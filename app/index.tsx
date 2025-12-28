@@ -1,17 +1,19 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, Modal, FlatList } from 'react-native';
-import { Text, Button, Chip, Surface, Divider } from 'react-native-paper';
+import { Text, Button, IconButton, Chip, Surface, Divider } from 'react-native-paper';
 import { useRouter, useFocusEffect, Stack } from 'expo-router';
 import { storage } from '../utils/storage';
 import { ALLERGENS } from '../constants/allergens';
-import { AllergenId, Language, LANGUAGES } from '../types';
+import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode, AllLanguageCode } from '../types';
+import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
 import i18n from '../utils/i18n';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>([]);
-  const [cardLanguage, setCardLanguage] = useState<Language>('en');
+  const [cardLanguage, setCardLanguage] = useState<AllLanguageCode>('en');
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  const [downloadedLanguages, setDownloadedLanguages] = useState<DownloadableLanguageCode[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -22,13 +24,38 @@ export default function HomeScreen() {
   const loadData = async () => {
     const allergens = await storage.getSelectedAllergens();
     const settings = await storage.getSettings();
+    const downloaded = await storage.getDownloadedLanguageCodes();
     setSelectedAllergens(allergens);
-    setCardLanguage(settings.cardLanguage);
+    setCardLanguage(settings.cardLanguage as AllLanguageCode);
+    setDownloadedLanguages(downloaded);
   };
 
-  const handleLanguageChange = async (lang: Language) => {
+  // Combina lingue hardcoded + scaricate
+  const allLanguages = useMemo(() => {
+    const downloadedLangInfos = DOWNLOADABLE_LANGUAGES.filter(
+      (lang) => downloadedLanguages.includes(lang.code)
+    ).map((lang) => ({
+      code: lang.code as AllLanguageCode,
+      name: lang.name,
+      nativeName: lang.nativeName,
+      flag: lang.flag,
+      isDownloaded: true,
+    }));
+
+    const hardcodedLangInfos = LANGUAGES.map((lang) => ({
+      code: lang.code as AllLanguageCode,
+      name: lang.name,
+      nativeName: lang.nativeName,
+      flag: lang.flag,
+      isDownloaded: false,
+    }));
+
+    return [...hardcodedLangInfos, ...downloadedLangInfos];
+  }, [downloadedLanguages]);
+
+  const handleLanguageChange = async (lang: AllLanguageCode) => {
     setCardLanguage(lang);
-    await storage.setCardLanguage(lang);
+    await storage.setCardLanguage(lang as Language);
     setShowLanguagePicker(false);
   };
 
@@ -36,7 +63,7 @@ export default function HomeScreen() {
     return ALLERGENS.find((a) => a.id === id);
   };
 
-  const currentLanguage = LANGUAGES.find((l) => l.code === cardLanguage);
+  const currentLanguage = allLanguages.find((l) => l.code === cardLanguage);
 
   return (
     <View style={styles.container}>
@@ -44,12 +71,13 @@ export default function HomeScreen() {
         options={{
           title: 'AllergiApp',
           headerRight: () => (
-            <Button
-              textColor="#FFFFFF"
+            <IconButton
+              icon="cog"
+              iconColor="rgba(255, 255, 255, 0.8)"
+              size={22}
               onPress={() => router.push('/settings')}
-            >
-              {i18n.t('home.settings')}
-            </Button>
+              style={{ margin: 0, backgroundColor: 'transparent' }}
+            />
           ),
         }}
       />
@@ -140,7 +168,7 @@ export default function HomeScreen() {
 
           {/* Quick language buttons */}
           <View style={styles.quickLanguages}>
-            {LANGUAGES.slice(0, 6).map((lang) => (
+            {allLanguages.slice(0, 6).map((lang) => (
               <Pressable
                 key={lang.code}
                 onPress={() => handleLanguageChange(lang.code)}
@@ -152,12 +180,14 @@ export default function HomeScreen() {
                 <Text style={styles.quickLangFlag}>{lang.flag}</Text>
               </Pressable>
             ))}
-            <Pressable
-              onPress={() => setShowLanguagePicker(true)}
-              style={styles.quickLangButton}
-            >
-              <Text style={styles.quickLangMore}>+9</Text>
-            </Pressable>
+            {allLanguages.length > 6 && (
+              <Pressable
+                onPress={() => setShowLanguagePicker(true)}
+                style={styles.quickLangButton}
+              >
+                <Text style={styles.quickLangMore}>+{allLanguages.length - 6}</Text>
+              </Pressable>
+            )}
           </View>
         </Surface>
 
@@ -197,7 +227,7 @@ export default function HomeScreen() {
               </Pressable>
             </View>
             <FlatList
-              data={LANGUAGES}
+              data={allLanguages}
               keyExtractor={(item) => item.code}
               ItemSeparatorComponent={() => <Divider />}
               renderItem={({ item }) => (
@@ -211,7 +241,10 @@ export default function HomeScreen() {
                 >
                   <Text style={styles.itemFlag}>{item.flag}</Text>
                   <View style={styles.itemTextContainer}>
-                    <Text style={styles.itemNativeName}>{item.nativeName}</Text>
+                    <Text style={styles.itemNativeName}>
+                      {item.nativeName}
+                      {item.isDownloaded && ' ⬇'}
+                    </Text>
                     <Text style={styles.itemName}>{item.name}</Text>
                   </View>
                   {item.code === cardLanguage && (

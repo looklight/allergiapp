@@ -33,6 +33,7 @@
   },
   "settings": {
     "title": "Impostazioni",
+    "back": "Indietro",
     "appLanguage": "Lingua dell'App",
     "cardLanguage": "Lingua della Card",
     "clearData": "Cancella Tutti i Dati",
@@ -40,6 +41,27 @@
     "cancel": "Annulla",
     "confirm": "Conferma",
     "italian": "Italiano",
-    "english": "Inglese"
+    "english": "Inglese",
+    "downloadLanguages": "Scarica Altre Lingue",
+    "downloadLanguagesDesc": "Scarica lingue aggiuntive per le card allergie",
+    "download": "Scarica",
+    "downloaded": "Scaricata!",
+    "delete": "Elimina",
+    "downloading": "Download in corso...",
+    "downloadError": "Download fallito. Controlla la connessione.",
+    "deleteConfirm": "Eliminare questa lingua?",
+    "translatingAllergens": "Traduzione nomi allergeni...",
+    "translatingDescriptions": "Traduzione descrizioni...",
+    "translatingCard": "Traduzione testi card...",
+    "noInternet": "Nessuna connessione internet",
+    "searchLanguage": "Cerca lingua...",
+    "languagesAvailable": "lingue disponibili",
+    "downloadedLanguages": "Scaricate",
+    "availableLanguages": "Disponibili",
+    "noLanguagesFound": "Nessuna lingua trovata",
+    "region_europe": "Europa",
+    "region_asia": "Asia e Medio Oriente",
+    "region_africa": "Africa",
+    "region_other": "Altro"
   }
 }
