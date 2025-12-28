@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "AllergiApp"
+  },
+  "home": {
+    "title": "Le Mie Allergie",
+    "noAllergies": "Non hai ancora aggiunto allergie",
+    "addAllergies": "Aggiungi Allergie",
+    "editAllergies": "Modifica allergie",
+    "showCard": "Mostra Card",
+    "showCardToWaiter": "Mostra Card al Cameriere",
+    "settings": "Impostazioni",
+    "whereAreYouTraveling": "Dove stai viaggiando?",
+    "chooseLanguage": "Scegli la lingua per comunicare le tue allergie",
+    "change": "Cambia",
+    "cardReadyIn": "La tua card è pronta in",
+    "selectLanguage": "Scegli la lingua"
+  },
+  "addAllergy": {
+    "title": "Aggiungi Allergie",
+    "subtitle": "Seleziona le tue allergie alimentari",
+    "save": "Salva"
+  },
+  "card": {
+    "title": "Allergie Alimentari",
+    "header": "ATTENZIONE",
+    "subtitle": "ALLERGIE ALIMENTARI",
+    "message": "Ho le seguenti allergie alimentari. Per favore, assicuratevi che il mio cibo non contenga questi ingredienti.",
+    "thanks": "Grazie per la vostra comprensione.",
+    "changeLanguage": "Cambia Lingua",
+    "showInMyLanguage": "Vedi nella mia lingua",
+    "showInDestLanguage": "Torna alla lingua originale"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "appLanguage": "Lingua dell'App",
+    "cardLanguage": "Lingua della Card",
+    "clearData": "Cancella Tutti i Dati",
+    "clearDataConfirm": "Sei sicuro di voler cancellare tutti i dati?",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "italian": "Italiano",
+    "english": "Inglese"
+  }
+}
