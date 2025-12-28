@@ -1,0 +1,75 @@
+import { DownloadableLanguageInfo } from '../types';
+
+export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
+  // Europa
+  { code: 'el', name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷', region: 'europe' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', region: 'europe' },
+  { code: 'cs', name: 'Czech', nativeName: 'Čeština', flag: '🇨🇿', region: 'europe' },
+  { code: 'hu', name: 'Hungarian', nativeName: 'Magyar', flag: '🇭🇺', region: 'europe' },
+  { code: 'ro', name: 'Romanian', nativeName: 'Română', flag: '🇷🇴', region: 'europe' },
+  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська', flag: '🇺🇦', region: 'europe' },
+  { code: 'da', name: 'Danish', nativeName: 'Dansk', flag: '🇩🇰', region: 'europe' },
+  { code: 'fi', name: 'Finnish', nativeName: 'Suomi', flag: '🇫🇮', region: 'europe' },
+  { code: 'no', name: 'Norwegian', nativeName: 'Norsk', flag: '🇳🇴', region: 'europe' },
+  { code: 'hr', name: 'Croatian', nativeName: 'Hrvatski', flag: '🇭🇷', region: 'europe' },
+  { code: 'bg', name: 'Bulgarian', nativeName: 'Български', flag: '🇧🇬', region: 'europe' },
+  { code: 'sk', name: 'Slovak', nativeName: 'Slovenčina', flag: '🇸🇰', region: 'europe' },
+  { code: 'sl', name: 'Slovenian', nativeName: 'Slovenščina', flag: '🇸🇮', region: 'europe' },
+  { code: 'sr', name: 'Serbian', nativeName: 'Српски', flag: '🇷🇸', region: 'europe' },
+  { code: 'lt', name: 'Lithuanian', nativeName: 'Lietuvių', flag: '🇱🇹', region: 'europe' },
+  { code: 'lv', name: 'Latvian', nativeName: 'Latviešu', flag: '🇱🇻', region: 'europe' },
+  { code: 'et', name: 'Estonian', nativeName: 'Eesti', flag: '🇪🇪', region: 'europe' },
+  { code: 'is', name: 'Icelandic', nativeName: 'Íslenska', flag: '🇮🇸', region: 'europe' },
+  { code: 'mk', name: 'Macedonian', nativeName: 'Македонски', flag: '🇲🇰', region: 'europe' },
+  { code: 'sq', name: 'Albanian', nativeName: 'Shqip', flag: '🇦🇱', region: 'europe' },
+  { code: 'bs', name: 'Bosnian', nativeName: 'Bosanski', flag: '🇧🇦', region: 'europe' },
+  { code: 'mt', name: 'Maltese', nativeName: 'Malti', flag: '🇲🇹', region: 'europe' },
+  { code: 'ga', name: 'Irish', nativeName: 'Gaeilge', flag: '🇮🇪', region: 'europe' },
+  { code: 'cy', name: 'Welsh', nativeName: 'Cymraeg', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', region: 'europe' },
+  { code: 'ca', name: 'Catalan', nativeName: 'Català', flag: '🇪🇸', region: 'europe' },
+  { code: 'eu', name: 'Basque', nativeName: 'Euskara', flag: '🇪🇸', region: 'europe' },
+  { code: 'gl', name: 'Galician', nativeName: 'Galego', flag: '🇪🇸', region: 'europe' },
+  // Asia
+  { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', region: 'asia' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', region: 'asia' },
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', flag: '🇻🇳', region: 'asia' },
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩', region: 'asia' },
+  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾', region: 'asia' },
+  { code: 'tl', name: 'Filipino', nativeName: 'Tagalog', flag: '🇵🇭', region: 'asia' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩', region: 'asia' },
+  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳', region: 'asia' },
+  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳', region: 'asia' },
+  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳', region: 'asia' },
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو', flag: '🇵🇰', region: 'asia' },
+  { code: 'fa', name: 'Persian', nativeName: 'فارسی', flag: '🇮🇷', region: 'asia' },
+  { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', flag: '🇳🇵', region: 'asia' },
+  { code: 'si', name: 'Sinhala', nativeName: 'සිංහල', flag: '🇱🇰', region: 'asia' },
+  { code: 'km', name: 'Khmer', nativeName: 'ភាសាខ្មែរ', flag: '🇰🇭', region: 'asia' },
+  { code: 'lo', name: 'Lao', nativeName: 'ລາວ', flag: '🇱🇦', region: 'asia' },
+  { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', flag: '🇲🇲', region: 'asia' },
+  { code: 'ka', name: 'Georgian', nativeName: 'ქართული', flag: '🇬🇪', region: 'asia' },
+  { code: 'hy', name: 'Armenian', nativeName: 'Հայdelays', flag: '🇦🇲', region: 'asia' },
+  { code: 'az', name: 'Azerbaijani', nativeName: 'Azərbaycan', flag: '🇦🇿', region: 'asia' },
+  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша', flag: '🇰🇿', region: 'asia' },
+  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha', flag: '🇺🇿', region: 'asia' },
+  { code: 'mn', name: 'Mongolian', nativeName: 'Монгол', flag: '🇲🇳', region: 'asia' },
+  // Africa
+  { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', flag: '🇰🇪', region: 'africa' },
+  { code: 'af', name: 'Afrikaans', nativeName: 'Afrikaans', flag: '🇿🇦', region: 'africa' },
+  { code: 'am', name: 'Amharic', nativeName: 'አማርኛ', flag: '🇪🇹', region: 'africa' },
+  { code: 'ha', name: 'Hausa', nativeName: 'Hausa', flag: '🇳🇬', region: 'africa' },
+  { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá', flag: '🇳🇬', region: 'africa' },
+  { code: 'zu', name: 'Zulu', nativeName: 'isiZulu', flag: '🇿🇦', region: 'africa' },
+  // Altro
+  { code: 'eo', name: 'Esperanto', nativeName: 'Esperanto', flag: '🌍', region: 'other' },
+];
+
+// Helper per ottenere le lingue per regione
+export const getLanguagesByRegion = () => {
+  return {
+    europe: DOWNLOADABLE_LANGUAGES.filter((l) => l.region === 'europe'),
+    asia: DOWNLOADABLE_LANGUAGES.filter((l) => l.region === 'asia'),
+    africa: DOWNLOADABLE_LANGUAGES.filter((l) => l.region === 'africa'),
+    other: DOWNLOADABLE_LANGUAGES.filter((l) => l.region === 'other'),
+  };
+};

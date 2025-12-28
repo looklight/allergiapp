@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Text, Surface, IconButton } from 'react-native-paper';
 import { useFocusEffect, Stack, useRouter } from 'expo-router';
@@ -6,7 +6,8 @@ import { storage } from '../utils/storage';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
 import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
-import { AllergenId, Language, LANGUAGES, AppLanguage } from '../types';
+import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
+import { AllergenId, Language, LANGUAGES, AppLanguage, AllLanguageCode, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
 import i18n from '../utils/i18n';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -16,10 +17,11 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 export default function CardScreen() {
   const router = useRouter();
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>([]);
-  const [cardLanguage, setCardLanguage] = useState<Language>('en');
+  const [cardLanguage, setCardLanguage] = useState<AllLanguageCode>('en');
   const [appLanguage, setAppLanguage] = useState<AppLanguage>('it');
   const [showInAppLanguage, setShowInAppLanguage] = useState(false);
   const [expandedAllergen, setExpandedAllergen] = useState<AllergenId | null>(null);
+  const [downloadedLanguageData, setDownloadedLanguageData] = useState<DownloadedLanguageData | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -31,10 +33,24 @@ export default function CardScreen() {
     const allergens = await storage.getSelectedAllergens();
     const settings = await storage.getSettings();
     setSelectedAllergens(allergens);
-    setCardLanguage(settings.cardLanguage);
+    setCardLanguage(settings.cardLanguage as AllLanguageCode);
     setAppLanguage(settings.appLanguage);
-    setShowInAppLanguage(false); // Reset to destination language when entering
+    setShowInAppLanguage(false);
+
+    // Carica dati lingua scaricata se necessario
+    const downloadedCodes = await storage.getDownloadedLanguageCodes();
+    if (downloadedCodes.includes(settings.cardLanguage as DownloadableLanguageCode)) {
+      const langData = await storage.getDownloadedLanguage(settings.cardLanguage as DownloadableLanguageCode);
+      setDownloadedLanguageData(langData);
+    } else {
+      setDownloadedLanguageData(null);
+    }
   };
+
+  // Verifica se la lingua corrente è scaricata
+  const isDownloadedLanguage = useMemo(() => {
+    return DOWNLOADABLE_LANGUAGES.some((l) => l.code === cardLanguage);
+  }, [cardLanguage]);
 
   const getAllergenInfo = (id: AllergenId) => {
     return ALLERGENS.find((a) => a.id === id);
@@ -47,10 +63,46 @@ export default function CardScreen() {
 
   // Current display language (either destination or app language)
   const displayLanguage = showInAppLanguage ? appLanguage : cardLanguage;
-  const currentLanguage = LANGUAGES.find((l) => l.code === displayLanguage);
-  const destLanguage = LANGUAGES.find((l) => l.code === cardLanguage);
-  const appLang = LANGUAGES.find((l) => l.code === appLanguage);
-  const translations = CARD_TRANSLATIONS[displayLanguage];
+
+  // Trova info lingua corrente (sia hardcoded che scaricata)
+  const currentLanguage = useMemo(() => {
+    const hardcoded = LANGUAGES.find((l) => l.code === displayLanguage);
+    if (hardcoded) return hardcoded;
+    const downloaded = DOWNLOADABLE_LANGUAGES.find((l) => l.code === displayLanguage);
+    return downloaded || null;
+  }, [displayLanguage]);
+
+  // Traduzioni card - usa dati scaricati se lingua scaricata
+  const translations = useMemo(() => {
+    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+      return {
+        header: downloadedLanguageData.cardTexts.header,
+        subtitle: downloadedLanguageData.cardTexts.subtitle,
+        message: downloadedLanguageData.cardTexts.message,
+        thanks: downloadedLanguageData.cardTexts.thanks,
+        tapToSee: CARD_TRANSLATIONS.en.tapToSee, // Fallback a inglese per UI
+        showIn: CARD_TRANSLATIONS.en.showIn,
+      };
+    }
+    return CARD_TRANSLATIONS[displayLanguage as Language] || CARD_TRANSLATIONS.en;
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+
+  // Funzione per ottenere nome allergene tradotto
+  const getAllergenTranslation = (id: AllergenId): string => {
+    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+      return downloadedLanguageData.allergens[id] || ALLERGENS.find((a) => a.id === id)?.translations.en || '';
+    }
+    const allergen = ALLERGENS.find((a) => a.id === id);
+    return allergen?.translations[displayLanguage as Language] || allergen?.translations.en || '';
+  };
+
+  // Funzione per ottenere descrizione allergene tradotta
+  const getAllergenDescription = (id: AllergenId): string => {
+    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+      return downloadedLanguageData.descriptions[id] || ALLERGEN_IMAGES[id]?.description.en || '';
+    }
+    return ALLERGEN_IMAGES[id]?.description[displayLanguage as Language] || ALLERGEN_IMAGES[id]?.description.en || '';
+  };
 
   return (
     <View style={styles.container}>
@@ -103,7 +155,7 @@ export default function CardScreen() {
                     <Text style={styles.allergenIcon}>{allergen.icon}</Text>
                     <View style={styles.allergenTextContainer}>
                       <Text style={styles.allergenText}>
-                        {allergen.translations[displayLanguage]}
+                        {getAllergenTranslation(id)}
                       </Text>
                       <Text style={styles.tapHint}>
                         {translations.tapToSee} {isExpanded ? '▲' : '▼'}
@@ -121,7 +173,7 @@ export default function CardScreen() {
                         ))}
                       </View>
                       <Text style={styles.breakdownDescription}>
-                        {images.description[displayLanguage] || images.description.en}
+                        {getAllergenDescription(id)}
                       </Text>
                     </View>
                   )}
