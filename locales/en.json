@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "AllergiApp"
+  },
+  "home": {
+    "title": "My Allergies",
+    "noAllergies": "You haven't added any allergies yet",
+    "addAllergies": "Add Allergies",
+    "editAllergies": "Edit allergies",
+    "showCard": "Show Card",
+    "showCardToWaiter": "Show Card to Waiter",
+    "settings": "Settings",
+    "whereAreYouTraveling": "Where are you traveling?",
+    "chooseLanguage": "Choose the language to communicate your allergies",
+    "change": "Change",
+    "cardReadyIn": "Your card is ready in",
+    "selectLanguage": "Select language"
+  },
+  "addAllergy": {
+    "title": "Add Allergies",
+    "subtitle": "Select your food allergies",
+    "save": "Save"
+  },
+  "card": {
+    "title": "Food Allergies",
+    "header": "ATTENTION",
+    "subtitle": "FOOD ALLERGIES",
+    "message": "I have the following food allergies. Please ensure my food does not contain these ingredients.",
+    "thanks": "Thank you for your understanding.",
+    "changeLanguage": "Change Language",
+    "showInMyLanguage": "View in my language",
+    "showInDestLanguage": "Back to original language"
+  },
+  "settings": {
+    "title": "Settings",
+    "appLanguage": "App Language",
+    "cardLanguage": "Card Language",
+    "clearData": "Clear All Data",
+    "clearDataConfirm": "Are you sure you want to clear all data?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "italian": "Italian",
+    "english": "English"
+  }
+}
