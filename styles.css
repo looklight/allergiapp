@@ -125,9 +125,34 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 80px 24px;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
     position: relative;
     z-index: 1;
+}
+
+.hero-text {
+    text-align: left;
+}
+
+.hero-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-image img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
 }
 
 .hero-title {
@@ -149,17 +174,13 @@ body {
     font-size: clamp(18px, 3vw, 24px);
     color: var(--text-secondary);
     margin-bottom: 48px;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .hero-cta {
     display: flex;
     gap: 16px;
-    justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 64px;
+    margin-bottom: 48px;
 }
 
 .button {
@@ -199,9 +220,15 @@ body {
 
 .hero-stats {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 64px;
     flex-wrap: wrap;
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 48px auto 0;
+    justify-content: center;
 }
 
 .stat {
@@ -412,6 +439,14 @@ body {
     color: white;
 }
 
+.download-icon {
+    width: 80px;
+    height: auto;
+    margin: 0 auto 32px;
+    display: block;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
 .download-buttons {
     display: flex;
     gap: 24px;
@@ -551,6 +586,28 @@ body {
 
     .nav-links a:not(.cta-button) {
         display: none;
+    }
+
+    .hero-content {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        text-align: center;
+    }
+
+    .hero-text {
+        text-align: center;
+    }
+
+    .hero-cta {
+        justify-content: center;
+    }
+
+    .hero-image {
+        order: -1;
+    }
+
+    .hero-image img {
+        max-width: 250px;
     }
 
     .hero-stats {
