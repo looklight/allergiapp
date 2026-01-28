@@ -1,18 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "landing/**/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/landing/$1"
-    }
-  ],
-  "github": {
-    "silent": true
-  }
+  "buildCommand": null,
+  "outputDirectory": "landing",
+  "installCommand": null,
+  "devCommand": null,
+  "framework": null
 }
