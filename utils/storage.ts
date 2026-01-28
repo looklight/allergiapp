@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AllergenId, Language, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
+import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
 
 const STORAGE_KEYS = {
   SELECTED_ALLERGENS: 'allergiapp_selected_allergens',
@@ -12,7 +12,38 @@ const DEFAULT_SETTINGS: UserSettings = {
   appLanguage: 'it',
 };
 
+export interface AppData {
+  selectedAllergens: AllergenId[];
+  settings: UserSettings;
+  downloadedLanguages: Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>;
+}
+
 export const storage = {
+  // Carica tutti i dati in una singola operazione (per il Context)
+  async loadAll(): Promise<AppData> {
+    try {
+      const keys = [
+        STORAGE_KEYS.SELECTED_ALLERGENS,
+        STORAGE_KEYS.SETTINGS,
+        STORAGE_KEYS.DOWNLOADED_LANGUAGES,
+      ];
+      const results = await AsyncStorage.multiGet(keys);
+      const [allergensRaw, settingsRaw, downloadedRaw] = results.map(([, v]) => v);
+
+      return {
+        selectedAllergens: allergensRaw ? JSON.parse(allergensRaw) : [],
+        settings: settingsRaw ? { ...DEFAULT_SETTINGS, ...JSON.parse(settingsRaw) } : DEFAULT_SETTINGS,
+        downloadedLanguages: downloadedRaw ? JSON.parse(downloadedRaw) : {},
+      };
+    } catch {
+      return {
+        selectedAllergens: [],
+        settings: DEFAULT_SETTINGS,
+        downloadedLanguages: {},
+      };
+    }
+  },
+
   async getSelectedAllergens(): Promise<AllergenId[]> {
     try {
       const data = await AsyncStorage.getItem(STORAGE_KEYS.SELECTED_ALLERGENS);
@@ -28,8 +59,8 @@ export const storage = {
         STORAGE_KEYS.SELECTED_ALLERGENS,
         JSON.stringify(allergens)
       );
-    } catch (error) {
-      console.error('Error saving allergens:', error);
+    } catch {
+      // Storage write failed silently
     }
   },
 
@@ -47,12 +78,12 @@ export const storage = {
       const current = await this.getSettings();
       const updated = { ...current, ...settings };
       await AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
-    } catch (error) {
-      console.error('Error saving settings:', error);
+    } catch {
+      // Storage write failed silently
     }
   },
 
-  async setCardLanguage(language: Language): Promise<void> {
+  async setCardLanguage(language: AllLanguageCode): Promise<void> {
     await this.setSettings({ cardLanguage: language });
   },
 
@@ -67,8 +98,8 @@ export const storage = {
         STORAGE_KEYS.SETTINGS,
         STORAGE_KEYS.DOWNLOADED_LANGUAGES,
       ]);
-    } catch (error) {
-      console.error('Error clearing storage:', error);
+    } catch {
+      // Storage clear failed silently
     }
   },
 
@@ -96,8 +127,8 @@ export const storage = {
       const languages = await this.getDownloadedLanguages();
       languages[langCode] = data;
       await AsyncStorage.setItem(STORAGE_KEYS.DOWNLOADED_LANGUAGES, JSON.stringify(languages));
-    } catch (error) {
-      console.error('Error saving downloaded language:', error);
+    } catch {
+      // Storage write failed silently
     }
   },
 
@@ -106,8 +137,8 @@ export const storage = {
       const languages = await this.getDownloadedLanguages();
       delete languages[langCode];
       await AsyncStorage.setItem(STORAGE_KEYS.DOWNLOADED_LANGUAGES, JSON.stringify(languages));
-    } catch (error) {
-      console.error('Error deleting downloaded language:', error);
+    } catch {
+      // Storage delete failed silently
     }
   },
 

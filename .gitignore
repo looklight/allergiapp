@@ -40,3 +40,7 @@ yarn-error.*
 /ios
 /android
 .npm-cache/
+
+# Firebase
+google-services.json
+GoogleService-Info.plist

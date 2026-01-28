@@ -1,26 +1,26 @@
-import { useCallback, useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Checkbox, List, Button, Divider } from 'react-native-paper';
-import { useRouter, useFocusEffect, Stack } from 'expo-router';
-import { storage } from '../utils/storage';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
-import { AllergenId } from '../types';
+import { AllergenId, Language } from '../types';
+import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
+import { useAppContext } from '../utils/AppContext';
+import { Analytics } from '../utils/analytics';
 
 export default function AddAllergyScreen() {
   const router = useRouter();
-  const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>([]);
+  const insets = useSafeAreaInsets();
+  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens } = useAppContext();
+  const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>(savedAllergens);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadAllergens();
-    }, [])
-  );
-
-  const loadAllergens = async () => {
-    const allergens = await storage.getSelectedAllergens();
-    setSelectedAllergens(allergens);
-  };
+  useEffect(() => {
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+  }, []);
 
   const toggleAllergen = (id: AllergenId) => {
     setSelectedAllergens((prev) =>
@@ -31,17 +31,43 @@ export default function AddAllergyScreen() {
   };
 
   const handleSave = async () => {
-    await storage.setSelectedAllergens(selectedAllergens);
+    // Traccia allergie aggiunte e rimosse
+    const added = selectedAllergens.filter((id) => !savedAllergens.includes(id));
+    const removed = savedAllergens.filter((id) => !selectedAllergens.includes(id));
+
+    // Log eventi individuali per allergie aggiunte/rimosse
+    for (const allergen of added) {
+      await Analytics.logAllergyAdded(allergen);
+    }
+    for (const allergen of removed) {
+      await Analytics.logAllergyRemoved(allergen);
+    }
+
+    // Log evento aggregato del salvataggio
+    await Analytics.logAllergiesSaved(
+      selectedAllergens,
+      savedAllergens.length,
+      selectedAllergens.length
+    );
+
+    await saveAllergens(selectedAllergens);
     router.back();
   };
 
   return (
     <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: i18n.t('addAllergy.title'),
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={8}
+          activeOpacity={0.6}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{i18n.t('addAllergy.title')}</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
       <Text variant="bodyMedium" style={styles.subtitle}>
         {i18n.t('addAllergy.subtitle')}
@@ -52,7 +78,7 @@ export default function AddAllergyScreen() {
           <View key={allergen.id}>
             <List.Item
               title={
-                allergen.translations[i18n.locale as 'it' | 'en'] ||
+                allergen.translations[i18n.locale as Language] ||
                 allergen.translations.en
               }
               left={() => (
@@ -70,6 +96,9 @@ export default function AddAllergyScreen() {
               )}
               onPress={() => toggleAllergen(allergen.id)}
               style={styles.listItem}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: selectedAllergens.includes(allergen.id) }}
+              accessibilityLabel={allergen.translations[i18n.locale as Language] || allergen.translations.en}
             />
             {index < ALLERGENS.length - 1 && <Divider />}
           </View>
@@ -90,14 +119,27 @@ export default function AddAllergyScreen() {
 }
 
 const styles = StyleSheet.create({
+  customHeader: {
+    backgroundColor: theme.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   subtitle: {
     padding: 16,
     paddingBottom: 8,
-    color: '#666666',
+    color: theme.colors.textSecondary,
   },
   list: {
     flex: 1,
@@ -114,9 +156,9 @@ const styles = StyleSheet.create({
   footer: {
     padding: 16,
     paddingBottom: 32,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: theme.colors.border,
   },
   saveButton: {
     paddingVertical: 4,

@@ -62,10 +62,10 @@ export interface Allergen {
   translations: Record<Language, string>;
 }
 
-export type AppLanguage = 'it' | 'en';
+export type AppLanguage = 'it' | 'en' | 'es' | 'de' | 'fr';
 
 export interface UserSettings {
-  cardLanguage: Language;
+  cardLanguage: AllLanguageCode;
   appLanguage: AppLanguage;
 }
 

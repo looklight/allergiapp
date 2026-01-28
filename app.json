@@ -3,7 +3,7 @@
     "name": "AllergiApp",
     "slug": "allergiapp",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -15,7 +15,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.allergiapp"
+      "bundleIdentifier": "com.allergiapp",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,14 +24,17 @@
         "backgroundColor": "#4CAF50"
       },
       "package": "com.allergiapp",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "versionCode": 1,
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-firebase/app"
     ]
   }
 }

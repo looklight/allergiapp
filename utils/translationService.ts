@@ -3,7 +3,18 @@ import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
 import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
 
-const LIBRETRANSLATE_API = 'https://libretranslate.com/translate';
+const MYMEMORY_API = 'https://api.mymemory.translated.net/get';
+const REQUEST_TIMEOUT_MS = 30000;
+const RATE_LIMIT_DELAY_MS = 300;
+
+function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = REQUEST_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => {
+    clearTimeout(timeout);
+  });
+}
 
 interface TranslateOptions {
   text: string;
@@ -12,33 +23,34 @@ interface TranslateOptions {
 }
 
 async function translateText({ text, sourceLang, targetLang }: TranslateOptions): Promise<string> {
-  try {
-    const response = await fetch(LIBRETRANSLATE_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        q: text,
-        source: sourceLang,
-        target: targetLang,
-        format: 'text',
-      }),
-    });
+  const params = new URLSearchParams({
+    q: text,
+    langpair: `${sourceLang}|${targetLang}`,
+  });
 
-    if (!response.ok) {
-      throw new Error(`Translation failed: ${response.status}`);
-    }
+  const response = await fetchWithTimeout(`${MYMEMORY_API}?${params.toString()}`, {
+    method: 'GET',
+  });
 
-    const data = await response.json();
-    return data.translatedText;
-  } catch (error) {
-    console.error('Translation error:', error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(`Translation failed: ${response.status}`);
   }
+
+  const data = await response.json();
+
+  if (!data.responseData?.translatedText) {
+    throw new Error('Invalid API response: missing translatedText');
+  }
+
+  // MyMemory returns match quality — check for errors
+  if (data.responseStatus === 403) {
+    throw new Error('Translation quota exceeded');
+  }
+
+  return data.responseData.translatedText;
 }
 
-// Traduce un batch di testi in una sola chiamata (se supportato) o sequenzialmente
+// Traduce un batch di testi sequenzialmente via MyMemory API
 async function translateBatch(
   texts: string[],
   sourceLang: string,
@@ -57,11 +69,23 @@ async function translateBatch(
     results.push(translated);
     onProgress?.(i + 1, total);
 
-    // Piccola pausa per evitare rate limiting
-    await new Promise(resolve => setTimeout(resolve, 200));
+    if (i < texts.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS));
+    }
   }
 
   return results;
+}
+
+// Rileva traduzioni parziali: se troppe parole restano in inglese, la traduzione non è affidabile
+function isPartialTranslation(original: string, translated: string): boolean {
+  const getWords = (text: string) =>
+    text.toLowerCase().split(/[\s,.\-()]+/).filter(w => w.length > 2);
+  const origWords = getWords(original);
+  const transWords = getWords(translated);
+  if (origWords.length === 0) return false;
+  const unchanged = origWords.filter(w => transWords.includes(w)).length;
+  return unchanged / origWords.length > 0.4;
 }
 
 export interface DownloadProgress {
@@ -73,7 +97,8 @@ export interface DownloadProgress {
 
 export async function downloadLanguageTranslations(
   targetLang: DownloadableLanguageCode,
-  onProgress?: (progress: DownloadProgress) => void
+  onProgress?: (progress: DownloadProgress) => void,
+  signal?: AbortSignal
 ): Promise<DownloadedLanguageData> {
   const sourceLang = 'en'; // Traduciamo sempre dall'inglese
 
@@ -98,6 +123,10 @@ export async function downloadLanguageTranslations(
     percentage: 0,
   });
 
+  const checkAborted = () => {
+    if (signal?.aborted) throw new Error('Download cancelled');
+  };
+
   const translatedAllergenNames = await translateBatch(
     allergenNames,
     sourceLang,
@@ -112,6 +141,7 @@ export async function downloadLanguageTranslations(
       });
     }
   );
+  checkAborted();
 
   // Traduce descrizioni allergeni
   onProgress?.({
@@ -135,6 +165,7 @@ export async function downloadLanguageTranslations(
       });
     }
   );
+  checkAborted();
 
   // Traduce testi card
   onProgress?.({
@@ -158,6 +189,7 @@ export async function downloadLanguageTranslations(
       });
     }
   );
+  checkAborted();
 
   // Costruisce l'oggetto risultato
   const allergens: Record<AllergenId, string> = {} as Record<AllergenId, string>;
@@ -165,7 +197,10 @@ export async function downloadLanguageTranslations(
 
   ALLERGENS.forEach((allergen, index) => {
     allergens[allergen.id] = translatedAllergenNames[index];
-    descriptions[allergen.id] = translatedDescriptions[index];
+    // Se la descrizione è tradotta solo parzialmente, usa l'originale inglese
+    const original = allergenDescriptions[index];
+    const translated = translatedDescriptions[index];
+    descriptions[allergen.id] = isPartialTranslation(original, translated) ? original : translated;
   });
 
   return {
@@ -181,12 +216,16 @@ export async function downloadLanguageTranslations(
   };
 }
 
-// Verifica se LibreTranslate è raggiungibile
+// Verifica se MyMemory API è raggiungibile
 export async function checkTranslationServiceAvailable(): Promise<boolean> {
   try {
-    const response = await fetch('https://libretranslate.com/languages', {
-      method: 'GET',
+    const params = new URLSearchParams({
+      q: 'test',
+      langpair: 'en|it',
     });
+    const response = await fetchWithTimeout(`${MYMEMORY_API}?${params.toString()}`, {
+      method: 'GET',
+    }, 10000);
     return response.ok;
   } catch {
     return false;
