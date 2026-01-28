@@ -490,43 +490,55 @@ body {
 .footer {
     background: var(--text);
     color: white;
-    padding: 64px 0 32px;
+    padding: 48px 0 32px;
 }
 
-.footer-content {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
-    gap: 48px;
-    margin-bottom: 48px;
+.footer-simple {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-.footer-brand p {
-    margin-top: 16px;
-    opacity: 0.8;
-}
-
-.footer-column h4 {
+.footer-simple .logo {
+    justify-content: center;
     margin-bottom: 16px;
-    font-size: 18px;
 }
 
-.footer-column a {
-    display: block;
+.footer-tagline {
+    font-size: 16px;
     color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 24px;
+}
+
+.footer-legal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.footer-legal a {
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-    margin-bottom: 12px;
+    font-size: 14px;
     transition: color 0.2s;
 }
 
-.footer-column a:hover {
+.footer-legal a:hover {
     color: white;
+    text-decoration: underline;
 }
 
-.footer-bottom {
-    text-align: center;
-    padding-top: 32px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    opacity: 0.6;
+.footer-legal .separator {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+}
+
+.footer-copyright {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
 }
 
 /* Responsive */
@@ -547,12 +559,11 @@ body {
         flex-direction: column;
     }
 
-    .footer-content {
-        grid-template-columns: 1fr;
-        gap: 32px;
-    }
-
     .newsletter-form {
         flex-direction: column;
+    }
+
+    .footer-legal {
+        flex-wrap: wrap;
     }
 }
