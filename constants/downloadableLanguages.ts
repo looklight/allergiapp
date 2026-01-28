@@ -48,7 +48,7 @@ export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
   { code: 'lo', name: 'Lao', nativeName: 'ລາວ', flag: '🇱🇦', region: 'asia' },
   { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', flag: '🇲🇲', region: 'asia' },
   { code: 'ka', name: 'Georgian', nativeName: 'ქართული', flag: '🇬🇪', region: 'asia' },
-  { code: 'hy', name: 'Armenian', nativeName: 'Հայdelays', flag: '🇦🇲', region: 'asia' },
+  { code: 'hy', name: 'Armenian', nativeName: 'Հայերեն', flag: '🇦🇲', region: 'asia' },
   { code: 'az', name: 'Azerbaijani', nativeName: 'Azərbaycan', flag: '🇦🇿', region: 'asia' },
   { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша', flag: '🇰🇿', region: 'asia' },
   { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha', flag: '🇺🇿', region: 'asia' },

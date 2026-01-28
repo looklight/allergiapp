@@ -1,14 +1,19 @@
-import { useCallback, useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
-import { Text, Surface, IconButton } from 'react-native-paper';
-import { useFocusEffect, Stack, useRouter } from 'expo-router';
-import { storage } from '../utils/storage';
+import { useState, useMemo, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity, LayoutAnimation, Platform, UIManager, useWindowDimensions } from 'react-native';
+import { Text, Surface } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
 import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
-import { AllergenId, Language, LANGUAGES, AppLanguage, AllLanguageCode, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
+import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
+import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
+import { useAppContext } from '../utils/AppContext';
+import { Analytics } from '../utils/analytics';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -16,36 +21,37 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function CardScreen() {
   const router = useRouter();
-  const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>([]);
-  const [cardLanguage, setCardLanguage] = useState<AllLanguageCode>('en');
-  const [appLanguage, setAppLanguage] = useState<AppLanguage>('it');
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const { selectedAllergens, settings, downloadedLanguages } = useAppContext();
+  const cardLanguage = settings.cardLanguage;
+  const appLanguage = settings.appLanguage;
   const [showInAppLanguage, setShowInAppLanguage] = useState(false);
   const [expandedAllergen, setExpandedAllergen] = useState<AllergenId | null>(null);
-  const [downloadedLanguageData, setDownloadedLanguageData] = useState<DownloadedLanguageData | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadData();
-    }, [])
-  );
+  // Permetti tutte le orientazioni per questa schermata
+  useEffect(() => {
+    ScreenOrientation.unlockAsync();
 
-  const loadData = async () => {
-    const allergens = await storage.getSelectedAllergens();
-    const settings = await storage.getSettings();
-    setSelectedAllergens(allergens);
-    setCardLanguage(settings.cardLanguage as AllLanguageCode);
-    setAppLanguage(settings.appLanguage);
-    setShowInAppLanguage(false);
+    // Traccia visualizzazione card
+    Analytics.logCardViewed(
+      cardLanguage,
+      selectedAllergens.length,
+      selectedAllergens,
+      isDownloadedLanguage
+    );
 
-    // Carica dati lingua scaricata se necessario
-    const downloadedCodes = await storage.getDownloadedLanguageCodes();
-    if (downloadedCodes.includes(settings.cardLanguage as DownloadableLanguageCode)) {
-      const langData = await storage.getDownloadedLanguage(settings.cardLanguage as DownloadableLanguageCode);
-      setDownloadedLanguageData(langData);
-    } else {
-      setDownloadedLanguageData(null);
-    }
-  };
+    // Quando l'utente esce dalla card, ri-blocca in portrait
+    return () => {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    };
+  }, []);
+
+  // Dati lingua scaricata dalla memoria (nessuna lettura AsyncStorage)
+  const downloadedLanguageData = useMemo(() => {
+    return downloadedLanguages[cardLanguage as DownloadableLanguageCode] ?? null;
+  }, [downloadedLanguages, cardLanguage]);
 
   // Verifica se la lingua corrente è scaricata
   const isDownloadedLanguage = useMemo(() => {
@@ -104,93 +110,247 @@ export default function CardScreen() {
     return ALLERGEN_IMAGES[id]?.description[displayLanguage as Language] || ALLERGEN_IMAGES[id]?.description.en || '';
   };
 
+  // Stili dinamici basati sull'orientamento
+  const dynamicStyles = useMemo(() => StyleSheet.create({
+    content: {
+      padding: isLandscape ? 12 : 16,
+      paddingBottom: isLandscape ? 12 : 32,
+      paddingLeft: isLandscape ? Math.max(insets.left, 12) : 16,
+      paddingRight: isLandscape ? Math.max(insets.right, 12) : 16,
+    },
+    headerSection: {
+      backgroundColor: theme.colors.error,
+      padding: isLandscape ? 16 : 24,
+      alignItems: 'center',
+    },
+    warningIcon: {
+      fontSize: isLandscape ? 36 : 48,
+      marginBottom: isLandscape ? 4 : 8,
+    },
+    header: {
+      fontSize: isLandscape ? 22 : 28,
+      fontWeight: 'bold' as const,
+      color: '#FFFFFF',
+      letterSpacing: 2,
+    },
+    subtitle: {
+      fontSize: isLandscape ? 16 : 18,
+      color: '#FFFFFF',
+      marginTop: 4,
+      letterSpacing: 1,
+    },
+    messageSection: {
+      padding: isLandscape ? 12 : 20,
+      backgroundColor: '#FFF3E0',
+      borderBottomWidth: 1,
+      borderBottomColor: '#FFE0B2',
+    },
+    message: {
+      fontSize: isLandscape ? 14 : 16,
+      lineHeight: isLandscape ? 20 : 24,
+      color: theme.colors.textPrimary,
+      textAlign: 'center' as const,
+    },
+    allergensSection: {
+      padding: isLandscape ? 12 : 20,
+    },
+    allergenRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      paddingVertical: isLandscape ? 8 : 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.divider,
+    },
+    allergenIcon: {
+      fontSize: isLandscape ? 24 : 28,
+      marginRight: isLandscape ? 12 : 16,
+    },
+    allergenText: {
+      fontSize: isLandscape ? 16 : 18,
+      fontWeight: '600' as const,
+      color: theme.colors.error,
+    },
+    tapHint: {
+      fontSize: isLandscape ? 11 : 12,
+      color: '#888888',
+      marginTop: 2,
+    },
+    breakdownContainer: {
+      backgroundColor: '#FFF8E1',
+      padding: isLandscape ? 12 : 16,
+      marginBottom: isLandscape ? 6 : 8,
+      borderRadius: 8,
+      borderLeftWidth: 4,
+      borderLeftColor: '#FFC107',
+    },
+    exampleEmoji: {
+      fontSize: isLandscape ? 28 : 36,
+    },
+    breakdownDescription: {
+      fontSize: isLandscape ? 13 : 14,
+      color: '#5D4037',
+      textAlign: 'center' as const,
+      fontStyle: 'italic' as const,
+    },
+    thanksSection: {
+      padding: isLandscape ? 12 : 20,
+      backgroundColor: theme.colors.primaryLight,
+    },
+    thanks: {
+      fontSize: isLandscape ? 14 : 16,
+      color: '#2E7D32',
+      textAlign: 'center' as const,
+      fontStyle: 'italic' as const,
+    },
+  }), [isLandscape]);
+
   return (
     <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: `${currentLanguage?.flag} ${translations.subtitle}`,
-          headerStyle: {
-            backgroundColor: '#D32F2F',
-          },
-          headerTintColor: '#FFFFFF',
-          headerLeft: () => (
-            <IconButton
-              icon="close"
-              iconColor="#FFFFFF"
-              size={24}
-              onPress={() => router.back()}
-            />
-          ),
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={[
+        styles.customHeader,
+        {
+          paddingTop: isLandscape ? Math.max(insets.top, insets.left, insets.right) : insets.top,
+          paddingLeft: isLandscape ? Math.max(insets.left, 16) : 16,
+          paddingRight: isLandscape ? Math.max(insets.right, 16) : 16,
+        }
+      ]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={8}
+          activeOpacity={0.6}
+        >
+          <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{currentLanguage?.flag} {translations.subtitle}</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={dynamicStyles.content}>
         <Surface style={styles.card} elevation={4}>
-          <View style={styles.headerSection}>
-            <Text style={styles.warningIcon}>⚠️</Text>
-            <Text style={styles.header}>{translations.header}</Text>
-            <Text style={styles.subtitle}>{translations.subtitle}</Text>
-          </View>
+          {isLandscape ? (
+            /* Layout Orizzontale - compatto e chiaro */
+            <View style={styles.landscapeContainer}>
+              {/* Header compatto in alto */}
+              <View style={styles.landscapeHeader}>
+                <Text style={styles.landscapeWarningIcon}>⚠️</Text>
+                <View style={styles.landscapeHeaderText}>
+                  <Text style={styles.landscapeTitle}>{translations.header}</Text>
+                  <Text style={styles.landscapeMessage}>{translations.message}</Text>
+                </View>
+              </View>
 
-          <View style={styles.messageSection}>
-            <Text style={styles.message}>{translations.message}</Text>
-          </View>
+              {/* Griglia allergeni - tutti visibili */}
+              <View style={styles.landscapeAllergensGrid}>
+                {selectedAllergens.map((id) => {
+                  const allergen = getAllergenInfo(id);
+                  const images = ALLERGEN_IMAGES[id];
+                  if (!allergen || !images) return null;
 
-          <View style={styles.allergensSection}>
-            {selectedAllergens.map((id) => {
-              const allergen = getAllergenInfo(id);
-              const images = ALLERGEN_IMAGES[id];
-              if (!allergen || !images) return null;
-              const isExpanded = expandedAllergen === id;
-
-              return (
-                <View key={id}>
-                  <Pressable
-                    onPress={() => toggleExpand(id)}
-                    style={({ pressed }) => [
-                      styles.allergenRow,
-                      pressed && styles.allergenRowPressed,
-                    ]}
-                  >
-                    <Text style={styles.allergenIcon}>{allergen.icon}</Text>
-                    <View style={styles.allergenTextContainer}>
-                      <Text style={styles.allergenText}>
+                  return (
+                    <View key={id} style={styles.landscapeAllergenCard}>
+                      <Text style={styles.landscapeAllergenIcon}>{allergen.icon}</Text>
+                      <Text style={styles.landscapeAllergenName}>
                         {getAllergenTranslation(id)}
                       </Text>
-                      <Text style={styles.tapHint}>
-                        {translations.tapToSee} {isExpanded ? '▲' : '▼'}
-                      </Text>
-                    </View>
-                  </Pressable>
-
-                  {isExpanded && (
-                    <View style={styles.breakdownContainer}>
-                      <View style={styles.examplesRow}>
-                        {images.examples.map((emoji, index) => (
-                          <Text key={index} style={styles.exampleEmoji}>
+                      <View style={styles.landscapeExamplesRow}>
+                        {images.examples.slice(0, 4).map((emoji, index) => (
+                          <Text key={index} style={styles.landscapeExampleEmoji}>
                             {emoji}
                           </Text>
                         ))}
                       </View>
-                      <Text style={styles.breakdownDescription}>
-                        {getAllergenDescription(id)}
-                      </Text>
                     </View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
+                  );
+                })}
+              </View>
 
-          <View style={styles.thanksSection}>
-            <Text style={styles.thanks}>{translations.thanks}</Text>
-          </View>
+              {/* Footer con ringraziamento */}
+              <View style={styles.landscapeFooter}>
+                <Text style={styles.landscapeThanks}>{translations.thanks}</Text>
+              </View>
+            </View>
+          ) : (
+            /* Layout Verticale - struttura originale */
+            <>
+              <View style={dynamicStyles.headerSection}>
+                <Text style={dynamicStyles.warningIcon}>⚠️</Text>
+                <Text style={dynamicStyles.header}>{translations.header}</Text>
+                <Text style={dynamicStyles.subtitle}>{translations.subtitle}</Text>
+              </View>
+
+              <View style={dynamicStyles.messageSection}>
+                <Text style={dynamicStyles.message}>{translations.message}</Text>
+              </View>
+
+              <View style={dynamicStyles.allergensSection}>
+                {selectedAllergens.map((id) => {
+                  const allergen = getAllergenInfo(id);
+                  const images = ALLERGEN_IMAGES[id];
+                  if (!allergen || !images) return null;
+                  const isExpanded = expandedAllergen === id;
+
+                  return (
+                    <View key={id}>
+                      <Pressable
+                        onPress={() => toggleExpand(id)}
+                        style={({ pressed }) => [
+                          dynamicStyles.allergenRow,
+                          pressed && styles.allergenRowPressed,
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${getAllergenTranslation(id)}, ${translations.tapToSee}`}
+                        accessibilityState={{ expanded: isExpanded }}
+                      >
+                        <Text style={dynamicStyles.allergenIcon}>{allergen.icon}</Text>
+                        <View style={styles.allergenTextContainer}>
+                          <Text style={dynamicStyles.allergenText}>
+                            {getAllergenTranslation(id)}
+                          </Text>
+                          <Text style={dynamicStyles.tapHint}>
+                            {translations.tapToSee} {isExpanded ? '▲' : '▼'}
+                          </Text>
+                        </View>
+                      </Pressable>
+
+                      {isExpanded && (
+                        <View style={dynamicStyles.breakdownContainer}>
+                          <View style={styles.examplesRow}>
+                            {images.examples.map((emoji, index) => (
+                              <Text key={index} style={dynamicStyles.exampleEmoji}>
+                                {emoji}
+                              </Text>
+                            ))}
+                          </View>
+                          <Text style={dynamicStyles.breakdownDescription}>
+                            {getAllergenDescription(id)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+
+              <View style={dynamicStyles.thanksSection}>
+                <Text style={dynamicStyles.thanks}>{translations.thanks}</Text>
+              </View>
+            </>
+          )}
         </Surface>
 
         {/* Language Toggle - Secondary action */}
         <Pressable
           style={styles.languageToggle}
-          onPress={() => setShowInAppLanguage(!showInAppLanguage)}
+          onPress={() => {
+            const newValue = !showInAppLanguage;
+            setShowInAppLanguage(newValue);
+            Analytics.logCardLanguageToggled(newValue, cardLanguage, appLanguage);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={showInAppLanguage
+            ? i18n.t('card.showInDestLanguage')
+            : i18n.t('card.showInMyLanguage')}
         >
           <Text style={styles.languageToggleText}>
             {showInAppLanguage
@@ -204,9 +364,22 @@ export default function CardScreen() {
 }
 
 const styles = StyleSheet.create({
+  customHeader: {
+    backgroundColor: theme.colors.error,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#D32F2F',
+    backgroundColor: theme.colors.error,
   },
   content: {
     padding: 16,
@@ -214,11 +387,84 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     overflow: 'hidden',
   },
+  landscapeContainer: {
+    flex: 1,
+  },
+  landscapeHeader: {
+    backgroundColor: theme.colors.error,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    gap: 12,
+  },
+  landscapeWarningIcon: {
+    fontSize: 32,
+  },
+  landscapeHeaderText: {
+    flex: 1,
+  },
+  landscapeTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  landscapeMessage: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    lineHeight: 18,
+  },
+  landscapeAllergensGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 12,
+    gap: 10,
+    backgroundColor: theme.colors.surface,
+  },
+  landscapeAllergenCard: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: 12,
+    padding: 10,
+    alignItems: 'center',
+    minWidth: 110,
+    borderWidth: 2,
+    borderColor: theme.colors.error,
+  },
+  landscapeAllergenIcon: {
+    fontSize: 32,
+    marginBottom: 4,
+  },
+  landscapeAllergenName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.error,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  landscapeExamplesRow: {
+    flexDirection: 'row',
+    gap: 4,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  landscapeExampleEmoji: {
+    fontSize: 20,
+  },
+  landscapeFooter: {
+    backgroundColor: theme.colors.primaryLight,
+    padding: 10,
+    alignItems: 'center',
+  },
+  landscapeThanks: {
+    fontSize: 13,
+    color: '#2E7D32',
+    fontStyle: 'italic',
+  },
   headerSection: {
-    backgroundColor: '#D32F2F',
+    backgroundColor: theme.colors.error,
     padding: 24,
     alignItems: 'center',
   },
@@ -247,7 +493,7 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#333333',
+    color: theme.colors.textPrimary,
     textAlign: 'center',
   },
   allergensSection: {
@@ -258,7 +504,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: theme.colors.divider,
   },
   allergenRowPressed: {
     backgroundColor: '#FFF3E0',
@@ -273,7 +519,7 @@ const styles = StyleSheet.create({
   allergenText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#D32F2F',
+    color: theme.colors.error,
   },
   tapHint: {
     fontSize: 12,
@@ -306,7 +552,7 @@ const styles = StyleSheet.create({
   },
   thanksSection: {
     padding: 20,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.primaryLight,
   },
   thanks: {
     fontSize: 16,
