@@ -156,11 +156,10 @@ body {
 
 /* Centro: il piatto protetto */
 .plate-center {
-    width: 250px;
+    width: 300px;
     height: auto;
     position: relative;
     z-index: 10;
-    animation: float 3s ease-in-out infinite;
     filter: drop-shadow(0 10px 30px rgba(76, 175, 80, 0.3));
 }
 
@@ -169,7 +168,7 @@ body {
     position: absolute;
     width: 80px;
     height: 80px;
-    animation: orbit 20s linear infinite, float-allergen 3s ease-in-out infinite;
+    animation: orbit 20s linear infinite;
 }
 
 .allergen-item img {
@@ -202,17 +201,7 @@ body {
     100% { transform: rotate(360deg) translateX(200px) rotate(-360deg); }
 }
 
-/* Fluttuazione su/giù */
-@keyframes float-allergen {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-}
-
-/* Animazione piatto centrale */
-@keyframes float {
-    0%, 100% { transform: translateY(0px) scale(1); }
-    50% { transform: translateY(-20px) scale(1.05); }
-}
+/* Animazione piatto centrale - rimosso per tenerlo fermo */
 
 .hero-title {
     font-size: clamp(36px, 6vw, 64px);
@@ -707,7 +696,7 @@ body {
     }
 
     .plate-center {
-        width: 150px;
+        width: 180px;
     }
 
     .allergen-item {
