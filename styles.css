@@ -396,6 +396,78 @@ body {
     line-height: 1.6;
 }
 
+/* Story Section */
+.story {
+    padding: 100px 0;
+    background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 100%);
+}
+
+.story-content {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 64px;
+    align-items: start;
+}
+
+.story-text {
+    max-width: 700px;
+}
+
+.story-body {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.story-body p {
+    margin-bottom: 24px;
+}
+
+.story-intro {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--primary-dark);
+}
+
+.story-signature {
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--primary-light);
+}
+
+.story-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.story-card {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid var(--primary);
+}
+
+.story-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.story-card h3 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.story-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
 /* Allergens Preview */
 .allergens-preview {
     padding: 100px 0;
@@ -600,6 +672,23 @@ body {
     .step-content p {
         font-size: 15px;
         line-height: 1.5;
+    }
+
+    .story {
+        padding: 60px 0;
+    }
+
+    .story-content {
+        grid-template-columns: 1fr;
+        gap: 48px;
+    }
+
+    .story-body {
+        font-size: 16px;
+    }
+
+    .story-intro {
+        font-size: 18px;
     }
 
     .footer-legal {
