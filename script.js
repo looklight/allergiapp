@@ -12,31 +12,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Newsletter form handling
-const newsletterForm = document.querySelector('.newsletter-form');
-if (newsletterForm) {
-    newsletterForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = newsletterForm.querySelector('input[type="email"]').value;
-        const button = newsletterForm.querySelector('button');
-        const originalText = button.textContent;
-
-        button.textContent = 'Inviato!';
-        button.disabled = true;
-
-        // Qui potresti integrare con un servizio di email marketing
-        // come Mailchimp, ConvertKit, etc.
-        console.log('Email registrata:', email);
-
-        setTimeout(() => {
-            newsletterForm.reset();
-            button.textContent = originalText;
-            button.disabled = false;
-            alert('Grazie! Ti avviseremo quando l\'app sarà disponibile.');
-        }, 1000);
-    });
-}
-
 // Add scroll effect to navigation
 let lastScroll = 0;
 const nav = document.querySelector('.nav');
