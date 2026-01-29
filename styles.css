@@ -141,18 +141,77 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 500px;
 }
 
-.hero-image img {
-    width: 100%;
-    max-width: 400px;
+/* Allergen Orbit Container */
+.allergen-orbit {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Centro: il piatto protetto */
+.plate-center {
+    width: 250px;
     height: auto;
+    position: relative;
+    z-index: 10;
     animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 10px 30px rgba(76, 175, 80, 0.3));
 }
 
-@keyframes float {
+/* Allergeni in orbita */
+.allergen-item {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    animation: orbit 20s linear infinite, float-allergen 3s ease-in-out infinite;
+}
+
+.allergen-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    opacity: 0.85;
+    transition: all 0.3s ease;
+}
+
+.allergen-item:hover img {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Posizionamento circolare degli allergeni */
+.allergen-1 { top: 0; left: 50%; transform: translate(-50%, -100px); animation-delay: 0s; }
+.allergen-2 { top: 15%; right: 0; transform: translate(100px, -50%); animation-delay: -2.5s; }
+.allergen-3 { top: 50%; right: 0; transform: translate(100px, -50%); animation-delay: -5s; }
+.allergen-4 { bottom: 15%; right: 0; transform: translate(100px, 50%); animation-delay: -7.5s; }
+.allergen-5 { bottom: 0; left: 50%; transform: translate(-50%, 100px); animation-delay: -10s; }
+.allergen-6 { bottom: 15%; left: 0; transform: translate(-100px, 50%); animation-delay: -12.5s; }
+.allergen-7 { top: 50%; left: 0; transform: translate(-100px, -50%); animation-delay: -15s; }
+.allergen-8 { top: 15%; left: 0; transform: translate(-100px, -50%); animation-delay: -17.5s; }
+
+/* Animazione di rotazione lenta attorno al centro */
+@keyframes orbit {
+    0% { transform: rotate(0deg) translateX(200px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(200px) rotate(-360deg); }
+}
+
+/* Fluttuazione su/giù */
+@keyframes float-allergen {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Animazione piatto centrale */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
 }
 
 .hero-title {
@@ -639,10 +698,27 @@ body {
 
     .hero-image {
         order: -1;
+        min-height: 350px;
     }
 
-    .hero-image img {
-        max-width: 250px;
+    .allergen-orbit {
+        width: 320px;
+        height: 320px;
+    }
+
+    .plate-center {
+        width: 150px;
+    }
+
+    .allergen-item {
+        width: 50px;
+        height: 50px;
+    }
+
+    /* Ridotto raggio orbita per mobile */
+    @keyframes orbit {
+        0% { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
     }
 
     .hero-stats {
