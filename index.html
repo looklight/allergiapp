@@ -40,13 +40,7 @@
                     Mostra una card chiara e comprensibile a camerieri e chef in tutto il mondo.
                 </p>
                 <div class="hero-cta">
-                    <a href="#download" class="button primary">
-                        <span>Scarica gratis</span>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M10 3V13M10 13L6 9M10 13L14 9M3 17H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </a>
-                    <a href="#how-it-works" class="button secondary">Scopri come funziona</a>
+                    <a href="#story" class="button primary">Scopri come funziona</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -95,24 +89,37 @@
     </header>
 
     <!-- Problem Section -->
-    <section class="problem">
+    <section id="story" class="problem">
         <div class="container">
             <h2 class="section-title">Hai mai provato questa situazione?</h2>
-            <div class="problem-grid">
-                <div class="problem-card">
-                    <div class="problem-icon">😰</div>
-                    <h3>Sei all'estero</h3>
-                    <p>In un ristorante, non sai come comunicare le tue allergie nella lingua locale</p>
+            <div class="problem-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">😰</div>
+                    <div class="timeline-content">
+                        <h3>Sei all'estero, al ristorante</h3>
+                        <p>Hai timore di non riuscire a comunicare le tue allergie nella lingua locale</p>
+                    </div>
                 </div>
-                <div class="problem-card">
-                    <div class="problem-icon">🗣️</div>
-                    <h3>Barriera linguistica</h3>
-                    <p>Il cameriere non parla inglese e tu non conosci il termine medico corretto</p>
+                <div class="timeline-item">
+                    <div class="timeline-icon">🗣️</div>
+                    <div class="timeline-content">
+                        <h3>Barriera linguistica</h3>
+                        <p>Il cameriere non parla inglese e tu non conosci il termine medico corretto</p>
+                    </div>
                 </div>
-                <div class="problem-card">
-                    <div class="problem-icon">⚠️</div>
-                    <h3>Rischio per la salute</h3>
-                    <p>Un malinteso potrebbe portare a una reazione allergica grave</p>
+                <div class="timeline-item">
+                    <div class="timeline-icon">📱</div>
+                    <div class="timeline-content">
+                        <h3>Usi il traduttore</h3>
+                        <p>Ma spesso rischi fraintendimenti e non sempre funziona offline</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">⚠️</div>
+                    <div class="timeline-content">
+                        <h3>Rischio per la salute</h3>
+                        <p>Un malinteso potrebbe portare a una reazione allergica grave</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -123,44 +130,6 @@
         <div class="container">
             <h2 class="section-title">La soluzione è semplice</h2>
             <p class="section-subtitle">AllergiApp ti permette di comunicare con chiarezza, sempre</p>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Selezione personalizzata</h3>
-                    <p>Scegli le tue allergie tra gli allergeni comuni riconosciuti a livello internazionale</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
-                    <h3>Oltre 60 lingue</h3>
-                    <p>Traduci istantaneamente le tue allergie in qualsiasi lingua del mondo</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">💳</div>
-                    <h3>Card universale</h3>
-                    <p>Mostra una card visiva chiara con emoji, nomi e esempi di alimenti</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">📥</div>
-                    <h3>Lingue offline</h3>
-                    <p>Scarica le lingue che ti servono e usale anche senza connessione</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Privacy totale</h3>
-                    <p>I tuoi dati rimangono sul tuo dispositivo. Nessuna registrazione richiesta</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Veloce e intuitiva</h3>
-                    <p>Mostra le tue allergie in secondi, anche in situazioni di emergenza</p>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -192,6 +161,42 @@
                         <p>Presenta il tuo telefono al personale del ristorante con una card chiara e professionale</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Feature Carousel -->
+            <div class="feature-carousel">
+                <div class="carousel-track">
+                    <div class="carousel-item active">
+                        <div class="carousel-icon">💳</div>
+                        <h3>Card universale tradotta</h3>
+                        <p>Mostra una card visiva chiara con emoji, nomi e esempi di alimenti</p>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-icon">⚡</div>
+                        <h3>Veloce e intuitiva</h3>
+                        <p>Mostra le tue allergie in secondi, anche in situazioni di emergenza</p>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-icon">🔒</div>
+                        <h3>Privacy totale</h3>
+                        <p>I tuoi dati rimangono sul tuo dispositivo. Nessuna registrazione richiesta</p>
+                    </div>
+                </div>
+                <div class="carousel-dots">
+                    <button class="dot active" data-index="0"></button>
+                    <button class="dot" data-index="1"></button>
+                    <button class="dot" data-index="2"></button>
+                </div>
+            </div>
+
+            <div class="cta-centered">
+                <h2 class="cta-title">Provaci anche tu</h2>
+                <a href="#download" class="button primary button-large">
+                    <span>Scarica gratis</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 3V13M10 13L6 9M10 13L14 9M3 17H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </section>

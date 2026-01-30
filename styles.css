@@ -161,6 +161,7 @@ body {
     position: relative;
     z-index: 10;
     filter: drop-shadow(0 10px 30px rgba(76, 175, 80, 0.3));
+    animation: float-plate 4s ease-in-out infinite;
 }
 
 /* Allergeni in posizioni fisse con animazione float */
@@ -199,6 +200,12 @@ body {
 @keyframes float-allergen {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-20px); }
+}
+
+/* Animazione leggera per il piatto centrale */
+@keyframes float-plate {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
 }
 
 .hero-title {
@@ -296,7 +303,7 @@ body {
 
 /* Problem Section */
 .problem {
-    padding: 100px 0;
+    padding: 80px 0;
     background: var(--bg-alt);
 }
 
@@ -316,81 +323,154 @@ body {
     margin-bottom: 64px;
 }
 
-.problem-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 32px;
+/* Timeline verticale compatta */
+.problem-timeline {
+    max-width: 700px;
+    margin: 0 auto;
 }
 
-.problem-card {
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px;
     background: white;
-    padding: 40px;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 2px 12px var(--shadow);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.problem-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px var(--shadow);
-}
-
-.problem-icon {
-    font-size: 64px;
-    margin-bottom: 24px;
-}
-
-.problem-card h3 {
-    font-size: 24px;
+    border-radius: 12px;
     margin-bottom: 16px;
-    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
 }
 
-.problem-card p {
+.timeline-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border-left-color: var(--primary);
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-icon {
+    font-size: 40px;
+    min-width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-content h3 {
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.timeline-content p {
+    font-size: 16px;
     color: var(--text-secondary);
-    line-height: 1.8;
+    line-height: 1.6;
+    margin: 0;
 }
 
 /* Features Section */
 .features {
-    padding: 100px 0;
+    padding: 60px 0 40px;
     background: white;
 }
 
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 32px;
-}
-
-.feature-card {
-    padding: 32px;
-    background: var(--bg-alt);
-    border-radius: 16px;
-    transition: all 0.3s;
-}
-
-.feature-card:hover {
-    background: var(--primary-light);
-    transform: translateY(-4px);
-}
-
-.feature-icon {
-    font-size: 48px;
+.features .section-title {
     margin-bottom: 16px;
+}
+
+.features .section-subtitle {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Feature Carousel */
+.feature-carousel {
+    max-width: 600px;
+    margin: 56px auto 0;
+    text-align: center;
+}
+
+.carousel-track {
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel-item {
+    display: none;
+    padding: 32px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease;
+}
+
+.carousel-item.active {
     display: block;
 }
 
-.feature-card h3 {
-    font-size: 22px;
-    margin-bottom: 12px;
-    color: var(--text);
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.feature-card p {
+.carousel-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+}
+
+.carousel-item h3 {
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.carousel-item p {
+    font-size: 16px;
     color: var(--text-secondary);
-    line-height: 1.8;
+    line-height: 1.6;
+}
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(76, 175, 80, 0.3);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0;
+}
+
+.dot.active {
+    background: var(--primary);
+    width: 24px;
+    border-radius: 5px;
 }
 
 /* How it works */
@@ -440,6 +520,23 @@ body {
     font-size: 16px;
     color: var(--text-secondary);
     line-height: 1.6;
+}
+
+.cta-centered {
+    text-align: center;
+    margin-top: 64px;
+}
+
+.cta-title {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: var(--text);
+}
+
+.button-large {
+    padding: 18px 40px;
+    font-size: 20px;
 }
 
 /* Story Section */
@@ -704,6 +801,11 @@ body {
         gap: 48px;
     }
 
+    .stat-label {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
     .hero-cta {
         order: 5;
         justify-content: center;
@@ -735,6 +837,11 @@ body {
     @keyframes float-allergen {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-15px); }
+    }
+
+    @keyframes float-plate {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
     }
 
     .hero-stats {
@@ -785,5 +892,86 @@ body {
 
     .footer-legal {
         flex-wrap: wrap;
+    }
+
+    .problem {
+        padding: 60px 0;
+    }
+
+    .section-title {
+        margin-bottom: 40px;
+    }
+
+    .timeline-item {
+        gap: 16px;
+        padding: 20px 16px;
+        margin-bottom: 12px;
+    }
+
+    .timeline-icon {
+        font-size: 32px;
+        min-width: 40px;
+        height: 40px;
+    }
+
+    .timeline-content h3 {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+
+    .timeline-content p {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .cta-centered {
+        margin-top: 48px;
+    }
+
+    .cta-title {
+        margin-bottom: 24px;
+    }
+
+    .button-large {
+        padding: 16px 32px;
+        font-size: 18px;
+    }
+
+    .allergens-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .allergen-badge {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+
+    .features {
+        padding: 48px 0 32px;
+    }
+
+    .features .section-title {
+        margin-bottom: 12px;
+    }
+
+    .feature-carousel {
+        margin: 40px auto 0;
+    }
+
+    .carousel-item {
+        padding: 24px;
+    }
+
+    .carousel-icon {
+        font-size: 48px;
+    }
+
+    .carousel-item h3 {
+        font-size: 20px;
+    }
+
+    .carousel-item p {
+        font-size: 15px;
     }
 }
