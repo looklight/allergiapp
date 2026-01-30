@@ -395,82 +395,75 @@ body {
     margin-bottom: 0;
 }
 
-/* Feature Carousel */
-.feature-carousel {
-    max-width: 600px;
+/* Feature Highlights */
+.feature-highlights {
     margin: 56px auto 0;
-    text-align: center;
+    max-width: 900px;
 }
 
-.carousel-track {
-    position: relative;
-    overflow: hidden;
+@media (min-width: 769px) {
+    .feature-highlights {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
 }
 
-.carousel-item {
-    display: none;
-    padding: 32px;
+@media (max-width: 768px) {
+    .feature-highlights {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 16px;
+        padding: 0 24px;
+        margin-left: -24px;
+        margin-right: -24px;
+        scrollbar-width: none; /* Firefox */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .feature-highlights::-webkit-scrollbar {
+        display: none; /* Chrome, Safari */
+    }
+}
+
+.highlight-card {
+    padding: 24px;
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.5s ease;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
 }
 
-.carousel-item.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+@media (max-width: 768px) {
+    .highlight-card {
+        flex: 0 0 85%;
+        scroll-snap-align: center;
     }
 }
 
-.carousel-icon {
-    font-size: 56px;
-    margin-bottom: 16px;
+.highlight-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
-.carousel-item h3 {
-    font-size: 24px;
+.highlight-icon {
+    font-size: 40px;
     margin-bottom: 12px;
+}
+
+.highlight-card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
     color: var(--text);
     font-weight: 700;
 }
 
-.carousel-item p {
-    font-size: 16px;
+.highlight-card p {
+    font-size: 14px;
     color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 24px;
-}
-
-.dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(76, 175, 80, 0.3);
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    padding: 0;
-}
-
-.dot.active {
-    background: var(--primary);
-    width: 24px;
-    border-radius: 5px;
+    line-height: 1.5;
 }
 
 /* How it works */
@@ -584,31 +577,39 @@ body {
 .story-visual {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
 }
 
 .story-card {
     background: white;
-    padding: 32px;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    border-left: 4px solid var(--primary);
+    padding: 20px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-left: 3px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.story-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .story-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+    font-size: 32px;
+    margin-bottom: 8px;
 }
 
 .story-card h3 {
-    font-size: 22px;
-    margin-bottom: 12px;
+    font-size: 18px;
+    margin-bottom: 8px;
     color: var(--text);
+    font-weight: 700;
 }
 
 .story-card p {
+    font-size: 15px;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* Allergens Preview */
@@ -890,6 +891,28 @@ body {
         font-size: 18px;
     }
 
+    .story-visual {
+        gap: 12px;
+    }
+
+    .story-card {
+        padding: 16px 20px;
+    }
+
+    .story-icon {
+        font-size: 28px;
+        margin-bottom: 6px;
+    }
+
+    .story-card h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+
+    .story-card p {
+        font-size: 14px;
+    }
+
     .footer-legal {
         flex-wrap: wrap;
     }
@@ -955,23 +978,25 @@ body {
         margin-bottom: 12px;
     }
 
-    .feature-carousel {
+    .feature-highlights {
         margin: 40px auto 0;
     }
 
-    .carousel-item {
-        padding: 24px;
+    .highlight-card {
+        padding: 20px;
     }
 
-    .carousel-icon {
-        font-size: 48px;
+    .highlight-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
     }
 
-    .carousel-item h3 {
-        font-size: 20px;
+    .highlight-card h3 {
+        font-size: 17px;
+        margin-bottom: 6px;
     }
 
-    .carousel-item p {
-        font-size: 15px;
+    .highlight-card p {
+        font-size: 14px;
     }
 }
