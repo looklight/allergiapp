@@ -69,6 +69,11 @@ body {
     height: 32px;
     width: auto;
     display: block;
+    border-radius: 20%;
+}
+
+.logo-nav {
+    border-radius: 0;
 }
 
 .nav-links {
@@ -303,7 +308,7 @@ body {
 
 /* Problem Section */
 .problem {
-    padding: 80px 0;
+    padding: 80px 0 40px;
     background: var(--bg-alt);
 }
 
@@ -387,12 +392,26 @@ body {
 }
 
 .features .section-title {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+}
+
+.features-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.features-logo {
+    width: 80px;
+    height: auto;
+    border-radius: 20%;
 }
 
 .features .section-subtitle {
     margin-top: 0;
     margin-bottom: 0;
+    text-align: center;
 }
 
 /* Feature Highlights */
@@ -532,16 +551,37 @@ body {
     font-size: 20px;
 }
 
+/* Back to Top */
+.back-to-top {
+    margin-top: 48px;
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.back-to-top:hover {
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
 /* Story Section */
 .story {
-    padding: 100px 0;
+    padding: 100px 0 40px;
     background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 100%);
 }
 
 .story-content {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
-    gap: 64px;
+    gap: 40px;
     align-items: start;
 }
 
@@ -565,13 +605,61 @@ body {
     color: var(--primary-dark);
 }
 
-.story-signature {
-    font-style: italic;
-    color: var(--text-secondary);
+.story-quote {
+    margin-top: 48px;
+    padding: 20px 0 20px 20px;
+    border-left: 4px solid var(--primary);
+    max-width: 600px;
+}
+
+.quote-content {
+    margin-bottom: 16px;
+}
+
+.quote-text {
     font-size: 16px;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 2px solid var(--primary-light);
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 0;
+    font-weight: 400;
+    font-family: Georgia, serif;
+}
+
+.quote-text::before {
+    content: '"';
+    color: var(--primary);
+    opacity: 0.5;
+    font-size: 20px;
+    margin-right: 2px;
+}
+
+.quote-text::after {
+    content: '"';
+    color: var(--primary);
+    opacity: 0.5;
+    font-size: 20px;
+    margin-left: 2px;
+}
+
+.quote-signature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-style: normal;
+    font-weight: 600;
+}
+
+.quote-image-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    flex-shrink: 0;
+    order: -1;
 }
 
 .story-visual {
@@ -614,7 +702,7 @@ body {
 
 /* Allergens Preview */
 .allergens-preview {
-    padding: 100px 0;
+    padding: 40px 0 60px;
     background: white;
 }
 
@@ -635,6 +723,7 @@ body {
     text-align: center;
     border: 2px solid var(--primary);
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .allergen-badge:hover {
@@ -662,6 +751,7 @@ body {
     margin: 0 auto 32px;
     display: block;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    border-radius: 20%;
 }
 
 .download-buttons {
@@ -880,7 +970,7 @@ body {
 
     .story-content {
         grid-template-columns: 1fr;
-        gap: 48px;
+        gap: 32px;
     }
 
     .story-body {
@@ -889,6 +979,43 @@ body {
 
     .story-intro {
         font-size: 18px;
+    }
+
+    .features-logo {
+        width: 64px;
+    }
+
+    .story-quote {
+        margin-top: 32px;
+        padding: 16px 0 16px 16px;
+        max-width: 100%;
+    }
+
+    .quote-content {
+        margin-bottom: 12px;
+    }
+
+    .quote-text {
+        font-size: 15px;
+    }
+
+    .quote-text::before,
+    .quote-text::after {
+        font-size: 18px;
+    }
+
+    .quote-signature {
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .quote-image-placeholder {
+        width: 40px;
+        height: 40px;
+    }
+
+    .allergens-preview {
+        padding: 32px 0 48px;
     }
 
     .story-visual {

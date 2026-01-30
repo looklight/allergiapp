@@ -31,7 +31,7 @@ window.addEventListener('scroll', () => {
 // Animate on scroll
 const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
@@ -44,7 +44,7 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 // Observe all cards and features
-document.querySelectorAll('.step, .cta-centered, .feature-highlights').forEach(el => {
+document.querySelectorAll('.step, .feature-highlights').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -60,3 +60,14 @@ document.querySelectorAll('.timeline-item').forEach((el, index) => {
     el.style.transitionDelay = `${index * 0.2}s`;
     observer.observe(el);
 });
+
+// Back to top button
+const backToTopButton = document.getElementById('backToTop');
+if (backToTopButton) {
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
