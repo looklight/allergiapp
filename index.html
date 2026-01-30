@@ -18,7 +18,7 @@
         <nav class="nav">
             <div class="nav-content">
                 <div class="logo">
-                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon">
+                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav">
                     <span class="logo-text">AllergiApp</span>
                 </div>
                 <div class="nav-links">
@@ -45,7 +45,7 @@
             </div>
             <div class="hero-image">
                 <div class="allergen-orbit">
-                    <!-- Centro: il piatto protetto -->
+                    <!-- Centro: il piatto protetto - NON usare logo_app qui, happyplate è specifico per questa animazione -->
                     <img src="images/happyplate.png" alt="AllergiApp - Viaggia sicuro" class="plate-center">
 
                     <!-- Allergeni che orbitano -->
@@ -104,7 +104,7 @@
                     <div class="timeline-icon">🗣️</div>
                     <div class="timeline-content">
                         <h3>Barriera linguistica</h3>
-                        <p>Il cameriere non parla inglese e tu non conosci il termine medico corretto</p>
+                        <p>Il cameriere non parla la tua lingua e tu non parli la sua</p>
                     </div>
                 </div>
                 <div class="timeline-item">
@@ -118,7 +118,7 @@
                     <div class="timeline-icon">⚠️</div>
                     <div class="timeline-content">
                         <h3>Rischio per la salute</h3>
-                        <p>Un malinteso potrebbe portare a una reazione allergica grave</p>
+                        <p>Un malinteso potrebbe portare a una reazione allergica (e rovinarti il viaggio)</p>
                     </div>
                 </div>
             </div>
@@ -129,7 +129,11 @@
     <section id="features" class="features">
         <div class="container">
             <h2 class="section-title">La soluzione è semplice</h2>
-            <p class="section-subtitle">AllergiApp ti permette di comunicare con chiarezza, sempre</p>
+            <div class="features-intro">
+                <!-- Logo AllergiApp - se cambi logo, modifica qui -->
+                <img src="images/logo_app.png" alt="AllergiApp" class="features-logo">
+                <p class="section-subtitle">AllergiApp ti permette di comunicare con chiarezza, sempre</p>
+            </div>
         </div>
     </section>
 
@@ -166,7 +170,7 @@
             <!-- Feature Highlights -->
             <div class="feature-highlights">
                 <div class="highlight-card">
-                    <div class="highlight-icon">💳</div>
+                    <div class="highlight-icon">📋</div>
                     <h3>Card universale tradotta</h3>
                     <p>Mostra una card visiva chiara con emoji, nomi e esempi di alimenti</p>
                 </div>
@@ -213,7 +217,7 @@
                         </p>
                         <p>
                             <strong>Un gesto semplice - mostrare una card - cambiava tutto.</strong>
-                            Il personale del ristorante apprezzava la chiarezza, io mi sentivo più sicuro,
+                            Il personale del ristorante apprezzava la chiarezza, io mi sentivo più sicura,
                             e finalmente potevo godermi la cucina locale senza paura.
                         </p>
                         <p>
@@ -223,21 +227,23 @@
                             solo una persona a godersi un pasto in più durante un viaggio, avrà raggiunto il suo scopo.
                         </p>
                         <p>
-                            L'app include pubblicità non invasive per coprire i costi di sviluppo e mantenimento.
-                            Se apprezzi il progetto e vuoi supportarlo, puoi contribuire con una donazione
-                            per aiutarmi a mantenerla gratuita e migliorarla nel tempo. ❤️
+                            Se apprezzi il progetto e vuoi supportarlo, ogni contributo aiuta a coprire i costi
+                            di sviluppo e mantenimento, e a mantenerla gratuita e migliorarla nel tempo. ❤️
                         </p>
-                        <p class="story-signature">
-                            — Con il desiderio di rendere il mondo più accessibile, un viaggiatore alla volta 🌍
-                        </p>
+                        <div class="story-quote">
+                            <div class="quote-content">
+                                <p class="quote-text">La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo anche attraverso il cibo, in sicurezza e con gioia.</p>
+                            </div>
+                            <div class="quote-signature">
+                                <div class="quote-image-placeholder">
+                                    <!-- Immagine da inserire -->
+                                </div>
+                                <span>— Marta Di Muro</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="story-visual">
-                    <div class="story-card">
-                        <div class="story-icon">✈️</div>
-                        <h3>La mia missione</h3>
-                        <p>Aiutare persone con allergie a esplorare il mondo attraverso il cibo, in sicurezza e con gioia</p>
-                    </div>
                     <div class="story-card">
                         <div class="story-icon">💝</div>
                         <h3>Supporta il progetto</h3>
@@ -274,7 +280,8 @@
     <!-- Download Section -->
     <section id="download" class="download">
         <div class="container">
-            <img src="images/happyplate.png" alt="AllergiApp" class="download-icon">
+            <!-- Logo AllergiApp - se cambi logo, modifica qui -->
+            <img src="images/logo_app.png" alt="AllergiApp" class="download-icon">
             <h2 class="section-title">Scarica AllergiApp</h2>
             <p class="section-subtitle">Disponibile gratuitamente su App Store e Google Play</p>
             <div class="download-buttons">
@@ -297,6 +304,7 @@
                     </div>
                 </a>
             </div>
+            <button id="backToTop" class="back-to-top">↑ Torna su</button>
         </div>
     </section>
 
@@ -305,7 +313,7 @@
         <div class="container">
             <div class="footer-simple">
                 <div class="logo">
-                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon">
+                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav">
                     <span class="logo-text">AllergiApp</span>
                 </div>
                 <p class="footer-tagline">Viaggia sicuro, comunica ovunque.</p>
