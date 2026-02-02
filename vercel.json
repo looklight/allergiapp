@@ -4,6 +4,12 @@
   "installCommand": null,
   "devCommand": null,
   "framework": null,
+  "git": {
+    "deploymentEnabled": {
+      "landing": true,
+      "main": false
+    }
+  },
   "rewrites": [
     { "source": "/support", "destination": "/support.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
