@@ -4,9 +4,11 @@ import { Text, ActivityIndicator, Divider, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DownloadableLanguageCode, LanguageRegion, DownloadableLanguageInfo } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
+import { LANGUAGE_NAMES } from '../../constants/languageNames';
 import { DownloadProgress } from '../../utils/translationService';
 import { theme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
+import { useAppContext } from '../../utils/AppContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -32,6 +34,8 @@ export default function DownloadableLanguagesSection({
   onDownload,
   onDelete,
 }: DownloadableLanguagesSectionProps) {
+  const { settings } = useAppContext();
+  const appLanguage = settings.appLanguage;
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRegions, setExpandedRegions] = useState<Record<LanguageRegion, boolean>>({
     europe: false,
@@ -43,15 +47,19 @@ export default function DownloadableLanguagesSection({
   const filteredLanguages = useMemo(() => {
     if (!searchQuery.trim()) return DOWNLOADABLE_LANGUAGES;
     const q = searchQuery.toLowerCase();
-    const filtered = DOWNLOADABLE_LANGUAGES.filter(
-      (lang) =>
-        lang.name.toLowerCase().includes(q) ||
-        lang.nativeName.toLowerCase().includes(q) ||
-        lang.code.toLowerCase().includes(q)
-    );
+    const filtered = DOWNLOADABLE_LANGUAGES.filter((lang) => {
+      // Cerca nel nome inglese, nome nativo e codice
+      if (lang.name.toLowerCase().includes(q)) return true;
+      if (lang.nativeName.toLowerCase().includes(q)) return true;
+      if (lang.code.toLowerCase().includes(q)) return true;
+      // Cerca anche nel nome tradotto nella lingua dell'app
+      const localizedName = LANGUAGE_NAMES[lang.code]?.[appLanguage];
+      if (localizedName && localizedName.toLowerCase().includes(q)) return true;
+      return false;
+    });
     // Ordina alfabeticamente per nome nativo
     return filtered.sort((a, b) => a.nativeName.localeCompare(b.nativeName));
-  }, [searchQuery]);
+  }, [searchQuery, appLanguage]);
 
   const downloadedLangs = useMemo(() => {
     const downloaded = DOWNLOADABLE_LANGUAGES.filter((lang) =>
