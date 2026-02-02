@@ -1,12 +1,14 @@
+import { Linking } from 'react-native';
 import { Portal, Dialog, Button, Text } from 'react-native-paper';
-import { useRouter } from 'expo-router';
 import i18n from '../../utils/i18n';
+import { APP_CONFIG } from '../../constants/config';
 
 interface LegalDialogsProps {
   showPrivacyDialog: boolean;
   showDisclaimerDialog: boolean;
   onDismissPrivacy: () => void;
   onDismissDisclaimer: () => void;
+  onNavigateToLegal?: () => void;
 }
 
 export default function LegalDialogs({
@@ -15,16 +17,13 @@ export default function LegalDialogs({
   onDismissPrivacy,
   onDismissDisclaimer,
 }: LegalDialogsProps) {
-  const router = useRouter();
 
   const handlePrivacyFullDocument = () => {
-    onDismissPrivacy();
-    router.push('/legal');
+    Linking.openURL(`${APP_CONFIG.WEBSITE_URL}/privacy.html`);
   };
 
-  const handleDisclaimerFullDocument = () => {
-    onDismissDisclaimer();
-    router.push('/legal');
+  const handleTermsFullDocument = () => {
+    Linking.openURL(`${APP_CONFIG.WEBSITE_URL}/terms.html`);
   };
 
   return (
@@ -48,7 +47,7 @@ export default function LegalDialogs({
           <Text style={{ lineHeight: 22 }}>{i18n.t('settings.disclaimerContent')}</Text>
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={handleDisclaimerFullDocument}>
+          <Button onPress={handleTermsFullDocument}>
             {i18n.t('settings.readFullDocument')}
           </Button>
           <Button onPress={onDismissDisclaimer}>OK</Button>

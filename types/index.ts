@@ -69,6 +69,16 @@ export interface UserSettings {
   appLanguage: AppLanguage;
 }
 
+export interface LegalConsent {
+  acceptedAt: string | null;  // ISO date string when user accepted
+  version: string;            // Version of terms accepted (e.g., "1.0")
+}
+
+export interface TrackingConsent {
+  status: 'not-determined' | 'authorized' | 'denied' | 'restricted';
+  askedAt: string | null;     // ISO date when user was asked
+}
+
 export interface AppState {
   selectedAllergens: AllergenId[];
   settings: UserSettings;

@@ -34,7 +34,13 @@
     },
     "plugins": [
       "expo-router",
-      "@react-native-firebase/app"
+      "@react-native-firebase/app",
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "AllergiApp collects anonymous usage statistics to improve the app experience. This data is not linked to your identity."
+        }
+      ]
     ]
   }
 }

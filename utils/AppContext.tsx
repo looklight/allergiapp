@@ -1,14 +1,21 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { storage, AppData } from './storage';
+import { storage, AppData, CURRENT_LEGAL_VERSION } from './storage';
 import { setAppLanguage } from './i18n';
-import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
+import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 
 interface AppContextValue {
   // State
   selectedAllergens: AllergenId[];
   settings: UserSettings;
   downloadedLanguages: Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>;
+  legalConsent: LegalConsent;
+  trackingConsent: TrackingConsent;
   isReady: boolean;
+
+  // Derived
+  hasAcceptedLegalTerms: boolean;
+  needsLegalConsent: boolean;
+  downloadedLanguageCodes: DownloadableLanguageCode[];
 
   // Actions
   setSelectedAllergens: (allergens: AllergenId[]) => Promise<void>;
@@ -16,10 +23,9 @@ interface AppContextValue {
   setAppLang: (language: AppLanguage) => Promise<void>;
   saveDownloadedLanguage: (langCode: DownloadableLanguageCode, data: DownloadedLanguageData) => Promise<void>;
   deleteDownloadedLanguage: (langCode: DownloadableLanguageCode) => Promise<void>;
+  acceptLegalTerms: () => Promise<void>;
+  setTrackingConsent: (consent: TrackingConsent) => Promise<void>;
   clearAll: () => Promise<void>;
-
-  // Derived
-  downloadedLanguageCodes: DownloadableLanguageCode[];
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -28,6 +34,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAllergens, setSelectedAllergensState] = useState<AllergenId[]>([]);
   const [settings, setSettingsState] = useState<UserSettings>({ cardLanguage: 'en', appLanguage: 'it' });
   const [downloadedLanguages, setDownloadedLanguagesState] = useState<Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>>({});
+  const [legalConsent, setLegalConsentState] = useState<LegalConsent>({ acceptedAt: null, version: '' });
+  const [trackingConsent, setTrackingConsentState] = useState<TrackingConsent>({ status: 'not-determined', askedAt: null });
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -36,11 +44,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setSelectedAllergensState(data.selectedAllergens);
       setSettingsState(data.settings);
       setDownloadedLanguagesState(data.downloadedLanguages);
+      setLegalConsentState(data.legalConsent);
+      setTrackingConsentState(data.trackingConsent);
       setAppLanguage(data.settings.appLanguage);
       setIsReady(true);
     };
     init();
   }, []);
+
+  // Derived state: check if user has accepted current version of legal terms
+  const hasAcceptedLegalTerms = legalConsent.acceptedAt !== null && legalConsent.version === CURRENT_LEGAL_VERSION;
+  const needsLegalConsent = !hasAcceptedLegalTerms;
 
   const setSelectedAllergens = useCallback(async (allergens: AllergenId[]) => {
     setSelectedAllergensState(allergens);
@@ -85,11 +99,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const acceptLegalTerms = useCallback(async () => {
+    const consent = await storage.acceptLegalTerms();
+    setLegalConsentState(consent);
+  }, []);
+
+  const setTrackingConsentAction = useCallback(async (consent: TrackingConsent) => {
+    setTrackingConsentState(consent);
+    await storage.setTrackingConsent(consent);
+  }, []);
+
   const clearAll = useCallback(async () => {
     const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: 'it' as AppLanguage };
     setSelectedAllergensState([]);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
+    // Note: we keep legal consent when clearing data (user already accepted terms)
     setAppLanguage(defaultSettings.appLanguage);
     await storage.clearAll();
   }, []);
@@ -101,14 +126,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       selectedAllergens,
       settings,
       downloadedLanguages,
+      legalConsent,
+      trackingConsent,
       isReady,
+      hasAcceptedLegalTerms,
+      needsLegalConsent,
+      downloadedLanguageCodes,
       setSelectedAllergens,
       setCardLanguage,
       setAppLang,
       saveDownloadedLanguage,
       deleteDownloadedLanguage,
+      acceptLegalTerms,
+      setTrackingConsent: setTrackingConsentAction,
       clearAll,
-      downloadedLanguageCodes,
     }}>
       {children}
     </AppContext.Provider>
