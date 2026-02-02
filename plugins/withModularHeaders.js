@@ -13,11 +13,11 @@ function withModularHeaders(config) {
 
       let podfileContent = fs.readFileSync(podfilePath, "utf8");
 
-      // Add use_modular_headers! after platform line if not already present
-      if (!podfileContent.includes("use_modular_headers!")) {
+      // Add modular headers only for Google/Firebase pods
+      if (!podfileContent.includes("pod 'GoogleUtilities', :modular_headers => true")) {
         podfileContent = podfileContent.replace(
-          /(platform :ios.*\n)/,
-          "$1\nuse_modular_headers!\n"
+          /(use_expo_modules!)/,
+          `$1\n\n  # Fix Firebase modular headers\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'FirebaseInstallations', :modular_headers => true`
         );
         fs.writeFileSync(podfilePath, podfileContent);
       }
