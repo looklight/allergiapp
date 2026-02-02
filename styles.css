@@ -726,6 +726,38 @@ body {
     font-size: 15px;
     color: var(--text-secondary);
     line-height: 1.5;
+    margin-top: 16px;
+}
+
+.donation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #FFDD00;
+    color: #000000;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin: 16px 0;
+}
+
+.donation-button:hover {
+    background: #FFE933;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
+}
+
+.coffee-icon {
+    font-size: 18px;
+}
+
+.external-icon {
+    font-size: 14px;
+    opacity: 0.8;
 }
 
 /* Allergens Preview */
@@ -1090,6 +1122,11 @@ body {
 
     .story-card p {
         font-size: 14px;
+    }
+
+    .donation-button {
+        font-size: 13px;
+        padding: 10px 20px;
     }
 
     .footer-legal {
