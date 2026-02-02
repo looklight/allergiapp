@@ -359,8 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 10,
+    paddingVertical: 14,
     gap: 10,
   },
   sectionHeaderTitle: {
