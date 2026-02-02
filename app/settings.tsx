@@ -594,8 +594,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   legalFooter: {
-    marginTop: 32,
-    paddingTop: 24,
+    marginTop: 16,
+    paddingTop: 16,
     paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: theme.colors.divider,
