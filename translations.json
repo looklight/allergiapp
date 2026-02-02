@@ -1,0 +1,202 @@
+{
+  "it": {
+    "meta": {
+      "description": "AllergiApp - Comunica le tue allergie in qualsiasi lingua. L'app essenziale per viaggiare sicuri con allergie alimentari.",
+      "keywords": "allergie, allergie alimentari, viaggi, traduzione allergie, sicurezza alimentare",
+      "ogTitle": "AllergiApp - Allergie senza confini",
+      "ogDescription": "Comunica le tue allergie in qualsiasi lingua quando viaggi",
+      "title": "AllergiApp - Comunica le tue allergie in qualsiasi lingua"
+    },
+    "nav": {
+      "features": "Funzionalità",
+      "howItWorks": "Come funziona",
+      "download": "Scarica"
+    },
+    "hero": {
+      "title1": "Viaggia sereno.",
+      "title2": "Le tue allergie, in ogni lingua.",
+      "subtitle1": "Comunica le tue allergie alimentari in più di 60 lingue.",
+      "subtitle2": "Mostra una card chiara e comprensibile a camerieri e chef in tutto il mondo.",
+      "cta": "Scopri come funziona",
+      "stat1Number": "60+",
+      "stat1Label": "Lingue disponibili",
+      "stat2Number": "100%",
+      "stat2Label": "Gratuita"
+    },
+    "problem": {
+      "title": "Hai mai provato questa situazione?",
+      "timeline1Title": "Sei all'estero, al ristorante",
+      "timeline1Text": "Hai timore di non riuscire a comunicare le tue allergie nella lingua locale",
+      "timeline2Title": "Barriera linguistica",
+      "timeline2Text": "Il cameriere non parla la tua lingua e tu non parli la sua",
+      "timeline3Title": "Usi il traduttore",
+      "timeline3Text": "Ma spesso rischi fraintendimenti e non sempre funziona offline",
+      "timeline4Title": "Rischio per la salute",
+      "timeline4Text": "Un malinteso potrebbe portare a una reazione allergica (e rovinarti il viaggio)"
+    },
+    "features": {
+      "title": "La soluzione è semplice",
+      "subtitle": "AllergiApp ti permette di comunicare con chiarezza, sempre."
+    },
+    "howItWorks": {
+      "title": "Come funziona",
+      "step1Title": "Seleziona le tue allergie",
+      "step1Text": "Scegli una o più allergie dalla lista completa degli allergeni",
+      "step2Title": "Scegli la lingua",
+      "step2Text": "Imposta la lingua del paese in cui ti trovi o scaricala per usarla offline",
+      "step3Title": "Mostra la card",
+      "step3Text": "Presenta il tuo telefono al personale del ristorante con una card chiara e professionale",
+      "highlight1Title": "Card universale tradotta",
+      "highlight1Text": "Mostra una card visiva chiara con emoji, nomi e esempi di alimenti",
+      "highlight2Title": "Veloce e intuitiva",
+      "highlight2Text": "Mostra le tue allergie in secondi, anche in situazioni di emergenza",
+      "highlight3Title": "Privacy totale",
+      "highlight3Text": "I tuoi dati rimangono sul tuo dispositivo. Nessuna registrazione richiesta",
+      "ctaTitle": "Provaci anche tu",
+      "ctaButton": "Scarica gratis"
+    },
+    "story": {
+      "title": "Perché è gratuita?",
+      "intro": "Questa app nasce da un'esperienza personale. Come persona con allergie alimentari, ho sempre amato viaggiare e scoprire nuove culture attraverso il cibo.",
+      "paragraph1": "Durante i miei viaggi, ho imparato che la barriera linguistica può trasformare un'esperienza culinaria in un momento di ansia. Ho iniziato a scrivere a mano piccole card con le mie allergie, poi a stamparle, e ho scoperto quanto fossero preziose per comunicare con camerieri e chef che non parlavano la mia lingua.",
+      "paragraph2": "Un gesto semplice - mostrare una card - cambiava tutto.",
+      "paragraph2b": "Il personale del ristorante apprezzava la chiarezza, io mi sentivo più sicura, e finalmente potevo godermi la cucina locale senza paura.",
+      "paragraph3": "Ho creato AllergiApp per portare questa soluzione a chiunque ne abbia bisogno. È gratuita perché",
+      "paragraph3Strong": "viaggiare e gustare il cibo del mondo dovrebbe essere un diritto per tutti",
+      "paragraph3End": "non un privilegio. Se questa app può aiutare anche solo una persona a godersi un pasto in più durante un viaggio, avrà raggiunto il suo scopo.",
+      "paragraph4": "Se apprezzi il progetto e vuoi supportarlo, ogni contributo aiuta a coprire i costi di sviluppo e mantenimento, e a mantenerla gratuita e migliorarla nel tempo. ❤️",
+      "quoteText": "La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo anche attraverso il cibo, in sicurezza e con gioia.",
+      "quoteAuthor": "— Marta Di Muro",
+      "supportTitle": "Supporta il progetto",
+      "supportText": "Gratuita per sempre. Puoi contribuire con una donazione per aiutare lo sviluppo e il mantenimento"
+    },
+    "allergens": {
+      "title": "Allergeni supportati",
+      "peanuts": "Arachidi",
+      "nuts": "Frutta a guscio",
+      "dairy": "Latticini",
+      "eggs": "Uova",
+      "fish": "Pesce",
+      "crustaceans": "Crostacei",
+      "mollusks": "Molluschi",
+      "gluten": "Glutine",
+      "soy": "Soia",
+      "sesame": "Sesamo",
+      "mustard": "Senape",
+      "celery": "Sedano",
+      "sulfites": "Solfiti",
+      "lupins": "Lupini"
+    },
+    "downloadSection": {
+      "title": "Scarica AllergiApp",
+      "subtitle": "Disponibile gratuitamente su App Store e Google Play",
+      "backToTop": "Torna su"
+    },
+    "footer": {
+      "tagline": "Viaggia sicuro, comunica ovunque.",
+      "privacy": "Privacy Policy",
+      "terms": "Termini di Servizio",
+      "copyright": "2026 AllergiApp. Tutti i diritti riservati."
+    }
+  },
+  "en": {
+    "meta": {
+      "description": "AllergiApp - Communicate your allergies in any language. The essential app for safe travel with food allergies.",
+      "keywords": "allergies, food allergies, travel, allergy translation, food safety",
+      "ogTitle": "AllergiApp - Allergies without borders",
+      "ogDescription": "Communicate your allergies in any language when you travel",
+      "title": "AllergiApp - Communicate your allergies in any language"
+    },
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How it works",
+      "download": "Download"
+    },
+    "hero": {
+      "title1": "Travel with confidence.",
+      "title2": "Your allergies, in every language.",
+      "subtitle1": "Communicate your food allergies in 60+ languages.",
+      "subtitle2": "Show a clear, easy-to-understand card to waiters and chefs around the world.",
+      "cta": "See how it works",
+      "stat1Number": "60+",
+      "stat1Label": "Languages",
+      "stat2Number": "100%",
+      "stat2Label": "Free"
+    },
+    "problem": {
+      "title": "Sound familiar?",
+      "timeline1Title": "You're abroad, dining out",
+      "timeline1Text": "You're worried you won't be able to communicate your allergies in the local language",
+      "timeline2Title": "Language barrier",
+      "timeline2Text": "Neither you nor the waiter speak the same language",
+      "timeline3Title": "You try a translator app",
+      "timeline3Text": "But it often causes misunderstandings and doesn't always work offline",
+      "timeline4Title": "Health risk",
+      "timeline4Text": "One misunderstanding could trigger an allergic reaction and ruin your trip"
+    },
+    "features": {
+      "title": "The solution is simple",
+      "subtitle": "AllergiApp helps you communicate clearly, anywhere."
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "step1Title": "Select your allergies",
+      "step1Text": "Choose one or more allergies from a comprehensive list of allergens",
+      "step2Title": "Choose your language",
+      "step2Text": "Select the language of the country you're visiting or download it for offline use",
+      "step3Title": "Show the card",
+      "step3Text": "Present your phone to restaurant staff with a clear, professional card",
+      "highlight1Title": "Universal translated card",
+      "highlight1Text": "Display a clear visual card with emojis, allergen names, and food examples",
+      "highlight2Title": "Fast and intuitive",
+      "highlight2Text": "Show your allergies in seconds, even in emergencies",
+      "highlight3Title": "Total privacy",
+      "highlight3Text": "Your data stays on your device. No registration required",
+      "ctaTitle": "Try it yourself",
+      "ctaButton": "Download for free"
+    },
+    "story": {
+      "title": "Why is it free?",
+      "intro": "This app was born from personal experience. As someone with food allergies, I've always loved traveling and discovering new cultures through food.",
+      "paragraph1": "During my travels, I learned that language barriers can turn a dining experience into a moment of anxiety. I started handwriting small cards listing my allergies, then printing them, and discovered how invaluable they were for communicating with waiters and chefs who didn't speak my language.",
+      "paragraph2": "One simple gesture—showing a card—changed everything.",
+      "paragraph2b": "Restaurant staff appreciated the clarity, I felt safer, and I could finally enjoy local cuisine without fear.",
+      "paragraph3": "I created AllergiApp to bring this solution to anyone who needs it. It's free because",
+      "paragraph3Strong": "traveling and enjoying the world's food should be a right for everyone",
+      "paragraph3End": "not a privilege. If this app helps even one person enjoy an extra meal while traveling, it will have achieved its purpose.",
+      "paragraph4": "If you appreciate this project and want to support it, every contribution helps cover development and maintenance costs, keeping it free and improving it over time. ❤️",
+      "quoteText": "My mission? Make the world more accessible and help people with allergies explore it through food—safely and joyfully.",
+      "quoteAuthor": "— Marta Di Muro",
+      "supportTitle": "Support the project",
+      "supportText": "Free forever. You can donate to help with development and maintenance"
+    },
+    "allergens": {
+      "title": "Supported allergens",
+      "peanuts": "Peanuts",
+      "nuts": "Tree nuts",
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "crustaceans": "Shellfish",
+      "mollusks": "Mollusks",
+      "gluten": "Gluten",
+      "soy": "Soy",
+      "sesame": "Sesame",
+      "mustard": "Mustard",
+      "celery": "Celery",
+      "sulfites": "Sulfites",
+      "lupins": "Lupins"
+    },
+    "downloadSection": {
+      "title": "Download AllergiApp",
+      "subtitle": "Available for free on App Store and Google Play",
+      "backToTop": "Back to top"
+    },
+    "footer": {
+      "tagline": "Travel safe, communicate anywhere.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "copyright": "2026 AllergiApp. All rights reserved."
+    }
+  }
+}
