@@ -10,6 +10,7 @@
     "nav": {
       "features": "Funzionalità",
       "howItWorks": "Come funziona",
+      "support": "❤️ Supporta",
       "download": "Scarica"
     },
     "hero": {
@@ -98,6 +99,26 @@
       "privacy": "Privacy Policy",
       "terms": "Termini di Servizio",
       "copyright": "2026 AllergiApp. Tutti i diritti riservati."
+    },
+    "support": {
+      "backHome": "Torna alla home",
+      "title": "Supporta AllergiApp",
+      "subtitle": "AllergiApp è gratuita per sempre e lo sarà sempre. Se ti è utile e vuoi aiutarci a mantenerla e migliorarla, ogni contributo fa la differenza.",
+      "reason1Title": "Sviluppo continuo",
+      "reason1Text": "Nuove lingue, nuovi allergeni e funzionalità sempre aggiornate",
+      "reason2Title": "Traduzioni professionali",
+      "reason2Text": "Traduzioni accurate verificate per comunicare in sicurezza",
+      "reason3Title": "Gratuita per tutti",
+      "reason3Text": "Il tuo supporto aiuta a mantenere l'app accessibile a tutti",
+      "donateTitle": "Fai una donazione",
+      "donateButton": "Supporta il progetto",
+      "alternativeTitle": "Altri modi per supportarci",
+      "alternativeText": "Non puoi donare? Nessun problema! Puoi aiutarci anche in altri modi:",
+      "alt1": "Lascia una recensione sullo store",
+      "alt2": "Condividi l'app con chi ne ha bisogno",
+      "alt3": "Suggerisci nuove funzionalità",
+      "thankYouText": "Grazie di cuore per il tuo supporto. Ogni contributo, grande o piccolo, mi aiuta a continuare questo progetto nato dalla passione per i viaggi e dal desiderio di rendere il mondo più accessibile per chi vive con allergie alimentari.",
+      "thankYouSignature": "— Marta"
     }
   },
   "en": {
@@ -111,6 +132,7 @@
     "nav": {
       "features": "Features",
       "howItWorks": "How it works",
+      "support": "❤️ Support",
       "download": "Download"
     },
     "hero": {
@@ -199,6 +221,26 @@
       "privacy": "Privacy Policy",
       "terms": "Terms of Service",
       "copyright": "2026 AllergiApp. All rights reserved."
+    },
+    "support": {
+      "backHome": "Back to home",
+      "title": "Support AllergiApp",
+      "subtitle": "AllergiApp is free forever and always will be. If you find it useful and want to help us maintain and improve it, every contribution makes a difference.",
+      "reason1Title": "Continuous development",
+      "reason1Text": "New languages, new allergens, and always up-to-date features",
+      "reason2Title": "Professional translations",
+      "reason2Text": "Accurate verified translations for safe communication",
+      "reason3Title": "Free for everyone",
+      "reason3Text": "Your support helps keep the app accessible to all",
+      "donateTitle": "Make a donation",
+      "donateButton": "Support the project",
+      "alternativeTitle": "Other ways to support us",
+      "alternativeText": "Can't donate? No problem! You can help us in other ways:",
+      "alt1": "Leave a review on the store",
+      "alt2": "Share the app with those who need it",
+      "alt3": "Suggest new features",
+      "thankYouText": "Thank you from the bottom of my heart for your support. Every contribution, big or small, helps me continue this project born from a passion for travel and the desire to make the world more accessible for those living with food allergies.",
+      "thankYouSignature": "— Marta"
     }
   }
 }

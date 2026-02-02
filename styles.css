@@ -106,6 +106,21 @@ body {
     transform: translateY(-2px);
 }
 
+.nav-support {
+    background: #FFDD00 !important;
+    color: #000000 !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.nav-support:hover {
+    background: #FFE933 !important;
+    transform: translateY(-1px);
+}
+
 /* Language Selector */
 .lang-selector {
     display: flex;
@@ -896,8 +911,18 @@ body {
         gap: 16px;
     }
 
-    .nav-links a:not(.cta-button) {
+    .nav-links a:not(.cta-button):not(.nav-support) {
         display: none;
+    }
+
+    .nav-support {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .cta-button {
+        padding: 8px 16px;
+        font-size: 13px;
     }
 
     .hero-content {

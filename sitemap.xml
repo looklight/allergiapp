@@ -28,4 +28,14 @@
         <priority>0.5</priority>
     </url>
 
+    <!-- Support / Donate -->
+    <url>
+        <loc>https://allergiapp.com/support</loc>
+        <lastmod>2026-02-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+        <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/support" />
+        <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/support?lang=en" />
+    </url>
+
 </urlset>

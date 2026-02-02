@@ -3,5 +3,10 @@
   "outputDirectory": ".",
   "installCommand": null,
   "devCommand": null,
-  "framework": null
+  "framework": null,
+  "rewrites": [
+    { "source": "/support", "destination": "/support.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" }
+  ]
 }
