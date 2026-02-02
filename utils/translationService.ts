@@ -115,6 +115,8 @@ export async function downloadLanguageTranslations(
     CARD_TRANSLATIONS.en.subtitle,
     CARD_TRANSLATIONS.en.message,
     CARD_TRANSLATIONS.en.thanks,
+    CARD_TRANSLATIONS.en.tapToSee,
+    CARD_TRANSLATIONS.en.showIn,
   ];
 
   const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length;
@@ -252,6 +254,8 @@ export async function downloadLanguageTranslations(
       subtitle: translatedCardTexts[1],
       message: translatedCardTexts[2],
       thanks: translatedCardTexts[3],
+      tapToSee: translatedCardTexts[4],
+      showIn: translatedCardTexts[5],
     },
     downloadedAt: new Date().toISOString(),
   };

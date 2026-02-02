@@ -157,6 +157,8 @@ export interface DownloadedLanguageData {
     subtitle: string;
     message: string;
     thanks: string;
+    tapToSee: string;
+    showIn: string;
   };
   downloadedAt: string;
 }
