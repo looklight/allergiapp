@@ -192,6 +192,14 @@ export default function CardScreen() {
       textAlign: 'center' as const,
       fontStyle: 'italic' as const,
     },
+    warningText: {
+      fontSize: isLandscape ? 12 : 13,
+      color: '#D84315',
+      textAlign: 'center' as const,
+      fontWeight: '600' as const,
+      marginTop: isLandscape ? 6 : 8,
+      paddingHorizontal: 8,
+    },
     thanksSection: {
       padding: isLandscape ? 12 : 20,
       backgroundColor: theme.colors.primaryLight,
@@ -326,6 +334,11 @@ export default function CardScreen() {
                           <Text style={dynamicStyles.breakdownDescription}>
                             {getAllergenDescription(id)}
                           </Text>
+                          {images.warning && (
+                            <Text style={dynamicStyles.warningText}>
+                              {images.warning[displayLanguage as Language] || images.warning.en}
+                            </Text>
+                          )}
                         </View>
                       )}
                     </View>
