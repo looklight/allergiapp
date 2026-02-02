@@ -9,8 +9,6 @@
     "newArchEnabled": false,
     "scheme": "allergiapp",
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
     "ios": {
