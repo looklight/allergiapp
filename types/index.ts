@@ -151,6 +151,7 @@ export interface DownloadableLanguageInfo {
 export interface DownloadedLanguageData {
   allergens: Record<AllergenId, string>;
   descriptions: Record<AllergenId, string>;
+  warnings?: Record<AllergenId, string>;
   cardTexts: {
     header: string;
     subtitle: string;
