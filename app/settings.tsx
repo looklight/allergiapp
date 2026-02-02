@@ -18,7 +18,7 @@ import { DownloadProgress } from '../utils/translationService';
 import { theme } from '../constants/theme';
 import { useAppContext } from '../utils/AppContext';
 import { Analytics } from '../utils/analytics';
-import { useLanguageDownload } from './hooks/useLanguageDownload';
+import { useLanguageDownload } from '../hooks/useLanguageDownload';
 import DownloadableLanguagesSection from './components/DownloadableLanguagesSection';
 import LegalDialogs from './components/LegalDialogs';
 
