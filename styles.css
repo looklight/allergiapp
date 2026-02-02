@@ -732,22 +732,24 @@ body {
 .allergens-preview {
     padding: 40px 0 60px;
     background: white;
+    overflow: hidden;
 }
 
 .allergens-carousel {
     display: flex;
     gap: 16px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
     padding: 8px 0;
-    max-width: 1200px;
-    margin: 0 auto;
+    animation: scroll-carousel 30s linear infinite;
+    width: max-content;
 }
 
-.allergens-carousel::-webkit-scrollbar {
-    display: none;
+@keyframes scroll-carousel {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .allergen-badge {
@@ -1059,6 +1061,7 @@ body {
 
     .allergens-carousel {
         gap: 12px;
+        animation: scroll-carousel 25s linear infinite;
     }
 
     .allergen-badge {
