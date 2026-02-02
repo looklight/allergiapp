@@ -3,6 +3,7 @@ import { AllergenId, Language } from '../types';
 interface AllergenImages {
   examples: string[];
   description: Record<Language, string>;
+  warning?: Record<Language, string>;
 }
 
 export const ALLERGEN_IMAGES: Record<AllergenId, AllergenImages> = {
@@ -24,6 +25,23 @@ export const ALLERGEN_IMAGES: Record<AllergenId, AllergenImages> = {
       ko: '빵, 파스타, 피자, 케이크, 쿠키, 시리얼',
       th: 'ขนมปัง พาสต้า พิซซ่า เค้ก คุกกี้ ธัญพืช',
       ar: 'خبز، معكرونة، بيتزا، كعك، بسكويت، حبوب',
+    },
+    warning: {
+      it: '⚠️ Attenzione: la salsa di soia tradizionale contiene glutine',
+      en: '⚠️ Warning: traditional soy sauce contains gluten',
+      fr: '⚠️ Attention : la sauce soja traditionnelle contient du gluten',
+      de: '⚠️ Achtung: traditionelle Sojasauce enthält Gluten',
+      es: '⚠️ Atención: la salsa de soja tradicional contiene gluten',
+      pt: '⚠️ Atenção: o molho de soja tradicional contém glúten',
+      nl: '⚠️ Waarschuwing: traditionele sojasaus bevat gluten',
+      pl: '⚠️ Uwaga: tradycyjny sos sojowy zawiera gluten',
+      ru: '⚠️ Внимание: традиционный соевый соус содержит глютен',
+      sv: '⚠️ Varning: traditionell sojasås innehåller gluten',
+      zh: '⚠️ 注意：传统酱油含有麸质',
+      ja: '⚠️ 注意：伝統的な醤油にはグルテンが含まれています',
+      ko: '⚠️ 주의: 전통 간장에는 글루텐이 포함되어 있습니다',
+      th: '⚠️ คำเตือน: ซอสถั่วเหลืองแบบดั้งเดิมมีกลูเตน',
+      ar: '⚠️ تحذير: صلصة الصويا التقليدية تحتوي على الغلوتين',
     },
   },
   crustaceans: {
