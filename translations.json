@@ -119,6 +119,21 @@
       "alt3": "Suggerisci nuove funzionalità",
       "thankYouText": "Grazie di cuore per il tuo supporto. Ogni contributo, grande o piccolo, mi aiuta a continuare questo progetto nato dalla passione per i viaggi e dal desiderio di rendere il mondo più accessibile per chi vive con allergie alimentari.",
       "thankYouSignature": "— Marta"
+    },
+    "faq": {
+      "title": "Domande Frequenti",
+      "q1": "Come funziona AllergiApp?",
+      "a1": "AllergiApp ti permette di creare card personalizzate con le tue allergie alimentari. Puoi tradurle in oltre 60 lingue e mostrarle a camerieri e chef quando viaggi all'estero, comunicando in modo chiaro e sicuro.",
+      "q2": "L'app funziona offline?",
+      "a2": "Sì, AllergiApp funziona completamente offline. Una volta scaricate le lingue che ti servono, non hai bisogno di connessione internet per usarla.",
+      "q3": "Quali allergie sono supportate?",
+      "a3": "Supportiamo tutti i principali allergeni: glutine, lattosio, uova, arachidi, frutta a guscio, pesce, crostacei, soia, sesamo e molti altri. Puoi anche aggiungere note personalizzate.",
+      "q4": "È davvero gratuita?",
+      "a4": "Sì, AllergiApp è completamente gratuita e lo sarà sempre. Non ci sono acquisti in-app, abbonamenti o costi nascosti. Puoi supportarci con una donazione volontaria se vuoi aiutarci a mantenerla.",
+      "q5": "Serve registrazione?",
+      "a5": "No, non è richiesta nessuna registrazione. Rispettiamo la tua privacy: i tuoi dati restano sul tuo dispositivo e non vengono mai condivisi.",
+      "q6": "Su quali dispositivi posso usarla?",
+      "a6": "AllergiApp è disponibile sia per iPhone/iPad (iOS) che per dispositivi Android. Scaricala gratuitamente da App Store o Google Play."
     }
   },
   "en": {
@@ -241,6 +256,21 @@
       "alt3": "Suggest new features",
       "thankYouText": "Thank you from the bottom of my heart for your support. Every contribution, big or small, helps me continue this project born from a passion for travel and the desire to make the world more accessible for those living with food allergies.",
       "thankYouSignature": "— Marta"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How does AllergiApp work?",
+      "a1": "AllergiApp allows you to create personalized cards with your food allergies. You can translate them into over 60 languages and show them to waiters and chefs when traveling abroad, communicating clearly and safely.",
+      "q2": "Does the app work offline?",
+      "a2": "Yes, AllergiApp works completely offline. Once you download the languages you need, you don't need an internet connection to use it.",
+      "q3": "Which allergies are supported?",
+      "a3": "We support all major allergens: gluten, lactose, eggs, peanuts, tree nuts, fish, shellfish, soy, sesame, and many others. You can also add custom notes.",
+      "q4": "Is it really free?",
+      "a4": "Yes, AllergiApp is completely free and always will be. There are no in-app purchases, subscriptions, or hidden costs. You can support us with a voluntary donation if you want to help us maintain it.",
+      "q5": "Do I need to register?",
+      "a5": "No, no registration is required. We respect your privacy: your data stays on your device and is never shared.",
+      "q6": "On which devices can I use it?",
+      "a6": "AllergiApp is available for both iPhone/iPad (iOS) and Android devices. Download it for free from the App Store or Google Play."
     }
   }
 }
