@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { Stack, ErrorBoundary } from 'expo-router';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,6 +9,8 @@ import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../utils/AppContext';
 import { Analytics } from '../utils/analytics';
 import ConsentModal from './consent';
+
+const splashLogo = require('../assets/splash-icon.png');
 
 // Mantieni lo splash screen visibile finché non siamo pronti
 SplashScreen.preventAutoHideAsync();
@@ -42,6 +44,20 @@ const errorStyles = StyleSheet.create({
   button: { minWidth: 120 },
 });
 
+const splashStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    borderRadius: 24,
+  },
+});
+
 
 function AppContent() {
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
@@ -60,8 +76,12 @@ function AppContent() {
   }, [isReady, hasAcceptedLegalTerms, trackingConsent]);
 
   if (!isReady) {
-    // Lo splash screen è ancora visibile, non serve mostrare nulla
-    return null;
+    // Mostra il nostro splash personalizzato mentre l'app carica
+    return (
+      <View style={splashStyles.container}>
+        <Image source={splashLogo} style={splashStyles.logo} resizeMode="contain" />
+      </View>
+    );
   }
 
   return (
