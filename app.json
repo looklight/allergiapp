@@ -27,7 +27,8 @@
       "package": "com.allergiapp",
       "edgeToEdgeEnabled": true,
       "versionCode": 1,
-      "permissions": []
+      "permissions": [],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png",
