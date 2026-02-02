@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Pressable, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Pressable, Image, Text as RNText } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -111,7 +111,7 @@ export default function AboutScreen() {
         <View style={styles.quoteContainer}>
           <View style={styles.quoteBar} />
           <View style={styles.quoteContent}>
-            <Text style={styles.quoteText}>{i18n.t('aboutStory.quoteText')}</Text>
+            <RNText style={styles.quoteText}>{i18n.t('aboutStory.quoteText')}</RNText>
             <View style={styles.authorRow}>
               {/* TODO: Sostituire author-photo.png con la foto reale dell'autrice */}
               <AuthorPhoto />
