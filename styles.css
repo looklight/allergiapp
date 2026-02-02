@@ -739,7 +739,7 @@ body {
     display: flex;
     gap: 16px;
     padding: 8px 0;
-    animation: scroll-carousel 30s linear infinite;
+    animation: scroll-carousel 60s linear infinite;
     width: max-content;
 }
 
@@ -1061,7 +1061,7 @@ body {
 
     .allergens-carousel {
         gap: 12px;
-        animation: scroll-carousel 25s linear infinite;
+        animation: scroll-carousel 50s linear infinite;
     }
 
     .allergen-badge {
