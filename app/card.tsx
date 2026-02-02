@@ -86,8 +86,8 @@ export default function CardScreen() {
         subtitle: downloadedLanguageData.cardTexts.subtitle,
         message: downloadedLanguageData.cardTexts.message,
         thanks: downloadedLanguageData.cardTexts.thanks,
-        tapToSee: CARD_TRANSLATIONS.en.tapToSee, // Fallback a inglese per UI
-        showIn: CARD_TRANSLATIONS.en.showIn,
+        tapToSee: downloadedLanguageData.cardTexts.tapToSee,
+        showIn: downloadedLanguageData.cardTexts.showIn,
       };
     }
     return CARD_TRANSLATIONS[displayLanguage as Language] || CARD_TRANSLATIONS.en;
