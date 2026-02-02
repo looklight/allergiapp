@@ -14,7 +14,7 @@ import i18n from '../utils/i18n';
 import { useAppContext } from '../utils/AppContext';
 import { Analytics } from '../utils/analytics';
 import BannerCarousel from './components/BannerCarousel';
-import { useLanguageDownload } from './hooks/useLanguageDownload';
+import { useLanguageDownload } from '../hooks/useLanguageDownload';
 
 export default function HomeScreen() {
   const router = useRouter();
