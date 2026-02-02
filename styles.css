@@ -688,25 +688,16 @@ body {
     order: -1;
 }
 
-.story-support {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin-top: 48px;
-}
-
-.support-icon {
-    font-size: 64px;
-    margin-bottom: 24px;
+.story-support-inline {
+    margin: 32px 0;
 }
 
 .support-text {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--text-secondary);
     line-height: 1.6;
-    max-width: 500px;
-    margin: 0 auto;
+    margin-top: 12px;
+    margin-bottom: 0;
 }
 
 .donation-button {
@@ -722,7 +713,6 @@ body {
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
-    margin: 16px 0;
 }
 
 .donation-button:hover {
@@ -731,13 +721,8 @@ body {
     box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
 }
 
-.coffee-icon {
-    font-size: 18px;
-}
-
-.external-icon {
-    font-size: 14px;
-    opacity: 0.8;
+.donation-button svg {
+    flex-shrink: 0;
 }
 
 /* Allergens Preview */
@@ -1078,13 +1063,8 @@ body {
         min-width: 160px;
     }
 
-    .story-support {
-        margin-top: 32px;
-    }
-
-    .support-icon {
-        font-size: 52px;
-        margin-bottom: 20px;
+    .story-support-inline {
+        margin: 24px 0;
     }
 
     .support-text {
@@ -1094,6 +1074,16 @@ body {
     .donation-button {
         font-size: 13px;
         padding: 10px 20px;
+    }
+
+    .donation-button svg:first-child {
+        width: 16px;
+        height: 16px;
+    }
+
+    .donation-button svg:last-child {
+        width: 12px;
+        height: 12px;
     }
 
     .footer-legal {
