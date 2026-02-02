@@ -203,9 +203,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   quoteText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: theme.colors.textPrimary,
+    fontSize: 14,
+    lineHeight: 22,
+    color: theme.colors.textSecondary,
     fontStyle: 'italic',
     marginBottom: 12,
   },
