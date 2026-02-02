@@ -691,6 +691,7 @@ body {
 .story-support-inline {
     margin: 32px 0;
     text-align: center;
+    scroll-margin-top: 100px;
 }
 
 .support-text {
