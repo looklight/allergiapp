@@ -70,6 +70,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
     await storage.deleteDownloadedLanguage(langCode);
+
+    // Se la lingua eliminata era la cardLanguage selezionata, imposta il default (inglese)
+    setSettingsState(prev => {
+      if (prev.cardLanguage === langCode) {
+        return { ...prev, cardLanguage: 'en' };
+      }
+      return prev;
+    });
+    // Salva anche su storage (fuori da setState per poter fare await)
+    const currentSettings = await storage.getSettings();
+    if (currentSettings.cardLanguage === langCode) {
+      await storage.setCardLanguage('en');
+    }
   }, []);
 
   const clearAll = useCallback(async () => {
