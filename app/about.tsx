@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Pressable } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Pressable, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -9,6 +9,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { APP_CONFIG } from '../constants/config';
+
+// Componente per la foto dell'autrice
+// Per aggiungere la foto reale:
+// 1. Salvare l'immagine come assets/author-photo.png (consigliato: 72x72 px o più, formato quadrato)
+// 2. Decommentare la riga con Image e commentare/rimuovere il View placeholder
+function AuthorPhoto() {
+  // Quando hai la foto, usa questa riga:
+  // return <Image source={require('../assets/author-photo.png')} style={styles.authorImage} />;
+
+  // Placeholder temporaneo
+  return (
+    <View style={[styles.authorImage, styles.authorPlaceholder]}>
+      <MaterialCommunityIcons name="account" size={20} color={theme.colors.textDisabled} />
+    </View>
+  );
+}
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -91,18 +107,17 @@ export default function AboutScreen() {
           <MaterialCommunityIcons name="open-in-new" size={14} color="#000000" />
         </Pressable>
 
-        {/* Quote */}
+        {/* Quote with Author Photo */}
         <View style={styles.quoteContainer}>
           <View style={styles.quoteBar} />
           <View style={styles.quoteContent}>
             <Text style={styles.quoteText}>{i18n.t('aboutStory.quoteText')}</Text>
-            <Text style={styles.quoteAuthor}>{i18n.t('aboutStory.quoteAuthor')}</Text>
+            <View style={styles.authorRow}>
+              {/* TODO: Sostituire author-photo.png con la foto reale dell'autrice */}
+              <AuthorPhoto />
+              <Text style={styles.quoteAuthor}>{i18n.t('aboutStory.quoteAuthor')}</Text>
+            </View>
           </View>
-        </View>
-
-        {/* Icon */}
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>💝</Text>
         </View>
       </ScrollView>
 
@@ -162,6 +177,21 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingLeft: 4,
   },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  authorImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.border,
+  },
+  authorPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   quoteBar: {
     width: 4,
     backgroundColor: theme.colors.primary,
@@ -183,13 +213,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.colors.textSecondary,
     fontWeight: '600',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  icon: {
-    fontSize: 48,
   },
   donationButton: {
     flexDirection: 'row',
