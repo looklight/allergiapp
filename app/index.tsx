@@ -180,7 +180,9 @@ export default function HomeScreen() {
         <Surface style={styles.card} elevation={1}>
           <View style={styles.cardHeader}>
             <View style={styles.cardHeaderLeft}>
-              <Text style={styles.stepNumber}>1</Text>
+              <View style={styles.stepNumberContainer}>
+                <Text style={styles.stepNumberText}>1</Text>
+              </View>
               <Text variant="titleMedium" style={styles.cardTitle}>
                 {i18n.t('home.title')}
               </Text>
@@ -237,7 +239,9 @@ export default function HomeScreen() {
         {/* Sezione Lingua */}
         <Surface style={styles.card} elevation={1}>
           <View style={styles.cardHeader}>
-            <Text style={styles.stepNumber}>2</Text>
+            <View style={styles.stepNumberContainer}>
+              <Text style={styles.stepNumberText}>2</Text>
+            </View>
             <Text variant="titleMedium" style={styles.cardTitle}>
               {i18n.t('home.whereAreYouTraveling')}
             </Text>
@@ -481,17 +485,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  stepNumber: {
+  stepNumberContainer: {
     width: 28,
     height: 28,
     borderRadius: 14,
     backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  stepNumberText: {
     color: '#FFFFFF',
-    textAlign: 'center',
-    lineHeight: 28,
     fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 12,
   },
   cardTitle: {
     fontWeight: '600',
