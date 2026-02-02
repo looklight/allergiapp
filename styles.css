@@ -596,28 +596,28 @@ body {
 
 /* Back to Top */
 .back-to-top {
-    margin-top: 48px;
-    padding: 8px 20px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    margin-top: 0;
+    padding: 10px 24px;
+    background: var(--primary-light);
+    border: 2px solid var(--primary);
     border-radius: 20px;
-    color: white;
+    color: var(--primary-dark);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    opacity: 0.7;
 }
 
 .back-to-top:hover {
-    background: rgba(255, 255, 255, 0.3);
-    opacity: 1;
+    background: var(--primary);
+    color: white;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 /* Story Section */
 .story {
-    padding: 100px 0 40px;
+    padding: 100px 0 35px;
     background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 100%);
 }
 
@@ -631,8 +631,8 @@ body {
 }
 
 .story-body {
-    font-size: 18px;
-    line-height: 1.8;
+    font-size: 16px;
+    line-height: 1.6;
     color: var(--text);
 }
 
@@ -747,7 +747,7 @@ body {
 
 /* Allergens Preview */
 .allergens-preview {
-    padding: 40px 0 60px;
+    padding: 35px 0 60px;
     background: white;
     overflow: hidden;
 }
@@ -792,7 +792,7 @@ body {
 
 /* Download Section */
 .download {
-    padding: 100px 0;
+    padding: 80px 0 60px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     text-align: center;
@@ -801,6 +801,10 @@ body {
 .download .section-title,
 .download .section-subtitle {
     color: white;
+}
+
+.download .section-subtitle {
+    margin-bottom: 40px;
 }
 
 .download-icon {
@@ -817,7 +821,7 @@ body {
     gap: 16px;
     justify-content: center;
     flex-wrap: nowrap;
-    margin-bottom: 48px;
+    margin-bottom: 32px;
 }
 
 .store-button {
@@ -1033,7 +1037,7 @@ body {
     }
 
     .story {
-        padding: 60px 0;
+        padding: 60px 0 28px;
     }
 
 
@@ -1079,7 +1083,7 @@ body {
     }
 
     .allergens-preview {
-        padding: 32px 0 48px;
+        padding: 28px 0 48px;
     }
 
     .allergens-carousel {
@@ -1163,6 +1167,10 @@ body {
         font-size: 18px;
     }
 
+    .download {
+        padding: 60px 0 40px;
+    }
+
     .download-buttons {
         gap: 8px;
     }
@@ -1213,7 +1221,7 @@ body {
 
 /* FAQ Section */
 .faq {
-    padding: 80px 0;
+    padding: 60px 0 80px;
     background: var(--bg);
 }
 
@@ -1258,7 +1266,7 @@ body {
 
 @media (max-width: 768px) {
     .faq {
-        padding: 60px 0;
+        padding: 48px 0 60px;
     }
 
     .faq .section-title {

@@ -127,13 +127,13 @@
       "q2": "L'app funziona offline?",
       "a2": "Sì, AllergiApp funziona completamente offline. Una volta scaricate le lingue che ti servono, non hai bisogno di connessione internet per usarla.",
       "q3": "Quali allergie sono supportate?",
-      "a3": "Supportiamo tutti i principali allergeni: glutine, lattosio, uova, arachidi, frutta a guscio, pesce, crostacei, soia, sesamo e molti altri. Puoi anche aggiungere note personalizzate.",
+      "a3": "Supportiamo tutti i principali allergeni: glutine, lattosio, uova, arachidi, frutta a guscio, pesce, crostacei, soia, sesamo e molti altri.",
       "q4": "È davvero gratuita?",
-      "a4": "Sì, AllergiApp è completamente gratuita e lo sarà sempre. Non ci sono acquisti in-app, abbonamenti o costi nascosti. Puoi supportarci con una donazione volontaria se vuoi aiutarci a mantenerla.",
+      "a4": "Sì, AllergiApp è completamente gratuita e lo sarà sempre. Non ci sono acquisti in-app o abbonamenti. Per mantenere l'app attiva e migliorarla continuamente, contiamo sulle donazioni volontarie degli utenti. Se trovi utile AllergiApp, puoi supportare il progetto con una donazione!",
       "q5": "Serve registrazione?",
-      "a5": "No, non è richiesta nessuna registrazione. Rispettiamo la tua privacy: i tuoi dati restano sul tuo dispositivo e non vengono mai condivisi.",
+      "a5": "No, non è richiesta nessuna registrazione. Rispettiamo la tua privacy: i tuoi dati personali restano sul tuo dispositivo e non vengono mai condivisi.",
       "q6": "Su quali dispositivi posso usarla?",
-      "a6": "AllergiApp è disponibile sia per iPhone/iPad (iOS) che per dispositivi Android. Scaricala gratuitamente da App Store o Google Play."
+      "a6": "AllergiApp è disponibile per iPhone (iOS) e per dispositivi Android. Scaricala gratuitamente da App Store o Google Play."
     }
   },
   "en": {
@@ -264,13 +264,13 @@
       "q2": "Does the app work offline?",
       "a2": "Yes, AllergiApp works completely offline. Once you download the languages you need, you don't need an internet connection to use it.",
       "q3": "Which allergies are supported?",
-      "a3": "We support all major allergens: gluten, lactose, eggs, peanuts, tree nuts, fish, shellfish, soy, sesame, and many others. You can also add custom notes.",
+      "a3": "We support all major allergens: gluten, lactose, eggs, peanuts, tree nuts, fish, shellfish, soy, sesame, and many others.",
       "q4": "Is it really free?",
-      "a4": "Yes, AllergiApp is completely free and always will be. There are no in-app purchases, subscriptions, or hidden costs. You can support us with a voluntary donation if you want to help us maintain it.",
+      "a4": "Yes, AllergiApp is completely free and always will be. There are no in-app purchases or subscriptions. To keep the app running and continually improve it, we rely on voluntary donations from users. If you find AllergiApp useful, you can support the project with a donation!",
       "q5": "Do I need to register?",
-      "a5": "No, no registration is required. We respect your privacy: your data stays on your device and is never shared.",
+      "a5": "No, no registration is required. We respect your privacy: your personal data stays on your device and is never shared.",
       "q6": "On which devices can I use it?",
-      "a6": "AllergiApp is available for both iPhone/iPad (iOS) and Android devices. Download it for free from the App Store or Google Play."
+      "a6": "AllergiApp is available for iPhone (iOS) and Android devices. Download it for free from the App Store or Google Play."
     }
   }
 }
