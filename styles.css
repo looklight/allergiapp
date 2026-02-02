@@ -798,9 +798,9 @@ body {
 
 .download-buttons {
     display: flex;
-    gap: 24px;
+    gap: 16px;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin-bottom: 48px;
 }
 
@@ -1135,6 +1135,23 @@ body {
     .button-large {
         padding: 16px 32px;
         font-size: 18px;
+    }
+
+    .download-buttons {
+        gap: 8px;
+    }
+
+    .store-button {
+        padding: 12px 16px;
+        gap: 8px;
+    }
+
+    .store-name {
+        font-size: 16px;
+    }
+
+    .store-text {
+        font-size: 10px;
     }
 
     .features {
