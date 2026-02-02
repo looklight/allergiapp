@@ -84,6 +84,14 @@
     "whyFree": "¿Por qué es gratuita?",
     "aboutSection": "Información y Soporte"
   },
+  "consent": {
+    "title": "Bienvenido a AllergiApp",
+    "disclaimerShort": "Esta app te ayuda a comunicar tus alergias, pero no sustituye el consejo médico.",
+    "privacyTitle": "Privacidad",
+    "termsTitle": "Términos",
+    "acceptButton": "Continuar",
+    "termsNote": "Al continuar aceptas Privacidad y Términos de Servicio"
+  },
   "aboutStory": {
     "title": "¿Por qué es gratuita?",
     "intro": "Esta aplicación nace de una experiencia personal. Como persona con alergias alimentarias, siempre me ha encantado viajar y descubrir nuevas culturas a través de la comida.",

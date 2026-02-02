@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../utils/AppContext';
 import { Analytics } from '../utils/analytics';
+import ConsentModal from './consent';
 
 // Mantieni lo splash screen visibile finché non siamo pronti
 SplashScreen.preventAutoHideAsync();
@@ -43,15 +44,20 @@ const errorStyles = StyleSheet.create({
 
 
 function AppContent() {
-  const { isReady } = useAppContext();
+  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
 
   useEffect(() => {
     if (isReady) {
       // Nascondi lo splash screen quando l'app è pronta
       SplashScreen.hideAsync();
-      Analytics.logAppOpened();
+
+      // Initialize analytics tracking based on stored consent
+      if (hasAcceptedLegalTerms) {
+        Analytics.setTrackingConsent(trackingConsent);
+        Analytics.logAppOpened();
+      }
     }
-  }, [isReady]);
+  }, [isReady, hasAcceptedLegalTerms, trackingConsent]);
 
   if (!isReady) {
     // Lo splash screen è ancora visibile, non serve mostrare nulla
@@ -74,6 +80,8 @@ function AppContent() {
           },
         }}
       />
+      {/* Consent modal overlay - shown on top of the app */}
+      <ConsentModal visible={needsLegalConsent} />
     </>
   );
 }

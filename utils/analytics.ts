@@ -1,4 +1,4 @@
-import { AllergenId, DownloadableLanguageCode, AppLanguage, AllLanguageCode } from '../types';
+import { AllergenId, DownloadableLanguageCode, AppLanguage, AllLanguageCode, TrackingConsent } from '../types';
 
 // Conditional import per supportare Expo Go (dev) e build nativi (prod)
 let analytics: any = null;
@@ -14,15 +14,49 @@ try {
   isFirebaseAvailable = false;
 }
 
+// Tracking consent state
+let isTrackingAuthorized = false;
+
+/**
+ * Check if analytics can be sent based on:
+ * 1. Firebase availability
+ * 2. User tracking consent (ATT on iOS)
+ */
+function canSendAnalytics(): boolean {
+  return isFirebaseAvailable && isTrackingAuthorized;
+}
+
 // Wrapper per tracciare eventi analytics in modo type-safe
-// Se Firebase non è disponibile (Expo Go), i metodi non fanno nulla
+// Se Firebase non è disponibile (Expo Go) o tracking non autorizzato, i metodi non fanno nulla
 
 export const Analytics = {
+  /**
+   * Tracking consent management
+   */
+  setTrackingConsent(consent: TrackingConsent) {
+    isTrackingAuthorized = consent.status === 'authorized';
+    console.log(`[Analytics] Tracking consent set: ${consent.status}, authorized: ${isTrackingAuthorized}`);
+
+    // If tracking is authorized, enable Firebase Analytics collection
+    if (isFirebaseAvailable && analytics) {
+      try {
+        analytics().setAnalyticsCollectionEnabled(isTrackingAuthorized);
+      } catch (error) {
+        console.warn('[Analytics] Error setting collection enabled:', error);
+      }
+    }
+  },
+
+  isTrackingAuthorized(): boolean {
+    return isTrackingAuthorized;
+  },
+
+
   /**
    * Eventi allergie
    */
   async logAllergyAdded(allergyId: AllergenId) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('allergy_added', {
         allergen_id: allergyId,
@@ -34,7 +68,7 @@ export const Analytics = {
   },
 
   async logAllergyRemoved(allergyId: AllergenId) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('allergy_removed', {
         allergen_id: allergyId,
@@ -46,7 +80,7 @@ export const Analytics = {
   },
 
   async logAllergiesSaved(allergenIds: AllergenId[], previousCount: number, newCount: number) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('allergies_saved', {
         allergen_count: allergenIds.length,
@@ -64,7 +98,7 @@ export const Analytics = {
    * Eventi lingue
    */
   async logLanguageDownloaded(languageCode: DownloadableLanguageCode, success: boolean, duration?: number) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('language_downloaded', {
         language_code: languageCode,
@@ -78,7 +112,7 @@ export const Analytics = {
   },
 
   async logLanguageDeleted(languageCode: DownloadableLanguageCode) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('language_deleted', {
         language_code: languageCode,
@@ -90,7 +124,7 @@ export const Analytics = {
   },
 
   async logAppLanguageChanged(fromLanguage: AppLanguage, toLanguage: AppLanguage) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('app_language_changed', {
         from_language: fromLanguage,
@@ -103,7 +137,7 @@ export const Analytics = {
   },
 
   async logCardLanguageChanged(fromLanguage: AllLanguageCode, toLanguage: AllLanguageCode) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('card_language_changed', {
         from_language: fromLanguage,
@@ -124,7 +158,7 @@ export const Analytics = {
     allergenIds: AllergenId[],
     isDownloadedLanguage: boolean
   ) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('card_viewed', {
         card_language: cardLanguage,
@@ -139,7 +173,7 @@ export const Analytics = {
   },
 
   async logCardLanguageToggled(showInAppLanguage: boolean, cardLanguage: AllLanguageCode, appLanguage: AppLanguage) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('card_language_toggled', {
         show_in_app_language: showInAppLanguage,
@@ -156,7 +190,7 @@ export const Analytics = {
    * Eventi app lifecycle
    */
   async logAppOpened() {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('app_opened', {
         timestamp: new Date().toISOString(),
@@ -167,7 +201,7 @@ export const Analytics = {
   },
 
   async logDataCleared() {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('data_cleared', {
         timestamp: new Date().toISOString(),
@@ -181,7 +215,7 @@ export const Analytics = {
    * Eventi banner/ads
    */
   async logBannerViewed(bannerId: string, bannerType: 'info' | 'ad' | 'custom', title?: string) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('banner_viewed', {
         banner_id: bannerId,
@@ -200,7 +234,7 @@ export const Analytics = {
     title?: string,
     adUrl?: string
   ) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('banner_clicked', {
         banner_id: bannerId,
@@ -215,7 +249,7 @@ export const Analytics = {
   },
 
   async logAdImpression(adId: string, adUrl?: string, adTitle?: string) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().logEvent('ad_impression', {
         ad_id: adId,
@@ -232,7 +266,7 @@ export const Analytics = {
    * User properties (informazioni demografiche aggregate)
    */
   async setUserProperty(property: string, value: string) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       await analytics().setUserProperty(property, value);
     } catch (error) {
@@ -242,7 +276,7 @@ export const Analytics = {
 
   // Proprietà demografiche opzionali (da chiamare se l'utente le fornisce)
   async setDemographics(ageRange?: string, gender?: string, country?: string) {
-    if (!isFirebaseAvailable) return;
+    if (!canSendAnalytics()) return;
     try {
       if (ageRange) {
         await analytics().setUserProperty('age_range', ageRange);
