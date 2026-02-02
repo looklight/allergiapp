@@ -254,6 +254,7 @@ export default function DownloadableLanguagesSection({
 
           return (
             <Surface key={region} style={styles.regionCard} elevation={1}>
+              <View style={styles.regionCardContent}>
               <Pressable
                 onPress={() => toggleRegion(region)}
                 style={({ pressed }) => [
@@ -308,6 +309,7 @@ export default function DownloadableLanguagesSection({
                   })}
                 </>
               )}
+              </View>
             </Surface>
           );
         })}
@@ -427,7 +429,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 12,
     marginBottom: 12,
+  },
+  regionCardContent: {
     overflow: 'hidden',
+    borderRadius: 12,
   },
   regionHeader: {
     flexDirection: 'row',

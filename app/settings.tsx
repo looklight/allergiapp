@@ -234,6 +234,24 @@ export default function SettingsScreen() {
             </Pressable>
           </View>
 
+          {/* Why Free - Perché è gratuita */}
+          <Divider style={styles.sectionDivider} />
+          <Pressable
+            onPress={() => router.push('/about')}
+            style={({ pressed }) => [styles.sectionHeaderRow, pressed && styles.settingsRowPressed]}
+            accessibilityRole="button"
+          >
+            <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
+            <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.whyFree')}</Text>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={20}
+              color={theme.colors.textSecondary}
+              style={{ marginLeft: 'auto' }}
+            />
+          </Pressable>
+
+          {/* Reset App */}
           <Divider style={styles.sectionDivider} />
           <Pressable
             onPress={handleResetApp}
