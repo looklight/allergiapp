@@ -36,7 +36,7 @@ export default function AboutScreen() {
   }, []);
 
   const handleDonation = async () => {
-    const url = APP_CONFIG.DONATION_LINK;
+    const url = APP_CONFIG.SUPPORT_LINK;
     const canOpen = await Linking.canOpenURL(url);
 
     if (canOpen) {
