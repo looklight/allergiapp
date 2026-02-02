@@ -607,10 +607,8 @@ body {
 }
 
 .story-content {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 40px;
-    align-items: start;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .story-text {
@@ -690,43 +688,32 @@ body {
     order: -1;
 }
 
-.story-visual {
+.story-support {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    align-items: center;
+    text-align: center;
+    margin-top: 48px;
 }
 
-.story-card {
-    background: white;
-    padding: 20px 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-left: 3px solid var(--primary);
-    transition: all 0.3s ease;
+.support-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
 }
 
-.story-card:hover {
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.story-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-}
-
-.story-card h3 {
-    font-size: 18px;
-    margin-bottom: 8px;
+.support-title {
+    font-size: 24px;
+    margin-bottom: 16px;
     color: var(--text);
     font-weight: 700;
 }
 
-.story-card p {
-    font-size: 15px;
+.support-text {
+    font-size: 16px;
     color: var(--text-secondary);
-    line-height: 1.5;
-    margin-top: 16px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .donation-button {
@@ -1041,10 +1028,6 @@ body {
         padding: 60px 0;
     }
 
-    .story-content {
-        grid-template-columns: 1fr;
-        gap: 32px;
-    }
 
     .story-body {
         font-size: 16px;
@@ -1102,25 +1085,21 @@ body {
         min-width: 160px;
     }
 
-    .story-visual {
-        gap: 12px;
+    .story-support {
+        margin-top: 32px;
     }
 
-    .story-card {
-        padding: 16px 20px;
+    .support-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
     }
 
-    .story-icon {
-        font-size: 28px;
-        margin-bottom: 6px;
+    .support-title {
+        font-size: 20px;
+        margin-bottom: 12px;
     }
 
-    .story-card h3 {
-        font-size: 16px;
-        margin-bottom: 6px;
-    }
-
-    .story-card p {
+    .support-text {
         font-size: 14px;
     }
 
