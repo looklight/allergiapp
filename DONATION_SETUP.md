@@ -1,75 +1,32 @@
-# 🎁 Configurazione Donazioni - Ko-Fi
+# 🌐 Configurazione Link Supporto
 
-## Come configurare il tuo link Ko-Fi
+## Link attuale
 
-### 1. Crea un account Ko-Fi
+Il pulsante "Visita il sito" nell'app apre la pagina di supporto sul sito web:
+`https://allergiapp.com/support`
 
-1. Vai su [ko-fi.com](https://ko-fi.com/)
-2. Crea un account gratuito
-3. Scegli il tuo username (es. `allergiapp`, `martadimuro`, ecc.)
-4. Il tuo link sarà: `https://ko-fi.com/TUOUSERNAME`
+## Configurazione
 
-### 2. Configura il link nell'app
-
-Apri il file `constants/config.ts` e modifica:
+Il link è definito in `constants/config.ts`:
 
 ```typescript
 export const APP_CONFIG = {
-  DONATION_LINK: 'https://ko-fi.com/TUOUSERNAME', // ← Cambia qui
+  SUPPORT_LINK: 'https://allergiapp.com/support',
   // ... resto del file
 };
 ```
 
-### 3. Testa il funzionamento
+## 📍 Dove appare il pulsante
 
-1. Riavvia l'app
-2. Vai in **Impostazioni** → **Supporta**
-3. Oppure apri **Impostazioni** → **Perché è gratuita?** e scorri fino al pulsante in fondo
-
-Il pulsante aprirà il tuo profilo Ko-Fi nel browser.
+Il pulsante "Visita il sito" appare nella schermata **"Perché è gratuita?"** in fondo alla storia.
 
 ## 🎨 Personalizzazione
 
-### Cambiare il colore del pulsante
-
-In `app/about.tsx`, modifica lo style `donationButton`:
-
-```typescript
-donationButton: {
-  backgroundColor: '#FFDD00', // ← Colore giallo di Ko-Fi
-  // Puoi cambiare con: '#FF5F5F' (rosso), '#5E72E4' (blu), ecc.
-},
-```
-
 ### Traduzioni del pulsante
 
-Le traduzioni sono nei file `locales/*.json`:
-- **IT**: "Supporta il progetto"
-- **EN**: "Support the project"
-- **ES**: "Apoya el proyecto"
-- **DE**: "Unterstütze das Projekt"
-- **FR**: "Soutenir le projet"
-
-Puoi modificarle a piacimento.
-
-## 📍 Dove appare il pulsante
-
-Il pulsante "Supporta il progetto" appare in **2 posizioni**:
-
-1. **Schermata "Perché è gratuita?"** - Pulsante grande in fondo alla storia
-2. **Impostazioni** - Nella sezione "Informazioni", sotto "Perché è gratuita?"
-
-## 🔍 Analytics
-
-Quando un utente clicca sul pulsante nelle impostazioni, viene tracciato un evento:
-```
-donation_clicked (source: settings)
-```
-
-Puoi vedere questi eventi in Firebase Analytics.
-
-## ⚠️ Note Importanti
-
-- **Link attuale**: `https://ko-fi.com/allergiapp` è l'account ufficiale di AllergiApp
-- **Se vuoi usare il tuo account**, modifica `constants/config.ts` con il tuo username
-- Il pulsante funziona solo se l'utente ha un browser installato
+Le traduzioni sono nei file `locales/*.json` con la chiave `aboutStory.supportProject`:
+- **IT**: "Scopri di più"
+- **EN**: "Learn more"
+- **ES**: "Descubre más"
+- **DE**: "Mehr erfahren"
+- **FR**: "En savoir plus"

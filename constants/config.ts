@@ -3,7 +3,7 @@
  */
 
 export const APP_CONFIG = {
-  DONATION_LINK: 'https://allergiapp.com/#supporto',
+  SUPPORT_LINK: 'https://allergiapp.com/support',
   APP_STORE_URL: '',
   GOOGLE_PLAY_URL: '',
   INSTAGRAM_URL: '',
