@@ -105,6 +105,11 @@ export async function downloadLanguageTranslations(
   // Prepara i testi da tradurre
   const allergenNames = ALLERGENS.map(a => a.translations.en);
   const allergenDescriptions = ALLERGENS.map(a => ALLERGEN_IMAGES[a.id].description.en);
+
+  // Raccoglie i warning da tradurre (solo per allergeni che hanno un warning)
+  const allergensWithWarnings = ALLERGENS.filter(a => ALLERGEN_IMAGES[a.id].warning);
+  const allergenWarnings = allergensWithWarnings.map(a => ALLERGEN_IMAGES[a.id].warning!.en);
+
   const cardTexts = [
     CARD_TRANSLATIONS.en.header,
     CARD_TRANSLATIONS.en.subtitle,
@@ -112,7 +117,7 @@ export async function downloadLanguageTranslations(
     CARD_TRANSLATIONS.en.thanks,
   ];
 
-  const totalItems = allergenNames.length + allergenDescriptions.length + cardTexts.length;
+  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length;
   let completedItems = 0;
 
   // Traduce nomi allergeni
@@ -167,6 +172,33 @@ export async function downloadLanguageTranslations(
   );
   checkAborted();
 
+  // Traduce warning allergeni (solo quelli che hanno un warning)
+  let translatedWarnings: string[] = [];
+  if (allergenWarnings.length > 0) {
+    onProgress?.({
+      phase: 'descriptions',
+      current: allergenDescriptions.length,
+      total: allergenDescriptions.length + allergenWarnings.length,
+      percentage: Math.round((completedItems / totalItems) * 100),
+    });
+
+    translatedWarnings = await translateBatch(
+      allergenWarnings,
+      sourceLang,
+      targetLang,
+      (current) => {
+        completedItems = allergenNames.length + allergenDescriptions.length + current;
+        onProgress?.({
+          phase: 'descriptions',
+          current: allergenDescriptions.length + current,
+          total: allergenDescriptions.length + allergenWarnings.length,
+          percentage: Math.round((completedItems / totalItems) * 100),
+        });
+      }
+    );
+    checkAborted();
+  }
+
   // Traduce testi card
   onProgress?.({
     phase: 'cardTexts',
@@ -180,7 +212,7 @@ export async function downloadLanguageTranslations(
     sourceLang,
     targetLang,
     (current) => {
-      completedItems = allergenNames.length + allergenDescriptions.length + current;
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + current;
       onProgress?.({
         phase: 'cardTexts',
         current,
@@ -194,6 +226,7 @@ export async function downloadLanguageTranslations(
   // Costruisce l'oggetto risultato
   const allergens: Record<AllergenId, string> = {} as Record<AllergenId, string>;
   const descriptions: Record<AllergenId, string> = {} as Record<AllergenId, string>;
+  const warnings: Record<AllergenId, string> = {} as Record<AllergenId, string>;
 
   ALLERGENS.forEach((allergen, index) => {
     allergens[allergen.id] = translatedAllergenNames[index];
@@ -203,9 +236,17 @@ export async function downloadLanguageTranslations(
     descriptions[allergen.id] = isPartialTranslation(original, translated) ? original : translated;
   });
 
+  // Aggiungi i warning tradotti
+  allergensWithWarnings.forEach((allergen, index) => {
+    const original = allergenWarnings[index];
+    const translated = translatedWarnings[index];
+    warnings[allergen.id] = isPartialTranslation(original, translated) ? original : translated;
+  });
+
   return {
     allergens,
     descriptions,
+    warnings: Object.keys(warnings).length > 0 ? warnings : undefined,
     cardTexts: {
       header: translatedCardTexts[0],
       subtitle: translatedCardTexts[1],

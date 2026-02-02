@@ -110,6 +110,16 @@ export default function CardScreen() {
     return ALLERGEN_IMAGES[id]?.description[displayLanguage as Language] || ALLERGEN_IMAGES[id]?.description.en || '';
   };
 
+  const getAllergenWarning = (id: AllergenId): string | undefined => {
+    const images = ALLERGEN_IMAGES[id];
+    if (!images?.warning) return undefined;
+
+    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.warnings) {
+      return downloadedLanguageData.warnings[id] || images.warning.en;
+    }
+    return images.warning[displayLanguage as Language] || images.warning.en;
+  };
+
   // Stili dinamici basati sull'orientamento
   const dynamicStyles = useMemo(() => StyleSheet.create({
     content: {
@@ -334,9 +344,9 @@ export default function CardScreen() {
                           <Text style={dynamicStyles.breakdownDescription}>
                             {getAllergenDescription(id)}
                           </Text>
-                          {images.warning && (
+                          {getAllergenWarning(id) && (
                             <Text style={dynamicStyles.warningText}>
-                              {images.warning[displayLanguage as Language] || images.warning.en}
+                              {getAllergenWarning(id)}
                             </Text>
                           )}
                         </View>
