@@ -6,7 +6,7 @@
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "scheme": "allergiapp",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -16,7 +16,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.allergiapp",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -34,14 +35,7 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "@react-native-firebase/app",
-        {
-          "ios": {
-            "googleServicesFile": "./GoogleService-Info.plist"
-          }
-        }
-      ],
+      "@react-native-firebase/app",
       [
         "expo-tracking-transparency",
         {
