@@ -79,6 +79,7 @@
     "about": "Informazioni",
     "privacyContent": "AllergiApp memorizza le tue allergie localmente sul tuo dispositivo. L'app può raccogliere dati anonimi di utilizzo per migliorare il servizio. Puoi fornire opzionalmente alcune informazioni demografiche a fini statistici. Nessun dato personale identificabile viene raccolto o condiviso. Le traduzioni sono gestite tramite servizi esterni.",
     "readFullDocument": "Leggi documento completo",
-    "disclaimerContent": "IMPORTANTE: AllergiApp è uno strumento di comunicazione e NON sostituisce il parere medico.\n\nL'app non garantisce la completezza delle informazioni, l'assenza di contaminazioni crociate o la corretta comprensione da parte del personale.\n\nIn caso di allergie gravi: porta sempre i farmaci prescritti, informa sempre il personale verbalmente e non affidarti esclusivamente a questa app.\n\nL'utente si assume ogni responsabilità nell'uso dell'applicazione. Gli sviluppatori non sono responsabili per reazioni allergiche o danni derivanti dall'uso dell'app."
+    "disclaimerContent": "IMPORTANTE: AllergiApp è uno strumento di comunicazione e NON sostituisce il parere medico.\n\nL'app non garantisce la completezza delle informazioni, l'assenza di contaminazioni crociate o la corretta comprensione da parte del personale.\n\nIn caso di allergie gravi: porta sempre i farmaci prescritti, informa sempre il personale verbalmente e non affidarti esclusivamente a questa app.\n\nL'utente si assume ogni responsabilità nell'uso dell'applicazione. Gli sviluppatori non sono responsabili per reazioni allergiche o danni derivanti dall'uso dell'app.",
+    "whyFree": "Perché è gratuita?"
   }
 }

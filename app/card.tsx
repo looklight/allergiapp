@@ -228,6 +228,7 @@ export default function CardScreen() {
 
       <ScrollView contentContainerStyle={dynamicStyles.content}>
         <Surface style={styles.card} elevation={4}>
+          <View style={styles.cardContent}>
           {isLandscape ? (
             /* Layout Orizzontale - compatto e chiaro */
             <View style={styles.landscapeContainer}>
@@ -337,6 +338,7 @@ export default function CardScreen() {
               </View>
             </>
           )}
+          </View>
         </Surface>
 
         {/* Language Toggle - Secondary action */}
@@ -388,7 +390,10 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     backgroundColor: theme.colors.surface,
+  },
+  cardContent: {
     overflow: 'hidden',
+    borderRadius: 16,
   },
   landscapeContainer: {
     flex: 1,
