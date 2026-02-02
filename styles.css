@@ -697,15 +697,8 @@ body {
 }
 
 .support-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-}
-
-.support-title {
-    font-size: 24px;
-    margin-bottom: 16px;
-    color: var(--text);
-    font-weight: 700;
+    font-size: 64px;
+    margin-bottom: 24px;
 }
 
 .support-text {
@@ -1090,13 +1083,8 @@ body {
     }
 
     .support-icon {
-        font-size: 40px;
-        margin-bottom: 12px;
-    }
-
-    .support-title {
-        font-size: 20px;
-        margin-bottom: 12px;
+        font-size: 52px;
+        margin-bottom: 20px;
     }
 
     .support-text {
