@@ -80,6 +80,21 @@
     "privacyContent": "AllergiApp speichert deine Allergien lokal auf deinem Geraet. Die App kann anonyme Nutzungsdaten erfassen, um den Service zu verbessern. Du kannst optional demografische Informationen zu statistischen Zwecken angeben. Es werden keine personenbezogenen Daten erfasst oder weitergegeben. Uebersetzungen werden ueber externe Dienste verwaltet.",
     "readFullDocument": "Vollstaendiges Dokument lesen",
     "disclaimerContent": "WICHTIG: AllergiApp ist ein Kommunikationswerkzeug und ersetzt NICHT die aerztliche Beratung.\n\nDie App garantiert nicht die Vollstaendigkeit der Informationen, das Fehlen von Kreuzkontaminationen oder das korrekte Verstaendnis durch das Personal.\n\nBei schweren Allergien: Trage immer verschriebene Medikamente bei dir, informiere das Personal immer muendlich und verlasse dich nicht ausschliesslich auf diese App.\n\nDer Benutzer uebernimmt die volle Verantwortung fuer die Nutzung der Anwendung. Die Entwickler haften nicht fuer allergische Reaktionen oder Schaeden, die aus der Nutzung der App entstehen.",
-    "whyFree": "Warum ist sie kostenlos?"
+    "whyFree": "Warum ist sie kostenlos?",
+    "aboutSection": "Über & Unterstützung"
+  },
+  "aboutStory": {
+    "title": "Warum ist sie kostenlos?",
+    "intro": "Diese App entstand aus einer persönlichen Erfahrung. Als Person mit Nahrungsmittelallergien habe ich es immer geliebt zu reisen und neue Kulturen durch Essen zu entdecken.",
+    "paragraph1": "Während meiner Reisen habe ich gelernt, dass Sprachbarrieren ein kulinarisches Erlebnis in einen Moment der Angst verwandeln können. Ich begann, kleine Karten mit meinen Allergien von Hand zu schreiben, dann zu drucken, und entdeckte, wie wertvoll sie für die Kommunikation mit Kellnern und Köchen waren, die meine Sprache nicht sprachen.",
+    "paragraph2": "Eine einfache Geste—das Zeigen einer Karte—änderte alles. Das Restaurantpersonal schätzte die Klarheit, ich fühlte mich sicherer und konnte endlich die lokale Küche ohne Angst genießen.",
+    "paragraph3": "Ich habe AllergiApp geschaffen, um diese Lösung jedem zugänglich zu machen, der sie braucht. Sie ist kostenlos, weil Reisen und das Genießen der Küche der Welt ein Recht für alle sein sollte, kein Privileg.",
+    "paragraph4": "Wenn diese App auch nur einer Person hilft, während einer Reise eine zusätzliche Mahlzeit zu genießen, hat sie ihren Zweck erfüllt.",
+    "paragraph5": "Wenn du dieses Projekt schätzt und es unterstützen möchtest, hilft jeder Beitrag, die Entwicklungs- und Wartungskosten zu decken und sie kostenlos zu halten und im Laufe der Zeit zu verbessern. ❤️",
+    "quoteText": "Meine Mission? Die Welt zugänglicher machen und Menschen mit Allergien helfen, sie durch Essen zu erkunden—sicher und freudig.",
+    "quoteAuthor": "— Marta Di Muro",
+    "supportButton": "☕ Kauf mir einen Kaffee",
+    "supportButtonShort": "Unterstützen",
+    "supportProject": "Unterstütze das Projekt"
   }
 }
