@@ -79,23 +79,31 @@ if (backToTopButton) {
     });
 }
 
-// Allergens Carousel - Simple auto-scroll
+// Allergens Carousel - Simple auto-scroll with perfect loop
 const carousel = document.querySelector('.allergens-carousel');
 
 if (carousel) {
     let autoScrollInterval;
     let isUserInteracting = false;
+    let isResetting = false;
     const scrollSpeed = 1; // pixels per frame
-    const pauseDuration = 2000; // pause at end before restart
+    const pauseDuration = 1500; // pause at end before restart
 
     function autoScroll() {
-        if (!isUserInteracting) {
+        if (!isUserInteracting && !isResetting) {
             const maxScroll = carousel.scrollWidth - carousel.clientWidth;
 
-            if (carousel.scrollLeft >= maxScroll) {
-                // Reached the end, pause then restart
+            if (carousel.scrollLeft >= maxScroll - 1) {
+                // Reached the end, stop and restart
+                isResetting = true;
+                stopAutoScroll();
+
                 setTimeout(() => {
                     carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                    setTimeout(() => {
+                        isResetting = false;
+                        startAutoScroll();
+                    }, 800); // Wait for smooth scroll animation
                 }, pauseDuration);
             } else {
                 // Continue scrolling
@@ -105,11 +113,16 @@ if (carousel) {
     }
 
     function startAutoScroll() {
-        autoScrollInterval = setInterval(autoScroll, 30);
+        if (!autoScrollInterval) {
+            autoScrollInterval = setInterval(autoScroll, 30);
+        }
     }
 
     function stopAutoScroll() {
-        clearInterval(autoScrollInterval);
+        if (autoScrollInterval) {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
+        }
     }
 
     // Pause on user interaction
