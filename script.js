@@ -79,71 +79,15 @@ if (backToTopButton) {
     });
 }
 
-// Allergens Carousel - Simple auto-scroll with perfect loop
+// Allergens Carousel - Pause on hover
 const carousel = document.querySelector('.allergens-carousel');
 
 if (carousel) {
-    let autoScrollInterval;
-    let isUserInteracting = false;
-    let isResetting = false;
-    const scrollSpeed = 1; // pixels per frame
-    const pauseDuration = 1500; // pause at end before restart
-
-    function autoScroll() {
-        if (!isUserInteracting && !isResetting) {
-            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-
-            if (carousel.scrollLeft >= maxScroll - 1) {
-                // Reached the end, stop and restart
-                isResetting = true;
-                stopAutoScroll();
-
-                setTimeout(() => {
-                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
-                    setTimeout(() => {
-                        isResetting = false;
-                        startAutoScroll();
-                    }, 800); // Wait for smooth scroll animation
-                }, pauseDuration);
-            } else {
-                // Continue scrolling
-                carousel.scrollLeft += scrollSpeed;
-            }
-        }
-    }
-
-    function startAutoScroll() {
-        if (!autoScrollInterval) {
-            autoScrollInterval = setInterval(autoScroll, 30);
-        }
-    }
-
-    function stopAutoScroll() {
-        if (autoScrollInterval) {
-            clearInterval(autoScrollInterval);
-            autoScrollInterval = null;
-        }
-    }
-
-    // Pause on user interaction
     carousel.addEventListener('mouseenter', () => {
-        isUserInteracting = true;
+        carousel.style.animationPlayState = 'paused';
     });
 
     carousel.addEventListener('mouseleave', () => {
-        isUserInteracting = false;
+        carousel.style.animationPlayState = 'running';
     });
-
-    carousel.addEventListener('touchstart', () => {
-        isUserInteracting = true;
-    });
-
-    carousel.addEventListener('touchend', () => {
-        setTimeout(() => {
-            isUserInteracting = false;
-        }, 3000);
-    });
-
-    // Start auto scroll
-    startAutoScroll();
 }
