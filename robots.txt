@@ -1,0 +1,16 @@
+# AllergiApp - Robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://allergiapp.com/sitemap.xml
+
+# Disallow admin/config files if any
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /package.json
+Disallow: /package-lock.json
+
+# Crawl-delay (optional, helps prevent overload)
+Crawl-delay: 1
