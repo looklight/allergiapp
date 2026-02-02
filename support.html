@@ -30,7 +30,7 @@
         .back-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 80px 24px 0;
+            padding: 88px 24px 0;
         }
 
         .back-link {
@@ -56,34 +56,40 @@
         .support-page {
             max-width: 800px;
             margin: 0 auto;
-            padding: 24px 24px 80px;
+            padding: 40px 24px 80px;
             text-align: center;
         }
 
         .support-hero {
-            margin-bottom: 32px;
-        }
-
-        .support-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
+            margin-bottom: 40px;
         }
 
         .support-page h1 {
-            font-size: 42px;
-            margin-bottom: 16px;
+            font-size: 38px;
+            margin-bottom: 20px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .support-page h1 .heart {
+            font-size: 32px;
+            background: none;
+            -webkit-text-fill-color: initial;
         }
 
         .support-subtitle {
-            font-size: 20px;
+            font-size: 17px;
             color: var(--text-secondary);
             line-height: 1.6;
             max-width: 600px;
-            margin: 0 auto 32px;
+            margin: 0 auto;
         }
 
         .support-reasons {
@@ -190,11 +196,23 @@
         }
 
         @media (max-width: 600px) {
+            .back-container {
+                padding: 80px 20px 0;
+            }
+            .support-page {
+                padding: 32px 20px 60px;
+            }
             .support-page h1 {
-                font-size: 32px;
+                font-size: 28px;
+            }
+            .support-page h1 .heart {
+                font-size: 26px;
             }
             .support-subtitle {
                 font-size: 16px;
+            }
+            .support-hero {
+                margin-bottom: 32px;
             }
             .kofi-container {
                 padding: 16px;
@@ -223,8 +241,7 @@
 
     <div class="support-page">
         <div class="support-hero">
-            <div class="support-icon">❤️</div>
-            <h1 data-i18n="support.title">Supporta AllergiApp</h1>
+            <h1><span data-i18n="support.title">Supporta AllergiApp</span> <span class="heart">❤️</span></h1>
             <p class="support-subtitle" data-i18n="support.subtitle">
                 AllergiApp è gratuita per sempre e lo sarà sempre. Se ti è utile e vuoi aiutarci a mantenerla e migliorarla, ogni contributo fa la differenza.
             </p>
