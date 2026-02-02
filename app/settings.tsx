@@ -128,7 +128,6 @@ export default function SettingsScreen() {
     setRenderKey((k) => k + 1);
   };
 
-
   return (
     <View style={styles.container} key={renderKey}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -205,64 +204,57 @@ export default function SettingsScreen() {
           onDelete={handleDeleteLanguage}
         />
 
-        {/* Informazioni e Privacy */}
+        {/* Why Free - Perché è gratuita come header */}
         <Divider style={styles.sectionDivider} />
-        <View>
-          <View style={styles.sectionHeaderRow}>
-            <MaterialCommunityIcons name="information-outline" size={22} color={theme.colors.primary} />
-            <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.about')}</Text>
-          </View>
+        <Pressable
+          onPress={() => router.push('/about')}
+          style={({ pressed }) => [styles.sectionHeaderRow, pressed && styles.settingsRowPressed]}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.whyFree')}</Text>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={20}
+            color={theme.colors.textSecondary}
+            style={{ marginLeft: 'auto' }}
+          />
+        </Pressable>
 
-          {/* Privacy e Disclaimer sulla stessa riga */}
-          <View style={styles.twoColumnsRow}>
+        {/* Reset App */}
+        <Divider style={styles.sectionDivider} />
+        <Pressable
+          onPress={handleResetApp}
+          style={({ pressed }) => [styles.settingsRow, pressed && styles.settingsRowPressed]}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons name="restart" size={22} color={theme.colors.error} />
+          <View style={styles.settingsRowText}>
+            <Text style={[styles.settingsRowTitle, { color: theme.colors.error }]}>{i18n.t('settings.clearData')}</Text>
+          </View>
+        </Pressable>
+
+        {/* Footer Legal Links - Privacy e Disclaimer in basso */}
+        <View style={styles.legalFooter}>
+          <View style={styles.legalRow}>
             <Pressable
               onPress={() => setShowPrivacyDialog(true)}
-              style={({ pressed }) => [styles.halfButton, pressed && styles.settingsRowPressed]}
+              style={({ pressed }) => [styles.legalLink, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
             >
-              <Text style={styles.settingsRowTitle}>{i18n.t('settings.privacyPolicy')}</Text>
+              <Text style={styles.legalLinkText}>{i18n.t('settings.privacyPolicy')}</Text>
             </Pressable>
 
-            <View style={styles.columnDivider} />
+            <Text style={styles.legalSeparator}>•</Text>
 
             <Pressable
               onPress={() => setShowDisclaimerDialog(true)}
-              style={({ pressed }) => [styles.halfButton, pressed && styles.settingsRowPressed]}
+              style={({ pressed }) => [styles.legalLink, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
             >
-              <Text style={styles.settingsRowTitle}>{i18n.t('settings.disclaimer')}</Text>
+              <Text style={styles.legalLinkText}>{i18n.t('settings.disclaimer')}</Text>
             </Pressable>
           </View>
-
-          {/* Why Free - Perché è gratuita */}
-          <Divider style={styles.sectionDivider} />
-          <Pressable
-            onPress={() => router.push('/about')}
-            style={({ pressed }) => [styles.sectionHeaderRow, pressed && styles.settingsRowPressed]}
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
-            <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.whyFree')}</Text>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={20}
-              color={theme.colors.textSecondary}
-              style={{ marginLeft: 'auto' }}
-            />
-          </Pressable>
-
-          {/* Reset App */}
-          <Divider style={styles.sectionDivider} />
-          <Pressable
-            onPress={handleResetApp}
-            style={({ pressed }) => [styles.settingsRow, pressed && styles.settingsRowPressed]}
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons name="restart" size={22} color={theme.colors.error} />
-            <View style={styles.settingsRowText}>
-              <Text style={[styles.settingsRowTitle, { color: theme.colors.error }]}>{i18n.t('settings.clearData')}</Text>
-            </View>
-          </Pressable>
         </View>
 
         <View style={{ height: 32 }} />
@@ -601,5 +593,31 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  legalFooter: {
+    marginTop: 32,
+    paddingTop: 24,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.divider,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  legalLink: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  legalLinkText: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+  legalSeparator: {
+    fontSize: 13,
+    color: theme.colors.textDisabled,
   },
 });
