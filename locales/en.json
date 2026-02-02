@@ -72,6 +72,7 @@
     "region_other": "Other",
     "cancelDownload": "Cancel",
     "downloadCancelled": "Download cancelled",
+    "doNotLeaveScreen": "Don't leave this screen during download",
     "privacyPolicy": "Privacy",
     "privacyPolicyDesc": "How we handle your data",
     "disclaimer": "Disclaimer",

@@ -4,9 +4,13 @@ import { Stack, ErrorBoundary } from 'expo-router';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../utils/AppContext';
 import { Analytics } from '../utils/analytics';
+
+// Mantieni lo splash screen visibile finché non siamo pronti
+SplashScreen.preventAutoHideAsync();
 
 export { ErrorBoundary };
 
@@ -37,16 +41,20 @@ const errorStyles = StyleSheet.create({
   button: { minWidth: 120 },
 });
 
+
 function AppContent() {
   const { isReady } = useAppContext();
 
   useEffect(() => {
     if (isReady) {
+      // Nascondi lo splash screen quando l'app è pronta
+      SplashScreen.hideAsync();
       Analytics.logAppOpened();
     }
   }, [isReady]);
 
   if (!isReady) {
+    // Lo splash screen è ancora visibile, non serve mostrare nulla
     return null;
   }
 

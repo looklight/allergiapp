@@ -119,16 +119,21 @@ export default function DownloadableLanguagesSection({
 
     return (
       <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${downloadProgress.percentage}%` },
-            ]}
-          />
+        <View style={styles.progressBarRow}>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${downloadProgress.percentage}%` },
+              ]}
+            />
+          </View>
+          <Text style={styles.progressText}>
+            {Math.round(downloadProgress.percentage)}%
+          </Text>
         </View>
-        <Text style={styles.progressText}>
-          {Math.round(downloadProgress.percentage)}%
+        <Text style={styles.doNotLeaveText}>
+          {i18n.t('settings.doNotLeaveScreen')}
         </Text>
       </View>
     );
@@ -503,10 +508,12 @@ const styles = StyleSheet.create({
     height: 1,
   },
   progressContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  progressBarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
     gap: 8,
   },
   progressBar: {
@@ -525,6 +532,13 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     minWidth: 35,
     fontWeight: '600',
+  },
+  doNotLeaveText: {
+    fontSize: 11,
+    color: theme.colors.primary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 6,
   },
   noResults: {
     padding: 40,
