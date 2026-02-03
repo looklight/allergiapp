@@ -9,7 +9,7 @@ import { AppLanguage } from '../types';
 
 const SUPPORTED_LANGUAGES: AppLanguage[] = ['it', 'en', 'es', 'de', 'fr'];
 
-function getDeviceLanguage(): AppLanguage {
+export function getDeviceLanguage(): AppLanguage {
   try {
     const locales = getLocales();
     if (locales && locales.length > 0) {
@@ -21,7 +21,7 @@ function getDeviceLanguage(): AppLanguage {
   } catch {
     // Fallback silenzioso
   }
-  return 'it';
+  return 'en'; // Fallback inglese (più universale)
 }
 
 const i18n = new I18n({
@@ -34,7 +34,7 @@ const i18n = new I18n({
 
 i18n.locale = getDeviceLanguage();
 i18n.enableFallback = true;
-i18n.defaultLocale = 'it';
+i18n.defaultLocale = 'en';
 
 export const setAppLanguage = (language: AppLanguage) => {
   i18n.locale = language;

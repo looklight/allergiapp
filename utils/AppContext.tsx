@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { storage, AppData, CURRENT_LEGAL_VERSION } from './storage';
-import { setAppLanguage } from './i18n';
+import { setAppLanguage, getDeviceLanguage } from './i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 
 interface AppContextValue {
@@ -32,7 +32,7 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAllergens, setSelectedAllergensState] = useState<AllergenId[]>([]);
-  const [settings, setSettingsState] = useState<UserSettings>({ cardLanguage: 'en', appLanguage: 'it' });
+  const [settings, setSettingsState] = useState<UserSettings>({ cardLanguage: 'en', appLanguage: 'en' });
   const [downloadedLanguages, setDownloadedLanguagesState] = useState<Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>>({});
   const [legalConsent, setLegalConsentState] = useState<LegalConsent>({ acceptedAt: null, version: '' });
   const [trackingConsent, setTrackingConsentState] = useState<TrackingConsent>({ status: 'not-determined', askedAt: null });
@@ -110,12 +110,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearAll = useCallback(async () => {
-    const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: 'it' as AppLanguage };
+    const deviceLanguage = getDeviceLanguage();
+    const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage };
     setSelectedAllergensState([]);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
     // Note: we keep legal consent when clearing data (user already accepted terms)
-    setAppLanguage(defaultSettings.appLanguage);
+    setAppLanguage(deviceLanguage);
     await storage.clearAll();
   }, []);
 
