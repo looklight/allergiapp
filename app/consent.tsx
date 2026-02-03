@@ -165,10 +165,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   disclaimer: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: 12,
+    color: '#999999',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 17,
     marginBottom: 20,
     paddingHorizontal: 8,
   },
