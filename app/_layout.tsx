@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../utils/AppContext';
 import { Analytics } from '../utils/analytics';
+import { RemoteConfig } from '../utils/remoteConfig';
 import ConsentModal from './consent';
 
 const splashLogo = require('../assets/splash-icon.png');
@@ -66,6 +67,9 @@ function AppContent() {
     if (isReady) {
       // Nascondi lo splash screen quando l'app è pronta
       SplashScreen.hideAsync();
+
+      // Initialize Remote Config (fetches banner configuration)
+      RemoteConfig.initialize();
 
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
