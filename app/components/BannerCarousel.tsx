@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, ReactNode } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking } from 'react-native';
+import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import i18n from '../../utils/i18n';
 import { theme } from '../../constants/theme';
 import { Analytics } from '../../utils/analytics';
+import { RemoteConfig } from '../../utils/remoteConfig';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,6 +26,12 @@ export interface BannerItem {
   adUrl?: string;
   adImage?: string;
   adButtonText?: string;
+  // Layout and styling
+  layout?: 'default' | 'full_image';
+  backgroundColor?: string;
+  textColor?: string;
+  // Display duration in milliseconds (overrides default)
+  displayDuration?: number;
   // Per custom render
   customContent?: ReactNode;
 }
@@ -36,15 +43,15 @@ interface BannerCarouselProps {
    */
   extraBanners?: BannerItem[];
   /**
-   * Intervallo di auto-scroll in millisecondi
-   * @default 6000
+   * Intervallo di auto-scroll di default in millisecondi
+   * @default 3000
    */
-  autoScrollInterval?: number;
+  defaultScrollInterval?: number;
 }
 
 export default function BannerCarousel({
   extraBanners = [],
-  autoScrollInterval = 6000,
+  defaultScrollInterval = 3000,
 }: BannerCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -76,52 +83,68 @@ export default function BannerCarousel({
     },
   ];
 
+  // Get promotional banner from Remote Config (if enabled)
+  const promoBanner = RemoteConfig.getPromoBanner();
+
+  // Combine extra banners with Remote Config banner
+  const allExtraBanners: BannerItem[] = [
+    ...extraBanners,
+    ...(promoBanner ? [promoBanner] : []),
+  ];
+
   // Combina banner informativi con extra banners (ads, referral, etc.)
   // Gli ads vengono inseriti strategicamente ogni 2 banner informativi
   const allBanners: BannerItem[] = [];
   infoBanners.forEach((banner, index) => {
     allBanners.push(banner);
     // Inserisci un ad ogni 2 banner informativi
-    if (index === 1 && extraBanners.length > 0) {
-      allBanners.push(extraBanners[0]);
+    if (index === 1 && allExtraBanners.length > 0) {
+      allBanners.push(allExtraBanners[0]);
     }
   });
   // Aggiungi eventuali ads rimanenti alla fine
-  if (extraBanners.length > 1) {
-    allBanners.push(...extraBanners.slice(1));
+  if (allExtraBanners.length > 1) {
+    allBanners.push(...allExtraBanners.slice(1));
   }
+
+  // Get display duration for current banner
+  const getCurrentDuration = (index: number) => {
+    const banner = allBanners[index];
+    return banner?.displayDuration || defaultScrollInterval;
+  };
+
+  // Schedule next auto-scroll based on current banner's duration
+  const scheduleNextScroll = (currentIndex: number) => {
+    if (autoScrollTimer.current) {
+      clearTimeout(autoScrollTimer.current);
+    }
+    const duration = getCurrentDuration(currentIndex);
+    autoScrollTimer.current = setTimeout(() => {
+      const nextIndex = (currentIndex + 1) % allBanners.length;
+      try {
+        flatListRef.current?.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+      } catch (error) {
+        // Ignora errori se il FlatList non è ancora pronto
+      }
+      setActiveIndex(nextIndex);
+      scheduleNextScroll(nextIndex);
+    }, duration);
+  };
 
   // Auto-scroll effect
   useEffect(() => {
     if (allBanners.length > 1) {
-      startAutoScroll();
+      scheduleNextScroll(activeIndex);
     }
     return () => {
       if (autoScrollTimer.current) {
-        clearInterval(autoScrollTimer.current);
+        clearTimeout(autoScrollTimer.current);
       }
     };
   }, [allBanners.length]);
-
-  const startAutoScroll = () => {
-    if (autoScrollTimer.current) {
-      clearInterval(autoScrollTimer.current);
-    }
-    autoScrollTimer.current = setInterval(() => {
-      setActiveIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % allBanners.length;
-        try {
-          flatListRef.current?.scrollToIndex({
-            index: nextIndex,
-            animated: true,
-          });
-        } catch (error) {
-          // Ignora errori se il FlatList non è ancora pronto
-        }
-        return nextIndex;
-      });
-    }, autoScrollInterval);
-  };
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
@@ -150,12 +173,12 @@ export default function BannerCarousel({
 
   const onScrollBeginDrag = () => {
     if (autoScrollTimer.current) {
-      clearInterval(autoScrollTimer.current);
+      clearTimeout(autoScrollTimer.current);
     }
   };
 
   const onScrollEndDrag = () => {
-    startAutoScroll();
+    scheduleNextScroll(activeIndex);
   };
 
   const onScrollToIndexFailed = (info: any) => {
@@ -199,20 +222,49 @@ export default function BannerCarousel({
 
     // Ad/Referral banner
     if (item.type === 'ad') {
+      // Full image layout - image fills entire banner (ideal for Canva designs)
+      if (item.layout === 'full_image' && item.adImage) {
+        return (
+          <TouchableOpacity
+            style={styles.fullImageBanner}
+            onPress={() => handleAdPress(item)}
+            activeOpacity={0.9}
+          >
+            <Image
+              source={{ uri: item.adImage }}
+              style={styles.fullImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+        );
+      }
+
+      // Default layout - icon/image on left, text on right
+      const customBgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {};
+      const customTextStyle = item.textColor ? { color: item.textColor } : {};
+
       return (
         <TouchableOpacity
-          style={styles.adBannerItem}
+          style={[styles.adBannerItem, customBgStyle]}
           onPress={() => handleAdPress(item)}
           activeOpacity={0.8}
         >
-          <Text style={styles.adIcon}>{item.icon || '🎁'}</Text>
+          {item.adImage ? (
+            <Image
+              source={{ uri: item.adImage }}
+              style={styles.adImageIcon}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={styles.adIcon}>{item.icon || '🎁'}</Text>
+          )}
           <View style={styles.bannerTextContainer}>
-            <Text style={styles.adTitle}>{item.title}</Text>
+            <Text style={[styles.adTitle, customTextStyle]}>{item.title}</Text>
             {item.subtitle && (
-              <Text style={styles.adSubtitle}>{item.subtitle}</Text>
+              <Text style={[styles.adSubtitle, customTextStyle, { opacity: 0.8 }]}>{item.subtitle}</Text>
             )}
             {item.adButtonText && (
-              <Text style={styles.adButton}>{item.adButtonText}</Text>
+              <Text style={[styles.adButton, customTextStyle]}>{item.adButtonText}</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -288,12 +340,28 @@ const styles = StyleSheet.create({
     gap: 16,
     backgroundColor: `${theme.colors.primary}08`, // Light tint for ads
   },
+  fullImageBanner: {
+    width: SCREEN_WIDTH - 32,
+    height: 140,
+    borderRadius: 0,
+    overflow: 'hidden',
+  },
+  fullImage: {
+    width: '100%',
+    height: '100%',
+  },
   bannerIcon: {
     fontSize: 48,
     marginRight: 16,
   },
   adIcon: {
     fontSize: 48,
+    marginRight: 16,
+  },
+  adImageIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     marginRight: 16,
   },
   bannerTextContainer: {
