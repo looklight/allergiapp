@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getLocales } from 'expo-localization';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 
 const STORAGE_KEYS = {
@@ -11,9 +12,28 @@ const STORAGE_KEYS = {
 
 export const CURRENT_LEGAL_VERSION = '1.0';
 
+// Lingue supportate per l'interfaccia dell'app
+const SUPPORTED_APP_LANGUAGES: AppLanguage[] = ['it', 'en', 'es', 'de', 'fr'];
+
+// Rileva la lingua del dispositivo
+function getDeviceLanguage(): AppLanguage {
+  try {
+    const locales = getLocales();
+    if (locales && locales.length > 0) {
+      const deviceLang = locales[0].languageCode;
+      if (deviceLang && SUPPORTED_APP_LANGUAGES.includes(deviceLang as AppLanguage)) {
+        return deviceLang as AppLanguage;
+      }
+    }
+  } catch {
+    // Fallback silenzioso
+  }
+  return 'en'; // Fallback inglese (più universale)
+}
+
 const DEFAULT_SETTINGS: UserSettings = {
   cardLanguage: 'en',
-  appLanguage: 'it',
+  appLanguage: getDeviceLanguage(),
 };
 
 export interface AppData {
