@@ -169,6 +169,7 @@ export interface DownloadedLanguageData {
     thanks: string;
     tapToSee: string;
     showIn: string;
+    examples?: string;
   };
   downloadedAt: string;
 }
