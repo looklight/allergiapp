@@ -17,10 +17,30 @@ function withModularHeaders(config) {
       if (!podfileContent.includes("pod 'GoogleUtilities', :modular_headers => true")) {
         podfileContent = podfileContent.replace(
           /(use_expo_modules!)/,
-          `$1\n\n  # Fix Firebase modular headers\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'FirebaseInstallations', :modular_headers => true`
+          `$1\n\n  # Fix Firebase modular headers\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'FirebaseInstallations', :modular_headers => true\n  pod 'FirebaseABTesting', :modular_headers => true\n  pod 'FirebaseRemoteConfig', :modular_headers => true\n  pod 'FirebaseSharedSwift', :modular_headers => true\n  pod 'FirebaseRemoteConfigInterop', :modular_headers => true`
         );
-        fs.writeFileSync(podfilePath, podfileContent);
       }
+
+      // Fix deployment target warnings for pods with outdated targets
+      if (!podfileContent.includes("IPHONEOS_DEPLOYMENT_TARGET")) {
+        const deploymentTargetFix = `
+    # Fix deployment target warnings for pods with outdated targets
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.1
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        end
+      end
+    end
+  end
+end`;
+        podfileContent = podfileContent.replace(
+          /(\s*end\s*\nend\s*)$/m,
+          deploymentTargetFix
+        );
+      }
+
+      fs.writeFileSync(podfilePath, podfileContent);
 
       return config;
     },
