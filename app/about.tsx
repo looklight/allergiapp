@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Pressable, Image, Text as RNText } from 'react-native';
 import { Text } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -10,20 +10,13 @@ import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { APP_CONFIG } from '../constants/config';
 
-// Componente per la foto dell'autrice
-// Per aggiungere la foto reale:
-// 1. Salvare l'immagine come assets/author-photo.png (consigliato: 72x72 px o più, formato quadrato)
-// 2. Decommentare la riga con Image e commentare/rimuovere il View placeholder
-function AuthorPhoto() {
-  // Quando hai la foto, usa questa riga:
-  // return <Image source={require('../assets/author-photo.png')} style={styles.authorImage} />;
+const INSTAGRAM_URL = 'https://www.instagram.com/martadimuro_';
+const YOUTUBE_URL = 'https://www.youtube.com/@martadimuro/';
+const TIKTOK_URL = 'https://www.tiktok.com/@martadimuro';
+const WEBSITE_URL = 'https://www.martadimuro.com';
 
-  // Placeholder temporaneo
-  return (
-    <View style={[styles.authorImage, styles.authorPlaceholder]}>
-      <MaterialCommunityIcons name="account" size={20} color={theme.colors.textDisabled} />
-    </View>
-  );
+function AuthorPhoto() {
+  return <Image source={require('../assets/profile_pic.jpg')} style={styles.authorImage} />;
 }
 
 export default function AboutScreen() {
@@ -35,14 +28,14 @@ export default function AboutScreen() {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
   }, []);
 
-  const handleDonation = async () => {
+  const handleOpenProject = async () => {
     const url = APP_CONFIG.SUPPORT_LINK;
     const canOpen = await Linking.canOpenURL(url);
 
     if (canOpen) {
       await Linking.openURL(url);
     } else {
-      Alert.alert('Error', 'Cannot open donation link');
+      Alert.alert('Error', 'Cannot open link');
     }
   };
 
@@ -94,16 +87,16 @@ export default function AboutScreen() {
         {/* Paragraph 5 */}
         <Text style={styles.paragraph}>{i18n.t('aboutStory.paragraph5')}</Text>
 
-        {/* Donation Button */}
+        {/* Project Page Button */}
         <Pressable
-          onPress={handleDonation}
+          onPress={handleOpenProject}
           style={({ pressed }) => [
-            styles.donationButton,
+            styles.projectButton,
             pressed && { opacity: 0.8 }
           ]}
         >
-          <MaterialCommunityIcons name="coffee" size={18} color="#000000" />
-          <Text style={styles.donationButtonLabel}>{i18n.t('aboutStory.supportProject')}</Text>
+          <MaterialCommunityIcons name="heart-outline" size={18} color="#000000" />
+          <Text style={styles.projectButtonLabel}>{i18n.t('aboutStory.supportProject')}</Text>
           <MaterialCommunityIcons name="open-in-new" size={14} color="#000000" />
         </Pressable>
 
@@ -112,11 +105,49 @@ export default function AboutScreen() {
           <View style={styles.quoteBar} />
           <View style={styles.quoteContent}>
             <RNText style={styles.quoteText}>{i18n.t('aboutStory.quoteText')}</RNText>
-            <View style={styles.authorRow}>
-              {/* TODO: Sostituire author-photo.png con la foto reale dell'autrice */}
+            <Pressable
+              onPress={() => Linking.openURL(INSTAGRAM_URL)}
+              style={({ pressed }) => [styles.authorRow, pressed && { opacity: 0.6 }]}
+            >
               <AuthorPhoto />
               <Text style={styles.quoteAuthor}>{i18n.t('aboutStory.quoteAuthor')}</Text>
-            </View>
+              <MaterialCommunityIcons name="open-in-new" size={12} color={theme.colors.textSecondary} />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Social Links */}
+        <View style={styles.socialSection}>
+          <Text style={styles.socialTitle}>{i18n.t('aboutStory.followMe')}</Text>
+          <View style={styles.socialRow}>
+            <Pressable
+              onPress={() => Linking.openURL(INSTAGRAM_URL)}
+              style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
+            >
+              <MaterialCommunityIcons name="instagram" size={22} color="#E1306C" />
+              <Text style={styles.socialLabel}>Instagram</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => Linking.openURL(YOUTUBE_URL)}
+              style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
+            >
+              <MaterialCommunityIcons name="youtube" size={22} color="#FF0000" />
+              <Text style={styles.socialLabel}>YouTube</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => Linking.openURL(TIKTOK_URL)}
+              style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
+            >
+              <Ionicons name="logo-tiktok" size={20} color="#000000" />
+              <Text style={styles.socialLabel}>TikTok</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => Linking.openURL(WEBSITE_URL)}
+              style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
+            >
+              <MaterialCommunityIcons name="web" size={22} color={theme.colors.primary} />
+              <Text style={styles.socialLabel}>Sito Web</Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -186,11 +217,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: theme.colors.border,
-  },
-  authorPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   quoteBar: {
     width: 4,
@@ -214,7 +240,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
-  donationButton: {
+  projectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -227,10 +253,40 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignSelf: 'center',
   },
-  donationButtonLabel: {
+  projectButtonLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#000000',
+  },
+  socialSection: {
+    marginTop: 8,
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  socialTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    marginBottom: 12,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  socialButton: {
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    minWidth: 70,
+  },
+  socialLabel: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
   },
   scrollGradient: {
     position: 'absolute',
