@@ -3,7 +3,7 @@
  */
 
 export const APP_CONFIG = {
-  SUPPORT_LINK: 'https://ko-fi.com/allergiapp',
+  SUPPORT_LINK: 'https://www.allergiapp.com',
   APP_STORE_URL: '',
   GOOGLE_PLAY_URL: '',
   INSTAGRAM_URL: '',
