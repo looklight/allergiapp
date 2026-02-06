@@ -25,7 +25,9 @@
       "package": "com.allergiapp",
       "edgeToEdgeEnabled": true,
       "versionCode": 1,
-      "permissions": [],
+      "permissions": [
+        "com.google.android.gms.permission.AD_ID"
+      ],
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -42,6 +44,13 @@
         }
       ],
       "./plugins/withModularHeaders"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6b6299aa-f37d-4e8d-9c33-c438a02060f8"
+      }
+    },
+    "owner": "looklight"
   }
 }
