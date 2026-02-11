@@ -54,6 +54,9 @@
         "projectId": "6b6299aa-f37d-4e8d-9c33-c438a02060f8"
       }
     },
-    "owner": "looklight"
+    "owner": "looklight",
+    "cli": {
+      "appVersionSource": "local"
+    }
   }
 }
