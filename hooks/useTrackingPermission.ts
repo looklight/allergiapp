@@ -25,7 +25,7 @@ export function useTrackingPermission() {
   useEffect(() => {
     const checkStatus = async () => {
       if (Platform.OS !== 'ios') {
-        // On Android, we don't need ATT - treat as authorized
+        // On Android/Web, we don't need ATT - treat as authorized
         setStatus('authorized');
         setIsLoading(false);
         return;
@@ -47,7 +47,7 @@ export function useTrackingPermission() {
 
   const requestPermission = useCallback(async (): Promise<TrackingConsent> => {
     if (Platform.OS !== 'ios') {
-      // On Android, we don't need ATT
+      // On Android/Web, we don't need ATT
       return {
         status: 'authorized',
         askedAt: new Date().toISOString(),

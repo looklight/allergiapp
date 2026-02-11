@@ -84,9 +84,6 @@ export default function AboutScreen() {
         {/* Paragraph 4 */}
         <Text style={styles.paragraph}>{i18n.t('aboutStory.paragraph4')}</Text>
 
-        {/* Paragraph 5 */}
-        <Text style={styles.paragraph}>{i18n.t('aboutStory.paragraph5')}</Text>
-
         {/* Project Page Button */}
         <Pressable
           onPress={handleOpenProject}

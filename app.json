@@ -40,7 +40,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "AllergiApp collects anonymous usage statistics to improve the app experience. This data is not linked to your identity."
+          "userTrackingPermission": "AllergiApp uses this permission to collect anonymous analytics data (such as which allergens are searched most frequently and which languages are most commonly translated) to improve app features and user experience. This data is not linked to your personal identity."
         }
       ],
       "./plugins/withModularHeaders"
