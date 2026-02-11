@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Pressable, Image, Text as RNText } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Pressable, Image, Text as RNText } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -28,15 +28,8 @@ export default function AboutScreen() {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
   }, []);
 
-  const handleOpenProject = async () => {
-    const url = APP_CONFIG.SUPPORT_LINK;
-    const canOpen = await Linking.canOpenURL(url);
-
-    if (canOpen) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('Error', 'Cannot open link');
-    }
+  const handleOpenWebsite = () => {
+    Linking.openURL(APP_CONFIG.SUPPORT_LINK);
   };
 
   const handleScroll = (event: any) => {
@@ -84,16 +77,16 @@ export default function AboutScreen() {
         {/* Paragraph 4 */}
         <Text style={styles.paragraph}>{i18n.t('aboutStory.paragraph4')}</Text>
 
-        {/* Project Page Button */}
+        {/* Learn More Button */}
         <Pressable
-          onPress={handleOpenProject}
+          onPress={handleOpenWebsite}
           style={({ pressed }) => [
-            styles.projectButton,
+            styles.websiteButton,
             pressed && { opacity: 0.8 }
           ]}
         >
-          <MaterialCommunityIcons name="heart-outline" size={18} color="#000000" />
-          <Text style={styles.projectButtonLabel}>{i18n.t('aboutStory.supportProject')}</Text>
+          <MaterialCommunityIcons name="information-outline" size={18} color="#000000" />
+          <Text style={styles.websiteButtonLabel}>{i18n.t('aboutStory.learnMore')}</Text>
           <MaterialCommunityIcons name="open-in-new" size={14} color="#000000" />
         </Pressable>
 
@@ -237,7 +230,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
-  projectButton: {
+  websiteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -250,7 +243,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignSelf: 'center',
   },
-  projectButtonLabel: {
+  websiteButtonLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#000000',

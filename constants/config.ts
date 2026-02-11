@@ -3,7 +3,7 @@
  */
 
 export const APP_CONFIG = {
-  SUPPORT_LINK: 'https://www.allergiapp.com/contacts',
+  SUPPORT_LINK: 'https://allergiapp.com/contacts',
   APP_STORE_URL: '',
   GOOGLE_PLAY_URL: '',
   INSTAGRAM_URL: '',
