@@ -15,7 +15,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.allergiapp",
       "buildNumber": "3",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
