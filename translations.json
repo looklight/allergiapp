@@ -117,13 +117,11 @@
       "instagramButton": "@martadimuro_",
       "faqTitle": "Domande Frequenti",
       "faq1Question": "Come posso segnalare un bug?",
-      "faq1Answer": "Scrivimi su Instagram descrivendo il problema riscontrato. Se possibile, invia uno screenshot e indica quale dispositivo stai usando.",
+      "faq1Answer": "Scrivimi descrivendo il problema riscontrato. Se possibile, includi uno screenshot e indica quale dispositivo stai usando.",
       "faq2Question": "Posso richiedere una nuova funzionalità?",
-      "faq2Answer": "Certo! Sono sempre aperta a nuove idee. Scrivimi su Instagram con la tua proposta e valuterò di implementarla in futuro.",
+      "faq2Answer": "Certo! Sono sempre aperta a nuove idee. Scrivimi con la tua proposta e valuterò di implementarla in futuro.",
       "faq3Question": "Posso richiedere l'aggiunta di una lingua?",
-      "faq3Answer": "Sì! Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla.",
-      "faq4Question": "L'app non funziona, cosa faccio?",
-      "faq4Answer": "Prima prova a riavviare l'app. Se il problema persiste, scrivimi su Instagram con i dettagli del problema e ti aiuterò a risolverlo."
+      "faq3Answer": "Sì! Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla."
     },
     "support": {
       "backHome": "Torna alla home",
@@ -279,13 +277,11 @@
       "instagramButton": "@martadimuro_",
       "faqTitle": "Frequently Asked Questions",
       "faq1Question": "How can I report a bug?",
-      "faq1Answer": "Write to me on Instagram describing the issue you encountered. If possible, send a screenshot and indicate which device you're using.",
+      "faq1Answer": "Write to me describing the issue you encountered. If possible, include a screenshot and indicate which device you're using.",
       "faq2Question": "Can I request a new feature?",
-      "faq2Answer": "Of course! I'm always open to new ideas. Write to me on Instagram with your proposal and I'll consider implementing it in the future.",
+      "faq2Answer": "Of course! I'm always open to new ideas. Write to me with your proposal and I'll consider implementing it in the future.",
       "faq3Question": "Can I request adding a language?",
-      "faq3Answer": "Yes! If you need a specific language that isn't available yet, write to me and I'll do my best to add it.",
-      "faq4Question": "The app isn't working, what do I do?",
-      "faq4Answer": "First try restarting the app. If the problem persists, write to me on Instagram with details about the issue and I'll help you resolve it."
+      "faq3Answer": "Yes! If you need a specific language that isn't available yet, write to me and I'll do my best to add it."
     },
     "support": {
       "backHome": "Back to home",
