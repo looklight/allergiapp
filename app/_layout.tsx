@@ -14,7 +14,7 @@ import ConsentModal from './consent';
 const splashLogo = require('../assets/splash-icon.png');
 
 // Mantieni lo splash screen visibile finché non siamo pronti
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export { ErrorBoundary };
 
