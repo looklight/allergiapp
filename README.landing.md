@@ -15,10 +15,7 @@ landing/
 ├── i18n-site.js        # Sistema traduzioni IT/EN
 ├── translations.json   # Testi tradotti per tutte le pagine
 ├── vercel.json         # Configurazione deploy Vercel
-├── images/             # Immagini del sito
-├── app/                # ⚠️ File app mobile (non usati dal sito) - da rimuovere
-├── hooks/              # ⚠️ File app mobile (non usati dal sito) - da rimuovere
-└── assets/             # ⚠️ File app mobile (non usati dal sito) - da rimuovere
+└── images/             # Immagini del sito
 ```
 
 ## 🚀 Deployment su Vercel
