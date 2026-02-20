@@ -70,7 +70,8 @@
       "quoteAuthor": "Marta Di Muro",
       "supportTitle": "Supporta il progetto",
       "donateButton": "Supporta il progetto",
-      "supportText": "AllergiApp è gratuita per sempre. Puoi contribuire con una donazione per aiutare lo sviluppo e il mantenimento dell'app"
+      "supportText": "AllergiApp è gratuita per sempre. Puoi contribuire con una donazione per aiutare lo sviluppo e il mantenimento dell'app",
+      "learnMoreButton": "Scopri di più"
     },
     "allergens": {
       "title": "Allergeni supportati",
@@ -92,7 +93,8 @@
     "downloadSection": {
       "title": "Scarica AllergiApp",
       "subtitle": "Disponibile gratuitamente su App Store e Google Play",
-      "backToTop": "Torna su"
+      "backToTop": "Torna su",
+      "comingSoon": "In arrivo su"
     },
     "footer": {
       "tagline": "Viaggia sicuro, comunica ovunque.",
@@ -103,17 +105,33 @@
     },
     "contacts": {
       "backHome": "Torna alla home",
-      "title": "Hai bisogno di aiuto?",
-      "subtitle": "Sono qui per aiutarti! Compila il form qui sotto o scrivimi su Instagram.",
+      "storyQuote": "La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo attraverso il cibo, in sicurezza e con gioia.",
+      "storySummary": "AllergiApp nasce dalla mia esperienza personale con le allergie alimentari. Ho creato quest'app perché credo che viaggiare e gustare il cibo del mondo sia un diritto di tutti. Per questo è gratuita e lo sarà sempre.",
+      "socialCta": "I miei canali social",
+      "supportTitle": "Supporta il progetto",
+      "supportSubtitle": "AllergiApp è gratuita per sempre. Ecco come puoi aiutare a farla crescere:",
+      "support1Title": "Lascia una recensione",
+      "support1Text": "Una recensione sullo store aiuta altri viaggiatori a trovarci",
+      "support2Title": "Condividi l'app",
+      "support2Text": "Consigliala a chi viaggia con allergie alimentari",
+      "support3Title": "Suggerisci idee",
+      "support3Text": "Nuove lingue, funzionalità o miglioramenti: ogni idea conta",
+      "support4Title": "Fai una donazione",
+      "support4Text": "Ogni contributo aiuta a coprire i costi di sviluppo e a mantenere l'app gratuita",
+      "supportThanks": "Ogni contributo, grande o piccolo, mi aiuta a continuare questo progetto nato dalla passione per i viaggi e dal desiderio di rendere il mondo più accessibile per chi vive con allergie alimentari.",
+      "supportSignature": "— Marta",
+      "contactTitle": "Hai un'idea o bisogno di aiuto?",
+      "contactSubtitle": "Che sia un suggerimento, una segnalazione o semplicemente per salutarmi, scrivimi!",
+      "successTitle": "Messaggio inviato!",
+      "successText": "Grazie per avermi contattato. Ti risponderò il prima possibile.",
       "formTitle": "Inviami un messaggio",
-      "formText": "Compila il form e ti risponderemo il prima possibile.",
       "formName": "Nome *",
       "formEmail": "Email *",
       "formMessage": "Messaggio *",
       "formSubmit": "Invia messaggio",
       "orText": "oppure",
       "instagramTitle": "💬 Scrivimi su Instagram",
-      "instagramText": "Preferisci Instagram? Scrivimi in DM e ti risponderò!",
+      "instagramText": "Preferisci Instagram? Scrivimi in DM!",
       "instagramButton": "@martadimuro_",
       "faqTitle": "Domande Frequenti",
       "faq1Question": "Come posso segnalare un bug?",
@@ -121,7 +139,7 @@
       "faq2Question": "Posso richiedere una nuova funzionalità?",
       "faq2Answer": "Certo! Sono sempre aperta a nuove idee. Scrivimi con la tua proposta e valuterò di implementarla in futuro.",
       "faq3Question": "Posso richiedere l'aggiunta di una lingua?",
-      "faq3Answer": "Sì! Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla."
+      "faq3Answer": "L'app include già diverse lingue di default e molte altre scaricabili per l'uso offline. Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla."
     },
     "support": {
       "backHome": "Torna alla home",
@@ -230,7 +248,8 @@
       "quoteAuthor": "Marta Di Muro",
       "supportTitle": "Support the project",
       "donateButton": "Support the project",
-      "supportText": "AllergiApp is free forever. You can donate to help with the app's development and maintenance"
+      "supportText": "AllergiApp is free forever. You can donate to help with the app's development and maintenance",
+      "learnMoreButton": "Learn more"
     },
     "allergens": {
       "title": "Supported allergens",
@@ -252,7 +271,8 @@
     "downloadSection": {
       "title": "Download AllergiApp",
       "subtitle": "Available for free on App Store and Google Play",
-      "backToTop": "Back to top"
+      "backToTop": "Back to top",
+      "comingSoon": "Coming soon on"
     },
     "footer": {
       "tagline": "Travel safe, communicate anywhere.",
@@ -263,17 +283,33 @@
     },
     "contacts": {
       "backHome": "Back to home",
-      "title": "Need help?",
-      "subtitle": "I'm here to help! Fill out the form below or write to me on Instagram.",
+      "storyQuote": "My mission? Make the world more accessible and help people with allergies explore it through food—safely and joyfully.",
+      "storySummary": "AllergiApp was born from my personal experience with food allergies. I created this app because I believe traveling and enjoying the world's food should be a right for everyone. That's why it's free and always will be.",
+      "socialCta": "My social channels",
+      "supportTitle": "Support the project",
+      "supportSubtitle": "AllergiApp is free forever. Here's how you can help it grow:",
+      "support1Title": "Leave a review",
+      "support1Text": "A store review helps other travelers find us",
+      "support2Title": "Share the app",
+      "support2Text": "Recommend it to anyone who travels with food allergies",
+      "support3Title": "Suggest ideas",
+      "support3Text": "New languages, features, or improvements: every idea counts",
+      "support4Title": "Make a donation",
+      "support4Text": "Every contribution helps cover development costs and keep the app free",
+      "supportThanks": "Every contribution, big or small, helps me continue this project born from a passion for travel and the desire to make the world more accessible for those living with food allergies.",
+      "supportSignature": "— Marta",
+      "contactTitle": "Have an idea or need help?",
+      "contactSubtitle": "Whether it's a suggestion, a bug report, or just to say hello, write to me!",
+      "successTitle": "Message sent!",
+      "successText": "Thank you for reaching out. I'll get back to you as soon as possible.",
       "formTitle": "Send me a message",
-      "formText": "Fill out the form and we'll get back to you as soon as possible.",
       "formName": "Name *",
       "formEmail": "Email *",
       "formMessage": "Message *",
       "formSubmit": "Send message",
       "orText": "or",
       "instagramTitle": "💬 Write to me on Instagram",
-      "instagramText": "Prefer Instagram? DM me and I'll reply!",
+      "instagramText": "Prefer Instagram? Send me a DM!",
       "instagramButton": "@martadimuro_",
       "faqTitle": "Frequently Asked Questions",
       "faq1Question": "How can I report a bug?",
@@ -281,7 +317,7 @@
       "faq2Question": "Can I request a new feature?",
       "faq2Answer": "Of course! I'm always open to new ideas. Write to me with your proposal and I'll consider implementing it in the future.",
       "faq3Question": "Can I request adding a language?",
-      "faq3Answer": "Yes! If you need a specific language that isn't available yet, write to me and I'll do my best to add it."
+      "faq3Answer": "The app already includes several default languages and many more that can be downloaded for offline use. If you need a specific language that isn't available yet, write to me and I'll do my best to add it."
     },
     "support": {
       "backHome": "Back to home",

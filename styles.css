@@ -20,6 +20,7 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 70px;
 }
 
 body {
@@ -853,6 +854,12 @@ body {
 .store-button:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-2px);
+}
+
+.store-button-soon {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
 }
 
 .store-text {

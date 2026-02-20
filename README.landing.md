@@ -6,11 +6,19 @@ Landing page per [allergiapp.com](https://allergiapp.com)
 
 ```
 landing/
-├── index.html      # Homepage
-├── privacy.html    # Privacy Policy
-├── terms.html      # Termini di Servizio
-├── styles.css      # Stili CSS
-└── script.js       # JavaScript
+├── index.html          # Homepage
+├── contacts.html       # Chi siamo / Contatti (linkata dall'app)
+├── privacy.html        # Privacy Policy
+├── terms.html          # Termini di Servizio
+├── styles.css          # Stili CSS condivisi
+├── script.js           # JavaScript homepage
+├── i18n-site.js        # Sistema traduzioni IT/EN
+├── translations.json   # Testi tradotti per tutte le pagine
+├── vercel.json         # Configurazione deploy Vercel
+├── images/             # Immagini del sito
+├── app/                # ⚠️ File app mobile (non usati dal sito) - da rimuovere
+├── hooks/              # ⚠️ File app mobile (non usati dal sito) - da rimuovere
+└── assets/             # ⚠️ File app mobile (non usati dal sito) - da rimuovere
 ```
 
 ## 🚀 Deployment su Vercel

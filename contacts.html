@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary Meta Tags -->
-    <title>Contatti - AllergiApp</title>
-    <meta name="title" content="Contatti - AllergiApp">
-    <meta name="description" content="Hai bisogno di aiuto con AllergiApp? Scrivimi su Instagram per assistenza e supporto.">
+    <title>Chi siamo - AllergiApp</title>
+    <meta name="title" content="Chi siamo - AllergiApp">
+    <meta name="description" content="Scopri la storia di AllergiApp: nata per aiutare chi ha allergie alimentari a viaggiare sicuro. Contattaci per supporto.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://allergiapp.com/contacts">
 
@@ -26,8 +26,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://allergiapp.com/contacts">
-    <meta property="og:title" content="Contatti - AllergiApp">
-    <meta property="og:description" content="Hai bisogno di aiuto con AllergiApp? Scrivimi per assistenza.">
+    <meta property="og:title" content="Chi siamo - AllergiApp">
+    <meta property="og:description" content="Scopri la storia di AllergiApp e come supportare il progetto.">
     <meta property="og:image" content="https://allergiapp.com/images/og-image.png">
 
     <link rel="stylesheet" href="styles.css">
@@ -58,145 +58,253 @@
             text-decoration: none;
         }
 
-        .contacts-page {
-            max-width: 800px;
+        /* ===== SECTION 1: STORY ===== */
+        .story-section {
+            max-width: 600px;
             margin: 0 auto;
-            padding: 40px 24px 80px;
+            padding: 40px 24px 24px;
             text-align: center;
         }
 
-        .contacts-hero {
-            margin-bottom: 48px;
-        }
-
-        .contacts-page h1 {
-            font-size: 38px;
+        .author-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .contacts-subtitle {
-            font-size: 17px;
+        .author-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .story-quote {
+            font-size: 16px;
+            font-style: italic;
+            font-family: Georgia, serif;
+            line-height: 1.7;
             color: var(--text-secondary);
-            line-height: 1.6;
-            max-width: 600px;
-            margin: 0 auto;
+            margin-bottom: 20px;
+            position: relative;
+            padding: 0 8px;
         }
 
-        .contact-card {
-            background: var(--card-bg);
-            border: 2px solid var(--primary);
-            border-radius: 16px;
-            padding: 40px 32px;
-            margin: 32px auto;
-            max-width: 500px;
-        }
-
-        .contact-icon {
+        .story-quote::before {
+            content: '\201C';
             font-size: 48px;
+            color: var(--primary);
+            position: absolute;
+            top: -20px;
+            left: -8px;
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+
+        .story-summary {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        .social-cta {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: 36px;
             margin-bottom: 16px;
         }
 
-        .contact-card h2 {
-            font-size: 24px;
-            margin-bottom: 12px;
-            color: var(--text-primary);
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .contact-card p {
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-            line-height: 1.6;
-        }
-
-        .instagram-button {
+        .social-link {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #E1306C, #C13584);
-            color: white;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: white;
             text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .instagram-button:hover {
+        .social-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        .instagram-icon {
-            width: 24px;
-            height: 24px;
+        .social-link svg {
+            width: 18px;
+            height: 18px;
         }
 
-        .faq-section {
-            margin-top: 64px;
+        /* ===== SECTION 2: SUPPORT ===== */
+        .support-section {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 100%);
+            padding: 40px 24px;
+        }
+
+        .support-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .support-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .support-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .support-list {
+            max-width: 460px;
+            margin: 0 auto 32px;
             text-align: left;
         }
 
-        .faq-section h2 {
-            font-size: 28px;
-            margin-bottom: 24px;
-            text-align: center;
-            color: var(--text-primary);
+        .support-item {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
         }
 
-        .faq-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 16px;
+        .support-item-icon {
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
-        .faq-item h3 {
-            font-size: 18px;
-            margin-bottom: 12px;
-            color: var(--text-primary);
+        .support-item strong {
+            font-size: 14px;
+            color: var(--text);
+            margin-right: 6px;
         }
 
-        .faq-item p {
+        .support-item span:not(.support-item-icon) {
+            font-size: 14px;
             color: var(--text-secondary);
-            line-height: 1.6;
-            margin: 0;
+            line-height: 1.5;
         }
 
-        .response-time {
+        .support-item-link {
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .support-item-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .support-thanks {
             margin-top: 32px;
             padding: 20px;
             background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
             border-radius: 12px;
             border-left: 4px solid var(--primary);
+            text-align: left;
         }
 
-        .response-time p {
+        .support-thanks p {
             color: var(--text-secondary);
             margin: 0;
             line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .support-thanks .signature {
+            margin-top: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ===== SECTION 3: CONTACT ===== */
+        .contact-section {
+            background: var(--bg-alt, #F5F5F5);
+            padding: 56px 24px 80px;
+        }
+
+        .contact-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .contact-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 36px;
+        }
+
+        .contact-card {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 36px 28px;
+            margin: 0 auto 0;
+            max-width: 480px;
+        }
+
+        .contact-card-header {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 20px;
         }
 
         .contact-form {
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             text-align: left;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text);
             font-size: 14px;
         }
 
@@ -209,8 +317,8 @@
             font-size: 15px;
             font-family: inherit;
             transition: border-color 0.2s;
-            background: var(--card-bg);
-            color: var(--text-primary);
+            background: white;
+            color: var(--text);
         }
 
         .form-group input:focus,
@@ -221,7 +329,7 @@
 
         .form-group textarea {
             resize: vertical;
-            min-height: 120px;
+            min-height: 100px;
         }
 
         .submit-button {
@@ -250,7 +358,7 @@
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 48px 0;
+            margin: 36px 0;
             color: var(--text-secondary);
             font-size: 14px;
         }
@@ -266,43 +374,146 @@
             padding: 0 16px;
         }
 
-        .alternative-contact {
-            max-width: 500px;
+        .instagram-card {
+            max-width: 480px;
             margin: 0 auto;
             padding: 24px;
-            background: var(--card-bg);
+            background: white;
             border: 1px solid var(--border);
             border-radius: 12px;
             text-align: center;
         }
 
-        .alternative-contact h3 {
+        .instagram-card h3 {
             font-size: 18px;
-            margin-bottom: 12px;
-            color: var(--text-primary);
+            margin-bottom: 10px;
+            color: var(--text);
         }
 
-        .alternative-contact p {
+        .instagram-card p {
             color: var(--text-secondary);
             margin-bottom: 16px;
             font-size: 14px;
         }
 
+        .instagram-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #E1306C, #C13584);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .instagram-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.3);
+        }
+
+        .instagram-icon {
+            width: 22px;
+            height: 22px;
+        }
+
+        .faq-section {
+            margin-top: 48px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: left;
+        }
+
+        .faq-section h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .faq-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .faq-item h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .faq-item p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Success message */
+        .success-message {
+            display: none;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
             .back-container {
                 padding: 80px 20px 0;
             }
-            .contacts-page {
-                padding: 32px 20px 60px;
+
+            .story-section {
+                padding: 32px 20px 40px;
             }
-            .contacts-page h1 {
-                font-size: 28px;
+
+            .author-avatar {
+                width: 64px;
+                height: 64px;
             }
+
+            .story-quote {
+                font-size: 15px;
+            }
+
+            .support-section {
+                padding: 40px 20px;
+            }
+
+            .support-title,
+            .contact-title {
+                font-size: 24px;
+            }
+
+
+            .contact-section {
+                padding: 40px 20px 60px;
+            }
+
             .contact-card {
-                padding: 32px 24px;
+                padding: 28px 20px;
             }
-            .contacts-subtitle {
-                font-size: 16px;
+
+            .social-links {
+                gap: 8px;
+            }
+
+            .social-link {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
     </style>
@@ -310,7 +521,7 @@
 <body>
     <nav class="nav">
         <div class="nav-content">
-            <a href="index.html" class="logo">
+            <a href="/" class="logo">
                 <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav">
                 <span class="logo-text">AllergiApp</span>
             </a>
@@ -318,7 +529,7 @@
     </nav>
 
     <div class="back-container">
-        <a href="index.html" class="back-link">
+        <a href="/" class="back-link">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
@@ -326,101 +537,153 @@
         </a>
     </div>
 
-    <script>
-        // Update form _next URL to use current domain
-        window.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('.contact-form');
-            const nextInput = form.querySelector('input[name="_next"]');
-            if (nextInput) {
-                nextInput.value = window.location.origin + '/contacts?success=true';
-            }
-        });
-    </script>
+    <!-- ===== SECTION 1: STORY ===== -->
+    <div class="story-section">
+        <img src="images/profile_pic.jpg" alt="Marta Di Muro" class="author-avatar">
+        <div class="author-name" data-i18n="story.quoteAuthor">Marta Di Muro</div>
+        <p class="story-quote" data-i18n="contacts.storyQuote">La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo attraverso il cibo, in sicurezza e con gioia.</p>
+        <p class="story-summary" data-i18n="contacts.storySummary">AllergiApp nasce dalla mia esperienza personale con le allergie alimentari. Ho creato quest'app perché credo che viaggiare e gustare il cibo del mondo sia un diritto di tutti. Per questo è gratuita e lo sarà sempre.</p>
 
-    <div class="contacts-page">
-        <div class="contacts-hero">
-            <h1 data-i18n="contacts.title">Hai bisogno di aiuto?</h1>
-            <p class="contacts-subtitle" data-i18n="contacts.subtitle">
-                Siamo qui per aiutarti! Compila il form qui sotto o contattaci su Instagram.
-            </p>
-        </div>
+    </div>
 
-        <!-- Success Message -->
-        <div id="successMessage" style="display: none; background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05)); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
-            <h3 style="color: var(--primary); margin-bottom: 8px;">Messaggio inviato!</h3>
-            <p style="color: var(--text-secondary); margin: 0;">Grazie per averci contattato. Ti risponderemo il prima possibile.</p>
-        </div>
+    <!-- ===== SECTION 2: SUPPORT ===== -->
+    <div class="support-section">
+        <div class="support-content">
+            <h2 class="support-title" data-i18n="contacts.supportTitle">Supporta il progetto</h2>
+            <p class="support-subtitle" data-i18n="contacts.supportSubtitle">AllergiApp è gratuita per sempre. Ecco come puoi aiutare a farla crescere:</p>
 
-        <!-- Contact Form -->
-        <div class="contact-card">
-            <div class="contact-icon">✉️</div>
-            <h2 data-i18n="contacts.formTitle">Inviaci un messaggio</h2>
-            <p data-i18n="contacts.formText" style="margin-bottom: 24px;">
-                Compila il form e ti risponderemo il prima possibile.
-            </p>
-
-            <form action="https://formsubmit.co/martadmuro@gmail.com" method="POST" class="contact-form">
-                <!-- FormSubmit Configuration -->
-                <input type="hidden" name="_subject" value="Nuovo messaggio da AllergiApp">
-                <input type="hidden" name="_captcha" value="false">
-                <input type="hidden" name="_template" value="table">
-                <input type="hidden" name="_next" value="https://allergiapp.com/contacts?success=true">
-
-                <div class="form-group">
-                    <label for="name" data-i18n="contacts.formName">Nome *</label>
-                    <input type="text" id="name" name="name" required placeholder="Il tuo nome">
+            <div class="support-list">
+                <div class="support-item">
+                    <span class="support-item-icon">⭐</span>
+                    <div>
+                        <strong data-i18n="contacts.support1Title">Lascia una recensione</strong>
+                        <span data-i18n="contacts.support1Text">Una recensione sullo store aiuta altri viaggiatori a trovarci</span>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="email" data-i18n="contacts.formEmail">Email *</label>
-                    <input type="email" id="email" name="email" required placeholder="tua@email.com">
+                <div class="support-item">
+                    <span class="support-item-icon">🔗</span>
+                    <div>
+                        <strong data-i18n="contacts.support2Title">Condividi l'app</strong>
+                        <span data-i18n="contacts.support2Text">Consigliala a chi viaggia con allergie alimentari</span>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="message" data-i18n="contacts.formMessage">Messaggio *</label>
-                    <textarea id="message" name="message" required placeholder="Come possiamo aiutarti?"></textarea>
+                <div class="support-item">
+                    <span class="support-item-icon">❤️</span>
+                    <div>
+                        <strong data-i18n="contacts.support4Title">Fai una donazione</strong>
+                        <span data-i18n="contacts.support4Text">Ogni contributo aiuta a coprire i costi di sviluppo e a mantenere l'app gratuita</span>
+                    </div>
                 </div>
-
-                <button type="submit" class="submit-button" data-i18n="contacts.formSubmit">Invia messaggio</button>
-            </form>
-        </div>
-
-        <!-- Divider -->
-        <div class="divider">
-            <span data-i18n="contacts.orText">oppure</span>
-        </div>
-
-        <!-- Instagram Alternative -->
-        <div class="alternative-contact">
-            <h3 data-i18n="contacts.instagramTitle">💬 Contattaci su Instagram</h3>
-            <p data-i18n="contacts.instagramText">
-                Preferisci Instagram? Scrivici in DM e ti risponderemo velocemente!
-            </p>
-            <a href="https://www.instagram.com/martadimuro_" target="_blank" rel="noopener noreferrer" class="instagram-button">
-                <svg class="instagram-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-                <span data-i18n="contacts.instagramButton">@allergiapp</span>
-            </a>
-        </div>
-
-        <div class="faq-section">
-            <h2 data-i18n="contacts.faqTitle">Domande Frequenti</h2>
-
-            <div class="faq-item">
-                <h3 data-i18n="contacts.faq1Question">Come posso segnalare un bug?</h3>
-                <p data-i18n="contacts.faq1Answer">Scrivici su Instagram descrivendo il problema riscontrato. Se possibile, invia uno screenshot e indica quale dispositivo stai usando.</p>
+                <a href="#contatti" class="support-item support-item-link" onclick="event.preventDefault(); var el = document.getElementById('contatti'); var nav = document.querySelector('.nav'); var offset = nav ? nav.offsetHeight + 20 : 20; window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' })">
+                    <span class="support-item-icon">💡</span>
+                    <div>
+                        <strong data-i18n="contacts.support3Title">Suggerisci idee</strong>
+                        <span data-i18n="contacts.support3Text">Nuove lingue, funzionalità o miglioramenti: ogni idea conta</span>
+                    </div>
+                </a>
             </div>
 
-            <div class="faq-item">
-                <h3 data-i18n="contacts.faq2Question">Posso richiedere una nuova funzionalità?</h3>
-                <p data-i18n="contacts.faq2Answer">Certo! Siamo sempre aperti a nuove idee. Contattaci su Instagram con la tua proposta e valuteremo di implementarla in futuro.</p>
+            <div class="support-thanks">
+                <p data-i18n="contacts.supportThanks">Ogni contributo, grande o piccolo, mi aiuta a continuare questo progetto nato dalla passione per i viaggi e dal desiderio di rendere il mondo più accessibile per chi vive con allergie alimentari.</p>
+                <p class="signature" data-i18n="contacts.supportSignature">— Marta</p>
             </div>
 
-            <div class="faq-item">
-                <h3 data-i18n="contacts.faq3Question">Posso richiedere l'aggiunta di una lingua?</h3>
-                <p data-i18n="contacts.faq3Answer">Sì! Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivici e faremo del nostro meglio per aggiungerla.</p>
+            <p class="social-cta" data-i18n="contacts.socialCta">I miei canali social</p>
+            <div class="social-links">
+                <a href="https://www.instagram.com/martadimuro_" target="_blank" rel="noopener noreferrer" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="#E1306C"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    Instagram
+                </a>
+                <a href="https://www.youtube.com/@martadimuro/" target="_blank" rel="noopener noreferrer" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    YouTube
+                </a>
+                <a href="https://www.tiktok.com/@martadimuro" target="_blank" rel="noopener noreferrer" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="#000000"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                    TikTok
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 3: CONTACT ===== -->
+    <div class="contact-section">
+        <div class="contact-content">
+            <h2 id="contatti" class="contact-title" data-i18n="contacts.contactTitle">Hai un'idea o bisogno di aiuto?</h2>
+            <p class="contact-subtitle" data-i18n="contacts.contactSubtitle">Che sia un suggerimento, una segnalazione o semplicemente per salutarmi, scrivimi!</p>
+
+            <!-- Instagram -->
+            <div class="instagram-card">
+                <h3 data-i18n="contacts.instagramTitle">💬 Scrivimi su Instagram</h3>
+                <p data-i18n="contacts.instagramText">Preferisci Instagram? Scrivimi in DM!</p>
+                <a href="https://www.instagram.com/martadimuro_" target="_blank" rel="noopener noreferrer" class="instagram-button">
+                    <svg class="instagram-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    <span data-i18n="contacts.instagramButton">@martadimuro_</span>
+                </a>
+            </div>
+
+            <!-- Divider -->
+            <div class="divider">
+                <span data-i18n="contacts.orText">oppure</span>
+            </div>
+
+            <!-- Contact Form -->
+            <!-- Success Message -->
+            <div id="successMessage" class="success-message">
+                <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+                <h3 style="color: var(--primary); margin-bottom: 8px;" data-i18n="contacts.successTitle">Messaggio inviato!</h3>
+                <p style="color: var(--text-secondary); margin: 0;" data-i18n="contacts.successText">Grazie per avermi contattato. Ti risponderò il prima possibile.</p>
+            </div>
+
+            <div class="contact-card">
+                <div class="contact-card-header" data-i18n="contacts.formTitle">Inviami un messaggio</div>
+
+                <form action="https://formsubmit.co/martadmuro@gmail.com" method="POST" class="contact-form">
+                    <!-- FormSubmit Configuration -->
+                    <input type="hidden" name="_subject" value="Nuovo messaggio da AllergiApp">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="hidden" name="_next" value="https://allergiapp.com/contacts?success=true">
+
+                    <div class="form-group">
+                        <label for="name" data-i18n="contacts.formName">Nome *</label>
+                        <input type="text" id="name" name="name" required placeholder="Il tuo nome">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" data-i18n="contacts.formEmail">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="tua@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message" data-i18n="contacts.formMessage">Messaggio *</label>
+                        <textarea id="message" name="message" required placeholder="Come posso aiutarti?"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-button" data-i18n="contacts.formSubmit">Invia messaggio</button>
+                </form>
+            </div>
+
+            <!-- FAQ -->
+            <div class="faq-section">
+                <h2 data-i18n="contacts.faqTitle">Domande Frequenti</h2>
+
+                <div class="faq-item">
+                    <h3 data-i18n="contacts.faq1Question">Come posso segnalare un bug?</h3>
+                    <p data-i18n="contacts.faq1Answer">Scrivimi descrivendo il problema riscontrato. Se possibile, includi uno screenshot e indica quale dispositivo stai usando.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 data-i18n="contacts.faq2Question">Posso richiedere una nuova funzionalità?</h3>
+                    <p data-i18n="contacts.faq2Answer">Certo! Sono sempre aperta a nuove idee. Scrivimi con la tua proposta e valuterò di implementarla in futuro.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 data-i18n="contacts.faq3Question">Posso richiedere l'aggiunta di una lingua?</h3>
+                    <p data-i18n="contacts.faq3Answer">L'app include già diverse lingue di default e molte altre scaricabili per l'uso offline. Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -451,12 +714,21 @@
 
     <script src="i18n-site.js"></script>
     <script>
+        // Update form _next URL to use current domain
+        window.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.contact-form');
+            if (form) {
+                const nextInput = form.querySelector('input[name="_next"]');
+                if (nextInput) {
+                    nextInput.value = window.location.origin + '/contacts?success=true';
+                }
+            }
+        });
+
         // Show success message if form was submitted
         if (window.location.search.includes('success=true')) {
             document.getElementById('successMessage').style.display = 'block';
-            // Scroll to message
             document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Remove success parameter from URL after 3 seconds
             setTimeout(() => {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }, 3000);
