@@ -10,6 +10,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: false,
   scheme: "allergiapp",
   splash: {
+    image: "./assets/splash-icon.png",
+    resizeMode: "contain",
     backgroundColor: "#FFFFFF",
   },
   ios: {
@@ -26,11 +28,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#F7DCB3",
     },
-    package: "com.allergiapp",
+    package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
     versionCode: 1,
     permissions: ["com.google.android.gms.permission.AD_ID"],
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json",
   },
   web: {
     favicon: "./assets/favicon.png",
