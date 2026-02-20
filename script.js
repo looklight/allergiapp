@@ -2,7 +2,8 @@
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const href = this.getAttribute('href');
+        const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
@@ -78,6 +79,47 @@ if (backToTopButton) {
         });
     });
 }
+
+// Easter egg: seleziona formaggio, grano, latte, uova per il piatto super felice
+(function() {
+    const easterEggKeys = ['img_cheese.png', 'img_wheat.png', 'img_milk.png', 'img_egg.png'];
+    const selected = new Set();
+    const orbit = document.querySelector('.allergen-orbit');
+
+    if (!orbit) return;
+
+    function resetSelection() {
+        selected.clear();
+        orbit.querySelectorAll('.allergen-item.selected').forEach(el => {
+            el.classList.remove('selected');
+        });
+    }
+
+    orbit.querySelectorAll('.allergen-item').forEach(item => {
+        const src = item.querySelector('img').getAttribute('src');
+        const filename = src.split('/').pop();
+        const isEasterEgg = easterEggKeys.includes(filename);
+
+        item.addEventListener('click', () => {
+            if (!isEasterEgg) {
+                resetSelection();
+                return;
+            }
+
+            item.classList.toggle('selected');
+
+            if (item.classList.contains('selected')) {
+                selected.add(filename);
+            } else {
+                selected.delete(filename);
+            }
+
+            if (easterEggKeys.every(key => selected.has(key))) {
+                orbit.classList.add('easter-egg');
+            }
+        });
+    });
+})();
 
 // Allergens Carousel - Pause on hover
 const carousel = document.querySelector('.allergens-carousel');

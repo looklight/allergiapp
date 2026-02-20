@@ -225,6 +225,18 @@
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .support-item-link:hover .support-item-arrow {
+            transform: translateX(3px);
+        }
+
+        .support-item-arrow {
+            font-size: 18px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+
 
         .support-thanks {
             margin-top: 32px;
@@ -553,27 +565,27 @@
             <p class="support-subtitle" data-i18n="contacts.supportSubtitle">AllergiApp è gratuita per sempre. Ecco come puoi aiutare a farla crescere:</p>
 
             <div class="support-list">
-                <div class="support-item">
+                <a href="https://apps.apple.com/app/allergiapp/id6758859853" target="_blank" rel="noopener noreferrer" class="support-item support-item-link">
                     <span class="support-item-icon">⭐</span>
                     <div>
                         <strong data-i18n="contacts.support1Title">Lascia una recensione</strong>
                         <span data-i18n="contacts.support1Text">Una recensione sullo store aiuta altri viaggiatori a trovarci</span>
                     </div>
-                </div>
-                <div class="support-item">
+                </a>
+                <a href="javascript:void(0)" class="support-item support-item-link" id="shareApp">
                     <span class="support-item-icon">🔗</span>
                     <div>
                         <strong data-i18n="contacts.support2Title">Condividi l'app</strong>
                         <span data-i18n="contacts.support2Text">Consigliala a chi viaggia con allergie alimentari</span>
                     </div>
-                </div>
-                <div class="support-item">
+                </a>
+                <a href="https://ko-fi.com/allergiapp" target="_blank" rel="noopener noreferrer" class="support-item support-item-link">
                     <span class="support-item-icon">❤️</span>
                     <div>
                         <strong data-i18n="contacts.support4Title">Fai una donazione</strong>
-                        <span data-i18n="contacts.support4Text">Ogni contributo aiuta a coprire i costi di sviluppo e a mantenere l'app gratuita</span>
+                        <span data-i18n="contacts.support4Text">Ogni contributo aiuta a coprire i costi di sviluppo e a mantenere l'app gratuita.</span> <span style="text-decoration: underline; color: var(--primary);" data-i18n="contacts.support4Link">Supporta</span>
                     </div>
-                </div>
+                </a>
                 <a href="#contatti" class="support-item support-item-link" onclick="event.preventDefault(); var el = document.getElementById('contatti'); var nav = document.querySelector('.nav'); var offset = nav ? nav.offsetHeight + 20 : 20; window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' })">
                     <span class="support-item-icon">💡</span>
                     <div>
@@ -722,6 +734,21 @@
                 if (nextInput) {
                     nextInput.value = window.location.origin + '/contacts?success=true';
                 }
+            }
+        });
+
+        // Share app button
+        document.getElementById('shareApp').addEventListener('click', function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'AllergiApp',
+                    text: 'Comunica le tue allergie alimentari in 60+ lingue!',
+                    url: 'https://allergiapp.com'
+                });
+            } else {
+                navigator.clipboard.writeText('https://allergiapp.com').then(function() {
+                    alert('Link copiato!');
+                });
             }
         });
 

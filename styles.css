@@ -61,9 +61,20 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
     font-weight: 700;
     font-size: 20px;
     color: var(--primary);
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+.logo:hover,
+.logo:active,
+.logo:visited,
+.logo:focus {
+    color: var(--primary);
+    text-decoration: none;
 }
 
 .logo-icon {
@@ -230,9 +241,46 @@ body {
     transition: all 0.3s ease;
 }
 
-.allergen-item:hover img {
+.allergen-item:hover img,
+.allergen-item.selected img {
     opacity: 1;
     transform: scale(1.2);
+}
+
+.allergen-item {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    user-select: none;
+}
+
+/* Easter egg: piatto happy nascosto */
+.plate-happy {
+    opacity: 0;
+    position: absolute;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.allergen-orbit.easter-egg .plate-center:not(.plate-happy) {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.allergen-orbit.easter-egg .plate-happy {
+    opacity: 1;
+    animation: float-plate-happy 3s ease-in-out infinite;
+}
+
+@keyframes float-plate-happy {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-20px) scale(1.02); }
+}
+
+.allergen-orbit.easter-egg .allergen-item {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
 }
 
 /* Posizionamento fisso degli allergeni attorno al piatto */
@@ -308,6 +356,17 @@ body {
     background: var(--primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 6px 24px var(--shadow);
+}
+
+.button.button-yellow {
+    background: #FFD600;
+    color: #1a1a1a;
+    border: none;
+    padding: 16px 64px;
+}
+
+.button.button-yellow:hover {
+    background: #FFC107;
 }
 
 .button.secondary {
