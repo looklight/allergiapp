@@ -6,6 +6,13 @@ import { theme } from '../../constants/theme';
 import { Analytics } from '../../utils/analytics';
 import { RemoteConfig } from '../../utils/remoteConfig';
 
+// Immagini logo per i banner
+const bannerImages = {
+  passport: require('../../assets/happy_plate_passport.png'),
+  language: require('../../assets/happy_plate_language.png'),
+  forks: require('../../assets/happy_plate_forks.png'),
+};
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
@@ -20,6 +27,7 @@ export interface BannerItem {
   id: string;
   type: BannerType;
   icon?: string;
+  image?: any;
   title?: string;
   subtitle?: string;
   // Per ads/referral
@@ -63,21 +71,21 @@ export default function BannerCarousel({
     {
       id: 'info-1',
       type: 'info',
-      icon: '🌍',
+      image: bannerImages.passport,
       title: i18n.t('home.bannerWelcome'),
       subtitle: i18n.t('home.bannerMotivation'),
     },
     {
       id: 'info-2',
       type: 'info',
-      icon: '🍽️',
+      image: bannerImages.language,
       title: i18n.t('home.bannerHowToUse'),
       subtitle: i18n.t('home.bannerHowToUseDesc'),
     },
     {
       id: 'info-3',
       type: 'info',
-      icon: '✈️',
+      image: bannerImages.forks,
       title: i18n.t('home.bannerTip'),
       subtitle: '',
     },
@@ -209,7 +217,11 @@ export default function BannerCarousel({
     if (item.type === 'info') {
       return (
         <View style={styles.bannerItem}>
-          <Text style={styles.bannerIcon}>{item.icon}</Text>
+          {item.image ? (
+            <Image source={item.image} style={styles.bannerImage} resizeMode="contain" />
+          ) : (
+            <Text style={styles.bannerIcon}>{item.icon}</Text>
+          )}
           <View style={styles.bannerTextContainer}>
             <Text style={styles.bannerTitle}>{item.title}</Text>
             {item.subtitle ? (
@@ -349,6 +361,11 @@ const styles = StyleSheet.create({
   fullImage: {
     width: '100%',
     height: '100%',
+  },
+  bannerImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 13,
   },
   bannerIcon: {
     fontSize: 48,
