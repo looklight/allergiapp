@@ -12,6 +12,32 @@ import { useAppContext } from '../../utils/AppContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// Tipo unificato per lingue nella lista (scaricabili + built-in)
+interface UnifiedLanguage {
+  code: string;
+  name: string;
+  nativeName: string;
+  flag: string;
+  region: LanguageRegion;
+  builtIn: boolean;
+}
+
+// Lingue con traduzioni card già incluse nell'app (escluse le 5 lingue app: it, en, fr, de, es)
+const BUILTIN_CARD_LANGUAGES: UnifiedLanguage[] = [
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇵🇹', region: 'europe', builtIn: true },
+  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱', region: 'europe', builtIn: true },
+  { code: 'pl', name: 'Polish', nativeName: 'Polski', flag: '🇵🇱', region: 'europe', builtIn: true },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', region: 'europe', builtIn: true },
+  { code: 'sv', name: 'Swedish', nativeName: 'Svenska', flag: '🇸🇪', region: 'europe', builtIn: true },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳', region: 'asia', builtIn: true },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵', region: 'asia', builtIn: true },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷', region: 'asia', builtIn: true },
+  { code: 'th', name: 'Thai', nativeName: 'ไทย', flag: '🇹🇭', region: 'asia', builtIn: true },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', region: 'asia', builtIn: true },
+];
+
+const BUILTIN_CODES = new Set(BUILTIN_CARD_LANGUAGES.map((l) => l.code));
+
 const REGION_ICONS: Record<LanguageRegion, string> = {
   europe: '🇪🇺',
   asia: '🌏',
@@ -44,46 +70,64 @@ export default function DownloadableLanguagesSection({
     other: false,
   });
 
+  // Tutte le lingue unificate (downloadable + built-in)
+  const allLanguages: UnifiedLanguage[] = useMemo(() => {
+    const downloadable: UnifiedLanguage[] = DOWNLOADABLE_LANGUAGES.map((lang) => ({
+      ...lang,
+      builtIn: false,
+    }));
+    return [...downloadable, ...BUILTIN_CARD_LANGUAGES];
+  }, []);
+
   const filteredLanguages = useMemo(() => {
-    if (!searchQuery.trim()) return DOWNLOADABLE_LANGUAGES;
+    if (!searchQuery.trim()) return allLanguages;
     const q = searchQuery.toLowerCase();
-    const filtered = DOWNLOADABLE_LANGUAGES.filter((lang) => {
-      // Cerca nel nome inglese, nome nativo e codice
+    const filtered = allLanguages.filter((lang) => {
       if (lang.name.toLowerCase().includes(q)) return true;
       if (lang.nativeName.toLowerCase().includes(q)) return true;
       if (lang.code.toLowerCase().includes(q)) return true;
-      // Cerca anche nel nome tradotto nella lingua dell'app
-      const localizedName = LANGUAGE_NAMES[lang.code]?.[appLanguage];
-      if (localizedName && localizedName.toLowerCase().includes(q)) return true;
+      if (!lang.builtIn) {
+        const localizedName = LANGUAGE_NAMES[lang.code as DownloadableLanguageCode]?.[appLanguage];
+        if (localizedName && localizedName.toLowerCase().includes(q)) return true;
+      }
       return false;
     });
-    // Ordina alfabeticamente per nome nativo
     return filtered.sort((a, b) => a.nativeName.localeCompare(b.nativeName));
-  }, [searchQuery, appLanguage]);
+  }, [searchQuery, appLanguage, allLanguages]);
 
+  // Lingue scaricate dall'utente (solo downloadable, non built-in)
   const downloadedLangs = useMemo(() => {
     const downloaded = DOWNLOADABLE_LANGUAGES.filter((lang) =>
       downloadedLanguageCodes.includes(lang.code)
     );
-    // Ordina alfabeticamente per nome nativo
     return downloaded.sort((a, b) => a.nativeName.localeCompare(b.nativeName));
   }, [downloadedLanguageCodes]);
 
-  const availableLangsByRegion = useMemo(() => {
-    const regions: Record<LanguageRegion, DownloadableLanguageInfo[]> = {
+  // Lingue built-in ordinate alfabeticamente
+  const builtInLangsSorted = useMemo(() => {
+    return [...BUILTIN_CARD_LANGUAGES].sort((a, b) => a.nativeName.localeCompare(b.nativeName));
+  }, []);
+
+  // Lingue per regione: include built-in (come "scaricate") + non scaricate
+  const langsByRegion = useMemo(() => {
+    const regions: Record<LanguageRegion, UnifiedLanguage[]> = {
       europe: [],
       asia: [],
       africa: [],
       other: [],
     };
 
-    DOWNLOADABLE_LANGUAGES.forEach((lang) => {
-      if (!downloadedLanguageCodes.includes(lang.code)) {
-        regions[lang.region].push(lang);
-      }
+    // Aggiungi le built-in
+    BUILTIN_CARD_LANGUAGES.forEach((lang) => {
+      regions[lang.region].push(lang);
     });
 
-    // Ordina alfabeticamente per nome nativo
+    // Aggiungi le downloadable (sia scaricate che non)
+    DOWNLOADABLE_LANGUAGES.forEach((lang) => {
+      regions[lang.region].push({ ...lang, builtIn: false });
+    });
+
+    // Ordina ogni regione alfabeticamente per nome nativo
     Object.keys(regions).forEach((region) => {
       regions[region as LanguageRegion].sort((a, b) =>
         a.nativeName.localeCompare(b.nativeName)
@@ -91,10 +135,14 @@ export default function DownloadableLanguagesSection({
     });
 
     return regions;
-  }, [downloadedLanguageCodes]);
+  }, []);
 
   const getRegionName = (region: LanguageRegion): string => {
     return i18n.t(`settings.region_${region}`);
+  };
+
+  const getRegionCount = (region: LanguageRegion): number => {
+    return langsByRegion[region].length;
   };
 
   const toggleRegion = (region: LanguageRegion) => {
@@ -147,6 +195,64 @@ export default function DownloadableLanguagesSection({
     );
   };
 
+  // Determina lo stato di una lingua: built-in, scaricata, o da scaricare
+  const getLangStatus = (lang: UnifiedLanguage): 'builtIn' | 'downloaded' | 'available' => {
+    if (lang.builtIn) return 'builtIn';
+    if (downloadedLanguageCodes.includes(lang.code as DownloadableLanguageCode)) return 'downloaded';
+    return 'available';
+  };
+
+  // Render icona azione in base allo stato
+  const renderLangAction = (lang: UnifiedLanguage) => {
+    const status = getLangStatus(lang);
+
+    if (status === 'builtIn') {
+      return <MaterialCommunityIcons name="check-circle" size={24} color={theme.colors.primary} />;
+    }
+
+    if (status === 'downloaded') {
+      return <MaterialCommunityIcons name="check-circle" size={24} color={theme.colors.primary} />;
+    }
+
+    return renderDownloadAction(lang.code as DownloadableLanguageCode);
+  };
+
+  // Render una riga lingua (usata sia nelle regioni che nella ricerca)
+  const renderLanguageRow = (lang: UnifiedLanguage, index: number, total: number) => {
+    const status = getLangStatus(lang);
+    const isDownloading = !lang.builtIn && downloadingLang === lang.code;
+
+    return (
+      <View key={lang.code}>
+        <Pressable
+          onPress={() => {
+            if (status === 'available' && !isDownloading) {
+              onDownload(lang.code as DownloadableLanguageCode);
+            }
+          }}
+          style={({ pressed }) => [
+            styles.languageItem,
+            pressed && status === 'available' && styles.languageItemPressed,
+          ]}
+          accessibilityRole="button"
+          disabled={status !== 'available'}
+        >
+          <Text style={styles.langFlag}>{lang.flag}</Text>
+          <View style={styles.langInfo}>
+            <Text style={styles.langNativeName}>{lang.nativeName}</Text>
+            <Text style={styles.langName}>
+              {lang.name}
+              {status === 'builtIn' ? ` · ${i18n.t('settings.includedLanguages')}` : ''}
+            </Text>
+          </View>
+          {renderLangAction(lang)}
+        </Pressable>
+        {!lang.builtIn && renderProgressBar(lang.code as DownloadableLanguageCode)}
+        {index < total - 1 && <Divider style={styles.itemDivider} />}
+      </View>
+    );
+  };
+
   return (
     <>
       <Divider style={styles.sectionDivider} />
@@ -191,7 +297,7 @@ export default function DownloadableLanguagesSection({
           {filteredLanguages.length} {i18n.t('settings.languagesAvailable')}
         </Text>
 
-        {/* Lingue scaricate */}
+        {/* Lingue scaricate dall'utente */}
         {downloadedLangs.length > 0 && (
           <View style={styles.downloadedSection}>
             <Text style={styles.subsectionTitle}>
@@ -227,41 +333,25 @@ export default function DownloadableLanguagesSection({
         )}
 
         {/* Risultati ricerca */}
-        {searchQuery.trim().length > 0 && filteredLanguages.filter(l => !downloadedLanguageCodes.includes(l.code)).length > 0 && (
+        {searchQuery.trim().length > 0 && (
           <View style={styles.searchResults}>
-            {filteredLanguages
-              .filter((lang) => !downloadedLanguageCodes.includes(lang.code))
-              .map((lang, index, array) => {
-                const isDownloading = downloadingLang === lang.code;
-                return (
-                  <View key={lang.code}>
-                    <Pressable
-                      onPress={() => !isDownloading && onDownload(lang.code)}
-                      style={({ pressed }) => [
-                        styles.languageItem,
-                        pressed && styles.languageItemPressed,
-                      ]}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${i18n.t('settings.download')} ${lang.nativeName}`}
-                    >
-                      <Text style={styles.langFlag}>{lang.flag}</Text>
-                      <View style={styles.langInfo}>
-                        <Text style={styles.langNativeName}>{lang.nativeName}</Text>
-                        <Text style={styles.langName}>{lang.name}</Text>
-                      </View>
-                      {renderDownloadAction(lang.code)}
-                    </Pressable>
-                    {renderProgressBar(lang.code)}
-                    {index < array.length - 1 && <Divider style={styles.itemDivider} />}
-                  </View>
-                );
-              })}
+            {filteredLanguages.map((lang, index) =>
+              renderLanguageRow(lang, index, filteredLanguages.length)
+            )}
+            {filteredLanguages.length === 0 && (
+              <View style={styles.noResults}>
+                <MaterialCommunityIcons name="cloud-search-outline" size={48} color={theme.colors.textDisabled} />
+                <Text style={styles.noResultsText}>
+                  {i18n.t('settings.noLanguagesFound')}
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
         {/* Lingue per regione */}
         {searchQuery.trim().length === 0 && (['europe', 'asia', 'africa', 'other'] as LanguageRegion[]).map((region) => {
-          const regionLangs = availableLangsByRegion[region];
+          const regionLangs = langsByRegion[region];
           if (regionLangs.length === 0) return null;
           const isExpanded = expandedRegions[region];
 
@@ -275,14 +365,14 @@ export default function DownloadableLanguagesSection({
                   pressed && styles.regionHeaderPressed,
                 ]}
                 accessibilityRole="button"
-                accessibilityLabel={`${getRegionName(region)}, ${regionLangs.length} languages`}
+                accessibilityLabel={`${getRegionName(region)}, ${getRegionCount(region)} languages`}
                 accessibilityState={{ expanded: isExpanded }}
               >
                 <View style={styles.regionHeaderLeft}>
                   <Text style={styles.regionIcon}>{REGION_ICONS[region]}</Text>
                   <View>
                     <Text style={styles.regionTitle}>{getRegionName(region)}</Text>
-                    <Text style={styles.regionCount}>{regionLangs.length} lingue</Text>
+                    <Text style={styles.regionCount}>{getRegionCount(region)} lingue</Text>
                   </View>
                 </View>
                 <MaterialCommunityIcons
@@ -295,47 +385,15 @@ export default function DownloadableLanguagesSection({
               {isExpanded && (
                 <>
                   <Divider style={styles.regionDivider} />
-                  {regionLangs.map((lang, index) => {
-                    const isDownloading = downloadingLang === lang.code;
-                    return (
-                      <View key={lang.code}>
-                        <Pressable
-                          onPress={() => !isDownloading && onDownload(lang.code)}
-                          style={({ pressed }) => [
-                            styles.languageItem,
-                            pressed && styles.languageItemPressed,
-                          ]}
-                          accessibilityRole="button"
-                          accessibilityLabel={`${i18n.t('settings.download')} ${lang.nativeName}`}
-                        >
-                          <Text style={styles.langFlag}>{lang.flag}</Text>
-                          <View style={styles.langInfo}>
-                            <Text style={styles.langNativeName}>{lang.nativeName}</Text>
-                            <Text style={styles.langName}>{lang.name}</Text>
-                          </View>
-                          {renderDownloadAction(lang.code)}
-                        </Pressable>
-                        {renderProgressBar(lang.code)}
-                        {index < regionLangs.length - 1 && <Divider style={styles.itemDivider} />}
-                      </View>
-                    );
-                  })}
+                  {regionLangs.map((lang, index) =>
+                    renderLanguageRow(lang, index, regionLangs.length)
+                  )}
                 </>
               )}
               </View>
             </Surface>
           );
         })}
-
-        {/* Nessun risultato */}
-        {searchQuery.trim().length > 0 && filteredLanguages.length === 0 && (
-          <View style={styles.noResults}>
-            <MaterialCommunityIcons name="cloud-search-outline" size={48} color={theme.colors.textDisabled} />
-            <Text style={styles.noResultsText}>
-              {i18n.t('settings.noLanguagesFound')}
-            </Text>
-          </View>
-        )}
       </View>
     </>
   );
@@ -417,7 +475,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 10,
-    width: (SCREEN_WIDTH - 32 - 8) / 2, // Metà schermo - padding laterale (16*2) - gap (8) / 2
+    width: (SCREEN_WIDTH - 32 - 8) / 2,
   },
   downloadedChipFlag: {
     fontSize: 24,

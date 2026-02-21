@@ -63,6 +63,7 @@
     "noInternet": "Sin conexion a internet",
     "searchLanguage": "Buscar idioma...",
     "languagesAvailable": "idiomas disponibles",
+    "includedLanguages": "Incluidos",
     "downloadedLanguages": "Descargados",
     "availableLanguages": "Disponibles",
     "noLanguagesFound": "No se encontraron idiomas",
