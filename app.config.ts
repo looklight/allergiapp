@@ -3,7 +3,7 @@ import { ExpoConfig, ConfigContext } from "expo/config";
 export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "AllergiApp",
   slug: "allergiapp",
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "default",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
@@ -17,7 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
-    buildNumber: "3",
+    buildNumber: "4",
     googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -50,6 +50,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     "./plugins/withModularHeaders",
   ],
+  updates: {
+    url: "https://u.expo.dev/6b6299aa-f37d-4e8d-9c33-c438a02060f8",
+  },
+  runtimeVersion: {
+    policy: "appVersion",
+  },
   extra: {
     router: {},
     eas: {
