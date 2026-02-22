@@ -1,7 +1,8 @@
 import { AllergenId, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
-import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
+import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS } from '../constants/cardTranslations';
+import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
 
 const MYMEMORY_API = 'https://api.mymemory.translated.net/get';
 const REQUEST_TIMEOUT_MS = 30000;
@@ -89,7 +90,7 @@ function isPartialTranslation(original: string, translated: string): boolean {
 }
 
 export interface DownloadProgress {
-  phase: 'allergens' | 'descriptions' | 'cardTexts';
+  phase: 'allergens' | 'descriptions' | 'cardTexts' | 'restrictions';
   current: number;
   total: number;
   percentage: number;
@@ -113,14 +114,26 @@ export async function downloadLanguageTranslations(
   const cardTexts = [
     CARD_TRANSLATIONS.en.header,
     CARD_TRANSLATIONS.en.subtitle,
+    CARD_TRANSLATIONS.en.pregnancySubtitle,
     CARD_TRANSLATIONS.en.message,
+    CARD_TRANSLATIONS.en.pregnancyMessage,
     CARD_TRANSLATIONS.en.thanks,
     CARD_TRANSLATIONS.en.tapToSee,
     CARD_TRANSLATIONS.en.showIn,
     CARD_TRANSLATIONS.en.examples,
   ];
 
-  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length;
+  // Restrizioni da tradurre
+  const restrictionNames = RESTRICTION_ITEMS.map(r => r.translations.en);
+  const restrictionCardTexts = [
+    RESTRICTION_CARD_TRANSLATIONS.en.header,
+    RESTRICTION_CARD_TRANSLATIONS.en.message,
+    RESTRICTION_CARD_TRANSLATIONS.en.pregnancyHeader,
+    RESTRICTION_CARD_TRANSLATIONS.en.pregnancyMessage,
+    RESTRICTION_CARD_TRANSLATIONS.en.pregnancySectionMessage,
+  ];
+
+  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + restrictionNames.length + restrictionCardTexts.length;
   let completedItems = 0;
 
   // Traduce nomi allergeni
@@ -226,6 +239,46 @@ export async function downloadLanguageTranslations(
   );
   checkAborted();
 
+  // Traduce nomi restrizioni
+  onProgress?.({
+    phase: 'restrictions',
+    current: 0,
+    total: restrictionNames.length + restrictionCardTexts.length,
+    percentage: Math.round((completedItems / totalItems) * 100),
+  });
+
+  const translatedRestrictionNames = await translateBatch(
+    restrictionNames,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + current;
+      onProgress?.({
+        phase: 'restrictions',
+        current,
+        total: restrictionNames.length + restrictionCardTexts.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    }
+  );
+  checkAborted();
+
+  const translatedRestrictionCardTexts = await translateBatch(
+    restrictionCardTexts,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + restrictionNames.length + current;
+      onProgress?.({
+        phase: 'restrictions',
+        current: restrictionNames.length + current,
+        total: restrictionNames.length + restrictionCardTexts.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    }
+  );
+  checkAborted();
+
   // Costruisce l'oggetto risultato
   const allergens: Record<AllergenId, string> = {} as Record<AllergenId, string>;
   const descriptions: Record<AllergenId, string> = {} as Record<AllergenId, string>;
@@ -246,18 +299,34 @@ export async function downloadLanguageTranslations(
     warnings[allergen.id] = isPartialTranslation(original, translated) ? original : translated;
   });
 
+  // Costruisce le restrizioni tradotte
+  const restrictions: Record<RestrictionItemId, string> = {} as Record<RestrictionItemId, string>;
+  RESTRICTION_ITEMS.forEach((item, index) => {
+    restrictions[item.id] = translatedRestrictionNames[index];
+  });
+
   return {
     allergens,
     descriptions,
     warnings: Object.keys(warnings).length > 0 ? warnings : undefined,
+    restrictions,
+    restrictionCardTexts: {
+      header: translatedRestrictionCardTexts[0],
+      message: translatedRestrictionCardTexts[1],
+      pregnancyHeader: translatedRestrictionCardTexts[2],
+      pregnancyMessage: translatedRestrictionCardTexts[3],
+      pregnancySectionMessage: translatedRestrictionCardTexts[4],
+    },
     cardTexts: {
       header: translatedCardTexts[0],
       subtitle: translatedCardTexts[1],
-      message: translatedCardTexts[2],
-      thanks: translatedCardTexts[3],
-      tapToSee: translatedCardTexts[4],
-      showIn: translatedCardTexts[5],
-      examples: translatedCardTexts[6],
+      pregnancySubtitle: translatedCardTexts[2],
+      message: translatedCardTexts[3],
+      pregnancyMessage: translatedCardTexts[4],
+      thanks: translatedCardTexts[5],
+      tapToSee: translatedCardTexts[6],
+      showIn: translatedCardTexts[7],
+      examples: translatedCardTexts[8],
     },
     downloadedAt: new Date().toISOString(),
   };

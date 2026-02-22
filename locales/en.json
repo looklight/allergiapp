@@ -3,10 +3,10 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "My Allergies",
-    "noAllergies": "You haven't added any allergies yet",
-    "addAllergies": "Add Allergies",
-    "editAllergies": "Edit allergies",
+    "title": "What I need to avoid?",
+    "noAllergies": "You haven't added anything yet",
+    "addAllergies": "Add",
+    "editAllergies": "Edit",
     "showCard": "Show Card",
     "showCardToWaiter": "Show Card",
     "settings": "Settings",
@@ -23,9 +23,19 @@
     "bannerHowToUseDesc": "Show your card to the waiter when ordering at the restaurant"
   },
   "addAllergy": {
-    "title": "Add Allergies",
+    "title": "What I need to avoid?",
     "subtitle": "Select your food allergies",
     "save": "Save"
+  },
+  "otherRestrictions": {
+    "title": "Other restrictions",
+    "subtitle": "Select foods to avoid",
+    "save": "Save",
+    "other": "Other",
+    "selectedCount": "{{count}} selected",
+    "pregnancyToggle": "I am pregnant",
+    "pregnancyHint": "Will show on the card that you are pregnant",
+    "foodsToAvoid": "Foods to avoid"
   },
   "card": {
     "title": "Food Allergies",

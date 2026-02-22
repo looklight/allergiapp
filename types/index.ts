@@ -162,10 +162,20 @@ export interface DownloadedLanguageData {
   allergens: Record<AllergenId, string>;
   descriptions: Record<AllergenId, string>;
   warnings?: Record<AllergenId, string>;
+  restrictions?: Record<string, string>;
+  restrictionCardTexts?: {
+    header: string;
+    message: string;
+    pregnancyHeader: string;
+    pregnancyMessage: string;
+    pregnancySectionMessage?: string;
+  };
   cardTexts: {
     header: string;
     subtitle: string;
+    pregnancySubtitle?: string;
     message: string;
+    pregnancyMessage?: string;
     thanks: string;
     tapToSee: string;
     showIn: string;
@@ -178,3 +188,6 @@ export type DownloadedLanguagesStorage = Record<DownloadableLanguageCode, Downlo
 
 // Tipo combinato per lingue (hardcoded + scaricate)
 export type AllLanguageCode = Language | DownloadableLanguageCode;
+
+// Re-export restriction types for convenience
+export type { RestrictionItemId, RestrictionCategoryId } from '../constants/otherRestrictions';

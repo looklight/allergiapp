@@ -19,7 +19,8 @@ import { useLanguageDownload } from '../hooks/useLanguageDownload';
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
+  const { selectedAllergens, selectedRestrictions, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
+  const hasSelections = selectedAllergens.length > 0 || selectedRestrictions.length > 0;
   const cardLanguage = settings.cardLanguage;
   const appLang = settings.appLanguage;
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
@@ -187,7 +188,7 @@ export default function HomeScreen() {
                 {i18n.t('home.title')}
               </Text>
             </View>
-            {selectedAllergens.length > 0 && (
+            {hasSelections && (
               <TouchableOpacity
                 onPress={() => router.push('/add-allergy')}
                 hitSlop={8}
@@ -200,7 +201,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {selectedAllergens.length === 0 ? (
+          {!hasSelections ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>🍽️</Text>
               <Text style={styles.emptyText}>
@@ -232,6 +233,17 @@ export default function HomeScreen() {
                   </Chip>
                 );
               })}
+              {selectedRestrictions.length > 0 && (
+                <Chip
+                  style={styles.restrictionChip}
+                  textStyle={styles.chipText}
+                  icon={() => (
+                    <Text style={styles.chipIcon}>📋</Text>
+                  )}
+                >
+                  {i18n.t('otherRestrictions.other')} ({selectedRestrictions.length})
+                </Chip>
+              )}
             </View>
           )}
         </Surface>
@@ -272,7 +284,7 @@ export default function HomeScreen() {
         </Surface>
 
         {/* Bottone Mostra Card */}
-        {selectedAllergens.length > 0 && (
+        {hasSelections && (
           <Surface style={styles.showCardSection} elevation={2}>
             <Text style={styles.readyText}>
               {i18n.t('home.cardReadyIn')} {currentLanguage?.nativeName}!
@@ -532,6 +544,10 @@ const styles = StyleSheet.create({
   },
   chip: {
     marginBottom: 4,
+  },
+  restrictionChip: {
+    marginBottom: 4,
+    backgroundColor: '#FFF8E1',
   },
   chipText: {
     fontSize: 14,

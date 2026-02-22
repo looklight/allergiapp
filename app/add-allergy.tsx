@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { Text, Checkbox, List, Button, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -15,7 +15,7 @@ import { Analytics } from '../utils/analytics';
 export default function AddAllergyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens } = useAppContext();
+  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions } = useAppContext();
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>(savedAllergens);
 
   useEffect(() => {
@@ -103,6 +103,28 @@ export default function AddAllergyScreen() {
             {index < ALLERGENS.length - 1 && <Divider />}
           </View>
         ))}
+
+        <Divider />
+        <Pressable
+          onPress={() => router.push('/other-restrictions')}
+          style={({ pressed }) => [
+            styles.otherRow,
+            pressed && styles.otherRowPressed,
+          ]}
+        >
+          <Text style={styles.otherIcon}>📋</Text>
+          <View style={styles.otherTextContainer}>
+            <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
+          </View>
+          <View style={styles.otherRight}>
+            {selectedRestrictions.length > 0 && (
+              <View style={styles.otherBadge}>
+                <Text style={styles.otherBadgeText}>{selectedRestrictions.length}</Text>
+              </View>
+            )}
+            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+          </View>
+        </Pressable>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -111,7 +133,7 @@ export default function AddAllergyScreen() {
           onPress={handleSave}
           style={styles.saveButton}
         >
-          {i18n.t('addAllergy.save')} ({selectedAllergens.length})
+          {i18n.t('addAllergy.save')} ({selectedAllergens.length + selectedRestrictions.length})
         </Button>
       </View>
     </View>
@@ -152,6 +174,48 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 8,
     alignSelf: 'center',
+  },
+  otherRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#F9F5FF',
+  },
+  otherRowPressed: {
+    backgroundColor: '#F0EAFC',
+  },
+  otherIcon: {
+    fontSize: 24,
+    marginRight: 8,
+    marginLeft: 16,
+  },
+  otherTextContainer: {
+    flex: 1,
+  },
+  otherTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  otherRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  otherBadge: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+  otherBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
   footer: {
     padding: 16,

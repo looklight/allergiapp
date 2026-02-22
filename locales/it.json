@@ -3,10 +3,10 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "Le Mie Allergie",
-    "noAllergies": "Non hai ancora aggiunto allergie",
-    "addAllergies": "Aggiungi Allergie",
-    "editAllergies": "Modifica allergie",
+    "title": "Cosa devo evitare?",
+    "noAllergies": "Non hai ancora aggiunto nulla",
+    "addAllergies": "Aggiungi",
+    "editAllergies": "Modifica",
     "showCard": "Mostra Card",
     "showCardToWaiter": "Mostra Card",
     "settings": "Impostazioni",
@@ -23,9 +23,19 @@
     "bannerHowToUseDesc": "Presenta la tua card al cameriere quando ordini al ristorante"
   },
   "addAllergy": {
-    "title": "Aggiungi Allergie",
+    "title": "Cosa devo evitare?",
     "subtitle": "Seleziona le tue allergie alimentari",
     "save": "Salva"
+  },
+  "otherRestrictions": {
+    "title": "Altre restrizioni",
+    "subtitle": "Seleziona gli alimenti da evitare",
+    "save": "Salva",
+    "other": "Altro",
+    "selectedCount": "{{count}} selezionati",
+    "pregnancyToggle": "Sono in gravidanza",
+    "pregnancyHint": "Mostrera' nella card che sei in gravidanza",
+    "foodsToAvoid": "Alimenti sconsigliati"
   },
   "card": {
     "title": "Allergie Alimentari",

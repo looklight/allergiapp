@@ -2,10 +2,13 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { storage, AppData, CURRENT_LEGAL_VERSION } from './storage';
 import { setAppLanguage, getDeviceLanguage } from './i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
+import { RestrictionItemId } from '../constants/otherRestrictions';
 
 interface AppContextValue {
   // State
   selectedAllergens: AllergenId[];
+  selectedRestrictions: RestrictionItemId[];
+  pregnancyMode: boolean;
   settings: UserSettings;
   downloadedLanguages: Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>;
   legalConsent: LegalConsent;
@@ -19,6 +22,8 @@ interface AppContextValue {
 
   // Actions
   setSelectedAllergens: (allergens: AllergenId[]) => Promise<void>;
+  setSelectedRestrictions: (restrictions: RestrictionItemId[]) => Promise<void>;
+  setPregnancyMode: (enabled: boolean) => Promise<void>;
   setCardLanguage: (language: AllLanguageCode) => Promise<void>;
   setAppLang: (language: AppLanguage) => Promise<void>;
   saveDownloadedLanguage: (langCode: DownloadableLanguageCode, data: DownloadedLanguageData) => Promise<void>;
@@ -32,6 +37,8 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAllergens, setSelectedAllergensState] = useState<AllergenId[]>([]);
+  const [selectedRestrictions, setSelectedRestrictionsState] = useState<RestrictionItemId[]>([]);
+  const [pregnancyMode, setPregnancyModeState] = useState(false);
   const [settings, setSettingsState] = useState<UserSettings>({ cardLanguage: 'en', appLanguage: 'en' });
   const [downloadedLanguages, setDownloadedLanguagesState] = useState<Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>>({});
   const [legalConsent, setLegalConsentState] = useState<LegalConsent>({ acceptedAt: null, version: '' });
@@ -42,6 +49,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const init = async () => {
       const data = await storage.loadAll();
       setSelectedAllergensState(data.selectedAllergens);
+      setSelectedRestrictionsState(data.selectedRestrictions);
+      setPregnancyModeState(data.pregnancyMode);
       setSettingsState(data.settings);
       setDownloadedLanguagesState(data.downloadedLanguages);
       setLegalConsentState(data.legalConsent);
@@ -59,6 +68,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setSelectedAllergens = useCallback(async (allergens: AllergenId[]) => {
     setSelectedAllergensState(allergens);
     await storage.setSelectedAllergens(allergens);
+  }, []);
+
+  const setSelectedRestrictions = useCallback(async (restrictions: RestrictionItemId[]) => {
+    setSelectedRestrictionsState(restrictions);
+    await storage.setSelectedRestrictions(restrictions);
+  }, []);
+
+  const setPregnancyMode = useCallback(async (enabled: boolean) => {
+    setPregnancyModeState(enabled);
+    await storage.setPregnancyMode(enabled);
   }, []);
 
   const setCardLanguage = useCallback(async (language: AllLanguageCode) => {
@@ -113,6 +132,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const deviceLanguage = getDeviceLanguage();
     const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage };
     setSelectedAllergensState([]);
+    setSelectedRestrictionsState([]);
+    setPregnancyModeState(false);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
     // Note: we keep legal consent when clearing data (user already accepted terms)
@@ -125,6 +146,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider value={{
       selectedAllergens,
+      selectedRestrictions,
+      pregnancyMode,
       settings,
       downloadedLanguages,
       legalConsent,
@@ -134,6 +157,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       needsLegalConsent,
       downloadedLanguageCodes,
       setSelectedAllergens,
+      setSelectedRestrictions,
+      setPregnancyMode,
       setCardLanguage,
       setAppLang,
       saveDownloadedLanguage,

@@ -3,18 +3,138 @@ import { Language } from '../types';
 interface CardTranslation {
   header: string;
   subtitle: string;
+  pregnancySubtitle: string;
   message: string;
+  pregnancyMessage: string;
   thanks: string;
   tapToSee: string;
   showIn: string;
   examples: string;
 }
 
+interface RestrictionCardTranslation {
+  header: string;
+  message: string;
+  pregnancyHeader: string;
+  pregnancyMessage: string;
+  pregnancySectionMessage: string;
+}
+
+export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTranslation> = {
+  it: {
+    header: 'ALIMENTI DA EVITARE',
+    message: 'Per motivi di salute, devo evitare i seguenti alimenti:',
+    pregnancyHeader: 'GRAVIDANZA',
+    pregnancyMessage: 'Sono in gravidanza. Per favore, assicuratevi che il mio cibo non contenga i seguenti alimenti:',
+    pregnancySectionMessage: 'Inoltre, a causa della gravidanza, devo evitare anche:',
+  },
+  en: {
+    header: 'FOODS TO AVOID',
+    message: 'For health reasons, I need to avoid the following foods:',
+    pregnancyHeader: 'PREGNANCY',
+    pregnancyMessage: 'I am pregnant. Please ensure my food does not contain the following:',
+    pregnancySectionMessage: 'Additionally, due to my pregnancy, I must also avoid:',
+  },
+  fr: {
+    header: 'ALIMENTS À ÉVITER',
+    message: 'Pour des raisons de santé, je dois éviter les aliments suivants :',
+    pregnancyHeader: 'GROSSESSE',
+    pregnancyMessage: 'Je suis enceinte. Veuillez vous assurer que ma nourriture ne contient pas les aliments suivants :',
+    pregnancySectionMessage: 'De plus, en raison de ma grossesse, je dois aussi éviter :',
+  },
+  de: {
+    header: 'ZU VERMEIDENDE LEBENSMITTEL',
+    message: 'Aus gesundheitlichen Gründen muss ich folgende Lebensmittel meiden:',
+    pregnancyHeader: 'SCHWANGERSCHAFT',
+    pregnancyMessage: 'Ich bin schwanger. Bitte stellen Sie sicher, dass mein Essen folgende Lebensmittel nicht enthält:',
+    pregnancySectionMessage: 'Zusätzlich muss ich wegen meiner Schwangerschaft auch Folgendes meiden:',
+  },
+  es: {
+    header: 'ALIMENTOS A EVITAR',
+    message: 'Por razones de salud, debo evitar los siguientes alimentos:',
+    pregnancyHeader: 'EMBARAZO',
+    pregnancyMessage: 'Estoy embarazada. Por favor, asegúrese de que mi comida no contenga los siguientes alimentos:',
+    pregnancySectionMessage: 'Además, debido a mi embarazo, también debo evitar:',
+  },
+  pt: {
+    header: 'ALIMENTOS A EVITAR',
+    message: 'Por razões de saúde, preciso evitar os seguintes alimentos:',
+    pregnancyHeader: 'GRAVIDEZ',
+    pregnancyMessage: 'Estou grávida. Por favor, certifique-se de que a minha comida não contém os seguintes alimentos:',
+    pregnancySectionMessage: 'Além disso, devido à minha gravidez, também devo evitar:',
+  },
+  nl: {
+    header: 'TE VERMIJDEN VOEDSEL',
+    message: 'Om gezondheidsredenen moet ik de volgende voedingsmiddelen vermijden:',
+    pregnancyHeader: 'ZWANGERSCHAP',
+    pregnancyMessage: 'Ik ben zwanger. Zorg ervoor dat mijn eten de volgende voedingsmiddelen niet bevat:',
+    pregnancySectionMessage: 'Daarnaast moet ik vanwege mijn zwangerschap ook het volgende vermijden:',
+  },
+  pl: {
+    header: 'PRODUKTY DO UNIKANIA',
+    message: 'Ze względów zdrowotnych muszę unikać następujących produktów:',
+    pregnancyHeader: 'CIĄŻA',
+    pregnancyMessage: 'Jestem w ciąży. Proszę upewnić się, że moje jedzenie nie zawiera następujących produktów:',
+    pregnancySectionMessage: 'Ponadto, z powodu ciąży, muszę również unikać:',
+  },
+  ru: {
+    header: 'ПРОДУКТЫ, КОТОРЫХ СЛЕДУЕТ ИЗБЕГАТЬ',
+    message: 'По состоянию здоровья мне необходимо избегать следующих продуктов:',
+    pregnancyHeader: 'БЕРЕМЕННОСТЬ',
+    pregnancyMessage: 'Я беременна. Пожалуйста, убедитесь, что моя еда не содержит следующих продуктов:',
+    pregnancySectionMessage: 'Кроме того, из-за беременности мне также следует избегать:',
+  },
+  sv: {
+    header: 'LIVSMEDEL ATT UNDVIKA',
+    message: 'Av hälsoskäl måste jag undvika följande livsmedel:',
+    pregnancyHeader: 'GRAVIDITET',
+    pregnancyMessage: 'Jag är gravid. Vänligen se till att min mat inte innehåller följande:',
+    pregnancySectionMessage: 'Dessutom, på grund av min graviditet, måste jag också undvika:',
+  },
+  zh: {
+    header: '需要避免的食物',
+    message: '出于健康原因，我需要避免以下食物：',
+    pregnancyHeader: '怀孕',
+    pregnancyMessage: '我怀孕了。请确保我的食物不含以下成分：',
+    pregnancySectionMessage: '此外，由于怀孕，我还需要避免：',
+  },
+  ja: {
+    header: '避けるべき食品',
+    message: '健康上の理由から、以下の食品を避ける必要があります：',
+    pregnancyHeader: '妊娠中',
+    pregnancyMessage: '妊娠中です。以下の食品が含まれていないことをご確認ください：',
+    pregnancySectionMessage: 'さらに、妊娠中のため、以下も避ける必要があります：',
+  },
+  ko: {
+    header: '피해야 할 음식',
+    message: '건강상의 이유로 다음 음식을 피해야 합니다:',
+    pregnancyHeader: '임신',
+    pregnancyMessage: '임신 중입니다. 제 음식에 다음이 포함되지 않도록 해주세요:',
+    pregnancySectionMessage: '또한, 임신으로 인해 다음도 피해야 합니다:',
+  },
+  th: {
+    header: 'อาหารที่ต้องหลีกเลี่ยง',
+    message: 'เพื่อสุขภาพ ฉันต้องหลีกเลี่ยงอาหารต่อไปนี้:',
+    pregnancyHeader: 'ตั้งครรภ์',
+    pregnancyMessage: 'ฉันตั้งครรภ์ กรุณาตรวจสอบให้แน่ใจว่าอาหารของฉันไม่มีสิ่งต่อไปนี้:',
+    pregnancySectionMessage: 'นอกจากนี้ เนื่องจากตั้งครรภ์ ฉันต้องหลีกเลี่ยงสิ่งต่อไปนี้ด้วย:',
+  },
+  ar: {
+    header: 'أطعمة يجب تجنبها',
+    message: 'لأسباب صحية، أحتاج إلى تجنب الأطعمة التالية:',
+    pregnancyHeader: 'الحمل',
+    pregnancyMessage: 'أنا حامل. يرجى التأكد من أن طعامي لا يحتوي على ما يلي:',
+    pregnancySectionMessage: 'بالإضافة إلى ذلك، بسبب حملي، يجب أيضًا تجنب:',
+  },
+};
+
 export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   it: {
     header: 'ATTENZIONE',
     subtitle: 'ALLERGIE ALIMENTARI',
+    pregnancySubtitle: 'GRAVIDANZA E ALLERGIE ALIMENTARI',
     message: 'Ho le seguenti allergie alimentari. Per favore, assicuratevi che il mio cibo non contenga questi ingredienti.',
+    pregnancyMessage: 'Sono in gravidanza e ho le seguenti allergie alimentari. Per favore, assicuratevi che il mio cibo non contenga questi ingredienti.',
     thanks: 'Vi ringrazio molto per la vostra comprensione e il vostro aiuto.',
     tapToSee: 'Tocca per vedere esempi',
     showIn: 'Mostra in',
@@ -23,7 +143,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   en: {
     header: 'ATTENTION',
     subtitle: 'FOOD ALLERGIES',
+    pregnancySubtitle: 'PREGNANCY & FOOD ALLERGIES',
     message: 'I have the following food allergies. Please ensure my food does not contain these ingredients.',
+    pregnancyMessage: 'I am pregnant and I have the following food allergies. Please ensure my food does not contain these ingredients.',
     thanks: 'Thank you so much for your understanding and your help.',
     tapToSee: 'Tap to see examples',
     showIn: 'Show in',
@@ -32,7 +154,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   fr: {
     header: 'ATTENTION',
     subtitle: 'ALLERGIES ALIMENTAIRES',
+    pregnancySubtitle: 'GROSSESSE ET ALLERGIES ALIMENTAIRES',
     message: 'J\'ai les allergies alimentaires suivantes. Veuillez vous assurer que ma nourriture ne contient pas ces ingrédients.',
+    pregnancyMessage: 'Je suis enceinte et j\'ai les allergies alimentaires suivantes. Veuillez vous assurer que ma nourriture ne contient pas ces ingrédients.',
     thanks: 'Je vous remercie beaucoup pour votre compréhension et votre aide.',
     tapToSee: 'Appuyez pour voir des exemples',
     showIn: 'Afficher en',
@@ -41,7 +165,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   de: {
     header: 'ACHTUNG',
     subtitle: 'LEBENSMITTELALLERGIEN',
+    pregnancySubtitle: 'SCHWANGERSCHAFT & LEBENSMITTELALLERGIEN',
     message: 'Ich habe die folgenden Lebensmittelallergien. Bitte stellen Sie sicher, dass mein Essen diese Zutaten nicht enthält.',
+    pregnancyMessage: 'Ich bin schwanger und habe die folgenden Lebensmittelallergien. Bitte stellen Sie sicher, dass mein Essen diese Zutaten nicht enthält.',
     thanks: 'Ich danke Ihnen sehr für Ihr Verständnis und Ihre Hilfe.',
     tapToSee: 'Tippen für Beispiele',
     showIn: 'Anzeigen auf',
@@ -50,7 +176,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   es: {
     header: 'ATENCIÓN',
     subtitle: 'ALERGIAS ALIMENTARIAS',
+    pregnancySubtitle: 'EMBARAZO Y ALERGIAS ALIMENTARIAS',
     message: 'Tengo las siguientes alergias alimentarias. Por favor, asegúrese de que mi comida no contenga estos ingredientes.',
+    pregnancyMessage: 'Estoy embarazada y tengo las siguientes alergias alimentarias. Por favor, asegúrese de que mi comida no contenga estos ingredientes.',
     thanks: 'Les agradezco mucho su comprensión y su ayuda.',
     tapToSee: 'Toca para ver ejemplos',
     showIn: 'Mostrar en',
@@ -59,7 +187,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   pt: {
     header: 'ATENÇÃO',
     subtitle: 'ALERGIAS ALIMENTARES',
+    pregnancySubtitle: 'GRAVIDEZ E ALERGIAS ALIMENTARES',
     message: 'Tenho as seguintes alergias alimentares. Por favor, certifique-se de que a minha comida não contém estes ingredientes.',
+    pregnancyMessage: 'Estou grávida e tenho as seguintes alergias alimentares. Por favor, certifique-se de que a minha comida não contém estes ingredientes.',
     thanks: 'Agradeço muito a vossa compreensão e a vossa ajuda.',
     tapToSee: 'Toque para ver exemplos',
     showIn: 'Mostrar em',
@@ -68,7 +198,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   nl: {
     header: 'LET OP',
     subtitle: 'VOEDSELALLERGIEËN',
+    pregnancySubtitle: 'ZWANGERSCHAP & VOEDSELALLERGIEËN',
     message: 'Ik heb de volgende voedselallergieën. Zorg ervoor dat mijn eten deze ingrediënten niet bevat.',
+    pregnancyMessage: 'Ik ben zwanger en ik heb de volgende voedselallergieën. Zorg ervoor dat mijn eten deze ingrediënten niet bevat.',
     thanks: 'Hartelijk dank voor uw begrip en uw hulp.',
     tapToSee: 'Tik voor voorbeelden',
     showIn: 'Tonen in',
@@ -77,7 +209,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   pl: {
     header: 'UWAGA',
     subtitle: 'ALERGIE POKARMOWE',
+    pregnancySubtitle: 'CIĄŻA I ALERGIE POKARMOWE',
     message: 'Mam następujące alergie pokarmowe. Proszę upewnić się, że moje jedzenie nie zawiera tych składników.',
+    pregnancyMessage: 'Jestem w ciąży i mam następujące alergie pokarmowe. Proszę upewnić się, że moje jedzenie nie zawiera tych składników.',
     thanks: 'Bardzo dziękuję za zrozumienie i pomoc.',
     tapToSee: 'Dotknij, aby zobaczyć przykłady',
     showIn: 'Pokaż w',
@@ -86,7 +220,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   ru: {
     header: 'ВНИМАНИЕ',
     subtitle: 'ПИЩЕВАЯ АЛЛЕРГИЯ',
+    pregnancySubtitle: 'БЕРЕМЕННОСТЬ И ПИЩЕВАЯ АЛЛЕРГИЯ',
     message: 'У меня следующие пищевые аллергии. Пожалуйста, убедитесь, что моя еда не содержит этих ингредиентов.',
+    pregnancyMessage: 'Я беременна и у меня следующие пищевые аллергии. Пожалуйста, убедитесь, что моя еда не содержит этих ингредиентов.',
     thanks: 'Большое спасибо за ваше понимание и помощь.',
     tapToSee: 'Нажмите для примеров',
     showIn: 'Показать на',
@@ -95,7 +231,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   sv: {
     header: 'OBSERVERA',
     subtitle: 'MATALLERGIER',
+    pregnancySubtitle: 'GRAVIDITET & MATALLERGIER',
     message: 'Jag har följande matallergier. Vänligen se till att min mat inte innehåller dessa ingredienser.',
+    pregnancyMessage: 'Jag är gravid och har följande matallergier. Vänligen se till att min mat inte innehåller dessa ingredienser.',
     thanks: 'Tack så mycket för er förståelse och er hjälp.',
     tapToSee: 'Tryck för exempel',
     showIn: 'Visa på',
@@ -104,7 +242,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   zh: {
     header: '注意',
     subtitle: '食物过敏',
+    pregnancySubtitle: '怀孕与食物过敏',
     message: '我有以下食物过敏。请确保我的食物不含这些成分。',
+    pregnancyMessage: '我怀孕了，并且有以下食物过敏。请确保我的食物不含这些成分。',
     thanks: '非常感谢您的理解和帮助。',
     tapToSee: '点击查看示例',
     showIn: '显示为',
@@ -113,7 +253,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   ja: {
     header: '注意',
     subtitle: '食物アレルギー',
+    pregnancySubtitle: '妊娠中・食物アレルギー',
     message: '私は以下の食物アレルギーがあります。私の食事にこれらの食材が含まれていないことをご確認ください。',
+    pregnancyMessage: '妊娠中であり、以下の食物アレルギーがあります。私の食事にこれらの食材が含まれていないことをご確認ください。',
     thanks: 'ご理解とご協力に心から感謝いたします。',
     tapToSee: 'タップして例を見る',
     showIn: '表示言語',
@@ -122,7 +264,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   ko: {
     header: '주의',
     subtitle: '식품 알레르기',
+    pregnancySubtitle: '임신 및 식품 알레르기',
     message: '저는 다음과 같은 식품 알레르기가 있습니다. 제 음식에 이러한 재료가 포함되지 않도록 해주세요.',
+    pregnancyMessage: '임신 중이며 다음과 같은 식품 알레르기가 있습니다. 제 음식에 이러한 재료가 포함되지 않도록 해주세요.',
     thanks: '이해와 도움에 진심으로 감사드립니다.',
     tapToSee: '예시를 보려면 탭하세요',
     showIn: '표시 언어',
@@ -131,7 +275,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   th: {
     header: 'โปรดทราบ',
     subtitle: 'แพ้อาหาร',
+    pregnancySubtitle: 'ตั้งครรภ์และแพ้อาหาร',
     message: 'ฉันมีอาการแพ้อาหารดังต่อไปนี้ กรุณาตรวจสอบให้แน่ใจว่าอาหารของฉันไม่มีส่วนผสมเหล่านี้',
+    pregnancyMessage: 'ฉันตั้งครรภ์และมีอาการแพ้อาหารดังต่อไปนี้ กรุณาตรวจสอบให้แน่ใจว่าอาหารของฉันไม่มีส่วนผสมเหล่านี้',
     thanks: 'ขอบคุณมากสำหรับความเข้าใจและความช่วยเหลือของคุณ',
     tapToSee: 'แตะเพื่อดูตัวอย่าง',
     showIn: 'แสดงใน',
@@ -140,7 +286,9 @@ export const CARD_TRANSLATIONS: Record<Language, CardTranslation> = {
   ar: {
     header: 'تنبيه',
     subtitle: 'حساسية الطعام',
+    pregnancySubtitle: 'الحمل وحساسية الطعام',
     message: 'لدي حساسية من الأطعمة التالية. يرجى التأكد من أن طعامي لا يحتوي على هذه المكونات.',
+    pregnancyMessage: 'أنا حامل ولدي حساسية من الأطعمة التالية. يرجى التأكد من أن طعامي لا يحتوي على هذه المكونات.',
     thanks: 'أشكركم جزيل الشكر على تفهمكم ومساعدتكم.',
     tapToSee: 'اضغط لرؤية الأمثلة',
     showIn: 'عرض بـ',

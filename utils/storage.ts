@@ -1,9 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
+import { RestrictionItemId } from '../constants/otherRestrictions';
 import { getDeviceLanguage } from './i18n';
 
 const STORAGE_KEYS = {
   SELECTED_ALLERGENS: 'allergiapp_selected_allergens',
+  SELECTED_RESTRICTIONS: 'allergiapp_selected_restrictions',
+  PREGNANCY_MODE: 'allergiapp_pregnancy_mode',
   SETTINGS: 'allergiapp_settings',
   DOWNLOADED_LANGUAGES: 'allergiapp_downloaded_languages',
   LEGAL_CONSENT: 'allergiapp_legal_consent',
@@ -19,6 +22,8 @@ const DEFAULT_SETTINGS: UserSettings = {
 
 export interface AppData {
   selectedAllergens: AllergenId[];
+  selectedRestrictions: RestrictionItemId[];
+  pregnancyMode: boolean;
   settings: UserSettings;
   downloadedLanguages: Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>;
   legalConsent: LegalConsent;
@@ -41,16 +46,20 @@ export const storage = {
     try {
       const keys = [
         STORAGE_KEYS.SELECTED_ALLERGENS,
+        STORAGE_KEYS.SELECTED_RESTRICTIONS,
+        STORAGE_KEYS.PREGNANCY_MODE,
         STORAGE_KEYS.SETTINGS,
         STORAGE_KEYS.DOWNLOADED_LANGUAGES,
         STORAGE_KEYS.LEGAL_CONSENT,
         STORAGE_KEYS.TRACKING_CONSENT,
       ];
       const results = await AsyncStorage.multiGet(keys);
-      const [allergensRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
+      const [allergensRaw, restrictionsRaw, pregnancyRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
 
       return {
         selectedAllergens: allergensRaw ? JSON.parse(allergensRaw) : [],
+        selectedRestrictions: restrictionsRaw ? JSON.parse(restrictionsRaw) : [],
+        pregnancyMode: pregnancyRaw ? JSON.parse(pregnancyRaw) : false,
         settings: settingsRaw ? { ...DEFAULT_SETTINGS, ...JSON.parse(settingsRaw) } : DEFAULT_SETTINGS,
         downloadedLanguages: downloadedRaw ? JSON.parse(downloadedRaw) : {},
         legalConsent: legalRaw ? JSON.parse(legalRaw) : DEFAULT_LEGAL_CONSENT,
@@ -59,6 +68,8 @@ export const storage = {
     } catch {
       return {
         selectedAllergens: [],
+        selectedRestrictions: [],
+        pregnancyMode: false,
         settings: DEFAULT_SETTINGS,
         downloadedLanguages: {},
         legalConsent: DEFAULT_LEGAL_CONSENT,
@@ -81,6 +92,46 @@ export const storage = {
       await AsyncStorage.setItem(
         STORAGE_KEYS.SELECTED_ALLERGENS,
         JSON.stringify(allergens)
+      );
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  async getSelectedRestrictions(): Promise<RestrictionItemId[]> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.SELECTED_RESTRICTIONS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setSelectedRestrictions(restrictions: RestrictionItemId[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.SELECTED_RESTRICTIONS,
+        JSON.stringify(restrictions)
+      );
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  async getPregnancyMode(): Promise<boolean> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.PREGNANCY_MODE);
+      return data ? JSON.parse(data) : false;
+    } catch {
+      return false;
+    }
+  },
+
+  async setPregnancyMode(enabled: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.PREGNANCY_MODE,
+        JSON.stringify(enabled)
       );
     } catch {
       // Storage write failed silently
@@ -118,6 +169,8 @@ export const storage = {
     try {
       await AsyncStorage.multiRemove([
         STORAGE_KEYS.SELECTED_ALLERGENS,
+        STORAGE_KEYS.SELECTED_RESTRICTIONS,
+        STORAGE_KEYS.PREGNANCY_MODE,
         STORAGE_KEYS.SETTINGS,
         STORAGE_KEYS.DOWNLOADED_LANGUAGES,
       ]);

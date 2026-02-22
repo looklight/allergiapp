@@ -7,8 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
-import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
+import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS } from '../constants/cardTranslations';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
+import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
@@ -24,7 +25,7 @@ export default function CardScreen() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
-  const { selectedAllergens, settings, downloadedLanguages } = useAppContext();
+  const { selectedAllergens, selectedRestrictions, pregnancyMode, settings, downloadedLanguages } = useAppContext();
   const cardLanguage = settings.cardLanguage;
   const appLanguage = settings.appLanguage;
   const [showInAppLanguage, setShowInAppLanguage] = useState(false);
@@ -85,7 +86,9 @@ export default function CardScreen() {
       return {
         header: downloadedLanguageData.cardTexts.header,
         subtitle: downloadedLanguageData.cardTexts.subtitle,
+        pregnancySubtitle: downloadedLanguageData.cardTexts.pregnancySubtitle || downloadedLanguageData.cardTexts.subtitle,
         message: downloadedLanguageData.cardTexts.message,
+        pregnancyMessage: downloadedLanguageData.cardTexts.pregnancyMessage || downloadedLanguageData.cardTexts.message,
         thanks: downloadedLanguageData.cardTexts.thanks,
         tapToSee: downloadedLanguageData.cardTexts.tapToSee,
         showIn: downloadedLanguageData.cardTexts.showIn,
@@ -112,6 +115,42 @@ export default function CardScreen() {
     return ALLERGEN_IMAGES[id]?.description[displayLanguage as Language] || ALLERGEN_IMAGES[id]?.description.en || '';
   };
 
+  // Traduzioni per la sezione restrizioni
+  const restrictionTranslations = useMemo(() => {
+    const base = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts)
+      ? downloadedLanguageData.restrictionCardTexts
+      : RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
+
+    // Se pregnancyMode, usa header e messaggio specifici
+    if (pregnancyMode) {
+      const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
+      return {
+        header: (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts?.pregnancyHeader)
+          ? downloadedLanguageData.restrictionCardTexts.pregnancyHeader
+          : hardcoded.pregnancyHeader,
+        message: (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts?.pregnancyMessage)
+          ? downloadedLanguageData.restrictionCardTexts.pregnancyMessage
+          : hardcoded.pregnancyMessage,
+        sectionMessage: (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts?.pregnancySectionMessage)
+          ? downloadedLanguageData.restrictionCardTexts.pregnancySectionMessage
+          : hardcoded.pregnancySectionMessage,
+      };
+    }
+    return { header: base.header, message: base.message, sectionMessage: base.message };
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage, pregnancyMode]);
+
+  const getRestrictionTranslation = (id: RestrictionItemId): string => {
+    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictions) {
+      return downloadedLanguageData.restrictions[id] || RESTRICTION_ITEMS.find((r) => r.id === id)?.translations.en || '';
+    }
+    const item = RESTRICTION_ITEMS.find((r) => r.id === id);
+    return item?.translations[displayLanguage as Language] || item?.translations.en || '';
+  };
+
+  const getRestrictionInfo = (id: RestrictionItemId) => {
+    return RESTRICTION_ITEMS.find((r) => r.id === id);
+  };
+
   const getAllergenWarning = (id: AllergenId): string | undefined => {
     const images = ALLERGEN_IMAGES[id];
     if (!images?.warning) return undefined;
@@ -122,6 +161,58 @@ export default function CardScreen() {
     return images.warning[displayLanguage as Language] || images.warning.en;
   };
 
+  // Palette colori condizionale
+  const colors = useMemo(() => {
+    if (pregnancyMode && selectedRestrictions.length > 0) {
+      return {
+        isPregnancy: true,
+        containerBg: '#F48FB1',
+        headerBg: '#F48FB1',
+        messageBg: '#FFF0F5',
+        messageBorder: '#FCE4EC',
+        allergenTextColor: '#C2185B',
+        breakdownBg: '#FFF0F5',
+        breakdownBorder: '#F8BBD0',
+        breakdownDescColor: '#AD1457',
+        warningTextColor: '#C2185B',
+        thanksBg: '#F3E5F5',
+        thanksColor: '#9C27B0',
+        restrictionBg: '#FFF0F5',
+        restrictionBorder: '#F8BBD0',
+        restrictionHeaderColor: '#C2185B',
+        restrictionTextColor: '#C2185B',
+        landscapeLeftBg: '#F48FB1',
+        landscapeWrapperBg: '#F06292',
+        landscapeAllergenNameColor: '#AD1457',
+        landscapeDetailBadgeBg: '#FFF0F5',
+        landscapeDetailBadgeTextColor: '#C2185B',
+      };
+    }
+    return {
+      isPregnancy: false,
+      containerBg: theme.colors.error,
+      headerBg: theme.colors.error,
+      messageBg: '#FFF3E0',
+      messageBorder: '#FFE0B2',
+      allergenTextColor: theme.colors.error,
+      breakdownBg: '#FFF8E1',
+      breakdownBorder: '#FFC107',
+      breakdownDescColor: '#5D4037',
+      warningTextColor: '#D84315',
+      thanksBg: theme.colors.primaryLight,
+      thanksColor: '#2E7D32',
+      restrictionBg: '#FFF8E1',
+      restrictionBorder: '#FFE082',
+      restrictionHeaderColor: '#E65100',
+      restrictionTextColor: '#E65100',
+      landscapeLeftBg: '#D32F2F',
+      landscapeWrapperBg: '#C62828',
+      landscapeAllergenNameColor: '#B71C1C',
+      landscapeDetailBadgeBg: '#FFEBEE',
+      landscapeDetailBadgeTextColor: '#C62828',
+    };
+  }, [pregnancyMode, selectedRestrictions.length]);
+
   // Stili dinamici basati sull'orientamento (per portrait)
   const dynamicStyles = useMemo(() => StyleSheet.create({
     content: {
@@ -129,7 +220,7 @@ export default function CardScreen() {
       paddingBottom: 32,
     },
     headerSection: {
-      backgroundColor: theme.colors.error,
+      backgroundColor: colors.headerBg,
       padding: 24,
       alignItems: 'center',
     },
@@ -148,12 +239,13 @@ export default function CardScreen() {
       color: '#FFFFFF',
       marginTop: 4,
       letterSpacing: 1,
+      textAlign: 'center' as const,
     },
     messageSection: {
       padding: 20,
-      backgroundColor: '#FFF3E0',
+      backgroundColor: colors.messageBg,
       borderBottomWidth: 1,
-      borderBottomColor: '#FFE0B2',
+      borderBottomColor: colors.messageBorder,
     },
     message: {
       fontSize: 16,
@@ -178,7 +270,7 @@ export default function CardScreen() {
     allergenText: {
       fontSize: 18,
       fontWeight: '600' as const,
-      color: theme.colors.error,
+      color: colors.allergenTextColor,
     },
     tapHint: {
       fontSize: 12,
@@ -186,25 +278,25 @@ export default function CardScreen() {
       marginTop: 2,
     },
     breakdownContainer: {
-      backgroundColor: '#FFF8E1',
+      backgroundColor: colors.breakdownBg,
       padding: 16,
       marginBottom: 8,
       borderRadius: 8,
       borderLeftWidth: 4,
-      borderLeftColor: '#FFC107',
+      borderLeftColor: colors.breakdownBorder,
     },
     exampleEmoji: {
       fontSize: 36,
     },
     breakdownDescription: {
       fontSize: 14,
-      color: '#5D4037',
+      color: colors.breakdownDescColor,
       textAlign: 'center' as const,
       fontStyle: 'italic' as const,
     },
     warningText: {
       fontSize: 13,
-      color: '#D84315',
+      color: colors.warningTextColor,
       textAlign: 'center' as const,
       fontWeight: '600' as const,
       marginTop: 8,
@@ -212,21 +304,29 @@ export default function CardScreen() {
     },
     thanksSection: {
       padding: 20,
-      backgroundColor: theme.colors.primaryLight,
+      backgroundColor: colors.thanksBg,
     },
     thanks: {
       fontSize: 16,
-      color: '#2E7D32',
+      color: colors.thanksColor,
       textAlign: 'center' as const,
       fontStyle: 'italic' as const,
     },
-  }), []);
+  }), [colors]);
 
   const handleLanguageToggle = () => {
     const newValue = !showInAppLanguage;
     setShowInAppLanguage(newValue);
     Analytics.logCardLanguageToggled(newValue, cardLanguage, appLanguage);
   };
+
+  const hasAllergens = selectedAllergens.length > 0;
+  const hasRestrictions = selectedRestrictions.length > 0;
+
+  // Restrictions inline (accodate agli allergeni) vs separate (sezione dedicata)
+  // Solo la gravidanza merita una sezione separata; gli "altri" vanno in coda agli allergeni
+  const inlineRestrictions = !pregnancyMode ? selectedRestrictions : [];
+  const separateRestrictions = pregnancyMode ? selectedRestrictions : [];
 
   // Render Landscape Layout - Design premium moderno
   const renderLandscape = () => {
@@ -236,7 +336,7 @@ export default function CardScreen() {
     const safeBottom = Math.max(insets.bottom, 6);
 
     return (
-      <View style={styles.landscapeWrapper}>
+      <View style={[styles.landscapeWrapper, { backgroundColor: colors.landscapeWrapperBg }]}>
         <View style={[styles.landscapeCard, {
           marginTop: safeTop,
           marginLeft: safeLeft,
@@ -245,62 +345,102 @@ export default function CardScreen() {
         }]}>
           {/* Contenuto a due colonne */}
           <View style={styles.landscapeBody}>
-            {/* Colonna sinistra - Allergeni con header integrato */}
-            <View style={styles.landscapeLeftColumn}>
-              {/* Mini header nella colonna sinistra */}
-              <View style={styles.landscapeLeftHeader}>
-                <Text style={styles.landscapeWarningIcon}>⚠️</Text>
-                <Text style={styles.landscapeLeftHeaderTitle}>{translations.header}</Text>
-              </View>
+            {/* Colonna sinistra - Allergeni + inline restrictions con header integrato */}
+            {(hasAllergens || inlineRestrictions.length > 0) && (
+              <View style={[styles.landscapeLeftColumn, { backgroundColor: colors.landscapeLeftBg }]}>
+                {/* Mini header nella colonna sinistra */}
+                <View style={styles.landscapeLeftHeader}>
+                  {!colors.isPregnancy && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
+                  <Text style={styles.landscapeLeftHeaderTitle}>{colors.isPregnancy ? '🤰 ' : ''}{translations.header}</Text>
+                </View>
 
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.landscapeAllergensScroll}
-              >
-                {selectedAllergens.map((id, index) => {
-                  const allergen = getAllergenInfo(id);
-                  if (!allergen) return null;
-                  const isSelected = selectedLandscapeAllergen === id;
-                  return (
-                    <Pressable
-                      key={id}
-                      onPress={() => setSelectedLandscapeAllergen(isSelected ? null : id)}
-                      style={[
-                        styles.landscapeAllergenItem,
-                        isSelected && styles.landscapeAllergenItemSelected,
-                        index === selectedAllergens.length - 1 && { marginBottom: 0 }
-                      ]}
-                    >
-                      <View style={[
-                        styles.landscapeAllergenIconBg,
-                        isSelected && styles.landscapeAllergenIconBgSelected
-                      ]}>
-                        <Text style={styles.landscapeAllergenIcon}>{allergen.icon}</Text>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.landscapeAllergensScroll}
+                >
+                  {selectedAllergens.map((id, index) => {
+                    const allergen = getAllergenInfo(id);
+                    if (!allergen) return null;
+                    const isSelected = selectedLandscapeAllergen === id;
+                    const isLast = index === selectedAllergens.length - 1 && inlineRestrictions.length === 0;
+                    return (
+                      <Pressable
+                        key={id}
+                        onPress={() => setSelectedLandscapeAllergen(isSelected ? null : id)}
+                        style={[
+                          styles.landscapeAllergenItem,
+                          isSelected && styles.landscapeAllergenItemSelected,
+                          isLast && { marginBottom: 0 }
+                        ]}
+                      >
+                        <View style={[
+                          styles.landscapeAllergenIconBg,
+                          isSelected && styles.landscapeAllergenIconBgSelected
+                        ]}>
+                          <Text style={styles.landscapeAllergenIcon}>{allergen.icon}</Text>
+                        </View>
+                        <Text style={[
+                          styles.landscapeAllergenName,
+                          { color: colors.landscapeAllergenNameColor },
+                          isSelected && styles.landscapeAllergenNameSelected
+                        ]} numberOfLines={2}>
+                          {getAllergenTranslation(id)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+
+                  {inlineRestrictions.map((id, index) => {
+                    const item = getRestrictionInfo(id);
+                    if (!item) return null;
+                    const isLast = index === inlineRestrictions.length - 1;
+                    return (
+                      <View
+                        key={id}
+                        style={[
+                          styles.landscapeAllergenItem,
+                          isLast && { marginBottom: 0 }
+                        ]}
+                      >
+                        <View style={styles.landscapeAllergenIconBg}>
+                          <Text style={styles.landscapeAllergenIcon}>{item.icon}</Text>
+                        </View>
+                        <Text style={[
+                          styles.landscapeAllergenName,
+                          { color: colors.landscapeAllergenNameColor },
+                        ]} numberOfLines={2}>
+                          {getRestrictionTranslation(id)}
+                        </Text>
                       </View>
-                      <Text style={[
-                        styles.landscapeAllergenName,
-                        isSelected && styles.landscapeAllergenNameSelected
-                      ]} numberOfLines={2}>
-                        {getAllergenTranslation(id)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
 
             {/* Colonna destra - Dettagli */}
             <View style={styles.landscapeRightColumn}>
-              {/* Header colonna destra */}
-              <View style={styles.landscapeRightHeader}>
-                <Text style={styles.landscapeRightHeaderText}>{translations.message}</Text>
-              </View>
+              {/* Header colonna destra - messaggio allergie solo se ci sono */}
+              {hasAllergens && (
+                <View style={styles.landscapeRightHeader}>
+                  <Text style={styles.landscapeRightHeaderText}>{pregnancyMode ? translations.pregnancyMessage : translations.message}</Text>
+                </View>
+              )}
+
+              {/* Header alternativo solo restrizioni (gravidanza o altri) */}
+              {!hasAllergens && hasRestrictions && (
+                <View style={[styles.landscapeRightHeader, { backgroundColor: colors.restrictionBg }]}>
+                  {!colors.isPregnancy && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
+                  <Text style={[styles.landscapeRightHeaderText, { fontWeight: 'bold' }]}>{restrictionTranslations.message}</Text>
+                </View>
+              )}
 
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.landscapeDetailsScroll}
+                style={{ flex: 1 }}
               >
-                {selectedAllergens.map((id, index) => {
+                {hasAllergens && selectedAllergens.map((id, index) => {
                   const allergen = getAllergenInfo(id);
                   const images = ALLERGEN_IMAGES[id];
                   if (!allergen || !images) return null;
@@ -318,10 +458,11 @@ export default function CardScreen() {
                       <View style={styles.landscapeDetailTop}>
                         <View style={[
                           styles.landscapeDetailBadge,
+                          { backgroundColor: colors.landscapeDetailBadgeBg },
                           isSelected && styles.landscapeDetailBadgeSelected
                         ]}>
                           <Text style={styles.landscapeDetailBadgeIcon}>{allergen.icon}</Text>
-                          <Text style={styles.landscapeDetailBadgeText}>{getAllergenTranslation(id)}</Text>
+                          <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor }]}>{getAllergenTranslation(id)}</Text>
                         </View>
                       </View>
                       <View style={styles.landscapeExamplesRow}>
@@ -339,11 +480,47 @@ export default function CardScreen() {
                     </Pressable>
                   );
                 })}
+
+                {inlineRestrictions.map((id) => {
+                  const item = getRestrictionInfo(id);
+                  if (!item) return null;
+                  return (
+                    <View key={id} style={styles.landscapeDetailCard}>
+                      <View style={styles.landscapeDetailTop}>
+                        <View style={[styles.landscapeDetailBadge, { backgroundColor: colors.landscapeDetailBadgeBg }]}>
+                          <Text style={styles.landscapeDetailBadgeIcon}>{item.icon}</Text>
+                          <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor }]}>{getRestrictionTranslation(id)}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+
+                {separateRestrictions.length > 0 && (
+                  <View style={[styles.landscapeRestrictionSection, hasAllergens && { borderTopColor: colors.restrictionBorder }]}>
+                    <View style={[styles.landscapeRestrictionHeader, { backgroundColor: colors.restrictionBg, borderBottomColor: colors.restrictionBorder }]}>
+                      <Text style={[styles.landscapeRestrictionHeaderText, { color: colors.restrictionHeaderColor }]}>{restrictionTranslations.header}</Text>
+                    </View>
+                    <Text style={styles.landscapeRestrictionMessage}>{hasAllergens ? restrictionTranslations.sectionMessage : restrictionTranslations.message}</Text>
+                    <View style={styles.landscapeRestrictionList}>
+                      {separateRestrictions.map((id) => {
+                        const item = getRestrictionInfo(id);
+                        if (!item) return null;
+                        return (
+                          <View key={id} style={[styles.landscapeRestrictionItem, { borderColor: colors.restrictionBorder }]}>
+                            <Text style={styles.landscapeRestrictionIcon}>{item.icon}</Text>
+                            <Text style={[styles.landscapeRestrictionName, { color: colors.restrictionTextColor }]}>{getRestrictionTranslation(id)}</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
               </ScrollView>
 
               {/* Footer integrato */}
-              <View style={styles.landscapeFooter}>
-                <Text style={styles.landscapeFooterText}>{translations.thanks}</Text>
+              <View style={[styles.landscapeFooter, { backgroundColor: colors.thanksBg }]}>
+                <Text style={[styles.landscapeFooterText, { color: colors.thanksColor }]}>{translations.thanks}</Text>
               </View>
             </View>
           </View>
@@ -358,58 +535,105 @@ export default function CardScreen() {
       <Surface style={styles.card} elevation={4}>
         <View style={styles.cardContent}>
           <View style={dynamicStyles.headerSection}>
-            <Text style={dynamicStyles.warningIcon}>⚠️</Text>
-            <Text style={dynamicStyles.header}>{translations.header}</Text>
-            <Text style={dynamicStyles.subtitle}>{translations.subtitle}</Text>
+            {!colors.isPregnancy && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
+            <Text style={dynamicStyles.header}>{colors.isPregnancy ? '🤰 ' : ''}{translations.header}</Text>
+            {hasAllergens && (
+              <Text style={dynamicStyles.subtitle}>{pregnancyMode ? translations.pregnancySubtitle : translations.subtitle}</Text>
+            )}
+            {!hasAllergens && inlineRestrictions.length > 0 && (
+              <Text style={dynamicStyles.subtitle}>{restrictionTranslations.header}</Text>
+            )}
           </View>
 
-          <View style={dynamicStyles.messageSection}>
-            <Text style={dynamicStyles.message}>{translations.message}</Text>
-          </View>
+          {hasAllergens && (
+            <View style={dynamicStyles.messageSection}>
+              <Text style={dynamicStyles.message}>{pregnancyMode ? translations.pregnancyMessage : translations.message}</Text>
+            </View>
+          )}
 
-          <View style={dynamicStyles.allergensSection}>
-            {selectedAllergens.map((id) => {
-              const allergen = getAllergenInfo(id);
-              const images = ALLERGEN_IMAGES[id];
-              if (!allergen || !images) return null;
-              const isExpanded = expandedAllergen === id;
+          {!hasAllergens && inlineRestrictions.length > 0 && (
+            <View style={dynamicStyles.messageSection}>
+              <Text style={dynamicStyles.message}>{restrictionTranslations.message}</Text>
+            </View>
+          )}
 
-              return (
-                <View key={id}>
-                  <Pressable
-                    onPress={() => toggleExpand(id)}
-                    style={({ pressed }) => [
-                      dynamicStyles.allergenRow,
-                      pressed && styles.allergenRowPressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${getAllergenTranslation(id)}, ${translations.tapToSee}`}
-                    accessibilityState={{ expanded: isExpanded }}
-                  >
-                    <Text style={dynamicStyles.allergenIcon}>{allergen.icon}</Text>
-                    <View style={styles.allergenTextContainer}>
-                      <Text style={dynamicStyles.allergenText}>{getAllergenTranslation(id)}</Text>
-                      <Text style={dynamicStyles.tapHint}>{translations.tapToSee} {isExpanded ? '▲' : '▼'}</Text>
-                    </View>
-                  </Pressable>
+          {(hasAllergens || inlineRestrictions.length > 0) && (
+            <View style={dynamicStyles.allergensSection}>
+              {selectedAllergens.map((id) => {
+                const allergen = getAllergenInfo(id);
+                const images = ALLERGEN_IMAGES[id];
+                if (!allergen || !images) return null;
+                const isExpanded = expandedAllergen === id;
 
-                  {isExpanded && (
-                    <View style={dynamicStyles.breakdownContainer}>
-                      <View style={styles.examplesRow}>
-                        {images.examples.map((emoji, index) => (
-                          <Text key={index} style={dynamicStyles.exampleEmoji}>{emoji}</Text>
-                        ))}
+                return (
+                  <View key={id}>
+                    <Pressable
+                      onPress={() => toggleExpand(id)}
+                      style={({ pressed }) => [
+                        dynamicStyles.allergenRow,
+                        pressed && styles.allergenRowPressed,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${getAllergenTranslation(id)}, ${translations.tapToSee}`}
+                      accessibilityState={{ expanded: isExpanded }}
+                    >
+                      <Text style={dynamicStyles.allergenIcon}>{allergen.icon}</Text>
+                      <View style={styles.allergenTextContainer}>
+                        <Text style={dynamicStyles.allergenText}>{getAllergenTranslation(id)}</Text>
+                        <Text style={dynamicStyles.tapHint}>{translations.tapToSee} {isExpanded ? '▲' : '▼'}</Text>
                       </View>
-                      <Text style={dynamicStyles.breakdownDescription}>{getAllergenDescription(id)}</Text>
-                      {getAllergenWarning(id) && (
-                        <Text style={dynamicStyles.warningText}>{getAllergenWarning(id)}</Text>
-                      )}
+                    </Pressable>
+
+                    {isExpanded && (
+                      <View style={dynamicStyles.breakdownContainer}>
+                        <View style={styles.examplesRow}>
+                          {images.examples.map((emoji, index) => (
+                            <Text key={index} style={dynamicStyles.exampleEmoji}>{emoji}</Text>
+                          ))}
+                        </View>
+                        <Text style={dynamicStyles.breakdownDescription}>{getAllergenDescription(id)}</Text>
+                        {getAllergenWarning(id) && (
+                          <Text style={dynamicStyles.warningText}>{getAllergenWarning(id)}</Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+
+              {inlineRestrictions.map((id) => {
+                const item = getRestrictionInfo(id);
+                if (!item) return null;
+                return (
+                  <View key={id} style={dynamicStyles.allergenRow}>
+                    <Text style={dynamicStyles.allergenIcon}>{item.icon}</Text>
+                    <View style={styles.allergenTextContainer}>
+                      <Text style={dynamicStyles.allergenText}>{getRestrictionTranslation(id)}</Text>
                     </View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {separateRestrictions.length > 0 && (
+            <View style={[styles.restrictionsSection, { backgroundColor: colors.restrictionBg, borderTopColor: colors.restrictionBorder }]}>
+              <View style={styles.restrictionHeader}>
+                <Text style={[styles.restrictionHeaderText, { color: colors.restrictionHeaderColor }]}>{restrictionTranslations.header}</Text>
+              </View>
+              <Text style={styles.restrictionMessage}>{hasAllergens ? restrictionTranslations.sectionMessage : restrictionTranslations.message}</Text>
+              {separateRestrictions.map((id) => {
+                const item = getRestrictionInfo(id);
+                if (!item) return null;
+                return (
+                  <View key={id} style={[styles.restrictionRow, { borderBottomColor: colors.restrictionBorder }]}>
+                    <Text style={styles.restrictionIcon}>{item.icon}</Text>
+                    <Text style={[styles.restrictionText, { color: colors.restrictionTextColor }]}>{getRestrictionTranslation(id)}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
 
           <View style={dynamicStyles.thanksSection}>
             <Text style={dynamicStyles.thanks}>{translations.thanks}</Text>
@@ -439,13 +663,15 @@ export default function CardScreen() {
   }), [isLandscape, insets]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.containerBg }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, headerPadding]}>
+      <View style={[styles.customHeader, headerPadding, { backgroundColor: colors.containerBg }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
           <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{currentLanguage?.flag} {translations.subtitle}</Text>
+        <Text style={[styles.headerTitle, { textAlign: 'center', flex: 1 }]} numberOfLines={2} adjustsFontSizeToFit={false}>
+          {currentLanguage?.flag} {hasAllergens ? (pregnancyMode ? translations.pregnancySubtitle : translations.subtitle) : restrictionTranslations.header}
+        </Text>
         {isLandscape ? (
           <TouchableOpacity
             onPress={handleLanguageToggle}
@@ -717,6 +943,98 @@ const styles = StyleSheet.create({
     color: '#C62828',
     fontWeight: '600',
     lineHeight: 19,
+  },
+  // Portrait restriction styles
+  restrictionsSection: {
+    padding: 20,
+    borderTopWidth: 2,
+    borderTopColor: '#FFE082',
+    backgroundColor: '#FFF8E1',
+  },
+  restrictionHeader: {
+    marginBottom: 8,
+  },
+  restrictionHeaderText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#E65100',
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  restrictionMessage: {
+    fontSize: 14,
+    color: '#5D4037',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  restrictionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE082',
+  },
+  restrictionIcon: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  restrictionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E65100',
+    flex: 1,
+  },
+  // Landscape restriction styles
+  landscapeRestrictionSection: {
+    borderTopWidth: 2,
+    borderTopColor: '#FFE082',
+  },
+  landscapeRestrictionHeader: {
+    backgroundColor: '#FFF8E1',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE082',
+  },
+  landscapeRestrictionHeaderText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#E65100',
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  landscapeRestrictionMessage: {
+    fontSize: 13,
+    color: '#5D4037',
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  landscapeRestrictionList: {
+    paddingHorizontal: 10,
+    paddingBottom: 8,
+  },
+  landscapeRestrictionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: '#FFE082',
+  },
+  landscapeRestrictionIcon: {
+    fontSize: 20,
+    marginRight: 10,
+  },
+  landscapeRestrictionName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#E65100',
+    flex: 1,
   },
   landscapeFooter: {
     backgroundColor: '#E8F5E9',
