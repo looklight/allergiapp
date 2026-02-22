@@ -22,8 +22,13 @@ interface UnifiedLanguage {
   builtIn: boolean;
 }
 
-// Lingue con traduzioni card già incluse nell'app (escluse le 5 lingue app: it, en, fr, de, es)
+// Lingue con traduzioni card già incluse nell'app
 const BUILTIN_CARD_LANGUAGES: UnifiedLanguage[] = [
+  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', region: 'europe', builtIn: true },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧', region: 'europe', builtIn: true },
+  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', region: 'europe', builtIn: true },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', region: 'europe', builtIn: true },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', region: 'europe', builtIn: true },
   { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇵🇹', region: 'europe', builtIn: true },
   { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱', region: 'europe', builtIn: true },
   { code: 'pl', name: 'Polish', nativeName: 'Polski', flag: '🇵🇱', region: 'europe', builtIn: true },
