@@ -28,6 +28,12 @@ export default function OtherRestrictionsScreen() {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
   }, []);
 
+  // Mantiene l'ordine di RESTRICTION_ITEMS quando si aggiungono elementi
+  const sortByDefinitionOrder = (ids: RestrictionItemId[]) => {
+    const idSet = new Set(ids);
+    return RESTRICTION_ITEMS.filter((item) => idSet.has(item.id)).map((item) => item.id);
+  };
+
   const handlePregnancyToggle = (enabled: boolean) => {
     setPregnancyMode(enabled);
     Animated.spring(toggleAnim, {
@@ -38,10 +44,7 @@ export default function OtherRestrictionsScreen() {
     }).start();
     const pregnancyItemIds = getRestrictionItemsByCategory('pregnancy').map((item) => item.id);
     if (enabled) {
-      setSelectedRestrictions((prev) => {
-        const combined = new Set([...prev, ...pregnancyItemIds]);
-        return Array.from(combined);
-      });
+      setSelectedRestrictions((prev) => sortByDefinitionOrder([...prev, ...pregnancyItemIds]));
     } else {
       setSelectedRestrictions((prev) => prev.filter((id) => !pregnancyItemIds.includes(id)));
     }
@@ -64,17 +67,11 @@ export default function OtherRestrictionsScreen() {
     setSelectedRestrictions((prev) =>
       prev.includes(id)
         ? prev.filter((r) => r !== id)
-        : [...prev, id]
+        : sortByDefinitionOrder([...prev, id])
     );
   };
 
   const handleSave = async () => {
-    await saveRestrictions(selectedRestrictions);
-    await savePregnancyMode(pregnancyMode);
-    router.back();
-  };
-
-  const handleBack = async () => {
     await saveRestrictions(selectedRestrictions);
     await savePregnancyMode(pregnancyMode);
     router.back();
@@ -87,7 +84,7 @@ export default function OtherRestrictionsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity
-          onPress={handleBack}
+          onPress={handleSave}
           hitSlop={8}
           activeOpacity={0.6}
         >

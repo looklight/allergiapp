@@ -4,13 +4,13 @@ export type RestrictionCategoryId = 'pregnancy';
 
 export type RestrictionItemId =
   | 'raw_fish'
-  | 'unpasteurized_cheese'
   | 'raw_cured_meats'
   | 'raw_eggs'
-  | 'alcohol'
-  | 'excessive_caffeine'
+  | 'raw_sprouts'
+  | 'unpasteurized_cheese'
   | 'unpasteurized_milk'
-  | 'raw_sprouts';
+  | 'alcohol'
+  | 'excessive_caffeine';
 
 export interface RestrictionCategory {
   id: RestrictionCategoryId;
@@ -50,6 +50,7 @@ export const RESTRICTION_CATEGORIES: RestrictionCategory[] = [
 ];
 
 export const RESTRICTION_ITEMS: RestrictionItem[] = [
+  // --- Cibi crudi (rischio batteriologico) ---
   {
     id: 'raw_fish',
     icon: '🐟',
@@ -70,28 +71,6 @@ export const RESTRICTION_ITEMS: RestrictionItem[] = [
       ko: '생선회 / 초밥',
       th: 'ปลาดิบ / ซูชิ',
       ar: 'السمك النيء / السوشي',
-    },
-  },
-  {
-    id: 'unpasteurized_cheese',
-    icon: '🧀',
-    categoryId: 'pregnancy',
-    translations: {
-      it: 'Formaggi non pastorizzati',
-      en: 'Unpasteurized cheeses',
-      fr: 'Fromages non pasteurisés',
-      de: 'Nicht pasteurisierter Käse',
-      es: 'Quesos no pasteurizados',
-      pt: 'Queijos não pasteurizados',
-      nl: 'Ongepasteuriseerde kaas',
-      pl: 'Sery niepasteryzowane',
-      ru: 'Непастеризованные сыры',
-      sv: 'Opastöriserad ost',
-      zh: '未经巴氏杀菌的奶酪',
-      ja: '未殺菌チーズ',
-      ko: '비살균 치즈',
-      th: 'ชีสที่ไม่ผ่านการพาสเจอร์ไรซ์',
-      ar: 'الأجبان غير المبسترة',
     },
   },
   {
@@ -139,6 +118,74 @@ export const RESTRICTION_ITEMS: RestrictionItem[] = [
     },
   },
   {
+    id: 'raw_sprouts',
+    icon: '🌱',
+    categoryId: 'pregnancy',
+    translations: {
+      it: 'Germogli crudi',
+      en: 'Raw sprouts',
+      fr: 'Germes crus',
+      de: 'Rohe Sprossen',
+      es: 'Brotes crudos',
+      pt: 'Brotos crus',
+      nl: 'Rauwe kiemgroenten',
+      pl: 'Surowe kiełki',
+      ru: 'Сырые ростки',
+      sv: 'Råa groddar',
+      zh: '生豆芽',
+      ja: '生もやし',
+      ko: '생 새싹',
+      th: 'ถั่วงอกดิบ',
+      ar: 'البراعم النيئة',
+    },
+  },
+  // --- Latticini non pastorizzati (rischio listeria) ---
+  {
+    id: 'unpasteurized_cheese',
+    icon: '🧀',
+    categoryId: 'pregnancy',
+    translations: {
+      it: 'Formaggi non pastorizzati',
+      en: 'Unpasteurized cheeses',
+      fr: 'Fromages non pasteurisés',
+      de: 'Nicht pasteurisierter Käse',
+      es: 'Quesos no pasteurizados',
+      pt: 'Queijos não pasteurizados',
+      nl: 'Ongepasteuriseerde kaas',
+      pl: 'Sery niepasteryzowane',
+      ru: 'Непастеризованные сыры',
+      sv: 'Opastöriserad ost',
+      zh: '未经巴氏杀菌的奶酪',
+      ja: '未殺菌チーズ',
+      ko: '비살균 치즈',
+      th: 'ชีสที่ไม่ผ่านการพาสเจอร์ไรซ์',
+      ar: 'الأجبان غير المبسترة',
+    },
+  },
+  {
+    id: 'unpasteurized_milk',
+    icon: '🥛',
+    categoryId: 'pregnancy',
+    translations: {
+      it: 'Latte non pastorizzato',
+      en: 'Unpasteurized milk',
+      fr: 'Lait non pasteurisé',
+      de: 'Nicht pasteurisierte Milch',
+      es: 'Leche no pasteurizada',
+      pt: 'Leite não pasteurizado',
+      nl: 'Ongepasteuriseerde melk',
+      pl: 'Mleko niepasteryzowane',
+      ru: 'Непастеризованное молоко',
+      sv: 'Opastöriserad mjölk',
+      zh: '未经巴氏杀菌的牛奶',
+      ja: '未殺菌牛乳',
+      ko: '비살균 우유',
+      th: 'นมที่ไม่ผ่านการพาสเจอร์ไรซ์',
+      ar: 'الحليب غير المبستر',
+    },
+  },
+  // --- Sostanze da evitare/limitare ---
+  {
     id: 'alcohol',
     icon: '🍷',
     categoryId: 'pregnancy',
@@ -180,50 +227,6 @@ export const RESTRICTION_ITEMS: RestrictionItem[] = [
       ko: '과도한 카페인',
       th: 'คาเฟอีนมากเกินไป',
       ar: 'الكافيين المفرط',
-    },
-  },
-  {
-    id: 'unpasteurized_milk',
-    icon: '🥛',
-    categoryId: 'pregnancy',
-    translations: {
-      it: 'Latte non pastorizzato',
-      en: 'Unpasteurized milk',
-      fr: 'Lait non pasteurisé',
-      de: 'Nicht pasteurisierte Milch',
-      es: 'Leche no pasteurizada',
-      pt: 'Leite não pasteurizado',
-      nl: 'Ongepasteuriseerde melk',
-      pl: 'Mleko niepasteryzowane',
-      ru: 'Непастеризованное молоко',
-      sv: 'Opastöriserad mjölk',
-      zh: '未经巴氏杀菌的牛奶',
-      ja: '未殺菌牛乳',
-      ko: '비살균 우유',
-      th: 'นมที่ไม่ผ่านการพาสเจอร์ไรซ์',
-      ar: 'الحليب غير المبستر',
-    },
-  },
-  {
-    id: 'raw_sprouts',
-    icon: '🌱',
-    categoryId: 'pregnancy',
-    translations: {
-      it: 'Germogli crudi',
-      en: 'Raw sprouts',
-      fr: 'Germes crus',
-      de: 'Rohe Sprossen',
-      es: 'Brotes crudos',
-      pt: 'Brotos crus',
-      nl: 'Rauwe kiemgroenten',
-      pl: 'Surowe kiełki',
-      ru: 'Сырые ростки',
-      sv: 'Råa groddar',
-      zh: '生豆芽',
-      ja: '生もやし',
-      ko: '생 새싹',
-      th: 'ถั่วงอกดิบ',
-      ar: 'البراعم النيئة',
     },
   },
 ];
