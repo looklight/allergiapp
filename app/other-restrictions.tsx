@@ -74,6 +74,12 @@ export default function OtherRestrictionsScreen() {
     router.back();
   };
 
+  const handleBack = async () => {
+    await saveRestrictions(selectedRestrictions);
+    await savePregnancyMode(pregnancyMode);
+    router.back();
+  };
+
   const locale = i18n.locale as Language;
 
   return (
@@ -81,7 +87,7 @@ export default function OtherRestrictionsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={handleBack}
           hitSlop={8}
           activeOpacity={0.6}
         >

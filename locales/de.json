@@ -35,7 +35,8 @@
     "selectedCount": "{{count}} ausgewaehlt",
     "pregnancyToggle": "Ich bin schwanger",
     "pregnancyHint": "Wird auf der Karte angezeigt, dass du schwanger bist",
-    "foodsToAvoid": "Zu vermeidende Lebensmittel"
+    "foodsToAvoid": "Zu vermeidende Lebensmittel",
+    "pregnancyActive": "Schwangerschaftsmodus aktiv"
   },
   "card": {
     "title": "Nahrungsmittelallergien",

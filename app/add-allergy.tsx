@@ -15,7 +15,7 @@ import { Analytics } from '../utils/analytics';
 export default function AddAllergyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions } = useAppContext();
+  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions, pregnancyMode } = useAppContext();
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>(savedAllergens);
 
   useEffect(() => {
@@ -112,14 +112,17 @@ export default function AddAllergyScreen() {
             pressed && styles.otherRowPressed,
           ]}
         >
-          <Text style={styles.otherIcon}>📋</Text>
+          <Text style={styles.otherIcon}>{pregnancyMode ? '🤰' : '📋'}</Text>
           <View style={styles.otherTextContainer}>
             <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
+            {pregnancyMode && (
+              <Text style={styles.otherHint}>{i18n.t('otherRestrictions.pregnancyActive')}</Text>
+            )}
           </View>
           <View style={styles.otherRight}>
             {selectedRestrictions.length > 0 && (
-              <View style={styles.otherBadge}>
-                <Text style={styles.otherBadgeText}>{selectedRestrictions.length}</Text>
+              <View style={[styles.otherBadge, pregnancyMode && styles.otherBadgePregnancy]}>
+                <Text style={[styles.otherBadgeText, pregnancyMode && styles.otherBadgeTextPregnancy]}>{selectedRestrictions.length}</Text>
               </View>
             )}
             <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
@@ -216,6 +219,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: 'bold',
+  },
+  otherBadgePregnancy: {
+    backgroundColor: '#E91E63',
+  },
+  otherBadgeTextPregnancy: {
+    color: '#FFFFFF',
+  },
+  otherHint: {
+    fontSize: 12,
+    color: '#E91E63',
+    marginTop: 2,
   },
   footer: {
     padding: 16,

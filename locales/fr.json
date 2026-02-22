@@ -35,7 +35,8 @@
     "selectedCount": "{{count}} selectionnes",
     "pregnancyToggle": "Je suis enceinte",
     "pregnancyHint": "Indiquera sur la carte que vous etes enceinte",
-    "foodsToAvoid": "Aliments a eviter"
+    "foodsToAvoid": "Aliments a eviter",
+    "pregnancyActive": "Mode grossesse actif"
   },
   "card": {
     "title": "Allergies Alimentaires",
