@@ -10,13 +10,14 @@
     "nav": {
       "features": "Funzionalità",
       "howItWorks": "Come funziona",
+      "aboutUs": "Chi siamo",
       "support": "❤️ Supporta",
       "download": "Scarica"
     },
     "hero": {
       "title1": "Viaggia sereno.",
       "title2": "Le tue allergie, in ogni lingua.",
-      "subtitle1": "Comunica le tue allergie alimentari in più di 60 lingue.",
+      "subtitle1": "Comunica le tue esigenze alimentari in più di 60 lingue.",
       "subtitle2": "Mostra una card chiara e comprensibile a camerieri e chef in tutto il mondo.",
       "cta": "Scopri come funziona",
       "stat1Number": "60+",
@@ -189,13 +190,14 @@
     "nav": {
       "features": "Features",
       "howItWorks": "How it works",
+      "aboutUs": "About us",
       "support": "❤️ Support",
       "download": "Download"
     },
     "hero": {
       "title1": "Travel with confidence.",
       "title2": "Your allergies, in every language.",
-      "subtitle1": "Communicate your food allergies in 60+ languages.",
+      "subtitle1": "Communicate your dietary needs in 60+ languages.",
       "subtitle2": "Show a clear, easy-to-understand card to waiters and chefs around the world.",
       "cta": "See how it works",
       "stat1Number": "60+",

@@ -993,7 +993,7 @@ body {
         gap: 16px;
     }
 
-    .nav-links a:not(.cta-button):not(.nav-support) {
+    .nav-links a:not(.cta-button):not(.nav-support):not(.nav-about) {
         display: none;
     }
 
