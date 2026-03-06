@@ -48,8 +48,8 @@ export default function CardLandscape({
           {(hasAllergens || inlineRestrictions.length > 0) && (
             <View style={[styles.landscapeLeftColumn, { backgroundColor: colors.landscapeLeftBg }]}>
               <View style={styles.landscapeLeftHeader}>
-                {!colors.isPregnancy && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
-                <Text style={styles.landscapeLeftHeaderTitle}>{colors.isPregnancy ? '🤰 ' : ''}{translations.header}</Text>
+                {colors.cardStyle === 'allergy' && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
+                <Text style={styles.landscapeLeftHeaderTitle}>{colors.cardStyle === 'pregnancy' ? '🤰 ' : ''}{translations.header}</Text>
               </View>
 
               <ScrollView
@@ -128,7 +128,7 @@ export default function CardLandscape({
 
             {!hasAllergens && hasRestrictions && (
               <View style={[styles.landscapeRightHeader, { backgroundColor: colors.restrictionBg }]}>
-                {!colors.isPregnancy && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
+                {colors.cardStyle === 'allergy' && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
                 <Text style={[styles.landscapeRightHeaderText, { fontWeight: 'bold' }]}>
                   {restrictionTranslations.message}
                 </Text>
@@ -212,7 +212,7 @@ export default function CardLandscape({
                   getRestrictionTranslation={getRestrictionTranslation}
                   getRestrictionInfo={(rid) => getRestrictionInfo(rid) as { icon: string } | undefined}
                   hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
-                  restrictionColors={colors.isPregnancy ? {
+                  restrictionColors={colors.cardStyle === 'pregnancy' ? {
                     restrictionBg: colors.restrictionBg,
                     restrictionBorder: colors.restrictionBorder,
                     restrictionHeaderColor: colors.restrictionHeaderColor,

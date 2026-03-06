@@ -2,8 +2,10 @@ import { AllergenId, Language, DownloadableLanguageCode, DownloadedLanguageData 
 import { RestrictionItemId } from '../../../constants/otherRestrictions';
 import { DietModeId } from '../../../constants/dietModes';
 
+export type CardStyle = 'allergy' | 'pregnancy' | 'dietOnly';
+
 export interface CardColors {
-  isPregnancy: boolean;
+  cardStyle: CardStyle;
   containerBg: string;
   headerBg: string;
   messageBg: string;

@@ -6,11 +6,13 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { RESTRICTION_CATEGORIES, RESTRICTION_ITEMS, RestrictionItemId, getRestrictionItemsByCategory } from '../constants/otherRestrictions';
-import { DIET_MODES, DietModeId, DietMode } from '../constants/dietModes';
+import { DIET_MODES, DietModeId, DietMode, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 import { Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../utils/AppContext';
+
+const VEGETARIAN_LEVELS: VegetarianLevel[] = ['no_meat', 'no_meat_fish', 'no_animal_products'];
 
 // Reusable toggle component for diet modes
 function DietModeToggle({
@@ -73,9 +75,12 @@ export default function OtherRestrictionsScreen() {
     setSelectedRestrictions: saveRestrictions,
     activeDietModes: savedDietModes,
     setActiveDietModes: saveDietModes,
+    vegetarianLevel: savedVegetarianLevel,
+    setVegetarianLevel: saveVegetarianLevel,
   } = useAppContext();
   const [selectedRestrictions, setSelectedRestrictions] = useState<RestrictionItemId[]>(savedRestrictions);
   const [localDietModes, setLocalDietModes] = useState<DietModeId[]>(savedDietModes);
+  const [localVegetarianLevel, setLocalVegetarianLevel] = useState<VegetarianLevel>(savedVegetarianLevel);
 
   // Create animation values for each diet mode
   const animRefs = useRef<Record<DietModeId, Animated.Value>>(
@@ -119,12 +124,6 @@ export default function OtherRestrictionsScreen() {
       if (mode.autoSelectRestrictions && mode.autoSelectRestrictions.length > 0) {
         setSelectedRestrictions((prev) => sortByDefinitionOrder([...prev, ...mode.autoSelectRestrictions!]));
       }
-
-      // If vegan is activated, also activate vegetarian
-      if (mode.id === 'vegan' && !newModes.includes('vegetarian')) {
-        newModes.push('vegetarian');
-        animateMode('vegetarian', 1);
-      }
     } else {
       newModes = newModes.filter((id) => id !== mode.id);
       animateMode(mode.id, 0);
@@ -132,12 +131,6 @@ export default function OtherRestrictionsScreen() {
       // Handle autoSelectRestrictions removal
       if (mode.autoSelectRestrictions && mode.autoSelectRestrictions.length > 0) {
         setSelectedRestrictions((prev) => prev.filter((id) => !mode.autoSelectRestrictions!.includes(id)));
-      }
-
-      // If vegetarian is deactivated, also deactivate vegan
-      if (mode.id === 'vegetarian' && newModes.includes('vegan')) {
-        newModes = newModes.filter((id) => id !== 'vegan');
-        animateMode('vegan', 0);
       }
     }
 
@@ -155,6 +148,7 @@ export default function OtherRestrictionsScreen() {
   const handleSave = async () => {
     await saveRestrictions(selectedRestrictions);
     await saveDietModes(localDietModes);
+    await saveVegetarianLevel(localVegetarianLevel);
     router.back();
   };
 
@@ -180,15 +174,52 @@ export default function OtherRestrictionsScreen() {
       </Text>
 
       <ScrollView style={styles.list}>
-        {/* Diet Mode Toggles - generated dynamically */}
+        {/* Diet Mode Toggles */}
         {DIET_MODES.map((mode) => (
-          <DietModeToggle
-            key={mode.id}
-            mode={mode}
-            isActive={isModeActive(mode.id)}
-            animValue={animRefs[mode.id]}
-            onToggle={(enabled) => handleDietModeToggle(mode, enabled)}
-          />
+          <View key={mode.id}>
+            <DietModeToggle
+              mode={mode}
+              isActive={isModeActive(mode.id)}
+              animValue={animRefs[mode.id]}
+              onToggle={(enabled) => handleDietModeToggle(mode, enabled)}
+            />
+            {/* Vegetarian level radio buttons */}
+            {mode.id === 'vegetarian' && isModeActive('vegetarian') && (
+              <View style={styles.levelContainer}>
+                {VEGETARIAN_LEVELS.map((level) => (
+                  <TouchableOpacity
+                    key={level}
+                    style={styles.levelRow}
+                    onPress={() => setLocalVegetarianLevel(level)}
+                    activeOpacity={0.6}
+                  >
+                    <View style={[
+                      styles.radioOuter,
+                      localVegetarianLevel === level && { borderColor: mode.toggleColors.active },
+                    ]}>
+                      {localVegetarianLevel === level && (
+                        <View style={[styles.radioInner, { backgroundColor: mode.toggleColors.active }]} />
+                      )}
+                    </View>
+                    <View style={styles.levelTextContainer}>
+                      <Text style={[
+                        styles.levelTitle,
+                        localVegetarianLevel === level && { color: mode.toggleColors.active },
+                      ]}>
+                        {i18n.t(`otherRestrictions.vegetarianLevel_${level}`)}
+                        {level === 'no_animal_products' && (
+                          <Text style={{ color: '#2E7D32', fontWeight: '400' }}> ({i18n.t('otherRestrictions.vegetarianVeganTag')})</Text>
+                        )}
+                      </Text>
+                      <Text style={styles.levelHint}>
+                        {i18n.t(`otherRestrictions.vegetarianLevelHint_${level}`)}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
         ))}
 
         {/* Lista alimenti */}
@@ -308,6 +339,48 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.colors.textSecondary,
     marginTop: 2,
+  },
+  levelContainer: {
+    marginHorizontal: 16,
+    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+  },
+  levelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  radioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  levelTextContainer: {
+    flex: 1,
+  },
+  levelTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: theme.colors.textPrimary,
+  },
+  levelHint: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 1,
   },
   categoryHeader: {
     paddingHorizontal: 16,

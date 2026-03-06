@@ -10,7 +10,7 @@ import { ALLERGEN_IMAGES } from '../constants/allergenImages';
 import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS } from '../constants/cardTranslations';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
-import { getVisibleModes, getFullCardMode, getDietModeById, DietModeId } from '../constants/dietModes';
+import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
@@ -29,7 +29,7 @@ export default function CardScreen() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
-  const { selectedAllergens, selectedRestrictions, activeDietModes, pregnancyMode, settings, downloadedLanguages } = useAppContext();
+  const { selectedAllergens, selectedRestrictions, activeDietModes, vegetarianLevel, pregnancyMode, settings, downloadedLanguages } = useAppContext();
   const cardLanguage = settings.cardLanguage;
   const appLanguage = settings.appLanguage;
   const [showInAppLanguage, setShowInAppLanguage] = useState(false);
@@ -125,32 +125,31 @@ export default function CardScreen() {
   }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage, pregnancyMode]);
 
   // Get diet mode translations, supporting downloaded languages
-  const getDietModeTranslation = (modeId: DietModeId) => {
+  const getDietModeTranslation = (cardKey: DietCardKey) => {
     const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
-    const base = hardcoded.dietModes[modeId];
+    const base = hardcoded.dietModes[cardKey];
     if (showInAppLanguage || !isDownloadedLanguage || !downloadedLanguageData?.restrictionCardTexts) {
       return base;
     }
     const d = downloadedLanguageData.restrictionCardTexts;
-    if (modeId === 'pregnancy') {
+    if (cardKey === 'pregnancy') {
       return {
         header: d.pregnancyHeader || base.header,
         message: d.pregnancyMessage || base.message,
         sectionMessage: d.pregnancySectionMessage || base.sectionMessage,
       };
     }
-    if (modeId === 'vegetarian') {
+    const keyMap: Record<string, { header?: string; message?: string; sectionMessage?: string }> = {
+      no_meat: { header: d.noMeatHeader, message: d.noMeatMessage, sectionMessage: d.noMeatSectionMessage },
+      no_meat_fish: { header: d.noMeatFishHeader, message: d.noMeatFishMessage, sectionMessage: d.noMeatFishSectionMessage },
+      no_animal_products: { header: d.noAnimalProductsHeader, message: d.noAnimalProductsMessage, sectionMessage: d.noAnimalProductsSectionMessage },
+    };
+    const mapped = keyMap[cardKey];
+    if (mapped) {
       return {
-        header: d.vegetarianHeader || base.header,
-        message: d.vegetarianMessage || base.message,
-        sectionMessage: d.vegetarianSectionMessage || base.sectionMessage,
-      };
-    }
-    if (modeId === 'vegan') {
-      return {
-        header: d.veganHeader || base.header,
-        message: d.veganMessage || base.message,
-        sectionMessage: d.veganSectionMessage || base.sectionMessage,
+        header: mapped.header || base.header,
+        message: mapped.message || base.message,
+        sectionMessage: mapped.sectionMessage || base.sectionMessage,
       };
     }
     return base;
@@ -163,7 +162,8 @@ export default function CardScreen() {
     const sections: DietModeSectionData[] = [];
 
     for (const mode of visibleModes) {
-      const modeTranslations = getDietModeTranslation(mode.id);
+      const cardKey = getDietCardKey(mode.id, vegetarianLevel);
+      const modeTranslations = getDietModeTranslation(cardKey);
       const message = hasOtherContent || sections.length > 0
         ? modeTranslations.sectionMessage
         : modeTranslations.message;
@@ -187,16 +187,58 @@ export default function CardScreen() {
     }
 
     return sections;
-  }, [activeDietModes, displayLanguage, selectedAllergens.length, selectedRestrictions, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedRestrictions, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
 
-  // Color palette - full card override for pregnancy
+  // Inline vs separate restrictions: pregnancy-specific items go to pregnancy section,
+  // general items (intolerances, etc.) always show inline with allergens
+  const pregnancyRestrictionIds = useMemo(() => {
+    return new Set(getDietModeById('pregnancy')?.autoSelectRestrictions ?? []);
+  }, []);
+
+  const inlineRestrictions = pregnancyMode
+    ? selectedRestrictions.filter(id => !pregnancyRestrictionIds.has(id))
+    : selectedRestrictions;
+  const separateRestrictions = pregnancyMode
+    ? selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id))
+    : [];
+
+  const hasAllergyContent = selectedAllergens.length > 0 || inlineRestrictions.length > 0;
+
+  // Color palette
   const colors = useMemo((): CardColors => {
     const fullCardMode = getFullCardMode(activeDietModes);
     if (fullCardMode?.fullCardColors) {
-      return { isPregnancy: true, ...fullCardMode.fullCardColors };
+      return { cardStyle: 'pregnancy', ...fullCardMode.fullCardColors };
+    }
+    if (!hasAllergyContent && !separateRestrictions.length && dietModeSections.length > 0) {
+      // Diet-only card (vegetarian/vegan without allergens)
+      const primaryMode = dietModeSections[0];
+      return {
+        cardStyle: 'dietOnly',
+        containerBg: primaryMode.sectionColors.headerBg,
+        headerBg: primaryMode.sectionColors.headerBg,
+        messageBg: primaryMode.sectionColors.background,
+        messageBorder: primaryMode.sectionColors.border,
+        allergenTextColor: primaryMode.sectionColors.primary,
+        breakdownBg: primaryMode.sectionColors.background,
+        breakdownBorder: primaryMode.sectionColors.border,
+        breakdownDescColor: primaryMode.sectionColors.text,
+        warningTextColor: primaryMode.sectionColors.primary,
+        thanksBg: primaryMode.sectionColors.background,
+        thanksColor: primaryMode.sectionColors.primary,
+        restrictionBg: primaryMode.sectionColors.background,
+        restrictionBorder: primaryMode.sectionColors.border,
+        restrictionHeaderColor: primaryMode.sectionColors.primary,
+        restrictionTextColor: primaryMode.sectionColors.primary,
+        landscapeLeftBg: primaryMode.sectionColors.headerBg,
+        landscapeWrapperBg: primaryMode.sectionColors.primary,
+        landscapeAllergenNameColor: primaryMode.sectionColors.primary,
+        landscapeDetailBadgeBg: primaryMode.sectionColors.background,
+        landscapeDetailBadgeTextColor: primaryMode.sectionColors.primary,
+      };
     }
     return {
-      isPregnancy: false,
+      cardStyle: 'allergy',
       containerBg: theme.colors.error,
       headerBg: theme.colors.error,
       messageBg: '#FFF3E0',
@@ -218,20 +260,7 @@ export default function CardScreen() {
       landscapeDetailBadgeBg: '#FFEBEE',
       landscapeDetailBadgeTextColor: '#C62828',
     };
-  }, [activeDietModes]);
-
-  // Inline vs separate restrictions: pregnancy-specific items go to pregnancy section,
-  // general items (intolerances, etc.) always show inline with allergens
-  const pregnancyRestrictionIds = useMemo(() => {
-    return new Set(getDietModeById('pregnancy')?.autoSelectRestrictions ?? []);
-  }, []);
-
-  const inlineRestrictions = pregnancyMode
-    ? selectedRestrictions.filter(id => !pregnancyRestrictionIds.has(id))
-    : selectedRestrictions;
-  const separateRestrictions = pregnancyMode
-    ? selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id))
-    : [];
+  }, [activeDietModes, hasAllergyContent, separateRestrictions.length, dietModeSections]);
 
   const toggleExpand = (id: AllergenId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

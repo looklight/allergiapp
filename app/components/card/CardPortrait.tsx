@@ -130,8 +130,9 @@ export default function CardPortrait({
       <Surface style={styles.card} elevation={4}>
         <View style={styles.cardContent}>
           <View style={dynamicStyles.headerSection}>
-            {!colors.isPregnancy && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
-            <Text style={dynamicStyles.header}>{colors.isPregnancy ? '🤰 ' : ''}{translations.header}</Text>
+            {colors.cardStyle === 'allergy' && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
+            {colors.cardStyle === 'pregnancy' && <Text style={dynamicStyles.header}>{'🤰 '}{translations.header}</Text>}
+            {colors.cardStyle !== 'pregnancy' && <Text style={dynamicStyles.header}>{translations.header}</Text>}
             {hasAllergens && (
               <Text style={dynamicStyles.subtitle}>{pregnancyMode ? translations.pregnancySubtitle : translations.subtitle}</Text>
             )}
@@ -223,7 +224,7 @@ export default function CardPortrait({
               getRestrictionTranslation={getRestrictionTranslation}
               getRestrictionInfo={(id) => getRestrictionInfo(id) as { icon: string } | undefined}
               hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
-              restrictionColors={colors.isPregnancy ? {
+              restrictionColors={colors.cardStyle === 'pregnancy' ? {
                 restrictionBg: colors.restrictionBg,
                 restrictionBorder: colors.restrictionBorder,
                 restrictionHeaderColor: colors.restrictionHeaderColor,

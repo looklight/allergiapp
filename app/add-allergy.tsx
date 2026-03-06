@@ -6,6 +6,7 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
+import { DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
@@ -15,7 +16,9 @@ import { Analytics } from '../utils/analytics';
 export default function AddAllergyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions, pregnancyMode } = useAppContext();
+  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions, activeDietModes, vegetarianLevel } = useAppContext();
+  const activeModeConfigs = DIET_MODES.filter(m => activeDietModes.includes(m.id)).sort((a, b) => a.order - b.order);
+  const hasActiveModes = activeModeConfigs.length > 0;
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>(savedAllergens);
 
   useEffect(() => {
@@ -81,17 +84,23 @@ export default function AddAllergyScreen() {
             pressed && styles.otherRowPressed,
           ]}
         >
-          <Text style={styles.otherIcon}>{pregnancyMode ? '🤰' : '📋'}</Text>
+          <Text style={styles.otherIcon}>{hasActiveModes ? activeModeConfigs[0].icon : '📋'}</Text>
           <View style={styles.otherTextContainer}>
             <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
-            {pregnancyMode && (
-              <Text style={styles.otherHint}>{i18n.t('otherRestrictions.pregnancyActive')}</Text>
+            {hasActiveModes && (
+              <Text style={[styles.otherHint, { color: activeModeConfigs[0].toggleColors.active }]}>
+                {activeModeConfigs.map(m =>
+                  m.id === 'vegetarian'
+                    ? i18n.t(`otherRestrictions.vegetarianLevel_${vegetarianLevel}`)
+                    : i18n.t(`otherRestrictions.${m.id}Label`)
+                ).join(' · ')}
+              </Text>
             )}
           </View>
           <View style={styles.otherRight}>
-            {selectedRestrictions.length > 0 && (
-              <View style={[styles.otherBadge, pregnancyMode && styles.otherBadgePregnancy]}>
-                <Text style={[styles.otherBadgeText, pregnancyMode && styles.otherBadgeTextPregnancy]}>{selectedRestrictions.length}</Text>
+            {(selectedRestrictions.length > 0 || hasActiveModes) && (
+              <View style={[styles.otherBadge, hasActiveModes && { backgroundColor: activeModeConfigs[0].toggleColors.active }]}>
+                <Text style={styles.otherBadgeText}>{selectedRestrictions.length + activeDietModes.length}</Text>
               </View>
             )}
             <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
@@ -136,7 +145,7 @@ export default function AddAllergyScreen() {
           onPress={handleSave}
           style={styles.saveButton}
         >
-          {i18n.t('addAllergy.save')} ({selectedAllergens.length + selectedRestrictions.length})
+          {i18n.t('addAllergy.save')} ({selectedAllergens.length + selectedRestrictions.length + activeDietModes.length})
         </Button>
       </View>
     </View>
@@ -220,15 +229,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 'bold',
   },
-  otherBadgePregnancy: {
-    backgroundColor: '#E91E63',
-  },
-  otherBadgeTextPregnancy: {
-    color: '#FFFFFF',
-  },
   otherHint: {
     fontSize: 12,
-    color: '#E91E63',
     marginTop: 2,
   },
   footer: {

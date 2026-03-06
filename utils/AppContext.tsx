@@ -3,23 +3,22 @@ import { storage, AppData, CURRENT_LEGAL_VERSION } from './storage';
 import { setAppLanguage, getDeviceLanguage } from './i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 import { RestrictionItemId } from '../constants/otherRestrictions';
-import { DietModeId } from '../constants/dietModes';
+import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 
 interface AppContextValue {
   // State
   selectedAllergens: AllergenId[];
   selectedRestrictions: RestrictionItemId[];
   activeDietModes: DietModeId[];
+  vegetarianLevel: VegetarianLevel;
   settings: UserSettings;
   downloadedLanguages: Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>;
   legalConsent: LegalConsent;
   trackingConsent: TrackingConsent;
   isReady: boolean;
 
-  // Derived - backward compat getters
+  // Derived
   pregnancyMode: boolean;
-  vegetarianMode: boolean;
-  veganMode: boolean;
 
   // Derived
   hasAcceptedLegalTerms: boolean;
@@ -30,6 +29,7 @@ interface AppContextValue {
   setSelectedAllergens: (allergens: AllergenId[]) => Promise<void>;
   setSelectedRestrictions: (restrictions: RestrictionItemId[]) => Promise<void>;
   setActiveDietModes: (modes: DietModeId[]) => Promise<void>;
+  setVegetarianLevel: (level: VegetarianLevel) => Promise<void>;
   isDietModeActive: (id: DietModeId) => boolean;
   setCardLanguage: (language: AllLanguageCode) => Promise<void>;
   setAppLang: (language: AppLanguage) => Promise<void>;
@@ -46,6 +46,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAllergens, setSelectedAllergensState] = useState<AllergenId[]>([]);
   const [selectedRestrictions, setSelectedRestrictionsState] = useState<RestrictionItemId[]>([]);
   const [activeDietModes, setActiveDietModesState] = useState<DietModeId[]>([]);
+  const [vegetarianLevel, setVegetarianLevelState] = useState<VegetarianLevel>(DEFAULT_VEGETARIAN_LEVEL);
   const [settings, setSettingsState] = useState<UserSettings>({ cardLanguage: 'en', appLanguage: 'en' });
   const [downloadedLanguages, setDownloadedLanguagesState] = useState<Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>>({});
   const [legalConsent, setLegalConsentState] = useState<LegalConsent>({ acceptedAt: null, version: '' });
@@ -58,6 +59,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setSelectedAllergensState(data.selectedAllergens);
       setSelectedRestrictionsState(data.selectedRestrictions);
       setActiveDietModesState(data.activeDietModes);
+      setVegetarianLevelState(data.vegetarianLevel);
       setSettingsState(data.settings);
       setDownloadedLanguagesState(data.downloadedLanguages);
       setLegalConsentState(data.legalConsent);
@@ -68,10 +70,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     init();
   }, []);
 
-  // Derived backward-compat getters
   const pregnancyMode = activeDietModes.includes('pregnancy');
-  const vegetarianMode = activeDietModes.includes('vegetarian');
-  const veganMode = activeDietModes.includes('vegan');
 
   // Derived state: check if user has accepted current version of legal terms
   const hasAcceptedLegalTerms = legalConsent.acceptedAt !== null && legalConsent.version === CURRENT_LEGAL_VERSION;
@@ -90,6 +89,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setActiveDietModes = useCallback(async (modes: DietModeId[]) => {
     setActiveDietModesState(modes);
     await storage.setActiveDietModes(modes);
+  }, []);
+
+  const setVegetarianLevel = useCallback(async (level: VegetarianLevel) => {
+    setVegetarianLevelState(level);
+    await storage.setVegetarianLevel(level);
   }, []);
 
   const isDietModeActive = useCallback((id: DietModeId) => {
@@ -150,6 +154,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSelectedAllergensState([]);
     setSelectedRestrictionsState([]);
     setActiveDietModesState([]);
+    setVegetarianLevelState(DEFAULT_VEGETARIAN_LEVEL);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
     // Note: we keep legal consent when clearing data (user already accepted terms)
@@ -164,9 +169,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       selectedAllergens,
       selectedRestrictions,
       activeDietModes,
+      vegetarianLevel,
       pregnancyMode,
-      vegetarianMode,
-      veganMode,
       settings,
       downloadedLanguages,
       legalConsent,
@@ -178,6 +182,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setSelectedAllergens,
       setSelectedRestrictions,
       setActiveDietModes,
+      setVegetarianLevel,
       isDietModeActive,
       setCardLanguage,
       setAppLang,

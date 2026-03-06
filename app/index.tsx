@@ -8,7 +8,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
 import { AllergenId, Language, LANGUAGES, AllLanguageCode, AppLanguage, DownloadableLanguageCode } from '../types';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
-import { DIET_MODES, getVisibleModes } from '../constants/dietModes';
+import { DIET_MODES, getVisibleModes, getDietModeById } from '../constants/dietModes';
 import { theme } from '../constants/theme';
 import { getLocalizedLanguageName } from '../constants/languageNames';
 import i18n from '../utils/i18n';
@@ -20,7 +20,7 @@ import { useLanguageDownload } from '../hooks/useLanguageDownload';
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens, selectedRestrictions, activeDietModes, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
+  const { selectedAllergens, selectedRestrictions, activeDietModes, vegetarianLevel, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
   const hasSelections = selectedAllergens.length > 0 || selectedRestrictions.length > 0 || activeDietModes.length > 0;
   const cardLanguage = settings.cardLanguage;
   const appLang = settings.appLanguage;
@@ -234,31 +234,38 @@ export default function HomeScreen() {
                   </Chip>
                 );
               })}
-              {selectedRestrictions.length > 0 && (
-                <Chip
-                  style={styles.restrictionChip}
-                  textStyle={styles.chipText}
-                  icon={() => (
-                    <Text style={styles.chipIcon}>{'\uD83D\uDCCB'}</Text>
-                  )}
-                >
-                  {i18n.t('otherRestrictions.other')} ({selectedRestrictions.length})
-                </Chip>
-              )}
-              {getVisibleModes(activeDietModes)
-                .filter((mode) => !mode.affectsFullCard)
-                .map((mode) => (
+              {(() => {
+                // Count only general restrictions (not auto-selected by active modes)
+                const autoIds = new Set(
+                  activeDietModes.flatMap(id => getDietModeById(id)?.autoSelectRestrictions ?? [])
+                );
+                const generalCount = selectedRestrictions.filter(id => !autoIds.has(id)).length;
+                return generalCount > 0 ? (
                   <Chip
-                    key={mode.id}
-                    style={[styles.dietModeChip, { backgroundColor: mode.sectionColors.background }]}
-                    textStyle={[styles.dietModeChipText, { color: mode.sectionColors.primary }]}
+                    style={styles.restrictionChip}
+                    textStyle={styles.chipText}
                     icon={() => (
-                      <Text style={styles.chipIcon}>{mode.icon}</Text>
+                      <Text style={styles.chipIcon}>{'\uD83D\uDCCB'}</Text>
                     )}
                   >
-                    {i18n.t(`otherRestrictions.${mode.id}Toggle`)}
+                    {i18n.t('otherRestrictions.other')} ({generalCount})
                   </Chip>
-                ))}
+                ) : null;
+              })()}
+              {getVisibleModes(activeDietModes).map((mode) => (
+                <Chip
+                  key={mode.id}
+                  style={[styles.dietModeChip, { backgroundColor: mode.sectionColors.background }]}
+                  textStyle={[styles.dietModeChipText, { color: mode.sectionColors.primary }]}
+                  icon={() => (
+                    <Text style={styles.chipIcon}>{mode.icon}</Text>
+                  )}
+                >
+                  {mode.id === 'vegetarian'
+                    ? i18n.t(`otherRestrictions.vegetarianLevel_${vegetarianLevel}`)
+                    : i18n.t(`otherRestrictions.${mode.id}Label`)}
+                </Chip>
+              ))}
             </View>
           )}
         </Surface>

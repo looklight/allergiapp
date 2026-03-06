@@ -1,5 +1,5 @@
 import { Language } from '../types';
-import { DietModeId } from './dietModes';
+import { DietCardKey } from './dietModes';
 
 interface CardTranslation {
   header: string;
@@ -13,7 +13,7 @@ interface CardTranslation {
   examples: string;
 }
 
-interface DietModeCardTranslation {
+export interface DietModeCardTranslation {
   header: string;
   message: string;
   sectionMessage: string;
@@ -22,7 +22,7 @@ interface DietModeCardTranslation {
 interface RestrictionCardTranslation {
   header: string;
   message: string;
-  dietModes: Record<DietModeId, DietModeCardTranslation>;
+  dietModes: Record<DietCardKey, DietModeCardTranslation>;
 }
 
 export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTranslation> = {
@@ -35,15 +35,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Sono in gravidanza. Per favore, assicuratevi che il mio cibo non contenga i seguenti alimenti:',
         sectionMessage: 'Inoltre, a causa della gravidanza, devo evitare anche:',
       },
-      vegetarian: {
-        header: 'VEGETARIANO/A',
-        message: 'Sono vegetariano/a. Non mangio carne, pesce e frutti di mare.',
-        sectionMessage: 'Inoltre, sono vegetariano/a e non mangio carne, pesce e frutti di mare.',
+      no_meat: {
+        header: 'DIETA VEGETARIANA',
+        message: 'Non mangio carne. Pesce e altri prodotti animali vanno bene.',
+        sectionMessage: 'Inoltre, non mangio carne. Pesce e altri prodotti animali vanno bene.',
       },
-      vegan: {
-        header: 'VEGANO/A',
-        message: 'Sono vegano/a. Non mangio carne, pesce, uova, latticini, miele e derivati animali.',
-        sectionMessage: 'Inoltre, sono vegano/a e non mangio carne, pesce, uova, latticini, miele e derivati animali.',
+      no_meat_fish: {
+        header: 'DIETA VEGETARIANA',
+        message: 'Seguo una dieta vegetariana. Non mangio carne e pesce.',
+        sectionMessage: 'Inoltre, seguo una dieta vegetariana e non mangio carne e pesce.',
+      },
+      no_animal_products: {
+        header: 'DIETA VEGANA',
+        message: 'Seguo una dieta vegana. Non mangio carne, pesce, uova, latticini, miele e derivati animali.',
+        sectionMessage: 'Inoltre, seguo una dieta vegana e non mangio carne, pesce, uova, latticini, miele e derivati animali.',
       },
     },
   },
@@ -56,15 +61,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'I am pregnant. Please ensure my food does not contain the following:',
         sectionMessage: 'Additionally, due to my pregnancy, I must also avoid:',
       },
-      vegetarian: {
-        header: 'VEGETARIAN',
-        message: 'I am vegetarian. I do not eat meat, fish or seafood.',
-        sectionMessage: 'Additionally, I am vegetarian and do not eat meat, fish or seafood.',
+      no_meat: {
+        header: 'VEGETARIAN DIET',
+        message: 'I do not eat meat. Fish and other animal products are fine.',
+        sectionMessage: 'Additionally, I do not eat meat. Fish and other animal products are fine.',
       },
-      vegan: {
-        header: 'VEGAN',
-        message: 'I am vegan. I do not eat meat, fish, eggs, dairy, honey or any animal products.',
-        sectionMessage: 'Additionally, I am vegan and do not eat meat, fish, eggs, dairy, honey or any animal products.',
+      no_meat_fish: {
+        header: 'VEGETARIAN DIET',
+        message: 'I follow a vegetarian diet. I do not eat meat or fish.',
+        sectionMessage: 'Additionally, I follow a vegetarian diet and do not eat meat or fish.',
+      },
+      no_animal_products: {
+        header: 'VEGAN DIET',
+        message: 'I follow a vegan diet. I do not eat meat, fish, eggs, dairy, honey or any animal products.',
+        sectionMessage: 'Additionally, I follow a vegan diet and do not eat meat, fish, eggs, dairy, honey or any animal products.',
       },
     },
   },
@@ -77,15 +87,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Je suis enceinte. Veuillez vous assurer que ma nourriture ne contient pas les aliments suivants :',
         sectionMessage: 'De plus, en raison de ma grossesse, je dois aussi \u00E9viter :',
       },
-      vegetarian: {
-        header: 'V\u00C9G\u00C9TARIEN(NE)',
-        message: 'Je suis v\u00E9g\u00E9tarien(ne). Je ne mange pas de viande, de poisson ni de fruits de mer.',
-        sectionMessage: 'De plus, je suis v\u00E9g\u00E9tarien(ne) et ne mange pas de viande, de poisson ni de fruits de mer.',
+      no_meat: {
+        header: 'R\u00C9GIME V\u00C9G\u00C9TARIEN',
+        message: 'Je ne mange pas de viande. Le poisson et les autres produits animaux conviennent.',
+        sectionMessage: 'De plus, je ne mange pas de viande. Le poisson et les autres produits animaux conviennent.',
       },
-      vegan: {
-        header: 'V\u00C9GAN(E)',
-        message: 'Je suis v\u00E9gan(e). Je ne mange pas de viande, de poisson, d\'oeufs, de produits laitiers, de miel ni de produits d\'origine animale.',
-        sectionMessage: 'De plus, je suis v\u00E9gan(e) et ne mange pas de viande, de poisson, d\'oeufs, de produits laitiers, de miel ni de produits d\'origine animale.',
+      no_meat_fish: {
+        header: 'R\u00C9GIME V\u00C9G\u00C9TARIEN',
+        message: 'Je suis un r\u00E9gime v\u00E9g\u00E9tarien. Je ne mange pas de viande ni de poisson.',
+        sectionMessage: 'De plus, je suis un r\u00E9gime v\u00E9g\u00E9tarien et ne mange pas de viande ni de poisson.',
+      },
+      no_animal_products: {
+        header: 'R\u00C9GIME V\u00C9GANE',
+        message: 'Je suis un r\u00E9gime v\u00E9gane. Je ne mange pas de viande, de poisson, d\'oeufs, de produits laitiers, de miel ni de produits d\'origine animale.',
+        sectionMessage: 'De plus, je suis un r\u00E9gime v\u00E9gane et ne mange pas de viande, de poisson, d\'oeufs, de produits laitiers, de miel ni de produits d\'origine animale.',
       },
     },
   },
@@ -98,15 +113,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Ich bin schwanger. Bitte stellen Sie sicher, dass mein Essen folgende Lebensmittel nicht enth\u00E4lt:',
         sectionMessage: 'Zus\u00E4tzlich muss ich wegen meiner Schwangerschaft auch Folgendes meiden:',
       },
-      vegetarian: {
-        header: 'VEGETARIER/IN',
-        message: 'Ich bin Vegetarier/in. Ich esse kein Fleisch, keinen Fisch und keine Meeresfr\u00FCchte.',
-        sectionMessage: 'Au\u00DFerdem bin ich Vegetarier/in und esse kein Fleisch, keinen Fisch und keine Meeresfr\u00FCchte.',
+      no_meat: {
+        header: 'VEGETARISCHE ERN\u00C4HRUNG',
+        message: 'Ich esse kein Fleisch. Fisch und andere tierische Produkte sind in Ordnung.',
+        sectionMessage: 'Au\u00DFerdem esse ich kein Fleisch. Fisch und andere tierische Produkte sind in Ordnung.',
       },
-      vegan: {
-        header: 'VEGAN',
-        message: 'Ich bin Veganer/in. Ich esse kein Fleisch, keinen Fisch, keine Eier, keine Milchprodukte, keinen Honig und keine tierischen Produkte.',
-        sectionMessage: 'Au\u00DFerdem bin ich Veganer/in und esse kein Fleisch, keinen Fisch, keine Eier, keine Milchprodukte, keinen Honig und keine tierischen Produkte.',
+      no_meat_fish: {
+        header: 'VEGETARISCHE ERN\u00C4HRUNG',
+        message: 'Ich folge einer vegetarischen Ern\u00E4hrung. Ich esse kein Fleisch und keinen Fisch.',
+        sectionMessage: 'Au\u00DFerdem folge ich einer vegetarischen Ern\u00E4hrung und esse kein Fleisch und keinen Fisch.',
+      },
+      no_animal_products: {
+        header: 'VEGANE ERN\u00C4HRUNG',
+        message: 'Ich folge einer veganen Ern\u00E4hrung. Ich esse kein Fleisch, keinen Fisch, keine Eier, keine Milchprodukte, keinen Honig und keine tierischen Produkte.',
+        sectionMessage: 'Au\u00DFerdem folge ich einer veganen Ern\u00E4hrung und esse kein Fleisch, keinen Fisch, keine Eier, keine Milchprodukte, keinen Honig und keine tierischen Produkte.',
       },
     },
   },
@@ -119,15 +139,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Estoy embarazada. Por favor, aseg\u00FArese de que mi comida no contenga los siguientes alimentos:',
         sectionMessage: 'Adem\u00E1s, debido a mi embarazo, tambi\u00E9n debo evitar:',
       },
-      vegetarian: {
-        header: 'VEGETARIANO/A',
-        message: 'Soy vegetariano/a. No como carne, pescado ni mariscos.',
-        sectionMessage: 'Adem\u00E1s, soy vegetariano/a y no como carne, pescado ni mariscos.',
+      no_meat: {
+        header: 'DIETA VEGETARIANA',
+        message: 'No como carne. El pescado y otros productos animales est\u00E1n bien.',
+        sectionMessage: 'Adem\u00E1s, no como carne. El pescado y otros productos animales est\u00E1n bien.',
       },
-      vegan: {
-        header: 'VEGANO/A',
-        message: 'Soy vegano/a. No como carne, pescado, huevos, l\u00E1cteos, miel ni productos de origen animal.',
-        sectionMessage: 'Adem\u00E1s, soy vegano/a y no como carne, pescado, huevos, l\u00E1cteos, miel ni productos de origen animal.',
+      no_meat_fish: {
+        header: 'DIETA VEGETARIANA',
+        message: 'Sigo una dieta vegetariana. No como carne ni pescado.',
+        sectionMessage: 'Adem\u00E1s, sigo una dieta vegetariana y no como carne ni pescado.',
+      },
+      no_animal_products: {
+        header: 'DIETA VEGANA',
+        message: 'Sigo una dieta vegana. No como carne, pescado, huevos, l\u00E1cteos, miel ni productos de origen animal.',
+        sectionMessage: 'Adem\u00E1s, sigo una dieta vegana y no como carne, pescado, huevos, l\u00E1cteos, miel ni productos de origen animal.',
       },
     },
   },
@@ -140,15 +165,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Estou gr\u00E1vida. Por favor, certifique-se de que a minha comida n\u00E3o cont\u00E9m os seguintes alimentos:',
         sectionMessage: 'Al\u00E9m disso, devido \u00E0 minha gravidez, tamb\u00E9m devo evitar:',
       },
-      vegetarian: {
-        header: 'VEGETARIANO/A',
-        message: 'Sou vegetariano/a. N\u00E3o como carne, peixe nem frutos do mar.',
-        sectionMessage: 'Al\u00E9m disso, sou vegetariano/a e n\u00E3o como carne, peixe nem frutos do mar.',
+      no_meat: {
+        header: 'DIETA VEGETARIANA',
+        message: 'N\u00E3o como carne. Peixe e outros produtos animais s\u00E3o aceit\u00E1veis.',
+        sectionMessage: 'Al\u00E9m disso, n\u00E3o como carne. Peixe e outros produtos animais s\u00E3o aceit\u00E1veis.',
       },
-      vegan: {
-        header: 'VEGANO/A',
-        message: 'Sou vegano/a. N\u00E3o como carne, peixe, ovos, latic\u00EDnios, mel nem produtos de origem animal.',
-        sectionMessage: 'Al\u00E9m disso, sou vegano/a e n\u00E3o como carne, peixe, ovos, latic\u00EDnios, mel nem produtos de origem animal.',
+      no_meat_fish: {
+        header: 'DIETA VEGETARIANA',
+        message: 'Sigo uma dieta vegetariana. N\u00E3o como carne nem peixe.',
+        sectionMessage: 'Al\u00E9m disso, sigo uma dieta vegetariana e n\u00E3o como carne nem peixe.',
+      },
+      no_animal_products: {
+        header: 'DIETA VEGANA',
+        message: 'Sigo uma dieta vegana. N\u00E3o como carne, peixe, ovos, latic\u00EDnios, mel nem produtos de origem animal.',
+        sectionMessage: 'Al\u00E9m disso, sigo uma dieta vegana e n\u00E3o como carne, peixe, ovos, latic\u00EDnios, mel nem produtos de origem animal.',
       },
     },
   },
@@ -161,15 +191,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Ik ben zwanger. Zorg ervoor dat mijn eten de volgende voedingsmiddelen niet bevat:',
         sectionMessage: 'Daarnaast moet ik vanwege mijn zwangerschap ook het volgende vermijden:',
       },
-      vegetarian: {
-        header: 'VEGETARISCH',
-        message: 'Ik ben vegetari\u00EBr. Ik eet geen vlees, vis of zeevruchten.',
-        sectionMessage: 'Daarnaast ben ik vegetari\u00EBr en eet ik geen vlees, vis of zeevruchten.',
+      no_meat: {
+        header: 'VEGETARISCH DIEET',
+        message: 'Ik eet geen vlees. Vis en andere dierlijke producten zijn prima.',
+        sectionMessage: 'Daarnaast eet ik geen vlees. Vis en andere dierlijke producten zijn prima.',
       },
-      vegan: {
-        header: 'VEGANISTISCH',
-        message: 'Ik ben veganist. Ik eet geen vlees, vis, eieren, zuivel, honing of dierlijke producten.',
-        sectionMessage: 'Daarnaast ben ik veganist en eet ik geen vlees, vis, eieren, zuivel, honing of dierlijke producten.',
+      no_meat_fish: {
+        header: 'VEGETARISCH DIEET',
+        message: 'Ik volg een vegetarisch dieet. Ik eet geen vlees en vis.',
+        sectionMessage: 'Daarnaast volg ik een vegetarisch dieet en eet ik geen vlees en vis.',
+      },
+      no_animal_products: {
+        header: 'VEGANISTISCH DIEET',
+        message: 'Ik volg een veganistisch dieet. Ik eet geen vlees, vis, eieren, zuivel, honing of dierlijke producten.',
+        sectionMessage: 'Daarnaast volg ik een veganistisch dieet en eet ik geen vlees, vis, eieren, zuivel, honing of dierlijke producten.',
       },
     },
   },
@@ -182,15 +217,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Jestem w ci\u0105\u017Cy. Prosz\u0119 upewni\u0107 si\u0119, \u017Ce moje jedzenie nie zawiera nast\u0119puj\u0105cych produkt\u00F3w:',
         sectionMessage: 'Ponadto, z powodu ci\u0105\u017Cy, musz\u0119 r\u00F3wnie\u017C unika\u0107:',
       },
-      vegetarian: {
-        header: 'WEGETARIANIZM',
-        message: 'Jestem wegetarianinem/wegetariank\u0105. Nie jem mi\u0119sa, ryb ani owoc\u00F3w morza.',
-        sectionMessage: 'Ponadto jestem wegetarianinem/wegetariank\u0105 i nie jem mi\u0119sa, ryb ani owoc\u00F3w morza.',
+      no_meat: {
+        header: 'DIETA WEGETARIA\u0143SKA',
+        message: 'Nie jem mi\u0119sa. Ryby i inne produkty pochodzenia zwierz\u0119cego s\u0105 w porz\u0105dku.',
+        sectionMessage: 'Ponadto nie jem mi\u0119sa. Ryby i inne produkty pochodzenia zwierz\u0119cego s\u0105 w porz\u0105dku.',
       },
-      vegan: {
-        header: 'WEGANIZM',
-        message: 'Jestem weganinem/wegank\u0105. Nie jem mi\u0119sa, ryb, jaj, nabia\u0142u, miodu ani produkt\u00F3w pochodzenia zwierz\u0119cego.',
-        sectionMessage: 'Ponadto jestem weganinem/wegank\u0105 i nie jem mi\u0119sa, ryb, jaj, nabia\u0142u, miodu ani produkt\u00F3w pochodzenia zwierz\u0119cego.',
+      no_meat_fish: {
+        header: 'DIETA WEGETARIA\u0143SKA',
+        message: 'Stosuj\u0119 diet\u0119 wegetaria\u0144sk\u0105. Nie jem mi\u0119sa ani ryb.',
+        sectionMessage: 'Ponadto stosuj\u0119 diet\u0119 wegetaria\u0144sk\u0105 i nie jem mi\u0119sa ani ryb.',
+      },
+      no_animal_products: {
+        header: 'DIETA WEGA\u0143SKA',
+        message: 'Stosuj\u0119 diet\u0119 wega\u0144sk\u0105. Nie jem mi\u0119sa, ryb, jaj, nabia\u0142u, miodu ani produkt\u00F3w pochodzenia zwierz\u0119cego.',
+        sectionMessage: 'Ponadto stosuj\u0119 diet\u0119 wega\u0144sk\u0105 i nie jem mi\u0119sa, ryb, jaj, nabia\u0142u, miodu ani produkt\u00F3w pochodzenia zwierz\u0119cego.',
       },
     },
   },
@@ -203,15 +243,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u042F \u0431\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u0430. \u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u0443\u0431\u0435\u0434\u0438\u0442\u0435\u0441\u044C, \u0447\u0442\u043E \u043C\u043E\u044F \u0435\u0434\u0430 \u043D\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0445 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u043E\u0432:',
         sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u0438\u0437-\u0437\u0430 \u0431\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0441\u0442\u0438 \u043C\u043D\u0435 \u0442\u0430\u043A\u0436\u0435 \u0441\u043B\u0435\u0434\u0443\u0435\u0442 \u0438\u0437\u0431\u0435\u0433\u0430\u0442\u044C:',
       },
-      vegetarian: {
-        header: '\u0412\u0415\u0413\u0415\u0422\u0410\u0420\u0418\u0410\u041D\u0421\u0422\u0412\u041E',
-        message: '\u042F \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043D\u0435\u0446/\u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043D\u043A\u0430. \u042F \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E, \u0440\u044B\u0431\u0443 \u0438 \u043C\u043E\u0440\u0435\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B.',
-        sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u044F \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043D\u0435\u0446/\u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043D\u043A\u0430 \u0438 \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E, \u0440\u044B\u0431\u0443 \u0438 \u043C\u043E\u0440\u0435\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B.',
+      no_meat: {
+        header: '\u0412\u0415\u0413\u0415\u0422\u0410\u0420\u0418\u0410\u041D\u0421\u041A\u0410\u042F \u0414\u0418\u0415\u0422\u0410',
+        message: '\u042F \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E. \u0420\u044B\u0431\u0430 \u0438 \u0434\u0440\u0443\u0433\u0438\u0435 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B \u0436\u0438\u0432\u043E\u0442\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0436\u0434\u0435\u043D\u0438\u044F \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0442.',
+        sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u044F \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E. \u0420\u044B\u0431\u0430 \u0438 \u0434\u0440\u0443\u0433\u0438\u0435 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B \u0436\u0438\u0432\u043E\u0442\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0436\u0434\u0435\u043D\u0438\u044F \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0442.',
       },
-      vegan: {
-        header: '\u0412\u0415\u0413\u0410\u041D\u0421\u0422\u0412\u041E',
-        message: '\u042F \u0432\u0435\u0433\u0430\u043D/\u0432\u0435\u0433\u0430\u043D\u043A\u0430. \u042F \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E, \u0440\u044B\u0431\u0443, \u044F\u0439\u0446\u0430, \u043C\u043E\u043B\u043E\u0447\u043D\u044B\u0435 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B, \u043C\u0451\u0434 \u0438 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B \u0436\u0438\u0432\u043E\u0442\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0436\u0434\u0435\u043D\u0438\u044F.',
-        sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u044F \u0432\u0435\u0433\u0430\u043D/\u0432\u0435\u0433\u0430\u043D\u043A\u0430 \u0438 \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E, \u0440\u044B\u0431\u0443, \u044F\u0439\u0446\u0430, \u043C\u043E\u043B\u043E\u0447\u043D\u044B\u0435 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B, \u043C\u0451\u0434 \u0438 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B \u0436\u0438\u0432\u043E\u0442\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0436\u0434\u0435\u043D\u0438\u044F.',
+      no_meat_fish: {
+        header: '\u0412\u0415\u0413\u0415\u0422\u0410\u0420\u0418\u0410\u041D\u0421\u041A\u0410\u042F \u0414\u0418\u0415\u0422\u0410',
+        message: '\u042F \u043F\u0440\u0438\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044E\u0441\u044C \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043D\u0441\u043A\u043E\u0439 \u0434\u0438\u0435\u0442\u044B. \u042F \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E \u0438 \u0440\u044B\u0431\u0443.',
+        sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u044F \u043F\u0440\u0438\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044E\u0441\u044C \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043D\u0441\u043A\u043E\u0439 \u0434\u0438\u0435\u0442\u044B \u0438 \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E \u0438 \u0440\u044B\u0431\u0443.',
+      },
+      no_animal_products: {
+        header: '\u0412\u0415\u0413\u0410\u041D\u0421\u041A\u0410\u042F \u0414\u0418\u0415\u0422\u0410',
+        message: '\u042F \u043F\u0440\u0438\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044E\u0441\u044C \u0432\u0435\u0433\u0430\u043D\u0441\u043A\u043E\u0439 \u0434\u0438\u0435\u0442\u044B. \u042F \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E, \u0440\u044B\u0431\u0443, \u044F\u0439\u0446\u0430, \u043C\u043E\u043B\u043E\u0447\u043D\u044B\u0435 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B, \u043C\u0451\u0434 \u0438 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B \u0436\u0438\u0432\u043E\u0442\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0436\u0434\u0435\u043D\u0438\u044F.',
+        sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u044F \u043F\u0440\u0438\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044E\u0441\u044C \u0432\u0435\u0433\u0430\u043D\u0441\u043A\u043E\u0439 \u0434\u0438\u0435\u0442\u044B \u0438 \u043D\u0435 \u0435\u043C \u043C\u044F\u0441\u043E, \u0440\u044B\u0431\u0443, \u044F\u0439\u0446\u0430, \u043C\u043E\u043B\u043E\u0447\u043D\u044B\u0435 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B, \u043C\u0451\u0434 \u0438 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B \u0436\u0438\u0432\u043E\u0442\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0438\u0441\u0445\u043E\u0436\u0434\u0435\u043D\u0438\u044F.',
       },
     },
   },
@@ -224,15 +269,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Jag \u00E4r gravid. V\u00E4nligen se till att min mat inte inneh\u00E5ller f\u00F6ljande:',
         sectionMessage: 'Dessutom, p\u00E5 grund av min graviditet, m\u00E5ste jag ocks\u00E5 undvika:',
       },
-      vegetarian: {
-        header: 'VEGETARIAN',
-        message: 'Jag \u00E4r vegetarian. Jag \u00E4ter inte k\u00F6tt, fisk eller skaldjur.',
-        sectionMessage: 'Dessutom \u00E4r jag vegetarian och \u00E4ter inte k\u00F6tt, fisk eller skaldjur.',
+      no_meat: {
+        header: 'VEGETARISK KOST',
+        message: 'Jag \u00E4ter inte k\u00F6tt. Fisk och andra animaliska produkter \u00E4r ok\u00E9.',
+        sectionMessage: 'Dessutom \u00E4ter jag inte k\u00F6tt. Fisk och andra animaliska produkter \u00E4r ok\u00E9.',
       },
-      vegan: {
-        header: 'VEGAN',
-        message: 'Jag \u00E4r vegan. Jag \u00E4ter inte k\u00F6tt, fisk, \u00E4gg, mejeriprodukter, honung eller animaliska produkter.',
-        sectionMessage: 'Dessutom \u00E4r jag vegan och \u00E4ter inte k\u00F6tt, fisk, \u00E4gg, mejeriprodukter, honung eller animaliska produkter.',
+      no_meat_fish: {
+        header: 'VEGETARISK KOST',
+        message: 'Jag f\u00F6ljer en vegetarisk kost. Jag \u00E4ter inte k\u00F6tt eller fisk.',
+        sectionMessage: 'Dessutom f\u00F6ljer jag en vegetarisk kost och \u00E4ter inte k\u00F6tt eller fisk.',
+      },
+      no_animal_products: {
+        header: 'VEGANSK KOST',
+        message: 'Jag f\u00F6ljer en vegansk kost. Jag \u00E4ter inte k\u00F6tt, fisk, \u00E4gg, mejeriprodukter, honung eller animaliska produkter.',
+        sectionMessage: 'Dessutom f\u00F6ljer jag en vegansk kost och \u00E4ter inte k\u00F6tt, fisk, \u00E4gg, mejeriprodukter, honung eller animaliska produkter.',
       },
     },
   },
@@ -245,15 +295,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u6211\u6000\u5B55\u4E86\u3002\u8BF7\u786E\u4FDD\u6211\u7684\u98DF\u7269\u4E0D\u542B\u4EE5\u4E0B\u6210\u5206\uFF1A',
         sectionMessage: '\u6B64\u5916\uFF0C\u7531\u4E8E\u6000\u5B55\uFF0C\u6211\u8FD8\u9700\u8981\u907F\u514D\uFF1A',
       },
-      vegetarian: {
-        header: '\u7D20\u98DF\u8005',
-        message: '\u6211\u662F\u7D20\u98DF\u8005\u3002\u6211\u4E0D\u5403\u8089\u7C7B\u3001\u9C7C\u7C7B\u548C\u6D77\u9C9C\u3002',
-        sectionMessage: '\u6B64\u5916\uFF0C\u6211\u662F\u7D20\u98DF\u8005\uFF0C\u4E0D\u5403\u8089\u7C7B\u3001\u9C7C\u7C7B\u548C\u6D77\u9C9C\u3002',
+      no_meat: {
+        header: '\u7D20\u98DF\u996E\u98DF',
+        message: '\u6211\u4E0D\u5403\u8089\u7C7B\u3002\u9C7C\u7C7B\u548C\u5176\u4ED6\u52A8\u7269\u4EA7\u54C1\u53EF\u4EE5\u3002',
+        sectionMessage: '\u6B64\u5916\uFF0C\u6211\u4E0D\u5403\u8089\u7C7B\u3002\u9C7C\u7C7B\u548C\u5176\u4ED6\u52A8\u7269\u4EA7\u54C1\u53EF\u4EE5\u3002',
       },
-      vegan: {
-        header: '\u7EAF\u7D20\u98DF\u8005',
-        message: '\u6211\u662F\u7EAF\u7D20\u98DF\u8005\u3002\u6211\u4E0D\u5403\u8089\u7C7B\u3001\u9C7C\u7C7B\u3001\u86CB\u7C7B\u3001\u4E73\u5236\u54C1\u3001\u8702\u871C\u548C\u4EFB\u4F55\u52A8\u7269\u5236\u54C1\u3002',
-        sectionMessage: '\u6B64\u5916\uFF0C\u6211\u662F\u7EAF\u7D20\u98DF\u8005\uFF0C\u4E0D\u5403\u8089\u7C7B\u3001\u9C7C\u7C7B\u3001\u86CB\u7C7B\u3001\u4E73\u5236\u54C1\u3001\u8702\u871C\u548C\u4EFB\u4F55\u52A8\u7269\u5236\u54C1\u3002',
+      no_meat_fish: {
+        header: '\u7D20\u98DF\u996E\u98DF',
+        message: '\u6211\u9075\u5FAA\u7D20\u98DF\u996E\u98DF\u3002\u6211\u4E0D\u5403\u8089\u7C7B\u548C\u9C7C\u7C7B\u3002',
+        sectionMessage: '\u6B64\u5916\uFF0C\u6211\u9075\u5FAA\u7D20\u98DF\u996E\u98DF\uFF0C\u4E0D\u5403\u8089\u7C7B\u548C\u9C7C\u7C7B\u3002',
+      },
+      no_animal_products: {
+        header: '\u7EAF\u7D20\u996E\u98DF',
+        message: '\u6211\u9075\u5FAA\u7EAF\u7D20\u996E\u98DF\u3002\u6211\u4E0D\u5403\u8089\u7C7B\u3001\u9C7C\u7C7B\u3001\u86CB\u7C7B\u3001\u4E73\u5236\u54C1\u3001\u8702\u871C\u548C\u4EFB\u4F55\u52A8\u7269\u5236\u54C1\u3002',
+        sectionMessage: '\u6B64\u5916\uFF0C\u6211\u9075\u5FAA\u7EAF\u7D20\u996E\u98DF\uFF0C\u4E0D\u5403\u8089\u7C7B\u3001\u9C7C\u7C7B\u3001\u86CB\u7C7B\u3001\u4E73\u5236\u54C1\u3001\u8702\u871C\u548C\u4EFB\u4F55\u52A8\u7269\u5236\u54C1\u3002',
       },
     },
   },
@@ -266,15 +321,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u598A\u5A20\u4E2D\u3067\u3059\u3002\u4EE5\u4E0B\u306E\u98DF\u54C1\u304C\u542B\u307E\u308C\u3066\u3044\u306A\u3044\u3053\u3068\u3092\u3054\u78BA\u8A8D\u304F\u3060\u3055\u3044\uFF1A',
         sectionMessage: '\u3055\u3089\u306B\u3001\u598A\u5A20\u4E2D\u306E\u305F\u3081\u3001\u4EE5\u4E0B\u3082\u907F\u3051\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\uFF1A',
       },
-      vegetarian: {
-        header: '\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3',
-        message: '\u79C1\u306F\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3\u3067\u3059\u3002\u8089\u3001\u9B5A\u3001\u30B7\u30FC\u30D5\u30FC\u30C9\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
-        sectionMessage: '\u307E\u305F\u3001\u79C1\u306F\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3\u306E\u305F\u3081\u3001\u8089\u3001\u9B5A\u3001\u30B7\u30FC\u30D5\u30FC\u30C9\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
+      no_meat: {
+        header: '\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3\u98DF',
+        message: '\u8089\u306F\u98DF\u3079\u307E\u305B\u3093\u3002\u9B5A\u3084\u305D\u306E\u4ED6\u306E\u52D5\u7269\u6027\u98DF\u54C1\u306F\u5927\u4E08\u592B\u3067\u3059\u3002',
+        sectionMessage: '\u307E\u305F\u3001\u8089\u306F\u98DF\u3079\u307E\u305B\u3093\u3002\u9B5A\u3084\u305D\u306E\u4ED6\u306E\u52D5\u7269\u6027\u98DF\u54C1\u306F\u5927\u4E08\u592B\u3067\u3059\u3002',
       },
-      vegan: {
-        header: '\u30F4\u30A3\u30FC\u30AC\u30F3',
-        message: '\u79C1\u306F\u30F4\u30A3\u30FC\u30AC\u30F3\u3067\u3059\u3002\u8089\u3001\u9B5A\u3001\u5375\u3001\u4E73\u88FD\u54C1\u3001\u8702\u871C\u3001\u52D5\u7269\u7531\u6765\u306E\u98DF\u54C1\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
-        sectionMessage: '\u307E\u305F\u3001\u79C1\u306F\u30F4\u30A3\u30FC\u30AC\u30F3\u306E\u305F\u3081\u3001\u8089\u3001\u9B5A\u3001\u5375\u3001\u4E73\u88FD\u54C1\u3001\u8702\u871C\u3001\u52D5\u7269\u7531\u6765\u306E\u98DF\u54C1\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
+      no_meat_fish: {
+        header: '\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3\u98DF',
+        message: '\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3\u306E\u98DF\u4E8B\u3092\u3057\u3066\u3044\u307E\u3059\u3002\u8089\u3068\u9B5A\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
+        sectionMessage: '\u307E\u305F\u3001\u30D9\u30B8\u30BF\u30EA\u30A2\u30F3\u306E\u98DF\u4E8B\u3092\u3057\u3066\u304A\u308A\u3001\u8089\u3068\u9B5A\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
+      },
+      no_animal_products: {
+        header: '\u30F4\u30A3\u30FC\u30AC\u30F3\u98DF',
+        message: '\u30F4\u30A3\u30FC\u30AC\u30F3\u306E\u98DF\u4E8B\u3092\u3057\u3066\u3044\u307E\u3059\u3002\u8089\u3001\u9B5A\u3001\u5375\u3001\u4E73\u88FD\u54C1\u3001\u8702\u871C\u3001\u52D5\u7269\u7531\u6765\u306E\u98DF\u54C1\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
+        sectionMessage: '\u307E\u305F\u3001\u30F4\u30A3\u30FC\u30AC\u30F3\u306E\u98DF\u4E8B\u3092\u3057\u3066\u304A\u308A\u3001\u8089\u3001\u9B5A\u3001\u5375\u3001\u4E73\u88FD\u54C1\u3001\u8702\u871C\u3001\u52D5\u7269\u7531\u6765\u306E\u98DF\u54C1\u306F\u98DF\u3079\u307E\u305B\u3093\u3002',
       },
     },
   },
@@ -287,15 +347,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\uC784\uC2E0 \uC911\uC785\uB2C8\uB2E4. \uC81C \uC74C\uC2DD\uC5D0 \uB2E4\uC74C\uC774 \uD3EC\uD568\uB418\uC9C0 \uC54A\uB3C4\uB85D \uD574\uC8FC\uC138\uC694:',
         sectionMessage: '\uB610\uD55C, \uC784\uC2E0\uC73C\uB85C \uC778\uD574 \uB2E4\uC74C\uB3C4 \uD53C\uD574\uC57C \uD569\uB2C8\uB2E4:',
       },
-      vegetarian: {
-        header: '\uCC44\uC2DD\uC8FC\uC758\uC790',
-        message: '\uC800\uB294 \uCC44\uC2DD\uC8FC\uC758\uC790\uC785\uB2C8\uB2E4. \uACE0\uAE30, \uC0DD\uC120, \uD574\uC0B0\uBB3C\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
-        sectionMessage: '\uB610\uD55C, \uC800\uB294 \uCC44\uC2DD\uC8FC\uC758\uC790\uB85C\uC11C \uACE0\uAE30, \uC0DD\uC120, \uD574\uC0B0\uBB3C\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
+      no_meat: {
+        header: '\uCC44\uC2DD \uC2DD\uB2E8',
+        message: '\uACE0\uAE30\uB97C \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC0DD\uC120\uACFC \uAE30\uD0C0 \uB3D9\uBB3C\uC131 \uC2DD\uD488\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.',
+        sectionMessage: '\uB610\uD55C, \uACE0\uAE30\uB97C \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC0DD\uC120\uACFC \uAE30\uD0C0 \uB3D9\uBB3C\uC131 \uC2DD\uD488\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.',
       },
-      vegan: {
-        header: '\uBE44\uAC74',
-        message: '\uC800\uB294 \uBE44\uAC74\uC785\uB2C8\uB2E4. \uACE0\uAE30, \uC0DD\uC120, \uB2EC\uAC78, \uC720\uC81C\uD488, \uAF40 \uBC0F \uB3D9\uBB3C\uC131 \uC81C\uD488\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
-        sectionMessage: '\uB610\uD55C, \uC800\uB294 \uBE44\uAC74\uC73C\uB85C\uC11C \uACE0\uAE30, \uC0DD\uC120, \uB2EC\uAC78, \uC720\uC81C\uD488, \uAF40 \uBC0F \uB3D9\uBB3C\uC131 \uC81C\uD488\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
+      no_meat_fish: {
+        header: '\uCC44\uC2DD \uC2DD\uB2E8',
+        message: '\uCC44\uC2DD \uC2DD\uB2E8\uC744 \uB530\uB974\uACE0 \uC788\uC2B5\uB2C8\uB2E4. \uACE0\uAE30\uC640 \uC0DD\uC120\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
+        sectionMessage: '\uB610\uD55C, \uCC44\uC2DD \uC2DD\uB2E8\uC744 \uB530\uB974\uACE0 \uC788\uC73C\uBA70 \uACE0\uAE30\uC640 \uC0DD\uC120\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
+      },
+      no_animal_products: {
+        header: '\uBE44\uAC74 \uC2DD\uB2E8',
+        message: '\uBE44\uAC74 \uC2DD\uB2E8\uC744 \uB530\uB974\uACE0 \uC788\uC2B5\uB2C8\uB2E4. \uACE0\uAE30, \uC0DD\uC120, \uB2EC\uAC78, \uC720\uC81C\uD488, \uAF40 \uBC0F \uB3D9\uBB3C\uC131 \uC81C\uD488\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
+        sectionMessage: '\uB610\uD55C, \uBE44\uAC74 \uC2DD\uB2E8\uC744 \uB530\uB974\uACE0 \uC788\uC73C\uBA70 \uACE0\uAE30, \uC0DD\uC120, \uB2EC\uAC78, \uC720\uC81C\uD488, \uAF40 \uBC0F \uB3D9\uBB3C\uC131 \uC81C\uD488\uC744 \uBA39\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.',
       },
     },
   },
@@ -308,15 +373,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u0E09\u0E31\u0E19\u0E15\u0E31\u0E49\u0E07\u0E04\u0E23\u0E23\u0E20\u0E4C \u0E01\u0E23\u0E38\u0E13\u0E32\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E43\u0E2B\u0E49\u0E41\u0E19\u0E48\u0E43\u0E08\u0E27\u0E48\u0E32\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E02\u0E2D\u0E07\u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E34\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E44\u0E1B\u0E19\u0E35\u0E49:',
         sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07\u0E08\u0E32\u0E01\u0E15\u0E31\u0E49\u0E07\u0E04\u0E23\u0E23\u0E20\u0E4C \u0E09\u0E31\u0E19\u0E15\u0E49\u0E2D\u0E07\u0E2B\u0E25\u0E35\u0E01\u0E40\u0E25\u0E35\u0E48\u0E22\u0E07\u0E2A\u0E34\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E44\u0E1B\u0E19\u0E35\u0E49\u0E14\u0E49\u0E27\u0E22:',
       },
-      vegetarian: {
-        header: '\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34',
-        message: '\u0E09\u0E31\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34 \u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32 \u0E41\u0E25\u0E30\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E17\u0E30\u0E40\u0E25',
-        sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34\u0E41\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32 \u0E41\u0E25\u0E30\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E17\u0E30\u0E40\u0E25',
+      no_meat: {
+        header: '\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34',
+        message: '\u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32\u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E08\u0E32\u0E01\u0E2A\u0E31\u0E15\u0E27\u0E4C\u0E2D\u0E37\u0E48\u0E19\u0E46 \u0E44\u0E21\u0E48\u0E40\u0E1B\u0E47\u0E19\u0E44\u0E23',
+        sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32\u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E08\u0E32\u0E01\u0E2A\u0E31\u0E15\u0E27\u0E4C\u0E2D\u0E37\u0E48\u0E19\u0E46 \u0E44\u0E21\u0E48\u0E40\u0E1B\u0E47\u0E19\u0E44\u0E23',
       },
-      vegan: {
-        header: '\u0E27\u0E35\u0E41\u0E01\u0E19',
-        message: '\u0E09\u0E31\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E27\u0E35\u0E41\u0E01\u0E19 \u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32 \u0E44\u0E02\u0E48 \u0E19\u0E21 \u0E19\u0E49\u0E33\u0E1C\u0E36\u0E49\u0E07 \u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E08\u0E32\u0E01\u0E2A\u0E31\u0E15\u0E27\u0E4C',
-        sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E27\u0E35\u0E41\u0E01\u0E19\u0E41\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32 \u0E44\u0E02\u0E48 \u0E19\u0E21 \u0E19\u0E49\u0E33\u0E1C\u0E36\u0E49\u0E07 \u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E08\u0E32\u0E01\u0E2A\u0E31\u0E15\u0E27\u0E4C',
+      no_meat_fish: {
+        header: '\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34',
+        message: '\u0E09\u0E31\u0E19\u0E23\u0E31\u0E1A\u0E1B\u0E23\u0E30\u0E17\u0E32\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34 \u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C\u0E41\u0E25\u0E30\u0E1B\u0E25\u0E32',
+        sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E23\u0E31\u0E1A\u0E1B\u0E23\u0E30\u0E17\u0E32\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E21\u0E31\u0E07\u0E2A\u0E27\u0E34\u0E23\u0E31\u0E15\u0E34\u0E41\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C\u0E41\u0E25\u0E30\u0E1B\u0E25\u0E32',
+      },
+      no_animal_products: {
+        header: '\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E27\u0E35\u0E41\u0E01\u0E19',
+        message: '\u0E09\u0E31\u0E19\u0E23\u0E31\u0E1A\u0E1B\u0E23\u0E30\u0E17\u0E32\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E27\u0E35\u0E41\u0E01\u0E19 \u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32 \u0E44\u0E02\u0E48 \u0E19\u0E21 \u0E19\u0E49\u0E33\u0E1C\u0E36\u0E49\u0E07 \u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E08\u0E32\u0E01\u0E2A\u0E31\u0E15\u0E27\u0E4C',
+        sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E23\u0E31\u0E1A\u0E1B\u0E23\u0E30\u0E17\u0E32\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E27\u0E35\u0E41\u0E01\u0E19\u0E41\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E34\u0E19\u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2A\u0E31\u0E15\u0E27\u0E4C \u0E1B\u0E25\u0E32 \u0E44\u0E02\u0E48 \u0E19\u0E21 \u0E19\u0E49\u0E33\u0E1C\u0E36\u0E49\u0E07 \u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E08\u0E32\u0E01\u0E2A\u0E31\u0E15\u0E27\u0E4C',
       },
     },
   },
@@ -329,15 +399,20 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u0623\u0646\u0627 \u062D\u0627\u0645\u0644. \u064A\u0631\u062C\u0649 \u0627\u0644\u062A\u0623\u0643\u062F \u0645\u0646 \u0623\u0646 \u0637\u0639\u0627\u0645\u064A \u0644\u0627 \u064A\u062D\u062A\u0648\u064A \u0639\u0644\u0649 \u0645\u0627 \u064A\u0644\u064A:',
         sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0628\u0633\u0628\u0628 \u062D\u0645\u0644\u064A\u060C \u064A\u062C\u0628 \u0623\u064A\u0636\u064B\u0627 \u062A\u062C\u0646\u0628:',
       },
-      vegetarian: {
-        header: '\u0646\u0628\u0627\u062A\u064A',
-        message: '\u0623\u0646\u0627 \u0646\u0628\u0627\u062A\u064A/\u0646\u0628\u0627\u062A\u064A\u0629. \u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0645\u0623\u0643\u0648\u0644\u0627\u062A \u0627\u0644\u0628\u062D\u0631\u064A\u0629.',
-        sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0623\u0646\u0627 \u0646\u0628\u0627\u062A\u064A/\u0646\u0628\u0627\u062A\u064A\u0629 \u0648\u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0645\u0623\u0643\u0648\u0644\u0627\u062A \u0627\u0644\u0628\u062D\u0631\u064A\u0629.',
+      no_meat: {
+        header: '\u0646\u0638\u0627\u0645 \u063A\u0630\u0627\u0626\u064A \u0646\u0628\u0627\u062A\u064A',
+        message: '\u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645. \u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A \u0627\u0644\u062D\u064A\u0648\u0627\u0646\u064A\u0629 \u0627\u0644\u0623\u062E\u0631\u0649 \u0645\u0642\u0628\u0648\u0644\u0629.',
+        sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645. \u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A \u0627\u0644\u062D\u064A\u0648\u0627\u0646\u064A\u0629 \u0627\u0644\u0623\u062E\u0631\u0649 \u0645\u0642\u0628\u0648\u0644\u0629.',
       },
-      vegan: {
-        header: '\u0646\u0628\u0627\u062A\u064A \u0635\u0631\u0641',
-        message: '\u0623\u0646\u0627 \u0646\u0628\u0627\u062A\u064A/\u0646\u0628\u0627\u062A\u064A\u0629 \u0635\u0631\u0641. \u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0628\u064A\u0636 \u0648\u0645\u0646\u062A\u062C\u0627\u062A \u0627\u0644\u0623\u0644\u0628\u0627\u0646 \u0648\u0627\u0644\u0639\u0633\u0644 \u0648\u0623\u064A \u0645\u0646\u062A\u062C\u0627\u062A \u062D\u064A\u0648\u0627\u0646\u064A\u0629.',
-        sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0623\u0646\u0627 \u0646\u0628\u0627\u062A\u064A/\u0646\u0628\u0627\u062A\u064A\u0629 \u0635\u0631\u0641 \u0648\u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0628\u064A\u0636 \u0648\u0645\u0646\u062A\u062C\u0627\u062A \u0627\u0644\u0623\u0644\u0628\u0627\u0646 \u0648\u0627\u0644\u0639\u0633\u0644 \u0648\u0623\u064A \u0645\u0646\u062A\u062C\u0627\u062A \u062D\u064A\u0648\u0627\u0646\u064A\u0629.',
+      no_meat_fish: {
+        header: '\u0646\u0638\u0627\u0645 \u063A\u0630\u0627\u0626\u064A \u0646\u0628\u0627\u062A\u064A',
+        message: '\u0623\u062A\u0628\u0639 \u0646\u0638\u0627\u0645\u064B\u0627 \u063A\u0630\u0627\u0626\u064A\u064B\u0627 \u0646\u0628\u0627\u062A\u064A\u064B\u0627. \u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643.',
+        sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0623\u062A\u0628\u0639 \u0646\u0638\u0627\u0645\u064B\u0627 \u063A\u0630\u0627\u0626\u064A\u064B\u0627 \u0646\u0628\u0627\u062A\u064A\u064B\u0627 \u0648\u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643.',
+      },
+      no_animal_products: {
+        header: '\u0646\u0638\u0627\u0645 \u063A\u0630\u0627\u0626\u064A \u0646\u0628\u0627\u062A\u064A \u0635\u0631\u0641',
+        message: '\u0623\u062A\u0628\u0639 \u0646\u0638\u0627\u0645\u064B\u0627 \u063A\u0630\u0627\u0626\u064A\u064B\u0627 \u0646\u0628\u0627\u062A\u064A\u064B\u0627 \u0635\u0631\u0641\u064B\u0627. \u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0628\u064A\u0636 \u0648\u0645\u0646\u062A\u062C\u0627\u062A \u0627\u0644\u0623\u0644\u0628\u0627\u0646 \u0648\u0627\u0644\u0639\u0633\u0644 \u0648\u0623\u064A \u0645\u0646\u062A\u062C\u0627\u062A \u062D\u064A\u0648\u0627\u0646\u064A\u0629.',
+        sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0623\u062A\u0628\u0639 \u0646\u0638\u0627\u0645\u064B\u0627 \u063A\u0630\u0627\u0626\u064A\u064B\u0627 \u0646\u0628\u0627\u062A\u064A\u064B\u0627 \u0635\u0631\u0641\u064B\u0627 \u0648\u0644\u0627 \u0622\u0643\u0644 \u0627\u0644\u0644\u062D\u0648\u0645 \u0648\u0627\u0644\u0623\u0633\u0645\u0627\u0643 \u0648\u0627\u0644\u0628\u064A\u0636 \u0648\u0645\u0646\u062A\u062C\u0627\u062A \u0627\u0644\u0623\u0644\u0628\u0627\u0646 \u0648\u0627\u0644\u0639\u0633\u0644 \u0648\u0623\u064A \u0645\u0646\u062A\u062C\u0627\u062A \u062D\u064A\u0648\u0627\u0646\u064A\u0629.',
       },
     },
   },

@@ -1,6 +1,13 @@
 import { RestrictionItemId } from './otherRestrictions';
 
-export type DietModeId = 'pregnancy' | 'vegetarian' | 'vegan';
+export type DietModeId = 'pregnancy' | 'vegetarian';
+
+export type VegetarianLevel = 'no_meat' | 'no_meat_fish' | 'no_animal_products';
+
+export const DEFAULT_VEGETARIAN_LEVEL: VegetarianLevel = 'no_meat_fish';
+
+/** Key used to look up card translations for diet modes */
+export type DietCardKey = 'pregnancy' | VegetarianLevel;
 
 export interface DietModeColors {
   primary: string;
@@ -45,8 +52,6 @@ export interface DietMode {
   order: number;
   /** If true, changes the palette of the ENTIRE card (like pregnancy) */
   affectsFullCard: boolean;
-  /** When this mode is active, hide the listed modes from the card */
-  supersedes?: DietModeId[];
   /** Restrictions to auto-select when this mode is activated */
   autoSelectRestrictions?: RestrictionItemId[];
   /** Colors for the section on the card (when affectsFullCard=false) */
@@ -126,25 +131,6 @@ export const DIET_MODES: DietMode[] = [
       activeBorder: '#A5D6A7',
     },
   },
-  {
-    id: 'vegan',
-    icon: '\u{1F331}',
-    order: 3,
-    affectsFullCard: false,
-    supersedes: ['vegetarian'],
-    sectionColors: {
-      primary: '#1B5E20',
-      background: '#E0F2F1',
-      border: '#80CBC4',
-      text: '#1B5E20',
-      headerBg: '#2E7D32',
-    },
-    toggleColors: {
-      active: '#1B5E20',
-      activeBg: '#E0F2F1',
-      activeBorder: '#80CBC4',
-    },
-  },
 ];
 
 export const getDietModeById = (id: DietModeId): DietMode | undefined => {
@@ -152,25 +138,12 @@ export const getDietModeById = (id: DietModeId): DietMode | undefined => {
 };
 
 /**
- * Returns diet modes that should be visible on the card,
- * filtering out modes that are superseded by other active modes.
- * Sorted by order.
+ * Returns active diet modes sorted by order.
  */
 export const getVisibleModes = (activeIds: DietModeId[]): DietMode[] => {
   const activeSet = new Set(activeIds);
-  const supersededIds = new Set<DietModeId>();
-
-  for (const id of activeIds) {
-    const mode = getDietModeById(id);
-    if (mode?.supersedes) {
-      for (const s of mode.supersedes) {
-        supersededIds.add(s);
-      }
-    }
-  }
-
   return DIET_MODES
-    .filter((m) => activeSet.has(m.id) && !supersededIds.has(m.id))
+    .filter((m) => activeSet.has(m.id))
     .sort((a, b) => a.order - b.order);
 };
 
@@ -179,4 +152,13 @@ export const getVisibleModes = (activeIds: DietModeId[]): DietMode[] => {
  */
 export const getFullCardMode = (activeIds: DietModeId[]): DietMode | undefined => {
   return DIET_MODES.find((m) => m.affectsFullCard && activeIds.includes(m.id));
+};
+
+/**
+ * Returns the DietCardKey to use for card translation lookup.
+ * For vegetarian mode, maps the level to the corresponding key.
+ */
+export const getDietCardKey = (modeId: DietModeId, vegetarianLevel: VegetarianLevel): DietCardKey => {
+  if (modeId === 'vegetarian') return vegetarianLevel;
+  return modeId;
 };
