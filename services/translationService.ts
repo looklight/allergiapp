@@ -124,7 +124,6 @@ export async function downloadLanguageTranslations(
     CARD_TRANSLATIONS.en.pregnancyMessage,
     CARD_TRANSLATIONS.en.thanks,
     CARD_TRANSLATIONS.en.tapToSee,
-    CARD_TRANSLATIONS.en.showIn,
     CARD_TRANSLATIONS.en.examples,
   ];
 
@@ -134,21 +133,14 @@ export async function downloadLanguageTranslations(
 
   // Restrizioni da tradurre
   const restrictionNames = RESTRICTION_ITEMS.map(r => r.translations.en);
+  const dietModeKeys = Object.keys(RESTRICTION_CARD_TRANSLATIONS.en.dietModes);
   const restrictionCardTexts = [
     RESTRICTION_CARD_TRANSLATIONS.en.header,
     RESTRICTION_CARD_TRANSLATIONS.en.message,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.pregnancy.header,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.pregnancy.message,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.pregnancy.sectionMessage,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_meat.header,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_meat.message,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_meat.sectionMessage,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_meat_fish.header,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_meat_fish.message,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_meat_fish.sectionMessage,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_animal_products.header,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_animal_products.message,
-    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.no_animal_products.sectionMessage,
+    ...dietModeKeys.flatMap(key => {
+      const mode = RESTRICTION_CARD_TRANSLATIONS.en.dietModes[key as keyof typeof RESTRICTION_CARD_TRANSLATIONS.en.dietModes];
+      return [mode.header, mode.message, mode.sectionMessage];
+    }),
   ];
 
   const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + restrictionNames.length + restrictionCardTexts.length;
@@ -355,18 +347,13 @@ export async function downloadLanguageTranslations(
     restrictionCardTexts: {
       header: translatedRestrictionCardTexts[0],
       message: translatedRestrictionCardTexts[1],
-      pregnancyHeader: translatedRestrictionCardTexts[2],
-      pregnancyMessage: translatedRestrictionCardTexts[3],
-      pregnancySectionMessage: translatedRestrictionCardTexts[4],
-      noMeatHeader: translatedRestrictionCardTexts[5],
-      noMeatMessage: translatedRestrictionCardTexts[6],
-      noMeatSectionMessage: translatedRestrictionCardTexts[7],
-      noMeatFishHeader: translatedRestrictionCardTexts[8],
-      noMeatFishMessage: translatedRestrictionCardTexts[9],
-      noMeatFishSectionMessage: translatedRestrictionCardTexts[10],
-      noAnimalProductsHeader: translatedRestrictionCardTexts[11],
-      noAnimalProductsMessage: translatedRestrictionCardTexts[12],
-      noAnimalProductsSectionMessage: translatedRestrictionCardTexts[13],
+      dietModeTexts: Object.fromEntries(
+        dietModeKeys.map((key, i) => [key, {
+          header: translatedRestrictionCardTexts[2 + i * 3],
+          message: translatedRestrictionCardTexts[2 + i * 3 + 1],
+          sectionMessage: translatedRestrictionCardTexts[2 + i * 3 + 2],
+        }])
+      ),
     },
     cardTexts: {
       header: translatedCardTexts[0],
@@ -376,8 +363,7 @@ export async function downloadLanguageTranslations(
       pregnancyMessage: translatedCardTexts[4],
       thanks: translatedCardTexts[5],
       tapToSee: translatedCardTexts[6],
-      showIn: translatedCardTexts[7],
-      examples: translatedCardTexts[8],
+      examples: translatedCardTexts[7],
     },
     downloadedAt: new Date().toISOString(),
   };

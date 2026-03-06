@@ -46,6 +46,10 @@
     "vegetarianLevelHint_no_meat": "Fish and other animal products are fine",
     "vegetarianLevelHint_no_meat_fish": "I don't eat meat and fish",
     "vegetarianLevelHint_no_animal_products": "No meat, fish, eggs, dairy, honey",
+    "nickelToggle": "Nickel allergy",
+    "nickelHint": "Will show foods high in nickel to avoid on the card",
+    "nickelLabel": "Nickel allergy",
+    "nickelActive": "Nickel mode active",
     "foodsToAvoid": "Foods to avoid",
     "pregnancyActive": "Pregnancy mode active"
   },

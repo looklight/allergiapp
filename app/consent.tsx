@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { View, Modal, StyleSheet, Image, Platform } from 'react-native';
 import { Text, Button, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppContext } from '../utils/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import { useTrackingPermission } from '../hooks/useTrackingPermission';
-import { Analytics } from '../utils/analytics';
+import { Analytics } from '../services/analytics';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import LegalDialogs from './components/LegalDialogs';
@@ -139,11 +139,11 @@ const styles = StyleSheet.create({
   container: {
     width: '90%',
     maxWidth: 400,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     paddingHorizontal: 24,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   disclaimer: {
     fontSize: 12,
-    color: '#999999',
+    color: theme.colors.textDisabled,
     textAlign: 'center',
     lineHeight: 17,
     marginBottom: 20,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     fontSize: 14,
-    color: '#CCCCCC',
+    color: theme.colors.separator,
   },
   button: {
     width: '100%',
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   termsNote: {
     fontSize: 11,
-    color: '#999999',
+    color: theme.colors.textDisabled,
     textAlign: 'center',
     marginTop: 16,
   },

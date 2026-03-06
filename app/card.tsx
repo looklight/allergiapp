@@ -14,8 +14,8 @@ import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, Diet
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
-import { useAppContext } from '../utils/AppContext';
-import { Analytics } from '../utils/analytics';
+import { useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
 import CardPortrait from './components/card/CardPortrait';
 import CardLandscape from './components/card/CardLandscape';
 import { CardColors, DietModeSectionData } from './components/card/types';
@@ -34,7 +34,7 @@ export default function CardScreen() {
   const appLanguage = settings.appLanguage;
   const [showInAppLanguage, setShowInAppLanguage] = useState(false);
   const [expandedAllergen, setExpandedAllergen] = useState<AllergenId | null>(null);
-  const [selectedLandscapeAllergen, setSelectedLandscapeAllergen] = useState<AllergenId | null>(null);
+  const [selectedLandscapeItem, setSelectedLandscapeItem] = useState<string | null>(null);
 
   const isDownloadedLanguage = useMemo(() => {
     return DOWNLOADABLE_LANGUAGES.some((l) => l.code === cardLanguage);
@@ -68,7 +68,6 @@ export default function CardScreen() {
         pregnancyMessage: downloadedLanguageData.cardTexts.pregnancyMessage || downloadedLanguageData.cardTexts.message,
         thanks: downloadedLanguageData.cardTexts.thanks,
         tapToSee: downloadedLanguageData.cardTexts.tapToSee,
-        showIn: downloadedLanguageData.cardTexts.showIn,
         examples: downloadedLanguageData.cardTexts.examples || CARD_TRANSLATIONS.en.examples,
       };
     }
@@ -107,57 +106,40 @@ export default function CardScreen() {
     return item?.translations[displayLanguage as Language] || item?.translations.en || '';
   };
 
-  // Restriction translations for the pregnancy section header/message
-  const restrictionTranslations = useMemo(() => {
-    const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
-    if (pregnancyMode) {
-      const downloaded = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts);
-      return {
-        header: downloaded ? (downloadedLanguageData!.restrictionCardTexts!.pregnancyHeader || hardcoded.dietModes.pregnancy.header) : hardcoded.dietModes.pregnancy.header,
-        message: downloaded ? (downloadedLanguageData!.restrictionCardTexts!.pregnancyMessage || hardcoded.dietModes.pregnancy.message) : hardcoded.dietModes.pregnancy.message,
-        sectionMessage: downloaded ? (downloadedLanguageData!.restrictionCardTexts!.pregnancySectionMessage || hardcoded.dietModes.pregnancy.sectionMessage) : hardcoded.dietModes.pregnancy.sectionMessage,
-      };
-    }
-    const base = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts)
-      ? downloadedLanguageData.restrictionCardTexts
-      : hardcoded;
-    return { header: base.header, message: base.message, sectionMessage: base.message };
-  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage, pregnancyMode]);
-
   // Get diet mode translations, supporting downloaded languages
   const getDietModeTranslation = (cardKey: DietCardKey) => {
     const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
     const base = hardcoded.dietModes[cardKey];
-    if (showInAppLanguage || !isDownloadedLanguage || !downloadedLanguageData?.restrictionCardTexts) {
+    if (showInAppLanguage || !isDownloadedLanguage || !downloadedLanguageData?.restrictionCardTexts?.dietModeTexts) {
       return base;
     }
-    const d = downloadedLanguageData.restrictionCardTexts;
-    if (cardKey === 'pregnancy') {
-      return {
-        header: d.pregnancyHeader || base.header,
-        message: d.pregnancyMessage || base.message,
-        sectionMessage: d.pregnancySectionMessage || base.sectionMessage,
-      };
-    }
-    const keyMap: Record<string, { header?: string; message?: string; sectionMessage?: string }> = {
-      no_meat: { header: d.noMeatHeader, message: d.noMeatMessage, sectionMessage: d.noMeatSectionMessage },
-      no_meat_fish: { header: d.noMeatFishHeader, message: d.noMeatFishMessage, sectionMessage: d.noMeatFishSectionMessage },
-      no_animal_products: { header: d.noAnimalProductsHeader, message: d.noAnimalProductsMessage, sectionMessage: d.noAnimalProductsSectionMessage },
+    const downloaded = downloadedLanguageData.restrictionCardTexts.dietModeTexts[cardKey];
+    if (!downloaded) return base;
+    return {
+      header: downloaded.header || base.header,
+      message: downloaded.message || base.message,
+      sectionMessage: downloaded.sectionMessage || base.sectionMessage,
     };
-    const mapped = keyMap[cardKey];
-    if (mapped) {
-      return {
-        header: mapped.header || base.header,
-        message: mapped.message || base.message,
-        sectionMessage: mapped.sectionMessage || base.sectionMessage,
-      };
-    }
-    return base;
   };
 
-  // Pregnancy auto-selected restriction IDs (stable, never changes)
+  // Restriction translations for the pregnancy section header/message
+  const restrictionTranslations = useMemo(() => {
+    if (pregnancyMode) {
+      return getDietModeTranslation('pregnancy');
+    }
+    const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
+    const downloaded = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts);
+    const header = downloaded ? (downloadedLanguageData!.restrictionCardTexts!.header || hardcoded.header) : hardcoded.header;
+    const message = downloaded ? (downloadedLanguageData!.restrictionCardTexts!.message || hardcoded.message) : hardcoded.message;
+    return { header, message, sectionMessage: message };
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage, pregnancyMode]);
+
+  // Auto-selected restriction IDs per mode (stable, never changes)
   const pregnancyRestrictionIds = useMemo(() => {
     return new Set(getDietModeById('pregnancy')?.autoSelectRestrictions ?? []);
+  }, []);
+  const nickelRestrictionIds = useMemo(() => {
+    return new Set(getDietModeById('nickel')?.autoSelectRestrictions ?? []);
   }, []);
 
   // Build diet mode sections for the card
@@ -166,9 +148,11 @@ export default function CardScreen() {
     // Only count restrictions shown inline (before diet sections).
     // Pregnancy auto-selected restrictions are rendered inside the pregnancy DietModeSection,
     // so they shouldn't make other diet sections use "Additionally..." phrasing.
-    const inlineRestrictionCount = activeDietModes.includes('pregnancy')
-      ? selectedRestrictions.filter(id => !pregnancyRestrictionIds.has(id)).length
-      : selectedRestrictions.length;
+    const autoSelectedIds = new Set([
+      ...(activeDietModes.includes('pregnancy') ? pregnancyRestrictionIds : []),
+      ...(activeDietModes.includes('nickel') ? nickelRestrictionIds : []),
+    ]);
+    const inlineRestrictionCount = selectedRestrictions.filter(id => !autoSelectedIds.has(id)).length;
     const hasOtherContent = selectedAllergens.length > 0 || inlineRestrictionCount > 0;
     const sections: DietModeSectionData[] = [];
 
@@ -194,8 +178,8 @@ export default function CardScreen() {
           ? downloadedLanguageData.dietFoods as Record<string, string>
           : (DIET_FOOD_TRANSLATIONS[displayLanguage as Language] || DIET_FOOD_TRANSLATIONS.en);
         section.foodItems = {
-          forbidden: levelItems.forbidden.map(id => ({ name: foodTrans[id], emoji: DIET_FOOD_EMOJI[id] })),
-          allowed: levelItems.allowed.map(id => ({ name: foodTrans[id], emoji: DIET_FOOD_EMOJI[id] })),
+          forbidden: levelItems.forbidden.map(id => ({ name: foodTrans[id] || DIET_FOOD_TRANSLATIONS.en[id], emoji: DIET_FOOD_EMOJI[id] })),
+          allowed: levelItems.allowed.map(id => ({ name: foodTrans[id] || DIET_FOOD_TRANSLATIONS.en[id], emoji: DIET_FOOD_EMOJI[id] })),
         };
       }
 
@@ -209,15 +193,26 @@ export default function CardScreen() {
         }
       }
 
+      // For nickel mode, attach nickel-specific restriction items
+      if (mode.id === 'nickel') {
+        const nickelItems = selectedRestrictions.filter(id => nickelRestrictionIds.has(id));
+        if (nickelItems.length > 0) {
+          section.restrictionItems = nickelItems;
+        }
+      }
+
       sections.push(section);
     }
 
     return sections;
-  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedRestrictions, pregnancyRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedRestrictions, pregnancyRestrictionIds, nickelRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
 
-  const inlineRestrictions = pregnancyMode
-    ? selectedRestrictions.filter(id => !pregnancyRestrictionIds.has(id))
-    : selectedRestrictions;
+  const nickelMode = activeDietModes.includes('nickel');
+  const autoModeRestrictionIds = new Set([
+    ...(pregnancyMode ? pregnancyRestrictionIds : []),
+    ...(nickelMode ? nickelRestrictionIds : []),
+  ]);
+  const inlineRestrictions = selectedRestrictions.filter(id => !autoModeRestrictionIds.has(id));
   const separateRestrictions = pregnancyMode
     ? selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id))
     : [];
@@ -261,24 +256,24 @@ export default function CardScreen() {
       cardStyle: 'allergy',
       containerBg: theme.colors.error,
       headerBg: theme.colors.error,
-      messageBg: '#FFF3E0',
-      messageBorder: '#FFE0B2',
+      messageBg: theme.colors.orangeLight,
+      messageBorder: theme.colors.orangeBorder,
       allergenTextColor: theme.colors.error,
-      breakdownBg: '#FFF8E1',
-      breakdownBorder: '#FFC107',
-      breakdownDescColor: '#5D4037',
-      warningTextColor: '#D84315',
+      breakdownBg: theme.colors.amberLight,
+      breakdownBorder: theme.colors.amber,
+      breakdownDescColor: theme.colors.cardDescriptionText,
+      warningTextColor: theme.colors.warningDark,
       thanksBg: theme.colors.primaryLight,
-      thanksColor: '#2E7D32',
-      restrictionBg: '#FFF8E1',
-      restrictionBorder: '#FFE082',
-      restrictionHeaderColor: '#E65100',
-      restrictionTextColor: '#E65100',
-      landscapeLeftBg: '#D32F2F',
-      landscapeWrapperBg: '#C62828',
-      landscapeAllergenNameColor: '#B71C1C',
-      landscapeDetailBadgeBg: '#FFEBEE',
-      landscapeDetailBadgeTextColor: '#C62828',
+      thanksColor: theme.colors.success,
+      restrictionBg: theme.colors.amberLight,
+      restrictionBorder: theme.colors.amberBorder,
+      restrictionHeaderColor: theme.colors.warning,
+      restrictionTextColor: theme.colors.warning,
+      landscapeLeftBg: theme.colors.error,
+      landscapeWrapperBg: theme.colors.errorDark,
+      landscapeAllergenNameColor: theme.colors.errorDarker,
+      landscapeDetailBadgeBg: theme.colors.errorLight,
+      landscapeDetailBadgeTextColor: theme.colors.errorDark,
     };
   }, [activeDietModes, hasAllergyContent, separateRestrictions.length, dietModeSections]);
 
@@ -305,54 +300,78 @@ export default function CardScreen() {
   }, [hasAllergens, hasRestrictions, pregnancyMode, translations, restrictionTranslations, dietModeSections]);
 
   const headerPadding = useMemo(() => ({
-    paddingTop: isLandscape ? Math.max(insets.top, 20) : insets.top + 16,
-    paddingLeft: isLandscape ? Math.max(insets.left, 16) : 16,
-    paddingRight: isLandscape ? Math.max(insets.right, 16) : 16,
-    paddingBottom: isLandscape ? 8 : 12,
-  }), [isLandscape, insets]);
+    paddingTop: insets.top + 16,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 12,
+  }), [insets]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.containerBg }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, headerPadding, { backgroundColor: colors.containerBg }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { textAlign: 'center', flex: 1 }]} numberOfLines={2} adjustsFontSizeToFit={false}>
-          {currentLanguage?.flag} {headerTitleText}
-        </Text>
-        {isLandscape ? (
-          <TouchableOpacity
-            onPress={handleLanguageToggle}
-            hitSlop={8}
-            activeOpacity={0.6}
-            style={styles.headerLanguageButton}
-          >
-            <MaterialCommunityIcons name="translate" size={20} color="#FFFFFF" />
+      {!isLandscape && (
+        <View style={[styles.customHeader, headerPadding, { backgroundColor: colors.containerBg }]}>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
+            <MaterialCommunityIcons name="close" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
-        ) : (
+          <Text style={[styles.headerTitle, { textAlign: 'center', flex: 1 }]} numberOfLines={2} adjustsFontSizeToFit={false}>
+            {currentLanguage?.flag} {headerTitleText}
+          </Text>
           <View style={styles.headerSpacer} />
-        )}
-      </View>
+        </View>
+      )}
 
       {isLandscape ? (
-        <CardLandscape
-          selectedAllergens={selectedAllergens}
-          inlineRestrictions={inlineRestrictions}
-          separateRestrictions={separateRestrictions}
-          colors={colors}
-          translations={translations}
-          restrictionTranslations={restrictionTranslations}
-          dietModeSections={dietModeSections}
-          selectedLandscapeAllergen={selectedLandscapeAllergen}
-          setSelectedLandscapeAllergen={setSelectedLandscapeAllergen}
-          pregnancyMode={pregnancyMode}
-          getAllergenTranslation={getAllergenTranslation}
-          getAllergenDescription={getAllergenDescription}
-          getAllergenWarning={getAllergenWarning}
-          getRestrictionTranslation={getRestrictionTranslation}
-          insets={insets}
-        />
+        <>
+          <CardLandscape
+            selectedAllergens={selectedAllergens}
+            inlineRestrictions={inlineRestrictions}
+            separateRestrictions={separateRestrictions}
+            colors={colors}
+            translations={translations}
+            restrictionTranslations={restrictionTranslations}
+            dietModeSections={dietModeSections}
+            selectedLandscapeItem={selectedLandscapeItem}
+            setSelectedLandscapeItem={setSelectedLandscapeItem}
+            pregnancyMode={pregnancyMode}
+            getAllergenTranslation={getAllergenTranslation}
+            getAllergenDescription={getAllergenDescription}
+            getAllergenWarning={getAllergenWarning}
+            getRestrictionTranslation={getRestrictionTranslation}
+            insets={insets}
+          />
+          {(() => {
+            const safeH = Math.max(insets.left, insets.right, 48);
+            const safeV = Math.max(insets.top, insets.bottom, 8);
+            const buttonSize = 38;
+            return (
+              <>
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                  style={[styles.landscapeOverlayButton, {
+                    top: safeV + 10,
+                    left: (safeH - buttonSize) / 2,
+                  }]}
+                >
+                  <MaterialCommunityIcons name="close" size={22} color={theme.colors.onPrimary} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleLanguageToggle}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                  style={[styles.landscapeOverlayButton, {
+                    top: safeV + 10,
+                    right: (safeH - buttonSize) / 2,
+                  }]}
+                >
+                  <MaterialCommunityIcons name="translate" size={20} color={theme.colors.onPrimary} />
+                </TouchableOpacity>
+              </>
+            );
+          })()}
+        </>
       ) : (
         <CardPortrait
           selectedAllergens={selectedAllergens}
@@ -389,14 +408,16 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
-  headerLanguageButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 16,
-    padding: 6,
+  landscapeOverlayButton: {
+    position: 'absolute' as const,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 10,
   },
   headerSpacer: {
     width: 24,

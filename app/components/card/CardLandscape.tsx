@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { ALLERGENS } from '../../../constants/allergens';
 import { ALLERGEN_IMAGES } from '../../../constants/allergenImages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../../../constants/otherRestrictions';
 import { AllergenId } from '../../../types';
+import { theme } from '../../../constants/theme';
 import DietModeSection from './DietModeSection';
 import { CardLandscapeProps } from './types';
 
@@ -19,8 +20,8 @@ export default function CardLandscape({
   translations,
   restrictionTranslations,
   dietModeSections,
-  selectedLandscapeAllergen,
-  setSelectedLandscapeAllergen,
+  selectedLandscapeItem,
+  setSelectedLandscapeItem,
   pregnancyMode,
   getAllergenTranslation,
   getAllergenDescription,
@@ -30,45 +31,67 @@ export default function CardLandscape({
 }: CardLandscapeProps) {
   const hasAllergens = selectedAllergens.length > 0;
   const hasRestrictions = separateRestrictions.length > 0 || inlineRestrictions.length > 0;
-  const safeLeft = Math.max(insets.left, 12);
-  const safeRight = Math.max(insets.right, 12);
-  const safeTop = Math.max(insets.top, 8);
-  const safeBottom = Math.max(insets.bottom, 6);
+  const hasAllergenContent = hasAllergens || inlineRestrictions.length > 0;
+  const hasLeftContent = hasAllergenContent || dietModeSections.length > 0;
+  const safeHorizontal = Math.max(insets.left, insets.right, 48);
+  const safeVertical = Math.max(insets.top, insets.bottom, 8);
+
+  const leftScrollRef = useRef<ScrollView>(null);
+  const rightScrollRef = useRef<ScrollView>(null);
+  const leftPositions = useRef<Map<string, number>>(new Map());
+  const rightPositions = useRef<Map<string, number>>(new Map());
+
+  const handleItemSelect = useCallback((id: string) => {
+    const newSelection = selectedLandscapeItem === id ? null : id;
+    setSelectedLandscapeItem(newSelection);
+    if (newSelection) {
+      const leftY = leftPositions.current.get(newSelection);
+      if (leftY !== undefined) {
+        leftScrollRef.current?.scrollTo({ y: Math.max(0, leftY - 10), animated: true });
+      }
+      const rightY = rightPositions.current.get(newSelection);
+      if (rightY !== undefined) {
+        rightScrollRef.current?.scrollTo({ y: Math.max(0, rightY - 10), animated: true });
+      }
+    }
+  }, [selectedLandscapeItem, setSelectedLandscapeItem]);
 
   return (
     <View style={[styles.landscapeWrapper, { backgroundColor: colors.landscapeWrapperBg }]}>
       <View style={[styles.landscapeCard, {
-        marginTop: safeTop,
-        marginLeft: safeLeft,
-        marginRight: safeRight,
-        marginBottom: safeBottom,
+        marginTop: safeVertical,
+        marginLeft: safeHorizontal,
+        marginRight: safeHorizontal,
+        marginBottom: safeVertical,
       }]}>
         <View style={styles.landscapeBody}>
-          {/* Left column - Allergens + inline restrictions */}
-          {(hasAllergens || inlineRestrictions.length > 0) && (
+          {/* Left column - Allergens + restrictions + diet modes */}
+          {hasLeftContent && (
             <View style={[styles.landscapeLeftColumn, { backgroundColor: colors.landscapeLeftBg }]}>
-              <View style={styles.landscapeLeftHeader}>
-                {colors.cardStyle === 'allergy' && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
-                <Text style={styles.landscapeLeftHeaderTitle}>{colors.cardStyle === 'pregnancy' ? '🤰 ' : ''}{translations.header}</Text>
-              </View>
+              {hasAllergenContent && (
+                <View style={styles.landscapeLeftHeader}>
+                  {(colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel')) && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
+                  <Text style={styles.landscapeLeftHeaderTitle}>{colors.cardStyle === 'pregnancy' ? '🤰 ' : ''}{translations.header}</Text>
+                </View>
+              )}
 
               <ScrollView
+                ref={leftScrollRef}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.landscapeAllergensScroll}
               >
-                {selectedAllergens.map((id, index) => {
+                {selectedAllergens.map((id) => {
                   const allergen = getAllergenInfo(id);
                   if (!allergen) return null;
-                  const isSelected = selectedLandscapeAllergen === id;
-                  const isLast = index === selectedAllergens.length - 1 && inlineRestrictions.length === 0;
+                  const isSelected = selectedLandscapeItem === id;
                   return (
                     <Pressable
                       key={id}
-                      onPress={() => setSelectedLandscapeAllergen(isSelected ? null : id)}
+                      onPress={() => handleItemSelect(id)}
+                      onLayout={(e) => leftPositions.current.set(id, e.nativeEvent.layout.y)}
                       style={[
                         styles.landscapeAllergenItem,
                         isSelected && styles.landscapeAllergenItemSelected,
-                        isLast && { marginBottom: 0 }
                       ]}
                     >
                       <View style={[
@@ -88,17 +111,13 @@ export default function CardLandscape({
                   );
                 })}
 
-                {inlineRestrictions.map((id, index) => {
+                {inlineRestrictions.map((id) => {
                   const item = getRestrictionInfo(id);
                   if (!item) return null;
-                  const isLast = index === inlineRestrictions.length - 1;
                   return (
                     <View
                       key={id}
-                      style={[
-                        styles.landscapeAllergenItem,
-                        isLast && { marginBottom: 0 }
-                      ]}
+                      style={styles.landscapeAllergenItem}
                     >
                       <View style={styles.landscapeAllergenIconBg}>
                         <Text style={styles.landscapeAllergenIcon}>{item.icon}</Text>
@@ -110,6 +129,41 @@ export default function CardLandscape({
                         {getRestrictionTranslation(id)}
                       </Text>
                     </View>
+                  );
+                })}
+
+                {hasAllergenContent && dietModeSections.length > 0 && (
+                  <View style={styles.landscapeDivider} />
+                )}
+
+                {dietModeSections.map((section, index) => {
+                  const isSelected = selectedLandscapeItem === section.modeId;
+                  return (
+                    <Pressable
+                      key={section.modeId}
+                      onPress={() => handleItemSelect(section.modeId)}
+                      onLayout={(e) => leftPositions.current.set(section.modeId, e.nativeEvent.layout.y)}
+                      style={[
+                        styles.landscapeAllergenItem,
+                        isSelected && styles.landscapeAllergenItemSelected,
+                        index === dietModeSections.length - 1 && { marginBottom: 0 }
+                      ]}
+                    >
+                      <View style={[
+                        styles.landscapeAllergenIconBg,
+                        { backgroundColor: section.sectionColors.background },
+                        isSelected && styles.landscapeAllergenIconBgSelected
+                      ]}>
+                        <Text style={styles.landscapeAllergenIcon}>{section.icon}</Text>
+                      </View>
+                      <Text style={[
+                        styles.landscapeAllergenName,
+                        { color: colors.landscapeAllergenNameColor },
+                        isSelected && styles.landscapeAllergenNameSelected
+                      ]} numberOfLines={2}>
+                        {section.header}
+                      </Text>
+                    </Pressable>
                   );
                 })}
               </ScrollView>
@@ -128,7 +182,7 @@ export default function CardLandscape({
 
             {!hasAllergens && hasRestrictions && (
               <View style={[styles.landscapeRightHeader, { backgroundColor: colors.restrictionBg }]}>
-                {colors.cardStyle === 'allergy' && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
+                {(colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel')) && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
                 <Text style={[styles.landscapeRightHeaderText, { fontWeight: 'bold' }]}>
                   {restrictionTranslations.message}
                 </Text>
@@ -136,6 +190,7 @@ export default function CardLandscape({
             )}
 
             <ScrollView
+              ref={rightScrollRef}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.landscapeDetailsScroll}
               style={{ flex: 1 }}
@@ -144,15 +199,15 @@ export default function CardLandscape({
                 const allergen = getAllergenInfo(id);
                 const images = ALLERGEN_IMAGES[id];
                 if (!allergen || !images) return null;
-                const isSelected = selectedLandscapeAllergen === id;
+                const isSelected = selectedLandscapeItem === id;
                 return (
                   <Pressable
                     key={id}
-                    onPress={() => setSelectedLandscapeAllergen(isSelected ? null : id)}
+                    onPress={() => handleItemSelect(id)}
+                    onLayout={(e) => rightPositions.current.set(id, e.nativeEvent.layout.y)}
                     style={[
                       styles.landscapeDetailCard,
                       isSelected && styles.landscapeDetailCardSelected,
-                      index === selectedAllergens.length - 1 && { marginBottom: 0 }
                     ]}
                   >
                     <View style={styles.landscapeDetailTop}>
@@ -168,7 +223,7 @@ export default function CardLandscape({
                       </View>
                     </View>
                     <View style={styles.landscapeExamplesRow}>
-                      <Text style={styles.landscapeExamplesLabel}>{translations.examples || 'Examples:'}</Text>
+                      <Text style={styles.landscapeExamplesLabel}>{translations.examples}</Text>
                       {images.examples.slice(0, 5).map((emoji, idx) => (
                         <Text key={idx} style={styles.landscapeExampleEmoji}>{emoji}</Text>
                       ))}
@@ -203,23 +258,35 @@ export default function CardLandscape({
                 );
               })}
 
-              {/* Diet mode sections - rendered dynamically */}
-              {dietModeSections.map((section) => (
-                <DietModeSection
-                  key={section.modeId}
-                  data={section}
-                  variant="landscape"
-                  getRestrictionTranslation={getRestrictionTranslation}
-                  getRestrictionInfo={(rid) => getRestrictionInfo(rid) as { icon: string } | undefined}
-                  hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
-                  restrictionColors={colors.cardStyle === 'pregnancy' ? {
-                    restrictionBg: colors.restrictionBg,
-                    restrictionBorder: colors.restrictionBorder,
-                    restrictionHeaderColor: colors.restrictionHeaderColor,
-                    restrictionTextColor: colors.restrictionTextColor,
-                  } : undefined}
-                />
-              ))}
+              {/* Diet mode sections */}
+              {dietModeSections.map((section) => {
+                const isDietSelected = selectedLandscapeItem === section.modeId;
+                return (
+                  <Pressable
+                    key={section.modeId}
+                    onPress={() => handleItemSelect(section.modeId)}
+                    onLayout={(e) => rightPositions.current.set(section.modeId, e.nativeEvent.layout.y)}
+                    style={[
+                      styles.landscapeDietDetailWrapper,
+                      isDietSelected && styles.landscapeDietDetailWrapperSelected,
+                    ]}
+                  >
+                    <DietModeSection
+                      data={section}
+                      variant="landscape"
+                      getRestrictionTranslation={getRestrictionTranslation}
+                      getRestrictionInfo={(rid) => getRestrictionInfo(rid) as { icon: string } | undefined}
+                      hasOtherContent={hasAllergenContent}
+                      restrictionColors={colors.cardStyle === 'pregnancy' && section.modeId === 'pregnancy' ? {
+                        restrictionBg: colors.restrictionBg,
+                        restrictionBorder: colors.restrictionBorder,
+                        restrictionHeaderColor: colors.restrictionHeaderColor,
+                        restrictionTextColor: colors.restrictionTextColor,
+                      } : undefined}
+                    />
+                  </Pressable>
+                );
+              })}
             </ScrollView>
 
             <View style={[styles.landscapeFooter, { backgroundColor: colors.thanksBg }]}>
@@ -238,10 +305,10 @@ const styles = StyleSheet.create({
   },
   landscapeCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -270,7 +337,7 @@ const styles = StyleSheet.create({
   landscapeLeftHeaderTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     letterSpacing: 2,
   },
   landscapeAllergensScroll: {
@@ -289,9 +356,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   landscapeAllergenItemSelected: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#FFD600',
-    shadowColor: '#FFD600',
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.accent,
+    shadowColor: theme.colors.accent,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -301,7 +368,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFF3E0',
+    backgroundColor: theme.colors.orangeLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -309,8 +376,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   landscapeAllergenIconBgSelected: {
-    backgroundColor: '#FFF8E1',
-    borderColor: '#FFD600',
+    backgroundColor: theme.colors.amberLight,
+    borderColor: theme.colors.accent,
   },
   landscapeAllergenIcon: {
     fontSize: 30,
@@ -322,22 +389,22 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   landscapeAllergenNameSelected: {
-    color: '#E65100',
+    color: theme.colors.warning,
   },
   landscapeRightColumn: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.colors.backgroundAlt,
   },
   landscapeRightHeader: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: theme.colors.amberLight,
     borderBottomWidth: 1,
-    borderBottomColor: '#FFE082',
+    borderBottomColor: theme.colors.amberBorder,
   },
   landscapeRightHeaderText: {
     fontSize: 16,
-    color: '#5D4037',
+    color: theme.colors.cardDescriptionText,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -346,11 +413,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   landscapeDetailCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
@@ -359,9 +426,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   landscapeDetailCardSelected: {
-    backgroundColor: '#FFFDE7',
-    borderColor: '#FFD600',
-    shadowColor: '#FFD600',
+    backgroundColor: theme.colors.accentLight,
+    borderColor: theme.colors.accent,
+    shadowColor: theme.colors.accent,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -379,7 +446,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   landscapeDetailBadgeSelected: {
-    backgroundColor: '#FFD600',
+    backgroundColor: theme.colors.accent,
   },
   landscapeDetailBadgeIcon: {
     fontSize: 16,
@@ -391,7 +458,7 @@ const styles = StyleSheet.create({
   },
   landscapeExamplesLabel: {
     fontSize: 13,
-    color: '#888888',
+    color: theme.colors.textHint,
     fontWeight: '600',
     marginRight: 8,
   },
@@ -406,20 +473,36 @@ const styles = StyleSheet.create({
   },
   landscapeDetailDescription: {
     fontSize: 15,
-    color: '#616161',
+    color: theme.colors.textMuted,
     lineHeight: 21,
   },
   landscapeWarningBox: {
     marginTop: 6,
     paddingTop: 5,
     borderTopWidth: 1,
-    borderTopColor: '#FFCDD2',
+    borderTopColor: theme.colors.errorContainer,
   },
   landscapeDetailWarning: {
     fontSize: 14,
-    color: '#C62828',
+    color: theme.colors.errorDark,
     fontWeight: '600',
     lineHeight: 19,
+  },
+  landscapeDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    marginHorizontal: 4,
+    marginBottom: 10,
+  },
+  landscapeDietDetailWrapper: {
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  landscapeDietDetailWrapperSelected: {
+    borderColor: theme.colors.accent,
   },
   landscapeFooter: {
     paddingVertical: 10,

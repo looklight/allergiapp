@@ -1,33 +1,19 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { View, StyleSheet, Pressable, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
-import {
-  Text,
-  Button,
-  Divider,
-  ActivityIndicator,
-  ProgressBar,
-} from 'react-native-paper';
+import { useEffect, useState } from 'react';
+import { View, StyleSheet, Pressable, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { AppLanguage, DownloadableLanguageCode, LanguageRegion, DownloadableLanguageInfo } from '../types';
+import { AppLanguage, DownloadableLanguageCode } from '../types';
 import i18n from '../utils/i18n';
-import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
-import { DownloadProgress } from '../utils/translationService';
+import { DownloadProgress } from '../services/translationService';
 import { theme } from '../constants/theme';
-import { useAppContext } from '../utils/AppContext';
-import { Analytics } from '../utils/analytics';
+import { useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
 import { useLanguageDownload } from '../hooks/useLanguageDownload';
 import DownloadableLanguagesSection from './components/DownloadableLanguagesSection';
 import LegalDialogs from './components/LegalDialogs';
-
-const REGION_ICONS: Record<LanguageRegion, string> = {
-  europe: '🇪🇺',
-  asia: '🌏',
-  africa: '🌍',
-  other: '🌐',
-};
 
 const APP_LANGUAGES = [
   { code: 'it' as const, name: 'Italiano', flag: '🇮🇹' },
@@ -53,7 +39,7 @@ export default function SettingsScreen() {
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showDisclaimerDialog, setShowDisclaimerDialog] = useState(false);
   const [renderKey, setRenderKey] = useState(0);
-  const { downloadingLang, downloadProgress, isDownloading, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
+  const { downloadingLang, downloadProgress, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
 
   // Blocca orientamento in portrait
   useEffect(() => {
@@ -137,7 +123,7 @@ export default function SettingsScreen() {
           hitSlop={8}
           activeOpacity={0.6}
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{i18n.t('settings.title')}</Text>
         <View style={{ width: 24 }} />
@@ -280,7 +266,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -389,209 +375,6 @@ const styles = StyleSheet.create({
   settingsRowTitle: {
     fontSize: 16,
     color: theme.colors.textPrimary,
-  },
-  settingsRowDesc: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  twoColumnsRow: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-  },
-  halfButton: {
-    flex: 1,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  columnDivider: {
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: theme.colors.divider,
-    marginVertical: 8,
-  },
-  downloadDesc: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    color: theme.colors.textSecondary,
-    fontSize: 14,
-  },
-  // Barra di ricerca
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.colors.textPrimary,
-    paddingVertical: 4,
-  },
-  clearSearch: {
-    fontSize: 16,
-    color: theme.colors.textDisabled,
-    padding: 4,
-  },
-  languageCount: {
-    fontSize: 12,
-    color: theme.colors.textDisabled,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  // Sezioni lingue
-  sectionContainer: {
-    marginBottom: 8,
-  },
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#F9F9F9',
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
-  },
-  downloadedChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    gap: 8,
-  },
-  downloadedChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primaryLight,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingLeft: 12,
-    paddingRight: 10,
-    gap: 10,
-    flexBasis: '47%',
-  },
-  downloadedChipFlag: {
-    fontSize: 20,
-  },
-  downloadedChipName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  downloadedChipSub: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-  },
-  // Lista lingue disponibili
-  languageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
-  },
-  languageItemPressed: {
-    backgroundColor: theme.colors.background,
-  },
-  langFlag: {
-    fontSize: 28,
-    marginRight: 12,
-  },
-  langInfo: {
-    flex: 1,
-  },
-  langNativeName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  langName: {
-    fontSize: 13,
-    color: '#888888',
-    marginTop: 2,
-  },
-  downloadingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  progressText: {
-    fontSize: 12,
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  progressContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: '#FAFAFA',
-  },
-  progressBar: {
-    height: 4,
-    borderRadius: 2,
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginTop: 4,
-  },
-  searchResults: {
-    marginTop: 8,
-  },
-  noResults: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  noResultsText: {
-    fontSize: 14,
-    color: theme.colors.textDisabled,
-  },
-  // Regioni
-  regionContainer: {
-    marginBottom: 8,
-  },
-  regionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#F0F4F8',
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  regionHeaderPressed: {
-    backgroundColor: '#E3E8ED',
-  },
-  regionIcon: {
-    fontSize: 20,
-    marginRight: 10,
-  },
-  regionTitle: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#455A64',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  iconAction: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   legalFooter: {
     marginTop: 16,

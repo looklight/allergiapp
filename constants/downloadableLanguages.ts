@@ -1,6 +1,6 @@
 import { DownloadableLanguageInfo } from '../types';
 
-export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
+export const DOWNLOADABLE_LANGUAGES: readonly DownloadableLanguageInfo[] = [
   // Europa
   { code: 'el', name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷', region: 'europe' },
   { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', region: 'europe' },

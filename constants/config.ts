@@ -9,4 +9,4 @@ export const APP_CONFIG = {
   INSTAGRAM_URL: '',
   TWITTER_URL: '',
   WEBSITE_URL: 'https://allergiapp.com',
-};
+} as const;

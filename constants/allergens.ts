@@ -1,6 +1,6 @@
 import { Allergen } from '../types';
 
-export const ALLERGENS: Allergen[] = [
+export const ALLERGENS: readonly Allergen[] = [
   {
     id: 'gluten',
     icon: '🌾',
@@ -293,6 +293,27 @@ export const ALLERGENS: Allergen[] = [
       ko: '연체동물',
       th: 'หอย',
       ar: 'الرخويات',
+    },
+  },
+  {
+    id: 'fava_beans',
+    icon: '🫛',
+    translations: {
+      it: 'Fave (favismo)',
+      en: 'Fava beans (favism)',
+      fr: 'Fèves (favisme)',
+      de: 'Saubohnen (Favismus)',
+      es: 'Habas (favismo)',
+      pt: 'Favas (favismo)',
+      nl: 'Tuinbonen (favisme)',
+      pl: 'Bób (fawizm)',
+      ru: 'Бобы (фавизм)',
+      sv: 'Bondbönor (favism)',
+      zh: '蚕豆（蚕豆病）',
+      ja: 'ソラマメ（ファビズム）',
+      ko: '잠두콩 (잠두중독)',
+      th: 'ถั่วปากอ้า (ฟาวิซึม)',
+      ar: 'الفول (التفول)',
     },
   },
 ];

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { storage, AppData, CURRENT_LEGAL_VERSION } from './storage';
-import { setAppLanguage, getDeviceLanguage } from './i18n';
+import { storage, AppData, CURRENT_LEGAL_VERSION } from '../utils/storage';
+import { setAppLanguage, getDeviceLanguage } from '../utils/i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 import { RestrictionItemId } from '../constants/otherRestrictions';
 import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';

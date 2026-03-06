@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image } from 'react-native';
 import { Text } from 'react-native-paper';
+import { BannerItem, BannerType } from '../../types';
 import i18n from '../../utils/i18n';
 import { theme } from '../../constants/theme';
-import { Analytics } from '../../utils/analytics';
-import { RemoteConfig } from '../../utils/remoteConfig';
+import { Analytics } from '../../services/analytics';
+import { RemoteConfig } from '../../services/remoteConfig';
 
 // Immagini logo per i banner
 const bannerImages = {
@@ -14,35 +15,6 @@ const bannerImages = {
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-/**
- * Tipi di banner supportati
- */
-export type BannerType = 'info' | 'ad' | 'custom';
-
-/**
- * Item del banner carousel
- */
-export interface BannerItem {
-  id: string;
-  type: BannerType;
-  icon?: string;
-  image?: any;
-  title?: string;
-  subtitle?: string;
-  // Per ads/referral
-  adUrl?: string;
-  adImage?: string;
-  adButtonText?: string;
-  // Layout and styling
-  layout?: 'default' | 'full_image';
-  backgroundColor?: string;
-  textColor?: string;
-  // Display duration in milliseconds (overrides default)
-  displayDuration?: number;
-  // Per custom render
-  customContent?: ReactNode;
-}
 
 interface BannerCarouselProps {
   /**

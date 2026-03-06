@@ -46,12 +46,12 @@ export default function CardPortrait({
     header: {
       fontSize: 28,
       fontWeight: 'bold' as const,
-      color: '#FFFFFF',
+      color: theme.colors.onPrimary,
       letterSpacing: 2,
     },
     subtitle: {
       fontSize: 18,
-      color: '#FFFFFF',
+      color: theme.colors.onPrimary,
       marginTop: 4,
       letterSpacing: 1,
       textAlign: 'center' as const,
@@ -86,7 +86,7 @@ export default function CardPortrait({
     },
     tapHint: {
       fontSize: 12,
-      color: '#888888',
+      color: theme.colors.textHint,
       marginTop: 2,
     },
     breakdownContainer: {
@@ -130,7 +130,7 @@ export default function CardPortrait({
       <Surface style={styles.card} elevation={4}>
         <View style={styles.cardContent}>
           <View style={dynamicStyles.headerSection}>
-            {colors.cardStyle === 'allergy' && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
+            {(colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel')) && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
             {colors.cardStyle === 'pregnancy' && <Text style={dynamicStyles.header}>{'🤰 '}{translations.header}</Text>}
             {colors.cardStyle !== 'pregnancy' && <Text style={dynamicStyles.header}>{translations.header}</Text>}
             {hasAllergens && (
@@ -224,7 +224,7 @@ export default function CardPortrait({
               getRestrictionTranslation={getRestrictionTranslation}
               getRestrictionInfo={(id) => getRestrictionInfo(id) as { icon: string } | undefined}
               hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
-              restrictionColors={colors.cardStyle === 'pregnancy' ? {
+              restrictionColors={colors.cardStyle === 'pregnancy' && section.modeId === 'pregnancy' ? {
                 restrictionBg: colors.restrictionBg,
                 restrictionBorder: colors.restrictionBorder,
                 restrictionHeaderColor: colors.restrictionHeaderColor,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   allergenRowPressed: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: theme.colors.orangeLight,
   },
   allergenTextContainer: {
     flex: 1,

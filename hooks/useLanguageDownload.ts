@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { DownloadableLanguageCode } from '../types';
-import { downloadLanguageTranslations, checkTranslationServiceAvailable, DownloadProgress } from '../utils/translationService';
-import { Analytics } from '../utils/analytics';
+import { downloadLanguageTranslations, checkTranslationServiceAvailable, DownloadProgress } from '../services/translationService';
+import { Analytics } from '../services/analytics';
 import i18n from '../utils/i18n';
 
 interface UseLanguageDownloadReturn {

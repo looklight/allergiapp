@@ -5,12 +5,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
+import { RESTRICTION_ITEMS, RestrictionItemId, RestrictionCategoryId } from '../constants/otherRestrictions';
 import { DIET_MODES, DietModeId, DietMode, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 import { Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
-import { useAppContext } from '../utils/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 
 const VEGETARIAN_LEVELS: VegetarianLevel[] = ['no_meat', 'no_meat_fish', 'no_animal_products'];
 
@@ -65,7 +65,7 @@ function DietModeToggle({
         value={isActive}
         onValueChange={onToggle}
         trackColor={{ false: theme.colors.border, true: mode.toggleColors.activeBorder }}
-        thumbColor={isActive ? mode.toggleColors.active : '#F4F3F4'}
+        thumbColor={isActive ? mode.toggleColors.active : theme.colors.switchThumbInactive}
       />
     </Animated.View>
   );
@@ -167,7 +167,7 @@ export default function OtherRestrictionsScreen() {
           hitSlop={8}
           activeOpacity={0.6}
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{i18n.t('otherRestrictions.title')}</Text>
         <View style={{ width: 24 }} />
@@ -213,7 +213,7 @@ export default function OtherRestrictionsScreen() {
                       ]}>
                         {i18n.t(`otherRestrictions.vegetarianLevel_${level}`)}
                         {level === 'no_animal_products' && (
-                          <Text style={{ color: '#2E7D32', fontWeight: '400' }}> ({i18n.t('otherRestrictions.vegetarianVeganTag')})</Text>
+                          <Text style={{ color: theme.colors.success, fontWeight: '400' }}> ({i18n.t('otherRestrictions.vegetarianVeganTag')})</Text>
                         )}
                       </Text>
                       <Text style={styles.levelHint}>
@@ -224,11 +224,13 @@ export default function OtherRestrictionsScreen() {
                 ))}
               </View>
             )}
-            {/* Pregnancy restriction items (inline checkboxes) */}
-            {mode.id === 'pregnancy' && isModeActive('pregnancy') && (
+            {/* Restriction items (inline checkboxes) for modes with autoSelectRestrictions */}
+            {mode.autoSelectRestrictions && mode.autoSelectRestrictions.length > 0 && isModeActive(mode.id) && (
               <View style={styles.levelContainer}>
                 <Text style={styles.pregnancySectionLabel}>{i18n.t('otherRestrictions.foodsToAvoid')}</Text>
-                {RESTRICTION_ITEMS.map((item) => {
+                {RESTRICTION_ITEMS
+                  .filter((item) => item.categoryId === (mode.id as RestrictionCategoryId))
+                  .map((item) => {
                   const isChecked = selectedRestrictions.includes(item.id);
                   return (
                     <TouchableOpacity
@@ -242,7 +244,7 @@ export default function OtherRestrictionsScreen() {
                         isChecked && { borderColor: mode.toggleColors.active, backgroundColor: mode.toggleColors.active },
                       ]}>
                         {isChecked && (
-                          <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />
+                          <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
                         )}
                       </View>
                       <Text style={styles.pregnancyItemIcon}>{item.icon}</Text>
@@ -284,7 +286,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -340,7 +342,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
   },
   levelRow: {

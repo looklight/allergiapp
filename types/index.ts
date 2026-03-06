@@ -1,3 +1,25 @@
+import { ReactNode } from 'react';
+
+// Banner types (used by services/remoteConfig and components/BannerCarousel)
+export type BannerType = 'info' | 'ad' | 'custom';
+
+export interface BannerItem {
+  id: string;
+  type: BannerType;
+  icon?: string;
+  image?: any;
+  title?: string;
+  subtitle?: string;
+  adUrl?: string;
+  adImage?: string;
+  adButtonText?: string;
+  layout?: 'default' | 'full_image';
+  backgroundColor?: string;
+  textColor?: string;
+  displayDuration?: number;
+  customContent?: ReactNode;
+}
+
 export type AllergenId =
   | 'gluten'
   | 'crustaceans'
@@ -12,7 +34,8 @@ export type AllergenId =
   | 'sesame'
   | 'sulfites'
   | 'lupin'
-  | 'mollusks';
+  | 'mollusks'
+  | 'fava_beans';
 
 export type Language =
   | 'it'  // Italiano
@@ -38,7 +61,7 @@ export interface LanguageInfo {
   flag: string;
 }
 
-export const LANGUAGES: LanguageInfo[] = [
+export const LANGUAGES: readonly LanguageInfo[] = [
   { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
@@ -166,18 +189,7 @@ export interface DownloadedLanguageData {
   restrictionCardTexts?: {
     header: string;
     message: string;
-    pregnancyHeader: string;
-    pregnancyMessage: string;
-    pregnancySectionMessage?: string;
-    noMeatHeader?: string;
-    noMeatMessage?: string;
-    noMeatSectionMessage?: string;
-    noMeatFishHeader?: string;
-    noMeatFishMessage?: string;
-    noMeatFishSectionMessage?: string;
-    noAnimalProductsHeader?: string;
-    noAnimalProductsMessage?: string;
-    noAnimalProductsSectionMessage?: string;
+    dietModeTexts: Record<string, { header: string; message: string; sectionMessage: string }>;
   };
   dietFoods?: Record<string, string>;
   cardTexts: {
@@ -188,7 +200,6 @@ export interface DownloadedLanguageData {
     pregnancyMessage?: string;
     thanks: string;
     tapToSee: string;
-    showIn: string;
     examples?: string;
   };
   downloadedAt: string;

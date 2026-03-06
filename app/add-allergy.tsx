@@ -10,8 +10,8 @@ import { DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
-import { useAppContext } from '../utils/AppContext';
-import { Analytics } from '../utils/analytics';
+import { useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
 
 export default function AddAllergyScreen() {
   const router = useRouter();
@@ -19,6 +19,9 @@ export default function AddAllergyScreen() {
   const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions, activeDietModes, vegetarianLevel } = useAppContext();
   const activeModeConfigs = DIET_MODES.filter(m => activeDietModes.includes(m.id)).sort((a, b) => a.toggleOrder - b.toggleOrder);
   const hasActiveModes = activeModeConfigs.length > 0;
+  // Count only manually-selected restrictions (not auto-selected by active diet modes)
+  const autoSelectedIds = new Set(activeModeConfigs.flatMap(m => m.autoSelectRestrictions ?? []));
+  const manualRestrictionsCount = selectedRestrictions.filter(id => !autoSelectedIds.has(id)).length;
   // Mode with highest medical priority (lowest cardOrder) — used for icon and badge color
   const primaryMode = hasActiveModes
     ? [...activeModeConfigs].sort((a, b) => a.cardOrder - b.cardOrder)[0]
@@ -70,7 +73,7 @@ export default function AddAllergyScreen() {
           hitSlop={8}
           activeOpacity={0.6}
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{i18n.t('addAllergy.title')}</Text>
         <View style={{ width: 24 }} />
@@ -95,7 +98,7 @@ export default function AddAllergyScreen() {
               <Text style={styles.otherHint}>
                 {activeModeConfigs.map((m, i) => (
                   <Text key={m.id}>
-                    {i > 0 && <Text style={{ color: '#999' }}> · </Text>}
+                    {i > 0 && <Text style={{ color: theme.colors.textDisabled }}> · </Text>}
                     <Text style={{ color: m.toggleColors.active }}>
                       {m.id === 'vegetarian'
                         ? i18n.t(`otherRestrictions.vegetarianLevel_${vegetarianLevel}`)
@@ -154,7 +157,7 @@ export default function AddAllergyScreen() {
           onPress={handleSave}
           style={styles.saveButton}
         >
-          {i18n.t('addAllergy.save')} ({selectedAllergens.length + selectedRestrictions.length + activeDietModes.length})
+          {i18n.t('addAllergy.save')} ({selectedAllergens.length + manualRestrictionsCount + activeDietModes.length})
         </Button>
       </View>
     </View>
@@ -171,7 +174,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -201,10 +204,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: '#F9F5FF',
+    backgroundColor: theme.colors.restrictionRowBg,
   },
   otherRowPressed: {
-    backgroundColor: '#F0EAFC',
+    backgroundColor: theme.colors.restrictionRowBgPressed,
   },
   otherIcon: {
     fontSize: 24,
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   otherBadgeText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 13,
     fontWeight: 'bold',
   },

@@ -1,4 +1,4 @@
-import { BannerItem } from '../app/components/BannerCarousel';
+import { BannerItem } from '../types';
 
 // Firebase Remote Config - Modular API
 let remoteConfig: any = null;

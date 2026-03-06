@@ -36,7 +36,6 @@ export interface CardTranslationsData {
   pregnancyMessage: string;
   thanks: string;
   tapToSee: string;
-  showIn: string;
   examples: string;
 }
 
@@ -91,8 +90,8 @@ export interface CardLandscapeProps {
   translations: CardTranslationsData;
   restrictionTranslations: RestrictionTranslationsData;
   dietModeSections: DietModeSectionData[];
-  selectedLandscapeAllergen: AllergenId | null;
-  setSelectedLandscapeAllergen: (id: AllergenId | null) => void;
+  selectedLandscapeItem: string | null;
+  setSelectedLandscapeItem: (id: string | null) => void;
   pregnancyMode: boolean;
   getAllergenTranslation: (id: AllergenId) => string;
   getAllergenDescription: (id: AllergenId) => string;

@@ -1,6 +1,6 @@
 import { Language } from '../types';
 
-export type RestrictionCategoryId = 'pregnancy';
+export type RestrictionCategoryId = 'pregnancy' | 'nickel';
 
 export type RestrictionItemId =
   | 'raw_fish'
@@ -10,7 +10,15 @@ export type RestrictionItemId =
   | 'unpasteurized_cheese'
   | 'unpasteurized_milk'
   | 'alcohol'
-  | 'excessive_caffeine';
+  | 'excessive_caffeine'
+  | 'nickel_chocolate'
+  | 'nickel_tomato'
+  | 'nickel_legumes'
+  | 'nickel_nuts'
+  | 'nickel_whole_grains'
+  | 'nickel_spinach'
+  | 'nickel_canned_food'
+  | 'nickel_tea_coffee';
 
 export interface RestrictionCategory {
   id: RestrictionCategoryId;
@@ -25,7 +33,7 @@ export interface RestrictionItem {
   translations: Record<Language, string>;
 }
 
-export const RESTRICTION_CATEGORIES: RestrictionCategory[] = [
+export const RESTRICTION_CATEGORIES: readonly RestrictionCategory[] = [
   {
     id: 'pregnancy',
     icon: '🤰',
@@ -47,9 +55,30 @@ export const RESTRICTION_CATEGORIES: RestrictionCategory[] = [
       ar: 'الحمل',
     },
   },
+  {
+    id: 'nickel',
+    icon: '⚠️',
+    translations: {
+      it: 'Allergia al nichel',
+      en: 'Nickel allergy',
+      fr: 'Allergie au nickel',
+      de: 'Nickelallergie',
+      es: 'Alergia al níquel',
+      pt: 'Alergia ao níquel',
+      nl: 'Nikkelallergie',
+      pl: 'Alergia na nikiel',
+      ru: 'Аллергия на никель',
+      sv: 'Nickelallergi',
+      zh: '镍过敏',
+      ja: 'ニッケルアレルギー',
+      ko: '니켈 알레르기',
+      th: 'แพ้นิกเกิล',
+      ar: 'حساسية النيكل',
+    },
+  },
 ];
 
-export const RESTRICTION_ITEMS: RestrictionItem[] = [
+export const RESTRICTION_ITEMS: readonly RestrictionItem[] = [
   // --- Cibi crudi (rischio batteriologico) ---
   {
     id: 'raw_fish',
@@ -227,6 +256,183 @@ export const RESTRICTION_ITEMS: RestrictionItem[] = [
       ko: '과도한 카페인',
       th: 'คาเฟอีนมากเกินไป',
       ar: 'الكافيين المفرط',
+    },
+  },
+  // --- Allergia al nichel (cibi ad alto contenuto) ---
+  {
+    id: 'nickel_chocolate',
+    icon: '🍫',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Cioccolato / cacao',
+      en: 'Chocolate / cocoa',
+      fr: 'Chocolat / cacao',
+      de: 'Schokolade / Kakao',
+      es: 'Chocolate / cacao',
+      pt: 'Chocolate / cacau',
+      nl: 'Chocolade / cacao',
+      pl: 'Czekolada / kakao',
+      ru: 'Шоколад / какао',
+      sv: 'Choklad / kakao',
+      zh: '巧克力 / 可可',
+      ja: 'チョコレート / ココア',
+      ko: '초콜릿 / 코코아',
+      th: 'ช็อกโกแลต / โกโก้',
+      ar: 'الشوكولاتة / الكاكاو',
+    },
+  },
+  {
+    id: 'nickel_tomato',
+    icon: '🍅',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Pomodoro e salse di pomodoro',
+      en: 'Tomato and tomato sauces',
+      fr: 'Tomate et sauces tomate',
+      de: 'Tomate und Tomatensoßen',
+      es: 'Tomate y salsas de tomate',
+      pt: 'Tomate e molhos de tomate',
+      nl: 'Tomaat en tomatensauzen',
+      pl: 'Pomidor i sosy pomidorowe',
+      ru: 'Помидоры и томатные соусы',
+      sv: 'Tomat och tomatsåser',
+      zh: '番茄和番茄酱',
+      ja: 'トマトとトマトソース',
+      ko: '토마토와 토마토소스',
+      th: 'มะเขือเทศและซอสมะเขือเทศ',
+      ar: 'الطماطم وصلصات الطماطم',
+    },
+  },
+  {
+    id: 'nickel_legumes',
+    icon: '🫘',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Legumi (lenticchie, ceci, fagioli)',
+      en: 'Legumes (lentils, chickpeas, beans)',
+      fr: 'Légumineuses (lentilles, pois chiches, haricots)',
+      de: 'Hülsenfrüchte (Linsen, Kichererbsen, Bohnen)',
+      es: 'Legumbres (lentejas, garbanzos, judías)',
+      pt: 'Leguminosas (lentilhas, grão-de-bico, feijão)',
+      nl: 'Peulvruchten (linzen, kikkererwten, bonen)',
+      pl: 'Rośliny strączkowe (soczewica, ciecierzyca, fasola)',
+      ru: 'Бобовые (чечевица, нут, фасоль)',
+      sv: 'Baljväxter (linser, kikärtor, bönor)',
+      zh: '豆类（扁豆、鹰嘴豆、豆子）',
+      ja: '豆類（レンズ豆、ひよこ豆、インゲン豆）',
+      ko: '콩류 (렌틸콩, 병아리콩, 강낭콩)',
+      th: 'ถั่ว (ถั่วเลนทิล, ถั่วลูกไก่, ถั่วแดง)',
+      ar: 'البقوليات (العدس، الحمص، الفاصوليا)',
+    },
+  },
+  {
+    id: 'nickel_nuts',
+    icon: '🥜',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Frutta a guscio (noci, nocciole, anacardi)',
+      en: 'Nuts (walnuts, hazelnuts, cashews)',
+      fr: 'Fruits à coque (noix, noisettes, cajous)',
+      de: 'Nüsse (Walnüsse, Haselnüsse, Cashews)',
+      es: 'Frutos secos (nueces, avellanas, anacardos)',
+      pt: 'Frutos secos (nozes, avelãs, cajus)',
+      nl: 'Noten (walnoten, hazelnoten, cashewnoten)',
+      pl: 'Orzechy (włoskie, laskowe, nerkowce)',
+      ru: 'Орехи (грецкие, фундук, кешью)',
+      sv: 'Nötter (valnötter, hasselnötter, cashewnötter)',
+      zh: '坚果（核桃、榛子、腰果）',
+      ja: 'ナッツ類（クルミ、ヘーゼルナッツ、カシューナッツ）',
+      ko: '견과류 (호두, 헤이즐넛, 캐슈넛)',
+      th: 'ถั่วเปลือกแข็ง (วอลนัท, เฮเซลนัท, มะม่วงหิมพานต์)',
+      ar: 'المكسرات (الجوز، البندق، الكاجو)',
+    },
+  },
+  {
+    id: 'nickel_whole_grains',
+    icon: '🌾',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Cereali integrali / avena',
+      en: 'Whole grains / oats',
+      fr: 'Céréales complètes / avoine',
+      de: 'Vollkorngetreide / Hafer',
+      es: 'Cereales integrales / avena',
+      pt: 'Cereais integrais / aveia',
+      nl: 'Volkoren granen / haver',
+      pl: 'Pełne ziarna / owies',
+      ru: 'Цельнозерновые / овёс',
+      sv: 'Fullkorn / havre',
+      zh: '全谷物 / 燕麦',
+      ja: '全粒穀物 / オーツ麦',
+      ko: '통곡물 / 귀리',
+      th: 'ธัญพืชเต็มเมล็ด / ข้าวโอ๊ต',
+      ar: 'الحبوب الكاملة / الشوفان',
+    },
+  },
+  {
+    id: 'nickel_spinach',
+    icon: '🥬',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Spinaci e verdure a foglia verde',
+      en: 'Spinach and leafy greens',
+      fr: 'Épinards et légumes-feuilles',
+      de: 'Spinat und Blattgemüse',
+      es: 'Espinacas y verduras de hoja verde',
+      pt: 'Espinafre e verduras de folha',
+      nl: 'Spinazie en bladgroenten',
+      pl: 'Szpinak i warzywa liściaste',
+      ru: 'Шпинат и листовая зелень',
+      sv: 'Spenat och bladgrönsaker',
+      zh: '菠菜和绿叶蔬菜',
+      ja: 'ほうれん草と葉野菜',
+      ko: '시금치와 잎채소',
+      th: 'ผักโขมและผักใบเขียว',
+      ar: 'السبانخ والخضروات الورقية',
+    },
+  },
+  {
+    id: 'nickel_canned_food',
+    icon: '🥫',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Cibi in scatola / lattina',
+      en: 'Canned food',
+      fr: 'Aliments en conserve',
+      de: 'Konserven / Dosenkost',
+      es: 'Alimentos enlatados',
+      pt: 'Alimentos enlatados',
+      nl: 'Ingeblikt voedsel',
+      pl: 'Żywność w puszkach',
+      ru: 'Консервированная еда',
+      sv: 'Konserverad mat',
+      zh: '罐头食品',
+      ja: '缶詰食品',
+      ko: '통조림 식품',
+      th: 'อาหารกระป๋อง',
+      ar: 'الأطعمة المعلبة',
+    },
+  },
+  {
+    id: 'nickel_tea_coffee',
+    icon: '☕',
+    categoryId: 'nickel',
+    translations: {
+      it: 'Tè e caffè',
+      en: 'Tea and coffee',
+      fr: 'Thé et café',
+      de: 'Tee und Kaffee',
+      es: 'Té y café',
+      pt: 'Chá e café',
+      nl: 'Thee en koffie',
+      pl: 'Herbata i kawa',
+      ru: 'Чай и кофе',
+      sv: 'Te och kaffe',
+      zh: '茶和咖啡',
+      ja: 'お茶とコーヒー',
+      ko: '차와 커피',
+      th: 'ชาและกาแฟ',
+      ar: 'الشاي والقهوة',
     },
   },
 ];

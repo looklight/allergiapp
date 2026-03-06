@@ -5,10 +5,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DownloadableLanguageCode, LanguageRegion, DownloadableLanguageInfo } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { LANGUAGE_NAMES } from '../../constants/languageNames';
-import { DownloadProgress } from '../../utils/translationService';
+import { DownloadProgress } from '../../services/translationService';
 import { theme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
-import { useAppContext } from '../../utils/AppContext';
+import { useAppContext } from '../../contexts/AppContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

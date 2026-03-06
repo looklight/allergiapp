@@ -1,6 +1,6 @@
 import { RestrictionItemId } from './otherRestrictions';
 
-export type DietModeId = 'pregnancy' | 'vegetarian';
+export type DietModeId = 'pregnancy' | 'vegetarian' | 'nickel';
 
 export type VegetarianLevel = 'no_meat' | 'no_meat_fish' | 'no_animal_products';
 
@@ -24,7 +24,7 @@ export const DIET_LEVEL_FOOD_ITEMS: Record<VegetarianLevel, { forbidden: DietFoo
 };
 
 /** Key used to look up card translations for diet modes */
-export type DietCardKey = 'pregnancy' | VegetarianLevel;
+export type DietCardKey = 'pregnancy' | 'nickel' | VegetarianLevel;
 
 export interface DietModeColors {
   primary: string;
@@ -82,12 +82,12 @@ export interface DietMode {
   toggleColors: DietModeToggleColors;
 }
 
-export const DIET_MODES: DietMode[] = [
+export const DIET_MODES: readonly DietMode[] = [
   {
     id: 'vegetarian',
     icon: '\u{1F33F}',
     toggleOrder: 1,
-    cardOrder: 2,
+    cardOrder: 3,
     affectsFullCard: false,
     sectionColors: {
       primary: '#2E7D32',
@@ -153,6 +153,35 @@ export const DIET_MODES: DietMode[] = [
       activeBorder: '#F8BBD0',
     },
   },
+  {
+    id: 'nickel',
+    icon: '\u{26A0}\u{FE0F}',
+    toggleOrder: 3,
+    cardOrder: 2,
+    affectsFullCard: false,
+    autoSelectRestrictions: [
+      'nickel_chocolate',
+      'nickel_tomato',
+      'nickel_legumes',
+      'nickel_nuts',
+      'nickel_whole_grains',
+      'nickel_spinach',
+      'nickel_canned_food',
+      'nickel_tea_coffee',
+    ],
+    sectionColors: {
+      primary: '#546E7A',
+      background: '#ECEFF1',
+      border: '#B0BEC5',
+      text: '#546E7A',
+      headerBg: '#78909C',
+    },
+    toggleColors: {
+      active: '#78909C',
+      activeBg: '#ECEFF1',
+      activeBorder: '#B0BEC5',
+    },
+  },
 ];
 
 export const getDietModeById = (id: DietModeId): DietMode | undefined => {
@@ -182,5 +211,5 @@ export const getFullCardMode = (activeIds: DietModeId[]): DietMode | undefined =
  */
 export const getDietCardKey = (modeId: DietModeId, vegetarianLevel: VegetarianLevel): DietCardKey => {
   if (modeId === 'vegetarian') return vegetarianLevel;
-  return modeId;
+  return modeId as DietCardKey;
 };

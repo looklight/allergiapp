@@ -6,9 +6,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
-import { AppProvider, useAppContext } from '../utils/AppContext';
-import { Analytics } from '../utils/analytics';
-import { RemoteConfig } from '../utils/remoteConfig';
+import { AppProvider, useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
+import { RemoteConfig } from '../services/remoteConfig';
 import ConsentModal from './consent';
 
 const splashLogo = require('../assets/splash-icon.png');
@@ -41,7 +41,7 @@ const errorStyles = StyleSheet.create({
   },
   icon: { fontSize: 48, marginBottom: 16 },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8, color: theme.colors.error },
-  message: { fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 24 },
+  message: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 24 },
   button: { minWidth: 120 },
 });
 
@@ -50,7 +50,7 @@ const splashStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   logo: {
     width: 150,
@@ -109,7 +109,7 @@ function AppContent() {
           headerStyle: {
             backgroundColor: theme.colors.primary,
           },
-          headerTintColor: '#FFFFFF',
+          headerTintColor: theme.colors.onPrimary,
           headerTitleStyle: {
             fontWeight: 'bold',
           },

@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RestrictionItemId } from '../../../constants/otherRestrictions';
+import { theme } from '../../../constants/theme';
 import { DietModeSectionData } from './types';
 
 interface DietModeSectionProps {
@@ -135,9 +136,9 @@ export default function DietModeSection({
               <View style={styles.foodListContainer}>
                 {data.foodItems!.forbidden.map((item, i) => (
                   <View key={`f-${i}`} style={styles.foodRow}>
-                    <MaterialCommunityIcons name="close-circle" size={20} color="#D32F2F" />
+                    <MaterialCommunityIcons name="close-circle" size={20} color={theme.colors.error} />
                     <Text style={styles.foodEmoji}>{item.emoji}</Text>
-                    <Text style={[styles.foodRowText, { color: '#C62828' }]}>{item.name}</Text>
+                    <Text style={[styles.foodRowText, { color: theme.colors.errorDark }]}>{item.name}</Text>
                   </View>
                 ))}
                 {data.foodItems!.allowed.length > 0 && (
@@ -145,9 +146,9 @@ export default function DietModeSection({
                     <View style={[styles.foodDivider, { borderBottomColor: sectionColors.border }]} />
                     {data.foodItems!.allowed.map((item, i) => (
                       <View key={`a-${i}`} style={styles.foodRow}>
-                        <MaterialCommunityIcons name="check-circle" size={20} color="#2E7D32" />
+                        <MaterialCommunityIcons name="check-circle" size={20} color={theme.colors.success} />
                         <Text style={styles.foodEmoji}>{item.emoji}</Text>
-                        <Text style={[styles.foodRowText, { color: '#1B5E20' }]}>{item.name}</Text>
+                        <Text style={[styles.foodRowText, { color: theme.colors.successDark }]}>{item.name}</Text>
                       </View>
                     ))}
                   </>
@@ -191,9 +192,9 @@ export default function DietModeSection({
             <View style={styles.foodListContainer}>
               {data.foodItems!.forbidden.map((item, i) => (
                 <View key={`f-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
-                  <MaterialCommunityIcons name="close-circle" size={18} color="#D32F2F" />
+                  <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.error} />
                   <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
-                  <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: '#C62828' }]}>{item.name}</Text>
+                  <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.errorDark }]}>{item.name}</Text>
                 </View>
               ))}
               {data.foodItems!.allowed.length > 0 && (
@@ -201,9 +202,9 @@ export default function DietModeSection({
                   <View style={[styles.foodDivider, { borderBottomColor: sectionColors.border }]} />
                   {data.foodItems!.allowed.map((item, i) => (
                     <View key={`a-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
-                      <MaterialCommunityIcons name="check-circle" size={18} color="#2E7D32" />
+                      <MaterialCommunityIcons name="check-circle" size={18} color={theme.colors.success} />
                       <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
-                      <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: '#1B5E20' }]}>{item.name}</Text>
+                      <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.successDark }]}>{item.name}</Text>
                     </View>
                   ))}
                 </>
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   },
   restrictionMessage: {
     fontSize: 14,
-    color: '#5D4037',
+    color: theme.colors.cardDescriptionText,
     textAlign: 'center',
     marginBottom: 12,
     lineHeight: 20,
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
   },
   landscapeRestrictionMessage: {
     fontSize: 13,
-    color: '#5D4037',
+    color: theme.colors.cardDescriptionText,
     textAlign: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   landscapeRestrictionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 10,
