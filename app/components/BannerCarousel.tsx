@@ -63,7 +63,7 @@ export default function BannerCarousel({
 }: BannerCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewedBanners = useRef<Set<string>>(new Set());
 
   // Banner predefiniti informativi
@@ -100,20 +100,11 @@ export default function BannerCarousel({
     ...(promoBanner ? [promoBanner] : []),
   ];
 
-  // Combina banner informativi con extra banners (ads, referral, etc.)
-  // Gli ads vengono inseriti strategicamente ogni 2 banner informativi
-  const allBanners: BannerItem[] = [];
-  infoBanners.forEach((banner, index) => {
-    allBanners.push(banner);
-    // Inserisci un ad ogni 2 banner informativi
-    if (index === 1 && allExtraBanners.length > 0) {
-      allBanners.push(allExtraBanners[0]);
-    }
-  });
-  // Aggiungi eventuali ads rimanenti alla fine
-  if (allExtraBanners.length > 1) {
-    allBanners.push(...allExtraBanners.slice(1));
-  }
+  // Promo banner per primo, poi i banner informativi
+  const allBanners: BannerItem[] = [
+    ...allExtraBanners,
+    ...infoBanners,
+  ];
 
   // Get display duration for current banner
   const getCurrentDuration = (index: number) => {

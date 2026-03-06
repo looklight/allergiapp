@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import { Stack, ErrorBoundary } from 'expo-router';
+import { Stack, ErrorBoundary, usePathname } from 'expo-router';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -62,6 +62,8 @@ const splashStyles = StyleSheet.create({
 
 function AppContent() {
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
+  const pathname = usePathname();
+  const prevPathname = useRef<string | null>(null);
 
   useEffect(() => {
     if (isReady) {
@@ -78,6 +80,15 @@ function AppContent() {
       }
     }
   }, [isReady, hasAcceptedLegalTerms, trackingConsent]);
+
+  // Track screen views on route changes
+  useEffect(() => {
+    if (isReady && hasAcceptedLegalTerms && pathname && pathname !== prevPathname.current) {
+      prevPathname.current = pathname;
+      const screenName = pathname === '/' ? 'Home' : pathname.replace(/^\//, '');
+      Analytics.logScreenView(screenName);
+    }
+  }, [pathname, isReady, hasAcceptedLegalTerms]);
 
   if (!isReady) {
     // Mostra il nostro splash personalizzato mentre l'app carica
