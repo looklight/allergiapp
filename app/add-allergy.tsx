@@ -74,6 +74,31 @@ export default function AddAllergyScreen() {
       </Text>
 
       <ScrollView style={styles.list}>
+        <Pressable
+          onPress={() => router.push('/other-restrictions')}
+          style={({ pressed }) => [
+            styles.otherRow,
+            pressed && styles.otherRowPressed,
+          ]}
+        >
+          <Text style={styles.otherIcon}>{pregnancyMode ? '🤰' : '📋'}</Text>
+          <View style={styles.otherTextContainer}>
+            <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
+            {pregnancyMode && (
+              <Text style={styles.otherHint}>{i18n.t('otherRestrictions.pregnancyActive')}</Text>
+            )}
+          </View>
+          <View style={styles.otherRight}>
+            {selectedRestrictions.length > 0 && (
+              <View style={[styles.otherBadge, pregnancyMode && styles.otherBadgePregnancy]}>
+                <Text style={[styles.otherBadgeText, pregnancyMode && styles.otherBadgeTextPregnancy]}>{selectedRestrictions.length}</Text>
+              </View>
+            )}
+            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+          </View>
+        </Pressable>
+        <Divider />
+
         {ALLERGENS.map((allergen, index) => (
           <View key={allergen.id}>
             <List.Item
@@ -103,31 +128,6 @@ export default function AddAllergyScreen() {
             {index < ALLERGENS.length - 1 && <Divider />}
           </View>
         ))}
-
-        <Divider />
-        <Pressable
-          onPress={() => router.push('/other-restrictions')}
-          style={({ pressed }) => [
-            styles.otherRow,
-            pressed && styles.otherRowPressed,
-          ]}
-        >
-          <Text style={styles.otherIcon}>{pregnancyMode ? '🤰' : '📋'}</Text>
-          <View style={styles.otherTextContainer}>
-            <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
-            {pregnancyMode && (
-              <Text style={styles.otherHint}>{i18n.t('otherRestrictions.pregnancyActive')}</Text>
-            )}
-          </View>
-          <View style={styles.otherRight}>
-            {selectedRestrictions.length > 0 && (
-              <View style={[styles.otherBadge, pregnancyMode && styles.otherBadgePregnancy]}>
-                <Text style={[styles.otherBadgeText, pregnancyMode && styles.otherBadgeTextPregnancy]}>{selectedRestrictions.length}</Text>
-              </View>
-            )}
-            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
-          </View>
-        </Pressable>
       </ScrollView>
 
       <View style={styles.footer}>
