@@ -6,6 +6,23 @@ export type VegetarianLevel = 'no_meat' | 'no_meat_fish' | 'no_animal_products';
 
 export const DEFAULT_VEGETARIAN_LEVEL: VegetarianLevel = 'no_meat_fish';
 
+export type DietFoodItem = 'meat' | 'fish' | 'seafood' | 'eggs' | 'dairy' | 'honey';
+
+export const DIET_FOOD_EMOJI: Record<DietFoodItem, string> = {
+  meat: '\u{1F969}',
+  fish: '\u{1F41F}',
+  seafood: '\u{1F990}',
+  eggs: '\u{1F95A}',
+  dairy: '\u{1F9C0}',
+  honey: '\u{1F36F}',
+};
+
+export const DIET_LEVEL_FOOD_ITEMS: Record<VegetarianLevel, { forbidden: DietFoodItem[]; allowed: DietFoodItem[] }> = {
+  no_meat: { forbidden: ['meat'], allowed: ['fish', 'seafood', 'eggs', 'dairy'] },
+  no_meat_fish: { forbidden: ['meat', 'fish', 'seafood'], allowed: ['eggs', 'dairy'] },
+  no_animal_products: { forbidden: ['meat', 'fish', 'seafood', 'eggs', 'dairy', 'honey'], allowed: [] },
+};
+
 /** Key used to look up card translations for diet modes */
 export type DietCardKey = 'pregnancy' | VegetarianLevel;
 
@@ -49,7 +66,10 @@ export interface DietModeToggleColors {
 export interface DietMode {
   id: DietModeId;
   icon: string;
-  order: number;
+  /** Display order in the settings toggle list */
+  toggleOrder: number;
+  /** Display order of sections on the generated card */
+  cardOrder: number;
   /** If true, changes the palette of the ENTIRE card (like pregnancy) */
   affectsFullCard: boolean;
   /** Restrictions to auto-select when this mode is activated */
@@ -66,7 +86,8 @@ export const DIET_MODES: DietMode[] = [
   {
     id: 'vegetarian',
     icon: '\u{1F33F}',
-    order: 1,
+    toggleOrder: 1,
+    cardOrder: 2,
     affectsFullCard: false,
     sectionColors: {
       primary: '#2E7D32',
@@ -84,7 +105,8 @@ export const DIET_MODES: DietMode[] = [
   {
     id: 'pregnancy',
     icon: '\u{1F930}',
-    order: 2,
+    toggleOrder: 2,
+    cardOrder: 1,
     affectsFullCard: true,
     autoSelectRestrictions: [
       'raw_fish',
@@ -138,13 +160,13 @@ export const getDietModeById = (id: DietModeId): DietMode | undefined => {
 };
 
 /**
- * Returns active diet modes sorted by order.
+ * Returns active diet modes sorted by card display order.
  */
 export const getVisibleModes = (activeIds: DietModeId[]): DietMode[] => {
   const activeSet = new Set(activeIds);
   return DIET_MODES
     .filter((m) => activeSet.has(m.id))
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.cardOrder - b.cardOrder);
 };
 
 /**

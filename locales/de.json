@@ -3,7 +3,7 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "Was muss ich meiden?",
+    "title": "Was muss ich mitteilen?",
     "noAllergies": "Du hast noch nichts hinzugefuegt",
     "addAllergies": "Hinzufuegen",
     "editAllergies": "Bearbeiten",
@@ -23,13 +23,13 @@
     "bannerHowToUseDesc": "Zeige deine Karte dem Kellner wenn du im Restaurant bestellst"
   },
   "addAllergy": {
-    "title": "Was muss ich meiden?",
+    "title": "Was muss ich mitteilen?",
     "subtitle": "Waehle die zu vermeidenden Lebensmittel",
     "save": "Speichern"
   },
   "otherRestrictions": {
-    "title": "Weitere Einschraenkungen",
-    "subtitle": "Waehle die zu vermeidenden Lebensmittel",
+    "title": "Weitere Beduerfnisse",
+    "subtitle": "Waehle was du mitteilen moechtest",
     "save": "Speichern",
     "other": "Andere",
     "selectedCount": "{{count}} ausgewaehlt",

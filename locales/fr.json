@@ -3,7 +3,7 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "Que dois-je eviter ?",
+    "title": "Que dois-je communiquer ?",
     "noAllergies": "Vous n'avez encore rien ajoute",
     "addAllergies": "Ajouter",
     "editAllergies": "Modifier",
@@ -23,13 +23,13 @@
     "bannerHowToUseDesc": "Présentez votre carte au serveur lorsque vous commandez au restaurant"
   },
   "addAllergy": {
-    "title": "Que dois-je eviter ?",
+    "title": "Que dois-je communiquer ?",
     "subtitle": "Selectionnez les aliments a eviter",
     "save": "Enregistrer"
   },
   "otherRestrictions": {
-    "title": "Autres restrictions",
-    "subtitle": "Selectionnez les aliments a eviter",
+    "title": "Autres besoins",
+    "subtitle": "Selectionnez quoi communiquer",
     "save": "Enregistrer",
     "other": "Autres",
     "selectedCount": "{{count}} selectionnes",
@@ -124,6 +124,7 @@
     "paragraph4": "Si cette application aide ne serait-ce qu'une seule personne à profiter d'un repas supplémentaire lors d'un voyage, elle aura atteint son objectif.",
     "quoteText": "Ma mission ? Rendre le monde plus accessible et aider les personnes allergiques à l'explorer à travers la nourriture, en toute sécurité et avec joie.",
     "quoteAuthor": "Marta Di Muro",
+    "learnMore": "En savoir plus",
     "followMe": "Mes réseaux"
   }
 }

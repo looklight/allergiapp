@@ -179,6 +179,7 @@ export interface DownloadedLanguageData {
     noAnimalProductsMessage?: string;
     noAnimalProductsSectionMessage?: string;
   };
+  dietFoods?: Record<string, string>;
   cardTexts: {
     header: string;
     subtitle: string;

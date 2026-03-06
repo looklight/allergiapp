@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Animated } from 'react-native';
-import { Text, Checkbox, List, Button, Divider } from 'react-native-paper';
+import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,8 @@ import i18n from '../utils/i18n';
 import { useAppContext } from '../utils/AppContext';
 
 const VEGETARIAN_LEVELS: VegetarianLevel[] = ['no_meat', 'no_meat_fish', 'no_animal_products'];
+
+const SORTED_DIET_MODES = [...DIET_MODES].sort((a, b) => a.toggleOrder - b.toggleOrder);
 
 // Reusable toggle component for diet modes
 function DietModeToggle({
@@ -177,7 +179,7 @@ export default function OtherRestrictionsScreen() {
 
       <ScrollView style={styles.list}>
         {/* Diet Mode Toggles */}
-        {DIET_MODES.map((mode, index) => (
+        {SORTED_DIET_MODES.map((mode, index) => (
           <View key={mode.id}>
             <DietModeToggle
               mode={mode}
@@ -222,35 +224,39 @@ export default function OtherRestrictionsScreen() {
                 ))}
               </View>
             )}
-          </View>
-        ))}
-
-        {/* Lista alimenti */}
-        <View style={styles.categoryHeader}>
-          <Text style={styles.categoryTitle}>
-            {i18n.t('otherRestrictions.foodsToAvoid')}
-          </Text>
-        </View>
-        {RESTRICTION_ITEMS.map((item, index) => (
-          <View key={item.id}>
-            <List.Item
-              title={item.translations[locale] || item.translations.en}
-              left={() => (
-                <Text style={styles.icon}>{item.icon}</Text>
-              )}
-              right={() => (
-                <Checkbox
-                  status={selectedRestrictions.includes(item.id) ? 'checked' : 'unchecked'}
-                  onPress={() => toggleRestriction(item.id)}
-                />
-              )}
-              onPress={() => toggleRestriction(item.id)}
-              style={styles.listItem}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: selectedRestrictions.includes(item.id) }}
-              accessibilityLabel={item.translations[locale] || item.translations.en}
-            />
-            {index < RESTRICTION_ITEMS.length - 1 && <Divider />}
+            {/* Pregnancy restriction items (inline checkboxes) */}
+            {mode.id === 'pregnancy' && isModeActive('pregnancy') && (
+              <View style={styles.levelContainer}>
+                <Text style={styles.pregnancySectionLabel}>{i18n.t('otherRestrictions.foodsToAvoid')}</Text>
+                {RESTRICTION_ITEMS.map((item) => {
+                  const isChecked = selectedRestrictions.includes(item.id);
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.levelRow}
+                      onPress={() => toggleRestriction(item.id)}
+                      activeOpacity={0.6}
+                    >
+                      <View style={[
+                        styles.checkboxOuter,
+                        isChecked && { borderColor: mode.toggleColors.active, backgroundColor: mode.toggleColors.active },
+                      ]}>
+                        {isChecked && (
+                          <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />
+                        )}
+                      </View>
+                      <Text style={styles.pregnancyItemIcon}>{item.icon}</Text>
+                      <Text style={[
+                        styles.levelTitle,
+                        isChecked && { color: mode.toggleColors.active },
+                      ]}>
+                        {item.translations[locale] || item.translations.en}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>
@@ -261,7 +267,7 @@ export default function OtherRestrictionsScreen() {
           onPress={handleSave}
           style={styles.saveButton}
         >
-          {i18n.t('otherRestrictions.save')} ({selectedRestrictions.length})
+          {i18n.t('otherRestrictions.save')}
         </Button>
       </View>
     </View>
@@ -358,6 +364,30 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
+  checkboxOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  pregnancyItemIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  pregnancySectionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 4,
+    paddingTop: 8,
+    paddingBottom: 2,
+  },
   levelTextContainer: {
     flex: 1,
   },
@@ -370,27 +400,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
     marginTop: 1,
-  },
-  categoryHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 8,
-  },
-  categoryTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  listItem: {
-    paddingVertical: 8,
-  },
-  icon: {
-    fontSize: 24,
-    marginLeft: 16,
-    marginRight: 8,
-    alignSelf: 'center',
   },
   footer: {
     padding: 16,

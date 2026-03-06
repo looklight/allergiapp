@@ -60,6 +60,8 @@ export interface DietModeSectionData {
   };
   /** For pregnancy mode: the restriction items to display */
   restrictionItems?: RestrictionItemId[];
+  /** For vegetarian/vegan: visual food item indicators */
+  foodItems?: { forbidden: { name: string; emoji: string }[]; allowed: { name: string; emoji: string }[] };
 }
 
 export interface CardPortraitProps {

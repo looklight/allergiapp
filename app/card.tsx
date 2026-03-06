@@ -7,10 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
-import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS } from '../constants/cardTranslations';
+import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS, DIET_FOOD_TRANSLATIONS } from '../constants/cardTranslations';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
-import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey } from '../constants/dietModes';
+import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
@@ -155,10 +155,21 @@ export default function CardScreen() {
     return base;
   };
 
+  // Pregnancy auto-selected restriction IDs (stable, never changes)
+  const pregnancyRestrictionIds = useMemo(() => {
+    return new Set(getDietModeById('pregnancy')?.autoSelectRestrictions ?? []);
+  }, []);
+
   // Build diet mode sections for the card
   const dietModeSections = useMemo((): DietModeSectionData[] => {
     const visibleModes = getVisibleModes(activeDietModes);
-    const hasOtherContent = selectedAllergens.length > 0 || selectedRestrictions.length > 0;
+    // Only count restrictions shown inline (before diet sections).
+    // Pregnancy auto-selected restrictions are rendered inside the pregnancy DietModeSection,
+    // so they shouldn't make other diet sections use "Additionally..." phrasing.
+    const inlineRestrictionCount = activeDietModes.includes('pregnancy')
+      ? selectedRestrictions.filter(id => !pregnancyRestrictionIds.has(id)).length
+      : selectedRestrictions.length;
+    const hasOtherContent = selectedAllergens.length > 0 || inlineRestrictionCount > 0;
     const sections: DietModeSectionData[] = [];
 
     for (const mode of visibleModes) {
@@ -176,24 +187,33 @@ export default function CardScreen() {
         sectionColors: mode.sectionColors,
       };
 
-      // For pregnancy mode, attach restriction items
-      if (mode.id === 'pregnancy' && selectedRestrictions.length > 0) {
-        section.restrictionItems = selectedRestrictions;
-        section.message = hasOtherContent ? restrictionTranslations.sectionMessage : restrictionTranslations.message;
-        section.header = restrictionTranslations.header;
+      // For vegetarian mode, attach food item indicators
+      if (mode.id === 'vegetarian') {
+        const levelItems = DIET_LEVEL_FOOD_ITEMS[vegetarianLevel];
+        const foodTrans = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.dietFoods)
+          ? downloadedLanguageData.dietFoods as Record<string, string>
+          : (DIET_FOOD_TRANSLATIONS[displayLanguage as Language] || DIET_FOOD_TRANSLATIONS.en);
+        section.foodItems = {
+          forbidden: levelItems.forbidden.map(id => ({ name: foodTrans[id], emoji: DIET_FOOD_EMOJI[id] })),
+          allowed: levelItems.allowed.map(id => ({ name: foodTrans[id], emoji: DIET_FOOD_EMOJI[id] })),
+        };
+      }
+
+      // For pregnancy mode, attach only pregnancy-specific restriction items
+      if (mode.id === 'pregnancy') {
+        const pregnancyItems = selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id));
+        if (pregnancyItems.length > 0) {
+          section.restrictionItems = pregnancyItems;
+          section.message = hasOtherContent ? restrictionTranslations.sectionMessage : restrictionTranslations.message;
+          section.header = restrictionTranslations.header;
+        }
       }
 
       sections.push(section);
     }
 
     return sections;
-  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedRestrictions, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
-
-  // Inline vs separate restrictions: pregnancy-specific items go to pregnancy section,
-  // general items (intolerances, etc.) always show inline with allergens
-  const pregnancyRestrictionIds = useMemo(() => {
-    return new Set(getDietModeById('pregnancy')?.autoSelectRestrictions ?? []);
-  }, []);
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedRestrictions, pregnancyRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
 
   const inlineRestrictions = pregnancyMode
     ? selectedRestrictions.filter(id => !pregnancyRestrictionIds.has(id))

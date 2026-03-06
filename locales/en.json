@@ -3,7 +3,7 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "What I need to avoid?",
+    "title": "What do I need to communicate?",
     "noAllergies": "You haven't added anything yet",
     "addAllergies": "Add",
     "editAllergies": "Edit",
@@ -23,13 +23,13 @@
     "bannerHowToUseDesc": "Show your card to the waiter when ordering at the restaurant"
   },
   "addAllergy": {
-    "title": "What I need to avoid?",
+    "title": "What do I need to communicate?",
     "subtitle": "Select foods to avoid",
     "save": "Save"
   },
   "otherRestrictions": {
-    "title": "Other restrictions",
-    "subtitle": "Select foods to avoid",
+    "title": "Other needs",
+    "subtitle": "Select what to communicate",
     "save": "Save",
     "other": "Other",
     "selectedCount": "{{count}} selected",

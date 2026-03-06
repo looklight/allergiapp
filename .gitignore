@@ -45,3 +45,8 @@ yarn-error.*
 # Firebase
 google-services.json
 GoogleService-Info.plist
+
+# Admin dashboard
+admin/.next/
+admin/node_modules/
+admin/service-account-key.json

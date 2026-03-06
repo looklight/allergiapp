@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RestrictionItemId } from '../../../constants/otherRestrictions';
 import { DietModeSectionData } from './types';
 
@@ -100,6 +101,9 @@ export default function DietModeSection({
   }
 
   // Label-only mode (vegetarian, vegan)
+  const [foodExpanded, setFoodExpanded] = useState(false);
+  const hasFoodItems = data.foodItems && (data.foodItems.forbidden.length > 0 || data.foodItems.allowed.length > 0);
+
   if (isPortrait) {
     return (
       <View style={[styles.vegSection, {
@@ -115,6 +119,43 @@ export default function DietModeSection({
         <Text style={[styles.vegMessage, { color: sectionColors.text }]}>
           {data.message}
         </Text>
+        {hasFoodItems && (
+          <>
+            <Pressable
+              onPress={() => setFoodExpanded(!foodExpanded)}
+              style={[styles.foodToggle, { borderColor: sectionColors.border }]}
+            >
+              <MaterialCommunityIcons
+                name={foodExpanded ? 'chevron-up' : 'chevron-down'}
+                size={22}
+                color={sectionColors.primary}
+              />
+            </Pressable>
+            {foodExpanded && (
+              <View style={styles.foodListContainer}>
+                {data.foodItems!.forbidden.map((item, i) => (
+                  <View key={`f-${i}`} style={styles.foodRow}>
+                    <MaterialCommunityIcons name="close-circle" size={20} color="#D32F2F" />
+                    <Text style={styles.foodEmoji}>{item.emoji}</Text>
+                    <Text style={[styles.foodRowText, { color: '#C62828' }]}>{item.name}</Text>
+                  </View>
+                ))}
+                {data.foodItems!.allowed.length > 0 && (
+                  <>
+                    <View style={[styles.foodDivider, { borderBottomColor: sectionColors.border }]} />
+                    {data.foodItems!.allowed.map((item, i) => (
+                      <View key={`a-${i}`} style={styles.foodRow}>
+                        <MaterialCommunityIcons name="check-circle" size={20} color="#2E7D32" />
+                        <Text style={styles.foodEmoji}>{item.emoji}</Text>
+                        <Text style={[styles.foodRowText, { color: '#1B5E20' }]}>{item.name}</Text>
+                      </View>
+                    ))}
+                  </>
+                )}
+              </View>
+            )}
+          </>
+        )}
       </View>
     );
   }
@@ -134,6 +175,43 @@ export default function DietModeSection({
       <Text style={[styles.landscapeVegMessage, { color: sectionColors.text }]}>
         {data.message}
       </Text>
+      {hasFoodItems && (
+        <>
+          <Pressable
+            onPress={() => setFoodExpanded(!foodExpanded)}
+            style={[styles.foodToggle, { borderColor: sectionColors.border }]}
+          >
+            <MaterialCommunityIcons
+              name={foodExpanded ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color={sectionColors.primary}
+            />
+          </Pressable>
+          {foodExpanded && (
+            <View style={styles.foodListContainer}>
+              {data.foodItems!.forbidden.map((item, i) => (
+                <View key={`f-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
+                  <MaterialCommunityIcons name="close-circle" size={18} color="#D32F2F" />
+                  <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
+                  <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: '#C62828' }]}>{item.name}</Text>
+                </View>
+              ))}
+              {data.foodItems!.allowed.length > 0 && (
+                <>
+                  <View style={[styles.foodDivider, { borderBottomColor: sectionColors.border }]} />
+                  {data.foodItems!.allowed.map((item, i) => (
+                    <View key={`a-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
+                      <MaterialCommunityIcons name="check-circle" size={18} color="#2E7D32" />
+                      <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
+                      <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: '#1B5E20' }]}>{item.name}</Text>
+                    </View>
+                  ))}
+                </>
+              )}
+            </View>
+          )}
+        </>
+      )}
     </View>
   );
 }
@@ -244,6 +322,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     flex: 1,
+  },
+  // Food items (expandable list)
+  foodToggle: {
+    alignSelf: 'center',
+    marginTop: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 2,
+  },
+  foodListContainer: {
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  foodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  foodRowLandscape: {
+    paddingVertical: 4,
+  },
+  foodDivider: {
+    borderBottomWidth: 1,
+    width: '60%',
+    marginVertical: 6,
+  },
+  foodEmoji: {
+    fontSize: 26,
+    marginLeft: 10,
+  },
+  foodEmojiLandscape: {
+    fontSize: 20,
+    marginLeft: 8,
+  },
+  foodRowText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  foodRowTextLandscape: {
+    fontSize: 13,
   },
   // Landscape veg/vegan styles
   landscapeVegSection: {

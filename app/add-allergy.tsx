@@ -17,8 +17,12 @@ export default function AddAllergyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedRestrictions, activeDietModes, vegetarianLevel } = useAppContext();
-  const activeModeConfigs = DIET_MODES.filter(m => activeDietModes.includes(m.id)).sort((a, b) => a.order - b.order);
+  const activeModeConfigs = DIET_MODES.filter(m => activeDietModes.includes(m.id)).sort((a, b) => a.toggleOrder - b.toggleOrder);
   const hasActiveModes = activeModeConfigs.length > 0;
+  // Mode with highest medical priority (lowest cardOrder) — used for icon and badge color
+  const primaryMode = hasActiveModes
+    ? [...activeModeConfigs].sort((a, b) => a.cardOrder - b.cardOrder)[0]
+    : null;
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>(savedAllergens);
 
   useEffect(() => {
@@ -84,23 +88,28 @@ export default function AddAllergyScreen() {
             pressed && styles.otherRowPressed,
           ]}
         >
-          <Text style={styles.otherIcon}>{hasActiveModes ? activeModeConfigs[0].icon : '📋'}</Text>
+          <Text style={styles.otherIcon}>{primaryMode ? primaryMode.icon : '📋'}</Text>
           <View style={styles.otherTextContainer}>
             <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
             {hasActiveModes && (
-              <Text style={[styles.otherHint, { color: activeModeConfigs[0].toggleColors.active }]}>
-                {activeModeConfigs.map(m =>
-                  m.id === 'vegetarian'
-                    ? i18n.t(`otherRestrictions.vegetarianLevel_${vegetarianLevel}`)
-                    : i18n.t(`otherRestrictions.${m.id}Label`)
-                ).join(' · ')}
+              <Text style={styles.otherHint}>
+                {activeModeConfigs.map((m, i) => (
+                  <Text key={m.id}>
+                    {i > 0 && <Text style={{ color: '#999' }}> · </Text>}
+                    <Text style={{ color: m.toggleColors.active }}>
+                      {m.id === 'vegetarian'
+                        ? i18n.t(`otherRestrictions.vegetarianLevel_${vegetarianLevel}`)
+                        : i18n.t(`otherRestrictions.${m.id}Label`)}
+                    </Text>
+                  </Text>
+                ))}
               </Text>
             )}
           </View>
           <View style={styles.otherRight}>
-            {(selectedRestrictions.length > 0 || hasActiveModes) && (
-              <View style={[styles.otherBadge, hasActiveModes && { backgroundColor: activeModeConfigs[0].toggleColors.active }]}>
-                <Text style={styles.otherBadgeText}>{selectedRestrictions.length + activeDietModes.length}</Text>
+            {hasActiveModes && (
+              <View style={[styles.otherBadge, primaryMode && { backgroundColor: primaryMode.toggleColors.active }]}>
+                <Text style={styles.otherBadgeText}>{activeDietModes.length}</Text>
               </View>
             )}
             <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
