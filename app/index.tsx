@@ -8,6 +8,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
 import { AllergenId, Language, LANGUAGES, AllLanguageCode, AppLanguage, DownloadableLanguageCode } from '../types';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
+import { DIET_MODES, getVisibleModes } from '../constants/dietModes';
 import { theme } from '../constants/theme';
 import { getLocalizedLanguageName } from '../constants/languageNames';
 import i18n from '../utils/i18n';
@@ -19,8 +20,8 @@ import { useLanguageDownload } from '../hooks/useLanguageDownload';
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens, selectedRestrictions, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
-  const hasSelections = selectedAllergens.length > 0 || selectedRestrictions.length > 0;
+  const { selectedAllergens, selectedRestrictions, activeDietModes, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
+  const hasSelections = selectedAllergens.length > 0 || selectedRestrictions.length > 0 || activeDietModes.length > 0;
   const cardLanguage = settings.cardLanguage;
   const appLang = settings.appLanguage;
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
@@ -238,12 +239,26 @@ export default function HomeScreen() {
                   style={styles.restrictionChip}
                   textStyle={styles.chipText}
                   icon={() => (
-                    <Text style={styles.chipIcon}>📋</Text>
+                    <Text style={styles.chipIcon}>{'\uD83D\uDCCB'}</Text>
                   )}
                 >
                   {i18n.t('otherRestrictions.other')} ({selectedRestrictions.length})
                 </Chip>
               )}
+              {getVisibleModes(activeDietModes)
+                .filter((mode) => !mode.affectsFullCard)
+                .map((mode) => (
+                  <Chip
+                    key={mode.id}
+                    style={[styles.dietModeChip, { backgroundColor: mode.sectionColors.background }]}
+                    textStyle={[styles.dietModeChipText, { color: mode.sectionColors.primary }]}
+                    icon={() => (
+                      <Text style={styles.chipIcon}>{mode.icon}</Text>
+                    )}
+                  >
+                    {i18n.t(`otherRestrictions.${mode.id}Toggle`)}
+                  </Chip>
+                ))}
             </View>
           )}
         </Surface>
@@ -548,6 +563,12 @@ const styles = StyleSheet.create({
   restrictionChip: {
     marginBottom: 4,
     backgroundColor: '#FFF8E1',
+  },
+  dietModeChip: {
+    marginBottom: 4,
+  },
+  dietModeChipText: {
+    fontSize: 14,
   },
   chipText: {
     fontSize: 14,

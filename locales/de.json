@@ -24,7 +24,7 @@
   },
   "addAllergy": {
     "title": "Was muss ich meiden?",
-    "subtitle": "Waehle deine Nahrungsmittelallergien",
+    "subtitle": "Waehle die zu vermeidenden Lebensmittel",
     "save": "Speichern"
   },
   "otherRestrictions": {
@@ -35,6 +35,10 @@
     "selectedCount": "{{count}} ausgewaehlt",
     "pregnancyToggle": "Ich bin schwanger",
     "pregnancyHint": "Wird auf der Karte angezeigt, dass du schwanger bist",
+    "vegetarianToggle": "Ich bin Vegetarier/in",
+    "vegetarianHint": "Wird auf der Karte angezeigt, dass du Vegetarier/in bist",
+    "veganToggle": "Ich bin Veganer/in",
+    "veganHint": "Wird auf der Karte angezeigt, dass du Veganer/in bist",
     "foodsToAvoid": "Zu vermeidende Lebensmittel",
     "pregnancyActive": "Schwangerschaftsmodus aktiv"
   },

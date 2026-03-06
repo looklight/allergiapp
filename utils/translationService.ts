@@ -128,9 +128,15 @@ export async function downloadLanguageTranslations(
   const restrictionCardTexts = [
     RESTRICTION_CARD_TRANSLATIONS.en.header,
     RESTRICTION_CARD_TRANSLATIONS.en.message,
-    RESTRICTION_CARD_TRANSLATIONS.en.pregnancyHeader,
-    RESTRICTION_CARD_TRANSLATIONS.en.pregnancyMessage,
-    RESTRICTION_CARD_TRANSLATIONS.en.pregnancySectionMessage,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.pregnancy.header,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.pregnancy.message,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.pregnancy.sectionMessage,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.vegetarian.header,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.vegetarian.message,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.vegetarian.sectionMessage,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.vegan.header,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.vegan.message,
+    RESTRICTION_CARD_TRANSLATIONS.en.dietModes.vegan.sectionMessage,
   ];
 
   const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + restrictionNames.length + restrictionCardTexts.length;
@@ -316,6 +322,12 @@ export async function downloadLanguageTranslations(
       pregnancyHeader: translatedRestrictionCardTexts[2],
       pregnancyMessage: translatedRestrictionCardTexts[3],
       pregnancySectionMessage: translatedRestrictionCardTexts[4],
+      vegetarianHeader: translatedRestrictionCardTexts[5],
+      vegetarianMessage: translatedRestrictionCardTexts[6],
+      vegetarianSectionMessage: translatedRestrictionCardTexts[7],
+      veganHeader: translatedRestrictionCardTexts[8],
+      veganMessage: translatedRestrictionCardTexts[9],
+      veganSectionMessage: translatedRestrictionCardTexts[10],
     },
     cardTexts: {
       header: translatedCardTexts[0],

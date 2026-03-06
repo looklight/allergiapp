@@ -6,10 +6,64 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { RESTRICTION_CATEGORIES, RESTRICTION_ITEMS, RestrictionItemId, getRestrictionItemsByCategory } from '../constants/otherRestrictions';
+import { DIET_MODES, DietModeId, DietMode } from '../constants/dietModes';
 import { Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../utils/AppContext';
+
+// Reusable toggle component for diet modes
+function DietModeToggle({
+  mode,
+  isActive,
+  animValue,
+  onToggle,
+}: {
+  mode: DietMode;
+  isActive: boolean;
+  animValue: Animated.Value;
+  onToggle: (enabled: boolean) => void;
+}) {
+  const bgColor = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [theme.colors.surface, mode.toggleColors.activeBg],
+  });
+  const borderColor = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [theme.colors.border, mode.toggleColors.activeBorder],
+  });
+  const hintOpacity = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+
+  const i18nKey = `otherRestrictions.${mode.id}Toggle` as const;
+  const hintKey = `otherRestrictions.${mode.id}Hint` as const;
+
+  return (
+    <Animated.View style={[styles.dietModeToggle, {
+      backgroundColor: bgColor,
+      borderColor: borderColor,
+      marginTop: mode.order === 1 ? 8 : 12,
+    }]}>
+      <View style={styles.dietModeToggleLeft}>
+        <Text style={styles.dietModeIcon}>{mode.icon}</Text>
+        <View style={styles.dietModeTextContainer}>
+          <Text style={styles.dietModeTitle}>{i18n.t(i18nKey)}</Text>
+          <Animated.Text style={[styles.dietModeHint, { opacity: hintOpacity }]}>
+            {i18n.t(hintKey)}
+          </Animated.Text>
+        </View>
+      </View>
+      <Switch
+        value={isActive}
+        onValueChange={onToggle}
+        trackColor={{ false: theme.colors.border, true: mode.toggleColors.activeBorder }}
+        thumbColor={isActive ? mode.toggleColors.active : '#F4F3F4'}
+      />
+    </Animated.View>
+  );
+}
 
 export default function OtherRestrictionsScreen() {
   const router = useRouter();
@@ -17,12 +71,19 @@ export default function OtherRestrictionsScreen() {
   const {
     selectedRestrictions: savedRestrictions,
     setSelectedRestrictions: saveRestrictions,
-    pregnancyMode: savedPregnancyMode,
-    setPregnancyMode: savePregnancyMode,
+    activeDietModes: savedDietModes,
+    setActiveDietModes: saveDietModes,
   } = useAppContext();
   const [selectedRestrictions, setSelectedRestrictions] = useState<RestrictionItemId[]>(savedRestrictions);
-  const [pregnancyMode, setPregnancyMode] = useState(savedPregnancyMode);
-  const toggleAnim = useRef(new Animated.Value(savedPregnancyMode ? 1 : 0)).current;
+  const [localDietModes, setLocalDietModes] = useState<DietModeId[]>(savedDietModes);
+
+  // Create animation values for each diet mode
+  const animRefs = useRef<Record<DietModeId, Animated.Value>>(
+    DIET_MODES.reduce((acc, mode) => {
+      acc[mode.id] = new Animated.Value(savedDietModes.includes(mode.id) ? 1 : 0);
+      return acc;
+    }, {} as Record<DietModeId, Animated.Value>)
+  ).current;
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
@@ -34,34 +95,54 @@ export default function OtherRestrictionsScreen() {
     return RESTRICTION_ITEMS.filter((item) => idSet.has(item.id)).map((item) => item.id);
   };
 
-  const handlePregnancyToggle = (enabled: boolean) => {
-    setPregnancyMode(enabled);
-    Animated.spring(toggleAnim, {
-      toValue: enabled ? 1 : 0,
+  const animateMode = (modeId: DietModeId, toValue: number) => {
+    Animated.spring(animRefs[modeId], {
+      toValue,
       useNativeDriver: false,
       friction: 8,
       tension: 40,
     }).start();
-    const pregnancyItemIds = getRestrictionItemsByCategory('pregnancy').map((item) => item.id);
-    if (enabled) {
-      setSelectedRestrictions((prev) => sortByDefinitionOrder([...prev, ...pregnancyItemIds]));
-    } else {
-      setSelectedRestrictions((prev) => prev.filter((id) => !pregnancyItemIds.includes(id)));
-    }
   };
 
-  const toggleBgColor = toggleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [theme.colors.surface, '#FFF0F5'],
-  });
-  const toggleBorderColor = toggleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [theme.colors.border, '#F8BBD0'],
-  });
-  const hintOpacity = toggleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.5, 1],
-  });
+  const isModeActive = (modeId: DietModeId) => localDietModes.includes(modeId);
+
+  const handleDietModeToggle = (mode: DietMode, enabled: boolean) => {
+    let newModes = [...localDietModes];
+
+    if (enabled) {
+      if (!newModes.includes(mode.id)) {
+        newModes.push(mode.id);
+      }
+      animateMode(mode.id, 1);
+
+      // Handle autoSelectRestrictions (e.g., pregnancy adds food items)
+      if (mode.autoSelectRestrictions && mode.autoSelectRestrictions.length > 0) {
+        setSelectedRestrictions((prev) => sortByDefinitionOrder([...prev, ...mode.autoSelectRestrictions!]));
+      }
+
+      // If vegan is activated, also activate vegetarian
+      if (mode.id === 'vegan' && !newModes.includes('vegetarian')) {
+        newModes.push('vegetarian');
+        animateMode('vegetarian', 1);
+      }
+    } else {
+      newModes = newModes.filter((id) => id !== mode.id);
+      animateMode(mode.id, 0);
+
+      // Handle autoSelectRestrictions removal
+      if (mode.autoSelectRestrictions && mode.autoSelectRestrictions.length > 0) {
+        setSelectedRestrictions((prev) => prev.filter((id) => !mode.autoSelectRestrictions!.includes(id)));
+      }
+
+      // If vegetarian is deactivated, also deactivate vegan
+      if (mode.id === 'vegetarian' && newModes.includes('vegan')) {
+        newModes = newModes.filter((id) => id !== 'vegan');
+        animateMode('vegan', 0);
+      }
+    }
+
+    setLocalDietModes(newModes);
+  };
 
   const toggleRestriction = (id: RestrictionItemId) => {
     setSelectedRestrictions((prev) =>
@@ -73,7 +154,7 @@ export default function OtherRestrictionsScreen() {
 
   const handleSave = async () => {
     await saveRestrictions(selectedRestrictions);
-    await savePregnancyMode(pregnancyMode);
+    await saveDietModes(localDietModes);
     router.back();
   };
 
@@ -99,27 +180,16 @@ export default function OtherRestrictionsScreen() {
       </Text>
 
       <ScrollView style={styles.list}>
-        {/* Toggle Gravidanza */}
-        <Animated.View style={[styles.pregnancyToggle, {
-          backgroundColor: toggleBgColor,
-          borderColor: toggleBorderColor,
-        }]}>
-          <View style={styles.pregnancyToggleLeft}>
-            <Text style={styles.pregnancyIcon}>🤰</Text>
-            <View style={styles.pregnancyTextContainer}>
-              <Text style={styles.pregnancyTitle}>{i18n.t('otherRestrictions.pregnancyToggle')}</Text>
-              <Animated.Text style={[styles.pregnancyHint, { opacity: hintOpacity }]}>
-                {i18n.t('otherRestrictions.pregnancyHint')}
-              </Animated.Text>
-            </View>
-          </View>
-          <Switch
-            value={pregnancyMode}
-            onValueChange={handlePregnancyToggle}
-            trackColor={{ false: theme.colors.border, true: '#F48FB1' }}
-            thumbColor={pregnancyMode ? '#E91E63' : '#F4F3F4'}
+        {/* Diet Mode Toggles - generated dynamically */}
+        {DIET_MODES.map((mode) => (
+          <DietModeToggle
+            key={mode.id}
+            mode={mode}
+            isActive={isModeActive(mode.id)}
+            animValue={animRefs[mode.id]}
+            onToggle={(enabled) => handleDietModeToggle(mode, enabled)}
           />
-        </Animated.View>
+        ))}
 
         {/* Lista alimenti */}
         {RESTRICTION_CATEGORIES.map((category) => {
@@ -204,38 +274,37 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
   },
-  pregnancyToggle: {
+  dietModeToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
     marginHorizontal: 16,
-    marginTop: 8,
     borderRadius: 16,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
-  pregnancyToggleLeft: {
+  dietModeToggleLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
     marginRight: 12,
   },
-  pregnancyIcon: {
+  dietModeIcon: {
     fontSize: 28,
     marginRight: 12,
   },
-  pregnancyTextContainer: {
+  dietModeTextContainer: {
     flex: 1,
   },
-  pregnancyTitle: {
+  dietModeTitle: {
     fontSize: 17,
     fontWeight: '600',
     color: theme.colors.textPrimary,
   },
-  pregnancyHint: {
+  dietModeHint: {
     fontSize: 13,
     color: theme.colors.textSecondary,
     marginTop: 2,

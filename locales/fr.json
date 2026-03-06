@@ -24,7 +24,7 @@
   },
   "addAllergy": {
     "title": "Que dois-je eviter ?",
-    "subtitle": "Selectionnez vos allergies alimentaires",
+    "subtitle": "Selectionnez les aliments a eviter",
     "save": "Enregistrer"
   },
   "otherRestrictions": {
@@ -35,6 +35,10 @@
     "selectedCount": "{{count}} selectionnes",
     "pregnancyToggle": "Je suis enceinte",
     "pregnancyHint": "Indiquera sur la carte que vous etes enceinte",
+    "vegetarianToggle": "Je suis vegetarien(ne)",
+    "vegetarianHint": "Indiquera sur la carte que vous etes vegetarien(ne)",
+    "veganToggle": "Je suis vegan(e)",
+    "veganHint": "Indiquera sur la carte que vous etes vegan(e)",
     "foodsToAvoid": "Aliments a eviter",
     "pregnancyActive": "Mode grossesse actif"
   },

@@ -24,7 +24,7 @@
   },
   "addAllergy": {
     "title": "What I need to avoid?",
-    "subtitle": "Select your food allergies",
+    "subtitle": "Select foods to avoid",
     "save": "Save"
   },
   "otherRestrictions": {
@@ -35,6 +35,10 @@
     "selectedCount": "{{count}} selected",
     "pregnancyToggle": "I am pregnant",
     "pregnancyHint": "Will show on the card that you are pregnant",
+    "vegetarianToggle": "I am vegetarian",
+    "vegetarianHint": "Will show on the card that you are vegetarian",
+    "veganToggle": "I am vegan",
+    "veganHint": "Will show on the card that you are vegan",
     "foodsToAvoid": "Foods to avoid",
     "pregnancyActive": "Pregnancy mode active"
   },

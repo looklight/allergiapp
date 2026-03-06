@@ -169,6 +169,12 @@ export interface DownloadedLanguageData {
     pregnancyHeader: string;
     pregnancyMessage: string;
     pregnancySectionMessage?: string;
+    vegetarianHeader?: string;
+    vegetarianMessage?: string;
+    vegetarianSectionMessage?: string;
+    veganHeader?: string;
+    veganMessage?: string;
+    veganSectionMessage?: string;
   };
   cardTexts: {
     header: string;

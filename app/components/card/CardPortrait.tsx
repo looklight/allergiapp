@@ -1,0 +1,297 @@
+import React, { useMemo } from 'react';
+import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { Text, Surface } from 'react-native-paper';
+import { ALLERGENS } from '../../../constants/allergens';
+import { ALLERGEN_IMAGES } from '../../../constants/allergenImages';
+import { RESTRICTION_ITEMS, RestrictionItemId } from '../../../constants/otherRestrictions';
+import { theme } from '../../../constants/theme';
+import i18n from '../../../utils/i18n';
+import DietModeSection from './DietModeSection';
+import { CardPortraitProps } from './types';
+
+const getRestrictionInfo = (id: RestrictionItemId) => {
+  return RESTRICTION_ITEMS.find((r) => r.id === id);
+};
+
+export default function CardPortrait({
+  selectedAllergens,
+  inlineRestrictions,
+  separateRestrictions,
+  colors,
+  translations,
+  restrictionTranslations,
+  dietModeSections,
+  expandedAllergen,
+  showInAppLanguage,
+  pregnancyMode,
+  getAllergenTranslation,
+  getAllergenDescription,
+  getAllergenWarning,
+  getRestrictionTranslation,
+  toggleExpand,
+  handleLanguageToggle,
+}: CardPortraitProps) {
+  const hasAllergens = selectedAllergens.length > 0;
+
+  const dynamicStyles = useMemo(() => StyleSheet.create({
+    headerSection: {
+      backgroundColor: colors.headerBg,
+      padding: 24,
+      alignItems: 'center',
+    },
+    warningIcon: {
+      fontSize: 48,
+      marginBottom: 8,
+    },
+    header: {
+      fontSize: 28,
+      fontWeight: 'bold' as const,
+      color: '#FFFFFF',
+      letterSpacing: 2,
+    },
+    subtitle: {
+      fontSize: 18,
+      color: '#FFFFFF',
+      marginTop: 4,
+      letterSpacing: 1,
+      textAlign: 'center' as const,
+    },
+    messageSection: {
+      padding: 20,
+      backgroundColor: colors.messageBg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.messageBorder,
+    },
+    message: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: theme.colors.textPrimary,
+      textAlign: 'center' as const,
+    },
+    allergenRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.divider,
+    },
+    allergenIcon: {
+      fontSize: 28,
+      marginRight: 16,
+    },
+    allergenText: {
+      fontSize: 18,
+      fontWeight: '600' as const,
+      color: colors.allergenTextColor,
+    },
+    tapHint: {
+      fontSize: 12,
+      color: '#888888',
+      marginTop: 2,
+    },
+    breakdownContainer: {
+      backgroundColor: colors.breakdownBg,
+      padding: 16,
+      marginBottom: 8,
+      borderRadius: 8,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.breakdownBorder,
+    },
+    breakdownDescription: {
+      fontSize: 14,
+      color: colors.breakdownDescColor,
+      textAlign: 'center' as const,
+      fontStyle: 'italic' as const,
+    },
+    warningText: {
+      fontSize: 13,
+      color: colors.warningTextColor,
+      textAlign: 'center' as const,
+      fontWeight: '600' as const,
+      marginTop: 8,
+      paddingHorizontal: 8,
+    },
+    thanksSection: {
+      padding: 20,
+      backgroundColor: colors.thanksBg,
+    },
+    thanks: {
+      fontSize: 16,
+      color: colors.thanksColor,
+      textAlign: 'center' as const,
+      fontStyle: 'italic' as const,
+    },
+  }), [colors]);
+
+  const getAllergenInfo = (id: string) => ALLERGENS.find((a) => a.id === id);
+
+  return (
+    <ScrollView contentContainerStyle={styles.content}>
+      <Surface style={styles.card} elevation={4}>
+        <View style={styles.cardContent}>
+          <View style={dynamicStyles.headerSection}>
+            {!colors.isPregnancy && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
+            <Text style={dynamicStyles.header}>{colors.isPregnancy ? '🤰 ' : ''}{translations.header}</Text>
+            {hasAllergens && (
+              <Text style={dynamicStyles.subtitle}>{pregnancyMode ? translations.pregnancySubtitle : translations.subtitle}</Text>
+            )}
+            {!hasAllergens && inlineRestrictions.length > 0 && (
+              <Text style={dynamicStyles.subtitle}>{restrictionTranslations.header}</Text>
+            )}
+          </View>
+
+          {hasAllergens && (
+            <View style={dynamicStyles.messageSection}>
+              <Text style={dynamicStyles.message}>{pregnancyMode ? translations.pregnancyMessage : translations.message}</Text>
+            </View>
+          )}
+
+          {!hasAllergens && inlineRestrictions.length > 0 && (
+            <View style={dynamicStyles.messageSection}>
+              <Text style={dynamicStyles.message}>{restrictionTranslations.message}</Text>
+            </View>
+          )}
+
+          {(hasAllergens || inlineRestrictions.length > 0) && (
+            <View style={styles.allergensSection}>
+              {selectedAllergens.map((id) => {
+                const allergen = getAllergenInfo(id);
+                const images = ALLERGEN_IMAGES[id];
+                if (!allergen || !images) return null;
+                const isExpanded = expandedAllergen === id;
+
+                return (
+                  <View key={id}>
+                    <Pressable
+                      onPress={() => toggleExpand(id)}
+                      style={({ pressed }) => [
+                        dynamicStyles.allergenRow,
+                        pressed && styles.allergenRowPressed,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${getAllergenTranslation(id)}, ${translations.tapToSee}`}
+                      accessibilityState={{ expanded: isExpanded }}
+                    >
+                      <Text style={dynamicStyles.allergenIcon}>{allergen.icon}</Text>
+                      <View style={styles.allergenTextContainer}>
+                        <Text style={dynamicStyles.allergenText}>{getAllergenTranslation(id)}</Text>
+                        <Text style={dynamicStyles.tapHint}>{translations.tapToSee} {isExpanded ? '▲' : '▼'}</Text>
+                      </View>
+                    </Pressable>
+
+                    {isExpanded && (() => {
+                      const warning = getAllergenWarning(id);
+                      return (
+                        <View style={dynamicStyles.breakdownContainer}>
+                          <View style={styles.examplesRow}>
+                            {images.examples.map((emoji, index) => (
+                              <Text key={index} style={styles.exampleEmoji}>{emoji}</Text>
+                            ))}
+                          </View>
+                          <Text style={dynamicStyles.breakdownDescription}>{getAllergenDescription(id)}</Text>
+                          {warning && (
+                            <Text style={dynamicStyles.warningText}>{warning}</Text>
+                          )}
+                        </View>
+                      );
+                    })()}
+                  </View>
+                );
+              })}
+
+              {inlineRestrictions.map((id) => {
+                const item = getRestrictionInfo(id);
+                if (!item) return null;
+                return (
+                  <View key={id} style={dynamicStyles.allergenRow}>
+                    <Text style={dynamicStyles.allergenIcon}>{item.icon}</Text>
+                    <View style={styles.allergenTextContainer}>
+                      <Text style={dynamicStyles.allergenText}>{getRestrictionTranslation(id)}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Diet mode sections - rendered dynamically */}
+          {dietModeSections.map((section) => (
+            <DietModeSection
+              key={section.modeId}
+              data={section}
+              variant="portrait"
+              getRestrictionTranslation={getRestrictionTranslation}
+              getRestrictionInfo={(id) => getRestrictionInfo(id) as { icon: string } | undefined}
+              hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
+              restrictionColors={colors.isPregnancy ? {
+                restrictionBg: colors.restrictionBg,
+                restrictionBorder: colors.restrictionBorder,
+                restrictionHeaderColor: colors.restrictionHeaderColor,
+                restrictionTextColor: colors.restrictionTextColor,
+              } : undefined}
+            />
+          ))}
+
+          <View style={dynamicStyles.thanksSection}>
+            <Text style={dynamicStyles.thanks}>{translations.thanks}</Text>
+          </View>
+        </View>
+      </Surface>
+
+      <Pressable
+        style={styles.languageToggle}
+        onPress={handleLanguageToggle}
+        accessibilityRole="button"
+        accessibilityLabel={showInAppLanguage ? i18n.t('card.showInDestLanguage') : i18n.t('card.showInMyLanguage')}
+      >
+        <Text style={styles.languageToggleText}>
+          {showInAppLanguage ? i18n.t('card.showInDestLanguage') : i18n.t('card.showInMyLanguage')}
+        </Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  card: {
+    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+  },
+  cardContent: {
+    overflow: 'hidden',
+    borderRadius: 16,
+  },
+  allergensSection: {
+    padding: 20,
+  },
+  allergenRowPressed: {
+    backgroundColor: '#FFF3E0',
+  },
+  allergenTextContainer: {
+    flex: 1,
+  },
+  examplesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 12,
+    justifyContent: 'center',
+    gap: 8,
+  },
+  exampleEmoji: {
+    fontSize: 36,
+  },
+  languageToggle: {
+    marginTop: 20,
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  languageToggleText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+});
