@@ -80,6 +80,10 @@ async function translateBatch(
 
 // Rileva traduzioni parziali: se troppe parole restano in inglese, la traduzione non è affidabile
 function isPartialTranslation(original: string, translated: string): boolean {
+  // Per script non-latini (cinese, arabo, cirillico, ecc.) il confronto parole non funziona.
+  // Se il testo tradotto contiene caratteri fuori dal range latino, è stato tradotto.
+  if (/[^\u0000-\u024F\u1E00-\u1EFF]/.test(translated)) return false;
+
   const getWords = (text: string) =>
     text.toLowerCase().split(/[\s,.\-()]+/).filter(w => w.length > 2);
   const origWords = getWords(original);

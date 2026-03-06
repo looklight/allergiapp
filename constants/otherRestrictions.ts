@@ -231,14 +231,6 @@ export const RESTRICTION_ITEMS: RestrictionItem[] = [
   },
 ];
 
-export const getRestrictionItemById = (id: string): RestrictionItem | undefined => {
-  return RESTRICTION_ITEMS.find((r) => r.id === id);
-};
-
-export const getRestrictionCategoryById = (id: string): RestrictionCategory | undefined => {
-  return RESTRICTION_CATEGORIES.find((c) => c.id === id);
-};
-
 export const getRestrictionItemsByCategory = (categoryId: RestrictionCategoryId): RestrictionItem[] => {
   return RESTRICTION_ITEMS.filter((r) => r.categoryId === categoryId);
 };

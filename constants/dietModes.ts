@@ -64,9 +64,27 @@ export interface DietMode {
 
 export const DIET_MODES: DietMode[] = [
   {
+    id: 'vegetarian',
+    icon: '\u{1F33F}',
+    order: 1,
+    affectsFullCard: false,
+    sectionColors: {
+      primary: '#2E7D32',
+      background: '#E8F5E9',
+      border: '#A5D6A7',
+      text: '#2E7D32',
+      headerBg: '#4CAF50',
+    },
+    toggleColors: {
+      active: '#4CAF50',
+      activeBg: '#E8F5E9',
+      activeBorder: '#A5D6A7',
+    },
+  },
+  {
     id: 'pregnancy',
     icon: '\u{1F930}',
-    order: 1,
+    order: 2,
     affectsFullCard: true,
     autoSelectRestrictions: [
       'raw_fish',
@@ -111,24 +129,6 @@ export const DIET_MODES: DietMode[] = [
       active: '#E91E63',
       activeBg: '#FFF0F5',
       activeBorder: '#F8BBD0',
-    },
-  },
-  {
-    id: 'vegetarian',
-    icon: '\u{1F33F}',
-    order: 2,
-    affectsFullCard: false,
-    sectionColors: {
-      primary: '#2E7D32',
-      background: '#E8F5E9',
-      border: '#A5D6A7',
-      text: '#2E7D32',
-      headerBg: '#4CAF50',
-    },
-    toggleColors: {
-      active: '#4CAF50',
-      activeBg: '#E8F5E9',
-      activeBorder: '#A5D6A7',
     },
   },
 ];

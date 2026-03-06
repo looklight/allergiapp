@@ -68,7 +68,7 @@ export const storage = {
         selectedAllergens: allergensRaw ? JSON.parse(allergensRaw) : [],
         selectedRestrictions: restrictionsRaw ? JSON.parse(restrictionsRaw) : [],
         activeDietModes: cleanModes,
-        vegetarianLevel: (vegLevelRaw as VegetarianLevel) || DEFAULT_VEGETARIAN_LEVEL,
+        vegetarianLevel: vegLevelRaw && ['no_meat', 'no_meat_fish', 'no_animal_products'].includes(vegLevelRaw) ? vegLevelRaw as VegetarianLevel : DEFAULT_VEGETARIAN_LEVEL,
         settings: settingsRaw ? { ...DEFAULT_SETTINGS, ...JSON.parse(settingsRaw) } : DEFAULT_SETTINGS,
         downloadedLanguages: downloadedRaw ? JSON.parse(downloadedRaw) : {},
         legalConsent: legalRaw ? JSON.parse(legalRaw) : DEFAULT_LEGAL_CONSENT,

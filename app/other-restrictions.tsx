@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { RESTRICTION_CATEGORIES, RESTRICTION_ITEMS, RestrictionItemId, getRestrictionItemsByCategory } from '../constants/otherRestrictions';
+import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
 import { DIET_MODES, DietModeId, DietMode, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 import { Language } from '../types';
 import { theme } from '../constants/theme';
@@ -20,11 +20,13 @@ function DietModeToggle({
   isActive,
   animValue,
   onToggle,
+  isFirst,
 }: {
   mode: DietMode;
   isActive: boolean;
   animValue: Animated.Value;
   onToggle: (enabled: boolean) => void;
+  isFirst: boolean;
 }) {
   const bgColor = animValue.interpolate({
     inputRange: [0, 1],
@@ -46,7 +48,7 @@ function DietModeToggle({
     <Animated.View style={[styles.dietModeToggle, {
       backgroundColor: bgColor,
       borderColor: borderColor,
-      marginTop: mode.order === 1 ? 8 : 12,
+      marginTop: isFirst ? 8 : 12,
     }]}>
       <View style={styles.dietModeToggleLeft}>
         <Text style={styles.dietModeIcon}>{mode.icon}</Text>
@@ -175,13 +177,14 @@ export default function OtherRestrictionsScreen() {
 
       <ScrollView style={styles.list}>
         {/* Diet Mode Toggles */}
-        {DIET_MODES.map((mode) => (
+        {DIET_MODES.map((mode, index) => (
           <View key={mode.id}>
             <DietModeToggle
               mode={mode}
               isActive={isModeActive(mode.id)}
               animValue={animRefs[mode.id]}
               onToggle={(enabled) => handleDietModeToggle(mode, enabled)}
+              isFirst={index === 0}
             />
             {/* Vegetarian level radio buttons */}
             {mode.id === 'vegetarian' && isModeActive('vegetarian') && (
@@ -223,47 +226,33 @@ export default function OtherRestrictionsScreen() {
         ))}
 
         {/* Lista alimenti */}
-        {RESTRICTION_CATEGORIES.map((category) => {
-          const items = getRestrictionItemsByCategory(category.id);
-          return (
-            <View key={category.id}>
-              <View style={styles.categoryHeader}>
-                <Text style={styles.categoryTitle}>
-                  {i18n.t('otherRestrictions.foodsToAvoid')}
-                </Text>
-              </View>
-              {items.map((item, index) => (
-                <View key={item.id}>
-                  <List.Item
-                    title={
-                      item.translations[locale] ||
-                      item.translations.en
-                    }
-                    left={() => (
-                      <Text style={styles.icon}>{item.icon}</Text>
-                    )}
-                    right={() => (
-                      <Checkbox
-                        status={
-                          selectedRestrictions.includes(item.id)
-                            ? 'checked'
-                            : 'unchecked'
-                        }
-                        onPress={() => toggleRestriction(item.id)}
-                      />
-                    )}
-                    onPress={() => toggleRestriction(item.id)}
-                    style={styles.listItem}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: selectedRestrictions.includes(item.id) }}
-                    accessibilityLabel={item.translations[locale] || item.translations.en}
-                  />
-                  {index < items.length - 1 && <Divider />}
-                </View>
-              ))}
-            </View>
-          );
-        })}
+        <View style={styles.categoryHeader}>
+          <Text style={styles.categoryTitle}>
+            {i18n.t('otherRestrictions.foodsToAvoid')}
+          </Text>
+        </View>
+        {RESTRICTION_ITEMS.map((item, index) => (
+          <View key={item.id}>
+            <List.Item
+              title={item.translations[locale] || item.translations.en}
+              left={() => (
+                <Text style={styles.icon}>{item.icon}</Text>
+              )}
+              right={() => (
+                <Checkbox
+                  status={selectedRestrictions.includes(item.id) ? 'checked' : 'unchecked'}
+                  onPress={() => toggleRestriction(item.id)}
+                />
+              )}
+              onPress={() => toggleRestriction(item.id)}
+              style={styles.listItem}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: selectedRestrictions.includes(item.id) }}
+              accessibilityLabel={item.translations[locale] || item.translations.en}
+            />
+            {index < RESTRICTION_ITEMS.length - 1 && <Divider />}
+          </View>
+        ))}
       </ScrollView>
 
       <View style={styles.footer}>
