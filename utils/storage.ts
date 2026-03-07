@@ -62,7 +62,8 @@ export const storage = {
 
       // Clean up legacy 'vegan' from activeDietModes
       const rawModes: DietModeId[] = dietModesRaw ? JSON.parse(dietModesRaw) : [];
-      const cleanModes = rawModes.filter(id => id === 'pregnancy' || id === 'vegetarian') as DietModeId[];
+      const validModeIds: DietModeId[] = ['pregnancy', 'vegetarian', 'nickel'];
+      const cleanModes = rawModes.filter(id => validModeIds.includes(id as DietModeId)) as DietModeId[];
 
       return {
         selectedAllergens: allergensRaw ? JSON.parse(allergensRaw) : [],
