@@ -4,11 +4,11 @@
 - [ ] Eliminare le 2 vecchie variabili `GOOGLE_SERVICES_JSON` da EAS (sensitive + secret)
 
 ## Pulizia progetto
-- [ ] Rimuovere i file markdown di privacy/terms non più usati: `PRIVACY_POLICY.md`, `PRIVACY_POLICY_EN.md`, `TERMS_OF_SERVICE.md`, `TERMS_OF_SERVICE_EN.md` (l'app apre le pagine web su allergiapp.com)
-- [ ] Eliminare `google-services-2.json` dalla root di AllergiApp (copia temporanea)
+- [x] Rimuovere i file markdown di privacy/terms non più usati: `PRIVACY_POLICY.md`, `PRIVACY_POLICY_EN.md`, `TERMS_OF_SERVICE.md`, `TERMS_OF_SERVICE_EN.md` (l'app apre le pagine web su allergiapp.com)
+- [x] Eliminare `google-services-2.json` dalla root di AllergiApp (copia temporanea)
 
 ## Google Play / Android
-- [ ] Sincronizzare `versionCode` Android (attualmente 1) con `buildNumber` iOS (attualmente 4) in `app.config.ts`
+- [x] Sincronizzare `versionCode` Android (attualmente 1) con `buildNumber` iOS (attualmente 4) in `app.config.ts`
 - [ ] Aggiungere profilo Android submit in `eas.json` (serviceAccount + track)
 - [ ] Completare verifica account sviluppatore (serve dispositivo Android fisico)
 - [ ] Caricare AAB su Google Play Console e pubblicare
