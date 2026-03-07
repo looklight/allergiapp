@@ -51,6 +51,10 @@
     "nickelHint": "Mostrerà sulla card i cibi ad alto contenuto di nichel da evitare",
     "nickelLabel": "Allergia al nichel",
     "nickelActive": "Modalità nichel attiva",
+    "histamineToggle": "Intolleranza all'istamina",
+    "histamineHint": "Mostrerà sulla card i cibi ad alto contenuto di istamina da evitare",
+    "histamineLabel": "Intolleranza all'istamina",
+    "histamineActive": "Modalità istamina attiva",
     "foodsToAvoid": "Alimenti sconsigliati",
     "pregnancyActive": "Modalità gravidanza attiva"
   },

@@ -37,7 +37,7 @@ export default function CardLandscape({
   const hasAllergens = selectedAllergens.length > 0;
   const hasOtherFoods = selectedOtherFoods.length > 0;
   const hasRestrictions = separateRestrictions.length > 0 || inlineRestrictions.length > 0;
-  const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel');
+  const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId !== 'vegetarian');
   const hasAllergenContent = hasAllergens || hasOtherFoods || inlineRestrictions.length > 0;
   const hasLeftContent = hasAllergenContent || dietModeSections.length > 0;
   const safeHorizontal = Math.max(insets.left, insets.right, 48);

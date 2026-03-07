@@ -51,6 +51,10 @@
     "nickelHint": "Mostrará en la tarjeta los alimentos ricos en níquel a evitar",
     "nickelLabel": "Alergia al níquel",
     "nickelActive": "Modo níquel activo",
+    "histamineToggle": "Intolerancia a la histamina",
+    "histamineHint": "Mostrará en la tarjeta los alimentos ricos en histamina a evitar",
+    "histamineLabel": "Intolerancia a la histamina",
+    "histamineActive": "Modo histamina activo",
     "foodsToAvoid": "Alimentos a evitar",
     "pregnancyActive": "Modo embarazo activo"
   },

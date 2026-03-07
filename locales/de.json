@@ -51,6 +51,10 @@
     "nickelHint": "Zeigt nickelreiche Lebensmittel auf deiner Karte an",
     "nickelLabel": "Nickelallergie",
     "nickelActive": "Nickelmodus aktiv",
+    "histamineToggle": "Histaminintoleranz",
+    "histamineHint": "Zeigt histaminreiche Lebensmittel auf deiner Karte an",
+    "histamineLabel": "Histaminintoleranz",
+    "histamineActive": "Histaminmodus aktiv",
     "foodsToAvoid": "Zu vermeidende Lebensmittel",
     "pregnancyActive": "Schwangerschaftsmodus aktiv"
   },

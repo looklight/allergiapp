@@ -51,6 +51,10 @@
     "nickelHint": "Indiquera sur la carte les aliments riches en nickel à éviter",
     "nickelLabel": "Allergie au nickel",
     "nickelActive": "Mode nickel actif",
+    "histamineToggle": "Intolérance à l'histamine",
+    "histamineHint": "Indiquera sur la carte les aliments riches en histamine à éviter",
+    "histamineLabel": "Intolérance à l'histamine",
+    "histamineActive": "Mode histamine actif",
     "foodsToAvoid": "Aliments à éviter",
     "pregnancyActive": "Mode grossesse actif"
   },

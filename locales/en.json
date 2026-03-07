@@ -51,6 +51,10 @@
     "nickelHint": "Will show foods high in nickel to avoid on the card",
     "nickelLabel": "Nickel allergy",
     "nickelActive": "Nickel mode active",
+    "histamineToggle": "Histamine intolerance",
+    "histamineHint": "Will show foods high in histamine to avoid on the card",
+    "histamineLabel": "Histamine intolerance",
+    "histamineActive": "Histamine mode active",
     "foodsToAvoid": "Foods to avoid",
     "pregnancyActive": "Pregnancy mode active"
   },

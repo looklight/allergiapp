@@ -1,6 +1,6 @@
 import { RestrictionItemId } from './otherRestrictions';
 
-export type DietModeId = 'pregnancy' | 'vegetarian' | 'nickel';
+export type DietModeId = 'pregnancy' | 'vegetarian' | 'nickel' | 'histamine';
 
 export type VegetarianLevel = 'no_meat' | 'no_meat_fish' | 'no_animal_products';
 
@@ -24,7 +24,7 @@ export const DIET_LEVEL_FOOD_ITEMS: Record<VegetarianLevel, { forbidden: DietFoo
 };
 
 /** Key used to look up card translations for diet modes */
-export type DietCardKey = 'pregnancy' | 'nickel' | VegetarianLevel;
+export type DietCardKey = 'pregnancy' | 'nickel' | 'histamine' | VegetarianLevel;
 
 export interface DietModeColors {
   primary: string;
@@ -87,7 +87,7 @@ export const DIET_MODES: readonly DietMode[] = [
     id: 'vegetarian',
     icon: '\u{1F33F}',
     toggleOrder: 1,
-    cardOrder: 3,
+    cardOrder: 4,
     affectsFullCard: false,
     sectionColors: {
       primary: '#2E7D32',
@@ -180,6 +180,39 @@ export const DIET_MODES: readonly DietMode[] = [
       active: '#78909C',
       activeBg: '#ECEFF1',
       activeBorder: '#B0BEC5',
+    },
+  },
+  {
+    id: 'histamine',
+    icon: '\u{26A0}\u{FE0F}',
+    toggleOrder: 4,
+    cardOrder: 3,
+    affectsFullCard: false,
+    autoSelectRestrictions: [
+      'histamine_aged_cheese',
+      'histamine_cured_meats',
+      'histamine_fish',
+      'histamine_fermented',
+      'histamine_wine_beer',
+      'histamine_vinegar',
+      'histamine_chocolate',
+      'histamine_tomato',
+      'histamine_strawberries',
+      'histamine_eggplant',
+      'histamine_avocado',
+      'histamine_spinach',
+    ],
+    sectionColors: {
+      primary: '#E65100',
+      background: '#FFF3E0',
+      border: '#FFCC80',
+      text: '#E65100',
+      headerBg: '#FF9800',
+    },
+    toggleColors: {
+      active: '#FF9800',
+      activeBg: '#FFF3E0',
+      activeBorder: '#FFCC80',
     },
   },
 ];

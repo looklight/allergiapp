@@ -11,7 +11,7 @@ import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS, DIET_FOOD_TRANSLATION
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
 import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
-import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI } from '../constants/dietModes';
+import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI, DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
@@ -156,11 +156,14 @@ export default function CardScreen() {
   }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage, pregnancyMode]);
 
   // Auto-selected restriction IDs per mode (stable, never changes)
-  const pregnancyRestrictionIds = useMemo(() => {
-    return new Set(getDietModeById('pregnancy')?.autoSelectRestrictions ?? []);
-  }, []);
-  const nickelRestrictionIds = useMemo(() => {
-    return new Set(getDietModeById('nickel')?.autoSelectRestrictions ?? []);
+  const modeRestrictionIds = useMemo(() => {
+    const map = new Map<DietModeId, Set<RestrictionItemId>>();
+    DIET_MODES.forEach(mode => {
+      if (mode.autoSelectRestrictions?.length) {
+        map.set(mode.id, new Set(mode.autoSelectRestrictions as RestrictionItemId[]));
+      }
+    });
+    return map;
   }, []);
 
   // Build diet mode sections for the card
@@ -169,10 +172,9 @@ export default function CardScreen() {
     // Only count restrictions shown inline (before diet sections).
     // Pregnancy auto-selected restrictions are rendered inside the pregnancy DietModeSection,
     // so they shouldn't make other diet sections use "Additionally..." phrasing.
-    const autoSelectedIds = new Set([
-      ...(activeDietModes.includes('pregnancy') ? pregnancyRestrictionIds : []),
-      ...(activeDietModes.includes('nickel') ? nickelRestrictionIds : []),
-    ]);
+    const autoSelectedIds = new Set(
+      activeDietModes.flatMap(id => [...(modeRestrictionIds.get(id) ?? [])])
+    );
     const inlineRestrictionCount = selectedRestrictions.filter(id => !autoSelectedIds.has(id)).length;
     const hasOtherContent = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || inlineRestrictionCount > 0;
     const sections: DietModeSectionData[] = [];
@@ -204,21 +206,17 @@ export default function CardScreen() {
         };
       }
 
-      // For pregnancy mode, attach only pregnancy-specific restriction items
-      if (mode.id === 'pregnancy') {
-        const pregnancyItems = selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id));
-        if (pregnancyItems.length > 0) {
-          section.restrictionItems = pregnancyItems;
-          section.message = hasOtherContent ? restrictionTranslations.sectionMessage : restrictionTranslations.message;
-          section.header = restrictionTranslations.header;
-        }
-      }
-
-      // For nickel mode, attach nickel-specific restriction items
-      if (mode.id === 'nickel') {
-        const nickelItems = selectedRestrictions.filter(id => nickelRestrictionIds.has(id));
-        if (nickelItems.length > 0) {
-          section.restrictionItems = nickelItems;
+      // Attach auto-selected restriction items to the section
+      const restrictionSet = modeRestrictionIds.get(mode.id);
+      if (restrictionSet) {
+        const modeItems = selectedRestrictions.filter(id => restrictionSet.has(id));
+        if (modeItems.length > 0) {
+          section.restrictionItems = modeItems;
+          // Pregnancy mode overrides header/message from restrictionTranslations
+          if (mode.id === 'pregnancy') {
+            section.message = hasOtherContent ? restrictionTranslations.sectionMessage : restrictionTranslations.message;
+            section.header = restrictionTranslations.header;
+          }
         }
       }
 
@@ -226,16 +224,14 @@ export default function CardScreen() {
     }
 
     return sections;
-  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedOtherFoods.length, selectedRestrictions, pregnancyRestrictionIds, nickelRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedOtherFoods.length, selectedRestrictions, modeRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
 
-  const nickelMode = activeDietModes.includes('nickel');
-  const autoModeRestrictionIds = new Set([
-    ...(pregnancyMode ? pregnancyRestrictionIds : []),
-    ...(nickelMode ? nickelRestrictionIds : []),
-  ]);
+  const autoModeRestrictionIds = new Set(
+    activeDietModes.flatMap(id => [...(modeRestrictionIds.get(id) ?? [])])
+  );
   const inlineRestrictions = selectedRestrictions.filter(id => !autoModeRestrictionIds.has(id));
   const separateRestrictions = pregnancyMode
-    ? selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id))
+    ? selectedRestrictions.filter(id => modeRestrictionIds.get('pregnancy')?.has(id))
     : [];
 
   const hasAllergyContent = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || inlineRestrictions.length > 0;

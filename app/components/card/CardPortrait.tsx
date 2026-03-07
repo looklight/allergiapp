@@ -41,7 +41,7 @@ export default function CardPortrait({
 }: CardPortraitProps) {
   const hasAllergens = selectedAllergens.length > 0;
   const hasOtherFoods = selectedOtherFoods.length > 0;
-  const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel');
+  const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId !== 'vegetarian');
 
   const dynamicStyles = useMemo(() => StyleSheet.create({
     headerSection: {
