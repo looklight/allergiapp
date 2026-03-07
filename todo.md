@@ -2,16 +2,6 @@
 
 ## Prossime feature
 
-### Allergeni extra (non-EU)
-Aggiungere sezione separata "Intolleranze alimentari comuni" con:
-- Aglio
-- Cipolla
-- Pomodoro
-- Mais
-- Funghi
-
-Questi non rientrano nei 14 EU obbligatori ma sono molto presenti in cucina e causa di allergie/intolleranze reali. Tenerli separati dai 14 EU + favismo per chiarezza.
-
 ### Feature ristoranti (branch: feature/restaurants)
 - Caricamento geo-based con query 50km + fallback globale
 - "Cerca in quest'area" + ricerca citta con geocoding
@@ -26,8 +16,20 @@ Attualmente le lingue vengono tradotte on-demand via MyMemory API (79 chiamate s
 
 Vantaggi: download istantaneo, qualita garantita, nessun limite quota, nessuna dipendenza API runtime.
 
-## In attesa
+## Pre-merge
 
-### Grano saraceno
-Allergene obbligatorio in Giappone/Corea. Da valutare se il target si espande verso Asia.
-Non si sovrappone col glutine (il grano saraceno non e un cereale, non contiene glutine).
+### Committare cartella admin/
+La cartella `admin/` (dashboard Next.js) non è ancora committata. Il `.gitignore` copre già:
+- `admin/service-account-key.json` ✅
+- `admin/node_modules/` ✅
+- `admin/.next/` ✅
+
+Da fare: `git add admin/` e committare.
+
+## Completati (branch feature/other-restrictions)
+
+- ✅ Sezione "Altri alimenti" con 13 cibi (aglio, cipolla, pomodoro, funghi, peperone, mais, fragole, kiwi, frutta a nocciolo, agrumi, banana, grano saraceno, spezie piccanti) — traduzioni in 15 lingue
+- ✅ Modalità dieta: vegetariano (3 livelli), gravidanza, allergia al nichel
+- ✅ Visualizzazione su card (portrait + landscape)
+- ✅ Fix traduzioni: svedese molluschi, tedesco du/Sie
+- ✅ Supporto other foods nelle lingue scaricabili
