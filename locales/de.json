@@ -25,7 +25,8 @@
   "addAllergy": {
     "title": "Was muss ich mitteilen?",
     "subtitle": "Wähle die zu vermeidenden Lebensmittel",
-    "save": "Speichern"
+    "save": "Speichern",
+    "otherFoods": "Andere Lebensmittel"
   },
   "otherRestrictions": {
     "title": "Weitere Bedürfnisse",
@@ -47,7 +48,7 @@
     "vegetarianLevelHint_no_meat_fish": "Ich esse kein Fleisch und keinen Fisch",
     "vegetarianLevelHint_no_animal_products": "Kein Fleisch, Fisch, Eier, Milchprodukte, Honig",
     "nickelToggle": "Nickelallergie",
-    "nickelHint": "Zeigt nickelreiche Lebensmittel auf Ihrer Karte an",
+    "nickelHint": "Zeigt nickelreiche Lebensmittel auf deiner Karte an",
     "nickelLabel": "Nickelallergie",
     "nickelActive": "Nickelmodus aktiv",
     "foodsToAvoid": "Zu vermeidende Lebensmittel",
@@ -113,11 +114,11 @@
   },
   "consent": {
     "title": "Willkommen bei AllergiApp",
-    "disclaimerShort": "Allergiapp hilft Ihnen, Ihre Allergien mitzuteilen, ersetzt aber keinen ärztlichen Rat. Ihre Allergiedaten werden lokal auf Ihrem Gerät gespeichert, es können anonyme Daten zur Verbesserung des Dienstes erhoben werden, aber es werden keine personenbezogenen Daten erfasst oder weitergegeben.",
+    "disclaimerShort": "AllergiApp hilft dir, deine Allergien mitzuteilen, ersetzt aber keinen ärztlichen Rat. Deine Allergiedaten werden lokal auf deinem Gerät gespeichert, es können anonyme Daten zur Verbesserung des Dienstes erhoben werden, aber es werden keine personenbezogenen Daten erfasst oder weitergegeben.",
     "privacyTitle": "Datenschutz",
     "termsTitle": "Bedingungen",
     "acceptButton": "Weiter",
-    "termsNote": "Mit dem Fortfahren akzeptieren Sie Datenschutz und Nutzungsbedingungen"
+    "termsNote": "Mit dem Fortfahren akzeptierst du Datenschutz und Nutzungsbedingungen"
   },
   "aboutStory": {
     "title": "Warum ist sie kostenlos?",

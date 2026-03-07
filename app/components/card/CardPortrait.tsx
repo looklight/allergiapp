@@ -4,6 +4,7 @@ import { Text, Surface } from 'react-native-paper';
 import { ALLERGENS } from '../../../constants/allergens';
 import { ALLERGEN_IMAGES } from '../../../constants/allergenImages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../../../constants/otherRestrictions';
+import { OTHER_FOODS, OtherFoodId } from '../../../constants/otherFoods';
 import { theme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import DietModeSection from './DietModeSection';
@@ -13,8 +14,13 @@ const getRestrictionInfo = (id: RestrictionItemId) => {
   return RESTRICTION_ITEMS.find((r) => r.id === id);
 };
 
+const getOtherFoodInfo = (id: OtherFoodId) => {
+  return OTHER_FOODS.find((f) => f.id === id);
+};
+
 export default function CardPortrait({
   selectedAllergens,
+  selectedOtherFoods,
   inlineRestrictions,
   separateRestrictions,
   colors,
@@ -29,10 +35,12 @@ export default function CardPortrait({
   getAllergenDescription,
   getAllergenWarning,
   getRestrictionTranslation,
+  getOtherFoodTranslation,
   toggleExpand,
   handleLanguageToggle,
 }: CardPortraitProps) {
   const hasAllergens = selectedAllergens.length > 0;
+  const hasOtherFoods = selectedOtherFoods.length > 0;
   const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel');
 
   const dynamicStyles = useMemo(() => StyleSheet.create({
@@ -134,27 +142,27 @@ export default function CardPortrait({
                 {showWarningIcon ? '⚠️ ' : ''}{translations.header}
               </Text>
             )}
-            {hasAllergens && (
+            {(hasAllergens || hasOtherFoods) && (
               <Text style={dynamicStyles.subtitle}>{pregnancyMode ? translations.pregnancySubtitle : translations.subtitle}</Text>
             )}
-            {!hasAllergens && inlineRestrictions.length > 0 && (
+            {!hasAllergens && !hasOtherFoods && inlineRestrictions.length > 0 && (
               <Text style={dynamicStyles.subtitle}>{restrictionTranslations.header}</Text>
             )}
           </View>
 
-          {hasAllergens && (
+          {(hasAllergens || hasOtherFoods) && (
             <View style={dynamicStyles.messageSection}>
               <Text style={dynamicStyles.message}>{pregnancyMode ? translations.pregnancyMessage : translations.message}</Text>
             </View>
           )}
 
-          {!hasAllergens && inlineRestrictions.length > 0 && (
+          {!hasAllergens && !hasOtherFoods && inlineRestrictions.length > 0 && (
             <View style={dynamicStyles.messageSection}>
               <Text style={dynamicStyles.message}>{restrictionTranslations.message}</Text>
             </View>
           )}
 
-          {(hasAllergens || inlineRestrictions.length > 0) && (
+          {(hasAllergens || hasOtherFoods || inlineRestrictions.length > 0) && (
             <View style={styles.allergensSection}>
               {selectedAllergens.map((id) => {
                 const allergen = getAllergenInfo(id);
@@ -201,6 +209,19 @@ export default function CardPortrait({
                 );
               })}
 
+              {selectedOtherFoods.map((id) => {
+                const food = getOtherFoodInfo(id);
+                if (!food) return null;
+                return (
+                  <View key={id} style={dynamicStyles.allergenRow}>
+                    <Text style={dynamicStyles.allergenIcon}>{food.icon}</Text>
+                    <View style={styles.allergenTextContainer}>
+                      <Text style={dynamicStyles.allergenText}>{getOtherFoodTranslation(id)}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+
               {inlineRestrictions.map((id) => {
                 const item = getRestrictionInfo(id);
                 if (!item) return null;
@@ -225,7 +246,7 @@ export default function CardPortrait({
               getRestrictionTranslation={getRestrictionTranslation}
               getRestrictionInfo={(id) => getRestrictionInfo(id) as { icon: string } | undefined}
               fontBoost={fontBoost}
-              hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
+              hasOtherContent={hasAllergens || hasOtherFoods || inlineRestrictions.length > 0}
               restrictionColors={colors.cardStyle === 'pregnancy' && section.modeId === 'pregnancy' ? {
                 restrictionBg: colors.restrictionBg,
                 restrictionBorder: colors.restrictionBorder,

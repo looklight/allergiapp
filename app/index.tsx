@@ -6,7 +6,8 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
-import { AllergenId, AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES } from '../types';
+import { OTHER_FOODS } from '../constants/otherFoods';
+import { AllergenId, AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES, OtherFoodId } from '../types';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
 import { getVisibleModes, getDietModeById } from '../constants/dietModes';
 import { theme } from '../constants/theme';
@@ -21,8 +22,8 @@ import { useLanguageDownload } from '../hooks/useLanguageDownload';
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens, selectedRestrictions, activeDietModes, vegetarianLevel, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
-  const hasSelections = selectedAllergens.length > 0 || selectedRestrictions.length > 0 || activeDietModes.length > 0;
+  const { selectedAllergens, selectedOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
+  const hasSelections = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || selectedRestrictions.length > 0 || activeDietModes.length > 0;
   const cardLanguage = settings.cardLanguage;
   const appLang = settings.appLanguage;
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
@@ -44,6 +45,10 @@ export default function HomeScreen() {
 
   const getAllergenInfo = (id: AllergenId) => {
     return ALLERGENS.find((a) => a.id === id);
+  };
+
+  const getOtherFoodInfo = (id: OtherFoodId) => {
+    return OTHER_FOODS.find((f) => f.id === id);
   };
 
   const currentLanguage = useMemo(() => {
@@ -127,6 +132,23 @@ export default function HomeScreen() {
                     )}
                   >
                     {allergen.translations[locale] || allergen.translations.en}
+                  </Chip>
+                );
+              })}
+              {selectedOtherFoods.map((id) => {
+                const food = getOtherFoodInfo(id);
+                if (!food) return null;
+                const locale = i18n.locale as AppLanguage;
+                return (
+                  <Chip
+                    key={id}
+                    style={styles.chip}
+                    textStyle={styles.chipText}
+                    icon={() => (
+                      <Text style={styles.chipIcon}>{food.icon}</Text>
+                    )}
+                  >
+                    {food.translations[locale] || food.translations.en}
                   </Chip>
                 );
               })}

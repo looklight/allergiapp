@@ -4,6 +4,7 @@ import { Text } from 'react-native-paper';
 import { ALLERGENS } from '../../../constants/allergens';
 import { ALLERGEN_IMAGES } from '../../../constants/allergenImages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../../../constants/otherRestrictions';
+import { OTHER_FOODS, OtherFoodId } from '../../../constants/otherFoods';
 import { AllergenId } from '../../../types';
 import { theme } from '../../../constants/theme';
 import DietModeSection from './DietModeSection';
@@ -11,9 +12,11 @@ import { CardLandscapeProps } from './types';
 
 const getAllergenInfo = (id: AllergenId) => ALLERGENS.find((a) => a.id === id);
 const getRestrictionInfo = (id: RestrictionItemId) => RESTRICTION_ITEMS.find((r) => r.id === id);
+const getOtherFoodInfo = (id: OtherFoodId) => OTHER_FOODS.find((f) => f.id === id);
 
 export default function CardLandscape({
   selectedAllergens,
+  selectedOtherFoods,
   inlineRestrictions,
   separateRestrictions,
   colors,
@@ -27,13 +30,15 @@ export default function CardLandscape({
   getAllergenDescription,
   getAllergenWarning,
   getRestrictionTranslation,
+  getOtherFoodTranslation,
   fontBoost,
   insets,
 }: CardLandscapeProps) {
   const hasAllergens = selectedAllergens.length > 0;
+  const hasOtherFoods = selectedOtherFoods.length > 0;
   const hasRestrictions = separateRestrictions.length > 0 || inlineRestrictions.length > 0;
   const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel');
-  const hasAllergenContent = hasAllergens || inlineRestrictions.length > 0;
+  const hasAllergenContent = hasAllergens || hasOtherFoods || inlineRestrictions.length > 0;
   const hasLeftContent = hasAllergenContent || dietModeSections.length > 0;
   const safeHorizontal = Math.max(insets.left, insets.right, 48);
   const safeVertical = Math.max(insets.top, insets.bottom, 8);
@@ -114,6 +119,27 @@ export default function CardLandscape({
                   );
                 })}
 
+                {selectedOtherFoods.map((id) => {
+                  const food = getOtherFoodInfo(id);
+                  if (!food) return null;
+                  return (
+                    <View
+                      key={id}
+                      style={styles.landscapeAllergenItem}
+                    >
+                      <View style={styles.landscapeAllergenIconBg}>
+                        <Text style={styles.landscapeAllergenIcon}>{food.icon}</Text>
+                      </View>
+                      <Text style={[
+                        styles.landscapeAllergenName,
+                        { color: colors.landscapeAllergenNameColor },
+                      ]} numberOfLines={2}>
+                        {getOtherFoodTranslation(id)}
+                      </Text>
+                    </View>
+                  );
+                })}
+
                 {inlineRestrictions.map((id) => {
                   const item = getRestrictionInfo(id);
                   if (!item) return null;
@@ -175,7 +201,7 @@ export default function CardLandscape({
 
           {/* Right column - Details */}
           <View style={styles.landscapeRightColumn}>
-            {hasAllergens && (
+            {(hasAllergens || hasOtherFoods) && (
               <View style={styles.landscapeRightHeader}>
                 <Text style={styles.landscapeRightHeaderText}>
                   {pregnancyMode ? translations.pregnancyMessage : translations.message}
@@ -183,7 +209,7 @@ export default function CardLandscape({
               </View>
             )}
 
-            {!hasAllergens && hasRestrictions && (
+            {!hasAllergens && !hasOtherFoods && hasRestrictions && (
               <View style={[styles.landscapeRightHeader, { backgroundColor: colors.restrictionBg }]}>
                 <Text style={[styles.landscapeRightHeaderText, { fontWeight: 'bold' }]}>
                   {showWarningIcon ? '⚠️ ' : ''}{restrictionTranslations.message}
@@ -240,6 +266,23 @@ export default function CardLandscape({
                       ) : null;
                     })()}
                   </Pressable>
+                );
+              })}
+
+              {selectedOtherFoods.map((id) => {
+                const food = getOtherFoodInfo(id);
+                if (!food) return null;
+                return (
+                  <View key={id} style={styles.landscapeDetailCard}>
+                    <View style={styles.landscapeDetailTop}>
+                      <View style={[styles.landscapeDetailBadge, { backgroundColor: colors.landscapeDetailBadgeBg }]}>
+                        <Text style={styles.landscapeDetailBadgeIcon}>{food.icon}</Text>
+                        <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
+                          {getOtherFoodTranslation(id)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
                 );
               })}
 

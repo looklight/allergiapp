@@ -1,5 +1,6 @@
 import { AllergenId, Language, DownloadableLanguageCode, DownloadedLanguageData } from '../../../types';
 import { RestrictionItemId } from '../../../constants/otherRestrictions';
+import { OtherFoodId } from '../../../constants/otherFoods';
 import { DietModeId } from '../../../constants/dietModes';
 
 export type CardStyle = 'allergy' | 'pregnancy' | 'dietOnly';
@@ -65,6 +66,7 @@ export interface DietModeSectionData {
 
 export interface CardPortraitProps {
   selectedAllergens: AllergenId[];
+  selectedOtherFoods: OtherFoodId[];
   inlineRestrictions: RestrictionItemId[];
   separateRestrictions: RestrictionItemId[];
   colors: CardColors;
@@ -79,12 +81,14 @@ export interface CardPortraitProps {
   getAllergenDescription: (id: AllergenId) => string;
   getAllergenWarning: (id: AllergenId) => string | undefined;
   getRestrictionTranslation: (id: RestrictionItemId) => string;
+  getOtherFoodTranslation: (id: OtherFoodId) => string;
   toggleExpand: (id: AllergenId) => void;
   handleLanguageToggle: () => void;
 }
 
 export interface CardLandscapeProps {
   selectedAllergens: AllergenId[];
+  selectedOtherFoods: OtherFoodId[];
   inlineRestrictions: RestrictionItemId[];
   separateRestrictions: RestrictionItemId[];
   colors: CardColors;
@@ -98,6 +102,7 @@ export interface CardLandscapeProps {
   getAllergenDescription: (id: AllergenId) => string;
   getAllergenWarning: (id: AllergenId) => string | undefined;
   getRestrictionTranslation: (id: RestrictionItemId) => string;
+  getOtherFoodTranslation: (id: OtherFoodId) => string;
   fontBoost: number;
   insets: { top: number; bottom: number; left: number; right: number };
 }

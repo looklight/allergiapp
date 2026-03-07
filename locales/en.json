@@ -25,7 +25,8 @@
   "addAllergy": {
     "title": "What do I need to communicate?",
     "subtitle": "Select foods to avoid",
-    "save": "Save"
+    "save": "Save",
+    "otherFoods": "Other foods"
   },
   "otherRestrictions": {
     "title": "Other needs",

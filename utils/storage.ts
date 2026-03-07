@@ -1,12 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 import { RestrictionItemId } from '../constants/otherRestrictions';
+import { OtherFoodId } from '../constants/otherFoods';
 import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 import { getDeviceLanguage } from './i18n';
 
 const STORAGE_KEYS = {
   SELECTED_ALLERGENS: 'allergiapp_selected_allergens',
   SELECTED_RESTRICTIONS: 'allergiapp_selected_restrictions',
+  SELECTED_OTHER_FOODS: 'allergiapp_selected_other_foods',
   ACTIVE_DIET_MODES: 'allergiapp_active_diet_modes',
   VEGETARIAN_LEVEL: 'allergiapp_vegetarian_level',
   SETTINGS: 'allergiapp_settings',
@@ -24,6 +26,7 @@ const DEFAULT_SETTINGS: UserSettings = {
 
 export interface AppData {
   selectedAllergens: AllergenId[];
+  selectedOtherFoods: OtherFoodId[];
   selectedRestrictions: RestrictionItemId[];
   activeDietModes: DietModeId[];
   vegetarianLevel: VegetarianLevel;
@@ -49,6 +52,7 @@ export const storage = {
     try {
       const keys = [
         STORAGE_KEYS.SELECTED_ALLERGENS,
+        STORAGE_KEYS.SELECTED_OTHER_FOODS,
         STORAGE_KEYS.SELECTED_RESTRICTIONS,
         STORAGE_KEYS.ACTIVE_DIET_MODES,
         STORAGE_KEYS.VEGETARIAN_LEVEL,
@@ -58,7 +62,7 @@ export const storage = {
         STORAGE_KEYS.TRACKING_CONSENT,
       ];
       const results = await AsyncStorage.multiGet(keys);
-      const [allergensRaw, restrictionsRaw, dietModesRaw, vegLevelRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
+      const [allergensRaw, otherFoodsRaw, restrictionsRaw, dietModesRaw, vegLevelRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
 
       // Clean up legacy 'vegan' from activeDietModes
       const rawModes: DietModeId[] = dietModesRaw ? JSON.parse(dietModesRaw) : [];
@@ -67,6 +71,7 @@ export const storage = {
 
       return {
         selectedAllergens: allergensRaw ? JSON.parse(allergensRaw) : [],
+        selectedOtherFoods: otherFoodsRaw ? JSON.parse(otherFoodsRaw) : [],
         selectedRestrictions: restrictionsRaw ? JSON.parse(restrictionsRaw) : [],
         activeDietModes: cleanModes,
         vegetarianLevel: vegLevelRaw && ['no_meat', 'no_meat_fish', 'no_animal_products'].includes(vegLevelRaw) ? vegLevelRaw as VegetarianLevel : DEFAULT_VEGETARIAN_LEVEL,
@@ -78,6 +83,7 @@ export const storage = {
     } catch {
       return {
         selectedAllergens: [],
+        selectedOtherFoods: [],
         selectedRestrictions: [],
         activeDietModes: [],
         vegetarianLevel: DEFAULT_VEGETARIAN_LEVEL,
@@ -103,6 +109,26 @@ export const storage = {
       await AsyncStorage.setItem(
         STORAGE_KEYS.SELECTED_ALLERGENS,
         JSON.stringify(allergens)
+      );
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  async getSelectedOtherFoods(): Promise<OtherFoodId[]> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.SELECTED_OTHER_FOODS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setSelectedOtherFoods(foods: OtherFoodId[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.SELECTED_OTHER_FOODS,
+        JSON.stringify(foods)
       );
     } catch {
       // Storage write failed silently
@@ -179,6 +205,7 @@ export const storage = {
     try {
       await AsyncStorage.multiRemove([
         STORAGE_KEYS.SELECTED_ALLERGENS,
+        STORAGE_KEYS.SELECTED_OTHER_FOODS,
         STORAGE_KEYS.SELECTED_RESTRICTIONS,
         STORAGE_KEYS.ACTIVE_DIET_MODES,
         STORAGE_KEYS.VEGETARIAN_LEVEL,

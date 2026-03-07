@@ -296,7 +296,7 @@ export const ALLERGEN_IMAGES: Record<AllergenId, AllergenImages> = {
       nl: 'Mosselen, kokkels, oesters, inktvis, octopus',
       pl: 'Małże, przegrzebki, ostrygi, kalmary, ośmiornice',
       ru: 'Мидии, моллюски, устрицы, кальмары, осьминог',
-      sv: 'Musslor, musslor, ostron, bläckfisk, bläckfisk',
+      sv: 'Musslor, venusmusslor, ostron, bläckfisk',
       zh: '贻贝、蛤蜊、牡蛎、鱿鱼、章鱼',
       ja: 'ムール貝、アサリ、カキ、イカ、タコ',
       ko: '홍합, 조개, 굴, 오징어, 문어',

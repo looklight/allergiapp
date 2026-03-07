@@ -3,6 +3,7 @@ import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
 import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS, DIET_FOOD_TRANSLATIONS } from '../constants/cardTranslations';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
+import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
 import { DietFoodItem } from '../constants/dietModes';
 
 const MYMEMORY_API = 'https://api.mymemory.translated.net/get';
@@ -131,6 +132,9 @@ export async function downloadLanguageTranslations(
   const dietFoodKeys = Object.keys(DIET_FOOD_TRANSLATIONS.en) as DietFoodItem[];
   const dietFoodNames = dietFoodKeys.map(key => DIET_FOOD_TRANSLATIONS.en[key]);
 
+  // Altri alimenti da tradurre
+  const otherFoodNames = OTHER_FOODS.map(f => f.translations.en);
+
   // Restrizioni da tradurre
   const restrictionNames = RESTRICTION_ITEMS.map(r => r.translations.en);
   const dietModeKeys = Object.keys(RESTRICTION_CARD_TRANSLATIONS.en.dietModes);
@@ -143,7 +147,7 @@ export async function downloadLanguageTranslations(
     }),
   ];
 
-  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + restrictionNames.length + restrictionCardTexts.length;
+  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length;
   let completedItems = 0;
 
   // Traduce nomi allergeni
@@ -266,11 +270,28 @@ export async function downloadLanguageTranslations(
   );
   checkAborted();
 
+  // Traduce nomi altri alimenti
+  const translatedOtherFoodNames = await translateBatch(
+    otherFoodNames,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + current;
+      onProgress?.({
+        phase: 'restrictions',
+        current,
+        total: otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    }
+  );
+  checkAborted();
+
   // Traduce nomi restrizioni
   onProgress?.({
     phase: 'restrictions',
-    current: 0,
-    total: restrictionNames.length + restrictionCardTexts.length,
+    current: otherFoodNames.length,
+    total: otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length,
     percentage: Math.round((completedItems / totalItems) * 100),
   });
 
@@ -279,7 +300,7 @@ export async function downloadLanguageTranslations(
     sourceLang,
     targetLang,
     (current) => {
-      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + current;
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + otherFoodNames.length + current;
       onProgress?.({
         phase: 'restrictions',
         current,
@@ -295,7 +316,7 @@ export async function downloadLanguageTranslations(
     sourceLang,
     targetLang,
     (current) => {
-      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + restrictionNames.length + current;
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + otherFoodNames.length + restrictionNames.length + current;
       onProgress?.({
         phase: 'restrictions',
         current: restrictionNames.length + current,
@@ -332,6 +353,12 @@ export async function downloadLanguageTranslations(
     dietFoods[key] = translatedDietFoodNames[index];
   });
 
+  // Costruisce le traduzioni degli altri alimenti
+  const otherFoods: Record<OtherFoodId, string> = {} as Record<OtherFoodId, string>;
+  OTHER_FOODS.forEach((food, index) => {
+    otherFoods[food.id] = translatedOtherFoodNames[index];
+  });
+
   // Costruisce le restrizioni tradotte
   const restrictions: Record<RestrictionItemId, string> = {} as Record<RestrictionItemId, string>;
   RESTRICTION_ITEMS.forEach((item, index) => {
@@ -343,6 +370,7 @@ export async function downloadLanguageTranslations(
     descriptions,
     warnings: Object.keys(warnings).length > 0 ? warnings : undefined,
     dietFoods,
+    otherFoods,
     restrictions,
     restrictionCardTexts: {
       header: translatedRestrictionCardTexts[0],

@@ -10,6 +10,7 @@ import { ALLERGEN_IMAGES } from '../constants/allergenImages';
 import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS, DIET_FOOD_TRANSLATIONS } from '../constants/cardTranslations';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
+import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
 import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { theme } from '../constants/theme';
@@ -41,7 +42,7 @@ export default function CardScreen() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
-  const { selectedAllergens, selectedRestrictions, activeDietModes, vegetarianLevel, pregnancyMode, settings, downloadedLanguages } = useAppContext();
+  const { selectedAllergens, selectedOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, pregnancyMode, settings, downloadedLanguages } = useAppContext();
   const cardLanguage = settings.cardLanguage;
   const appLanguage = settings.appLanguage;
   const [showInAppLanguage, setShowInAppLanguage] = useState(false);
@@ -118,6 +119,14 @@ export default function CardScreen() {
     return item?.translations[displayLanguage as Language] || item?.translations.en || '';
   };
 
+  const getOtherFoodTranslation = (id: OtherFoodId): string => {
+    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.otherFoods) {
+      return downloadedLanguageData.otherFoods[id] || OTHER_FOODS.find((f) => f.id === id)?.translations.en || '';
+    }
+    const food = OTHER_FOODS.find((f) => f.id === id);
+    return food?.translations[displayLanguage as Language] || food?.translations.en || '';
+  };
+
   // Get diet mode translations, supporting downloaded languages
   const getDietModeTranslation = (cardKey: DietCardKey) => {
     const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
@@ -165,7 +174,7 @@ export default function CardScreen() {
       ...(activeDietModes.includes('nickel') ? nickelRestrictionIds : []),
     ]);
     const inlineRestrictionCount = selectedRestrictions.filter(id => !autoSelectedIds.has(id)).length;
-    const hasOtherContent = selectedAllergens.length > 0 || inlineRestrictionCount > 0;
+    const hasOtherContent = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || inlineRestrictionCount > 0;
     const sections: DietModeSectionData[] = [];
 
     for (const mode of visibleModes) {
@@ -217,7 +226,7 @@ export default function CardScreen() {
     }
 
     return sections;
-  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedRestrictions, pregnancyRestrictionIds, nickelRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedOtherFoods.length, selectedRestrictions, pregnancyRestrictionIds, nickelRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
 
   const nickelMode = activeDietModes.includes('nickel');
   const autoModeRestrictionIds = new Set([
@@ -229,7 +238,7 @@ export default function CardScreen() {
     ? selectedRestrictions.filter(id => pregnancyRestrictionIds.has(id))
     : [];
 
-  const hasAllergyContent = selectedAllergens.length > 0 || inlineRestrictions.length > 0;
+  const hasAllergyContent = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || inlineRestrictions.length > 0;
 
   const fontBoost = COMPLEX_SCRIPT_LANGS.has(displayLanguage) ? 2 : 0;
 
@@ -302,7 +311,7 @@ export default function CardScreen() {
     Analytics.logCardLanguageToggled(newValue, cardLanguage, appLanguage);
   };
 
-  const hasAllergens = selectedAllergens.length > 0;
+  const hasAllergens = selectedAllergens.length > 0 || selectedOtherFoods.length > 0;
   const hasRestrictions = selectedRestrictions.length > 0;
 
   // Header title computation
@@ -339,6 +348,7 @@ export default function CardScreen() {
         <>
           <CardLandscape
             selectedAllergens={selectedAllergens}
+            selectedOtherFoods={selectedOtherFoods}
             inlineRestrictions={inlineRestrictions}
             separateRestrictions={separateRestrictions}
             colors={colors}
@@ -352,6 +362,7 @@ export default function CardScreen() {
             getAllergenDescription={getAllergenDescription}
             getAllergenWarning={getAllergenWarning}
             getRestrictionTranslation={getRestrictionTranslation}
+            getOtherFoodTranslation={getOtherFoodTranslation}
             fontBoost={fontBoost}
             insets={insets}
           />
@@ -390,6 +401,7 @@ export default function CardScreen() {
       ) : (
         <CardPortrait
           selectedAllergens={selectedAllergens}
+          selectedOtherFoods={selectedOtherFoods}
           inlineRestrictions={inlineRestrictions}
           separateRestrictions={separateRestrictions}
           colors={colors}
@@ -403,6 +415,7 @@ export default function CardScreen() {
           getAllergenDescription={getAllergenDescription}
           getAllergenWarning={getAllergenWarning}
           getRestrictionTranslation={getRestrictionTranslation}
+          getOtherFoodTranslation={getOtherFoodTranslation}
           fontBoost={fontBoost}
           toggleExpand={toggleExpand}
           handleLanguageToggle={handleLanguageToggle}

@@ -25,7 +25,8 @@
   "addAllergy": {
     "title": "¿Qué debo comunicar?",
     "subtitle": "Selecciona los alimentos a evitar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "otherFoods": "Otros alimentos"
   },
   "otherRestrictions": {
     "title": "Otras necesidades",

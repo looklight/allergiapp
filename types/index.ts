@@ -186,6 +186,7 @@ export interface DownloadedLanguageData {
   descriptions: Record<AllergenId, string>;
   warnings?: Record<AllergenId, string>;
   restrictions?: Record<string, string>;
+  otherFoods?: Record<string, string>;
   restrictionCardTexts?: {
     header: string;
     message: string;
@@ -212,3 +213,4 @@ export type AllLanguageCode = Language | DownloadableLanguageCode;
 
 // Re-export restriction types for convenience
 export type { RestrictionItemId, RestrictionCategoryId } from '../constants/otherRestrictions';
+export type { OtherFoodId } from '../constants/otherFoods';

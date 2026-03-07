@@ -3,11 +3,13 @@ import { storage, AppData, CURRENT_LEGAL_VERSION } from '../utils/storage';
 import { setAppLanguage, getDeviceLanguage } from '../utils/i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 import { RestrictionItemId } from '../constants/otherRestrictions';
+import { OtherFoodId } from '../constants/otherFoods';
 import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 
 interface AppContextValue {
   // State
   selectedAllergens: AllergenId[];
+  selectedOtherFoods: OtherFoodId[];
   selectedRestrictions: RestrictionItemId[];
   activeDietModes: DietModeId[];
   vegetarianLevel: VegetarianLevel;
@@ -27,6 +29,7 @@ interface AppContextValue {
 
   // Actions
   setSelectedAllergens: (allergens: AllergenId[]) => Promise<void>;
+  setSelectedOtherFoods: (foods: OtherFoodId[]) => Promise<void>;
   setSelectedRestrictions: (restrictions: RestrictionItemId[]) => Promise<void>;
   setActiveDietModes: (modes: DietModeId[]) => Promise<void>;
   setVegetarianLevel: (level: VegetarianLevel) => Promise<void>;
@@ -44,6 +47,7 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAllergens, setSelectedAllergensState] = useState<AllergenId[]>([]);
+  const [selectedOtherFoods, setSelectedOtherFoodsState] = useState<OtherFoodId[]>([]);
   const [selectedRestrictions, setSelectedRestrictionsState] = useState<RestrictionItemId[]>([]);
   const [activeDietModes, setActiveDietModesState] = useState<DietModeId[]>([]);
   const [vegetarianLevel, setVegetarianLevelState] = useState<VegetarianLevel>(DEFAULT_VEGETARIAN_LEVEL);
@@ -57,6 +61,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const init = async () => {
       const data = await storage.loadAll();
       setSelectedAllergensState(data.selectedAllergens);
+      setSelectedOtherFoodsState(data.selectedOtherFoods);
       setSelectedRestrictionsState(data.selectedRestrictions);
       setActiveDietModesState(data.activeDietModes);
       setVegetarianLevelState(data.vegetarianLevel);
@@ -79,6 +84,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setSelectedAllergens = useCallback(async (allergens: AllergenId[]) => {
     setSelectedAllergensState(allergens);
     await storage.setSelectedAllergens(allergens);
+  }, []);
+
+  const setSelectedOtherFoods = useCallback(async (foods: OtherFoodId[]) => {
+    setSelectedOtherFoodsState(foods);
+    await storage.setSelectedOtherFoods(foods);
   }, []);
 
   const setSelectedRestrictions = useCallback(async (restrictions: RestrictionItemId[]) => {
@@ -152,6 +162,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const deviceLanguage = getDeviceLanguage();
     const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage };
     setSelectedAllergensState([]);
+    setSelectedOtherFoodsState([]);
     setSelectedRestrictionsState([]);
     setActiveDietModesState([]);
     setVegetarianLevelState(DEFAULT_VEGETARIAN_LEVEL);
@@ -167,6 +178,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider value={{
       selectedAllergens,
+      selectedOtherFoods,
       selectedRestrictions,
       activeDietModes,
       vegetarianLevel,
@@ -180,6 +192,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       needsLegalConsent,
       downloadedLanguageCodes,
       setSelectedAllergens,
+      setSelectedOtherFoods,
       setSelectedRestrictions,
       setActiveDietModes,
       setVegetarianLevel,
