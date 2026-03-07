@@ -3,9 +3,12 @@
 ## Prossime feature
 
 ### Feature ristoranti (branch: feature/restaurants)
-- Caricamento geo-based con query 50km + fallback globale
-- "Cerca in quest'area" + ricerca citta con geocoding
-- Dettaglio ristorante con info allergeni
+Caricamento geo-based implementato su branch separato. Criticità aperte:
+- [ ] **Flickering centerOn** — `setCenterOn({...})` crea sempre un nuovo oggetto, la mappa rianima anche se la posizione non è cambiata. Aggiungere check di uguaglianza lat/lng prima di chiamare setCenterOn
+- [ ] **UX campo ricerca svuotato** — dopo geocoding di una città il campo si svuota di colpo. Opzioni: mostrare il nome della città come placeholder, oppure aggiungere testo "Risultati per Torino" nel contatore
+- [ ] **Clustering pin** — con centinaia di ristoranti in zone dense i pin si sovrappongono. Valutare `react-native-map-clustering` quando la densità cresce
+- [ ] **Scalabilità Firestore** — se il numero di ristoranti arriva a migliaia, valutare Supabase (PostGIS) per le query geo
+- [ ] Dettaglio ristorante con info allergeni
 
 ### Lingue scaricabili: valutare pre-traduzione
 Attualmente le lingue vengono tradotte on-demand via MyMemory API (79 chiamate sequenziali per lingua, ~40-60s, limite 5.000 char/giorno/IP). Valutare se conviene:
