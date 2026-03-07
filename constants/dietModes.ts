@@ -1,6 +1,6 @@
 import { RestrictionItemId } from './otherRestrictions';
 
-export type DietModeId = 'pregnancy' | 'vegetarian' | 'nickel' | 'histamine';
+export type DietModeId = 'pregnancy' | 'vegetarian' | 'nickel' | 'histamine' | 'diabetes';
 
 export type VegetarianLevel = 'no_meat' | 'no_meat_fish' | 'no_animal_products';
 
@@ -24,7 +24,7 @@ export const DIET_LEVEL_FOOD_ITEMS: Record<VegetarianLevel, { forbidden: DietFoo
 };
 
 /** Key used to look up card translations for diet modes */
-export type DietCardKey = 'pregnancy' | 'nickel' | 'histamine' | VegetarianLevel;
+export type DietCardKey = 'pregnancy' | 'nickel' | 'histamine' | 'diabetes' | VegetarianLevel;
 
 export interface DietModeColors {
   primary: string;
@@ -87,7 +87,7 @@ export const DIET_MODES: readonly DietMode[] = [
     id: 'vegetarian',
     icon: '\u{1F33F}',
     toggleOrder: 1,
-    cardOrder: 4,
+    cardOrder: 5,
     affectsFullCard: false,
     sectionColors: {
       primary: '#2E7D32',
@@ -213,6 +213,33 @@ export const DIET_MODES: readonly DietMode[] = [
       active: '#FF9800',
       activeBg: '#FFF3E0',
       activeBorder: '#FFCC80',
+    },
+  },
+  {
+    id: 'diabetes',
+    icon: '\u{26A0}\u{FE0F}',
+    toggleOrder: 5,
+    cardOrder: 4,
+    affectsFullCard: false,
+    autoSelectRestrictions: [
+      'diabetes_added_sugar',
+      'diabetes_honey_sweeteners',
+      'diabetes_sweet_sauces',
+      'diabetes_sweet_glazes',
+      'diabetes_fruit_juice',
+      'diabetes_candied_fruit',
+    ],
+    sectionColors: {
+      primary: '#1565C0',
+      background: '#E3F2FD',
+      border: '#90CAF9',
+      text: '#1565C0',
+      headerBg: '#42A5F5',
+    },
+    toggleColors: {
+      active: '#42A5F5',
+      activeBg: '#E3F2FD',
+      activeBorder: '#90CAF9',
     },
   },
 ];

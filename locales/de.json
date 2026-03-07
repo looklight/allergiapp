@@ -55,6 +55,10 @@
     "histamineHint": "Zeigt histaminreiche Lebensmittel auf deiner Karte an",
     "histamineLabel": "Histaminintoleranz",
     "histamineActive": "Histaminmodus aktiv",
+    "diabetesToggle": "Diabetes",
+    "diabetesHint": "Teilt auf der Karte mit, dass du Diabetes hast, und zeigt zu vermeidende Lebensmittel an",
+    "diabetesLabel": "Diabetes",
+    "diabetesActive": "Diabetesmodus aktiv",
     "foodsToAvoid": "Zu vermeidende Lebensmittel",
     "pregnancyActive": "Schwangerschaftsmodus aktiv"
   },
@@ -65,8 +69,7 @@
     "message": "Ich habe folgende Nahrungsmittelallergien. Bitte stellen Sie sicher, dass mein Essen diese Zutaten nicht enthält.",
     "thanks": "Vielen Dank für Ihr Verständnis.",
     "changeLanguage": "Sprache ändern",
-    "showInMyLanguage": "In meiner Sprache anzeigen",
-    "showInDestLanguage": "Zurück zur Originalsprache"
+    "viewInLanguage": "Anzeigen auf {{lang}}"
   },
   "settings": {
     "title": "Einstellungen",

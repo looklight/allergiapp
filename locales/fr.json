@@ -55,6 +55,10 @@
     "histamineHint": "Indiquera sur la carte les aliments riches en histamine à éviter",
     "histamineLabel": "Intolérance à l'histamine",
     "histamineActive": "Mode histamine actif",
+    "diabetesToggle": "Diabète",
+    "diabetesHint": "Indiquera sur la carte que vous êtes diabétique et les aliments à éviter",
+    "diabetesLabel": "Diabète",
+    "diabetesActive": "Mode diabète actif",
     "foodsToAvoid": "Aliments à éviter",
     "pregnancyActive": "Mode grossesse actif"
   },
@@ -65,8 +69,7 @@
     "message": "J'ai les allergies alimentaires suivantes. Veuillez vous assurer que ma nourriture ne contient pas ces ingrédients.",
     "thanks": "Merci pour votre compréhension.",
     "changeLanguage": "Changer de Langue",
-    "showInMyLanguage": "Voir dans ma langue",
-    "showInDestLanguage": "Retour à la langue originale"
+    "viewInLanguage": "Voir en {{lang}}"
   },
   "settings": {
     "title": "Paramètres",

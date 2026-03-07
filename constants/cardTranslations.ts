@@ -59,6 +59,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Non posso mangiare cibi ricchi di istamina. L\'istamina si trova in alimenti stagionati, fermentati o conservati a lungo. Come ad esempio:',
         sectionMessage: 'Inoltre, non posso mangiare cibi ricchi di istamina. L\'istamina si trova in alimenti stagionati, fermentati o conservati a lungo. Come ad esempio:',
       },
+      diabetes: {
+        header: 'DIABETE',
+        message: 'Ho il diabete e devo controllare l\'assunzione di zuccheri. Per favore, non aggiungete zucchero ai miei piatti e informatemi se contengono:',
+        sectionMessage: 'Inoltre, ho il diabete e devo controllare l\'assunzione di zuccheri. Per favore, non aggiungete zucchero ai miei piatti e informatemi se contengono:',
+      },
     },
   },
   en: {
@@ -94,6 +99,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: 'HISTAMINE INTOLERANCE',
         message: 'I cannot eat foods rich in histamine. Histamine is found in aged, fermented or long-preserved foods. For example:',
         sectionMessage: 'Additionally, I cannot eat foods rich in histamine. Histamine is found in aged, fermented or long-preserved foods. For example:',
+      },
+      diabetes: {
+        header: 'DIABETES',
+        message: 'I have diabetes and need to control my sugar intake. Please do not add sugar to my food and let me know if it contains:',
+        sectionMessage: 'Additionally, I have diabetes and need to control my sugar intake. Please do not add sugar to my food and let me know if it contains:',
       },
     },
   },
@@ -131,6 +141,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Je ne peux pas manger d\'aliments riches en histamine. L\'histamine se trouve dans les aliments vieillis, ferment\u00E9s ou conserv\u00E9s longtemps. Par exemple :',
         sectionMessage: 'De plus, je ne peux pas manger d\'aliments riches en histamine. L\'histamine se trouve dans les aliments vieillis, ferment\u00E9s ou conserv\u00E9s longtemps. Par exemple :',
       },
+      diabetes: {
+        header: 'DIAB\u00C8TE',
+        message: 'J\'ai du diab\u00E8te et je dois contr\u00F4ler ma consommation de sucre. Veuillez ne pas ajouter de sucre \u00E0 mes plats et m\'informer s\'ils contiennent :',
+        sectionMessage: 'De plus, j\'ai du diab\u00E8te et je dois contr\u00F4ler ma consommation de sucre. Veuillez ne pas ajouter de sucre \u00E0 mes plats et m\'informer s\'ils contiennent :',
+      },
     },
   },
   de: {
@@ -166,6 +181,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: 'HISTAMININTOLERANZ',
         message: 'Ich kann keine histaminreichen Lebensmittel essen. Histamin findet sich in gereiften, fermentierten oder lange konservierten Lebensmitteln. Zum Beispiel:',
         sectionMessage: 'Zus\u00E4tzlich kann ich keine histaminreichen Lebensmittel essen. Histamin findet sich in gereiften, fermentierten oder lange konservierten Lebensmitteln. Zum Beispiel:',
+      },
+      diabetes: {
+        header: 'DIABETES',
+        message: 'Ich habe Diabetes und muss meinen Zuckerkonsum kontrollieren. Bitte f\u00FCgen Sie meinem Essen keinen Zucker hinzu und informieren Sie mich, ob es Folgendes enth\u00E4lt:',
+        sectionMessage: 'Zus\u00E4tzlich habe ich Diabetes und muss meinen Zuckerkonsum kontrollieren. Bitte f\u00FCgen Sie meinem Essen keinen Zucker hinzu und informieren Sie mich, ob es Folgendes enth\u00E4lt:',
       },
     },
   },
@@ -203,6 +223,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'No puedo comer alimentos ricos en histamina. La histamina se encuentra en alimentos curados, fermentados o conservados durante mucho tiempo. Por ejemplo:',
         sectionMessage: 'Adem\u00E1s, no puedo comer alimentos ricos en histamina. La histamina se encuentra en alimentos curados, fermentados o conservados durante mucho tiempo. Por ejemplo:',
       },
+      diabetes: {
+        header: 'DIABETES',
+        message: 'Tengo diabetes y necesito controlar mi consumo de az\u00FAcar. Por favor, no a\u00F1adan az\u00FAcar a mis platos e inf\u00F3rmenme si contienen:',
+        sectionMessage: 'Adem\u00E1s, tengo diabetes y necesito controlar mi consumo de az\u00FAcar. Por favor, no a\u00F1adan az\u00FAcar a mis platos e inf\u00F3rmenme si contienen:',
+      },
     },
   },
   pt: {
@@ -238,6 +263,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: 'INTOLER\u00C2NCIA \u00C0 HISTAMINA',
         message: 'N\u00E3o posso comer alimentos ricos em histamina. A histamina encontra-se em alimentos curados, fermentados ou conservados por muito tempo. Por exemplo:',
         sectionMessage: 'Al\u00E9m disso, n\u00E3o posso comer alimentos ricos em histamina. A histamina encontra-se em alimentos curados, fermentados ou conservados por muito tempo. Por exemplo:',
+      },
+      diabetes: {
+        header: 'DIABETES',
+        message: 'Tenho diabetes e preciso controlar o consumo de a\u00E7\u00FAcar. Por favor, n\u00E3o adicionem a\u00E7\u00FAcar \u00E0 minha comida e informem-me se cont\u00E9m:',
+        sectionMessage: 'Al\u00E9m disso, tenho diabetes e preciso controlar o consumo de a\u00E7\u00FAcar. Por favor, n\u00E3o adicionem a\u00E7\u00FAcar \u00E0 minha comida e informem-me se cont\u00E9m:',
       },
     },
   },
@@ -275,6 +305,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: 'Ik kan geen histaminerijke voedingsmiddelen eten. Histamine zit in gerijpte, gefermenteerde of lang bewaarde voedingsmiddelen. Bijvoorbeeld:',
         sectionMessage: 'Daarnaast kan ik geen histaminerijke voedingsmiddelen eten. Histamine zit in gerijpte, gefermenteerde of lang bewaarde voedingsmiddelen. Bijvoorbeeld:',
       },
+      diabetes: {
+        header: 'DIABETES',
+        message: 'Ik heb diabetes en moet mijn suikerinname controleren. Voeg alstublieft geen suiker toe aan mijn eten en laat me weten of het het volgende bevat:',
+        sectionMessage: 'Daarnaast heb ik diabetes en moet ik mijn suikerinname controleren. Voeg alstublieft geen suiker toe aan mijn eten en laat me weten of het het volgende bevat:',
+      },
     },
   },
   pl: {
@@ -310,6 +345,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: 'NIETOLERANCJA HISTAMINY',
         message: 'Nie mog\u0119 je\u015B\u0107 produkt\u00F3w bogatych w histamin\u0119. Histamina znajduje si\u0119 w produktach dojrzewaj\u0105cych, fermentowanych lub d\u0142ugo przechowywanych. Na przyk\u0142ad:',
         sectionMessage: 'Ponadto nie mog\u0119 je\u015B\u0107 produkt\u00F3w bogatych w histamin\u0119. Histamina znajduje si\u0119 w produktach dojrzewaj\u0105cych, fermentowanych lub d\u0142ugo przechowywanych. Na przyk\u0142ad:',
+      },
+      diabetes: {
+        header: 'CUKRZYCA',
+        message: 'Mam cukrzyc\u0119 i musz\u0119 kontrolowa\u0107 spo\u017Cycie cukru. Prosz\u0119 nie dodawa\u0107 cukru do moich potraw i poinformowa\u0107 mnie, czy zawieraj\u0105:',
+        sectionMessage: 'Ponadto mam cukrzyc\u0119 i musz\u0119 kontrolowa\u0107 spo\u017Cycie cukru. Prosz\u0119 nie dodawa\u0107 cukru do moich potraw i poinformowa\u0107 mnie, czy zawieraj\u0105:',
       },
     },
   },
@@ -347,6 +387,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u042F \u043D\u0435 \u043C\u043E\u0433\u0443 \u0435\u0441\u0442\u044C \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B, \u0431\u043E\u0433\u0430\u0442\u044B\u0435 \u0433\u0438\u0441\u0442\u0430\u043C\u0438\u043D\u043E\u043C. \u0413\u0438\u0441\u0442\u0430\u043C\u0438\u043D \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442\u0441\u044F \u0432 \u0432\u044B\u0434\u0435\u0440\u0436\u0430\u043D\u043D\u044B\u0445, \u0444\u0435\u0440\u043C\u0435\u043D\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0445 \u0438\u043B\u0438 \u0434\u043E\u043B\u0433\u043E \u0445\u0440\u0430\u043D\u044F\u0449\u0438\u0445\u0441\u044F \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430\u0445. \u041D\u0430\u043F\u0440\u0438\u043C\u0435\u0440:',
         sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u044F \u043D\u0435 \u043C\u043E\u0433\u0443 \u0435\u0441\u0442\u044C \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B, \u0431\u043E\u0433\u0430\u0442\u044B\u0435 \u0433\u0438\u0441\u0442\u0430\u043C\u0438\u043D\u043E\u043C. \u0413\u0438\u0441\u0442\u0430\u043C\u0438\u043D \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442\u0441\u044F \u0432 \u0432\u044B\u0434\u0435\u0440\u0436\u0430\u043D\u043D\u044B\u0445, \u0444\u0435\u0440\u043C\u0435\u043D\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0445 \u0438\u043B\u0438 \u0434\u043E\u043B\u0433\u043E \u0445\u0440\u0430\u043D\u044F\u0449\u0438\u0445\u0441\u044F \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430\u0445. \u041D\u0430\u043F\u0440\u0438\u043C\u0435\u0440:',
       },
+      diabetes: {
+        header: '\u0414\u0418\u0410\u0411\u0415\u0422',
+        message: '\u0423 \u043C\u0435\u043D\u044F \u0434\u0438\u0430\u0431\u0435\u0442, \u0438 \u043C\u043D\u0435 \u043D\u0443\u0436\u043D\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u043F\u043E\u0442\u0440\u0435\u0431\u043B\u0435\u043D\u0438\u0435 \u0441\u0430\u0445\u0430\u0440\u0430. \u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0439\u0442\u0435 \u0441\u0430\u0445\u0430\u0440 \u0432 \u043C\u043E\u044E \u0435\u0434\u0443 \u0438 \u0441\u043E\u043E\u0431\u0449\u0438\u0442\u0435 \u043C\u043D\u0435, \u0435\u0441\u043B\u0438 \u043E\u043D\u0430 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442:',
+        sectionMessage: '\u041A\u0440\u043E\u043C\u0435 \u0442\u043E\u0433\u043E, \u0443 \u043C\u0435\u043D\u044F \u0434\u0438\u0430\u0431\u0435\u0442, \u0438 \u043C\u043D\u0435 \u043D\u0443\u0436\u043D\u043E \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u043F\u043E\u0442\u0440\u0435\u0431\u043B\u0435\u043D\u0438\u0435 \u0441\u0430\u0445\u0430\u0440\u0430. \u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0439\u0442\u0435 \u0441\u0430\u0445\u0430\u0440 \u0432 \u043C\u043E\u044E \u0435\u0434\u0443 \u0438 \u0441\u043E\u043E\u0431\u0449\u0438\u0442\u0435 \u043C\u043D\u0435, \u0435\u0441\u043B\u0438 \u043E\u043D\u0430 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442:',
+      },
     },
   },
   sv: {
@@ -382,6 +427,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: 'HISTAMININTOLERANS',
         message: 'Jag kan inte \u00E4ta histaminrika livsmedel. Histamin finns i lagrade, fermenterade eller l\u00E4nge konserverade livsmedel. Till exempel:',
         sectionMessage: 'Dessutom kan jag inte \u00E4ta histaminrika livsmedel. Histamin finns i lagrade, fermenterade eller l\u00E4nge konserverade livsmedel. Till exempel:',
+      },
+      diabetes: {
+        header: 'DIABETES',
+        message: 'Jag har diabetes och beh\u00F6ver kontrollera mitt sockerintag. V\u00E4nligen tills\u00E4tt inte socker i min mat och informera mig om den inneh\u00E5ller:',
+        sectionMessage: 'Dessutom har jag diabetes och beh\u00F6ver kontrollera mitt sockerintag. V\u00E4nligen tills\u00E4tt inte socker i min mat och informera mig om den inneh\u00E5ller:',
       },
     },
   },
@@ -419,6 +469,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u6211\u4E0D\u80FD\u5403\u5BCC\u542B\u7EC4\u80FA\u7684\u98DF\u7269\u3002\u7EC4\u80FA\u5B58\u5728\u4E8E\u9648\u5316\u3001\u53D1\u9175\u6216\u957F\u671F\u4FDD\u5B58\u7684\u98DF\u7269\u4E2D\u3002\u4F8B\u5982\uFF1A',
         sectionMessage: '\u6B64\u5916\uFF0C\u6211\u4E0D\u80FD\u5403\u5BCC\u542B\u7EC4\u80FA\u7684\u98DF\u7269\u3002\u7EC4\u80FA\u5B58\u5728\u4E8E\u9648\u5316\u3001\u53D1\u9175\u6216\u957F\u671F\u4FDD\u5B58\u7684\u98DF\u7269\u4E2D\u3002\u4F8B\u5982\uFF1A',
       },
+      diabetes: {
+        header: '\u7CD6\u5C3F\u75C5',
+        message: '\u6211\u6709\u7CD6\u5C3F\u75C5\uFF0C\u9700\u8981\u63A7\u5236\u7CD6\u5206\u6444\u5165\u3002\u8BF7\u4E0D\u8981\u5728\u6211\u7684\u98DF\u7269\u4E2D\u6DFB\u52A0\u7CD6\uFF0C\u5E76\u544A\u77E5\u6211\u98DF\u7269\u662F\u5426\u542B\u6709\uFF1A',
+        sectionMessage: '\u6B64\u5916\uFF0C\u6211\u6709\u7CD6\u5C3F\u75C5\uFF0C\u9700\u8981\u63A7\u5236\u7CD6\u5206\u6444\u5165\u3002\u8BF7\u4E0D\u8981\u5728\u6211\u7684\u98DF\u7269\u4E2D\u6DFB\u52A0\u7CD6\uFF0C\u5E76\u544A\u77E5\u6211\u98DF\u7269\u662F\u5426\u542B\u6709\uFF1A',
+      },
     },
   },
   ja: {
@@ -454,6 +509,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: '\u30D2\u30B9\u30BF\u30DF\u30F3\u4E0D\u8010\u75C7',
         message: '\u30D2\u30B9\u30BF\u30DF\u30F3\u3092\u591A\u304F\u542B\u3080\u98DF\u54C1\u3092\u98DF\u3079\u3089\u308C\u307E\u305B\u3093\u3002\u30D2\u30B9\u30BF\u30DF\u30F3\u306F\u719F\u6210\u3001\u767A\u9175\u3001\u9577\u671F\u4FDD\u5B58\u3055\u308C\u305F\u98DF\u54C1\u306B\u542B\u307E\u308C\u3066\u3044\u307E\u3059\u3002\u4F8B\u3048\u3070\uFF1A',
         sectionMessage: '\u307E\u305F\u3001\u30D2\u30B9\u30BF\u30DF\u30F3\u3092\u591A\u304F\u542B\u3080\u98DF\u54C1\u3092\u98DF\u3079\u3089\u308C\u307E\u305B\u3093\u3002\u30D2\u30B9\u30BF\u30DF\u30F3\u306F\u719F\u6210\u3001\u767A\u9175\u3001\u9577\u671F\u4FDD\u5B58\u3055\u308C\u305F\u98DF\u54C1\u306B\u542B\u307E\u308C\u3066\u3044\u307E\u3059\u3002\u4F8B\u3048\u3070\uFF1A',
+      },
+      diabetes: {
+        header: '\u7CD6\u5C3F\u75C5',
+        message: '\u7CD6\u5C3F\u75C5\u304C\u3042\u308A\u3001\u7CD6\u5206\u306E\u6442\u53D6\u3092\u63A7\u3048\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002\u6599\u7406\u306B\u7802\u7CD6\u3092\u52A0\u3048\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002\u307E\u305F\u3001\u4EE5\u4E0B\u304C\u542B\u307E\u308C\u3066\u3044\u308B\u304B\u6559\u3048\u3066\u304F\u3060\u3055\u3044\uFF1A',
+        sectionMessage: '\u307E\u305F\u3001\u7CD6\u5C3F\u75C5\u304C\u3042\u308A\u3001\u7CD6\u5206\u306E\u6442\u53D6\u3092\u63A7\u3048\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002\u6599\u7406\u306B\u7802\u7CD6\u3092\u52A0\u3048\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002\u4EE5\u4E0B\u304C\u542B\u307E\u308C\u3066\u3044\u308B\u304B\u6559\u3048\u3066\u304F\u3060\u3055\u3044\uFF1A',
       },
     },
   },
@@ -491,6 +551,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\uD788\uC2A4\uD0C0\uBBFC\uC774 \uD48D\uBD80\uD55C \uC74C\uC2DD\uC744 \uBA39\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD788\uC2A4\uD0C0\uBBFC\uC740 \uC219\uC131, \uBC1C\uD6A8 \uB610\uB294 \uC624\uB798 \uBCF4\uAD00\uB41C \uC2DD\uD488\uC5D0 \uB4E4\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uC608\uB97C \uB4E4\uC5B4:',
         sectionMessage: '\uB610\uD55C, \uD788\uC2A4\uD0C0\uBBFC\uC774 \uD48D\uBD80\uD55C \uC74C\uC2DD\uC744 \uBA39\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD788\uC2A4\uD0C0\uBBFC\uC740 \uC219\uC131, \uBC1C\uD6A8 \uB610\uB294 \uC624\uB798 \uBCF4\uAD00\uB41C \uC2DD\uD488\uC5D0 \uB4E4\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uC608\uB97C \uB4E4\uC5B4:',
       },
+      diabetes: {
+        header: '\uB2F9\uB1E8\uBCD1',
+        message: '\uB2F9\uB1E8\uBCD1\uC774 \uC788\uC5B4 \uB2F9\uBD84 \uC12D\uCDE8\uB97C \uC870\uC808\uD574\uC57C \uD569\uB2C8\uB2E4. \uC74C\uC2DD\uC5D0 \uC124\uD0D5\uC744 \uB123\uC9C0 \uB9D0\uC544 \uC8FC\uC2DC\uACE0, \uB2E4\uC74C\uC774 \uD3EC\uD568\uB418\uC5B4 \uC788\uB294\uC9C0 \uC54C\uB824\uC8FC\uC138\uC694:',
+        sectionMessage: '\uB610\uD55C, \uB2F9\uB1E8\uBCD1\uC774 \uC788\uC5B4 \uB2F9\uBD84 \uC12D\uCDE8\uB97C \uC870\uC808\uD574\uC57C \uD569\uB2C8\uB2E4. \uC74C\uC2DD\uC5D0 \uC124\uD0D5\uC744 \uB123\uC9C0 \uB9D0\uC544 \uC8FC\uC2DC\uACE0, \uB2E4\uC74C\uC774 \uD3EC\uD568\uB418\uC5B4 \uC788\uB294\uC9C0 \uC54C\uB824\uC8FC\uC138\uC694:',
+      },
     },
   },
   th: {
@@ -527,6 +592,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         message: '\u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E01\u0E34\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E17\u0E35\u0E48\u0E21\u0E35\u0E2E\u0E34\u0E2A\u0E17\u0E32\u0E21\u0E35\u0E19\u0E2A\u0E39\u0E07\u0E44\u0E14\u0E49 \u0E2E\u0E34\u0E2A\u0E17\u0E32\u0E21\u0E35\u0E19\u0E1E\u0E1A\u0E43\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E17\u0E35\u0E48\u0E1A\u0E48\u0E21 \u0E2B\u0E21\u0E31\u0E01 \u0E2B\u0E23\u0E37\u0E2D\u0E40\u0E01\u0E47\u0E1A\u0E23\u0E31\u0E01\u0E29\u0E32\u0E44\u0E27\u0E49\u0E19\u0E32\u0E19 \u0E40\u0E0A\u0E48\u0E19:',
         sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E44\u0E21\u0E48\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E01\u0E34\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E17\u0E35\u0E48\u0E21\u0E35\u0E2E\u0E34\u0E2A\u0E17\u0E32\u0E21\u0E35\u0E19\u0E2A\u0E39\u0E07\u0E44\u0E14\u0E49 \u0E2E\u0E34\u0E2A\u0E17\u0E32\u0E21\u0E35\u0E19\u0E1E\u0E1A\u0E43\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E17\u0E35\u0E48\u0E1A\u0E48\u0E21 \u0E2B\u0E21\u0E31\u0E01 \u0E2B\u0E23\u0E37\u0E2D\u0E40\u0E01\u0E47\u0E1A\u0E23\u0E31\u0E01\u0E29\u0E32\u0E44\u0E27\u0E49\u0E19\u0E32\u0E19 \u0E40\u0E0A\u0E48\u0E19:',
       },
+      diabetes: {
+        header: '\u0E42\u0E23\u0E04\u0E40\u0E1A\u0E32\u0E2B\u0E27\u0E32\u0E19',
+        message: '\u0E09\u0E31\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E40\u0E1A\u0E32\u0E2B\u0E27\u0E32\u0E19\u0E41\u0E25\u0E30\u0E15\u0E49\u0E2D\u0E07\u0E04\u0E27\u0E1A\u0E04\u0E38\u0E21\u0E01\u0E32\u0E23\u0E1A\u0E23\u0E34\u0E42\u0E20\u0E04\u0E19\u0E49\u0E33\u0E15\u0E32\u0E25 \u0E01\u0E23\u0E38\u0E13\u0E32\u0E2D\u0E22\u0E48\u0E32\u0E40\u0E15\u0E34\u0E21\u0E19\u0E49\u0E33\u0E15\u0E32\u0E25\u0E43\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E02\u0E2D\u0E07\u0E09\u0E31\u0E19 \u0E41\u0E25\u0E30\u0E41\u0E08\u0E49\u0E07\u0E43\u0E2B\u0E49\u0E17\u0E23\u0E32\u0E1A\u0E2B\u0E32\u0E01\u0E21\u0E35:',
+        sectionMessage: '\u0E19\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E19\u0E35\u0E49 \u0E09\u0E31\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E40\u0E1A\u0E32\u0E2B\u0E27\u0E32\u0E19\u0E41\u0E25\u0E30\u0E15\u0E49\u0E2D\u0E07\u0E04\u0E27\u0E1A\u0E04\u0E38\u0E21\u0E01\u0E32\u0E23\u0E1A\u0E23\u0E34\u0E42\u0E20\u0E04\u0E19\u0E49\u0E33\u0E15\u0E32\u0E25 \u0E01\u0E23\u0E38\u0E13\u0E32\u0E2D\u0E22\u0E48\u0E32\u0E40\u0E15\u0E34\u0E21\u0E19\u0E49\u0E33\u0E15\u0E32\u0E25\u0E43\u0E19\u0E2D\u0E32\u0E2B\u0E32\u0E23\u0E02\u0E2D\u0E07\u0E09\u0E31\u0E19 \u0E41\u0E25\u0E30\u0E41\u0E08\u0E49\u0E07\u0E43\u0E2B\u0E49\u0E17\u0E23\u0E32\u0E1A\u0E2B\u0E32\u0E01\u0E21\u0E35:',
+      },
     },
   },
   ar: {
@@ -562,6 +632,11 @@ export const RESTRICTION_CARD_TRANSLATIONS: Record<Language, RestrictionCardTran
         header: '\u0639\u062F\u0645 \u062A\u062D\u0645\u0644 \u0627\u0644\u0647\u064A\u0633\u062A\u0627\u0645\u064A\u0646',
         message: '\u0644\u0627 \u0623\u0633\u062A\u0637\u064A\u0639 \u062A\u0646\u0627\u0648\u0644 \u0627\u0644\u0623\u0637\u0639\u0645\u0629 \u0627\u0644\u063A\u0646\u064A\u0629 \u0628\u0627\u0644\u0647\u064A\u0633\u062A\u0627\u0645\u064A\u0646. \u064A\u0648\u062C\u062F \u0627\u0644\u0647\u064A\u0633\u062A\u0627\u0645\u064A\u0646 \u0641\u064A \u0627\u0644\u0623\u0637\u0639\u0645\u0629 \u0627\u0644\u0645\u0639\u062A\u0642\u0629 \u0648\u0627\u0644\u0645\u062E\u0645\u0631\u0629 \u0648\u0627\u0644\u0645\u062D\u0641\u0648\u0638\u0629 \u0644\u0641\u062A\u0631\u0629 \u0637\u0648\u064A\u0644\u0629. \u0639\u0644\u0649 \u0633\u0628\u064A\u0644 \u0627\u0644\u0645\u062B\u0627\u0644:',
         sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0644\u0627 \u0623\u0633\u062A\u0637\u064A\u0639 \u062A\u0646\u0627\u0648\u0644 \u0627\u0644\u0623\u0637\u0639\u0645\u0629 \u0627\u0644\u063A\u0646\u064A\u0629 \u0628\u0627\u0644\u0647\u064A\u0633\u062A\u0627\u0645\u064A\u0646. \u064A\u0648\u062C\u062F \u0627\u0644\u0647\u064A\u0633\u062A\u0627\u0645\u064A\u0646 \u0641\u064A \u0627\u0644\u0623\u0637\u0639\u0645\u0629 \u0627\u0644\u0645\u0639\u062A\u0642\u0629 \u0648\u0627\u0644\u0645\u062E\u0645\u0631\u0629 \u0648\u0627\u0644\u0645\u062D\u0641\u0648\u0638\u0629 \u0644\u0641\u062A\u0631\u0629 \u0637\u0648\u064A\u0644\u0629. \u0639\u0644\u0649 \u0633\u0628\u064A\u0644 \u0627\u0644\u0645\u062B\u0627\u0644:',
+      },
+      diabetes: {
+        header: '\u0645\u0631\u0636 \u0627\u0644\u0633\u0643\u0631\u064A',
+        message: '\u0644\u062F\u064A\u0651 \u0645\u0631\u0636 \u0627\u0644\u0633\u0643\u0631\u064A \u0648\u0623\u062D\u062A\u0627\u062C \u0625\u0644\u0649 \u0627\u0644\u062A\u062D\u0643\u0645 \u0641\u064A \u062A\u0646\u0627\u0648\u0644 \u0627\u0644\u0633\u0643\u0631. \u064A\u0631\u062C\u0649 \u0639\u062F\u0645 \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0633\u0643\u0631 \u0625\u0644\u0649 \u0637\u0639\u0627\u0645\u064A \u0648\u0625\u0639\u0644\u0627\u0645\u064A \u0625\u0630\u0627 \u0643\u0627\u0646 \u064A\u062D\u062A\u0648\u064A \u0639\u0644\u0649:',
+        sectionMessage: '\u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0630\u0644\u0643\u060C \u0644\u062F\u064A\u0651 \u0645\u0631\u0636 \u0627\u0644\u0633\u0643\u0631\u064A \u0648\u0623\u062D\u062A\u0627\u062C \u0625\u0644\u0649 \u0627\u0644\u062A\u062D\u0643\u0645 \u0641\u064A \u062A\u0646\u0627\u0648\u0644 \u0627\u0644\u0633\u0643\u0631. \u064A\u0631\u062C\u0649 \u0639\u062F\u0645 \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0633\u0643\u0631 \u0625\u0644\u0649 \u0637\u0639\u0627\u0645\u064A \u0648\u0625\u0639\u0644\u0627\u0645\u064A \u0625\u0630\u0627 \u0643\u0627\u0646 \u064A\u062D\u062A\u0648\u064A \u0639\u0644\u0649:',
       },
     },
   },

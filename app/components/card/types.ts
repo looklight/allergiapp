@@ -3,6 +3,8 @@ import { RestrictionItemId } from '../../../constants/otherRestrictions';
 import { OtherFoodId } from '../../../constants/otherFoods';
 import { DietModeId } from '../../../constants/dietModes';
 
+export type CardDisplayMode = 'card' | 'app' | 'english';
+
 export type CardStyle = 'allergy' | 'pregnancy' | 'dietOnly';
 
 export interface CardColors {
@@ -74,7 +76,12 @@ export interface CardPortraitProps {
   restrictionTranslations: RestrictionTranslationsData;
   dietModeSections: DietModeSectionData[];
   expandedAllergen: AllergenId | null;
-  showInAppLanguage: boolean;
+  displayMode: CardDisplayMode;
+  showAppToggle: boolean;
+  showEnglishToggle: boolean;
+  cardLanguageLabel: string;
+  appLanguageLabel: string;
+  englishLabel: string;
   pregnancyMode: boolean;
   fontBoost: number;
   getAllergenTranslation: (id: AllergenId) => string;
@@ -83,7 +90,7 @@ export interface CardPortraitProps {
   getRestrictionTranslation: (id: RestrictionItemId) => string;
   getOtherFoodTranslation: (id: OtherFoodId) => string;
   toggleExpand: (id: AllergenId) => void;
-  handleLanguageToggle: () => void;
+  onDisplayModeChange: (mode: CardDisplayMode) => void;
 }
 
 export interface CardLandscapeProps {

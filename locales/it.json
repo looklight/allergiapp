@@ -55,6 +55,10 @@
     "histamineHint": "Mostrerà sulla card i cibi ad alto contenuto di istamina da evitare",
     "histamineLabel": "Intolleranza all'istamina",
     "histamineActive": "Modalità istamina attiva",
+    "diabetesToggle": "Diabete",
+    "diabetesHint": "Comunicherà sulla card che sei diabetico e indicherà gli alimenti da evitare",
+    "diabetesLabel": "Diabete",
+    "diabetesActive": "Modalità diabete attiva",
     "foodsToAvoid": "Alimenti sconsigliati",
     "pregnancyActive": "Modalità gravidanza attiva"
   },
@@ -65,8 +69,7 @@
     "message": "Ho le seguenti allergie alimentari. Per favore, assicuratevi che il mio cibo non contenga questi ingredienti.",
     "thanks": "Grazie per la vostra comprensione.",
     "changeLanguage": "Cambia Lingua",
-    "showInMyLanguage": "Vedi nella mia lingua",
-    "showInDestLanguage": "Torna alla lingua originale"
+    "viewInLanguage": "Vedi in {{lang}}"
   },
   "settings": {
     "title": "Impostazioni",

@@ -13,13 +13,14 @@ import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrict
 import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
 import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI, DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
+import { getLocalizedLanguageName } from '../constants/languageNames';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import CardPortrait from './components/card/CardPortrait';
 import CardLandscape from './components/card/CardLandscape';
-import { CardColors, DietModeSectionData } from './components/card/types';
+import { CardColors, CardDisplayMode, DietModeSectionData } from './components/card/types';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -45,7 +46,7 @@ export default function CardScreen() {
   const { selectedAllergens, selectedOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, pregnancyMode, settings, downloadedLanguages } = useAppContext();
   const cardLanguage = settings.cardLanguage;
   const appLanguage = settings.appLanguage;
-  const [showInAppLanguage, setShowInAppLanguage] = useState(false);
+  const [displayMode, setDisplayMode] = useState<CardDisplayMode>('card');
   const [expandedAllergen, setExpandedAllergen] = useState<AllergenId | null>(null);
   const [selectedLandscapeItem, setSelectedLandscapeItem] = useState<string | null>(null);
 
@@ -63,7 +64,7 @@ export default function CardScreen() {
     return downloadedLanguages[cardLanguage as DownloadableLanguageCode] ?? null;
   }, [downloadedLanguages, cardLanguage]);
 
-  const displayLanguage = showInAppLanguage ? appLanguage : cardLanguage;
+  const displayLanguage = displayMode === 'card' ? cardLanguage : displayMode === 'app' ? appLanguage : 'en';
 
   const currentLanguage = useMemo(() => {
     const hardcoded = LANGUAGES.find((l) => l.code === displayLanguage);
@@ -72,7 +73,7 @@ export default function CardScreen() {
   }, [displayLanguage]);
 
   const translations = useMemo(() => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData) {
       return {
         header: downloadedLanguageData.cardTexts.header,
         subtitle: downloadedLanguageData.cardTexts.subtitle,
@@ -85,10 +86,10 @@ export default function CardScreen() {
       };
     }
     return CARD_TRANSLATIONS[displayLanguage as Language] || CARD_TRANSLATIONS.en;
-  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, displayMode]);
 
   const getAllergenTranslation = (id: AllergenId): string => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData) {
       return downloadedLanguageData.allergens[id] || ALLERGENS.find((a) => a.id === id)?.translations.en || '';
     }
     const allergen = ALLERGENS.find((a) => a.id === id);
@@ -96,7 +97,7 @@ export default function CardScreen() {
   };
 
   const getAllergenDescription = (id: AllergenId): string => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData) {
       return downloadedLanguageData.descriptions[id] || ALLERGEN_IMAGES[id]?.description.en || '';
     }
     return ALLERGEN_IMAGES[id]?.description[displayLanguage as Language] || ALLERGEN_IMAGES[id]?.description.en || '';
@@ -105,14 +106,14 @@ export default function CardScreen() {
   const getAllergenWarning = (id: AllergenId): string | undefined => {
     const images = ALLERGEN_IMAGES[id];
     if (!images?.warning) return undefined;
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.warnings) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.warnings) {
       return downloadedLanguageData.warnings[id] || images.warning.en;
     }
     return images.warning[displayLanguage as Language] || images.warning.en;
   };
 
   const getRestrictionTranslation = (id: RestrictionItemId): string => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictions) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.restrictions) {
       return downloadedLanguageData.restrictions[id] || RESTRICTION_ITEMS.find((r) => r.id === id)?.translations.en || '';
     }
     const item = RESTRICTION_ITEMS.find((r) => r.id === id);
@@ -120,7 +121,7 @@ export default function CardScreen() {
   };
 
   const getOtherFoodTranslation = (id: OtherFoodId): string => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.otherFoods) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.otherFoods) {
       return downloadedLanguageData.otherFoods[id] || OTHER_FOODS.find((f) => f.id === id)?.translations.en || '';
     }
     const food = OTHER_FOODS.find((f) => f.id === id);
@@ -131,7 +132,7 @@ export default function CardScreen() {
   const getDietModeTranslation = (cardKey: DietCardKey) => {
     const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
     const base = hardcoded.dietModes[cardKey];
-    if (showInAppLanguage || !isDownloadedLanguage || !downloadedLanguageData?.restrictionCardTexts?.dietModeTexts) {
+    if (displayMode !== 'card' || !isDownloadedLanguage || !downloadedLanguageData?.restrictionCardTexts?.dietModeTexts) {
       return base;
     }
     const downloaded = downloadedLanguageData.restrictionCardTexts.dietModeTexts[cardKey];
@@ -149,11 +150,11 @@ export default function CardScreen() {
       return getDietModeTranslation('pregnancy');
     }
     const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
-    const downloaded = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts);
+    const downloaded = (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts);
     const header = downloaded ? (downloadedLanguageData!.restrictionCardTexts!.header || hardcoded.header) : hardcoded.header;
     const message = downloaded ? (downloadedLanguageData!.restrictionCardTexts!.message || hardcoded.message) : hardcoded.message;
     return { header, message, sectionMessage: message };
-  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage, pregnancyMode]);
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, displayMode, pregnancyMode]);
 
   // Auto-selected restriction IDs per mode (stable, never changes)
   const modeRestrictionIds = useMemo(() => {
@@ -197,7 +198,7 @@ export default function CardScreen() {
       // For vegetarian mode, attach food item indicators
       if (mode.id === 'vegetarian') {
         const levelItems = DIET_LEVEL_FOOD_ITEMS[vegetarianLevel];
-        const foodTrans = (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.dietFoods)
+        const foodTrans = (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.dietFoods)
           ? downloadedLanguageData.dietFoods as Record<string, string>
           : (DIET_FOOD_TRANSLATIONS[displayLanguage as Language] || DIET_FOOD_TRANSLATIONS.en);
         section.foodItems = {
@@ -224,7 +225,7 @@ export default function CardScreen() {
     }
 
     return sections;
-  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedOtherFoods.length, selectedRestrictions, modeRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedOtherFoods.length, selectedRestrictions, modeRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, displayMode]);
 
   const autoModeRestrictionIds = new Set(
     activeDietModes.flatMap(id => [...(modeRestrictionIds.get(id) ?? [])])
@@ -301,10 +302,27 @@ export default function CardScreen() {
     setExpandedAllergen(expandedAllergen === id ? null : id);
   };
 
-  const handleLanguageToggle = () => {
-    const newValue = !showInAppLanguage;
-    setShowInAppLanguage(newValue);
-    Analytics.logCardLanguageToggled(newValue, cardLanguage, appLanguage);
+  const showAppToggle = cardLanguage !== appLanguage;
+  const showEnglishToggle = cardLanguage !== 'en' && appLanguage !== 'en';
+
+  const cardLanguageLabel = useMemo(() => {
+    return getLocalizedLanguageName(cardLanguage, appLanguage) || cardLanguage;
+  }, [cardLanguage, appLanguage]);
+
+  const appLanguageLabel = useMemo(() => {
+    return getLocalizedLanguageName(appLanguage, appLanguage) || appLanguage;
+  }, [appLanguage]);
+
+  const englishLabel = useMemo(() => {
+    return getLocalizedLanguageName('en', appLanguage) || 'English';
+  }, [appLanguage]);
+
+  const handleLanguageCycle = () => {
+    const modes: CardDisplayMode[] = ['card'];
+    if (showAppToggle) modes.push('app');
+    if (showEnglishToggle) modes.push('english');
+    const nextIndex = (modes.indexOf(displayMode) + 1) % modes.length;
+    setDisplayMode(modes[nextIndex]);
   };
 
   const hasAllergens = selectedAllergens.length > 0 || selectedOtherFoods.length > 0;
@@ -380,7 +398,7 @@ export default function CardScreen() {
                   <MaterialCommunityIcons name="close" size={22} color={theme.colors.onPrimary} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={handleLanguageToggle}
+                  onPress={handleLanguageCycle}
                   hitSlop={8}
                   activeOpacity={0.6}
                   style={[styles.landscapeOverlayButton, {
@@ -405,7 +423,12 @@ export default function CardScreen() {
           restrictionTranslations={restrictionTranslations}
           dietModeSections={dietModeSections}
           expandedAllergen={expandedAllergen}
-          showInAppLanguage={showInAppLanguage}
+          displayMode={displayMode}
+          showAppToggle={showAppToggle}
+          showEnglishToggle={showEnglishToggle}
+          cardLanguageLabel={cardLanguageLabel}
+          appLanguageLabel={appLanguageLabel}
+          englishLabel={englishLabel}
           pregnancyMode={pregnancyMode}
           getAllergenTranslation={getAllergenTranslation}
           getAllergenDescription={getAllergenDescription}
@@ -414,7 +437,7 @@ export default function CardScreen() {
           getOtherFoodTranslation={getOtherFoodTranslation}
           fontBoost={fontBoost}
           toggleExpand={toggleExpand}
-          handleLanguageToggle={handleLanguageToggle}
+          onDisplayModeChange={setDisplayMode}
         />
       )}
     </View>

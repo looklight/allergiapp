@@ -1,6 +1,6 @@
 import { Language } from '../types';
 
-export type RestrictionCategoryId = 'pregnancy' | 'nickel' | 'histamine';
+export type RestrictionCategoryId = 'pregnancy' | 'nickel' | 'histamine' | 'diabetes';
 
 export type RestrictionItemId =
   | 'raw_fish'
@@ -30,7 +30,13 @@ export type RestrictionItemId =
   | 'histamine_strawberries'
   | 'histamine_eggplant'
   | 'histamine_avocado'
-  | 'histamine_spinach';
+  | 'histamine_spinach'
+  | 'diabetes_added_sugar'
+  | 'diabetes_honey_sweeteners'
+  | 'diabetes_sweet_sauces'
+  | 'diabetes_sweet_glazes'
+  | 'diabetes_fruit_juice'
+  | 'diabetes_candied_fruit';
 
 export interface RestrictionCategory {
   id: RestrictionCategoryId;
@@ -107,6 +113,27 @@ export const RESTRICTION_CATEGORIES: readonly RestrictionCategory[] = [
       ko: '\uD788\uC2A4\uD0C0\uBBFC \uBD88\uB0B4\uC99D',
       th: '\u0E41\u0E1E\u0E49\u0E2E\u0E34\u0E2A\u0E17\u0E32\u0E21\u0E35\u0E19',
       ar: '\u0639\u062F\u0645 \u062A\u062D\u0645\u0644 \u0627\u0644\u0647\u064A\u0633\u062A\u0627\u0645\u064A\u0646',
+    },
+  },
+  {
+    id: 'diabetes',
+    icon: '\u{26A0}\u{FE0F}',
+    translations: {
+      it: 'Diabete',
+      en: 'Diabetes',
+      fr: 'Diab\u00E8te',
+      de: 'Diabetes',
+      es: 'Diabetes',
+      pt: 'Diabetes',
+      nl: 'Diabetes',
+      pl: 'Cukrzyca',
+      ru: '\u0414\u0438\u0430\u0431\u0435\u0442',
+      sv: 'Diabetes',
+      zh: '\u7CD6\u5C3F\u75C5',
+      ja: '\u7CD6\u5C3F\u75C5',
+      ko: '\uB2F9\uB1E8\uBCD1',
+      th: '\u0E42\u0E23\u0E04\u0E40\u0E1A\u0E32\u0E2B\u0E27\u0E32\u0E19',
+      ar: '\u0645\u0631\u0636 \u0627\u0644\u0633\u0643\u0631\u064A',
     },
   },
 ];
@@ -731,6 +758,139 @@ export const RESTRICTION_ITEMS: readonly RestrictionItem[] = [
       ko: '\uC2DC\uAE08\uCE58',
       th: '\u0E1C\u0E31\u0E01\u0E42\u0E02\u0E21',
       ar: '\u0627\u0644\u0633\u0628\u0627\u0646\u062E',
+    },
+  },
+  // --- Diabete ---
+  {
+    id: 'diabetes_added_sugar',
+    icon: '\u{1F36C}',
+    categoryId: 'diabetes',
+    translations: {
+      it: 'Zucchero aggiunto / sciroppi',
+      en: 'Added sugar / syrups',
+      fr: 'Sucre ajout\u00E9 / sirops',
+      de: 'Zugesetzter Zucker / Sirupe',
+      es: 'Az\u00FAcar a\u00F1adido / jarabes',
+      pt: 'A\u00E7\u00FAcar adicionado / xaropes',
+      nl: 'Toegevoegde suiker / siropen',
+      pl: 'Cukier dodany / syropy',
+      ru: '\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u043D\u044B\u0439 \u0441\u0430\u0445\u0430\u0440 / \u0441\u0438\u0440\u043E\u043F\u044B',
+      sv: 'Tillsatt socker / sirap',
+      zh: '\u6DFB\u52A0\u7CD6 / \u7CD6\u6D46',
+      ja: '\u7802\u7CD6 / \u30B7\u30ED\u30C3\u30D7',
+      ko: '\uCCA8\uAC00\uB2F9 / \uC2DC\uB7FD',
+      th: '\u0E19\u0E49\u0E33\u0E15\u0E32\u0E25\u0E17\u0E35\u0E48\u0E40\u0E15\u0E34\u0E21 / \u0E19\u0E49\u0E33\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21',
+      ar: '\u0627\u0644\u0633\u0643\u0631 \u0627\u0644\u0645\u0636\u0627\u0641 / \u0627\u0644\u0634\u0631\u0627\u0628 \u0627\u0644\u0645\u0631\u0643\u0632',
+    },
+  },
+  {
+    id: 'diabetes_honey_sweeteners',
+    icon: '\u{1F36F}',
+    categoryId: 'diabetes',
+    translations: {
+      it: 'Miele e dolcificanti',
+      en: 'Honey and sweeteners',
+      fr: 'Miel et \u00E9dulcorants',
+      de: 'Honig und S\u00FC\u00DFungsmittel',
+      es: 'Miel y edulcorantes',
+      pt: 'Mel e ado\u00E7antes',
+      nl: 'Honing en zoetstoffen',
+      pl: 'Mi\u00F3d i s\u0142odziki',
+      ru: '\u041C\u0451\u0434 \u0438 \u043F\u043E\u0434\u0441\u043B\u0430\u0441\u0442\u0438\u0442\u0435\u043B\u0438',
+      sv: 'Honung och s\u00F6tningsmedel',
+      zh: '\u8702\u871C\u548C\u751C\u5473\u5242',
+      ja: '\u306F\u3061\u307F\u3064\u3068\u7518\u5473\u6599',
+      ko: '\uAFC0\uACFC \uAC10\uBBF8\uB8CC',
+      th: '\u0E19\u0E49\u0E33\u0E1C\u0E36\u0E49\u0E07\u0E41\u0E25\u0E30\u0E2A\u0E32\u0E23\u0E43\u0E2B\u0E49\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E27\u0E32\u0E19',
+      ar: '\u0627\u0644\u0639\u0633\u0644 \u0648\u0627\u0644\u0645\u062D\u0644\u064A\u0627\u062A',
+    },
+  },
+  {
+    id: 'diabetes_sweet_sauces',
+    icon: '\u{1F96B}',
+    categoryId: 'diabetes',
+    translations: {
+      it: 'Salse dolci (ketchup, agrodolce, teriyaki)',
+      en: 'Sweet sauces (ketchup, sweet and sour, teriyaki)',
+      fr: 'Sauces sucr\u00E9es (ketchup, aigre-douce, teriyaki)',
+      de: 'S\u00FC\u00DFe So\u00DFen (Ketchup, S\u00FC\u00DF-Sauer, Teriyaki)',
+      es: 'Salsas dulces (ketchup, agridulce, teriyaki)',
+      pt: 'Molhos doces (ketchup, agridoce, teriyaki)',
+      nl: 'Zoete sauzen (ketchup, zoetzuur, teriyaki)',
+      pl: 'S\u0142odkie sosy (ketchup, s\u0142odko-kwa\u015Bny, teriyaki)',
+      ru: '\u0421\u043B\u0430\u0434\u043A\u0438\u0435 \u0441\u043E\u0443\u0441\u044B (\u043A\u0435\u0442\u0447\u0443\u043F, \u043A\u0438\u0441\u043B\u043E-\u0441\u043B\u0430\u0434\u043A\u0438\u0439, \u0442\u0435\u0440\u0438\u044F\u043A\u0438)',
+      sv: 'S\u00F6ta s\u00E5ser (ketchup, s\u00F6tsur, teriyaki)',
+      zh: '\u751C\u9171\uFF08\u756A\u8304\u9171\u3001\u7CD6\u918B\u9171\u3001\u7167\u70E7\u9171\uFF09',
+      ja: '\u7518\u3044\u30BD\u30FC\u30B9\uFF08\u30B1\u30C1\u30E3\u30C3\u30D7\u3001\u7518\u9162\u3001\u7167\u308A\u713C\u304D\uFF09',
+      ko: '\uB2EC\uCF64\uD55C \uC18C\uC2A4 (\uCF00\uCCA9, \uD0D5\uC218, \uB370\uB9AC\uC57C\uD0A4)',
+      th: '\u0E0B\u0E2D\u0E2A\u0E2B\u0E27\u0E32\u0E19 (\u0E0B\u0E2D\u0E2A\u0E21\u0E30\u0E40\u0E02\u0E37\u0E2D\u0E40\u0E17\u0E28, \u0E40\u0E1B\u0E23\u0E35\u0E49\u0E22\u0E27\u0E2B\u0E27\u0E32\u0E19, \u0E40\u0E17\u0E2D\u0E23\u0E34\u0E22\u0E32\u0E01\u0E34)',
+      ar: '\u0627\u0644\u0635\u0644\u0635\u0627\u062A \u0627\u0644\u062D\u0644\u0648\u0629 (\u0627\u0644\u0643\u0627\u062A\u0634\u0628\u060C \u0627\u0644\u062D\u0644\u0648 \u0648\u0627\u0644\u062D\u0627\u0645\u0636\u060C \u0627\u0644\u062A\u0631\u064A\u0627\u0643\u064A)',
+    },
+  },
+  {
+    id: 'diabetes_sweet_glazes',
+    icon: '\u{1F370}',
+    categoryId: 'diabetes',
+    translations: {
+      it: 'Glasse e marinature zuccherate',
+      en: 'Sweet glazes and marinades',
+      fr: 'Gla\u00E7ages et marinades sucr\u00E9es',
+      de: 'S\u00FC\u00DFe Glasuren und Marinaden',
+      es: 'Glaseados y marinados dulces',
+      pt: 'Glac\u00EAs e marinadas a\u00E7ucaradas',
+      nl: 'Zoete glazuren en marinades',
+      pl: 'S\u0142odkie polewy i marynaty',
+      ru: '\u0421\u043B\u0430\u0434\u043A\u0438\u0435 \u0433\u043B\u0430\u0437\u0443\u0440\u0438 \u0438 \u043C\u0430\u0440\u0438\u043D\u0430\u0434\u044B',
+      sv: 'S\u00F6ta glaseringar och marinader',
+      zh: '\u751C\u9171\u548C\u814C\u6599',
+      ja: '\u7518\u3044\u30B0\u30EC\u30FC\u30BA\u3068\u30DE\u30EA\u30CD',
+      ko: '\uB2EC\uCF64\uD55C \uAE00\uB808\uC774\uC988\uC640 \uC591\uB150',
+      th: '\u0E19\u0E49\u0E33\u0E40\u0E04\u0E25\u0E37\u0E2D\u0E1A\u0E41\u0E25\u0E30\u0E0B\u0E2D\u0E2A\u0E2B\u0E21\u0E31\u0E01\u0E2B\u0E27\u0E32\u0E19',
+      ar: '\u0627\u0644\u062A\u0632\u062C\u064A\u062C \u0627\u0644\u062D\u0644\u0648 \u0648\u0627\u0644\u062A\u062A\u0628\u064A\u0644\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u0627\u0629',
+    },
+  },
+  {
+    id: 'diabetes_fruit_juice',
+    icon: '\u{1F9C3}',
+    categoryId: 'diabetes',
+    translations: {
+      it: 'Succhi di frutta come ingrediente',
+      en: 'Fruit juice as ingredient',
+      fr: 'Jus de fruit comme ingr\u00E9dient',
+      de: 'Fruchtsaft als Zutat',
+      es: 'Zumo de fruta como ingrediente',
+      pt: 'Sumo de fruta como ingrediente',
+      nl: 'Vruchtensap als ingredi\u00EBnt',
+      pl: 'Sok owocowy jako sk\u0142adnik',
+      ru: '\u0424\u0440\u0443\u043A\u0442\u043E\u0432\u044B\u0439 \u0441\u043E\u043A \u043A\u0430\u043A \u0438\u043D\u0433\u0440\u0435\u0434\u0438\u0435\u043D\u0442',
+      sv: 'Fruktjuice som ingrediens',
+      zh: '\u679C\u6C41\u4F5C\u4E3A\u914D\u6599',
+      ja: '\u8ABF\u7406\u7528\u30D5\u30EB\u30FC\u30C4\u30B8\u30E5\u30FC\u30B9',
+      ko: '\uC7AC\uB8CC\uB85C \uC0AC\uC6A9\uB41C \uACFC\uC77C \uC8FC\uC2A4',
+      th: '\u0E19\u0E49\u0E33\u0E1C\u0E25\u0E44\u0E21\u0E49\u0E40\u0E1B\u0E47\u0E19\u0E2A\u0E48\u0E27\u0E19\u0E1C\u0E2A\u0E21',
+      ar: '\u0639\u0635\u064A\u0631 \u0627\u0644\u0641\u0627\u0643\u0647\u0629 \u0643\u0645\u0643\u0648\u0646',
+    },
+  },
+  {
+    id: 'diabetes_candied_fruit',
+    icon: '\u{1FAD9}',
+    categoryId: 'diabetes',
+    translations: {
+      it: 'Frutta candita / confetture',
+      en: 'Candied fruit / jams',
+      fr: 'Fruits confits / confitures',
+      de: 'Kandierte Fr\u00FCchte / Konfit\u00FCren',
+      es: 'Fruta confitada / mermeladas',
+      pt: 'Fruta cristalizada / compotas',
+      nl: 'Gekonfijt fruit / jam',
+      pl: 'Owoce kandyzowane / d\u017Cemy',
+      ru: '\u0426\u0443\u043A\u0430\u0442\u044B / \u0434\u0436\u0435\u043C\u044B',
+      sv: 'Kanderad frukt / sylt',
+      zh: '\u871C\u996F / \u679C\u9171',
+      ja: '\u7802\u7CD6\u6F2C\u3051\u30D5\u30EB\u30FC\u30C4 / \u30B8\u30E3\u30E0',
+      ko: '\uC124\uD0D5 \uC808\uC784 \uACFC\uC77C / \uC7FC',
+      th: '\u0E1C\u0E25\u0E44\u0E21\u0E49\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21 / \u0E41\u0E22\u0E21',
+      ar: '\u0627\u0644\u0641\u0648\u0627\u0643\u0647 \u0627\u0644\u0645\u0633\u0643\u0631\u0629 / \u0627\u0644\u0645\u0631\u0628\u064A\u0627\u062A',
     },
   },
 ];

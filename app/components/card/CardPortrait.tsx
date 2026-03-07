@@ -28,7 +28,12 @@ export default function CardPortrait({
   restrictionTranslations,
   dietModeSections,
   expandedAllergen,
-  showInAppLanguage,
+  displayMode,
+  showAppToggle,
+  showEnglishToggle,
+  cardLanguageLabel,
+  appLanguageLabel,
+  englishLabel,
   pregnancyMode,
   fontBoost,
   getAllergenTranslation,
@@ -37,7 +42,7 @@ export default function CardPortrait({
   getRestrictionTranslation,
   getOtherFoodTranslation,
   toggleExpand,
-  handleLanguageToggle,
+  onDisplayModeChange,
 }: CardPortraitProps) {
   const hasAllergens = selectedAllergens.length > 0;
   const hasOtherFoods = selectedOtherFoods.length > 0;
@@ -262,16 +267,31 @@ export default function CardPortrait({
         </View>
       </Surface>
 
-      <Pressable
-        style={styles.languageToggle}
-        onPress={handleLanguageToggle}
-        accessibilityRole="button"
-        accessibilityLabel={showInAppLanguage ? i18n.t('card.showInDestLanguage') : i18n.t('card.showInMyLanguage')}
-      >
-        <Text style={styles.languageToggleText}>
-          {showInAppLanguage ? i18n.t('card.showInDestLanguage') : i18n.t('card.showInMyLanguage')}
-        </Text>
-      </Pressable>
+      {(showAppToggle || showEnglishToggle) && (
+        <View style={styles.languageToggleRow}>
+          {displayMode !== 'card' && (
+            <Pressable onPress={() => onDisplayModeChange('card')} style={styles.languageToggleButton}>
+              <Text style={styles.languageToggleText}>{i18n.t('card.viewInLanguage', { lang: cardLanguageLabel })}</Text>
+            </Pressable>
+          )}
+          {displayMode !== 'app' && showAppToggle && (
+            <>
+              {displayMode !== 'card' && <Text style={styles.languageToggleSep}>·</Text>}
+              <Pressable onPress={() => onDisplayModeChange('app')} style={styles.languageToggleButton}>
+                <Text style={styles.languageToggleText}>{i18n.t('card.viewInLanguage', { lang: appLanguageLabel })}</Text>
+              </Pressable>
+            </>
+          )}
+          {displayMode !== 'english' && showEnglishToggle && (
+            <>
+              {(displayMode !== 'card' || showAppToggle) && <Text style={styles.languageToggleSep}>·</Text>}
+              <Pressable onPress={() => onDisplayModeChange('english')} style={styles.languageToggleButton}>
+                <Text style={styles.languageToggleText}>{i18n.t('card.viewInLanguage', { lang: englishLabel })}</Text>
+              </Pressable>
+            </>
+          )}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -308,14 +328,27 @@ const styles = StyleSheet.create({
   exampleEmoji: {
     fontSize: 36,
   },
-  languageToggle: {
-    marginTop: 20,
+  languageToggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
     paddingVertical: 12,
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  languageToggleButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
   languageToggleText: {
     color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 14,
     textDecorationLine: 'underline',
+  },
+  languageToggleSep: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 14,
+    marginHorizontal: 4,
   },
 });

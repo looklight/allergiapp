@@ -55,6 +55,10 @@
     "histamineHint": "Will show foods high in histamine to avoid on the card",
     "histamineLabel": "Histamine intolerance",
     "histamineActive": "Histamine mode active",
+    "diabetesToggle": "Diabetes",
+    "diabetesHint": "Will inform on the card that you have diabetes and list foods to avoid",
+    "diabetesLabel": "Diabetes",
+    "diabetesActive": "Diabetes mode active",
     "foodsToAvoid": "Foods to avoid",
     "pregnancyActive": "Pregnancy mode active"
   },
@@ -65,8 +69,7 @@
     "message": "I have the following food allergies. Please ensure my food does not contain these ingredients.",
     "thanks": "Thank you for your understanding.",
     "changeLanguage": "Change Language",
-    "showInMyLanguage": "View in my language",
-    "showInDestLanguage": "Back to original language"
+    "viewInLanguage": "View in {{lang}}"
   },
   "settings": {
     "title": "Settings",
