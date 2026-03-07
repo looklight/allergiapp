@@ -13,6 +13,7 @@ interface DietModeSectionProps {
   getRestrictionInfo: (id: RestrictionItemId) => { icon: string } | undefined;
   /** Whether there is other content before this section (allergens, restrictions, etc.) */
   hasOtherContent: boolean;
+  fontBoost?: number;
   /** Restriction colors for the pregnancy section on card */
   restrictionColors?: {
     restrictionBg: string;
@@ -28,6 +29,7 @@ export default function DietModeSection({
   getRestrictionTranslation,
   getRestrictionInfo,
   hasOtherContent,
+  fontBoost = 0,
   restrictionColors,
 }: DietModeSectionProps) {
   const isPortrait = variant === 'portrait';
@@ -54,7 +56,7 @@ export default function DietModeSection({
               {data.header}
             </Text>
           </View>
-          <Text style={styles.restrictionMessage}>{data.message}</Text>
+          <Text style={[styles.restrictionMessage, fontBoost > 0 && { fontSize: 14 + fontBoost, lineHeight: 20 + fontBoost }]}>{data.message}</Text>
           {restrictionItems.map((id) => {
             const item = getRestrictionInfo(id);
             if (!item) return null;
@@ -78,11 +80,11 @@ export default function DietModeSection({
           backgroundColor: rColors.restrictionBg,
           borderBottomColor: rColors.restrictionBorder,
         }]}>
-          <Text style={[styles.landscapeRestrictionHeaderText, { color: rColors.restrictionHeaderColor }]}>
+          <Text style={[styles.landscapeRestrictionHeaderText, { color: rColors.restrictionHeaderColor }, fontBoost > 0 && { fontSize: 14 + fontBoost }]}>
             {data.header}
           </Text>
         </View>
-        <Text style={styles.landscapeRestrictionMessage}>{data.message}</Text>
+        <Text style={[styles.landscapeRestrictionMessage, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{data.message}</Text>
         <View style={styles.landscapeRestrictionList}>
           {restrictionItems.map((id) => {
             const item = getRestrictionInfo(id);
@@ -90,7 +92,7 @@ export default function DietModeSection({
             return (
               <View key={id} style={[styles.landscapeRestrictionItem, { borderColor: rColors.restrictionBorder }]}>
                 <Text style={styles.landscapeRestrictionIcon}>{item.icon}</Text>
-                <Text style={[styles.landscapeRestrictionName, { color: rColors.restrictionTextColor }]}>
+                <Text style={[styles.landscapeRestrictionName, { color: rColors.restrictionTextColor }, fontBoost > 0 && { fontSize: 14 + fontBoost }]}>
                   {getRestrictionTranslation(id)}
                 </Text>
               </View>
@@ -117,7 +119,7 @@ export default function DietModeSection({
             {data.header}
           </Text>
         </View>
-        <Text style={[styles.vegMessage, { color: sectionColors.text }]}>
+        <Text style={[styles.vegMessage, { color: sectionColors.text }, fontBoost > 0 && { fontSize: 15 + fontBoost, lineHeight: 22 + fontBoost }]}>
           {data.message}
         </Text>
         {hasFoodItems && (
@@ -169,11 +171,11 @@ export default function DietModeSection({
     }]}>
       <View style={[styles.landscapeVegHeader, { borderBottomColor: sectionColors.border }]}>
         <Text style={styles.landscapeVegHeaderIcon}>{data.icon}</Text>
-        <Text style={[styles.landscapeVegHeaderText, { color: sectionColors.primary }]}>
+        <Text style={[styles.landscapeVegHeaderText, { color: sectionColors.primary }, fontBoost > 0 && { fontSize: 14 + fontBoost }]}>
           {data.header}
         </Text>
       </View>
-      <Text style={[styles.landscapeVegMessage, { color: sectionColors.text }]}>
+      <Text style={[styles.landscapeVegMessage, { color: sectionColors.text }, fontBoost > 0 && { fontSize: 13 + fontBoost, lineHeight: 19 + fontBoost }]}>
         {data.message}
       </Text>
       {hasFoodItems && (
@@ -194,7 +196,7 @@ export default function DietModeSection({
                 <View key={`f-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
                   <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.error} />
                   <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
-                  <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.errorDark }]}>{item.name}</Text>
+                  <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.errorDark }, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{item.name}</Text>
                 </View>
               ))}
               {data.foodItems!.allowed.length > 0 && (
@@ -204,7 +206,7 @@ export default function DietModeSection({
                     <View key={`a-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
                       <MaterialCommunityIcons name="check-circle" size={18} color={theme.colors.success} />
                       <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
-                      <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.successDark }]}>{item.name}</Text>
+                      <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.successDark }, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{item.name}</Text>
                     </View>
                   ))}
                 </>

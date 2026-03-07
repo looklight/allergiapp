@@ -74,6 +74,7 @@ export interface CardPortraitProps {
   expandedAllergen: AllergenId | null;
   showInAppLanguage: boolean;
   pregnancyMode: boolean;
+  fontBoost: number;
   getAllergenTranslation: (id: AllergenId) => string;
   getAllergenDescription: (id: AllergenId) => string;
   getAllergenWarning: (id: AllergenId) => string | undefined;
@@ -97,5 +98,6 @@ export interface CardLandscapeProps {
   getAllergenDescription: (id: AllergenId) => string;
   getAllergenWarning: (id: AllergenId) => string | undefined;
   getRestrictionTranslation: (id: RestrictionItemId) => string;
+  fontBoost: number;
   insets: { top: number; bottom: number; left: number; right: number };
 }

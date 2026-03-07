@@ -24,6 +24,7 @@ export default function CardPortrait({
   expandedAllergen,
   showInAppLanguage,
   pregnancyMode,
+  fontBoost,
   getAllergenTranslation,
   getAllergenDescription,
   getAllergenWarning,
@@ -32,16 +33,13 @@ export default function CardPortrait({
   handleLanguageToggle,
 }: CardPortraitProps) {
   const hasAllergens = selectedAllergens.length > 0;
+  const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel');
 
   const dynamicStyles = useMemo(() => StyleSheet.create({
     headerSection: {
       backgroundColor: colors.headerBg,
       padding: 24,
       alignItems: 'center',
-    },
-    warningIcon: {
-      fontSize: 48,
-      marginBottom: 8,
     },
     header: {
       fontSize: 28,
@@ -85,7 +83,7 @@ export default function CardPortrait({
       color: colors.allergenTextColor,
     },
     tapHint: {
-      fontSize: 12,
+      fontSize: 12 + fontBoost,
       color: theme.colors.textHint,
       marginTop: 2,
     },
@@ -98,13 +96,13 @@ export default function CardPortrait({
       borderLeftColor: colors.breakdownBorder,
     },
     breakdownDescription: {
-      fontSize: 14,
+      fontSize: 14 + fontBoost,
       color: colors.breakdownDescColor,
       textAlign: 'center' as const,
       fontStyle: 'italic' as const,
     },
     warningText: {
-      fontSize: 13,
+      fontSize: 13 + fontBoost,
       color: colors.warningTextColor,
       textAlign: 'center' as const,
       fontWeight: '600' as const,
@@ -121,7 +119,7 @@ export default function CardPortrait({
       textAlign: 'center' as const,
       fontStyle: 'italic' as const,
     },
-  }), [colors]);
+  }), [colors, fontBoost]);
 
   const getAllergenInfo = (id: string) => ALLERGENS.find((a) => a.id === id);
 
@@ -130,9 +128,12 @@ export default function CardPortrait({
       <Surface style={styles.card} elevation={4}>
         <View style={styles.cardContent}>
           <View style={dynamicStyles.headerSection}>
-            {(colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel')) && <Text style={dynamicStyles.warningIcon}>⚠️</Text>}
             {colors.cardStyle === 'pregnancy' && <Text style={dynamicStyles.header}>{'🤰 '}{translations.header}</Text>}
-            {colors.cardStyle !== 'pregnancy' && <Text style={dynamicStyles.header}>{translations.header}</Text>}
+            {colors.cardStyle !== 'pregnancy' && (
+              <Text style={dynamicStyles.header}>
+                {showWarningIcon ? '⚠️ ' : ''}{translations.header}
+              </Text>
+            )}
             {hasAllergens && (
               <Text style={dynamicStyles.subtitle}>{pregnancyMode ? translations.pregnancySubtitle : translations.subtitle}</Text>
             )}
@@ -223,6 +224,7 @@ export default function CardPortrait({
               variant="portrait"
               getRestrictionTranslation={getRestrictionTranslation}
               getRestrictionInfo={(id) => getRestrictionInfo(id) as { icon: string } | undefined}
+              fontBoost={fontBoost}
               hasOtherContent={hasAllergens || inlineRestrictions.length > 0}
               restrictionColors={colors.cardStyle === 'pregnancy' && section.modeId === 'pregnancy' ? {
                 restrictionBg: colors.restrictionBg,

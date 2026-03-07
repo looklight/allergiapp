@@ -24,6 +24,18 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+const COMPLEX_SCRIPT_LANGS = new Set([
+  'zh', 'ja', 'ko',           // CJK
+  'ar', 'ur', 'fa',           // Arabic script
+  'th', 'lo', 'km',           // Thai, Lao, Khmer
+  'hi', 'mr', 'ne',           // Devanagari
+  'bn', 'ta', 'te', 'si',     // South Asian
+  'my',                        // Burmese
+  'ka', 'hy',                  // Georgian, Armenian
+  'he',                        // Hebrew
+  'am',                        // Amharic (Ge'ez)
+]);
+
 export default function CardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -219,6 +231,8 @@ export default function CardScreen() {
 
   const hasAllergyContent = selectedAllergens.length > 0 || inlineRestrictions.length > 0;
 
+  const fontBoost = COMPLEX_SCRIPT_LANGS.has(displayLanguage) ? 2 : 0;
+
   // Color palette
   const colors = useMemo((): CardColors => {
     const fullCardMode = getFullCardMode(activeDietModes);
@@ -338,6 +352,7 @@ export default function CardScreen() {
             getAllergenDescription={getAllergenDescription}
             getAllergenWarning={getAllergenWarning}
             getRestrictionTranslation={getRestrictionTranslation}
+            fontBoost={fontBoost}
             insets={insets}
           />
           {(() => {
@@ -388,6 +403,7 @@ export default function CardScreen() {
           getAllergenDescription={getAllergenDescription}
           getAllergenWarning={getAllergenWarning}
           getRestrictionTranslation={getRestrictionTranslation}
+          fontBoost={fontBoost}
           toggleExpand={toggleExpand}
           handleLanguageToggle={handleLanguageToggle}
         />

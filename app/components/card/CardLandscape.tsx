@@ -27,10 +27,12 @@ export default function CardLandscape({
   getAllergenDescription,
   getAllergenWarning,
   getRestrictionTranslation,
+  fontBoost,
   insets,
 }: CardLandscapeProps) {
   const hasAllergens = selectedAllergens.length > 0;
   const hasRestrictions = separateRestrictions.length > 0 || inlineRestrictions.length > 0;
+  const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel');
   const hasAllergenContent = hasAllergens || inlineRestrictions.length > 0;
   const hasLeftContent = hasAllergenContent || dietModeSections.length > 0;
   const safeHorizontal = Math.max(insets.left, insets.right, 48);
@@ -70,8 +72,9 @@ export default function CardLandscape({
             <View style={[styles.landscapeLeftColumn, { backgroundColor: colors.landscapeLeftBg }]}>
               {hasAllergenContent && (
                 <View style={styles.landscapeLeftHeader}>
-                  {(colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel')) && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
-                  <Text style={styles.landscapeLeftHeaderTitle}>{colors.cardStyle === 'pregnancy' ? '🤰 ' : ''}{translations.header}</Text>
+                  <Text style={styles.landscapeLeftHeaderTitle}>
+                    {colors.cardStyle === 'pregnancy' ? '🤰 ' : showWarningIcon ? '⚠️ ' : ''}{translations.header}
+                  </Text>
                 </View>
               )}
 
@@ -182,9 +185,8 @@ export default function CardLandscape({
 
             {!hasAllergens && hasRestrictions && (
               <View style={[styles.landscapeRightHeader, { backgroundColor: colors.restrictionBg }]}>
-                {(colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId === 'nickel')) && <Text style={styles.landscapeWarningIcon}>⚠️</Text>}
                 <Text style={[styles.landscapeRightHeaderText, { fontWeight: 'bold' }]}>
-                  {restrictionTranslations.message}
+                  {showWarningIcon ? '⚠️ ' : ''}{restrictionTranslations.message}
                 </Text>
               </View>
             )}
@@ -217,23 +219,23 @@ export default function CardLandscape({
                         isSelected && styles.landscapeDetailBadgeSelected
                       ]}>
                         <Text style={styles.landscapeDetailBadgeIcon}>{allergen.icon}</Text>
-                        <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor }]}>
+                        <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getAllergenTranslation(id)}
                         </Text>
                       </View>
                     </View>
                     <View style={styles.landscapeExamplesRow}>
-                      <Text style={styles.landscapeExamplesLabel}>{translations.examples}</Text>
+                      <Text style={[styles.landscapeExamplesLabel, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{translations.examples}</Text>
                       {images.examples.slice(0, 5).map((emoji, idx) => (
                         <Text key={idx} style={styles.landscapeExampleEmoji}>{emoji}</Text>
                       ))}
                     </View>
-                    <Text style={styles.landscapeDetailDescription}>{getAllergenDescription(id)}</Text>
+                    <Text style={[styles.landscapeDetailDescription, fontBoost > 0 && { fontSize: 15 + fontBoost, lineHeight: 21 + fontBoost }]}>{getAllergenDescription(id)}</Text>
                     {(() => {
                       const warning = getAllergenWarning(id);
                       return warning ? (
                         <View style={styles.landscapeWarningBox}>
-                          <Text style={styles.landscapeDetailWarning}>{warning}</Text>
+                          <Text style={[styles.landscapeDetailWarning, fontBoost > 0 && { fontSize: 14 + fontBoost, lineHeight: 19 + fontBoost }]}>{warning}</Text>
                         </View>
                       ) : null;
                     })()}
@@ -249,7 +251,7 @@ export default function CardLandscape({
                     <View style={styles.landscapeDetailTop}>
                       <View style={[styles.landscapeDetailBadge, { backgroundColor: colors.landscapeDetailBadgeBg }]}>
                         <Text style={styles.landscapeDetailBadgeIcon}>{item.icon}</Text>
-                        <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor }]}>
+                        <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getRestrictionTranslation(id)}
                         </Text>
                       </View>
@@ -276,6 +278,7 @@ export default function CardLandscape({
                       variant="landscape"
                       getRestrictionTranslation={getRestrictionTranslation}
                       getRestrictionInfo={(rid) => getRestrictionInfo(rid) as { icon: string } | undefined}
+                      fontBoost={fontBoost}
                       hasOtherContent={hasAllergenContent}
                       restrictionColors={colors.cardStyle === 'pregnancy' && section.modeId === 'pregnancy' ? {
                         restrictionBg: colors.restrictionBg,
@@ -329,10 +332,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.2)',
-  },
-  landscapeWarningIcon: {
-    fontSize: 26,
-    marginRight: 10,
   },
   landscapeLeftHeaderTitle: {
     fontSize: 18,
