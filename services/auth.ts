@@ -24,6 +24,7 @@ async function createUserProfile(user: User, displayName: string): Promise<void>
     restaurantsAdded: 0,
     dishesAdded: 0,
     reviewsAdded: 0,
+    contributionsAdded: 0,
   };
   await setDoc(doc(db, 'users', user.uid), profile);
 }

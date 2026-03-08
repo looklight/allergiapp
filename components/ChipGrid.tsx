@@ -9,7 +9,7 @@ interface ChipGridItem {
 }
 
 interface ChipGridProps {
-  items: ChipGridItem[];
+  items: readonly ChipGridItem[];
   activeIds: string[];
   onToggle: (id: string) => void;
   lang: string;
