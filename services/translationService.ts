@@ -46,7 +46,7 @@ async function translateText({ text, sourceLang, targetLang }: TranslateOptions)
   }
 
   // MyMemory returns match quality — check for errors
-  if (data.responseStatus === 403) {
+  if (data.responseStatus === 403 || data.responseStatus === 429) {
     throw new Error('Translation quota exceeded');
   }
 
@@ -58,12 +58,14 @@ async function translateBatch(
   texts: string[],
   sourceLang: string,
   targetLang: string,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  signal?: AbortSignal
 ): Promise<string[]> {
   const results: string[] = [];
   const total = texts.length;
 
   for (let i = 0; i < texts.length; i++) {
+    if (signal?.aborted) throw new Error('Download cancelled');
     const translated = await translateText({
       text: texts[i],
       sourceLang,
@@ -174,7 +176,8 @@ export async function downloadLanguageTranslations(
         total: allergenNames.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -198,7 +201,8 @@ export async function downloadLanguageTranslations(
         total: allergenDescriptions.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -224,7 +228,8 @@ export async function downloadLanguageTranslations(
           total: allergenDescriptions.length + allergenWarnings.length,
           percentage: Math.round((completedItems / totalItems) * 100),
         });
-      }
+      },
+      signal
     );
     checkAborted();
   }
@@ -249,7 +254,8 @@ export async function downloadLanguageTranslations(
         total: cardTexts.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -266,7 +272,8 @@ export async function downloadLanguageTranslations(
         total: cardTexts.length + dietFoodNames.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -283,7 +290,8 @@ export async function downloadLanguageTranslations(
         total: otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -307,7 +315,8 @@ export async function downloadLanguageTranslations(
         total: restrictionNames.length + restrictionCardTexts.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -323,7 +332,8 @@ export async function downloadLanguageTranslations(
         total: restrictionNames.length + restrictionCardTexts.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 

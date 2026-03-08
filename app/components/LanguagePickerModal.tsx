@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { getLocalizedLanguageName } from '../../constants/languageNames';
+import { languageMatchesQuery } from '../../utils/languageSearch';
 import { DownloadProgress } from '../../services/translationService';
 import { theme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
@@ -118,23 +119,23 @@ export default function LanguagePickerModal({
       list.map((l) => ({ ...l, needsDownload }));
 
     if (!searchQuery.trim()) return addType(allLanguages, false);
-    const q = searchQuery.toLowerCase();
 
-    const matchesQuery = (lang: { nativeName: string; localizedName: string; englishName: string }) =>
-      lang.nativeName.toLowerCase().includes(q) ||
-      lang.localizedName.toLowerCase().includes(q) ||
-      lang.englishName.toLowerCase().includes(q);
-
-    const matched = allLanguages.filter(matchesQuery);
+    const matched = allLanguages.filter((lang) =>
+      languageMatchesQuery(lang.code, searchQuery, {
+        nativeName: lang.nativeName,
+        englishName: lang.englishName,
+        localizedName: lang.localizedName,
+      }, appLang)
+    );
 
     const existingCodes = new Set(allLanguages.map((l) => l.code));
     const downloadable = DOWNLOADABLE_LANGUAGES
       .filter((lang) => {
         if (existingCodes.has(lang.code as AllLanguageCode)) return false;
-        const localized = getLocalizedLanguageName(lang.code, appLang) || lang.name;
-        return lang.name.toLowerCase().includes(q) ||
-          lang.nativeName.toLowerCase().includes(q) ||
-          localized.toLowerCase().includes(q);
+        return languageMatchesQuery(lang.code, searchQuery, {
+          nativeName: lang.nativeName,
+          englishName: lang.name,
+        }, appLang);
       })
       .map((lang) => ({
         code: lang.code as AllLanguageCode,
