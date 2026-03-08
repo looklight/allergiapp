@@ -12,13 +12,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Firebase JS SDK — funziona in Expo Go senza build nativo.
 // Configurazione web app dal progetto Firebase (allergiapp-7bdf3).
 const firebaseConfig = {
-  apiKey: 'AIzaSyAnVDaPPkfd2gryea3o8-LoDJ5oVycv4sQ',
-  authDomain: 'allergiapp-7bdf3.firebaseapp.com',
-  projectId: 'allergiapp-7bdf3',
-  storageBucket: 'allergiapp-7bdf3.firebasestorage.app',
-  messagingSenderId: '283693662836',
-  appId: '1:283693662836:web:38abbdf3fe259bb1988721',
-  measurementId: 'G-N05D83SNW2',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase (singleton pattern)
