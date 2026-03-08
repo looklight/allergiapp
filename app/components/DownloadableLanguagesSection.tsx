@@ -1,16 +1,14 @@
 import { useState, useMemo } from 'react';
-import { View, StyleSheet, TextInput, Pressable, Dimensions } from 'react-native';
+import { View, StyleSheet, TextInput, Pressable, useWindowDimensions } from 'react-native';
 import { Text, ActivityIndicator, Divider, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { DownloadableLanguageCode, LanguageRegion, DownloadableLanguageInfo } from '../../types';
+import { DownloadableLanguageCode, LanguageRegion } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
-import { LANGUAGE_NAMES } from '../../constants/languageNames';
-import { DownloadProgress } from '../../utils/translationService';
+import { languageMatchesQuery } from '../../utils/languageSearch';
+import { DownloadProgress } from '../../services/translationService';
 import { theme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
-import { useAppContext } from '../../utils/AppContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useAppContext } from '../../contexts/AppContext';
 
 // Tipo unificato per lingue nella lista (scaricabili + built-in)
 interface UnifiedLanguage {
@@ -41,8 +39,6 @@ const BUILTIN_CARD_LANGUAGES: UnifiedLanguage[] = [
   { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', region: 'asia', builtIn: true },
 ];
 
-const BUILTIN_CODES = new Set(BUILTIN_CARD_LANGUAGES.map((l) => l.code));
-
 const REGION_ICONS: Record<LanguageRegion, string> = {
   europe: '🇪🇺',
   asia: '🌏',
@@ -67,6 +63,8 @@ export default function DownloadableLanguagesSection({
 }: DownloadableLanguagesSectionProps) {
   const { settings } = useAppContext();
   const appLanguage = settings.appLanguage;
+  const { width: screenWidth } = useWindowDimensions();
+  const chipWidth = (screenWidth - 32 - 8) / 2;
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRegions, setExpandedRegions] = useState<Record<LanguageRegion, boolean>>({
     europe: false,
@@ -86,17 +84,12 @@ export default function DownloadableLanguagesSection({
 
   const filteredLanguages = useMemo(() => {
     if (!searchQuery.trim()) return allLanguages;
-    const q = searchQuery.toLowerCase();
-    const filtered = allLanguages.filter((lang) => {
-      if (lang.name.toLowerCase().includes(q)) return true;
-      if (lang.nativeName.toLowerCase().includes(q)) return true;
-      if (lang.code.toLowerCase().includes(q)) return true;
-      if (!lang.builtIn) {
-        const localizedName = LANGUAGE_NAMES[lang.code as DownloadableLanguageCode]?.[appLanguage];
-        if (localizedName && localizedName.toLowerCase().includes(q)) return true;
-      }
-      return false;
-    });
+    const filtered = allLanguages.filter((lang) =>
+      languageMatchesQuery(lang.code, searchQuery, {
+        nativeName: lang.nativeName,
+        englishName: lang.name,
+      }, appLanguage, { searchCode: true })
+    );
     return filtered.sort((a, b) => a.nativeName.localeCompare(b.nativeName));
   }, [searchQuery, appLanguage, allLanguages]);
 
@@ -107,11 +100,6 @@ export default function DownloadableLanguagesSection({
     );
     return downloaded.sort((a, b) => a.nativeName.localeCompare(b.nativeName));
   }, [downloadedLanguageCodes]);
-
-  // Lingue built-in ordinate alfabeticamente
-  const builtInLangsSorted = useMemo(() => {
-    return [...BUILTIN_CARD_LANGUAGES].sort((a, b) => a.nativeName.localeCompare(b.nativeName));
-  }, []);
 
   // Lingue per regione: include built-in (come "scaricate") + non scaricate
   const langsByRegion = useMemo(() => {
@@ -312,7 +300,7 @@ export default function DownloadableLanguagesSection({
               {downloadedLangs.map((lang) => {
                 const isDownloading = downloadingLang === lang.code;
                 return (
-                  <Surface key={lang.code} style={styles.downloadedChip} elevation={1}>
+                  <Surface key={lang.code} style={[styles.downloadedChip, { width: chipWidth }]} elevation={1}>
                     <Text style={styles.downloadedChipFlag}>{lang.flag}</Text>
                     <View style={styles.downloadedChipContent}>
                       <Text style={styles.downloadedChipName} numberOfLines={1}>{lang.nativeName}</Text>
@@ -377,7 +365,7 @@ export default function DownloadableLanguagesSection({
                   <Text style={styles.regionIcon}>{REGION_ICONS[region]}</Text>
                   <View>
                     <Text style={styles.regionTitle}>{getRegionName(region)}</Text>
-                    <Text style={styles.regionCount}>{getRegionCount(region)} lingue</Text>
+                    <Text style={styles.regionCount}>{getRegionCount(region)} {i18n.t('settings.languagesAvailable')}</Text>
                   </View>
                 </View>
                 <MaterialCommunityIcons
@@ -480,7 +468,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 10,
-    width: (SCREEN_WIDTH - 32 - 8) / 2,
+    minHeight: 56,
   },
   downloadedChipFlag: {
     fontSize: 24,

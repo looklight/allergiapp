@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluteeni (viljat)",
+    "crustaceans": "Äyriäiset",
+    "eggs": "Kananmunat",
+    "fish": "Kala",
+    "peanuts": "Maapähkinät",
+    "soy": "Soija",
+    "milk": "Maito ja maitotuotteet",
+    "celery": "Selleri",
+    "mustard": "Sinappi",
+    "sesame": "Seesaminsiemenet",
+    "sulfites": "Rikkidioksidi ja sulfiitit",
+    "lupin": "Lupiini",
+    "mollusks": "Nilviäiset",
+    "nuts": "Pähkinät",
+    "fava_beans": "Härkäpapu (favismi)"
+  },
+  "descriptions": {
+    "gluten": "Kaikki viljaa tai jauhoja sisältävät ruoat (vehnä, ohra, ruis, speltti): leipä, pasta, pizza, kakut, keksit, olut",
+    "crustaceans": "Katkaravut, hummeri, rapu, jättikatkaravut",
+    "eggs": "Kananmunat, munakkaat, kakut, majoneesi, tuore pasta",
+    "fish": "Kala, sushi, kalakastikkeet, liemet",
+    "peanuts": "Maapähkinät, maapähkinävoi, välipalat, jälkiruoat",
+    "soy": "Tofu, soijakastike, soijamaito, edamame",
+    "milk": "Maito, juusto, voi, jäätelö, kerma",
+    "celery": "Selleri, salaatit, keitot, kasvisliemi",
+    "mustard": "Sinappi, kastikkeet, salaatinkastikkeet, marinadit",
+    "sesame": "Seesaminsiemenet, seesamiöljy, hummus, leipä",
+    "sulfites": "Viini, olut, kuivatut hedelmät, perunalastut",
+    "lupin": "Lupiinijauho, leipä, pasta, välipalat",
+    "mollusks": "Simpukat, osterit, kalmari, mustekala",
+    "nuts": "Saksanpähkinät, mantelit, hasselpähkinät, pistaasit, cashewpähkinät",
+    "fava_beans": "Härkäpapu, härkäpapukeitto, härkäpapusose, padat"
+  },
+  "warnings": {
+    "gluten": "Varoitus: soijakastike voi sisältää gluteenia",
+    "fava_beans": "G6PD-puutos: pienetkin määrät voivat aiheuttaa hemolyyttisen kriisin"
+  },
+  "cardTexts": {
+    "header": "HUOMIO",
+    "subtitle": "RUOKA-ALLERGIAT",
+    "pregnancySubtitle": "RASKAUS JA RUOKA-ALLERGIAT",
+    "message": "Minulla on seuraavat ruoka-allergiat. Varmistakaa, ettei ruokani sisällä näitä ainesosia, myöskään ristikontaminaation kautta.",
+    "pregnancyMessage": "Olen raskaana ja minulla on seuraavat ruoka-allergiat. Varmistakaa, ettei ruokani sisällä näitä ainesosia, myöskään ristikontaminaation kautta.",
+    "thanks": "Kiitos paljon ymmärryksestänne ja avustanne.",
+    "tapToSee": "Napauta nähdäksesi esimerkkejä",
+    "examples": "Esimerkkejä:"
+  },
+  "dietFoods": {
+    "meat": "Liha",
+    "fish": "Kala",
+    "seafood": "Äyriäiset",
+    "eggs": "Kananmunat",
+    "dairy": "Maitotuotteet",
+    "honey": "Hunaja"
+  },
+  "otherFoods": {
+    "garlic": "Valkosipuli",
+    "onion": "Sipuli",
+    "tomato": "Tomaatti",
+    "mushrooms": "Sienet",
+    "bell_pepper": "Paprika",
+    "corn": "Maissi",
+    "strawberries": "Mansikat",
+    "kiwi": "Kiivi",
+    "stone_fruits": "Kivihedelmät (persikka, kirsikka, aprikoosi)",
+    "citrus": "Sitrushedelmät",
+    "banana": "Banaani",
+    "buckwheat": "Tattari",
+    "spicy": "Mausteinen ruoka"
+  },
+  "restrictions": {
+    "raw_fish": "Raaka kala / sushi",
+    "raw_cured_meats": "Raaka makkara",
+    "raw_eggs": "Raa'at kananmunat",
+    "raw_sprouts": "Raa'at idut",
+    "unpasteurized_cheese": "Pastöroimaton juusto",
+    "unpasteurized_milk": "Pastöroimaton maito",
+    "alcohol": "Alkoholi",
+    "excessive_caffeine": "Liiallinen kofeiini",
+    "nickel_chocolate": "Suklaa / kaakao",
+    "nickel_tomato": "Tomaatit ja tomaattikastikkeet",
+    "nickel_legumes": "Palkokasvit (linssit, kikherneet, pavut)",
+    "nickel_nuts": "Pähkinät (saksanpähkinä, hasselpähkinä, cashew)",
+    "nickel_whole_grains": "Täysjyvä / kaura",
+    "nickel_spinach": "Pinaatti ja lehtivihannekset",
+    "nickel_canned_food": "Säilykeruoka",
+    "nickel_tea_coffee": "Tee ja kahvi",
+    "histamine_aged_cheese": "Kypsytetyt juustot",
+    "histamine_cured_meats": "Leikkeleet ja makkarat",
+    "histamine_fish": "Säilötty ja savustettu kala",
+    "histamine_fermented": "Fermentoidut ruoat (hapankaali, kimchi, miso)",
+    "histamine_wine_beer": "Viini ja olut",
+    "histamine_vinegar": "Etikka ja suolakurkut",
+    "histamine_chocolate": "Suklaa / kaakao",
+    "histamine_tomato": "Tomaatit ja tomaattikastikkeet",
+    "histamine_strawberries": "Mansikat",
+    "histamine_eggplant": "Munakoiso",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Pinaatti",
+    "diabetes_added_sugar": "Sokeri / siirapit",
+    "diabetes_honey_sweeteners": "Hunaja ja makeutusaineet",
+    "diabetes_sweet_sauces": "Makeat kastikkeet (ketsuppi, hapanimeläkastike, teriyaki)",
+    "diabetes_sweet_glazes": "Makeat kuorrutteet ja marinadit",
+    "diabetes_fruit_juice": "Hedelmämehu ainesosana",
+    "diabetes_candied_fruit": "Sokeroitu hedelmä / hillot"
+  },
+  "restrictionCardTexts": {
+    "header": "VÄLTETTÄVÄT RUOAT",
+    "message": "Terveydellisistä syistä minun on vältettävä seuraavia ruokia:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "RASKAUS",
+        "message": "Olen raskaana. Varmistakaa, ettei ruokani sisällä:",
+        "sectionMessage": "Lisäksi raskauteni vuoksi minun on vältettävä:"
+      },
+      "no_meat": {
+        "header": "KASVISRUOKAVALIO",
+        "message": "En syö lihaa.\nKala ja muut eläintuotteet käyvät.",
+        "sectionMessage": "Lisäksi en syö lihaa.\nKala ja muut eläintuotteet käyvät."
+      },
+      "no_meat_fish": {
+        "header": "KASVISRUOKAVALIO",
+        "message": "Noudatan kasvisruokavaliota. En syö lihaa enkä kalaa.",
+        "sectionMessage": "Lisäksi noudatan kasvisruokavaliota enkä syö lihaa tai kalaa."
+      },
+      "no_animal_products": {
+        "header": "VEGAANIRUOKAVALIO",
+        "message": "Noudatan vegaaniruokavaliota. En syö lihaa, kalaa, äyriäisiä, kananmunia, maitotuotteita, hunajaa enkä mitään eläinperäisiä tuotteita.",
+        "sectionMessage": "Lisäksi noudatan vegaaniruokavaliota enkä syö lihaa, kalaa, äyriäisiä, kananmunia, maitotuotteita, hunajaa enkä mitään eläinperäisiä tuotteita."
+      },
+      "nickel": {
+        "header": "NIKKELIALLERGIA",
+        "message": "Minulla on nikkeliallergia. Nikkeli on monissa ruoissa esiintyvä metalli. Varmistakaa, ettei ruokani sisällä:",
+        "sectionMessage": "Lisäksi minulla on nikkeliallergia. Varmistakaa, ettei ruokani sisällä:"
+      },
+      "histamine": {
+        "header": "HISTAMIINI-INTOLERANSSI",
+        "message": "En voi syödä histamiinipitoisia ruokia. Histamiinia on kypsytetyissä, fermentoiduissa tai pitkään säilytetyissä ruoissa. Esimerkiksi:",
+        "sectionMessage": "Lisäksi en voi syödä histamiinipitoisia ruokia. Esimerkiksi:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Minulla on diabetes ja minun on kontrolloitava sokerinsaantiani. Älkää lisätkö sokeria ruokaani ja kertokaa, jos se sisältää:",
+        "sectionMessage": "Lisäksi minulla on diabetes ja minun on kontrolloitava sokerinsaantiani. Kertokaa, jos se sisältää:"
+      }
+    }
+  }
+}

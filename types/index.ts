@@ -1,3 +1,25 @@
+import { ReactNode } from 'react';
+
+// Banner types (used by services/remoteConfig and components/BannerCarousel)
+export type BannerType = 'info' | 'ad' | 'custom';
+
+export interface BannerItem {
+  id: string;
+  type: BannerType;
+  icon?: string;
+  image?: any;
+  title?: string;
+  subtitle?: string;
+  adUrl?: string;
+  adImage?: string;
+  adButtonText?: string;
+  layout?: 'default' | 'full_image';
+  backgroundColor?: string;
+  textColor?: string;
+  displayDuration?: number;
+  customContent?: ReactNode;
+}
+
 export type AllergenId =
   | 'gluten'
   | 'crustaceans'
@@ -12,7 +34,8 @@ export type AllergenId =
   | 'sesame'
   | 'sulfites'
   | 'lupin'
-  | 'mollusks';
+  | 'mollusks'
+  | 'fava_beans';
 
 export type Language =
   | 'it'  // Italiano
@@ -38,7 +61,7 @@ export interface LanguageInfo {
   flag: string;
 }
 
-export const LANGUAGES: LanguageInfo[] = [
+export const LANGUAGES: readonly LanguageInfo[] = [
   { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
@@ -117,6 +140,10 @@ export type DownloadableLanguageCode =
   // Asia
   | 'he'  // Ebraico
   | 'hi'  // Hindi
+  | 'pa'  // Punjabi
+  | 'gu'  // Gujarati
+  | 'kn'  // Kannada
+  | 'ml'  // Malayalam
   | 'vi'  // Vietnamita
   | 'id'  // Indonesiano
   | 'ms'  // Malese
@@ -127,8 +154,11 @@ export type DownloadableLanguageCode =
   | 'mr'  // Marathi
   | 'ur'  // Urdu
   | 'fa'  // Persiano
+  | 'ps'  // Pashto
+  | 'ku'  // Curdo
   | 'ne'  // Nepalese
   | 'si'  // Singalese
+  | 'dv'  // Dhivehi (Maldiviano)
   | 'km'  // Khmer
   | 'lo'  // Laotiano
   | 'my'  // Birmano
@@ -137,6 +167,9 @@ export type DownloadableLanguageCode =
   | 'az'  // Azero
   | 'kk'  // Kazako
   | 'uz'  // Uzbeco
+  | 'tg'  // Tagico
+  | 'ky'  // Kirghiso
+  | 'tk'  // Turkmeno
   | 'mn'  // Mongolo
   // Africa
   | 'sw'  // Swahili
@@ -145,7 +178,10 @@ export type DownloadableLanguageCode =
   | 'ha'  // Hausa
   | 'yo'  // Yoruba
   | 'zu'  // Zulu
+  | 'so'  // Somalo
+  | 'mg'  // Malgascio
   // Altro
+  | 'ht'  // Creolo haitiano
   | 'eo'; // Esperanto
 
 export type LanguageRegion = 'europe' | 'asia' | 'africa' | 'other';
@@ -162,13 +198,22 @@ export interface DownloadedLanguageData {
   allergens: Record<AllergenId, string>;
   descriptions: Record<AllergenId, string>;
   warnings?: Record<AllergenId, string>;
+  restrictions?: Record<string, string>;
+  otherFoods?: Record<string, string>;
+  restrictionCardTexts?: {
+    header: string;
+    message: string;
+    dietModeTexts: Record<string, { header: string; message: string; sectionMessage: string }>;
+  };
+  dietFoods?: Record<string, string>;
   cardTexts: {
     header: string;
     subtitle: string;
+    pregnancySubtitle?: string;
     message: string;
+    pregnancyMessage?: string;
     thanks: string;
     tapToSee: string;
-    showIn: string;
     examples?: string;
   };
   downloadedAt: string;
@@ -178,3 +223,7 @@ export type DownloadedLanguagesStorage = Record<DownloadableLanguageCode, Downlo
 
 // Tipo combinato per lingue (hardcoded + scaricate)
 export type AllLanguageCode = Language | DownloadableLanguageCode;
+
+// Re-export restriction types for convenience
+export type { RestrictionItemId, RestrictionCategoryId } from '../constants/otherRestrictions';
+export type { OtherFoodId } from '../constants/otherFoods';

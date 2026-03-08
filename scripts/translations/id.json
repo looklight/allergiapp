@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (sereal)",
+    "crustaceans": "Krustasea",
+    "eggs": "Telur",
+    "fish": "Ikan",
+    "peanuts": "Kacang tanah",
+    "soy": "Kedelai",
+    "milk": "Susu dan produk susu",
+    "celery": "Seledri",
+    "mustard": "Mustard",
+    "sesame": "Biji wijen",
+    "sulfites": "Sulfur dioksida dan sulfit",
+    "lupin": "Lupin",
+    "mollusks": "Moluska",
+    "nuts": "Kacang pohon",
+    "fava_beans": "Kacang fava (favisme)"
+  },
+  "descriptions": {
+    "gluten": "Semua makanan dengan sereal atau tepung (gandum, jelai, gandum hitam, spelt): roti, pasta, pizza, kue, biskuit, bir",
+    "crustaceans": "Udang, lobster, kepiting, udang karang",
+    "eggs": "Telur, omelet, kue, mayones, pasta segar",
+    "fish": "Ikan, sushi, saus ikan, kaldu",
+    "peanuts": "Kacang tanah, selai kacang, camilan, makanan penutup",
+    "soy": "Tahu, kecap, susu kedelai, edamame",
+    "milk": "Susu, keju, mentega, es krim, krim",
+    "celery": "Seledri, salad, sup, kaldu sayuran",
+    "mustard": "Mustard, saus, dressing, marinade",
+    "sesame": "Biji wijen, minyak wijen, hummus, roti",
+    "sulfites": "Anggur, bir, buah kering, keripik",
+    "lupin": "Tepung lupin, roti, pasta, camilan",
+    "mollusks": "Kerang, tiram, cumi-cumi, gurita",
+    "nuts": "Kenari, almond, hazelnut, pistachio, kacang mete",
+    "fava_beans": "Kacang fava, sup kacang, puree kacang, semur"
+  },
+  "warnings": {
+    "gluten": "Peringatan: kecap bisa mengandung gluten",
+    "fava_beans": "Defisiensi G6PD: bahkan jumlah kecil dapat menyebabkan krisis hemolitik"
+  },
+  "cardTexts": {
+    "header": "PERHATIAN",
+    "subtitle": "ALERGI MAKANAN",
+    "pregnancySubtitle": "KEHAMILAN DAN ALERGI MAKANAN",
+    "message": "Saya memiliki alergi makanan berikut. Mohon pastikan makanan saya tidak mengandung bahan-bahan ini, termasuk kontaminasi silang.",
+    "pregnancyMessage": "Saya sedang hamil dan memiliki alergi makanan berikut. Mohon pastikan makanan saya tidak mengandung bahan-bahan ini, termasuk kontaminasi silang.",
+    "thanks": "Terima kasih banyak atas pengertian dan bantuan Anda.",
+    "tapToSee": "Ketuk untuk melihat contoh",
+    "examples": "Contoh:"
+  },
+  "dietFoods": {
+    "meat": "Daging",
+    "fish": "Ikan",
+    "seafood": "Makanan laut",
+    "eggs": "Telur",
+    "dairy": "Produk susu",
+    "honey": "Madu"
+  },
+  "otherFoods": {
+    "garlic": "Bawang putih",
+    "onion": "Bawang merah",
+    "tomato": "Tomat",
+    "mushrooms": "Jamur",
+    "bell_pepper": "Paprika",
+    "corn": "Jagung",
+    "strawberries": "Stroberi",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Buah batu (persik, ceri, aprikot)",
+    "citrus": "Buah jeruk",
+    "banana": "Pisang",
+    "buckwheat": "Soba",
+    "spicy": "Makanan pedas"
+  },
+  "restrictions": {
+    "raw_fish": "Ikan mentah / sushi",
+    "raw_cured_meats": "Daging olahan mentah",
+    "raw_eggs": "Telur mentah",
+    "raw_sprouts": "Kecambah mentah",
+    "unpasteurized_cheese": "Keju tidak dipasteurisasi",
+    "unpasteurized_milk": "Susu tidak dipasteurisasi",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "Kafein berlebihan",
+    "nickel_chocolate": "Cokelat / kakao",
+    "nickel_tomato": "Tomat dan saus tomat",
+    "nickel_legumes": "Kacang-kacangan (lentil, buncis, kacang merah)",
+    "nickel_nuts": "Kacang pohon (kenari, hazelnut, kacang mete)",
+    "nickel_whole_grains": "Biji-bijian utuh / oat",
+    "nickel_spinach": "Bayam dan sayuran berdaun",
+    "nickel_canned_food": "Makanan kaleng",
+    "nickel_tea_coffee": "Teh dan kopi",
+    "histamine_aged_cheese": "Keju tua",
+    "histamine_cured_meats": "Daging olahan dan sosis",
+    "histamine_fish": "Ikan kaleng dan asap",
+    "histamine_fermented": "Makanan fermentasi (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Anggur dan bir",
+    "histamine_vinegar": "Cuka dan acar",
+    "histamine_chocolate": "Cokelat / kakao",
+    "histamine_tomato": "Tomat dan saus tomat",
+    "histamine_strawberries": "Stroberi",
+    "histamine_eggplant": "Terong",
+    "histamine_avocado": "Alpukat",
+    "histamine_spinach": "Bayam",
+    "diabetes_added_sugar": "Gula / sirup",
+    "diabetes_honey_sweeteners": "Madu dan pemanis",
+    "diabetes_sweet_sauces": "Saus manis (saus tomat, asam manis, teriyaki)",
+    "diabetes_sweet_glazes": "Glasir manis dan marinade",
+    "diabetes_fruit_juice": "Jus buah sebagai bahan",
+    "diabetes_candied_fruit": "Buah manisan / selai"
+  },
+  "restrictionCardTexts": {
+    "header": "MAKANAN YANG HARUS DIHINDARI",
+    "message": "Untuk alasan kesehatan saya harus menghindari makanan berikut:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "KEHAMILAN",
+        "message": "Saya sedang hamil. Mohon pastikan makanan saya tidak mengandung:",
+        "sectionMessage": "Selain itu, karena kehamilan saya harus menghindari juga:"
+      },
+      "no_meat": {
+        "header": "DIET VEGETARIAN",
+        "message": "Saya tidak makan daging.\nIkan dan produk hewani lainnya boleh.",
+        "sectionMessage": "Selain itu, saya tidak makan daging.\nIkan dan produk hewani lainnya boleh."
+      },
+      "no_meat_fish": {
+        "header": "DIET VEGETARIAN",
+        "message": "Saya mengikuti diet vegetarian. Saya tidak makan daging dan ikan.",
+        "sectionMessage": "Selain itu, saya mengikuti diet vegetarian dan tidak makan daging atau ikan."
+      },
+      "no_animal_products": {
+        "header": "DIET VEGAN",
+        "message": "Saya mengikuti diet vegan. Saya tidak makan daging, ikan, makanan laut, telur, produk susu, madu, atau produk hewani apa pun.",
+        "sectionMessage": "Selain itu, saya mengikuti diet vegan dan tidak makan daging, ikan, makanan laut, telur, produk susu, madu, atau produk hewani apa pun."
+      },
+      "nickel": {
+        "header": "ALERGI NIKEL",
+        "message": "Saya memiliki alergi nikel. Nikel adalah logam yang terdapat dalam banyak makanan. Mohon pastikan makanan saya tidak mengandung:",
+        "sectionMessage": "Selain itu, saya memiliki alergi nikel. Mohon pastikan makanan saya tidak mengandung:"
+      },
+      "histamine": {
+        "header": "INTOLERANSI HISTAMIN",
+        "message": "Saya tidak bisa makan makanan tinggi histamin. Histamin terdapat dalam makanan yang sudah tua, difermentasi, atau disimpan lama. Contoh:",
+        "sectionMessage": "Selain itu, saya tidak bisa makan makanan tinggi histamin. Contoh:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Saya menderita diabetes dan harus mengontrol konsumsi gula. Mohon jangan tambahkan gula ke makanan saya dan beri tahu saya jika mengandung:",
+        "sectionMessage": "Selain itu, saya menderita diabetes dan harus mengontrol konsumsi gula. Beri tahu saya jika mengandung:"
+      }
+    }
+  }
+}

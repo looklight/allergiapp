@@ -1,6 +1,6 @@
 import { DownloadableLanguageInfo } from '../types';
 
-export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
+export const DOWNLOADABLE_LANGUAGES: readonly DownloadableLanguageInfo[] = [
   // Europa
   { code: 'el', name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷', region: 'europe' },
   { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', region: 'europe' },
@@ -32,6 +32,10 @@ export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
   // Asia
   { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', region: 'asia' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', region: 'asia' },
+  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', flag: '🇮🇳', region: 'asia' },
+  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳', region: 'asia' },
+  { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', flag: '🇮🇳', region: 'asia' },
+  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', flag: '🇮🇳', region: 'asia' },
   { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', flag: '🇻🇳', region: 'asia' },
   { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩', region: 'asia' },
   { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾', region: 'asia' },
@@ -42,8 +46,11 @@ export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
   { code: 'mr', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳', region: 'asia' },
   { code: 'ur', name: 'Urdu', nativeName: 'اردو', flag: '🇵🇰', region: 'asia' },
   { code: 'fa', name: 'Persian', nativeName: 'فارسی', flag: '🇮🇷', region: 'asia' },
+  { code: 'ps', name: 'Pashto', nativeName: 'پښتو', flag: '🇦🇫', region: 'asia' },
+  { code: 'ku', name: 'Kurdish', nativeName: 'Kurdî', flag: '🇮🇶', region: 'asia' },
   { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', flag: '🇳🇵', region: 'asia' },
   { code: 'si', name: 'Sinhala', nativeName: 'සිංහල', flag: '🇱🇰', region: 'asia' },
+  { code: 'dv', name: 'Dhivehi', nativeName: 'ދިވެހި', flag: '🇲🇻', region: 'asia' },
   { code: 'km', name: 'Khmer', nativeName: 'ភាសាខ្មែរ', flag: '🇰🇭', region: 'asia' },
   { code: 'lo', name: 'Lao', nativeName: 'ລາວ', flag: '🇱🇦', region: 'asia' },
   { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', flag: '🇲🇲', region: 'asia' },
@@ -52,6 +59,9 @@ export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
   { code: 'az', name: 'Azerbaijani', nativeName: 'Azərbaycan', flag: '🇦🇿', region: 'asia' },
   { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша', flag: '🇰🇿', region: 'asia' },
   { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha', flag: '🇺🇿', region: 'asia' },
+  { code: 'tg', name: 'Tajik', nativeName: 'Тоҷикӣ', flag: '🇹🇯', region: 'asia' },
+  { code: 'ky', name: 'Kyrgyz', nativeName: 'Кыргызча', flag: '🇰🇬', region: 'asia' },
+  { code: 'tk', name: 'Turkmen', nativeName: 'Türkmençe', flag: '🇹🇲', region: 'asia' },
   { code: 'mn', name: 'Mongolian', nativeName: 'Монгол', flag: '🇲🇳', region: 'asia' },
   // Africa
   { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', flag: '🇰🇪', region: 'africa' },
@@ -60,7 +70,10 @@ export const DOWNLOADABLE_LANGUAGES: DownloadableLanguageInfo[] = [
   { code: 'ha', name: 'Hausa', nativeName: 'Hausa', flag: '🇳🇬', region: 'africa' },
   { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá', flag: '🇳🇬', region: 'africa' },
   { code: 'zu', name: 'Zulu', nativeName: 'isiZulu', flag: '🇿🇦', region: 'africa' },
+  { code: 'so', name: 'Somali', nativeName: 'Soomaali', flag: '🇸🇴', region: 'africa' },
+  { code: 'mg', name: 'Malagasy', nativeName: 'Malagasy', flag: '🇲🇬', region: 'africa' },
   // Altro
+  { code: 'ht', name: 'Haitian Creole', nativeName: 'Kreyòl ayisyen', flag: '🇭🇹', region: 'other' },
   { code: 'eo', name: 'Esperanto', nativeName: 'Esperanto', flag: '🌍', region: 'other' },
 ];
 

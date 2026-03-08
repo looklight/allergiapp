@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (grane)",
+    "crustaceans": "Skaaldiere",
+    "eggs": "Eiers",
+    "fish": "Vis",
+    "peanuts": "Grondboontjies",
+    "soy": "Soja",
+    "milk": "Melk en suiwelprodukte",
+    "celery": "Seldery",
+    "mustard": "Mosterd",
+    "sesame": "Sesam",
+    "sulfites": "Swaweldioksied en sulfiete",
+    "lupin": "Lupien",
+    "mollusks": "Weekdiere",
+    "nuts": "Boomneute",
+    "fava_beans": "Fava bone (favism)"
+  },
+  "descriptions": {
+    "gluten": "Alle kosse met graan of meel (koring, gars, rog, spelt): brood, pasta, pizza, koeke, koekies, bier",
+    "crustaceans": "Garnale, kreef, krap, garnale",
+    "eggs": "Eiers, omelette, koeke, mayonnaise, vars pasta",
+    "fish": "Vis, soesji, vissouse, sous",
+    "peanuts": "Grondboontjies, grondboontjiebotter, peuselhappies, nageregte",
+    "soy": "Tofu, sojasous, sojamelk, edamame",
+    "milk": "Melk, kaas, botter, roomys, room",
+    "celery": "Seldery, slaaie, sop, groentebouillons",
+    "mustard": "Mosterd, souse, dressings, marinades",
+    "sesame": "Sesamsaad, sesamolie, hummus, brood",
+    "sulfites": "Wyn, bier, gedroogde vrugte, skyfies",
+    "lupin": "Lupienmeel, brood, pasta, versnaperinge",
+    "mollusks": "Mossels, mossels, oesters, inkvis, seekat",
+    "nuts": "Okkerneute, amandels, haselneute, pistache, kasjoeneute",
+    "fava_beans": "Fava bone, fava boontjiesop, fava boontjiepuree, bredies"
+  },
+  "warnings": {
+    "gluten": "⚠️ Waarskuwing: sojasous kan gluten bevat",
+    "fava_beans": "G6PD-tekort: selfs klein hoeveelhede kan hemolitiese krisis veroorsaak"
+  },
+  "cardTexts": {
+    "header": "AANDAG",
+    "subtitle": "VOEDSELALLERGIEë",
+    "pregnancySubtitle": "SWANGERSKAP & VOEDSELALLERGIEë",
+    "message": "Ek het die volgende voedselallergieë. Maak asseblief seker dat my kos nie hierdie bestanddele bevat nie, insluitend deur kruiskontaminasie.",
+    "pregnancyMessage": "Ek is swanger en ek het die volgende voedselallergieë. Maak asseblief seker dat my kos nie hierdie bestanddele bevat nie, insluitend deur kruiskontaminasie.",
+    "thanks": "Baie dankie vir jou begrip en jou hulp.",
+    "tapToSee": "Tik om voorbeelde te sien",
+    "examples": "Voorbeelde:"
+  },
+  "dietFoods": {
+    "meat": "Vleis",
+    "fish": "Vis",
+    "seafood": "Seekos",
+    "eggs": "Eiers",
+    "dairy": "Suiwel",
+    "honey": "Liefie"
+  },
+  "otherFoods": {
+    "garlic": "Knoffel",
+    "onion": "Ui",
+    "tomato": "Tamatie",
+    "mushrooms": "Sampioene",
+    "bell_pepper": "Soetrissie",
+    "corn": "Mielies",
+    "strawberries": "Aarbeie",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Steenvrugte (perske, kersie, appelkoos)",
+    "citrus": "Sitrusvrugte",
+    "banana": "Piesang",
+    "buckwheat": "Bokwiet",
+    "spicy": "Pittige kosse"
+  },
+  "restrictions": {
+    "raw_fish": "Rou vis / sushi",
+    "raw_cured_meats": "Rou gebakte vleis",
+    "raw_eggs": "Rou eiers",
+    "raw_sprouts": "Rou spruite",
+    "unpasteurized_cheese": "Ongepasteuriseerde kase",
+    "unpasteurized_milk": "Ongepasteuriseerde melk",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "Oormatige kafeïen",
+    "nickel_chocolate": "Sjokolade / kakao",
+    "nickel_tomato": "Tamatie en tamatiesouse",
+    "nickel_legumes": "Peulgewasse (lensies, kekerertjies, boontjies)",
+    "nickel_nuts": "Neute (okkerneute, haselneute, kasjoeneute)",
+    "nickel_whole_grains": "Volgraan / hawer",
+    "nickel_spinach": "Spinasie en blaargroentes",
+    "nickel_canned_food": "Blikkieskos",
+    "nickel_tea_coffee": "Tee en koffie",
+    "histamine_aged_cheese": "Verouderde kase",
+    "histamine_cured_meats": "Gesuurde vleis en wors",
+    "histamine_fish": "Ingemaakte en gerookte vis",
+    "histamine_fermented": "Gefermenteerde kosse (suurkool, kimchi, miso)",
+    "histamine_wine_beer": "Wyn en bier",
+    "histamine_vinegar": "Asyn en piekels",
+    "histamine_chocolate": "Sjokolade / kakao",
+    "histamine_tomato": "Tamatie en tamatiesouse",
+    "histamine_strawberries": "Aarbeie",
+    "histamine_eggplant": "Eiervrug",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Spinasie",
+    "diabetes_added_sugar": "Bygevoegde suiker/stroop",
+    "diabetes_honey_sweeteners": "Heuning en versoeters",
+    "diabetes_sweet_sauces": "Soet souse (ketchup, soet en suur, teriyaki)",
+    "diabetes_sweet_glazes": "Soet glasure en marinades",
+    "diabetes_fruit_juice": "Vrugtesap as bestanddeel",
+    "diabetes_candied_fruit": "Versuikerde vrugte / konfyte"
+  },
+  "restrictionCardTexts": {
+    "header": "VOEDSEL OM TE VERMY",
+    "message": "Om gesondheidsredes moet ek die volgende kosse vermy:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "SWANGERSKAP",
+        "message": "Ek is swanger. Maak asseblief seker dat my kos nie die volgende bevat nie:",
+        "sectionMessage": "Verder, as gevolg van my swangerskap, moet ek ook vermy:"
+      },
+      "no_meat": {
+        "header": "VEGETARIESE DIEET",
+        "message": "Ek eet nie vleis nie. \nVis en ander diereprodukte is goed.",
+        "sectionMessage": "Boonop eet ek nie vleis nie. \nVis en ander diereprodukte is goed."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIESE DIEET",
+        "message": "Ek volg 'n vegetariese dieet. \nEk eet nie vleis of vis nie.",
+        "sectionMessage": "Daarbenewens volg ek 'n vegetariese dieet en eet nie vleis of vis nie."
+      },
+      "no_animal_products": {
+        "header": "VEGAN DIEET",
+        "message": "Ek volg 'n veganiese dieet. \nEk eet nie vleis, vis, seekos, eiers, suiwel, heuning of enige diereprodukte nie.",
+        "sectionMessage": "Daarbenewens volg ek 'n veganistiese dieet en eet nie vleis, vis, seekos, eiers, suiwel, heuning of enige diereprodukte nie."
+      },
+      "nickel": {
+        "header": "NIKKELALLERGIE",
+        "message": "Ek het 'n nikkelallergie. Nikkel is 'n metaal wat in baie kosse voorkom. Maak asseblief seker my kos bevat nie:",
+        "sectionMessage": "Daarbenewens het ek 'n nikkelallergie. Nikkel is 'n metaal wat in baie kosse voorkom. Maak asseblief seker my kos bevat nie:"
+      },
+      "histamine": {
+        "header": "HISTAMIEN-ONVERdraagsaamheid",
+        "message": "Ek kan nie kos eet wat ryk is aan histamien nie. Histamien word aangetref in verouderde, gefermenteerde of lank gepreserveerde voedsel. Byvoorbeeld:",
+        "sectionMessage": "Daarbenewens kan ek nie kos eet wat ryk is aan histamien nie. Histamien word aangetref in verouderde, gefermenteerde of lank gepreserveerde voedsel. Byvoorbeeld:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Ek het diabetes en moet my suikerinname beheer. Moet asseblief nie suiker by my kos voeg nie en laat weet my of dit bevat:",
+        "sectionMessage": "Daarbenewens het ek diabetes en moet my suikerinname beheer. Moet asseblief nie suiker by my kos voeg nie en laat weet my of dit bevat:"
+      }
+    }
+  }
+}

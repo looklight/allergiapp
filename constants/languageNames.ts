@@ -50,6 +50,10 @@ export const LANGUAGE_NAMES: Record<string, Record<AppLanguage, string>> = {
   // Asia e Medio Oriente
   he: { it: 'Ebraico', en: 'Hebrew', es: 'Hebreo', de: 'Hebräisch', fr: 'Hébreu' },
   hi: { it: 'Hindi', en: 'Hindi', es: 'Hindi', de: 'Hindi', fr: 'Hindi' },
+  pa: { it: 'Punjabi', en: 'Punjabi', es: 'Punyabí', de: 'Punjabi', fr: 'Pendjabi' },
+  gu: { it: 'Gujarati', en: 'Gujarati', es: 'Guyaratí', de: 'Gujarati', fr: 'Gujarati' },
+  kn: { it: 'Kannada', en: 'Kannada', es: 'Canarés', de: 'Kannada', fr: 'Kannada' },
+  ml: { it: 'Malayalam', en: 'Malayalam', es: 'Malayalam', de: 'Malayalam', fr: 'Malayalam' },
   vi: { it: 'Vietnamita', en: 'Vietnamese', es: 'Vietnamita', de: 'Vietnamesisch', fr: 'Vietnamien' },
   id: { it: 'Indonesiano', en: 'Indonesian', es: 'Indonesio', de: 'Indonesisch', fr: 'Indonésien' },
   ms: { it: 'Malese', en: 'Malay', es: 'Malayo', de: 'Malaiisch', fr: 'Malais' },
@@ -60,8 +64,11 @@ export const LANGUAGE_NAMES: Record<string, Record<AppLanguage, string>> = {
   mr: { it: 'Marathi', en: 'Marathi', es: 'Maratí', de: 'Marathi', fr: 'Marathi' },
   ur: { it: 'Urdu', en: 'Urdu', es: 'Urdu', de: 'Urdu', fr: 'Ourdou' },
   fa: { it: 'Persiano', en: 'Persian', es: 'Persa', de: 'Persisch', fr: 'Persan' },
+  ps: { it: 'Pashto', en: 'Pashto', es: 'Pastún', de: 'Paschtu', fr: 'Pachto' },
+  ku: { it: 'Curdo', en: 'Kurdish', es: 'Kurdo', de: 'Kurdisch', fr: 'Kurde' },
   ne: { it: 'Nepalese', en: 'Nepali', es: 'Nepalí', de: 'Nepalesisch', fr: 'Népalais' },
   si: { it: 'Singalese', en: 'Sinhala', es: 'Cingalés', de: 'Singhalesisch', fr: 'Cingalais' },
+  dv: { it: 'Dhivehi', en: 'Dhivehi', es: 'Divehi', de: 'Dhivehi', fr: 'Maldivien' },
   km: { it: 'Khmer', en: 'Khmer', es: 'Jemer', de: 'Khmer', fr: 'Khmer' },
   lo: { it: 'Laotiano', en: 'Lao', es: 'Laosiano', de: 'Laotisch', fr: 'Laotien' },
   my: { it: 'Birmano', en: 'Burmese', es: 'Birmano', de: 'Birmanisch', fr: 'Birman' },
@@ -70,6 +77,9 @@ export const LANGUAGE_NAMES: Record<string, Record<AppLanguage, string>> = {
   az: { it: 'Azerbaigiano', en: 'Azerbaijani', es: 'Azerbaiyano', de: 'Aserbaidschanisch', fr: 'Azerbaïdjanais' },
   kk: { it: 'Kazako', en: 'Kazakh', es: 'Kazajo', de: 'Kasachisch', fr: 'Kazakh' },
   uz: { it: 'Uzbeco', en: 'Uzbek', es: 'Uzbeko', de: 'Usbekisch', fr: 'Ouzbek' },
+  tg: { it: 'Tagico', en: 'Tajik', es: 'Tayiko', de: 'Tadschikisch', fr: 'Tadjik' },
+  ky: { it: 'Kirghiso', en: 'Kyrgyz', es: 'Kirguís', de: 'Kirgisisch', fr: 'Kirghize' },
+  tk: { it: 'Turkmeno', en: 'Turkmen', es: 'Turcomano', de: 'Turkmenisch', fr: 'Turkmène' },
   mn: { it: 'Mongolo', en: 'Mongolian', es: 'Mongol', de: 'Mongolisch', fr: 'Mongol' },
   // Africa
   sw: { it: 'Swahili', en: 'Swahili', es: 'Suajili', de: 'Swahili', fr: 'Swahili' },
@@ -78,7 +88,10 @@ export const LANGUAGE_NAMES: Record<string, Record<AppLanguage, string>> = {
   ha: { it: 'Hausa', en: 'Hausa', es: 'Hausa', de: 'Hausa', fr: 'Haoussa' },
   yo: { it: 'Yoruba', en: 'Yoruba', es: 'Yoruba', de: 'Yoruba', fr: 'Yoruba' },
   zu: { it: 'Zulu', en: 'Zulu', es: 'Zulú', de: 'Zulu', fr: 'Zoulou' },
+  so: { it: 'Somalo', en: 'Somali', es: 'Somalí', de: 'Somali', fr: 'Somali' },
+  mg: { it: 'Malgascio', en: 'Malagasy', es: 'Malgache', de: 'Malagasy', fr: 'Malgache' },
   // Altro
+  ht: { it: 'Creolo haitiano', en: 'Haitian Creole', es: 'Criollo haitiano', de: 'Haitianisches Kreol', fr: 'Créole haïtien' },
   eo: { it: 'Esperanto', en: 'Esperanto', es: 'Esperanto', de: 'Esperanto', fr: 'Espéranto' },
 };
 

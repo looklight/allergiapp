@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluteen (teravili)",
+    "crustaceans": "Koorikloomad",
+    "eggs": "Munad",
+    "fish": "Kala",
+    "peanuts": "Maapähklid",
+    "soy": "Soja",
+    "milk": "Piim ja piimatooted",
+    "celery": "Seller",
+    "mustard": "Sinep",
+    "sesame": "Seesamiseemned",
+    "sulfites": "Vääveldioksiid ja sulfitid",
+    "lupin": "Lupiin",
+    "mollusks": "Limused",
+    "nuts": "Pähklid",
+    "fava_beans": "Oad (favism)"
+  },
+  "descriptions": {
+    "gluten": "Kõik teravilja või jahuga toidud (nisu, oder, rukis, spelta): leib, pasta, pitsa, koogid, küpsised, õlu",
+    "crustaceans": "Krevetid, homaar, krabi, garneelid",
+    "eggs": "Munad, omletid, koogid, majonees, värske pasta",
+    "fish": "Kala, sushi, kalakastmed, puljongid",
+    "peanuts": "Maapähklid, maapähklivõi, suupisted, magustoidud",
+    "soy": "Tofu, sojakaste, sojapiim, edamame",
+    "milk": "Piim, juust, või, jäätis, koor",
+    "celery": "Seller, salatid, supid, köögiviljapuljong",
+    "mustard": "Sinep, kastmed, salatikastmed, marinaadid",
+    "sesame": "Seesamiseemned, seesamiõli, hummus, leib",
+    "sulfites": "Vein, õlu, kuivatatud puuviljad, krõpsud",
+    "lupin": "Lupiinijahu, leib, pasta, suupisted",
+    "mollusks": "Rannakarid, austrid, kalmaarid, kaheksajalad",
+    "nuts": "Kreeka pähklid, mandlid, sarapuupähklid, pistaatsiapähklid, kašupähklid",
+    "fava_beans": "Oad, oasupp, oapüree, hautised"
+  },
+  "warnings": {
+    "gluten": "Hoiatus: sojakaste võib sisaldada gluteeni",
+    "fava_beans": "G6PD puudulikkus: isegi väikesed kogused võivad põhjustada hemolüütilise kriisi"
+  },
+  "cardTexts": {
+    "header": "TÄHELEPANU",
+    "subtitle": "TOIDUALLERGIAD",
+    "pregnancySubtitle": "RASEDUS JA TOIDUALLERGIAD",
+    "message": "Mul on järgmised toiduallergiad. Palun veenduge, et minu toidus ei oleks neid koostisosi, sealhulgas ristsaastumise kaudu.",
+    "pregnancyMessage": "Olen rase ja mul on järgmised toiduallergiad. Palun veenduge, et minu toidus ei oleks neid koostisosi, sealhulgas ristsaastumise kaudu.",
+    "thanks": "Suur tänu teie mõistmise ja abi eest.",
+    "tapToSee": "Puudutage näidete nägemiseks",
+    "examples": "Näited:"
+  },
+  "dietFoods": {
+    "meat": "Liha",
+    "fish": "Kala",
+    "seafood": "Mereannid",
+    "eggs": "Munad",
+    "dairy": "Piimatooted",
+    "honey": "Mesi"
+  },
+  "otherFoods": {
+    "garlic": "Küüslauk",
+    "onion": "Sibul",
+    "tomato": "Tomat",
+    "mushrooms": "Seened",
+    "bell_pepper": "Paprika",
+    "corn": "Mais",
+    "strawberries": "Maasikad",
+    "kiwi": "Kiivi",
+    "stone_fruits": "Luuviljad (virsik, kirss, aprikoos)",
+    "citrus": "Tsitrusviljad",
+    "banana": "Banaan",
+    "buckwheat": "Tatar",
+    "spicy": "Vürtsikas toit"
+  },
+  "restrictions": {
+    "raw_fish": "Toores kala / sushi",
+    "raw_cured_meats": "Toores kuivatatud liha",
+    "raw_eggs": "Toored munad",
+    "raw_sprouts": "Toored idud",
+    "unpasteurized_cheese": "Pastöriseerimata juust",
+    "unpasteurized_milk": "Pastöriseerimata piim",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "Liigne kofeiin",
+    "nickel_chocolate": "Šokolaad / kakao",
+    "nickel_tomato": "Tomatid ja tomatikastmed",
+    "nickel_legumes": "Kaunviljad (läätsed, kikerhernes, oad)",
+    "nickel_nuts": "Pähklid (kreeka, sarapuu, kašu)",
+    "nickel_whole_grains": "Täisteravili / kaer",
+    "nickel_spinach": "Spinat ja lehtköögiviljad",
+    "nickel_canned_food": "Konservid",
+    "nickel_tea_coffee": "Tee ja kohv",
+    "histamine_aged_cheese": "Laagerdatud juust",
+    "histamine_cured_meats": "Kuivatatud liha ja vorstid",
+    "histamine_fish": "Konserveeritud ja suitsutatud kala",
+    "histamine_fermented": "Fermenteeritud toidud (hapukapsas, kimchi, miso)",
+    "histamine_wine_beer": "Vein ja õlu",
+    "histamine_vinegar": "Äädikas ja marineeritud köögiviljad",
+    "histamine_chocolate": "Šokolaad / kakao",
+    "histamine_tomato": "Tomatid ja tomatikastmed",
+    "histamine_strawberries": "Maasikad",
+    "histamine_eggplant": "Baklažaan",
+    "histamine_avocado": "Avokaado",
+    "histamine_spinach": "Spinat",
+    "diabetes_added_sugar": "Suhkur / siirupid",
+    "diabetes_honey_sweeteners": "Mesi ja magusained",
+    "diabetes_sweet_sauces": "Magusad kastmed (ketšup, hapumagus, teriyaki)",
+    "diabetes_sweet_glazes": "Magusad glasuurid ja marinaadid",
+    "diabetes_fruit_juice": "Puuviljamahl koostisosana",
+    "diabetes_candied_fruit": "Suhkrustatud puuviljad / moosid"
+  },
+  "restrictionCardTexts": {
+    "header": "VÄLDITAVAD TOIDUD",
+    "message": "Tervislikel põhjustel pean vältima järgmisi toite:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "RASEDUS",
+        "message": "Olen rase. Palun veenduge, et minu toidus ei oleks:",
+        "sectionMessage": "Lisaks pean raseduse tõttu vältima:"
+      },
+      "no_meat": {
+        "header": "TAIMETOITLUS",
+        "message": "Ma ei söö liha.\nKala ja muud loomsed tooted sobivad.",
+        "sectionMessage": "Lisaks ei söö ma liha.\nKala ja muud loomsed tooted sobivad."
+      },
+      "no_meat_fish": {
+        "header": "TAIMETOITLUS",
+        "message": "Järgin taimetoitlust. Ma ei söö liha ega kala.",
+        "sectionMessage": "Lisaks järgin taimetoitlust ega söö liha ega kala."
+      },
+      "no_animal_products": {
+        "header": "VEGANTOITLUS",
+        "message": "Järgin vegantoitlust. Ma ei söö liha, kala, mereande, mune, piimatooteid, mett ega muid loomseid tooteid.",
+        "sectionMessage": "Lisaks järgin vegantoitlust ega söö liha, kala, mereande, mune, piimatooteid, mett ega muid loomseid tooteid."
+      },
+      "nickel": {
+        "header": "NIKLI ALLERGIA",
+        "message": "Mul on nikli allergia. Nikkel on paljudes toiduainetes leiduv metall. Palun veenduge, et minu toidus ei oleks:",
+        "sectionMessage": "Lisaks on mul nikli allergia. Palun veenduge, et minu toidus ei oleks:"
+      },
+      "histamine": {
+        "header": "HISTAMIINITALUMATUS",
+        "message": "Ma ei saa süüa histamiinirikast toitu. Histamiin leidub laagerdatud, fermenteeritud või kaua säilitatud toitudes. Näiteks:",
+        "sectionMessage": "Lisaks ei saa ma süüa histamiinirikast toitu. Näiteks:"
+      },
+      "diabetes": {
+        "header": "DIABEET",
+        "message": "Mul on diabeet ja pean kontrollima suhkru tarbimist. Palun ärge lisage suhkrut minu toidule ja öelge, kui see sisaldab:",
+        "sectionMessage": "Lisaks on mul diabeet ja pean kontrollima suhkru tarbimist. Öelge, kui sisaldab:"
+      }
+    }
+  }
+}

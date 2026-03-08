@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glutena (zerealak)",
+    "crustaceans": "Krustazeoak",
+    "eggs": "Arrautzak",
+    "fish": "Arraina",
+    "peanuts": "Kakahueteak",
+    "soy": "Soja",
+    "milk": "Esnea eta esne-produktuak",
+    "celery": "Apioa",
+    "mustard": "Ziapea",
+    "sesame": "Sesamo-haziak",
+    "sulfites": "Sufre dioxidoa eta sulfitoak",
+    "lupin": "Lupinuak",
+    "mollusks": "Moluskuak",
+    "nuts": "Fruitu lehorrak",
+    "fava_beans": "Babak (fabismoa)"
+  },
+  "descriptions": {
+    "gluten": "Zerealak edo irina duten janari guztiak (garia, garagarra, zekalea, espelta): ogia, pasta, pizza, pastelak, galletak, garagardoa",
+    "crustaceans": "Ganba txikiak, otarraingoak, karramarroak, zizka-mizka",
+    "eggs": "Arrautzak, tortillak, pastelak, maionesa, pasta freskoa",
+    "fish": "Arraina, sushia, arrain-saltsak, salda",
+    "peanuts": "Kakahueteak, kakahuete-gurina, aperitiboak, postreak",
+    "soy": "Tofu, soja-saltsa, soja-esnea, edamame",
+    "milk": "Esnea, gazta, gurina, izozkia, krema",
+    "celery": "Apioa, entsaladak, zopak, barazki-salda",
+    "mustard": "Ziapea, saltsak, binagretak, marinatuak",
+    "sesame": "Sesamo-haziak, sesamo-olioa, hummusa, ogia",
+    "sulfites": "Ardoa, garagardoa, fruitu lehorrak, txipak",
+    "lupin": "Lupinu-irina, ogia, pasta, aperitiboak",
+    "mollusks": "Muskuiluak, ostrák, txipiroiak, olagarro",
+    "nuts": "Intxaurrak, almendrák, hurrak, pistatxoak, anakardoak",
+    "fava_beans": "Babak, baba-zopa, baba-purea, gisatuak"
+  },
+  "warnings": {
+    "gluten": "Kontuz: soja-saltsak glutena izan dezake",
+    "fava_beans": "G6PD gabezia: kopuru txikiek ere krisi hemolitikoa eragin dezakete"
+  },
+  "cardTexts": {
+    "header": "KONTUZ",
+    "subtitle": "JANARI ALERGIAK",
+    "pregnancySubtitle": "HAURDUNALDIA ETA JANARI ALERGIAK",
+    "message": "Hurrengo janari alergiak ditut. Mesedez, ziurtatu nire janariak ez dituela osagai hauek, gurutzatutako kutsadura barne.",
+    "pregnancyMessage": "Haurdun nago eta hurrengo janari alergiak ditut. Mesedez, ziurtatu nire janariak ez dituela osagai hauek, gurutzatutako kutsadura barne.",
+    "thanks": "Mila esker zure ulermenari eta laguntzari.",
+    "tapToSee": "Sakatu adibideak ikusteko",
+    "examples": "Adibideak:"
+  },
+  "dietFoods": {
+    "meat": "Haragia",
+    "fish": "Arraina",
+    "seafood": "Itsas janaria",
+    "eggs": "Arrautzak",
+    "dairy": "Esne-produktuak",
+    "honey": "Eztia"
+  },
+  "otherFoods": {
+    "garlic": "Baratxuria",
+    "onion": "Tipula",
+    "tomato": "Tomatea",
+    "mushrooms": "Perretxikoak",
+    "bell_pepper": "Piperra",
+    "corn": "Artoa",
+    "strawberries": "Marrubiak",
+    "kiwi": "Kivia",
+    "stone_fruits": "Hezur-fruituak (mertxika, gerezi, albarkokea)",
+    "citrus": "Zitrikoak",
+    "banana": "Banana",
+    "buckwheat": "Artoa beltza",
+    "spicy": "Janari pikantea"
+  },
+  "restrictions": {
+    "raw_fish": "Arrain gordina / sushia",
+    "raw_cured_meats": "Haragi ondu gordina",
+    "raw_eggs": "Arrautza gordinak",
+    "raw_sprouts": "Kimu gordinak",
+    "unpasteurized_cheese": "Pasterizatu gabeko gazta",
+    "unpasteurized_milk": "Pasterizatu gabeko esnea",
+    "alcohol": "Alkohola",
+    "excessive_caffeine": "Kafeina gehiegizkoa",
+    "nickel_chocolate": "Txokolatea / kakaoa",
+    "nickel_tomato": "Tomateak eta tomate-saltsak",
+    "nickel_legumes": "Lekaleak (dilistak, garbantzu, babarrunak)",
+    "nickel_nuts": "Fruitu lehorrak (intxaurrak, hurrak, anakardoak)",
+    "nickel_whole_grains": "Zereal osoak / oloa",
+    "nickel_spinach": "Espinakaak eta hosto-barazkiak",
+    "nickel_canned_food": "Kontserbak",
+    "nickel_tea_coffee": "Tea eta kafea",
+    "histamine_aged_cheese": "Ondu gazta",
+    "histamine_cured_meats": "Haragi ondua eta txistorrak",
+    "histamine_fish": "Kontserba eta arrain errea",
+    "histamine_fermented": "Janari hartzituak (azpil, kimchi, miso)",
+    "histamine_wine_beer": "Ardoa eta garagardoa",
+    "histamine_vinegar": "Ozpina eta ozpinean gordeta",
+    "histamine_chocolate": "Txokolatea / kakaoa",
+    "histamine_tomato": "Tomateak eta tomate-saltsak",
+    "histamine_strawberries": "Marrubiak",
+    "histamine_eggplant": "Alberjinia",
+    "histamine_avocado": "Ahuakatea",
+    "histamine_spinach": "Espinakaak",
+    "diabetes_added_sugar": "Azukrea / jarabeak",
+    "diabetes_honey_sweeteners": "Eztia eta edulkoranteaak",
+    "diabetes_sweet_sauces": "Saltsa gozoak (ketxup, gazi-gozoa, teriyaki)",
+    "diabetes_sweet_glazes": "Glaseatze gozoak eta marinatuak",
+    "diabetes_fruit_juice": "Fruitu-zukua osagai gisa",
+    "diabetes_candied_fruit": "Fruitu azukratuak / marmeladak"
+  },
+  "restrictionCardTexts": {
+    "header": "EKIDIN BEHARREKO JANARIAK",
+    "message": "Osasun arrazoiengatik hurrengo janariak ekidin behar ditut:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "HAURDUNALDIA",
+        "message": "Haurdun nago. Mesedez, ziurtatu nire janariak ez duela eduki:",
+        "sectionMessage": "Gainera, haurdunaldiaren ondorioz ekidin behar dut ere:"
+      },
+      "no_meat": {
+        "header": "DIETA BEGETARIANOA",
+        "message": "Ez dut haragirik jaten.\nArraina eta beste animalia-produktu batzuk ongi daude.",
+        "sectionMessage": "Gainera, ez dut haragirik jaten.\nArraina eta beste animalia-produktu batzuk ongi daude."
+      },
+      "no_meat_fish": {
+        "header": "DIETA BEGETARIANOA",
+        "message": "Dieta begetarianoa jarraitzen dut. Ez dut haragirik ez arrainik jaten.",
+        "sectionMessage": "Gainera, dieta begetarianoa jarraitzen dut eta ez dut haragirik ez arrainik jaten."
+      },
+      "no_animal_products": {
+        "header": "DIETA BEGANOA",
+        "message": "Dieta beganoa jarraitzen dut. Ez dut haragirik, arrainik, itsas janaririk, arrautzarik, esne-produkturik, eztirik ez animalia-produktu ezer jaten.",
+        "sectionMessage": "Gainera, dieta beganoa jarraitzen dut eta ez dut haragirik, arrainik, itsas janaririk, arrautzarik, esne-produkturik, eztirik ez animalia-produktu ezer jaten."
+      },
+      "nickel": {
+        "header": "NIKEL ALERGIA",
+        "message": "Nikel alergia dut. Nikela janari askotan aurkitzen den metala da. Mesedez, ziurtatu nire janariak ez duela eduki:",
+        "sectionMessage": "Gainera, nikel alergia dut. Mesedez, ziurtatu nire janariak ez duela eduki:"
+      },
+      "histamine": {
+        "header": "HISTAMINA INTOLERANTZIA",
+        "message": "Ezin dut histamina asko duen janaririk jan. Histamina ondu, hartzitu edo luzaroan gordeta dagoen janarietan aurkitzen da. Adibidez:",
+        "sectionMessage": "Gainera, ezin dut histamina asko duen janaririk jan. Adibidez:"
+      },
+      "diabetes": {
+        "header": "DIABETESA",
+        "message": "Diabetesa dut eta azukre kontsumoa kontrolatu behar dut. Mesedez, ez gehitu azukrerik nire janariari eta esan iezadazu badauka:",
+        "sectionMessage": "Gainera, diabetesa dut eta azukre kontsumoa kontrolatu behar dut. Esan iezadazu badauka:"
+      }
+    }
+  }
+}

@@ -1,112 +1,103 @@
 import { useState, useMemo, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity, LayoutAnimation, Platform, UIManager, useWindowDimensions } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager, useWindowDimensions } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
-import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
+import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS, DIET_FOOD_TRANSLATIONS } from '../constants/cardTranslations';
 import { DOWNLOADABLE_LANGUAGES } from '../constants/downloadableLanguages';
+import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
+import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
+import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI, DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
+import { getLocalizedLanguageName } from '../constants/languageNames';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
-import { useAppContext } from '../utils/AppContext';
-import { Analytics } from '../utils/analytics';
+import { useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
+import CardPortrait from './components/card/CardPortrait';
+import CardLandscape from './components/card/CardLandscape';
+import { CardColors, CardDisplayMode, DietModeSectionData } from './components/card/types';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
+
+const COMPLEX_SCRIPT_LANGS = new Set([
+  'zh', 'ja', 'ko',           // CJK
+  'ar', 'ur', 'fa',           // Arabic script
+  'th', 'lo', 'km',           // Thai, Lao, Khmer
+  'hi', 'mr', 'ne',           // Devanagari
+  'bn', 'ta', 'te', 'si',     // South Asian
+  'my',                        // Burmese
+  'ka', 'hy',                  // Georgian, Armenian
+  'he',                        // Hebrew
+  'am',                        // Amharic (Ge'ez)
+]);
 
 export default function CardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
-  const { selectedAllergens, settings, downloadedLanguages } = useAppContext();
+  const { selectedAllergens, selectedOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, pregnancyMode, settings, downloadedLanguages } = useAppContext();
   const cardLanguage = settings.cardLanguage;
   const appLanguage = settings.appLanguage;
-  const [showInAppLanguage, setShowInAppLanguage] = useState(false);
+  const [displayMode, setDisplayMode] = useState<CardDisplayMode>('card');
   const [expandedAllergen, setExpandedAllergen] = useState<AllergenId | null>(null);
-  const [selectedLandscapeAllergen, setSelectedLandscapeAllergen] = useState<AllergenId | null>(null);
+  const [selectedLandscapeItem, setSelectedLandscapeItem] = useState<string | null>(null);
 
-  // Permetti tutte le orientazioni per questa schermata
-  useEffect(() => {
-    ScreenOrientation.unlockAsync();
-
-    // Traccia visualizzazione card
-    Analytics.logCardViewed(
-      cardLanguage,
-      selectedAllergens.length,
-      selectedAllergens,
-      isDownloadedLanguage
-    );
-
-    // Quando l'utente esce dalla card, ri-blocca in portrait
-    return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-    };
-  }, []);
-
-  // Dati lingua scaricata dalla memoria (nessuna lettura AsyncStorage)
-  const downloadedLanguageData = useMemo(() => {
-    return downloadedLanguages[cardLanguage as DownloadableLanguageCode] ?? null;
-  }, [downloadedLanguages, cardLanguage]);
-
-  // Verifica se la lingua corrente è scaricata
   const isDownloadedLanguage = useMemo(() => {
     return DOWNLOADABLE_LANGUAGES.some((l) => l.code === cardLanguage);
   }, [cardLanguage]);
 
-  const getAllergenInfo = (id: AllergenId) => {
-    return ALLERGENS.find((a) => a.id === id);
-  };
+  useEffect(() => {
+    ScreenOrientation.unlockAsync();
+    Analytics.logCardViewed(cardLanguage, selectedAllergens.length, selectedAllergens, isDownloadedLanguage);
+    return () => { ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
+  }, []);
 
-  const toggleExpand = (id: AllergenId) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedAllergen(expandedAllergen === id ? null : id);
-  };
+  const downloadedLanguageData = useMemo(() => {
+    return downloadedLanguages[cardLanguage as DownloadableLanguageCode] ?? null;
+  }, [downloadedLanguages, cardLanguage]);
 
-  // Current display language (either destination or app language)
-  const displayLanguage = showInAppLanguage ? appLanguage : cardLanguage;
+  const displayLanguage = displayMode === 'card' ? cardLanguage : displayMode === 'app' ? appLanguage : 'en';
 
-  // Trova info lingua corrente (sia hardcoded che scaricata)
   const currentLanguage = useMemo(() => {
     const hardcoded = LANGUAGES.find((l) => l.code === displayLanguage);
     if (hardcoded) return hardcoded;
-    const downloaded = DOWNLOADABLE_LANGUAGES.find((l) => l.code === displayLanguage);
-    return downloaded || null;
+    return DOWNLOADABLE_LANGUAGES.find((l) => l.code === displayLanguage) || null;
   }, [displayLanguage]);
 
-  // Traduzioni card - usa dati scaricati se lingua scaricata
   const translations = useMemo(() => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData) {
       return {
         header: downloadedLanguageData.cardTexts.header,
         subtitle: downloadedLanguageData.cardTexts.subtitle,
+        pregnancySubtitle: downloadedLanguageData.cardTexts.pregnancySubtitle || downloadedLanguageData.cardTexts.subtitle,
         message: downloadedLanguageData.cardTexts.message,
+        pregnancyMessage: downloadedLanguageData.cardTexts.pregnancyMessage || downloadedLanguageData.cardTexts.message,
         thanks: downloadedLanguageData.cardTexts.thanks,
         tapToSee: downloadedLanguageData.cardTexts.tapToSee,
-        showIn: downloadedLanguageData.cardTexts.showIn,
         examples: downloadedLanguageData.cardTexts.examples || CARD_TRANSLATIONS.en.examples,
       };
     }
     return CARD_TRANSLATIONS[displayLanguage as Language] || CARD_TRANSLATIONS.en;
-  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, showInAppLanguage]);
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, displayMode]);
 
-  // Funzione per ottenere nome allergene tradotto
   const getAllergenTranslation = (id: AllergenId): string => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData) {
       return downloadedLanguageData.allergens[id] || ALLERGENS.find((a) => a.id === id)?.translations.en || '';
     }
     const allergen = ALLERGENS.find((a) => a.id === id);
     return allergen?.translations[displayLanguage as Language] || allergen?.translations.en || '';
   };
 
-  // Funzione per ottenere descrizione allergene tradotta
   const getAllergenDescription = (id: AllergenId): string => {
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData) {
       return downloadedLanguageData.descriptions[id] || ALLERGEN_IMAGES[id]?.description.en || '';
     }
     return ALLERGEN_IMAGES[id]?.description[displayLanguage as Language] || ALLERGEN_IMAGES[id]?.description.en || '';
@@ -115,352 +106,340 @@ export default function CardScreen() {
   const getAllergenWarning = (id: AllergenId): string | undefined => {
     const images = ALLERGEN_IMAGES[id];
     if (!images?.warning) return undefined;
-
-    if (!showInAppLanguage && isDownloadedLanguage && downloadedLanguageData?.warnings) {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.warnings) {
       return downloadedLanguageData.warnings[id] || images.warning.en;
     }
     return images.warning[displayLanguage as Language] || images.warning.en;
   };
 
-  // Stili dinamici basati sull'orientamento (per portrait)
-  const dynamicStyles = useMemo(() => StyleSheet.create({
-    content: {
-      padding: 16,
-      paddingBottom: 32,
-    },
-    headerSection: {
-      backgroundColor: theme.colors.error,
-      padding: 24,
-      alignItems: 'center',
-    },
-    warningIcon: {
-      fontSize: 48,
-      marginBottom: 8,
-    },
-    header: {
-      fontSize: 28,
-      fontWeight: 'bold' as const,
-      color: '#FFFFFF',
-      letterSpacing: 2,
-    },
-    subtitle: {
-      fontSize: 18,
-      color: '#FFFFFF',
-      marginTop: 4,
-      letterSpacing: 1,
-    },
-    messageSection: {
-      padding: 20,
-      backgroundColor: '#FFF3E0',
-      borderBottomWidth: 1,
-      borderBottomColor: '#FFE0B2',
-    },
-    message: {
-      fontSize: 16,
-      lineHeight: 24,
-      color: theme.colors.textPrimary,
-      textAlign: 'center' as const,
-    },
-    allergensSection: {
-      padding: 20,
-    },
-    allergenRow: {
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.divider,
-    },
-    allergenIcon: {
-      fontSize: 28,
-      marginRight: 16,
-    },
-    allergenText: {
-      fontSize: 18,
-      fontWeight: '600' as const,
-      color: theme.colors.error,
-    },
-    tapHint: {
-      fontSize: 12,
-      color: '#888888',
-      marginTop: 2,
-    },
-    breakdownContainer: {
-      backgroundColor: '#FFF8E1',
-      padding: 16,
-      marginBottom: 8,
-      borderRadius: 8,
-      borderLeftWidth: 4,
-      borderLeftColor: '#FFC107',
-    },
-    exampleEmoji: {
-      fontSize: 36,
-    },
-    breakdownDescription: {
-      fontSize: 14,
-      color: '#5D4037',
-      textAlign: 'center' as const,
-      fontStyle: 'italic' as const,
-    },
-    warningText: {
-      fontSize: 13,
-      color: '#D84315',
-      textAlign: 'center' as const,
-      fontWeight: '600' as const,
-      marginTop: 8,
-      paddingHorizontal: 8,
-    },
-    thanksSection: {
-      padding: 20,
-      backgroundColor: theme.colors.primaryLight,
-    },
-    thanks: {
-      fontSize: 16,
-      color: '#2E7D32',
-      textAlign: 'center' as const,
-      fontStyle: 'italic' as const,
-    },
-  }), []);
-
-  const handleLanguageToggle = () => {
-    const newValue = !showInAppLanguage;
-    setShowInAppLanguage(newValue);
-    Analytics.logCardLanguageToggled(newValue, cardLanguage, appLanguage);
+  const getRestrictionTranslation = (id: RestrictionItemId): string => {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.restrictions) {
+      return downloadedLanguageData.restrictions[id] || RESTRICTION_ITEMS.find((r) => r.id === id)?.translations.en || '';
+    }
+    const item = RESTRICTION_ITEMS.find((r) => r.id === id);
+    return item?.translations[displayLanguage as Language] || item?.translations.en || '';
   };
 
-  // Render Landscape Layout - Design premium moderno
-  const renderLandscape = () => {
-    const safeLeft = Math.max(insets.left, 12);
-    const safeRight = Math.max(insets.right, 12);
-    const safeTop = Math.max(insets.top, 8);
-    const safeBottom = Math.max(insets.bottom, 6);
+  const getOtherFoodTranslation = (id: OtherFoodId): string => {
+    if (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.otherFoods) {
+      return downloadedLanguageData.otherFoods[id] || OTHER_FOODS.find((f) => f.id === id)?.translations.en || '';
+    }
+    const food = OTHER_FOODS.find((f) => f.id === id);
+    return food?.translations[displayLanguage as Language] || food?.translations.en || '';
+  };
 
-    return (
-      <View style={styles.landscapeWrapper}>
-        <View style={[styles.landscapeCard, {
-          marginTop: safeTop,
-          marginLeft: safeLeft,
-          marginRight: safeRight,
-          marginBottom: safeBottom,
-        }]}>
-          {/* Contenuto a due colonne */}
-          <View style={styles.landscapeBody}>
-            {/* Colonna sinistra - Allergeni con header integrato */}
-            <View style={styles.landscapeLeftColumn}>
-              {/* Mini header nella colonna sinistra */}
-              <View style={styles.landscapeLeftHeader}>
-                <Text style={styles.landscapeWarningIcon}>⚠️</Text>
-                <Text style={styles.landscapeLeftHeaderTitle}>{translations.header}</Text>
-              </View>
+  // Get diet mode translations, supporting downloaded languages
+  const getDietModeTranslation = (cardKey: DietCardKey) => {
+    const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
+    const base = hardcoded.dietModes[cardKey];
+    if (displayMode !== 'card' || !isDownloadedLanguage || !downloadedLanguageData?.restrictionCardTexts?.dietModeTexts) {
+      return base;
+    }
+    const downloaded = downloadedLanguageData.restrictionCardTexts.dietModeTexts[cardKey];
+    if (!downloaded) return base;
+    return {
+      header: downloaded.header || base.header,
+      message: downloaded.message || base.message,
+      sectionMessage: downloaded.sectionMessage || base.sectionMessage,
+    };
+  };
 
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.landscapeAllergensScroll}
-              >
-                {selectedAllergens.map((id, index) => {
-                  const allergen = getAllergenInfo(id);
-                  if (!allergen) return null;
-                  const isSelected = selectedLandscapeAllergen === id;
-                  return (
-                    <Pressable
-                      key={id}
-                      onPress={() => setSelectedLandscapeAllergen(isSelected ? null : id)}
-                      style={[
-                        styles.landscapeAllergenItem,
-                        isSelected && styles.landscapeAllergenItemSelected,
-                        index === selectedAllergens.length - 1 && { marginBottom: 0 }
-                      ]}
-                    >
-                      <View style={[
-                        styles.landscapeAllergenIconBg,
-                        isSelected && styles.landscapeAllergenIconBgSelected
-                      ]}>
-                        <Text style={styles.landscapeAllergenIcon}>{allergen.icon}</Text>
-                      </View>
-                      <Text style={[
-                        styles.landscapeAllergenName,
-                        isSelected && styles.landscapeAllergenNameSelected
-                      ]} numberOfLines={2}>
-                        {getAllergenTranslation(id)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
+  // Restriction translations for the pregnancy section header/message
+  const restrictionTranslations = useMemo(() => {
+    if (pregnancyMode) {
+      return getDietModeTranslation('pregnancy');
+    }
+    const hardcoded = RESTRICTION_CARD_TRANSLATIONS[displayLanguage as Language] || RESTRICTION_CARD_TRANSLATIONS.en;
+    const downloaded = (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.restrictionCardTexts);
+    const header = downloaded ? (downloadedLanguageData!.restrictionCardTexts!.header || hardcoded.header) : hardcoded.header;
+    const message = downloaded ? (downloadedLanguageData!.restrictionCardTexts!.message || hardcoded.message) : hardcoded.message;
+    return { header, message, sectionMessage: message };
+  }, [displayLanguage, isDownloadedLanguage, downloadedLanguageData, displayMode, pregnancyMode]);
 
-            {/* Colonna destra - Dettagli */}
-            <View style={styles.landscapeRightColumn}>
-              {/* Header colonna destra */}
-              <View style={styles.landscapeRightHeader}>
-                <Text style={styles.landscapeRightHeaderText}>{translations.message}</Text>
-              </View>
+  // Auto-selected restriction IDs per mode (stable, never changes)
+  const modeRestrictionIds = useMemo(() => {
+    const map = new Map<DietModeId, Set<RestrictionItemId>>();
+    DIET_MODES.forEach(mode => {
+      if (mode.autoSelectRestrictions?.length) {
+        map.set(mode.id, new Set(mode.autoSelectRestrictions as RestrictionItemId[]));
+      }
+    });
+    return map;
+  }, []);
 
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.landscapeDetailsScroll}
-              >
-                {selectedAllergens.map((id, index) => {
-                  const allergen = getAllergenInfo(id);
-                  const images = ALLERGEN_IMAGES[id];
-                  if (!allergen || !images) return null;
-                  const isSelected = selectedLandscapeAllergen === id;
-                  return (
-                    <Pressable
-                      key={id}
-                      onPress={() => setSelectedLandscapeAllergen(isSelected ? null : id)}
-                      style={[
-                        styles.landscapeDetailCard,
-                        isSelected && styles.landscapeDetailCardSelected,
-                        index === selectedAllergens.length - 1 && { marginBottom: 0 }
-                      ]}
-                    >
-                      <View style={styles.landscapeDetailTop}>
-                        <View style={[
-                          styles.landscapeDetailBadge,
-                          isSelected && styles.landscapeDetailBadgeSelected
-                        ]}>
-                          <Text style={styles.landscapeDetailBadgeIcon}>{allergen.icon}</Text>
-                          <Text style={styles.landscapeDetailBadgeText}>{getAllergenTranslation(id)}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.landscapeExamplesRow}>
-                        <Text style={styles.landscapeExamplesLabel}>{translations.examples || 'Examples:'}</Text>
-                        {images.examples.slice(0, 5).map((emoji, idx) => (
-                          <Text key={idx} style={styles.landscapeExampleEmoji}>{emoji}</Text>
-                        ))}
-                      </View>
-                      <Text style={styles.landscapeDetailDescription}>{getAllergenDescription(id)}</Text>
-                      {getAllergenWarning(id) && (
-                        <View style={styles.landscapeWarningBox}>
-                          <Text style={styles.landscapeDetailWarning}>{getAllergenWarning(id)}</Text>
-                        </View>
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Footer integrato */}
-              <View style={styles.landscapeFooter}>
-                <Text style={styles.landscapeFooterText}>{translations.thanks}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
+  // Build diet mode sections for the card
+  const dietModeSections = useMemo((): DietModeSectionData[] => {
+    const visibleModes = getVisibleModes(activeDietModes);
+    // Only count restrictions shown inline (before diet sections).
+    // Pregnancy auto-selected restrictions are rendered inside the pregnancy DietModeSection,
+    // so they shouldn't make other diet sections use "Additionally..." phrasing.
+    const autoSelectedIds = new Set(
+      activeDietModes.flatMap(id => [...(modeRestrictionIds.get(id) ?? [])])
     );
+    const inlineRestrictionCount = selectedRestrictions.filter(id => !autoSelectedIds.has(id)).length;
+    const hasOtherContent = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || inlineRestrictionCount > 0;
+    const sections: DietModeSectionData[] = [];
+
+    for (const mode of visibleModes) {
+      const cardKey = getDietCardKey(mode.id, vegetarianLevel);
+      const modeTranslations = getDietModeTranslation(cardKey);
+      const message = hasOtherContent || sections.length > 0
+        ? modeTranslations.sectionMessage
+        : modeTranslations.message;
+
+      const section: DietModeSectionData = {
+        modeId: mode.id,
+        icon: mode.icon,
+        header: modeTranslations.header,
+        message,
+        sectionColors: mode.sectionColors,
+      };
+
+      // For vegetarian mode, attach food item indicators
+      if (mode.id === 'vegetarian') {
+        const levelItems = DIET_LEVEL_FOOD_ITEMS[vegetarianLevel];
+        const foodTrans = (displayMode === 'card' && isDownloadedLanguage && downloadedLanguageData?.dietFoods)
+          ? downloadedLanguageData.dietFoods as Record<string, string>
+          : (DIET_FOOD_TRANSLATIONS[displayLanguage as Language] || DIET_FOOD_TRANSLATIONS.en);
+        section.foodItems = {
+          forbidden: levelItems.forbidden.map(id => ({ name: foodTrans[id] || DIET_FOOD_TRANSLATIONS.en[id], emoji: DIET_FOOD_EMOJI[id] })),
+          allowed: levelItems.allowed.map(id => ({ name: foodTrans[id] || DIET_FOOD_TRANSLATIONS.en[id], emoji: DIET_FOOD_EMOJI[id] })),
+        };
+      }
+
+      // Attach auto-selected restriction items to the section
+      const restrictionSet = modeRestrictionIds.get(mode.id);
+      if (restrictionSet) {
+        const modeItems = selectedRestrictions.filter(id => restrictionSet.has(id));
+        if (modeItems.length > 0) {
+          section.restrictionItems = modeItems;
+          // Pregnancy mode overrides header/message from restrictionTranslations
+          if (mode.id === 'pregnancy') {
+            section.message = hasOtherContent ? restrictionTranslations.sectionMessage : restrictionTranslations.message;
+            section.header = restrictionTranslations.header;
+          }
+        }
+      }
+
+      sections.push(section);
+    }
+
+    return sections;
+  }, [activeDietModes, vegetarianLevel, displayLanguage, selectedAllergens.length, selectedOtherFoods.length, selectedRestrictions, modeRestrictionIds, restrictionTranslations, isDownloadedLanguage, downloadedLanguageData, displayMode]);
+
+  const autoModeRestrictionIds = new Set(
+    activeDietModes.flatMap(id => [...(modeRestrictionIds.get(id) ?? [])])
+  );
+  const inlineRestrictions = selectedRestrictions.filter(id => !autoModeRestrictionIds.has(id));
+  const separateRestrictions = pregnancyMode
+    ? selectedRestrictions.filter(id => modeRestrictionIds.get('pregnancy')?.has(id))
+    : [];
+
+  const hasAllergyContent = selectedAllergens.length > 0 || selectedOtherFoods.length > 0 || inlineRestrictions.length > 0;
+
+  const fontBoost = COMPLEX_SCRIPT_LANGS.has(displayLanguage) ? 2 : 0;
+
+  // Color palette
+  const colors = useMemo((): CardColors => {
+    const fullCardMode = getFullCardMode(activeDietModes);
+    if (fullCardMode?.fullCardColors) {
+      return { cardStyle: 'pregnancy', ...fullCardMode.fullCardColors };
+    }
+    if (!hasAllergyContent && !separateRestrictions.length && dietModeSections.length > 0) {
+      // Diet-only card (vegetarian/vegan without allergens)
+      const primaryMode = dietModeSections[0];
+      return {
+        cardStyle: 'dietOnly',
+        containerBg: primaryMode.sectionColors.headerBg,
+        headerBg: primaryMode.sectionColors.headerBg,
+        messageBg: primaryMode.sectionColors.background,
+        messageBorder: primaryMode.sectionColors.border,
+        allergenTextColor: primaryMode.sectionColors.primary,
+        breakdownBg: primaryMode.sectionColors.background,
+        breakdownBorder: primaryMode.sectionColors.border,
+        breakdownDescColor: primaryMode.sectionColors.text,
+        warningTextColor: primaryMode.sectionColors.primary,
+        thanksBg: primaryMode.sectionColors.background,
+        thanksColor: primaryMode.sectionColors.primary,
+        restrictionBg: primaryMode.sectionColors.background,
+        restrictionBorder: primaryMode.sectionColors.border,
+        restrictionHeaderColor: primaryMode.sectionColors.primary,
+        restrictionTextColor: primaryMode.sectionColors.primary,
+        landscapeLeftBg: primaryMode.sectionColors.headerBg,
+        landscapeWrapperBg: primaryMode.sectionColors.primary,
+        landscapeAllergenNameColor: primaryMode.sectionColors.primary,
+        landscapeDetailBadgeBg: primaryMode.sectionColors.background,
+        landscapeDetailBadgeTextColor: primaryMode.sectionColors.primary,
+      };
+    }
+    return {
+      cardStyle: 'allergy',
+      containerBg: theme.colors.error,
+      headerBg: theme.colors.error,
+      messageBg: theme.colors.orangeLight,
+      messageBorder: theme.colors.orangeBorder,
+      allergenTextColor: theme.colors.error,
+      breakdownBg: theme.colors.amberLight,
+      breakdownBorder: theme.colors.amber,
+      breakdownDescColor: theme.colors.cardDescriptionText,
+      warningTextColor: theme.colors.warningDark,
+      thanksBg: theme.colors.primaryLight,
+      thanksColor: theme.colors.success,
+      restrictionBg: theme.colors.amberLight,
+      restrictionBorder: theme.colors.amberBorder,
+      restrictionHeaderColor: theme.colors.warning,
+      restrictionTextColor: theme.colors.warning,
+      landscapeLeftBg: theme.colors.error,
+      landscapeWrapperBg: theme.colors.errorDark,
+      landscapeAllergenNameColor: theme.colors.errorDarker,
+      landscapeDetailBadgeBg: theme.colors.errorLight,
+      landscapeDetailBadgeTextColor: theme.colors.errorDark,
+    };
+  }, [activeDietModes, hasAllergyContent, separateRestrictions.length, dietModeSections]);
+
+  const toggleExpand = (id: AllergenId) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedAllergen(expandedAllergen === id ? null : id);
   };
 
-  // Render Portrait Layout
-  const renderPortrait = () => (
-    <ScrollView contentContainerStyle={dynamicStyles.content}>
-      <Surface style={styles.card} elevation={4}>
-        <View style={styles.cardContent}>
-          <View style={dynamicStyles.headerSection}>
-            <Text style={dynamicStyles.warningIcon}>⚠️</Text>
-            <Text style={dynamicStyles.header}>{translations.header}</Text>
-            <Text style={dynamicStyles.subtitle}>{translations.subtitle}</Text>
-          </View>
+  const showAppToggle = cardLanguage !== appLanguage;
+  const showEnglishToggle = cardLanguage !== 'en' && appLanguage !== 'en';
 
-          <View style={dynamicStyles.messageSection}>
-            <Text style={dynamicStyles.message}>{translations.message}</Text>
-          </View>
+  const cardLanguageLabel = useMemo(() => {
+    return getLocalizedLanguageName(cardLanguage, appLanguage) || cardLanguage;
+  }, [cardLanguage, appLanguage]);
 
-          <View style={dynamicStyles.allergensSection}>
-            {selectedAllergens.map((id) => {
-              const allergen = getAllergenInfo(id);
-              const images = ALLERGEN_IMAGES[id];
-              if (!allergen || !images) return null;
-              const isExpanded = expandedAllergen === id;
+  const appLanguageLabel = useMemo(() => {
+    return getLocalizedLanguageName(appLanguage, appLanguage) || appLanguage;
+  }, [appLanguage]);
 
-              return (
-                <View key={id}>
-                  <Pressable
-                    onPress={() => toggleExpand(id)}
-                    style={({ pressed }) => [
-                      dynamicStyles.allergenRow,
-                      pressed && styles.allergenRowPressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${getAllergenTranslation(id)}, ${translations.tapToSee}`}
-                    accessibilityState={{ expanded: isExpanded }}
-                  >
-                    <Text style={dynamicStyles.allergenIcon}>{allergen.icon}</Text>
-                    <View style={styles.allergenTextContainer}>
-                      <Text style={dynamicStyles.allergenText}>{getAllergenTranslation(id)}</Text>
-                      <Text style={dynamicStyles.tapHint}>{translations.tapToSee} {isExpanded ? '▲' : '▼'}</Text>
-                    </View>
-                  </Pressable>
+  const englishLabel = useMemo(() => {
+    return getLocalizedLanguageName('en', appLanguage) || 'English';
+  }, [appLanguage]);
 
-                  {isExpanded && (
-                    <View style={dynamicStyles.breakdownContainer}>
-                      <View style={styles.examplesRow}>
-                        {images.examples.map((emoji, index) => (
-                          <Text key={index} style={dynamicStyles.exampleEmoji}>{emoji}</Text>
-                        ))}
-                      </View>
-                      <Text style={dynamicStyles.breakdownDescription}>{getAllergenDescription(id)}</Text>
-                      {getAllergenWarning(id) && (
-                        <Text style={dynamicStyles.warningText}>{getAllergenWarning(id)}</Text>
-                      )}
-                    </View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
+  const handleLanguageCycle = () => {
+    const modes: CardDisplayMode[] = ['card'];
+    if (showAppToggle) modes.push('app');
+    if (showEnglishToggle) modes.push('english');
+    const nextIndex = (modes.indexOf(displayMode) + 1) % modes.length;
+    setDisplayMode(modes[nextIndex]);
+  };
 
-          <View style={dynamicStyles.thanksSection}>
-            <Text style={dynamicStyles.thanks}>{translations.thanks}</Text>
-          </View>
-        </View>
-      </Surface>
+  const hasAllergens = selectedAllergens.length > 0 || selectedOtherFoods.length > 0;
+  const hasRestrictions = selectedRestrictions.length > 0;
 
-      <Pressable
-        style={styles.languageToggle}
-        onPress={handleLanguageToggle}
-        accessibilityRole="button"
-        accessibilityLabel={showInAppLanguage ? i18n.t('card.showInDestLanguage') : i18n.t('card.showInMyLanguage')}
-      >
-        <Text style={styles.languageToggleText}>
-          {showInAppLanguage ? i18n.t('card.showInDestLanguage') : i18n.t('card.showInMyLanguage')}
-        </Text>
-      </Pressable>
-    </ScrollView>
-  );
+  // Header title computation
+  const headerTitleText = useMemo(() => {
+    if (hasAllergens) return pregnancyMode ? translations.pregnancySubtitle : translations.subtitle;
+    if (hasRestrictions || pregnancyMode) return restrictionTranslations.header;
+    if (dietModeSections.length > 0) return dietModeSections[0].header;
+    return restrictionTranslations.header;
+  }, [hasAllergens, hasRestrictions, pregnancyMode, translations, restrictionTranslations, dietModeSections]);
 
-  // Padding header calcolato in base all'orientamento
   const headerPadding = useMemo(() => ({
-    paddingTop: isLandscape ? Math.max(insets.top, 20) : insets.top + 16,
-    paddingLeft: isLandscape ? Math.max(insets.left, 16) : 16,
-    paddingRight: isLandscape ? Math.max(insets.right, 16) : 16,
-    paddingBottom: isLandscape ? 8 : 12,
-  }), [isLandscape, insets]);
+    paddingTop: insets.top + 16,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 12,
+  }), [insets]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.containerBg }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, headerPadding]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{currentLanguage?.flag} {translations.subtitle}</Text>
-        {isLandscape ? (
-          <TouchableOpacity
-            onPress={handleLanguageToggle}
-            hitSlop={8}
-            activeOpacity={0.6}
-            style={styles.headerLanguageButton}
-          >
-            <MaterialCommunityIcons name="translate" size={20} color="#FFFFFF" />
+      {!isLandscape && (
+        <View style={[styles.customHeader, headerPadding, { backgroundColor: colors.containerBg }]}>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
+            <MaterialCommunityIcons name="close" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
-        ) : (
+          <Text style={[styles.headerTitle, { textAlign: 'center', flex: 1 }]} numberOfLines={2} adjustsFontSizeToFit={false}>
+            {currentLanguage?.flag} {headerTitleText}
+          </Text>
           <View style={styles.headerSpacer} />
-        )}
-      </View>
+        </View>
+      )}
 
-      {isLandscape ? renderLandscape() : renderPortrait()}
+      {isLandscape ? (
+        <>
+          <CardLandscape
+            selectedAllergens={selectedAllergens}
+            selectedOtherFoods={selectedOtherFoods}
+            inlineRestrictions={inlineRestrictions}
+            separateRestrictions={separateRestrictions}
+            colors={colors}
+            translations={translations}
+            restrictionTranslations={restrictionTranslations}
+            dietModeSections={dietModeSections}
+            selectedLandscapeItem={selectedLandscapeItem}
+            setSelectedLandscapeItem={setSelectedLandscapeItem}
+            pregnancyMode={pregnancyMode}
+            getAllergenTranslation={getAllergenTranslation}
+            getAllergenDescription={getAllergenDescription}
+            getAllergenWarning={getAllergenWarning}
+            getRestrictionTranslation={getRestrictionTranslation}
+            getOtherFoodTranslation={getOtherFoodTranslation}
+            fontBoost={fontBoost}
+            insets={insets}
+          />
+          {(() => {
+            const safeH = Math.max(insets.left, insets.right, 48);
+            const safeV = Math.max(insets.top, insets.bottom, 8);
+            const buttonSize = 38;
+            return (
+              <>
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                  style={[styles.landscapeOverlayButton, {
+                    top: safeV + 10,
+                    left: (safeH - buttonSize) / 2,
+                  }]}
+                >
+                  <MaterialCommunityIcons name="close" size={22} color={theme.colors.onPrimary} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleLanguageCycle}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                  style={[styles.landscapeOverlayButton, {
+                    top: safeV + 10,
+                    right: (safeH - buttonSize) / 2,
+                  }]}
+                >
+                  <MaterialCommunityIcons name="translate" size={20} color={theme.colors.onPrimary} />
+                </TouchableOpacity>
+              </>
+            );
+          })()}
+        </>
+      ) : (
+        <CardPortrait
+          selectedAllergens={selectedAllergens}
+          selectedOtherFoods={selectedOtherFoods}
+          inlineRestrictions={inlineRestrictions}
+          separateRestrictions={separateRestrictions}
+          colors={colors}
+          translations={translations}
+          restrictionTranslations={restrictionTranslations}
+          dietModeSections={dietModeSections}
+          expandedAllergen={expandedAllergen}
+          displayMode={displayMode}
+          showAppToggle={showAppToggle}
+          showEnglishToggle={showEnglishToggle}
+          cardLanguageLabel={cardLanguageLabel}
+          appLanguageLabel={appLanguageLabel}
+          englishLabel={englishLabel}
+          pregnancyMode={pregnancyMode}
+          getAllergenTranslation={getAllergenTranslation}
+          getAllergenDescription={getAllergenDescription}
+          getAllergenWarning={getAllergenWarning}
+          getRestrictionTranslation={getRestrictionTranslation}
+          getOtherFoodTranslation={getOtherFoodTranslation}
+          fontBoost={fontBoost}
+          toggleExpand={toggleExpand}
+          onDisplayModeChange={setDisplayMode}
+        />
+      )}
     </View>
   );
 }
@@ -468,10 +447,8 @@ export default function CardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.error,
   },
   customHeader: {
-    backgroundColor: theme.colors.error,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -479,255 +456,18 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
-  headerLanguageButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 16,
-    padding: 6,
+  landscapeOverlayButton: {
+    position: 'absolute' as const,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 10,
   },
   headerSpacer: {
     width: 24,
-  },
-  card: {
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-  },
-  cardContent: {
-    overflow: 'hidden',
-    borderRadius: 16,
-  },
-  allergenRowPressed: {
-    backgroundColor: '#FFF3E0',
-  },
-  allergenTextContainer: {
-    flex: 1,
-  },
-  examplesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-    justifyContent: 'center',
-    gap: 8,
-  },
-  languageToggle: {
-    marginTop: 20,
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  languageToggleText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
-  // Landscape styles - Design premium
-  landscapeWrapper: {
-    flex: 1,
-    backgroundColor: '#C62828',
-  },
-  landscapeCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  landscapeBody: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  // Colonna sinistra
-  landscapeLeftColumn: {
-    width: '35%',
-    backgroundColor: '#D32F2F',
-  },
-  landscapeLeftHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.2)',
-  },
-  landscapeWarningIcon: {
-    fontSize: 26,
-    marginRight: 10,
-  },
-  landscapeLeftHeaderTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 2,
-  },
-  landscapeAllergensScroll: {
-    padding: 10,
-    paddingBottom: 16,
-  },
-  landscapeAllergenItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  landscapeAllergenItemSelected: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#FFD600',
-    shadowColor: '#FFD600',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  landscapeAllergenIconBg: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFF3E0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  landscapeAllergenIconBgSelected: {
-    backgroundColor: '#FFF8E1',
-    borderColor: '#FFD600',
-  },
-  landscapeAllergenIcon: {
-    fontSize: 30,
-  },
-  landscapeAllergenName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#B71C1C',
-    flex: 1,
-    lineHeight: 22,
-  },
-  landscapeAllergenNameSelected: {
-    color: '#E65100',
-  },
-  // Colonna destra
-  landscapeRightColumn: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  landscapeRightHeader: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#FFF8E1',
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFE082',
-  },
-  landscapeRightHeaderText: {
-    fontSize: 16,
-    color: '#5D4037',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  landscapeDetailsScroll: {
-    padding: 10,
-    paddingBottom: 8,
-  },
-  landscapeDetailCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 1,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  landscapeDetailCardSelected: {
-    backgroundColor: '#FFFDE7',
-    borderColor: '#FFD600',
-    shadowColor: '#FFD600',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  landscapeDetailTop: {
-    marginBottom: 6,
-  },
-  landscapeDetailBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFEBEE',
-    alignSelf: 'flex-start',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  landscapeDetailBadgeSelected: {
-    backgroundColor: '#FFD600',
-  },
-  landscapeDetailBadgeIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  landscapeDetailBadgeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#C62828',
-  },
-  landscapeExamplesLabel: {
-    fontSize: 13,
-    color: '#888888',
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  landscapeExamplesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  landscapeExampleEmoji: {
-    fontSize: 32,
-  },
-  landscapeDetailDescription: {
-    fontSize: 15,
-    color: '#616161',
-    lineHeight: 21,
-  },
-  landscapeWarningBox: {
-    marginTop: 6,
-    paddingTop: 5,
-    borderTopWidth: 1,
-    borderTopColor: '#FFCDD2',
-  },
-  landscapeDetailWarning: {
-    fontSize: 14,
-    color: '#C62828',
-    fontWeight: '600',
-    lineHeight: 19,
-  },
-  landscapeFooter: {
-    backgroundColor: '#E8F5E9',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  landscapeFooterText: {
-    fontSize: 16,
-    color: '#2E7D32',
-    fontWeight: '500',
-    fontStyle: 'italic',
   },
 });

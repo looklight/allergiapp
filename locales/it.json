@@ -3,10 +3,10 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "Le Mie Allergie",
-    "noAllergies": "Non hai ancora aggiunto allergie",
-    "addAllergies": "Aggiungi Allergie",
-    "editAllergies": "Modifica allergie",
+    "title": "Cosa devo comunicare?",
+    "noAllergies": "Non hai ancora aggiunto nulla",
+    "addAllergies": "Aggiungi",
+    "editAllergies": "Modifica",
     "showCard": "Mostra Card",
     "showCardToWaiter": "Mostra Card",
     "settings": "Impostazioni",
@@ -23,9 +23,44 @@
     "bannerHowToUseDesc": "Presenta la tua card al cameriere quando ordini al ristorante"
   },
   "addAllergy": {
-    "title": "Aggiungi Allergie",
-    "subtitle": "Seleziona le tue allergie alimentari",
-    "save": "Salva"
+    "title": "Cosa devo comunicare?",
+    "subtitle": "Seleziona gli alimenti da evitare",
+    "save": "Salva",
+    "otherFoods": "Altri alimenti"
+  },
+  "otherRestrictions": {
+    "title": "Altre esigenze",
+    "subtitle": "Seleziona cosa comunicare",
+    "save": "Salva",
+    "other": "Altro",
+    "selectedCount": "{{count}} selezionati",
+    "pregnancyToggle": "Sono in gravidanza",
+    "pregnancyHint": "Mostrerà nella card che sei in gravidanza",
+    "vegetarianToggle": "Dieta vegetariana",
+    "vegetarianHint": "Seleziona cosa non mangi",
+    "pregnancyLabel": "In gravidanza",
+    "vegetarianLabel": "Dieta vegetariana",
+    "vegetarianLevel_no_meat": "No carne",
+    "vegetarianLevel_no_meat_fish": "No carne e pesce",
+    "vegetarianLevel_no_animal_products": "No prodotti animali",
+    "vegetarianVeganTag": "dieta vegana",
+    "vegetarianLevelHint_no_meat": "Pesce e altri prodotti animali vanno bene",
+    "vegetarianLevelHint_no_meat_fish": "Non mangio carne e pesce",
+    "vegetarianLevelHint_no_animal_products": "Niente carne, pesce, uova, latticini, miele",
+    "nickelToggle": "Allergia al nichel",
+    "nickelHint": "Mostrerà sulla card i cibi ad alto contenuto di nichel da evitare",
+    "nickelLabel": "Allergia al nichel",
+    "nickelActive": "Modalità nichel attiva",
+    "histamineToggle": "Intolleranza all'istamina",
+    "histamineHint": "Mostrerà sulla card i cibi ad alto contenuto di istamina da evitare",
+    "histamineLabel": "Intolleranza all'istamina",
+    "histamineActive": "Modalità istamina attiva",
+    "diabetesToggle": "Diabete",
+    "diabetesHint": "Comunicherà sulla card che sei diabetico e indicherà gli alimenti da evitare",
+    "diabetesLabel": "Diabete",
+    "diabetesActive": "Modalità diabete attiva",
+    "foodsToAvoid": "Alimenti sconsigliati",
+    "pregnancyActive": "Modalità gravidanza attiva"
   },
   "card": {
     "title": "Allergie Alimentari",
@@ -34,8 +69,7 @@
     "message": "Ho le seguenti allergie alimentari. Per favore, assicuratevi che il mio cibo non contenga questi ingredienti.",
     "thanks": "Grazie per la vostra comprensione.",
     "changeLanguage": "Cambia Lingua",
-    "showInMyLanguage": "Vedi nella mia lingua",
-    "showInDestLanguage": "Torna alla lingua originale"
+    "viewInLanguage": "Vedi in {{lang}}"
   },
   "settings": {
     "title": "Impostazioni",
@@ -61,7 +95,7 @@
     "translatingDescriptions": "Traduzione descrizioni...",
     "translatingCard": "Traduzione testi card...",
     "noInternet": "Nessuna connessione internet",
-    "searchLanguage": "Cerca lingua...",
+    "searchLanguage": "Cerca lingua o paese...",
     "languagesAvailable": "lingue disponibili",
     "includedLanguages": "Incluse",
     "downloadedLanguages": "Scaricate",

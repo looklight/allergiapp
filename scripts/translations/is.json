@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glúten (korn)",
+    "crustaceans": "Krabbadýr",
+    "eggs": "Egg",
+    "fish": "Fiskur",
+    "peanuts": "Jarðhnetur",
+    "soy": "Soja",
+    "milk": "Mjólk og mjólkurvörur",
+    "celery": "Sellerí",
+    "mustard": "Sinnep",
+    "sesame": "Sesamfræ",
+    "sulfites": "Brennisteinsdíoxíð og súlfít",
+    "lupin": "Lúpína",
+    "mollusks": "Lindýr",
+    "nuts": "Hnetur",
+    "fava_beans": "Baunir (favismi)"
+  },
+  "descriptions": {
+    "gluten": "Öll matvæli með korni eða hveiti (hveiti, bygg, rúgur, spelt): brauð, pasta, pizza, kökur, smákökur, bjór",
+    "crustaceans": "Rækjur, humar, krabbi, jafnfætlur",
+    "eggs": "Egg, eggjakökur, kökur, majónes, fersk pasta",
+    "fish": "Fiskur, súsí, fisksósur, soðið",
+    "peanuts": "Jarðhnetur, jarðhnetusmjör, snarl, eftiréttir",
+    "soy": "Tófú, sojasósa, sojamjólk, edamame",
+    "milk": "Mjólk, ostur, smjör, ís, rjómi",
+    "celery": "Sellerí, salöt, súpur, grænmetissoð",
+    "mustard": "Sinnep, sósur, salatdressingar, súrningar",
+    "sesame": "Sesamfræ, sesamolía, húmmus, brauð",
+    "sulfites": "Vín, bjór, þurrkaðir ávextir, flögur",
+    "lupin": "Lúpínuhveiti, brauð, pasta, snarl",
+    "mollusks": "Kræklingur, ostrur, smokkfiskur, kolkrabbi",
+    "nuts": "Valhnetur, möndlur, heslihnetur, pistasíuhnetur, kasjúhnetur",
+    "fava_beans": "Baunir, baunasúpa, baunamauk, grýtur"
+  },
+  "warnings": {
+    "gluten": "Viðvörun: sojasósa getur innihaldið glúten",
+    "fava_beans": "G6PD skortur: jafnvel lítið magn getur valdið rauðkornarofsun"
+  },
+  "cardTexts": {
+    "header": "ATHUGIÐ",
+    "subtitle": "FÆÐUOFNÆMI",
+    "pregnancySubtitle": "MEÐGANGA OG FÆÐUOFNÆMI",
+    "message": "Ég er með eftirfarandi fæðuofnæmi. Vinsamlegast tryggið að matur minn innihaldi ekki þessi efni, þar með talið krossmengun.",
+    "pregnancyMessage": "Ég er þunguð og er með eftirfarandi fæðuofnæmi. Vinsamlegast tryggið að matur minn innihaldi ekki þessi efni, þar með talið krossmengun.",
+    "thanks": "Kærar þakkir fyrir skilning og hjálp.",
+    "tapToSee": "Snertu til að sjá dæmi",
+    "examples": "Dæmi:"
+  },
+  "dietFoods": {
+    "meat": "Kjöt",
+    "fish": "Fiskur",
+    "seafood": "Sjávarréttir",
+    "eggs": "Egg",
+    "dairy": "Mjólkurvörur",
+    "honey": "Hunang"
+  },
+  "otherFoods": {
+    "garlic": "Hvítlaukur",
+    "onion": "Laukur",
+    "tomato": "Tómatur",
+    "mushrooms": "Sveppir",
+    "bell_pepper": "Paprika",
+    "corn": "Maís",
+    "strawberries": "Jarðarber",
+    "kiwi": "Kíví",
+    "stone_fruits": "Steinaldin (ferskja, kirsuber, apríkósa)",
+    "citrus": "Sítrusávextir",
+    "banana": "Banani",
+    "buckwheat": "Bókhveiti",
+    "spicy": "Sterkur matur"
+  },
+  "restrictions": {
+    "raw_fish": "Hrár fiskur / súsí",
+    "raw_cured_meats": "Hrátt saltað kjöt",
+    "raw_eggs": "Hrá egg",
+    "raw_sprouts": "Hrár spírur",
+    "unpasteurized_cheese": "Ógerilsneyddur ostur",
+    "unpasteurized_milk": "Ógerilsneydd mjólk",
+    "alcohol": "Áfengi",
+    "excessive_caffeine": "Of mikið koffín",
+    "nickel_chocolate": "Súkkulaði / kakó",
+    "nickel_tomato": "Tómatar og tómatssósur",
+    "nickel_legumes": "Belgávextir (linsubaunir, kjúklingabaunir, baunir)",
+    "nickel_nuts": "Hnetur (valhnetur, heslihnetur, kasjúhnetur)",
+    "nickel_whole_grains": "Heilkorn / hafrar",
+    "nickel_spinach": "Spínat og laufrætur",
+    "nickel_canned_food": "Niðursoðinn matur",
+    "nickel_tea_coffee": "Te og kaffi",
+    "histamine_aged_cheese": "Þroskaður ostur",
+    "histamine_cured_meats": "Saltað kjöt og pylsur",
+    "histamine_fish": "Niðursoðinn og reyktur fiskur",
+    "histamine_fermented": "Gerjað matvæli (súrkál, kimchí, mísó)",
+    "histamine_wine_beer": "Vín og bjór",
+    "histamine_vinegar": "Edik og súrsaðar grænmetis",
+    "histamine_chocolate": "Súkkulaði / kakó",
+    "histamine_tomato": "Tómatar og tómatssósur",
+    "histamine_strawberries": "Jarðarber",
+    "histamine_eggplant": "Eggaldin",
+    "histamine_avocado": "Avókadó",
+    "histamine_spinach": "Spínat",
+    "diabetes_added_sugar": "Sykur / síróp",
+    "diabetes_honey_sweeteners": "Hunang og sætuefni",
+    "diabetes_sweet_sauces": "Sætar sósur (ketsjúp, sætsúr, teríjakí)",
+    "diabetes_sweet_glazes": "Sætar gljáar og súrningar",
+    "diabetes_fruit_juice": "Ávaxtasafi sem innihaldsefni",
+    "diabetes_candied_fruit": "Sykraðir ávextir / sultur"
+  },
+  "restrictionCardTexts": {
+    "header": "MATVÆLI SEM FORÐAST BER",
+    "message": "Af heilsufarslegum ástæðum þarf ég að forðast eftirfarandi matvæli:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "MEÐGANGA",
+        "message": "Ég er þunguð. Vinsamlegast tryggið að matur minn innihaldi ekki:",
+        "sectionMessage": "Auk þess þarf ég vegna meðgöngu að forðast:"
+      },
+      "no_meat": {
+        "header": "GRÆNMETISFÆÐI",
+        "message": "Ég borða ekki kjöt.\nFiskur og aðrar dýraafurðir eru í lagi.",
+        "sectionMessage": "Auk þess borða ég ekki kjöt.\nFiskur og aðrar dýraafurðir eru í lagi."
+      },
+      "no_meat_fish": {
+        "header": "GRÆNMETISFÆÐI",
+        "message": "Ég fylgi grænmetisfæði. Ég borða ekki kjöt né fisk.",
+        "sectionMessage": "Auk þess fylgi ég grænmetisfæði og borða ekki kjöt né fisk."
+      },
+      "no_animal_products": {
+        "header": "VEGANFÆÐI",
+        "message": "Ég fylgi veganfæði. Ég borða ekki kjöt, fisk, sjávarrétti, egg, mjólkurvörur, hunang né neinar dýraafurðir.",
+        "sectionMessage": "Auk þess fylgi ég veganfæði og borða ekki kjöt, fisk, sjávarrétti, egg, mjólkurvörur, hunang né neinar dýraafurðir."
+      },
+      "nickel": {
+        "header": "NIKKELOFNÆMI",
+        "message": "Ég er með nikkelofnæmi. Nikkel er málmur sem finnst í mörgum matvælum. Vinsamlegast tryggið að matur minn innihaldi ekki:",
+        "sectionMessage": "Auk þess er ég með nikkelofnæmi. Vinsamlegast tryggið að matur minn innihaldi ekki:"
+      },
+      "histamine": {
+        "header": "HISTAMÍNÓÞOL",
+        "message": "Ég get ekki borðað mat ríkan af histamíni. Histamín finnst í þroskuðum, gerjuðum eða lengi geymdum matvælum. Til dæmis:",
+        "sectionMessage": "Auk þess get ég ekki borðað mat ríkan af histamíni. Til dæmis:"
+      },
+      "diabetes": {
+        "header": "SYKURSÝKI",
+        "message": "Ég er með sykursýki og þarf að hafa eftirlit með sykurneyslu. Vinsamlegast bætið ekki sykri í mat minn og látið mig vita ef hann inniheldur:",
+        "sectionMessage": "Auk þess er ég með sykursýki og þarf að hafa eftirlit með sykurneyslu. Látið mig vita ef inniheldur:"
+      }
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Kleykovina (don)",
+    "crustaceans": "Qisqichbaqasimonlar",
+    "eggs": "Tuxum",
+    "fish": "Baliq",
+    "peanuts": "Yong'oq",
+    "soy": "Soya",
+    "milk": "Sut va sut mahsulotlari",
+    "celery": "Seldr",
+    "mustard": "Xantal",
+    "sesame": "Susan",
+    "sulfites": "Oltingugurt dioksidi va sulfitlar",
+    "lupin": "Lyupin",
+    "mollusks": "Mollyuskalar",
+    "nuts": "Daraxt yong'oqlari",
+    "fava_beans": "Fava loviya (favizm)"
+  },
+  "descriptions": {
+    "gluten": "Yorma yoki unli barcha ovqatlar (bug'doy, arpa, javdar, maydalangan): non, makaron, pizza, kek, pechenye, pivo",
+    "crustaceans": "Qisqichbaqalar, omar, qisqichbaqa, qisqichbaqalar",
+    "eggs": "Tuxum, omlet, kek, mayonez, yangi makaron",
+    "fish": "Baliq, sushi, baliq soslari, bulyonlar",
+    "peanuts": "Fıstık, yeryong'oq yog'i, gazaklar, shirinliklar",
+    "soy": "Tofu, soya sousi, soya suti, edamame",
+    "milk": "Sut, pishloq, sariyog ', muzqaymoq, qaymoq",
+    "celery": "Selderey, salatlar, sho'rvalar, sabzavotli bulyonlar",
+    "mustard": "Xantal, soslar, soslar, marinadlar",
+    "sesame": "Susan urug'i, kunjut yog'i, gumus, non",
+    "sulfites": "Sharob, pivo, quritilgan mevalar, chiplar",
+    "lupin": "Lyupin uni, non, makaron, gazaklar",
+    "mollusks": "Midiya, mollyuska, istiridye, kalamar, sakkizoyoq",
+    "nuts": "Yong'oq, bodom, findiq, pista, kaju",
+    "fava_beans": "Fava loviya, fava loviya sho'rva, fava loviya pyuresi, güveç"
+  },
+  "warnings": {
+    "gluten": "⚠️ Ogohlantirish: soya sousida kleykovina bo'lishi mumkin",
+    "fava_beans": "G6PD etishmovchiligi: hatto kichik miqdorlar ham gemolitik inqirozga olib kelishi mumkin"
+  },
+  "cardTexts": {
+    "header": "DIQQAT",
+    "subtitle": "OZIQ-OVQAT ALLERGIYASI",
+    "pregnancySubtitle": "Homiladorlik va oziq-ovqat ALLERGIYASI",
+    "message": "Menda quyidagi oziq-ovqat allergiyalari bor. Iltimos, mening ovqatimda ushbu ingredientlar, jumladan, o'zaro ifloslanish yo'qligiga ishonch hosil qiling.",
+    "pregnancyMessage": "Men homiladorman va menda quyidagi oziq-ovqat allergiyalari bor. Iltimos, mening ovqatimda ushbu ingredientlar, jumladan, o'zaro ifloslanish yo'qligiga ishonch hosil qiling.",
+    "thanks": "Tushunganingiz va yordamingiz uchun katta rahmat.",
+    "tapToSee": "Misollarni ko'rish uchun bosing",
+    "examples": "Misollar:"
+  },
+  "dietFoods": {
+    "meat": "Go'sht",
+    "fish": "Baliq",
+    "seafood": "Dengiz mahsulotlari",
+    "eggs": "Tuxum",
+    "dairy": "Sut mahsulotlari",
+    "honey": "Asal"
+  },
+  "otherFoods": {
+    "garlic": "Sarimsoq",
+    "onion": "Piyoz",
+    "tomato": "Pomidor",
+    "mushrooms": "Qo'ziqorinlar",
+    "bell_pepper": "Bolgar qalampiri",
+    "corn": "Makkajo'xori",
+    "strawberries": "Qulupnay",
+    "kiwi": "Kivi",
+    "stone_fruits": "Toshli mevalar (shaftoli, olcha, o'rik)",
+    "citrus": "Tsitrus mevalari",
+    "banana": "Banan",
+    "buckwheat": "Karabuğday",
+    "spicy": "Achchiq ovqatlar"
+  },
+  "restrictions": {
+    "raw_fish": "Xom baliq / sushi",
+    "raw_cured_meats": "Xom pishirilgan go'sht",
+    "raw_eggs": "Xom tuxum",
+    "raw_sprouts": "Xom kurtaklar",
+    "unpasteurized_cheese": "Pasterizatsiya qilinmagan pishloqlar",
+    "unpasteurized_milk": "Pasterizatsiya qilinmagan sut",
+    "alcohol": "Spirtli ichimliklar",
+    "excessive_caffeine": "Haddan tashqari kofein",
+    "nickel_chocolate": "Shokolad / kakao",
+    "nickel_tomato": "Pomidor va pomidor soslari",
+    "nickel_legumes": "Dukkaklilar (yasmiq, nohut, loviya)",
+    "nickel_nuts": "Yong'oqlar (yong'oq, findiq, kaju)",
+    "nickel_whole_grains": "To'liq donalar / jo'xori",
+    "nickel_spinach": "Ismaloq va bargli ko'katlar",
+    "nickel_canned_food": "Konservalangan ovqat",
+    "nickel_tea_coffee": "Choy va qahva",
+    "histamine_aged_cheese": "Qadimgi pishloqlar",
+    "histamine_cured_meats": "Qovurilgan go'sht va kolbasa",
+    "histamine_fish": "Konservalangan va dudlangan baliq",
+    "histamine_fermented": "Fermentlangan ovqatlar (kimchi, tuzlangan karam, miso)",
+    "histamine_wine_beer": "Vino va pivo",
+    "histamine_vinegar": "Sirka va tuzlangan bodring",
+    "histamine_chocolate": "Shokolad / kakao",
+    "histamine_tomato": "Pomidor va pomidor soslari",
+    "histamine_strawberries": "Qulupnay",
+    "histamine_eggplant": "Baqlajon",
+    "histamine_avocado": "Avakado",
+    "histamine_spinach": "Ismaloq",
+    "diabetes_added_sugar": "Qo'shilgan shakar / siroplar",
+    "diabetes_honey_sweeteners": "Asal va shirinliklar",
+    "diabetes_sweet_sauces": "Shirin soslar (ketchup, shirin va nordon, teriyaki)",
+    "diabetes_sweet_glazes": "Shirin sirlar va marinadlar",
+    "diabetes_fruit_juice": "Ingredient sifatida meva sharbati",
+    "diabetes_candied_fruit": "Shakarlangan mevalar / murabbo"
+  },
+  "restrictionCardTexts": {
+    "header": "O'ZI BO'LGAN OZIQ-OVQATLAR",
+    "message": "Sog'liqni saqlash nuqtai nazaridan men quyidagi ovqatlardan voz kechishim kerak:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "HOMILALILIK",
+        "message": "Men homiladorman. Iltimos, mening ovqatimda quyidagilar mavjud emasligiga ishonch hosil qiling:",
+        "sectionMessage": "Bundan tashqari, homiladorligim tufayli men quyidagilardan qochishim kerak:"
+      },
+      "no_meat": {
+        "header": "VEGETERAN DETASI",
+        "message": "Men go'sht yemayman. \nBaliq va boshqa hayvonot mahsulotlari yaxshi.",
+        "sectionMessage": "Bundan tashqari, men go'sht iste'mol qilmayman. \nBaliq va boshqa hayvonot mahsulotlari yaxshi."
+      },
+      "no_meat_fish": {
+        "header": "VEGETERAN DETASI",
+        "message": "Men vegetarian dietasiga amal qilaman. \nMen go'sht yoki baliq iste'mol qilmayman.",
+        "sectionMessage": "Bundan tashqari, men vegetarian parhezga rioya qilaman va go'sht yoki baliq iste'mol qilmayman."
+      },
+      "no_animal_products": {
+        "header": "VEGAN DIET",
+        "message": "Men vegan dietasiga amal qilaman. \nMen go'sht, baliq, dengiz mahsulotlari, tuxum, sut, asal yoki boshqa hayvonot mahsulotlarini iste'mol qilmayman.",
+        "sectionMessage": "Bundan tashqari, men vegetarian parhezga rioya qilaman va go'sht, baliq, dengiz mahsulotlari, tuxum, sut, asal yoki boshqa hayvonot mahsulotlarini iste'mol qilmayman."
+      },
+      "nickel": {
+        "header": "NİKEL ALLERGIYASI",
+        "message": "Menda nikel allergiyasi bor. Nikel ko'plab oziq-ovqatlarda mavjud bo'lgan metalldir. Iltimos, mening ovqatimda quyidagilar mavjud emasligiga ishonch hosil qiling:",
+        "sectionMessage": "Bundan tashqari, menda nikel allergiyasi bor. Nikel ko'plab oziq-ovqatlarda mavjud bo'lgan metalldir. Iltimos, mening ovqatimda quyidagilar mavjud emasligiga ishonch hosil qiling:"
+      },
+      "histamine": {
+        "header": "GİSTaminlarga chidamlilik",
+        "message": "Men gistaminga boy ovqatlarni iste'mol qila olmayman. Gistamin keksa, fermentlangan yoki uzoq vaqt saqlanadigan ovqatlarda mavjud. Masalan:",
+        "sectionMessage": "Bundan tashqari, men gistaminga boy ovqatlarni iste'mol qila olmayman. Gistamin keksa, fermentlangan yoki uzoq vaqt saqlanadigan ovqatlarda mavjud. Masalan:"
+      },
+      "diabetes": {
+        "header": "QANDLI DABET",
+        "message": "Menda qandli diabet bor va shakarni iste'mol qilishni nazorat qilishim kerak. Iltimos, mening ovqatimga shakar qo'shmang va uning tarkibida quyidagilar bo'lsa, menga xabar bering:",
+        "sectionMessage": "Bundan tashqari, men diabetga chalinganman va shakarni iste'mol qilishni nazorat qilishim kerak. Iltimos, mening ovqatimga shakar qo'shmang va uning tarkibida quyidagilar bo'lsa, menga xabar bering:"
+      }
+    }
+  }
+}

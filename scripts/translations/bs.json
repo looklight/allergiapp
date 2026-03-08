@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (žitarice)",
+    "crustaceans": "Rakovi",
+    "eggs": "Jaja",
+    "fish": "Riba",
+    "peanuts": "Kikiriki",
+    "soy": "Soja",
+    "milk": "Mlijeko i mliječni proizvodi",
+    "celery": "Celer",
+    "mustard": "Senf",
+    "sesame": "Sjemenke susama",
+    "sulfites": "Sumporni dioksid i sulfiti",
+    "lupin": "Lupina",
+    "mollusks": "Mekušci",
+    "nuts": "Orašasti plodovi",
+    "fava_beans": "Bob (favizam)"
+  },
+  "descriptions": {
+    "gluten": "Sva hrana sa žitaricama ili brašnom (pšenica, ječam, raž, pir): hljeb, tjestenina, pizza, torte, keksovi, pivo",
+    "crustaceans": "Škampi, jastog, rak, kozice",
+    "eggs": "Jaja, omleti, torte, majoneza, svježa tjestenina",
+    "fish": "Riba, suši, riblje umake, bujoni",
+    "peanuts": "Kikiriki, puter od kikirikija, grickalice, deserti",
+    "soy": "Tofu, soja sos, sojino mlijeko, edamame",
+    "milk": "Mlijeko, sir, puter, sladoled, vrhnje",
+    "celery": "Celer, salate, supe, povrćni bujon",
+    "mustard": "Senf, umaci, preljevi, marinade",
+    "sesame": "Sjemenke susama, susamovo ulje, humus, hljeb",
+    "sulfites": "Vino, pivo, suho voće, čips",
+    "lupin": "Lupinino brašno, hljeb, tjestenina, grickalice",
+    "mollusks": "Dagnje, školjke, kamenice, lignje, hobotnica",
+    "nuts": "Orasi, bademi, lješnjaci, pistacije, indijski oraščići",
+    "fava_beans": "Bob, čorba od boba, pire od boba, variva"
+  },
+  "warnings": {
+    "gluten": "Upozorenje: soja sos može sadržavati gluten",
+    "fava_beans": "Deficit G6PD: čak i male količine mogu izazvati hemolitičku krizu"
+  },
+  "cardTexts": {
+    "header": "PAŽNJA",
+    "subtitle": "ALERGIJE NA HRANU",
+    "pregnancySubtitle": "TRUDNOĆA I ALERGIJE NA HRANU",
+    "message": "Imam sljedeće alergije na hranu. Molim vas osigurajte da moja hrana ne sadrži ove sastojke, uključujući unakrsnu kontaminaciju.",
+    "pregnancyMessage": "Trudna sam i imam sljedeće alergije na hranu. Molim vas osigurajte da moja hrana ne sadrži ove sastojke, uključujući unakrsnu kontaminaciju.",
+    "thanks": "Hvala vam puno na razumijevanju i pomoći.",
+    "tapToSee": "Dodirnite za primjere",
+    "examples": "Primjeri:"
+  },
+  "dietFoods": {
+    "meat": "Meso",
+    "fish": "Riba",
+    "seafood": "Morski plodovi",
+    "eggs": "Jaja",
+    "dairy": "Mliječni proizvodi",
+    "honey": "Med"
+  },
+  "otherFoods": {
+    "garlic": "Bijeli luk",
+    "onion": "Crni luk",
+    "tomato": "Paradajz",
+    "mushrooms": "Gljive",
+    "bell_pepper": "Paprika",
+    "corn": "Kukuruz",
+    "strawberries": "Jagode",
+    "kiwi": "Kivi",
+    "stone_fruits": "Koštunjavo voće (breskva, trešnja, kajsija)",
+    "citrus": "Citrusi",
+    "banana": "Banana",
+    "buckwheat": "Heljda",
+    "spicy": "Ljuta hrana"
+  },
+  "restrictions": {
+    "raw_fish": "Sirova riba / suši",
+    "raw_cured_meats": "Sirovo sušeno meso",
+    "raw_eggs": "Sirova jaja",
+    "raw_sprouts": "Sirove klice",
+    "unpasteurized_cheese": "Nepasterizirani sirevi",
+    "unpasteurized_milk": "Nepasterizirano mlijeko",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "Prekomjerni kofein",
+    "nickel_chocolate": "Čokolada / kakao",
+    "nickel_tomato": "Paradajz i umaci od paradajza",
+    "nickel_legumes": "Mahunarke (leća, slanutak, grah)",
+    "nickel_nuts": "Orašasti plodovi (orasi, lješnjaci, indijski oraščići)",
+    "nickel_whole_grains": "Integralne žitarice / zob",
+    "nickel_spinach": "Špinat i lisnato povrće",
+    "nickel_canned_food": "Konzerve",
+    "nickel_tea_coffee": "Čaj i kafa",
+    "histamine_aged_cheese": "Zreli sirevi",
+    "histamine_cured_meats": "Sušeno meso i kobasice",
+    "histamine_fish": "Konzervirana i dimljena riba",
+    "histamine_fermented": "Fermentirana hrana (kiseli kupus, kimči, miso)",
+    "histamine_wine_beer": "Vino i pivo",
+    "histamine_vinegar": "Sirće i turšija",
+    "histamine_chocolate": "Čokolada / kakao",
+    "histamine_tomato": "Paradajz i umaci od paradajza",
+    "histamine_strawberries": "Jagode",
+    "histamine_eggplant": "Patlidžan",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Špinat",
+    "diabetes_added_sugar": "Šećer / sirupi",
+    "diabetes_honey_sweeteners": "Med i zaslađivači",
+    "diabetes_sweet_sauces": "Slatki umaci (kečap, kiselo-slatko, terijaki)",
+    "diabetes_sweet_glazes": "Slatke glazure i marinade",
+    "diabetes_fruit_juice": "Voćni sok kao sastojak",
+    "diabetes_candied_fruit": "Kandirano voće / džemovi"
+  },
+  "restrictionCardTexts": {
+    "header": "HRANA KOJU TREBA IZBJEGAVATI",
+    "message": "Iz zdravstvenih razloga moram izbjegavati sljedeću hranu:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "TRUDNOĆA",
+        "message": "Trudna sam. Molim vas osigurajte da moja hrana ne sadrži:",
+        "sectionMessage": "Dodatno, zbog trudnoće moram izbjegavati:"
+      },
+      "no_meat": {
+        "header": "VEGETARIJANSKA ISHRANA",
+        "message": "Ne jedem meso.\nRiba i drugi životinjski proizvodi su u redu.",
+        "sectionMessage": "Dodatno, ne jedem meso.\nRiba i drugi životinjski proizvodi su u redu."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIJANSKA ISHRANA",
+        "message": "Pratim vegetarijansku ishranu. Ne jedem meso ni ribu.",
+        "sectionMessage": "Dodatno, pratim vegetarijansku ishranu i ne jedem meso ni ribu."
+      },
+      "no_animal_products": {
+        "header": "VEGANSKA ISHRANA",
+        "message": "Pratim vegansku ishranu. Ne jedem meso, ribu, morske plodove, jaja, mliječne proizvode, med niti bilo kakve životinjske proizvode.",
+        "sectionMessage": "Dodatno, pratim vegansku ishranu i ne jedem meso, ribu, morske plodove, jaja, mliječne proizvode, med niti bilo kakve životinjske proizvode."
+      },
+      "nickel": {
+        "header": "ALERGIJA NA NIKAL",
+        "message": "Imam alergiju na nikal. Nikal je metal koji se nalazi u mnogim namirnicama. Molim vas osigurajte da moja hrana ne sadrži:",
+        "sectionMessage": "Dodatno, imam alergiju na nikal. Molim vas osigurajte da moja hrana ne sadrži:"
+      },
+      "histamine": {
+        "header": "NETOLERANCIJA NA HISTAMIN",
+        "message": "Ne mogu jesti hranu bogatu histaminom. Histamin se nalazi u zrelim, fermentiranim ili dugo čuvanim namirnicama. Na primjer:",
+        "sectionMessage": "Dodatno, ne mogu jesti hranu bogatu histaminom. Na primjer:"
+      },
+      "diabetes": {
+        "header": "DIJABETES",
+        "message": "Imam dijabetes i moram kontrolisati unos šećera. Molim vas ne dodajte šećer u moju hranu i javite mi ako sadrži:",
+        "sectionMessage": "Dodatno, imam dijabetes i moram kontrolisati unos šećera. Javite mi ako sadrži:"
+      }
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (butil)",
+    "crustaceans": "Crustacean",
+    "eggs": "Itlog",
+    "fish": "Isda",
+    "peanuts": "Mani",
+    "soy": "Soya",
+    "milk": "Gatas at produktong gatas",
+    "celery": "Kintsay",
+    "mustard": "Mustasa",
+    "sesame": "Linga",
+    "sulfites": "Sulfur dioxide at sulfites",
+    "lupin": "Lupin",
+    "mollusks": "Lamang-dagat na malambot",
+    "nuts": "Mga nuts",
+    "fava_beans": "Fava beans (favism)"
+  },
+  "descriptions": {
+    "gluten": "Lahat ng pagkain na may butil o harina (trigo, barley, rye, spelt): tinapay, pasta, pizza, cake, biskwit, beer",
+    "crustaceans": "Hipon, lobster, alimango, sugpo",
+    "eggs": "Itlog, omelette, cake, mayonnaise, fresh pasta",
+    "fish": "Isda, sushi, sarsa ng isda, sabaw",
+    "peanuts": "Mani, peanut butter, meryenda, panghimagas",
+    "soy": "Tofu, toyo, soy milk, edamame",
+    "milk": "Gatas, keso, mantikilya, ice cream, cream",
+    "celery": "Kintsay, salad, sopas, sabaw ng gulay",
+    "mustard": "Mustasa, sarsa, dressing, marinade",
+    "sesame": "Linga, langis ng linga, hummus, tinapay",
+    "sulfites": "Alak, beer, pinatuyong prutas, chips",
+    "lupin": "Harina ng lupin, tinapay, pasta, meryenda",
+    "mollusks": "Tahong, talaba, pusit, pugita",
+    "nuts": "Walnut, almond, hazelnut, pistachio, cashew",
+    "fava_beans": "Fava beans, sopas ng beans, bean puree, stew"
+  },
+  "warnings": {
+    "gluten": "Babala: ang toyo ay maaaring maglaman ng gluten",
+    "fava_beans": "Kakulangan sa G6PD: kahit maliit na dami ay maaaring magdulot ng hemolytic crisis"
+  },
+  "cardTexts": {
+    "header": "PANSIN",
+    "subtitle": "MGA ALLERGY SA PAGKAIN",
+    "pregnancySubtitle": "PAGBUBUNTIS AT MGA ALLERGY SA PAGKAIN",
+    "message": "Mayroon akong mga sumusunod na allergy sa pagkain. Pakitiyak na walang mga sangkap na ito sa aking pagkain, kasama ang cross-contamination.",
+    "pregnancyMessage": "Ako ay buntis at mayroon akong mga sumusunod na allergy sa pagkain. Pakitiyak na walang mga sangkap na ito sa aking pagkain, kasama ang cross-contamination.",
+    "thanks": "Maraming salamat sa iyong pag-unawa at tulong.",
+    "tapToSee": "I-tap upang makita ang mga halimbawa",
+    "examples": "Mga halimbawa:"
+  },
+  "dietFoods": {
+    "meat": "Karne",
+    "fish": "Isda",
+    "seafood": "Seafood",
+    "eggs": "Itlog",
+    "dairy": "Produktong gatas",
+    "honey": "Pulot"
+  },
+  "otherFoods": {
+    "garlic": "Bawang",
+    "onion": "Sibuyas",
+    "tomato": "Kamatis",
+    "mushrooms": "Kabute",
+    "bell_pepper": "Bell pepper",
+    "corn": "Mais",
+    "strawberries": "Strawberry",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Prutas na may buto (peach, cherry, apricot)",
+    "citrus": "Citrus",
+    "banana": "Saging",
+    "buckwheat": "Buckwheat",
+    "spicy": "Maanghang na pagkain"
+  },
+  "restrictions": {
+    "raw_fish": "Hilaw na isda / sushi",
+    "raw_cured_meats": "Hilaw na cured na karne",
+    "raw_eggs": "Hilaw na itlog",
+    "raw_sprouts": "Hilaw na sprouts",
+    "unpasteurized_cheese": "Hindi pasteurized na keso",
+    "unpasteurized_milk": "Hindi pasteurized na gatas",
+    "alcohol": "Alak",
+    "excessive_caffeine": "Sobrang caffeine",
+    "nickel_chocolate": "Tsokolate / cacao",
+    "nickel_tomato": "Kamatis at sarsa ng kamatis",
+    "nickel_legumes": "Legumes (lentil, chickpea, beans)",
+    "nickel_nuts": "Mga nuts (walnut, hazelnut, cashew)",
+    "nickel_whole_grains": "Whole grains / oats",
+    "nickel_spinach": "Spinach at leafy greens",
+    "nickel_canned_food": "De-lata na pagkain",
+    "nickel_tea_coffee": "Tsaa at kape",
+    "histamine_aged_cheese": "Aged na keso",
+    "histamine_cured_meats": "Cured na karne at sausage",
+    "histamine_fish": "De-lata at smoked na isda",
+    "histamine_fermented": "Fermented na pagkain (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Alak at beer",
+    "histamine_vinegar": "Suka at atsara",
+    "histamine_chocolate": "Tsokolate / cacao",
+    "histamine_tomato": "Kamatis at sarsa ng kamatis",
+    "histamine_strawberries": "Strawberry",
+    "histamine_eggplant": "Talong",
+    "histamine_avocado": "Avocado",
+    "histamine_spinach": "Spinach",
+    "diabetes_added_sugar": "Asukal / syrup",
+    "diabetes_honey_sweeteners": "Pulot at sweetener",
+    "diabetes_sweet_sauces": "Matamis na sarsa (ketchup, sweet and sour, teriyaki)",
+    "diabetes_sweet_glazes": "Matamis na glaze at marinade",
+    "diabetes_fruit_juice": "Juice ng prutas bilang sangkap",
+    "diabetes_candied_fruit": "Candied na prutas / jam"
+  },
+  "restrictionCardTexts": {
+    "header": "MGA PAGKAING DAPAT IWASAN",
+    "message": "Para sa mga dahilang pangkalusugan kailangan kong iwasan ang mga sumusunod na pagkain:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "PAGBUBUNTIS",
+        "message": "Ako ay buntis. Pakitiyak na walang laman ang aking pagkain na:",
+        "sectionMessage": "Bukod pa rito, dahil sa pagbubuntis kailangan ko ring iwasan:"
+      },
+      "no_meat": {
+        "header": "VEGETARIAN NA DIYETA",
+        "message": "Hindi ako kumakain ng karne.\nOkay lang ang isda at iba pang produktong hayop.",
+        "sectionMessage": "Bukod pa rito, hindi ako kumakain ng karne.\nOkay lang ang isda at iba pang produktong hayop."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIAN NA DIYETA",
+        "message": "Sumusunod ako sa vegetarian na diyeta. Hindi ako kumakain ng karne at isda.",
+        "sectionMessage": "Bukod pa rito, sumusunod ako sa vegetarian na diyeta at hindi kumakain ng karne o isda."
+      },
+      "no_animal_products": {
+        "header": "VEGAN NA DIYETA",
+        "message": "Sumusunod ako sa vegan na diyeta. Hindi ako kumakain ng karne, isda, seafood, itlog, produktong gatas, pulot o anumang produktong hayop.",
+        "sectionMessage": "Bukod pa rito, sumusunod ako sa vegan na diyeta at hindi kumakain ng karne, isda, seafood, itlog, produktong gatas, pulot o anumang produktong hayop."
+      },
+      "nickel": {
+        "header": "ALLERGY SA NICKEL",
+        "message": "Mayroon akong allergy sa nickel. Ang nickel ay isang metal na matatagpuan sa maraming pagkain. Pakitiyak na walang laman ang aking pagkain na:",
+        "sectionMessage": "Bukod pa rito, mayroon akong allergy sa nickel. Pakitiyak na walang laman ang aking pagkain na:"
+      },
+      "histamine": {
+        "header": "HISTAMINE INTOLERANCE",
+        "message": "Hindi ako makakain ng pagkaing mataas sa histamine. Ang histamine ay matatagpuan sa aged, fermented o matagal na iniimbak na pagkain. Halimbawa:",
+        "sectionMessage": "Bukod pa rito, hindi ako makakain ng pagkaing mataas sa histamine. Halimbawa:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Mayroon akong diabetes at kailangan kong kontrolin ang pagkonsumo ng asukal. Pakiusap huwag magdagdag ng asukal sa aking pagkain at sabihin sa akin kung naglalaman ng:",
+        "sectionMessage": "Bukod pa rito, mayroon akong diabetes at kailangan kong kontrolin ang pagkonsumo ng asukal. Sabihin sa akin kung naglalaman ng:"
+      }
+    }
+  }
+}

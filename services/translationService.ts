@@ -1,7 +1,10 @@
 import { AllergenId, DownloadableLanguageCode, DownloadedLanguageData } from '../types';
 import { ALLERGENS } from '../constants/allergens';
 import { ALLERGEN_IMAGES } from '../constants/allergenImages';
-import { CARD_TRANSLATIONS } from '../constants/cardTranslations';
+import { CARD_TRANSLATIONS, RESTRICTION_CARD_TRANSLATIONS, DIET_FOOD_TRANSLATIONS } from '../constants/cardTranslations';
+import { RESTRICTION_ITEMS, RestrictionItemId } from '../constants/otherRestrictions';
+import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
+import { DietFoodItem } from '../constants/dietModes';
 
 const MYMEMORY_API = 'https://api.mymemory.translated.net/get';
 const REQUEST_TIMEOUT_MS = 30000;
@@ -43,7 +46,7 @@ async function translateText({ text, sourceLang, targetLang }: TranslateOptions)
   }
 
   // MyMemory returns match quality — check for errors
-  if (data.responseStatus === 403) {
+  if (data.responseStatus === 403 || data.responseStatus === 429) {
     throw new Error('Translation quota exceeded');
   }
 
@@ -55,12 +58,14 @@ async function translateBatch(
   texts: string[],
   sourceLang: string,
   targetLang: string,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  signal?: AbortSignal
 ): Promise<string[]> {
   const results: string[] = [];
   const total = texts.length;
 
   for (let i = 0; i < texts.length; i++) {
+    if (signal?.aborted) throw new Error('Download cancelled');
     const translated = await translateText({
       text: texts[i],
       sourceLang,
@@ -79,6 +84,10 @@ async function translateBatch(
 
 // Rileva traduzioni parziali: se troppe parole restano in inglese, la traduzione non è affidabile
 function isPartialTranslation(original: string, translated: string): boolean {
+  // Per script non-latini (cinese, arabo, cirillico, ecc.) il confronto parole non funziona.
+  // Se il testo tradotto contiene caratteri fuori dal range latino, è stato tradotto.
+  if (/[^\u0000-\u024F\u1E00-\u1EFF]/.test(translated)) return false;
+
   const getWords = (text: string) =>
     text.toLowerCase().split(/[\s,.\-()]+/).filter(w => w.length > 2);
   const origWords = getWords(original);
@@ -89,7 +98,7 @@ function isPartialTranslation(original: string, translated: string): boolean {
 }
 
 export interface DownloadProgress {
-  phase: 'allergens' | 'descriptions' | 'cardTexts';
+  phase: 'allergens' | 'descriptions' | 'cardTexts' | 'restrictions';
   current: number;
   total: number;
   percentage: number;
@@ -113,14 +122,34 @@ export async function downloadLanguageTranslations(
   const cardTexts = [
     CARD_TRANSLATIONS.en.header,
     CARD_TRANSLATIONS.en.subtitle,
+    CARD_TRANSLATIONS.en.pregnancySubtitle,
     CARD_TRANSLATIONS.en.message,
+    CARD_TRANSLATIONS.en.pregnancyMessage,
     CARD_TRANSLATIONS.en.thanks,
     CARD_TRANSLATIONS.en.tapToSee,
-    CARD_TRANSLATIONS.en.showIn,
     CARD_TRANSLATIONS.en.examples,
   ];
 
-  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length;
+  // Nomi cibo per diete (vegetariano/vegano)
+  const dietFoodKeys = Object.keys(DIET_FOOD_TRANSLATIONS.en) as DietFoodItem[];
+  const dietFoodNames = dietFoodKeys.map(key => DIET_FOOD_TRANSLATIONS.en[key]);
+
+  // Altri alimenti da tradurre
+  const otherFoodNames = OTHER_FOODS.map(f => f.translations.en);
+
+  // Restrizioni da tradurre
+  const restrictionNames = RESTRICTION_ITEMS.map(r => r.translations.en);
+  const dietModeKeys = Object.keys(RESTRICTION_CARD_TRANSLATIONS.en.dietModes);
+  const restrictionCardTexts = [
+    RESTRICTION_CARD_TRANSLATIONS.en.header,
+    RESTRICTION_CARD_TRANSLATIONS.en.message,
+    ...dietModeKeys.flatMap(key => {
+      const mode = RESTRICTION_CARD_TRANSLATIONS.en.dietModes[key as keyof typeof RESTRICTION_CARD_TRANSLATIONS.en.dietModes];
+      return [mode.header, mode.message, mode.sectionMessage];
+    }),
+  ];
+
+  const totalItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length;
   let completedItems = 0;
 
   // Traduce nomi allergeni
@@ -147,7 +176,8 @@ export async function downloadLanguageTranslations(
         total: allergenNames.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -171,7 +201,8 @@ export async function downloadLanguageTranslations(
         total: allergenDescriptions.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
   );
   checkAborted();
 
@@ -197,7 +228,8 @@ export async function downloadLanguageTranslations(
           total: allergenDescriptions.length + allergenWarnings.length,
           percentage: Math.round((completedItems / totalItems) * 100),
         });
-      }
+      },
+      signal
     );
     checkAborted();
   }
@@ -222,7 +254,86 @@ export async function downloadLanguageTranslations(
         total: cardTexts.length,
         percentage: Math.round((completedItems / totalItems) * 100),
       });
-    }
+    },
+    signal
+  );
+  checkAborted();
+
+  // Traduce nomi cibo per diete
+  const translatedDietFoodNames = await translateBatch(
+    dietFoodNames,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + current;
+      onProgress?.({
+        phase: 'cardTexts',
+        current: cardTexts.length + current,
+        total: cardTexts.length + dietFoodNames.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    },
+    signal
+  );
+  checkAborted();
+
+  // Traduce nomi altri alimenti
+  const translatedOtherFoodNames = await translateBatch(
+    otherFoodNames,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + current;
+      onProgress?.({
+        phase: 'restrictions',
+        current,
+        total: otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    },
+    signal
+  );
+  checkAborted();
+
+  // Traduce nomi restrizioni
+  onProgress?.({
+    phase: 'restrictions',
+    current: otherFoodNames.length,
+    total: otherFoodNames.length + restrictionNames.length + restrictionCardTexts.length,
+    percentage: Math.round((completedItems / totalItems) * 100),
+  });
+
+  const translatedRestrictionNames = await translateBatch(
+    restrictionNames,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + otherFoodNames.length + current;
+      onProgress?.({
+        phase: 'restrictions',
+        current,
+        total: restrictionNames.length + restrictionCardTexts.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    },
+    signal
+  );
+  checkAborted();
+
+  const translatedRestrictionCardTexts = await translateBatch(
+    restrictionCardTexts,
+    sourceLang,
+    targetLang,
+    (current) => {
+      completedItems = allergenNames.length + allergenDescriptions.length + allergenWarnings.length + cardTexts.length + dietFoodNames.length + otherFoodNames.length + restrictionNames.length + current;
+      onProgress?.({
+        phase: 'restrictions',
+        current: restrictionNames.length + current,
+        total: restrictionNames.length + restrictionCardTexts.length,
+        percentage: Math.round((completedItems / totalItems) * 100),
+      });
+    },
+    signal
   );
   checkAborted();
 
@@ -246,18 +357,51 @@ export async function downloadLanguageTranslations(
     warnings[allergen.id] = isPartialTranslation(original, translated) ? original : translated;
   });
 
+  // Costruisce le traduzioni cibo per diete
+  const dietFoods: Record<string, string> = {};
+  dietFoodKeys.forEach((key, index) => {
+    dietFoods[key] = translatedDietFoodNames[index];
+  });
+
+  // Costruisce le traduzioni degli altri alimenti
+  const otherFoods: Record<OtherFoodId, string> = {} as Record<OtherFoodId, string>;
+  OTHER_FOODS.forEach((food, index) => {
+    otherFoods[food.id] = translatedOtherFoodNames[index];
+  });
+
+  // Costruisce le restrizioni tradotte
+  const restrictions: Record<RestrictionItemId, string> = {} as Record<RestrictionItemId, string>;
+  RESTRICTION_ITEMS.forEach((item, index) => {
+    restrictions[item.id] = translatedRestrictionNames[index];
+  });
+
   return {
     allergens,
     descriptions,
     warnings: Object.keys(warnings).length > 0 ? warnings : undefined,
+    dietFoods,
+    otherFoods,
+    restrictions,
+    restrictionCardTexts: {
+      header: translatedRestrictionCardTexts[0],
+      message: translatedRestrictionCardTexts[1],
+      dietModeTexts: Object.fromEntries(
+        dietModeKeys.map((key, i) => [key, {
+          header: translatedRestrictionCardTexts[2 + i * 3],
+          message: translatedRestrictionCardTexts[2 + i * 3 + 1],
+          sectionMessage: translatedRestrictionCardTexts[2 + i * 3 + 2],
+        }])
+      ),
+    },
     cardTexts: {
       header: translatedCardTexts[0],
       subtitle: translatedCardTexts[1],
-      message: translatedCardTexts[2],
-      thanks: translatedCardTexts[3],
-      tapToSee: translatedCardTexts[4],
-      showIn: translatedCardTexts[5],
-      examples: translatedCardTexts[6],
+      pregnancySubtitle: translatedCardTexts[2],
+      message: translatedCardTexts[3],
+      pregnancyMessage: translatedCardTexts[4],
+      thanks: translatedCardTexts[5],
+      tapToSee: translatedCardTexts[6],
+      examples: translatedCardTexts[7],
     },
     downloadedAt: new Date().toISOString(),
   };

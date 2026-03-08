@@ -49,7 +49,7 @@ export default function AboutScreen() {
           hitSlop={8}
           activeOpacity={0.6}
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{i18n.t('aboutStory.title')}</Text>
         <View style={{ width: 24 }} />
@@ -85,9 +85,9 @@ export default function AboutScreen() {
             pressed && { opacity: 0.8 }
           ]}
         >
-          <MaterialCommunityIcons name="information-outline" size={18} color="#000000" />
+          <MaterialCommunityIcons name="information-outline" size={18} color={theme.colors.shadow} />
           <Text style={styles.websiteButtonLabel}>{i18n.t('aboutStory.learnMore')}</Text>
-          <MaterialCommunityIcons name="open-in-new" size={14} color="#000000" />
+          <MaterialCommunityIcons name="open-in-new" size={14} color={theme.colors.shadow} />
         </Pressable>
 
         {/* Quote with Author Photo */}
@@ -114,21 +114,21 @@ export default function AboutScreen() {
               onPress={() => Linking.openURL(INSTAGRAM_URL)}
               style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
             >
-              <MaterialCommunityIcons name="instagram" size={22} color="#E1306C" />
+              <MaterialCommunityIcons name="instagram" size={22} color={theme.colors.brandInstagram} />
               <Text style={styles.socialLabel}>Instagram</Text>
             </Pressable>
             <Pressable
               onPress={() => Linking.openURL(YOUTUBE_URL)}
               style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
             >
-              <MaterialCommunityIcons name="youtube" size={22} color="#FF0000" />
+              <MaterialCommunityIcons name="youtube" size={22} color={theme.colors.brandYoutube} />
               <Text style={styles.socialLabel}>YouTube</Text>
             </Pressable>
             <Pressable
               onPress={() => Linking.openURL(TIKTOK_URL)}
               style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.6 }]}
             >
-              <Ionicons name="logo-tiktok" size={20} color="#000000" />
+              <Ionicons name="logo-tiktok" size={20} color={theme.colors.shadow} />
               <Text style={styles.socialLabel}>TikTok</Text>
             </Pressable>
             <Pressable
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFDD00',
+    backgroundColor: theme.colors.brandWebsite,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   websiteButtonLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000000',
+    color: theme.colors.shadow,
   },
   socialSection: {
     marginTop: 8,

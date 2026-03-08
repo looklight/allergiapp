@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (cereale)",
+    "crustaceans": "Crustacee",
+    "eggs": "Ouă",
+    "fish": "Pește",
+    "peanuts": "Arahide",
+    "soy": "Soia",
+    "milk": "Lapte și produse lactate",
+    "celery": "Țelină",
+    "mustard": "Muștar",
+    "sesame": "Semințe de susan",
+    "sulfites": "Dioxid de sulf și sulfiți",
+    "lupin": "Lupin",
+    "mollusks": "Moluște",
+    "nuts": "Fructe cu coajă",
+    "fava_beans": "Fava (favism)"
+  },
+  "descriptions": {
+    "gluten": "Toate alimentele cu cereale sau făină (grâu, orz, secară, alac): pâine, paste, pizza, prăjituri, biscuiți, bere",
+    "crustaceans": "Creveți, homar, crab, langustine",
+    "eggs": "Ouă, omlete, prăjituri, maioneză, paste proaspete",
+    "fish": "Pește, sushi, sosuri de pește, bulion",
+    "peanuts": "Arahide, unt de arahide, gustări, deserturi",
+    "soy": "Tofu, sos de soia, lapte de soia, edamame",
+    "milk": "Lapte, brânză, unt, înghețată, smântână",
+    "celery": "Țelină, salate, supe, bulion de legume",
+    "mustard": "Muștar, sosuri, dressinguri, marinate",
+    "sesame": "Semințe de susan, ulei de susan, hummus, pâine",
+    "sulfites": "Vin, bere, fructe uscate, chipsuri",
+    "lupin": "Făină de lupin, pâine, paste, gustări",
+    "mollusks": "Midii, scoici, stridii, calamari, caracatiță",
+    "nuts": "Nuci, migdale, alune, fistic, caju",
+    "fava_beans": "Fava, supă de fava, piure de fava, tocănițe"
+  },
+  "warnings": {
+    "gluten": "Atenție: sosul de soia poate conține gluten",
+    "fava_beans": "Deficit de G6PD: chiar și cantități mici pot provoca criză hemolitică"
+  },
+  "cardTexts": {
+    "header": "ATENȚIE",
+    "subtitle": "ALERGII ALIMENTARE",
+    "pregnancySubtitle": "SARCINĂ ȘI ALERGII ALIMENTARE",
+    "message": "Am următoarele alergii alimentare. Vă rog să vă asigurați că mâncarea mea nu conține aceste ingrediente, inclusiv prin contaminare încrucișată.",
+    "pregnancyMessage": "Sunt însărcinată și am următoarele alergii alimentare. Vă rog să vă asigurați că mâncarea mea nu conține aceste ingrediente, inclusiv prin contaminare încrucișată.",
+    "thanks": "Vă mulțumesc foarte mult pentru înțelegere și ajutor.",
+    "tapToSee": "Atingeți pentru exemple",
+    "examples": "Exemple:"
+  },
+  "dietFoods": {
+    "meat": "Carne",
+    "fish": "Pește",
+    "seafood": "Fructe de mare",
+    "eggs": "Ouă",
+    "dairy": "Lactate",
+    "honey": "Miere"
+  },
+  "otherFoods": {
+    "garlic": "Usturoi",
+    "onion": "Ceapă",
+    "tomato": "Roșie",
+    "mushrooms": "Ciuperci",
+    "bell_pepper": "Ardei gras",
+    "corn": "Porumb",
+    "strawberries": "Căpșuni",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Fructe sâmburoase (piersică, cireașă, caisă)",
+    "citrus": "Citrice",
+    "banana": "Banană",
+    "buckwheat": "Hrișcă",
+    "spicy": "Mâncăruri picante"
+  },
+  "restrictions": {
+    "raw_fish": "Pește crud / sushi",
+    "raw_cured_meats": "Mezeluri crude",
+    "raw_eggs": "Ouă crude",
+    "raw_sprouts": "Germeni cruzi",
+    "unpasteurized_cheese": "Brânzeturi nepasteurizate",
+    "unpasteurized_milk": "Lapte nepasteurizat",
+    "alcohol": "Alcool",
+    "excessive_caffeine": "Cafeină excesivă",
+    "nickel_chocolate": "Ciocolată / cacao",
+    "nickel_tomato": "Roșii și sosuri de roșii",
+    "nickel_legumes": "Leguminoase (linte, năut, fasole)",
+    "nickel_nuts": "Nuci (nuci, alune, caju)",
+    "nickel_whole_grains": "Cereale integrale / ovăz",
+    "nickel_spinach": "Spanac și legume cu frunze",
+    "nickel_canned_food": "Conserve",
+    "nickel_tea_coffee": "Ceai și cafea",
+    "histamine_aged_cheese": "Brânzeturi maturate",
+    "histamine_cured_meats": "Mezeluri și cârnați",
+    "histamine_fish": "Pește conservat și afumat",
+    "histamine_fermented": "Alimente fermentate (varză murată, kimchi, miso)",
+    "histamine_wine_beer": "Vin și bere",
+    "histamine_vinegar": "Oțet și murături",
+    "histamine_chocolate": "Ciocolată / cacao",
+    "histamine_tomato": "Roșii și sosuri de roșii",
+    "histamine_strawberries": "Căpșuni",
+    "histamine_eggplant": "Vinete",
+    "histamine_avocado": "Avocado",
+    "histamine_spinach": "Spanac",
+    "diabetes_added_sugar": "Zahăr / siropuri",
+    "diabetes_honey_sweeteners": "Miere și îndulcitori",
+    "diabetes_sweet_sauces": "Sosuri dulci (ketchup, dulce-acrișor, teriyaki)",
+    "diabetes_sweet_glazes": "Glazuri dulci și marinate",
+    "diabetes_fruit_juice": "Suc de fructe ca ingredient",
+    "diabetes_candied_fruit": "Fructe confiate / gemuri"
+  },
+  "restrictionCardTexts": {
+    "header": "ALIMENTE DE EVITAT",
+    "message": "Din motive de sănătate, trebuie să evit următoarele alimente:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "SARCINĂ",
+        "message": "Sunt însărcinată. Vă rog să vă asigurați că mâncarea mea nu conține:",
+        "sectionMessage": "În plus, din cauza sarcinii, trebuie să evit:"
+      },
+      "no_meat": {
+        "header": "DIETĂ VEGETARIANĂ",
+        "message": "Nu mănânc carne.\nPeștele și alte produse animale sunt în regulă.",
+        "sectionMessage": "În plus, nu mănânc carne.\nPeștele și alte produse animale sunt în regulă."
+      },
+      "no_meat_fish": {
+        "header": "DIETĂ VEGETARIANĂ",
+        "message": "Urmez o dietă vegetariană. Nu mănânc carne sau pește.",
+        "sectionMessage": "În plus, urmez o dietă vegetariană și nu mănânc carne sau pește."
+      },
+      "no_animal_products": {
+        "header": "DIETĂ VEGANĂ",
+        "message": "Urmez o dietă vegană. Nu mănânc carne, pește, fructe de mare, ouă, lactate, miere sau orice produs de origine animală.",
+        "sectionMessage": "În plus, urmez o dietă vegană și nu mănânc carne, pește, fructe de mare, ouă, lactate, miere sau orice produs de origine animală."
+      },
+      "nickel": {
+        "header": "ALERGIE LA NICHEL",
+        "message": "Am alergie la nichel. Nichelul este un metal prezent în multe alimente. Vă rog să vă asigurați că mâncarea mea nu conține:",
+        "sectionMessage": "În plus, am alergie la nichel. Vă rog să vă asigurați că mâncarea mea nu conține:"
+      },
+      "histamine": {
+        "header": "INTOLERANȚĂ LA HISTAMINĂ",
+        "message": "Nu pot mânca alimente bogate în histamină. Histamina se găsește în alimente maturate, fermentate sau conservate mult timp. De exemplu:",
+        "sectionMessage": "În plus, nu pot mânca alimente bogate în histamină. De exemplu:"
+      },
+      "diabetes": {
+        "header": "DIABET",
+        "message": "Am diabet și trebuie să îmi controlez aportul de zahăr. Vă rog să nu adăugați zahăr în mâncarea mea și să mă informați dacă conține:",
+        "sectionMessage": "În plus, am diabet și trebuie să îmi controlez aportul de zahăr. Informați-mă dacă conține:"
+      }
+    }
+  }
+}

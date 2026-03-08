@@ -3,10 +3,10 @@
     "title": "AllergiApp"
   },
   "home": {
-    "title": "My Allergies",
-    "noAllergies": "You haven't added any allergies yet",
-    "addAllergies": "Add Allergies",
-    "editAllergies": "Edit allergies",
+    "title": "What do I need to communicate?",
+    "noAllergies": "You haven't added anything yet",
+    "addAllergies": "Add",
+    "editAllergies": "Edit",
     "showCard": "Show Card",
     "showCardToWaiter": "Show Card",
     "settings": "Settings",
@@ -23,9 +23,44 @@
     "bannerHowToUseDesc": "Show your card to the waiter when ordering at the restaurant"
   },
   "addAllergy": {
-    "title": "Add Allergies",
-    "subtitle": "Select your food allergies",
-    "save": "Save"
+    "title": "What do I need to communicate?",
+    "subtitle": "Select foods to avoid",
+    "save": "Save",
+    "otherFoods": "Other foods"
+  },
+  "otherRestrictions": {
+    "title": "Other needs",
+    "subtitle": "Select what to communicate",
+    "save": "Save",
+    "other": "Other",
+    "selectedCount": "{{count}} selected",
+    "pregnancyToggle": "I am pregnant",
+    "pregnancyHint": "Will show on the card that you are pregnant",
+    "vegetarianToggle": "Vegetarian diet",
+    "vegetarianHint": "Select what you don't eat",
+    "pregnancyLabel": "Pregnant",
+    "vegetarianLabel": "Vegetarian diet",
+    "vegetarianLevel_no_meat": "No meat",
+    "vegetarianLevel_no_meat_fish": "No meat and fish",
+    "vegetarianLevel_no_animal_products": "No animal products",
+    "vegetarianVeganTag": "vegan diet",
+    "vegetarianLevelHint_no_meat": "Fish and other animal products are fine",
+    "vegetarianLevelHint_no_meat_fish": "I don't eat meat and fish",
+    "vegetarianLevelHint_no_animal_products": "No meat, fish, eggs, dairy, honey",
+    "nickelToggle": "Nickel allergy",
+    "nickelHint": "Will show foods high in nickel to avoid on the card",
+    "nickelLabel": "Nickel allergy",
+    "nickelActive": "Nickel mode active",
+    "histamineToggle": "Histamine intolerance",
+    "histamineHint": "Will show foods high in histamine to avoid on the card",
+    "histamineLabel": "Histamine intolerance",
+    "histamineActive": "Histamine mode active",
+    "diabetesToggle": "Diabetes",
+    "diabetesHint": "Will inform on the card that you have diabetes and list foods to avoid",
+    "diabetesLabel": "Diabetes",
+    "diabetesActive": "Diabetes mode active",
+    "foodsToAvoid": "Foods to avoid",
+    "pregnancyActive": "Pregnancy mode active"
   },
   "card": {
     "title": "Food Allergies",
@@ -34,8 +69,7 @@
     "message": "I have the following food allergies. Please ensure my food does not contain these ingredients.",
     "thanks": "Thank you for your understanding.",
     "changeLanguage": "Change Language",
-    "showInMyLanguage": "View in my language",
-    "showInDestLanguage": "Back to original language"
+    "viewInLanguage": "View in {{lang}}"
   },
   "settings": {
     "title": "Settings",
@@ -61,7 +95,7 @@
     "translatingDescriptions": "Translating descriptions...",
     "translatingCard": "Translating card texts...",
     "noInternet": "No internet connection",
-    "searchLanguage": "Search language...",
+    "searchLanguage": "Search language or country...",
     "languagesAvailable": "languages available",
     "includedLanguages": "Included",
     "downloadedLanguages": "Downloaded",

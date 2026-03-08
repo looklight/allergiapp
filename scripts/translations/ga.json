@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glútan (gránaigh)",
+    "crustaceans": "Crústáigh",
+    "eggs": "Uibheacha",
+    "fish": "Iasc",
+    "peanuts": "Piseáin talún",
+    "soy": "Soighe",
+    "milk": "Bainne agus táirgí bainne",
+    "celery": "Soilire",
+    "mustard": "Mustard",
+    "sesame": "Síolta seasamain",
+    "sulfites": "Dé-ocsaíd sulfair agus sulfítí",
+    "lupin": "Lúipín",
+    "mollusks": "Moilisc",
+    "nuts": "Cnónna",
+    "fava_beans": "Pónaírí leathana (faibhiseas)"
+  },
+  "descriptions": {
+    "gluten": "Gach bia le gránaigh nó plúr (cruithneacht, eorna, seagal, spelt): arán, pasta, pizza, cácaí, brioscaí, beoir",
+    "crustaceans": "Ribeoga, gliomaigh, portáin, cloicheáin",
+    "eggs": "Uibheacha, uibheagáin, cácaí, maonáis, pasta úr",
+    "fish": "Iasc, sushi, anlanna éisc, anraith",
+    "peanuts": "Piseáin talún, im piseáin talún, sneaiceanna, milseoga",
+    "soy": "Tófú, anlann soighe, bainne soighe, edamame",
+    "milk": "Bainne, cáis, im, uachtar reoite, uachtar",
+    "celery": "Soilire, sailéid, anraithí, anraith glasraí",
+    "mustard": "Mustard, anlanna, cumhdaigh, maranáidí",
+    "sesame": "Síolta seasamain, ola seasamain, hummus, arán",
+    "sulfites": "Fíon, beoir, torthaí triomaithe, sceallóga",
+    "lupin": "Plúr lúipín, arán, pasta, sneaiceanna",
+    "mollusks": "Diúilicíní, oisrí, scuid, ochtapas",
+    "nuts": "Gallchnónna, almóinní, cnónna coill, piostaisí, cnónna caisiú",
+    "fava_beans": "Pónaírí leathana, anraith pónaírí, puiréi pónaírí, stobhaigh"
+  },
+  "warnings": {
+    "gluten": "Rabhadh: d'fhéadfadh anlann soighe glútan a bheith ann",
+    "fava_beans": "Easnamh G6PD: fiú méideanna beaga is féidir géarchéim haemailíteach a chur faoi deara"
+  },
+  "cardTexts": {
+    "header": "AIRE",
+    "subtitle": "AILLÉIRGÍ BIA",
+    "pregnancySubtitle": "TOIRCHEAS AGUS AILLÉIRGÍ BIA",
+    "message": "Tá na hailléirgí bia seo a leanas agam. Le do thoil cinntigh nach bhfuil na comhábhair seo i mo chuid bia, lena n-áirítear tras-éilliú.",
+    "pregnancyMessage": "Táim ag iompar clainne agus tá na hailléirgí bia seo a leanas agam. Le do thoil cinntigh nach bhfuil na comhábhair seo i mo chuid bia, lena n-áirítear tras-éilliú.",
+    "thanks": "Go raibh míle maith agat as do thuiscint agus do chabhair.",
+    "tapToSee": "Tapáil chun samplaí a fheiceáil",
+    "examples": "Samplaí:"
+  },
+  "dietFoods": {
+    "meat": "Feoil",
+    "fish": "Iasc",
+    "seafood": "Bia mara",
+    "eggs": "Uibheacha",
+    "dairy": "Táirgí bainne",
+    "honey": "Mil"
+  },
+  "otherFoods": {
+    "garlic": "Gairleog",
+    "onion": "Oinniún",
+    "tomato": "Tráta",
+    "mushrooms": "Muisiriúin",
+    "bell_pepper": "Piobar glas",
+    "corn": "Arbhar",
+    "strawberries": "Sútha talún",
+    "kiwi": "Cíví",
+    "stone_fruits": "Torthaí cloiche (péitseog, silín, aibreog)",
+    "citrus": "Torthaí citris",
+    "banana": "Banana",
+    "buckwheat": "Cruithneacht bhog",
+    "spicy": "Bia spíosrach"
+  },
+  "restrictions": {
+    "raw_fish": "Iasc amh / sushi",
+    "raw_cured_meats": "Feolta leigheasta amha",
+    "raw_eggs": "Uibheacha amha",
+    "raw_sprouts": "Péacáin amha",
+    "unpasteurized_cheese": "Cáis neamhphaistéaraithe",
+    "unpasteurized_milk": "Bainne neamhphaistéaraithe",
+    "alcohol": "Alcól",
+    "excessive_caffeine": "Caifein iomarcach",
+    "nickel_chocolate": "Seacláid / cacó",
+    "nickel_tomato": "Trátaí agus anlanna trátaí",
+    "nickel_legumes": "Piseánach (lintilí, sicirí, pónaírí)",
+    "nickel_nuts": "Cnónna (gallchnónna, cnónna coill, cnónna caisiú)",
+    "nickel_whole_grains": "Gránaigh iomlána / coirce",
+    "nickel_spinach": "Spionáis agus glasraí duilleoige",
+    "nickel_canned_food": "Bia stánaithe",
+    "nickel_tea_coffee": "Tae agus caife",
+    "histamine_aged_cheese": "Cáis aosta",
+    "histamine_cured_meats": "Feolta leigheasta agus ispíní",
+    "histamine_fish": "Iasc stánaithe agus deataithe",
+    "histamine_fermented": "Bianna coipeacha (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Fíon agus beoir",
+    "histamine_vinegar": "Fínéagar agus glasraí picilte",
+    "histamine_chocolate": "Seacláid / cacó",
+    "histamine_tomato": "Trátaí agus anlanna trátaí",
+    "histamine_strawberries": "Sútha talún",
+    "histamine_eggplant": "Ubhthoradh",
+    "histamine_avocado": "Abhacád",
+    "histamine_spinach": "Spionáis",
+    "diabetes_added_sugar": "Siúcra / síoróip",
+    "diabetes_honey_sweeteners": "Mil agus milsiúcháin",
+    "diabetes_sweet_sauces": "Anlanna milse (citseap, géar-mhilis, teriyaki)",
+    "diabetes_sweet_glazes": "Gléasanna milse agus maranáidí",
+    "diabetes_fruit_juice": "Sú torthaí mar chomhábhar",
+    "diabetes_candied_fruit": "Torthaí siúcraithe / subha"
+  },
+  "restrictionCardTexts": {
+    "header": "BIA LE SEACHAINT",
+    "message": "Ar chúiseanna sláinte caithfidh mé na bianna seo a leanas a sheachaint:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "TOIRCHEAS",
+        "message": "Táim ag iompar clainne. Le do thoil cinntigh nach bhfuil i mo chuid bia:",
+        "sectionMessage": "Ina theannta sin, mar gheall ar an toircheas caithfidh mé seachaint freisin:"
+      },
+      "no_meat": {
+        "header": "AISTE BIA FEOILSÉANTÓRA",
+        "message": "Ní ithim feoil.\nTá iasc agus táirgí ainmhithe eile ceart go leor.",
+        "sectionMessage": "Ina theannta sin, ní ithim feoil.\nTá iasc agus táirgí ainmhithe eile ceart go leor."
+      },
+      "no_meat_fish": {
+        "header": "AISTE BIA FEOILSÉANTÓRA",
+        "message": "Leanann mé aiste bia feoilséantóra. Ní ithim feoil ná iasc.",
+        "sectionMessage": "Ina theannta sin, leanann mé aiste bia feoilséantóra agus ní ithim feoil ná iasc."
+      },
+      "no_animal_products": {
+        "header": "AISTE BIA VÉAGÁNACH",
+        "message": "Leanann mé aiste bia véagánach. Ní ithim feoil, iasc, bia mara, uibheacha, táirgí bainne, mil ná aon táirgí ainmhithe.",
+        "sectionMessage": "Ina theannta sin, leanann mé aiste bia véagánach agus ní ithim feoil, iasc, bia mara, uibheacha, táirgí bainne, mil ná aon táirgí ainmhithe."
+      },
+      "nickel": {
+        "header": "AILLÉIRGE NICIL",
+        "message": "Tá ailléirge nicil agam. Is miotal é nicil a fhaightear i go leor bianna. Le do thoil cinntigh nach bhfuil i mo chuid bia:",
+        "sectionMessage": "Ina theannta sin, tá ailléirge nicil agam. Le do thoil cinntigh nach bhfuil i mo chuid bia:"
+      },
+      "histamine": {
+        "header": "ÉADULAINGT HISTAIMÍN",
+        "message": "Ní féidir liom bianna ard i histaimín a ithe. Faightear histaimín i mbianna aosta, coipeacha nó a stóráiltear go fada. Mar shampla:",
+        "sectionMessage": "Ina theannta sin, ní féidir liom bianna ard i histaimín a ithe. Mar shampla:"
+      },
+      "diabetes": {
+        "header": "DIAIBÉITEAS",
+        "message": "Tá diaibéiteas agam agus caithfidh mé tomhaltas siúcra a rialú. Le do thoil ná cuir siúcra le mo chuid bia agus inis dom má tá ann:",
+        "sectionMessage": "Ina theannta sin, tá diaibéiteas agam agus caithfidh mé tomhaltas siúcra a rialú. Inis dom má tá ann:"
+      }
+    }
+  }
+}

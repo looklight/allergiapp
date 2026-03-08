@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Lipeklis (graudaugi)",
+    "crustaceans": "Vēžveidīgie",
+    "eggs": "Olas",
+    "fish": "Zivis",
+    "peanuts": "Zemesrieksti",
+    "soy": "Soja",
+    "milk": "Piens un piena produkti",
+    "celery": "Selerija",
+    "mustard": "Sinepes",
+    "sesame": "Sezama sēklas",
+    "sulfites": "Sēra dioksīds un sulfīti",
+    "lupin": "Lupīna",
+    "mollusks": "Gliemji",
+    "nuts": "Rieksti",
+    "fava_beans": "Pupas (favisms)"
+  },
+  "descriptions": {
+    "gluten": "Visi ēdieni ar graudaugiem vai miltiem (kvieši, mieži, rudzi, speltas): maize, pasta, pica, kūkas, cepumi, alus",
+    "crustaceans": "Garneles, omāri, krabji, langustīni",
+    "eggs": "Olas, omletes, kūkas, majonēze, svaiga pasta",
+    "fish": "Zivis, suši, zivju mērces, buljoni",
+    "peanuts": "Zemesrieksti, zemesriekstu sviests, uzkodas, deserti",
+    "soy": "Tofu, sojas mērce, sojas piens, edamame",
+    "milk": "Piens, siers, sviests, saldējums, krējums",
+    "celery": "Selerija, salāti, zupas, dārzeņu buljons",
+    "mustard": "Sinepes, mērces, mērcītes, marinādes",
+    "sesame": "Sezama sēklas, sezama eļļa, humuss, maize",
+    "sulfites": "Vīns, alus, žāvēti augļi, čipsi",
+    "lupin": "Lupīnu milti, maize, pasta, uzkodas",
+    "mollusks": "Mīdijas, austeres, kalmāri, astoņkāji",
+    "nuts": "Valrieksti, mandeles, lazdu rieksti, pistācijas, Indijas rieksti",
+    "fava_beans": "Pupas, pupu zupa, pupu biezenis, sautējumi"
+  },
+  "warnings": {
+    "gluten": "Brīdinājums: sojas mērce var saturēt lipekli",
+    "fava_beans": "G6PD deficīts: pat nelieli daudzumi var izraisīt hemolītisku krīzi"
+  },
+  "cardTexts": {
+    "header": "UZMANĪBU",
+    "subtitle": "PĀRTIKAS ALERĢIJAS",
+    "pregnancySubtitle": "GRŪTNIECĪBA UN PĀRTIKAS ALERĢIJAS",
+    "message": "Man ir šādas pārtikas alerģijas. Lūdzu, pārliecinieties, ka mans ēdiens nesatur šīs sastāvdaļas, tostarp krustenisko piesārņojumu.",
+    "pregnancyMessage": "Esmu grūtniece un man ir šādas pārtikas alerģijas. Lūdzu, pārliecinieties, ka mans ēdiens nesatur šīs sastāvdaļas, tostarp krustenisko piesārņojumu.",
+    "thanks": "Liels paldies par jūsu sapratni un palīdzību.",
+    "tapToSee": "Pieskarieties, lai redzētu piemērus",
+    "examples": "Piemēri:"
+  },
+  "dietFoods": {
+    "meat": "Gaļa",
+    "fish": "Zivis",
+    "seafood": "Jūras veltes",
+    "eggs": "Olas",
+    "dairy": "Piena produkti",
+    "honey": "Medus"
+  },
+  "otherFoods": {
+    "garlic": "Ķiploks",
+    "onion": "Sīpols",
+    "tomato": "Tomāts",
+    "mushrooms": "Sēnes",
+    "bell_pepper": "Paprika",
+    "corn": "Kukurūza",
+    "strawberries": "Zemenes",
+    "kiwi": "Kivi",
+    "stone_fruits": "Kauleņi (persiks, ķirsis, aprikoze)",
+    "citrus": "Citrusaugļi",
+    "banana": "Banāns",
+    "buckwheat": "Griķi",
+    "spicy": "Ass ēdiens"
+  },
+  "restrictions": {
+    "raw_fish": "Jēla zivs / suši",
+    "raw_cured_meats": "Jēla žāvēta gaļa",
+    "raw_eggs": "Jēlas olas",
+    "raw_sprouts": "Jēli dīgsti",
+    "unpasteurized_cheese": "Nepasterizēts siers",
+    "unpasteurized_milk": "Nepasterizēts piens",
+    "alcohol": "Alkohols",
+    "excessive_caffeine": "Pārmērīgs kofeīns",
+    "nickel_chocolate": "Šokolāde / kakao",
+    "nickel_tomato": "Tomāti un tomātu mērces",
+    "nickel_legumes": "Pākšaugi (lēcas, aunazirņi, pupas)",
+    "nickel_nuts": "Rieksti (valrieksti, lazdu rieksti, Indijas rieksti)",
+    "nickel_whole_grains": "Pilngraudu / auzas",
+    "nickel_spinach": "Spināti un lapu dārzeņi",
+    "nickel_canned_food": "Konservi",
+    "nickel_tea_coffee": "Tēja un kafija",
+    "histamine_aged_cheese": "Nogatavināts siers",
+    "histamine_cured_meats": "Žāvēta gaļa un desas",
+    "histamine_fish": "Konservētas un kūpinātas zivis",
+    "histamine_fermented": "Fermentēti ēdieni (skābēti kāposti, kimči, miso)",
+    "histamine_wine_beer": "Vīns un alus",
+    "histamine_vinegar": "Etiķis un marinēti dārzeņi",
+    "histamine_chocolate": "Šokolāde / kakao",
+    "histamine_tomato": "Tomāti un tomātu mērces",
+    "histamine_strawberries": "Zemenes",
+    "histamine_eggplant": "Baklažāns",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Spināti",
+    "diabetes_added_sugar": "Cukurs / sīrupi",
+    "diabetes_honey_sweeteners": "Medus un saldinātāji",
+    "diabetes_sweet_sauces": "Saldas mērces (kečups, skābsaldā, teriaki)",
+    "diabetes_sweet_glazes": "Saldas glazūras un marinādes",
+    "diabetes_fruit_juice": "Augļu sula kā sastāvdaļa",
+    "diabetes_candied_fruit": "Cukuroti augļi / ievārījumi"
+  },
+  "restrictionCardTexts": {
+    "header": "IZVAIRĀMIE ĒDIENI",
+    "message": "Veselības dēļ man jāizvairās no šādiem ēdieniem:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "GRŪTNIECĪBA",
+        "message": "Esmu grūtniece. Lūdzu, pārliecinieties, ka mans ēdiens nesatur:",
+        "sectionMessage": "Turklāt grūtniecības dēļ man jāizvairās arī no:"
+      },
+      "no_meat": {
+        "header": "VEĢETĀRĀ DIĒTA",
+        "message": "Es neēdu gaļu.\nZivis un citi dzīvnieku produkti ir pieļaujami.",
+        "sectionMessage": "Turklāt es neēdu gaļu.\nZivis un citi dzīvnieku produkti ir pieļaujami."
+      },
+      "no_meat_fish": {
+        "header": "VEĢETĀRĀ DIĒTA",
+        "message": "Es ievēroju veģetāro diētu. Neēdu gaļu un zivis.",
+        "sectionMessage": "Turklāt es ievēroju veģetāro diētu un neēdu gaļu vai zivis."
+      },
+      "no_animal_products": {
+        "header": "VEGĀNA DIĒTA",
+        "message": "Es ievēroju vegāna diētu. Neēdu gaļu, zivis, jūras veltes, olas, piena produktus, medu vai jebkādus dzīvnieku produktus.",
+        "sectionMessage": "Turklāt es ievēroju vegāna diētu un neēdu gaļu, zivis, jūras veltes, olas, piena produktus, medu vai jebkādus dzīvnieku produktus."
+      },
+      "nickel": {
+        "header": "NIĶEĻA ALERĢIJA",
+        "message": "Man ir niķeļa alerģija. Niķelis ir metāls, kas atrodams daudzos ēdienos. Lūdzu, pārliecinieties, ka mans ēdiens nesatur:",
+        "sectionMessage": "Turklāt man ir niķeļa alerģija. Lūdzu, pārliecinieties, ka mans ēdiens nesatur:"
+      },
+      "histamine": {
+        "header": "HISTAMĪNA NEPANESĪBA",
+        "message": "Es nevaru ēst histamīnā bagātus ēdienus. Histamīns atrodams nogatavinātos, fermentētos vai ilgi uzglabātos ēdienos. Piemēram:",
+        "sectionMessage": "Turklāt es nevaru ēst histamīnā bagātus ēdienus. Piemēram:"
+      },
+      "diabetes": {
+        "header": "DIABĒTS",
+        "message": "Man ir diabēts un man jākontrolē cukura patēriņš. Lūdzu, nepievienojiet cukuru manam ēdienam un paziņojiet, ja tas satur:",
+        "sectionMessage": "Turklāt man ir diabēts un man jākontrolē cukura patēriņš. Paziņojiet, ja satur:"
+      }
+    }
+  }
+}

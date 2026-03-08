@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gliutenas (grūdai)",
+    "crustaceans": "Vėžiagyviai",
+    "eggs": "Kiaušiniai",
+    "fish": "Žuvis",
+    "peanuts": "Žemės riešutai",
+    "soy": "Soja",
+    "milk": "Pienas ir pieno produktai",
+    "celery": "Salierai",
+    "mustard": "Garstyčios",
+    "sesame": "Sezamo sėklos",
+    "sulfites": "Sieros dioksidas ir sulfitai",
+    "lupin": "Lubinai",
+    "mollusks": "Moliuskai",
+    "nuts": "Riešutai",
+    "fava_beans": "Pupos (favizmas)"
+  },
+  "descriptions": {
+    "gluten": "Visi maisto produktai su grūdais ar miltais (kviečiai, miežiai, rugiai, speltos): duona, makaronai, pica, tortai, sausainiai, alus",
+    "crustaceans": "Krevetės, omarai, krabai, langustinai",
+    "eggs": "Kiaušiniai, omletai, tortai, majonezas, šviežia pasta",
+    "fish": "Žuvis, sušiai, žuvies padažai, sultiniai",
+    "peanuts": "Žemės riešutai, žemės riešutų sviestas, užkandžiai, desertai",
+    "soy": "Tofu, sojų padažas, sojų pienas, edamamė",
+    "milk": "Pienas, sūris, sviestas, ledai, grietinėlė",
+    "celery": "Salierai, salotos, sriubos, daržovių sultiniai",
+    "mustard": "Garstyčios, padažai, užpilai, marinadai",
+    "sesame": "Sezamo sėklos, sezamų aliejus, humusas, duona",
+    "sulfites": "Vynas, alus, džiovinti vaisiai, traškučiai",
+    "lupin": "Lubinų miltai, duona, makaronai, užkandžiai",
+    "mollusks": "Midijos, austrės, kalmarai, aštuonkojai",
+    "nuts": "Graikiniai riešutai, migdolai, lazdyno riešutai, pistacijos, anakardžiai",
+    "fava_beans": "Pupos, pupų sriuba, pupų košė, troškiniai"
+  },
+  "warnings": {
+    "gluten": "Dėmesio: sojų padažas gali turėti gliuteno",
+    "fava_beans": "G6PD trūkumas: net maži kiekiai gali sukelti hemolizinę krizę"
+  },
+  "cardTexts": {
+    "header": "DĖMESIO",
+    "subtitle": "MAISTO ALERGIJOS",
+    "pregnancySubtitle": "NĖŠTUMAS IR MAISTO ALERGIJOS",
+    "message": "Turiu šias maisto alergijas. Prašau užtikrinti, kad mano maiste nebūtų šių ingredientų, įskaitant kryžminį užteršimą.",
+    "pregnancyMessage": "Esu nėščia ir turiu šias maisto alergijas. Prašau užtikrinti, kad mano maiste nebūtų šių ingredientų, įskaitant kryžminį užteršimą.",
+    "thanks": "Labai ačiū už jūsų supratimą ir pagalbą.",
+    "tapToSee": "Palieskite, kad pamatytumėte pavyzdžius",
+    "examples": "Pavyzdžiai:"
+  },
+  "dietFoods": {
+    "meat": "Mėsa",
+    "fish": "Žuvis",
+    "seafood": "Jūros gėrybės",
+    "eggs": "Kiaušiniai",
+    "dairy": "Pieno produktai",
+    "honey": "Medus"
+  },
+  "otherFoods": {
+    "garlic": "Česnakas",
+    "onion": "Svogūnas",
+    "tomato": "Pomidoras",
+    "mushrooms": "Grybai",
+    "bell_pepper": "Paprika",
+    "corn": "Kukurūzai",
+    "strawberries": "Braškės",
+    "kiwi": "Kivis",
+    "stone_fruits": "Kaulavaisiai (persikas, vyšnia, abrikosas)",
+    "citrus": "Citrusai",
+    "banana": "Bananas",
+    "buckwheat": "Grikiai",
+    "spicy": "Aštrus maistas"
+  },
+  "restrictions": {
+    "raw_fish": "Žalia žuvis / sušiai",
+    "raw_cured_meats": "Žalios vytintos mėsos",
+    "raw_eggs": "Žali kiaušiniai",
+    "raw_sprouts": "Žali daigai",
+    "unpasteurized_cheese": "Nepasterizuoti sūriai",
+    "unpasteurized_milk": "Nepasterizuotas pienas",
+    "alcohol": "Alkoholis",
+    "excessive_caffeine": "Per didelis kofeinas",
+    "nickel_chocolate": "Šokoladas / kakava",
+    "nickel_tomato": "Pomidorai ir pomidorų padažai",
+    "nickel_legumes": "Ankštiniai (lęšiai, avinžirniai, pupelės)",
+    "nickel_nuts": "Riešutai (graikiniai, lazdyno, anakardžiai)",
+    "nickel_whole_grains": "Pilno grūdo / avižos",
+    "nickel_spinach": "Špinatai ir lapinės daržovės",
+    "nickel_canned_food": "Konservai",
+    "nickel_tea_coffee": "Arbata ir kava",
+    "histamine_aged_cheese": "Brandinti sūriai",
+    "histamine_cured_meats": "Vytintos mėsos ir dešrelės",
+    "histamine_fish": "Konservuota ir rūkyta žuvis",
+    "histamine_fermented": "Fermentuoti maisto produktai (rauginti kopūstai, kimči, miso)",
+    "histamine_wine_beer": "Vynas ir alus",
+    "histamine_vinegar": "Actas ir marinuotos daržovės",
+    "histamine_chocolate": "Šokoladas / kakava",
+    "histamine_tomato": "Pomidorai ir pomidorų padažai",
+    "histamine_strawberries": "Braškės",
+    "histamine_eggplant": "Baklažanas",
+    "histamine_avocado": "Avokadas",
+    "histamine_spinach": "Špinatai",
+    "diabetes_added_sugar": "Cukrus / sirupai",
+    "diabetes_honey_sweeteners": "Medus ir saldikliai",
+    "diabetes_sweet_sauces": "Saldūs padažai (kečupas, rūgščiai saldus, terijakis)",
+    "diabetes_sweet_glazes": "Saldžios glazūros ir marinadai",
+    "diabetes_fruit_juice": "Vaisių sultys kaip ingredientas",
+    "diabetes_candied_fruit": "Cukruoti vaisiai / džemai"
+  },
+  "restrictionCardTexts": {
+    "header": "MAISTAS, KURIO REIKIA VENGTI",
+    "message": "Dėl sveikatos priežasčių turiu vengti šių maisto produktų:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "NĖŠTUMAS",
+        "message": "Esu nėščia. Prašau užtikrinti, kad mano maiste nebūtų:",
+        "sectionMessage": "Be to, dėl nėštumo taip pat turiu vengti:"
+      },
+      "no_meat": {
+        "header": "VEGETARIŠKA MITYBA",
+        "message": "Nevalgau mėsos.\nŽuvis ir kiti gyvūniniai produktai tinka.",
+        "sectionMessage": "Be to, nevalgau mėsos.\nŽuvis ir kiti gyvūniniai produktai tinka."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIŠKA MITYBA",
+        "message": "Laikausi vegetariškos mitybos. Nevalgau mėsos ir žuvies.",
+        "sectionMessage": "Be to, laikausi vegetariškos mitybos ir nevalgau mėsos ar žuvies."
+      },
+      "no_animal_products": {
+        "header": "VEGANIŠKA MITYBA",
+        "message": "Laikausi veganiškos mitybos. Nevalgau mėsos, žuvies, jūros gėrybių, kiaušinių, pieno produktų, medaus ar jokių gyvūninių produktų.",
+        "sectionMessage": "Be to, laikausi veganiškos mitybos ir nevalgau mėsos, žuvies, jūros gėrybių, kiaušinių, pieno produktų, medaus ar jokių gyvūninių produktų."
+      },
+      "nickel": {
+        "header": "NIKELIO ALERGIJA",
+        "message": "Turiu nikelio alergiją. Nikelis yra metalas, randamas daugelyje maisto produktų. Prašau užtikrinti, kad mano maiste nebūtų:",
+        "sectionMessage": "Be to, turiu nikelio alergiją. Prašau užtikrinti, kad mano maiste nebūtų:"
+      },
+      "histamine": {
+        "header": "HISTAMINO NETOLERAVIMAS",
+        "message": "Negaliu valgyti maisto, turinčio daug histamino. Histaminas randamas brandintame, fermentuotame ar ilgai laikytame maiste. Pavyzdžiui:",
+        "sectionMessage": "Be to, negaliu valgyti maisto, turinčio daug histamino. Pavyzdžiui:"
+      },
+      "diabetes": {
+        "header": "DIABETAS",
+        "message": "Turiu diabetą ir turiu kontroliuoti cukraus vartojimą. Prašau nedėti cukraus į mano maistą ir pranešti, ar jame yra:",
+        "sectionMessage": "Be to, turiu diabetą ir turiu kontroliuoti cukraus vartojimą. Pranešite, ar yra:"
+      }
+    }
+  }
+}

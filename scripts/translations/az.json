@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (taxıl)",
+    "crustaceans": "Xərçəngkimilər",
+    "eggs": "Yumurta",
+    "fish": "Balıq",
+    "peanuts": "Fıstıq",
+    "soy": "soya",
+    "milk": "Süd və süd məhsulları",
+    "celery": "Kərəviz",
+    "mustard": "xardal",
+    "sesame": "küncüt",
+    "sulfites": "Kükürd dioksidi və sulfitlər",
+    "lupin": "Lupin",
+    "mollusks": "Mollyuskalar",
+    "nuts": "Ağac qoz-fındıqları",
+    "fava_beans": "Fava lobya (favizm)"
+  },
+  "descriptions": {
+    "gluten": "Taxıl və ya un tərkibli bütün qidalar (buğda, arpa, çovdar, bişmiş): çörək, makaron, pizza, tortlar, peçenye, pivə",
+    "crustaceans": "Karides, xərçəng, xərçəng, karides",
+    "eggs": "Yumurta, omlet, tortlar, mayonez, təzə makaron",
+    "fish": "Balıq, suşi, balıq sousları, bulyonlar",
+    "peanuts": "Fıstıq, fıstıq yağı, qəlyanaltılar, desertlər",
+    "soy": "Tofu, soya sousu, soya südü, edamame",
+    "milk": "Süd, pendir, yağ, dondurma, qaymaq",
+    "celery": "Kərəviz, salatlar, şorbalar, tərəvəz bulyonları",
+    "mustard": "Xardal, souslar, souslar, marinadlar",
+    "sesame": "Susam, küncüt yağı, humus, çörək",
+    "sulfites": "Şərab, pivə, quru meyvələr, çipslər",
+    "lupin": "Lupin unu, çörək, makaron, qəlyanaltılar",
+    "mollusks": "Midiya, midye, istiridyə, kalamar, ahtapot",
+    "nuts": "Qoz, badam, fındıq, püstə, anakardiya",
+    "fava_beans": "Fava lobya, fava lobya şorbası, fava lobya püresi, güveç"
+  },
+  "warnings": {
+    "gluten": "⚠️ Xəbərdarlıq: soya sousunda qlüten ola bilər",
+    "fava_beans": "G6PD çatışmazlığı: hətta kiçik miqdarlar hemolitik böhrana səbəb ola bilər"
+  },
+  "cardTexts": {
+    "header": "DİQQƏT",
+    "subtitle": "QİDA ALLERGIYASI",
+    "pregnancySubtitle": "HAMİLƏLİK VƏ QİDA ALLERGIYASI",
+    "message": "Məndə aşağıdakı qida allergiyası var. Zəhmət olmasa, mənim yeməyimdə bu maddələrin, o cümlədən çarpaz çirklənmə yolu ilə olmadığından əmin olun.",
+    "pregnancyMessage": "Mən hamiləyəm və aşağıdakı qida allergiyam var. Zəhmət olmasa, mənim yeməyimdə bu maddələrin, o cümlədən çarpaz çirklənmə yolu ilə olmadığından əmin olun.",
+    "thanks": "Anlayışınıza və köməyinizə görə çox sağ olun.",
+    "tapToSee": "Nümunələri görmək üçün toxunun",
+    "examples": "Nümunələr:"
+  },
+  "dietFoods": {
+    "meat": "Ət",
+    "fish": "Balıq",
+    "seafood": "Dəniz məhsulları",
+    "eggs": "Yumurta",
+    "dairy": "Süd məhsulları",
+    "honey": "bal"
+  },
+  "otherFoods": {
+    "garlic": "sarımsaq",
+    "onion": "soğan",
+    "tomato": "Pomidor",
+    "mushrooms": "Göbələklər",
+    "bell_pepper": "Bolqar bibəri",
+    "corn": "qarğıdalı",
+    "strawberries": "çiyələk",
+    "kiwi": "Kivi",
+    "stone_fruits": "Daşlı meyvələr (şaftalı, albalı, ərik)",
+    "citrus": "Sitrus meyvələri",
+    "banana": "Banan",
+    "buckwheat": "qarabaşaq yarması",
+    "spicy": "Acılı qidalar"
+  },
+  "restrictions": {
+    "raw_fish": "Çiy balıq / suşi",
+    "raw_cured_meats": "Çiy qurudulmuş ətlər",
+    "raw_eggs": "Çiy yumurta",
+    "raw_sprouts": "Çiy cücərtilər",
+    "unpasteurized_cheese": "Pasterizə olunmamış pendirlər",
+    "unpasteurized_milk": "Pasterizə olunmamış süd",
+    "alcohol": "Alkoqol",
+    "excessive_caffeine": "Həddindən artıq kofein",
+    "nickel_chocolate": "Şokolad / kakao",
+    "nickel_tomato": "Pomidor və pomidor sousları",
+    "nickel_legumes": "Paxlalılar (mərci, noxud, lobya)",
+    "nickel_nuts": "Fındıq (qoz, fındıq, anakardiya)",
+    "nickel_whole_grains": "Bütün taxıllar / yulaf",
+    "nickel_spinach": "İspanaq və yarpaqlı göyərti",
+    "nickel_canned_food": "Konservləşdirilmiş yemək",
+    "nickel_tea_coffee": "Çay və qəhvə",
+    "histamine_aged_cheese": "Yaşlı pendirlər",
+    "histamine_cured_meats": "Qurudulmuş ət və kolbasa",
+    "histamine_fish": "Konservləşdirilmiş və hisə verilmiş balıq",
+    "histamine_fermented": "Fermentasiya edilmiş qidalar (kələm, kimchi, miso)",
+    "histamine_wine_beer": "Şərab və pivə",
+    "histamine_vinegar": "Sirkə və turşu",
+    "histamine_chocolate": "Şokolad / kakao",
+    "histamine_tomato": "Pomidor və pomidor sousları",
+    "histamine_strawberries": "çiyələk",
+    "histamine_eggplant": "badımcan",
+    "histamine_avocado": "avokado",
+    "histamine_spinach": "ispanaq",
+    "diabetes_added_sugar": "Şəkər / şərbət əlavə edildi",
+    "diabetes_honey_sweeteners": "Bal və tatlandırıcılar",
+    "diabetes_sweet_sauces": "Şirin souslar (ketçup, şirin və turş, teriyaki)",
+    "diabetes_sweet_glazes": "Şirin şirniyyatlar və marinadlar",
+    "diabetes_fruit_juice": "Tərkib olaraq meyvə şirəsi",
+    "diabetes_candied_fruit": "Şirniyyatlı meyvələr / mürəbbələr"
+  },
+  "restrictionCardTexts": {
+    "header": "QARŞININ EDİLMƏSİ GƏLƏCƏK QİDALAR",
+    "message": "Sağlamlıq baxımından aşağıdakı qidalardan uzaq durmalıyam:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "HAMİLƏLİK",
+        "message": "Mən hamiləyəm. Zəhmət olmasa, yeməyimdə aşağıdakıların olmadığına əmin olun:",
+        "sectionMessage": "Bundan əlavə, hamiləliyimə görə mən də çəkinməliyəm:"
+      },
+      "no_meat": {
+        "header": "VEGETarian Pəhriz",
+        "message": "Mən ət yemirəm. \nBalıq və digər heyvan məhsulları yaxşıdır.",
+        "sectionMessage": "Bundan əlavə, mən ət yemirəm. \nBalıq və digər heyvan məhsulları yaxşıdır."
+      },
+      "no_meat_fish": {
+        "header": "VEGETarian Pəhriz",
+        "message": "Mən vegetarian pəhrizinə əməl edirəm. \nMən ət və balıq yemirəm.",
+        "sectionMessage": "Bundan əlavə, mən vegetarian pəhrizinə riayət edirəm və ət və ya balıq yemirəm."
+      },
+      "no_animal_products": {
+        "header": "VEGAN PİHASI",
+        "message": "Mən vegan pəhrizinə əməl edirəm. \nMən ət, balıq, dəniz məhsulları, yumurta, süd məhsulları, bal və ya hər hansı heyvan məhsulu yemirəm.",
+        "sectionMessage": "Bundan əlavə, mən vegan pəhrizinə riayət edirəm və ət, balıq, dəniz məhsulları, yumurta, süd, bal və ya hər hansı heyvan məhsulu yemirəm."
+      },
+      "nickel": {
+        "header": "NİKEL ALLERGIYASI",
+        "message": "Mənim nikel allergiyam var. Nikel bir çox qidada olan bir metaldır. Zəhmət olmasa, yeməyimin tərkibində olmadığına əmin olun:",
+        "sectionMessage": "Bundan əlavə, mənim nikel allergiyam var. Nikel bir çox qidada olan bir metaldır. Zəhmət olmasa, yeməyimin tərkibində olmadığına əmin olun:"
+      },
+      "histamine": {
+        "header": "HİSTAMİN DÖZÜMÜZÜMÜ",
+        "message": "Histaminlə zəngin qidaları yeyə bilmirəm. Histamin yaşlı, fermentləşdirilmiş və ya uzun müddət saxlanılan qidalarda olur. Məsələn:",
+        "sectionMessage": "Bundan əlavə, histaminlə zəngin qidaları yeyə bilmirəm. Histamin yaşlı, fermentləşdirilmiş və ya uzun müddət saxlanılan qidalarda olur. Məsələn:"
+      },
+      "diabetes": {
+        "header": "ŞƏKƏRLƏR",
+        "message": "Şəkərli diabetim var və şəkər qəbuluma nəzarət etməliyəm. Xahiş edirəm yeməyimə şəkər əlavə etməyin və tərkibində aşağıdakılar olub olmadığını mənə bildirin:",
+        "sectionMessage": "Bundan əlavə, məndə diabet var və şəkər qəbuluna nəzarət etməliyəm. Xahiş edirəm yeməyimə şəkər əlavə etməyin və tərkibində aşağıdakılar olub olmadığını mənə bildirin:"
+      }
+    }
+  }
+}

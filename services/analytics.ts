@@ -5,6 +5,7 @@ let firebaseAnalytics: any = null;
 let logEvent: any = null;
 let setAnalyticsCollectionEnabled: any = null;
 let setUserProperty: any = null;
+let firebaseLogScreenView: any = null;
 let isFirebaseAvailable = false;
 
 try {
@@ -16,6 +17,7 @@ try {
   logEvent = analyticsModule.logEvent;
   setAnalyticsCollectionEnabled = analyticsModule.setAnalyticsCollectionEnabled;
   setUserProperty = analyticsModule.setUserProperty;
+  firebaseLogScreenView = analyticsModule.logScreenView;
   isFirebaseAvailable = true;
   console.log('[Analytics] Firebase Analytics disponibile (modular API)');
 } catch (error) {
@@ -60,6 +62,17 @@ export const Analytics = {
     return isTrackingAuthorized;
   },
 
+  /**
+   * Screen views
+   */
+  async logScreenView(screenName: string) {
+    if (!canSendAnalytics()) return;
+    try {
+      await firebaseLogScreenView(firebaseAnalytics, { screen_name: screenName, screen_class: screenName });
+    } catch (error) {
+      console.warn('[Analytics] Error logging screen_view:', error);
+    }
+  },
 
   /**
    * Eventi allergie
@@ -69,7 +82,6 @@ export const Analytics = {
     try {
       await logEvent(firebaseAnalytics, 'allergy_added', {
         allergen_id: allergyId,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging allergy_added:', error);
@@ -81,7 +93,6 @@ export const Analytics = {
     try {
       await logEvent(firebaseAnalytics, 'allergy_removed', {
         allergen_id: allergyId,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging allergy_removed:', error);
@@ -96,7 +107,6 @@ export const Analytics = {
         previous_count: previousCount,
         new_count: newCount,
         allergens: allergenIds.join(','),
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging allergies_saved:', error);
@@ -113,7 +123,6 @@ export const Analytics = {
         language_code: languageCode,
         success: success,
         duration_ms: duration,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging language_downloaded:', error);
@@ -125,7 +134,6 @@ export const Analytics = {
     try {
       await logEvent(firebaseAnalytics, 'language_deleted', {
         language_code: languageCode,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging language_deleted:', error);
@@ -138,7 +146,6 @@ export const Analytics = {
       await logEvent(firebaseAnalytics, 'app_language_changed', {
         from_language: fromLanguage,
         to_language: toLanguage,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging app_language_changed:', error);
@@ -151,7 +158,6 @@ export const Analytics = {
       await logEvent(firebaseAnalytics, 'card_language_changed', {
         from_language: fromLanguage,
         to_language: toLanguage,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging card_language_changed:', error);
@@ -174,7 +180,6 @@ export const Analytics = {
         allergen_count: allergenCount,
         allergens: allergenIds.join(','),
         is_downloaded_language: isDownloadedLanguage,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging card_viewed:', error);
@@ -188,7 +193,6 @@ export const Analytics = {
         show_in_app_language: showInAppLanguage,
         card_language: cardLanguage,
         app_language: appLanguage,
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging card_language_toggled:', error);
@@ -201,9 +205,7 @@ export const Analytics = {
   async logAppOpened() {
     if (!canSendAnalytics()) return;
     try {
-      await logEvent(firebaseAnalytics, 'app_opened', {
-        timestamp: new Date().toISOString(),
-      });
+      await logEvent(firebaseAnalytics, 'app_opened', {});
     } catch (error) {
       console.warn('[Analytics] Error logging app_opened:', error);
     }
@@ -212,9 +214,7 @@ export const Analytics = {
   async logDataCleared() {
     if (!canSendAnalytics()) return;
     try {
-      await logEvent(firebaseAnalytics, 'data_cleared', {
-        timestamp: new Date().toISOString(),
-      });
+      await logEvent(firebaseAnalytics, 'data_cleared', {});
     } catch (error) {
       console.warn('[Analytics] Error logging data_cleared:', error);
     }
@@ -230,7 +230,6 @@ export const Analytics = {
         banner_id: bannerId,
         banner_type: bannerType,
         banner_title: title || '',
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging banner_viewed:', error);
@@ -250,7 +249,6 @@ export const Analytics = {
         banner_type: bannerType,
         banner_title: title || '',
         ad_url: adUrl || '',
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging banner_clicked:', error);
@@ -264,7 +262,6 @@ export const Analytics = {
         ad_id: adId,
         ad_url: adUrl || '',
         ad_title: adTitle || '',
-        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging ad_impression:', error);
@@ -280,24 +277,6 @@ export const Analytics = {
       await setUserProperty(firebaseAnalytics, property, value);
     } catch (error) {
       console.warn('[Analytics] Error setting user property:', error);
-    }
-  },
-
-  // Proprietà demografiche opzionali (da chiamare se l'utente le fornisce)
-  async setDemographics(ageRange?: string, gender?: string, country?: string) {
-    if (!canSendAnalytics()) return;
-    try {
-      if (ageRange) {
-        await setUserProperty(firebaseAnalytics, 'age_range', ageRange);
-      }
-      if (gender) {
-        await setUserProperty(firebaseAnalytics, 'gender', gender);
-      }
-      if (country) {
-        await setUserProperty(firebaseAnalytics, 'country', country);
-      }
-    } catch (error) {
-      console.warn('[Analytics] Error setting demographics:', error);
     }
   },
 };
