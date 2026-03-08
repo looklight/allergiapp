@@ -1,6 +1,9 @@
 {
   "app": {
-    "title": "AllergiApp"
+    "title": "AllergiApp",
+    "errorTitle": "Etwas ist schiefgelaufen",
+    "errorRetry": "Erneut versuchen",
+    "ok": "OK"
   },
   "home": {
     "title": "Was muss ich mitteilen?",

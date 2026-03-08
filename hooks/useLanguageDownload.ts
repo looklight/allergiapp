@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Alert } from 'react-native';
-import { DownloadableLanguageCode } from '../types';
+import { DownloadableLanguageCode, DownloadedLanguageData } from '../types';
 import { downloadLanguageTranslations, checkTranslationServiceAvailable, DownloadProgress } from '../services/translationService';
 import { fetchTranslationFromFirestore } from '../services/firestoreTranslations';
 import { Analytics } from '../services/analytics';
@@ -12,7 +12,7 @@ interface UseLanguageDownloadReturn {
   isDownloading: (langCode: DownloadableLanguageCode) => boolean;
   handleDownloadLanguage: (
     langCode: DownloadableLanguageCode,
-    onSuccess: (langCode: DownloadableLanguageCode, data: any) => Promise<void>
+    onSuccess: (langCode: DownloadableLanguageCode, data: DownloadedLanguageData) => Promise<void>
   ) => Promise<void>;
   cancelDownload: () => void;
 }
@@ -45,7 +45,7 @@ export function useLanguageDownload(): UseLanguageDownloadReturn {
 
   const handleDownloadLanguage = async (
     langCode: DownloadableLanguageCode,
-    onSuccess: (langCode: DownloadableLanguageCode, data: any) => Promise<void>
+    onSuccess: (langCode: DownloadableLanguageCode, data: DownloadedLanguageData) => Promise<void>
   ): Promise<void> => {
     // Previeni download multipli simultanei
     if (downloadingLang) return;

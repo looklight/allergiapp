@@ -37,7 +37,7 @@ export default function LegalDialogs({
           <Button onPress={handlePrivacyFullDocument}>
             {i18n.t('settings.readFullDocument')}
           </Button>
-          <Button onPress={onDismissPrivacy}>OK</Button>
+          <Button onPress={onDismissPrivacy}>{i18n.t('app.ok')}</Button>
         </Dialog.Actions>
       </Dialog>
 
@@ -50,7 +50,7 @@ export default function LegalDialogs({
           <Button onPress={handleTermsFullDocument}>
             {i18n.t('settings.readFullDocument')}
           </Button>
-          <Button onPress={onDismissDisclaimer}>OK</Button>
+          <Button onPress={onDismissDisclaimer}>{i18n.t('app.ok')}</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

@@ -1,7 +1,17 @@
 import { BannerItem } from '../types';
 
 // Firebase Remote Config - Modular API
-let remoteConfig: any = null;
+// Dynamically required — may not be available in Expo Go
+type RemoteConfigInstance = {
+  setDefaults: (defaults: Record<string, unknown>) => Promise<void>;
+  setConfigSettings: (settings: { minimumFetchIntervalMillis: number }) => Promise<void>;
+  fetchAndActivate: () => Promise<void>;
+  fetch: (expiration: number) => Promise<void>;
+  activate: () => Promise<void>;
+  getValue: (key: string) => { asString: () => string; asBoolean: () => boolean };
+};
+
+let remoteConfig: RemoteConfigInstance | null = null;
 let isRemoteConfigAvailable = false;
 
 // Default values for Remote Config
@@ -25,9 +35,9 @@ try {
   const remoteConfigModule = require('@react-native-firebase/remote-config');
   remoteConfig = remoteConfigModule.default();
   isRemoteConfigAvailable = true;
-  console.log('[RemoteConfig] Firebase Remote Config disponibile');
+  if (__DEV__) console.log('[RemoteConfig] Firebase Remote Config disponibile');
 } catch (error) {
-  console.log('[RemoteConfig] Firebase Remote Config non disponibile (probabilmente Expo Go)');
+  if (__DEV__) console.log('[RemoteConfig] Firebase Remote Config non disponibile (probabilmente Expo Go)');
   isRemoteConfigAvailable = false;
 }
 
@@ -36,7 +46,7 @@ try {
  */
 async function initialize(): Promise<void> {
   if (!isRemoteConfigAvailable || !remoteConfig) {
-    console.log('[RemoteConfig] Skipping initialization - not available');
+    if (__DEV__) console.log('[RemoteConfig] Skipping initialization - not available');
     return;
   }
 
@@ -51,7 +61,7 @@ async function initialize(): Promise<void> {
 
     // Fetch and activate
     await remoteConfig.fetchAndActivate();
-    console.log('[RemoteConfig] Configuration fetched and activated');
+    if (__DEV__) console.log('[RemoteConfig] Configuration fetched and activated');
   } catch (error) {
     console.warn('[RemoteConfig] Error initializing:', error);
   }
@@ -62,13 +72,13 @@ async function initialize(): Promise<void> {
  */
 function getString(key: string): string {
   if (!isRemoteConfigAvailable || !remoteConfig) {
-    return (DEFAULT_CONFIG as any)[key] || '';
+    return String((DEFAULT_CONFIG as Record<string, unknown>)[key] ?? '') || '';
   }
   try {
     return remoteConfig.getValue(key).asString();
   } catch (error) {
     console.warn(`[RemoteConfig] Error getting string ${key}:`, error);
-    return (DEFAULT_CONFIG as any)[key] || '';
+    return String((DEFAULT_CONFIG as Record<string, unknown>)[key] ?? '') || '';
   }
 }
 
@@ -77,13 +87,13 @@ function getString(key: string): string {
  */
 function getBoolean(key: string): boolean {
   if (!isRemoteConfigAvailable || !remoteConfig) {
-    return (DEFAULT_CONFIG as any)[key] || false;
+    return Boolean((DEFAULT_CONFIG as Record<string, unknown>)[key]);
   }
   try {
     return remoteConfig.getValue(key).asBoolean();
   } catch (error) {
     console.warn(`[RemoteConfig] Error getting boolean ${key}:`, error);
-    return (DEFAULT_CONFIG as any)[key] || false;
+    return Boolean((DEFAULT_CONFIG as Record<string, unknown>)[key]);
   }
 }
 
@@ -135,7 +145,7 @@ async function refresh(): Promise<void> {
   try {
     await remoteConfig.fetch(0); // Force fetch
     await remoteConfig.activate();
-    console.log('[RemoteConfig] Configuration refreshed');
+    if (__DEV__) console.log('[RemoteConfig] Configuration refreshed');
   } catch (error) {
     console.warn('[RemoteConfig] Error refreshing:', error);
   }

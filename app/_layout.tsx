@@ -9,6 +9,7 @@ import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import { RemoteConfig } from '../services/remoteConfig';
+import i18n from '../utils/i18n';
 import ConsentModal from './consent';
 
 const splashLogo = require('../assets/splash-icon.png');
@@ -22,10 +23,10 @@ function AppErrorFallback({ error, retry }: { error: Error; retry: () => void })
   return (
     <View style={errorStyles.container}>
       <Text style={errorStyles.icon}>⚠️</Text>
-      <Text style={errorStyles.title}>Qualcosa è andato storto</Text>
+      <Text style={errorStyles.title}>{i18n.t('app.errorTitle')}</Text>
       <Text style={errorStyles.message}>{error.message}</Text>
       <Button mode="contained" onPress={retry} style={errorStyles.button}>
-        Riprova
+        {i18n.t('app.errorRetry')}
       </Button>
     </View>
   );

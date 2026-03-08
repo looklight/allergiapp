@@ -1,6 +1,9 @@
 {
   "app": {
-    "title": "AllergiApp"
+    "title": "AllergiApp",
+    "errorTitle": "Algo salió mal",
+    "errorRetry": "Reintentar",
+    "ok": "OK"
   },
   "home": {
     "title": "¿Qué debo comunicar?",

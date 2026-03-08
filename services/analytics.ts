@@ -1,15 +1,21 @@
 import { AllergenId, DownloadableLanguageCode, AppLanguage, AllLanguageCode, TrackingConsent } from '../types';
 
-// Modular Firebase Analytics API
-let firebaseAnalytics: any = null;
-let logEvent: any = null;
-let setAnalyticsCollectionEnabled: any = null;
-let setUserProperty: any = null;
-let firebaseLogScreenView: any = null;
+// Modular Firebase Analytics API (dynamically required — may not be available in Expo Go)
+type FirebaseAnalyticsInstance = object;
+type LogEventFn = (analytics: FirebaseAnalyticsInstance, name: string, params?: Record<string, unknown>) => Promise<void>;
+type SetCollectionFn = (analytics: FirebaseAnalyticsInstance, enabled: boolean) => Promise<void>;
+type SetPropertyFn = (analytics: FirebaseAnalyticsInstance, name: string, value: string) => Promise<void>;
+type LogScreenViewFn = (analytics: FirebaseAnalyticsInstance, params: { screen_name: string; screen_class: string }) => Promise<void>;
+
+// Initialized via dynamic require — only used after canSendAnalytics() guard
+let firebaseAnalytics: FirebaseAnalyticsInstance = null!;
+let logEvent: LogEventFn = null!;
+let setAnalyticsCollectionEnabled: SetCollectionFn = null!;
+let setUserProperty: SetPropertyFn = null!;
+let firebaseLogScreenView: LogScreenViewFn = null!;
 let isFirebaseAvailable = false;
 
 try {
-  // Import modular API functions
   const analyticsModule = require('@react-native-firebase/analytics');
   const { getAnalytics } = analyticsModule;
 
@@ -19,9 +25,9 @@ try {
   setUserProperty = analyticsModule.setUserProperty;
   firebaseLogScreenView = analyticsModule.logScreenView;
   isFirebaseAvailable = true;
-  console.log('[Analytics] Firebase Analytics disponibile (modular API)');
+  if (__DEV__) console.log('[Analytics] Firebase Analytics disponibile (modular API)');
 } catch (error) {
-  console.log('[Analytics] Firebase non disponibile (probabilmente Expo Go), usando mock');
+  if (__DEV__) console.log('[Analytics] Firebase non disponibile (probabilmente Expo Go), usando mock');
   isFirebaseAvailable = false;
 }
 
@@ -46,7 +52,7 @@ export const Analytics = {
    */
   setTrackingConsent(consent: TrackingConsent) {
     isTrackingAuthorized = consent.status === 'authorized';
-    console.log(`[Analytics] Tracking consent set: ${consent.status}, authorized: ${isTrackingAuthorized}`);
+    if (__DEV__) console.log(`[Analytics] Tracking consent set: ${consent.status}, authorized: ${isTrackingAuthorized}`);
 
     // If tracking is authorized, enable Firebase Analytics collection
     if (isFirebaseAvailable && firebaseAnalytics && setAnalyticsCollectionEnabled) {

@@ -32,7 +32,7 @@ export default function AboutScreen() {
     Linking.openURL(APP_CONFIG.SUPPORT_LINK);
   };
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: { nativeEvent: { layoutMeasurement: { height: number }; contentOffset: { y: number }; contentSize: { height: number } } }) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
     setShowGradient(!isCloseToBottom);
