@@ -4,7 +4,7 @@
 
 ### Branch e merge
 - [ ] Merge `feature/other-restrictions` → main
-- [x] ~~Committare cartella `admin/`~~ — il `.gitignore` copre già `service-account-key.json`, `node_modules/`, `.next/`
+- [ ] Committare cartella `admin/` — i sorgenti sono sul branch `feature/restaurants`
 
 ### Pre-traduzioni Firestore
 Implementazione pronta (Firestore-first con fallback MyMemory). Da completare:
@@ -13,8 +13,8 @@ Implementazione pronta (Firestore-first con fallback MyMemory). Da completare:
 - [ ] Verificare qualità traduzioni su un campione di lingue
 
 ## Google Play / Android
-Bloccato da azioni esterne:
-- [ ] Completare verifica account sviluppatore (serve dispositivo Android fisico)
+In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio mar 2026).
+- [ ] Attendere completamento revisione closed testing
 - [ ] Aggiungere profilo Android submit in `eas.json` (serviceAccount + track)
 - [ ] Caricare AAB su Google Play Console e pubblicare
 - [ ] Aggiornare link Google Play nel sito (`index.html`) quando pubblicata
@@ -33,6 +33,7 @@ In sviluppo. Caricamento geo-based implementato.
 - Scalabilità query geo — valutare Supabase (PostGIS) se i ristoranti arrivano a migliaia
 
 ## Completati
+- [x] Pre-traduzioni Firestore: firebase.ts, firestoreTranslations.ts, 51 JSON, script, 13 nuove lingue
 - [x] Eliminare variabili EAS orfane (3× GOOGLE_SERVICES_JSON / GOOGLE_SERVICES_JSON_ANDROID)
 - [x] Pulizia file: privacy/terms markdown, google-services-2.json
 - [x] Sincronizzare versionCode Android con buildNumber iOS (entrambi a 4)
