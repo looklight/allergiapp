@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (cereals)",
+    "crustaceans": "Crustacis",
+    "eggs": "Ous",
+    "fish": "Peix",
+    "peanuts": "Cacauets",
+    "soy": "Soja",
+    "milk": "Llet i productes làctics",
+    "celery": "Api",
+    "mustard": "Mostassa",
+    "sesame": "Llavors de sèsam",
+    "sulfites": "Diòxid de sofre i sulfits",
+    "lupin": "Tramussos",
+    "mollusks": "Mol·luscs",
+    "nuts": "Fruits de closca",
+    "fava_beans": "Faves (favisme)"
+  },
+  "descriptions": {
+    "gluten": "Tots els aliments amb cereals o farina (blat, ordi, sègol, espelta): pa, pasta, pizza, pastissos, galetes, cervesa",
+    "crustaceans": "Gambes, llagosta, cranc, llagostins",
+    "eggs": "Ous, truites, pastissos, maionesa, pasta fresca",
+    "fish": "Peix, sushi, salses de peix, brous",
+    "peanuts": "Cacauets, mantega de cacauet, aperitius, postres",
+    "soy": "Tofu, salsa de soja, llet de soja, edamame",
+    "milk": "Llet, formatge, mantega, gelat, nata",
+    "celery": "Api, amanides, sopes, brou de verdures",
+    "mustard": "Mostassa, salses, vinaigretes, marinades",
+    "sesame": "Llavors de sèsam, oli de sèsam, hummus, pa",
+    "sulfites": "Vi, cervesa, fruita seca, xips",
+    "lupin": "Farina de tramussos, pa, pasta, aperitius",
+    "mollusks": "Musclos, ostres, calamars, pops",
+    "nuts": "Nous, ametlles, avellanes, festucs, anacards",
+    "fava_beans": "Faves, sopa de faves, puré de faves, estofats"
+  },
+  "warnings": {
+    "gluten": "Atenció: la salsa de soja pot contenir gluten",
+    "fava_beans": "Dèficit de G6PD: fins i tot petites quantitats poden causar una crisi hemolítica"
+  },
+  "cardTexts": {
+    "header": "ATENCIÓ",
+    "subtitle": "AL·LÈRGIES ALIMENTÀRIES",
+    "pregnancySubtitle": "EMBARÀS I AL·LÈRGIES ALIMENTÀRIES",
+    "message": "Tinc les següents al·lèrgies alimentàries. Si us plau, assegureu-vos que el meu menjar no contingui aquests ingredients, inclosa la contaminació creuada.",
+    "pregnancyMessage": "Estic embarassada i tinc les següents al·lèrgies alimentàries. Si us plau, assegureu-vos que el meu menjar no contingui aquests ingredients, inclosa la contaminació creuada.",
+    "thanks": "Moltes gràcies per la vostra comprensió i ajuda.",
+    "tapToSee": "Toqueu per veure exemples",
+    "examples": "Exemples:"
+  },
+  "dietFoods": {
+    "meat": "Carn",
+    "fish": "Peix",
+    "seafood": "Marisc",
+    "eggs": "Ous",
+    "dairy": "Productes làctics",
+    "honey": "Mel"
+  },
+  "otherFoods": {
+    "garlic": "All",
+    "onion": "Ceba",
+    "tomato": "Tomàquet",
+    "mushrooms": "Bolets",
+    "bell_pepper": "Pebrot",
+    "corn": "Blat de moro",
+    "strawberries": "Maduixes",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Fruites d'os (préssec, cirera, albercoc)",
+    "citrus": "Cítrics",
+    "banana": "Plàtan",
+    "buckwheat": "Fajol",
+    "spicy": "Menjar picant"
+  },
+  "restrictions": {
+    "raw_fish": "Peix cru / sushi",
+    "raw_cured_meats": "Embotits crus",
+    "raw_eggs": "Ous crus",
+    "raw_sprouts": "Brots crus",
+    "unpasteurized_cheese": "Formatge no pasteuritzat",
+    "unpasteurized_milk": "Llet no pasteuritzada",
+    "alcohol": "Alcohol",
+    "excessive_caffeine": "Cafeïna excessiva",
+    "nickel_chocolate": "Xocolata / cacau",
+    "nickel_tomato": "Tomàquets i salses de tomàquet",
+    "nickel_legumes": "Llegums (llenties, cigrons, mongetes)",
+    "nickel_nuts": "Fruits de closca (nous, avellanes, anacards)",
+    "nickel_whole_grains": "Cereals integrals / civada",
+    "nickel_spinach": "Espinacs i verdures de fulla",
+    "nickel_canned_food": "Conserves",
+    "nickel_tea_coffee": "Te i cafè",
+    "histamine_aged_cheese": "Formatge curat",
+    "histamine_cured_meats": "Embotits i salsitxes",
+    "histamine_fish": "Peix en conserva i fumat",
+    "histamine_fermented": "Aliments fermentats (xucrut, kimchi, miso)",
+    "histamine_wine_beer": "Vi i cervesa",
+    "histamine_vinegar": "Vinagre i verdures en vinagre",
+    "histamine_chocolate": "Xocolata / cacau",
+    "histamine_tomato": "Tomàquets i salses de tomàquet",
+    "histamine_strawberries": "Maduixes",
+    "histamine_eggplant": "Albergínia",
+    "histamine_avocado": "Alvocat",
+    "histamine_spinach": "Espinacs",
+    "diabetes_added_sugar": "Sucre / xarops",
+    "diabetes_honey_sweeteners": "Mel i edulcorants",
+    "diabetes_sweet_sauces": "Salses dolces (kètxup, agredolç, teriyaki)",
+    "diabetes_sweet_glazes": "Vidriats dolços i marinades",
+    "diabetes_fruit_juice": "Suc de fruita com a ingredient",
+    "diabetes_candied_fruit": "Fruita confitada / melmelades"
+  },
+  "restrictionCardTexts": {
+    "header": "ALIMENTS A EVITAR",
+    "message": "Per raons de salut he d'evitar els aliments següents:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "EMBARÀS",
+        "message": "Estic embarassada. Si us plau, assegureu-vos que el meu menjar no contingui:",
+        "sectionMessage": "A més, per l'embaràs he d'evitar també:"
+      },
+      "no_meat": {
+        "header": "DIETA VEGETARIANA",
+        "message": "No menjo carn.\nEl peix i altres productes animals són acceptables.",
+        "sectionMessage": "A més, no menjo carn.\nEl peix i altres productes animals són acceptables."
+      },
+      "no_meat_fish": {
+        "header": "DIETA VEGETARIANA",
+        "message": "Segueixo una dieta vegetariana. No menjo carn ni peix.",
+        "sectionMessage": "A més, segueixo una dieta vegetariana i no menjo carn ni peix."
+      },
+      "no_animal_products": {
+        "header": "DIETA VEGANA",
+        "message": "Segueixo una dieta vegana. No menjo carn, peix, marisc, ous, productes làctics, mel ni cap producte animal.",
+        "sectionMessage": "A més, segueixo una dieta vegana i no menjo carn, peix, marisc, ous, productes làctics, mel ni cap producte animal."
+      },
+      "nickel": {
+        "header": "AL·LÈRGIA AL NÍQUEL",
+        "message": "Tinc al·lèrgia al níquel. El níquel és un metall present en molts aliments. Si us plau, assegureu-vos que el meu menjar no contingui:",
+        "sectionMessage": "A més, tinc al·lèrgia al níquel. Si us plau, assegureu-vos que el meu menjar no contingui:"
+      },
+      "histamine": {
+        "header": "INTOLERÀNCIA A LA HISTAMINA",
+        "message": "No puc menjar aliments rics en histamina. La histamina es troba en aliments curats, fermentats o conservats llargament. Per exemple:",
+        "sectionMessage": "A més, no puc menjar aliments rics en histamina. Per exemple:"
+      },
+      "diabetes": {
+        "header": "DIABETIS",
+        "message": "Tinc diabetis i he de controlar el consum de sucre. Si us plau, no afegiu sucre al meu menjar i digueu-me si conté:",
+        "sectionMessage": "A més, tinc diabetis i he de controlar el consum de sucre. Digueu-me si conté:"
+      }
+    }
+  }
+}

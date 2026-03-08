@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (drithëra)",
+    "crustaceans": "Krustacë",
+    "eggs": "Vezë",
+    "fish": "Peshk",
+    "peanuts": "Kikirikë",
+    "soy": "Sojë",
+    "milk": "Qumësht dhe produkte qumështi",
+    "celery": "Selino",
+    "mustard": "Mustardë",
+    "sesame": "Fara susami",
+    "sulfites": "Dioksid squfuri dhe sulfite",
+    "lupin": "Lupinë",
+    "mollusks": "Molusqe",
+    "nuts": "Fruta me guaskë",
+    "fava_beans": "Bathë (favizëm)"
+  },
+  "descriptions": {
+    "gluten": "Të gjitha ushqimet me drithëra ose miell (grurë, elb, thekër, speltë): bukë, makarona, pica, torta, biskota, birrë",
+    "crustaceans": "Karkaleca, karavidhe, gaforre, gamarele",
+    "eggs": "Vezë, omëleta, torta, majonezë, makarona të freskëta",
+    "fish": "Peshk, sushi, salca peshku, lëngje",
+    "peanuts": "Kikirikë, gjalpë kikiriku, meze, ëmbëlsira",
+    "soy": "Tofu, salcë soje, qumësht soje, edamame",
+    "milk": "Qumësht, djathë, gjalpë, akullore, krem",
+    "celery": "Selino, sallatat, supa, lëng perimesh",
+    "mustard": "Mustardë, salca, dresingje, marinada",
+    "sesame": "Fara susami, vaj susami, humus, bukë",
+    "sulfites": "Verë, birrë, fruta të thata, çips",
+    "lupin": "Miell lupine, bukë, makarona, meze",
+    "mollusks": "Midhje, gocë, kallamarë, oktapodë",
+    "nuts": "Arra, bajame, lajthi, fëstëk, arra indiane",
+    "fava_beans": "Bathë, supë bathësh, pure bathësh, zierje"
+  },
+  "warnings": {
+    "gluten": "Kujdes: salca e sojës mund të përmbajë gluten",
+    "fava_beans": "Mungesë e G6PD: edhe sasi të vogla mund të shkaktojnë krizë hemolitike"
+  },
+  "cardTexts": {
+    "header": "KUJDES",
+    "subtitle": "ALERGJITË USHQIMORE",
+    "pregnancySubtitle": "SHTATZËNIA DHE ALERGJITË USHQIMORE",
+    "message": "Kam alergjitë e mëposhtme ushqimore. Ju lutem sigurohuni që ushqimi im të mos përmbajë këto përbërës, duke përfshirë kontaminimin e kryqëzuar.",
+    "pregnancyMessage": "Jam shtatzënë dhe kam alergjitë e mëposhtme ushqimore. Ju lutem sigurohuni që ushqimi im të mos përmbajë këto përbërës, duke përfshirë kontaminimin e kryqëzuar.",
+    "thanks": "Faleminderit shumë për mirëkuptimin dhe ndihmën tuaj.",
+    "tapToSee": "Prekni për të parë shembuj",
+    "examples": "Shembuj:"
+  },
+  "dietFoods": {
+    "meat": "Mish",
+    "fish": "Peshk",
+    "seafood": "Ushqime deti",
+    "eggs": "Vezë",
+    "dairy": "Produkte qumështi",
+    "honey": "Mjaltë"
+  },
+  "otherFoods": {
+    "garlic": "Hudhër",
+    "onion": "Qepë",
+    "tomato": "Domate",
+    "mushrooms": "Kërpudha",
+    "bell_pepper": "Spec",
+    "corn": "Misër",
+    "strawberries": "Luleshtrydhe",
+    "kiwi": "Kivi",
+    "stone_fruits": "Fruta me bërthamë (pjeshkë, qershi, kajsi)",
+    "citrus": "Agrume",
+    "banana": "Banane",
+    "buckwheat": "Hekur",
+    "spicy": "Ushqime pikante"
+  },
+  "restrictions": {
+    "raw_fish": "Peshk i papjekur / sushi",
+    "raw_cured_meats": "Mish i thatë i papjekur",
+    "raw_eggs": "Vezë të papjekura",
+    "raw_sprouts": "Filiza të papjekura",
+    "unpasteurized_cheese": "Djathë i papasterizuar",
+    "unpasteurized_milk": "Qumësht i papasterizuar",
+    "alcohol": "Alkool",
+    "excessive_caffeine": "Kafeinë e tepërt",
+    "nickel_chocolate": "Çokollatë / kakao",
+    "nickel_tomato": "Domate dhe salca domate",
+    "nickel_legumes": "Bishtajore (thjerrëza, qiqra, fasule)",
+    "nickel_nuts": "Fruta me guaskë (arra, lajthi, arra indiane)",
+    "nickel_whole_grains": "Drithëra integrale / tërshërë",
+    "nickel_spinach": "Spinaq dhe perime gjethe",
+    "nickel_canned_food": "Konserva",
+    "nickel_tea_coffee": "Çaj dhe kafe",
+    "histamine_aged_cheese": "Djathë i pjekur",
+    "histamine_cured_meats": "Mish i thatë dhe sallam",
+    "histamine_fish": "Peshk i konservuar dhe i tymosur",
+    "histamine_fermented": "Ushqime të fermentuara (lakër turshi, kimçi, miso)",
+    "histamine_wine_beer": "Verë dhe birrë",
+    "histamine_vinegar": "Uthull dhe turshi",
+    "histamine_chocolate": "Çokollatë / kakao",
+    "histamine_tomato": "Domate dhe salca domate",
+    "histamine_strawberries": "Luleshtrydhe",
+    "histamine_eggplant": "Patëllxhan",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Spinaq",
+    "diabetes_added_sugar": "Sheqer / shurup",
+    "diabetes_honey_sweeteners": "Mjaltë dhe ëmbëlsues",
+    "diabetes_sweet_sauces": "Salca të ëmbla (ketchup, ëmbël-acidë, teriyaki)",
+    "diabetes_sweet_glazes": "Glasura të ëmbla dhe marinada",
+    "diabetes_fruit_juice": "Lëng frutash si përbërës",
+    "diabetes_candied_fruit": "Fruta të sheqerosura / reçel"
+  },
+  "restrictionCardTexts": {
+    "header": "USHQIME QË DUHEN SHMANGUR",
+    "message": "Për arsye shëndetësore duhet të shmang ushqimet e mëposhtme:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "SHTATZËNIA",
+        "message": "Jam shtatzënë. Ju lutem sigurohuni që ushqimi im të mos përmbajë:",
+        "sectionMessage": "Përveç kësaj, për shkak të shtatzënisë duhet të shmang:"
+      },
+      "no_meat": {
+        "header": "DIETË VEGETARIANE",
+        "message": "Nuk ha mish.\nPeshku dhe produktet e tjera shtazore janë në rregull.",
+        "sectionMessage": "Përveç kësaj, nuk ha mish.\nPeshku dhe produktet e tjera shtazore janë në rregull."
+      },
+      "no_meat_fish": {
+        "header": "DIETË VEGETARIANE",
+        "message": "Ndjek një dietë vegetariane. Nuk ha mish as peshk.",
+        "sectionMessage": "Përveç kësaj, ndjek një dietë vegetariane dhe nuk ha mish as peshk."
+      },
+      "no_animal_products": {
+        "header": "DIETË VEGANE",
+        "message": "Ndjek një dietë vegane. Nuk ha mish, peshk, ushqime deti, vezë, produkte qumështi, mjaltë ose asnjë produkt shtazor.",
+        "sectionMessage": "Përveç kësaj, ndjek një dietë vegane dhe nuk ha mish, peshk, ushqime deti, vezë, produkte qumështi, mjaltë ose asnjë produkt shtazor."
+      },
+      "nickel": {
+        "header": "ALERGJI NDAJ NIKELIT",
+        "message": "Kam alergji ndaj nikelit. Nikeli është një metal që gjendet në shumë ushqime. Ju lutem sigurohuni që ushqimi im të mos përmbajë:",
+        "sectionMessage": "Përveç kësaj, kam alergji ndaj nikelit. Ju lutem sigurohuni që ushqimi im të mos përmbajë:"
+      },
+      "histamine": {
+        "header": "INTOLERANCË NDAJ HISTAMINËS",
+        "message": "Nuk mund të ha ushqime të pasura me histaminë. Histamina gjendet në ushqime të pjekura, të fermentuara ose të ruajtura gjatë. Për shembull:",
+        "sectionMessage": "Përveç kësaj, nuk mund të ha ushqime të pasura me histaminë. Për shembull:"
+      },
+      "diabetes": {
+        "header": "DIABETI",
+        "message": "Kam diabet dhe duhet të kontrolloj konsumin e sheqerit. Ju lutem mos shtoni sheqer në ushqimin tim dhe më njoftoni nëse përmban:",
+        "sectionMessage": "Përveç kësaj, kam diabet dhe duhet të kontrolloj konsumin e sheqerit. Më njoftoni nëse përmban:"
+      }
+    }
+  }
+}

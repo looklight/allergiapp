@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (tahıllar)",
+    "crustaceans": "Kabuklu deniz hayvanları",
+    "eggs": "Yumurta",
+    "fish": "Balık",
+    "peanuts": "Yer fıstığı",
+    "soy": "Soya",
+    "milk": "Süt ve süt ürünleri",
+    "celery": "Kereviz",
+    "mustard": "Hardal",
+    "sesame": "Susam",
+    "sulfites": "Kükürt dioksit ve sülfitler",
+    "lupin": "Acı bakla",
+    "mollusks": "Yumuşakçalar",
+    "nuts": "Sert kabuklu meyveler",
+    "fava_beans": "Bakla (favizm)"
+  },
+  "descriptions": {
+    "gluten": "Tahıl veya un içeren tüm gıdalar (buğday, arpa, çavdar, kızıl buğday): ekmek, makarna, pizza, kek, bisküvi, bira",
+    "crustaceans": "Karides, ıstakoz, yengeç, karidesler",
+    "eggs": "Yumurta, omlet, kek, mayonez, taze makarna",
+    "fish": "Balık, suşi, balık sosları, et suları",
+    "peanuts": "Yer fıstığı, fıstık ezmesi, atıştırmalıklar, tatlılar",
+    "soy": "Tofu, soya sosu, soya sütü, edamame",
+    "milk": "Süt, peynir, tereyağı, dondurma, krema",
+    "celery": "Kereviz, salatalar, çorbalar, sebze suları",
+    "mustard": "Hardal, soslar, salata sosları, marine",
+    "sesame": "Susam, susam yağı, humus, ekmek",
+    "sulfites": "Şarap, bira, kuru meyve, cips",
+    "lupin": "Acı bakla unu, ekmek, makarna, atıştırmalıklar",
+    "mollusks": "Midye, istiridye, kalamar, ahtapot",
+    "nuts": "Ceviz, badem, fındık, antep fıstığı, kaju",
+    "fava_beans": "Bakla, bakla çorbası, bakla püresi, güveç"
+  },
+  "warnings": {
+    "gluten": "Uyarı: soya sosu gluten içerebilir",
+    "fava_beans": "G6PD eksikliği: küçük miktarlar bile hemolitik krize neden olabilir"
+  },
+  "cardTexts": {
+    "header": "DİKKAT",
+    "subtitle": "GIDA ALERJİLERİ",
+    "pregnancySubtitle": "HAMİLELİK VE GIDA ALERJİLERİ",
+    "message": "Aşağıdaki gıda alerjilerim var. Lütfen yemeğimin çapraz bulaşma dahil bu maddeleri içermediğinden emin olun.",
+    "pregnancyMessage": "Hamileyim ve aşağıdaki gıda alerjilerim var. Lütfen yemeğimin çapraz bulaşma dahil bu maddeleri içermediğinden emin olun.",
+    "thanks": "Anlayışınız ve yardımınız için çok teşekkür ederim.",
+    "tapToSee": "Örnekleri görmek için dokunun",
+    "examples": "Örnekler:"
+  },
+  "dietFoods": {
+    "meat": "Et",
+    "fish": "Balık",
+    "seafood": "Deniz ürünleri",
+    "eggs": "Yumurta",
+    "dairy": "Süt ürünleri",
+    "honey": "Bal"
+  },
+  "otherFoods": {
+    "garlic": "Sarımsak",
+    "onion": "Soğan",
+    "tomato": "Domates",
+    "mushrooms": "Mantar",
+    "bell_pepper": "Biber",
+    "corn": "Mısır",
+    "strawberries": "Çilek",
+    "kiwi": "Kivi",
+    "stone_fruits": "Sert çekirdekli meyveler (şeftali, kiraz, kayısı)",
+    "citrus": "Narenciye",
+    "banana": "Muz",
+    "buckwheat": "Karabuğday",
+    "spicy": "Baharatlı yiyecekler"
+  },
+  "restrictions": {
+    "raw_fish": "Çiğ balık / suşi",
+    "raw_cured_meats": "Çiğ işlenmiş etler",
+    "raw_eggs": "Çiğ yumurta",
+    "raw_sprouts": "Çiğ filizler",
+    "unpasteurized_cheese": "Pastörize edilmemiş peynirler",
+    "unpasteurized_milk": "Pastörize edilmemiş süt",
+    "alcohol": "Alkol",
+    "excessive_caffeine": "Aşırı kafein",
+    "nickel_chocolate": "Çikolata / kakao",
+    "nickel_tomato": "Domates ve domates sosları",
+    "nickel_legumes": "Baklagiller (mercimek, nohut, fasulye)",
+    "nickel_nuts": "Kuruyemişler (ceviz, fındık, kaju)",
+    "nickel_whole_grains": "Tam tahıllar / yulaf",
+    "nickel_spinach": "Ispanak ve yeşil yapraklılar",
+    "nickel_canned_food": "Konserve gıdalar",
+    "nickel_tea_coffee": "Çay ve kahve",
+    "histamine_aged_cheese": "Olgunlaştırılmış peynirler",
+    "histamine_cured_meats": "İşlenmiş etler ve sucuklar",
+    "histamine_fish": "Konserve ve tütsülenmiş balık",
+    "histamine_fermented": "Fermente gıdalar (lahana turşusu, kimchi, miso)",
+    "histamine_wine_beer": "Şarap ve bira",
+    "histamine_vinegar": "Sirke ve turşular",
+    "histamine_chocolate": "Çikolata / kakao",
+    "histamine_tomato": "Domates ve domates sosları",
+    "histamine_strawberries": "Çilek",
+    "histamine_eggplant": "Patlıcan",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Ispanak",
+    "diabetes_added_sugar": "Şeker / şuruplar",
+    "diabetes_honey_sweeteners": "Bal ve tatlandırıcılar",
+    "diabetes_sweet_sauces": "Tatlı soslar (ketçap, ekşi-tatlı, teriyaki)",
+    "diabetes_sweet_glazes": "Tatlı glazürler ve marineler",
+    "diabetes_fruit_juice": "Malzeme olarak meyve suyu",
+    "diabetes_candied_fruit": "Şekerlenmiş meyve / reçeller"
+  },
+  "restrictionCardTexts": {
+    "header": "KAÇINILMASI GEREKEN GIDALAR",
+    "message": "Sağlık nedeniyle aşağıdaki gıdalardan kaçınmam gerekiyor:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "HAMİLELİK",
+        "message": "Hamileyim. Lütfen yemeğimin aşağıdakileri içermediğinden emin olun:",
+        "sectionMessage": "Ayrıca hamileliğim nedeniyle şunlardan da kaçınmalıyım:"
+      },
+      "no_meat": {
+        "header": "VEJETARYEN BESLENME",
+        "message": "Et yemiyorum.\nBalık ve diğer hayvansal ürünler sorun değil.",
+        "sectionMessage": "Ayrıca et yemiyorum.\nBalık ve diğer hayvansal ürünler sorun değil."
+      },
+      "no_meat_fish": {
+        "header": "VEJETARYEN BESLENME",
+        "message": "Vejetaryen besleniyorum. Et ve balık yemiyorum.",
+        "sectionMessage": "Ayrıca vejetaryen besleniyorum ve et veya balık yemiyorum."
+      },
+      "no_animal_products": {
+        "header": "VEGAN BESLENME",
+        "message": "Vegan besleniyorum. Et, balık, deniz ürünleri, yumurta, süt ürünleri, bal veya herhangi bir hayvansal ürün yemiyorum.",
+        "sectionMessage": "Ayrıca vegan besleniyorum ve et, balık, deniz ürünleri, yumurta, süt ürünleri, bal veya herhangi bir hayvansal ürün yemiyorum."
+      },
+      "nickel": {
+        "header": "NİKEL ALERJİSİ",
+        "message": "Nikel alerjim var. Nikel birçok gıdada bulunan bir metaldir. Lütfen yemeğimin şunları içermediğinden emin olun:",
+        "sectionMessage": "Ayrıca nikel alerjim var. Lütfen yemeğimin şunları içermediğinden emin olun:"
+      },
+      "histamine": {
+        "header": "HİSTAMİN İNTOLERANSI",
+        "message": "Histamin açısından zengin gıdalar yiyemiyorum. Histamin, olgunlaştırılmış, fermente edilmiş veya uzun süre saklanmış gıdalarda bulunur. Örneğin:",
+        "sectionMessage": "Ayrıca histamin açısından zengin gıdalar yiyemiyorum. Örneğin:"
+      },
+      "diabetes": {
+        "header": "DİYABET",
+        "message": "Diyabetim var ve şeker alımımı kontrol etmem gerekiyor. Lütfen yemeğime şeker eklemeyin ve şunları içerip içermediğini bildirin:",
+        "sectionMessage": "Ayrıca diyabetim var ve şeker alımımı kontrol etmem gerekiyor. Şunları içerip içermediğini bildirin:"
+      }
+    }
+  }
+}

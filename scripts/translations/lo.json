@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (ທັນຍາພືດ)",
+    "crustaceans": "ສັຕວ໌ຈຳພວກກຸ້ງ",
+    "eggs": "ໄຂ່",
+    "fish": "ປາ",
+    "peanuts": "ຖົ່ວດິນ",
+    "soy": "ຖົ່ວເຫຼືອງ",
+    "milk": "ນົມແລະຜະລິດຕະພັນນົມ",
+    "celery": "ຂຶ້ນຊ່າຢ",
+    "mustard": "ຜັກກາດ",
+    "sesame": "ໝາກງາ",
+    "sulfites": "sulfur dioxide ແລະ sulfites",
+    "lupin": "ລູປິນ",
+    "mollusks": "ໝາກໂມ",
+    "nuts": "ໝາກໄມ້",
+    "fava_beans": "ຖົ່ວ Fava (Favism)"
+  },
+  "descriptions": {
+    "gluten": "ອາ​ຫານ​ທັງ​ຫມົດ​ທີ່​ມີ​ທັນ​ຍາ​ຫານ​ຫຼື​ແປ້ງ (ເຂົ້າ​ສາ​ລີ​, ເຂົ້າ​ບາ​ເລ​, rye​, rye​)​: ເຂົ້າຈີ່​, pasta​, pizza​, cake​, cookies​, ເບຍ​.",
+    "crustaceans": "ກຸ້ງ, ກຸ້ງ, ປູ, ກຸ້ງ",
+    "eggs": "ໄຂ່, omelettes, cakes, mayonnaise, pasta ສົດ",
+    "fish": "ປາ, ຊູຊິ, ນ້ໍາປາ, broths",
+    "peanuts": "ຖົ່ວດິນ, ມັນເບີຖົ່ວດິນ, ອາຫານຫວ່າງ, ຂອງຫວານ",
+    "soy": "ເຕົ້າຫູ້, ຊອຍຖົ່ວເຫຼືອງ, ນົມຖົ່ວເຫຼືອງ, ເອດາມາມ",
+    "milk": "ນົມ, ເນີຍແຂງ, ມັນເບີ, ສີຄີມກ້ອນ, ຄີມ",
+    "celery": "Celery, ສະຫຼັດ, ແກງ, broths ຜັກ",
+    "mustard": "mustard, ຊອດ, dressings, marinades",
+    "sesame": "ແກ່ນຫມາກງາ, ນ້ໍາມັນງາ, hummus, ເຂົ້າຈີ່",
+    "sulfites": "ເຫຼົ້າແວງ, ເບຍ, ຫມາກໄມ້ແຫ້ງ, ຊິບ",
+    "lupin": "ແປ້ງ Lupine, ເຂົ້າຈີ່, pasta, ອາຫານຫວ່າງ",
+    "mollusks": "ຫອຢແມລງພູ່ ຫອຢລາຢ ຫອຢນາງຣມ ປລາຫມຶກ ປລາຫມຶກຢັກສ໌",
+    "nuts": "Walnuts, almonds, hazelnuts, pistachios, ຫມາກມ່ວງຫິມະພານ",
+    "fava_beans": "ຖົ່ວ Fava, ແກງຖົ່ວ fava, ຖົ່ວ fava puree, stews"
+  },
+  "warnings": {
+    "gluten": "⚠️ ຄຳເຕືອນ: ນ້ຳຖົ່ວເຫຼືອງອາດມີທາດ gluten",
+    "fava_beans": "ການຂາດ G6PD: ເຖິງແມ່ນວ່າປະລິມານຫນ້ອຍກໍ່ສາມາດເຮັດໃຫ້ເກີດວິກິດການ hemolytic"
+  },
+  "cardTexts": {
+    "header": "ເອົາໃຈໃສ່",
+    "subtitle": "ອາການແພ້ອາຫານ",
+    "pregnancySubtitle": "ການຖືພາ & ອາການແພ້ອາຫານ",
+    "message": "ຂ້ອຍມີອາການແພ້ອາຫານຕໍ່ໄປນີ້. ກະລຸນາໃຫ້ແນ່ໃຈວ່າອາຫານຂອງຂ້ອຍບໍ່ມີສ່ວນປະກອບເຫຼົ່ານີ້, ລວມທັງຜ່ານການປົນເປື້ອນຂ້າມ.",
+    "pregnancyMessage": "ຂ້ອຍຖືພາແລະຂ້ອຍມີອາການແພ້ອາຫານຕໍ່ໄປນີ້. ກະລຸນາໃຫ້ແນ່ໃຈວ່າອາຫານຂອງຂ້ອຍບໍ່ມີສ່ວນປະກອບເຫຼົ່ານີ້, ລວມທັງຜ່ານການປົນເປື້ອນຂ້າມ.",
+    "thanks": "ຂອບໃຈຫຼາຍໆສຳລັບຄວາມເຂົ້າໃຈ ແລະການຊ່ວຍເຫຼືອຂອງເຈົ້າ.",
+    "tapToSee": "ແຕະເພື່ອເບິ່ງຕົວຢ່າງ",
+    "examples": "ຕົວຢ່າງ:"
+  },
+  "dietFoods": {
+    "meat": "ຊີ້ນ",
+    "fish": "ປາ",
+    "seafood": "ອາຫານທະເລ",
+    "eggs": "ໄຂ່",
+    "dairy": "ນົມ",
+    "honey": "ນໍ້າເຜິ້ງ"
+  },
+  "otherFoods": {
+    "garlic": "ຜັກທຽມ",
+    "onion": "ຜັກບົ່ວ",
+    "tomato": "ໝາກເລັ່ນ",
+    "mushrooms": "ເຫັດ",
+    "bell_pepper": "ໝາກພິກໄທ",
+    "corn": "ສາລີ",
+    "strawberries": "ສະຕໍເບີຣີ",
+    "kiwi": "ກີວີ",
+    "stone_fruits": "ຫມາກໄມ້ຫີນ (peach, cherry, apricot)",
+    "citrus": "ໝາກນາວ",
+    "banana": "ກ້ວຍ",
+    "buckwheat": "ບັຄວີທ",
+    "spicy": "ອາຫານເຜັດ"
+  },
+  "restrictions": {
+    "raw_fish": "ປາດິບ / ຊູຊິ",
+    "raw_cured_meats": "ຊີ້ນທີ່ຕົ້ມສຸກແລ້ວ",
+    "raw_eggs": "ໄຂ່ດິບ",
+    "raw_sprouts": "ງອກດິບ",
+    "unpasteurized_cheese": "ເນີຍແຂງທີ່ບໍ່ໄດ້ຜ່ານການປຸງແຕ່ງ",
+    "unpasteurized_milk": "ນົມທີ່ບໍ່ໄດ້ຜ່ານການປຸງແຕ່ງ",
+    "alcohol": "ເຫຼົ້າ",
+    "excessive_caffeine": "ຄາເຟອີນຫຼາຍເກີນໄປ",
+    "nickel_chocolate": "ຊັອກໂກແລັດ / ໂກໂກ້",
+    "nickel_tomato": "ຊອດຫມາກເລັ່ນແລະຫມາກເລັ່ນ",
+    "nickel_legumes": "legumes (lentil, chickpeas, ຫມາກ​ຖົ່ວ​)",
+    "nickel_nuts": "ແກ່ນຂອງຫມາກໄມ້ (walnut, hazelnuts, ຫມາກມ່ວງຫິມະພານ)",
+    "nickel_whole_grains": "ເມັດພືດທັງຫມົດ / oats",
+    "nickel_spinach": "ຜັກຫົມ ແລະໃບສີຂຽວ",
+    "nickel_canned_food": "ອາຫານກະປ໋ອງ",
+    "nickel_tea_coffee": "ຊາແລະກາເຟ",
+    "histamine_aged_cheese": "ເນີຍແຂງອາຍຸ",
+    "histamine_cured_meats": "ຊີ້ນແລະໄສ້ກອກທີ່ປິ່ນປົວແລ້ວ",
+    "histamine_fish": "ປາກະປ໋ອງແລະສູບຢາ",
+    "histamine_fermented": "ອາຫານດອງ (ໄສ້ກອກ, ກິມຈິ, ມິໂຊ້)",
+    "histamine_wine_beer": "ເຫຼົ້າແວງແລະເບຍ",
+    "histamine_vinegar": "ສົ້ມ ແລະດອງ",
+    "histamine_chocolate": "ຊັອກໂກແລັດ / ໂກໂກ້",
+    "histamine_tomato": "ຊອດຫມາກເລັ່ນແລະຫມາກເລັ່ນ",
+    "histamine_strawberries": "ສະຕໍເບີຣີ",
+    "histamine_eggplant": "ໝາກເຂືອ",
+    "histamine_avocado": "ອາໂວກາໂດ",
+    "histamine_spinach": "ຜັກຫົມ",
+    "diabetes_added_sugar": "ເພີ່ມ້ໍາຕານ / ຢານ້ໍາ",
+    "diabetes_honey_sweeteners": "ນໍ້າເຜິ້ງ ແລະຂອງຫວານ",
+    "diabetes_sweet_sauces": "ຊອດຫວານ (ketchup, ຫວານແລະສົ້ມ, teriyaki)",
+    "diabetes_sweet_glazes": "ຫວານ glazes ແລະ marinades",
+    "diabetes_fruit_juice": "ນ້ ຳ ໝາກ ໄມ້ເປັນສ່ວນປະກອບ",
+    "diabetes_candied_fruit": "ໝາກ ໄມ້ / ເຂົ້າ ໜົມ ປັງ"
+  },
+  "restrictionCardTexts": {
+    "header": "ອາຫານທີ່ຄວນຫຼີກລ້ຽງ",
+    "message": "ດ້ວຍເຫດຜົນດ້ານສຸຂະພາບ, ຂ້ອຍ ຈຳ ເປັນຕ້ອງຫລີກລ້ຽງອາຫານຕໍ່ໄປນີ້:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "ການຖືພາ",
+        "message": "ຂ້ອຍຖືພາ. ກະລຸນາກວດສອບວ່າອາຫານຂອງຂ້ອຍບໍ່ມີສິ່ງຕໍ່ໄປນີ້:",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ເນື່ອງຈາກການຖືພາຂອງຂ້ອຍ, ຂ້ອຍຍັງຕ້ອງຫຼີກເວັ້ນ:"
+      },
+      "no_meat": {
+        "header": "ອາຫານຜັກກາດ",
+        "message": "ຂ້ອຍບໍ່ກິນຊີ້ນ. \nປາແລະຜະລິດຕະພັນສັດອື່ນໆແມ່ນດີ.",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ຂ້ອຍບໍ່ກິນຊີ້ນ. \nປາແລະຜະລິດຕະພັນສັດອື່ນໆແມ່ນດີ."
+      },
+      "no_meat_fish": {
+        "header": "ອາຫານຜັກກາດ",
+        "message": "ຂ້ອຍປະຕິບັດຕາມອາຫານ vegetarian. \nຂ້ອຍບໍ່ກິນຊີ້ນຫຼືປາ.",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ຂ້ອຍປະຕິບັດຕາມຄາບອາຫານ vegetarian ແລະບໍ່ກິນຊີ້ນຫຼືປາ."
+      },
+      "no_animal_products": {
+        "header": "ອາຫານຜັກກາດ",
+        "message": "ຂ້ອຍປະຕິບັດຕາມອາຫານ vegan. \nຂ້ອຍບໍ່ກິນຊີ້ນ, ປາ, ອາຫານທະເລ, ໄຂ່, ນົມ, ນໍ້າເຜິ້ງ ຫຼືຜະລິດຕະພັນສັດໃດໆ.",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ຂ້ອຍປະຕິບັດຕາມອາຫານ vegan ແລະບໍ່ກິນຊີ້ນ, ປາ, ອາຫານທະເລ, ໄຂ່, ນົມ, ນໍ້າເຜິ້ງຫຼືຜະລິດຕະພັນສັດໃດໆ."
+      },
+      "nickel": {
+        "header": "ອາການແພ້ NICKEL",
+        "message": "ຂ້ອຍມີອາການແພ້ nickel. Nickel ແມ່ນໂລຫະທີ່ພົບເຫັນຢູ່ໃນອາຫານຫຼາຍຊະນິດ. ກະລຸນາກວດໃຫ້ແນ່ໃຈວ່າອາຫານຂອງຂ້ອຍບໍ່ມີ:",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ຂ້ອຍມີອາການແພ້ nickel. Nickel ແມ່ນໂລຫະທີ່ພົບເຫັນຢູ່ໃນອາຫານຫຼາຍຊະນິດ. ກະລຸນາກວດໃຫ້ແນ່ໃຈວ່າອາຫານຂອງຂ້ອຍບໍ່ມີ:"
+      },
+      "histamine": {
+        "header": "ຄວາມບໍ່ພໍໃຈຂອງຮິສຕາມິນ",
+        "message": "ຂ້ອຍບໍ່ສາມາດກິນອາຫານທີ່ອຸດົມດ້ວຍ histamine ໄດ້. Histamine ພົບເຫັນຢູ່ໃນອາຫານທີ່ມີອາຍຸ, ດອງຫຼືເກັບຮັກສາໄວ້ດົນນານ. ຕົວຢ່າງ:",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ຂ້ອຍບໍ່ສາມາດກິນອາຫານທີ່ອຸດົມດ້ວຍ histamine ໄດ້. Histamine ພົບເຫັນຢູ່ໃນອາຫານທີ່ມີອາຍຸ, ດອງຫຼືເກັບຮັກສາໄວ້ດົນນານ. ຕົວຢ່າງ:"
+      },
+      "diabetes": {
+        "header": "ພະຍາດເບົາຫວານ",
+        "message": "ຂ້ອຍເປັນພະຍາດເບົາຫວານແລະຕ້ອງຄວບຄຸມການກິນນ້ ຳ ຕານ. ກະລຸນາຢ່າເພີ່ມນໍ້າຕານໃສ່ອາຫານຂອງຂ້ອຍ ແລະບອກຂ້ອຍວ່າມັນມີ:",
+        "sectionMessage": "ນອກຈາກນັ້ນ, ຂ້ອຍເປັນພະຍາດເບົາຫວານແລະຕ້ອງຄວບຄຸມການກິນນ້ ຳ ຕານ. ກະລຸນາຢ່າເພີ່ມນໍ້າຕານໃສ່ອາຫານຂອງຂ້ອຍ ແລະບອກຂ້ອຍວ່າມັນມີ:"
+      }
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glutina (ċereali)",
+    "crustaceans": "Krustaċji",
+    "eggs": "Bajd",
+    "fish": "Ħut",
+    "peanuts": "Karawett",
+    "soy": "Soja",
+    "milk": "Ħalib u prodotti tal-ħalib",
+    "celery": "Karfus",
+    "mustard": "Mustarda",
+    "sesame": "Żerriegħa tas-simsim",
+    "sulfites": "Diossidu tal-kubrit u sulfiti",
+    "lupin": "Lupini",
+    "mollusks": "Molluski",
+    "nuts": "Ġewż",
+    "fava_beans": "Ful (faviżmu)"
+  },
+  "descriptions": {
+    "gluten": "L-ikel kollu biċ-ċereali jew id-dqiq (qamħ, xgħir, segala, spelta): ħobż, għaġin, pizza, kejkijiet, gallettini, birra",
+    "crustaceans": "Gambli, awwista, granċ, gambli żgħar",
+    "eggs": "Bajd, omeletti, kejkijiet, majonniż, għaġin frisk",
+    "fish": "Ħut, sushi, zlazi tal-ħut, brodu",
+    "peanuts": "Karawett, butir tal-karawett, snacks, deżerti",
+    "soy": "Tofu, zalza tas-soja, ħalib tas-soja, edamame",
+    "milk": "Ħalib, ġobon, butir, ġelat, krema",
+    "celery": "Karfus, insalati, sopop, brodu tal-ħaxix",
+    "mustard": "Mustarda, zlazi, dressings, marinati",
+    "sesame": "Żerriegħa tas-simsim, żejt tas-simsim, ħummus, ħobż",
+    "sulfites": "Inbid, birra, frott imnixxef, ċips",
+    "lupin": "Dqiq tal-lupini, ħobż, għaġin, snacks",
+    "mollusks": "Maskli, gajdri, klamar, qarnita",
+    "nuts": "Ġewż, lewż, ġellewż, fesdiq, anakardju",
+    "fava_beans": "Ful, soppa tal-ful, pire tal-ful, stuffat"
+  },
+  "warnings": {
+    "gluten": "Twissija: iz-zalza tas-soja tista' tinkludi glutina",
+    "fava_beans": "Defiċjenza ta' G6PD: anke kwantitajiet żgħar jistgħu jikkawżaw kriżi emolitika"
+  },
+  "cardTexts": {
+    "header": "ATTENZJONI",
+    "subtitle": "ALLERĠIJI TAL-IKEL",
+    "pregnancySubtitle": "TQALA U ALLERĠIJI TAL-IKEL",
+    "message": "Għandi l-allerġiji tal-ikel li ġejjin. Jekk jogħġbok żgura li l-ikel tiegħi ma fihx dawn l-ingredjenti, inkluż kontaminazzjoni inkroċjata.",
+    "pregnancyMessage": "Jien tqila u għandi l-allerġiji tal-ikel li ġejjin. Jekk jogħġbok żgura li l-ikel tiegħi ma fihx dawn l-ingredjenti, inkluż kontaminazzjoni inkroċjata.",
+    "thanks": "Grazzi ħafna għall-fehim u l-għajnuna tiegħek.",
+    "tapToSee": "Miss biex tara eżempji",
+    "examples": "Eżempji:"
+  },
+  "dietFoods": {
+    "meat": "Laħam",
+    "fish": "Ħut",
+    "seafood": "Frott tal-baħar",
+    "eggs": "Bajd",
+    "dairy": "Prodotti tal-ħalib",
+    "honey": "Għasel"
+  },
+  "otherFoods": {
+    "garlic": "Tewm",
+    "onion": "Basal",
+    "tomato": "Tadama",
+    "mushrooms": "Faqqiegħ",
+    "bell_pepper": "Bżar aħmar",
+    "corn": "Qamħirrum",
+    "strawberries": "Frawli",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Frott bl-għadma (ħawħa, ċirasa, berquqa)",
+    "citrus": "Frott taċ-ċitru",
+    "banana": "Banana",
+    "buckwheat": "Qamħ iswed",
+    "spicy": "Ikel pikanti"
+  },
+  "restrictions": {
+    "raw_fish": "Ħut mhux imsajjar / sushi",
+    "raw_cured_meats": "Laħam ikkurat mhux imsajjar",
+    "raw_eggs": "Bajd mhux imsajjar",
+    "raw_sprouts": "Nebbieta mhux imsajjra",
+    "unpasteurized_cheese": "Ġobon mhux ippasterizzat",
+    "unpasteurized_milk": "Ħalib mhux ippasterizzat",
+    "alcohol": "Alkoħol",
+    "excessive_caffeine": "Kaffeina eċċessiva",
+    "nickel_chocolate": "Ċikkulata / kakaw",
+    "nickel_tomato": "Tadam u zlazi tat-tadam",
+    "nickel_legumes": "Legumi (għads, ċiċri, fażola)",
+    "nickel_nuts": "Ġewż (ġewż, ġellewż, anakardju)",
+    "nickel_whole_grains": "Ċereali sħaħ / ħafur",
+    "nickel_spinach": "Spinaċi u ħaxix tal-weraq",
+    "nickel_canned_food": "Ikel fil-laned",
+    "nickel_tea_coffee": "Te u kafè",
+    "histamine_aged_cheese": "Ġobon stagjonat",
+    "histamine_cured_meats": "Laħam ikkurat u zalzett",
+    "histamine_fish": "Ħut fil-laned u affumikat",
+    "histamine_fermented": "Ikel iffermentat (krawtikkappar, kimchi, miso)",
+    "histamine_wine_beer": "Inbid u birra",
+    "histamine_vinegar": "Ħall u ħaxix fil-ħall",
+    "histamine_chocolate": "Ċikkulata / kakaw",
+    "histamine_tomato": "Tadam u zlazi tat-tadam",
+    "histamine_strawberries": "Frawli",
+    "histamine_eggplant": "Brunġiel",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Spinaċi",
+    "diabetes_added_sugar": "Zokkor / xiroppijiet",
+    "diabetes_honey_sweeteners": "Għasel u ħlewwiet",
+    "diabetes_sweet_sauces": "Zlazi ħelwin (ketchup, agrodolċi, teriyaki)",
+    "diabetes_sweet_glazes": "Glazuri ħelwin u marinati",
+    "diabetes_fruit_juice": "Meraq tal-frott bħala ingredjent",
+    "diabetes_candied_fruit": "Frott ikkandjat / ġammijiet"
+  },
+  "restrictionCardTexts": {
+    "header": "IKEL LI GĦANDU JIĠI EVITAT",
+    "message": "Għal raġunijiet ta' saħħa irrid nevita l-ikel li ġej:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "TQALA",
+        "message": "Jien tqila. Jekk jogħġbok żgura li l-ikel tiegħi ma fihx:",
+        "sectionMessage": "Barra minn hekk, minħabba t-tqala irrid nevita wkoll:"
+      },
+      "no_meat": {
+        "header": "DIETA VEĠETARJANA",
+        "message": "Ma niklx laħam.\nĦut u prodotti oħra tal-annimali huma tajbin.",
+        "sectionMessage": "Barra minn hekk, ma niklx laħam.\nĦut u prodotti oħra tal-annimali huma tajbin."
+      },
+      "no_meat_fish": {
+        "header": "DIETA VEĠETARJANA",
+        "message": "Insegwi dieta veġetarjana. Ma niklx laħam u lanqas ħut.",
+        "sectionMessage": "Barra minn hekk, insegwi dieta veġetarjana u ma niklx laħam u lanqas ħut."
+      },
+      "no_animal_products": {
+        "header": "DIETA VEGANA",
+        "message": "Insegwi dieta vegana. Ma niklx laħam, ħut, frott tal-baħar, bajd, prodotti tal-ħalib, għasel jew prodotti tal-annimali.",
+        "sectionMessage": "Barra minn hekk, insegwi dieta vegana u ma niklx laħam, ħut, frott tal-baħar, bajd, prodotti tal-ħalib, għasel jew prodotti tal-annimali."
+      },
+      "nickel": {
+        "header": "ALLERĠIJA GĦAN-NIKIL",
+        "message": "Għandi allerġija għan-nikil. In-nikil huwa metall li jinsab f'ħafna ikel. Jekk jogħġbok żgura li l-ikel tiegħi ma fihx:",
+        "sectionMessage": "Barra minn hekk, għandi allerġija għan-nikil. Jekk jogħġbok żgura li l-ikel tiegħi ma fihx:"
+      },
+      "histamine": {
+        "header": "INTOLLERANZA GĦALL-ISTAMINA",
+        "message": "Ma nistax niekol ikel rikk fl-istamina. L-istamina tinsab f'ikel stagjonat, iffermentat jew maħżun fit-tul. Eżempju:",
+        "sectionMessage": "Barra minn hekk, ma nistax niekol ikel rikk fl-istamina. Eżempju:"
+      },
+      "diabetes": {
+        "header": "DIJABETE",
+        "message": "Għandi d-dijabete u rrid nikkontrolla l-konsum taz-zokkor. Jekk jogħġbok iżżidx zokkor fl-ikel tiegħi u għidli jekk fih:",
+        "sectionMessage": "Barra minn hekk, għandi d-dijabete u rrid nikkontrolla l-konsum taz-zokkor. Għidli jekk fih:"
+      }
+    }
+  }
+}

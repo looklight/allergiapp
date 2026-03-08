@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Traduzioni pre-generate: lettura pubblica, scrittura solo admin
+    match /translations/{langCode} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Ristoranti: lettura pubblica, scrittura solo admin
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Report: chiunque può creare, solo admin può leggere/modificare
+    match /reports/{reportId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Utenti: solo il proprietario può leggere/scrivere il proprio documento
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Default: nega tutto il resto
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

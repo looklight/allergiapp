@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (ngũ cốc)",
+    "crustaceans": "Giáp xác",
+    "eggs": "Trứng",
+    "fish": "Cá",
+    "peanuts": "Đậu phộng",
+    "soy": "Đậu nành",
+    "milk": "Sữa và sản phẩm từ sữa",
+    "celery": "Cần tây",
+    "mustard": "Mù tạt",
+    "sesame": "Hạt mè",
+    "sulfites": "Lưu huỳnh đioxit và sulfit",
+    "lupin": "Đậu lupin",
+    "mollusks": "Động vật thân mềm",
+    "nuts": "Quả hạch",
+    "fava_beans": "Đậu tằm (thiếu G6PD)"
+  },
+  "descriptions": {
+    "gluten": "Tất cả thực phẩm có ngũ cốc hoặc bột mì (lúa mì, lúa mạch, lúa mạch đen, spelta): bánh mì, mì ống, pizza, bánh ngọt, bánh quy, bia",
+    "crustaceans": "Tôm, tôm hùm, cua, tôm càng",
+    "eggs": "Trứng, trứng ốp la, bánh ngọt, sốt mayonnaise, mì tươi",
+    "fish": "Cá, sushi, nước mắm, nước dùng",
+    "peanuts": "Đậu phộng, bơ đậu phộng, đồ ăn vặt, tráng miệng",
+    "soy": "Đậu hũ, nước tương, sữa đậu nành, edamame",
+    "milk": "Sữa, phô mai, bơ, kem, kem tươi",
+    "celery": "Cần tây, salad, súp, nước dùng rau",
+    "mustard": "Mù tạt, nước sốt, nước trộn, nước ướp",
+    "sesame": "Hạt mè, dầu mè, hummus, bánh mì",
+    "sulfites": "Rượu vang, bia, trái cây sấy, khoai tây chiên",
+    "lupin": "Bột đậu lupin, bánh mì, mì ống, đồ ăn vặt",
+    "mollusks": "Trai, hàu, mực, bạch tuộc",
+    "nuts": "Quả óc chó, hạnh nhân, hạt phỉ, hạt dẻ cười, hạt điều",
+    "fava_beans": "Đậu tằm, súp đậu, đậu nghiền, món hầm"
+  },
+  "warnings": {
+    "gluten": "Cảnh báo: nước tương có thể chứa gluten",
+    "fava_beans": "Thiếu G6PD: ngay cả lượng nhỏ cũng có thể gây cơn tan máu"
+  },
+  "cardTexts": {
+    "header": "CHÚ Ý",
+    "subtitle": "DỊ ỨNG THỰC PHẨM",
+    "pregnancySubtitle": "MANG THAI VÀ DỊ ỨNG THỰC PHẨM",
+    "message": "Tôi bị dị ứng thực phẩm sau đây. Xin hãy đảm bảo thức ăn của tôi không chứa các thành phần này, bao gồm cả lây nhiễm chéo.",
+    "pregnancyMessage": "Tôi đang mang thai và bị dị ứng thực phẩm sau đây. Xin hãy đảm bảo thức ăn của tôi không chứa các thành phần này, bao gồm cả lây nhiễm chéo.",
+    "thanks": "Cảm ơn rất nhiều vì sự thông cảm và giúp đỡ của bạn.",
+    "tapToSee": "Chạm để xem ví dụ",
+    "examples": "Ví dụ:"
+  },
+  "dietFoods": {
+    "meat": "Thịt",
+    "fish": "Cá",
+    "seafood": "Hải sản",
+    "eggs": "Trứng",
+    "dairy": "Sản phẩm sữa",
+    "honey": "Mật ong"
+  },
+  "otherFoods": {
+    "garlic": "Tỏi",
+    "onion": "Hành",
+    "tomato": "Cà chua",
+    "mushrooms": "Nấm",
+    "bell_pepper": "Ớt chuông",
+    "corn": "Bắp",
+    "strawberries": "Dâu tây",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Quả hạch cứng (đào, anh đào, mơ)",
+    "citrus": "Quả có múi",
+    "banana": "Chuối",
+    "buckwheat": "Kiều mạch",
+    "spicy": "Thức ăn cay"
+  },
+  "restrictions": {
+    "raw_fish": "Cá sống / sushi",
+    "raw_cured_meats": "Thịt muối sống",
+    "raw_eggs": "Trứng sống",
+    "raw_sprouts": "Giá đỗ sống",
+    "unpasteurized_cheese": "Phô mai chưa tiệt trùng",
+    "unpasteurized_milk": "Sữa chưa tiệt trùng",
+    "alcohol": "Rượu",
+    "excessive_caffeine": "Caffeine quá mức",
+    "nickel_chocolate": "Sô cô la / cacao",
+    "nickel_tomato": "Cà chua và sốt cà chua",
+    "nickel_legumes": "Đậu (đậu lăng, đậu gà, đậu)",
+    "nickel_nuts": "Quả hạch (óc chó, hạt phỉ, hạt điều)",
+    "nickel_whole_grains": "Ngũ cốc nguyên cám / yến mạch",
+    "nickel_spinach": "Rau bina và rau lá xanh",
+    "nickel_canned_food": "Đồ hộp",
+    "nickel_tea_coffee": "Trà và cà phê",
+    "histamine_aged_cheese": "Phô mai ủ lâu",
+    "histamine_cured_meats": "Thịt muối và xúc xích",
+    "histamine_fish": "Cá đóng hộp và hun khói",
+    "histamine_fermented": "Thực phẩm lên men (dưa cải, kimchi, miso)",
+    "histamine_wine_beer": "Rượu vang và bia",
+    "histamine_vinegar": "Giấm và dưa muối",
+    "histamine_chocolate": "Sô cô la / cacao",
+    "histamine_tomato": "Cà chua và sốt cà chua",
+    "histamine_strawberries": "Dâu tây",
+    "histamine_eggplant": "Cà tím",
+    "histamine_avocado": "Bơ",
+    "histamine_spinach": "Rau bina",
+    "diabetes_added_sugar": "Đường / xi-rô",
+    "diabetes_honey_sweeteners": "Mật ong và chất tạo ngọt",
+    "diabetes_sweet_sauces": "Nước sốt ngọt (ketchup, chua ngọt, teriyaki)",
+    "diabetes_sweet_glazes": "Lớp phủ ngọt và nước ướp",
+    "diabetes_fruit_juice": "Nước ép trái cây làm nguyên liệu",
+    "diabetes_candied_fruit": "Trái cây sên / mứt"
+  },
+  "restrictionCardTexts": {
+    "header": "THỰC PHẨM CẦN TRÁNH",
+    "message": "Vì lý do sức khỏe, tôi cần tránh các thực phẩm sau:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "MANG THAI",
+        "message": "Tôi đang mang thai. Xin hãy đảm bảo thức ăn của tôi không chứa:",
+        "sectionMessage": "Ngoài ra, vì đang mang thai tôi cần tránh:"
+      },
+      "no_meat": {
+        "header": "CHẾ ĐỘ ĂN CHAY",
+        "message": "Tôi không ăn thịt.\nCá và các sản phẩm động vật khác thì được.",
+        "sectionMessage": "Ngoài ra, tôi không ăn thịt.\nCá và các sản phẩm động vật khác thì được."
+      },
+      "no_meat_fish": {
+        "header": "CHẾ ĐỘ ĂN CHAY",
+        "message": "Tôi ăn chay. Tôi không ăn thịt và cá.",
+        "sectionMessage": "Ngoài ra, tôi ăn chay và không ăn thịt hay cá."
+      },
+      "no_animal_products": {
+        "header": "CHẾ ĐỘ ĂN THUẦN CHAY",
+        "message": "Tôi ăn thuần chay. Tôi không ăn thịt, cá, hải sản, trứng, sản phẩm sữa, mật ong hay bất kỳ sản phẩm động vật nào.",
+        "sectionMessage": "Ngoài ra, tôi ăn thuần chay và không ăn thịt, cá, hải sản, trứng, sản phẩm sữa, mật ong hay bất kỳ sản phẩm động vật nào."
+      },
+      "nickel": {
+        "header": "DỊ ỨNG NIKEN",
+        "message": "Tôi bị dị ứng niken. Niken là kim loại có trong nhiều loại thực phẩm. Xin hãy đảm bảo thức ăn của tôi không chứa:",
+        "sectionMessage": "Ngoài ra, tôi bị dị ứng niken. Xin hãy đảm bảo thức ăn của tôi không chứa:"
+      },
+      "histamine": {
+        "header": "KHÔNG DUNG NẠP HISTAMINE",
+        "message": "Tôi không thể ăn thực phẩm giàu histamine. Histamine có trong thực phẩm ủ lâu, lên men hoặc bảo quản lâu. Ví dụ:",
+        "sectionMessage": "Ngoài ra, tôi không thể ăn thực phẩm giàu histamine. Ví dụ:"
+      },
+      "diabetes": {
+        "header": "TIỂU ĐƯỜNG",
+        "message": "Tôi bị tiểu đường và cần kiểm soát lượng đường. Xin đừng thêm đường vào thức ăn của tôi và cho tôi biết nếu có chứa:",
+        "sectionMessage": "Ngoài ra, tôi bị tiểu đường và cần kiểm soát lượng đường. Cho tôi biết nếu có chứa:"
+      }
+    }
+  }
+}

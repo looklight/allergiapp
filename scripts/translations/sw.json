@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluteni (nafaka)",
+    "crustaceans": "Krasteshia",
+    "eggs": "Mayai",
+    "fish": "Samaki",
+    "peanuts": "Karanga",
+    "soy": "Soya",
+    "milk": "Maziwa na bidhaa za maziwa",
+    "celery": "Seleri",
+    "mustard": "Haradali",
+    "sesame": "Ufuta",
+    "sulfites": "Sulfuri dioksidi na sulfiti",
+    "lupin": "Lupini",
+    "mollusks": "Wanyama laini wa baharini",
+    "nuts": "Njugu za mti",
+    "fava_beans": "Maharagwe mapana (favism)"
+  },
+  "descriptions": {
+    "gluten": "Vyakula vyote vyenye nafaka au unga (ngano, shayiri, rye, spelt): mkate, pasta, pizza, keki, biskuti, bia",
+    "crustaceans": "Kamba, kambembe, kaa, udongo",
+    "eggs": "Mayai, omeleti, keki, mayonezi, pasta safi",
+    "fish": "Samaki, sushi, mchuzi wa samaki, supu",
+    "peanuts": "Karanga, siagi ya karanga, vitafunio, desseti",
+    "soy": "Tofu, sosi ya soya, maziwa ya soya, edamame",
+    "milk": "Maziwa, jibini, siagi, aiskrimu, krimu",
+    "celery": "Seleri, saladi, supu, mchuzi wa mboga",
+    "mustard": "Haradali, sosi, dressing, marinedi",
+    "sesame": "Ufuta, mafuta ya ufuta, humusi, mkate",
+    "sulfites": "Mvinyo, bia, matunda yaliyokaushwa, chipsi",
+    "lupin": "Unga wa lupini, mkate, pasta, vitafunio",
+    "mollusks": "Chaza, oysta, ngisi, pweza",
+    "nuts": "Walnut, almondi, hazelnati, pistachio, korosho",
+    "fava_beans": "Maharagwe, supu ya maharagwe, puree ya maharagwe, mchuzi"
+  },
+  "warnings": {
+    "gluten": "Onyo: sosi ya soya inaweza kuwa na gluteni",
+    "fava_beans": "Upungufu wa G6PD: hata kiasi kidogo kinaweza kusababisha mgogoro wa hemolytic"
+  },
+  "cardTexts": {
+    "header": "TAHADHARI",
+    "subtitle": "MZIO WA CHAKULA",
+    "pregnancySubtitle": "UJAUZITO NA MZIO WA CHAKULA",
+    "message": "Nina mzio wa chakula ufuatao. Tafadhali hakikisha chakula changu hakina viungo hivi, ikiwa ni pamoja na uchafuzi mtambuka.",
+    "pregnancyMessage": "Mimi ni mjamzito na nina mzio wa chakula ufuatao. Tafadhali hakikisha chakula changu hakina viungo hivi, ikiwa ni pamoja na uchafuzi mtambuka.",
+    "thanks": "Asante sana kwa uelewa na msaada wako.",
+    "tapToSee": "Gusa kuona mifano",
+    "examples": "Mifano:"
+  },
+  "dietFoods": {
+    "meat": "Nyama",
+    "fish": "Samaki",
+    "seafood": "Vyakula vya baharini",
+    "eggs": "Mayai",
+    "dairy": "Bidhaa za maziwa",
+    "honey": "Asali"
+  },
+  "otherFoods": {
+    "garlic": "Vitunguu swaumu",
+    "onion": "Vitunguu",
+    "tomato": "Nyanya",
+    "mushrooms": "Uyoga",
+    "bell_pepper": "Pilipili hoho",
+    "corn": "Mahindi",
+    "strawberries": "Stroberi",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Matunda yenye kokwa (pichi, cheri, aprikoti)",
+    "citrus": "Matunda ya machungwa",
+    "banana": "Ndizi",
+    "buckwheat": "Buckwheat",
+    "spicy": "Chakula chenye viungo"
+  },
+  "restrictions": {
+    "raw_fish": "Samaki mbichi / sushi",
+    "raw_cured_meats": "Nyama iliyokaushwa mbichi",
+    "raw_eggs": "Mayai mabichi",
+    "raw_sprouts": "Chipukizi mbichi",
+    "unpasteurized_cheese": "Jibini isiyopasteurishwa",
+    "unpasteurized_milk": "Maziwa yasiyopasteurishwa",
+    "alcohol": "Pombe",
+    "excessive_caffeine": "Kafeini kupita kiasi",
+    "nickel_chocolate": "Chokoleti / kakao",
+    "nickel_tomato": "Nyanya na sosi za nyanya",
+    "nickel_legumes": "Mikunde (dengu, chickpea, maharagwe)",
+    "nickel_nuts": "Njugu (walnut, hazelnati, korosho)",
+    "nickel_whole_grains": "Nafaka nzima / oat",
+    "nickel_spinach": "Mchicha na mboga za majani",
+    "nickel_canned_food": "Chakula cha makopo",
+    "nickel_tea_coffee": "Chai na kahawa",
+    "histamine_aged_cheese": "Jibini iliyokomaa",
+    "histamine_cured_meats": "Nyama iliyokaushwa na soseji",
+    "histamine_fish": "Samaki wa makopo na kuvuta moshi",
+    "histamine_fermented": "Vyakula vilivyochachushwa (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Mvinyo na bia",
+    "histamine_vinegar": "Siki na achali",
+    "histamine_chocolate": "Chokoleti / kakao",
+    "histamine_tomato": "Nyanya na sosi za nyanya",
+    "histamine_strawberries": "Stroberi",
+    "histamine_eggplant": "Biringanya",
+    "histamine_avocado": "Parachichi",
+    "histamine_spinach": "Mchicha",
+    "diabetes_added_sugar": "Sukari / sirapu",
+    "diabetes_honey_sweeteners": "Asali na vitamu",
+    "diabetes_sweet_sauces": "Sosi tamu (ketchup, tamu-chachu, teriyaki)",
+    "diabetes_sweet_glazes": "Glazing tamu na marinedi",
+    "diabetes_fruit_juice": "Juisi ya matunda kama kiungo",
+    "diabetes_candied_fruit": "Matunda yaliyotiwa sukari / jamu"
+  },
+  "restrictionCardTexts": {
+    "header": "VYAKULA VYA KUEPUKA",
+    "message": "Kwa sababu za kiafya lazima niepuke vyakula vifuatavyo:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "UJAUZITO",
+        "message": "Mimi ni mjamzito. Tafadhali hakikisha chakula changu hakina:",
+        "sectionMessage": "Zaidi ya hayo, kwa sababu ya ujauzito lazima niepuke pia:"
+      },
+      "no_meat": {
+        "header": "LISHE YA MBOGA",
+        "message": "Sili nyama.\nSamaki na bidhaa nyingine za wanyama ni sawa.",
+        "sectionMessage": "Zaidi ya hayo, sili nyama.\nSamaki na bidhaa nyingine za wanyama ni sawa."
+      },
+      "no_meat_fish": {
+        "header": "LISHE YA MBOGA",
+        "message": "Ninafuata lishe ya mboga. Sili nyama wala samaki.",
+        "sectionMessage": "Zaidi ya hayo, ninafuata lishe ya mboga na sili nyama wala samaki."
+      },
+      "no_animal_products": {
+        "header": "LISHE YA VEGAN",
+        "message": "Ninafuata lishe ya vegan. Sili nyama, samaki, vyakula vya baharini, mayai, bidhaa za maziwa, asali au bidhaa yoyote ya wanyama.",
+        "sectionMessage": "Zaidi ya hayo, ninafuata lishe ya vegan na sili nyama, samaki, vyakula vya baharini, mayai, bidhaa za maziwa, asali au bidhaa yoyote ya wanyama."
+      },
+      "nickel": {
+        "header": "MZIO WA NIKELI",
+        "message": "Nina mzio wa nikeli. Nikeli ni chuma kinachopatikana katika vyakula vingi. Tafadhali hakikisha chakula changu hakina:",
+        "sectionMessage": "Zaidi ya hayo, nina mzio wa nikeli. Tafadhali hakikisha chakula changu hakina:"
+      },
+      "histamine": {
+        "header": "KUTOVUMILIA HISTAMINI",
+        "message": "Siwezi kula vyakula vyenye histamini nyingi. Histamini hupatikana katika vyakula vilivyokomaa, kuchachushwa au kuhifadhiwa kwa muda mrefu. Kwa mfano:",
+        "sectionMessage": "Zaidi ya hayo, siwezi kula vyakula vyenye histamini nyingi. Kwa mfano:"
+      },
+      "diabetes": {
+        "header": "KISUKARI",
+        "message": "Nina kisukari na lazima nidhibiti matumizi ya sukari. Tafadhali usiongeze sukari katika chakula changu na niambie ikiwa kina:",
+        "sectionMessage": "Zaidi ya hayo, nina kisukari na lazima nidhibiti matumizi ya sukari. Niambie ikiwa kina:"
+      }
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glutén (gabonafélék)",
+    "crustaceans": "Rákfélék",
+    "eggs": "Tojás",
+    "fish": "Hal",
+    "peanuts": "Földimogyoró",
+    "soy": "Szója",
+    "milk": "Tej és tejtermékek",
+    "celery": "Zeller",
+    "mustard": "Mustár",
+    "sesame": "Szezámmag",
+    "sulfites": "Kén-dioxid és szulfitok",
+    "lupin": "Csillagfürt",
+    "mollusks": "Puhatestűek",
+    "nuts": "Diófélék",
+    "fava_beans": "Lóbab (favizmus)"
+  },
+  "descriptions": {
+    "gluten": "Minden gabonát vagy lisztet tartalmazó élelmiszer (búza, árpa, rozs, tönkölybúza): kenyér, tészta, pizza, sütemény, keksz, sör",
+    "crustaceans": "Garnélarák, homár, rák, languszta",
+    "eggs": "Tojás, omlett, sütemények, majonéz, friss tészta",
+    "fish": "Hal, szusi, halszószok, levesek",
+    "peanuts": "Földimogyoró, mogyoróvaj, snackek, desszertek",
+    "soy": "Tofu, szójaszósz, szójatej, edamame",
+    "milk": "Tej, sajt, vaj, fagylalt, tejszín",
+    "celery": "Zeller, saláták, levesek, zöldséglevesek",
+    "mustard": "Mustár, szószok, dresszingek, pácok",
+    "sesame": "Szezámmag, szezámolaj, humusz, kenyér",
+    "sulfites": "Bor, sör, aszalt gyümölcs, chips",
+    "lupin": "Csillagfürtliszt, kenyér, tészta, snackek",
+    "mollusks": "Kagyló, osztriga, tintahal, polip",
+    "nuts": "Dió, mandula, mogyoró, pisztácia, kesudió",
+    "fava_beans": "Lóbab, lóbableves, lóbabpüré, pörkölt"
+  },
+  "warnings": {
+    "gluten": "Figyelmeztetés: a szójaszósz glutént tartalmazhat",
+    "fava_beans": "G6PD-hiány: kis mennyiségek is hemolitikus krízist okozhatnak"
+  },
+  "cardTexts": {
+    "header": "FIGYELEM",
+    "subtitle": "ÉTELALLERGIÁK",
+    "pregnancySubtitle": "TERHESSÉG ÉS ÉTELALLERGIÁK",
+    "message": "Az alábbi ételallergiáim vannak. Kérem, győződjön meg arról, hogy az ételem nem tartalmazza ezeket az összetevőket, beleértve a keresztszennyeződést is.",
+    "pregnancyMessage": "Terhes vagyok és az alábbi ételallergiáim vannak. Kérem, győződjön meg arról, hogy az ételem nem tartalmazza ezeket az összetevőket, beleértve a keresztszennyeződést is.",
+    "thanks": "Nagyon köszönöm a megértését és segítségét.",
+    "tapToSee": "Koppintson a példákért",
+    "examples": "Példák:"
+  },
+  "dietFoods": {
+    "meat": "Hús",
+    "fish": "Hal",
+    "seafood": "Tenger gyümölcsei",
+    "eggs": "Tojás",
+    "dairy": "Tejtermékek",
+    "honey": "Méz"
+  },
+  "otherFoods": {
+    "garlic": "Fokhagyma",
+    "onion": "Hagyma",
+    "tomato": "Paradicsom",
+    "mushrooms": "Gomba",
+    "bell_pepper": "Paprika",
+    "corn": "Kukorica",
+    "strawberries": "Eper",
+    "kiwi": "Kivi",
+    "stone_fruits": "Csonthéjasok (őszibarack, cseresznye, sárgabarack)",
+    "citrus": "Citrusfélék",
+    "banana": "Banán",
+    "buckwheat": "Hajdina",
+    "spicy": "Csípős ételek"
+  },
+  "restrictions": {
+    "raw_fish": "Nyers hal / szusi",
+    "raw_cured_meats": "Nyers pácolt húsok",
+    "raw_eggs": "Nyers tojás",
+    "raw_sprouts": "Nyers csírák",
+    "unpasteurized_cheese": "Pasztörizálatlan sajtok",
+    "unpasteurized_milk": "Pasztörizálatlan tej",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "Túlzott koffein",
+    "nickel_chocolate": "Csokoládé / kakaó",
+    "nickel_tomato": "Paradicsom és paradicsomszószok",
+    "nickel_legumes": "Hüvelyesek (lencse, csicseriborsó, bab)",
+    "nickel_nuts": "Diófélék (dió, mogyoró, kesudió)",
+    "nickel_whole_grains": "Teljes kiőrlésű gabona / zab",
+    "nickel_spinach": "Spenót és leveles zöldségek",
+    "nickel_canned_food": "Konzervek",
+    "nickel_tea_coffee": "Tea és kávé",
+    "histamine_aged_cheese": "Érlelt sajtok",
+    "histamine_cured_meats": "Felvágottak és kolbászok",
+    "histamine_fish": "Konzervált és füstölt hal",
+    "histamine_fermented": "Erjesztett ételek (savanyú káposzta, kimchi, miso)",
+    "histamine_wine_beer": "Bor és sör",
+    "histamine_vinegar": "Ecet és savanyúságok",
+    "histamine_chocolate": "Csokoládé / kakaó",
+    "histamine_tomato": "Paradicsom és paradicsomszószok",
+    "histamine_strawberries": "Eper",
+    "histamine_eggplant": "Padlizsán",
+    "histamine_avocado": "Avokádó",
+    "histamine_spinach": "Spenót",
+    "diabetes_added_sugar": "Cukor / szirupok",
+    "diabetes_honey_sweeteners": "Méz és édesítőszerek",
+    "diabetes_sweet_sauces": "Édes szószok (ketchup, édes-savanyú, teriyaki)",
+    "diabetes_sweet_glazes": "Édes mázak és pácok",
+    "diabetes_fruit_juice": "Gyümölcslé összetevőként",
+    "diabetes_candied_fruit": "Kandírozott gyümölcs / lekvárok"
+  },
+  "restrictionCardTexts": {
+    "header": "KERÜLENDŐ ÉTELEK",
+    "message": "Egészségügyi okokból a következő ételeket kell kerülnöm:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "TERHESSÉG",
+        "message": "Terhes vagyok. Kérem, győződjön meg arról, hogy az ételem nem tartalmazza:",
+        "sectionMessage": "Továbbá terhességem miatt kerülnöm kell:"
+      },
+      "no_meat": {
+        "header": "VEGETÁRIÁNUS ÉTREND",
+        "message": "Nem eszem húst.\nHal és egyéb állati termékek rendben vannak.",
+        "sectionMessage": "Továbbá nem eszem húst.\nHal és egyéb állati termékek rendben vannak."
+      },
+      "no_meat_fish": {
+        "header": "VEGETÁRIÁNUS ÉTREND",
+        "message": "Vegetáriánus étrendet követek. Nem eszem húst és halat.",
+        "sectionMessage": "Továbbá vegetáriánus vagyok és nem eszem húst és halat."
+      },
+      "no_animal_products": {
+        "header": "VEGÁN ÉTREND",
+        "message": "Vegán étrendet követek. Nem eszem húst, halat, tenger gyümölcseit, tojást, tejtermékeket, mézet és semmilyen állati terméket.",
+        "sectionMessage": "Továbbá vegán vagyok és nem eszem húst, halat, tenger gyümölcseit, tojást, tejtermékeket, mézet és semmilyen állati terméket."
+      },
+      "nickel": {
+        "header": "NIKKELALLERGIA",
+        "message": "Nikkelallergiám van. A nikkel sok élelmiszerben megtalálható fém. Kérem, győződjön meg arról, hogy az ételem nem tartalmazza:",
+        "sectionMessage": "Továbbá nikkelallergiám van. Kérem, győződjön meg arról, hogy az ételem nem tartalmazza:"
+      },
+      "histamine": {
+        "header": "HISZTAMIN-INTOLERANCIA",
+        "message": "Nem ehetek hisztaminban gazdag ételeket. A hisztamin érlelt, erjesztett vagy hosszan tárolt élelmiszerekben található. Például:",
+        "sectionMessage": "Továbbá nem ehetek hisztaminban gazdag ételeket. Például:"
+      },
+      "diabetes": {
+        "header": "CUKORBETEGSÉG",
+        "message": "Cukorbeteg vagyok és figyelnem kell a cukorbevitelre. Kérem, ne adjon cukrot az ételemhez és jelezze, ha tartalmaz:",
+        "sectionMessage": "Továbbá cukorbeteg vagyok és figyelnem kell a cukorbevitelre. Jelezze, ha tartalmaz:"
+      }
+    }
+  }
+}

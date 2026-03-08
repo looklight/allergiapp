@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glute (cereais)",
+    "crustaceans": "Crustáceos",
+    "eggs": "Ovos",
+    "fish": "Peixe",
+    "peanuts": "Cacahuetes",
+    "soy": "Soia",
+    "milk": "Leite e produtos lácteos",
+    "celery": "Apio",
+    "mustard": "Mostaza",
+    "sesame": "Sementes de sésamo",
+    "sulfites": "Dióxido de xofre e sulfitos",
+    "lupin": "Altramuz",
+    "mollusks": "Moluscos",
+    "nuts": "Froitos secos",
+    "fava_beans": "Fabas (favismo)"
+  },
+  "descriptions": {
+    "gluten": "Todos os alimentos con cereais ou fariña (trigo, cebada, centeo, espelta): pan, pasta, pizza, tortas, galletas, cervexa",
+    "crustaceans": "Gambas, lagosta, cangrexo, langostinos",
+    "eggs": "Ovos, tortillas, tortas, maionesa, pasta fresca",
+    "fish": "Peixe, sushi, salsas de peixe, caldos",
+    "peanuts": "Cacahuetes, manteiga de cacahuete, aperitivos, postres",
+    "soy": "Tofu, salsa de soia, leite de soia, edamame",
+    "milk": "Leite, queixo, manteiga, xeado, nata",
+    "celery": "Apio, ensaladas, sopas, caldo de verduras",
+    "mustard": "Mostaza, salsas, vinagretas, marinadas",
+    "sesame": "Sementes de sésamo, aceite de sésamo, hummus, pan",
+    "sulfites": "Viño, cervexa, froita seca, patacas fritas",
+    "lupin": "Fariña de altramuz, pan, pasta, aperitivos",
+    "mollusks": "Mexillóns, ostras, calamares, polbo",
+    "nuts": "Noces, améndoas, abelás, pistachos, anacardos",
+    "fava_beans": "Fabas, sopa de fabas, puré de fabas, estofados"
+  },
+  "warnings": {
+    "gluten": "Atención: a salsa de soia pode conter glute",
+    "fava_beans": "Déficit de G6PD: mesmo pequenas cantidades poden causar unha crise hemolítica"
+  },
+  "cardTexts": {
+    "header": "ATENCIÓN",
+    "subtitle": "ALERXIAS ALIMENTARIAS",
+    "pregnancySubtitle": "EMBARAZO E ALERXIAS ALIMENTARIAS",
+    "message": "Teño as seguintes alerxias alimentarias. Por favor, asegúrense de que a miña comida non conteña estes ingredientes, incluíndo a contaminación cruzada.",
+    "pregnancyMessage": "Estou embarazada e teño as seguintes alerxias alimentarias. Por favor, asegúrense de que a miña comida non conteña estes ingredientes, incluíndo a contaminación cruzada.",
+    "thanks": "Moitas grazas pola súa comprensión e axuda.",
+    "tapToSee": "Toque para ver exemplos",
+    "examples": "Exemplos:"
+  },
+  "dietFoods": {
+    "meat": "Carne",
+    "fish": "Peixe",
+    "seafood": "Marisco",
+    "eggs": "Ovos",
+    "dairy": "Produtos lácteos",
+    "honey": "Mel"
+  },
+  "otherFoods": {
+    "garlic": "Allo",
+    "onion": "Cebola",
+    "tomato": "Tomate",
+    "mushrooms": "Cogomelos",
+    "bell_pepper": "Pemento",
+    "corn": "Millo",
+    "strawberries": "Amorodos",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Froitos de óso (pexego, cereixa, albaricoque)",
+    "citrus": "Cítricos",
+    "banana": "Plátano",
+    "buckwheat": "Trigo sarraceno",
+    "spicy": "Comida picante"
+  },
+  "restrictions": {
+    "raw_fish": "Peixe cru / sushi",
+    "raw_cured_meats": "Embutidos crus",
+    "raw_eggs": "Ovos crus",
+    "raw_sprouts": "Brotes crus",
+    "unpasteurized_cheese": "Queixo non pasteurizado",
+    "unpasteurized_milk": "Leite non pasteurizado",
+    "alcohol": "Alcohol",
+    "excessive_caffeine": "Cafeína excesiva",
+    "nickel_chocolate": "Chocolate / cacao",
+    "nickel_tomato": "Tomates e salsas de tomate",
+    "nickel_legumes": "Legumes (lentellas, garavanzos, fabas)",
+    "nickel_nuts": "Froitos secos (noces, abelás, anacardos)",
+    "nickel_whole_grains": "Cereais integrais / avea",
+    "nickel_spinach": "Espinacas e verduras de folla",
+    "nickel_canned_food": "Conservas",
+    "nickel_tea_coffee": "Té e café",
+    "histamine_aged_cheese": "Queixo curado",
+    "histamine_cured_meats": "Embutidos e salchichas",
+    "histamine_fish": "Peixe en conserva e afumado",
+    "histamine_fermented": "Alimentos fermentados (chucrut, kimchi, miso)",
+    "histamine_wine_beer": "Viño e cervexa",
+    "histamine_vinegar": "Vinagre e verduras en vinagre",
+    "histamine_chocolate": "Chocolate / cacao",
+    "histamine_tomato": "Tomates e salsas de tomate",
+    "histamine_strawberries": "Amorodos",
+    "histamine_eggplant": "Berenxena",
+    "histamine_avocado": "Aguacate",
+    "histamine_spinach": "Espinacas",
+    "diabetes_added_sugar": "Azucre / xaropes",
+    "diabetes_honey_sweeteners": "Mel e edulcorantes",
+    "diabetes_sweet_sauces": "Salsas doces (kétchup, agridoce, teriyaki)",
+    "diabetes_sweet_glazes": "Glaseados doces e marinadas",
+    "diabetes_fruit_juice": "Zume de froita como ingrediente",
+    "diabetes_candied_fruit": "Froita confitada / marmeladas"
+  },
+  "restrictionCardTexts": {
+    "header": "ALIMENTOS A EVITAR",
+    "message": "Por razóns de saúde debo evitar os seguintes alimentos:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "EMBARAZO",
+        "message": "Estou embarazada. Por favor, asegúrense de que a miña comida non conteña:",
+        "sectionMessage": "Ademais, polo embarazo debo evitar tamén:"
+      },
+      "no_meat": {
+        "header": "DIETA VEXETARIANA",
+        "message": "Non como carne.\nO peixe e outros produtos animais están ben.",
+        "sectionMessage": "Ademais, non como carne.\nO peixe e outros produtos animais están ben."
+      },
+      "no_meat_fish": {
+        "header": "DIETA VEXETARIANA",
+        "message": "Sigo unha dieta vexetariana. Non como carne nin peixe.",
+        "sectionMessage": "Ademais, sigo unha dieta vexetariana e non como carne nin peixe."
+      },
+      "no_animal_products": {
+        "header": "DIETA VEGANA",
+        "message": "Sigo unha dieta vegana. Non como carne, peixe, marisco, ovos, produtos lácteos, mel nin ningún produto animal.",
+        "sectionMessage": "Ademais, sigo unha dieta vegana e non como carne, peixe, marisco, ovos, produtos lácteos, mel nin ningún produto animal."
+      },
+      "nickel": {
+        "header": "ALERXIA AO NÍQUEL",
+        "message": "Teño alerxia ao níquel. O níquel é un metal presente en moitos alimentos. Por favor, asegúrense de que a miña comida non conteña:",
+        "sectionMessage": "Ademais, teño alerxia ao níquel. Por favor, asegúrense de que a miña comida non conteña:"
+      },
+      "histamine": {
+        "header": "INTOLERANCIA Á HISTAMINA",
+        "message": "Non podo comer alimentos ricos en histamina. A histamina atópase en alimentos curados, fermentados ou conservados durante moito tempo. Por exemplo:",
+        "sectionMessage": "Ademais, non podo comer alimentos ricos en histamina. Por exemplo:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Teño diabetes e debo controlar o consumo de azucre. Por favor, non engadan azucre á miña comida e díganme se contén:",
+        "sectionMessage": "Ademais, teño diabetes e debo controlar o consumo de azucre. Díganme se contén:"
+      }
+    }
+  }
+}

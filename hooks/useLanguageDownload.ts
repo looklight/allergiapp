@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { DownloadableLanguageCode } from '../types';
 import { downloadLanguageTranslations, checkTranslationServiceAvailable, DownloadProgress } from '../services/translationService';
+import { fetchTranslationFromFirestore } from '../services/firestoreTranslations';
 import { Analytics } from '../services/analytics';
 import i18n from '../utils/i18n';
 
@@ -17,7 +18,8 @@ interface UseLanguageDownloadReturn {
 }
 
 /**
- * Hook riutilizzabile per gestire il download di lingue tradotte
+ * Hook riutilizzabile per gestire il download di lingue tradotte.
+ * Prova prima Firestore (traduzioni pre-generate), poi fallback a MyMemory API.
  */
 export function useLanguageDownload(): UseLanguageDownloadReturn {
   const [downloadingLang, setDownloadingLang] = useState<DownloadableLanguageCode | null>(null);
@@ -48,15 +50,6 @@ export function useLanguageDownload(): UseLanguageDownloadReturn {
     // Previeni download multipli simultanei
     if (downloadingLang) return;
 
-    // Controlla connettività prima di iniziare
-    const isAvailable = await checkTranslationServiceAvailable();
-    if (!isAvailable) {
-      Alert.alert('', i18n.t('settings.noInternet'));
-      return;
-    }
-
-    const abortController = new AbortController();
-    downloadAbortRef.current = abortController;
     setDownloadingLang(langCode);
     setDownloadProgress(null);
 
@@ -64,6 +57,25 @@ export function useLanguageDownload(): UseLanguageDownloadReturn {
     let success = false;
 
     try {
+      // 1. Prova Firestore (traduzioni pre-generate, istantaneo)
+      const firestoreData = await fetchTranslationFromFirestore(langCode);
+
+      if (firestoreData) {
+        await onSuccess(langCode, firestoreData);
+        success = true;
+        return;
+      }
+
+      // 2. Fallback: MyMemory API (traduzione on-demand)
+      const isAvailable = await checkTranslationServiceAvailable();
+      if (!isAvailable) {
+        Alert.alert('', i18n.t('settings.noInternet'));
+        return;
+      }
+
+      const abortController = new AbortController();
+      downloadAbortRef.current = abortController;
+
       const data = await downloadLanguageTranslations(
         langCode,
         (progress) => {

@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (korn)",
+    "crustaceans": "Krebsdyr",
+    "eggs": "Æg",
+    "fish": "Fisk",
+    "peanuts": "Jordnødder",
+    "soy": "Soja",
+    "milk": "Mælk og mejeriprodukter",
+    "celery": "Selleri",
+    "mustard": "Sennep",
+    "sesame": "Sesamfrø",
+    "sulfites": "Svovldioxid og sulfitter",
+    "lupin": "Lupin",
+    "mollusks": "Bløddyr",
+    "nuts": "Nødder",
+    "fava_beans": "Hestebønner (favisme)"
+  },
+  "descriptions": {
+    "gluten": "Alle fødevarer med korn eller mel (hvede, byg, rug, spelt): brød, pasta, pizza, kager, kiks, øl",
+    "crustaceans": "Rejer, hummer, krabbe, jomfruhummer",
+    "eggs": "Æg, omeletter, kager, mayonnaise, frisk pasta",
+    "fish": "Fisk, sushi, fiskesaucer, bouillon",
+    "peanuts": "Jordnødder, jordnøddesmør, snacks, desserter",
+    "soy": "Tofu, sojasauce, sojamælk, edamame",
+    "milk": "Mælk, ost, smør, is, fløde",
+    "celery": "Selleri, salater, supper, grøntsagsbouillon",
+    "mustard": "Sennep, saucer, dressinger, marinader",
+    "sesame": "Sesamfrø, sesamolie, hummus, brød",
+    "sulfites": "Vin, øl, tørret frugt, chips",
+    "lupin": "Lupinmel, brød, pasta, snacks",
+    "mollusks": "Muslinger, østers, blæksprutter, blæksprutte",
+    "nuts": "Valnødder, mandler, hasselnødder, pistacienødder, cashewnødder",
+    "fava_beans": "Hestebønner, bønnesuppe, bønnepuré, gryderetter"
+  },
+  "warnings": {
+    "gluten": "Advarsel: sojasauce kan indeholde gluten",
+    "fava_beans": "G6PD-mangel: selv små mængder kan forårsage hæmolytisk krise"
+  },
+  "cardTexts": {
+    "header": "OBS",
+    "subtitle": "FØDEVAREALLERGIER",
+    "pregnancySubtitle": "GRAVIDITET OG FØDEVAREALLERGIER",
+    "message": "Jeg har følgende fødevareallergier. Sørg venligst for, at min mad ikke indeholder disse ingredienser, heller ikke ved krydskontaminering.",
+    "pregnancyMessage": "Jeg er gravid og har følgende fødevareallergier. Sørg venligst for, at min mad ikke indeholder disse ingredienser, heller ikke ved krydskontaminering.",
+    "thanks": "Mange tak for din forståelse og hjælp.",
+    "tapToSee": "Tryk for at se eksempler",
+    "examples": "Eksempler:"
+  },
+  "dietFoods": {
+    "meat": "Kød",
+    "fish": "Fisk",
+    "seafood": "Skaldyr",
+    "eggs": "Æg",
+    "dairy": "Mejeriprodukter",
+    "honey": "Honning"
+  },
+  "otherFoods": {
+    "garlic": "Hvidløg",
+    "onion": "Løg",
+    "tomato": "Tomat",
+    "mushrooms": "Svampe",
+    "bell_pepper": "Peberfrugt",
+    "corn": "Majs",
+    "strawberries": "Jordbær",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Stenfrugter (fersken, kirsebær, abrikos)",
+    "citrus": "Citrusfrugter",
+    "banana": "Banan",
+    "buckwheat": "Boghvede",
+    "spicy": "Krydret mad"
+  },
+  "restrictions": {
+    "raw_fish": "Rå fisk / sushi",
+    "raw_cured_meats": "Rå spegepølse",
+    "raw_eggs": "Rå æg",
+    "raw_sprouts": "Rå spirer",
+    "unpasteurized_cheese": "Upasteuriseret ost",
+    "unpasteurized_milk": "Upasteuriseret mælk",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "For meget koffein",
+    "nickel_chocolate": "Chokolade / kakao",
+    "nickel_tomato": "Tomater og tomatsaucer",
+    "nickel_legumes": "Bælgfrugter (linser, kikærter, bønner)",
+    "nickel_nuts": "Nødder (valnødder, hasselnødder, cashew)",
+    "nickel_whole_grains": "Fuldkorn / havre",
+    "nickel_spinach": "Spinat og bladgrøntsager",
+    "nickel_canned_food": "Dåsemad",
+    "nickel_tea_coffee": "Te og kaffe",
+    "histamine_aged_cheese": "Lagret ost",
+    "histamine_cured_meats": "Spegepølse og pølser",
+    "histamine_fish": "Dåse- og røget fisk",
+    "histamine_fermented": "Fermenterede fødevarer (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Vin og øl",
+    "histamine_vinegar": "Eddike og syltede grøntsager",
+    "histamine_chocolate": "Chokolade / kakao",
+    "histamine_tomato": "Tomater og tomatsaucer",
+    "histamine_strawberries": "Jordbær",
+    "histamine_eggplant": "Aubergine",
+    "histamine_avocado": "Avocado",
+    "histamine_spinach": "Spinat",
+    "diabetes_added_sugar": "Sukker / sirup",
+    "diabetes_honey_sweeteners": "Honning og sødestoffer",
+    "diabetes_sweet_sauces": "Søde saucer (ketchup, sur-sød, teriyaki)",
+    "diabetes_sweet_glazes": "Søde glasurer og marinader",
+    "diabetes_fruit_juice": "Frugtjuice som ingrediens",
+    "diabetes_candied_fruit": "Kandiseret frugt / marmelade"
+  },
+  "restrictionCardTexts": {
+    "header": "FØDEVARER DER SKAL UNDGÅS",
+    "message": "Af sundhedsmæssige årsager skal jeg undgå følgende fødevarer:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "GRAVIDITET",
+        "message": "Jeg er gravid. Sørg venligst for, at min mad ikke indeholder:",
+        "sectionMessage": "Derudover skal jeg på grund af min graviditet også undgå:"
+      },
+      "no_meat": {
+        "header": "VEGETARISK KOST",
+        "message": "Jeg spiser ikke kød.\nFisk og andre animalske produkter er okay.",
+        "sectionMessage": "Derudover spiser jeg ikke kød.\nFisk og andre animalske produkter er okay."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARISK KOST",
+        "message": "Jeg følger en vegetarisk kost. Jeg spiser ikke kød eller fisk.",
+        "sectionMessage": "Derudover følger jeg en vegetarisk kost og spiser ikke kød eller fisk."
+      },
+      "no_animal_products": {
+        "header": "VEGANSK KOST",
+        "message": "Jeg følger en vegansk kost. Jeg spiser ikke kød, fisk, skaldyr, æg, mejeriprodukter, honning eller nogen animalske produkter.",
+        "sectionMessage": "Derudover følger jeg en vegansk kost og spiser ikke kød, fisk, skaldyr, æg, mejeriprodukter, honning eller nogen animalske produkter."
+      },
+      "nickel": {
+        "header": "NIKKELALLERGI",
+        "message": "Jeg har nikkelallergi. Nikkel er et metal der findes i mange fødevarer. Sørg venligst for, at min mad ikke indeholder:",
+        "sectionMessage": "Derudover har jeg nikkelallergi. Sørg venligst for, at min mad ikke indeholder:"
+      },
+      "histamine": {
+        "header": "HISTAMININTOLERANS",
+        "message": "Jeg kan ikke spise fødevarer rige på histamin. Histamin findes i lagrede, fermenterede eller længe opbevarede fødevarer. For eksempel:",
+        "sectionMessage": "Derudover kan jeg ikke spise fødevarer rige på histamin. For eksempel:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Jeg har diabetes og skal kontrollere mit sukkerindtag. Tilsæt venligst ikke sukker til min mad og fortæl mig, hvis den indeholder:",
+        "sectionMessage": "Derudover har jeg diabetes og skal kontrollere mit sukkerindtag. Fortæl mig, hvis den indeholder:"
+      }
+    }
+  }
+}

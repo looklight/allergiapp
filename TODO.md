@@ -1,58 +1,44 @@
 # AllergiApp - TODO
 
-## EAS / Build
-- [ ] Eliminare le 2 vecchie variabili `GOOGLE_SERVICES_JSON` da EAS (sensitive + secret)
+## Da fare subito
 
-## Pulizia progetto
-- [x] Rimuovere i file markdown di privacy/terms non più usati: `PRIVACY_POLICY.md`, `PRIVACY_POLICY_EN.md`, `TERMS_OF_SERVICE.md`, `TERMS_OF_SERVICE_EN.md` (l'app apre le pagine web su allergiapp.com)
-- [x] Eliminare `google-services-2.json` dalla root di AllergiApp (copia temporanea)
+### Branch e merge
+- [ ] Merge `feature/other-restrictions` → main
+- [x] ~~Committare cartella `admin/`~~ — il `.gitignore` copre già `service-account-key.json`, `node_modules/`, `.next/`
+
+### Pre-traduzioni Firestore
+Implementazione pronta (Firestore-first con fallback MyMemory). Da completare:
+- [ ] Generare traduzioni mancanti per le nuove lingue aggiunte (pa, gu, kn, ml, ps, ku, dv, tg, ky, tk, so, mg, ht)
+- [ ] Upload traduzioni su Firestore (`node scripts/uploadTranslations.js`)
+- [ ] Verificare qualità traduzioni su un campione di lingue
 
 ## Google Play / Android
-- [x] Sincronizzare `versionCode` Android (attualmente 1) con `buildNumber` iOS (attualmente 4) in `app.config.ts`
-- [ ] Aggiungere profilo Android submit in `eas.json` (serviceAccount + track)
+Bloccato da azioni esterne:
 - [ ] Completare verifica account sviluppatore (serve dispositivo Android fisico)
+- [ ] Aggiungere profilo Android submit in `eas.json` (serviceAccount + track)
 - [ ] Caricare AAB su Google Play Console e pubblicare
-- [ ] Aggiornare link Google Play nella homepage del sito (`index.html`) quando pubblicata
+- [ ] Aggiornare link Google Play nel sito (`index.html`) quando pubblicata
 
-## Pre-rilascio produzione
-- [ ] Migrare `DraggableBottomSheet` custom a `@gorhom/bottom-sheet` + `react-native-reanimated` — il custom (Animated+PanResponder) funziona su Expo Go ma per produzione le animazioni native sono più fluide (60fps thread UI)
+## Deploy
+- [ ] Decidere e configurare deploy admin dashboard (Vercel o altro)
+- [ ] Deployare su Vercel le modifiche al sito landing (contacts redesign, pulsante "Scopri di più", link App Store)
 
-## Prossime feature
-
-### Feature ristoranti (branch: feature/restaurants)
-Caricamento geo-based implementato su branch separato. Criticità aperte:
-- [ ] **Flickering centerOn** — `setCenterOn({...})` crea sempre un nuovo oggetto, la mappa rianima anche se la posizione non è cambiata. Aggiungere check di uguaglianza lat/lng prima di chiamare setCenterOn
-- [ ] **UX campo ricerca svuotato** — dopo geocoding di una città il campo si svuota di colpo. Opzioni: mostrare il nome della città come placeholder, oppure aggiungere testo "Risultati per Torino" nel contatore
-- [ ] **Clustering pin** — con centinaia di ristoranti in zone dense i pin si sovrappongono. Valutare `react-native-map-clustering` quando la densità cresce
-- [ ] **Scalabilità Firestore** — se il numero di ristoranti arriva a migliaia, valutare Supabase (PostGIS) per le query geo
+## Feature ristoranti (branch: feature/restaurants)
+In sviluppo. Caricamento geo-based implementato.
 - [ ] Dettaglio ristorante con info allergeni
+- [ ] Migrare `DraggableBottomSheet` custom a `@gorhom/bottom-sheet` + `react-native-reanimated` (pre-rilascio)
 
-### Lingue scaricabili: valutare pre-traduzione
-Attualmente le lingue vengono tradotte on-demand via MyMemory API (79 chiamate sequenziali per lingua, ~40-60s, limite 5.000 char/giorno/IP). Valutare se conviene:
-- Pre-tradurre tutte le 65 lingue una tantum (con DeepL, ChatGPT/Claude, o MyMemory da locale)
-- Verificare manualmente la qualità
-- Hostare i JSON su Firebase Storage (~3-4KB per lingua)
-- L'app scarica un singolo file JSON già pronto invece di chiamare l'API 79 volte
+### Futuri (quando il volume cresce)
+- Clustering pin (`react-native-map-clustering`) — quando la densità di ristoranti lo richiede
+- Scalabilità query geo — valutare Supabase (PostGIS) se i ristoranti arrivano a migliaia
 
-Vantaggi: download istantaneo, qualità garantita, nessun limite quota, nessuna dipendenza API runtime.
-
-## Branch in sospeso
-- [ ] `feature/other-restrictions` — Altre restrizioni alimentari e modalità dieta. Pronto, da mergiare in main.
-- [ ] `feature/restaurants` — Feature ristoranti completa (app + admin dashboard). In sviluppo.
-
-## Admin Dashboard (admin/)
-- [ ] Committare cartella `admin/` — il `.gitignore` copre già `service-account-key.json`, `node_modules/`, `.next/`
-- [ ] Decidere deploy admin (Vercel o altro)
-
-## Sito (landing/)
-- [ ] Deployare su Vercel le modifiche al sito (contacts redesign, pulsante "Scopri di più", link App Store)
-
-## Da verificare
-- [ ] Se provo a scaricare una lingua ma non c'è internet o sparisce la connessione, l'utente lo capisce o fallisce silenziosamente?
-- [ ] Nei box delle lingue scaricate verificare che le dimensioni siano uguali per tutti i box e che si adattino correttamente a tutti i dispositivi (es. Burmese sembra più alto)
-- [ ] Cosa succede quando finiscono i crediti gratuiti per tradurre con MyMemory?
-
-## Completati (branch feature/other-restrictions)
+## Completati
+- [x] Eliminare variabili EAS orfane (3× GOOGLE_SERVICES_JSON / GOOGLE_SERVICES_JSON_ANDROID)
+- [x] Pulizia file: privacy/terms markdown, google-services-2.json
+- [x] Sincronizzare versionCode Android con buildNumber iOS (entrambi a 4)
+- [x] Download lingua offline: pre-flight check + timeout 30s + alert localizzati
+- [x] Box lingue scaricate: minHeight 56 + larghezza reattiva alla rotazione
+- [x] Crediti MyMemory: check per 429 + rilevamento testo invariato
 - [x] Sezione "Altri alimenti" con 13 cibi — traduzioni in 15 lingue
 - [x] Modalità dieta: vegetariano (3 livelli), gravidanza, allergia al nichel
 - [x] Visualizzazione su card (portrait + landscape)

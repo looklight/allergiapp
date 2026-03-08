@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Lepek (obiloviny)",
+    "crustaceans": "Korýši",
+    "eggs": "Vejce",
+    "fish": "Ryby",
+    "peanuts": "Arašídy",
+    "soy": "Sója",
+    "milk": "Mléko a mléčné výrobky",
+    "celery": "Celer",
+    "mustard": "Hořčice",
+    "sesame": "Sezam",
+    "sulfites": "Oxid siřičitý a siřičitany",
+    "lupin": "Vlčí bob",
+    "mollusks": "Měkkýši",
+    "nuts": "Skořápkové plody",
+    "fava_beans": "Boby (favismus)"
+  },
+  "descriptions": {
+    "gluten": "Všechny potraviny s obilovinami nebo moukou (pšenice, ječmen, žito, špalda): chléb, těstoviny, pizza, koláče, sušenky, pivo",
+    "crustaceans": "Krevety, humr, krab, garnáty",
+    "eggs": "Vejce, omelety, koláče, majonéza, čerstvé těstoviny",
+    "fish": "Ryby, sushi, rybí omáčky, vývary",
+    "peanuts": "Arašídy, arašídové máslo, snacky, dezerty",
+    "soy": "Tofu, sójová omáčka, sójové mléko, edamame",
+    "milk": "Mléko, sýr, máslo, zmrzlina, smetana",
+    "celery": "Celer, saláty, polévky, zeleninové vývary",
+    "mustard": "Hořčice, omáčky, dresinky, marinády",
+    "sesame": "Sezamová semínka, sezamový olej, hummus, chléb",
+    "sulfites": "Víno, pivo, sušené ovoce, chipsy",
+    "lupin": "Vlčí bobová mouka, chléb, těstoviny, snacky",
+    "mollusks": "Slávky, škeble, ústřice, kalamáry, chobotnice",
+    "nuts": "Vlašské ořechy, mandle, lískové ořechy, pistácie, kešu",
+    "fava_beans": "Boby, bobová polévka, bobové pyré, dušená jídla"
+  },
+  "warnings": {
+    "gluten": "Upozornění: sójová omáčka může obsahovat lepek",
+    "fava_beans": "Deficit G6PD: i malé množství může způsobit hemolytickou krizi"
+  },
+  "cardTexts": {
+    "header": "POZOR",
+    "subtitle": "POTRAVINOVÉ ALERGIE",
+    "pregnancySubtitle": "TĚHOTENSTVÍ A POTRAVINOVÉ ALERGIE",
+    "message": "Mám následující potravinové alergie. Prosím zajistěte, aby mé jídlo neobsahovalo tyto ingredience, včetně křížové kontaminace.",
+    "pregnancyMessage": "Jsem těhotná a mám následující potravinové alergie. Prosím zajistěte, aby mé jídlo neobsahovalo tyto ingredience, včetně křížové kontaminace.",
+    "thanks": "Mockrát děkuji za vaše pochopení a pomoc.",
+    "tapToSee": "Klepněte pro příklady",
+    "examples": "Příklady:"
+  },
+  "dietFoods": {
+    "meat": "Maso",
+    "fish": "Ryby",
+    "seafood": "Mořské plody",
+    "eggs": "Vejce",
+    "dairy": "Mléčné výrobky",
+    "honey": "Med"
+  },
+  "otherFoods": {
+    "garlic": "Česnek",
+    "onion": "Cibule",
+    "tomato": "Rajče",
+    "mushrooms": "Houby",
+    "bell_pepper": "Paprika",
+    "corn": "Kukuřice",
+    "strawberries": "Jahody",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Peckoviny (broskev, třešeň, meruňka)",
+    "citrus": "Citrusové plody",
+    "banana": "Banán",
+    "buckwheat": "Pohanka",
+    "spicy": "Pálivá jídla"
+  },
+  "restrictions": {
+    "raw_fish": "Syrové ryby / sushi",
+    "raw_cured_meats": "Syrové uzeniny",
+    "raw_eggs": "Syrová vejce",
+    "raw_sprouts": "Syrové klíčky",
+    "unpasteurized_cheese": "Nepasterizované sýry",
+    "unpasteurized_milk": "Nepasterizované mléko",
+    "alcohol": "Alkohol",
+    "excessive_caffeine": "Nadměrný kofein",
+    "nickel_chocolate": "Čokoláda / kakao",
+    "nickel_tomato": "Rajčata a rajčatové omáčky",
+    "nickel_legumes": "Luštěniny (čočka, cizrna, fazole)",
+    "nickel_nuts": "Ořechy (vlašské, lískové, kešu)",
+    "nickel_whole_grains": "Celozrnné výrobky / ovesné vločky",
+    "nickel_spinach": "Špenát a listová zelenina",
+    "nickel_canned_food": "Konzervované potraviny",
+    "nickel_tea_coffee": "Čaj a káva",
+    "histamine_aged_cheese": "Zrající sýry",
+    "histamine_cured_meats": "Uzeniny a klobásy",
+    "histamine_fish": "Konzervované a uzené ryby",
+    "histamine_fermented": "Fermentované potraviny (kysané zelí, kimchi, miso)",
+    "histamine_wine_beer": "Víno a pivo",
+    "histamine_vinegar": "Ocet a nakládaná zelenina",
+    "histamine_chocolate": "Čokoláda / kakao",
+    "histamine_tomato": "Rajčata a rajčatové omáčky",
+    "histamine_strawberries": "Jahody",
+    "histamine_eggplant": "Lilek",
+    "histamine_avocado": "Avokádo",
+    "histamine_spinach": "Špenát",
+    "diabetes_added_sugar": "Cukr / sirupy",
+    "diabetes_honey_sweeteners": "Med a sladidla",
+    "diabetes_sweet_sauces": "Sladké omáčky (kečup, sladkokyselá, teriyaki)",
+    "diabetes_sweet_glazes": "Sladké polevy a marinády",
+    "diabetes_fruit_juice": "Ovocná šťáva jako přísada",
+    "diabetes_candied_fruit": "Kandované ovoce / džemy"
+  },
+  "restrictionCardTexts": {
+    "header": "POTRAVINY, KTERÝM SE VYHNOUT",
+    "message": "Ze zdravotních důvodů se musím vyhnout následujícím potravinám:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "TĚHOTENSTVÍ",
+        "message": "Jsem těhotná. Prosím zajistěte, aby mé jídlo neobsahovalo:",
+        "sectionMessage": "Navíc kvůli těhotenství se musím vyhnout:"
+      },
+      "no_meat": {
+        "header": "VEGETARIÁNSKÁ STRAVA",
+        "message": "Nejím maso.\nRyby a ostatní živočišné produkty jsou v pořádku.",
+        "sectionMessage": "Navíc nejím maso.\nRyby a ostatní živočišné produkty jsou v pořádku."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIÁNSKÁ STRAVA",
+        "message": "Jsem vegetarián/ka. Nejím maso ani ryby.",
+        "sectionMessage": "Navíc jsem vegetarián/ka a nejím maso ani ryby."
+      },
+      "no_animal_products": {
+        "header": "VEGANSKÁ STRAVA",
+        "message": "Jsem vegan/ka. Nejím maso, ryby, mořské plody, vejce, mléčné výrobky, med ani žádné živočišné produkty.",
+        "sectionMessage": "Navíc jsem vegan/ka a nejím maso, ryby, mořské plody, vejce, mléčné výrobky, med ani žádné živočišné produkty."
+      },
+      "nickel": {
+        "header": "ALERGIE NA NIKL",
+        "message": "Mám alergii na nikl. Nikl je kov obsažený v mnoha potravinách. Prosím zajistěte, aby mé jídlo neobsahovalo:",
+        "sectionMessage": "Navíc mám alergii na nikl. Prosím zajistěte, aby mé jídlo neobsahovalo:"
+      },
+      "histamine": {
+        "header": "INTOLERANCE HISTAMINU",
+        "message": "Nemohu jíst potraviny bohaté na histamin. Histamin se nachází ve zrajících, fermentovaných nebo dlouho skladovaných potravinách. Například:",
+        "sectionMessage": "Navíc nemohu jíst potraviny bohaté na histamin. Například:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Mám diabetes a potřebuji kontrolovat příjem cukru. Prosím nepřidávejte cukr do mého jídla a informujte mě, pokud obsahuje:",
+        "sectionMessage": "Navíc mám diabetes a potřebuji kontrolovat příjem cukru. Informujte mě, pokud obsahuje:"
+      }
+    }
+  }
+}

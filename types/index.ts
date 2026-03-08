@@ -140,6 +140,10 @@ export type DownloadableLanguageCode =
   // Asia
   | 'he'  // Ebraico
   | 'hi'  // Hindi
+  | 'pa'  // Punjabi
+  | 'gu'  // Gujarati
+  | 'kn'  // Kannada
+  | 'ml'  // Malayalam
   | 'vi'  // Vietnamita
   | 'id'  // Indonesiano
   | 'ms'  // Malese
@@ -150,8 +154,11 @@ export type DownloadableLanguageCode =
   | 'mr'  // Marathi
   | 'ur'  // Urdu
   | 'fa'  // Persiano
+  | 'ps'  // Pashto
+  | 'ku'  // Curdo
   | 'ne'  // Nepalese
   | 'si'  // Singalese
+  | 'dv'  // Dhivehi (Maldiviano)
   | 'km'  // Khmer
   | 'lo'  // Laotiano
   | 'my'  // Birmano
@@ -160,6 +167,9 @@ export type DownloadableLanguageCode =
   | 'az'  // Azero
   | 'kk'  // Kazako
   | 'uz'  // Uzbeco
+  | 'tg'  // Tagico
+  | 'ky'  // Kirghiso
+  | 'tk'  // Turkmeno
   | 'mn'  // Mongolo
   // Africa
   | 'sw'  // Swahili
@@ -168,7 +178,10 @@ export type DownloadableLanguageCode =
   | 'ha'  // Hausa
   | 'yo'  // Yoruba
   | 'zu'  // Zulu
+  | 'so'  // Somalo
+  | 'mg'  // Malgascio
   // Altro
+  | 'ht'  // Creolo haitiano
   | 'eo'; // Esperanto
 
 export type LanguageRegion = 'europe' | 'asia' | 'africa' | 'other';

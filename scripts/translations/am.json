@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "ግሉተን (እህል)",
+    "crustaceans": "ክሪስታስያን",
+    "eggs": "እንቁላል",
+    "fish": "ዓሳ",
+    "peanuts": "ኦቾሎኒ",
+    "soy": "አኩሪ አተር",
+    "milk": "ወተት እና የወተት ተዋጽኦዎች",
+    "celery": "ሴሊሪ",
+    "mustard": "ሰናፍጭ",
+    "sesame": "ሰሊጥ",
+    "sulfites": "ሰልፈር ዳይኦክሳይድ እና ሰልፋይት",
+    "lupin": "ሉፒን",
+    "mollusks": "ሞለስኮች",
+    "nuts": "የዛፍ ፍሬዎች",
+    "fava_beans": "ፋቫ ባቄላ (ፋቪዝም)"
+  },
+  "descriptions": {
+    "gluten": "ሁሉም ምግቦች ከእህል ወይም ዱቄት ጋር (ስንዴ፣ ገብስ፣ አጃ፣ ስፒልት)፡ ዳቦ፣ ፓስታ፣ ፒዛ፣ ኬኮች፣ ኩኪዎች፣ ቢራ",
+    "crustaceans": "ሽሪምፕ፣ ሎብስተር፣ ሸርጣን፣ ፕራውን",
+    "eggs": "እንቁላል, ኦሜሌቶች, ኬኮች, ማዮኔዝ, ትኩስ ፓስታ",
+    "fish": "ዓሳ ፣ ሱሺ ፣ የዓሳ ሾርባዎች ፣ ሾርባዎች",
+    "peanuts": "ኦቾሎኒ, የኦቾሎኒ ቅቤ, መክሰስ, ጣፋጭ ምግቦች",
+    "soy": "ቶፉ፣ አኩሪ አተር፣ አኩሪ አተር ወተት፣ ኤዳማሜ",
+    "milk": "ወተት, አይብ, ቅቤ, አይስክሬም, ክሬም",
+    "celery": "ሴሊሪ, ሰላጣ, ሾርባ, የአትክልት ሾርባዎች",
+    "mustard": "ሰናፍጭ ፣ ሳጎኖች ፣ አልባሳት ፣ marinades",
+    "sesame": "የሰሊጥ ዘር ፣ የሰሊጥ ዘይት ፣ humus ፣ ዳቦ",
+    "sulfites": "ወይን, ቢራ, የደረቁ ፍራፍሬዎች, ቺፕስ",
+    "lupin": "የሉፒን ዱቄት, ዳቦ, ፓስታ, መክሰስ",
+    "mollusks": "እንጉዳዮች፣ ክላም፣ ኦይስተር፣ ስኩዊድ፣ ኦክቶፐስ",
+    "nuts": "ዋልኑትስ፣ ለውዝ፣ hazelnuts፣ pistachios፣ cashews",
+    "fava_beans": "ፋቫ ባቄላ፣ ፋቫ ባቄላ ሾርባ፣ fava bean puree፣ ወጥ"
+  },
+  "warnings": {
+    "gluten": "⚠️ ማስጠንቀቂያ፡ አኩሪ አተር ግሉተን ሊይዝ ይችላል።",
+    "fava_beans": "የጂ6ፒዲ እጥረት፡- አነስተኛ መጠን እንኳን ሄሞሊቲክ ቀውስ ሊፈጥር ይችላል።"
+  },
+  "cardTexts": {
+    "header": "ትኩረት",
+    "subtitle": "የምግብ አለርጂዎች",
+    "pregnancySubtitle": "እርግዝና እና የምግብ አለርጂዎች",
+    "message": "የሚከተሉት የምግብ አለርጂዎች አሉኝ. እባክዎን የእኔ ምግብ እነዚህን ንጥረ ነገሮች አለመያዙን ያረጋግጡ፣ መበከልን ጨምሮ።",
+    "pregnancyMessage": "ነፍሰ ጡር ነኝ እና የሚከተሉት የምግብ አለርጂዎች አሉብኝ። እባክዎን የእኔ ምግብ እነዚህን ንጥረ ነገሮች አለመያዙን ያረጋግጡ፣ መበከልን ጨምሮ።",
+    "thanks": "ስለ መረዳትዎ እና ለእርዳታዎ በጣም እናመሰግናለን።",
+    "tapToSee": "ምሳሌዎችን ለማየት መታ ያድርጉ",
+    "examples": "ምሳሌዎች፡-"
+  },
+  "dietFoods": {
+    "meat": "ስጋ",
+    "fish": "ዓሳ",
+    "seafood": "የባህር ምግቦች",
+    "eggs": "እንቁላል",
+    "dairy": "የወተት ምርቶች",
+    "honey": "ማር"
+  },
+  "otherFoods": {
+    "garlic": "ነጭ ሽንኩርት",
+    "onion": "ሽንኩርት",
+    "tomato": "ቲማቲም",
+    "mushrooms": "እንጉዳዮች",
+    "bell_pepper": "ደወል በርበሬ",
+    "corn": "በቆሎ",
+    "strawberries": "እንጆሪ",
+    "kiwi": "ኪዊ",
+    "stone_fruits": "የድንጋይ ፍራፍሬዎች (አፕሪኮት ፣ ቼሪ ፣ ኮክ)",
+    "citrus": "Citrus ፍራፍሬዎች",
+    "banana": "ሙዝ",
+    "buckwheat": "ቡክሆት",
+    "spicy": "ቅመም የበዛባቸው ምግቦች"
+  },
+  "restrictions": {
+    "raw_fish": "ጥሬ ዓሳ / ሱሺ",
+    "raw_cured_meats": "ጥሬ የተቀዳ ስጋ",
+    "raw_eggs": "ጥሬ እንቁላል",
+    "raw_sprouts": "ጥሬ ቡቃያዎች",
+    "unpasteurized_cheese": "ያልተፈጨ አይብ",
+    "unpasteurized_milk": "ያልበሰለ ወተት",
+    "alcohol": "አልኮል",
+    "excessive_caffeine": "ከመጠን በላይ ካፌይን",
+    "nickel_chocolate": "ቸኮሌት / ኮኮዋ",
+    "nickel_tomato": "ቲማቲም እና ቲማቲም ሾርባዎች",
+    "nickel_legumes": "ጥራጥሬዎች (ባቄላ ፣ ምስር ፣ ባቄላ)",
+    "nickel_nuts": "ለውዝ (ዋልኑትስ፣ hazelnuts፣ cashews)",
+    "nickel_whole_grains": "ሙሉ እህል / አጃ",
+    "nickel_spinach": "ስፒናች እና ቅጠላ ቅጠሎች",
+    "nickel_canned_food": "የታሸገ ምግብ",
+    "nickel_tea_coffee": "ሻይ እና ቡና",
+    "histamine_aged_cheese": "ያረጁ አይብ",
+    "histamine_cured_meats": "የተቀቀለ ስጋ እና ሳህኖች",
+    "histamine_fish": "የታሸጉ እና ያጨሱ ዓሳዎች",
+    "histamine_fermented": "የዳበረ ምግቦች (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "ወይን እና ቢራ",
+    "histamine_vinegar": "ኮምጣጤ እና ኮምጣጤ",
+    "histamine_chocolate": "ቸኮሌት / ኮኮዋ",
+    "histamine_tomato": "ቲማቲም እና ቲማቲም ሾርባዎች",
+    "histamine_strawberries": "እንጆሪ",
+    "histamine_eggplant": "የእንቁላል ፍሬ",
+    "histamine_avocado": "አቮካዶ",
+    "histamine_spinach": "ስፒናች",
+    "diabetes_added_sugar": "የተጨመረ ስኳር / ሽሮፕ",
+    "diabetes_honey_sweeteners": "ማር እና ጣፋጮች",
+    "diabetes_sweet_sauces": "ጣፋጭ ሾርባዎች (ኬትችፕ ፣ ጣፋጭ እና መራራ ፣ ቴሪያኪ)",
+    "diabetes_sweet_glazes": "ጣፋጭ ብርጭቆዎች እና ማራናዳዎች",
+    "diabetes_fruit_juice": "የፍራፍሬ ጭማቂ እንደ ንጥረ ነገር",
+    "diabetes_candied_fruit": "የታሸጉ ፍራፍሬ / መጨናነቅ"
+  },
+  "restrictionCardTexts": {
+    "header": "ለማስወገድ የሚረዱ ምግቦች",
+    "message": "በጤና ምክንያት ከሚከተሉት ምግቦች መራቅ አለብኝ።",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "እርግዝና",
+        "message": "ነፍሰ ጡር ነኝ. እባክዎን የእኔ ምግብ የሚከተሉትን እንዳልያዘ ያረጋግጡ።",
+        "sectionMessage": "በተጨማሪም በእርግዝናዬ ምክንያት የሚከተሉትን ማስወገድ አለብኝ:"
+      },
+      "no_meat": {
+        "header": "የቬጀቴሪያን አመጋገብ",
+        "message": "ስጋ አልበላም። \nዓሳ እና ሌሎች የእንስሳት ምርቶች በጣም ጥሩ ናቸው.",
+        "sectionMessage": "በተጨማሪም ስጋ አልበላም። \nዓሳ እና ሌሎች የእንስሳት ምርቶች በጣም ጥሩ ናቸው."
+      },
+      "no_meat_fish": {
+        "header": "የቬጀቴሪያን አመጋገብ",
+        "message": "የቬጀቴሪያን አመጋገብን እከተላለሁ. \nስጋ ወይም አሳ አልበላም።",
+        "sectionMessage": "በተጨማሪም፣ የቬጀቴሪያን አመጋገብን እከተላለሁ እናም ስጋ ወይም አሳ አልበላም።"
+      },
+      "no_animal_products": {
+        "header": "የቪጋን አመጋገብ",
+        "message": "የቪጋን አመጋገብን እከተላለሁ. \nስጋ፣ አሳ፣ የባህር ምግብ፣ እንቁላል፣ የወተት ሃብት፣ ማር ወይም ማንኛውንም የእንስሳት ተዋጽኦ አልበላም።",
+        "sectionMessage": "በተጨማሪም፣ የቪጋን አመጋገብን እከተላለሁ እና ስጋ፣ አሳ፣ የባህር ምግብ፣ እንቁላል፣ ወተት፣ ማር ወይም ማንኛውንም የእንስሳት ተዋጽኦ አልበላም።"
+      },
+      "nickel": {
+        "header": "የኒኬል አለርጂ",
+        "message": "የኒኬል አለርጂ አለብኝ። ኒኬል በብዙ ምግቦች ውስጥ የሚገኝ ብረት ነው። እባካችሁ የእኔ ምግብ አለመኖሩን ያረጋግጡ፡-",
+        "sectionMessage": "በተጨማሪም, የኒኬል አለርጂ አለብኝ. ኒኬል በብዙ ምግቦች ውስጥ የሚገኝ ብረት ነው። እባካችሁ የእኔ ምግብ አለመኖሩን ያረጋግጡ፡-"
+      },
+      "histamine": {
+        "header": "ሂስተሚን አለመቻቻል",
+        "message": "በሂስታሚን የበለፀጉ ምግቦችን መመገብ አልችልም። ሂስታሚን በእርጅና, በዳቦ ወይም ለረጅም ጊዜ በተጠበቁ ምግቦች ውስጥ ይገኛል. ለምሳሌ፡-",
+        "sectionMessage": "በተጨማሪም በሂስታሚን የበለፀጉ ምግቦችን መመገብ አልችልም። ሂስታሚን በእርጅና, በዳቦ ወይም ለረጅም ጊዜ በተጠበቁ ምግቦች ውስጥ ይገኛል. ለምሳሌ፡-"
+      },
+      "diabetes": {
+        "header": "የስኳር በሽታ",
+        "message": "የስኳር በሽታ አለብኝ እናም የስኳር ፍጆታዬን መቆጣጠር አለብኝ። እባኮትን ወደ ምግቤ ውስጥ ስኳር አትጨምሩ እና በውስጡ የያዘ እንደሆነ ያሳውቁኝ፡-",
+        "sectionMessage": "በተጨማሪም፣ የስኳር በሽታ አለብኝ እናም የስኳር ፍጆታዬን መቆጣጠር አለብኝ። እባኮትን ወደ ምግቤ ውስጥ ስኳር አትጨምሩ እና በውስጡ የያዘ እንደሆነ ያሳውቁኝ፡-"
+      }
+    }
+  }
+}

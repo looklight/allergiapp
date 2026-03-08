@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glwten (grawnfwyd)",
+    "crustaceans": "Cramenogion",
+    "eggs": "Wyau",
+    "fish": "Pysgod",
+    "peanuts": "Cnau daear",
+    "soy": "Soi",
+    "milk": "Llaeth a chynnyrch llaeth",
+    "celery": "Seleri",
+    "mustard": "Mwstard",
+    "sesame": "Hadau sesame",
+    "sulfites": "Sylffwr deuocsid a sylffitau",
+    "lupin": "Bysedd y blaidd",
+    "mollusks": "Molysgiaid",
+    "nuts": "Cnau",
+    "fava_beans": "Ffa (ffafism)"
+  },
+  "descriptions": {
+    "gluten": "Pob bwyd gyda grawnfwyd neu flawd (gwenith, haidd, rhyg, sbelt): bara, pasta, pitsa, cacennau, bisgedi, cwrw",
+    "crustaceans": "Corgimychiaid, cimychiaid, crancod, berdys",
+    "eggs": "Wyau, omledau, cacennau, mayonnaise, pasta ffres",
+    "fish": "Pysgod, swshi, sawsiau pysgod, cawl",
+    "peanuts": "Cnau daear, menyn cnau daear, byrbrydau, pwdinau",
+    "soy": "Toffw, saws soi, llaeth soi, edamame",
+    "milk": "Llaeth, caws, menyn, hufen iâ, hufen",
+    "celery": "Seleri, saladau, cawliau, cawl llysiau",
+    "mustard": "Mwstard, sawsiau, dresinau, marinadau",
+    "sesame": "Hadau sesame, olew sesame, hwmws, bara",
+    "sulfites": "Gwin, cwrw, ffrwythau sych, sglodion",
+    "lupin": "Blawd bysedd y blaidd, bara, pasta, byrbrydau",
+    "mollusks": "Cregyn gleision, wystrys, sgwid, octopws",
+    "nuts": "Cnau Ffrengig, almwnau, cnau cyll, pistasios, cnau casiwi",
+    "fava_beans": "Ffa, cawl ffa, stwns ffa, stiwiau"
+  },
+  "warnings": {
+    "gluten": "Rhybudd: gall saws soi gynnwys glwten",
+    "fava_beans": "Diffyg G6PD: gall hyd yn oed symiau bach achosi argyfwng hemolytig"
+  },
+  "cardTexts": {
+    "header": "SYLW",
+    "subtitle": "ALERGEDDAU BWYD",
+    "pregnancySubtitle": "BEICHIOGRWYDD AC ALERGEDDAU BWYD",
+    "message": "Mae gen i'r alergeddau bwyd canlynol. Os gwelwch yn dda sicrhewch nad yw fy mwyd yn cynnwys y cynhwysion hyn, gan gynnwys croeshalogi.",
+    "pregnancyMessage": "Rwy'n feichiog ac mae gen i'r alergeddau bwyd canlynol. Os gwelwch yn dda sicrhewch nad yw fy mwyd yn cynnwys y cynhwysion hyn, gan gynnwys croeshalogi.",
+    "thanks": "Diolch yn fawr am eich dealltwriaeth a'ch cymorth.",
+    "tapToSee": "Tapiwch i weld enghreifftiau",
+    "examples": "Enghreifftiau:"
+  },
+  "dietFoods": {
+    "meat": "Cig",
+    "fish": "Pysgod",
+    "seafood": "Bwyd môr",
+    "eggs": "Wyau",
+    "dairy": "Cynnyrch llaeth",
+    "honey": "Mêl"
+  },
+  "otherFoods": {
+    "garlic": "Garlleg",
+    "onion": "Winwnsyn",
+    "tomato": "Tomato",
+    "mushrooms": "Madarch",
+    "bell_pepper": "Pupur",
+    "corn": "Corn",
+    "strawberries": "Mefus",
+    "kiwi": "Ciwi",
+    "stone_fruits": "Ffrwythau carreg (eirin gwlanog, ceirios, bricyll)",
+    "citrus": "Ffrwythau sitrws",
+    "banana": "Banana",
+    "buckwheat": "Gwenith yr hydd",
+    "spicy": "Bwyd sbeslyd"
+  },
+  "restrictions": {
+    "raw_fish": "Pysgod amrwd / swshi",
+    "raw_cured_meats": "Cigoedd wedi'u halltu amrwd",
+    "raw_eggs": "Wyau amrwd",
+    "raw_sprouts": "Eginblanhigion amrwd",
+    "unpasteurized_cheese": "Caws heb ei basteureiddio",
+    "unpasteurized_milk": "Llaeth heb ei basteureiddio",
+    "alcohol": "Alcohol",
+    "excessive_caffeine": "Caffein gormodol",
+    "nickel_chocolate": "Siocled / cacao",
+    "nickel_tomato": "Tomatos a sawsiau tomato",
+    "nickel_legumes": "Codlysiau (lentils, ffacbys, ffa)",
+    "nickel_nuts": "Cnau (cnau Ffrengig, cnau cyll, cnau casiwi)",
+    "nickel_whole_grains": "Grawnfwyd cyflawn / ceirch",
+    "nickel_spinach": "Sbigoglys a llysiau deiliog",
+    "nickel_canned_food": "Bwyd tun",
+    "nickel_tea_coffee": "Te a choffi",
+    "histamine_aged_cheese": "Caws wedi'i aeddfedu",
+    "histamine_cured_meats": "Cigoedd wedi'u halltu a selsig",
+    "histamine_fish": "Pysgod tun a mwg",
+    "histamine_fermented": "Bwydydd wedi'u eplesu (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Gwin a chwrw",
+    "histamine_vinegar": "Finegr a llysiau wedi'u piclo",
+    "histamine_chocolate": "Siocled / cacao",
+    "histamine_tomato": "Tomatos a sawsiau tomato",
+    "histamine_strawberries": "Mefus",
+    "histamine_eggplant": "Planhigyn wy",
+    "histamine_avocado": "Afocado",
+    "histamine_spinach": "Sbigoglys",
+    "diabetes_added_sugar": "Siwgr / syrupau",
+    "diabetes_honey_sweeteners": "Mêl a melysyddion",
+    "diabetes_sweet_sauces": "Sawsiau melys (cetsyp, melys-sur, teriyaki)",
+    "diabetes_sweet_glazes": "Gwydreddau melys a marinadau",
+    "diabetes_fruit_juice": "Sudd ffrwythau fel cynhwysyn",
+    "diabetes_candied_fruit": "Ffrwythau wedi'u siwgro / jamiau"
+  },
+  "restrictionCardTexts": {
+    "header": "BWYDYDD I'W HOSGOI",
+    "message": "Am resymau iechyd mae'n rhaid i mi osgoi'r bwydydd canlynol:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "BEICHIOGRWYDD",
+        "message": "Rwy'n feichiog. Os gwelwch yn dda sicrhewch nad yw fy mwyd yn cynnwys:",
+        "sectionMessage": "Yn ogystal, oherwydd beichiogrwydd mae'n rhaid i mi osgoi hefyd:"
+      },
+      "no_meat": {
+        "header": "DIET LLYSIEUOL",
+        "message": "Dydw i ddim yn bwyta cig.\nMae pysgod a chynnyrch anifeiliaid eraill yn iawn.",
+        "sectionMessage": "Yn ogystal, dydw i ddim yn bwyta cig.\nMae pysgod a chynnyrch anifeiliaid eraill yn iawn."
+      },
+      "no_meat_fish": {
+        "header": "DIET LLYSIEUOL",
+        "message": "Rwy'n dilyn diet llysieuol. Dydw i ddim yn bwyta cig na physgod.",
+        "sectionMessage": "Yn ogystal, rwy'n dilyn diet llysieuol a dydw i ddim yn bwyta cig na physgod."
+      },
+      "no_animal_products": {
+        "header": "DIET FEGAN",
+        "message": "Rwy'n dilyn diet fegan. Dydw i ddim yn bwyta cig, pysgod, bwyd môr, wyau, cynnyrch llaeth, mêl na unrhyw gynnyrch anifeiliaid.",
+        "sectionMessage": "Yn ogystal, rwy'n dilyn diet fegan a dydw i ddim yn bwyta cig, pysgod, bwyd môr, wyau, cynnyrch llaeth, mêl na unrhyw gynnyrch anifeiliaid."
+      },
+      "nickel": {
+        "header": "ALERGEDD NICEL",
+        "message": "Mae gen i alergedd nicel. Mae nicel yn fetel a geir mewn llawer o fwydydd. Os gwelwch yn dda sicrhewch nad yw fy mwyd yn cynnwys:",
+        "sectionMessage": "Yn ogystal, mae gen i alergedd nicel. Os gwelwch yn dda sicrhewch nad yw fy mwyd yn cynnwys:"
+      },
+      "histamine": {
+        "header": "ANODDEFIAD HISTAMIN",
+        "message": "Alla i ddim bwyta bwydydd uchel mewn histamin. Mae histamin i'w gael mewn bwydydd wedi'u haeddfedu, eplesu neu storio'n hir. Er enghraifft:",
+        "sectionMessage": "Yn ogystal, alla i ddim bwyta bwydydd uchel mewn histamin. Er enghraifft:"
+      },
+      "diabetes": {
+        "header": "DIABETES",
+        "message": "Mae gen i ddiabetes ac mae'n rhaid i mi reoli fy defnydd o siwgr. Os gwelwch yn dda peidiwch ag ychwanegu siwgr at fy mwyd a dwedwch wrthyf os yw'n cynnwys:",
+        "sectionMessage": "Yn ogystal, mae gen i ddiabetes ac mae'n rhaid i mi reoli fy defnydd o siwgr. Dwedwch wrthyf os yw'n cynnwys:"
+      }
+    }
+  }
+}
