@@ -4,7 +4,7 @@
 
 ### Branch e merge
 - [ ] Merge `feature/other-restrictions` → main
-- [ ] Committare cartella `admin/` — i sorgenti sono sul branch `feature/restaurants`
+- [ ] Committare cartella `admin/` — i sorgenti sono sul branch `feature/restaurants-v2`
 
 ### Pre-traduzioni Firestore
 Implementazione pronta (Firestore-first con fallback MyMemory). Da completare:
@@ -23,10 +23,10 @@ In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio ma
 - [ ] Decidere e configurare deploy admin dashboard (Vercel o altro)
 - [ ] Deployare su Vercel le modifiche al sito landing (contacts redesign, pulsante "Scopri di più", link App Store)
 
-## Feature ristoranti (branch: feature/restaurants)
-In sviluppo. Caricamento geo-based implementato.
-- [ ] Dettaglio ristorante con info allergeni
-- [ ] Migrare `DraggableBottomSheet` custom a `@gorhom/bottom-sheet` + `react-native-reanimated` (pre-rilascio)
+## Feature ristoranti (branch: feature/restaurants-v2)
+In sviluppo. Caricamento geo-based implementato. Dietary needs nel profilo utente.
+- [ ] Migrare animazioni a `react-native-reanimated` + `react-native-gesture-handler` (richiede dev build, non funziona in Expo Go SDK 54 per mismatch Worklets 0.7.4 vs 0.5.1 — fare insieme alla migrazione Firebase native SDK)
+- [ ] Completare filtri ristoranti per esigenze alimentari (filtrare per utenti con stesse allergie/diete)
 
 ### Futuri (quando il volume cresce)
 - Clustering pin (`react-native-map-clustering`) — quando la densità di ristoranti lo richiede
