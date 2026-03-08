@@ -21,6 +21,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSLocationWhenInUseUsageDescription:
+        "AllergiApp usa la posizione per mostrarti i ristoranti vicini a te.",
     },
   },
   android: {
@@ -31,8 +33,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
     versionCode: 4,
-    permissions: ["com.google.android.gms.permission.AD_ID"],
+    permissions: [
+      "com.google.android.gms.permission.AD_ID",
+      "ACCESS_FINE_LOCATION",
+      "ACCESS_COARSE_LOCATION",
+    ],
     googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json",
+    config: {
+      googleMaps: {
+        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? "",
+      },
+    },
   },
   web: {
     favicon: "./assets/favicon.png",
@@ -41,6 +52,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-router",
     "@react-native-firebase/app",
+    [
+      "expo-location",
+      {
+        locationWhenInUsePermission:
+          "AllergiApp usa la posizione per mostrarti i ristoranti vicini a te.",
+      },
+    ],
     [
       "expo-tracking-transparency",
       {
@@ -58,6 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     router: {},
+    googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY ?? "",
     eas: {
       projectId: "6b6299aa-f37d-4e8d-9c33-c438a02060f8",
     },

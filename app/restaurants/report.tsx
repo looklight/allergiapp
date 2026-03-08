@@ -1,0 +1,258 @@
+import { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Keyboard, Platform } from 'react-native';
+import { Text, TextInput } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from '../../constants/theme';
+import { REPORT_REASONS } from '../../constants/reportReasons';
+import { RestaurantService } from '../../services/restaurantService';
+import { useAuth } from '../../contexts/AuthContext';
+import type { ReportReason } from '../../types/restaurants';
+
+export default function ReportScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+  const isDescriptionFocused = useRef(false);
+  const { restaurantId, restaurantName } = useLocalSearchParams<{
+    restaurantId: string;
+    restaurantName?: string;
+  }>();
+  const { user } = useAuth();
+
+  const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
+  const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const canSubmit = selectedReason !== null && description.trim().length > 0;
+
+  // Scroll al TextInput quando la tastiera si apre (event-driven, cross-platform)
+  useEffect(() => {
+    const event = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const sub = Keyboard.addListener(event, () => {
+      if (isDescriptionFocused.current) {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!restaurantId || !user || !selectedReason || !description.trim()) return;
+    Keyboard.dismiss();
+
+    setIsSubmitting(true);
+    const report = await RestaurantService.addReport(
+      restaurantId,
+      { reason: selectedReason, description: description.trim() },
+      user.uid,
+      user.displayName ?? 'Anonimo',
+    );
+    setIsSubmitting(false);
+
+    if (report) {
+      Alert.alert(
+        'Grazie!',
+        'La tua segnalazione è stata inviata. La esamineremo il prima possibile.',
+        [{ text: 'OK', onPress: () => router.back() }],
+      );
+    } else {
+      Alert.alert('Errore', 'Non è stato possibile inviare la segnalazione. Riprova.');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Segnala un problema</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Info ristorante */}
+        {restaurantName && (
+          <View style={styles.restaurantInfo}>
+            <MaterialCommunityIcons name="store" size={20} color={theme.colors.primary} />
+            <Text style={styles.restaurantName} numberOfLines={1}>{restaurantName}</Text>
+          </View>
+        )}
+
+        <View style={styles.separator} />
+
+        {/* Motivi */}
+        <Text style={styles.sectionTitle}>Motivo della segnalazione</Text>
+        <View style={styles.reasonList}>
+          {REPORT_REASONS.map(reason => {
+            const isActive = selectedReason === reason.id;
+            return (
+              <TouchableOpacity
+                key={reason.id}
+                style={[styles.reasonChip, isActive && styles.reasonChipActive]}
+                onPress={() => setSelectedReason(reason.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.reasonIcon}>{reason.icon}</Text>
+                <Text style={[styles.reasonText, isActive && styles.reasonTextActive]}>
+                  {reason.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <View style={styles.separator} />
+
+        {/* Descrizione */}
+        <Text style={styles.sectionTitle}>Descrizione</Text>
+        <TextInput
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Descrivi il problema in dettaglio..."
+          multiline
+          maxLength={500}
+          mode="outlined"
+          style={styles.textInput}
+          outlineStyle={styles.textInputOutline}
+          onFocus={() => { isDescriptionFocused.current = true; }}
+          onBlur={() => { isDescriptionFocused.current = false; }}
+        />
+        <Text style={styles.charCount}>{description.length}/500</Text>
+
+        {/* Bottone submit */}
+        <TouchableOpacity
+          style={[styles.submitButton, (!canSubmit || isSubmitting) && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={isSubmitting || !canSubmit}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.submitText}>
+            {isSubmitting ? 'Invio in corso...' : 'Invia segnalazione'}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
+    backgroundColor: theme.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginHorizontal: 8,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  restaurantInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  restaurantName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    flex: 1,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: 24,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    marginBottom: 14,
+  },
+  reasonList: {
+    gap: 8,
+  },
+  reasonChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  reasonChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  reasonIcon: {
+    fontSize: 18,
+  },
+  reasonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: theme.colors.textPrimary,
+  },
+  reasonTextActive: {
+    color: '#FFFFFF',
+  },
+  textInput: {
+    backgroundColor: '#FFFFFF',
+    fontSize: 14,
+    minHeight: 120,
+  },
+  textInputOutline: {
+    borderRadius: 12,
+    borderColor: theme.colors.border,
+  },
+  charCount: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  submitButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 16,
+    borderRadius: 14,
+    marginTop: 32,
+  },
+  submitButtonDisabled: {
+    opacity: 0.4,
+  },
+  submitText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+});

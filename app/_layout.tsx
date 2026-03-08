@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
+import { AuthProvider } from '../contexts/AuthContext';
 import { Analytics } from '../services/analytics';
 import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
@@ -127,7 +128,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
         <AppProvider>
-          <AppContent />
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
         </AppProvider>
       </PaperProvider>
     </SafeAreaProvider>

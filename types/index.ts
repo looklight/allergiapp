@@ -37,6 +37,35 @@ export type AllergenId =
   | 'mollusks'
   | 'fava_beans';
 
+export type RestaurantCategoryId =
+  | 'gluten_free'
+  | 'vegan'
+  | 'vegetarian'
+  | 'pizza'
+  | 'italian'
+  | 'japanese'
+  | 'chinese'
+  | 'mexican'
+  | 'indian'
+  | 'thai'
+  | 'korean'
+  | 'mediterranean'
+  | 'hamburger'
+  | 'greek'
+  | 'turkish'
+  | 'arabic'
+  | 'french'
+  | 'spanish'
+  | 'brazilian'
+  | 'peruvian'
+  | 'sushi';
+
+export interface RestaurantCategory {
+  id: RestaurantCategoryId;
+  icon: string;
+  translations: Record<Language, string>;
+}
+
 export type Language =
   | 'it'  // Italiano
   | 'en'  // English
