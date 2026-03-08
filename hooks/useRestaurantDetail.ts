@@ -6,6 +6,7 @@ import { RestaurantService } from '../services/restaurantService';
 import { useAuth } from '../contexts/AuthContext';
 import { useDishLikes } from './useDishLikes';
 import type { Restaurant, Dish, Review, Contribution, ContributionDish, MenuPhoto, RestaurantReport } from '../types/restaurants';
+import type { DietaryNeeds } from '../types';
 
 export interface UnifiedContribution {
   key: string;
@@ -16,12 +17,12 @@ export interface UnifiedContribution {
   dishes: ContributionDish[];
   createdAt: Date;
   imageUrl?: string;
+  userDietaryNeeds?: DietaryNeeds;
 }
 
 export interface AggregatedDish {
   name: string;
   description?: string;
-  allergenSafe: Set<string>;
   imageUrl?: string;
   thumbnailUrl?: string;
   totalLikes: number;
@@ -95,6 +96,7 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
         text: c.text,
         dishes: c.dishes,
         createdAt: c.createdAt.toDate(),
+        userDietaryNeeds: c.userDietaryNeeds,
       });
     }
 
@@ -118,8 +120,6 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
         dishes: [{
           name: d.name,
           description: d.description,
-          allergenSafe: d.allergenSafe,
-          allergenContains: d.allergenContains,
         }],
         createdAt: d.addedAt.toDate(),
       });
@@ -147,7 +147,6 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
         }
 
         if (existing) {
-          d.allergenSafe.forEach(a => existing.allergenSafe.add(a));
           if (!existing.imageUrl && d.imageUrl) {
             existing.imageUrl = d.imageUrl;
             existing.thumbnailUrl = d.thumbnailUrl;
@@ -163,7 +162,6 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
           map.set(normalized, {
             name: d.name,
             description: d.description,
-            allergenSafe: new Set(d.allergenSafe),
             imageUrl: d.imageUrl,
             thumbnailUrl: d.thumbnailUrl,
             totalLikes: likers.length,

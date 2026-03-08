@@ -3,8 +3,9 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
+import { ALLERGENS } from '../../constants/allergens';
+import { DIETS } from '../../constants/diets';
 import StarRating from '../StarRating';
-import AllergenBadges from '../AllergenBadges';
 import type { UnifiedContribution } from '../../hooks/useRestaurantDetail';
 
 interface ContributionCardProps {
@@ -62,6 +63,20 @@ export default function ContributionCard({
         <Text style={styles.contributionText}>{item.text}</Text>
       )}
 
+      {/* Esigenze alimentari dell'autore */}
+      {item.userDietaryNeeds && (item.userDietaryNeeds.allergens.length > 0 || item.userDietaryNeeds.diets.length > 0) && (
+        <View style={styles.dietaryBadges}>
+          {item.userDietaryNeeds.diets.map(dId => {
+            const diet = DIETS.find(x => x.id === dId);
+            return diet ? <Text key={dId} style={styles.dietaryBadgeIcon}>{diet.icon}</Text> : null;
+          })}
+          {item.userDietaryNeeds.allergens.map(aId => {
+            const allergen = ALLERGENS.find(x => x.id === aId);
+            return allergen ? <Text key={aId} style={styles.dietaryBadgeIcon}>{allergen.icon}</Text> : null;
+          })}
+        </View>
+      )}
+
       {/* Foto legacy review */}
       {item.imageUrl && (
         <TouchableOpacity onPress={() => onImagePress(item.imageUrl!)}>
@@ -96,7 +111,7 @@ export default function ContributionCard({
                     <Text style={styles.dishDescription}>{d.description}</Text>
                   )}
                   <View style={styles.dishBottomRow}>
-                    <AllergenBadges allergenIds={d.allergenSafe} />
+                    <View />
                     {isContribution && (
                       <TouchableOpacity
                         style={styles.dishLikeBtn}
@@ -238,5 +253,14 @@ const styles = StyleSheet.create({
   },
   dishLikeCountPrimary: {
     color: theme.colors.primary,
+  },
+  dietaryBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+    marginTop: 2,
+  },
+  dietaryBadgeIcon: {
+    fontSize: 14,
   },
 });

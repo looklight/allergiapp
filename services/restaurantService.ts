@@ -24,6 +24,7 @@ import type {
   CreateContributionInput,
   CreateReportInput,
 } from '../types/restaurants';
+import type { DietaryNeeds } from '../types';
 
 // ─── Costanti collezioni ────────────────────────────────────────────────────
 
@@ -83,8 +84,6 @@ async function uploadAndMapDishes(
       return {
         name: dish.name,
         ...(dish.description && { description: dish.description }),
-        allergenSafe: dish.allergenSafe ?? [],
-        ...(dish.allergenContains && dish.allergenContains.length > 0 && { allergenContains: dish.allergenContains }),
         ...(imageUrl && { imageUrl }),
         ...(thumbnailUrl && { thumbnailUrl }),
       };
@@ -394,8 +393,9 @@ async function addContribution(params: {
   input: CreateContributionInput;
   userId: string;
   displayName: string;
+  userDietaryNeeds?: DietaryNeeds;
 }): Promise<Contribution | null> {
-  const { restaurantId, input, userId, displayName } = params;
+  const { restaurantId, input, userId, displayName, userDietaryNeeds } = params;
   try {
     const contribRef = doc(collection(db, RESTAURANTS, restaurantId, CONTRIBUTIONS));
     const dishes = await uploadAndMapDishes(input.dishes, restaurantId, contribRef.id);
@@ -409,6 +409,7 @@ async function addContribution(params: {
       ...(input.text && { text: input.text }),
       dishes,
       ...(confirmedCategories.length > 0 && { confirmedCategories }),
+      ...(userDietaryNeeds && { userDietaryNeeds }),
       createdAt: Timestamp.now(),
       status: 'active',
     };
@@ -453,8 +454,9 @@ async function updateContribution(params: {
   userId: string;
   displayName: string;
   oldContribution: Contribution;
+  userDietaryNeeds?: DietaryNeeds;
 }): Promise<Contribution | null> {
-  const { restaurantId, contributionId, input, userId, displayName, oldContribution } = params;
+  const { restaurantId, contributionId, input, userId, displayName, oldContribution, userDietaryNeeds } = params;
   try {
     const contribRef = doc(db, RESTAURANTS, restaurantId, CONTRIBUTIONS, contributionId);
     const oldDishes = oldContribution.dishes;
@@ -486,6 +488,7 @@ async function updateContribution(params: {
       ...(input.text && { text: input.text }),
       dishes,
       ...(newConfirmedCategories.length > 0 && { confirmedCategories: newConfirmedCategories }),
+      ...(userDietaryNeeds && { userDietaryNeeds }),
       createdAt: oldContribution.createdAt,
       updatedAt: now,
       status: 'active',

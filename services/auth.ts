@@ -14,18 +14,22 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import type { RestaurantUserProfile } from '../types/restaurants';
+import type { DietaryNeeds } from '../types';
 
 async function createUserProfile(user: User, displayName: string): Promise<void> {
-  const profile: Omit<RestaurantUserProfile, 'uid'> = {
+  const profile: Record<string, unknown> = {
     displayName,
     email: user.email ?? '',
-    photoURL: user.photoURL ?? undefined,
     createdAt: Timestamp.now(),
     restaurantsAdded: 0,
     dishesAdded: 0,
     reviewsAdded: 0,
     contributionsAdded: 0,
   };
+  // Firestore non accetta undefined — aggiungi photoURL solo se presente
+  if (user.photoURL) {
+    profile.photoURL = user.photoURL;
+  }
   await setDoc(doc(db, 'users', user.uid), profile);
 }
 
@@ -119,6 +123,16 @@ async function deleteAccount(userId: string): Promise<void> {
   }
 }
 
+async function updateDietaryNeeds(userId: string, dietaryNeeds: DietaryNeeds): Promise<void> {
+  // Verifica se è il primo salvataggio (per consenso GDPR dati sanitari)
+  const profile = await getUserProfile(userId);
+  const updateData: Record<string, unknown> = { dietaryNeeds };
+  if (!profile?.healthDataConsentAt) {
+    updateData.healthDataConsentAt = Timestamp.now();
+  }
+  await updateDoc(doc(db, 'users', userId), updateData);
+}
+
 async function sendPasswordReset(email: string): Promise<void> {
   await firebaseSendPasswordReset(auth, email);
 }
@@ -135,5 +149,6 @@ export const AuthService = {
   updateDisplayName,
   deleteAccount,
   sendPasswordReset,
+  updateDietaryNeeds,
   isAvailable: () => true,
 };

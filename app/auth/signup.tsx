@@ -29,8 +29,9 @@ export default function SignupScreen() {
     setIsLoading(true);
     try {
       await AuthService.signUp(email.trim(), password, displayName.trim());
-      router.back();
+      router.push('/auth/onboarding-dietary');
     } catch (error: any) {
+      console.warn('[Signup] Errore registrazione:', error.code, error.message);
       const message =
         error.code === 'auth/email-already-in-use'
           ? 'Questa email è già registrata. Prova ad accedere.'
@@ -38,7 +39,9 @@ export default function SignupScreen() {
           ? 'Email non valida.'
           : error.code === 'auth/weak-password'
           ? 'Password troppo debole. Usa almeno 6 caratteri.'
-          : 'Si è verificato un errore. Riprova.';
+          : error.code === 'auth/network-request-failed'
+          ? 'Errore di rete. Controlla la connessione.'
+          : `Si è verificato un errore (${error.code ?? 'unknown'}). Riprova.`;
       Alert.alert('Errore', message);
     } finally {
       setIsLoading(false);

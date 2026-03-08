@@ -2,18 +2,23 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import type { User } from 'firebase/auth';
 import { AuthService } from '../services/auth';
 import type { RestaurantUserProfile } from '../types/restaurants';
+import type { DietaryNeeds } from '../types';
 
 interface AuthContextValue {
   user: User | null;
   userProfile: RestaurantUserProfile | null;
+  dietaryNeeds: DietaryNeeds;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshProfile: () => Promise<void>;
 }
 
+const EMPTY_DIETARY_NEEDS: DietaryNeeds = { allergens: [], diets: [] };
+
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   userProfile: null,
+  dietaryNeeds: EMPTY_DIETARY_NEEDS,
   isLoading: true,
   isAuthenticated: false,
   refreshProfile: async () => {},
@@ -56,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user,
       userProfile,
+      dietaryNeeds: userProfile?.dietaryNeeds ?? EMPTY_DIETARY_NEEDS,
       isLoading,
       isAuthenticated: !!user,
       refreshProfile,

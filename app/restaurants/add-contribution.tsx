@@ -6,30 +6,24 @@ import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../../constants/theme';
-import { ALLERGENS } from '../../constants/allergens';
 import { RESTAURANT_CATEGORIES, CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../../components/StarRating';
-import AllergenBadges from '../../components/AllergenBadges';
 import ChipGrid from '../../components/ChipGrid';
-import type { AllergenId, AppLanguage, RestaurantCategoryId } from '../../types';
+import type { AppLanguage, RestaurantCategoryId } from '../../types';
 import type { Contribution } from '../../types/restaurants';
 import i18n from '../../utils/i18n';
 
 interface DishForm {
   name: string;
   description: string;
-  allergenSafe: AllergenId[];
-  allergenContains: AllergenId[];
   imageUri: string | null;
 }
 
 const emptyDish = (): DishForm => ({
   name: '',
   description: '',
-  allergenSafe: [],
-  allergenContains: [],
   imageUri: null,
 });
 
@@ -47,7 +41,7 @@ export default function AddContributionScreen() {
   }>();
   const ratingNum = parseFloat(restaurantRating ?? '0');
   const ratingCountNum = parseInt(restaurantRatingCount ?? '0', 10);
-  const { user } = useAuth();
+  const { user, dietaryNeeds } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
   const initialRating = (parseInt(prefillRating ?? '0', 10) || 0) as 0 | 1 | 2 | 3 | 4 | 5;
@@ -56,7 +50,6 @@ export default function AddContributionScreen() {
   const [dishes, setDishes] = useState<DishForm[]>([]);
   // Quale piatto è in editing (-1 = nessuno)
   const [editingDish, setEditingDish] = useState(-1);
-  const [showAllergens, setShowAllergens] = useState(false);
   const [confirmedCategories, setConfirmedCategories] = useState<RestaurantCategoryId[]>([]);
   const [showCuisine, setShowCuisine] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,8 +70,6 @@ export default function AddContributionScreen() {
         setDishes(c.dishes.map(d => ({
           name: d.name,
           description: d.description ?? '',
-          allergenSafe: d.allergenSafe ?? [],
-          allergenContains: d.allergenContains ?? [],
           imageUri: d.imageUrl ?? null,
         })));
         setConfirmedCategories(c.confirmedCategories ?? []);
@@ -93,7 +84,6 @@ export default function AddContributionScreen() {
     const newIndex = dishes.length;
     setDishes(prev => [...prev, emptyDish()]);
     setEditingDish(newIndex);
-    setShowAllergens(false);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   };
 
@@ -109,27 +99,14 @@ export default function AddContributionScreen() {
       return;
     }
     setEditingDish(-1);
-    setShowAllergens(false);
   };
 
   const openEditDish = (index: number) => {
     setEditingDish(index);
-    setShowAllergens(dishes[index].allergenSafe.length > 0);
   };
 
   const updateDish = (index: number, updates: Partial<DishForm>) => {
     setDishes(prev => prev.map((d, i) => i === index ? { ...d, ...updates } : d));
-  };
-
-  const toggleDishAllergenSafe = (dishIndex: number, allergenId: AllergenId) => {
-    setDishes(prev => prev.map((d, i) => {
-      if (i !== dishIndex) return d;
-      const safe = d.allergenSafe.includes(allergenId)
-        ? d.allergenSafe.filter(x => x !== allergenId)
-        : [...d.allergenSafe, allergenId];
-      const contains = d.allergenContains.filter(x => x !== allergenId);
-      return { ...d, allergenSafe: safe, allergenContains: contains };
-    }));
   };
 
   const pickDishImage = async (dishIndex: number) => {
@@ -158,12 +135,14 @@ export default function AddContributionScreen() {
       dishes: validDishes.map(d => ({
         name: d.name.trim(),
         description: d.description.trim() || undefined,
-        allergenSafe: d.allergenSafe,
-        allergenContains: d.allergenContains.length > 0 ? d.allergenContains : undefined,
         imageUri: d.imageUri ?? undefined,
       })),
       ...(confirmedCategories.length > 0 && { confirmedCategories }),
     };
+
+    // Snapshot delle esigenze alimentari dell'utente al momento del contributo
+    const needsSnapshot = (dietaryNeeds.allergens.length > 0 || dietaryNeeds.diets.length > 0)
+      ? dietaryNeeds : undefined;
 
     let contribution;
     if (isEditMode && contributionId && existingContribution) {
@@ -174,6 +153,7 @@ export default function AddContributionScreen() {
         userId: user.uid,
         displayName: user.displayName ?? 'Anonimo',
         oldContribution: existingContribution,
+        userDietaryNeeds: needsSnapshot,
       });
     } else {
       contribution = await RestaurantService.addContribution({
@@ -181,6 +161,7 @@ export default function AddContributionScreen() {
         input: inputData,
         userId: user.uid,
         displayName: user.displayName ?? 'Anonimo',
+        userDietaryNeeds: needsSnapshot,
       });
     }
     setIsSubmitting(false);
@@ -212,7 +193,6 @@ export default function AddContributionScreen() {
             {dish.description.length > 0 && (
               <Text style={styles.dishSummaryDesc} numberOfLines={1}>{dish.description}</Text>
             )}
-            <AllergenBadges allergenIds={dish.allergenSafe} size={14} />
           </View>
         </View>
         <View style={styles.dishSummaryActions}>
@@ -265,29 +245,6 @@ export default function AddContributionScreen() {
         multiline
         placeholder="Es. Preparato senza burro..."
       />
-
-      {/* Allergeni — collassabile */}
-      {showAllergens ? (
-        <>
-          <View style={styles.allergenRow}>
-            <MaterialCommunityIcons name="shield-check-outline" size={16} color={theme.colors.primary} />
-            <Text style={styles.allergenLabel}>Sicuro per</Text>
-          </View>
-          <ChipGrid
-            items={ALLERGENS}
-            activeIds={dish.allergenSafe}
-            onToggle={(id) => toggleDishAllergenSafe(index, id as AllergenId)}
-            lang={lang}
-            keyPrefix={`safe-${index}`}
-          />
-        </>
-      ) : (
-        <TouchableOpacity style={styles.expandLink} onPress={() => setShowAllergens(true)} hitSlop={8}>
-          <MaterialCommunityIcons name="shield-check-outline" size={16} color={theme.colors.textSecondary} />
-          <Text style={styles.expandLinkText}>Seleziona allergeni</Text>
-          <MaterialCommunityIcons name="chevron-down" size={16} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-      )}
 
       {/* Conferma piatto */}
       <TouchableOpacity style={styles.confirmDishButton} onPress={() => confirmDish(index)} activeOpacity={0.6}>
@@ -592,10 +549,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 1,
   },
-  dishSummaryAllergens: {
-    fontSize: 14,
-    marginTop: 2,
-  },
   dishSummaryActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -648,17 +601,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 12,
   },
-  // Allergeni
-  allergenRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  allergenLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
   altroToggle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -670,16 +612,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: theme.colors.primary,
-  },
-  expandLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-  },
-  expandLinkText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
   },
   // Conferma piatto
   confirmDishButton: {

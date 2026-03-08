@@ -37,6 +37,15 @@ export type AllergenId =
   | 'mollusks'
   | 'fava_beans';
 
+// Diete e intolleranze per il profilo utente ristoranti
+// TODO merge: valutare se unificare con DietModeId della sezione card
+export type DietId = 'vegetarian' | 'vegan' | 'histamine' | 'nickel' | 'diabetes';
+
+export interface DietaryNeeds {
+  allergens: AllergenId[];
+  diets: DietId[];
+}
+
 export type RestaurantCategoryId =
   | 'gluten_free'
   | 'vegan'

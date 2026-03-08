@@ -1,5 +1,5 @@
 import type { Timestamp } from 'firebase/firestore';
-import type { AllergenId, RestaurantCategoryId } from './index';
+import type { AllergenId, DietaryNeeds, RestaurantCategoryId } from './index';
 
 export type { Timestamp };
 
@@ -23,7 +23,6 @@ export type ContentStatus = 'pending' | 'active' | 'removed';
 // users/{userId}
 //
 // Profilo utente registrato. Creato al primo login con Firebase Auth.
-// Le allergie personali NON sono qui: restano in AsyncStorage locale.
 // ---------------------------------------------------------------------------
 export interface RestaurantUserProfile {
   uid: string;
@@ -38,6 +37,10 @@ export interface RestaurantUserProfile {
   contributionsAdded: number;
   avatarId?: string;
   profileColor?: string;
+  // Esigenze alimentari (allergeni + diete)
+  dietaryNeeds?: DietaryNeeds;
+  // Timestamp consenso GDPR per dati sanitari
+  healthDataConsentAt?: Timestamp;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,20 +113,11 @@ export interface Restaurant {
 
 // ---------------------------------------------------------------------------
 // restaurants/{restaurantId}/dishes/{dishId}
-//
-// Piatto specifico con informazioni sugli allergeni.
-// allergenSafe:     questo piatto è sicuro per chi ha queste allergie
-// allergenContains: questo piatto contiene esplicitamente questi allergeni
-//                   (campo opzionale per maggiore precisione)
 // ---------------------------------------------------------------------------
 export interface Dish {
   id: string;
   name: string;
   description?: string;
-
-  // Allergie — specifico AllergiApp
-  allergenSafe: AllergenId[];
-  allergenContains?: AllergenId[];
 
   // Metadati
   addedBy: string;                // userId
@@ -207,10 +201,7 @@ export type CreateRestaurantInput = Pick<
 >;
 
 // Input per creare un nuovo piatto
-export type CreateDishInput = Pick<
-  Dish,
-  'name' | 'description' | 'allergenSafe' | 'allergenContains'
->;
+export type CreateDishInput = Pick<Dish, 'name' | 'description'>;
 
 // Input per creare una nuova recensione
 export type CreateReviewInput = Pick<Review, 'text' | 'rating'> & {
@@ -227,8 +218,6 @@ export type CreateReviewInput = Pick<Review, 'text' | 'rating'> & {
 export interface ContributionDish {
   name: string;
   description?: string;
-  allergenSafe: AllergenId[];
-  allergenContains?: AllergenId[];
   imageUrl?: string;              // full size
   thumbnailUrl?: string;          // 150px thumbnail
 }
@@ -244,6 +233,8 @@ export interface Contribution {
   dishes: ContributionDish[];
   // Categorie dietetiche confermate dall'utente
   confirmedCategories?: RestaurantCategoryId[];
+  // Snapshot delle esigenze alimentari dell'autore al momento del contributo
+  userDietaryNeeds?: DietaryNeeds;
   createdAt: Timestamp;
   updatedAt?: Timestamp;
   status: ContentStatus;
@@ -291,8 +282,6 @@ export type CreateContributionInput = {
   dishes: {
     name: string;
     description?: string;
-    allergenSafe: AllergenId[];
-    allergenContains?: AllergenId[];
     imageUri?: string;            // URI locale, upload nel service
   }[];
   confirmedCategories?: RestaurantCategoryId[];

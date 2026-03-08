@@ -3,7 +3,6 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-nat
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import AllergenBadges from '../AllergenBadges';
 import type { AggregatedDish } from '../../hooks/useRestaurantDetail';
 
 interface DishesSectionProps {
@@ -67,7 +66,6 @@ export default function DishesSection({ aggregatedDishes, userId, onDishPress, o
         )}
         <View style={styles.dishGridInfo}>
           <Text style={styles.dishGridName} numberOfLines={2}>{dish.name}</Text>
-          <AllergenBadges allergenIds={dish.allergenSafe} />
           <View style={styles.dishGridFooter}>
             {dish.count > 1 && <Text style={styles.dishGridHint}>×{dish.count}</Text>}
             {renderLikeButton(dish, isLiked)}
@@ -131,7 +129,6 @@ export default function DishesSection({ aggregatedDishes, userId, onDishPress, o
                     {dish.description && (
                       <Text style={styles.dishGridDescription} numberOfLines={2}>{dish.description}</Text>
                     )}
-                    <AllergenBadges allergenIds={dish.allergenSafe} />
                     <View style={styles.dishGridFooter}>
                       {dish.count > 1 && <Text style={styles.dishGridHint}>Segnalato {dish.count} volte</Text>}
                       {renderLikeButton(dish, isLiked)}

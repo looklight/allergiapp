@@ -1,0 +1,117 @@
+// Diete e intolleranze per la sezione ristoranti.
+// TODO merge: valutare se unificare con dietModes.ts della sezione card
+import type { DietId, Language } from '../types';
+
+export interface DietInfo {
+  id: DietId;
+  icon: string;
+  translations: Record<Language, string>;
+}
+
+export const DIETS: readonly DietInfo[] = [
+  {
+    id: 'vegetarian',
+    icon: '🥬',
+    translations: {
+      it: 'Vegetariano',
+      en: 'Vegetarian',
+      fr: 'Végétarien',
+      de: 'Vegetarisch',
+      es: 'Vegetariano',
+      pt: 'Vegetariano',
+      nl: 'Vegetarisch',
+      pl: 'Wegetariański',
+      ru: 'Вегетарианец',
+      sv: 'Vegetarian',
+      zh: '素食',
+      ja: 'ベジタリアン',
+      ko: '채식주의',
+      th: 'มังสวิรัติ',
+      ar: 'نباتي',
+    },
+  },
+  {
+    id: 'vegan',
+    icon: '🌱',
+    translations: {
+      it: 'Vegano',
+      en: 'Vegan',
+      fr: 'Végétalien',
+      de: 'Vegan',
+      es: 'Vegano',
+      pt: 'Vegano',
+      nl: 'Veganistisch',
+      pl: 'Wegański',
+      ru: 'Веган',
+      sv: 'Vegan',
+      zh: '纯素',
+      ja: 'ヴィーガン',
+      ko: '비건',
+      th: 'วีแกน',
+      ar: 'نباتي صرف',
+    },
+  },
+  {
+    id: 'histamine',
+    icon: '🧪',
+    translations: {
+      it: 'Intolleranza istamina',
+      en: 'Histamine intolerance',
+      fr: 'Intolérance à l\'histamine',
+      de: 'Histaminintoleranz',
+      es: 'Intolerancia a la histamina',
+      pt: 'Intolerância à histamina',
+      nl: 'Histamine-intolerantie',
+      pl: 'Nietolerancja histaminy',
+      ru: 'Непереносимость гистамина',
+      sv: 'Histaminintolerans',
+      zh: '组胺不耐受',
+      ja: 'ヒスタミン不耐症',
+      ko: '히스타민 불내증',
+      th: 'แพ้ฮิสตามีน',
+      ar: 'عدم تحمل الهيستامين',
+    },
+  },
+  {
+    id: 'nickel',
+    icon: '🪙',
+    translations: {
+      it: 'Allergia al nichel',
+      en: 'Nickel allergy',
+      fr: 'Allergie au nickel',
+      de: 'Nickelallergie',
+      es: 'Alergia al níquel',
+      pt: 'Alergia ao níquel',
+      nl: 'Nikkelallergie',
+      pl: 'Alergia na nikiel',
+      ru: 'Аллергия на никель',
+      sv: 'Nickelallergi',
+      zh: '镍过敏',
+      ja: 'ニッケルアレルギー',
+      ko: '니켈 알레르기',
+      th: 'แพ้นิกเกิล',
+      ar: 'حساسية النيكل',
+    },
+  },
+  {
+    id: 'diabetes',
+    icon: '🩸',
+    translations: {
+      it: 'Diabete',
+      en: 'Diabetes',
+      fr: 'Diabète',
+      de: 'Diabetes',
+      es: 'Diabetes',
+      pt: 'Diabetes',
+      nl: 'Diabetes',
+      pl: 'Cukrzyca',
+      ru: 'Диабет',
+      sv: 'Diabetes',
+      zh: '糖尿病',
+      ja: '糖尿病',
+      ko: '당뇨병',
+      th: 'เบาหวาน',
+      ar: 'السكري',
+    },
+  },
+];
