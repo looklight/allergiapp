@@ -1,22 +1,22 @@
 import * as Crypto from 'expo-crypto';
 import { supabase } from './supabase';
-import { StorageService } from './storageService';
+import { StorageService, type UploadResult } from './storageService';
 import { isRemoteUrl } from '../utils/url';
-import type { DietaryNeeds } from '../types';
+
 
 // ─── Costanti ────────────────────────────────────────────────────────────────
 
-const QUERY_LIMITS = {
+const QUERY_LIMITS: Record<string, number> = {
   ALL_RESTAURANTS: 200,
   NEARBY_DEFAULT: 50,
   USER_REVIEWS: 20,
-} as const;
+};
 
-const DEFAULTS = {
+const DEFAULTS: Record<string, number> = {
   NEARBY_RADIUS_KM: 5,
   ALLERGEN_RADIUS_KM: 10,
   MIN_RATING: 1,
-} as const;
+};
 
 /** PostgreSQL UNIQUE constraint violation */
 const PG_UNIQUE_VIOLATION = '23505';
@@ -32,7 +32,7 @@ export interface Restaurant {
   location: { latitude: number; longitude: number } | null;
   phone: string | null;
   website: string | null;
-  cuisine_type: string | null;
+  cuisine_types: string[];
   price_range: number | null;
   photo_urls: string[];
   added_by: string | null;
@@ -50,13 +50,9 @@ export interface Restaurant {
   matching_reviews?: number;
 }
 
-export interface ReviewDish {
-  id: string;
-  review_id: string;
-  name: string;
-  description: string | null;
-  photo_url: string | null;
-  thumbnail_url: string | null;
+export interface ReviewPhoto {
+  url: string;
+  thumbnailUrl: string;
 }
 
 export interface Review {
@@ -67,10 +63,10 @@ export interface Review {
   comment: string | null;
   allergens_snapshot: string[];
   dietary_snapshot: string[];
+  photos: ReviewPhoto[];
+  language: string | null;
   created_at: string;
   updated_at: string;
-  // Join
-  dishes?: ReviewDish[];
   // Dal profilo utente (join)
   user_display_name?: string;
 }
@@ -93,13 +89,6 @@ export interface MenuPhoto {
   created_at: string;
 }
 
-export interface DishLike {
-  id: string;
-  review_dish_id: string;
-  user_id: string;
-  created_at: string;
-}
-
 export interface Report {
   id: string;
   restaurant_id: string | null;
@@ -109,6 +98,12 @@ export interface Report {
   details: string | null;
   status: string;
   created_at: string;
+}
+
+export interface CuisineVote {
+  cuisine_id: string;
+  vote_count: number;
+  user_voted: boolean;
 }
 
 export type SortBy = 'recent' | 'rating' | 'distance';
@@ -122,7 +117,7 @@ export interface CreateRestaurantInput {
   longitude: number;
   phone?: string;
   website?: string;
-  cuisine_type?: string;
+  cuisine_types?: string[];
   price_range?: number;
   google_place_id?: string;
 }
@@ -130,11 +125,7 @@ export interface CreateRestaurantInput {
 export interface CreateReviewInput {
   rating: number;
   comment?: string;
-  dishes: {
-    name: string;
-    description?: string;
-    imageUri?: string;
-  }[];
+  photos: string[]; // URI locali delle foto
 }
 
 export interface CreateReportInput {
@@ -312,7 +303,6 @@ async function addRestaurant(
         location: `POINT(${lng} ${lat})`,
         phone: input.phone ?? null,
         website: input.website ?? null,
-        cuisine_type: input.cuisine_type ?? null,
         price_range: input.price_range ?? null,
         google_place_id: input.google_place_id ?? null,
         added_by: userId,
@@ -320,6 +310,12 @@ async function addRestaurant(
       .select()
       .single();
     if (error) throw error;
+
+    // Inserisci voti iniziali del creatore per i tag scelti
+    if (input.cuisine_types?.length) {
+      await voteCuisines(data.id, userId, input.cuisine_types);
+    }
+
     return mapRestaurant(data);
   } catch (error) {
     console.warn('[RestaurantService] Errore addRestaurant:', error);
@@ -362,11 +358,23 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
       .eq('restaurant_id', restaurantId);
     if ((count ?? 0) > 0) return false;
 
+    // Cleanup Storage delle menu_photos prima della CASCADE
+    const { data: menuPhotos } = await supabase
+      .from('menu_photos')
+      .select('image_url, thumbnail_url')
+      .eq('restaurant_id', restaurantId);
+
     const { error } = await supabase
       .from('restaurants')
       .delete()
       .eq('id', restaurantId);
     if (error) throw error;
+
+    // Best-effort: elimina file dallo storage dopo la CASCADE
+    for (const mp of menuPhotos ?? []) {
+      StorageService.deleteImageWithThumbnail(mp.image_url, mp.thumbnail_url).catch(() => {});
+    }
+
     return true;
   } catch (error) {
     console.warn('[RestaurantService] Errore removeOwnRestaurant:', error);
@@ -382,7 +390,6 @@ async function getReviews(restaurantId: string): Promise<Review[]> {
       .from('reviews')
       .select(`
         *,
-        dishes:review_dishes(*),
         profile:profiles!user_id(display_name)
       `)
       .eq('restaurant_id', restaurantId)
@@ -390,8 +397,8 @@ async function getReviews(restaurantId: string): Promise<Review[]> {
     if (error) throw error;
     return (data ?? []).map((r: any) => ({
       ...r,
+      photos: r.photos ?? [],
       user_display_name: r.profile?.display_name ?? null,
-      dishes: r.dishes ?? [],
     }));
   } catch (error) {
     console.warn('[RestaurantService] Errore getReviews:', error);
@@ -403,7 +410,7 @@ async function getUserReview(restaurantId: string, userId: string): Promise<Revi
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .select('*, dishes:review_dishes(*)')
+      .select('*')
       .eq('restaurant_id', restaurantId)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -423,7 +430,6 @@ async function getReviewsByUser(userId: string): Promise<(Review & { restaurant_
       .from('reviews')
       .select(`
         *,
-        dishes:review_dishes(*),
         restaurant:restaurants!restaurant_id(name)
       `)
       .eq('user_id', userId)
@@ -433,7 +439,6 @@ async function getReviewsByUser(userId: string): Promise<(Review & { restaurant_
     return (data ?? []).map((r: any) => ({
       ...r,
       restaurant_name: r.restaurant?.name ?? null,
-      dishes: r.dishes ?? [],
     }));
   } catch (error) {
     console.warn('[RestaurantService] Errore getReviewsByUser:', error);
@@ -441,42 +446,38 @@ async function getReviewsByUser(userId: string): Promise<(Review & { restaurant_
   }
 }
 
-async function uploadDishPhotos(
-  dishes: CreateReviewInput['dishes'],
-  restaurantId: string,
-  reviewId: string,
-): Promise<{ name: string; description: string | null; photo_url: string | null; thumbnail_url: string | null }[]> {
-  return Promise.all(
-    dishes.map(async (dish, index) => {
-      let photoUrl: string | null = null;
-      let thumbnailUrl: string | null = null;
-      if (dish.imageUri && !isRemoteUrl(dish.imageUri)) {
-        const result = await StorageService.uploadDishImage(restaurantId, reviewId, index, dish.imageUri);
-        photoUrl = result.imageUrl;
-        thumbnailUrl = result.thumbnailUrl;
-      } else if (dish.imageUri) {
-        photoUrl = dish.imageUri;
-      }
-      return { name: dish.name, description: dish.description ?? null, photo_url: photoUrl, thumbnail_url: thumbnailUrl };
-    })
-  );
-}
-
 async function addReview(params: {
   restaurantId: string;
   input: CreateReviewInput;
   userId: string;
-  userDietaryNeeds?: DietaryNeeds;
+  userDietaryNeeds?: { allergens: string[]; diets: string[] };
+  language?: string;
 }): Promise<Review | null> {
-  const { restaurantId, input, userId, userDietaryNeeds } = params;
+  const { restaurantId, input, userId, userDietaryNeeds, language } = params;
   try {
-    // 1. Pre-genera UUID: usato sia come path Storage che come ID review nel DB
     const generatedId = Crypto.randomUUID();
 
-    // 2. Upload foto con l'ID definitivo (non più 'tmp')
-    const dishData = await uploadDishPhotos(input.dishes, restaurantId, generatedId);
+    // Upload foto (full + thumbnail) — se uno fallisce, pulisci i riusciti
+    const settled = await Promise.allSettled(
+      input.photos
+        .filter(uri => !!uri)
+        .map((uri, i) => StorageService.uploadReviewPhoto(restaurantId, generatedId, i, uri))
+    );
+    const hasFailed = settled.some(r => r.status === 'rejected');
+    if (hasFailed) {
+      for (const r of settled) {
+        if (r.status === 'fulfilled') {
+          StorageService.deleteByUrl(r.value.imageUrl).catch(() => {});
+          StorageService.deleteByUrl(r.value.thumbnailUrl).catch(() => {});
+        }
+      }
+      throw new Error('Upload foto fallito');
+    }
+    const photos: ReviewPhoto[] = (settled as PromiseFulfilledResult<UploadResult>[]).map(r => ({
+      url: r.value.imageUrl,
+      thumbnailUrl: r.value.thumbnailUrl,
+    }));
 
-    // 3. RPC atomica: insert review con ID pre-generato + insert piatti
     const { data: reviewId, error } = await supabase.rpc('upsert_review', {
       p_restaurant_id: restaurantId,
       p_user_id: userId,
@@ -484,12 +485,19 @@ async function addReview(params: {
       p_comment: input.comment ?? null,
       p_allergens_snapshot: userDietaryNeeds?.allergens ?? [],
       p_dietary_snapshot: userDietaryNeeds?.diets ?? [],
-      p_dishes: dishData,
+      p_photos: photos,
       p_generated_id: generatedId,
+      p_language: language ?? null,
     });
-    if (error) throw error;
+    if (error) {
+      // Cleanup foto orfane (DB insert fallito ma upload riuscito)
+      for (const p of photos) {
+        StorageService.deleteByUrl(p.url).catch(() => {});
+        StorageService.deleteByUrl(p.thumbnailUrl).catch(() => {});
+      }
+      throw error;
+    }
 
-    // 3. Recupera la review completa
     const { data: review } = await supabase
       .from('reviews')
       .select('*')
@@ -508,41 +516,47 @@ async function updateReview(params: {
   restaurantId: string;
   input: CreateReviewInput;
   userId: string;
-  oldDishes?: ReviewDish[];
+  oldPhotos?: ReviewPhoto[];
+  userDietaryNeeds?: { allergens: string[]; diets: string[] };
 }): Promise<Review | null> {
-  const { reviewId, restaurantId, input, userId, oldDishes } = params;
+  const { reviewId, restaurantId, input, userId, oldPhotos, userDietaryNeeds } = params;
   try {
-    // 1. Upload nuove foto (prima di toccare il DB)
-    const dishData = await uploadDishPhotos(input.dishes, restaurantId, reviewId);
+    // Upload nuove foto, mantieni quelle remote esistenti
+    const photos: ReviewPhoto[] = await Promise.all(
+      input.photos.filter(uri => !!uri).map(async (uri, i) => {
+        if (isRemoteUrl(uri)) {
+          // Foto già caricata: cerca il suo thumbnail tra le vecchie
+          const existing = oldPhotos?.find(p => p.url === uri);
+          return existing ?? { url: uri, thumbnailUrl: uri };
+        }
+        const result = await StorageService.uploadReviewPhoto(restaurantId, reviewId, i, uri);
+        return { url: result.imageUrl, thumbnailUrl: result.thumbnailUrl };
+      })
+    );
 
-    // 2. RPC atomica: update review + delete vecchi piatti + insert nuovi in una transaction
     const { data: returnedId, error } = await supabase.rpc('upsert_review', {
       p_restaurant_id: restaurantId,
       p_user_id: userId,
       p_rating: input.rating,
       p_comment: input.comment ?? null,
-      p_dishes: dishData,
+      p_allergens_snapshot: userDietaryNeeds?.allergens ?? [],
+      p_dietary_snapshot: userDietaryNeeds?.diets ?? [],
+      p_photos: photos,
       p_review_id: reviewId,
     });
     if (error) throw error;
 
-    // 3. Cleanup immagini vecchie non piu usate (best-effort, dopo successo)
-    if (oldDishes) {
-      const newUrls = new Set([
-        ...dishData.map(d => d.photo_url).filter(Boolean),
-        ...dishData.map(d => d.thumbnail_url).filter(Boolean),
-      ]);
-      for (const oldDish of oldDishes) {
-        if (oldDish.photo_url && !newUrls.has(oldDish.photo_url)) {
-          StorageService.deleteByUrl(oldDish.photo_url).catch(() => {});
-        }
-        if (oldDish.thumbnail_url && !newUrls.has(oldDish.thumbnail_url)) {
-          StorageService.deleteByUrl(oldDish.thumbnail_url).catch(() => {});
+    // Cleanup foto vecchie non riutilizzate (best-effort)
+    if (oldPhotos) {
+      const newUrls = new Set(photos.map(p => p.url));
+      for (const old of oldPhotos) {
+        if (!newUrls.has(old.url)) {
+          StorageService.deleteByUrl(old.url).catch(() => {});
+          StorageService.deleteByUrl(old.thumbnailUrl).catch(() => {});
         }
       }
     }
 
-    // 4. Recupera la review aggiornata
     const { data: review } = await supabase
       .from('reviews')
       .select('*')
@@ -558,11 +572,12 @@ async function updateReview(params: {
 
 async function deleteReview(reviewId: string, userId: string): Promise<boolean> {
   try {
-    // Recupera i piatti per eliminare le immagini
-    const { data: dishes } = await supabase
-      .from('review_dishes')
-      .select('photo_url, thumbnail_url')
-      .eq('review_id', reviewId);
+    const { data: review } = await supabase
+      .from('reviews')
+      .select('photos')
+      .eq('id', reviewId)
+      .eq('user_id', userId)
+      .single();
 
     const { error } = await supabase
       .from('reviews')
@@ -571,10 +586,10 @@ async function deleteReview(reviewId: string, userId: string): Promise<boolean> 
       .eq('user_id', userId);
     if (error) throw error;
 
-    // Elimina immagini + thumbnail (best-effort)
-    for (const dish of dishes ?? []) {
-      if (dish.photo_url) StorageService.deleteByUrl(dish.photo_url).catch(() => {});
-      if (dish.thumbnail_url) StorageService.deleteByUrl(dish.thumbnail_url).catch(() => {});
+    // Cleanup foto (best-effort)
+    for (const photo of (review?.photos as ReviewPhoto[]) ?? []) {
+      StorageService.deleteByUrl(photo.url).catch(() => {});
+      StorageService.deleteByUrl(photo.thumbnailUrl).catch(() => {});
     }
 
     return true;
@@ -694,7 +709,10 @@ async function addMenuPhoto(
       })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      StorageService.deleteImageWithThumbnail(imageUrl, thumbnailUrl).catch(() => {});
+      throw error;
+    }
     return data;
   } catch (error) {
     console.warn('[RestaurantService] Errore addMenuPhoto:', error);
@@ -730,71 +748,6 @@ async function deleteMenuPhoto(
   } catch (error) {
     console.warn('[RestaurantService] Errore deleteMenuPhoto:', error);
     return false;
-  }
-}
-
-// ─── Dish Likes ─────────────────────────────────────────────────────────────
-
-async function getDishLikes(restaurantId: string): Promise<Map<string, string[]>> {
-  try {
-    // Recupera tutti i like dei piatti di review di questo ristorante
-    // 1. Recupera gli ID dei piatti di questo ristorante
-    const { data: dishes } = await supabase
-      .from('review_dishes')
-      .select('id, review_id!inner(restaurant_id)')
-      .eq('review_id.restaurant_id', restaurantId);
-    const dishIds = (dishes ?? []).map((d: any) => d.id);
-    if (dishIds.length === 0) return new Map();
-
-    // 2. Recupera i like su quei piatti
-    const { data: likes, error } = await supabase
-      .from('dish_likes')
-      .select('review_dish_id, user_id')
-      .in('review_dish_id', dishIds);
-    if (error) throw error;
-
-    const map = new Map<string, string[]>();
-    for (const like of likes ?? []) {
-      const existing = map.get(like.review_dish_id) ?? [];
-      existing.push(like.user_id);
-      map.set(like.review_dish_id, existing);
-    }
-    return map;
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getDishLikes:', error);
-    return new Map();
-  }
-}
-
-async function toggleDishLike(
-  reviewDishId: string,
-  userId: string,
-): Promise<boolean> {
-  try {
-    const { count } = await supabase
-      .from('dish_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('review_dish_id', reviewDishId)
-      .eq('user_id', userId);
-
-    if ((count ?? 0) > 0) {
-      const { error } = await supabase
-        .from('dish_likes')
-        .delete()
-        .eq('review_dish_id', reviewDishId)
-        .eq('user_id', userId);
-      if (error) throw error;
-      return false;
-    } else {
-      const { error } = await supabase
-        .from('dish_likes')
-        .insert({ review_dish_id: reviewDishId, user_id: userId });
-      if (error) throw error;
-      return true;
-    }
-  } catch (error) {
-    console.warn('[RestaurantService] Errore toggleDishLike:', error);
-    throw error;
   }
 }
 
@@ -874,6 +827,119 @@ async function addReport(
   }
 }
 
+// ─── Cuisine Votes ──────────────────────────────────────────────────────────
+
+async function getCuisineVotes(restaurantId: string): Promise<CuisineVote[]> {
+  try {
+    const { data, error } = await supabase.rpc('get_restaurant_cuisine_votes', {
+      restaurant_uuid: restaurantId,
+    });
+    if (error) throw error;
+    return (data ?? []).map((v: any) => ({
+      cuisine_id: v.cuisine_id,
+      vote_count: Number(v.vote_count),
+      user_voted: v.user_voted ?? false,
+    }));
+  } catch (error) {
+    console.warn('[RestaurantService] Errore getCuisineVotes:', error);
+    return [];
+  }
+}
+
+async function voteCuisines(
+  restaurantId: string,
+  userId: string,
+  cuisineIds: string[],
+): Promise<void> {
+  try {
+    // 1. Rimuovi tutti i voti precedenti dell'utente per questo ristorante
+    await supabase
+      .from('restaurant_cuisine_votes')
+      .delete()
+      .eq('restaurant_id', restaurantId)
+      .eq('user_id', userId);
+
+    // 2. Inserisci i nuovi voti
+    if (cuisineIds.length > 0) {
+      const rows = cuisineIds.map(id => ({
+        restaurant_id: restaurantId,
+        user_id: userId,
+        cuisine_id: id,
+      }));
+      const { error } = await supabase
+        .from('restaurant_cuisine_votes')
+        .insert(rows);
+      if (error) throw error;
+    }
+  } catch (error) {
+    console.warn('[RestaurantService] Errore voteCuisines:', error);
+  }
+}
+
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+
+export interface LeaderboardEntry {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  profile_color: string | null;
+  allergens: string[];
+  dietary_preferences: string[];
+  count: number;
+}
+
+async function getLeaderboard(): Promise<{
+  topRestaurants: LeaderboardEntry[];
+  topReviewers: LeaderboardEntry[];
+}> {
+  try {
+    const [restaurantsRes, reviewsRes] = await Promise.all([
+      supabase
+        .from('restaurants')
+        .select('added_by, profiles!added_by(display_name, avatar_url, profile_color, allergens, dietary_preferences)')
+        .not('added_by', 'is', null),
+      supabase
+        .from('reviews')
+        .select('user_id, profiles!user_id(display_name, avatar_url, profile_color, allergens, dietary_preferences)')
+        .not('user_id', 'is', null),
+    ]);
+
+    const countByUser = (rows: any[], userField: string): LeaderboardEntry[] => {
+      const map = new Map<string, { display_name: string | null; avatar_url: string | null; profile_color: string | null; allergens: string[]; dietary_preferences: string[]; count: number }>();
+      for (const row of rows) {
+        const uid = row[userField];
+        if (!uid) continue;
+        const existing = map.get(uid);
+        if (existing) {
+          existing.count++;
+        } else {
+          const profile = row.profiles;
+          map.set(uid, {
+            display_name: profile?.display_name ?? null,
+            avatar_url: profile?.avatar_url ?? null,
+            profile_color: profile?.profile_color ?? null,
+            allergens: profile?.allergens ?? [],
+            dietary_preferences: profile?.dietary_preferences ?? [],
+            count: 1,
+          });
+        }
+      }
+      return Array.from(map.entries())
+        .map(([user_id, data]) => ({ user_id, ...data }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+    };
+
+    return {
+      topRestaurants: countByUser(restaurantsRes.data ?? [], 'added_by'),
+      topReviewers: countByUser(reviewsRes.data ?? [], 'user_id'),
+    };
+  } catch (error) {
+    console.warn('[RestaurantService] Errore getLeaderboard:', error);
+    return { topRestaurants: [], topReviewers: [] };
+  }
+}
+
 // ─── Lookup by Google Place ID ───────────────────────────────────────────────
 
 async function getRestaurantByGooglePlaceId(googlePlaceId: string): Promise<Restaurant | null> {
@@ -891,12 +957,35 @@ async function getRestaurantByGooglePlaceId(googlePlaceId: string): Promise<Rest
   }
 }
 
+async function checkExistingByPlaceIds(
+  placeIds: string[],
+): Promise<Map<string, { id: string; name: string }>> {
+  const result = new Map<string, { id: string; name: string }>();
+  if (placeIds.length === 0) return result;
+  try {
+    const { data, error } = await supabase
+      .from('restaurants')
+      .select('id, name, google_place_id')
+      .in('google_place_id', placeIds);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      if (row.google_place_id) {
+        result.set(row.google_place_id, { id: row.id, name: row.name });
+      }
+    }
+  } catch (error) {
+    console.warn('[RestaurantService] Errore checkExistingByPlaceIds:', error);
+  }
+  return result;
+}
+
 // ─── Export ─────────────────────────────────────────────────────────────────
 
 export const RestaurantService = {
   // Restaurant CRUD
   getRestaurant,
   getRestaurantByGooglePlaceId,
+  checkExistingByPlaceIds,
   getNearbyRestaurants,
   getRestaurantsByAllergens,
   getAllRestaurants,
@@ -919,11 +1008,13 @@ export const RestaurantService = {
   getMenuPhotos,
   addMenuPhoto,
   deleteMenuPhoto,
-  // Dish Likes
-  getDishLikes,
-  toggleDishLike,
   // Reports
   getReports,
   getUserReport,
   addReport,
+  // Cuisine Votes
+  getCuisineVotes,
+  voteCuisines,
+  // Leaderboard
+  getLeaderboard,
 };

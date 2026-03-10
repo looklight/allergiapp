@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, useWindowDimensions } from 'react-native';
 import { Text, Surface, Button, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
@@ -11,8 +11,8 @@ import StarRating from '../../components/StarRating';
 import ImageFullscreenModal from '../../components/ImageFullscreenModal';
 import RestaurantHeader from '../../components/restaurants/RestaurantHeader';
 import MenuPhotosSection from '../../components/restaurants/MenuPhotosSection';
-import DishesSection from '../../components/restaurants/DishesSection';
 import ReviewCard from '../../components/restaurants/ReviewCard';
+import PhotoGalleryModal from '../../components/restaurants/PhotoGalleryModal';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
@@ -26,18 +26,32 @@ export default function RestaurantDetailScreen() {
   const lang = i18n.locale as AppLanguage;
 
   const {
-    restaurant, allReviews, aggregatedDishes, menuPhotos,
-    reports, userReview, userReport, isFavorite,
+    restaurant, allReviews, menuPhotos,
+    reports, cuisineVotes, userReview, userReport, isFavorite,
     isLoading, isUploadingMenu,
     handleToggleFavorite, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto,
-    toggleLike, isDishLiked, getLikers,
   } = useRestaurantDetail(id);
 
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [fullscreenDish, setFullscreenDish] = useState<{ photo_url?: string | null; name: string; description?: string } | null>(null);
-  const [tappedBadge, setTappedBadge] = useState<string | null>(null);
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
+
+  // Raccogli tutte le foto dalle recensioni con metadata autore
+  const reviewPhotos = useMemo(
+    () => allReviews.flatMap(r =>
+      r.photos.map(p => ({
+        url: p.url,
+        thumbnailUrl: p.thumbnailUrl,
+        displayName: r.displayName,
+        rating: r.rating,
+        text: r.text,
+      }))
+    ),
+    [allReviews],
+  );
+  const userPhotoSize = 88;
 
   const canRemove = restaurant
     && user?.uid === restaurant.added_by
@@ -137,8 +151,7 @@ export default function RestaurantDetailScreen() {
         <RestaurantHeader
           restaurant={restaurant}
           lang={lang}
-          tappedBadge={tappedBadge}
-          onTapBadge={setTappedBadge}
+          cuisineVotes={cuisineVotes}
         />
 
         {/* Foto Menu */}
@@ -150,6 +163,27 @@ export default function RestaurantDetailScreen() {
           onDeletePhoto={handleDeleteMenuPhoto}
           onPhotoPress={setFullscreenImage}
         />
+
+        {/* Foto degli utenti — carosello orizzontale */}
+        {reviewPhotos.length > 0 && (
+          <Surface style={styles.section} elevation={1}>
+            <Text style={styles.sectionTitle}>Foto degli utenti ({reviewPhotos.length})</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.userPhotosScroll}
+            >
+              {reviewPhotos.map((photo, idx) => (
+                <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => setGalleryIndex(idx)}>
+                  <Image
+                    source={{ uri: photo.thumbnailUrl }}
+                    style={[styles.userPhoto, { width: userPhotoSize, height: userPhotoSize }]}
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Surface>
+        )}
 
         {/* CTA — Contributo utente o valuta con stelle */}
         {userReview ? (
@@ -170,9 +204,9 @@ export default function RestaurantDetailScreen() {
             {userReview.comment && (
               <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
             )}
-            {(userReview.dishes?.length ?? 0) > 0 && (
+            {(userReview.photos?.length ?? 0) > 0 && (
               <Text style={styles.ctaHint}>
-                {userReview.dishes!.length} piatt{userReview.dishes!.length === 1 ? 'o' : 'i'} segnalat{userReview.dishes!.length === 1 ? 'o' : 'i'}
+                {userReview.photos.length} foto
               </Text>
             )}
           </Surface>
@@ -186,28 +220,20 @@ export default function RestaurantDetailScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Piatti della community */}
-        <DishesSection
-          aggregatedDishes={aggregatedDishes}
-          userId={user?.uid}
-          onDishPress={setFullscreenDish}
-          onToggleLike={toggleLike}
-        />
-
         {/* Esperienze della community */}
         {allReviews.length > 0 && (
           <Surface style={styles.section} elevation={1}>
-            <Text style={styles.sectionTitle}>Esperienze ({allReviews.length})</Text>
+            <Text style={styles.sectionTitle}>Recensioni ({allReviews.length})</Text>
             {allReviews.map((item, idx) => (
               <View key={item.key}>
                 {idx > 0 && <Divider style={styles.divider} />}
                 <ReviewCard
                   review={item}
-                  getLikers={getLikers}
-                  isDishLiked={isDishLiked}
-                  toggleLike={toggleLike}
-                  onDishPress={setFullscreenDish}
-                  onImagePress={setFullscreenImage}
+                  onImagePress={(url) => {
+                    const idx = reviewPhotos.findIndex(p => p.url === url);
+                    if (idx >= 0) setGalleryIndex(idx);
+                    else setFullscreenImage(url);
+                  }}
                 />
               </View>
             ))}
@@ -235,7 +261,7 @@ export default function RestaurantDetailScreen() {
                       <View style={styles.contributionMeta}>
                         <Text style={styles.contributionAuthor}>Utente</Text>
                         <Text style={styles.contributionDate}>
-                          {new Date(report.created_at).toLocaleDateString('it-IT', {
+                          {new Date(report.created_at).toLocaleDateString(i18n.locale, {
                             day: 'numeric', month: 'short', year: 'numeric',
                           })}
                         </Text>
@@ -295,31 +321,21 @@ export default function RestaurantDetailScreen() {
 
       </ScrollView>
 
-      {/* Modal immagine fullscreen */}
+      {/* Modal immagine singola (menu, review inline) */}
       <ImageFullscreenModal
         visible={!!fullscreenImage}
         imageUrl={fullscreenImage}
         onClose={() => setFullscreenImage(null)}
       />
 
-      {/* Modal piatto fullscreen */}
-      <ImageFullscreenModal
-        visible={!!fullscreenDish}
-        imageUrl={fullscreenDish?.photo_url ?? undefined}
-        onClose={() => setFullscreenDish(null)}
-        placeholder={
-          <View style={styles.dishFullscreenPlaceholder}>
-            <MaterialCommunityIcons name="silverware-fork-knife" size={80} color={theme.colors.primary} />
-          </View>
-        }
-      >
-        <View style={styles.dishFullscreenInfo}>
-          <Text style={styles.dishFullscreenName}>{fullscreenDish?.name}</Text>
-          {fullscreenDish?.description && (
-            <Text style={styles.dishFullscreenDescription}>{fullscreenDish.description}</Text>
-          )}
-        </View>
-      </ImageFullscreenModal>
+      {/* Gallery fullscreen — foto utenti con swipe */}
+      {galleryIndex !== null && (
+        <PhotoGalleryModal
+          photos={reviewPhotos}
+          initialIndex={galleryIndex}
+          onClose={() => setGalleryIndex(null)}
+        />
+      )}
     </View>
   );
 }
@@ -407,31 +423,6 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: 14,
   },
-  // Fullscreen dish
-  dishFullscreenPlaceholder: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: theme.colors.scrim,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dishFullscreenInfo: {
-    position: 'absolute',
-    bottom: 80,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-  },
-  dishFullscreenName: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: '700',
-    textAlign: 'center',
-    textShadowColor: theme.colors.overlayDark,
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
   reportSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -505,14 +496,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.colors.textSecondary,
   },
-  dishFullscreenDescription: {
-    color: theme.colors.overlayLight,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 22,
-    textShadowColor: theme.colors.overlayDark,
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+  userPhotosScroll: {
+    gap: 8,
+  },
+  userPhoto: {
+    borderRadius: 10,
   },
 });

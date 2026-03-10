@@ -3,30 +3,29 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
-import { ALLERGENS } from '../../constants/allergens';
-import { DIETS } from '../../constants/diets';
+import { getRestrictionById } from '../../constants/foodRestrictions';
+import type { FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
+import i18n from '../../utils/i18n';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
+
+const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: string }> = {
+  eu_allergen:      { bg: theme.colors.orangeLight,  text: theme.colors.warning },
+  intolerance:      { bg: theme.colors.amberLight,   text: theme.colors.amberText },
+  diet:             { bg: theme.colors.primaryLight,  text: theme.colors.primary },
+  food_sensitivity: { bg: theme.colors.background,   text: theme.colors.textSecondary },
+};
 
 interface ReviewCardProps {
   review: UnifiedReview;
-  getLikers: (reviewDishId: string) => string[];
-  isDishLiked: (reviewDishId: string) => boolean;
-  toggleLike: (reviewDishId: string) => Promise<void>;
-  onDishPress: (dish: { photo_url?: string | null; name: string; description?: string }) => void;
   onImagePress: (imageUrl: string) => void;
 }
 
 const getInitial = (name: string) => (name.charAt(0) || '?').toUpperCase();
 
-export default function ReviewCard({
-  review: item,
-  getLikers,
-  isDishLiked,
-  toggleLike,
-  onDishPress,
-  onImagePress,
-}: ReviewCardProps) {
+const REVIEW_PHOTO_SIZE = 56;
+
+export default function ReviewCard({ review: item, onImagePress }: ReviewCardProps) {
   const router = useRouter();
 
   return (
@@ -45,7 +44,7 @@ export default function ReviewCard({
           <View style={styles.contributionMeta}>
             <Text style={styles.contributionAuthor}>{item.displayName}</Text>
             <Text style={styles.contributionDate}>
-              {item.createdAt.toLocaleDateString('it-IT', {
+              {item.createdAt.toLocaleDateString(i18n.locale, {
                 day: 'numeric', month: 'short', year: 'numeric',
               })}
             </Text>
@@ -64,72 +63,28 @@ export default function ReviewCard({
       {/* Esigenze alimentari dell'autore */}
       {((item.allergensSnapshot?.length ?? 0) > 0 || (item.dietarySnapshot?.length ?? 0) > 0) && (
         <View style={styles.dietaryBadges}>
-          {(item.dietarySnapshot ?? []).map(dId => {
-            const diet = DIETS.find(x => x.id === dId);
-            return diet ? <Text key={dId} style={styles.dietaryBadgeIcon}>{diet.icon}</Text> : null;
-          })}
-          {(item.allergensSnapshot ?? []).map(aId => {
-            const allergen = ALLERGENS.find(x => x.id === aId);
-            return allergen ? <Text key={aId} style={styles.dietaryBadgeIcon}>{allergen.icon}</Text> : null;
+          {[...(item.dietarySnapshot ?? []), ...(item.allergensSnapshot ?? [])].map(id => {
+            const r = getRestrictionById(id);
+            if (!r) return null;
+            const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
+            const colors = CATEGORY_COLORS[r.category];
+            return (
+              <View key={id} style={[styles.dietaryBadge, { backgroundColor: colors.bg }]}>
+                <Text style={[styles.dietaryBadgeText, { color: colors.text }]}>{label}</Text>
+              </View>
+            );
           })}
         </View>
       )}
 
-      {/* Piatti del contributo */}
-      {item.dishes.length > 0 && (
-        <View style={styles.contributionDishes}>
-          {item.dishes.map((d, dIdx) => {
-            const likeCount = d.id ? getLikers(d.id).length : 0;
-            const liked = d.id ? isDishLiked(d.id) : false;
-
-            return (
-              <TouchableOpacity
-                key={d.id ?? dIdx}
-                style={styles.dishCard}
-                activeOpacity={0.7}
-                onPress={() => onDishPress({ photo_url: d.photo_url, name: d.name, description: d.description ?? undefined })}
-              >
-                {d.photo_url ? (
-                  <Image source={{ uri: d.thumbnail_url ?? d.photo_url }} style={styles.dishPhoto} />
-                ) : (
-                  <View style={styles.dishPhotoPlaceholder}>
-                    <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={theme.colors.primary} />
-                  </View>
-                )}
-                <View style={styles.dishContent}>
-                  <Text style={styles.dishName}>{d.name}</Text>
-                  {d.description && (
-                    <Text style={styles.dishDescription}>{d.description}</Text>
-                  )}
-                  <View style={styles.dishBottomRow}>
-                    <View />
-                    {d.id && (
-                      <TouchableOpacity
-                        style={styles.dishLikeBtn}
-                        activeOpacity={0.6}
-                        hitSlop={8}
-                        onPress={(e) => {
-                          e.stopPropagation?.();
-                          toggleLike(d.id);
-                        }}
-                      >
-                        <MaterialCommunityIcons
-                          name={liked ? 'thumb-up' : 'thumb-up-outline'}
-                          size={16}
-                          color={liked ? theme.colors.primary : theme.colors.textSecondary}
-                        />
-                        {likeCount > 0 && (
-                          <Text style={[styles.dishLikeCount, liked && styles.dishLikeCountPrimary]}>
-                            {likeCount}
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+      {/* Foto review */}
+      {item.photos.length > 0 && (
+        <View style={styles.photoGrid}>
+          {item.photos.map((photo, idx) => (
+            <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => onImagePress(photo.url)}>
+              <Image source={{ uri: photo.thumbnailUrl }} style={[styles.reviewPhoto, { width: REVIEW_PHOTO_SIZE, height: REVIEW_PHOTO_SIZE }]} />
+            </TouchableOpacity>
+          ))}
         </View>
       )}
     </View>
@@ -181,72 +136,27 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     lineHeight: 20,
   },
-  contributionDishes: {
-    gap: 8,
-    marginTop: 2,
-  },
-  dishCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
-    padding: 10,
-  },
-  dishPhoto: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  dishPhotoPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dishContent: {
-    flex: 1,
-  },
-  dishName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  dishDescription: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  dishBottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  dishLikeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 4,
-  },
-  dishLikeCount: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-  dishLikeCountPrimary: {
-    color: theme.colors.primary,
-  },
   dietaryBadges: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 2,
-    marginTop: 2,
+    gap: 6,
+    marginTop: 4,
   },
-  dietaryBadgeIcon: {
-    fontSize: 14,
+  dietaryBadge: {
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  dietaryBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  reviewPhoto: {
+    borderRadius: 10,
   },
 });

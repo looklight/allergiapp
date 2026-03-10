@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import type { DietaryNeeds } from '../types';
 
 // Tipo utente compatibile con l'interfaccia usata nell'app
 export interface AppUser {
@@ -154,7 +153,7 @@ async function deleteAccount(userId: string): Promise<void> {
   await supabase.auth.signOut();
 }
 
-async function updateDietaryNeeds(userId: string, dietaryNeeds: DietaryNeeds): Promise<void> {
+async function updateDietaryNeeds(userId: string, dietaryNeeds: { allergens: string[]; diets: string[] }): Promise<void> {
   const { error } = await supabase
     .from('profiles')
     .update({

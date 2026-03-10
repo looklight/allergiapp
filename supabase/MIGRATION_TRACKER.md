@@ -131,13 +131,16 @@
 - [ ] `getRestaurant`: unificare in singola RPC (attualmente 2 request)
 - [ ] `updateDisplayName`: rendere atomico (o accettare inconsistenza)
 
-### 14. Admin dashboard
-- [ ] Migrare `admin/` da Firebase a Supabase
-- [ ] Auth admin (Supabase + ruolo admin in profiles)
-- [ ] Dashboard statistiche
-- [ ] Gestione ristoranti (+ pulsante "Aggiorna da Google" per refresh dati)
-- [ ] Gestione utenti
-- [ ] Gestione segnalazioni
+### 14. Admin dashboard (completato mar 2026)
+- [x] Migrare `admin/` da Firebase a Supabase
+- [x] Auth admin (Supabase + ruolo `admin` in profiles)
+- [x] Dashboard statistiche (ristoranti, utenti, recensioni, segnalazioni pending)
+- [x] Gestione ristoranti (lista, dettaglio, eliminazione)
+- [x] Gestione utenti (lista, dettaglio con ristoranti e recensioni)
+- [x] Gestione segnalazioni (filtri per stato/motivo, risolvi/archivia)
+- [x] Rimosso Firebase SDK, firebase-admin, service-account-key
+- [x] Config in `.env.local` (non piu hardcoded)
+- [x] Script `set-admin` riscritto per Supabase
 - [ ] Gestione claim ristoranti
 
 ### 15. Pulizia

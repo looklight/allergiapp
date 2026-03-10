@@ -130,6 +130,27 @@
     "acceptButton": "Continuer",
     "termsNote": "En continuant vous acceptez Confidentialité et Conditions d'Utilisation"
   },
+  "leaderboard": {
+    "title": "Classement",
+    "restaurants": "Restaurants",
+    "reviews": "Avis",
+    "restaurantsAdded": "restaurants ajout\u00e9s",
+    "restaurantsSubtitle": "Ceux qui ont le plus aid\u00e9 la communaut\u00e9 en faisant d\u00e9couvrir des restaurants allergy-friendly \u00e0 ceux qui en ont besoin",
+    "reviewsWritten": "avis \u00e9crits",
+    "reviewsSubtitle": "Ceux qui ont le plus aid\u00e9 la communaut\u00e9 en partageant leurs exp\u00e9riences",
+    "infoTitle": "Comment \u00e7a marche ?",
+    "infoBody": "Ici vous pouvez voir qui contribue le plus \u00e0 la communaut\u00e9 en ajoutant des restaurants et en \u00e9crivant des avis.\n\nAjoutez des restaurants et laissez des avis pour monter dans le classement !",
+    "empty": "Aucune contribution pour le moment",
+    "anonymous": "Utilisateur anonyme"
+  },
+  "profile": {
+    "error": "Erreur",
+    "diets": "R\u00e9gimes",
+    "dietaryHint": "S\u00e9lectionnez vos besoins. Ils seront automatiquement associ\u00e9s \u00e0 vos contributions.",
+    "allergensIntolerances": "Allerg\u00e8nes et intol\u00e9rances",
+    "saveDietary": "Enregistrer les besoins alimentaires",
+    "saveDietaryError": "Impossible d'enregistrer les besoins alimentaires. R\u00e9essayez."
+  },
   "aboutStory": {
     "title": "Pourquoi est-elle gratuite ?",
     "intro": "Cette application est née d'une expérience personnelle. En tant que personne souffrant d'allergies alimentaires, j'ai toujours aimé voyager et découvrir de nouvelles cultures à travers la nourriture.",

@@ -108,13 +108,7 @@ function AppContent() {
         screenOptions={{
           animation: 'slide_from_right',
           gestureEnabled: true,
-          headerStyle: {
-            backgroundColor: theme.colors.primary,
-          },
-          headerTintColor: theme.colors.onPrimary,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerShown: false,
         }}
       />
       {/* Consent modal overlay - shown on top of the app */}

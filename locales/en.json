@@ -130,6 +130,27 @@
     "acceptButton": "Continue",
     "termsNote": "By continuing you accept Privacy and Terms of Service"
   },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "restaurants": "Restaurants",
+    "reviews": "Reviews",
+    "restaurantsAdded": "restaurants added",
+    "restaurantsSubtitle": "Those who helped the community the most by helping others discover allergy-friendly restaurants",
+    "reviewsWritten": "reviews written",
+    "reviewsSubtitle": "Those who helped the community the most by sharing their experiences",
+    "infoTitle": "How does it work?",
+    "infoBody": "Here you can see who contributes the most to the community by adding restaurants and writing reviews.\n\nAdd restaurants and leave reviews to climb the leaderboard!",
+    "empty": "No contributions yet",
+    "anonymous": "Anonymous user"
+  },
+  "profile": {
+    "error": "Error",
+    "diets": "Diets",
+    "dietaryHint": "Select your needs. They will be automatically linked to your contributions.",
+    "allergensIntolerances": "Allergens & intolerances",
+    "saveDietary": "Save dietary needs",
+    "saveDietaryError": "Unable to save dietary needs. Please try again."
+  },
   "aboutStory": {
     "title": "Why is it free?",
     "intro": "This app was born from personal experience. As someone with food allergies, I've always loved traveling and discovering new cultures through food.",

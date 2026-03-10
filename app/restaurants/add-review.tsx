@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Image, ActivityIndicator, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
@@ -7,21 +7,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
+import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
+import {
+  FOOD_RESTRICTIONS,
+  getRestrictionsByCategory,
+  getRestrictionById,
+  INTOLERANCE_RESTRICTION_IDS,
+} from '../../constants/foodRestrictions';
+import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantCategories';
+import ChipGrid from '../../components/ChipGrid';
 import StarRating from '../../components/StarRating';
-import type { Review, ReviewDish } from '../../services/restaurantService';
+import i18n from '../../utils/i18n';
+import type { Review, CuisineVote } from '../../services/restaurantService';
+import type { DietId, AppLanguage } from '../../types';
 
-interface DishForm {
-  name: string;
-  description: string;
-  imageUri: string | null;
-}
+const MAX_PHOTOS = 3;
 
-const emptyDish = (): DishForm => ({
-  name: '',
-  description: '',
-  imageUri: null,
-});
+// Gruppi per il form review (derivati dal catalogo centralizzato)
+const DIETS_GROUP = getRestrictionsByCategory('diet');
+const INTOLERANCES_GROUP = FOOD_RESTRICTIONS.filter(
+  r => r.category !== 'diet',
+);
 
 export default function AddReviewScreen() {
   const router = useRouter();
@@ -37,19 +44,80 @@ export default function AddReviewScreen() {
   }>();
   const ratingNum = parseFloat(restaurantRating ?? '0');
   const ratingCountNum = parseInt(restaurantRatingCount ?? '0', 10);
-  const { user, dietaryNeeds } = useAuth();
+  const { user, dietaryNeeds, refreshProfile } = useAuth();
+
+  const { width: screenWidth } = useWindowDimensions();
+  // Foto: dimensione dinamica per stare in riga su qualsiasi schermo
+  const photoGap = 12;
+  const contentPadding = 20;
+  const photoSize = Math.floor((screenWidth - contentPadding * 2 - photoGap * (MAX_PHOTOS - 1)) / MAX_PHOTOS);
 
   const initialRating = (parseInt(prefillRating ?? '0', 10) || 0) as 0 | 1 | 2 | 3 | 4 | 5;
   const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(initialRating);
   const [comment, setComment] = useState('');
-  const [dishes, setDishes] = useState<DishForm[]>([]);
-  // Quale piatto è in editing (-1 = nessuno)
-  const [editingDish, setEditingDish] = useState(-1);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [selectedAllergens, setSelectedAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
+  const [selectedDiets, setSelectedDiets] = useState<DietId[]>([...dietaryNeeds.diets] as DietId[]);
+  const [needsExpanded, setNeedsExpanded] = useState(dietaryNeeds.allergens.length === 0 && dietaryNeeds.diets.length === 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [existingReview, setExistingReview] = useState<(Review & { dishes?: ReviewDish[] }) | null>(null);
+  const [existingReview, setExistingReview] = useState<Review | null>(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(!!reviewId);
-  const scrollRef = useRef<ScrollView>(null);
+  const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
+  const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+  const [cuisinePickerOpen, setCuisinePickerOpen] = useState(false);
   const isEditMode = !!reviewId;
+  const [syncingProfile, setSyncingProfile] = useState(false);
+  const [justSynced, setJustSynced] = useState(false);
+  const hasNeeds = selectedAllergens.length > 0 || selectedDiets.length > 0;
+
+  const profileAllergens = new Set<string>(dietaryNeeds.allergens);
+  const profileDiets = new Set<string>(dietaryNeeds.diets);
+  const needsDifferFromProfile =
+    selectedAllergens.length !== profileAllergens.size ||
+    selectedDiets.length !== profileDiets.size ||
+    selectedAllergens.some(a => !profileAllergens.has(a)) ||
+    selectedDiets.some(d => !profileDiets.has(d));
+
+  // Reset feedback quando l'utente modifica dopo un sync
+  const handleToggleAllergen = (id: string) => {
+    setJustSynced(false);
+    setSelectedAllergens(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]);
+  };
+  const handleToggleDiet = (id: string) => {
+    setJustSynced(false);
+    setSelectedDiets(prev =>
+      prev.includes(id as DietId) ? prev.filter(d => d !== id) : [...prev, id as DietId]
+    );
+  };
+
+  const handleSyncProfile = async () => {
+    if (!user) return;
+    setSyncingProfile(true);
+    try {
+      await AuthService.updateDietaryNeeds(user.uid, {
+        allergens: selectedAllergens,
+        diets: selectedDiets,
+      });
+      await refreshProfile();
+      setJustSynced(true);
+    } catch {
+      Alert.alert('Errore', 'Impossibile aggiornare il profilo. Riprova.');
+    } finally {
+      setSyncingProfile(false);
+    }
+  };
+
+  // Carica voti cucina: pre-seleziona solo quelli dell'utente, gli altri deselezionati
+  useEffect(() => {
+    if (!restaurantId) return;
+    let cancelled = false;
+    RestaurantService.getCuisineVotes(restaurantId).then(votes => {
+      if (cancelled) return;
+      setCuisineVotes(votes);
+      setSelectedCuisines(votes.filter(v => v.user_voted).map(v => v.cuisine_id));
+    });
+    return () => { cancelled = true; };
+  }, [restaurantId]);
 
   // Carica review esistente per la modifica
   useEffect(() => {
@@ -60,56 +128,69 @@ export default function AddReviewScreen() {
         setExistingReview(r);
         setRating((r.rating ?? 0) as 0 | 1 | 2 | 3 | 4 | 5);
         setComment(r.comment ?? '');
-        setDishes((r.dishes ?? []).map(d => ({
-          name: d.name,
-          description: d.description ?? '',
-          imageUri: d.photo_url ?? null,
-        })));
+        setPhotos((r.photos ?? []).map(p => p.url));
+        if (r.allergens_snapshot?.length) setSelectedAllergens([...r.allergens_snapshot]);
+        if (r.dietary_snapshot?.length) setSelectedDiets(r.dietary_snapshot as DietId[]);
+        setNeedsExpanded(!r.allergens_snapshot?.length && !r.dietary_snapshot?.length);
+      } else {
+        Alert.alert('Errore', 'Recensione non trovata.', [{ text: 'OK', onPress: () => router.back() }]);
       }
       setIsLoadingExisting(false);
     });
   }, [reviewId, restaurantId, user]);
 
-  const hasContent = rating > 0 || comment.trim().length > 0 || dishes.some(d => d.name.trim().length > 0);
-
-  const addDish = () => {
-    const newIndex = dishes.length;
-    setDishes(prev => [...prev, emptyDish()]);
-    setEditingDish(newIndex);
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+  const toggleCuisine = (id: string) => {
+    setSelectedCuisines(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
-  const removeDish = (index: number) => {
-    setDishes(prev => prev.filter((_, i) => i !== index));
-    if (editingDish === index) setEditingDish(-1);
-    else if (editingDish > index) setEditingDish(editingDish - 1);
-  };
+  const hasContent = rating > 0 || comment.trim().length > 0 || photos.length > 0;
 
-  const confirmDish = (index: number) => {
-    if (!dishes[index].name.trim()) {
-      Alert.alert('Attenzione', 'Inserisci almeno il nome del piatto.');
-      return;
-    }
-    setEditingDish(-1);
-  };
+  const remaining = MAX_PHOTOS - photos.length;
 
-  const openEditDish = (index: number) => {
-    setEditingDish(index);
-  };
-
-  const updateDish = (index: number, updates: Partial<DishForm>) => {
-    setDishes(prev => prev.map((d, i) => i === index ? { ...d, ...updates } : d));
-  };
-
-  const pickDishImage = async (dishIndex: number) => {
+  const pickFromGallery = async () => {
+    if (remaining <= 0) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 1,
+      allowsMultipleSelection: true,
+      selectionLimit: remaining,
+    });
+    if (!result.canceled && result.assets.length > 0) {
+      setPhotos(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, MAX_PHOTOS));
+    }
+  };
+
+  const takePhoto = async () => {
+    if (remaining <= 0) return;
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permesso necessario', 'Consenti l\'accesso alla fotocamera per scattare foto.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 1,
       allowsEditing: true,
+      aspect: [1, 1],
     });
     if (!result.canceled && result.assets[0]) {
-      updateDish(dishIndex, { imageUri: result.assets[0].uri });
+      setPhotos(prev => [...prev, result.assets[0].uri]);
     }
+  };
+
+  const handleAddPhoto = () => {
+    if (remaining <= 0) return;
+    Alert.alert('Aggiungi foto', undefined, [
+      { text: 'Galleria', onPress: pickFromGallery },
+      { text: 'Fotocamera', onPress: takePhoto },
+      { text: 'Annulla', style: 'cancel' },
+    ]);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -118,129 +199,57 @@ export default function AddReviewScreen() {
       Alert.alert('Attenzione', 'Seleziona almeno una stella per la valutazione.');
       return;
     }
-    const validDishes = dishes.filter(d => d.name.trim().length > 0);
 
     setIsSubmitting(true);
-    const inputData = {
-      rating,
-      ...(comment.trim() && { comment: comment.trim() }),
-      dishes: validDishes.map(d => ({
-        name: d.name.trim(),
-        description: d.description.trim() || undefined,
-        imageUri: d.imageUri ?? undefined,
-      })),
-    };
+    try {
+      const inputData = {
+        rating,
+        ...(comment.trim() && { comment: comment.trim() }),
+        photos,
+      };
 
-    // Snapshot delle esigenze alimentari dell'utente al momento del contributo
-    const needsSnapshot = (dietaryNeeds.allergens.length > 0 || dietaryNeeds.diets.length > 0)
-      ? dietaryNeeds : undefined;
+      const needsSnapshot = hasNeeds
+        ? { allergens: selectedAllergens, diets: selectedDiets }
+        : undefined;
 
-    let review;
-    if (isEditMode && reviewId && existingReview) {
-      review = await RestaurantService.updateReview({
-        reviewId: reviewId,
-        restaurantId,
-        input: inputData,
-        userId: user.uid,
-        oldDishes: existingReview.dishes,
-      });
-    } else {
-      review = await RestaurantService.addReview({
-        restaurantId,
-        input: inputData,
-        userId: user.uid,
-        userDietaryNeeds: needsSnapshot,
-      });
-    }
-    setIsSubmitting(false);
+      let review;
+      if (isEditMode && reviewId && existingReview) {
+        review = await RestaurantService.updateReview({
+          reviewId: reviewId,
+          restaurantId,
+          input: inputData,
+          userId: user.uid,
+          oldPhotos: existingReview.photos,
+          userDietaryNeeds: needsSnapshot,
+        });
+      } else {
+        review = await RestaurantService.addReview({
+          restaurantId,
+          input: inputData,
+          userId: user.uid,
+          userDietaryNeeds: needsSnapshot,
+          language: i18n.locale,
+        });
+      }
 
-    if (review) {
-      Alert.alert(
-        'Grazie!',
-        isEditMode ? 'La tua recensione è stata aggiornata.' : 'La tua recensione è stata condivisa con la community.',
-        [{ text: 'OK', onPress: () => router.back() }],
-      );
-    } else {
+      // Salva voti cucina (pre-selezionati = baseline, nessun rischio di perdita)
+      await RestaurantService.voteCuisines(restaurantId, user.uid, selectedCuisines);
+
+      if (review) {
+        Alert.alert(
+          'Grazie!',
+          isEditMode ? 'La tua recensione è stata aggiornata.' : 'La tua recensione è stata condivisa con la community.',
+          [{ text: 'OK', onPress: () => router.back() }],
+        );
+      } else {
+        Alert.alert('Errore', 'Non è stato possibile inviare. Riprova.');
+      }
+    } catch {
       Alert.alert('Errore', 'Non è stato possibile inviare. Riprova.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const renderDishSummary = (dish: DishForm, index: number) => {
-    return (
-      <TouchableOpacity key={index} style={styles.dishSummary} onPress={() => openEditDish(index)} activeOpacity={0.6}>
-        <View style={styles.dishSummaryLeft}>
-          {dish.imageUri ? (
-            <Image source={{ uri: dish.imageUri }} style={styles.dishSummaryImage} />
-          ) : (
-            <View style={styles.dishSummaryIcon}>
-              <MaterialCommunityIcons name="silverware-fork-knife" size={16} color={theme.colors.primary} />
-            </View>
-          )}
-          <View style={styles.dishSummaryInfo}>
-            <Text style={styles.dishSummaryName} numberOfLines={1}>{dish.name}</Text>
-            {dish.description.length > 0 && (
-              <Text style={styles.dishSummaryDesc} numberOfLines={1}>{dish.description}</Text>
-            )}
-          </View>
-        </View>
-        <View style={styles.dishSummaryActions}>
-          <MaterialCommunityIcons name="pencil-outline" size={18} color={theme.colors.textSecondary} />
-          <TouchableOpacity onPress={() => removeDish(index)} hitSlop={8}>
-            <MaterialCommunityIcons name="close" size={18} color={theme.colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderDishEditor = (dish: DishForm, index: number) => (
-    <View key={index} style={styles.dishEditor}>
-      {/* Foto */}
-      {dish.imageUri ? (
-        <View style={styles.imageWrap}>
-          <Image source={{ uri: dish.imageUri }} style={styles.imagePreview} />
-          <TouchableOpacity
-            style={styles.removeImageBtn}
-            onPress={() => updateDish(index, { imageUri: null })}
-          >
-            <MaterialCommunityIcons name="close-circle" size={24} color="#FFF" />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity style={styles.photoButton} onPress={() => pickDishImage(index)} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="camera-plus-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.photoButtonText}>Scatta o scegli una foto</Text>
-        </TouchableOpacity>
-      )}
-
-      <TextInput
-        label="Nome del piatto"
-        value={dish.name}
-        onChangeText={(v) => updateDish(index, { name: v })}
-        mode="outlined"
-        style={styles.dishInput}
-        outlineStyle={styles.inputOutline}
-        placeholder="Es. Risotto ai funghi"
-      />
-
-      <TextInput
-        label="Note (opzionale)"
-        value={dish.description}
-        onChangeText={(v) => updateDish(index, { description: v })}
-        mode="outlined"
-        style={[styles.dishInput, { minHeight: 90 }]}
-        outlineStyle={styles.inputOutline}
-        multiline
-        placeholder="Es. Preparato senza burro..."
-      />
-
-      {/* Conferma piatto */}
-      <TouchableOpacity style={styles.confirmDishButton} onPress={() => confirmDish(index)} activeOpacity={0.6}>
-        <MaterialCommunityIcons name="check" size={18} color={theme.colors.primary} />
-        <Text style={styles.confirmDishText}>Conferma piatto</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
     <View style={styles.container}>
@@ -255,8 +264,12 @@ export default function AddReviewScreen() {
         <View style={{ width: 24 }} />
       </View>
 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
       <ScrollView
-        ref={scrollRef}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 130 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -304,29 +317,210 @@ export default function AddReviewScreen() {
         <TextInput
           value={comment}
           onChangeText={setComment}
-          placeholder="Racconta com'è andata"
+          placeholder="Racconta la tua esperienza, i piatti provati..."
           multiline
           mode="outlined"
           style={styles.textInput}
           outlineStyle={styles.textInputOutline}
         />
 
-        <View style={styles.separator} />
+        {/* Foto */}
+        <View style={styles.photosSection}>
+          <View style={styles.photosGrid}>
+            {photos.map((uri, index) => (
+              <View key={index} style={styles.photoThumbWrap}>
+                <Image source={{ uri }} style={[styles.photoThumb, { width: photoSize, height: photoSize }]} />
+                <TouchableOpacity style={styles.photoRemoveBtn} onPress={() => removePhoto(index)} hitSlop={6}>
+                  <MaterialCommunityIcons name="close-circle" size={22} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            {remaining > 0 && (
+              <TouchableOpacity style={[styles.photoAddBtn, { width: photoSize, height: photoSize }]} onPress={handleAddPhoto} activeOpacity={0.6}>
+                <MaterialCommunityIcons name="camera-plus-outline" size={24} color={theme.colors.primary} />
+                <Text style={styles.photoAddText}>Foto</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
-        {/* Piatti */}
-        <Text style={styles.sectionTitle}>Piatti provati</Text>
-        <Text style={styles.sectionHint}>Segnala i piatti sicuri per chi ha allergie</Text>
-
-        {dishes.map((dish, index) =>
-          editingDish === index
-            ? renderDishEditor(dish, index)
-            : renderDishSummary(dish, index)
+        {/* Tag tipo di cucina — community */}
+        <Text style={styles.cuisineTitle}>Tipo di cucina</Text>
+        <Text style={styles.cuisineHint}>
+          {cuisineVotes.length > 0
+            ? 'Seleziona i tag che ritieni corretti per questo ristorante'
+            : 'Aggiungi il tipo di cucina di questo ristorante'}
+        </Text>
+        {/* Tag esistenti — posizione fissa, ordinati per voti */}
+        <View style={styles.cuisineGrid}>
+          {cuisineVotes.map(v => {
+            const selected = selectedCuisines.includes(v.cuisine_id);
+            const count = selected && !v.user_voted ? v.vote_count + 1 : !selected && v.user_voted ? v.vote_count - 1 : v.vote_count;
+            return (
+              <TouchableOpacity
+                key={v.cuisine_id}
+                style={[styles.cuisineChip, selected && styles.cuisineChipSelected]}
+                onPress={() => toggleCuisine(v.cuisine_id)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.cuisineChipText, selected && styles.cuisineChipTextSelected]}>
+                  {getCuisineLabel(v.cuisine_id, i18n.locale, { emoji: false })}
+                </Text>
+                <Text style={[styles.cuisineChipCountInline, selected && styles.cuisineChipCountInlineSelected]}>
+                  {count}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          {/* Tag aggiunti dall'utente che non erano nei voti community */}
+          {selectedCuisines
+            .filter(id => !cuisineVotes.some(v => v.cuisine_id === id))
+            .map(id => (
+              <TouchableOpacity
+                key={id}
+                style={[styles.cuisineChip, styles.cuisineChipSelected]}
+                onPress={() => toggleCuisine(id)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.cuisineChipText, styles.cuisineChipTextSelected]}>
+                  {getCuisineLabel(id, i18n.locale, { emoji: false })}
+                </Text>
+                <Text style={[styles.cuisineChipCountInline, styles.cuisineChipCountInlineSelected]}>1</Text>
+              </TouchableOpacity>
+            ))}
+          {/* Chip "+ Aggiungi" in coda alla griglia */}
+          <TouchableOpacity
+            style={[styles.cuisineChipAdd, cuisinePickerOpen && styles.cuisineChipAddOpen]}
+            onPress={() => setCuisinePickerOpen(prev => !prev)}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name={cuisinePickerOpen ? 'close' : 'plus'}
+              size={14}
+              color={cuisinePickerOpen ? theme.colors.primary : theme.colors.textSecondary}
+            />
+            <Text style={[styles.cuisineChipAddText, cuisinePickerOpen && styles.cuisineChipAddTextOpen]}>
+              {cuisinePickerOpen ? 'Chiudi' : 'Aggiungi'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {/* Picker tag aggiuntivi */}
+        {cuisinePickerOpen && (
+          <View style={[styles.cuisineGrid, { marginTop: 8 }]}>
+            {CUISINE_CATEGORIES
+              .filter(cat => !selectedCuisines.includes(cat.id) && !cuisineVotes.some(v => v.cuisine_id === cat.id))
+              .map(cat => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.cuisineChipAdd}
+                  onPress={() => toggleCuisine(cat.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.cuisineChipAddText}>
+                    {cat.translations[i18n.locale as AppLanguage] ?? cat.translations.it}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </View>
         )}
 
-        <TouchableOpacity style={styles.addDishButton} onPress={addDish} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
-          <Text style={styles.addDishText}>Aggiungi un piatto</Text>
-        </TouchableOpacity>
+        {/* Profilo alimentare (editabile) */}
+        <View style={styles.separator} />
+        <View style={styles.needsBox}>
+          <View style={styles.needsHeader}>
+            <MaterialCommunityIcons name="shield-check-outline" size={20} color={theme.colors.primary} />
+            <Text style={styles.needsTitle}>Le tue esigenze alimentari</Text>
+          </View>
+
+          <Text style={styles.needsDescription}>
+            {hasNeeds
+              ? 'Questi dati aiutano altri utenti con le stesse esigenze a trovare questo ristorante.'
+              : 'Hai allergie o segui una dieta? Aggiungile per aiutare chi ha le tue stesse esigenze.'}
+          </Text>
+
+          {/* Chip riepilogo (quando collassato) */}
+          {!needsExpanded && hasNeeds && (
+            <View style={styles.needsChips}>
+              {selectedAllergens.map((code) => {
+                const a = getRestrictionById(code);
+                return (
+                  <View key={code} style={styles.needsChip}>
+                    <Text style={styles.needsChipText}>{a ? `${a.icon ? a.icon + ' ' : ''}${a.translations[i18n.locale as keyof typeof a.translations] ?? a.translations.en}` : code}</Text>
+                  </View>
+                );
+              })}
+              {selectedDiets.map((code) => {
+                const d = getRestrictionById(code);
+                return (
+                  <View key={code} style={[styles.needsChip, styles.needsChipDiet]}>
+                    <Text style={styles.needsChipText}>{d ? (d.translations[i18n.locale as keyof typeof d.translations] ?? d.translations.en) : code}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Link Modifica/Aggiungi in fondo */}
+          {!needsExpanded && (
+            <TouchableOpacity onPress={() => setNeedsExpanded(true)} activeOpacity={0.6} style={styles.needsBottomLink}>
+              <Text style={styles.needsBottomLinkText}>{hasNeeds ? 'Modifica' : 'Aggiungi esigenze'}</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* ChipGrid editabile (quando espanso) */}
+          {needsExpanded && (
+            <View style={styles.needsEditor}>
+              {needsDifferFromProfile && (
+                <View style={styles.syncProfileCard}>
+                  <Text style={styles.syncProfileText}>Usa queste esigenze come predefinite</Text>
+                  <TouchableOpacity
+                    onPress={handleSyncProfile}
+                    disabled={syncingProfile}
+                    activeOpacity={0.6}
+                    style={styles.syncProfileBtn}
+                  >
+                    {syncingProfile
+                      ? <ActivityIndicator size="small" color={theme.colors.primary} />
+                      : <Text style={styles.syncProfileBtnText}>Salva</Text>
+                    }
+                  </TouchableOpacity>
+                </View>
+              )}
+              {justSynced && !needsDifferFromProfile && (
+                <View style={styles.syncProfileCardDone}>
+                  <MaterialCommunityIcons name="check-circle-outline" size={16} color={theme.colors.success} />
+                  <Text style={styles.syncProfileDone}>Profilo aggiornato</Text>
+                </View>
+              )}
+              <Text style={styles.needsEditorLabel}>Diete</Text>
+              <ChipGrid
+                items={DIETS_GROUP}
+                activeIds={selectedDiets}
+                onToggle={handleToggleDiet}
+                lang={i18n.locale}
+                keyPrefix="diet"
+              />
+              <Text style={[styles.needsEditorLabel, { marginTop: 16 }]}>Intolleranze e allergeni</Text>
+              <ChipGrid
+                items={INTOLERANCES_GROUP}
+                activeIds={[...selectedDiets, ...selectedAllergens]}
+                onToggle={(id) => {
+                  if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
+                    handleToggleDiet(id);
+                  } else {
+                    handleToggleAllergen(id);
+                  }
+                }}
+                lang={i18n.locale}
+                keyPrefix="intol"
+              />
+              <TouchableOpacity onPress={() => setNeedsExpanded(false)} activeOpacity={0.6} style={styles.needsBottomLink}>
+                <MaterialCommunityIcons name="chevron-up" size={16} color={theme.colors.primary} />
+                <Text style={styles.needsBottomLinkText}>Chiudi</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
         </>}
 
         {isEditMode && existingReview && (
@@ -373,6 +567,7 @@ export default function AddReviewScreen() {
         </TouchableOpacity>
         <Text style={styles.submitCaption}>La tua recensione aiuta la community</Text>
       </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -438,12 +633,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     marginBottom: 10,
   },
-  sectionHint: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: -6,
-    marginBottom: 12,
-  },
   separator: {
     height: 1,
     backgroundColor: theme.colors.border,
@@ -466,130 +655,39 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: theme.colors.border,
   },
-  // Dish summary (collapsed)
-  dishSummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
-  },
-  dishSummaryLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  dishSummaryIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: theme.colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dishSummaryImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-  },
-  dishSummaryInfo: {
-    flex: 1,
-  },
-  dishSummaryName: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  dishSummaryDesc: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginTop: 1,
-  },
-  dishSummaryActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  // Dish editor (expanded)
-  dishEditor: {
-    gap: 12,
-    marginBottom: 8,
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
-    padding: 16,
-  },
-  dishInput: {
-    backgroundColor: theme.colors.surface,
-    fontSize: 14,
-  },
-  inputOutline: {
-    borderRadius: 10,
-    borderColor: theme.colors.border,
-  },
   // Foto
-  photoButton: {
+  photosSection: {
+    marginTop: 20,
+    gap: 8,
+  },
+  photosGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 20,
+    gap: 12,
+  },
+  photoThumbWrap: {
+    position: 'relative',
+  },
+  photoThumb: {
+    borderRadius: 12,
+  },
+  photoRemoveBtn: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 11,
+  },
+  photoAddBtn: {
     borderRadius: 12,
     backgroundColor: theme.colors.primaryLight,
-  },
-  photoButtonText: {
-    fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  imageWrap: {
-    position: 'relative',
-    alignSelf: 'center',
-  },
-  imagePreview: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  removeImageBtn: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: theme.colors.overlay,
-    borderRadius: 12,
-  },
-  // Conferma piatto
-  confirmDishButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: theme.colors.primary,
-    marginTop: 4,
-  },
-  confirmDishText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  // Aggiungi piatto
-  addDishButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    marginTop: 4,
+    gap: 4,
   },
-  addDishText: {
-    fontSize: 15,
-    fontWeight: '600',
+  photoAddText: {
+    fontSize: 12,
     color: theme.colors.primary,
+    fontWeight: '600',
   },
   // Bottom bar
   bottomBar: {
@@ -624,16 +722,196 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
+  // Needs snapshot
+  needsBox: {
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 14,
+    padding: 16,
+    gap: 10,
+  },
+  needsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  needsTitle: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  needsBottomLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  needsBottomLinkText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+  },
+  needsDescription: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    lineHeight: 18,
+  },
+  needsChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 2,
+  },
+  needsChip: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.primaryContainer,
+  },
+  needsChipDiet: {
+    borderColor: theme.colors.secondaryContainer,
+  },
+  needsChipText: {
+    fontSize: 13,
+    color: theme.colors.textPrimary,
+  },
+  needsEditor: {
+    marginTop: 4,
+    gap: 4,
+  },
+  syncProfileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.border,
+    padding: 12,
+    marginBottom: 12,
+  },
+  syncProfileCardDone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+  },
+  syncProfileText: {
+    flex: 1,
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+  },
+  syncProfileBtn: {
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  syncProfileBtnText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+  },
+  syncProfileDone: {
+    fontSize: 13,
+    color: theme.colors.success,
+  },
+  needsEditorLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    marginBottom: 4,
+  },
+  // Cuisine tags
+  cuisineTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    marginTop: 20,
+    marginBottom: 2,
+  },
+  cuisineHint: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+  },
+  cuisineGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 4,
+  },
+  cuisineChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  cuisineChipSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  cuisineChipText: {
+    fontSize: 12,
+    color: theme.colors.textPrimary,
+  },
+  cuisineChipTextSelected: {
+    color: theme.colors.onPrimary,
+  },
+  cuisineChipCountInline: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    marginLeft: 1,
+  },
+  cuisineChipCountInlineSelected: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  cuisineChipAdd: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderStyle: 'dashed',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  cuisineChipAddOpen: {
+    borderStyle: 'solid',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryLight,
+  },
+  cuisineChipAddText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  cuisineChipAddTextOpen: {
+    color: theme.colors.primary,
+  },
   deleteRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 14,
     marginTop: 24,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: theme.colors.border,
     paddingTop: 20,
+    paddingBottom: 14,
   },
   deleteRowText: {
     fontSize: 13,

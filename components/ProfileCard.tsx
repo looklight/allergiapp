@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 import { getAvatarById } from '../constants/avatars';
+import i18n from '../utils/i18n';
 import type { UserProfile } from '../services/auth';
 
 interface ProfileCardProps {
@@ -22,7 +23,7 @@ export default function ProfileCard({ profile, onBack, title = 'Profilo', header
   const initial = (profile.display_name?.charAt(0) || '?').toUpperCase();
 
   const memberSince = profile.created_at
-    ? new Date(profile.created_at).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })
+    ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })
     : '';
 
   return (
@@ -43,7 +44,7 @@ export default function ProfileCard({ profile, onBack, title = 'Profilo', header
         {/* Profilo: avatar + nome in riga, stile Airbnb */}
         <Surface style={styles.profileCard} elevation={1}>
           <View style={styles.profileRow}>
-            {avatarOption ? (
+            {avatarOption?.source ? (
               <Image source={avatarOption.source} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarFallback}>
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
+    resizeMode: 'contain',
   },
   avatarFallback: {
     width: AVATAR_SIZE,

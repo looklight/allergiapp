@@ -130,6 +130,27 @@
     "acceptButton": "Weiter",
     "termsNote": "Mit dem Fortfahren akzeptierst du Datenschutz und Nutzungsbedingungen"
   },
+  "leaderboard": {
+    "title": "Rangliste",
+    "restaurants": "Restaurants",
+    "reviews": "Bewertungen",
+    "restaurantsAdded": "Restaurants hinzugef\u00fcgt",
+    "restaurantsSubtitle": "Wer der Community am meisten geholfen hat, allergikerfreundliche Restaurants f\u00fcr andere zu entdecken",
+    "reviewsWritten": "Bewertungen geschrieben",
+    "reviewsSubtitle": "Wer der Community am meisten geholfen hat, indem er seine Erfahrungen geteilt hat",
+    "infoTitle": "Wie funktioniert es?",
+    "infoBody": "Hier siehst du, wer am meisten zur Community beitr\u00e4gt, indem er Restaurants hinzuf\u00fcgt und Bewertungen schreibt.\n\nF\u00fcge Restaurants hinzu und schreibe Bewertungen, um in der Rangliste aufzusteigen!",
+    "empty": "Noch keine Beitr\u00e4ge",
+    "anonymous": "Anonymer Benutzer"
+  },
+  "profile": {
+    "error": "Fehler",
+    "diets": "Ern\u00e4hrung",
+    "dietaryHint": "W\u00e4hle deine Bed\u00fcrfnisse. Sie werden automatisch mit deinen Beitr\u00e4gen verkn\u00fcpft.",
+    "allergensIntolerances": "Allergene und Intoleranzen",
+    "saveDietary": "Ern\u00e4hrungsbed\u00fcrfnisse speichern",
+    "saveDietaryError": "Ern\u00e4hrungsbed\u00fcrfnisse konnten nicht gespeichert werden. Versuche es erneut."
+  },
   "aboutStory": {
     "title": "Warum ist sie kostenlos?",
     "intro": "Diese App entstand aus einer persönlichen Erfahrung. Als Person mit Nahrungsmittelallergien habe ich es immer geliebt zu reisen und neue Kulturen durch Essen zu entdecken.",

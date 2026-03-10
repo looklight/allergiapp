@@ -11,6 +11,7 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { Review } from '../../services/restaurantService';
 import StarRating from '../../components/StarRating';
 import ProfileCard from '../../components/ProfileCard';
+import i18n from '../../utils/i18n';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -91,6 +92,16 @@ export default function ProfileScreen() {
         {/* Azioni */}
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => router.push('/restaurants/avatar-gallery')}
+          activeOpacity={0.6}
+        >
+          <MaterialCommunityIcons name="emoticon-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.menuItemText}>I miei Avatar</Text>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => router.push('/restaurants/edit-profile')}
           activeOpacity={0.6}
         >
@@ -105,7 +116,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Le mie recensioni</Text>
             {reviews.map((c) => {
               const restaurantName = c.restaurant_name ?? 'Ristorante';
-              const date = new Date(c.created_at).toLocaleDateString('it-IT', {
+              const date = new Date(c.created_at).toLocaleDateString(i18n.locale, {
                 day: 'numeric', month: 'short', year: 'numeric',
               });
               return (
@@ -129,9 +140,9 @@ export default function ProfileScreen() {
                     {c.comment ? (
                       <Text style={styles.reviewText} numberOfLines={3}>{c.comment}</Text>
                     ) : null}
-                    {c.dishes && c.dishes.length > 0 && (
+                    {(c.photos?.length ?? 0) > 0 && (
                       <Text style={styles.reviewDishes}>
-                        {c.dishes.length} piatt{c.dishes.length === 1 ? 'o' : 'i'} aggiunti
+                        {c.photos.length} foto
                       </Text>
                     )}
                     <Text style={styles.reviewDate}>{date}</Text>

@@ -11,6 +11,7 @@ import type { Review } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
 import StarRating from '../../../components/StarRating';
 import ProfileCard from '../../../components/ProfileCard';
+import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 
 export default function PublicProfileScreen() {
@@ -78,7 +79,7 @@ export default function PublicProfileScreen() {
             <Text style={styles.sectionTitle}>Recensioni</Text>
             {reviews.map((c) => {
               const restaurantName = c.restaurant_name ?? 'Ristorante';
-              const date = new Date(c.created_at).toLocaleDateString('it-IT', {
+              const date = new Date(c.created_at).toLocaleDateString(i18n.locale, {
                 day: 'numeric', month: 'short', year: 'numeric',
               });
               return (
@@ -102,9 +103,9 @@ export default function PublicProfileScreen() {
                     {c.comment ? (
                       <Text style={styles.reviewText} numberOfLines={3}>{c.comment}</Text>
                     ) : null}
-                    {c.dishes && c.dishes.length > 0 && (
+                    {(c.photos?.length ?? 0) > 0 && (
                       <Text style={styles.reviewDishes}>
-                        {c.dishes.length} piatt{c.dishes.length === 1 ? 'o' : 'i'} aggiunti
+                        {c.photos.length} foto
                       </Text>
                     )}
                     <Text style={styles.reviewDate}>{date}</Text>

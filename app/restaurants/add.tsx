@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Linking } from 'react-native';
 import { Text, TextInput, Button, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -21,7 +21,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
   const [results, setResults] = useState<PlaceAutocompleteResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [existingRestaurant, setExistingRestaurant] = useState<{ id: string; name: string } | null>(null);
+  const [existingMap, setExistingMap] = useState<Map<string, { id: string; name: string }>>(new Map());
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -32,32 +32,28 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
 
   const handleQueryChange = useCallback((text: string) => {
     setQuery(text);
-    setExistingRestaurant(null);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (text.trim().length < 2) {
       setResults([]);
+      setExistingMap(new Map());
       return;
     }
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true);
       const found = await PlacesService.searchPlaces(text);
       setResults(found);
+
+      // Batch check: una sola query per tutti i placeId
+      const placeIds = found.map(r => r.placeId).filter(Boolean);
+      const existing = await RestaurantService.checkExistingByPlaceIds(placeIds);
+      setExistingMap(existing);
+
       setIsSearching(false);
     }, 400);
   }, []);
 
   const handleSelect = async (result: PlaceAutocompleteResult) => {
-    setExistingRestaurant(null);
     setIsLoadingDetails(true);
-
-    // Check rapido su Supabase per google_place_id (univoco)
-    const existing = await RestaurantService.getRestaurantByGooglePlaceId(result.placeId);
-    if (existing) {
-      setIsLoadingDetails(false);
-      setExistingRestaurant({ id: existing.id, name: existing.name });
-      return;
-    }
-
     const details = await PlacesService.getPlaceDetails(result.placeId);
     setIsLoadingDetails(false);
     if (details) {
@@ -96,36 +92,52 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
         )}
 
         {results.map(result => {
-          const isExisting = existingRestaurant && result.mainText.toLowerCase() === existingRestaurant.name.toLowerCase();
-          return (
-            <TouchableOpacity
-              key={result.placeId}
-              style={[styles.resultRow, isExisting && styles.resultRowExisting]}
-              onPress={() => isExisting
-                ? router.push(`/restaurants/${existingRestaurant.id}`)
-                : handleSelect(result)
-              }
-              activeOpacity={0.7}
-            >
-              <MaterialCommunityIcons
-                name={isExisting ? 'check-circle' : 'map-marker-outline'}
-                size={20}
-                color={theme.colors.primary}
-              />
-              <View style={styles.resultText}>
-                <Text style={styles.resultMain}>{result.mainText}</Text>
-                {isExisting ? (
-                  <Text style={styles.resultExistingHint}>Già nella community — tocca per vedere</Text>
-                ) : (
+          const existing = existingMap.get(result.placeId);
+          return existing ? (
+            // Ristorante già presente nella community
+            <View key={result.placeId} style={styles.resultRowExisting}>
+              <View style={styles.resultExistingTop}>
+                <MaterialCommunityIcons name="check-circle" size={18} color={theme.colors.primary} />
+                <View style={styles.resultText}>
+                  <Text style={styles.resultMain}>{result.mainText}</Text>
                   <Text style={styles.resultSecondary} numberOfLines={1}>{result.secondaryText}</Text>
-                )}
+                </View>
               </View>
-              <MaterialCommunityIcons
-                name={isExisting ? 'arrow-right' : 'chevron-right'}
-                size={20}
-                color={theme.colors.textSecondary}
-              />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.resultExistingBtn}
+                onPress={() => router.push(`/restaurants/${existing.id}`)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.resultExistingBtnText}>Già nella community — vedi scheda</Text>
+                <MaterialCommunityIcons name="arrow-right" size={16} color={theme.colors.primary} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            // Nuovo ristorante
+            <View key={result.placeId} style={styles.resultRow}>
+              <TouchableOpacity
+                style={styles.resultSelectArea}
+                onPress={() => handleSelect(result)}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons name="map-marker-outline" size={20} color={theme.colors.primary} />
+                <View style={styles.resultText}>
+                  <Text style={styles.resultMain}>{result.mainText}</Text>
+                  <Text style={styles.resultSecondary} numberOfLines={1}>{result.secondaryText}</Text>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.6}
+                onPress={() => Linking.openURL(
+                  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(result.mainText + ' ' + result.secondaryText)}&query_place_id=${result.placeId}`
+                )}
+                style={styles.mapsBtn}
+              >
+                <MaterialCommunityIcons name="google-maps" size={12} color={theme.colors.textSecondary} />
+                <Text style={styles.mapsBtnText}>Verifica su Maps</Text>
+              </TouchableOpacity>
+            </View>
           );
         })}
       </Surface>
@@ -138,15 +150,15 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
 // ---------------------------------------------------------------------------
 function ConfirmStep({
   place,
-  cuisineType,
-  onCuisineTypeChange,
+  cuisineTypes,
+  onToggleCuisine,
   onSubmit,
   onBack,
   isLoading,
 }: {
   place: PlaceSuggestion;
-  cuisineType: string;
-  onCuisineTypeChange: (text: string) => void;
+  cuisineTypes: string[];
+  onToggleCuisine: (id: string) => void;
   onSubmit: () => void;
   onBack: () => void;
   isLoading: boolean;
@@ -169,16 +181,16 @@ function ConfirmStep({
 
       <Surface style={styles.section} elevation={0}>
         <Text style={styles.sectionTitle}>Tipo di cucina</Text>
-        <Text style={styles.stepHint}>Seleziona il tipo di cucina del ristorante (opzionale)</Text>
+        <Text style={styles.stepHint}>Seleziona uno o più tipi di cucina (opzionale)</Text>
         <View style={styles.cuisineGrid}>
           {CUISINE_CATEGORIES.map(cat => {
             const label = cat.translations['it' as AppLanguage] ?? cat.id;
-            const selected = cuisineType === cat.id;
+            const selected = cuisineTypes.includes(cat.id);
             return (
               <TouchableOpacity
                 key={cat.id}
                 style={[styles.cuisineChip, selected && styles.cuisineChipSelected]}
-                onPress={() => onCuisineTypeChange(selected ? '' : cat.id)}
+                onPress={() => onToggleCuisine(cat.id)}
                 activeOpacity={0.7}
               >
                 <Text style={styles.cuisineChipIcon}>{cat.icon}</Text>
@@ -215,8 +227,14 @@ export default function AddRestaurantScreen() {
   const { user, userProfile } = useAuth();
 
   const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(null);
-  const [cuisineType, setCuisineType] = useState('');
+  const [cuisineTypes, setCuisineTypes] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const toggleCuisine = (id: string) => {
+    setCuisineTypes(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
 
   const handleSubmit = async () => {
     if (!selectedPlace || !user) return;
@@ -231,7 +249,7 @@ export default function AddRestaurantScreen() {
       latitude: selectedPlace.location.latitude,
       longitude: selectedPlace.location.longitude,
       google_place_id: selectedPlace.googlePlaceId,
-      cuisine_type: cuisineType.trim() || undefined,
+      cuisine_types: cuisineTypes.length > 0 ? cuisineTypes : undefined,
     };
 
     const result = await RestaurantService.addRestaurant(input, user.uid);
@@ -271,10 +289,10 @@ export default function AddRestaurantScreen() {
         ) : (
           <ConfirmStep
             place={selectedPlace}
-            cuisineType={cuisineType}
-            onCuisineTypeChange={setCuisineType}
+            cuisineTypes={cuisineTypes}
+            onToggleCuisine={toggleCuisine}
             onSubmit={handleSubmit}
-            onBack={() => { setSelectedPlace(null); setCuisineType(''); }}
+            onBack={() => { setSelectedPlace(null); setCuisineTypes([]); }}
             isLoading={isSubmitting}
           />
         )}
@@ -342,18 +360,43 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   resultRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: 10,
     borderRadius: 10,
-    gap: 10,
+    gap: 6,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.border,
   },
+  resultSelectArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   resultRowExisting: {
     backgroundColor: theme.colors.primaryLight,
+    borderRadius: 10,
+    padding: 10,
+    gap: 8,
+  },
+  resultExistingTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  resultExistingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    paddingVertical: 7,
     borderWidth: 1,
     borderColor: theme.colors.primary,
+  },
+  resultExistingBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   resultText: {
     flex: 1,
@@ -368,11 +411,20 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
-  resultExistingHint: {
-    fontSize: 13,
-    color: theme.colors.primary,
-    fontWeight: '500',
-    marginTop: 2,
+  mapsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginLeft: 30,
+    gap: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    backgroundColor: theme.colors.background,
+  },
+  mapsBtnText: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
   },
   placeSummary: {
     backgroundColor: theme.colors.primaryLight,

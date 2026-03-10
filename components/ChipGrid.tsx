@@ -4,7 +4,7 @@ import { theme } from '../constants/theme';
 
 interface ChipGridItem {
   id: string;
-  icon: string;
+  icon?: string;
   translations: Record<string, string>;
 }
 
@@ -28,7 +28,7 @@ export default function ChipGrid({ items, activeIds, onToggle, lang, keyPrefix }
             style={[styles.chip, isActive && styles.chipActive]}
             activeOpacity={0.7}
           >
-            <Text style={styles.chipIcon}>{item.icon}</Text>
+            {!!item.icon && <Text style={styles.chipIcon}>{item.icon}</Text>}
             <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
               {item.translations[lang] ?? item.translations.en}
             </Text>

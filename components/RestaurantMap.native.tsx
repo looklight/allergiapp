@@ -97,9 +97,9 @@ export default function RestaurantMap({ restaurants, centerOn, onRegionChangeCom
             <Surface style={styles.callout} elevation={3}>
               <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
               <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
-              {restaurant.cuisine_type && (
+              {restaurant.cuisine_types?.length > 0 && (
                 <Text style={styles.calloutTags} numberOfLines={1}>
-                  {getCuisineLabel(restaurant.cuisine_type)}
+                  {restaurant.cuisine_types.map(ct => getCuisineLabel(ct)).join(' · ')}
                 </Text>
               )}
               <Text style={styles.calloutCta}>Tocca per aprire →</Text>

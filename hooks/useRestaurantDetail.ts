@@ -4,8 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { RestaurantService } from '../services/restaurantService';
 import { useAuth } from '../contexts/AuthContext';
-import { useDishLikes } from './useDishLikes';
-import type { Restaurant, Review, ReviewDish, MenuPhoto, Report } from '../services/restaurantService';
+import type { Restaurant, Review, ReviewPhoto, MenuPhoto, Report, CuisineVote } from '../services/restaurantService';
 
 export interface UnifiedReview {
   key: string;
@@ -13,21 +12,10 @@ export interface UnifiedReview {
   displayName: string;
   rating?: number;
   text?: string;
-  dishes: ReviewDish[];
+  photos: ReviewPhoto[];
   createdAt: Date;
   allergensSnapshot?: string[];
   dietarySnapshot?: string[];
-}
-
-export interface AggregatedDish {
-  name: string;
-  description?: string;
-  photo_url?: string | null;
-  thumbnail_url?: string | null;
-  totalLikes: number;
-  likerIds: Set<string>;
-  count: number;
-  sources: { reviewDishId: string }[];
 }
 
 export function useRestaurantDetail(restaurantId: string | undefined) {
@@ -43,39 +31,41 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
   const [isUploadingMenu, setIsUploadingMenu] = useState(false);
   const [userReport, setUserReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
-
-  const { dishLikes, toggleLike, isLiked: isDishLiked, getLikers, reloadLikes } = useDishLikes(restaurantId);
+  const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
 
   const load = useCallback(async () => {
     if (!restaurantId) return;
     if (!restaurant) setIsLoading(true);
-    const [rest, rv, mp, rp] = await Promise.all([
+
+    const basePromise = Promise.all([
       RestaurantService.getRestaurant(restaurantId),
       RestaurantService.getReviews(restaurantId),
       RestaurantService.getMenuPhotos(restaurantId),
       RestaurantService.getReports(restaurantId),
+      RestaurantService.getCuisineVotes(restaurantId),
     ]);
+    const userPromise = user?.uid
+      ? Promise.all([
+          RestaurantService.getUserReview(restaurantId, user.uid),
+          RestaurantService.isFavorite(user.uid, restaurantId),
+          RestaurantService.getUserReport(restaurantId, user.uid),
+        ])
+      : Promise.resolve([null, false, null] as const);
+
+    const [[rest, rv, mp, rp, cv], [ur, fav, urp]] = await Promise.all([basePromise, userPromise]);
+
     setRestaurant(rest);
     setReviews(rv);
     setMenuPhotos(mp);
     setReports(rp);
-    if (user?.uid) {
-      const [ur, fav, urp] = await Promise.all([
-        RestaurantService.getUserReview(restaurantId, user.uid),
-        RestaurantService.isFavorite(user.uid, restaurantId),
-        RestaurantService.getUserReport(restaurantId, user.uid),
-      ]);
-      setUserReview(ur);
-      setIsFavorite(fav);
-      setUserReport(urp);
-    } else {
-      setIsFavorite(false);
-      setUserReport(null);
-    }
+    setCuisineVotes(cv);
+    setUserReview(ur);
+    setIsFavorite(fav ?? false);
+    setUserReport(urp);
     setIsLoading(false);
   }, [restaurantId, user?.uid]);
 
-  useFocusEffect(useCallback(() => { load(); reloadLikes(); }, [load, reloadLikes]));
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const allReviews = useMemo((): UnifiedReview[] => {
     const items: UnifiedReview[] = [];
@@ -87,7 +77,7 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
         displayName: r.user_display_name ?? 'Utente',
         rating: r.rating,
         text: r.comment ?? undefined,
-        dishes: r.dishes ?? [],
+        photos: r.photos ?? [],
         createdAt: new Date(r.created_at),
         allergensSnapshot: r.allergens_snapshot,
         dietarySnapshot: r.dietary_snapshot,
@@ -97,46 +87,6 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     return items;
   }, [reviews]);
-
-  const aggregatedDishes = useMemo((): AggregatedDish[] => {
-    const map = new Map<string, AggregatedDish>();
-
-    for (const c of allReviews) {
-      for (const d of c.dishes) {
-        const normalized = d.name.trim().toLowerCase();
-        const existing = map.get(normalized);
-
-        const likers: string[] = d.id ? (dishLikes.get(d.id) ?? []) : [];
-
-        if (existing) {
-          if (!existing.photo_url && d.photo_url) {
-            existing.photo_url = d.photo_url;
-            existing.thumbnail_url = d.thumbnail_url;
-          }
-          if (!existing.description && d.description) existing.description = d.description;
-          existing.totalLikes += likers.length;
-          likers.forEach(uid => existing.likerIds.add(uid));
-          existing.count++;
-          if (d.id) {
-            existing.sources.push({ reviewDishId: d.id });
-          }
-        } else {
-          map.set(normalized, {
-            name: d.name,
-            description: d.description ?? undefined,
-            photo_url: d.photo_url,
-            thumbnail_url: d.thumbnail_url,
-            totalLikes: likers.length,
-            likerIds: new Set(likers),
-            count: 1,
-            sources: d.id ? [{ reviewDishId: d.id }] : [],
-          });
-        }
-      }
-    }
-
-    return Array.from(map.values()).sort((a, b) => b.totalLikes - a.totalLikes || b.count - a.count);
-  }, [allReviews, dishLikes]);
 
   const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated || !user) {
@@ -225,9 +175,9 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
   return {
     restaurant,
     allReviews,
-    aggregatedDishes,
     menuPhotos,
     reports,
+    cuisineVotes,
     userReview,
     userReport,
     isFavorite,
@@ -237,8 +187,5 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     navigateToContribute,
     handleAddMenuPhoto,
     handleDeleteMenuPhoto,
-    toggleLike,
-    isDishLiked,
-    getLikers,
   };
 }

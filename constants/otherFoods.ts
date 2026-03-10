@@ -296,7 +296,3 @@ export const OTHER_FOODS: readonly OtherFood[] = [
     },
   },
 ];
-
-export const getOtherFoodById = (id: string): OtherFood | undefined => {
-  return OTHER_FOODS.find((f) => f.id === id);
-};

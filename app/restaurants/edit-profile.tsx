@@ -21,9 +21,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
-import { AVATARS, getAvatarById } from '../../constants/avatars';
+import { getAvatarById } from '../../constants/avatars';
 import { PROFILE_COLORS, getProfileColor } from '../../constants/profileColors';
 import DietaryNeedsEditor from '../../components/restaurants/DietaryNeedsEditor';
+import i18n from '../../utils/i18n';
 import type { DietaryNeeds } from '../../types';
 
 if (Platform.OS === 'android') {
@@ -39,11 +40,13 @@ export default function EditProfileScreen() {
   const { user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
 
   const currentDisplayName = userProfile?.display_name ?? user?.displayName ?? '';
+  const savedAvatarId = userProfile?.avatar_url ?? null;
+  const savedColorHex = userProfile?.profile_color ?? null;
+
   const [displayName, setDisplayName] = useState(currentDisplayName);
+  const [selectedColorHex, setSelectedColorHex] = useState(savedColorHex);
   const email = user?.email ?? '';
-  const [savingAvatar, setSavingAvatar] = useState(false);
-  const [savingColor, setSavingColor] = useState(false);
-  const [savingName, setSavingName] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -51,39 +54,15 @@ export default function EditProfileScreen() {
   const stepAnim = useRef(new Animated.Value(0)).current;
 
   // Accordion state
-  const [avatarOpen, setAvatarOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
 
-  const currentAvatarId = userProfile?.avatar_url;
-  const currentAvatar = currentAvatarId ? getAvatarById(currentAvatarId) : undefined;
-  const currentProfileColor = getProfileColor(userProfile?.profile_color ?? undefined);
-  const initial = currentDisplayName.charAt(0).toUpperCase() || '?';
+  const currentAvatar = savedAvatarId ? getAvatarById(savedAvatarId) : undefined;
+  const currentProfileColor = getProfileColor(selectedColorHex ?? undefined);
+  const initial = (displayName.trim() || currentDisplayName).charAt(0).toUpperCase() || '?';
 
-  const handleSelectAvatar = async (avatarId: string) => {
-    if (!user || savingAvatar) return;
-    setSavingAvatar(true);
-    try {
-      await AuthService.updateUserAvatar(user.uid, avatarId);
-      await refreshProfile();
-    } catch {
-      Alert.alert('Errore', "Impossibile salvare l'avatar. Riprova.");
-    } finally {
-      setSavingAvatar(false);
-    }
-  };
-
-  const handleSelectColor = async (colorHex: string) => {
-    if (!user || savingColor) return;
-    setSavingColor(true);
-    try {
-      await AuthService.updateProfileColor(user.uid, colorHex);
-      await refreshProfile();
-    } catch {
-      Alert.alert('Errore', 'Impossibile salvare il colore. Riprova.');
-    } finally {
-      setSavingColor(false);
-    }
-  };
+  const nameChanged = displayName.trim() !== currentDisplayName;
+  const colorChanged = selectedColorHex !== savedColorHex;
+  const hasChanges = nameChanged || colorChanged;
 
   const handleSave = async () => {
     if (!user) return;
@@ -92,19 +71,22 @@ export default function EditProfileScreen() {
       Alert.alert('Nome obbligatorio', 'Inserisci un nome visualizzato.');
       return;
     }
-    if (trimmed === currentDisplayName) {
+    if (!hasChanges) {
       router.back();
       return;
     }
-    setSavingName(true);
+    setSaving(true);
     try {
-      await AuthService.updateDisplayName(user.uid, trimmed);
+      const promises: Promise<void>[] = [];
+      if (nameChanged) promises.push(AuthService.updateDisplayName(user.uid, trimmed));
+      if (colorChanged && selectedColorHex) promises.push(AuthService.updateProfileColor(user.uid, selectedColorHex));
+      await Promise.all(promises);
       await refreshProfile();
       router.back();
     } catch {
-      Alert.alert('Errore', 'Impossibile aggiornare il nome. Riprova.');
+      Alert.alert('Errore', 'Impossibile salvare le modifiche. Riprova.');
     } finally {
-      setSavingName(false);
+      setSaving(false);
     }
   };
 
@@ -154,7 +136,6 @@ export default function EditProfileScreen() {
   };
 
   const deleteConfirmValid = deleteConfirmText.trim().toUpperCase() === 'ELIMINA';
-  const nameChanged = displayName.trim() !== currentDisplayName;
 
   return (
     <View style={styles.container}>
@@ -174,7 +155,7 @@ export default function EditProfileScreen() {
         {/* Profilo: avatar + nome */}
         <View style={styles.profileSection}>
           <View style={[styles.avatarRing, { borderColor: currentProfileColor.hex }]}>
-            {currentAvatar ? (
+            {currentAvatar?.source ? (
               <Image source={currentAvatar.source} style={styles.avatarImage} />
             ) : (
               <View style={[styles.avatarFallback, { backgroundColor: currentProfileColor.hex }]}>
@@ -186,50 +167,8 @@ export default function EditProfileScreen() {
           <Text style={styles.emailLabel}>{email}</Text>
         </View>
 
-        {/* Cambia avatar — menuItem espandibile */}
-        <View style={styles.expandableCard}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => { toggleLayout(); setAvatarOpen((v) => !v); }}
-            activeOpacity={0.6}
-          >
-            <MaterialCommunityIcons name="emoticon-outline" size={22} color={theme.colors.primary} />
-            <Text style={styles.menuItemText}>Cambia avatar</Text>
-            <MaterialCommunityIcons
-              name={avatarOpen ? 'chevron-up' : 'chevron-down'}
-              size={22}
-              color={theme.colors.textSecondary}
-            />
-          </TouchableOpacity>
-          {avatarOpen && (
-            <View style={styles.expandedContent}>
-              <View style={styles.avatarGrid}>
-                {AVATARS.map((item) => {
-                  const isSelected = currentAvatarId === item.id;
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      onPress={() => handleSelectAvatar(item.id)}
-                      activeOpacity={0.7}
-                      disabled={savingAvatar}
-                      style={[styles.avatarOption, isSelected && styles.avatarOptionSelected]}
-                    >
-                      <Image source={item.source} style={styles.avatarOptionImage} />
-                      {isSelected && (
-                        <View style={styles.checkBadge}>
-                          <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-        </View>
-
         {/* Colore profilo — menuItem espandibile */}
-        <View style={[styles.expandableCard, { marginTop: 10 }]}>
+        <View style={styles.expandableCard}>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => { toggleLayout(); setColorOpen((v) => !v); }}
@@ -248,13 +187,12 @@ export default function EditProfileScreen() {
             <View style={styles.expandedContent}>
               <View style={styles.colorRow}>
                 {PROFILE_COLORS.map((color) => {
-                  const isSelected = currentProfileColor.hex === color.hex;
+                  const isSelected = selectedColorHex === color.hex;
                   return (
                     <TouchableOpacity
                       key={color.id}
-                      onPress={() => handleSelectColor(color.hex)}
+                      onPress={() => setSelectedColorHex(color.hex)}
                       activeOpacity={0.7}
-                      disabled={savingColor}
                       accessibilityLabel={color.label}
                     >
                       <View
@@ -304,8 +242,8 @@ export default function EditProfileScreen() {
         <Button
           mode="contained"
           onPress={handleSave}
-          loading={savingName}
-          disabled={savingName || !nameChanged}
+          loading={saving}
+          disabled={saving || !hasChanges}
           style={styles.saveButton}
           labelStyle={styles.saveButtonLabel}
         >
@@ -316,7 +254,7 @@ export default function EditProfileScreen() {
         <Surface style={[styles.card, { marginTop: 20 }]} elevation={1}>
           <DietaryNeedsEditor
             initialNeeds={dietaryNeeds}
-            lang="it"
+            lang={i18n.locale}
             onSave={async (needs: DietaryNeeds) => {
               if (!user) return;
               await AuthService.updateDietaryNeeds(user.uid, needs);
@@ -472,15 +410,14 @@ const styles = StyleSheet.create({
   avatarRing: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    padding: 3,
     marginBottom: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatarImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 36,
+    resizeMode: 'contain',
   },
   avatarFallback: {
     width: '100%',
@@ -525,45 +462,6 @@ const styles = StyleSheet.create({
   expandedContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-  },
-
-  // Avatar grid
-  avatarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  avatarOption: {
-    width: '30%',
-    aspectRatio: 1,
-    borderRadius: 16,
-    borderWidth: 3,
-    borderColor: 'transparent',
-    padding: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  avatarOptionSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primaryLight,
-  },
-  avatarOptionImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-  },
-  checkBadge: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
   // Color picker

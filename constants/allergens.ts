@@ -317,7 +317,3 @@ export const ALLERGENS: readonly Allergen[] = [
     },
   },
 ];
-
-export const getAllergenById = (id: string): Allergen | undefined => {
-  return ALLERGENS.find((a) => a.id === id);
-};

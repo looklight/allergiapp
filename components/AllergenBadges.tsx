@@ -1,9 +1,8 @@
 import { View, StyleSheet, Text } from 'react-native';
-import { ALLERGENS } from '../constants/allergens';
-import type { AllergenId } from '../types';
+import { getRestrictionById } from '../constants/foodRestrictions';
 
 interface AllergenBadgesProps {
-  allergenIds: AllergenId[] | Set<string>;
+  allergenIds: string[] | Set<string>;
   /** Font size for emoji icons. Default: 16 */
   size?: number;
   /** Gap between icons. Default: 2 */
@@ -16,9 +15,9 @@ export default function AllergenBadges({ allergenIds, size = 16, gap = 2 }: Alle
 
   return (
     <View style={[styles.row, { gap }]}>
-      {ids.map(aId => {
-        const a = ALLERGENS.find(x => x.id === aId);
-        return a ? <Text key={aId} style={{ fontSize: size }}>{a.icon}</Text> : null;
+      {ids.map(id => {
+        const r = getRestrictionById(id);
+        return r?.icon ? <Text key={id} style={{ fontSize: size }}>{r.icon}</Text> : null;
       })}
     </View>
   );

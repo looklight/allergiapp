@@ -5,18 +5,25 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
-import { ALLERGENS } from '../../constants/allergens';
-import { DIETS } from '../../constants/diets';
+import {
+  FOOD_RESTRICTIONS,
+  getRestrictionsByCategory,
+  INTOLERANCE_RESTRICTION_IDS,
+} from '../../constants/foodRestrictions';
 import ChipGrid from '../../components/ChipGrid';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
-import type { AllergenId, DietId } from '../../types';
+import i18n from '../../utils/i18n';
+import type { FoodRestrictionId, DietId } from '../../types';
+
+const DIETS_GROUP = getRestrictionsByCategory('diet');
+const ALLERGENS_GROUP = FOOD_RESTRICTIONS.filter(r => r.category !== 'diet');
 
 export default function OnboardingDietaryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, refreshProfile } = useAuth();
-  const [allergens, setAllergens] = useState<AllergenId[]>([]);
+  const [allergens, setAllergens] = useState<FoodRestrictionId[]>([]);
   const [diets, setDiets] = useState<DietId[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -24,9 +31,9 @@ export default function OnboardingDietaryScreen() {
 
   const toggleAllergen = (id: string) => {
     setAllergens((prev) =>
-      prev.includes(id as AllergenId)
+      prev.includes(id as FoodRestrictionId)
         ? prev.filter((a) => a !== id)
-        : [...prev, id as AllergenId]
+        : [...prev, id as FoodRestrictionId]
     );
   };
 
@@ -84,23 +91,28 @@ export default function OnboardingDietaryScreen() {
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Diete e intolleranze</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('profile.diets')}</Text>
         <ChipGrid
-          items={DIETS}
+          items={DIETS_GROUP}
           activeIds={diets}
           onToggle={toggleDiet}
-          lang="it"
+          lang={i18n.locale}
           keyPrefix="diet"
         />
 
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Allergeni</Text>
-        <Text style={styles.sectionHint}>14 allergeni EU + favismo</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{i18n.t('profile.allergensIntolerances')}</Text>
         <ChipGrid
-          items={ALLERGENS}
-          activeIds={allergens}
-          onToggle={toggleAllergen}
-          lang="it"
-          keyPrefix="allergen"
+          items={ALLERGENS_GROUP}
+          activeIds={[...diets, ...allergens]}
+          onToggle={(id) => {
+            if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
+              toggleDiet(id);
+            } else {
+              toggleAllergen(id);
+            }
+          }}
+          lang={i18n.locale}
+          keyPrefix="intol"
         />
 
         <Text style={styles.gdprNote}>
@@ -183,12 +195,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: theme.colors.textPrimary,
-    marginBottom: 10,
-  },
-  sectionHint: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: -6,
     marginBottom: 10,
   },
   gdprNote: {

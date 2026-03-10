@@ -1,4 +1,6 @@
 import { ReactNode } from 'react';
+import type { ImageSourcePropType } from 'react-native';
+import type { OtherFoodId } from '../constants/otherFoods';
 
 // Banner types (used by services/remoteConfig and components/BannerCarousel)
 export type BannerType = 'info' | 'ad' | 'custom';
@@ -7,7 +9,7 @@ export interface BannerItem {
   id: string;
   type: BannerType;
   icon?: string;
-  image?: any;
+  image?: ImageSourcePropType;
   title?: string;
   subtitle?: string;
   adUrl?: string;
@@ -41,8 +43,10 @@ export type AllergenId =
 // TODO merge: valutare se unificare con DietModeId della sezione card
 export type DietId = 'vegetarian' | 'vegan' | 'histamine' | 'nickel' | 'diabetes';
 
+export type FoodRestrictionId = AllergenId | OtherFoodId;
+
 export interface DietaryNeeds {
-  allergens: AllergenId[];
+  allergens: FoodRestrictionId[];
   diets: DietId[];
 }
 

@@ -134,7 +134,7 @@ export default function RestaurantsScreen() {
     let list = restaurants;
     if (activeFilters.length > 0) {
       list = list.filter(r =>
-        activeFilters.includes(r.cuisine_type as RestaurantCategoryId)
+        r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
       );
     }
     if (searchQuery.length >= 2) {
@@ -552,6 +552,13 @@ export default function RestaurantsScreen() {
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Text style={styles.headerTitle}>Ristoranti</Text>
         <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => router.push('/leaderboard')}
+            hitSlop={8}
+            activeOpacity={0.6}
+          >
+            <MaterialCommunityIcons name="trophy" size={24} color={theme.colors.onPrimary} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => isAuthenticated ? router.push('/restaurants/favorites') : router.push('/auth/login')}
             hitSlop={8}

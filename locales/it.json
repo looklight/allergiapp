@@ -130,6 +130,27 @@
     "acceptButton": "Continua",
     "termsNote": "Continuando accetti Privacy e Termini di Servizio"
   },
+  "leaderboard": {
+    "title": "Classifica",
+    "restaurants": "Ristoranti",
+    "reviews": "Recensioni",
+    "restaurantsAdded": "ristoranti aggiunti",
+    "restaurantsSubtitle": "Chi ha aiutato di piu la community facendo scoprire ristoranti allergy-friendly a chi ne ha bisogno",
+    "reviewsWritten": "recensioni scritte",
+    "reviewsSubtitle": "Chi ha aiutato di piu la community condividendo le proprie esperienze",
+    "infoTitle": "Come funziona?",
+    "infoBody": "Qui puoi vedere chi contribuisce di piu alla community aggiungendo ristoranti e scrivendo recensioni.\n\nAggiungi ristoranti e lascia recensioni per scalare la classifica!",
+    "empty": "Nessun contributo ancora",
+    "anonymous": "Utente anonimo"
+  },
+  "profile": {
+    "error": "Errore",
+    "diets": "Diete",
+    "dietaryHint": "Seleziona le tue esigenze. Verranno associate automaticamente ai tuoi contributi.",
+    "allergensIntolerances": "Allergeni e intolleranze",
+    "saveDietary": "Salva esigenze alimentari",
+    "saveDietaryError": "Impossibile salvare le esigenze alimentari. Riprova."
+  },
   "aboutStory": {
     "title": "Perché è gratuita?",
     "intro": "Questa app nasce da un'esperienza personale. Come persona con allergie alimentari, ho sempre amato viaggiare e scoprire nuove culture attraverso il cibo.",

@@ -5,17 +5,16 @@ import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
 import StarRating from '../StarRating';
-import type { Restaurant } from '../../services/restaurantService';
+import type { Restaurant, CuisineVote } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
 
 interface RestaurantHeaderProps {
   restaurant: Restaurant;
   lang: AppLanguage;
-  tappedBadge: string | null;
-  onTapBadge: (catId: string | null) => void;
+  cuisineVotes: CuisineVote[];
 }
 
-export default function RestaurantHeader({ restaurant, lang, tappedBadge, onTapBadge }: RestaurantHeaderProps) {
+export default function RestaurantHeader({ restaurant, lang, cuisineVotes }: RestaurantHeaderProps) {
   const router = useRouter();
 
   return (
@@ -24,17 +23,17 @@ export default function RestaurantHeader({ restaurant, lang, tappedBadge, onTapB
         <Text style={[styles.restaurantName, { flex: 1 }]}>{restaurant.name}</Text>
         {(restaurant.google_place_id || restaurant.address) && (
           <TouchableOpacity
+            style={styles.mapsBtn}
+            activeOpacity={0.7}
             onPress={() => {
               const url = restaurant.google_place_id
                 ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.google_place_id}`
                 : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address!)}`;
               Linking.openURL(url);
             }}
-            hitSlop={8}
-            activeOpacity={0.6}
-            style={styles.mapsIconBtn}
           >
-            <MaterialCommunityIcons name="google-maps" size={30} color="#EA4335" />
+            <MaterialCommunityIcons name="google-maps" size={26} color="#EA4335" />
+            <Text style={styles.mapsBtnText}>Dettagli</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -64,11 +63,16 @@ export default function RestaurantHeader({ restaurant, lang, tappedBadge, onTapB
         </View>
       )}
 
-      {restaurant.cuisine_type && (
+      {cuisineVotes.length > 0 && (
         <View style={styles.tagsWrap}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>{getCuisineLabel(restaurant.cuisine_type, lang)}</Text>
-          </View>
+          {cuisineVotes.map(v => (
+            <View key={v.cuisine_id} style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>{getCuisineLabel(v.cuisine_id, lang, { emoji: false })}</Text>
+              <View style={styles.categoryBadgeCount}>
+                <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       )}
 
@@ -102,9 +106,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textPrimary,
     marginBottom: 12,
-  },
-  mapsIconBtn: {
-    padding: 4,
   },
   ratingRow: {
     flexDirection: 'row',
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     backgroundColor: '#FFFFFF',
-    paddingLeft: 8,
+    paddingLeft: 10,
     paddingRight: 4,
     paddingVertical: 3,
   },
@@ -165,11 +166,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },
-  badgeHint: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    fontStyle: 'italic',
-    marginTop: 4,
+  mapsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  mapsBtnText: {
+    fontSize: 13,
+    color: theme.colors.textPrimary,
+    fontWeight: '500',
   },
   addedByRow: {
     flexDirection: 'row',
@@ -181,8 +192,5 @@ const styles = StyleSheet.create({
   addedByText: {
     fontSize: 12,
     color: theme.colors.textSecondary,
-  },
-  addedByName: {
-    fontWeight: '600',
   },
 });

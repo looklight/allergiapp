@@ -12,7 +12,6 @@ const BUCKET = 'images';
 // Presets compressione immagini: { maxWidth, quality }
 const IMAGE_PRESETS = {
   thumbnail: { width: 150, quality: 0.5 },
-  dish:      { width: 600, quality: 0.7 },
   review:    { width: 800, quality: 0.7 },
   menu:      { width: 1200, quality: 0.8 },
 } as const;
@@ -27,13 +26,38 @@ async function compressImage(
   uri: string,
   maxWidth: number,
   quality: number,
+  crop?: 'square',
 ): Promise<string> {
+  const actions: ImageManipulator.Action[] = [];
+
+  if (crop === 'square') {
+    // Crop quadrato dal centro: prima scopriamo le dimensioni originali
+    const { width, height } = await getImageSize(uri);
+    const side = Math.min(width, height);
+    actions.push({
+      crop: {
+        originX: Math.floor((width - side) / 2),
+        originY: Math.floor((height - side) / 2),
+        width: side,
+        height: side,
+      },
+    });
+  }
+
+  actions.push({ resize: { width: maxWidth } });
+
   const manipulated = await ImageManipulator.manipulateAsync(
     uri,
-    [{ resize: { width: maxWidth } }],
+    actions,
     { compress: quality, format: ImageManipulator.SaveFormat.JPEG },
   );
   return manipulated.uri;
+}
+
+async function getImageSize(uri: string): Promise<{ width: number; height: number }> {
+  // manipulateAsync senza azioni ritorna le dimensioni originali
+  const result = await ImageManipulator.manipulateAsync(uri, []);
+  return { width: result.width, height: result.height };
 }
 
 async function uriToArrayBuffer(uri: string): Promise<ArrayBuffer> {
@@ -61,10 +85,11 @@ async function uploadWithThumbnail(
   thumbPath: string,
   fullMaxWidth: number,
   fullQuality: number,
+  crop?: 'square',
 ): Promise<UploadResult> {
   const [fullUri, thumbUri] = await Promise.all([
-    compressImage(localUri, fullMaxWidth, fullQuality),
-    compressImage(localUri, IMAGE_PRESETS.thumbnail.width, IMAGE_PRESETS.thumbnail.quality),
+    compressImage(localUri, fullMaxWidth, fullQuality, crop),
+    compressImage(localUri, IMAGE_PRESETS.thumbnail.width, IMAGE_PRESETS.thumbnail.quality, 'square'),
   ]);
   const [imageUrl, thumbnailUrl] = await Promise.all([
     uploadSingle(fullUri, fullPath),
@@ -73,25 +98,15 @@ async function uploadWithThumbnail(
   return { imageUrl, thumbnailUrl };
 }
 
-async function uploadReviewImage(
+async function uploadReviewPhoto(
   restaurantId: string,
   reviewId: string,
-  localUri: string,
-): Promise<string> {
-  const userId = await getCurrentUserId();
-  const compressed = await compressImage(localUri, IMAGE_PRESETS.review.width, IMAGE_PRESETS.review.quality);
-  return uploadSingle(compressed, `${userId}/reviews/${restaurantId}/${reviewId}.jpg`);
-}
-
-async function uploadDishImage(
-  restaurantId: string,
-  reviewId: string,
-  dishIndex: number,
+  index: number,
   localUri: string,
 ): Promise<UploadResult> {
   const userId = await getCurrentUserId();
-  const base = `${userId}/dishes/${restaurantId}/${reviewId}_dish${dishIndex}`;
-  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, IMAGE_PRESETS.dish.width, IMAGE_PRESETS.dish.quality);
+  const base = `${userId}/reviews/${restaurantId}/${reviewId}_${index}`;
+  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, IMAGE_PRESETS.review.width, IMAGE_PRESETS.review.quality, 'square');
 }
 
 async function uploadMenuPhoto(
@@ -121,8 +136,7 @@ async function deleteImageWithThumbnail(imageUrl: string, thumbnailUrl?: string)
 }
 
 export const StorageService = {
-  uploadReviewImage,
-  uploadDishImage,
+  uploadReviewPhoto,
   uploadMenuPhoto,
   deleteByUrl,
   deleteImageWithThumbnail,

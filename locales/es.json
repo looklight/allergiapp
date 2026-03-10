@@ -130,6 +130,27 @@
     "acceptButton": "Continuar",
     "termsNote": "Al continuar aceptas Privacidad y Términos de Servicio"
   },
+  "leaderboard": {
+    "title": "Clasificaci\u00f3n",
+    "restaurants": "Restaurantes",
+    "reviews": "Rese\u00f1as",
+    "restaurantsAdded": "restaurantes a\u00f1adidos",
+    "restaurantsSubtitle": "Quienes m\u00e1s han ayudado a la comunidad haciendo descubrir restaurantes allergy-friendly a quienes los necesitan",
+    "reviewsWritten": "rese\u00f1as escritas",
+    "reviewsSubtitle": "Quienes m\u00e1s han ayudado a la comunidad compartiendo sus experiencias",
+    "infoTitle": "\u00bfC\u00f3mo funciona?",
+    "infoBody": "Aqu\u00ed puedes ver qui\u00e9n contribuye m\u00e1s a la comunidad a\u00f1adiendo restaurantes y escribiendo rese\u00f1as.\n\n\u00a1A\u00f1ade restaurantes y deja rese\u00f1as para subir en la clasificaci\u00f3n!",
+    "empty": "Ning\u00fan aporte a\u00fan",
+    "anonymous": "Usuario an\u00f3nimo"
+  },
+  "profile": {
+    "error": "Error",
+    "diets": "Dietas",
+    "dietaryHint": "Selecciona tus necesidades. Se asociar\u00e1n autom\u00e1ticamente a tus contribuciones.",
+    "allergensIntolerances": "Al\u00e9rgenos e intolerancias",
+    "saveDietary": "Guardar necesidades alimentarias",
+    "saveDietaryError": "No se pudieron guardar las necesidades alimentarias. Int\u00e9ntalo de nuevo."
+  },
   "aboutStory": {
     "title": "¿Por qué es gratuita?",
     "intro": "Esta aplicación nace de una experiencia personal. Como persona con alergias alimentarias, siempre me ha encantado viajar y descubrir nuevas culturas a través de la comida.",
