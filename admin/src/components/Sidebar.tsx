@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -38,7 +37,7 @@ export default function Sidebar() {
       </nav>
       <div className="p-4 border-t border-gray-700">
         <button
-          onClick={() => signOut(auth)}
+          onClick={() => supabase.auth.signOut()}
           className="text-sm text-gray-400 hover:text-white"
         >
           Esci

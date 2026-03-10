@@ -1,66 +1,93 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  collection, query, where, orderBy, getDocs, limit,
-  type QueryConstraint,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import type { Restaurant, RestaurantReport, ReportReason } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
+import type { Report, ReportReason, ReportStatus } from '@/lib/types';
 import { REPORT_REASON_LABELS } from '@/lib/types';
+import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
 
-interface ReportWithRestaurant extends RestaurantReport {
-  restaurantName: string;
-  restaurantCity: string;
-}
+const PAGE_SIZE = 25;
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<ReportWithRestaurant[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('pending');
   const [reasonFilter, setReasonFilter] = useState<ReportReason | 'all'>('all');
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+
+  const loadReports = async (pageNum: number, append = false) => {
+    setLoading(true);
+
+    let query = supabase
+      .from('reports')
+      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name)')
+      .order('created_at', { ascending: false })
+      .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
+
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+    if (reasonFilter !== 'all') {
+      query = query.eq('reason', reasonFilter);
+    }
+
+    const { data } = await query;
+    const items = (data ?? []).map((r: any) => ({
+      ...r,
+      reporter_name: r.profiles?.display_name ?? null,
+      restaurant_name: r.restaurants?.name ?? null,
+      restaurant_city: r.restaurants?.city ?? null,
+      profiles: undefined,
+      restaurants: undefined,
+    }));
+
+    setHasMore(items.length > PAGE_SIZE);
+    const pageItems = items.slice(0, PAGE_SIZE);
+
+    if (append) {
+      setReports((prev) => [...prev, ...pageItems]);
+    } else {
+      setReports(pageItems);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
+    setPage(0);
+    loadReports(0);
+  }, [statusFilter, reasonFilter]);
 
-      // Prendi i ristoranti con segnalazioni
-      const rRef = collection(db, 'restaurants');
-      const rSnap = await getDocs(
-        query(rRef, where('reportCount', '>', 0), orderBy('reportCount', 'desc'), limit(50))
-      );
-
-      const allReports: ReportWithRestaurant[] = [];
-
-      for (const rDoc of rSnap.docs) {
-        const rData = rDoc.data() as Restaurant;
-        const reportsRef = collection(db, 'restaurants', rDoc.id, 'reports');
-        const constraints: QueryConstraint[] = [where('status', '==', 'active')];
-        if (reasonFilter !== 'all') {
-          constraints.push(where('reason', '==', reasonFilter));
-        }
-        constraints.push(orderBy('createdAt', 'desc'));
-
-        const repSnap = await getDocs(query(reportsRef, ...constraints));
-        for (const repDoc of repSnap.docs) {
-          allReports.push({
-            ...repDoc.data(),
-            id: repDoc.id,
-            restaurantName: rData.name,
-            restaurantCity: rData.city,
-          } as ReportWithRestaurant);
-        }
-      }
-
-      setReports(allReports);
-      setLoading(false);
+  const updateStatus = async (reportId: string, status: ReportStatus) => {
+    const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
+    if (error) {
+      alert(`Errore: ${error.message}`);
+      return;
     }
-    load();
-  }, [reasonFilter]);
+    setReports((prev) =>
+      prev.map((r) => (r.id === reportId ? { ...r, status } : r))
+    );
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Segnalazioni</h1>
+
+      {/* Filtri status */}
+      <div className="flex gap-2 mb-3">
+        {(['all', 'pending', 'resolved', 'dismissed'] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={`px-3 py-1 rounded text-sm ${
+              statusFilter === s ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {s === 'all' ? 'Tutti' : s === 'pending' ? 'In attesa' : s === 'resolved' ? 'Risolte' : 'Archiviate'}
+          </button>
+        ))}
+      </div>
 
       {/* Filtri motivo */}
       <div className="flex gap-2 mb-4 flex-wrap">
@@ -70,7 +97,7 @@ export default function ReportsPage() {
             reasonFilter === 'all' ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
           }`}
         >
-          Tutti
+          Tutti i motivi
         </button>
         {(Object.keys(REPORT_REASON_LABELS) as ReportReason[]).map((reason) => (
           <button
@@ -98,25 +125,71 @@ export default function ReportsPage() {
                 <th className="px-4 py-3 font-medium">Motivo</th>
                 <th className="px-4 py-3 font-medium">Descrizione</th>
                 <th className="px-4 py-3 font-medium">Segnalato da</th>
+                <th className="px-4 py-3 font-medium">Stato</th>
+                <th className="px-4 py-3 font-medium text-right">Azioni</th>
               </tr>
             </thead>
             <tbody>
               {reports.map((r) => (
-                <tr key={`${r.restaurantId}-${r.id}`} className="border-t hover:bg-gray-50">
+                <tr key={r.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <Link href={`/restaurants/${r.restaurantId}`} className="text-blue-600 hover:underline">
-                      {r.restaurantName}
-                    </Link>
-                    <span className="text-gray-400 ml-1 text-xs">{r.restaurantCity}</span>
+                    {r.restaurant_id ? (
+                      <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline">
+                        {r.restaurant_name ?? '—'}
+                      </Link>
+                    ) : '—'}
+                    {r.restaurant_city && (
+                      <span className="text-gray-400 ml-1 text-xs">{r.restaurant_city}</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3">{REPORT_REASON_LABELS[r.reason]}</td>
-                  <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{r.description}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.displayName}</td>
+                  <td className="px-4 py-3">
+                    {REPORT_REASON_LABELS[r.reason as ReportReason] ?? r.reason}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 max-w-xs truncate" title={r.details ?? ''}>
+                    {r.details || '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{r.reporter_name ?? 'Anonimo'}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={r.status} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {r.status === 'pending' && (
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => updateStatus(r.id, 'resolved')}
+                          className="text-green-600 hover:underline text-xs"
+                        >
+                          Risolvi
+                        </button>
+                        <button
+                          onClick={() => updateStatus(r.id, 'dismissed')}
+                          className="text-gray-600 hover:underline text-xs"
+                        >
+                          Archivia
+                        </button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {loading && reports.length > 0 && <p className="text-gray-500 mt-4">Caricamento...</p>}
+
+      {hasMore && !loading && (
+        <button
+          onClick={() => {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            loadReports(nextPage, true);
+          }}
+          className="mt-4 px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50"
+        >
+          Carica altre
+        </button>
       )}
     </div>
   );

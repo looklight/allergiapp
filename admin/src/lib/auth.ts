@@ -1,17 +1,17 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth } from './firebase';
+import { supabase } from './supabase';
+import type { Session } from '@supabase/supabase-js';
 
 interface AuthState {
-  user: User | null;
+  session: Session | null;
   isAdmin: boolean;
   loading: boolean;
 }
 
 export const AuthContext = createContext<AuthState>({
-  user: null,
+  session: null,
   isAdmin: false,
   loading: true,
 });
@@ -22,26 +22,46 @@ export function useAuth() {
 
 export function useAuthState(): AuthState {
   const [state, setState] = useState<AuthState>({
-    user: null,
+    session: null,
     isAdmin: false,
     loading: true,
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const tokenResult = await user.getIdTokenResult();
-        setState({
-          user,
-          isAdmin: tokenResult.claims.admin === true,
-          loading: false,
-        });
+    // Sessione iniziale
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        checkAdmin(session);
       } else {
-        setState({ user: null, isAdmin: false, loading: false });
+        setState({ session: null, isAdmin: false, loading: false });
       }
     });
-    return unsubscribe;
+
+    // Ascolta cambi auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        checkAdmin(session);
+      } else {
+        setState({ session: null, isAdmin: false, loading: false });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  async function checkAdmin(session: Session) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    setState({
+      session,
+      isAdmin: data?.role === 'admin',
+      loading: false,
+    });
+  }
 
   return state;
 }

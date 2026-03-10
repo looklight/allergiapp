@@ -13,6 +13,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="it">
+      <head>
+        <title>AllergiApp Admin</title>
+      </head>
       <body>
         <AuthContext.Provider value={authState}>
           {isLoginPage ? (

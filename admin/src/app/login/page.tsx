@@ -1,25 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { session, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && user && isAdmin) {
+    if (!authLoading && session && isAdmin) {
       router.replace('/dashboard');
     }
-  }, [user, isAdmin, authLoading, router]);
+  }, [session, isAdmin, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +25,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const tokenResult = await credential.user.getIdTokenResult();
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (tokenResult.claims.admin !== true) {
-        await auth.signOut();
+      if (authError) {
+        setError('Email o password non validi.');
+        return;
+      }
+
+      // Verifica ruolo admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profile?.role !== 'admin') {
+        await supabase.auth.signOut();
         setError('Accesso non autorizzato. Account non admin.');
         return;
       }

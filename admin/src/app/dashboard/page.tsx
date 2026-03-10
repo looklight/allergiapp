@@ -1,53 +1,53 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, orderBy, limit, getDocs, getCountFromServer } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import type { Restaurant } from '@/lib/types';
-import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
 
 interface Stats {
-  active: number;
-  removed: number;
+  totalRestaurants: number;
   totalUsers: number;
+  totalReviews: number;
+  pendingReports: number;
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats>({ active: 0, removed: 0, totalUsers: 0 });
-  const [topReported, setTopReported] = useState<Restaurant[]>([]);
+  const [stats, setStats] = useState<Stats>({ totalRestaurants: 0, totalUsers: 0, totalReviews: 0, pendingReports: 0 });
+  const [topReported, setTopReported] = useState<(Restaurant & { report_count: number })[]>([]);
   const [recent, setRecent] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const ref = collection(db, 'restaurants');
-
-      // Conteggi per status
-      const [activeSnap, removedSnap, usersSnap] = await Promise.all([
-        getCountFromServer(query(ref, where('status', '==', 'active'))),
-        getCountFromServer(query(ref, where('status', '==', 'removed'))),
-        getCountFromServer(collection(db, 'users')),
+      const [restaurantsRes, usersRes, reviewsRes, reportsRes] = await Promise.all([
+        supabase.from('restaurants').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('reviews').select('*', { count: 'exact', head: true }),
+        supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
       setStats({
-        active: activeSnap.data().count,
-        removed: removedSnap.data().count,
-        totalUsers: usersSnap.data().count,
+        totalRestaurants: restaurantsRes.count ?? 0,
+        totalUsers: usersRes.count ?? 0,
+        totalReviews: reviewsRes.count ?? 0,
+        pendingReports: reportsRes.count ?? 0,
       });
 
-      // Top 5 ristoranti piu segnalati
-      const reportedSnap = await getDocs(
-        query(ref, where('reportCount', '>', 0), orderBy('reportCount', 'desc'), limit(5))
-      );
-      setTopReported(reportedSnap.docs.map((d) => ({ ...d.data(), googlePlaceId: d.id } as Restaurant)));
+      // Top 5 ristoranti con piu segnalazioni pending (aggregato in Postgres)
+      const { data: reportedData } = await supabase.rpc('get_top_reported_restaurants', { top_n: 5 });
+      if (reportedData) {
+        setTopReported(reportedData as (Restaurant & { report_count: number })[]);
+      }
 
       // Ultimi 5 ristoranti aggiunti
-      const recentSnap = await getDocs(
-        query(ref, orderBy('addedAt', 'desc'), limit(5))
-      );
-      setRecent(recentSnap.docs.map((d) => ({ ...d.data(), googlePlaceId: d.id } as Restaurant)));
+      const { data: recentData } = await supabase
+        .from('restaurants')
+        .select('id, name, city, country, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
 
+      setRecent(recentData as Restaurant[] ?? []);
       setLoading(false);
     }
     load();
@@ -62,10 +62,11 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <StatCard label="Ristoranti attivi" value={stats.active} color="text-green-600" />
-        <StatCard label="Rimossi" value={stats.removed} color="text-red-600" />
-        <StatCard label="Totale utenti" value={stats.totalUsers} color="text-blue-600" />
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-green-600" />
+        <StatCard label="Utenti" value={stats.totalUsers} color="text-blue-600" />
+        <StatCard label="Recensioni" value={stats.totalReviews} color="text-purple-600" />
+        <StatCard label="Segnalazioni in attesa" value={stats.pendingReports} color="text-red-600" />
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -78,15 +79,15 @@ export default function DashboardPage() {
             <table className="w-full text-sm">
               <tbody>
                 {topReported.map((r) => (
-                  <tr key={r.googlePlaceId} className="border-b last:border-0">
+                  <tr key={r.id} className="border-b last:border-0">
                     <td className="py-2">
-                      <Link href={`/restaurants/${r.googlePlaceId}`} className="text-blue-600 hover:underline">
+                      <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
                         {r.name}
                       </Link>
                     </td>
                     <td className="py-2 text-gray-500">{r.city}</td>
                     <td className="py-2 text-right">
-                      <span className="text-red-600 font-medium">{r.reportCount}</span> segnalazioni
+                      <span className="text-red-600 font-medium">{r.report_count}</span> segnalazioni
                     </td>
                   </tr>
                 ))}
@@ -101,15 +102,15 @@ export default function DashboardPage() {
           <table className="w-full text-sm">
             <tbody>
               {recent.map((r) => (
-                <tr key={r.googlePlaceId} className="border-b last:border-0">
+                <tr key={r.id} className="border-b last:border-0">
                   <td className="py-2">
-                    <Link href={`/restaurants/${r.googlePlaceId}`} className="text-blue-600 hover:underline">
+                    <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
                       {r.name}
                     </Link>
                   </td>
                   <td className="py-2 text-gray-500">{r.city}</td>
-                  <td className="py-2 text-right">
-                    <StatusBadge status={r.status} />
+                  <td className="py-2 text-right text-gray-400 text-xs">
+                    {new Date(r.created_at).toLocaleDateString('it-IT')}
                   </td>
                 </tr>
               ))}

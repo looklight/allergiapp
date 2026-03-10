@@ -3,6 +3,4 @@ node_modules/
 out/
 *.tsbuildinfo
 next-env.d.ts
-
-# Firebase service account key (mai committare!)
-service-account-key.json
+.env.local

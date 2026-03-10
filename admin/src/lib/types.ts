@@ -1,6 +1,6 @@
-import type { Timestamp } from 'firebase/firestore';
+// Tipi allineati allo schema Supabase
 
-export type ContentStatus = 'pending' | 'active' | 'removed';
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed';
 
 export type ReportReason = 'closed' | 'incorrect_info' | 'hygiene' | 'inappropriate' | 'other';
 
@@ -12,67 +12,80 @@ export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
   other: 'Altro',
 };
 
+export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
+  pending: 'In attesa',
+  resolved: 'Risolta',
+  dismissed: 'Archiviata',
+};
+
 export interface Restaurant {
-  googlePlaceId: string;
+  id: string;
   name: string;
-  address: string;
-  city: string;
-  cityNormalized: string;
-  country: string;
-  countryCode: string;
-  phone?: string;
-  website?: string;
-  categories: string[];
-  addedBy: string;
-  addedByName?: string;
-  addedAt: Timestamp;
-  updatedAt: Timestamp;
-  status: ContentStatus;
-  reviewCount: number;
-  dishCount: number;
-  favoriteCount: number;
-  contributionCount?: number;
-  averageRating: number;
-  ratingCount: number;
-  reportCount?: number;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  phone: string | null;
+  website: string | null;
+  cuisine_types: string[];
+  price_range: number | null;
+  photo_urls: string[];
+  added_by: string | null;
+  owner_id: string | null;
+  google_place_id: string | null;
+  is_premium: boolean;
+  created_at: string;
+  updated_at: string;
+  // Aggregati (calcolati nelle query)
+  review_count?: number;
+  average_rating?: number;
+  favorite_count?: number;
+  report_count?: number;
+  // Join
+  adder_name?: string | null;
 }
 
-export interface Contribution {
+export interface Review {
   id: string;
-  userId: string;
-  displayName: string;
-  rating?: 1 | 2 | 3 | 4 | 5;
-  text?: string;
-  dishes: {
-    name: string;
-    allergenSafe: string[];
-    allergenContains?: string[];
-    imageUrl?: string;
-  }[];
-  createdAt: Timestamp;
-  status: ContentStatus;
+  restaurant_id: string;
+  user_id: string | null;
+  rating: number;
+  comment: string | null;
+  photos: { url: string; thumbnailUrl?: string }[];
+  allergens_snapshot: string[];
+  dietary_snapshot: string[];
+  created_at: string;
+  updated_at: string;
+  // Join
+  reviewer_name?: string | null;
+  restaurant_name?: string | null;
 }
 
 export interface UserProfile {
-  uid: string;
-  displayName: string;
-  email: string;
-  photoURL?: string;
-  createdAt: Timestamp;
-  restaurantsAdded: number;
-  dishesAdded: number;
-  reviewsAdded: number;
-  avatarId?: string;
-  profileColor?: string;
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  allergens: string[];
+  dietary_preferences: string[];
+  profile_color: string | null;
+  role: 'user' | 'restaurant_owner' | 'admin';
+  created_at: string;
+  // Aggregati
+  restaurants_count?: number;
+  reviews_count?: number;
+  email?: string;
 }
 
-export interface RestaurantReport {
+export interface Report {
   id: string;
-  restaurantId: string;
-  userId: string;
-  displayName: string;
-  reason: ReportReason;
-  description: string;
-  createdAt: Timestamp;
-  status: ContentStatus;
+  restaurant_id: string | null;
+  review_id: string | null;
+  user_id: string | null;
+  reason: string;
+  details: string | null;
+  status: ReportStatus;
+  created_at: string;
+  // Join
+  reporter_name?: string | null;
+  restaurant_name?: string | null;
+  restaurant_city?: string | null;
 }
