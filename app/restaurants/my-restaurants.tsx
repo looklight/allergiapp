@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
-import type { Restaurant } from '../../types/restaurants';
+import type { Restaurant } from '../../services/restaurantService';
 
 function MyRestaurantCard({
   item,
@@ -26,7 +26,7 @@ function MyRestaurantCard({
         </View>
 
         <Text style={styles.cardCity} numberOfLines={1}>
-          {item.city} · {item.countryCode}
+          {item.city} · {item.country}
         </Text>
 
       </Surface>
@@ -60,7 +60,7 @@ export default function MyRestaurantsScreen() {
 
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>I miei ristoranti</Text>
         <View style={{ width: 24 }} />
@@ -88,12 +88,12 @@ export default function MyRestaurantsScreen() {
       ) : (
         <FlatList
           data={restaurants}
-          keyExtractor={item => item.googlePlaceId}
+          keyExtractor={item => item.id}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
           renderItem={({ item }) => (
             <MyRestaurantCard
               item={item}
-              onPress={() => router.push(`/restaurants/${item.googlePlaceId}`)}
+              onPress={() => router.push(`/restaurants/${item.id}`)}
             />
           )}
         />
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },

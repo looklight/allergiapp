@@ -4,7 +4,8 @@ import { Text, Surface } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { theme } from '../constants/theme';
-import type { Restaurant } from '../types/restaurants';
+import { getCuisineLabel } from '../constants/restaurantCategories';
+import type { Restaurant } from '../services/restaurantService';
 
 type Region = {
   latitude: number;
@@ -38,9 +39,9 @@ export default function RestaurantMap({ restaurants, centerOn, onRegionChangeCom
     if (restaurants.length === 0 || centerOn) return;
     setTimeout(() => {
       mapRef.current?.fitToCoordinates(
-        restaurants.map(r => ({
-          latitude: r.location.latitude,
-          longitude: r.location.longitude,
+        restaurants.filter(r => r.location).map(r => ({
+          latitude: r.location!.latitude,
+          longitude: r.location!.longitude,
         })),
         {
           edgePadding: { top: 80, right: 50, bottom: 50, left: 50 },
@@ -80,25 +81,25 @@ export default function RestaurantMap({ restaurants, centerOn, onRegionChangeCom
       onRegionChangeComplete={onRegionChangeComplete}
       onLayout={e => setMapHeight(e.nativeEvent.layout.height)}
     >
-      {restaurants.map(restaurant => (
+      {restaurants.filter(r => r.location).map(restaurant => (
         <Marker
-          key={restaurant.googlePlaceId}
+          key={restaurant.id}
           coordinate={{
-            latitude: restaurant.location.latitude,
-            longitude: restaurant.location.longitude,
+            latitude: restaurant.location!.latitude,
+            longitude: restaurant.location!.longitude,
           }}
           pinColor={theme.colors.primary}
         >
           <Callout
             tooltip
-            onPress={() => router.push(`/restaurants/${restaurant.googlePlaceId}`)}
+            onPress={() => router.push(`/restaurants/${restaurant.id}`)}
           >
             <Surface style={styles.callout} elevation={3}>
               <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
               <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
-              {(restaurant.categories ?? []).length > 0 && (
+              {restaurant.cuisine_type && (
                 <Text style={styles.calloutTags} numberOfLines={1}>
-                  {(restaurant.categories ?? []).join(' · ')}
+                  {getCuisineLabel(restaurant.cuisine_type)}
                 </Text>
               )}
               <Text style={styles.calloutCta}>Tocca per aprire →</Text>

@@ -7,7 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
-import { RestaurantService, type UserContributionWithRestaurant } from '../../services/restaurantService';
+import { RestaurantService } from '../../services/restaurantService';
+import type { Review } from '../../services/restaurantService';
 import StarRating from '../../components/StarRating';
 import ProfileCard from '../../components/ProfileCard';
 
@@ -16,25 +17,14 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, isAuthenticated } = useAuth();
 
-  const [contributions, setContributions] = useState<UserContributionWithRestaurant[]>([]);
-  const [restaurantNames, setRestaurantNames] = useState<Record<string, string>>({});
+  const [reviews, setContributions] = useState<(Review & { restaurant_name?: string })[]>([]);
 
   useEffect(() => {
     if (!user?.uid) return;
 
     (async () => {
-      const contribs = await RestaurantService.getContributionsByUser(user.uid);
+      const contribs = await RestaurantService.getReviewsByUser(user.uid);
       setContributions(contribs);
-
-      const uniqueIds = [...new Set(contribs.map(c => c.restaurantId))];
-      const names: Record<string, string> = {};
-      await Promise.all(
-        uniqueIds.map(async (rid) => {
-          const r = await RestaurantService.getRestaurant(rid);
-          if (r) names[rid] = r.name;
-        })
-      );
-      setRestaurantNames(names);
     })().catch((err) => console.warn('[Profile] Errore caricamento contributi:', err));
   }, [user?.uid]);
 
@@ -58,7 +48,7 @@ export default function ProfileScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.customHeader, { paddingTop: insets.top }]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profilo</Text>
           <View style={{ width: 24 }} />
@@ -90,11 +80,11 @@ export default function ProfileScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileCard
-        profile={{ ...userProfile, displayName: userProfile.displayName || user?.displayName || '' }}
+        profile={{ ...userProfile, display_name: userProfile.display_name || user?.displayName || '' }}
         onBack={() => router.back()}
         headerRight={
           <TouchableOpacity onPress={handleLogout} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="logout" size={22} color="#FFFFFF" />
+            <MaterialCommunityIcons name="logout" size={22} color={theme.colors.onPrimary} />
           </TouchableOpacity>
         }
       >
@@ -110,19 +100,19 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* Recensioni */}
-        {contributions.length > 0 && (
+        {reviews.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Le mie recensioni</Text>
-            {contributions.map((c) => {
-              const restaurantName = restaurantNames[c.restaurantId] ?? 'Ristorante';
-              const date = c.createdAt.toDate().toLocaleDateString('it-IT', {
+            {reviews.map((c) => {
+              const restaurantName = c.restaurant_name ?? 'Ristorante';
+              const date = new Date(c.created_at).toLocaleDateString('it-IT', {
                 day: 'numeric', month: 'short', year: 'numeric',
               });
               return (
                 <Surface key={c.id} style={styles.reviewCard} elevation={1}>
                   <TouchableOpacity
                     activeOpacity={0.7}
-                    onPress={() => router.push(`/restaurants/${c.restaurantId}`)}
+                    onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
                   >
                     <View style={styles.reviewHeader}>
                       <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
@@ -136,10 +126,10 @@ export default function ProfileScreen() {
                         <StarRating rating={c.rating} size={14} />
                       </View>
                     )}
-                    {c.text ? (
-                      <Text style={styles.reviewText} numberOfLines={3}>{c.text}</Text>
+                    {c.comment ? (
+                      <Text style={styles.reviewText} numberOfLines={3}>{c.comment}</Text>
                     ) : null}
-                    {c.dishes.length > 0 && (
+                    {c.dishes && c.dishes.length > 0 && (
                       <Text style={styles.reviewDishes}>
                         {c.dishes.length} piatt{c.dishes.length === 1 ? 'o' : 'i'} aggiunti
                       </Text>
@@ -171,7 +161,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },

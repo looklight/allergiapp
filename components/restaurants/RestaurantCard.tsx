@@ -3,7 +3,7 @@ import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import StarRating from '../StarRating';
-import type { Restaurant } from '../../types/restaurants';
+import type { Restaurant } from '../../services/restaurantService';
 
 /** Genera un colore consistente dal nome del ristorante per il placeholder. */
 export function hashColor(name: string): string {
@@ -35,11 +35,11 @@ export default function RestaurantCard({
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Surface style={styles.card} elevation={1}>
         <View style={styles.cardRow}>
-          {restaurant.thumbnailUrl ? (
-            <Image source={{ uri: restaurant.thumbnailUrl }} style={styles.cardThumb} />
+          {restaurant.photo_urls?.[0] ? (
+            <Image source={{ uri: restaurant.photo_urls[0] }} style={styles.cardThumb} />
           ) : (
             <View style={[styles.cardThumb, styles.cardThumbPlaceholder, { backgroundColor: hashColor(restaurant.name) }]}>
-              <MaterialCommunityIcons name="silverware-fork-knife" size={24} color="#FFFFFF" />
+              <MaterialCommunityIcons name="silverware-fork-knife" size={24} color={theme.colors.onPrimary} />
             </View>
           )}
 
@@ -50,10 +50,10 @@ export default function RestaurantCard({
                 <MaterialCommunityIcons
                   name={isFavorite ? 'heart' : 'heart-outline'}
                   size={18}
-                  color={isFavorite ? theme.colors.error ?? '#D32F2F' : theme.colors.textSecondary}
+                  color={isFavorite ? theme.colors.error : theme.colors.textSecondary}
                 />
-                <Text style={[styles.favCount, isFavorite && { color: theme.colors.error ?? '#D32F2F' }]}>
-                  {restaurant.favoriteCount}
+                <Text style={[styles.favCount, isFavorite && { color: theme.colors.error }]}>
+                  {restaurant.favorite_count}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -61,11 +61,11 @@ export default function RestaurantCard({
               {restaurant.city}, {restaurant.country}
             </Text>
             <View style={styles.cardBottom}>
-              {(restaurant.ratingCount ?? 0) > 0 ? (
+              {(restaurant.review_count ?? 0) > 0 ? (
                 <View style={styles.cardRating}>
-                  <StarRating rating={restaurant.averageRating ?? 0} size={14} />
+                  <StarRating rating={restaurant.average_rating ?? 0} size={14} />
                   <Text style={styles.cardRatingText}>
-                    {(restaurant.averageRating ?? 0).toFixed(1)} ({restaurant.ratingCount})
+                    {(restaurant.average_rating ?? 0).toFixed(1)} ({restaurant.review_count})
                   </Text>
                 </View>
               ) : (

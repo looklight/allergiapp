@@ -6,11 +6,12 @@ import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../constants/theme';
 import { AuthService } from '../../../services/auth';
-import { RestaurantService, type UserContributionWithRestaurant } from '../../../services/restaurantService';
+import { RestaurantService } from '../../../services/restaurantService';
+import type { Review } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
 import StarRating from '../../../components/StarRating';
 import ProfileCard from '../../../components/ProfileCard';
-import type { RestaurantUserProfile } from '../../../types/restaurants';
+import type { UserProfile } from '../../../services/auth';
 
 export default function PublicProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
@@ -18,9 +19,8 @@ export default function PublicProfileScreen() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
 
-  const [profile, setProfile] = useState<RestaurantUserProfile | null>(null);
-  const [contributions, setContributions] = useState<UserContributionWithRestaurant[]>([]);
-  const [restaurantNames, setRestaurantNames] = useState<Record<string, string>>({});
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [reviews, setContributions] = useState<(Review & { restaurant_name?: string })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -34,20 +34,10 @@ export default function PublicProfileScreen() {
       try {
         const [prof, contribs] = await Promise.all([
           AuthService.getUserProfile(uid),
-          RestaurantService.getContributionsByUser(uid),
+          RestaurantService.getReviewsByUser(uid),
         ]);
         setProfile(prof);
         setContributions(contribs);
-
-        const uniqueIds = [...new Set(contribs.map(c => c.restaurantId))];
-        const names: Record<string, string> = {};
-        await Promise.all(
-          uniqueIds.map(async (rid) => {
-            const r = await RestaurantService.getRestaurant(rid);
-            if (r) names[rid] = r.name;
-          })
-        );
-        setRestaurantNames(names);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
@@ -63,7 +53,7 @@ export default function PublicProfileScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.simpleHeader, { paddingTop: insets.top }]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profilo</Text>
           <View style={{ width: 24 }} />
@@ -83,19 +73,19 @@ export default function PublicProfileScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileCard profile={profile} onBack={() => router.back()}>
-        {contributions.length > 0 && (
+        {reviews.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Recensioni</Text>
-            {contributions.map((c) => {
-              const restaurantName = restaurantNames[c.restaurantId] ?? 'Ristorante';
-              const date = c.createdAt.toDate().toLocaleDateString('it-IT', {
+            {reviews.map((c) => {
+              const restaurantName = c.restaurant_name ?? 'Ristorante';
+              const date = new Date(c.created_at).toLocaleDateString('it-IT', {
                 day: 'numeric', month: 'short', year: 'numeric',
               });
               return (
                 <Surface key={c.id} style={styles.reviewCard} elevation={1}>
                   <TouchableOpacity
                     activeOpacity={0.7}
-                    onPress={() => router.push(`/restaurants/${c.restaurantId}`)}
+                    onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
                   >
                     <View style={styles.reviewHeader}>
                       <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
@@ -109,10 +99,10 @@ export default function PublicProfileScreen() {
                         <StarRating rating={c.rating} size={14} />
                       </View>
                     )}
-                    {c.text ? (
-                      <Text style={styles.reviewText} numberOfLines={3}>{c.text}</Text>
+                    {c.comment ? (
+                      <Text style={styles.reviewText} numberOfLines={3}>{c.comment}</Text>
                     ) : null}
-                    {c.dishes.length > 0 && (
+                    {c.dishes && c.dishes.length > 0 && (
                       <Text style={styles.reviewDishes}>
                         {c.dishes.length} piatt{c.dishes.length === 1 ? 'o' : 'i'} aggiunti
                       </Text>
@@ -143,7 +133,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },

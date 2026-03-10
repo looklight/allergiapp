@@ -6,9 +6,8 @@ import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RESTAURANT_CATEGORIES, CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
-import { RestaurantService, type SortBy } from '../../services/restaurantService';
+import { RestaurantService, type SortBy, type Restaurant } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
-import type { Restaurant } from '../../types/restaurants';
 import RestaurantCard from '../../components/restaurants/RestaurantCard';
 import RestaurantMap from '../../components/RestaurantMap';
 import DraggableBottomSheet from '../../components/DraggableBottomSheet';
@@ -39,7 +38,7 @@ export default function RestaurantsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<RestaurantCategoryId[]>([]);
-  const [sortBy, setSortBy] = useState<SortBy | 'distance'>('distance');
+  const [sortBy, setSortBy] = useState<SortBy>('distance');
   const [showCuisineMenu, setShowCuisineMenu] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -91,11 +90,10 @@ export default function RestaurantsScreen() {
     }).start();
   }, [showCuisineMenu]);
 
-  const SORT_OPTIONS: { key: SortBy | 'distance'; label: string }[] = [
+  const SORT_OPTIONS: { key: SortBy; label: string }[] = [
     { key: 'distance', label: 'Distanza' },
     { key: 'recent', label: 'Recenti' },
     { key: 'rating', label: 'Stelle' },
-    { key: 'popularity', label: 'Popolarità' },
   ];
 
   const hasActiveSettings = activeFilters.length > 0 || sortBy !== 'distance';
@@ -111,7 +109,7 @@ export default function RestaurantsScreen() {
     let geoMode = results.length > 0;
     if (results.length === 0) {
       // Fallback globale — raro con centinaia di ristoranti
-      results = await RestaurantService.getAllActiveRestaurants();
+      results = await RestaurantService.getAllRestaurants();
       geoMode = false; // fallback globale, non "vicino a te"
     }
     setRestaurants(results);
@@ -124,7 +122,7 @@ export default function RestaurantsScreen() {
   /** Fallback: carica tutti i ristoranti attivi (senza GPS) */
   const loadAll = useCallback(async () => {
     setIsLoading(true);
-    const results = await RestaurantService.getAllActiveRestaurants();
+    const results = await RestaurantService.getAllRestaurants();
     setRestaurants(results);
     setIsGeoMode(false);
     setIsLoading(false);
@@ -136,14 +134,13 @@ export default function RestaurantsScreen() {
     let list = restaurants;
     if (activeFilters.length > 0) {
       list = list.filter(r =>
-        (r.categories ?? []).some(c => activeFilters.includes(c as RestaurantCategoryId)) ||
-        (r.cuisineTypes ?? []).some(c => activeFilters.includes(c as RestaurantCategoryId))
+        activeFilters.includes(r.cuisine_type as RestaurantCategoryId)
       );
     }
     if (searchQuery.length >= 2) {
       const q = searchQuery.toLowerCase();
       list = list.filter(r =>
-        r.name.toLowerCase().includes(q) || r.city.toLowerCase().includes(q)
+        r.name.toLowerCase().includes(q) || (r.city ?? '').toLowerCase().includes(q)
       );
     }
     return list;
@@ -155,48 +152,51 @@ export default function RestaurantsScreen() {
 
     // Ordinamento
     if (sortBy === 'distance' && userLocation) {
-      list = [...list].sort((a, b) =>
-        haversineKm(userLocation.latitude, userLocation.longitude, a.location.latitude, a.location.longitude) -
-        haversineKm(userLocation.latitude, userLocation.longitude, b.location.latitude, b.location.longitude)
-      );
+      list = [...list].sort((a, b) => {
+        if (!a.location) return 1;
+        if (!b.location) return -1;
+        return haversineKm(userLocation.latitude, userLocation.longitude, a.location.latitude, a.location.longitude) -
+          haversineKm(userLocation.latitude, userLocation.longitude, b.location.latitude, b.location.longitude);
+      });
     } else if (sortBy === 'rating') {
-      list = [...list].sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
-    } else if (sortBy === 'popularity') {
-      list = [...list].sort((a, b) => (b.favoriteCount ?? 0) - (a.favoriteCount ?? 0));
+      list = [...list].sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0));
     }
 
     // Cap progressivo per distanza reale (solo caricamento iniziale, non "Cerca in quest'area")
     // Applica il cap sempre in base alla distanza, indipendentemente dall'ordinamento scelto
     if (!isAreaSearch && userLocation && list.length > 0) {
-      const withDist = list.map(r => ({
-        r,
-        d: haversineKm(userLocation.latitude, userLocation.longitude, r.location.latitude, r.location.longitude),
-      }));
+      const withDist = list
+        .filter(r => r.location != null)
+        .map(r => ({
+          r,
+          d: haversineKm(userLocation.latitude, userLocation.longitude, r.location!.latitude, r.location!.longitude),
+        }));
       // Ordina per distanza per applicare il cap correttamente
       withDist.sort((a, b) => a.d - b.d);
       const capped: Restaurant[] = [];
       for (const { r, d } of withDist) {
-        if (d <= 10) { capped.push(r); continue; }                        // ≤10km: tutti
+        if (d <= 10) { capped.push(r); continue; }                        // <=10km: tutti
         if (d <= 30 && capped.length < 50) { capped.push(r); continue; }  // 10-30km: max 50 totali
         if (d <= 50 && capped.length < 15) { capped.push(r); continue; }  // 30-50km: max 15 totali
         if (capped.length < 5) { capped.push(r); continue; }              // >50km: max 5 totali
       }
+      // Add back restaurants without location at the end
+      const noLocation = list.filter(r => r.location == null);
+      const allCapped = [...capped, ...noLocation];
       // Riapplica l'ordinamento scelto dall'utente sui risultati cappati
       if (sortBy === 'distance') {
-        list = capped; // già ordinati per distanza
+        list = allCapped; // gia ordinati per distanza
       } else if (sortBy === 'rating') {
-        list = capped.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
-      } else if (sortBy === 'popularity') {
-        list = capped.sort((a, b) => (b.favoriteCount ?? 0) - (a.favoriteCount ?? 0));
+        list = allCapped.sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0));
       } else {
-        list = capped;
+        list = allCapped;
       }
     }
 
     return list;
   }, [mapRestaurants, sortBy, userLocation, isAreaSearch]);
 
-  /** Mostra "Cerca in quest'area" quando il centro mappa esce dall'area già caricata */
+  /** Mostra "Cerca in quest'area" quando il centro mappa esce dall'area gia caricata */
   const handleRegionChange = useCallback((region: { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number }) => {
     setMapRegion(region);
     if (lastQueryCenter.current) {
@@ -230,7 +230,7 @@ export default function RestaurantsScreen() {
   const loadFavorites = useCallback(async () => {
     if (!user) { setFavoriteIds(new Set()); return; }
     const favs = await RestaurantService.getFavorites(user.uid);
-    setFavoriteIds(new Set(favs.map(f => f.restaurantId)));
+    setFavoriteIds(new Set(favs.map(f => f.restaurant_id)));
   }, [user]);
 
   // Carica ristoranti al primo GPS fix
@@ -242,7 +242,7 @@ export default function RestaurantsScreen() {
     }
   }, [userLocation, loadGeo]);
 
-  // Fallback: se dopo 3s non c'è GPS, carica tutti
+  // Fallback: se dopo 3s non c'e GPS, carica tutti
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!hasLoadedGeo.current) {
@@ -291,37 +291,52 @@ export default function RestaurantsScreen() {
       router.push('/auth/login');
       return;
     }
-    const willBeFav = !favoriteIds.has(restaurant.googlePlaceId);
+    const willBeFav = !favoriteIds.has(restaurant.id);
     // Optimistic update
     setFavoriteIds(prev => {
       const next = new Set(prev);
-      if (willBeFav) next.add(restaurant.googlePlaceId);
-      else next.delete(restaurant.googlePlaceId);
+      if (willBeFav) next.add(restaurant.id);
+      else next.delete(restaurant.id);
       return next;
     });
     setRestaurants(prev => prev.map(r =>
-      r.googlePlaceId === restaurant.googlePlaceId
-        ? { ...r, favoriteCount: r.favoriteCount + (willBeFav ? 1 : -1) }
+      r.id === restaurant.id
+        ? { ...r, favorite_count: (r.favorite_count ?? 0) + (willBeFav ? 1 : -1) }
         : r
     ));
-    const actual = await RestaurantService.toggleFavorite(user.uid, restaurant);
-    // Rollback se il server non concorda
-    if (actual !== willBeFav) {
+    try {
+      const actual = await RestaurantService.toggleFavorite(user.uid, restaurant.id);
+      // Rollback se il server non concorda
+      if (actual !== willBeFav) {
+        setFavoriteIds(prev => {
+          const next = new Set(prev);
+          if (actual) next.add(restaurant.id);
+          else next.delete(restaurant.id);
+          return next;
+        });
+        setRestaurants(prev => prev.map(r =>
+          r.id === restaurant.id
+            ? { ...r, favorite_count: (r.favorite_count ?? 0) + (actual ? 1 : -1) }
+            : r
+        ));
+      }
+    } catch {
+      // Rollback optimistic update
       setFavoriteIds(prev => {
         const next = new Set(prev);
-        if (actual) next.add(restaurant.googlePlaceId);
-        else next.delete(restaurant.googlePlaceId);
+        if (willBeFav) next.delete(restaurant.id);
+        else next.add(restaurant.id);
         return next;
       });
       setRestaurants(prev => prev.map(r =>
-        r.googlePlaceId === restaurant.googlePlaceId
-          ? { ...r, favoriteCount: r.favoriteCount + (actual ? 1 : -1) }
+        r.id === restaurant.id
+          ? { ...r, favorite_count: (r.favorite_count ?? 0) + (willBeFav ? -1 : 1) }
           : r
       ));
     }
   }, [isAuthenticated, user, favoriteIds, router]);
 
-  /** Ricerca per città: geocode → query geo centrata sulla città (senza fallback globale) */
+  /** Ricerca per citta: geocode -> query geo centrata sulla citta (senza fallback globale) */
   const handleSearchSubmit = useCallback(async () => {
     if (searchQuery.length < 2) return;
     try {
@@ -393,7 +408,7 @@ export default function RestaurantsScreen() {
           <MaterialCommunityIcons
             name="tune-vertical"
             size={20}
-            color={(showCuisineMenu || hasActiveSettings) ? '#FFFFFF' : theme.colors.textSecondary}
+            color={(showCuisineMenu || hasActiveSettings) ? theme.colors.onPrimary : theme.colors.textSecondary}
           />
         </TouchableOpacity>
       </View>
@@ -443,7 +458,7 @@ export default function RestaurantsScreen() {
             return (
               <TouchableOpacity
                 key={opt.key}
-                onPress={() => setSortBy(opt.key as SortBy | 'distance')}
+                onPress={() => setSortBy(opt.key)}
                 style={[styles.filterChip, isActive && styles.filterChipActive]}
                 activeOpacity={0.7}
               >
@@ -508,19 +523,19 @@ export default function RestaurantsScreen() {
     return (
       <FlatList
         data={filteredRestaurants}
-        keyExtractor={r => r.googlePlaceId}
+        keyExtractor={r => r.id}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 88 }]}
         renderItem={({ item }) => (
           <RestaurantCard
             restaurant={item}
-            isFavorite={favoriteIds.has(item.googlePlaceId)}
-            distance={userLocation ? haversineKm(
+            isFavorite={favoriteIds.has(item.id)}
+            distance={userLocation && item.location ? haversineKm(
               userLocation.latitude, userLocation.longitude,
               item.location.latitude, item.location.longitude,
             ) : null}
-            onPress={() => router.push(`/restaurants/${item.googlePlaceId}`)}
+            onPress={() => router.push(`/restaurants/${item.id}`)}
             onToggleFavorite={() => handleToggleFavorite(item)}
           />
         )}
@@ -542,7 +557,7 @@ export default function RestaurantsScreen() {
             hitSlop={8}
             activeOpacity={0.6}
           >
-            <MaterialCommunityIcons name="heart-outline" size={24} color="#FFFFFF" />
+            <MaterialCommunityIcons name="heart-outline" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push('/restaurants/profile')}
@@ -552,7 +567,7 @@ export default function RestaurantsScreen() {
             <MaterialCommunityIcons
               name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
               size={24}
-              color="#FFFFFF"
+              color={theme.colors.onPrimary}
             />
           </TouchableOpacity>
         </View>
@@ -572,7 +587,7 @@ export default function RestaurantsScreen() {
             onPress={handleSearchArea}
             activeOpacity={0.85}
           >
-            <MaterialCommunityIcons name="magnify" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <MaterialCommunityIcons name="magnify" size={16} color={theme.colors.onPrimary} style={{ marginRight: 6 }} />
             <Text style={styles.searchAreaText}>Cerca in quest'area</Text>
           </TouchableOpacity>
         )}
@@ -594,7 +609,7 @@ export default function RestaurantsScreen() {
         onPress={handleAddPress}
         activeOpacity={0.85}
       >
-        <MaterialCommunityIcons name="plus" size={28} color="#FFFFFF" />
+        <MaterialCommunityIcons name="plus" size={28} color={theme.colors.onPrimary} />
       </TouchableOpacity>
     </View>
   );
@@ -620,7 +635,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -700,7 +715,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     borderRadius: 20,
@@ -717,7 +732,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   filterChipTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   resetButton: {
     width: '100%',
@@ -728,7 +743,7 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: theme.colors.error ?? '#D32F2F',
+    color: theme.colors.error,
   },
   list: {
     padding: 12,
@@ -752,7 +767,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   searchAreaText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 14,
     fontWeight: '600',
   },

@@ -38,9 +38,9 @@ export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
 
-  const currentDisplayName = userProfile?.displayName ?? user?.displayName ?? '';
+  const currentDisplayName = userProfile?.display_name ?? user?.displayName ?? '';
   const [displayName, setDisplayName] = useState(currentDisplayName);
-  const email = userProfile?.email ?? user?.email ?? '';
+  const email = user?.email ?? '';
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [savingColor, setSavingColor] = useState(false);
   const [savingName, setSavingName] = useState(false);
@@ -54,9 +54,9 @@ export default function EditProfileScreen() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
 
-  const currentAvatarId = userProfile?.avatarId;
+  const currentAvatarId = userProfile?.avatar_url;
   const currentAvatar = currentAvatarId ? getAvatarById(currentAvatarId) : undefined;
-  const currentProfileColor = getProfileColor(userProfile?.profileColor);
+  const currentProfileColor = getProfileColor(userProfile?.profile_color ?? undefined);
   const initial = currentDisplayName.charAt(0).toUpperCase() || '?';
 
   const handleSelectAvatar = async (avatarId: string) => {
@@ -147,14 +147,7 @@ export default function EditProfileScreen() {
       router.dismissAll();
     } catch (error: any) {
       closeDeleteModal();
-      if (error.code === 'auth/requires-recent-login') {
-        Alert.alert(
-          'Riautenticazione necessaria',
-          'Per motivi di sicurezza, esci e accedi di nuovo prima di eliminare l\'account.'
-        );
-      } else {
-        Alert.alert('Errore', 'Impossibile eliminare l\'account. Riprova.');
-      }
+      Alert.alert('Errore', 'Impossibile eliminare l\'account. Riprova.');
     } finally {
       setDeleting(false);
     }
@@ -170,7 +163,7 @@ export default function EditProfileScreen() {
       {/* Header */}
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Modifica profilo</Text>
         <View style={{ width: 24 }} />
@@ -224,7 +217,7 @@ export default function EditProfileScreen() {
                       <Image source={item.source} style={styles.avatarOptionImage} />
                       {isSelected && (
                         <View style={styles.checkBadge}>
-                          <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />
+                          <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
                         </View>
                       )}
                     </TouchableOpacity>
@@ -272,7 +265,7 @@ export default function EditProfileScreen() {
                         ]}
                       >
                         {isSelected && (
-                          <MaterialCommunityIcons name="check" size={18} color="#FFFFFF" />
+                          <MaterialCommunityIcons name="check" size={18} color={theme.colors.onPrimary} />
                         )}
                       </View>
                     </TouchableOpacity>
@@ -462,7 +455,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -499,7 +492,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   displayName: {
     fontSize: 20,
@@ -595,7 +588,7 @@ const styles = StyleSheet.create({
   },
   colorCircleSelected: {
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.onPrimary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -644,7 +637,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: theme.colors.overlay,
     padding: 24,
   },
   deleteModalContent: {

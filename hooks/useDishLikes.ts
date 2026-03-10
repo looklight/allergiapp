@@ -18,46 +18,54 @@ export function useDishLikes(restaurantId: string | undefined) {
     setDishLikes(likes);
   }, [restaurantId]);
 
-  const toggleLike = useCallback(async (contributionId: string, dishIndex: number) => {
+  const toggleLike = useCallback(async (reviewDishId: string) => {
     if (!isAuthenticated || !user) {
       router.push('/auth/login');
       return;
     }
     if (!restaurantId) return;
 
-    const likeKey = `${contributionId}_${dishIndex}`;
-    const currentLikers = dishLikes.get(likeKey) ?? [];
+    const currentLikers = dishLikes.get(reviewDishId) ?? [];
     const alreadyLiked = currentLikers.includes(user.uid);
 
     // Optimistic update
     setDishLikes(prev => {
       const next = new Map(prev);
       if (alreadyLiked) {
-        next.set(likeKey, currentLikers.filter(uid => uid !== user.uid));
+        next.set(reviewDishId, currentLikers.filter(uid => uid !== user.uid));
       } else {
-        next.set(likeKey, [...currentLikers, user.uid]);
+        next.set(reviewDishId, [...currentLikers, user.uid]);
       }
       return next;
     });
 
-    const liked = await RestaurantService.toggleDishLike(restaurantId, contributionId, dishIndex, user.uid);
-    // Se il server non concorda con l'update ottimistico, ricarica
-    if (liked === alreadyLiked) {
-      const fresh = await RestaurantService.getDishLikes(restaurantId);
-      setDishLikes(fresh);
+    try {
+      const liked = await RestaurantService.toggleDishLike(reviewDishId, user.uid);
+      // Se il server non concorda con l'update ottimistico, ricarica
+      if (liked === alreadyLiked) {
+        const fresh = await RestaurantService.getDishLikes(restaurantId);
+        setDishLikes(fresh);
+      }
+    } catch {
+      // Rollback optimistic update
+      setDishLikes(prev => {
+        const next = new Map(prev);
+        next.set(reviewDishId, currentLikers);
+        return next;
+      });
     }
   }, [restaurantId, user, isAuthenticated, dishLikes, router]);
 
   /** Controlla se l'utente corrente ha messo like */
-  const isLiked = useCallback((contributionId: string, dishIndex: number): boolean => {
+  const isLiked = useCallback((reviewDishId: string): boolean => {
     if (!user) return false;
-    const likers = dishLikes.get(`${contributionId}_${dishIndex}`) ?? [];
+    const likers = dishLikes.get(reviewDishId) ?? [];
     return likers.includes(user.uid);
   }, [dishLikes, user]);
 
   /** Ritorna la lista di userId che hanno messo like */
-  const getLikers = useCallback((contributionId: string, dishIndex: number): string[] => {
-    return dishLikes.get(`${contributionId}_${dishIndex}`) ?? [];
+  const getLikers = useCallback((reviewDishId: string): string[] => {
+    return dishLikes.get(reviewDishId) ?? [];
   }, [dishLikes]);
 
   return { dishLikes, toggleLike, isLiked, getLikers, reloadLikes: loadLikes };

@@ -7,14 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
-import type { FavoriteRestaurant } from '../../types/restaurants';
+import type { Favorite } from '../../services/restaurantService';
 
 function FavoriteCard({
   item,
   onPress,
   onRemove,
 }: {
-  item: FavoriteRestaurant;
+  item: Favorite;
   onPress: () => void;
   onRemove: () => void;
 }) {
@@ -25,7 +25,7 @@ function FavoriteCard({
         <View style={styles.cardTop}>
           <View style={styles.cardTitleRow}>
             <MaterialCommunityIcons name="silverware-fork-knife" size={16} color={theme.colors.primary} />
-            <Text style={styles.cardName} numberOfLines={1}>{item.name}</Text>
+            <Text style={styles.cardName} numberOfLines={1}>{item.restaurant?.name ?? ''}</Text>
           </View>
           <TouchableOpacity onPress={onRemove} hitSlop={8}>
             <MaterialCommunityIcons name="heart" size={20} color={theme.colors.primary} />
@@ -33,7 +33,7 @@ function FavoriteCard({
         </View>
 
         <Text style={styles.cardCity} numberOfLines={1}>
-          {item.city} · {item.countryCode}
+          {item.restaurant?.city ?? ''} · {item.restaurant?.country ?? ''}
         </Text>
 
       </Surface>
@@ -46,7 +46,7 @@ export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
-  const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -61,11 +61,11 @@ export default function FavoritesScreen() {
     load();
   }, [load]);
 
-  const handleRemove = async (item: FavoriteRestaurant) => {
+  const handleRemove = async (item: Favorite) => {
     if (!user) return;
     // Aggiorna UI subito (ottimistic update), poi chiama il servizio
-    setFavorites(prev => prev.filter(f => f.restaurantId !== item.restaurantId));
-    await RestaurantService.removeFavorite(user.uid, item.restaurantId);
+    setFavorites(prev => prev.filter(f => f.restaurant_id !== item.restaurant_id));
+    await RestaurantService.removeFavorite(user.uid, item.restaurant_id);
   };
 
   return (
@@ -74,7 +74,7 @@ export default function FavoritesScreen() {
 
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>I miei preferiti</Text>
         <View style={{ width: 24 }} />
@@ -102,12 +102,12 @@ export default function FavoritesScreen() {
       ) : (
         <FlatList
           data={favorites}
-          keyExtractor={item => item.restaurantId}
+          keyExtractor={item => item.restaurant_id}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
           renderItem={({ item }) => (
             <FavoriteCard
               item={item}
-              onPress={() => router.push(`/restaurants/${item.restaurantId}`)}
+              onPress={() => router.push(`/restaurants/${item.restaurant_id}`)}
               onRemove={() => handleRemove(item)}
             />
           )}
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },

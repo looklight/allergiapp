@@ -12,7 +12,7 @@ import ImageFullscreenModal from '../../components/ImageFullscreenModal';
 import RestaurantHeader from '../../components/restaurants/RestaurantHeader';
 import MenuPhotosSection from '../../components/restaurants/MenuPhotosSection';
 import DishesSection from '../../components/restaurants/DishesSection';
-import ContributionCard from '../../components/restaurants/ContributionCard';
+import ReviewCard from '../../components/restaurants/ReviewCard';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
@@ -26,8 +26,8 @@ export default function RestaurantDetailScreen() {
   const lang = i18n.locale as AppLanguage;
 
   const {
-    restaurant, allContributions, aggregatedDishes, menuPhotos,
-    reports, userContribution, userReport, isFavorite,
+    restaurant, allReviews, aggregatedDishes, menuPhotos,
+    reports, userReview, userReport, isFavorite,
     isLoading, isUploadingMenu,
     handleToggleFavorite, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto,
@@ -35,13 +35,13 @@ export default function RestaurantDetailScreen() {
   } = useRestaurantDetail(id);
 
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [fullscreenDish, setFullscreenDish] = useState<{ imageUrl?: string; name: string; description?: string } | null>(null);
+  const [fullscreenDish, setFullscreenDish] = useState<{ photo_url?: string | null; name: string; description?: string } | null>(null);
   const [tappedBadge, setTappedBadge] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
   const canRemove = restaurant
-    && user?.uid === restaurant.addedBy
-    && (restaurant.contributionCount ?? 0) === 0;
+    && user?.uid === restaurant.added_by
+    && (restaurant.review_count ?? 0) === 0;
 
   const handleRemoveRestaurant = () => {
     if (!restaurant || !user?.uid) return;
@@ -55,7 +55,7 @@ export default function RestaurantDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             setIsRemoving(true);
-            const ok = await RestaurantService.removeOwnRestaurant(restaurant.googlePlaceId, user.uid);
+            const ok = await RestaurantService.removeOwnRestaurant(restaurant.id, user.uid);
             setIsRemoving(false);
             if (ok) {
               router.back();
@@ -71,7 +71,7 @@ export default function RestaurantDetailScreen() {
   // Auto-cleanup: rimuovi favorito orfano se il ristorante non esiste più
   useEffect(() => {
     if (!isLoading && !restaurant && user?.uid && id) {
-      RestaurantService.removeOrphanedFavorite(user.uid, id);
+      RestaurantService.removeFavorite(user.uid, id);
     }
   }, [isLoading, restaurant, user?.uid, id]);
 
@@ -81,7 +81,7 @@ export default function RestaurantDetailScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.customHeader, { paddingTop: insets.top }]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle} numberOfLines={1}> </Text>
           <View style={{ width: 24 }} />
@@ -99,7 +99,7 @@ export default function RestaurantDetailScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.customHeader, { paddingTop: insets.top }]}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Ristorante</Text>
           <View style={{ width: 24 }} />
@@ -117,7 +117,7 @@ export default function RestaurantDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{restaurant.name}</Text>
         <View style={styles.headerActions}>
@@ -125,7 +125,7 @@ export default function RestaurantDetailScreen() {
             <MaterialCommunityIcons
               name={isFavorite ? 'heart' : 'heart-outline'}
               size={24}
-              color="#FFFFFF"
+              color={theme.colors.onPrimary}
             />
           </TouchableOpacity>
         </View>
@@ -152,27 +152,27 @@ export default function RestaurantDetailScreen() {
         />
 
         {/* CTA — Contributo utente o valuta con stelle */}
-        {userContribution ? (
+        {userReview ? (
           <Surface style={styles.ctaCard} elevation={1}>
             <View style={styles.ctaTopRow}>
               <Text style={styles.ctaTitle}>La tua recensione</Text>
               <TouchableOpacity
-                onPress={() => navigateToContribute(undefined, userContribution.id)}
+                onPress={() => navigateToContribute(undefined, userReview.id)}
                 hitSlop={8}
                 activeOpacity={0.6}
               >
                 <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
-            {userContribution.rating != null && userContribution.rating > 0 && (
-              <StarRating rating={userContribution.rating} size={24} />
+            {userReview.rating != null && userReview.rating > 0 && (
+              <StarRating rating={userReview.rating} size={24} />
             )}
-            {userContribution.text && (
-              <Text style={styles.userContribText} numberOfLines={3}>{userContribution.text}</Text>
+            {userReview.comment && (
+              <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
             )}
-            {userContribution.dishes.length > 0 && (
+            {(userReview.dishes?.length ?? 0) > 0 && (
               <Text style={styles.ctaHint}>
-                {userContribution.dishes.length} piatt{userContribution.dishes.length === 1 ? 'o' : 'i'} segnalat{userContribution.dishes.length === 1 ? 'o' : 'i'}
+                {userReview.dishes!.length} piatt{userReview.dishes!.length === 1 ? 'o' : 'i'} segnalat{userReview.dishes!.length === 1 ? 'o' : 'i'}
               </Text>
             )}
           </Surface>
@@ -195,14 +195,14 @@ export default function RestaurantDetailScreen() {
         />
 
         {/* Esperienze della community */}
-        {allContributions.length > 0 && (
+        {allReviews.length > 0 && (
           <Surface style={styles.section} elevation={1}>
-            <Text style={styles.sectionTitle}>Esperienze ({allContributions.length})</Text>
-            {allContributions.map((item, idx) => (
+            <Text style={styles.sectionTitle}>Esperienze ({allReviews.length})</Text>
+            {allReviews.map((item, idx) => (
               <View key={item.key}>
                 {idx > 0 && <Divider style={styles.divider} />}
-                <ContributionCard
-                  contribution={item}
+                <ReviewCard
+                  review={item}
                   getLikers={getLikers}
                   isDishLiked={isDishLiked}
                   toggleLike={toggleLike}
@@ -218,12 +218,12 @@ export default function RestaurantDetailScreen() {
         {reports.length > 0 && (
           <Surface style={styles.section} elevation={1}>
             <View style={styles.reportSectionHeader}>
-              <MaterialCommunityIcons name="flag-outline" size={18} color={'#E6A700'} />
+              <MaterialCommunityIcons name="flag-outline" size={18} color={theme.colors.amberDark} />
               <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Segnalazioni ({reports.length})</Text>
             </View>
 
             {reports.map((report, idx) => {
-              const reasonInfo = REPORT_REASON_MAP[report.reason] ?? REPORT_REASON_MAP.other;
+              const reasonInfo = REPORT_REASON_MAP[report.reason as keyof typeof REPORT_REASON_MAP] ?? REPORT_REASON_MAP.other;
               return (
                 <View key={report.id}>
                   {idx > 0 && <Divider style={styles.divider} />}
@@ -235,7 +235,7 @@ export default function RestaurantDetailScreen() {
                       <View style={styles.contributionMeta}>
                         <Text style={styles.contributionAuthor}>Utente</Text>
                         <Text style={styles.contributionDate}>
-                          {report.createdAt.toDate().toLocaleDateString('it-IT', {
+                          {new Date(report.created_at).toLocaleDateString('it-IT', {
                             day: 'numeric', month: 'short', year: 'numeric',
                           })}
                         </Text>
@@ -244,7 +244,7 @@ export default function RestaurantDetailScreen() {
                         <Text style={styles.reportReasonBadgeText}>{reasonInfo.icon} {reasonInfo.label}</Text>
                       </View>
                     </View>
-                    <Text style={styles.contributionText}>{report.description}</Text>
+                    <Text style={styles.contributionText}>{report.details}</Text>
                   </View>
                 </View>
               );
@@ -261,10 +261,10 @@ export default function RestaurantDetailScreen() {
             onPress={handleRemoveRestaurant}
           >
             {isRemoving ? (
-              <ActivityIndicator size="small" color="#D32F2F" />
+              <ActivityIndicator size="small" color={theme.colors.error} />
             ) : (
               <>
-                <MaterialCommunityIcons name="delete-outline" size={16} color="#D32F2F" />
+                <MaterialCommunityIcons name="delete-outline" size={16} color={theme.colors.error} />
                 <Text style={styles.removeButtonText}>Elimina ristorante</Text>
               </>
             )}
@@ -305,7 +305,7 @@ export default function RestaurantDetailScreen() {
       {/* Modal piatto fullscreen */}
       <ImageFullscreenModal
         visible={!!fullscreenDish}
-        imageUrl={fullscreenDish?.imageUrl}
+        imageUrl={fullscreenDish?.photo_url ?? undefined}
         onClose={() => setFullscreenDish(null)}
         placeholder={
           <View style={styles.dishFullscreenPlaceholder}>
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
     flex: 1,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: theme.colors.scrim,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -424,11 +424,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dishFullscreenName: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowColor: theme.colors.overlayDark,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   reportReasonBadge: {
-    backgroundColor: '#FFF8E1',
+    backgroundColor: theme.colors.amberLight,
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   reportReasonBadgeText: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#8D6E00',
+    color: theme.colors.amberText,
   },
   removeButton: {
     flexDirection: 'row',
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   },
   removeButtonText: {
     fontSize: 13,
-    color: '#D32F2F',
+    color: theme.colors.error,
     fontWeight: '500',
   },
   reportButton: {
@@ -506,12 +506,12 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   dishFullscreenDescription: {
-    color: 'rgba(255,255,255,0.85)',
+    color: theme.colors.overlayLight,
     fontSize: 15,
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 22,
-    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowColor: theme.colors.overlayDark,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },

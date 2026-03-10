@@ -1,17 +1,16 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Text, TextInput, Button, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
-import { RESTAURANT_CATEGORIES, CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
-import { RestaurantService } from '../../services/restaurantService';
+import { RestaurantService, CreateRestaurantInput } from '../../services/restaurantService';
 import { PlacesService, PlaceAutocompleteResult } from '../../services/placesService';
+import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { useAuth } from '../../contexts/AuthContext';
-import type { PlaceSuggestion, CreateRestaurantInput } from '../../types/restaurants';
-import type { RestaurantCategoryId, AppLanguage } from '../../types';
-import i18n from '../../utils/i18n';
+import type { PlaceSuggestion } from '../../types/restaurants';
+import type { AppLanguage } from '../../types';
 
 // ---------------------------------------------------------------------------
 // Step 1: Ricerca ristorante tramite Google Places
@@ -22,42 +21,40 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
   const [results, setResults] = useState<PlaceAutocompleteResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [existingRestaurant, setExistingRestaurant] = useState<{ placeId: string; name: string } | null>(null);
-  const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [existingRestaurant, setExistingRestaurant] = useState<{ id: string; name: string } | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pulizia timeout se il componente viene smontato durante una ricerca
   useEffect(() => {
     return () => {
-      if (searchTimeout) clearTimeout(searchTimeout);
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
-  }, [searchTimeout]);
+  }, []);
 
   const handleQueryChange = useCallback((text: string) => {
     setQuery(text);
     setExistingRestaurant(null);
-    if (searchTimeout) clearTimeout(searchTimeout);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (text.trim().length < 2) {
       setResults([]);
       return;
     }
-    const t = setTimeout(async () => {
+    searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true);
       const found = await PlacesService.searchPlaces(text);
       setResults(found);
       setIsSearching(false);
     }, 400);
-    setSearchTimeout(t);
-  }, [searchTimeout]);
+  }, []);
 
   const handleSelect = async (result: PlaceAutocompleteResult) => {
     setExistingRestaurant(null);
     setIsLoadingDetails(true);
 
-    // Check rapido su Firestore prima di chiamare Google Place Details
-    const existing = await RestaurantService.getRestaurant(result.placeId);
+    // Check rapido su Supabase per google_place_id (univoco)
+    const existing = await RestaurantService.getRestaurantByGooglePlaceId(result.placeId);
     if (existing) {
       setIsLoadingDetails(false);
-      setExistingRestaurant({ placeId: existing.googlePlaceId, name: existing.name });
+      setExistingRestaurant({ id: existing.id, name: existing.name });
       return;
     }
 
@@ -99,13 +96,13 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
         )}
 
         {results.map(result => {
-          const isExisting = existingRestaurant?.placeId === result.placeId;
+          const isExisting = existingRestaurant && result.mainText.toLowerCase() === existingRestaurant.name.toLowerCase();
           return (
             <TouchableOpacity
               key={result.placeId}
               style={[styles.resultRow, isExisting && styles.resultRowExisting]}
               onPress={() => isExisting
-                ? router.push(`/restaurants/${result.placeId}`)
+                ? router.push(`/restaurants/${existingRestaurant.id}`)
                 : handleSelect(result)
               }
               activeOpacity={0.7}
@@ -137,26 +134,23 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
 }
 
 // ---------------------------------------------------------------------------
-// Step 2: Categorie e conferma
+// Step 2: Conferma dettagli
 // ---------------------------------------------------------------------------
-function CategoryStep({
+function ConfirmStep({
   place,
+  cuisineType,
+  onCuisineTypeChange,
   onSubmit,
   onBack,
   isLoading,
 }: {
   place: PlaceSuggestion;
-  onSubmit: (categories: RestaurantCategoryId[]) => void;
+  cuisineType: string;
+  onCuisineTypeChange: (text: string) => void;
+  onSubmit: () => void;
   onBack: () => void;
   isLoading: boolean;
 }) {
-  const [selected, setSelected] = useState<RestaurantCategoryId[]>([]);
-  const lang = i18n.locale as AppLanguage;
-
-  const toggle = (id: RestaurantCategoryId) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
   return (
     <View style={styles.stepContainer}>
       {/* Riepilogo posto selezionato */}
@@ -174,43 +168,22 @@ function CategoryStep({
       </Surface>
 
       <Surface style={styles.section} elevation={0}>
-        <Text style={styles.sectionTitle}>Categorie</Text>
-        <Text style={styles.stepHint}>
-          Seleziona le categorie che descrivono questo ristorante.
-        </Text>
-
-        <View style={styles.allergenGrid}>
-          {RESTAURANT_CATEGORIES.map(cat => {
-            const isActive = selected.includes(cat.id);
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => toggle(cat.id)}
-                style={[styles.allergenChip, isActive && styles.allergenChipActive]}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.allergenChipText, isActive && styles.allergenChipTextActive]}>
-                  {cat.icon} {cat.translations[lang] ?? cat.translations.en}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Tipo di cucina</Text>
-
-        <View style={styles.allergenGrid}>
+        <Text style={styles.sectionTitle}>Tipo di cucina</Text>
+        <Text style={styles.stepHint}>Seleziona il tipo di cucina del ristorante (opzionale)</Text>
+        <View style={styles.cuisineGrid}>
           {CUISINE_CATEGORIES.map(cat => {
-            const isActive = selected.includes(cat.id);
+            const label = cat.translations['it' as AppLanguage] ?? cat.id;
+            const selected = cuisineType === cat.id;
             return (
               <TouchableOpacity
                 key={cat.id}
-                onPress={() => toggle(cat.id)}
-                style={[styles.allergenChip, isActive && styles.allergenChipActive]}
+                style={[styles.cuisineChip, selected && styles.cuisineChipSelected]}
+                onPress={() => onCuisineTypeChange(selected ? '' : cat.id)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.allergenChipText, isActive && styles.allergenChipTextActive]}>
-                  {cat.icon} {cat.translations[lang] ?? cat.translations.en}
+                <Text style={styles.cuisineChipIcon}>{cat.icon}</Text>
+                <Text style={[styles.cuisineChipText, selected && styles.cuisineChipTextSelected]}>
+                  {label}
                 </Text>
               </TouchableOpacity>
             );
@@ -220,7 +193,7 @@ function CategoryStep({
 
       <Button
         mode="contained"
-        onPress={() => onSubmit(selected)}
+        onPress={onSubmit}
         loading={isLoading}
         disabled={isLoading}
         style={styles.submitButton}
@@ -242,36 +215,26 @@ export default function AddRestaurantScreen() {
   const { user, userProfile } = useAuth();
 
   const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(null);
+  const [cuisineType, setCuisineType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (categories: RestaurantCategoryId[]) => {
+  const handleSubmit = async () => {
     if (!selectedPlace || !user) return;
-
-    // Validazione dati Google Places — alcuni campi possono essere vuoti
-    // se l'API non restituisce address_components completi
-    if (!selectedPlace.city || !selectedPlace.countryCode) {
-      Alert.alert(
-        'Dati incompleti',
-        'Non è stato possibile determinare la città o il paese di questo locale. Prova a cercarlo con un indirizzo più preciso.'
-      );
-      return;
-    }
 
     setIsSubmitting(true);
 
     const input: CreateRestaurantInput = {
-      googlePlaceId: selectedPlace.googlePlaceId,
       name: selectedPlace.name,
       address: selectedPlace.address,
       city: selectedPlace.city,
-      cityNormalized: selectedPlace.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
       country: selectedPlace.country,
-      countryCode: selectedPlace.countryCode,
-      location: selectedPlace.location,
-      categories,
+      latitude: selectedPlace.location.latitude,
+      longitude: selectedPlace.location.longitude,
+      google_place_id: selectedPlace.googlePlaceId,
+      cuisine_type: cuisineType.trim() || undefined,
     };
 
-    const result = await RestaurantService.addRestaurant(input, user.uid, userProfile?.displayName ?? user?.displayName ?? 'Utente');
+    const result = await RestaurantService.addRestaurant(input, user.uid);
 
     setIsSubmitting(false);
 
@@ -279,7 +242,7 @@ export default function AddRestaurantScreen() {
       Alert.alert(
         'Ristorante aggiunto!',
         `${result.name} è stato aggiunto alla community.`,
-        [{ text: 'OK', onPress: () => router.replace(`/restaurants/${result.googlePlaceId}`) }]
+        [{ text: 'OK', onPress: () => router.replace(`/restaurants/${result.id}`) }]
       );
     } else {
       Alert.alert(
@@ -294,7 +257,7 @@ export default function AddRestaurantScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Aggiungi ristorante</Text>
         <View style={{ width: 24 }} />
@@ -306,10 +269,12 @@ export default function AddRestaurantScreen() {
         {!selectedPlace ? (
           <PlaceSearchStep onSelect={setSelectedPlace} />
         ) : (
-          <CategoryStep
+          <ConfirmStep
             place={selectedPlace}
+            cuisineType={cuisineType}
+            onCuisineTypeChange={setCuisineType}
             onSubmit={handleSubmit}
-            onBack={() => setSelectedPlace(null)}
+            onBack={() => { setSelectedPlace(null); setCuisineType(''); }}
             isLoading={isSubmitting}
           />
         )}
@@ -328,7 +293,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -437,32 +402,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  allergenGrid: {
+  cuisineGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  allergenChip: {
+  cuisineChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    borderRadius: 20,
-    paddingHorizontal: 12,
+    gap: 4,
+    paddingHorizontal: 10,
     paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
-  allergenChipActive: {
+  cuisineChipSelected: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
-  allergenChipText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
+  cuisineChipIcon: {
+    fontSize: 14,
   },
-  allergenChipTextActive: {
-    color: '#FFFFFF',
+  cuisineChipText: {
+    fontSize: 13,
+    color: theme.colors.textPrimary,
+    fontWeight: '500',
+  },
+  cuisineChipTextSelected: {
+    color: theme.colors.onPrimary,
   },
   submitButton: {
     borderRadius: 10,

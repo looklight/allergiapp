@@ -455,3 +455,14 @@ export const ALL_RESTAURANT_CATEGORIES: RestaurantCategory[] = [
   ...RESTAURANT_CATEGORIES,
   ...CUISINE_CATEGORIES,
 ];
+
+// Lookup O(1) per id → categoria
+const CATEGORY_MAP = new Map(ALL_RESTAURANT_CATEGORIES.map(c => [c.id, c]));
+
+/** Restituisce "🍕 Pizza" (emoji + label tradotta) dato un id e una lingua */
+export function getCuisineLabel(id: string, lang: string = 'it'): string {
+  const cat = CATEGORY_MAP.get(id as RestaurantCategory['id']);
+  if (!cat) return id;
+  const label = cat.translations[lang as keyof typeof cat.translations] ?? cat.translations.it;
+  return `${cat.icon} ${label}`;
+}

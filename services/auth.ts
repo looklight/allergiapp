@@ -1,67 +1,108 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  onAuthStateChanged as firebaseOnAuthStateChanged,
-  updateProfile,
-  sendPasswordResetEmail as firebaseSendPasswordReset,
-  deleteUser,
-  type User,
-} from 'firebase/auth';
-import {
-  doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs,
-  collection, query, where, collectionGroup, writeBatch, Timestamp,
-} from 'firebase/firestore';
-import { auth, db } from './firebase';
-import type { RestaurantUserProfile } from '../types/restaurants';
+import { supabase } from './supabase';
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import type { DietaryNeeds } from '../types';
 
-async function createUserProfile(user: User, displayName: string): Promise<void> {
-  const profile: Record<string, unknown> = {
-    displayName,
-    email: user.email ?? '',
-    createdAt: Timestamp.now(),
-    restaurantsAdded: 0,
-    dishesAdded: 0,
-    reviewsAdded: 0,
-    contributionsAdded: 0,
+// Tipo utente compatibile con l'interfaccia usata nell'app
+export interface AppUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+}
+
+// Profilo utente dalla tabella profiles
+export interface UserProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  allergens: string[];
+  dietary_preferences: string[];
+  profile_color: string | null;
+  role: 'user' | 'restaurant_owner' | 'admin';
+  created_at: string;
+}
+
+function mapUser(user: SupabaseUser | null): AppUser | null {
+  if (!user) return null;
+  return {
+    uid: user.id,
+    email: user.email ?? null,
+    displayName: user.user_metadata?.display_name ?? user.email ?? null,
   };
-  // Firestore non accetta undefined — aggiungi photoURL solo se presente
-  if (user.photoURL) {
-    profile.photoURL = user.photoURL;
-  }
-  await setDoc(doc(db, 'users', user.uid), profile);
 }
 
-async function signUp(email: string, password: string, displayName: string): Promise<User> {
-  const { user } = await createUserWithEmailAndPassword(auth, email, password);
-  await updateProfile(user, { displayName });
-  await createUserProfile(user, displayName);
-  return user;
+async function signUp(email: string, password: string, displayName: string): Promise<AppUser> {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { display_name: displayName },
+    },
+  });
+  if (error) throw error;
+  if (!data.user) throw new Error('Registrazione fallita');
+
+  // Crea il profilo (lazy creation garantisce che esista sempre)
+  await ensureProfile(data.user.id, displayName);
+
+  return mapUser(data.user)!;
 }
 
-async function signIn(email: string, password: string): Promise<User> {
-  const { user } = await signInWithEmailAndPassword(auth, email, password);
-  return user;
+async function signIn(email: string, password: string): Promise<AppUser> {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw error;
+  return mapUser(data.user)!;
 }
 
 async function signOut(): Promise<void> {
-  await firebaseSignOut(auth);
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 }
 
-function getCurrentUser(): User | null {
-  return auth.currentUser;
+async function getCurrentUser(): Promise<AppUser | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return mapUser(user);
 }
 
-function onAuthStateChanged(callback: (user: User | null) => void): () => void {
-  return firebaseOnAuthStateChanged(auth, callback);
+function onAuthStateChanged(callback: (user: AppUser | null) => void): () => void {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event: string, session: Session | null) => {
+      callback(mapUser(session?.user ?? null));
+    }
+  );
+  return () => subscription.unsubscribe();
 }
 
-async function getUserProfile(userId: string): Promise<RestaurantUserProfile | null> {
+async function ensureProfile(userId: string, displayName?: string | null): Promise<UserProfile> {
+  // Prova a leggere il profilo
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+  if (data) return data;
+
+  // Profilo mancante — crealo (lazy creation)
+  const { data: created, error } = await supabase
+    .from('profiles')
+    .upsert({ id: userId, display_name: displayName ?? null })
+    .select()
+    .single();
+  if (error) throw error;
+  return created;
+}
+
+async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    const snap = await getDoc(doc(db, 'users', userId));
-    if (!snap.exists()) return null;
-    return { uid: snap.id, ...snap.data() } as RestaurantUserProfile;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.warn('[Auth] Errore nel recupero profilo utente:', error);
     return null;
@@ -69,72 +110,64 @@ async function getUserProfile(userId: string): Promise<RestaurantUserProfile | n
 }
 
 async function updateUserAvatar(userId: string, avatarId: string): Promise<void> {
-  await updateDoc(doc(db, 'users', userId), { avatarId });
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_url: avatarId })
+    .eq('id', userId);
+  if (error) throw error;
 }
 
 async function updateProfileColor(userId: string, color: string): Promise<void> {
-  await updateDoc(doc(db, 'users', userId), { profileColor: color });
+  const { error } = await supabase
+    .from('profiles')
+    .update({ profile_color: color })
+    .eq('id', userId);
+  if (error) throw error;
 }
 
 async function updateDisplayName(userId: string, displayName: string): Promise<void> {
-  const currentUser = auth.currentUser;
-  if (currentUser) {
-    await updateProfile(currentUser, { displayName });
-  }
-  await updateDoc(doc(db, 'users', userId), { displayName });
+  // Aggiorna sia auth metadata che profilo
+  const { error: authError } = await supabase.auth.updateUser({
+    data: { display_name: displayName },
+  });
+  if (authError) throw authError;
 
-  // Aggiorna il nome a cascata nei ristoranti e contributi dell'utente
-  propagateDisplayName(userId, displayName).catch((err) =>
-    console.warn('[Auth] Errore propagazione displayName:', err)
-  );
-}
-
-async function propagateDisplayName(userId: string, displayName: string): Promise<void> {
-  // Ristoranti aggiunti dall'utente
-  const restaurantsSnap = await getDocs(
-    query(collection(db, 'restaurants'), where('addedBy', '==', userId), where('status', '==', 'active'))
-  );
-
-  // Contributi dell'utente
-  const contributionsSnap = await getDocs(
-    query(collectionGroup(db, 'contributions'), where('userId', '==', userId), where('status', '==', 'active'))
-  );
-
-  // Batch update (max 500 per batch)
-  const allDocs = [
-    ...restaurantsSnap.docs.map((d) => ({ ref: d.ref, field: 'addedByName' })),
-    ...contributionsSnap.docs.map((d) => ({ ref: d.ref, field: 'displayName' })),
-  ];
-
-  for (let i = 0; i < allDocs.length; i += 500) {
-    const batch = writeBatch(db);
-    allDocs.slice(i, i + 500).forEach(({ ref, field }) => {
-      batch.update(ref, { [field]: displayName });
-    });
-    await batch.commit();
-  }
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ display_name: displayName })
+    .eq('id', userId);
+  if (profileError) throw profileError;
 }
 
 async function deleteAccount(userId: string): Promise<void> {
-  await deleteDoc(doc(db, 'users', userId));
-  const currentUser = auth.currentUser;
-  if (currentUser) {
-    await deleteUser(currentUser);
-  }
+  // Chiama la Edge Function che elimina profilo + auth.users con service_role
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Utente non autenticato');
+
+  const { data, error } = await supabase.functions.invoke('delete-account', {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+
+  // Sign out locale (sessione non piu valida)
+  await supabase.auth.signOut();
 }
 
 async function updateDietaryNeeds(userId: string, dietaryNeeds: DietaryNeeds): Promise<void> {
-  // Verifica se è il primo salvataggio (per consenso GDPR dati sanitari)
-  const profile = await getUserProfile(userId);
-  const updateData: Record<string, unknown> = { dietaryNeeds };
-  if (!profile?.healthDataConsentAt) {
-    updateData.healthDataConsentAt = Timestamp.now();
-  }
-  await updateDoc(doc(db, 'users', userId), updateData);
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      allergens: dietaryNeeds.allergens,
+      dietary_preferences: dietaryNeeds.diets,
+    })
+    .eq('id', userId);
+  if (error) throw error;
 }
 
 async function sendPasswordReset(email: string): Promise<void> {
-  await firebaseSendPasswordReset(auth, email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) throw error;
 }
 
 export const AuthService = {
@@ -143,6 +176,7 @@ export const AuthService = {
   signOut,
   getCurrentUser,
   onAuthStateChanged,
+  ensureProfile,
   getUserProfile,
   updateUserAvatar,
   updateProfileColor,
@@ -150,5 +184,4 @@ export const AuthService = {
   deleteAccount,
   sendPasswordReset,
   updateDietaryNeeds,
-  isAvailable: () => true,
 };

@@ -1,12 +1,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { User } from 'firebase/auth';
-import { AuthService } from '../services/auth';
-import type { RestaurantUserProfile } from '../types/restaurants';
+import { AuthService, type AppUser, type UserProfile } from '../services/auth';
 import type { DietaryNeeds } from '../types';
 
 interface AuthContextValue {
-  user: User | null;
-  userProfile: RestaurantUserProfile | null;
+  user: AppUser | null;
+  userProfile: UserProfile | null;
   dietaryNeeds: DietaryNeeds;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -25,12 +23,13 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<RestaurantUserProfile | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadProfile = async (u: User) => {
-    const profile = await AuthService.getUserProfile(u.uid);
+  const loadProfile = async (u: AppUser) => {
+    // ensureProfile crea il profilo se mancante (lazy creation)
+    const profile = await AuthService.ensureProfile(u.uid, u.displayName);
     setUserProfile(profile);
   };
 
@@ -57,11 +56,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
+  const dietaryNeeds: DietaryNeeds = userProfile
+    ? {
+        allergens: userProfile.allergens as DietaryNeeds['allergens'],
+        diets: userProfile.dietary_preferences as DietaryNeeds['diets'],
+      }
+    : EMPTY_DIETARY_NEEDS;
+
   return (
     <AuthContext.Provider value={{
       user,
       userProfile,
-      dietaryNeeds: userProfile?.dietaryNeeds ?? EMPTY_DIETARY_NEEDS,
+      dietaryNeeds,
       isLoading,
       isAuthenticated: !!user,
       refreshProfile,

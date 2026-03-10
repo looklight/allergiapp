@@ -8,8 +8,8 @@ import type { AggregatedDish } from '../../hooks/useRestaurantDetail';
 interface DishesSectionProps {
   aggregatedDishes: AggregatedDish[];
   userId?: string;
-  onDishPress: (dish: { imageUrl?: string; name: string; description?: string }) => void;
-  onToggleLike: (contributionId: string, dishIndex: number) => void;
+  onDishPress: (dish: { photo_url?: string | null; name: string; description?: string }) => void;
+  onToggleLike: (reviewDishId: string) => void;
 }
 
 export default function DishesSection({ aggregatedDishes, userId, onDishPress, onToggleLike }: DishesSectionProps) {
@@ -30,7 +30,7 @@ export default function DishesSection({ aggregatedDishes, userId, onDishPress, o
         onPress={(e) => {
           e.stopPropagation?.();
           const src = dish.sources[0];
-          onToggleLike(src.contributionKey.replace(/^contrib-/, ''), src.dishIndex);
+          onToggleLike(src.reviewDishId);
         }}
       >
         <MaterialCommunityIcons
@@ -49,16 +49,15 @@ export default function DishesSection({ aggregatedDishes, userId, onDishPress, o
 
   const renderScrollCard = (dish: AggregatedDish, idx: number) => {
     const isLiked = userId ? dish.likerIds.has(userId) : false;
-    const thumbSrc = dish.thumbnailUrl ?? dish.imageUrl;
     return (
       <TouchableOpacity
         key={idx}
         style={styles.dishScrollCard}
         activeOpacity={0.8}
-        onPress={() => onDishPress({ imageUrl: dish.imageUrl, name: dish.name, description: dish.description })}
+        onPress={() => onDishPress({ photo_url: dish.photo_url, name: dish.name, description: dish.description })}
       >
-        {thumbSrc ? (
-          <Image source={{ uri: thumbSrc }} style={styles.dishScrollImage} />
+        {dish.photo_url ? (
+          <Image source={{ uri: dish.thumbnail_url ?? dish.photo_url }} style={styles.dishScrollImage} />
         ) : (
           <View style={styles.dishScrollImagePlaceholder}>
             <MaterialCommunityIcons name="silverware-fork-knife" size={28} color={theme.colors.primary} />
@@ -109,16 +108,15 @@ export default function DishesSection({ aggregatedDishes, userId, onDishPress, o
           <View style={styles.dishGrid}>
             {aggregatedDishes.map((dish, idx) => {
               const isLiked = userId ? dish.likerIds.has(userId) : false;
-              const gridThumb = dish.thumbnailUrl ?? dish.imageUrl;
               return (
                 <TouchableOpacity
                   key={idx}
                   style={styles.dishGridCard}
                   activeOpacity={0.8}
-                  onPress={() => onDishPress({ imageUrl: dish.imageUrl, name: dish.name, description: dish.description })}
+                  onPress={() => onDishPress({ photo_url: dish.photo_url, name: dish.name, description: dish.description })}
                 >
-                  {gridThumb ? (
-                    <Image source={{ uri: gridThumb }} style={styles.dishGridImage} />
+                  {dish.photo_url ? (
+                    <Image source={{ uri: dish.thumbnail_url ?? dish.photo_url }} style={styles.dishGridImage} />
                   ) : (
                     <View style={styles.dishGridImagePlaceholder}>
                       <MaterialCommunityIcons name="silverware-fork-knife" size={32} color={theme.colors.primary} />

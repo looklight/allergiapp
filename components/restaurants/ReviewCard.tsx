@@ -6,30 +6,28 @@ import { theme } from '../../constants/theme';
 import { ALLERGENS } from '../../constants/allergens';
 import { DIETS } from '../../constants/diets';
 import StarRating from '../StarRating';
-import type { UnifiedContribution } from '../../hooks/useRestaurantDetail';
+import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
 
-interface ContributionCardProps {
-  contribution: UnifiedContribution;
-  getLikers: (contributionId: string, dishIndex: number) => string[];
-  isDishLiked: (contributionId: string, dishIndex: number) => boolean;
-  toggleLike: (contributionId: string, dishIndex: number) => Promise<void>;
-  onDishPress: (dish: { imageUrl?: string; name: string; description?: string }) => void;
+interface ReviewCardProps {
+  review: UnifiedReview;
+  getLikers: (reviewDishId: string) => string[];
+  isDishLiked: (reviewDishId: string) => boolean;
+  toggleLike: (reviewDishId: string) => Promise<void>;
+  onDishPress: (dish: { photo_url?: string | null; name: string; description?: string }) => void;
   onImagePress: (imageUrl: string) => void;
 }
 
 const getInitial = (name: string) => (name.charAt(0) || '?').toUpperCase();
 
-export default function ContributionCard({
-  contribution: item,
+export default function ReviewCard({
+  review: item,
   getLikers,
   isDishLiked,
   toggleLike,
   onDishPress,
   onImagePress,
-}: ContributionCardProps) {
+}: ReviewCardProps) {
   const router = useRouter();
-  const isContribution = item.key.startsWith('contrib-');
-  const contribId = item.key.replace(/^contrib-/, '');
 
   return (
     <View style={styles.contributionRow}>
@@ -64,42 +62,35 @@ export default function ContributionCard({
       )}
 
       {/* Esigenze alimentari dell'autore */}
-      {item.userDietaryNeeds && (item.userDietaryNeeds.allergens.length > 0 || item.userDietaryNeeds.diets.length > 0) && (
+      {((item.allergensSnapshot?.length ?? 0) > 0 || (item.dietarySnapshot?.length ?? 0) > 0) && (
         <View style={styles.dietaryBadges}>
-          {item.userDietaryNeeds.diets.map(dId => {
+          {(item.dietarySnapshot ?? []).map(dId => {
             const diet = DIETS.find(x => x.id === dId);
             return diet ? <Text key={dId} style={styles.dietaryBadgeIcon}>{diet.icon}</Text> : null;
           })}
-          {item.userDietaryNeeds.allergens.map(aId => {
+          {(item.allergensSnapshot ?? []).map(aId => {
             const allergen = ALLERGENS.find(x => x.id === aId);
             return allergen ? <Text key={aId} style={styles.dietaryBadgeIcon}>{allergen.icon}</Text> : null;
           })}
         </View>
       )}
 
-      {/* Foto legacy review */}
-      {item.imageUrl && (
-        <TouchableOpacity onPress={() => onImagePress(item.imageUrl!)}>
-          <Image source={{ uri: item.imageUrl }} style={styles.contributionImage} />
-        </TouchableOpacity>
-      )}
-
       {/* Piatti del contributo */}
       {item.dishes.length > 0 && (
         <View style={styles.contributionDishes}>
           {item.dishes.map((d, dIdx) => {
-            const likeCount = getLikers(contribId, dIdx).length;
-            const liked = isDishLiked(contribId, dIdx);
+            const likeCount = d.id ? getLikers(d.id).length : 0;
+            const liked = d.id ? isDishLiked(d.id) : false;
 
             return (
               <TouchableOpacity
-                key={dIdx}
+                key={d.id ?? dIdx}
                 style={styles.dishCard}
                 activeOpacity={0.7}
-                onPress={() => onDishPress({ imageUrl: d.imageUrl, name: d.name, description: d.description })}
+                onPress={() => onDishPress({ photo_url: d.photo_url, name: d.name, description: d.description ?? undefined })}
               >
-                {(d.thumbnailUrl ?? d.imageUrl) ? (
-                  <Image source={{ uri: (d.thumbnailUrl ?? d.imageUrl)! }} style={styles.dishPhoto} />
+                {d.photo_url ? (
+                  <Image source={{ uri: d.thumbnail_url ?? d.photo_url }} style={styles.dishPhoto} />
                 ) : (
                   <View style={styles.dishPhotoPlaceholder}>
                     <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={theme.colors.primary} />
@@ -112,14 +103,14 @@ export default function ContributionCard({
                   )}
                   <View style={styles.dishBottomRow}>
                     <View />
-                    {isContribution && (
+                    {d.id && (
                       <TouchableOpacity
                         style={styles.dishLikeBtn}
                         activeOpacity={0.6}
                         hitSlop={8}
                         onPress={(e) => {
                           e.stopPropagation?.();
-                          toggleLike(contribId, dIdx);
+                          toggleLike(d.id);
                         }}
                       >
                         <MaterialCommunityIcons
@@ -189,11 +180,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textPrimary,
     lineHeight: 20,
-  },
-  contributionImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 12,
   },
   contributionDishes: {
     gap: 8,

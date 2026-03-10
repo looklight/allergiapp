@@ -3,9 +3,9 @@ import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
-import { ALL_RESTAURANT_CATEGORIES } from '../../constants/restaurantCategories';
+import { getCuisineLabel } from '../../constants/restaurantCategories';
 import StarRating from '../StarRating';
-import type { Restaurant } from '../../types/restaurants';
+import type { Restaurant } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
 
 interface RestaurantHeaderProps {
@@ -17,29 +17,32 @@ interface RestaurantHeaderProps {
 
 export default function RestaurantHeader({ restaurant, lang, tappedBadge, onTapBadge }: RestaurantHeaderProps) {
   const router = useRouter();
-  const categoryVotes = restaurant.categoryVotes ?? {};
-  const votedCatIds = Object.keys(categoryVotes)
-    .filter(k => categoryVotes[k] > 0)
-    .sort((a, b) => categoryVotes[b] - categoryVotes[a]);
 
   return (
     <Surface style={styles.section} elevation={1}>
       <View style={styles.sectionTopRow}>
         <Text style={[styles.restaurantName, { flex: 1 }]}>{restaurant.name}</Text>
-        <TouchableOpacity
-          onPress={() => Linking.openURL(`https://www.google.com/maps/place/?q=place_id:${restaurant.googlePlaceId}`)}
-          hitSlop={8}
-          activeOpacity={0.6}
-          style={styles.mapsIconBtn}
-        >
-          <MaterialCommunityIcons name="google-maps" size={30} color="#EA4335" />
-        </TouchableOpacity>
+        {(restaurant.google_place_id || restaurant.address) && (
+          <TouchableOpacity
+            onPress={() => {
+              const url = restaurant.google_place_id
+                ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.google_place_id}`
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address!)}`;
+              Linking.openURL(url);
+            }}
+            hitSlop={8}
+            activeOpacity={0.6}
+            style={styles.mapsIconBtn}
+          >
+            <MaterialCommunityIcons name="google-maps" size={30} color="#EA4335" />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {(restaurant.ratingCount ?? 0) > 0 ? (
+      {(restaurant.review_count ?? 0) > 0 ? (
         <View style={styles.ratingRow}>
-          <StarRating rating={restaurant.averageRating ?? 0} size={18} showValue />
-          <Text style={styles.ratingCount}>({restaurant.ratingCount} recensioni)</Text>
+          <StarRating rating={restaurant.average_rating ?? 0} size={18} showValue />
+          <Text style={styles.ratingCount}>({restaurant.review_count} recensioni)</Text>
         </View>
       ) : (
         <View style={styles.ratingRow}>
@@ -47,62 +50,36 @@ export default function RestaurantHeader({ restaurant, lang, tappedBadge, onTapB
         </View>
       )}
 
-      <View style={styles.infoRow}>
-        <MaterialCommunityIcons name="map-marker-outline" size={16} color={theme.colors.textSecondary} />
-        <Text style={styles.infoText}>{restaurant.address}</Text>
-      </View>
-
-      {restaurant.priceLevel && (
+      {restaurant.address && (
         <View style={styles.infoRow}>
-          <MaterialCommunityIcons name="currency-eur" size={16} color={theme.colors.textSecondary} />
-          <Text style={styles.infoText}>{'€'.repeat(restaurant.priceLevel)}</Text>
+          <MaterialCommunityIcons name="map-marker-outline" size={16} color={theme.colors.textSecondary} />
+          <Text style={styles.infoText}>{restaurant.address}</Text>
         </View>
       )}
 
-      {votedCatIds.length > 0 && (
-        <>
-          <View style={styles.tagsWrap}>
-            {votedCatIds.map(catId => {
-              const cat = ALL_RESTAURANT_CATEGORIES.find(x => x.id === catId);
-              if (!cat) return null;
-              const votes = categoryVotes[catId];
-              return (
-                <TouchableOpacity
-                  key={catId}
-                  style={styles.categoryBadge}
-                  activeOpacity={0.7}
-                  onPress={() => onTapBadge(tappedBadge === catId ? null : catId)}
-                >
-                  <Text style={styles.categoryBadgeText}>
-                    {cat.icon} {cat.translations[lang] ?? cat.translations.en}
-                  </Text>
-                  <View style={styles.categoryBadgeCount}>
-                    <Text style={styles.categoryBadgeCountText}>{votes}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          {tappedBadge && categoryVotes[tappedBadge] > 0 && (
-            <Text style={styles.badgeHint}>
-              {categoryVotes[tappedBadge] === 1
-                ? '1 utente ha segnalato questa informazione'
-                : `${categoryVotes[tappedBadge]} utenti hanno segnalato questa informazione`}
-            </Text>
-          )}
-        </>
+      {restaurant.price_range && (
+        <View style={styles.infoRow}>
+          <MaterialCommunityIcons name="currency-eur" size={16} color={theme.colors.textSecondary} />
+          <Text style={styles.infoText}>{'€'.repeat(restaurant.price_range)}</Text>
+        </View>
       )}
 
-      {restaurant.addedByName && (
+      {restaurant.cuisine_type && (
+        <View style={styles.tagsWrap}>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryBadgeText}>{getCuisineLabel(restaurant.cuisine_type, lang)}</Text>
+          </View>
+        </View>
+      )}
+
+      {restaurant.added_by && (
         <TouchableOpacity
           style={styles.addedByRow}
           activeOpacity={0.6}
-          onPress={() => router.push(`/restaurants/user/${restaurant.addedBy}`)}
+          onPress={() => router.push(`/restaurants/user/${restaurant.added_by}`)}
         >
           <MaterialCommunityIcons name="account-outline" size={14} color={theme.colors.textSecondary} />
-          <Text style={styles.addedByText}>
-            Aggiunto da <Text style={styles.addedByName}>{restaurant.addedByName}</Text>
-          </Text>
+          <Text style={styles.addedByText}>Aggiunto da un utente</Text>
         </TouchableOpacity>
       )}
     </Surface>

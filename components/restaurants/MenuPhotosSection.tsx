@@ -2,7 +2,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Imag
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import type { MenuPhoto } from '../../types/restaurants';
+import type { MenuPhoto } from '../../services/restaurantService';
 
 interface MenuPhotosSectionProps {
   menuPhotos: MenuPhoto[];
@@ -33,10 +33,10 @@ export default function MenuPhotosSection({
         >
           {menuPhotos.map(photo => (
             <View key={photo.id} style={styles.menuThumbWrap}>
-              <TouchableOpacity onPress={() => onPhotoPress(photo.imageUrl)} activeOpacity={0.8}>
-                <Image source={{ uri: photo.thumbnailUrl ?? photo.imageUrl }} style={styles.menuThumb} />
+              <TouchableOpacity onPress={() => onPhotoPress(photo.image_url)} activeOpacity={0.8}>
+                <Image source={{ uri: photo.thumbnail_url ?? photo.image_url }} style={styles.menuThumb} />
               </TouchableOpacity>
-              {photo.uploadedBy === currentUserId && (
+              {photo.user_id === currentUserId && (
                 <TouchableOpacity style={styles.menuDeleteBtn} onPress={() => onDeletePhoto(photo)} hitSlop={6}>
                   <MaterialCommunityIcons name="close-circle" size={20} color={theme.colors.error} />
                 </TouchableOpacity>
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: theme.colors.overlayLight,
     borderRadius: 10,
   },
   menuAddThumb: {

@@ -1,10 +1,26 @@
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { storage } from './firebase';
+import { supabase } from './supabase';
 
 export interface UploadResult {
   imageUrl: string;
   thumbnailUrl: string;
+}
+
+// Bucket Supabase Storage (Public per lettura, RLS per scrittura/cancellazione)
+const BUCKET = 'images';
+
+// Presets compressione immagini: { maxWidth, quality }
+const IMAGE_PRESETS = {
+  thumbnail: { width: 150, quality: 0.5 },
+  dish:      { width: 600, quality: 0.7 },
+  review:    { width: 800, quality: 0.7 },
+  menu:      { width: 1200, quality: 0.8 },
+} as const;
+
+async function getCurrentUserId(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) throw new Error('Utente non autenticato');
+  return session.user.id;
 }
 
 async function compressImage(
@@ -20,33 +36,25 @@ async function compressImage(
   return manipulated.uri;
 }
 
-/**
- * Converte un URI locale in Blob via XMLHttpRequest.
- * Metodo raccomandato da Expo per Firebase Storage su React Native.
- * @see https://github.com/expo/examples/tree/master/with-firebase-storage-upload
- */
-function uriToBlob(uri: string): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.onload = () => resolve(xhr.response as Blob);
-    xhr.onerror = () => reject(new TypeError('Network request failed'));
-    xhr.responseType = 'blob';
-    xhr.open('GET', uri, true);
-    xhr.send(null);
-  });
+async function uriToArrayBuffer(uri: string): Promise<ArrayBuffer> {
+  const response = await fetch(uri);
+  return response.arrayBuffer();
 }
 
 async function uploadSingle(localUri: string, storagePath: string): Promise<string> {
-  const blob = await uriToBlob(localUri);
-  const storageRef = ref(storage, storagePath);
-  await uploadBytes(storageRef, blob);
-  return getDownloadURL(storageRef);
+  const buffer = await uriToArrayBuffer(localUri);
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(storagePath, buffer, {
+      contentType: 'image/jpeg',
+      upsert: true,
+    });
+  if (error) throw error;
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
+  return data.publicUrl;
 }
 
-/**
- * Carica un'immagine full + thumbnail in parallelo.
- * Thumbnail: 150px, quality 0.5 (~10-15 KB).
- */
 async function uploadWithThumbnail(
   localUri: string,
   fullPath: string,
@@ -56,7 +64,7 @@ async function uploadWithThumbnail(
 ): Promise<UploadResult> {
   const [fullUri, thumbUri] = await Promise.all([
     compressImage(localUri, fullMaxWidth, fullQuality),
-    compressImage(localUri, 150, 0.5),
+    compressImage(localUri, IMAGE_PRESETS.thumbnail.width, IMAGE_PRESETS.thumbnail.quality),
   ]);
   const [imageUrl, thumbnailUrl] = await Promise.all([
     uploadSingle(fullUri, fullPath),
@@ -70,18 +78,20 @@ async function uploadReviewImage(
   reviewId: string,
   localUri: string,
 ): Promise<string> {
-  const compressed = await compressImage(localUri, 800, 0.7);
-  return uploadSingle(compressed, `reviews/${restaurantId}/${reviewId}.jpg`);
+  const userId = await getCurrentUserId();
+  const compressed = await compressImage(localUri, IMAGE_PRESETS.review.width, IMAGE_PRESETS.review.quality);
+  return uploadSingle(compressed, `${userId}/reviews/${restaurantId}/${reviewId}.jpg`);
 }
 
 async function uploadDishImage(
   restaurantId: string,
-  contributionId: string,
+  reviewId: string,
   dishIndex: number,
   localUri: string,
 ): Promise<UploadResult> {
-  const base = `contributions/${restaurantId}/${contributionId}_dish${dishIndex}`;
-  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, 600, 0.7);
+  const userId = await getCurrentUserId();
+  const base = `${userId}/dishes/${restaurantId}/${reviewId}_dish${dishIndex}`;
+  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, IMAGE_PRESETS.dish.width, IMAGE_PRESETS.dish.quality);
 }
 
 async function uploadMenuPhoto(
@@ -89,37 +99,19 @@ async function uploadMenuPhoto(
   photoId: string,
   localUri: string,
 ): Promise<UploadResult> {
-  const base = `menus/${restaurantId}/${photoId}`;
-  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, 1200, 0.8);
+  const userId = await getCurrentUserId();
+  const base = `${userId}/menus/${restaurantId}/${photoId}`;
+  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, IMAGE_PRESETS.menu.width, IMAGE_PRESETS.menu.quality);
 }
 
-/**
- * Elimina un file da Storage. Non lancia errori se il file non esiste.
- */
-async function deleteFile(storagePath: string): Promise<void> {
-  try {
-    await deleteObject(ref(storage, storagePath));
-  } catch {
-    // File già eliminato o non esiste — ignora
-  }
-}
-
-/**
- * Elimina un'immagine e il suo thumbnail dato l'URL di download.
- * Estrae il path dallo Storage URL.
- */
 async function deleteByUrl(url: string): Promise<void> {
-  try {
-    const storageRef = ref(storage, url);
-    await deleteObject(storageRef);
-  } catch {
-    // Ignora — file già eliminato o URL non valido
-  }
+  // Estrai il path dal public URL: .../storage/v1/object/public/images/PATH
+  const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+  if (!match) return;
+  const { error } = await supabase.storage.from(BUCKET).remove([match[1]]);
+  if (error) console.warn('[Storage] Errore eliminazione:', error.message);
 }
 
-/**
- * Elimina immagine full + thumbnail dato l'URL full.
- */
 async function deleteImageWithThumbnail(imageUrl: string, thumbnailUrl?: string): Promise<void> {
   const promises: Promise<void>[] = [deleteByUrl(imageUrl)];
   if (thumbnailUrl) {
@@ -132,7 +124,6 @@ export const StorageService = {
   uploadReviewImage,
   uploadDishImage,
   uploadMenuPhoto,
-  deleteFile,
   deleteByUrl,
   deleteImageWithThumbnail,
 };

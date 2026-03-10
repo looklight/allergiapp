@@ -46,6 +46,9 @@ yarn-error.*
 google-services.json
 GoogleService-Info.plist
 
+# Supabase CLI
+supabase/.temp/
+
 # Admin dashboard
 admin/.next/
 admin/node_modules/

@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
-import type { Restaurant } from '../types/restaurants';
+import type { Restaurant } from '../services/restaurantService';
 
 type Props = {
   restaurants: Restaurant[];

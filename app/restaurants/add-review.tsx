@@ -6,14 +6,10 @@ import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../../constants/theme';
-import { RESTAURANT_CATEGORIES, CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../../components/StarRating';
-import ChipGrid from '../../components/ChipGrid';
-import type { AppLanguage, RestaurantCategoryId } from '../../types';
-import type { Contribution } from '../../types/restaurants';
-import i18n from '../../utils/i18n';
+import type { Review, ReviewDish } from '../../services/restaurantService';
 
 interface DishForm {
   name: string;
@@ -27,58 +23,54 @@ const emptyDish = (): DishForm => ({
   imageUri: null,
 });
 
-export default function AddContributionScreen() {
+export default function AddReviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, contributionId } = useLocalSearchParams<{
+  const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, reviewId } = useLocalSearchParams<{
     restaurantId: string;
     restaurantName?: string;
     restaurantAddress?: string;
     restaurantRating?: string;
     restaurantRatingCount?: string;
     prefillRating?: string;
-    contributionId?: string;
+    reviewId?: string;
   }>();
   const ratingNum = parseFloat(restaurantRating ?? '0');
   const ratingCountNum = parseInt(restaurantRatingCount ?? '0', 10);
   const { user, dietaryNeeds } = useAuth();
-  const lang = i18n.locale as AppLanguage;
 
   const initialRating = (parseInt(prefillRating ?? '0', 10) || 0) as 0 | 1 | 2 | 3 | 4 | 5;
   const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(initialRating);
-  const [text, setText] = useState('');
+  const [comment, setComment] = useState('');
   const [dishes, setDishes] = useState<DishForm[]>([]);
   // Quale piatto è in editing (-1 = nessuno)
   const [editingDish, setEditingDish] = useState(-1);
-  const [confirmedCategories, setConfirmedCategories] = useState<RestaurantCategoryId[]>([]);
-  const [showCuisine, setShowCuisine] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [existingContribution, setExistingContribution] = useState<Contribution | null>(null);
-  const [isLoadingExisting, setIsLoadingExisting] = useState(!!contributionId);
+  const [existingReview, setExistingReview] = useState<(Review & { dishes?: ReviewDish[] }) | null>(null);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(!!reviewId);
   const scrollRef = useRef<ScrollView>(null);
-  const isEditMode = !!contributionId;
+  const isEditMode = !!reviewId;
 
-  // Carica contributo esistente per la modifica
+  // Carica review esistente per la modifica
   useEffect(() => {
-    if (!contributionId || !restaurantId || !user) return;
+    if (!reviewId || !restaurantId || !user) return;
     setIsLoadingExisting(true);
-    RestaurantService.getUserContribution(restaurantId, user.uid).then(c => {
-      if (c) {
-        setExistingContribution(c);
-        setRating((c.rating ?? 0) as 0 | 1 | 2 | 3 | 4 | 5);
-        setText(c.text ?? '');
-        setDishes(c.dishes.map(d => ({
+    RestaurantService.getUserReview(restaurantId, user.uid).then(r => {
+      if (r) {
+        setExistingReview(r);
+        setRating((r.rating ?? 0) as 0 | 1 | 2 | 3 | 4 | 5);
+        setComment(r.comment ?? '');
+        setDishes((r.dishes ?? []).map(d => ({
           name: d.name,
           description: d.description ?? '',
-          imageUri: d.imageUrl ?? null,
+          imageUri: d.photo_url ?? null,
         })));
-        setConfirmedCategories(c.confirmedCategories ?? []);
       }
       setIsLoadingExisting(false);
     });
-  }, [contributionId, restaurantId, user]);
+  }, [reviewId, restaurantId, user]);
 
-  const hasContent = rating > 0 || text.trim().length > 0 || dishes.some(d => d.name.trim().length > 0);
+  const hasContent = rating > 0 || comment.trim().length > 0 || dishes.some(d => d.name.trim().length > 0);
 
   const addDish = () => {
     const newIndex = dishes.length;
@@ -122,51 +114,47 @@ export default function AddContributionScreen() {
 
   const handleSubmit = async () => {
     if (!restaurantId || !user) return;
-    const validDishes = dishes.filter(d => d.name.trim().length > 0);
-    if (rating === 0 && !text.trim() && validDishes.length === 0) {
-      Alert.alert('Attenzione', 'Inserisci almeno una valutazione, un commento o un piatto.');
+    if (rating === 0) {
+      Alert.alert('Attenzione', 'Seleziona almeno una stella per la valutazione.');
       return;
     }
+    const validDishes = dishes.filter(d => d.name.trim().length > 0);
 
     setIsSubmitting(true);
     const inputData = {
-      ...(rating > 0 && { rating: rating as 1 | 2 | 3 | 4 | 5 }),
-      ...(text.trim() && { text: text.trim() }),
+      rating,
+      ...(comment.trim() && { comment: comment.trim() }),
       dishes: validDishes.map(d => ({
         name: d.name.trim(),
         description: d.description.trim() || undefined,
         imageUri: d.imageUri ?? undefined,
       })),
-      ...(confirmedCategories.length > 0 && { confirmedCategories }),
     };
 
     // Snapshot delle esigenze alimentari dell'utente al momento del contributo
     const needsSnapshot = (dietaryNeeds.allergens.length > 0 || dietaryNeeds.diets.length > 0)
       ? dietaryNeeds : undefined;
 
-    let contribution;
-    if (isEditMode && contributionId && existingContribution) {
-      contribution = await RestaurantService.updateContribution({
+    let review;
+    if (isEditMode && reviewId && existingReview) {
+      review = await RestaurantService.updateReview({
+        reviewId: reviewId,
         restaurantId,
-        contributionId,
         input: inputData,
         userId: user.uid,
-        displayName: user.displayName ?? 'Anonimo',
-        oldContribution: existingContribution,
-        userDietaryNeeds: needsSnapshot,
+        oldDishes: existingReview.dishes,
       });
     } else {
-      contribution = await RestaurantService.addContribution({
+      review = await RestaurantService.addReview({
         restaurantId,
         input: inputData,
         userId: user.uid,
-        displayName: user.displayName ?? 'Anonimo',
         userDietaryNeeds: needsSnapshot,
       });
     }
     setIsSubmitting(false);
 
-    if (contribution) {
+    if (review) {
       Alert.alert(
         'Grazie!',
         isEditMode ? 'La tua recensione è stata aggiornata.' : 'La tua recensione è stata condivisa con la community.',
@@ -261,7 +249,7 @@ export default function AddContributionScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isEditMode ? 'Modifica recensione' : 'La tua recensione'}</Text>
         <View style={{ width: 24 }} />
@@ -314,8 +302,8 @@ export default function AddContributionScreen() {
         </View>
 
         <TextInput
-          value={text}
-          onChangeText={setText}
+          value={comment}
+          onChangeText={setComment}
           placeholder="Racconta com'è andata"
           multiline
           mode="outlined"
@@ -339,42 +327,13 @@ export default function AddContributionScreen() {
           <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
           <Text style={styles.addDishText}>Aggiungi un piatto</Text>
         </TouchableOpacity>
-
-        <View style={styles.separator} />
-
-        {/* Categorie confermate */}
-        <Text style={styles.sectionTitle}>Questo ristorante è adatto a...</Text>
-        <Text style={styles.sectionHint}>Conferma le categorie in base alla tua recensione</Text>
-        <ChipGrid
-          items={RESTAURANT_CATEGORIES}
-          activeIds={confirmedCategories}
-          onToggle={(id) => setConfirmedCategories(prev =>
-            prev.includes(id as RestaurantCategoryId) ? prev.filter(x => x !== id) : [...prev, id as RestaurantCategoryId]
-          )}
-          lang={lang}
-        />
-
-        <TouchableOpacity onPress={() => { setShowCuisine(prev => { if (!prev) setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150); return !prev; }); }} activeOpacity={0.7} style={styles.altroToggle}>
-          <Text style={styles.altroToggleText}>Tipo di cucina</Text>
-          <MaterialCommunityIcons name={showCuisine ? 'chevron-up' : 'chevron-down'} size={20} color={theme.colors.primary} />
-        </TouchableOpacity>
-        {showCuisine && (
-          <ChipGrid
-            items={CUISINE_CATEGORIES}
-            activeIds={confirmedCategories}
-            onToggle={(id) => setConfirmedCategories(prev =>
-              prev.includes(id as RestaurantCategoryId) ? prev.filter(x => x !== id) : [...prev, id as RestaurantCategoryId]
-            )}
-            lang={lang}
-          />
-        )}
         </>}
 
-        {isEditMode && existingContribution && (
+        {isEditMode && existingReview && (
           <TouchableOpacity
             onPress={() => {
               Alert.alert(
-                'Elimina contributo',
+                'Elimina recensione',
                 'Sei sicuro di voler eliminare la tua recensione? Questa azione non può essere annullata.',
                 [
                   { text: 'Annulla', style: 'cancel' },
@@ -382,8 +341,8 @@ export default function AddContributionScreen() {
                     text: 'Elimina',
                     style: 'destructive',
                     onPress: async () => {
-                      if (!restaurantId || !user) return;
-                      const ok = await RestaurantService.deleteContribution(restaurantId, existingContribution.id, user.uid, existingContribution);
+                      if (!user) return;
+                      const ok = await RestaurantService.deleteReview(existingReview.id, user.uid);
                       if (ok) {
                         router.back();
                       }
@@ -421,7 +380,7 @@ export default function AddContributionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   header: {
     backgroundColor: theme.colors.primary,
@@ -433,7 +392,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -498,7 +457,7 @@ const styles = StyleSheet.create({
   },
   // Testo
   textInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     fontSize: 14,
     minHeight: 100,
     marginTop: 16,
@@ -563,7 +522,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   dishInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     fontSize: 14,
   },
   inputOutline: {
@@ -598,20 +557,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: theme.colors.overlay,
     borderRadius: 12,
-  },
-  altroToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 20,
-    marginBottom: 12,
-  },
-  altroToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
   },
   // Conferma piatto
   confirmDishButton: {
@@ -650,7 +597,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     paddingHorizontal: 20,
@@ -667,7 +614,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   submitText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: '700',
   },

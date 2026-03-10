@@ -8,7 +8,6 @@ import { theme } from '../../constants/theme';
 import { REPORT_REASONS } from '../../constants/reportReasons';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
-import type { ReportReason } from '../../types/restaurants';
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -21,7 +20,7 @@ export default function ReportScreen() {
   }>();
   const { user } = useAuth();
 
-  const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,9 +44,8 @@ export default function ReportScreen() {
     setIsSubmitting(true);
     const report = await RestaurantService.addReport(
       restaurantId,
-      { reason: selectedReason, description: description.trim() },
+      { reason: selectedReason, details: description.trim() },
       user.uid,
-      user.displayName ?? 'Anonimo',
     );
     setIsSubmitting(false);
 
@@ -69,7 +67,7 @@ export default function ReportScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Segnala un problema</Text>
         <View style={{ width: 24 }} />
@@ -151,7 +149,7 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   header: {
     backgroundColor: theme.colors.primary,
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -202,7 +200,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     borderRadius: 12,
@@ -222,10 +220,10 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   reasonTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   textInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     fontSize: 14,
     minHeight: 120,
   },
@@ -251,7 +249,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   submitText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
