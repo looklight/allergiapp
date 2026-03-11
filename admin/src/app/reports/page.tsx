@@ -16,6 +16,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
 
   const loadReports = async (pageNum: number, append = false) => {
     setLoading(true);
@@ -60,7 +61,10 @@ export default function ReportsPage() {
   }, [statusFilter, reasonFilter]);
 
   const updateStatus = async (reportId: string, status: ReportStatus) => {
+    if (busyIds.has(reportId)) return;
+    setBusyIds((prev) => new Set(prev).add(reportId));
     const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
+    setBusyIds((prev) => { const next = new Set(prev); next.delete(reportId); return next; });
     if (error) {
       alert(`Errore: ${error.message}`);
       return;
@@ -157,13 +161,15 @@ export default function ReportsPage() {
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => updateStatus(r.id, 'resolved')}
-                          className="text-green-600 hover:underline text-xs"
+                          disabled={busyIds.has(r.id)}
+                          className="text-green-600 hover:underline text-xs disabled:opacity-50"
                         >
-                          Risolvi
+                          {busyIds.has(r.id) ? '...' : 'Risolvi'}
                         </button>
                         <button
                           onClick={() => updateStatus(r.id, 'dismissed')}
-                          className="text-gray-600 hover:underline text-xs"
+                          disabled={busyIds.has(r.id)}
+                          className="text-gray-600 hover:underline text-xs disabled:opacity-50"
                         >
                           Archivia
                         </button>

@@ -9,26 +9,15 @@ import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  FOOD_RESTRICTIONS,
-  getRestrictionsByCategory,
-  getRestrictionById,
-  INTOLERANCE_RESTRICTION_IDS,
-} from '../../constants/foodRestrictions';
 import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantCategories';
 import ChipGrid from '../../components/ChipGrid';
+import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import StarRating from '../../components/StarRating';
 import i18n from '../../utils/i18n';
 import type { Review, CuisineVote } from '../../services/restaurantService';
 import type { DietId, AppLanguage } from '../../types';
 
 const MAX_PHOTOS = 3;
-
-// Gruppi per il form review (derivati dal catalogo centralizzato)
-const DIETS_GROUP = getRestrictionsByCategory('diet');
-const INTOLERANCES_GROUP = FOOD_RESTRICTIONS.filter(
-  r => r.category !== 'diet',
-);
 
 export default function AddReviewScreen() {
   const router = useRouter();
@@ -57,8 +46,7 @@ export default function AddReviewScreen() {
   const [comment, setComment] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
-  const [selectedDiets, setSelectedDiets] = useState<DietId[]>([...dietaryNeeds.diets] as DietId[]);
-  const [needsExpanded, setNeedsExpanded] = useState(dietaryNeeds.allergens.length === 0 && dietaryNeeds.diets.length === 0);
+  const [selectedDiets, setSelectedDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingReview, setExistingReview] = useState<Review | null>(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(!!reviewId);
@@ -66,46 +54,7 @@ export default function AddReviewScreen() {
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [cuisinePickerOpen, setCuisinePickerOpen] = useState(false);
   const isEditMode = !!reviewId;
-  const [syncingProfile, setSyncingProfile] = useState(false);
-  const [justSynced, setJustSynced] = useState(false);
   const hasNeeds = selectedAllergens.length > 0 || selectedDiets.length > 0;
-
-  const profileAllergens = new Set<string>(dietaryNeeds.allergens);
-  const profileDiets = new Set<string>(dietaryNeeds.diets);
-  const needsDifferFromProfile =
-    selectedAllergens.length !== profileAllergens.size ||
-    selectedDiets.length !== profileDiets.size ||
-    selectedAllergens.some(a => !profileAllergens.has(a)) ||
-    selectedDiets.some(d => !profileDiets.has(d));
-
-  // Reset feedback quando l'utente modifica dopo un sync
-  const handleToggleAllergen = (id: string) => {
-    setJustSynced(false);
-    setSelectedAllergens(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]);
-  };
-  const handleToggleDiet = (id: string) => {
-    setJustSynced(false);
-    setSelectedDiets(prev =>
-      prev.includes(id as DietId) ? prev.filter(d => d !== id) : [...prev, id as DietId]
-    );
-  };
-
-  const handleSyncProfile = async () => {
-    if (!user) return;
-    setSyncingProfile(true);
-    try {
-      await AuthService.updateDietaryNeeds(user.uid, {
-        allergens: selectedAllergens,
-        diets: selectedDiets,
-      });
-      await refreshProfile();
-      setJustSynced(true);
-    } catch {
-      Alert.alert('Errore', 'Impossibile aggiornare il profilo. Riprova.');
-    } finally {
-      setSyncingProfile(false);
-    }
-  };
 
   // Carica voti cucina: pre-seleziona solo quelli dell'utente, gli altri deselezionati
   useEffect(() => {
@@ -115,7 +64,7 @@ export default function AddReviewScreen() {
       if (cancelled) return;
       setCuisineVotes(votes);
       setSelectedCuisines(votes.filter(v => v.user_voted).map(v => v.cuisine_id));
-    });
+    }).catch(() => { /* voti cucina non critici, si caricano vuoti */ });
     return () => { cancelled = true; };
   }, [restaurantId]);
 
@@ -131,10 +80,12 @@ export default function AddReviewScreen() {
         setPhotos((r.photos ?? []).map(p => p.url));
         if (r.allergens_snapshot?.length) setSelectedAllergens([...r.allergens_snapshot]);
         if (r.dietary_snapshot?.length) setSelectedDiets(r.dietary_snapshot as DietId[]);
-        setNeedsExpanded(!r.allergens_snapshot?.length && !r.dietary_snapshot?.length);
       } else {
         Alert.alert('Errore', 'Recensione non trovata.', [{ text: 'OK', onPress: () => router.back() }]);
       }
+      setIsLoadingExisting(false);
+    }).catch(() => {
+      Alert.alert('Errore', 'Impossibile caricare la recensione.', [{ text: 'OK', onPress: () => router.back() }]);
       setIsLoadingExisting(false);
     });
   }, [reviewId, restaurantId, user]);
@@ -426,101 +377,21 @@ export default function AddReviewScreen() {
 
         {/* Profilo alimentare (editabile) */}
         <View style={styles.separator} />
-        <View style={styles.needsBox}>
-          <View style={styles.needsHeader}>
-            <MaterialCommunityIcons name="shield-check-outline" size={20} color={theme.colors.primary} />
-            <Text style={styles.needsTitle}>Le tue esigenze alimentari</Text>
-          </View>
-
-          <Text style={styles.needsDescription}>
-            {hasNeeds
-              ? 'Questi dati aiutano altri utenti con le stesse esigenze a trovare questo ristorante.'
-              : 'Hai allergie o segui una dieta? Aggiungile per aiutare chi ha le tue stesse esigenze.'}
-          </Text>
-
-          {/* Chip riepilogo (quando collassato) */}
-          {!needsExpanded && hasNeeds && (
-            <View style={styles.needsChips}>
-              {selectedAllergens.map((code) => {
-                const a = getRestrictionById(code);
-                return (
-                  <View key={code} style={styles.needsChip}>
-                    <Text style={styles.needsChipText}>{a ? `${a.icon ? a.icon + ' ' : ''}${a.translations[i18n.locale as keyof typeof a.translations] ?? a.translations.en}` : code}</Text>
-                  </View>
-                );
-              })}
-              {selectedDiets.map((code) => {
-                const d = getRestrictionById(code);
-                return (
-                  <View key={code} style={[styles.needsChip, styles.needsChipDiet]}>
-                    <Text style={styles.needsChipText}>{d ? (d.translations[i18n.locale as keyof typeof d.translations] ?? d.translations.en) : code}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-
-          {/* Link Modifica/Aggiungi in fondo */}
-          {!needsExpanded && (
-            <TouchableOpacity onPress={() => setNeedsExpanded(true)} activeOpacity={0.6} style={styles.needsBottomLink}>
-              <Text style={styles.needsBottomLinkText}>{hasNeeds ? 'Modifica' : 'Aggiungi esigenze'}</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* ChipGrid editabile (quando espanso) */}
-          {needsExpanded && (
-            <View style={styles.needsEditor}>
-              {needsDifferFromProfile && (
-                <View style={styles.syncProfileCard}>
-                  <Text style={styles.syncProfileText}>Usa queste esigenze come predefinite</Text>
-                  <TouchableOpacity
-                    onPress={handleSyncProfile}
-                    disabled={syncingProfile}
-                    activeOpacity={0.6}
-                    style={styles.syncProfileBtn}
-                  >
-                    {syncingProfile
-                      ? <ActivityIndicator size="small" color={theme.colors.primary} />
-                      : <Text style={styles.syncProfileBtnText}>Salva</Text>
-                    }
-                  </TouchableOpacity>
-                </View>
-              )}
-              {justSynced && !needsDifferFromProfile && (
-                <View style={styles.syncProfileCardDone}>
-                  <MaterialCommunityIcons name="check-circle-outline" size={16} color={theme.colors.success} />
-                  <Text style={styles.syncProfileDone}>Profilo aggiornato</Text>
-                </View>
-              )}
-              <Text style={styles.needsEditorLabel}>Diete</Text>
-              <ChipGrid
-                items={DIETS_GROUP}
-                activeIds={selectedDiets}
-                onToggle={handleToggleDiet}
-                lang={i18n.locale}
-                keyPrefix="diet"
-              />
-              <Text style={[styles.needsEditorLabel, { marginTop: 16 }]}>Intolleranze e allergeni</Text>
-              <ChipGrid
-                items={INTOLERANCES_GROUP}
-                activeIds={[...selectedDiets, ...selectedAllergens]}
-                onToggle={(id) => {
-                  if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
-                    handleToggleDiet(id);
-                  } else {
-                    handleToggleAllergen(id);
-                  }
-                }}
-                lang={i18n.locale}
-                keyPrefix="intol"
-              />
-              <TouchableOpacity onPress={() => setNeedsExpanded(false)} activeOpacity={0.6} style={styles.needsBottomLink}>
-                <MaterialCommunityIcons name="chevron-up" size={16} color={theme.colors.primary} />
-                <Text style={styles.needsBottomLinkText}>Chiudi</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
+        <DietaryNeedsPicker
+          allergens={selectedAllergens}
+          diets={selectedDiets}
+          onAllergensChange={setSelectedAllergens}
+          onDietsChange={setSelectedDiets}
+          profileAllergens={dietaryNeeds.allergens}
+          profileDiets={dietaryNeeds.diets}
+          onSyncProfile={async (a, d) => {
+            if (!user) return;
+            await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
+            await refreshProfile();
+          }}
+          lang={i18n.locale}
+          initialExpanded={dietaryNeeds.allergens.length === 0 && dietaryNeeds.diets.length === 0}
+        />
         </>}
 
         {isEditMode && existingReview && (
@@ -721,113 +592,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
-  },
-  // Needs snapshot
-  needsBox: {
-    backgroundColor: theme.colors.primaryLight,
-    borderRadius: 14,
-    padding: 16,
-    gap: 10,
-  },
-  needsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  needsTitle: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  needsBottomLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'center',
-    gap: 6,
-    marginTop: 2,
-  },
-  needsBottomLinkText: {
-    fontSize: 13,
-    color: theme.colors.primary,
-  },
-  needsDescription: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-  },
-  needsChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 2,
-  },
-  needsChip: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryContainer,
-  },
-  needsChipDiet: {
-    borderColor: theme.colors.secondaryContainer,
-  },
-  needsChipText: {
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-  },
-  needsEditor: {
-    marginTop: 4,
-    gap: 4,
-  },
-  syncProfileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.colors.border,
-    padding: 12,
-    marginBottom: 12,
-  },
-  syncProfileCardDone: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 12,
-  },
-  syncProfileText: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-  },
-  syncProfileBtn: {
-    backgroundColor: theme.colors.primaryLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  syncProfileBtnText: {
-    fontSize: 13,
-    color: theme.colors.primary,
-  },
-  syncProfileDone: {
-    fontSize: 13,
-    color: theme.colors.success,
-  },
-  needsEditorLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    marginBottom: 4,
   },
   // Cuisine tags
   cuisineTitle: {

@@ -14,9 +14,10 @@ interface ChipGridProps {
   onToggle: (id: string) => void;
   lang: string;
   keyPrefix?: string;
+  hideIcons?: boolean;
 }
 
-export default function ChipGrid({ items, activeIds, onToggle, lang, keyPrefix }: ChipGridProps) {
+export default function ChipGrid({ items, activeIds, onToggle, lang, keyPrefix, hideIcons }: ChipGridProps) {
   return (
     <View style={styles.grid}>
       {items.map(item => {
@@ -28,7 +29,7 @@ export default function ChipGrid({ items, activeIds, onToggle, lang, keyPrefix }
             style={[styles.chip, isActive && styles.chipActive]}
             activeOpacity={0.7}
           >
-            {!!item.icon && <Text style={styles.chipIcon}>{item.icon}</Text>}
+            {!hideIcons && !!item.icon && <Text style={styles.chipIcon}>{item.icon}</Text>}
             <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
               {item.translations[lang] ?? item.translations.en}
             </Text>

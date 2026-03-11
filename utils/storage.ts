@@ -49,37 +49,21 @@ const DEFAULT_TRACKING_CONSENT: TrackingConsent = {
 export const storage = {
   // Carica tutti i dati in una singola operazione (per il Context)
   async loadAll(): Promise<AppData> {
+    const keys = [
+      STORAGE_KEYS.SELECTED_ALLERGENS,
+      STORAGE_KEYS.SELECTED_OTHER_FOODS,
+      STORAGE_KEYS.SELECTED_RESTRICTIONS,
+      STORAGE_KEYS.ACTIVE_DIET_MODES,
+      STORAGE_KEYS.VEGETARIAN_LEVEL,
+      STORAGE_KEYS.SETTINGS,
+      STORAGE_KEYS.DOWNLOADED_LANGUAGES,
+      STORAGE_KEYS.LEGAL_CONSENT,
+      STORAGE_KEYS.TRACKING_CONSENT,
+    ];
+
+    let results: readonly [string, string | null][];
     try {
-      const keys = [
-        STORAGE_KEYS.SELECTED_ALLERGENS,
-        STORAGE_KEYS.SELECTED_OTHER_FOODS,
-        STORAGE_KEYS.SELECTED_RESTRICTIONS,
-        STORAGE_KEYS.ACTIVE_DIET_MODES,
-        STORAGE_KEYS.VEGETARIAN_LEVEL,
-        STORAGE_KEYS.SETTINGS,
-        STORAGE_KEYS.DOWNLOADED_LANGUAGES,
-        STORAGE_KEYS.LEGAL_CONSENT,
-        STORAGE_KEYS.TRACKING_CONSENT,
-      ];
-      const results = await AsyncStorage.multiGet(keys);
-      const [allergensRaw, otherFoodsRaw, restrictionsRaw, dietModesRaw, vegLevelRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
-
-      // Clean up legacy 'vegan' from activeDietModes
-      const rawModes: DietModeId[] = dietModesRaw ? JSON.parse(dietModesRaw) : [];
-      const validModeIds: DietModeId[] = ['pregnancy', 'vegetarian', 'nickel', 'histamine', 'diabetes'];
-      const cleanModes = rawModes.filter(id => validModeIds.includes(id as DietModeId)) as DietModeId[];
-
-      return {
-        selectedAllergens: allergensRaw ? JSON.parse(allergensRaw) : [],
-        selectedOtherFoods: otherFoodsRaw ? JSON.parse(otherFoodsRaw) : [],
-        selectedRestrictions: restrictionsRaw ? JSON.parse(restrictionsRaw) : [],
-        activeDietModes: cleanModes,
-        vegetarianLevel: vegLevelRaw && ['no_meat', 'no_meat_fish', 'no_animal_products'].includes(vegLevelRaw) ? vegLevelRaw as VegetarianLevel : DEFAULT_VEGETARIAN_LEVEL,
-        settings: settingsRaw ? { ...DEFAULT_SETTINGS, ...JSON.parse(settingsRaw) } : DEFAULT_SETTINGS,
-        downloadedLanguages: downloadedRaw ? JSON.parse(downloadedRaw) : {},
-        legalConsent: legalRaw ? JSON.parse(legalRaw) : DEFAULT_LEGAL_CONSENT,
-        trackingConsent: trackingRaw ? JSON.parse(trackingRaw) : DEFAULT_TRACKING_CONSENT,
-      };
+      results = await AsyncStorage.multiGet(keys);
     } catch {
       return {
         selectedAllergens: [],
@@ -93,6 +77,30 @@ export const storage = {
         trackingConsent: DEFAULT_TRACKING_CONSENT,
       };
     }
+
+    const [allergensRaw, otherFoodsRaw, restrictionsRaw, dietModesRaw, vegLevelRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
+
+    const safeParse = <T>(raw: string | null | undefined, fallback: T): T => {
+      if (!raw) return fallback;
+      try { return JSON.parse(raw); } catch { return fallback; }
+    };
+
+    // Clean up legacy 'vegan' from activeDietModes
+    const rawModes: DietModeId[] = safeParse(dietModesRaw, []);
+    const validModeIds: DietModeId[] = ['pregnancy', 'vegetarian', 'nickel', 'histamine', 'diabetes'];
+    const cleanModes = rawModes.filter(id => validModeIds.includes(id as DietModeId)) as DietModeId[];
+
+    return {
+      selectedAllergens: safeParse(allergensRaw, []),
+      selectedOtherFoods: safeParse(otherFoodsRaw, []),
+      selectedRestrictions: safeParse(restrictionsRaw, []),
+      activeDietModes: cleanModes,
+      vegetarianLevel: vegLevelRaw && ['no_meat', 'no_meat_fish', 'no_animal_products'].includes(vegLevelRaw) ? vegLevelRaw as VegetarianLevel : DEFAULT_VEGETARIAN_LEVEL,
+      settings: { ...DEFAULT_SETTINGS, ...safeParse(settingsRaw, {}) },
+      downloadedLanguages: safeParse(downloadedRaw, {}),
+      legalConsent: safeParse(legalRaw, DEFAULT_LEGAL_CONSENT),
+      trackingConsent: safeParse(trackingRaw, DEFAULT_TRACKING_CONSENT),
+    };
   },
 
   async getSelectedAllergens(): Promise<AllergenId[]> {

@@ -1,20 +1,34 @@
+import { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
+import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
 import type { Restaurant, CuisineVote } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
+
+interface MatchInfo {
+  reviewCount: number;
+  coveredCount: number;
+  totalFilters: number;
+  covered: string[];
+  uncovered: string[];
+}
 
 interface RestaurantHeaderProps {
   restaurant: Restaurant;
   lang: AppLanguage;
   cuisineVotes: CuisineVote[];
+  matchInfo?: MatchInfo;
+  hasUserNeeds?: boolean;
 }
 
-export default function RestaurantHeader({ restaurant, lang, cuisineVotes }: RestaurantHeaderProps) {
+export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds }: RestaurantHeaderProps) {
+  const [compatExpanded, setCompatExpanded] = useState(false);
+  const isFull = matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
   const router = useRouter();
 
   return (
@@ -76,15 +90,53 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes }: Res
         </View>
       )}
 
-      {restaurant.added_by && (
-        <TouchableOpacity
-          style={styles.addedByRow}
-          activeOpacity={0.6}
-          onPress={() => router.push(`/restaurants/user/${restaurant.added_by}`)}
-        >
-          <MaterialCommunityIcons name="account-outline" size={14} color={theme.colors.textSecondary} />
-          <Text style={styles.addedByText}>Aggiunto da un utente</Text>
-        </TouchableOpacity>
+      {hasUserNeeds && matchInfo && matchInfo.reviewCount > 0 && (
+        <View style={styles.compatContainer}>
+          <TouchableOpacity
+            onPress={() => setCompatExpanded(prev => !prev)}
+            activeOpacity={0.7}
+            style={styles.compatRow}
+          >
+            <MaterialCommunityIcons
+              name="shield-check"
+              size={15}
+              color={isFull ? theme.colors.success : theme.colors.amberDark}
+            />
+            <Text style={[styles.compatText, { color: isFull ? theme.colors.success : theme.colors.amberDark }]}>
+              {matchInfo.coveredCount}/{matchInfo.totalFilters} esigenze confermate da {matchInfo.reviewCount} {matchInfo.reviewCount === 1 ? 'utente' : 'utenti'}
+            </Text>
+            <MaterialCommunityIcons
+              name={compatExpanded ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={theme.colors.textSecondary}
+            />
+          </TouchableOpacity>
+
+          {compatExpanded && (
+            <View style={styles.compatDetail}>
+              {matchInfo.covered.map(code => {
+                const r = getRestrictionById(code);
+                const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
+                return (
+                  <View key={code} style={[styles.compatChip, styles.compatChipCovered]}>
+                    <MaterialCommunityIcons name="check" size={12} color={theme.colors.success} />
+                    <Text style={[styles.compatChipText, { color: theme.colors.success }]}>{label}</Text>
+                  </View>
+                );
+              })}
+              {matchInfo.uncovered.map(code => {
+                const r = getRestrictionById(code);
+                const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
+                return (
+                  <View key={code} style={[styles.compatChip, styles.compatChipUncovered]}>
+                    <MaterialCommunityIcons name="minus" size={12} color={theme.colors.textDisabled} />
+                    <Text style={[styles.compatChipText, { color: theme.colors.textDisabled }]}>{label}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
       )}
     </Surface>
   );
@@ -182,15 +234,41 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     fontWeight: '500',
   },
-  addedByRow: {
+  compatContainer: {
+    marginTop: 8,
+  },
+  compatRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-end',
-    gap: 4,
-    marginTop: 4,
+    gap: 5,
   },
-  addedByText: {
+  compatText: {
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+  },
+  compatDetail: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  compatChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  compatChipCovered: {
+    backgroundColor: '#E8F5E9',
+  },
+  compatChipUncovered: {
+    backgroundColor: theme.colors.background,
+  },
+  compatChipText: {
     fontSize: 12,
-    color: theme.colors.textSecondary,
+    fontWeight: '500',
   },
 });

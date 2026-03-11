@@ -81,15 +81,26 @@ export default function ReportScreen() {
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
       >
+        {/* Banner informativo */}
+        <View style={styles.infoBanner}>
+          <MaterialCommunityIcons name="information-outline" size={20} color={theme.colors.primary} />
+          <Text style={styles.infoBannerText}>
+            AllergiApp è una piattaforma collaborativa: i ristoranti e le recensioni sono interamente gestiti dalla community. Usa questa segnalazione solo in caso di problemi reali (informazioni errate, contenuti inappropriati, ecc.). Le azioni che possiamo intraprendere sono limitate poiché non abbiamo rapporti diretti con i ristoranti.
+          </Text>
+        </View>
+
+        <View style={styles.formSeparator} />
+
         {/* Info ristorante */}
         {restaurantName && (
-          <View style={styles.restaurantInfo}>
-            <MaterialCommunityIcons name="store" size={20} color={theme.colors.primary} />
-            <Text style={styles.restaurantName} numberOfLines={1}>{restaurantName}</Text>
-          </View>
+          <>
+            <View style={styles.restaurantInfo}>
+              <MaterialCommunityIcons name="store" size={20} color={theme.colors.primary} />
+              <Text style={styles.restaurantName} numberOfLines={1}>{restaurantName}</Text>
+            </View>
+            <View style={styles.separator} />
+          </>
         )}
-
-        <View style={styles.separator} />
 
         {/* Motivi */}
         <Text style={styles.sectionTitle}>Motivo della segnalazione</Text>
@@ -170,6 +181,23 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 24,
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: theme.colors.background,
+    borderRadius: 12,
+    padding: 14,
+  },
+  formSeparator: {
+    height: 28,
+  },
+  infoBannerText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 19,
+    color: theme.colors.textSecondary,
   },
   restaurantInfo: {
     flexDirection: 'row',

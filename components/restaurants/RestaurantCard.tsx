@@ -20,6 +20,10 @@ interface RestaurantCardProps {
   isFavorite: boolean;
   /** Distanza in km dall'utente (opzionale) */
   distance?: number | null;
+  /** Mostra badge di compatibilità allergeni */
+  showMatchInfo?: boolean;
+  /** Evidenzia la card (selezionata dalla mappa) */
+  selected?: boolean;
   onPress: () => void;
   onToggleFavorite: () => void;
 }
@@ -28,12 +32,19 @@ export default function RestaurantCard({
   restaurant,
   isFavorite,
   distance,
+  showMatchInfo,
+  selected,
   onPress,
   onToggleFavorite,
 }: RestaurantCardProps) {
+  const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
+  const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+  const matchingReviews = restaurant.matching_reviews ?? 0;
+  const hasMatch = showMatchInfo && filtersTotal > 0 && matchingReviews > 0;
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Surface style={styles.card} elevation={1}>
+      <Surface style={[styles.card, selected && styles.cardSelected]} elevation={selected ? 2 : 1}>
         <View style={styles.cardRow}>
           {restaurant.photo_urls?.[0] ? (
             <Image source={{ uri: restaurant.photo_urls[0] }} style={styles.cardThumb} />
@@ -59,6 +70,12 @@ export default function RestaurantCard({
             </View>
             <Text style={styles.cardCity} numberOfLines={1}>
               {restaurant.city}, {restaurant.country}
+              {distance != null && (
+                <Text style={styles.cardDistance}>
+                  {' · '}
+                  {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
+                </Text>
+              )}
             </Text>
             <View style={styles.cardBottom}>
               {(restaurant.review_count ?? 0) > 0 ? (
@@ -71,11 +88,26 @@ export default function RestaurantCard({
               ) : (
                 <Text style={styles.cardNoReviews}>Ancora nessuna recensione</Text>
               )}
-              {distance != null && (
-                <Text style={styles.cardDistance}>
-                  {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
-                </Text>
-              )}
+              <View style={styles.cardBottomRight}>
+                {hasMatch && (
+                  <View style={[
+                    styles.matchBadge,
+                    coveredTotal >= filtersTotal ? styles.matchBadgeFull : styles.matchBadgePartial,
+                  ]}>
+                    <MaterialCommunityIcons
+                      name="shield-check"
+                      size={11}
+                      color={coveredTotal >= filtersTotal ? theme.colors.success : theme.colors.amberDark}
+                    />
+                    <Text style={[
+                      styles.matchBadgeText,
+                      { color: coveredTotal >= filtersTotal ? theme.colors.success : theme.colors.amberDark },
+                    ]}>
+                      {coveredTotal}/{filtersTotal}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
         </View>
@@ -89,6 +121,11 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 14,
     backgroundColor: theme.colors.surface,
+  },
+  cardSelected: {
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    padding: 10, // compensa il borderWidth per mantenere le dimensioni
   },
   cardRow: {
     flexDirection: 'row',
@@ -142,6 +179,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  cardBottomRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   cardDistance: {
     fontSize: 12,
     fontWeight: '600',
@@ -159,5 +201,23 @@ const styles = StyleSheet.create({
   cardNoReviews: {
     fontSize: 12,
     color: theme.colors.textDisabled,
+  },
+  matchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  matchBadgeFull: {
+    backgroundColor: '#E8F5E9',
+  },
+  matchBadgePartial: {
+    backgroundColor: theme.colors.amberLight,
+  },
+  matchBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

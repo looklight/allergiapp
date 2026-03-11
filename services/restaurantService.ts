@@ -48,6 +48,11 @@ export interface Restaurant {
   favorite_count?: number;
   distance_km?: number;
   matching_reviews?: number;
+  matching_avg_rating?: number;
+  covered_allergen_count?: number;
+  covered_dietary_count?: number;
+  total_allergen_filters?: number;
+  total_dietary_filters?: number;
 }
 
 export interface ReviewPhoto {
@@ -106,7 +111,7 @@ export interface CuisineVote {
   user_voted: boolean;
 }
 
-export type SortBy = 'recent' | 'rating' | 'distance';
+export type SortBy = 'recent' | 'rating' | 'distance' | 'relevance';
 
 export interface CreateRestaurantInput {
   name: string;
@@ -133,55 +138,75 @@ export interface CreateReportInput {
   details?: string;
 }
 
-// ─── Helper: parse PostGIS point ─────────────────────────────────────────────
+// ─── Helper: mappa riga RPC → Restaurant ────────────────────────────────────
 
-function parseLocation(loc: any): { latitude: number; longitude: number } | null {
-  if (!loc) return null;
-  // GeoJSON (da RPC functions)
-  if (typeof loc === 'object' && loc.coordinates) {
-    return { longitude: loc.coordinates[0], latitude: loc.coordinates[1] };
-  }
-  return null;
-}
+type RestaurantRow = Omit<Restaurant, 'location' | 'review_count' | 'average_rating' | 'favorite_count' | 'distance_km' | 'matching_reviews' | 'matching_avg_rating' | 'covered_allergen_count' | 'covered_dietary_count' | 'total_allergen_filters' | 'total_dietary_filters'> & {
+  latitude?: number | null;
+  longitude?: number | null;
+  review_count?: number;
+  average_rating?: number | string;
+  favorite_count?: number;
+  distance_km?: number | string | null;
+  matching_reviews?: number | string | null;
+  matching_avg_rating?: number | string | null;
+  covered_allergen_count?: number | null;
+  covered_dietary_count?: number | null;
+  total_allergen_filters?: number | null;
+  total_dietary_filters?: number | null;
+};
 
-function mapRestaurant(row: any): Restaurant {
+function mapRestaurant(row: RestaurantRow): Restaurant {
   return {
     ...row,
-    location: parseLocation(row.location),
+    location: row.latitude != null && row.longitude != null
+      ? { latitude: row.latitude, longitude: row.longitude }
+      : null,
     review_count: row.review_count ?? 0,
     average_rating: Number(row.average_rating ?? 0),
     favorite_count: row.favorite_count ?? 0,
     distance_km: row.distance_km != null ? Number(row.distance_km) : undefined,
     matching_reviews: row.matching_reviews != null ? Number(row.matching_reviews) : undefined,
+    matching_avg_rating: row.matching_avg_rating != null ? Number(row.matching_avg_rating) : undefined,
+    covered_allergen_count: row.covered_allergen_count ?? undefined,
+    covered_dietary_count: row.covered_dietary_count ?? undefined,
+    total_allergen_filters: row.total_allergen_filters ?? undefined,
+    total_dietary_filters: row.total_dietary_filters ?? undefined,
+  };
+}
+
+/** Converte una riga da SELECT diretto (location GeoJSON) al formato lat/lng atteso da mapRestaurant */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractLatLng(row: any): RestaurantRow {
+  const loc = row.location;
+  return {
+    ...row,
+    latitude: loc?.coordinates?.[1] ?? null,
+    longitude: loc?.coordinates?.[0] ?? null,
   };
 }
 
 // ─── Restaurant CRUD ────────────────────────────────────────────────────────
 
 async function getRestaurant(restaurantId: string): Promise<Restaurant | null> {
-  try {
-    const { data, error } = await supabase
-      .from('restaurants')
-      .select('*')
-      .eq('id', restaurantId)
-      .single();
-    if (error) throw error;
+  const { data, error } = await supabase
+    .from('restaurants')
+    .select('*')
+    .eq('id', restaurantId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
 
-    // Carica stats
-    const { data: stats } = await supabase.rpc('get_restaurant_stats', {
-      restaurant_uuid: restaurantId,
-    });
+  // Carica stats
+  const { data: stats } = await supabase.rpc('get_restaurant_stats', {
+    restaurant_uuid: restaurantId,
+  });
 
-    return mapRestaurant({
-      ...data,
-      review_count: stats?.[0]?.review_count ?? 0,
-      average_rating: stats?.[0]?.average_rating ?? 0,
-      favorite_count: stats?.[0]?.favorite_count ?? 0,
-    });
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getRestaurant:', error);
-    return null;
-  }
+  return mapRestaurant({
+    ...extractLatLng(data),
+    review_count: stats?.[0]?.review_count ?? 0,
+    average_rating: stats?.[0]?.average_rating ?? 0,
+    favorite_count: stats?.[0]?.favorite_count ?? 0,
+  });
 }
 
 async function getNearbyRestaurants(
@@ -205,27 +230,25 @@ async function getNearbyRestaurants(
   }
 }
 
-async function getRestaurantsByAllergens(
+async function getRestaurantsForMyNeeds(
   lat: number,
   lng: number,
   allergens: string[],
   dietary: string[],
   radiusKm = DEFAULTS.ALLERGEN_RADIUS_KM,
-  minRating = DEFAULTS.MIN_RATING,
 ): Promise<Restaurant[]> {
   try {
-    const { data, error } = await supabase.rpc('get_restaurants_by_allergens', {
+    const { data, error } = await supabase.rpc('get_restaurants_for_my_needs', {
       lat,
       lng,
-      radius_km: radiusKm,
       filter_allergens: allergens,
       filter_dietary: dietary,
-      min_rating: minRating,
+      radius_km: radiusKm,
     });
     if (error) throw error;
     return (data ?? []).map(mapRestaurant);
   } catch (error) {
-    console.warn('[RestaurantService] Errore getRestaurantsByAllergens:', error);
+    console.warn('[RestaurantService] Errore getRestaurantsForMyNeeds:', error);
     return [];
   }
 }
@@ -251,11 +274,12 @@ async function batchLoadStats(ids: string[]): Promise<Map<string, { review_count
   return statsMap;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyStats(rows: any[], statsMap: Map<string, { review_count: number; total_rating: number; favorite_count: number }>): Restaurant[] {
   return rows.map(row => {
     const s = statsMap.get(row.id);
     return mapRestaurant({
-      ...row,
+      ...extractLatLng(row),
       review_count: s?.review_count ?? 0,
       average_rating: s && s.review_count > 0 ? s.total_rating / s.review_count : 0,
       favorite_count: s?.favorite_count ?? 0,
@@ -265,16 +289,11 @@ function applyStats(rows: any[], statsMap: Map<string, { review_count: number; t
 
 async function getAllRestaurants(): Promise<Restaurant[]> {
   try {
-    const { data, error } = await supabase
-      .from('restaurants')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(QUERY_LIMITS.ALL_RESTAURANTS);
+    const { data, error } = await supabase.rpc('get_all_restaurants', {
+      max_results: QUERY_LIMITS.ALL_RESTAURANTS,
+    });
     if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    const statsMap = await batchLoadStats(data.map(r => r.id));
-    return applyStats(data, statsMap);
+    return (data ?? []).map(mapRestaurant);
   } catch (error) {
     console.warn('[RestaurantService] Errore getAllRestaurants:', error);
     return [];
@@ -385,43 +404,33 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
 // ─── Reviews ────────────────────────────────────────────────────────────────
 
 async function getReviews(restaurantId: string): Promise<Review[]> {
-  try {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        profile:profiles!user_id(display_name)
-      `)
-      .eq('restaurant_id', restaurantId)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return (data ?? []).map((r: any) => ({
-      ...r,
-      photos: r.photos ?? [],
-      user_display_name: r.profile?.display_name ?? null,
-    }));
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getReviews:', error);
-    return [];
-  }
+  const { data, error } = await supabase
+    .from('reviews')
+    .select(`
+      *,
+      profile:profiles!user_id(display_name)
+    `)
+    .eq('restaurant_id', restaurantId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r: any) => ({
+    ...r,
+    photos: r.photos ?? [],
+    user_display_name: r.profile?.display_name ?? null,
+  }));
 }
 
 async function getUserReview(restaurantId: string, userId: string): Promise<Review | null> {
-  try {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('restaurant_id', restaurantId)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getUserReview:', error);
-    return null;
-  }
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*')
+    .eq('restaurant_id', restaurantId)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }
 
 async function getReviewsByUser(userId: string): Promise<(Review & { restaurant_name?: string })[]> {
@@ -498,6 +507,8 @@ async function addReview(params: {
       throw error;
     }
 
+    if (!reviewId) return null;
+
     const { data: review } = await supabase
       .from('reviews')
       .select('*')
@@ -556,6 +567,8 @@ async function updateReview(params: {
         }
       }
     }
+
+    if (!returnedId) return null;
 
     const { data: review } = await supabase
       .from('reviews')
@@ -620,17 +633,13 @@ async function getFavorites(userId: string): Promise<Favorite[]> {
 }
 
 async function isFavorite(userId: string, restaurantId: string): Promise<boolean> {
-  try {
-    const { count, error } = await supabase
-      .from('favorites')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('restaurant_id', restaurantId);
-    if (error) throw error;
-    return (count ?? 0) > 0;
-  } catch {
-    return false;
-  }
+  const { count, error } = await supabase
+    .from('favorites')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('restaurant_id', restaurantId);
+  if (error) throw error;
+  return (count ?? 0) > 0;
 }
 
 async function toggleFavorite(userId: string, restaurantId: string): Promise<boolean> {
@@ -675,18 +684,13 @@ async function removeFavorite(userId: string, restaurantId: string): Promise<voi
 // ─── Menu Photos ────────────────────────────────────────────────────────────
 
 async function getMenuPhotos(restaurantId: string): Promise<MenuPhoto[]> {
-  try {
-    const { data, error } = await supabase
-      .from('menu_photos')
-      .select('*')
-      .eq('restaurant_id', restaurantId)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getMenuPhotos:', error);
-    return [];
-  }
+  const { data, error } = await supabase
+    .from('menu_photos')
+    .select('*')
+    .eq('restaurant_id', restaurantId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
 }
 
 async function addMenuPhoto(
@@ -754,37 +758,27 @@ async function deleteMenuPhoto(
 // ─── Reports ────────────────────────────────────────────────────────────────
 
 async function getReports(restaurantId: string): Promise<Report[]> {
-  try {
-    const { data, error } = await supabase
-      .from('reports')
-      .select('*')
-      .eq('restaurant_id', restaurantId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getReports:', error);
-    return [];
-  }
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('restaurant_id', restaurantId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
 }
 
 async function getUserReport(restaurantId: string, userId: string): Promise<Report | null> {
-  try {
-    const { data, error } = await supabase
-      .from('reports')
-      .select('*')
-      .eq('restaurant_id', restaurantId)
-      .eq('user_id', userId)
-      .eq('status', 'pending')
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getUserReport:', error);
-    return null;
-  }
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('restaurant_id', restaurantId)
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }
 
 async function addReport(
@@ -830,20 +824,15 @@ async function addReport(
 // ─── Cuisine Votes ──────────────────────────────────────────────────────────
 
 async function getCuisineVotes(restaurantId: string): Promise<CuisineVote[]> {
-  try {
-    const { data, error } = await supabase.rpc('get_restaurant_cuisine_votes', {
-      restaurant_uuid: restaurantId,
-    });
-    if (error) throw error;
-    return (data ?? []).map((v: any) => ({
-      cuisine_id: v.cuisine_id,
-      vote_count: Number(v.vote_count),
-      user_voted: v.user_voted ?? false,
-    }));
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getCuisineVotes:', error);
-    return [];
-  }
+  const { data, error } = await supabase.rpc('get_restaurant_cuisine_votes', {
+    restaurant_uuid: restaurantId,
+  });
+  if (error) throw error;
+  return (data ?? []).map((v: any) => ({
+    cuisine_id: v.cuisine_id,
+    vote_count: Number(v.vote_count),
+    user_voted: v.user_voted ?? false,
+  }));
 }
 
 async function voteCuisines(
@@ -987,7 +976,7 @@ export const RestaurantService = {
   getRestaurantByGooglePlaceId,
   checkExistingByPlaceIds,
   getNearbyRestaurants,
-  getRestaurantsByAllergens,
+  getRestaurantsForMyNeeds,
   getAllRestaurants,
   addRestaurant,
   getRestaurantsByUser,

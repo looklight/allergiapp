@@ -12,18 +12,14 @@ I chip "Gluten Free", "Vegan", "Vegetarian" non matchano nessun ristorante. Il f
 2. Filtro separato basato sulle recensioni (ristoranti dove utenti vegani/celiaci hanno dato buone valutazioni)
 3. Rimuovere temporaneamente i chip dietetici dalla lista
 
-### [BUG] Edge Function `delete-account` non creata
-Il codice app (`services/auth.ts`) chiama `supabase.functions.invoke('delete-account')`, ma la function non esiste in `supabase/functions/`. Serve crearla con `service_role` per eliminare l'utente da `auth.users`.
-
-### [BUG] Bucket "images" Supabase Storage
-Creare il bucket "images" (Public) dalla dashboard Supabase Storage. Upload foto non funziona senza.
-*(Azione manuale da dashboard Supabase)*
-
 ---
 
 ## Prima del rilascio
 
-### Sicurezza
+### Azioni manuali Supabase
+- [ ] Eseguire migrazione `019_admin_rls_policies.sql` nel SQL Editor (policy RLS per admin)
+- [ ] Creare bucket "images" (Public) dalla dashboard Supabase Storage
+- [ ] Deploy Edge Function `delete-account`: `supabase functions deploy delete-account`
 - [ ] Riabilitare email confirmation in Supabase (attualmente disabilitata per sviluppo)
 
 ### Robustezza
@@ -72,7 +68,7 @@ Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 
 ### Refactor add-review.tsx (~920 righe)
 - Estrarre sezione tag cucina in componente `CuisineTagsSection`
-- Estrarre sezione esigenze alimentari in componente `DietaryNeedsSection`
+- [x] ~~Estrarre sezione esigenze alimentari in componente `DietaryNeedsSection`~~
 
 ### Dipendenze Firebase residue
 - `@react-native-firebase/*` + `plugins/withModularHeaders.js`: necessari per Analytics + Remote Config
@@ -91,8 +87,21 @@ In attesa: closed testing con 12 tester (inviato ~inizio mar 2026).
 - [ ] Deploy admin dashboard su Vercel
 - [ ] Deploy sito landing su Vercel
 
+## Supporto Web
+Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-85%.
+
+### Mappa web con Leaflet
+- [ ] Installare `react-leaflet`, `leaflet`, `@types/leaflet`, `react-leaflet-cluster`
+- [ ] Riscrivere `RestaurantMap.web.tsx` con Leaflet + OpenStreetMap (gratuito, nessuna API key)
+- [ ] Supporto clustering marker su web
+- [ ] Il file nativo (`RestaurantMap.native.tsx`) resta invariato
+
+### Miglioramenti UX web minori
+- [ ] Nascondere pulsante camera su web in `add-review.tsx` (`Platform.OS !== 'web'`)
+- [ ] Sostituire `Alert` con modal custom per coerenza visiva cross-platform
+- [ ] Verificare responsive layout su schermi desktop
+
 ## Futuri (quando il volume cresce)
-- Clustering pin mappa (`react-native-map-clustering`)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
 - Animazioni: migrare a `react-native-reanimated` + `react-native-gesture-handler`
 
@@ -115,3 +124,11 @@ In attesa: closed testing con 12 tester (inviato ~inizio mar 2026).
 - [x] Foto review con thumbnails efficienti (JSONB `photos`)
 - [x] Gallery foto utenti nella scheda ristorante
 - [x] Badge esigenze alimentari colorati per categoria
+- [x] Edge Function `delete-account` implementata (`supabase/functions/delete-account/`)
+- [x] Policy storage bucket "images" (`008_storage_policies.sql`)
+- [x] Audit codice e fix (mar 2026): RLS admin, null checks, file size limit, context memoization, error handling, stale request protection, safe JSON parse
+
+---
+
+## Note
+- Valutare se passare alla gestione nativa del menu dal basso (tab bar). Verificare se c'e un vantaggio concreto rispetto all'implementazione attuale.

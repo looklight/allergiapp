@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Text as RNText } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import ClusteredMapView from 'react-native-map-clustering';
+import { Marker, Callout } from 'react-native-maps';
 import { theme } from '../constants/theme';
 import { getCuisineLabel } from '../constants/restaurantCategories';
+import i18n from '../utils/i18n';
 import type { Restaurant } from '../services/restaurantService';
 
 type Region = {
@@ -25,43 +27,54 @@ type Props = {
   restaurants: Restaurant[];
   /** When set, the map animates to this location. sheetFraction = copertura sheet al momento del centering */
   centerOn?: { latitude: number; longitude: number; sheetFraction: number } | null;
+  /** Whether the user's GPS position is available (shows blue dot independently of centerOn) */
+  hasUserLocation?: boolean;
   /** Fired when the user stops panning/zooming the map */
   onRegionChangeComplete?: (region: Region) => void;
+  /** Currently selected restaurant id (highlighted on map) */
+  selectedId?: string | null;
+  /** Called when a marker is tapped */
+  onMarkerSelect?: (id: string) => void;
+  /** Called when the user taps an empty area of the map */
+  onDeselect?: () => void;
 };
 
-export default function RestaurantMap({ restaurants, centerOn, onRegionChangeComplete }: Props) {
+/** Colore del pallino in base al rating */
+function ratingColor(rating: number): string {
+  if (rating >= 4) return '#2E7D32';   // green
+  if (rating >= 3) return '#F9A825';   // amber
+  if (rating > 0) return '#E65100';    // orange
+  return theme.colors.textSecondary;   // grey = no reviews
+}
+
+export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, onRegionChangeComplete, selectedId, onMarkerSelect, onDeselect }: Props) {
   const router = useRouter();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const [mapHeight, setMapHeight] = useState(0);
+  const mapReady = useRef(false);
+
+  const fitToMarkers = useCallback(() => {
+    const coords = restaurants.filter(r => r.location).map(r => ({
+      latitude: r.location!.latitude,
+      longitude: r.location!.longitude,
+    }));
+    if (coords.length === 0) return;
+    mapRef.current?.fitToCoordinates(coords, {
+      edgePadding: { top: 80, right: 50, bottom: 50, left: 50 },
+      animated: true,
+    });
+  }, [restaurants]);
 
   // Fit to all markers only when there's no user position to center on
   useEffect(() => {
-    if (restaurants.length === 0 || centerOn) return;
-    setTimeout(() => {
-      mapRef.current?.fitToCoordinates(
-        restaurants.filter(r => r.location).map(r => ({
-          latitude: r.location!.latitude,
-          longitude: r.location!.longitude,
-        })),
-        {
-          edgePadding: { top: 80, right: 50, bottom: 50, left: 50 },
-          animated: true,
-        },
-      );
-    }, 100);
-  }, [restaurants, centerOn]);
+    if (restaurants.length === 0 || centerOn || !mapReady.current) return;
+    fitToMarkers();
+  }, [restaurants, centerOn, fitToMarkers]);
 
   useEffect(() => {
     if (!centerOn || mapHeight === 0) return;
-    // Calcola l'offset in base alla copertura reale dello sheet.
-    // Lo sheet copre `sheetFraction` della mappa dal basso.
-    // Il centro visibile è a metà della parte scoperta.
-    // Offset = spostamento dal centro geometrico al centro visibile, in gradi lat.
     const latDelta = 0.15;
     const sheetCoverage = centerOn.sheetFraction;
-    // Centro visibile: a metà della parte scoperta = (1 - sheetCoverage) / 2 dall'alto
-    // Centro geometrico: 0.5
-    // Offset in frazione della mappa: 0.5 - (1 - sheetCoverage) / 2 = sheetCoverage / 2
     const offset = latDelta * (sheetCoverage / 2);
     mapRef.current?.animateToRegion({
       latitude: centerOn.latitude - offset,
@@ -72,47 +85,133 @@ export default function RestaurantMap({ restaurants, centerOn, onRegionChangeCom
   }, [centerOn, mapHeight]);
 
   return (
-    <MapView
+    <ClusteredMapView
       ref={mapRef}
       style={styles.map}
       initialRegion={DEFAULT_REGION}
-      showsUserLocation={!!centerOn}
+      showsUserLocation={!!hasUserLocation}
       showsMyLocationButton={false}
+      onMapReady={() => {
+        mapReady.current = true;
+        if (!centerOn && restaurants.length > 0) fitToMarkers();
+      }}
       onRegionChangeComplete={onRegionChangeComplete}
-      onLayout={e => setMapHeight(e.nativeEvent.layout.height)}
+      onPress={() => onDeselect?.()}
+      onLayout={(e: any) => setMapHeight(e.nativeEvent.layout.height)}
+      clusterColor={theme.colors.primary}
+      clusterTextColor={theme.colors.onPrimary}
+      clusterFontFamily="System"
+      radius={50}
+      minZoomLevel={0}
+      maxZoom={16}
+      extent={512}
+      animationEnabled
     >
-      {restaurants.filter(r => r.location).map(restaurant => (
-        <Marker
-          key={restaurant.id}
-          coordinate={{
-            latitude: restaurant.location!.latitude,
-            longitude: restaurant.location!.longitude,
-          }}
-          pinColor={theme.colors.primary}
-        >
-          <Callout
-            tooltip
-            onPress={() => router.push(`/restaurants/${restaurant.id}`)}
+      {restaurants.filter(r => r.location).map(restaurant => {
+        const rating = restaurant.average_rating ?? 0;
+        const hasRating = rating > 0;
+        const isSelected = selectedId === restaurant.id;
+        const color = isSelected ? theme.colors.primary : ratingColor(rating);
+
+        return (
+          <Marker
+            key={restaurant.id}
+            coordinate={{
+              latitude: restaurant.location!.latitude,
+              longitude: restaurant.location!.longitude,
+            }}
+            tracksViewChanges={isSelected}
+            zIndex={isSelected ? 999 : undefined}
+            onPress={() => onMarkerSelect?.(restaurant.id)}
           >
-            <Surface style={styles.callout} elevation={3}>
-              <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
-              <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
-              {restaurant.cuisine_types?.length > 0 && (
-                <Text style={styles.calloutTags} numberOfLines={1}>
-                  {restaurant.cuisine_types.map(ct => getCuisineLabel(ct)).join(' · ')}
-                </Text>
+            <View style={[
+              styles.markerContainer,
+              { borderColor: color },
+              isSelected && styles.markerSelected,
+            ]}>
+              {hasRating ? (
+                <RNText style={[styles.markerText, { color }]}>
+                  {rating.toFixed(1)}
+                </RNText>
+              ) : (
+                <View style={[styles.markerDot, { backgroundColor: theme.colors.primary }]} />
               )}
-              <Text style={styles.calloutCta}>Tocca per aprire →</Text>
-            </Surface>
-          </Callout>
-        </Marker>
-      ))}
-    </MapView>
+            </View>
+            <View style={styles.markerArrow}>
+              <View style={[styles.markerArrowInner, { borderTopColor: color }]} />
+            </View>
+
+            <Callout
+              tooltip
+              onPress={() => router.push(`/restaurants/${restaurant.id}`)}
+            >
+              <Surface style={styles.callout} elevation={3}>
+                <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
+                <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
+                {restaurant.cuisine_types?.length > 0 && (
+                  <Text style={styles.calloutTags} numberOfLines={1}>
+                    {restaurant.cuisine_types.map(ct => getCuisineLabel(ct)).join(' · ')}
+                  </Text>
+                )}
+                <Text style={styles.calloutCta}>{i18n.t('map.tapToOpen')}</Text>
+              </Surface>
+            </Callout>
+          </Marker>
+        );
+      })}
+    </ClusteredMapView>
   );
 }
 
 const styles = StyleSheet.create({
   map: { ...StyleSheet.absoluteFillObject },
+
+  // Custom marker
+  markerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  markerSelected: {
+    borderWidth: 3,
+    transform: [{ scale: 1.2 }],
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+  },
+  markerText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  markerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  markerArrow: {
+    alignItems: 'center',
+    marginTop: -1,
+  },
+  markerArrowInner: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+
+  // Callout
   callout: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,

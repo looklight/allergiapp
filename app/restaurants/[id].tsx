@@ -13,7 +13,7 @@ import RestaurantHeader from '../../components/restaurants/RestaurantHeader';
 import MenuPhotosSection from '../../components/restaurants/MenuPhotosSection';
 import ReviewCard from '../../components/restaurants/ReviewCard';
 import PhotoGalleryModal from '../../components/restaurants/PhotoGalleryModal';
-import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
+import { useRestaurantDetail, type ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
 import i18n from '../../utils/i18n';
@@ -22,13 +22,14 @@ export default function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, dietaryNeeds } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
   const {
     restaurant, allReviews, menuPhotos,
     reports, cuisineVotes, userReview, userReport, isFavorite,
-    isLoading, isUploadingMenu,
+    isLoading, error, isUploadingMenu,
+    reviewSortOrder, setReviewSortOrder, hasUserNeeds,
     handleToggleFavorite, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto,
   } = useRestaurantDetail(id);
@@ -51,6 +52,25 @@ export default function RestaurantDetailScreen() {
     ),
     [allReviews],
   );
+  // Calcola copertura esigenze e numero review rilevanti
+  const matchInfo = useMemo(() => {
+    if (!hasUserNeeds) return { reviewCount: 0, coveredCount: 0, totalFilters: 0, covered: [] as string[], uncovered: [] as string[] };
+    const userAll: string[] = [...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])];
+    const userSet = new Set(userAll);
+    const coveredSet = new Set<string>();
+    let reviewCount = 0;
+    for (const r of allReviews) {
+      const snap = [...(r.allergensSnapshot ?? []), ...(r.dietarySnapshot ?? [])];
+      if (snap.some(a => userSet.has(a))) {
+        reviewCount++;
+        snap.forEach(a => { if (userSet.has(a)) coveredSet.add(a); });
+      }
+    }
+    const covered = userAll.filter(a => coveredSet.has(a));
+    const uncovered = userAll.filter(a => !coveredSet.has(a));
+    return { reviewCount, coveredCount: coveredSet.size, totalFilters: userAll.length, covered, uncovered };
+  }, [allReviews, dietaryNeeds, hasUserNeeds]);
+
   const userPhotoSize = 88;
 
   const canRemove = restaurant
@@ -107,6 +127,25 @@ export default function RestaurantDetailScreen() {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[styles.customHeader, { paddingTop: insets.top }]}>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Errore</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Button onPress={() => router.back()}>Torna indietro</Button>
+        </View>
+      </View>
+    );
+  }
+
   if (!restaurant) {
     return (
       <View style={styles.container}>
@@ -152,6 +191,8 @@ export default function RestaurantDetailScreen() {
           restaurant={restaurant}
           lang={lang}
           cuisineVotes={cuisineVotes}
+          matchInfo={matchInfo}
+          hasUserNeeds={hasUserNeeds}
         />
 
         {/* Foto Menu */}
@@ -224,6 +265,40 @@ export default function RestaurantDetailScreen() {
         {allReviews.length > 0 && (
           <Surface style={styles.section} elevation={1}>
             <Text style={styles.sectionTitle}>Recensioni ({allReviews.length})</Text>
+            {/* Chip ordinamento review */}
+            {allReviews.length > 1 && (
+              <View style={styles.reviewSortRow}>
+                {([
+                  { key: 'recent' as ReviewSortOrder, label: 'Recenti' },
+                  { key: 'rating' as ReviewSortOrder, label: 'Stelle' },
+                  ...(hasUserNeeds
+                    ? [{ key: 'relevance' as ReviewSortOrder, label: 'Per me' }]
+                    : []),
+                ] as const).map(opt => {
+                  const active = reviewSortOrder === opt.key;
+                  return (
+                    <TouchableOpacity
+                      key={opt.key}
+                      onPress={() => setReviewSortOrder(opt.key)}
+                      style={[styles.reviewSortChip, active && styles.reviewSortChipActive]}
+                      activeOpacity={0.7}
+                    >
+                      {opt.key === 'relevance' && (
+                        <MaterialCommunityIcons
+                          name="shield-check"
+                          size={14}
+                          color={active ? theme.colors.onPrimary : theme.colors.primary}
+                          style={{ marginRight: 4 }}
+                        />
+                      )}
+                      <Text style={[styles.reviewSortChipText, active && styles.reviewSortChipTextActive]}>
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
             {allReviews.map((item, idx) => (
               <View key={item.key}>
                 {idx > 0 && <Divider style={styles.divider} />}
@@ -278,46 +353,71 @@ export default function RestaurantDetailScreen() {
           </Surface>
         )}
 
-        {/* Elimina ristorante (solo owner, senza contributi) */}
-        {canRemove && (
+        {/* Footer: aggiunto da + azioni */}
+        <Surface style={styles.footerSection} elevation={1}>
+          {restaurant.added_by && (
+            <TouchableOpacity
+              style={styles.footerRow}
+              activeOpacity={0.6}
+              onPress={() => router.push(`/restaurants/user/${restaurant.added_by}`)}
+            >
+              <MaterialCommunityIcons name="account-outline" size={18} color={theme.colors.textSecondary} />
+              <Text style={styles.footerRowText}>Aggiunto da un utente</Text>
+              <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
+            </TouchableOpacity>
+          )}
+
+          {restaurant.added_by && <Divider />}
+
           <TouchableOpacity
-            style={styles.removeButton}
+            style={styles.footerRow}
             activeOpacity={0.6}
-            disabled={isRemoving}
-            onPress={handleRemoveRestaurant}
+            onPress={() => {
+              if (!isAuthenticated) {
+                router.push('/auth/login');
+                return;
+              }
+              if (userReport) {
+                Alert.alert('Già segnalato', 'Hai già segnalato questo ristorante.');
+                return;
+              }
+              router.push(`/restaurants/report?restaurantId=${id}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
+            }}
           >
-            {isRemoving ? (
-              <ActivityIndicator size="small" color={theme.colors.error} />
-            ) : (
-              <>
-                <MaterialCommunityIcons name="delete-outline" size={16} color={theme.colors.error} />
-                <Text style={styles.removeButtonText}>Elimina ristorante</Text>
-              </>
+            <MaterialCommunityIcons
+              name="flag-outline"
+              size={18}
+              color={userReport ? theme.colors.textDisabled : theme.colors.warning}
+            />
+            <Text style={[styles.footerRowText, userReport && { color: theme.colors.textDisabled }]}>
+              {userReport ? 'Hai già segnalato questo ristorante' : 'Segnala un problema'}
+            </Text>
+            {!userReport && (
+              <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
             )}
           </TouchableOpacity>
-        )}
 
-        {/* Segnala un problema */}
-        <TouchableOpacity
-          style={styles.reportButton}
-          activeOpacity={0.6}
-          onPress={() => {
-            if (!isAuthenticated) {
-              router.push('/auth/login');
-              return;
-            }
-            if (userReport) {
-              Alert.alert('Già segnalato', 'Hai già segnalato questo ristorante.');
-              return;
-            }
-            router.push(`/restaurants/report?restaurantId=${id}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
-          }}
-        >
-          <MaterialCommunityIcons name="flag-outline" size={16} color={theme.colors.textSecondary} />
-          <Text style={styles.reportButtonText}>
-            {userReport ? 'Hai già segnalato questo ristorante' : 'Segnala un problema'}
-          </Text>
-        </TouchableOpacity>
+          {canRemove && (
+            <>
+              <Divider />
+              <TouchableOpacity
+                style={styles.footerRow}
+                activeOpacity={0.6}
+                disabled={isRemoving}
+                onPress={handleRemoveRestaurant}
+              >
+                {isRemoving ? (
+                  <ActivityIndicator size="small" color={theme.colors.error} />
+                ) : (
+                  <>
+                    <MaterialCommunityIcons name="delete-outline" size={18} color={theme.colors.error} />
+                    <Text style={[styles.footerRowText, { color: theme.colors.error }]}>Elimina ristorante</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+        </Surface>
 
       </ScrollView>
 
@@ -473,33 +573,55 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: theme.colors.amberText,
   },
-  removeButton: {
+  footerSection: {
+    padding: 0,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surface,
+    overflow: 'hidden',
+  },
+  footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
+    gap: 10,
     paddingVertical: 14,
+    paddingHorizontal: 16,
   },
-  removeButtonText: {
-    fontSize: 13,
-    color: theme.colors.error,
-    fontWeight: '500',
-  },
-  reportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 14,
-  },
-  reportButtonText: {
-    fontSize: 13,
+  footerRowText: {
+    fontSize: 14,
     color: theme.colors.textSecondary,
+    flex: 1,
   },
   userPhotosScroll: {
     gap: 8,
   },
   userPhoto: {
     borderRadius: 10,
+  },
+  reviewSortRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  reviewSortChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  reviewSortChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  reviewSortChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: theme.colors.textPrimary,
+  },
+  reviewSortChipTextActive: {
+    color: theme.colors.onPrimary,
   },
 });

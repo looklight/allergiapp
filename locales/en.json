@@ -130,6 +130,11 @@
     "acceptButton": "Continue",
     "termsNote": "By continuing you accept Privacy and Terms of Service"
   },
+  "map": {
+    "tapToOpen": "Tap to open →",
+    "noGeocodingResults": "No results for this search",
+    "searchArea": "Search this area"
+  },
   "leaderboard": {
     "title": "Leaderboard",
     "restaurants": "Restaurants",

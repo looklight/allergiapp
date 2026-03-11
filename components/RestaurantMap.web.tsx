@@ -7,7 +7,11 @@ import type { Restaurant } from '../services/restaurantService';
 type Props = {
   restaurants: Restaurant[];
   centerOn?: { latitude: number; longitude: number; sheetFraction: number } | null;
+  hasUserLocation?: boolean;
   onRegionChangeComplete?: (region: { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number }) => void;
+  selectedId?: string | null;
+  onMarkerSelect?: (id: string) => void;
+  onDeselect?: () => void;
 };
 
 export default function RestaurantMap(_props: Props) {

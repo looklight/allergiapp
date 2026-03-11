@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { storage, AppData, CURRENT_LEGAL_VERSION } from '../utils/storage';
 import { setAppLanguage, getDeviceLanguage } from '../utils/i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
@@ -135,15 +135,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await storage.deleteDownloadedLanguage(langCode);
 
     // Se la lingua eliminata era la cardLanguage selezionata, imposta il default (inglese)
+    let didReset = false;
     setSettingsState(prev => {
       if (prev.cardLanguage === langCode) {
+        didReset = true;
         return { ...prev, cardLanguage: 'en' };
       }
       return prev;
     });
-    // Salva anche su storage (fuori da setState per poter fare await)
-    const currentSettings = await storage.getSettings();
-    if (currentSettings.cardLanguage === langCode) {
+    if (didReset) {
       await storage.setCardLanguage('en');
     }
   }, []);
@@ -173,38 +173,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await storage.clearAll();
   }, []);
 
-  const downloadedLanguageCodes = Object.keys(downloadedLanguages) as DownloadableLanguageCode[];
+  const downloadedLanguageCodes = useMemo(
+    () => Object.keys(downloadedLanguages) as DownloadableLanguageCode[],
+    [downloadedLanguages],
+  );
+
+  const value = useMemo<AppContextValue>(() => ({
+    selectedAllergens,
+    selectedOtherFoods,
+    selectedRestrictions,
+    activeDietModes,
+    vegetarianLevel,
+    pregnancyMode,
+    settings,
+    downloadedLanguages,
+    legalConsent,
+    trackingConsent,
+    isReady,
+    hasAcceptedLegalTerms,
+    needsLegalConsent,
+    downloadedLanguageCodes,
+    setSelectedAllergens,
+    setSelectedOtherFoods,
+    setSelectedRestrictions,
+    setActiveDietModes,
+    setVegetarianLevel,
+    isDietModeActive,
+    setCardLanguage,
+    setAppLang,
+    saveDownloadedLanguage,
+    deleteDownloadedLanguage,
+    acceptLegalTerms,
+    setTrackingConsent: setTrackingConsentAction,
+    clearAll,
+  }), [
+    selectedAllergens, selectedOtherFoods, selectedRestrictions,
+    activeDietModes, vegetarianLevel, pregnancyMode,
+    settings, downloadedLanguages, legalConsent, trackingConsent,
+    isReady, hasAcceptedLegalTerms, needsLegalConsent, downloadedLanguageCodes,
+    setSelectedAllergens, setSelectedOtherFoods, setSelectedRestrictions,
+    setActiveDietModes, setVegetarianLevel, isDietModeActive,
+    setCardLanguage, setAppLang, saveDownloadedLanguage,
+    deleteDownloadedLanguage, acceptLegalTerms, setTrackingConsentAction, clearAll,
+  ]);
 
   return (
-    <AppContext.Provider value={{
-      selectedAllergens,
-      selectedOtherFoods,
-      selectedRestrictions,
-      activeDietModes,
-      vegetarianLevel,
-      pregnancyMode,
-      settings,
-      downloadedLanguages,
-      legalConsent,
-      trackingConsent,
-      isReady,
-      hasAcceptedLegalTerms,
-      needsLegalConsent,
-      downloadedLanguageCodes,
-      setSelectedAllergens,
-      setSelectedOtherFoods,
-      setSelectedRestrictions,
-      setActiveDietModes,
-      setVegetarianLevel,
-      isDietModeActive,
-      setCardLanguage,
-      setAppLang,
-      saveDownloadedLanguage,
-      deleteDownloadedLanguage,
-      acceptLegalTerms,
-      setTrackingConsent: setTrackingConsentAction,
-      clearAll,
-    }}>
+    <AppContext.Provider value={value}>
       {children}
     </AppContext.Provider>
   );

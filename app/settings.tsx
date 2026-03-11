@@ -38,7 +38,6 @@ export default function SettingsScreen() {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showDisclaimerDialog, setShowDisclaimerDialog] = useState(false);
-  const [renderKey, setRenderKey] = useState(0);
   const { downloadingLang, downloadProgress, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
 
   // Blocca orientamento in portrait
@@ -84,8 +83,6 @@ export default function SettingsScreen() {
           onPress: async () => {
             await Analytics.logDataCleared();
             await clearAll();
-            setRenderKey((k) => k + 1);
-            // Feedback di successo
             Alert.alert('', i18n.t('settings.clearDataSuccess'));
           },
         },
@@ -111,11 +108,10 @@ export default function SettingsScreen() {
     const previousLanguage = appLang;
     await contextSetAppLang(language);
     await Analytics.logAppLanguageChanged(previousLanguage, language);
-    setRenderKey((k) => k + 1);
   };
 
   return (
-    <View style={styles.container} key={renderKey}>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.customHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity

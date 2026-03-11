@@ -16,6 +16,7 @@ export default function RestaurantDetailPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({ review_count: 0, average_rating: 0, favorite_count: 0 });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,7 +87,10 @@ export default function RestaurantDetailPage() {
   }, [id]);
 
   const updateReportStatus = async (reportId: string, status: ReportStatus) => {
+    if (busyIds.has(reportId)) return;
+    setBusyIds((prev) => new Set(prev).add(reportId));
     const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
+    setBusyIds((prev) => { const next = new Set(prev); next.delete(reportId); return next; });
     if (error) {
       alert(`Errore: ${error.message}`);
       return;
@@ -96,7 +100,10 @@ export default function RestaurantDetailPage() {
 
   const deleteReview = async (reviewId: string) => {
     if (!confirm('Eliminare questa recensione?')) return;
+    if (busyIds.has(reviewId)) return;
+    setBusyIds((prev) => new Set(prev).add(reviewId));
     const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+    setBusyIds((prev) => { const next = new Set(prev); next.delete(reviewId); return next; });
     if (error) {
       alert(`Errore: ${error.message}`);
       return;
@@ -180,13 +187,15 @@ export default function RestaurantDetailPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => updateReportStatus(r.id, 'resolved')}
-                      className="text-green-600 hover:underline text-xs"
+                      disabled={busyIds.has(r.id)}
+                      className="text-green-600 hover:underline text-xs disabled:opacity-50"
                     >
-                      Risolvi
+                      {busyIds.has(r.id) ? '...' : 'Risolvi'}
                     </button>
                     <button
                       onClick={() => updateReportStatus(r.id, 'dismissed')}
-                      className="text-gray-600 hover:underline text-xs"
+                      disabled={busyIds.has(r.id)}
+                      className="text-gray-600 hover:underline text-xs disabled:opacity-50"
                     >
                       Archivia
                     </button>
@@ -221,9 +230,10 @@ export default function RestaurantDetailPage() {
                     </span>
                     <button
                       onClick={() => deleteReview(r.id)}
-                      className="text-red-600 hover:underline text-xs"
+                      disabled={busyIds.has(r.id)}
+                      className="text-red-600 hover:underline text-xs disabled:opacity-50"
                     >
-                      Elimina
+                      {busyIds.has(r.id) ? '...' : 'Elimina'}
                     </button>
                   </div>
                 </div>

@@ -130,6 +130,11 @@
     "acceptButton": "Continuar",
     "termsNote": "Al continuar aceptas Privacidad y Términos de Servicio"
   },
+  "map": {
+    "tapToOpen": "Toca para abrir →",
+    "noGeocodingResults": "Sin resultados para esta búsqueda",
+    "searchArea": "Buscar en esta zona"
+  },
   "leaderboard": {
     "title": "Clasificaci\u00f3n",
     "restaurants": "Restaurantes",

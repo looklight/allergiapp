@@ -130,6 +130,11 @@
     "acceptButton": "Weiter",
     "termsNote": "Mit dem Fortfahren akzeptierst du Datenschutz und Nutzungsbedingungen"
   },
+  "map": {
+    "tapToOpen": "Tippen zum Öffnen →",
+    "noGeocodingResults": "Keine Ergebnisse für diese Suche",
+    "searchArea": "In diesem Bereich suchen"
+  },
   "leaderboard": {
     "title": "Rangliste",
     "restaurants": "Restaurants",

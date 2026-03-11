@@ -16,6 +16,8 @@ const IMAGE_PRESETS = {
   menu:      { width: 1200, quality: 0.8 },
 } as const;
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+
 async function getCurrentUserId(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) throw new Error('Utente non autenticato');
@@ -67,6 +69,9 @@ async function uriToArrayBuffer(uri: string): Promise<ArrayBuffer> {
 
 async function uploadSingle(localUri: string, storagePath: string): Promise<string> {
   const buffer = await uriToArrayBuffer(localUri);
+  if (buffer.byteLength > MAX_UPLOAD_BYTES) {
+    throw new Error(`File troppo grande (${(buffer.byteLength / 1024 / 1024).toFixed(1)} MB). Massimo ${MAX_UPLOAD_BYTES / 1024 / 1024} MB.`);
+  }
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(storagePath, buffer, {
