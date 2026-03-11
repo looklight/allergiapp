@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Animated,
   PanResponder,
+  Keyboard,
   useWindowDimensions,
 } from 'react-native';
 import { theme } from '../constants/theme';
@@ -62,6 +63,7 @@ export default function DraggableBottomSheet({
         return Math.abs(gesture.dy) > 8 && Math.abs(gesture.dy) > Math.abs(gesture.dx);
       },
       onPanResponderGrant: () => {
+        Keyboard.dismiss();
         translateY.stopAnimation(val => {
           lastSnap.current = val;
           translateY.setOffset(val);

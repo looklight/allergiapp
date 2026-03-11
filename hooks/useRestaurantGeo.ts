@@ -84,13 +84,17 @@ export function useRestaurantGeo(params: FilterParams) {
     })();
   }, []);
 
-  // Carica ristoranti al primo GPS fix
+  // Carica ristoranti al primo GPS fix (rispetta forMyNeeds da storage restore)
   useEffect(() => {
     if (userLocation && !hasLoadedGeo.current) {
       hasLoadedGeo.current = true;
-      loadGeo(userLocation.latitude, userLocation.longitude);
+      if (forMyNeeds && filterAllergens.length > 0) {
+        loadForMyNeeds(userLocation.latitude, userLocation.longitude);
+      } else {
+        loadGeo(userLocation.latitude, userLocation.longitude);
+      }
     }
-  }, [userLocation, loadGeo]);
+  }, [userLocation, forMyNeeds, filterAllergens, loadGeo, loadForMyNeeds]);
 
   // Fallback: se dopo 3s non c'e GPS, carica tutti
   useEffect(() => {

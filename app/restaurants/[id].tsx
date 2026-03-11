@@ -227,92 +227,106 @@ export default function RestaurantDetailScreen() {
         )}
 
         {/* CTA — Contributo utente o valuta con stelle */}
-        {userReview ? (
-          <Surface style={styles.ctaCard} elevation={1}>
-            <View style={styles.ctaTopRow}>
-              <Text style={styles.ctaTitle}>La tua recensione</Text>
-              <TouchableOpacity
-                onPress={() => navigateToContribute(undefined, userReview.id)}
-                hitSlop={8}
-                activeOpacity={0.6}
-              >
-                <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
-              </TouchableOpacity>
-            </View>
-            {userReview.rating != null && userReview.rating > 0 && (
-              <StarRating rating={userReview.rating} size={24} />
-            )}
-            {userReview.comment && (
-              <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
-            )}
-            {(userReview.photos?.length ?? 0) > 0 && (
-              <Text style={styles.ctaHint}>
-                {userReview.photos.length} foto
-              </Text>
-            )}
-          </Surface>
-        ) : (
-          <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
+        {isAuthenticated ? (
+          userReview ? (
             <Surface style={styles.ctaCard} elevation={1}>
-              <Text style={styles.ctaTitle}>Sei stato qui?</Text>
-              <StarRating rating={0} size={36} onRate={(r) => navigateToContribute(r)} />
-              <Text style={styles.ctaHint}>Tocca per valutare e lasciare una recensione</Text>
+              <View style={styles.ctaTopRow}>
+                <Text style={styles.ctaTitle}>La tua recensione</Text>
+                <TouchableOpacity
+                  onPress={() => navigateToContribute(undefined, userReview.id)}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                >
+                  <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
+                </TouchableOpacity>
+              </View>
+              {userReview.rating != null && userReview.rating > 0 && (
+                <StarRating rating={userReview.rating} size={24} />
+              )}
+              {userReview.comment && (
+                <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
+              )}
+              {(userReview.photos?.length ?? 0) > 0 && (
+                <Text style={styles.ctaHint}>
+                  {userReview.photos.length} foto
+                </Text>
+              )}
             </Surface>
-          </TouchableOpacity>
-        )}
+          ) : (
+            <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
+              <Surface style={styles.ctaCard} elevation={1}>
+                <Text style={styles.ctaTitle}>Sei stato qui?</Text>
+                <StarRating rating={0} size={36} onRate={(r) => navigateToContribute(r)} />
+                <Text style={styles.ctaHint}>Tocca per valutare e lasciare una recensione</Text>
+              </Surface>
+            </TouchableOpacity>
+          )
+        ) : null}
 
         {/* Esperienze della community */}
-        {allReviews.length > 0 && (
-          <Surface style={styles.section} elevation={1}>
-            <Text style={styles.sectionTitle}>Recensioni ({allReviews.length})</Text>
-            {/* Chip ordinamento review */}
-            {allReviews.length > 1 && (
-              <View style={styles.reviewSortRow}>
-                {([
-                  { key: 'recent' as ReviewSortOrder, label: 'Recenti' },
-                  { key: 'rating' as ReviewSortOrder, label: 'Stelle' },
-                  ...(hasUserNeeds
-                    ? [{ key: 'relevance' as ReviewSortOrder, label: 'Per me' }]
-                    : []),
-                ] as const).map(opt => {
-                  const active = reviewSortOrder === opt.key;
-                  return (
-                    <TouchableOpacity
-                      key={opt.key}
-                      onPress={() => setReviewSortOrder(opt.key)}
-                      style={[styles.reviewSortChip, active && styles.reviewSortChipActive]}
-                      activeOpacity={0.7}
-                    >
-                      {opt.key === 'relevance' && (
-                        <MaterialCommunityIcons
-                          name="shield-check"
-                          size={14}
-                          color={active ? theme.colors.onPrimary : theme.colors.primary}
-                          style={{ marginRight: 4 }}
-                        />
-                      )}
-                      <Text style={[styles.reviewSortChipText, active && styles.reviewSortChipTextActive]}>
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
-            {allReviews.map((item, idx) => (
-              <View key={item.key}>
-                {idx > 0 && <Divider style={styles.divider} />}
-                <ReviewCard
-                  review={item}
-                  onImagePress={(url) => {
-                    const idx = reviewPhotos.findIndex(p => p.url === url);
-                    if (idx >= 0) setGalleryIndex(idx);
-                    else setFullscreenImage(url);
-                  }}
-                />
-              </View>
-            ))}
-          </Surface>
+        {isAuthenticated ? (
+          allReviews.length > 0 && (
+            <Surface style={styles.section} elevation={1}>
+              <Text style={styles.sectionTitle}>Recensioni ({allReviews.length})</Text>
+              {/* Chip ordinamento review */}
+              {allReviews.length > 1 && (
+                <View style={styles.reviewSortRow}>
+                  {([
+                    { key: 'recent' as ReviewSortOrder, label: 'Recenti' },
+                    { key: 'rating' as ReviewSortOrder, label: 'Stelle' },
+                    ...(hasUserNeeds
+                      ? [{ key: 'relevance' as ReviewSortOrder, label: 'Per me' }]
+                      : []),
+                  ] as const).map(opt => {
+                    const active = reviewSortOrder === opt.key;
+                    return (
+                      <TouchableOpacity
+                        key={opt.key}
+                        onPress={() => setReviewSortOrder(opt.key)}
+                        style={[styles.reviewSortChip, active && styles.reviewSortChipActive]}
+                        activeOpacity={0.7}
+                      >
+                        {opt.key === 'relevance' && (
+                          <MaterialCommunityIcons
+                            name="shield-check"
+                            size={14}
+                            color={active ? theme.colors.onPrimary : theme.colors.primary}
+                            style={{ marginRight: 4 }}
+                          />
+                        )}
+                        <Text style={[styles.reviewSortChipText, active && styles.reviewSortChipTextActive]}>
+                          {opt.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+              {allReviews.map((item, idx) => (
+                <View key={item.key}>
+                  {idx > 0 && <Divider style={styles.divider} />}
+                  <ReviewCard
+                    review={item}
+                    onImagePress={(url) => {
+                      const idx = reviewPhotos.findIndex(p => p.url === url);
+                      if (idx >= 0) setGalleryIndex(idx);
+                      else setFullscreenImage(url);
+                    }}
+                  />
+                </View>
+              ))}
+            </Surface>
+          )
+        ) : (
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/auth/login')}>
+            <Surface style={styles.loginCtaCard} elevation={1}>
+              <MaterialCommunityIcons name="lock-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.loginCtaTitle}>Accedi per vedere le recensioni</Text>
+              <Text style={styles.loginCtaSubtitle}>
+                Leggi le esperienze della community e lascia la tua valutazione
+              </Text>
+            </Surface>
+          </TouchableOpacity>
         )}
 
         {/* Segnalazioni della community */}
@@ -490,6 +504,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.textPrimary,
     marginBottom: 12,
+  },
+  // CTA login per utenti non autenticati
+  loginCtaCard: {
+    alignItems: 'center',
+    padding: 24,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surface,
+    gap: 8,
+  },
+  loginCtaTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  loginCtaSubtitle: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   // CTA stelle
   ctaCard: {

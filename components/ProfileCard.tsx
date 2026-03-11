@@ -8,15 +8,22 @@ import { getAvatarById } from '../constants/avatars';
 import i18n from '../utils/i18n';
 import type { UserProfile } from '../services/auth';
 
+interface ProfileStats {
+  restaurants: number;
+  reviews: number;
+  favorites: number;
+}
+
 interface ProfileCardProps {
   profile: UserProfile;
+  stats?: ProfileStats;
   onBack: () => void;
   title?: string;
   headerRight?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, onBack, title = 'Profilo', headerRight, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, onBack, title = 'Profilo', headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
 
   const avatarOption = profile.avatar_url ? getAvatarById(profile.avatar_url) : undefined;
@@ -63,18 +70,18 @@ export default function ProfileCard({ profile, onBack, title = 'Profilo', header
           <View style={styles.divider} />
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statNumber}>{stats?.restaurants ?? 0}</Text>
               <Text style={styles.statLabel}>Ristoranti</Text>
             </View>
             <View style={styles.statSep} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0</Text>
-              <Text style={styles.statLabel}>Piatti</Text>
+              <Text style={styles.statNumber}>{stats?.reviews ?? 0}</Text>
+              <Text style={styles.statLabel}>Recensioni</Text>
             </View>
             <View style={styles.statSep} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0</Text>
-              <Text style={styles.statLabel}>Recensioni</Text>
+              <Text style={styles.statNumber}>{stats?.favorites ?? 0}</Text>
+              <Text style={styles.statLabel}>Preferiti</Text>
             </View>
           </View>
         </Surface>

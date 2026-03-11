@@ -18,15 +18,23 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, isAuthenticated } = useAuth();
 
-  const [reviews, setContributions] = useState<(Review & { restaurant_name?: string })[]>([]);
+  const [reviews, setReviews] = useState<(Review & { restaurant_name?: string })[]>([]);
+  const [restaurantCount, setRestaurantCount] = useState(0);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
     if (!user?.uid) return;
 
     (async () => {
-      const contribs = await RestaurantService.getReviewsByUser(user.uid);
-      setContributions(contribs);
-    })().catch((err) => console.warn('[Profile] Errore caricamento contributi:', err));
+      const [userReviews, userRestaurants, userFavorites] = await Promise.all([
+        RestaurantService.getReviewsByUser(user.uid),
+        RestaurantService.getRestaurantsByUser(user.uid),
+        RestaurantService.getFavorites(user.uid),
+      ]);
+      setReviews(userReviews);
+      setRestaurantCount(userRestaurants.length);
+      setFavoriteCount(userFavorites.length);
+    })().catch((err) => console.warn('[Profile] Errore caricamento dati:', err));
   }, [user?.uid]);
 
   const handleLogout = () => {
@@ -82,6 +90,7 @@ export default function ProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileCard
         profile={{ ...userProfile, display_name: userProfile.display_name || user?.displayName || '' }}
+        stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: favoriteCount }}
         onBack={() => router.back()}
         headerRight={
           <TouchableOpacity onPress={handleLogout} hitSlop={8} activeOpacity={0.6}>
@@ -107,6 +116,16 @@ export default function ProfileScreen() {
         >
           <MaterialCommunityIcons name="account-edit-outline" size={22} color={theme.colors.primary} />
           <Text style={styles.menuItemText}>Modifica profilo</Text>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/restaurants/favorites')}
+          activeOpacity={0.6}
+        >
+          <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.menuItemText}>I miei preferiti</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 

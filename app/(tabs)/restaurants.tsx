@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
@@ -17,6 +17,7 @@ import i18n from '../../utils/i18n';
 import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
 import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
+import { storage } from '../../utils/storage';
 
 export default function RestaurantsScreen() {
   const router = useRouter();
@@ -39,6 +40,18 @@ export default function RestaurantsScreen() {
       setFilterDiets([...(dietaryNeeds.diets ?? [])]);
     }
   }, [dietaryNeeds.allergens, dietaryNeeds.diets]);
+
+  // Ripristina preferenza "Per me" da storage per utenti loggati
+  const forMyNeedsRestored = useRef(false);
+  useEffect(() => {
+    if (!isAuthenticated || forMyNeedsRestored.current) return;
+    forMyNeedsRestored.current = true;
+    const hasNeeds = dietaryNeeds.allergens.length > 0 || (dietaryNeeds.diets ?? []).length > 0;
+    if (!hasNeeds) return;
+    storage.getForMyNeeds().then(saved => {
+      if (saved) setForMyNeeds(true);
+    });
+  }, [isAuthenticated, dietaryNeeds.allergens, dietaryNeeds.diets]);
 
   const filterHasNeeds = filterAllergens.length > 0 || filterDiets.length > 0;
   const hasActiveSettings = activeFilters.length > 0 || sortBy !== 'distance' || forMyNeeds;
@@ -73,6 +86,15 @@ export default function RestaurantsScreen() {
 
   useFocusEffect(useCallback(() => { loadFavorites(); }, [loadFavorites]));
 
+  // Scroll alla card selezionata dopo il re-render
+  useEffect(() => {
+    if (!selectedId) return;
+    const idx = filteredRestaurants.findIndex(r => r.id === selectedId);
+    if (idx >= 0) {
+      listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+    }
+  }, [selectedId, filteredRestaurants]);
+
   // --- Handlers ---
   const toggleFilter = useCallback((id: RestaurantCategoryId) => {
     setActiveFilters(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -102,6 +124,7 @@ export default function RestaurantsScreen() {
     }
     const newValue = !forMyNeeds;
     setForMyNeeds(newValue);
+    storage.setForMyNeeds(newValue);
     if (newValue) {
       if (geo.userLocation) await geo.loadForMyNeeds(geo.userLocation.latitude, geo.userLocation.longitude);
     } else {
@@ -130,25 +153,26 @@ export default function RestaurantsScreen() {
   }, [geo.resetToUserLocation]);
 
   const handleMarkerSelect = useCallback((id: string) => {
-    setSelectedId(prev => {
-      if (prev === id) return null; // toggle off
-      const idx = filteredRestaurants.findIndex(r => r.id === id);
-      if (idx >= 0) {
-        listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
-      }
-      return id;
-    });
-  }, [filteredRestaurants]);
+    Keyboard.dismiss();
+    setSelectedId(prev => (prev === id ? null : id));
+  }, []);
 
   const handleDeselect = useCallback(() => {
     setSelectedId(null);
+    Keyboard.dismiss();
   }, []);
+
+  const handleRegionChange = useCallback((region: Parameters<typeof geo.handleRegionChange>[0]) => {
+    setSelectedId(null);
+    geo.handleRegionChange(region);
+  }, [geo.handleRegionChange]);
 
   const handleResetFilters = useCallback(async () => {
     setActiveFilters([]);
     setSortBy('distance');
     if (forMyNeeds) {
       setForMyNeeds(false);
+      storage.setForMyNeeds(false);
       if (geo.userLocation) await geo.loadGeo(geo.userLocation.latitude, geo.userLocation.longitude);
       else await geo.loadAll();
     }
@@ -186,7 +210,7 @@ export default function RestaurantsScreen() {
           )}
         </View>
         <TouchableOpacity
-          onPress={() => setShowFilterModal(true)}
+          onPress={() => isAuthenticated ? setShowFilterModal(true) : router.push('/auth/login')}
           style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
           activeOpacity={0.7}
         >
@@ -251,6 +275,7 @@ export default function RestaurantsScreen() {
       <FlatList
         ref={listRef}
         data={filteredRestaurants}
+        extraData={selectedId}
         keyExtractor={r => r.id}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
@@ -285,13 +310,6 @@ export default function RestaurantsScreen() {
           <TouchableOpacity onPress={() => router.push('/leaderboard')} hitSlop={8} activeOpacity={0.6}>
             <MaterialCommunityIcons name="trophy" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => isAuthenticated ? router.push('/restaurants/favorites') : router.push('/auth/login')}
-            hitSlop={8}
-            activeOpacity={0.6}
-          >
-            <MaterialCommunityIcons name="heart-outline" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/restaurants/profile')} hitSlop={8} activeOpacity={0.6}>
             <MaterialCommunityIcons
               name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
@@ -307,7 +325,7 @@ export default function RestaurantsScreen() {
           restaurants={mapRestaurants}
           centerOn={geo.centerOn}
           hasUserLocation={!!geo.userLocation}
-          onRegionChangeComplete={geo.handleRegionChange}
+          onRegionChangeComplete={handleRegionChange}
           selectedId={selectedId}
           onMarkerSelect={handleMarkerSelect}
           onDeselect={handleDeselect}

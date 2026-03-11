@@ -149,9 +149,13 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
                 <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
                 <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
                 {restaurant.cuisine_types?.length > 0 && (
-                  <Text style={styles.calloutTags} numberOfLines={1}>
-                    {restaurant.cuisine_types.map(ct => getCuisineLabel(ct)).join(' · ')}
-                  </Text>
+                  <View style={styles.calloutTagsRow}>
+                    {restaurant.cuisine_types.slice(0, 3).map(ct => (
+                      <View key={ct} style={styles.calloutBadge}>
+                        <Text style={styles.calloutBadgeText}>{getCuisineLabel(ct, i18n.locale, { emoji: false })}</Text>
+                      </View>
+                    ))}
+                  </View>
                 )}
                 <Text style={styles.calloutCta}>{i18n.t('map.tapToOpen')}</Text>
               </Surface>
@@ -221,6 +225,13 @@ const styles = StyleSheet.create({
   },
   calloutName: { fontSize: 14, fontWeight: '600', color: theme.colors.textPrimary, marginBottom: 2 },
   calloutCity: { fontSize: 12, color: theme.colors.textSecondary, marginBottom: 4 },
-  calloutTags: { fontSize: 11, color: theme.colors.primary, marginBottom: 6 },
+  calloutTagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 6 },
+  calloutBadge: {
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  calloutBadgeText: { fontSize: 10, fontWeight: '500', color: theme.colors.primary },
   calloutCta: { fontSize: 11, color: theme.colors.primary, fontWeight: '600' },
 });

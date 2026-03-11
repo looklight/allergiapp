@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
   cardSelected: {
     borderWidth: 2,
     borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryLight,
     padding: 10, // compensa il borderWidth per mantenere le dimensioni
   },
   cardRow: {

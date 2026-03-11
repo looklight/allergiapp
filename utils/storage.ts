@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   DOWNLOADED_LANGUAGES: 'allergiapp_downloaded_languages',
   LEGAL_CONSENT: 'allergiapp_legal_consent',
   TRACKING_CONSENT: 'allergiapp_tracking_consent',
+  FOR_MY_NEEDS: 'allergiapp_for_my_needs',
 };
 
 export const CURRENT_LEGAL_VERSION = '1.0';
@@ -219,6 +220,7 @@ export const storage = {
         STORAGE_KEYS.VEGETARIAN_LEVEL,
         STORAGE_KEYS.SETTINGS,
         STORAGE_KEYS.DOWNLOADED_LANGUAGES,
+        STORAGE_KEYS.FOR_MY_NEEDS,
       ]);
     } catch {
       // Storage clear failed silently
@@ -313,6 +315,23 @@ export const storage = {
   async setTrackingConsent(consent: TrackingConsent): Promise<void> {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.TRACKING_CONSENT, JSON.stringify(consent));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  async getForMyNeeds(): Promise<boolean> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.FOR_MY_NEEDS);
+      return data === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  async setForMyNeeds(value: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.FOR_MY_NEEDS, value ? 'true' : 'false');
     } catch {
       // Storage write failed silently
     }

@@ -28,6 +28,7 @@ interface RestaurantHeaderProps {
 
 export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds }: RestaurantHeaderProps) {
   const [compatExpanded, setCompatExpanded] = useState(false);
+  const [showCuisineHint, setShowCuisineHint] = useState(false);
   const isFull = matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
   const router = useRouter();
 
@@ -78,15 +79,30 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
       )}
 
       {cuisineVotes.length > 0 && (
-        <View style={styles.tagsWrap}>
-          {cuisineVotes.map(v => (
-            <View key={v.cuisine_id} style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>{getCuisineLabel(v.cuisine_id, lang, { emoji: false })}</Text>
-              <View style={styles.categoryBadgeCount}>
-                <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
-              </View>
+        <View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowCuisineHint(prev => !prev)}
+          >
+            <View style={styles.tagsWrap}>
+              {cuisineVotes.map(v => (
+                <View key={v.cuisine_id} style={styles.categoryBadge}>
+                  <Text style={styles.categoryBadgeText}>{getCuisineLabel(v.cuisine_id, lang, { emoji: false })}</Text>
+                  <View style={styles.categoryBadgeCount}>
+                    <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
-          ))}
+          </TouchableOpacity>
+          {showCuisineHint && (
+            <View style={styles.cuisineHint}>
+              <MaterialCommunityIcons name="information-outline" size={14} color={theme.colors.textSecondary} />
+              <Text style={styles.cuisineHintText}>
+                Tag suggeriti dalla community. Il numero indica quanti utenti hanno confermato ogni tipo di cucina.
+              </Text>
+            </View>
+          )}
         </View>
       )}
 
@@ -217,6 +233,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: theme.colors.textSecondary,
+  },
+  cuisineHint: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+  cuisineHintText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    flex: 1,
+    lineHeight: 17,
   },
   mapsBtn: {
     flexDirection: 'row',
