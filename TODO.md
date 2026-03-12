@@ -2,15 +2,65 @@
 
 ## Da fare subito
 
-### Branch e merge
-- [ ] Merge `feature/other-restrictions` → main
-- [ ] Committare cartella `admin/` — i sorgenti sono sul branch `feature/restaurants`
+### Merge `feature/restaurants-v2` → main
 
-### Pre-traduzioni Firestore
-Implementazione pronta (Firestore-first con fallback MyMemory). Da completare:
-- [ ] Generare traduzioni mancanti per le nuove lingue aggiunte (pa, gu, kn, ml, ps, ku, dv, tg, ky, tk, so, mg, ht)
-- [ ] Upload traduzioni su Firestore (`node scripts/uploadTranslations.js`)
-- [ ] Verificare qualità traduzioni su un campione di lingue
+Il branch è maturo (11 commit, 197 file, 21 migration SQL). I ristoranti sono completamente su Supabase.
+Le card (portrait, landscape, DietModeSection, BannerCarousel) **non sono toccate** dal branch — nessun conflitto con l'accessibilità.
+
+#### Decisioni da prendere
+
+1. **Firebase web SDK** — Il branch restaurants lo ha ancora per le traduzioni Firestore.
+   Main l'ha già rimosso (traduzioni migrate a Supabase). Durante il merge va eliminato anche lì.
+
+2. **Supabase client** (`services/supabase.ts`) — Due versioni:
+   - Main: client minimale (solo lettura traduzioni, no auth)
+   - Restaurants: client con auth + AsyncStorage (serve per login utenti)
+   → Tenere la versione restaurants (più completa), funziona anche per le traduzioni.
+
+3. **Supabase version** — Main ha v2.49, restaurants ha v2.99.
+   → Usare la più recente (2.99).
+
+4. **`constants/otherFoods.ts`** — Main ha ristrutturato con 27 cibi + categorie.
+   Restaurants rimuove solo una funzione `getOtherFoodById()`.
+   → Tenere la versione main, verificare che nessun codice restaurants usa quella funzione.
+
+#### File con conflitto (10 file su ~197)
+
+| File | Cosa fare |
+|------|-----------|
+| `app/_layout.tsx` | Combinare: AnnouncementPopup + analytics (main) + AuthProvider (restaurants) |
+| `app.config.ts` | Combinare: version 1.0.2/build 5 (main) + permessi location + Google Maps (restaurants) |
+| `package.json` | Supabase 2.99, rimuovere `firebase`, aggiungere deps maps/location da restaurants |
+| `services/firebase.ts` | Eliminare (main l'ha già rimosso, restaurants non ne ha bisogno dopo merge) |
+| `services/supabase.ts` | Tenere versione restaurants (con auth + AsyncStorage) |
+| `constants/otherFoods.ts` | Tenere versione main (27 cibi + categorie) |
+| `app/settings.tsx` | Main (accessibilità) + restaurants (semplifica state) → combinare |
+| `constants/theme.ts` | Facile: main cambia textHint, restaurants aggiunge spacing/radius/typography |
+| `utils/storage.ts` | Combinare: popup keys (main) + "for my needs" + refactor loadAll (restaurants) |
+| `locales/*.json` | Combinare: popup keys (main) + map/leaderboard/profile keys (restaurants) |
+
+#### Strategia merge
+
+1. Creare branch temporaneo da restaurants-v2
+2. Fare merge di main nel branch temporaneo (portare novità main nei ristoranti)
+3. Risolvere i 10 conflitti (soprattutto _layout, package.json, supabase client)
+4. Eliminare `services/firebase.ts` e aggiornare import
+5. Far puntare le traduzioni al `translationService.supabase.ts` di main
+6. `npx tsc --noEmit` — zero errori
+7. Testare: card con accessibilità + ristoranti + traduzioni scaricabili
+8. Merge fast-forward in main
+
+#### Pre-requisiti Supabase (prima del merge)
+
+- [ ] Verificare che bucket "images" sia Public in Supabase Storage
+- [ ] Eseguire migration SQL 010–021 su Supabase (se non già fatte)
+- [ ] Verificare RPC functions: `get_nearby_restaurants`, `get_restaurants_for_my_needs`
+
+### Accessibilità (v1.0.3) — opzionale
+P1–P3 completati. Rimanenti:
+- [ ] P4: Dark mode (attualmente forzato light)
+- [ ] P4: Reduce Motion per il carousel banner
+- [ ] P4: `accessibilityLiveRegion` per contenuti dinamici
 
 ## Google Play / Android
 In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio mar 2026).
@@ -23,16 +73,12 @@ In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio ma
 - [ ] Decidere e configurare deploy admin dashboard (Vercel o altro)
 - [ ] Deployare su Vercel le modifiche al sito landing (contacts redesign, pulsante "Scopri di più", link App Store)
 
-## Feature ristoranti (branch: feature/restaurants)
-In sviluppo. Caricamento geo-based implementato.
-- [ ] Dettaglio ristorante con info allergeni
-- [ ] Migrare `DraggableBottomSheet` custom a `@gorhom/bottom-sheet` + `react-native-reanimated` (pre-rilascio)
-
-### Futuri (quando il volume cresce)
-- Clustering pin (`react-native-map-clustering`) — quando la densità di ristoranti lo richiede
-- Scalabilità query geo — valutare Supabase (PostGIS) se i ristoranti arrivano a migliaia
-
 ## Completati
+- [x] Accessibilità P1–P3: VoiceOver su card (portrait+landscape), banner, home, settings; contrasto WCAG AA
+- [x] Migrazione traduzioni Firestore → Supabase + rimozione Firebase web SDK
+- [x] "Altri alimenti" aggiornati a 27 cibi + traduzioni caricate su Supabase
+- [x] Fix traduzioni critiche: 11 lingue, 33 correzioni (lao molluschi, khmer contaminazione, ecc.)
+- [x] v1.0.2 buildata e inviata su App Store Connect
 - [x] Pre-traduzioni Firestore: firebase.ts, firestoreTranslations.ts, 51 JSON, script, 13 nuove lingue
 - [x] Eliminare variabili EAS orfane (3× GOOGLE_SERVICES_JSON / GOOGLE_SERVICES_JSON_ANDROID)
 - [x] Pulizia file: privacy/terms markdown, google-services-2.json
