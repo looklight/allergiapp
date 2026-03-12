@@ -1,4 +1,5 @@
 import { AllergenId, DownloadableLanguageCode, AppLanguage, AllLanguageCode, TrackingConsent } from '../types';
+import { DietModeId } from '../constants/dietModes';
 
 // Modular Firebase Analytics API (dynamically required — may not be available in Expo Go)
 type FirebaseAnalyticsInstance = object;
@@ -192,11 +193,11 @@ export const Analytics = {
     }
   },
 
-  async logCardLanguageToggled(showInAppLanguage: boolean, cardLanguage: AllLanguageCode, appLanguage: AppLanguage) {
+  async logCardLanguageToggled(displayMode: 'card' | 'app' | 'english', cardLanguage: AllLanguageCode, appLanguage: AppLanguage) {
     if (!canSendAnalytics()) return;
     try {
       await logEvent(firebaseAnalytics, 'card_language_toggled', {
-        show_in_app_language: showInAppLanguage,
+        display_mode: displayMode,
         card_language: cardLanguage,
         app_language: appLanguage,
       });
@@ -275,6 +276,21 @@ export const Analytics = {
   },
 
   /**
+   * Diet mode events
+   */
+  async logDietModeToggled(modeId: DietModeId, enabled: boolean) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'diet_mode_toggled', {
+        mode_id: modeId,
+        enabled: enabled,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging diet_mode_toggled:', error);
+    }
+  },
+
+  /**
    * User properties (informazioni demografiche aggregate)
    */
   async setUserPropertyValue(property: string, value: string) {
@@ -283,6 +299,21 @@ export const Analytics = {
       await setUserProperty(firebaseAnalytics, property, value);
     } catch (error) {
       console.warn('[Analytics] Error setting user property:', error);
+    }
+  },
+
+  async updateUserProperties(props: {
+    allergens: AllergenId[];
+    dietModes: DietModeId[];
+    cardLanguage: AllLanguageCode;
+  }) {
+    if (!canSendAnalytics()) return;
+    try {
+      await setUserProperty(firebaseAnalytics, 'allergens', props.allergens.length > 0 ? props.allergens.join(',') : 'none');
+      await setUserProperty(firebaseAnalytics, 'diet_modes', props.dietModes.length > 0 ? props.dietModes.join(',') : 'none');
+      await setUserProperty(firebaseAnalytics, 'card_language', props.cardLanguage);
+    } catch (error) {
+      console.warn('[Analytics] Error updating user properties:', error);
     }
   },
 };

@@ -11,6 +11,7 @@ import { Analytics } from '../services/analytics';
 import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
 import ConsentModal from './consent';
+import AnnouncementPopup from './components/AnnouncementPopup';
 
 const splashLogo = require('../assets/splash-icon.png');
 
@@ -62,7 +63,7 @@ const splashStyles = StyleSheet.create({
 
 
 function AppContent() {
-  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
+  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, activeDietModes, settings } = useAppContext();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
 
@@ -78,6 +79,11 @@ function AppContent() {
       if (hasAcceptedLegalTerms) {
         Analytics.setTrackingConsent(trackingConsent);
         Analytics.logAppOpened();
+        Analytics.updateUserProperties({
+          allergens: selectedAllergens,
+          dietModes: activeDietModes,
+          cardLanguage: settings.cardLanguage,
+        });
       }
     }
   }, [isReady, hasAcceptedLegalTerms, trackingConsent]);
@@ -118,6 +124,8 @@ function AppContent() {
       />
       {/* Consent modal overlay - shown on top of the app */}
       <ConsentModal visible={needsLegalConsent} />
+      {/* Announcement popup - shown once per popup_id after consent */}
+      {hasAcceptedLegalTerms && <AnnouncementPopup />}
     </>
   );
 }

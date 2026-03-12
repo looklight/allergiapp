@@ -11,6 +11,7 @@ import { Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
 
 const VEGETARIAN_LEVELS: VegetarianLevel[] = ['no_meat', 'no_meat_fish', 'no_animal_products'];
 
@@ -116,6 +117,7 @@ export default function OtherRestrictionsScreen() {
   const isModeActive = (modeId: DietModeId) => localDietModes.includes(modeId);
 
   const handleDietModeToggle = (mode: DietMode, enabled: boolean) => {
+    Analytics.logDietModeToggled(mode.id, enabled);
     let newModes = [...localDietModes];
 
     if (enabled) {

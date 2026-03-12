@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   DOWNLOADED_LANGUAGES: 'allergiapp_downloaded_languages',
   LEGAL_CONSENT: 'allergiapp_legal_consent',
   TRACKING_CONSENT: 'allergiapp_tracking_consent',
+  DISMISSED_POPUPS: 'allergiapp_dismissed_popups',
 };
 
 export const CURRENT_LEGAL_VERSION = '1.0';
@@ -305,6 +306,28 @@ export const storage = {
   async setTrackingConsent(consent: TrackingConsent): Promise<void> {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.TRACKING_CONSENT, JSON.stringify(consent));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Dismissed popups
+  async getDismissedPopups(): Promise<string[]> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.DISMISSED_POPUPS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async dismissPopup(popupId: string): Promise<void> {
+    try {
+      const dismissed = await this.getDismissedPopups();
+      if (!dismissed.includes(popupId)) {
+        dismissed.push(popupId);
+        await AsyncStorage.setItem(STORAGE_KEYS.DISMISSED_POPUPS, JSON.stringify(dismissed));
+      }
     } catch {
       // Storage write failed silently
     }
