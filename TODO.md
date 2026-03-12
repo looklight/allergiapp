@@ -29,14 +29,17 @@ I chip "Gluten Free", "Vegan", "Vegetarian" non matchano nessun ristorante. Il f
 ### Test manuali
 - [ ] Aggiungere recensione con piatti e foto
 - [ ] Modifica/cancella recensione
-- [ ] Preferiti (toggle + lista)
+- [ ] Preferiti (toggle + lista da profilo)
 - [ ] Like piatti
 - [ ] Foto menu
 - [ ] Segnalazione ristorante
-- [ ] Profilo utente (proprio + pubblico)
+- [ ] Profilo utente (contatori dinamici, preferiti, recensioni)
+- [ ] Profilo pubblico
 - [ ] Modifica profilo + galleria avatar
 - [ ] Logout
 - [ ] Elimina account
+- [ ] Utente non loggato: redirect login su filtri, recensioni, preferiti
+- [ ] Persistenza filtro "Per me" tra sessioni
 
 ---
 
@@ -127,6 +130,15 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [x] Edge Function `delete-account` implementata (`supabase/functions/delete-account/`)
 - [x] Policy storage bucket "images" (`008_storage_policies.sql`)
 - [x] Audit codice e fix (mar 2026): RLS admin, null checks, file size limit, context memoization, error handling, stale request protection, safe JSON parse
+- [x] Profilo: rimosso stat "Piatti" (legacy), contatori dinamici (ristoranti, recensioni, preferiti)
+- [x] Preferiti spostati dall'header ristoranti alla sezione profilo
+- [x] Tooltip spiegazione tag cucina (tap per info community)
+- [x] Badge cucina senza emoji nei callout mappa
+- [x] Keyboard dismiss su tap mappa, marker select, drag bottom sheet
+- [x] Fix scroll marker→lista: useEffect reattivo al posto di setTimeout
+- [x] Card selezionata evidenziata con sfondo primaryLight
+- [x] Gate autenticazione su filtri e recensioni (redirect login)
+- [x] Preferenza "Per me" persistente in AsyncStorage
 
 ---
 
