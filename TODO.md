@@ -5,7 +5,12 @@
 ### Merge `feature/restaurants-v2` → main
 
 Il branch è maturo (11 commit, 197 file, 21 migration SQL). I ristoranti sono completamente su Supabase.
-Le card (portrait, landscape, DietModeSection, BannerCarousel) **non sono toccate** dal branch — nessun conflitto con l'accessibilità.
+
+**Regola fondamentale: per tutto il sistema card/traduzioni, main vince sempre.**
+Il codice card su restaurants-v2 è obsoleto (versione precedente a tutte le migliorie fatte su main:
+accessibilità, migrazione traduzioni Supabase, 27 altri alimenti, fix traduzioni critiche).
+In caso di conflitto su file legati a card, traduzioni, otherFoods, theme → prendere main senza eccezioni.
+Il branch restaurants aggiunge solo funzionalità ristoranti (nuovi file, route, hooks, migration SQL).
 
 #### Decisioni da prendere
 
