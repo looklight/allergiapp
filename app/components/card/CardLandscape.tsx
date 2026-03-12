@@ -101,12 +101,15 @@ export default function CardLandscape({
                         styles.landscapeAllergenItem,
                         isSelected && styles.landscapeAllergenItemSelected,
                       ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={getAllergenTranslation(id)}
+                      accessibilityState={{ selected: isSelected }}
                     >
                       <View style={[
                         styles.landscapeAllergenIconBg,
                         isSelected && styles.landscapeAllergenIconBgSelected
                       ]}>
-                        <Text style={styles.landscapeAllergenIcon}>{allergen.icon}</Text>
+                        <Text style={styles.landscapeAllergenIcon} accessibilityElementsHidden>{allergen.icon}</Text>
                       </View>
                       <Text style={[
                         styles.landscapeAllergenName,
@@ -126,9 +129,10 @@ export default function CardLandscape({
                     <View
                       key={id}
                       style={styles.landscapeAllergenItem}
+                      accessibilityLabel={getOtherFoodTranslation(id)}
                     >
                       <View style={styles.landscapeAllergenIconBg}>
-                        <Text style={styles.landscapeAllergenIcon}>{food.icon}</Text>
+                        <Text style={styles.landscapeAllergenIcon} accessibilityElementsHidden>{food.icon}</Text>
                       </View>
                       <Text style={[
                         styles.landscapeAllergenName,
@@ -147,9 +151,10 @@ export default function CardLandscape({
                     <View
                       key={id}
                       style={styles.landscapeAllergenItem}
+                      accessibilityLabel={getRestrictionTranslation(id)}
                     >
                       <View style={styles.landscapeAllergenIconBg}>
-                        <Text style={styles.landscapeAllergenIcon}>{item.icon}</Text>
+                        <Text style={styles.landscapeAllergenIcon} accessibilityElementsHidden>{item.icon}</Text>
                       </View>
                       <Text style={[
                         styles.landscapeAllergenName,
@@ -177,13 +182,16 @@ export default function CardLandscape({
                         isSelected && styles.landscapeAllergenItemSelected,
                         index === dietModeSections.length - 1 && { marginBottom: 0 }
                       ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={section.header}
+                      accessibilityState={{ selected: isSelected }}
                     >
                       <View style={[
                         styles.landscapeAllergenIconBg,
                         { backgroundColor: section.sectionColors.background },
                         isSelected && styles.landscapeAllergenIconBgSelected
                       ]}>
-                        <Text style={styles.landscapeAllergenIcon}>{section.icon}</Text>
+                        <Text style={styles.landscapeAllergenIcon} accessibilityElementsHidden>{section.icon}</Text>
                       </View>
                       <Text style={[
                         styles.landscapeAllergenName,
@@ -237,6 +245,8 @@ export default function CardLandscape({
                       styles.landscapeDetailCard,
                       isSelected && styles.landscapeDetailCardSelected,
                     ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <View style={styles.landscapeDetailTop}>
                       <View style={[
@@ -244,13 +254,13 @@ export default function CardLandscape({
                         { backgroundColor: colors.landscapeDetailBadgeBg },
                         isSelected && styles.landscapeDetailBadgeSelected
                       ]}>
-                        <Text style={styles.landscapeDetailBadgeIcon}>{allergen.icon}</Text>
+                        <Text style={styles.landscapeDetailBadgeIcon} accessibilityElementsHidden>{allergen.icon}</Text>
                         <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getAllergenTranslation(id)}
                         </Text>
                       </View>
                     </View>
-                    <View style={styles.landscapeExamplesRow}>
+                    <View style={styles.landscapeExamplesRow} accessibilityElementsHidden>
                       <Text style={[styles.landscapeExamplesLabel, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{translations.examples}</Text>
                       {images.examples.slice(0, 5).map((emoji, idx) => (
                         <Text key={idx} style={styles.landscapeExampleEmoji}>{emoji}</Text>
@@ -273,10 +283,10 @@ export default function CardLandscape({
                 const food = getOtherFoodInfo(id);
                 if (!food) return null;
                 return (
-                  <View key={id} style={styles.landscapeDetailCard}>
+                  <View key={id} style={styles.landscapeDetailCard} accessibilityLabel={getOtherFoodTranslation(id)}>
                     <View style={styles.landscapeDetailTop}>
                       <View style={[styles.landscapeDetailBadge, { backgroundColor: colors.landscapeDetailBadgeBg }]}>
-                        <Text style={styles.landscapeDetailBadgeIcon}>{food.icon}</Text>
+                        <Text style={styles.landscapeDetailBadgeIcon} accessibilityElementsHidden>{food.icon}</Text>
                         <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getOtherFoodTranslation(id)}
                         </Text>
@@ -290,10 +300,10 @@ export default function CardLandscape({
                 const item = getRestrictionInfo(id);
                 if (!item) return null;
                 return (
-                  <View key={id} style={styles.landscapeDetailCard}>
+                  <View key={id} style={styles.landscapeDetailCard} accessibilityLabel={getRestrictionTranslation(id)}>
                     <View style={styles.landscapeDetailTop}>
                       <View style={[styles.landscapeDetailBadge, { backgroundColor: colors.landscapeDetailBadgeBg }]}>
-                        <Text style={styles.landscapeDetailBadgeIcon}>{item.icon}</Text>
+                        <Text style={styles.landscapeDetailBadgeIcon} accessibilityElementsHidden>{item.icon}</Text>
                         <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getRestrictionTranslation(id)}
                         </Text>
@@ -315,6 +325,9 @@ export default function CardLandscape({
                       styles.landscapeDietDetailWrapper,
                       isDietSelected && styles.landscapeDietDetailWrapperSelected,
                     ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={section.header}
+                    accessibilityState={{ selected: isDietSelected }}
                   >
                     <DietModeSection
                       data={section}

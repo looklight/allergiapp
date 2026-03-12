@@ -70,6 +70,8 @@ export default function HomeScreen() {
           onPress={() => router.push('/settings')}
           hitSlop={8}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('home.settings')}
         >
           <MaterialCommunityIcons name="cog" size={26} color={theme.colors.onPrimary} />
         </TouchableOpacity>
@@ -95,6 +97,8 @@ export default function HomeScreen() {
                 onPress={() => router.push('/add-allergy')}
                 hitSlop={8}
                 activeOpacity={0.6}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t('home.editAllergies')}
               >
                 <Text style={styles.editLink}>
                   {i18n.t('home.editAllergies')}

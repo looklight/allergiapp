@@ -179,11 +179,11 @@ export default function BannerCarousel({
     // Info banner (default)
     if (item.type === 'info') {
       return (
-        <View style={styles.bannerItem}>
+        <View style={styles.bannerItem} accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}>
           {item.image ? (
-            <Image source={item.image} style={styles.bannerImage} resizeMode="contain" />
+            <Image source={item.image} style={styles.bannerImage} resizeMode="contain" accessibilityElementsHidden />
           ) : (
-            <Text style={styles.bannerIcon}>{item.icon}</Text>
+            <Text style={styles.bannerIcon} accessibilityElementsHidden>{item.icon}</Text>
           )}
           <View style={styles.bannerTextContainer}>
             <Text style={styles.bannerTitle}>{item.title}</Text>
@@ -204,11 +204,14 @@ export default function BannerCarousel({
             style={styles.fullImageBanner}
             onPress={() => handleAdPress(item)}
             activeOpacity={0.9}
+            accessibilityRole="link"
+            accessibilityLabel={item.title}
           >
             <Image
               source={{ uri: item.adImage }}
               style={styles.fullImage}
               resizeMode="cover"
+              accessibilityElementsHidden
             />
           </TouchableOpacity>
         );
@@ -223,6 +226,8 @@ export default function BannerCarousel({
           style={[styles.adBannerItem, customBgStyle]}
           onPress={() => handleAdPress(item)}
           activeOpacity={0.8}
+          accessibilityRole="link"
+          accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
         >
           {item.adImage ? (
             <Image
@@ -274,7 +279,7 @@ export default function BannerCarousel({
         bounces={false}
       />
       {allBanners.length > 1 && (
-        <View style={styles.paginationDots}>
+        <View style={styles.paginationDots} accessible accessibilityLabel={`${activeIndex + 1}/${allBanners.length}`}>
           {allBanners.map((_, index) => (
             <View
               key={index}
@@ -282,6 +287,7 @@ export default function BannerCarousel({
                 styles.dot,
                 index === activeIndex && styles.dotActive,
               ]}
+              accessibilityElementsHidden
             />
           ))}
         </View>
