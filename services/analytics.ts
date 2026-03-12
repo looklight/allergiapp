@@ -303,14 +303,18 @@ export const Analytics = {
   },
 
   async updateUserProperties(props: {
-    allergens: AllergenId[];
+    allergenCount: number;
     dietModes: DietModeId[];
     cardLanguage: AllLanguageCode;
   }) {
     if (!canSendAnalytics()) return;
     try {
-      await setUserProperty(firebaseAnalytics, 'allergens', props.allergens.length > 0 ? props.allergens.join(',') : 'none');
-      await setUserProperty(firebaseAnalytics, 'diet_modes', props.dietModes.length > 0 ? props.dietModes.join(',') : 'none');
+      // User property values limited to 36 chars by Firebase
+      await setUserProperty(firebaseAnalytics, 'allergen_count', String(props.allergenCount));
+      // Abbreviate diet mode IDs to fit 36-char limit (preg,veg,nick,hist,diab)
+      const modeAbbrev: Record<string, string> = { pregnancy: 'preg', vegetarian: 'veg', nickel: 'nick', histamine: 'hist', diabetes: 'diab' };
+      const modes = props.dietModes.map(m => modeAbbrev[m] || m).join(',');
+      await setUserProperty(firebaseAnalytics, 'diet_modes', modes || 'none');
       await setUserProperty(firebaseAnalytics, 'card_language', props.cardLanguage);
     } catch (error) {
       console.warn('[Analytics] Error updating user properties:', error);

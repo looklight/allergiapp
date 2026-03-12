@@ -13,7 +13,9 @@ export default function AnnouncementPopup() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    checkPopup();
+    // Delay check to ensure Remote Config has fetched after app init
+    const timer = setTimeout(checkPopup, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const checkPopup = async () => {
@@ -38,7 +40,11 @@ export default function AnnouncementPopup() {
     if (!popup) return;
     Analytics.logBannerClicked(popup.id, 'info', popup.title, popup.buttonUrl);
     if (popup.buttonUrl) {
-      Linking.openURL(popup.buttonUrl);
+      try {
+        await Linking.openURL(popup.buttonUrl);
+      } catch {
+        // Invalid URL, ignore
+      }
     }
     await storage.dismissPopup(popup.id);
     setVisible(false);

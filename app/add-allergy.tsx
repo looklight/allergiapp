@@ -80,7 +80,7 @@ export default function AddAllergyScreen() {
 
     // Update user properties for segmentation
     Analytics.updateUserProperties({
-      allergens: selectedAllergens,
+      allergenCount: selectedAllergens.length + selectedOtherFoods.length,
       dietModes: activeDietModes,
       cardLanguage: settings.cardLanguage,
     });

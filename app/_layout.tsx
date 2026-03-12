@@ -80,7 +80,7 @@ function AppContent() {
         Analytics.setTrackingConsent(trackingConsent);
         Analytics.logAppOpened();
         Analytics.updateUserProperties({
-          allergens: selectedAllergens,
+          allergenCount: selectedAllergens.length,
           dietModes: activeDietModes,
           cardLanguage: settings.cardLanguage,
         });
