@@ -10,7 +10,7 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ALLERGENS } from '../constants/allergens';
-import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
+import { OTHER_FOODS, OTHER_FOOD_CATEGORIES, OtherFoodId, OtherFoodCategory } from '../constants/otherFoods';
 import { DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language } from '../types';
 import { theme } from '../constants/theme';
@@ -200,35 +200,44 @@ export default function AddAllergyScreen() {
           </View>
         </Pressable>
 
-        {otherFoodsExpanded && OTHER_FOODS.map((food, index) => (
-          <View key={food.id}>
-            <List.Item
-              title={
-                food.translations[i18n.locale as Language] ||
-                food.translations.en
-              }
-              left={() => (
-                <Text style={styles.icon}>{food.icon}</Text>
+        {otherFoodsExpanded && OTHER_FOODS.map((food, index) => {
+          const prevCategory = index > 0 ? OTHER_FOODS[index - 1].category : null;
+          const showCategoryHeader = food.category !== prevCategory;
+          return (
+            <View key={food.id}>
+              {showCategoryHeader && (
+                <Text style={styles.categoryHeader}>
+                  {OTHER_FOOD_CATEGORIES[food.category][i18n.locale as Language] || OTHER_FOOD_CATEGORIES[food.category].en}
+                </Text>
               )}
-              right={() => (
-                <Checkbox
-                  status={
-                    selectedOtherFoods.includes(food.id)
-                      ? 'checked'
-                      : 'unchecked'
-                  }
-                  onPress={() => toggleOtherFood(food.id)}
-                />
-              )}
-              onPress={() => toggleOtherFood(food.id)}
-              style={styles.listItem}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: selectedOtherFoods.includes(food.id) }}
-              accessibilityLabel={food.translations[i18n.locale as Language] || food.translations.en}
-            />
-            {index < OTHER_FOODS.length - 1 && <Divider />}
-          </View>
-        ))}
+              <List.Item
+                title={
+                  food.translations[i18n.locale as Language] ||
+                  food.translations.en
+                }
+                left={() => (
+                  <Text style={styles.icon}>{food.icon}</Text>
+                )}
+                right={() => (
+                  <Checkbox
+                    status={
+                      selectedOtherFoods.includes(food.id)
+                        ? 'checked'
+                        : 'unchecked'
+                    }
+                    onPress={() => toggleOtherFood(food.id)}
+                  />
+                )}
+                onPress={() => toggleOtherFood(food.id)}
+                style={styles.listItem}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selectedOtherFoods.includes(food.id) }}
+                accessibilityLabel={food.translations[i18n.locale as Language] || food.translations.en}
+              />
+              {index < OTHER_FOODS.length - 1 && <Divider />}
+            </View>
+          );
+        })}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -272,6 +281,17 @@ const styles = StyleSheet.create({
   },
   listItem: {
     paddingVertical: 8,
+  },
+  categoryHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 6,
+    backgroundColor: theme.colors.background,
   },
   icon: {
     fontSize: 24,

@@ -1,7 +1,7 @@
 {
   "allergens": {
     "gluten": "ግሉተን (እህል)",
-    "crustaceans": "ክሪስታስያን",
+    "crustaceans": "ሽሪምፕና ሸርጣን ዝርያ",
     "eggs": "እንቁላል",
     "fish": "ዓሳ",
     "peanuts": "ኦቾሎኒ",
@@ -14,7 +14,7 @@
     "lupin": "ሉፒን",
     "mollusks": "ሞለስኮች",
     "nuts": "የዛፍ ፍሬዎች",
-    "fava_beans": "ፋቫ ባቄላ (ፋቪዝም)"
+    "fava_beans": "ባቄላ (ፋቪዝም)"
   },
   "descriptions": {
     "gluten": "ሁሉም ምግቦች ከእህል ወይም ዱቄት ጋር (ስንዴ፣ ገብስ፣ አጃ፣ ስፒልት)፡ ዳቦ፣ ፓስታ፣ ፒዛ፣ ኬኮች፣ ኩኪዎች፣ ቢራ",
@@ -56,18 +56,32 @@
     "honey": "ማር"
   },
   "otherFoods": {
-    "garlic": "ነጭ ሽንኩርት",
-    "onion": "ሽንኩርት",
     "tomato": "ቲማቲም",
-    "mushrooms": "እንጉዳዮች",
+    "onion": "ሽንኩርት",
+    "garlic": "ነጭ ሽንኩርት",
     "bell_pepper": "ደወል በርበሬ",
-    "corn": "በቆሎ",
-    "strawberries": "እንጆሪ",
+    "eggplant": "የእንቁላል ፍሬ",
+    "carrot": "ካሮት",
+    "mushrooms": "እንጉዳዮች",
+    "pumpkin": "ዱባ",
+    "peach": "ፒች",
     "kiwi": "ኪዊ",
-    "stone_fruits": "የድንጋይ ፍራፍሬዎች (አፕሪኮት ፣ ቼሪ ፣ ኮክ)",
-    "citrus": "Citrus ፍራፍሬዎች",
+    "strawberries": "እንጆሪ",
+    "apple": "አፕል",
     "banana": "ሙዝ",
+    "cherry": "ቼሪ",
+    "apricot": "አፕሪኮት",
+    "pear": "ፒር",
+    "citrus": "Citrus ፍራፍሬዎች",
+    "coconut": "ኮኮናት",
+    "pineapple": "አናናስ",
+    "mango": "ማንጎ",
+    "avocado": "አቮካዶ",
+    "chickpeas": "ሽንብራ",
+    "lentils": "ምስር",
+    "corn": "በቆሎ",
     "buckwheat": "ቡክሆት",
+    "coriander": "ኮሪንደር",
     "spicy": "ቅመም የበዛባቸው ምግቦች"
   },
   "restrictions": {

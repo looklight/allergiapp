@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { DownloadableLanguageCode, DownloadedLanguageData } from '../types';
 import { downloadLanguageTranslations, checkTranslationServiceAvailable, DownloadProgress } from '../services/translationService';
-import { fetchTranslationFromFirestore } from '../services/firestoreTranslations';
+import { fetchTranslation } from '../services/translationService.supabase';
 import { Analytics } from '../services/analytics';
 import i18n from '../utils/i18n';
 
@@ -19,7 +19,7 @@ interface UseLanguageDownloadReturn {
 
 /**
  * Hook riutilizzabile per gestire il download di lingue tradotte.
- * Prova prima Firestore (traduzioni pre-generate), poi fallback a MyMemory API.
+ * Prova prima Supabase (traduzioni pre-generate), poi fallback a MyMemory API.
  */
 export function useLanguageDownload(): UseLanguageDownloadReturn {
   const [downloadingLang, setDownloadingLang] = useState<DownloadableLanguageCode | null>(null);
@@ -57,11 +57,11 @@ export function useLanguageDownload(): UseLanguageDownloadReturn {
     let success = false;
 
     try {
-      // 1. Prova Firestore (traduzioni pre-generate, istantaneo)
-      const firestoreData = await fetchTranslationFromFirestore(langCode);
+      // 1. Prova Supabase (traduzioni pre-generate, istantaneo)
+      const preloadedData = await fetchTranslation(langCode);
 
-      if (firestoreData) {
-        await onSuccess(langCode, firestoreData);
+      if (preloadedData) {
+        await onSuccess(langCode, preloadedData);
         success = true;
         return;
       }

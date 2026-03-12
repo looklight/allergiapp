@@ -14,7 +14,7 @@
     "lupin": "ලුපින්",
     "mollusks": "මොලුස්කාවන්",
     "nuts": "ගස් ගෙඩි",
-    "fava_beans": "ෆාවා බෝංචි (favism)"
+    "fava_beans": "මාළු බෝංචි (ෆේවිස්ම්)"
   },
   "descriptions": {
     "gluten": "ධාන්ය වර්ග හෝ පිටි සහිත සියලුම ආහාර (තිරිඟු, බාර්ලි, රයි, ස්පෙල්ට්): පාන්, පැස්ටා, පීසා, කේක්, කුකීස්, බියර්",
@@ -56,18 +56,32 @@
     "honey": "මී පැණි"
   },
   "otherFoods": {
-    "garlic": "සුදුළුනු",
-    "onion": "ලූනු",
     "tomato": "තක්කාලි",
-    "mushrooms": "හතු",
+    "onion": "ලූනු",
+    "garlic": "සුදුළුනු",
     "bell_pepper": "බෙල් පෙපර්",
-    "corn": "බඩ ඉරිඟු",
-    "strawberries": "ස්ට්රෝබෙරි",
+    "eggplant": "වම්බටු",
+    "carrot": "කැරට්",
+    "mushrooms": "හතු",
+    "pumpkin": "වට්ටක්කා",
+    "peach": "පීච්",
     "kiwi": "කීවි",
-    "stone_fruits": "ගල් පලතුරු (පීච්, චෙරි, ඇප්රිකොට් ඇටයේ)",
-    "citrus": "පැඟිරි පලතුරු",
+    "strawberries": "ස්ට්රෝබෙරි",
+    "apple": "ඇපල්",
     "banana": "කෙසෙල්",
+    "cherry": "චෙරි",
+    "apricot": "එප්රිකට්",
+    "pear": "පෙයා",
+    "citrus": "පැඟිරි පලතුරු",
+    "coconut": "පොල්",
+    "pineapple": "අන්නාසි",
+    "mango": "අඹ",
+    "avocado": "අලිගැටපේර",
+    "chickpeas": "කඩල",
+    "lentils": "පරිප්පු",
+    "corn": "බඩ ඉරිඟු",
     "buckwheat": "අම්බෙලිෆර්",
+    "coriander": "කොත්තමල්ලි",
     "spicy": "කුළුබඩු සහිත ආහාර"
   },
   "restrictions": {
