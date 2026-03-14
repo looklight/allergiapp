@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Pressable, TouchableOpacity, Modal, FlatList, Animated, PanResponder, TextInput, ActivityIndicator } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { getLocalizedLanguageName } from '../../constants/languageNames';
@@ -35,6 +36,7 @@ export default function LanguagePickerModal({
   downloadProgress,
   onNavigateToSettings,
 }: LanguagePickerModalProps) {
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const pickerAnim = useRef(new Animated.Value(0)).current;
   const dragY = useRef(new Animated.Value(0)).current;
@@ -220,6 +222,7 @@ export default function LanguagePickerModal({
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCorrect={false}
+              underlineColorAndroid="transparent"
             />
             {searchQuery.length > 0 && (
               <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
@@ -289,7 +292,7 @@ export default function LanguagePickerModal({
                     onNavigateToSettings();
                   }}
                   activeOpacity={0.6}
-                  style={styles.downloadMoreButton}
+                  style={[styles.downloadMoreButton, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}
                 >
                   <MaterialCommunityIcons name="download" size={22} color={theme.colors.primary} />
                   <Text style={styles.downloadMoreText}>{i18n.t('home.downloadMoreLanguages')}</Text>
@@ -377,6 +380,7 @@ const styles = StyleSheet.create({
   },
   itemFlag: {
     fontSize: 32,
+    lineHeight: 40,
     marginRight: 16,
   },
   itemTextContainer: {
@@ -403,7 +407,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    paddingBottom: 48,
   },
   downloadMoreText: {
     flex: 1,

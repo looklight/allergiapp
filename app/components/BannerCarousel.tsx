@@ -276,6 +276,11 @@ export default function BannerCarousel({
         onScrollBeginDrag={onScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
         onScrollToIndexFailed={onScrollToIndexFailed}
+        getItemLayout={(_, index) => ({
+          length: SCREEN_WIDTH - 32,
+          offset: (SCREEN_WIDTH - 32) * index,
+          index,
+        })}
         bounces={false}
       />
       {allBanners.length > 1 && (
@@ -338,10 +343,12 @@ const styles = StyleSheet.create({
   },
   bannerIcon: {
     fontSize: 48,
+    lineHeight: 58,
     marginRight: 16,
   },
   adIcon: {
     fontSize: 48,
+    lineHeight: 58,
     marginRight: 16,
   },
   adImageIcon: {

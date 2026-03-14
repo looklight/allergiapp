@@ -240,7 +240,7 @@ export default function AddAllergyScreen() {
         })}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}>
         <Button
           mode="contained"
           onPress={handleSave}
@@ -295,6 +295,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 24,
+    lineHeight: 32,
     marginLeft: 16,
     marginRight: 8,
     alignSelf: 'center',
@@ -311,6 +312,7 @@ const styles = StyleSheet.create({
   },
   otherIcon: {
     fontSize: 24,
+    lineHeight: 32,
     marginRight: 8,
     marginLeft: 16,
   },
@@ -374,7 +376,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    paddingBottom: 32,
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,

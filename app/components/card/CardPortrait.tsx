@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ALLERGENS } from '../../../constants/allergens';
 import { ALLERGEN_IMAGES } from '../../../constants/allergenImages';
 import { RESTRICTION_ITEMS, RestrictionItemId } from '../../../constants/otherRestrictions';
@@ -44,6 +45,7 @@ export default function CardPortrait({
   toggleExpand,
   onDisplayModeChange,
 }: CardPortraitProps) {
+  const insets = useSafeAreaInsets();
   const hasAllergens = selectedAllergens.length > 0;
   const hasOtherFoods = selectedOtherFoods.length > 0;
   const showWarningIcon = colors.cardStyle === 'allergy' || (colors.cardStyle === 'dietOnly' && dietModeSections[0]?.modeId !== 'vegetarian');
@@ -137,7 +139,7 @@ export default function CardPortrait({
   const getAllergenInfo = (id: string) => ALLERGENS.find((a) => a.id === id);
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}>
       <Surface style={styles.card} elevation={4}>
         <View style={styles.cardContent}>
           <View style={dynamicStyles.headerSection}>
@@ -299,7 +301,6 @@ export default function CardPortrait({
 const styles = StyleSheet.create({
   content: {
     padding: 16,
-    paddingBottom: 32,
   },
   card: {
     borderRadius: 16,
@@ -327,6 +328,7 @@ const styles = StyleSheet.create({
   },
   exampleEmoji: {
     fontSize: 36,
+    lineHeight: 44,
   },
   languageToggleRow: {
     flexDirection: 'row',

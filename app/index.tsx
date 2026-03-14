@@ -77,7 +77,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}>
         {/* Banner Carousel */}
         <BannerCarousel />
 
@@ -283,7 +283,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 32,
   },
   card: {
     padding: 20,
@@ -335,6 +334,7 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 48,
+    lineHeight: 58,
     marginBottom: 12,
   },
   emptyText: {
@@ -365,6 +365,7 @@ const styles = StyleSheet.create({
   },
   chipIcon: {
     fontSize: 16,
+    lineHeight: 22,
   },
   languageSelector: {
     flexDirection: 'row',
@@ -376,6 +377,7 @@ const styles = StyleSheet.create({
   },
   languageFlag: {
     fontSize: 40,
+    lineHeight: 50,
     marginRight: 16,
   },
   languageInfo: {

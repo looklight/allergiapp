@@ -265,7 +265,7 @@ export default function OtherRestrictionsScreen() {
         ))}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}>
         <Button
           mode="contained"
           onPress={handleSave}
@@ -324,6 +324,7 @@ const styles = StyleSheet.create({
   },
   dietModeIcon: {
     fontSize: 28,
+    lineHeight: 36,
     marginRight: 12,
   },
   dietModeTextContainer: {
@@ -380,6 +381,7 @@ const styles = StyleSheet.create({
   },
   pregnancyItemIcon: {
     fontSize: 18,
+    lineHeight: 24,
     marginRight: 8,
   },
   pregnancySectionLabel: {
@@ -407,7 +409,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    paddingBottom: 32,
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,

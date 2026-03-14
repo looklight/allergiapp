@@ -436,6 +436,7 @@ const styles = StyleSheet.create({
   },
   landscapeAllergenIcon: {
     fontSize: 30,
+    lineHeight: 38,
   },
   landscapeAllergenName: {
     fontSize: 16,
@@ -505,6 +506,7 @@ const styles = StyleSheet.create({
   },
   landscapeDetailBadgeIcon: {
     fontSize: 16,
+    lineHeight: 22,
     marginRight: 6,
   },
   landscapeDetailBadgeText: {
@@ -525,6 +527,7 @@ const styles = StyleSheet.create({
   },
   landscapeExampleEmoji: {
     fontSize: 32,
+    lineHeight: 40,
   },
   landscapeDetailDescription: {
     fontSize: 15,

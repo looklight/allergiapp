@@ -255,7 +255,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <View style={{ height: 32 }} />
+        <View style={{ height: Math.max(insets.bottom, 16) + 16 }} />
       </ScrollView>
 
       <LegalDialogs
@@ -310,6 +310,7 @@ const styles = StyleSheet.create({
   },
   langPickerFlag: {
     fontSize: 18,
+    lineHeight: 24,
   },
   langPickerLabel: {
     fontSize: 15,
@@ -342,6 +343,7 @@ const styles = StyleSheet.create({
   },
   langPickerOptionFlag: {
     fontSize: 24,
+    lineHeight: 32,
     marginRight: 12,
   },
   langPickerOptionName: {
