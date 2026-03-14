@@ -69,9 +69,14 @@ P1–P3 completati. Rimanenti:
 
 ## Google Play / Android
 In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio mar 2026).
+- [x] Fix safe area: padding bottom dinamico con `insets.bottom` su tutte le schermate (Android edge-to-edge)
+- [x] Fix emoji: aggiunto `lineHeight` a tutti gli stili emoji per evitare clipping su Android
+- [x] Fix TextInput: `underlineColorAndroid="transparent"` nei campi di ricerca
+- [x] Fix BannerCarousel: aggiunto `getItemLayout` per auto-scroll affidabile su Android
 - [ ] Attendere completamento revisione closed testing
-- [ ] Aggiungere profilo Android submit in `eas.json` (serviceAccount + track)
-- [ ] Caricare AAB su Google Play Console e pubblicare
+- [ ] Aggiungere profilo Android production in `eas.json` (serviceAccount + track)
+- [ ] `npx eas-cli build --platform android --profile production`
+- [ ] Submit AAB su Google Play Console e pubblicare
 - [ ] Aggiornare link Google Play nel sito (`index.html`) quando pubblicata
 
 ## Deploy
@@ -96,3 +101,4 @@ In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio ma
 - [x] Visualizzazione su card (portrait + landscape)
 - [x] Fix traduzioni: svedese molluschi, tedesco du/Sie
 - [x] Supporto other foods nelle lingue scaricabili
+- [x] Fix Android: safe area dinamiche, emoji lineHeight, TextInput underline, BannerCarousel getItemLayout
