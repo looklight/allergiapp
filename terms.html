@@ -13,62 +13,14 @@
     <link rel="alternate" hreflang="en" href="https://allergiapp.com/terms?lang=en" />
     <link rel="alternate" hreflang="x-default" href="https://allergiapp.com/terms" />
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/logo_app.png">
+    <link rel="apple-touch-icon" href="images/logo_app.png">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .legal-page {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 120px 24px 80px;
-        }
-        .legal-page h1 {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        .legal-page .last-updated {
-            color: var(--text-secondary);
-            margin-bottom: 48px;
-        }
-        .legal-page h2 {
-            font-size: 32px;
-            margin-top: 48px;
-            margin-bottom: 16px;
-        }
-        .legal-page h3 {
-            font-size: 24px;
-            margin-top: 32px;
-            margin-bottom: 12px;
-        }
-        .legal-page p, .legal-page li {
-            font-size: 18px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-        .legal-page ul {
-            margin-left: 24px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 32px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .warning-box {
-            background: #FFF3E0;
-            border-left: 4px solid #FF9800;
-            padding: 20px;
-            margin: 24px 0;
-            border-radius: 4px;
-        }
-        .warning-box p {
-            margin: 0;
-            color: var(--text);
-        }
-    </style>
 </head>
 <body>
     <nav class="nav">
@@ -84,104 +36,122 @@
     </nav>
 
     <div class="legal-page">
-        <a href="/" class="back-link">← Torna alla home</a>
+        <a href="/" class="back-link" data-i18n="terms.backHome">← Torna alla home</a>
 
-        <h1>Termini di Servizio</h1>
-        <p class="last-updated">Ultimo aggiornamento: 28 Gennaio 2026</p>
+        <h1 data-i18n="terms.title">Termini di Servizio</h1>
+        <p class="last-updated" data-i18n="terms.lastUpdated">Ultimo aggiornamento: 28 Gennaio 2026</p>
 
-        <h2>Accettazione dei Termini</h2>
-        <p>Utilizzando AllergiApp, accetti questi Termini di Servizio. Se non accetti, non utilizzare l'app.</p>
+        <h2 data-i18n="terms.acceptanceTitle">Accettazione dei Termini</h2>
+        <p data-i18n="terms.acceptanceText">Utilizzando AllergiApp, accetti questi Termini di Servizio. Se non accetti, non utilizzare l'app.</p>
 
-        <h2>Descrizione del Servizio</h2>
-        <p>AllergiApp è un'applicazione mobile gratuita che ti aiuta a comunicare le tue allergie alimentari in diverse lingue.</p>
-        <p><strong>AllergiApp è uno strumento di comunicazione, NON un dispositivo medico.</strong></p>
+        <h2 data-i18n="terms.descriptionTitle">Descrizione del Servizio</h2>
+        <p data-i18n="terms.descriptionText1">AllergiApp è un'applicazione mobile gratuita che ti aiuta a comunicare le tue allergie alimentari in diverse lingue.</p>
+        <p><strong data-i18n="terms.descriptionText2">AllergiApp è uno strumento di comunicazione, NON un dispositivo medico.</strong></p>
 
-        <h2>Uso dell'App</h2>
+        <h2 data-i18n="terms.useTitle">Uso dell'App</h2>
 
-        <h3>Puoi:</h3>
+        <h3 data-i18n="terms.canTitle">Puoi:</h3>
         <ul>
-            <li>Utilizzare l'app per scopi personali</li>
-            <li>Salvare le tue allergie sul tuo dispositivo</li>
-            <li>Scaricare traduzioni in diverse lingue</li>
-            <li>Mostrare la card allergie a ristoranti/personale</li>
+            <li data-i18n="terms.canItem1">Utilizzare l'app per scopi personali</li>
+            <li data-i18n="terms.canItem2">Salvare le tue allergie sul tuo dispositivo</li>
+            <li data-i18n="terms.canItem3">Scaricare traduzioni in diverse lingue</li>
+            <li data-i18n="terms.canItem4">Mostrare la card allergie a ristoranti/personale</li>
         </ul>
 
-        <h3>NON puoi:</h3>
+        <h3 data-i18n="terms.cannotTitle">NON puoi:</h3>
         <ul>
-            <li>Usare l'app per scopi commerciali senza permesso</li>
-            <li>Modificare, decompilare o fare reverse engineering dell'app</li>
-            <li>Rimuovere copyright o avvisi proprietari</li>
-            <li>Usare l'app in modo che violi leggi locali</li>
+            <li data-i18n="terms.cannotItem1">Usare l'app per scopi commerciali senza permesso</li>
+            <li data-i18n="terms.cannotItem2">Modificare, decompilare o fare reverse engineering dell'app</li>
+            <li data-i18n="terms.cannotItem3">Rimuovere copyright o avvisi proprietari</li>
+            <li data-i18n="terms.cannotItem4">Usare l'app in modo che violi leggi locali</li>
         </ul>
 
-        <h2>Limitazione di Responsabilità</h2>
+        <h2 data-i18n="terms.liabilityTitle">Limitazione di Responsabilità</h2>
 
         <div class="warning-box">
-            <p><strong>IMPORTANTE - DISCLAIMER MEDICO</strong></p>
-            <p><strong>AllergiApp NON sostituisce il parere medico professionale.</strong></p>
-            <p>L'app è fornita "COSÌ COM'È" senza garanzie di alcun tipo.</p>
+            <p><strong data-i18n="terms.warningTitle">IMPORTANTE - DISCLAIMER MEDICO</strong></p>
+            <p><strong data-i18n="terms.warningText1">AllergiApp NON sostituisce il parere medico professionale.</strong></p>
+            <p data-i18n="terms.warningText2">L'app è fornita "COSÌ COM'È" senza garanzie di alcun tipo.</p>
         </div>
 
-        <h3>NON GARANTIAMO:</h3>
+        <h3 data-i18n="terms.noGuaranteeTitle">NON GARANTIAMO:</h3>
         <ul>
-            <li>La completezza o accuratezza delle traduzioni</li>
-            <li>L'assenza di errori o imprecisioni</li>
-            <li>Che l'app funzioni ininterrottamente</li>
-            <li>L'assenza di contaminazioni crociate negli alimenti</li>
-            <li>La corretta comprensione delle informazioni da parte del personale</li>
+            <li data-i18n="terms.noGuaranteeItem1">La completezza o accuratezza delle traduzioni</li>
+            <li data-i18n="terms.noGuaranteeItem2">L'assenza di errori o imprecisioni</li>
+            <li data-i18n="terms.noGuaranteeItem3">Che l'app funzioni ininterrottamente</li>
+            <li data-i18n="terms.noGuaranteeItem4">L'assenza di contaminazioni crociate negli alimenti</li>
+            <li data-i18n="terms.noGuaranteeItem5">La corretta comprensione delle informazioni da parte del personale</li>
         </ul>
 
-        <h3>IN CASO DI ALLERGIE GRAVI:</h3>
+        <h3 data-i18n="terms.severeTitle">IN CASO DI ALLERGIE GRAVI:</h3>
         <ul>
-            <li>Porta sempre con te i farmaci prescritti (es. adrenalina auto-iniettabile)</li>
-            <li>Informa SEMPRE il personale verbalmente delle tue allergie</li>
-            <li>Non affidarti esclusivamente a questa app</li>
-            <li>In caso di dubbio, non consumare l'alimento</li>
+            <li data-i18n="terms.severeItem1">Porta sempre con te i farmaci prescritti (es. adrenalina auto-iniettabile)</li>
+            <li data-i18n="terms.severeItem2">Informa SEMPRE il personale verbalmente delle tue allergie</li>
+            <li data-i18n="terms.severeItem3">Non affidarti esclusivamente a questa app</li>
+            <li data-i18n="terms.severeItem4">In caso di dubbio, non consumare l'alimento</li>
         </ul>
 
-        <h3>Esclusione di Responsabilità</h3>
-        <p>Nei limiti consentiti dalla legge, gli sviluppatori di AllergiApp NON SONO RESPONSABILI per:</p>
+        <h3 data-i18n="terms.exclusionTitle">Esclusione di Responsabilità</h3>
+        <p><span data-i18n="terms.exclusionText">Nei limiti consentiti dalla legge, gli sviluppatori di AllergiApp NON SONO RESPONSABILI per:</span></p>
         <ul>
-            <li>Reazioni allergiche di qualsiasi tipo</li>
-            <li>Danni diretti, indiretti, incidentali o consequenziali</li>
-            <li>Perdita di dati</li>
-            <li>Malfunzionamenti dell'app</li>
-            <li>Traduzioni errate o incomplete</li>
+            <li data-i18n="terms.exclusionItem1">Reazioni allergiche di qualsiasi tipo</li>
+            <li data-i18n="terms.exclusionItem2">Danni diretti, indiretti, incidentali o consequenziali</li>
+            <li data-i18n="terms.exclusionItem3">Perdita di dati</li>
+            <li data-i18n="terms.exclusionItem4">Malfunzionamenti dell'app</li>
+            <li data-i18n="terms.exclusionItem5">Traduzioni errate o incomplete</li>
         </ul>
-        <p><strong>L'utente si assume ogni responsabilità nell'uso dell'applicazione per comunicare le proprie allergie.</strong></p>
+        <p><strong data-i18n="terms.exclusionNote">L'utente si assume ogni responsabilità nell'uso dell'applicazione per comunicare le proprie allergie.</strong></p>
 
-        <h2>Modifiche all'App</h2>
-        <p>Ci riserviamo il diritto di:</p>
+        <h2 data-i18n="terms.appChangesTitle">Modifiche all'App</h2>
+        <p data-i18n="terms.appChangesText">Ci riserviamo il diritto di:</p>
         <ul>
-            <li>Modificare o interrompere l'app in qualsiasi momento</li>
-            <li>Aggiornare queste condizioni</li>
+            <li data-i18n="terms.appChangesItem1">Modificare o interrompere l'app in qualsiasi momento</li>
+            <li data-i18n="terms.appChangesItem2">Aggiornare queste condizioni</li>
         </ul>
-        <p>Ti informeremo di modifiche significative tramite aggiornamenti dell'app.</p>
+        <p data-i18n="terms.appChangesNote">Ti informeremo di modifiche significative tramite aggiornamenti dell'app.</p>
 
-        <h2>Proprietà Intellettuale</h2>
-        <p>AllergiApp, il suo design, logo e contenuti sono protetti da diritti d'autore.</p>
-        <p>Copyright © 2026 AllergiApp. Tutti i diritti riservati.</p>
+        <h2 data-i18n="terms.ipTitle">Proprietà Intellettuale</h2>
+        <p data-i18n="terms.ipText1">AllergiApp, il suo design, logo e contenuti sono protetti da diritti d'autore.</p>
+        <p data-i18n="terms.ipText2">Copyright © 2026 AllergiApp. Tutti i diritti riservati.</p>
 
-        <h2>Legge Applicabile</h2>
-        <p>Questi termini sono regolati dalla legge italiana.</p>
+        <h2 data-i18n="terms.lawTitle">Legge Applicabile</h2>
+        <p data-i18n="terms.lawText">Questi termini sono regolati dalla legge italiana.</p>
 
-        <h2>Severability</h2>
-        <p>Se una clausola di questi termini è ritenuta invalida, le altre clausole rimangono valide.</p>
+        <h2 data-i18n="terms.severabilityTitle">Severability</h2>
+        <p data-i18n="terms.severabilityText">Se una clausola di questi termini è ritenuta invalida, le altre clausole rimangono valide.</p>
 
-        <h2>Contatti</h2>
-        <p>Per domande sui Termini di Servizio: <a href="mailto:legal@allergiapp.com">legal@allergiapp.com</a></p>
+        <h2 data-i18n="terms.contactTitle">Contatti</h2>
+        <p><span data-i18n="terms.contactText">Per domande sui Termini di Servizio:</span> <a href="mailto:legal@allergiapp.com">legal@allergiapp.com</a></p>
 
-        <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+        <hr class="divider-line">
 
-        <p style="font-weight: bold; text-align: center;"><strong>Utilizzando AllergiApp, confermi di aver letto, compreso e accettato questi Termini di Servizio e il Disclaimer medico.</strong></p>
+        <p class="footer-note" data-i18n="terms.footerNote">Utilizzando AllergiApp, confermi di aver letto, compreso e accettato questi Termini di Servizio e il Disclaimer medico.</p>
     </div>
 
     <footer class="footer">
         <div class="container">
-            <div class="footer-bottom">
-                <p>&copy; 2026 AllergiApp. Tutti i diritti riservati.</p>
+            <div class="footer-simple">
+                <a href="/" class="logo">
+                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav" loading="lazy">
+                    <span class="logo-text">AllergiApp</span>
+                </a>
+                <p class="footer-tagline" data-i18n="footer.tagline">Viaggia sicuro, comunica ovunque.</p>
+                <div class="lang-selector">
+                    <a href="#" data-lang="it" title="Italiano">🇮🇹</a>
+                    <a href="#" data-lang="en" title="English">🇬🇧</a>
+                </div>
+                <div class="footer-legal">
+                    <a href="contacts" data-i18n="footer.contacts">Contatti</a>
+                    <span class="separator">•</span>
+                    <a href="privacy" data-i18n="footer.privacy">Privacy Policy</a>
+                    <span class="separator">•</span>
+                    <a href="terms" data-i18n="footer.terms">Termini di Servizio</a>
+                </div>
+                <p class="footer-copyright">&copy; <span data-i18n="footer.copyright">2026 AllergiApp. Tutti i diritti riservati.</span></p>
             </div>
         </div>
     </footer>
+
+    <script src="i18n-site.js"></script>
 </body>
 </html>

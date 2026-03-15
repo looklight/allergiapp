@@ -101,22 +101,7 @@ function applyTranslations(lang) {
     if (element.dataset.i18nAttr) {
       element.setAttribute(element.dataset.i18nAttr, translation);
     } else {
-      // Altrimenti traduci il contenuto testuale
-      // Preserva HTML interno se presente (es. <br>)
-      if (element.innerHTML.includes('<')) {
-        // Ha HTML interno, preserva la struttura
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = element.innerHTML;
-        // Sostituisci solo il testo, non i tag
-        element.childNodes.forEach(node => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            node.textContent = translation;
-          }
-        });
-      } else {
-        // Testo semplice
-        element.textContent = translation;
-      }
+      element.textContent = translation;
     }
   });
 }

@@ -118,21 +118,6 @@ body {
     transform: translateY(-2px);
 }
 
-.nav-support {
-    background: #FFDD00 !important;
-    color: #000000 !important;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-}
-
-.nav-support:hover {
-    background: #FFE933 !important;
-    transform: translateY(-1px);
-}
-
 /* Language Selector */
 .lang-selector {
     display: flex;
@@ -367,16 +352,6 @@ body {
 
 .button.button-yellow:hover {
     background: #FFC107;
-}
-
-.button.secondary {
-    background: white;
-    color: var(--primary);
-    border: 2px solid var(--primary);
-}
-
-.button.secondary:hover {
-    background: var(--primary-light);
 }
 
 .hero-stats {
@@ -775,48 +750,6 @@ body {
     object-fit: cover;
 }
 
-.story-support-inline {
-    margin: 32px 0;
-    text-align: center;
-    scroll-margin-top: 100px;
-}
-
-.support-text {
-    font-size: 13px;
-    color: #999999;
-    line-height: 1.5;
-    margin-top: 12px;
-    margin-bottom: 0;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.donation-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: #FFDD00;
-    color: #000000;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.donation-button:hover {
-    background: #FFE933;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
-}
-
-.donation-button svg {
-    flex-shrink: 0;
-}
-
 /* Allergens Preview */
 .allergens-preview {
     padding: 35px 0 60px;
@@ -997,11 +930,6 @@ body {
         display: none;
     }
 
-    .nav-support {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
     .cta-button {
         padding: 8px 16px;
         font-size: 13px;
@@ -1175,29 +1103,6 @@ body {
         min-width: 160px;
     }
 
-    .story-support-inline {
-        margin: 24px 0;
-    }
-
-    .support-text {
-        font-size: 12px;
-    }
-
-    .donation-button {
-        font-size: 13px;
-        padding: 10px 20px;
-    }
-
-    .donation-button svg:first-child {
-        width: 16px;
-        height: 16px;
-    }
-
-    .donation-button svg:last-child {
-        width: 12px;
-        height: 12px;
-    }
-
     .footer-legal {
         flex-wrap: wrap;
     }
@@ -1294,6 +1199,112 @@ body {
 
     .highlight-card p {
         font-size: 14px;
+    }
+}
+
+/* Legal Pages (Privacy, Terms) */
+.legal-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 120px 24px 80px;
+}
+
+.legal-page h1 {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.legal-page .last-updated {
+    color: var(--text-secondary);
+    margin-bottom: 48px;
+}
+
+.legal-page h2 {
+    font-size: 32px;
+    margin-top: 48px;
+    margin-bottom: 16px;
+}
+
+.legal-page h3 {
+    font-size: 24px;
+    margin-top: 32px;
+    margin-bottom: 12px;
+}
+
+.legal-page p,
+.legal-page li {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.legal-page ul {
+    margin-left: 24px;
+}
+
+.legal-page .back-link {
+    display: inline-block;
+    margin-bottom: 32px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.legal-page .back-link:hover {
+    text-decoration: underline;
+}
+
+.legal-page .warning-box {
+    background: #FFF3E0;
+    border-left: 4px solid #FF9800;
+    padding: 20px;
+    margin: 24px 0;
+    border-radius: 4px;
+}
+
+.legal-page .warning-box p {
+    margin: 0;
+    color: var(--text);
+}
+
+.legal-page .divider-line {
+    margin: 40px 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+.legal-page .gdpr-note {
+    font-style: italic;
+    text-align: center;
+    color: #666;
+}
+
+.legal-page .footer-note {
+    font-weight: bold;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .legal-page {
+        padding: 100px 20px 60px;
+    }
+
+    .legal-page h1 {
+        font-size: 32px;
+    }
+
+    .legal-page h2 {
+        font-size: 24px;
+    }
+
+    .legal-page h3 {
+        font-size: 20px;
+    }
+
+    .legal-page p,
+    .legal-page li {
+        font-size: 16px;
     }
 }
 

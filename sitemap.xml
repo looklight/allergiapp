@@ -5,37 +5,41 @@
     <!-- Homepage -->
     <url>
         <loc>https://allergiapp.com/</loc>
-        <lastmod>2026-02-02</lastmod>
+        <lastmod>2026-03-15</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
         <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/" />
         <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/?lang=en" />
     </url>
 
+    <!-- Contacts / About -->
+    <url>
+        <loc>https://allergiapp.com/contacts</loc>
+        <lastmod>2026-03-15</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+        <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/contacts" />
+        <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/contacts?lang=en" />
+    </url>
+
     <!-- Privacy Policy -->
     <url>
-        <loc>https://allergiapp.com/privacy.html</loc>
-        <lastmod>2026-02-02</lastmod>
+        <loc>https://allergiapp.com/privacy</loc>
+        <lastmod>2026-03-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
+        <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/privacy" />
+        <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/privacy?lang=en" />
     </url>
 
     <!-- Terms of Service -->
     <url>
-        <loc>https://allergiapp.com/terms.html</loc>
-        <lastmod>2026-02-02</lastmod>
+        <loc>https://allergiapp.com/terms</loc>
+        <lastmod>2026-03-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
-    </url>
-
-    <!-- Support / Donate -->
-    <url>
-        <loc>https://allergiapp.com/support</loc>
-        <lastmod>2026-02-02</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-        <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/support" />
-        <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/support?lang=en" />
+        <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/terms" />
+        <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/terms?lang=en" />
     </url>
 
 </urlset>

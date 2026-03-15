@@ -13,51 +13,14 @@
     <link rel="alternate" hreflang="en" href="https://allergiapp.com/privacy?lang=en" />
     <link rel="alternate" hreflang="x-default" href="https://allergiapp.com/privacy" />
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/logo_app.png">
+    <link rel="apple-touch-icon" href="images/logo_app.png">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .legal-page {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 120px 24px 80px;
-        }
-        .legal-page h1 {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        .legal-page .last-updated {
-            color: var(--text-secondary);
-            margin-bottom: 48px;
-        }
-        .legal-page h2 {
-            font-size: 32px;
-            margin-top: 48px;
-            margin-bottom: 16px;
-        }
-        .legal-page h3 {
-            font-size: 24px;
-            margin-top: 32px;
-            margin-bottom: 12px;
-        }
-        .legal-page p, .legal-page li {
-            font-size: 18px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-        .legal-page ul {
-            margin-left: 24px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 32px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body>
     <nav class="nav">
@@ -73,85 +36,103 @@
     </nav>
 
     <div class="legal-page">
-        <a href="/" class="back-link">← Torna alla home</a>
+        <a href="/" class="back-link" data-i18n="privacy.backHome">← Torna alla home</a>
 
-        <h1>Privacy Policy</h1>
-        <p class="last-updated">Ultimo aggiornamento: 28 Gennaio 2026</p>
+        <h1 data-i18n="privacy.title">Privacy Policy</h1>
+        <p class="last-updated" data-i18n="privacy.lastUpdated">Ultimo aggiornamento: 28 Gennaio 2026</p>
 
-        <h2>Chi siamo</h2>
-        <p>AllergiApp è un'applicazione mobile gratuita per comunicare allergie alimentari durante i viaggi.</p>
+        <h2 data-i18n="privacy.whoWeAreTitle">Chi siamo</h2>
+        <p data-i18n="privacy.whoWeAreText">AllergiApp è un'applicazione mobile gratuita per comunicare allergie alimentari durante i viaggi.</p>
 
-        <h2>Quali dati raccogliamo</h2>
+        <h2 data-i18n="privacy.dataTitle">Quali dati raccogliamo</h2>
 
-        <h3>Dati memorizzati localmente (sul tuo dispositivo)</h3>
+        <h3 data-i18n="privacy.localTitle">Dati memorizzati localmente (sul tuo dispositivo)</h3>
         <ul>
-            <li>Le tue allergie alimentari selezionate</li>
-            <li>Preferenze lingua</li>
-            <li>Traduzioni scaricate</li>
+            <li data-i18n="privacy.localItem1">Le tue allergie alimentari selezionate</li>
+            <li data-i18n="privacy.localItem2">Preferenze lingua</li>
+            <li data-i18n="privacy.localItem3">Traduzioni scaricate</li>
         </ul>
-        <p><strong>Questi dati NON vengono mai inviati a nostri server.</strong> Rimangono solo sul tuo dispositivo.</p>
+        <p><strong data-i18n="privacy.localNote">Questi dati NON vengono mai inviati a nostri server. Rimangono solo sul tuo dispositivo.</strong></p>
 
-        <h3>Dati analytics anonimi</h3>
-        <p>Utilizziamo <strong>Google Firebase Analytics</strong> per migliorare l'app. Raccogliamo automaticamente:</p>
+        <h3 data-i18n="privacy.analyticsTitle">Dati analytics anonimi</h3>
+        <p><span data-i18n="privacy.analyticsText">Utilizziamo Google Firebase Analytics per migliorare l'app. Raccogliamo automaticamente:</span></p>
         <ul>
-            <li>Paese e città approssimativa (da indirizzo IP)</li>
-            <li>Tipo di dispositivo e sistema operativo</li>
-            <li>Lingua del dispositivo</li>
-            <li>Utilizzo dell'app (quali schermate visiti, quali funzioni usi)</li>
-            <li>Statistiche su allergie più comuni (aggregate e anonime)</li>
-            <li>Lingue più scaricate</li>
+            <li data-i18n="privacy.analyticsItem1">Paese e città approssimativa (da indirizzo IP)</li>
+            <li data-i18n="privacy.analyticsItem2">Tipo di dispositivo e sistema operativo</li>
+            <li data-i18n="privacy.analyticsItem3">Lingua del dispositivo</li>
+            <li data-i18n="privacy.analyticsItem4">Utilizzo dell'app (quali schermate visiti, quali funzioni usi)</li>
+            <li data-i18n="privacy.analyticsItem5">Statistiche su allergie più comuni (aggregate e anonime)</li>
+            <li data-i18n="privacy.analyticsItem6">Lingue più scaricate</li>
         </ul>
-        <p><strong>Non raccogliamo</strong>: nome, email, indirizzo, numero di telefono o altri dati che ti identificano personalmente.</p>
+        <p><strong data-i18n="privacy.analyticsNote">Non raccogliamo: nome, email, indirizzo, numero di telefono o altri dati che ti identificano personalmente.</strong></p>
 
-        <h3>Servizi di traduzione</h3>
-        <p>Quando scarichi lingue aggiuntive, i testi degli allergeni vengono inviati a servizi di traduzione esterni per essere tradotti. Non vengono inviati tuoi dati personali.</p>
+        <h3 data-i18n="privacy.translationTitle">Servizi di traduzione</h3>
+        <p data-i18n="privacy.translationText">Quando scarichi lingue aggiuntive, i testi degli allergeni vengono inviati a servizi di traduzione esterni per essere tradotti. Non vengono inviati tuoi dati personali.</p>
 
-        <h2>Perché raccogliamo questi dati</h2>
+        <h2 data-i18n="privacy.whyTitle">Perché raccogliamo questi dati</h2>
         <ul>
-            <li><strong>Dati locali</strong>: Per far funzionare l'app e mostrare le tue allergie</li>
-            <li><strong>Analytics</strong>: Per capire come migliorare l'app, quali lingue aggiungere, quali allergie sono più comuni</li>
-        </ul>
-
-        <h2>Base giuridica (GDPR)</h2>
-        <p>La raccolta di analytics anonimi si basa sul nostro <strong>legittimo interesse</strong> a migliorare l'app. Poiché i dati sono completamente anonimi e aggregati, non ti identificano in alcun modo.</p>
-
-        <h2>Trasferimento dati</h2>
-        <p>I dati analytics anonimi vengono elaborati da <strong>Google LLC</strong> (USA) tramite Firebase. Google utilizza le Standard Contractual Clauses (SCC) approvate dalla Commissione Europea per garantire la protezione dei dati.</p>
-
-        <h2>I tuoi diritti</h2>
-        <p>Poiché non raccogliamo dati personali identificabili, non applichiamo i diritti GDPR tradizionali (accesso, rettifica, cancellazione) in quanto non possiamo associare i dati analytics a te specificamente.</p>
-        <p>Tuttavia:</p>
-        <ul>
-            <li><strong>Disinstallando l'app</strong>, cancelli tutti i dati locali (allergie, preferenze)</li>
-            <li><strong>Nelle impostazioni</strong>, puoi resettare completamente i dati dell'app</li>
+            <li><strong data-i18n="privacy.whyItem1Local">Dati locali</strong>: <span data-i18n="privacy.whyItem1Text">Per far funzionare l'app e mostrare le tue allergie</span></li>
+            <li><strong data-i18n="privacy.whyItem2Analytics">Analytics</strong>: <span data-i18n="privacy.whyItem2Text">Per capire come migliorare l'app, quali lingue aggiungere, quali allergie sono più comuni</span></li>
         </ul>
 
-        <h2>Conservazione dati</h2>
+        <h2 data-i18n="privacy.gdprTitle">Base giuridica (GDPR)</h2>
+        <p data-i18n="privacy.gdprText">La raccolta di analytics anonimi si basa sul nostro legittimo interesse a migliorare l'app. Poiché i dati sono completamente anonimi e aggregati, non ti identificano in alcun modo.</p>
+
+        <h2 data-i18n="privacy.transferTitle">Trasferimento dati</h2>
+        <p data-i18n="privacy.transferText">I dati analytics anonimi vengono elaborati da Google LLC (USA) tramite Firebase. Google utilizza le Standard Contractual Clauses (SCC) approvate dalla Commissione Europea per garantire la protezione dei dati.</p>
+
+        <h2 data-i18n="privacy.rightsTitle">I tuoi diritti</h2>
+        <p data-i18n="privacy.rightsText1">Poiché non raccogliamo dati personali identificabili, non applichiamo i diritti GDPR tradizionali (accesso, rettifica, cancellazione) in quanto non possiamo associare i dati analytics a te specificamente.</p>
+        <p data-i18n="privacy.rightsText2">Tuttavia:</p>
         <ul>
-            <li><strong>Dati locali</strong>: Conservati finché non disinstalli l'app o li cancelli manualmente</li>
-            <li><strong>Analytics</strong>: Conservati da Google Firebase secondo le loro policy (solitamente 14 mesi)</li>
+            <li><strong data-i18n="privacy.rightsItem1">Disinstallando l'app, cancelli tutti i dati locali (allergie, preferenze)</strong></li>
+            <li><strong data-i18n="privacy.rightsItem2">Nelle impostazioni, puoi resettare completamente i dati dell'app</strong></li>
         </ul>
 
-        <h2>Modifiche a questa policy</h2>
-        <p>Potremmo aggiornare questa privacy policy. La data dell'ultimo aggiornamento è indicata in alto. Ti informeremo di modifiche significative tramite aggiornamento app.</p>
+        <h2 data-i18n="privacy.retentionTitle">Conservazione dati</h2>
+        <ul>
+            <li data-i18n="privacy.retentionItem1">Dati locali: Conservati finché non disinstalli l'app o li cancelli manualmente</li>
+            <li data-i18n="privacy.retentionItem2">Analytics: Conservati da Google Firebase secondo le loro policy (solitamente 14 mesi)</li>
+        </ul>
 
-        <h2>Bambini</h2>
-        <p>L'app è destinata a utenti di tutte le età. Non raccogliamo consapevolmente dati personali di minori di 16 anni. Se sei un genitore e scopri che tuo figlio ha fornito dati personali (anche se l'app non li richiede), contattaci.</p>
+        <h2 data-i18n="privacy.changesTitle">Modifiche a questa policy</h2>
+        <p data-i18n="privacy.changesText">Potremmo aggiornare questa privacy policy. La data dell'ultimo aggiornamento è indicata in alto. Ti informeremo di modifiche significative tramite aggiornamento app.</p>
 
-        <h2>Contatti</h2>
-        <p>Per domande su questa privacy policy: <a href="mailto:privacy@allergiapp.com">privacy@allergiapp.com</a></p>
+        <h2 data-i18n="privacy.childrenTitle">Bambini</h2>
+        <p data-i18n="privacy.childrenText">L'app è destinata a utenti di tutte le età. Non raccogliamo consapevolmente dati personali di minori di 16 anni. Se sei un genitore e scopri che tuo figlio ha fornito dati personali (anche se l'app non li richiede), contattaci.</p>
 
-        <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+        <h2 data-i18n="privacy.contactTitle">Contatti</h2>
+        <p><span data-i18n="privacy.contactText">Per domande su questa privacy policy:</span> <a href="mailto:privacy@allergiapp.com">privacy@allergiapp.com</a></p>
 
-        <p style="font-style: italic; text-align: center; color: #666;">Questa privacy policy è conforme al Regolamento Generale sulla Protezione dei Dati (GDPR) dell'Unione Europea.</p>
+        <hr class="divider-line">
+
+        <p class="gdpr-note" data-i18n="privacy.gdprNote">Questa privacy policy è conforme al Regolamento Generale sulla Protezione dei Dati (GDPR) dell'Unione Europea.</p>
     </div>
 
     <footer class="footer">
         <div class="container">
-            <div class="footer-bottom">
-                <p>&copy; 2026 AllergiApp. Tutti i diritti riservati.</p>
+            <div class="footer-simple">
+                <a href="/" class="logo">
+                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav" loading="lazy">
+                    <span class="logo-text">AllergiApp</span>
+                </a>
+                <p class="footer-tagline" data-i18n="footer.tagline">Viaggia sicuro, comunica ovunque.</p>
+                <div class="lang-selector">
+                    <a href="#" data-lang="it" title="Italiano">🇮🇹</a>
+                    <a href="#" data-lang="en" title="English">🇬🇧</a>
+                </div>
+                <div class="footer-legal">
+                    <a href="contacts" data-i18n="footer.contacts">Contatti</a>
+                    <span class="separator">•</span>
+                    <a href="privacy" data-i18n="footer.privacy">Privacy Policy</a>
+                    <span class="separator">•</span>
+                    <a href="terms" data-i18n="footer.terms">Termini di Servizio</a>
+                </div>
+                <p class="footer-copyright">&copy; <span data-i18n="footer.copyright">2026 AllergiApp. Tutti i diritti riservati.</span></p>
             </div>
         </div>
     </footer>
+
+    <script src="i18n-site.js"></script>
 </body>
 </html>
