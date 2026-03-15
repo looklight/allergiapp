@@ -63,7 +63,7 @@ const splashStyles = StyleSheet.create({
 
 
 function AppContent() {
-  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, activeDietModes, settings } = useAppContext();
+  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, selectedOtherFoods, activeDietModes, vegetarianLevel, selectedRestrictions, settings } = useAppContext();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
 
@@ -80,9 +80,13 @@ function AppContent() {
         Analytics.setTrackingConsent(trackingConsent);
         Analytics.logAppOpened();
         Analytics.updateUserProperties({
-          allergenCount: selectedAllergens.length,
+          allergenCount: selectedAllergens.length + selectedOtherFoods.length,
+          allergenIds: selectedAllergens,
+          otherFoodIds: selectedOtherFoods,
           dietModes: activeDietModes,
           cardLanguage: settings.cardLanguage,
+          vegetarianLevel: activeDietModes.includes('vegetarian') ? vegetarianLevel : undefined,
+          restrictionCount: selectedRestrictions.length,
         });
       }
     }

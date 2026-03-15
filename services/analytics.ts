@@ -1,5 +1,6 @@
 import { AllergenId, DownloadableLanguageCode, AppLanguage, AllLanguageCode, TrackingConsent } from '../types';
 import { DietModeId } from '../constants/dietModes';
+import { OtherFoodId } from '../constants/otherFoods';
 
 // Modular Firebase Analytics API (dynamically required — may not be available in Expo Go)
 type FirebaseAnalyticsInstance = object;
@@ -117,6 +118,45 @@ export const Analytics = {
       });
     } catch (error) {
       console.warn('[Analytics] Error logging allergies_saved:', error);
+    }
+  },
+
+  /**
+   * Eventi other foods
+   */
+  async logOtherFoodAdded(foodId: OtherFoodId) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'other_food_added', {
+        food_id: foodId,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging other_food_added:', error);
+    }
+  },
+
+  async logOtherFoodRemoved(foodId: OtherFoodId) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'other_food_removed', {
+        food_id: foodId,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging other_food_removed:', error);
+    }
+  },
+
+  async logOtherFoodsSaved(foodIds: OtherFoodId[], previousCount: number, newCount: number) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'other_foods_saved', {
+        food_count: foodIds.length,
+        previous_count: previousCount,
+        new_count: newCount,
+        foods: foodIds.join(','),
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging other_foods_saved:', error);
     }
   },
 
@@ -276,8 +316,56 @@ export const Analytics = {
   },
 
   /**
-   * Diet mode events
+   * Eventi restrizioni e diete
    */
+  async logRestrictionAdded(restrictionId: string) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'restriction_added', {
+        restriction_id: restrictionId,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging restriction_added:', error);
+    }
+  },
+
+  async logRestrictionRemoved(restrictionId: string) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'restriction_removed', {
+        restriction_id: restrictionId,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging restriction_removed:', error);
+    }
+  },
+
+  async logVegetarianLevelChanged(level: string) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'vegetarian_level_changed', {
+        level: level,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging vegetarian_level_changed:', error);
+    }
+  },
+
+  async logRestrictionsSaved(restrictionIds: string[], dietModes: DietModeId[], vegetarianLevel: string) {
+    if (!canSendAnalytics()) return;
+    try {
+      await logEvent(firebaseAnalytics, 'restrictions_saved', {
+        restriction_count: restrictionIds.length,
+        restrictions: restrictionIds.join(','),
+        diet_mode_count: dietModes.length,
+        diet_modes: dietModes.join(','),
+        vegetarian_level: vegetarianLevel,
+      });
+    } catch (error) {
+      console.warn('[Analytics] Error logging restrictions_saved:', error);
+    }
+  },
+
   async logDietModeToggled(modeId: DietModeId, enabled: boolean) {
     if (!canSendAnalytics()) return;
     try {
@@ -304,18 +392,34 @@ export const Analytics = {
 
   async updateUserProperties(props: {
     allergenCount: number;
+    allergenIds: AllergenId[];
+    otherFoodIds: OtherFoodId[];
     dietModes: DietModeId[];
     cardLanguage: AllLanguageCode;
+    vegetarianLevel?: string;
+    restrictionCount?: number;
   }) {
     if (!canSendAnalytics()) return;
     try {
       // User property values limited to 36 chars by Firebase
       await setUserProperty(firebaseAnalytics, 'allergen_count', String(props.allergenCount));
+      // Truncate CSV to 36 chars (Firebase user property limit)
+      const allergensCsv = props.allergenIds.join(',') || 'none';
+      await setUserProperty(firebaseAnalytics, 'allergens', allergensCsv.slice(0, 36));
+      const otherFoodsCsv = props.otherFoodIds.join(',') || 'none';
+      await setUserProperty(firebaseAnalytics, 'other_foods', otherFoodsCsv.slice(0, 36));
+      await setUserProperty(firebaseAnalytics, 'other_food_count', String(props.otherFoodIds.length));
       // Abbreviate diet mode IDs to fit 36-char limit (preg,veg,nick,hist,diab)
       const modeAbbrev: Record<string, string> = { pregnancy: 'preg', vegetarian: 'veg', nickel: 'nick', histamine: 'hist', diabetes: 'diab' };
       const modes = props.dietModes.map(m => modeAbbrev[m] || m).join(',');
       await setUserProperty(firebaseAnalytics, 'diet_modes', modes || 'none');
       await setUserProperty(firebaseAnalytics, 'card_language', props.cardLanguage);
+      if (props.vegetarianLevel !== undefined) {
+        await setUserProperty(firebaseAnalytics, 'vegetarian_level', props.vegetarianLevel);
+      }
+      if (props.restrictionCount !== undefined) {
+        await setUserProperty(firebaseAnalytics, 'restriction_count', String(props.restrictionCount));
+      }
     } catch (error) {
       console.warn('[Analytics] Error updating user properties:', error);
     }

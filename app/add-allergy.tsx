@@ -75,12 +75,31 @@ export default function AddAllergyScreen() {
       selectedAllergens.length
     );
 
+    // Traccia other foods aggiunti e rimossi
+    const addedFoods = selectedOtherFoods.filter((id) => !savedOtherFoods.includes(id));
+    const removedFoods = savedOtherFoods.filter((id) => !selectedOtherFoods.includes(id));
+
+    for (const food of addedFoods) {
+      await Analytics.logOtherFoodAdded(food);
+    }
+    for (const food of removedFoods) {
+      await Analytics.logOtherFoodRemoved(food);
+    }
+
+    await Analytics.logOtherFoodsSaved(
+      selectedOtherFoods,
+      savedOtherFoods.length,
+      selectedOtherFoods.length
+    );
+
     await saveAllergens(selectedAllergens);
     await saveOtherFoods(selectedOtherFoods);
 
     // Update user properties for segmentation
     Analytics.updateUserProperties({
       allergenCount: selectedAllergens.length + selectedOtherFoods.length,
+      allergenIds: selectedAllergens,
+      otherFoodIds: selectedOtherFoods,
       dietModes: activeDietModes,
       cardLanguage: settings.cardLanguage,
     });

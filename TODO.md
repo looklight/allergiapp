@@ -80,6 +80,7 @@ In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio ma
 - [ ] Aggiornare link Google Play nel sito (`index.html`) quando pubblicata
 
 ## Deploy
+- [ ] **OTA update** per attivare analytics other foods, restrizioni e diete: `npx eas-cli update --branch production --message "Add comprehensive analytics tracking"`
 - [ ] Decidere e configurare deploy admin dashboard (Vercel o altro)
 - [ ] Deployare su Vercel le modifiche al sito landing (contacts redesign, pulsante "Scopri di più", link App Store)
 
