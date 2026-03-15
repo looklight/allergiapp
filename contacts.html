@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary Meta Tags -->
-    <title>Chi siamo - AllergiApp</title>
-    <meta name="title" content="Chi siamo - AllergiApp">
+    <title>Come nasce AllergiApp</title>
+    <meta name="title" content="Come nasce AllergiApp">
     <meta name="description" content="Scopri la storia di AllergiApp: nata per aiutare chi ha allergie alimentari a viaggiare sicuro. Contattaci per supporto.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://allergiapp.com/contacts">
@@ -26,7 +26,7 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://allergiapp.com/contacts">
-    <meta property="og:title" content="Chi siamo - AllergiApp">
+    <meta property="og:title" content="Come nasce AllergiApp">
     <meta property="og:description" content="Scopri la storia di AllergiApp e come supportare il progetto.">
     <meta property="og:image" content="https://allergiapp.com/images/og-image.jpg">
 
@@ -34,55 +34,65 @@
     <style>
         /* ===== SECTION 1: STORY ===== */
         .story-section {
-            max-width: 600px;
+            max-width: 640px;
             margin: 0 auto;
-            padding: 100px 24px 24px;
+            padding: 84px 24px 48px;
             text-align: center;
         }
 
-        .author-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .author-name {
-            font-size: 20px;
-            font-weight: 700;
+        .page-title {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 800;
             color: var(--text);
             margin-bottom: 16px;
         }
 
+        .story-summary {
+            font-size: 17px;
+            line-height: 1.8;
+            color: var(--text);
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .author-block {
+            text-align: center;
+        }
+
         .story-quote {
-            font-size: 16px;
+            font-size: 15px;
             font-style: italic;
             font-family: Georgia, serif;
-            line-height: 1.7;
+            line-height: 1.8;
             color: var(--text-secondary);
-            margin-bottom: 20px;
-            position: relative;
-            padding: 0 8px;
+            margin: 0 auto 16px;
+            max-width: 460px;
         }
 
-        .story-quote::before {
-            content: '\201C';
-            font-size: 48px;
-            color: var(--primary);
-            position: absolute;
-            top: -20px;
-            left: -8px;
-            font-family: Georgia, serif;
-            line-height: 1;
+        .author-signature {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: opacity 0.2s;
         }
 
-        .story-summary {
-            font-size: 15px;
-            line-height: 1.7;
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .author-signature:hover {
+            opacity: 0.7;
+        }
+
+        .author-name {
+            font-size: 14px;
+            font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 0;
+            letter-spacing: 0.02em;
         }
 
         .social-cta {
@@ -128,7 +138,7 @@
         /* ===== SECTION 2: SUPPORT ===== */
         .support-section {
             background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 100%);
-            padding: 40px 24px;
+            padding: 48px 24px;
         }
 
         .support-content {
@@ -241,7 +251,7 @@
         /* ===== SECTION 3: CONTACT ===== */
         .contact-section {
             background: var(--bg-alt, #F5F5F5);
-            padding: 56px 24px 80px;
+            padding: 48px 24px 80px;
         }
 
         .contact-content {
@@ -477,25 +487,29 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-            .back-container {
-                padding: 80px 20px 0;
+            .story-section {
+                padding: 88px 20px 36px;
             }
 
-            .story-section {
-                padding: 88px 20px 40px;
+            .story-summary {
+                font-size: 16px;
+            }
+
+            .author-block {
+                padding-top: 24px;
             }
 
             .author-avatar {
-                width: 64px;
-                height: 64px;
+                width: 32px;
+                height: 32px;
             }
 
             .story-quote {
-                font-size: 15px;
+                font-size: 14px;
             }
 
             .support-section {
-                padding: 40px 20px;
+                padding: 36px 20px;
             }
 
             .support-title,
@@ -503,9 +517,8 @@
                 font-size: 24px;
             }
 
-
             .contact-section {
-                padding: 40px 20px 60px;
+                padding: 36px 20px 60px;
             }
 
             .contact-card {
@@ -533,48 +546,51 @@
         </div>
     </nav>
 
-
     <!-- ===== SECTION 1: STORY ===== -->
     <div class="story-section">
-        <img src="images/profile_pic.jpg" alt="Marta Di Muro" class="author-avatar">
-        <div class="author-name" data-i18n="story.quoteAuthor">Marta Di Muro</div>
-        <p class="story-quote" data-i18n="contacts.storyQuote">La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo attraverso il cibo, in sicurezza e con gioia.</p>
-        <p class="story-summary" data-i18n="contacts.storySummary">AllergiApp nasce dalla mia esperienza personale con le allergie alimentari. Ho creato quest'app perché credo che viaggiare e gustare il cibo del mondo sia un diritto di tutti. Per questo è gratuita e lo sarà sempre.</p>
-
+        <h1 class="page-title"><span data-i18n="contacts.pageTitle">Come nasce</span> <span class="gradient-text">AllergiApp</span></h1>
+        <p class="story-summary" data-i18n="contacts.storySummary">AllergiApp nasce dalla mia esperienza personale con le allergie alimentari. Ho creato quest'app perché credo che viaggiare e gustare il cibo del mondo sia un diritto di tutti.</p>
+        <div class="author-block">
+            <p class="story-quote" data-i18n="contacts.storyQuote">La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo attraverso il cibo, in sicurezza e con gioia.</p>
+            <a href="https://www.instagram.com/martadimuro_" target="_blank" rel="noopener noreferrer" class="author-signature">
+                <img src="images/profile_pic.jpg" alt="Marta Di Muro" class="author-avatar">
+                <div class="author-name">— <span data-i18n="story.quoteAuthor">Marta Di Muro</span></div>
+            </a>
+        </div>
     </div>
 
     <!-- ===== SECTION 2: SUPPORT ===== -->
     <div class="support-section">
         <div class="support-content">
             <h2 class="support-title" data-i18n="contacts.supportTitle">Supporta il progetto</h2>
-            <p class="support-subtitle" data-i18n="contacts.supportSubtitle">AllergiApp è gratuita per sempre. Ecco come puoi aiutare a farla crescere:</p>
+            <p class="support-subtitle"><span data-i18n="contacts.supportSubtitle1">AllergiApp è un progetto che aiuta molte persone e per questo l'app è</span> <strong data-i18n="contacts.supportSubtitleFree">gratuita</strong> <span data-i18n="contacts.supportSubtitle2">e lo sarà per sempre.</span><br><span data-i18n="contacts.supportSubtitle3">Se credi nel progetto e vuoi supportarlo puoi:</span></p>
 
             <div class="support-list">
                 <a href="https://apps.apple.com/app/allergiapp/id6758859853" target="_blank" rel="noopener noreferrer" class="support-item support-item-link">
                     <span class="support-item-icon">⭐</span>
                     <div>
-                        <strong data-i18n="contacts.support1Title">Lascia una recensione</strong>
-                        <span data-i18n="contacts.support1Text">Una recensione sullo store aiuta altri viaggiatori a trovarci</span>
+                        <strong data-i18n="contacts.support1Title">Lasciare una recensione</strong>
+                        <span data-i18n="contacts.support1Text">Racconta la tua esperienza, ogni recensione aiuta chi vive con allergie a scoprirci</span>
                     </div>
                 </a>
-                <a href="javascript:void(0)" class="support-item support-item-link" id="shareApp">
+                <a href="#" class="support-item support-item-link" id="shareApp">
                     <span class="support-item-icon">🔗</span>
                     <div>
-                        <strong data-i18n="contacts.support2Title">Condividi l'app</strong>
+                        <strong data-i18n="contacts.support2Title">Condividere l'app</strong>
                         <span data-i18n="contacts.support2Text">Consigliala a chi viaggia con allergie alimentari</span>
                     </div>
                 </a>
                 <a href="https://donate.stripe.com/4gM9AT0Egbcp54n3bb9k400" target="_blank" rel="noopener noreferrer" class="support-item support-item-link">
                     <span class="support-item-icon">❤️</span>
                     <div>
-                        <strong data-i18n="contacts.support4Title">Fai una donazione</strong>
+                        <strong data-i18n="contacts.support4Title">Fare una donazione</strong>
                         <span data-i18n="contacts.support4Text">Ogni contributo aiuta a coprire i costi di sviluppo e a mantenere l'app gratuita.</span> <span class="support-link-text" data-i18n="contacts.support4Link">Supporta</span>
                     </div>
                 </a>
-                <a href="#contatti" class="support-item support-item-link" onclick="event.preventDefault(); var el = document.getElementById('contatti'); var nav = document.querySelector('.nav'); var offset = nav ? nav.offsetHeight + 20 : 20; window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' })">
+                <a href="#contatti" class="support-item support-item-link" id="suggestIdeas">
                     <span class="support-item-icon">💡</span>
                     <div>
-                        <strong data-i18n="contacts.support3Title">Suggerisci idee</strong>
+                        <strong data-i18n="contacts.support3Title">Suggerire idee</strong>
                         <span data-i18n="contacts.support3Text">Nuove lingue, funzionalità o miglioramenti: ogni idea conta</span>
                     </div>
                 </a>
@@ -646,17 +662,17 @@
 
                     <div class="form-group">
                         <label for="name" data-i18n="contacts.formName">Nome *</label>
-                        <input type="text" id="name" name="name" required placeholder="Il tuo nome">
+                        <input type="text" id="name" name="name" required placeholder="Il tuo nome" data-i18n="contacts.formNamePlaceholder" data-i18n-attr="placeholder">
                     </div>
 
                     <div class="form-group">
                         <label for="email" data-i18n="contacts.formEmail">Email *</label>
-                        <input type="email" id="email" name="email" required placeholder="tua@email.com">
+                        <input type="email" id="email" name="email" required placeholder="tua@email.com" data-i18n="contacts.formEmailPlaceholder" data-i18n-attr="placeholder">
                     </div>
 
                     <div class="form-group">
                         <label for="message" data-i18n="contacts.formMessage">Messaggio *</label>
-                        <textarea id="message" name="message" required placeholder="Come posso aiutarti?"></textarea>
+                        <textarea id="message" name="message" required placeholder="Come posso aiutarti?" data-i18n="contacts.formMessagePlaceholder" data-i18n-attr="placeholder"></textarea>
                     </div>
 
                     <button type="submit" class="submit-button" data-i18n="contacts.formSubmit">Invia messaggio</button>
@@ -722,8 +738,18 @@
             }
         });
 
+        // Smooth scroll to contact section
+        document.getElementById('suggestIdeas').addEventListener('click', function(e) {
+            e.preventDefault();
+            var el = document.getElementById('contatti');
+            var nav = document.querySelector('.nav');
+            var offset = nav ? nav.offsetHeight + 20 : 20;
+            window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' });
+        });
+
         // Share app button
-        document.getElementById('shareApp').addEventListener('click', function() {
+        document.getElementById('shareApp').addEventListener('click', function(e) {
+            e.preventDefault();
             if (navigator.share) {
                 navigator.share({
                     title: 'AllergiApp',
