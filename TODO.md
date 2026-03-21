@@ -104,6 +104,22 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [ ] Sostituire `Alert` con modal custom per coerenza visiva cross-platform
 - [ ] Verificare responsive layout su schermi desktop
 
+## Ristoranti — Miglioramenti DB & Backend
+
+### Priorità alta
+- [ ] **Indexes mancanti** — aggiungere index su `restaurants.added_by`, `restaurants.owner_id`, `reviews.created_at`, `profiles.role`. Senza questi, le RLS policy eseguono seq scan su ogni operazione di write
+- [ ] **Paginazione review** — `getReviews()` carica tutte le review senza limit. Aggiungere paginazione (cursor-based o offset) per evitare OOM su ristoranti popolari
+- [ ] **`voteCuisines` non atomico** — DELETE + INSERT in due chiamate separate senza transazione. Se l'app crasha tra le due, i voti vanno persi. Spostare in una RPC con transazione unica
+
+### Priorità media
+- [ ] **`toggleFavorite` anti-pattern** — usa try/catch su errore PostgreSQL 23505 (UNIQUE violation) per toggle. Sostituire con RPC che usa `INSERT ... ON CONFLICT DO NOTHING RETURNING id` (atomico, nessuna race condition)
+- [ ] **Claim → owner_id non automatizzato** — quando un claim viene approvato (`status = 'approved'`), nessun trigger setta `restaurants.owner_id`. Aggiungere trigger `AFTER UPDATE ON restaurant_claims` che assegni automaticamente l'owner
+- [ ] **Premium non verificato server-side** — `is_premium` e `subscription_expires_at` esistono ma nessuna RPC o policy verifica che la subscription sia ancora attiva. Un ristorante scaduto continua ad avere priorità nell'ordinamento (`ORDER BY is_premium DESC`)
+
+### Priorità bassa
+- [ ] **Droppare `review_dishes` e `dish_likes`** — tabelle deprecate dalla migration 015 (foto migrate a `reviews.photos` JSONB). La `upsert_review` fa ancora `DELETE FROM review_dishes` inutilmente
+- [ ] **FK inconsistente `restaurant_cuisine_votes`** — referenzia `auth.users` direttamente invece di `profiles` come tutte le altre tabelle
+
 ## Futuri (quando il volume cresce)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
 - Animazioni: migrare a `react-native-reanimated` + `react-native-gesture-handler`

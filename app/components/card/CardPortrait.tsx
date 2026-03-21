@@ -8,7 +8,7 @@ import { OTHER_FOODS, OtherFoodId } from '../../../constants/otherFoods';
 import { theme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import DietModeSection from './DietModeSection';
-import { CardPortraitProps } from './types';
+import { CardPortraitProps } from './_types';
 
 const getRestrictionInfo = (id: RestrictionItemId) => {
   return RESTRICTION_ITEMS.find((r) => r.id === id);

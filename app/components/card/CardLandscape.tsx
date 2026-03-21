@@ -8,7 +8,7 @@ import { OTHER_FOODS, OtherFoodId } from '../../../constants/otherFoods';
 import { AllergenId } from '../../../types';
 import { theme } from '../../../constants/theme';
 import DietModeSection from './DietModeSection';
-import { CardLandscapeProps } from './types';
+import { CardLandscapeProps } from './_types';
 
 const getAllergenInfo = (id: AllergenId) => ALLERGENS.find((a) => a.id === id);
 const getRestrictionInfo = (id: RestrictionItemId) => RESTRICTION_ITEMS.find((r) => r.id === id);

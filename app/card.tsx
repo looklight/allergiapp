@@ -20,7 +20,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import CardPortrait from './components/card/CardPortrait';
 import CardLandscape from './components/card/CardLandscape';
-import { CardColors, CardDisplayMode, DietModeSectionData } from './components/card/types';
+import { CardColors, CardDisplayMode, DietModeSectionData } from './components/card/_types';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
