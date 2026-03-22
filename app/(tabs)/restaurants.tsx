@@ -64,7 +64,7 @@ export default function RestaurantsScreen() {
   const sheetFractionRef = useRef(0.60);
   const getSheetFraction = useCallback(() => sheetFractionRef.current, []);
   const handleSnapChange = useCallback((f: number) => { sheetFractionRef.current = f; }, []);
-  const snapPoints = useMemo(() => [0.18, 0.60, 0.85], []);
+  const snapPoints = useMemo(() => [0.18, 0.50, 0.85], []);
 
   // --- Hooks ---
   const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, getSheetFraction });
@@ -304,22 +304,6 @@ export default function RestaurantsScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Ristoranti</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={() => router.push('/leaderboard')} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="trophy" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/restaurants/profile')} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons
-              name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
-              size={24}
-              color={theme.colors.onPrimary}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
       <View style={styles.mapContainer}>
         <RestaurantMap
           restaurants={mapRestaurants}
@@ -340,6 +324,18 @@ export default function RestaurantsScreen() {
             <Text style={styles.searchAreaText}>{i18n.t('map.searchArea')}</Text>
           </TouchableOpacity>
         )}
+        <View style={[styles.mapOverlayActions, { top: insets.top + 12 }]}>
+          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
+            <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85}>
+            <MaterialCommunityIcons
+              name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
+              size={22}
+              color={theme.colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <DraggableBottomSheet
@@ -388,27 +384,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    zIndex: 10,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   mapContainer: {
     flex: 1,
+  },
+  mapOverlayActions: {
+    position: 'absolute',
+    right: 12,
+    flexDirection: 'column',
+    gap: 10,
+    zIndex: 10,
+  },
+  mapOverlayButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   badgeRow: {
     flexDirection: 'row',
