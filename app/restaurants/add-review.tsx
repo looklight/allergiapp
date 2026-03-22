@@ -268,7 +268,7 @@ export default function AddReviewScreen() {
         <TextInput
           value={comment}
           onChangeText={setComment}
-          placeholder="Racconta la tua esperienza, i piatti provati..."
+          placeholder="Racconta la tua esperienza: Quali piatti hai ordinato? Il personale è stato attento alle tue esigenze alimentari?"
           multiline
           mode="outlined"
           style={styles.textInput}

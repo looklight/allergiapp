@@ -307,6 +307,7 @@ export default function RestaurantDetailScreen() {
                   {idx > 0 && <Divider style={styles.divider} />}
                   <ReviewCard
                     review={item}
+                    userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
                     onImagePress={(url) => {
                       const idx = reviewPhotos.findIndex(p => p.url === url);
                       if (idx >= 0) setGalleryIndex(idx);

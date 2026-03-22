@@ -19,12 +19,13 @@ interface ProfileCardProps {
   profile: UserProfile;
   stats?: ProfileStats;
   onBack: () => void;
+  onEdit?: () => void;
   title?: string;
   headerRight?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, onBack, title = 'Profilo', headerRight, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, onBack, onEdit, title = 'Profilo', headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
 
   const avatarOption = profile.avatar_url ? getAvatarById(profile.avatar_url) : undefined;
@@ -65,6 +66,11 @@ export default function ProfileCard({ profile, stats, onBack, title = 'Profilo',
                 <Text style={styles.memberSince}>Membro da {memberSince}</Text>
               ) : null}
             </View>
+            {onEdit && (
+              <TouchableOpacity onPress={onEdit} hitSlop={8} activeOpacity={0.6}>
+                <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Stats */}

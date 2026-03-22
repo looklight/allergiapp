@@ -92,6 +92,7 @@ export default function ProfileScreen() {
         profile={{ ...userProfile, display_name: userProfile.display_name || user?.displayName || '' }}
         stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: favoriteCount }}
         onBack={() => router.back()}
+        onEdit={() => router.push('/restaurants/edit-profile')}
         headerRight={
           <TouchableOpacity onPress={handleLogout} hitSlop={8} activeOpacity={0.6}>
             <MaterialCommunityIcons name="logout" size={22} color={theme.colors.onPrimary} />
@@ -106,16 +107,6 @@ export default function ProfileScreen() {
         >
           <MaterialCommunityIcons name="emoticon-outline" size={22} color={theme.colors.primary} />
           <Text style={styles.menuItemText}>I miei Avatar</Text>
-          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/restaurants/edit-profile')}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="account-edit-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>Modifica profilo</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 

@@ -19,13 +19,14 @@ const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: strin
 interface ReviewCardProps {
   review: UnifiedReview;
   onImagePress: (imageUrl: string) => void;
+  userNeeds?: string[];
 }
 
 const getInitial = (name: string) => (name.charAt(0) || '?').toUpperCase();
 
 const REVIEW_PHOTO_SIZE = 56;
 
-export default function ReviewCard({ review: item, onImagePress }: ReviewCardProps) {
+export default function ReviewCard({ review: item, onImagePress, userNeeds }: ReviewCardProps) {
   const router = useRouter();
 
   return (
@@ -68,8 +69,12 @@ export default function ReviewCard({ review: item, onImagePress }: ReviewCardPro
             if (!r) return null;
             const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
             const colors = CATEGORY_COLORS[r.category];
+            const isMatch = userNeeds?.includes(id) ?? false;
             return (
               <View key={id} style={[styles.dietaryBadge, { backgroundColor: colors.bg }]}>
+                {isMatch && (
+                  <MaterialCommunityIcons name="check" size={11} color={colors.text} />
+                )}
                 <Text style={[styles.dietaryBadgeText, { color: colors.text }]}>{label}</Text>
               </View>
             );
@@ -143,6 +148,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   dietaryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 3,
