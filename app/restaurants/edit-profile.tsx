@@ -4,7 +4,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Image,
   ScrollView,
   Modal,
   Pressable,
@@ -21,7 +20,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
-import { getAvatarById } from '../../constants/avatars';
 import { PROFILE_COLORS, getProfileColor } from '../../constants/profileColors';
 import DietaryNeedsEditor from '../../components/restaurants/DietaryNeedsEditor';
 import i18n from '../../utils/i18n';
@@ -40,7 +38,6 @@ export default function EditProfileScreen() {
   const { user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
 
   const currentDisplayName = userProfile?.display_name ?? user?.displayName ?? '';
-  const savedAvatarId = userProfile?.avatar_url ?? null;
   const savedColorHex = userProfile?.profile_color ?? null;
 
   const [displayName, setDisplayName] = useState(currentDisplayName);
@@ -56,9 +53,7 @@ export default function EditProfileScreen() {
   // Accordion state
   const [colorOpen, setColorOpen] = useState(false);
 
-  const currentAvatar = savedAvatarId ? getAvatarById(savedAvatarId) : undefined;
   const currentProfileColor = getProfileColor(selectedColorHex ?? undefined);
-  const initial = (displayName.trim() || currentDisplayName).charAt(0).toUpperCase() || '?';
 
   const nameChanged = displayName.trim() !== currentDisplayName;
   const colorChanged = selectedColorHex !== savedColorHex;
@@ -151,21 +146,6 @@ export default function EditProfileScreen() {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
-
-        {/* Profilo: avatar + nome */}
-        <View style={styles.profileSection}>
-          <View style={[styles.avatarRing, { borderColor: currentProfileColor.hex }]}>
-            {currentAvatar?.source ? (
-              <Image source={currentAvatar.source} style={styles.avatarImage} />
-            ) : (
-              <View style={[styles.avatarFallback, { backgroundColor: currentProfileColor.hex }]}>
-                <Text style={styles.avatarText}>{initial}</Text>
-              </View>
-            )}
-          </View>
-          <Text style={styles.displayName}>{currentDisplayName}</Text>
-          <Text style={styles.emailLabel}>{email}</Text>
-        </View>
 
         {/* Colore profilo — menuItem espandibile */}
         <View style={styles.expandableCard}>
@@ -400,46 +380,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-  },
-
-  // Profilo hero
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  avatarRing: {
-    width: 80,
-    height: 80,
-    marginBottom: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-  avatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: theme.colors.onPrimary,
-  },
-  displayName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 2,
-  },
-  emailLabel: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
   },
 
   // Menu item espandibile (stile profile.tsx)

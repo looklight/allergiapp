@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Linking } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -8,23 +8,61 @@ interface MenuPhotosSectionProps {
   menuPhotos: MenuPhoto[];
   currentUserId?: string;
   isUploading: boolean;
+  canUpload: boolean;
+  menuUrl?: string | null;
   onAddPhoto: () => void;
   onDeletePhoto: (photo: MenuPhoto) => void;
   onPhotoPress: (imageUrl: string) => void;
+  onUpdateMenuUrl: () => void;
+  isUpdatingMenuUrl?: boolean;
 }
 
 export default function MenuPhotosSection({
   menuPhotos,
   currentUserId,
   isUploading,
+  canUpload,
+  menuUrl,
   onAddPhoto,
   onDeletePhoto,
   onPhotoPress,
+  onUpdateMenuUrl,
+  isUpdatingMenuUrl,
 }: MenuPhotosSectionProps) {
+  const hasPhotos = menuPhotos.length > 0;
+
   return (
     <Surface style={styles.menuSection} elevation={1}>
-      <Text style={styles.sectionTitle}>Menu {menuPhotos.length > 0 ? `(${menuPhotos.length})` : ''}</Text>
-      {menuPhotos.length > 0 ? (
+      {/* Titolo + azione link */}
+      <View style={styles.titleRow}>
+        <Text style={styles.sectionTitle}>Menu{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
+        {canUpload && (
+          <TouchableOpacity onPress={onUpdateMenuUrl} disabled={isUpdatingMenuUrl} style={styles.linkAction} activeOpacity={0.7}>
+            {isUpdatingMenuUrl ? (
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            ) : (hasPhotos || menuUrl) ? (
+              <MaterialCommunityIcons name="pencil-outline" size={18} color={theme.colors.textSecondary} />
+            ) : (
+              <>
+                <MaterialCommunityIcons name="link-variant" size={15} color={theme.colors.primary} />
+                <Text style={styles.linkActionText}>Aggiungi link</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Link menu — visibile a tutti se presente */}
+      {menuUrl && (
+        <TouchableOpacity onPress={() => Linking.openURL(menuUrl)} style={styles.menuLinkRow} activeOpacity={0.7}>
+          <MaterialCommunityIcons name="link-variant" size={18} color={theme.colors.primary} />
+          <Text style={styles.menuLinkText} numberOfLines={1}>Vedi menu online</Text>
+          <MaterialCommunityIcons name="open-in-new" size={16} color={theme.colors.primary} />
+        </TouchableOpacity>
+      )}
+
+      {/* Foto */}
+      {hasPhotos ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -43,33 +81,46 @@ export default function MenuPhotosSection({
               )}
             </View>
           ))}
-          <TouchableOpacity
-            onPress={onAddPhoto}
-            disabled={isUploading}
-            activeOpacity={0.7}
-            style={styles.menuAddThumb}
-          >
+          {canUpload && (
+            <TouchableOpacity
+              onPress={onAddPhoto}
+              disabled={isUploading}
+              activeOpacity={0.7}
+              style={styles.menuAddThumb}
+            >
+              {isUploading ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="camera-plus-outline" size={24} color={theme.colors.primary} />
+                  <Text style={styles.menuAddText}>Aggiungi</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      ) : !menuUrl && (
+        canUpload ? (
+          <TouchableOpacity onPress={onAddPhoto} disabled={isUploading} activeOpacity={0.7} style={styles.menuEmpty}>
             {isUploading ? (
               <ActivityIndicator size="small" color={theme.colors.primary} />
             ) : (
               <>
-                <MaterialCommunityIcons name="camera-plus-outline" size={24} color={theme.colors.primary} />
-                <Text style={styles.menuAddText}>Aggiungi</Text>
+                <MaterialCommunityIcons name="camera-plus-outline" size={28} color={theme.colors.textSecondary} />
+                <Text style={styles.ctaHint}>Tocca per aggiungere una foto del menu</Text>
               </>
             )}
           </TouchableOpacity>
-        </ScrollView>
-      ) : (
-        <TouchableOpacity onPress={onAddPhoto} disabled={isUploading} activeOpacity={0.7} style={styles.menuEmpty}>
-          {isUploading ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : (
-            <>
-              <MaterialCommunityIcons name="camera-plus-outline" size={28} color={theme.colors.textSecondary} />
-              <Text style={styles.ctaHint}>Tocca per aggiungere una foto del menu</Text>
-            </>
-          )}
-        </TouchableOpacity>
+        ) : (
+          <View style={styles.menuEmpty}>
+            <MaterialCommunityIcons name="image-outline" size={28} color={theme.colors.textDisabled} />
+            <Text style={styles.ctaHint}>
+              {currentUserId
+                ? 'Scrivi una recensione per aggiungere foto o il link del menu'
+                : 'Ancora nessuna foto del menu'}
+            </Text>
+          </View>
+        )
       )}
     </Surface>
   );
@@ -83,11 +134,42 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: theme.colors.surface,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.colors.textPrimary,
+  },
+  linkAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  linkActionText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  menuLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: theme.colors.background,
+    borderRadius: 10,
     marginBottom: 12,
+  },
+  menuLinkText: {
+    flex: 1,
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
   menuScrollOuter: {
     marginHorizontal: -16,

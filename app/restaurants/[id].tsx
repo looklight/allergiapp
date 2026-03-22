@@ -28,10 +28,10 @@ export default function RestaurantDetailScreen() {
   const {
     restaurant, allReviews, menuPhotos,
     reports, cuisineVotes, userReview, userReport, isFavorite,
-    isLoading, error, isUploadingMenu,
+    isLoading, error, isUploadingMenu, userHasReviews, isUpdatingMenuUrl,
     reviewSortOrder, setReviewSortOrder, hasUserNeeds,
     handleToggleFavorite, navigateToContribute,
-    handleAddMenuPhoto, handleDeleteMenuPhoto,
+    handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
   } = useRestaurantDetail(id);
 
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
@@ -200,9 +200,13 @@ export default function RestaurantDetailScreen() {
           menuPhotos={menuPhotos}
           currentUserId={user?.uid}
           isUploading={isUploadingMenu}
+          canUpload={isAuthenticated && userHasReviews}
+          menuUrl={restaurant.menu_url}
           onAddPhoto={handleAddMenuPhoto}
           onDeletePhoto={handleDeleteMenuPhoto}
           onPhotoPress={setFullscreenImage}
+          onUpdateMenuUrl={handleUpdateMenuUrl}
+          isUpdatingMenuUrl={isUpdatingMenuUrl}
         />
 
         {/* Foto degli utenti — carosello orizzontale */}

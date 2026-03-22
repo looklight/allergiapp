@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Text, Button } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import {
   FOOD_RESTRICTIONS,
@@ -59,6 +60,13 @@ export default function DietaryNeedsEditor({ initialNeeds, lang, onSave }: Dieta
 
   return (
     <View style={styles.container}>
+      {hasChanges && (
+        <TouchableOpacity style={styles.unsavedBanner} onPress={handleSave} activeOpacity={0.85}>
+          <MaterialCommunityIcons name="content-save-outline" size={16} color={theme.colors.primary} />
+          <Text style={styles.unsavedBannerText}>Modifiche non salvate</Text>
+          <Text style={styles.unsavedBannerAction}>{saving ? 'Salvataggio...' : 'Salva'}</Text>
+        </TouchableOpacity>
+      )}
       <Text style={styles.sectionTitle}>{i18n.t('profile.diets')}</Text>
       <Text style={styles.sectionHint}>
         {i18n.t('profile.dietaryHint')}
@@ -86,16 +94,18 @@ export default function DietaryNeedsEditor({ initialNeeds, lang, onSave }: Dieta
         keyPrefix="intol"
       />
 
-      <Button
-        mode="contained"
-        onPress={handleSave}
-        loading={saving}
-        disabled={saving || !hasChanges}
-        style={styles.saveButton}
-        labelStyle={styles.saveButtonLabel}
-      >
-        {i18n.t('profile.saveDietary')}
-      </Button>
+      {hasChanges && (
+        <Button
+          mode="contained"
+          onPress={handleSave}
+          loading={saving}
+          disabled={saving}
+          style={styles.saveButton}
+          labelStyle={styles.saveButtonLabel}
+        >
+          {i18n.t('profile.saveDietary')}
+        </Button>
+      )}
     </View>
   );
 }
@@ -103,6 +113,27 @@ export default function DietaryNeedsEditor({ initialNeeds, lang, onSave }: Dieta
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
+  },
+  unsavedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  unsavedBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  unsavedBannerAction: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.primary,
   },
   sectionTitle: {
     fontSize: 16,

@@ -40,6 +40,7 @@ export interface Restaurant {
   google_place_id: string | null;
   is_premium: boolean;
   subscription_status: string;
+  menu_url?: string | null;
   created_at: string;
   updated_at: string;
   // Calcolati (da RPC/join)
@@ -681,6 +682,35 @@ async function removeFavorite(userId: string, restaurantId: string): Promise<voi
   }
 }
 
+// ─── Menu URL ───────────────────────────────────────────────────────────────
+
+async function getUserHasAnyReview(userId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('reviews')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return data !== null;
+}
+
+async function updateMenuUrl(
+  restaurantId: string,
+  menuUrl: string | null,
+): Promise<boolean> {
+  try {
+    const { error } = await supabase.rpc('update_restaurant_menu_url', {
+      p_restaurant_id: restaurantId,
+      p_menu_url: menuUrl,
+    });
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.warn('[RestaurantService] Errore updateMenuUrl:', error);
+    return false;
+  }
+}
+
 // ─── Menu Photos ────────────────────────────────────────────────────────────
 
 async function getMenuPhotos(restaurantId: string): Promise<MenuPhoto[]> {
@@ -993,6 +1023,9 @@ export const RestaurantService = {
   isFavorite,
   toggleFavorite,
   removeFavorite,
+  // Menu URL
+  getUserHasAnyReview,
+  updateMenuUrl,
   // Menu Photos
   getMenuPhotos,
   addMenuPhoto,

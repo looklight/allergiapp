@@ -32,6 +32,8 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [menuPhotos, setMenuPhotos] = useState<MenuPhoto[]>([]);
   const [isUploadingMenu, setIsUploadingMenu] = useState(false);
+  const [userHasReviews, setUserHasReviews] = useState(false);
+  const [isUpdatingMenuUrl, setIsUpdatingMenuUrl] = useState(false);
   const [userReport, setUserReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
@@ -57,10 +59,11 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
             RestaurantService.getUserReview(restaurantId, user.uid),
             RestaurantService.isFavorite(user.uid, restaurantId),
             RestaurantService.getUserReport(restaurantId, user.uid),
+            RestaurantService.getUserHasAnyReview(user.uid),
           ])
-        : Promise.resolve([null, false, null] as const);
+        : Promise.resolve([null, false, null, false] as const);
 
-      const [[rest, rv, mp, rp, cv], [ur, fav, urp]] = await Promise.all([basePromise, userPromise]);
+      const [[rest, rv, mp, rp, cv], [ur, fav, urp, hasReviews]] = await Promise.all([basePromise, userPromise]);
 
       if (loadId !== loadIdRef.current) return;
 
@@ -72,6 +75,7 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
       setUserReview(ur);
       setIsFavorite(fav ?? false);
       setUserReport(urp);
+      setUserHasReviews(hasReviews);
     } catch (e) {
       if (loadId !== loadIdRef.current) return;
       setError(e instanceof Error ? e.message : 'Errore di caricamento');
@@ -197,6 +201,34 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     setIsUploadingMenu(false);
   }, [isAuthenticated, user, restaurantId, router]);
 
+  const handleUpdateMenuUrl = useCallback(() => {
+    if (!isAuthenticated || !user) {
+      router.push('/auth/login');
+      return;
+    }
+    Alert.prompt(
+      restaurant?.menu_url ? 'Modifica link menu' : 'Aggiungi link menu',
+      'Inserisci l\'URL del menu online (lascia vuoto per rimuovere)',
+      async (input?: string) => {
+        if (input === undefined) return;
+        let url = input.trim();
+        if (url && !/^https?:\/\//i.test(url)) {
+          url = 'https://' + url;
+        }
+        setIsUpdatingMenuUrl(true);
+        const ok = await RestaurantService.updateMenuUrl(restaurantId!, url || null);
+        setIsUpdatingMenuUrl(false);
+        if (ok) {
+          setRestaurant(prev => prev ? { ...prev, menu_url: url || null } : prev);
+        } else {
+          Alert.alert('Errore', 'Non è stato possibile aggiornare il link.');
+        }
+      },
+      'plain-text',
+      restaurant?.menu_url ?? '',
+    );
+  }, [isAuthenticated, user, restaurant?.menu_url, restaurantId, router]);
+
   const handleDeleteMenuPhoto = useCallback((photo: MenuPhoto) => {
     if (!user || !restaurantId) return;
     Alert.alert(
@@ -233,9 +265,12 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     reviewSortOrder,
     setReviewSortOrder,
     hasUserNeeds,
+    userHasReviews,
+    isUpdatingMenuUrl,
     handleToggleFavorite,
     navigateToContribute,
     handleAddMenuPhoto,
     handleDeleteMenuPhoto,
+    handleUpdateMenuUrl,
   };
 }
