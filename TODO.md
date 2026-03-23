@@ -67,6 +67,14 @@ P1–P3 completati. Rimanenti:
 - [ ] P4: Reduce Motion per il carousel banner
 - [ ] P4: `accessibilityLiveRegion` per contenuti dinamici
 
+## v1.0.5 — da fare (1.0.4 approvata e pubblicata 2026-03-23)
+- [ ] Incrementare version → `1.0.5`, buildNumber → `8`, versionCode → `8` in `app.config.ts`
+- [ ] `npx eas-cli build --platform ios --profile production`
+- [ ] `npx eas-cli build --platform android --profile production`
+- [ ] Submit iOS: `npx eas-cli submit --platform ios --latest`
+- [ ] Submit Android: scaricare AAB da EAS e caricare su Google Play Console
+- Crashlytics già integrato nel codice (`services/crashlytics.ts`, plugin in `app.config.ts`, consent in `_layout.tsx`)
+
 ## Google Play / Android
 In attesa: closed testing con 12 tester, revisione 14 giorni (inviato ~inizio mar 2026).
 - [x] Fix safe area: padding bottom dinamico con `insets.bottom` su tutte le schermate (Android edge-to-edge)

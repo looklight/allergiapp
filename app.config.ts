@@ -3,7 +3,7 @@ import { ExpoConfig, ConfigContext } from "expo/config";
 export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "AllergiApp",
   slug: "allergiapp",
-  version: "1.0.3",
+  version: "1.0.4",
   orientation: "default",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
@@ -17,7 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
-    buildNumber: "6",
+    buildNumber: "7",
     googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
-    versionCode: 6,
+    versionCode: 7,
     permissions: ["com.google.android.gms.permission.AD_ID"],
     googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json",
   },
@@ -41,6 +41,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-router",
     "@react-native-firebase/app",
+    "@react-native-firebase/crashlytics",
     [
       "expo-tracking-transparency",
       {

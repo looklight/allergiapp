@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
+import { Crashlytics } from '../services/crashlytics';
 import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
 import ConsentModal from './consent';
@@ -78,6 +79,7 @@ function AppContent() {
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
         Analytics.setTrackingConsent(trackingConsent);
+        Crashlytics.setCollectionEnabled(trackingConsent.status === 'authorized');
         Analytics.logAppOpened();
         Analytics.updateUserProperties({
           allergenCount: selectedAllergens.length + selectedOtherFoods.length,

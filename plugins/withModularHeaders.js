@@ -17,7 +17,7 @@ function withModularHeaders(config) {
       if (!podfileContent.includes("pod 'GoogleUtilities', :modular_headers => true")) {
         podfileContent = podfileContent.replace(
           /(use_expo_modules!)/,
-          `$1\n\n  # Fix Firebase modular headers\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'FirebaseInstallations', :modular_headers => true\n  pod 'FirebaseABTesting', :modular_headers => true\n  pod 'FirebaseRemoteConfig', :modular_headers => true\n  pod 'FirebaseSharedSwift', :modular_headers => true\n  pod 'FirebaseRemoteConfigInterop', :modular_headers => true`
+          `$1\n\n  # Fix Firebase modular headers\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'FirebaseInstallations', :modular_headers => true\n  pod 'FirebaseABTesting', :modular_headers => true\n  pod 'FirebaseRemoteConfig', :modular_headers => true\n  pod 'FirebaseSharedSwift', :modular_headers => true\n  pod 'FirebaseRemoteConfigInterop', :modular_headers => true\n  pod 'FirebaseCrashlytics', :modular_headers => true\n  pod 'FirebaseSessions', :modular_headers => true`
         );
       }
 
