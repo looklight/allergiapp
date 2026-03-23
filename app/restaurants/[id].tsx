@@ -36,12 +36,14 @@ function PhotoGrid({
   const moreCount = photos.length - MAX_VISIBLE_PHOTOS;
   const visible = photos.slice(0, MAX_VISIBLE_PHOTOS);
 
+  const placeholder = { backgroundColor: theme.colors.background };
+
   if (photos.length === 1) {
     return (
       <TouchableOpacity onPress={() => onPress(0)} activeOpacity={0.85}>
         <Image
           source={{ uri: photos[0].url }}
-          style={{ width: containerWidth, height: 220, borderRadius: 10 }}
+          style={{ width: containerWidth, height: 220, borderRadius: 10, ...placeholder }}
           resizeMode="cover"
         />
       </TouchableOpacity>
@@ -55,8 +57,8 @@ function PhotoGrid({
         {photos.map((photo, idx) => (
           <TouchableOpacity key={idx} onPress={() => onPress(idx)} activeOpacity={0.85}>
             <Image
-              source={{ uri: photo.thumbnailUrl }}
-              style={{ width: w, height: 190, borderRadius: 10 }}
+              source={{ uri: photo.url }}
+              style={{ width: w, height: 190, borderRadius: 10, ...placeholder }}
               resizeMode="cover"
             />
           </TouchableOpacity>
@@ -84,7 +86,7 @@ function PhotoGrid({
         <TouchableOpacity onPress={() => onPress(0)} activeOpacity={0.85}>
           <Image
             source={{ uri: photos[0].url }}
-            style={{ width: heroW, height: heroH, borderRadius: 10 }}
+            style={{ width: heroW, height: heroH, borderRadius: 10, ...placeholder }}
             resizeMode="cover"
           />
         </TouchableOpacity>
@@ -93,7 +95,7 @@ function PhotoGrid({
             <TouchableOpacity key={i + 1} onPress={() => onPress(i + 1)} activeOpacity={0.85}>
               <Image
                 source={{ uri: photo.thumbnailUrl }}
-                style={{ width: smallW, height: smallH, borderRadius: 10 }}
+                style={{ width: smallW, height: smallH, borderRadius: 10, ...placeholder }}
                 resizeMode="cover"
               />
             </TouchableOpacity>
@@ -111,7 +113,7 @@ function PhotoGrid({
               <TouchableOpacity key={idx} onPress={() => onPress(idx)} activeOpacity={0.85}>
                 <Image
                   source={{ uri: photo.thumbnailUrl }}
-                  style={{ width: colW, height: 104, borderRadius: 10 }}
+                  style={{ width: colW, height: 104, borderRadius: 10, ...placeholder }}
                   resizeMode="cover"
                 />
                 {isLast && (
