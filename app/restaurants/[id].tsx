@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, useWindowDimensions } from 'react-native';
-import { Text, Surface, Button, Divider } from 'react-native-paper';
+import { Text, Button, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import RestaurantHeader from '../../components/restaurants/RestaurantHeader';
 import MenuPhotosSection from '../../components/restaurants/MenuPhotosSection';
 import ReviewCard from '../../components/restaurants/ReviewCard';
 import PhotoGalleryModal from '../../components/restaurants/PhotoGalleryModal';
+import LoginGateCta from '../../components/restaurants/LoginGateCta';
 import { useRestaurantDetail, type ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
@@ -317,7 +318,7 @@ export default function RestaurantDetailScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
 
         {/* Info principali */}
         <RestaurantHeader
@@ -329,7 +330,9 @@ export default function RestaurantDetailScreen() {
           isAuthenticated={isAuthenticated}
         />
 
-        {/* Foto Menu */}
+        <View style={styles.separator} />
+
+        {/* Menu */}
         {isAuthenticated ? (
           <MenuPhotosSection
             menuPhotos={menuPhotos}
@@ -344,79 +347,79 @@ export default function RestaurantDetailScreen() {
             isUpdatingMenuUrl={isUpdatingMenuUrl}
           />
         ) : (
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/auth/login')}>
-            <Surface style={styles.loginCtaCard} elevation={1}>
-              <MaterialCommunityIcons name="lock-outline" size={24} color={theme.colors.primary} />
-              <Text style={styles.loginCtaTitle}>Accedi per vedere il menu</Text>
-              <Text style={styles.loginCtaSubtitle}>
-                Foto del menu e link aggiunto dalla community
-              </Text>
-            </Surface>
-          </TouchableOpacity>
+          <LoginGateCta
+            title="Accedi per vedere il menu"
+            subtitle="Foto del menu e link aggiunto dalla community"
+          />
         )}
 
         {/* Foto degli utenti — griglia stile Google Maps */}
         {isAuthenticated && reviewPhotos.length > 0 && (
-          <Surface style={styles.section} elevation={1}>
-            <View style={styles.photosSectionHeader}>
-              <Text style={styles.sectionTitle}>Foto ({reviewPhotos.length})</Text>
-              {reviewPhotos.length > 1 && (
-                <TouchableOpacity onPress={() => setGalleryIndex(0)} hitSlop={8} activeOpacity={0.7}>
-                  <Text style={styles.viewAllText}>Vedi tutte</Text>
-                </TouchableOpacity>
-              )}
+          <>
+            <View style={styles.separator} />
+            <View style={styles.section}>
+              <View style={styles.photosSectionHeader}>
+                <Text style={styles.sectionTitle}>Foto ({reviewPhotos.length})</Text>
+                {reviewPhotos.length > 1 && (
+                  <TouchableOpacity onPress={() => setGalleryIndex(0)} hitSlop={8} activeOpacity={0.7}>
+                    <Text style={styles.viewAllText}>Vedi tutte</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <PhotoGrid
+                photos={reviewPhotos}
+                containerWidth={screenWidth - 32}
+                onPress={setGalleryIndex}
+              />
             </View>
-            <PhotoGrid
-              photos={reviewPhotos}
-              containerWidth={screenWidth - 56}
-              onPress={setGalleryIndex}
-            />
-          </Surface>
+          </>
         )}
 
         {/* CTA — Contributo utente o valuta con stelle */}
-        {isAuthenticated ? (
-          userReview ? (
-            <Surface style={styles.ctaCard} elevation={1}>
-              <View style={styles.ctaTopRow}>
-                <Text style={styles.ctaTitle}>La tua recensione</Text>
-                <TouchableOpacity
-                  onPress={() => navigateToContribute(undefined, userReview.id)}
-                  hitSlop={8}
-                  activeOpacity={0.6}
-                >
-                  <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
-                </TouchableOpacity>
+        {isAuthenticated && (
+          <>
+            <View style={styles.separator} />
+            {userReview ? (
+              <View style={styles.ctaSection}>
+                <View style={styles.ctaTopRow}>
+                  <Text style={styles.ctaTitle}>La tua recensione</Text>
+                  <TouchableOpacity
+                    onPress={() => navigateToContribute(undefined, userReview.id)}
+                    hitSlop={8}
+                    activeOpacity={0.6}
+                  >
+                    <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
+                  </TouchableOpacity>
+                </View>
+                {userReview.rating != null && userReview.rating > 0 && (
+                  <StarRating rating={userReview.rating} size={24} />
+                )}
+                {userReview.comment && (
+                  <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
+                )}
+                {(userReview.photos?.length ?? 0) > 0 && (
+                  <Text style={styles.ctaHint}>{userReview.photos.length} foto</Text>
+                )}
               </View>
-              {userReview.rating != null && userReview.rating > 0 && (
-                <StarRating rating={userReview.rating} size={24} />
-              )}
-              {userReview.comment && (
-                <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
-              )}
-              {(userReview.photos?.length ?? 0) > 0 && (
-                <Text style={styles.ctaHint}>
-                  {userReview.photos.length} foto
-                </Text>
-              )}
-            </Surface>
-          ) : (
-            <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
-              <Surface style={styles.ctaCard} elevation={1}>
-                <Text style={styles.ctaTitle}>Sei stato qui?</Text>
-                <StarRating rating={0} size={36} onRate={(r) => navigateToContribute(r)} />
-                <Text style={styles.ctaHint}>Tocca per valutare e lasciare una recensione</Text>
-              </Surface>
-            </TouchableOpacity>
-          )
-        ) : null}
+            ) : (
+              <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
+                <View style={styles.ctaSection}>
+                  <Text style={styles.ctaTitle}>Sei stato qui?</Text>
+                  <StarRating rating={0} size={36} onRate={(r) => navigateToContribute(r)} />
+                  <Text style={styles.ctaHint}>Tocca per valutare e lasciare una recensione</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
 
-        {/* Esperienze della community */}
+        <View style={styles.separator} />
+
+        {/* Recensioni */}
         {isAuthenticated ? (
-          allReviews.length > 0 && (
-            <Surface style={styles.section} elevation={1}>
+          allReviews.length > 0 ? (
+            <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recensioni ({allReviews.length})</Text>
-              {/* Chip ordinamento review */}
               {allReviews.length > 1 && (
                 <View style={styles.reviewSortRow}>
                   {([
@@ -464,60 +467,65 @@ export default function RestaurantDetailScreen() {
                   />
                 </View>
               ))}
-            </Surface>
+            </View>
+          ) : (
+            <View style={styles.emptySection}>
+              <MaterialCommunityIcons name="comment-text-outline" size={36} color={theme.colors.textDisabled} />
+              <Text style={styles.emptySectionTitle}>Ancora nessuna recensione</Text>
+              <Text style={styles.emptySectionText}>Sii il primo a condividere la tua esperienza</Text>
+            </View>
           )
         ) : (
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/auth/login')}>
-            <Surface style={styles.loginCtaCard} elevation={1}>
-              <MaterialCommunityIcons name="lock-outline" size={24} color={theme.colors.primary} />
-              <Text style={styles.loginCtaTitle}>Accedi per vedere le recensioni</Text>
-              <Text style={styles.loginCtaSubtitle}>
-                Leggi le esperienze della community e lascia la tua valutazione
-              </Text>
-            </Surface>
-          </TouchableOpacity>
+          <LoginGateCta
+            title="Accedi per vedere le recensioni"
+            subtitle="Leggi le esperienze della community e lascia la tua valutazione"
+          />
         )}
 
         {/* Segnalazioni della community */}
         {reports.length > 0 && (
-          <Surface style={styles.section} elevation={1}>
-            <View style={styles.reportSectionHeader}>
-              <MaterialCommunityIcons name="flag-outline" size={18} color={theme.colors.amberDark} />
-              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Segnalazioni ({reports.length})</Text>
-            </View>
-
-            {reports.map((report, idx) => {
-              const reasonInfo = REPORT_REASON_MAP[report.reason as keyof typeof REPORT_REASON_MAP] ?? REPORT_REASON_MAP.other;
-              return (
-                <View key={report.id}>
-                  {idx > 0 && <Divider style={styles.divider} />}
-                  <View style={styles.reportRow}>
-                    <View style={styles.reportTop}>
-                      <View style={styles.reportAvatar}>
-                        <MaterialCommunityIcons name="account-outline" size={16} color={theme.colors.textSecondary} />
+          <>
+            <View style={styles.separator} />
+            <View style={styles.section}>
+              <View style={styles.reportSectionHeader}>
+                <MaterialCommunityIcons name="flag-outline" size={18} color={theme.colors.amberDark} />
+                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Segnalazioni ({reports.length})</Text>
+              </View>
+              {reports.map((report, idx) => {
+                const reasonInfo = REPORT_REASON_MAP[report.reason as keyof typeof REPORT_REASON_MAP] ?? REPORT_REASON_MAP.other;
+                return (
+                  <View key={report.id}>
+                    {idx > 0 && <Divider style={styles.divider} />}
+                    <View style={styles.reportRow}>
+                      <View style={styles.reportTop}>
+                        <View style={styles.reportAvatar}>
+                          <MaterialCommunityIcons name="account-outline" size={16} color={theme.colors.textSecondary} />
+                        </View>
+                        <View style={styles.contributionMeta}>
+                          <Text style={styles.contributionAuthor}>Utente</Text>
+                          <Text style={styles.contributionDate}>
+                            {new Date(report.created_at).toLocaleDateString(i18n.locale, {
+                              day: 'numeric', month: 'short', year: 'numeric',
+                            })}
+                          </Text>
+                        </View>
+                        <View style={styles.reportReasonBadge}>
+                          <Text style={styles.reportReasonBadgeText}>{reasonInfo.icon} {reasonInfo.label}</Text>
+                        </View>
                       </View>
-                      <View style={styles.contributionMeta}>
-                        <Text style={styles.contributionAuthor}>Utente</Text>
-                        <Text style={styles.contributionDate}>
-                          {new Date(report.created_at).toLocaleDateString(i18n.locale, {
-                            day: 'numeric', month: 'short', year: 'numeric',
-                          })}
-                        </Text>
-                      </View>
-                      <View style={styles.reportReasonBadge}>
-                        <Text style={styles.reportReasonBadgeText}>{reasonInfo.icon} {reasonInfo.label}</Text>
-                      </View>
+                      <Text style={styles.contributionText}>{report.details}</Text>
                     </View>
-                    <Text style={styles.contributionText}>{report.details}</Text>
                   </View>
-                </View>
-              );
-            })}
-          </Surface>
+                );
+              })}
+            </View>
+          </>
         )}
 
+        <View style={styles.separator} />
+
         {/* Footer: aggiunto da + azioni */}
-        <Surface style={styles.footerSection} elevation={1}>
+        <View style={styles.footerSection}>
           {restaurant.added_by && (
             <TouchableOpacity
               style={styles.footerRow}
@@ -580,7 +588,7 @@ export default function RestaurantDetailScreen() {
               </TouchableOpacity>
             </>
           )}
-        </Surface>
+        </View>
 
       </ScrollView>
 
@@ -627,7 +635,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   centered: {
     flex: 1,
@@ -639,13 +647,13 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginBottom: 16,
   },
-  content: {
-    padding: 12,
-    gap: 12,
+  separator: {
+    height: 8,
+    backgroundColor: theme.colors.background,
   },
   section: {
-    padding: 16,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     backgroundColor: theme.colors.surface,
   },
   sectionTitle: {
@@ -654,32 +662,18 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     marginBottom: 12,
   },
-  // CTA login per utenti non autenticati
-  loginCtaCard: {
-    alignItems: 'center',
-    padding: 24,
-    borderRadius: 14,
+  ctaSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
     backgroundColor: theme.colors.surface,
-    gap: 8,
-  },
-  loginCtaTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  loginCtaSubtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  // CTA stelle
-  ctaCard: {
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surface,
     gap: 10,
+  },
+  ctaTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   ctaTitle: {
     fontSize: 16,
@@ -696,11 +690,22 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
   },
-  ctaTopRow: {
-    flexDirection: 'row',
+  emptySection: {
+    paddingHorizontal: 16,
+    paddingVertical: 28,
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
+    gap: 8,
+  },
+  emptySectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  emptySectionText: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   divider: {
     marginVertical: 14,
@@ -756,10 +761,7 @@ const styles = StyleSheet.create({
     color: theme.colors.amberText,
   },
   footerSection: {
-    padding: 0,
-    borderRadius: 14,
     backgroundColor: theme.colors.surface,
-    overflow: 'hidden',
   },
   footerRow: {
     flexDirection: 'row',

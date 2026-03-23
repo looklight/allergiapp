@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
@@ -34,7 +34,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   const router = useRouter();
 
   return (
-    <Surface style={styles.section} elevation={1}>
+    <View style={styles.section}>
       <View style={styles.sectionTopRow}>
         <Text style={[styles.restaurantName, { flex: 1 }]}>{restaurant.name}</Text>
         {(restaurant.google_place_id || restaurant.address) && (
@@ -169,14 +169,14 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
           )}
         </View>
       )}
-    </Surface>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: {
-    padding: 16,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     backgroundColor: theme.colors.surface,
   },
   sectionTopRow: {

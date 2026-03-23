@@ -1,5 +1,5 @@
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Linking } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import type { MenuPhoto } from '../../services/restaurantService';
@@ -32,7 +32,7 @@ export default function MenuPhotosSection({
   const hasPhotos = menuPhotos.length > 0;
 
   return (
-    <Surface style={styles.menuSection} elevation={1}>
+    <View style={styles.menuSection}>
       {/* Titolo + azione link */}
       <View style={styles.titleRow}>
         <Text style={styles.sectionTitle}>Menu{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
@@ -122,16 +122,14 @@ export default function MenuPhotosSection({
           </View>
         )
       )}
-    </Surface>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   menuSection: {
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    borderRadius: 14,
     backgroundColor: theme.colors.surface,
   },
   titleRow: {
