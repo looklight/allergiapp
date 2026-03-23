@@ -12,8 +12,8 @@ const BUCKET = 'images';
 // Presets compressione immagini: { maxWidth, quality }
 const IMAGE_PRESETS = {
   thumbnail: { width: 150, quality: 0.5 },
-  review:    { width: 800, quality: 0.7 },
-  menu:      { width: 1200, quality: 0.8 },
+  review:    { width: 600, quality: 0.7 },
+  menu:      { width: 1000, quality: 0.8 },
 } as const;
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -51,7 +51,7 @@ async function compressImage(
   const manipulated = await ImageManipulator.manipulateAsync(
     uri,
     actions,
-    { compress: quality, format: ImageManipulator.SaveFormat.JPEG },
+    { compress: quality, format: ImageManipulator.SaveFormat.WEBP },
   );
   return manipulated.uri;
 }
@@ -75,7 +75,7 @@ async function uploadSingle(localUri: string, storagePath: string): Promise<stri
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(storagePath, buffer, {
-      contentType: 'image/jpeg',
+      contentType: 'image/webp',
       upsert: true,
     });
   if (error) throw error;
@@ -111,7 +111,7 @@ async function uploadReviewPhoto(
 ): Promise<UploadResult> {
   const userId = await getCurrentUserId();
   const base = `${userId}/reviews/${restaurantId}/${reviewId}_${index}`;
-  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, IMAGE_PRESETS.review.width, IMAGE_PRESETS.review.quality, 'square');
+  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.review.width, IMAGE_PRESETS.review.quality, 'square');
 }
 
 async function uploadMenuPhoto(
@@ -121,7 +121,7 @@ async function uploadMenuPhoto(
 ): Promise<UploadResult> {
   const userId = await getCurrentUserId();
   const base = `${userId}/menus/${restaurantId}/${photoId}`;
-  return uploadWithThumbnail(localUri, `${base}.jpg`, `${base}_thumb.jpg`, IMAGE_PRESETS.menu.width, IMAGE_PRESETS.menu.quality);
+  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.menu.width, IMAGE_PRESETS.menu.quality);
 }
 
 async function deleteByUrl(url: string): Promise<void> {
