@@ -18,6 +18,139 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
 import i18n from '../../utils/i18n';
 
+const PHOTO_GAP = 3;
+const MAX_VISIBLE_PHOTOS = 6;
+
+function PhotoGrid({
+  photos,
+  containerWidth,
+  onPress,
+}: {
+  photos: { url: string; thumbnailUrl: string }[];
+  containerWidth: number;
+  onPress: (idx: number) => void;
+}) {
+  if (photos.length === 0) return null;
+
+  const hasMore = photos.length > MAX_VISIBLE_PHOTOS;
+  const moreCount = photos.length - MAX_VISIBLE_PHOTOS;
+  const visible = photos.slice(0, MAX_VISIBLE_PHOTOS);
+
+  if (photos.length === 1) {
+    return (
+      <TouchableOpacity onPress={() => onPress(0)} activeOpacity={0.85}>
+        <Image
+          source={{ uri: photos[0].url }}
+          style={{ width: containerWidth, height: 220, borderRadius: 10 }}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+    );
+  }
+
+  if (photos.length === 2) {
+    const w = (containerWidth - PHOTO_GAP) / 2;
+    return (
+      <View style={{ flexDirection: 'row', gap: PHOTO_GAP }}>
+        {photos.map((photo, idx) => (
+          <TouchableOpacity key={idx} onPress={() => onPress(idx)} activeOpacity={0.85}>
+            <Image
+              source={{ uri: photo.thumbnailUrl }}
+              style={{ width: w, height: 190, borderRadius: 10 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  }
+
+  // 3+ photos: hero left + 2 stacked right, optional second row
+  const heroW = Math.floor(containerWidth * 0.62);
+  const smallW = containerWidth - heroW - PHOTO_GAP;
+  const heroH = 200;
+  const smallH = Math.floor((heroH - PHOTO_GAP) / 2);
+
+  const secondRow = visible.slice(3);
+  const colCount = secondRow.length;
+  const colW = colCount > 0
+    ? Math.floor((containerWidth - PHOTO_GAP * (colCount - 1)) / colCount)
+    : 0;
+
+  return (
+    <View style={{ gap: PHOTO_GAP }}>
+      {/* Row 1: hero + 2 stacked */}
+      <View style={{ flexDirection: 'row', gap: PHOTO_GAP }}>
+        <TouchableOpacity onPress={() => onPress(0)} activeOpacity={0.85}>
+          <Image
+            source={{ uri: photos[0].url }}
+            style={{ width: heroW, height: heroH, borderRadius: 10 }}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
+        <View style={{ gap: PHOTO_GAP }}>
+          {visible.slice(1, 3).map((photo, i) => (
+            <TouchableOpacity key={i + 1} onPress={() => onPress(i + 1)} activeOpacity={0.85}>
+              <Image
+                source={{ uri: photo.thumbnailUrl }}
+                style={{ width: smallW, height: smallH, borderRadius: 10 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Row 2: up to 3 photos, last has "+X" overlay if more exist */}
+      {secondRow.length > 0 && (
+        <View style={{ flexDirection: 'row', gap: PHOTO_GAP }}>
+          {secondRow.map((photo, i) => {
+            const idx = i + 3;
+            const isLast = i === secondRow.length - 1 && hasMore;
+            return (
+              <TouchableOpacity key={idx} onPress={() => onPress(idx)} activeOpacity={0.85}>
+                <Image
+                  source={{ uri: photo.thumbnailUrl }}
+                  style={{ width: colW, height: 104, borderRadius: 10 }}
+                  resizeMode="cover"
+                />
+                {isLast && (
+                  <View style={photoGridStyles.moreOverlay}>
+                    <Text style={photoGridStyles.moreCount}>+{moreCount}</Text>
+                    <Text style={photoGridStyles.moreLabel}>foto</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const photoGridStyles = StyleSheet.create({
+  moreOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.52)',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moreCount: {
+    color: '#fff',
+    fontSize: 26,
+    fontWeight: '700',
+    lineHeight: 30,
+  },
+  moreLabel: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+});
+
 export default function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -70,8 +203,6 @@ export default function RestaurantDetailScreen() {
     const uncovered = userAll.filter(a => !coveredSet.has(a));
     return { reviewCount, coveredCount: coveredSet.size, totalFilters: userAll.length, covered, uncovered };
   }, [allReviews, dietaryNeeds, hasUserNeeds]);
-
-  const userPhotoSize = 88;
 
   const canRemove = restaurant
     && user?.uid === restaurant.added_by
@@ -222,24 +353,22 @@ export default function RestaurantDetailScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Foto degli utenti — carosello orizzontale */}
+        {/* Foto degli utenti — griglia stile Google Maps */}
         {isAuthenticated && reviewPhotos.length > 0 && (
           <Surface style={styles.section} elevation={1}>
-            <Text style={styles.sectionTitle}>Foto degli utenti ({reviewPhotos.length})</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.userPhotosScroll}
-            >
-              {reviewPhotos.map((photo, idx) => (
-                <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => setGalleryIndex(idx)}>
-                  <Image
-                    source={{ uri: photo.thumbnailUrl }}
-                    style={[styles.userPhoto, { width: userPhotoSize, height: userPhotoSize }]}
-                  />
+            <View style={styles.photosSectionHeader}>
+              <Text style={styles.sectionTitle}>Foto ({reviewPhotos.length})</Text>
+              {reviewPhotos.length > 1 && (
+                <TouchableOpacity onPress={() => setGalleryIndex(0)} hitSlop={8} activeOpacity={0.7}>
+                  <Text style={styles.viewAllText}>Vedi tutte</Text>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              )}
+            </View>
+            <PhotoGrid
+              photos={reviewPhotos}
+              containerWidth={screenWidth - 56}
+              onPress={setGalleryIndex}
+            />
           </Surface>
         )}
 
@@ -642,11 +771,16 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     flex: 1,
   },
-  userPhotosScroll: {
-    gap: 8,
+  photosSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  userPhoto: {
-    borderRadius: 10,
+  viewAllText: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
   reviewSortRow: {
     flexDirection: 'row',
