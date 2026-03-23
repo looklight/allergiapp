@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Text, Surface, Button } from 'react-native-paper';
+import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,9 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import { RestaurantService } from '../../services/restaurantService';
 import type { Review } from '../../services/restaurantService';
-import StarRating from '../../components/StarRating';
 import ProfileCard from '../../components/ProfileCard';
-import i18n from '../../utils/i18n';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -120,48 +118,15 @@ export default function ProfileScreen() {
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
-        {/* Recensioni */}
-        {reviews.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Le mie recensioni</Text>
-            {reviews.map((c) => {
-              const restaurantName = c.restaurant_name ?? 'Ristorante';
-              const date = new Date(c.created_at).toLocaleDateString(i18n.locale, {
-                day: 'numeric', month: 'short', year: 'numeric',
-              });
-              return (
-                <Surface key={c.id} style={styles.reviewCard} elevation={1}>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
-                  >
-                    <View style={styles.reviewHeader}>
-                      <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
-                      <Text style={styles.reviewRestaurant} numberOfLines={1}>
-                        {restaurantName}
-                      </Text>
-                      <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textSecondary} />
-                    </View>
-                    {c.rating != null && c.rating > 0 && (
-                      <View style={styles.reviewRating}>
-                        <StarRating rating={c.rating} size={14} />
-                      </View>
-                    )}
-                    {c.comment ? (
-                      <Text style={styles.reviewText} numberOfLines={3}>{c.comment}</Text>
-                    ) : null}
-                    {(c.photos?.length ?? 0) > 0 && (
-                      <Text style={styles.reviewDishes}>
-                        {c.photos.length} foto
-                      </Text>
-                    )}
-                    <Text style={styles.reviewDate}>{date}</Text>
-                  </TouchableOpacity>
-                </Surface>
-              );
-            })}
-          </>
-        )}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/restaurants/my-reviews')}
+          activeOpacity={0.6}
+        >
+          <MaterialCommunityIcons name="comment-text-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.menuItemText}>Le mie recensioni</Text>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
 
       </ProfileCard>
     </>
@@ -226,46 +191,5 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.colors.textPrimary,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginTop: 4,
-  },
-  reviewCard: {
-    borderRadius: 14,
-    backgroundColor: theme.colors.surface,
-    padding: 16,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  reviewRestaurant: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    flex: 1,
-  },
-  reviewRating: {
-    marginTop: 8,
-  },
-  reviewText: {
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    lineHeight: 20,
-    marginTop: 8,
-  },
-  reviewDishes: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginTop: 4,
   },
 });
