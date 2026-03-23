@@ -24,9 +24,10 @@ interface RestaurantHeaderProps {
   cuisineVotes: CuisineVote[];
   matchInfo?: MatchInfo;
   hasUserNeeds?: boolean;
+  isAuthenticated?: boolean;
 }
 
-export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds }: RestaurantHeaderProps) {
+export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, isAuthenticated }: RestaurantHeaderProps) {
   const [compatExpanded, setCompatExpanded] = useState(false);
   const [showCuisineHint, setShowCuisineHint] = useState(false);
   const isFull = matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
@@ -106,7 +107,21 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
         </View>
       )}
 
-      {hasUserNeeds && matchInfo && matchInfo.reviewCount > 0 && (
+      {!isAuthenticated && (restaurant.review_count ?? 0) > 0 && (
+        <TouchableOpacity
+          onPress={() => router.push('/auth/login')}
+          activeOpacity={0.7}
+          style={[styles.compatContainer, styles.compatRow]}
+        >
+          <MaterialCommunityIcons name="shield-check-outline" size={15} color={theme.colors.textSecondary} />
+          <Text style={[styles.compatText, { color: theme.colors.textSecondary, fontWeight: '400' }]}>
+            Accedi per vedere la compatibilità con le tue esigenze
+          </Text>
+          <MaterialCommunityIcons name="lock-outline" size={15} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      )}
+
+      {isAuthenticated && hasUserNeeds && matchInfo && matchInfo.reviewCount > 0 && (
         <View style={styles.compatContainer}>
           <TouchableOpacity
             onPress={() => setCompatExpanded(prev => !prev)}

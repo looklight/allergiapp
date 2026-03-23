@@ -193,24 +193,37 @@ export default function RestaurantDetailScreen() {
           cuisineVotes={cuisineVotes}
           matchInfo={matchInfo}
           hasUserNeeds={hasUserNeeds}
+          isAuthenticated={isAuthenticated}
         />
 
         {/* Foto Menu */}
-        <MenuPhotosSection
-          menuPhotos={menuPhotos}
-          currentUserId={user?.uid}
-          isUploading={isUploadingMenu}
-          canUpload={isAuthenticated && userHasReviews}
-          menuUrl={restaurant.menu_url}
-          onAddPhoto={handleAddMenuPhoto}
-          onDeletePhoto={handleDeleteMenuPhoto}
-          onPhotoPress={setFullscreenImage}
-          onUpdateMenuUrl={handleUpdateMenuUrl}
-          isUpdatingMenuUrl={isUpdatingMenuUrl}
-        />
+        {isAuthenticated ? (
+          <MenuPhotosSection
+            menuPhotos={menuPhotos}
+            currentUserId={user?.uid}
+            isUploading={isUploadingMenu}
+            canUpload={userHasReviews}
+            menuUrl={restaurant.menu_url}
+            onAddPhoto={handleAddMenuPhoto}
+            onDeletePhoto={handleDeleteMenuPhoto}
+            onPhotoPress={setFullscreenImage}
+            onUpdateMenuUrl={handleUpdateMenuUrl}
+            isUpdatingMenuUrl={isUpdatingMenuUrl}
+          />
+        ) : (
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/auth/login')}>
+            <Surface style={styles.loginCtaCard} elevation={1}>
+              <MaterialCommunityIcons name="lock-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.loginCtaTitle}>Accedi per vedere il menu</Text>
+              <Text style={styles.loginCtaSubtitle}>
+                Foto del menu e link aggiunto dalla community
+              </Text>
+            </Surface>
+          </TouchableOpacity>
+        )}
 
         {/* Foto degli utenti — carosello orizzontale */}
-        {reviewPhotos.length > 0 && (
+        {isAuthenticated && reviewPhotos.length > 0 && (
           <Surface style={styles.section} elevation={1}>
             <Text style={styles.sectionTitle}>Foto degli utenti ({reviewPhotos.length})</Text>
             <ScrollView
