@@ -90,8 +90,7 @@
     "downloadSection": {
       "title": "Scarica AllergiApp",
       "subtitle": "Disponibile gratuitamente su App Store e Google Play",
-      "backToTop": "Torna su",
-      "comingSoon": "In arrivo su"
+      "backToTop": "Torna su"
     },
     "footer": {
       "tagline": "Viaggia sicuro, comunica ovunque.",
@@ -367,8 +366,7 @@
     "downloadSection": {
       "title": "Download AllergiApp",
       "subtitle": "Available for free on App Store and Google Play",
-      "backToTop": "Back to top",
-      "comingSoon": "Coming soon on"
+      "backToTop": "Back to top"
     },
     "footer": {
       "tagline": "Travel safe, communicate anywhere.",
