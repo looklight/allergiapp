@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -62,10 +62,10 @@ export default function ProfileScreen() {
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.centered}>
-          <MaterialCommunityIcons
-            name="account-circle-outline"
-            size={80}
-            color={theme.colors.textDisabled}
+          <Image
+            source={require('../../assets/happy_plate_language.png')}
+            style={styles.guestImage}
+            resizeMode="contain"
           />
           <Text style={styles.guestTitle}>Non hai effettuato l'accesso</Text>
           <Text style={styles.guestSubtitle}>
@@ -161,26 +161,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingHorizontal: 32,
+  },
+  guestImage: {
+    width: 150,
+    height: 150,
+    marginBottom: 32,
   },
   guestTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textPrimary,
-    marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 12,
     textAlign: 'center',
   },
   guestSubtitle: {
     fontSize: 14,
     color: theme.colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
+    lineHeight: 22,
+    marginBottom: 32,
   },
   loginButton: {
     borderRadius: 10,
-    paddingHorizontal: 24,
+    alignSelf: 'stretch',
   },
   loginButtonLabel: {
     fontSize: 16,

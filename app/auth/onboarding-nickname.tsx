@@ -31,7 +31,6 @@ export default function OnboardingNicknameScreen() {
         await AuthService.updateAnonymous(user.uid, true);
       }
       await refreshProfile();
-      // replace mantiene lo stack a 2 (signup + dietary) → dismiss(2) in dietary funziona invariato
       router.replace('/auth/onboarding-dietary');
     } catch {
       Alert.alert('Errore', 'Impossibile salvare. Riprova.');

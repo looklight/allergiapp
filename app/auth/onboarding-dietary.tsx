@@ -52,8 +52,9 @@ export default function OnboardingDietaryScreen() {
     setSaving(true);
     try {
       await AuthService.updateDietaryNeeds(user.uid, { allergens, diets });
+      await AuthService.completeOnboarding(user.uid);
       await refreshProfile();
-      router.dismiss(2); // Chiude onboarding + signup
+      router.replace('/auth/onboarding-tutorial');
     } catch {
       Alert.alert('Errore', 'Impossibile salvare. Riprova.');
     } finally {
@@ -70,7 +71,9 @@ export default function OnboardingDietaryScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity onPress={() => router.replace('/auth/onboarding-nickname')} hitSlop={8} activeOpacity={0.6}>
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Le tue esigenze</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -81,13 +84,9 @@ export default function OnboardingDietaryScreen() {
       >
         <View style={styles.introSection}>
           <MaterialCommunityIcons name="shield-check-outline" size={40} color={theme.colors.primary} />
-          <Text style={styles.introTitle}>Aiutaci a personalizzare la tua esperienza</Text>
+          <Text style={styles.introTitle}>Trova le soluzioni giuste per te</Text>
           <Text style={styles.introText}>
-            Seleziona le tue allergie e diete. Verranno associate automaticamente alle tue recensioni,
-            così altri utenti con le stesse esigenze potranno trovare i ristoranti giusti.
-          </Text>
-          <Text style={styles.introNote}>
-            Potrai modificarle in qualsiasi momento dal tuo profilo.
+            Indica le tue allergie e preferenze alimentari e trova subito i ristoranti più adatti a te.
           </Text>
         </View>
 
@@ -116,10 +115,7 @@ export default function OnboardingDietaryScreen() {
         />
 
         <Text style={styles.gdprNote}>
-          Usate per mostrarti i ristoranti più adatti a te, mai associate alla tua identità.
-          Modificabili in qualsiasi momento dal profilo.{' '}
-          {/* TODO: sostituire con link reale prima del lancio */}
-          <Text style={styles.gdprLink}>Privacy policy</Text>
+          Le tue preferenze vengono usate solo per mostrarti i ristoranti più adatti a te e non vengono mai associate alla tua identità.
         </Text>
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
@@ -147,6 +143,7 @@ export default function OnboardingDietaryScreen() {
         >
           Salva e continua
         </Button>
+        <Text style={styles.saveNote}>Potrai modificarle in qualsiasi momento dal tuo profilo.</Text>
       </View>
     </View>
   );
@@ -192,12 +189,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 6,
   },
-  introNote: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -213,10 +204,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 8,
   },
-  gdprLink: {
-    color: theme.colors.primary,
-    textDecorationLine: 'underline',
-  },
   bottomBar: {
     paddingHorizontal: 24,
     paddingTop: 12,
@@ -230,6 +217,13 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontSize: 16,
     paddingVertical: 4,
+  },
+  saveNote: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 10,
+    fontStyle: 'italic',
   },
   skipRow: {
     alignItems: 'center',

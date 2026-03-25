@@ -19,6 +19,7 @@ export interface UserProfile {
   role: 'user' | 'restaurant_owner' | 'admin';
   created_at: string;
   is_anonymous: boolean;
+  onboarding_complete: boolean;
 }
 
 function mapUser(user: SupabaseUser | null): AppUser | null {
@@ -173,6 +174,14 @@ async function updateDietaryNeeds(userId: string, dietaryNeeds: { allergens: str
   if (error) throw error;
 }
 
+async function completeOnboarding(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ onboarding_complete: true })
+    .eq('id', userId);
+  if (error) throw error;
+}
+
 async function sendPasswordReset(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(email);
   if (error) throw error;
@@ -193,4 +202,5 @@ export const AuthService = {
   deleteAccount,
   sendPasswordReset,
   updateDietaryNeeds,
+  completeOnboarding,
 };

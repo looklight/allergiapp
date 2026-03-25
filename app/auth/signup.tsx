@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, TextInput, Button, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -65,9 +65,14 @@ export default function SignupScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
         keyboardShouldPersistTaps="handled"
       >
+        <Image
+          source={require('../../assets/happy_plate_passport.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
         <Text style={styles.subtitle}>
-          Crea un account per contribuire alla community: aggiungi ristoranti,
-          segnala piatti sicuri e salva i tuoi locali preferiti.
+          Trova ristoranti, condividi la tua esperienza e aiuta altri utenti con le tue stesse esigenze.
         </Text>
 
         <Surface style={styles.form} elevation={1}>
@@ -110,6 +115,13 @@ export default function SignupScreen() {
           </Button>
         </Surface>
 
+        <Text style={styles.legalNote}>
+          Creando un account accetti i nostri{' '}
+          <Text style={styles.legalLink}>Termini di servizio</Text>
+          {' '}e la{' '}
+          <Text style={styles.legalLink}>Privacy Policy</Text>
+        </Text>
+
         <View style={styles.row}>
           <Text style={styles.rowText}>Hai già un account? </Text>
           <TouchableOpacity onPress={() => router.replace('/auth/login')}>
@@ -146,12 +158,20 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
     paddingTop: 16,
+    alignItems: 'stretch',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   subtitle: {
     color: theme.colors.textSecondary,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 24,
+    textAlign: 'center',
   },
   form: {
     padding: 20,
@@ -181,6 +201,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  legalNote: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  legalLink: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
   rowText: {
     color: theme.colors.textSecondary,

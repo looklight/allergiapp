@@ -8,6 +8,7 @@ interface AuthContextValue {
   dietaryNeeds: DietaryNeeds;
   isLoading: boolean;
   isAuthenticated: boolean;
+  needsOnboarding: boolean;
   refreshProfile: () => Promise<void>;
 }
 
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextValue>({
   dietaryNeeds: EMPTY_DIETARY_NEEDS,
   isLoading: true,
   isAuthenticated: false,
+  needsOnboarding: false,
   refreshProfile: async () => {},
 });
 
@@ -63,6 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     : EMPTY_DIETARY_NEEDS;
 
+  const needsOnboarding = !!user && !!userProfile && !userProfile.onboarding_complete;
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -70,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dietaryNeeds,
       isLoading,
       isAuthenticated: !!user,
+      needsOnboarding,
       refreshProfile,
     }}>
       {children}

@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import { Stack, ErrorBoundary, usePathname } from 'expo-router';
+import { Stack, ErrorBoundary, usePathname, useRouter } from 'expo-router';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
-import { AuthProvider } from '../contexts/AuthContext';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { Analytics } from '../services/analytics';
 import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
@@ -62,8 +62,12 @@ const splashStyles = StyleSheet.create({
 });
 
 
+const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary', '/auth/onboarding-tutorial'];
+
 function AppContent() {
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
+  const { needsOnboarding, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
 
@@ -82,6 +86,14 @@ function AppContent() {
       }
     }
   }, [isReady, hasAcceptedLegalTerms, trackingConsent]);
+
+  // Redirect onboarding incompleto
+  useEffect(() => {
+    if (!isReady || authLoading) return;
+    if (needsOnboarding && !ONBOARDING_PATHS.includes(pathname)) {
+      router.replace('/auth/onboarding-nickname');
+    }
+  }, [isReady, authLoading, needsOnboarding, pathname]);
 
   // Track screen views on route changes
   useEffect(() => {

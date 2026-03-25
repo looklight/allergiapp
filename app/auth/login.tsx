@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, TextInput, Button, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -72,6 +72,12 @@ export default function LoginScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
         keyboardShouldPersistTaps="handled"
       >
+        <Image
+          source={require('../../assets/happy_plate_forks.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
         <Text style={styles.subtitle}>
           Accedi per aggiungere ristoranti, salvare preferiti e lasciare recensioni.
         </Text>
@@ -118,11 +124,16 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </Surface>
 
-        <View style={styles.row}>
-          <Text style={styles.rowText}>Non hai un account? </Text>
-          <TouchableOpacity onPress={() => router.replace('/auth/signup')}>
-            <Text style={styles.rowLink}>Registrati</Text>
-          </TouchableOpacity>
+        <View style={styles.registerSection}>
+          <Text style={styles.rowText}>Non hai un account?</Text>
+          <Button
+            mode="outlined"
+            onPress={() => router.replace('/auth/signup')}
+            style={styles.registerButton}
+            contentStyle={styles.buttonContent}
+          >
+            Registrati
+          </Button>
         </View>
 
         <TouchableOpacity onPress={() => router.back()} style={styles.skipRow}>
@@ -154,12 +165,20 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
     paddingTop: 16,
+    alignItems: 'stretch',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   subtitle: {
     color: theme.colors.textSecondary,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 24,
+    textAlign: 'center',
   },
   form: {
     padding: 20,
@@ -187,20 +206,18 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontSize: 14,
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  registerSection: {
     alignItems: 'center',
     marginBottom: 16,
+    gap: 10,
   },
   rowText: {
     color: theme.colors.textSecondary,
     fontSize: 15,
   },
-  rowLink: {
-    color: theme.colors.primary,
-    fontSize: 15,
-    fontWeight: '600',
+  registerButton: {
+    borderRadius: 10,
+    alignSelf: 'stretch',
   },
   skipRow: {
     alignItems: 'center',
