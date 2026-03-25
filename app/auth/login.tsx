@@ -26,15 +26,16 @@ export default function LoginScreen() {
       await AuthService.signIn(email.trim(), password);
       router.back();
     } catch (error: any) {
-      console.warn('[Login] Errore login:', error.code, error.message);
+      console.warn('[Login] Errore login:', error.message);
+      const msg: string = (error?.message ?? '').toLowerCase();
       const message =
-        error.code === 'auth/invalid-credential'
+        msg.includes('invalid') || msg.includes('credentials') || msg.includes('wrong password') || msg.includes('user not found')
           ? 'Email o password non corretti.'
-          : error.code === 'auth/too-many-requests'
+          : msg.includes('too many') || msg.includes('rate limit') || msg.includes('blocked')
           ? 'Troppi tentativi. Riprova più tardi.'
-          : error.code === 'auth/network-request-failed'
+          : msg.includes('network') || msg.includes('fetch') || msg.includes('connection')
           ? 'Errore di rete. Controlla la connessione.'
-          : `Si è verificato un errore (${error.code ?? 'unknown'}). Riprova.`;
+          : 'Si è verificato un errore. Riprova.';
       Alert.alert('Errore', message);
     } finally {
       setIsLoading(false);

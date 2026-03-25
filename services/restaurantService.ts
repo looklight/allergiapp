@@ -74,7 +74,10 @@ export interface Review {
   created_at: string;
   updated_at: string;
   // Dal profilo utente (join)
-  user_display_name?: string;
+  user_display_name?: string | null;
+  user_avatar_url?: string | null;
+  user_profile_color?: string | null;
+  user_is_anonymous?: boolean;
 }
 
 export interface Favorite {
@@ -409,7 +412,7 @@ async function getReviews(restaurantId: string): Promise<Review[]> {
     .from('reviews')
     .select(`
       *,
-      profile:profiles!user_id(display_name)
+      profile:profiles!user_id(display_name, avatar_url, profile_color, is_anonymous)
     `)
     .eq('restaurant_id', restaurantId)
     .order('created_at', { ascending: false });
@@ -417,7 +420,10 @@ async function getReviews(restaurantId: string): Promise<Review[]> {
   return (data ?? []).map((r: any) => ({
     ...r,
     photos: r.photos ?? [],
-    user_display_name: r.profile?.display_name ?? null,
+    user_display_name: r.profile?.is_anonymous ? null : (r.profile?.display_name ?? null),
+    user_avatar_url: r.profile?.avatar_url ?? null,
+    user_profile_color: r.profile?.profile_color ?? null,
+    user_is_anonymous: r.profile?.is_anonymous ?? false,
   }));
 }
 

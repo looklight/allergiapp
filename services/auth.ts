@@ -18,6 +18,7 @@ export interface UserProfile {
   profile_color: string | null;
   role: 'user' | 'restaurant_owner' | 'admin';
   created_at: string;
+  is_anonymous: boolean;
 }
 
 function mapUser(user: SupabaseUser | null): AppUser | null {
@@ -29,7 +30,7 @@ function mapUser(user: SupabaseUser | null): AppUser | null {
   };
 }
 
-async function signUp(email: string, password: string, displayName: string): Promise<AppUser> {
+async function signUp(email: string, password: string, displayName?: string): Promise<AppUser> {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -124,6 +125,14 @@ async function updateProfileColor(userId: string, color: string): Promise<void> 
   if (error) throw error;
 }
 
+async function updateAnonymous(userId: string, isAnonymous: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ is_anonymous: isAnonymous })
+    .eq('id', userId);
+  if (error) throw error;
+}
+
 async function updateDisplayName(userId: string, displayName: string): Promise<void> {
   // Aggiorna sia auth metadata che profilo
   const { error: authError } = await supabase.auth.updateUser({
@@ -180,6 +189,7 @@ export const AuthService = {
   updateUserAvatar,
   updateProfileColor,
   updateDisplayName,
+  updateAnonymous,
   deleteAccount,
   sendPasswordReset,
   updateDietaryNeeds,

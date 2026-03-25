@@ -47,6 +47,14 @@ export default function PublicProfileScreen() {
     })();
   }, [uid, isAuthenticated]);
 
+  // Mask display name for anonymous users when viewed by others
+  const visibleProfile = profile?.is_anonymous
+    ? {
+        ...profile,
+        display_name: `Utente #${(parseInt((uid ?? '').replace(/-/g, '').slice(0, 8), 16) % 10000).toString().padStart(4, '0')}`,
+      }
+    : profile;
+
   // Loading & error states use a simple header (no profile color)
   if (isLoading || !profile) {
     return (
@@ -73,7 +81,7 @@ export default function PublicProfileScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <ProfileCard profile={profile} onBack={() => router.back()}>
+      <ProfileCard profile={visibleProfile!} onBack={() => router.back()}>
         {reviews.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Recensioni</Text>

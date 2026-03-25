@@ -61,7 +61,12 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, title = 'P
               </View>
             )}
             <View style={styles.profileText}>
-              <Text style={styles.displayName}>{profile.display_name || 'Utente'}</Text>
+              <View style={styles.nameRow}>
+                <Text style={styles.displayName}>{profile.display_name || 'Utente'}</Text>
+                {profile.is_anonymous && (
+                  <MaterialCommunityIcons name="incognito" size={18} color={theme.colors.textSecondary} />
+                )}
+              </View>
               {memberSince ? (
                 <Text style={styles.memberSince}>Membro da {memberSince}</Text>
               ) : null}
@@ -177,6 +182,11 @@ const styles = StyleSheet.create({
   },
   profileText: {
     flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   displayName: {
     fontSize: 20,

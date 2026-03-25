@@ -134,6 +134,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 ## Futuri (quando il volume cresce)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
 - Animazioni: migrare a `react-native-reanimated` + `react-native-gesture-handler`
+- **Uniformare le pagine e integrare la card nella scheda ristorante** — idea da investigare: mostrare la card allergenica direttamente nella pagina del ristorante, così l'utente ha in un unico posto sia le info del locale che la sua card da mostrare al cameriere. Valutare coerenza visiva con il resto dell'app e se ha senso come punto di accesso alternativo alla card.
 
 ---
 

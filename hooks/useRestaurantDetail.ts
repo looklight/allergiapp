@@ -9,7 +9,10 @@ import type { Restaurant, Review, ReviewPhoto, MenuPhoto, Report, CuisineVote } 
 export interface UnifiedReview {
   key: string;
   userId?: string;
-  displayName: string;
+  displayName: string | null;
+  isAnonymous?: boolean;
+  avatarUrl?: string | null;
+  profileColor?: string | null;
   rating?: number;
   text?: string;
   photos: ReviewPhoto[];
@@ -101,7 +104,10 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
       items.push({
         key: `review-${r.id}`,
         userId: r.user_id ?? undefined,
-        displayName: r.user_display_name ?? 'Utente',
+        displayName: r.user_display_name ?? null,
+        isAnonymous: r.user_is_anonymous ?? false,
+        avatarUrl: r.user_avatar_url ?? null,
+        profileColor: r.user_profile_color ?? null,
         rating: r.rating,
         text: r.comment ?? undefined,
         photos: r.photos ?? [],

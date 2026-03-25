@@ -22,12 +22,22 @@ import i18n from '../../utils/i18n';
 const PHOTO_GAP = 3;
 const MAX_VISIBLE_PHOTOS = 6;
 
+function AllergenCountBadge({ count }: { count: number }) {
+  if (count === 0) return null;
+  return (
+    <View style={photoGridStyles.allergenBadge}>
+      <MaterialCommunityIcons name="alert-circle" size={10} color={theme.colors.warning} />
+      <Text style={photoGridStyles.allergenBadgeText}>{count}</Text>
+    </View>
+  );
+}
+
 function PhotoGrid({
   photos,
   containerWidth,
   onPress,
 }: {
-  photos: { url: string; thumbnailUrl: string }[];
+  photos: { url: string; thumbnailUrl: string; allergenCount?: number }[];
   containerWidth: number;
   onPress: (idx: number) => void;
 }) {
@@ -47,6 +57,7 @@ function PhotoGrid({
           style={{ width: containerWidth, height: 220, borderRadius: 10, ...placeholder }}
           resizeMode="cover"
         />
+        <AllergenCountBadge count={photos[0].allergenCount ?? 0} />
       </TouchableOpacity>
     );
   }
@@ -62,6 +73,7 @@ function PhotoGrid({
               style={{ width: w, height: 190, borderRadius: 10, ...placeholder }}
               resizeMode="cover"
             />
+            <AllergenCountBadge count={photo.allergenCount ?? 0} />
           </TouchableOpacity>
         ))}
       </View>
@@ -90,6 +102,7 @@ function PhotoGrid({
             style={{ width: heroW, height: heroH, borderRadius: 10, ...placeholder }}
             resizeMode="cover"
           />
+          <AllergenCountBadge count={photos[0].allergenCount ?? 0} />
         </TouchableOpacity>
         <View style={{ gap: PHOTO_GAP }}>
           {visible.slice(1, 3).map((photo, i) => (
@@ -99,6 +112,7 @@ function PhotoGrid({
                 style={{ width: smallW, height: smallH, borderRadius: 10, ...placeholder }}
                 resizeMode="cover"
               />
+              <AllergenCountBadge count={photo.allergenCount ?? 0} />
             </TouchableOpacity>
           ))}
         </View>
@@ -117,6 +131,7 @@ function PhotoGrid({
                   style={{ width: colW, height: 104, borderRadius: 10, ...placeholder }}
                   resizeMode="cover"
                 />
+                <AllergenCountBadge count={photo.allergenCount ?? 0} />
                 {isLast && (
                   <View style={photoGridStyles.moreOverlay}>
                     <Text style={photoGridStyles.moreCount}>+{moreCount}</Text>
@@ -152,6 +167,23 @@ const photoGridStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
+  allergenBadge: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  allergenBadgeText: {
+    color: theme.colors.warning,
+    fontSize: 11,
+    fontWeight: '700',
+  },
 });
 
 export default function RestaurantDetailScreen() {
@@ -177,15 +209,21 @@ export default function RestaurantDetailScreen() {
 
   // Raccogli tutte le foto dalle recensioni con metadata autore
   const reviewPhotos = useMemo(
-    () => allReviews.flatMap(r =>
-      r.photos.map(p => ({
+    () => allReviews.flatMap(r => {
+      const allergenCount = (r.allergensSnapshot?.length ?? 0) + (r.dietarySnapshot?.length ?? 0);
+      return r.photos.map(p => ({
         url: p.url,
         thumbnailUrl: p.thumbnailUrl,
         displayName: r.displayName,
+        avatarUrl: r.avatarUrl,
+        profileColor: r.profileColor,
         rating: r.rating,
         text: r.text,
-      }))
-    ),
+        allergensSnapshot: r.allergensSnapshot,
+        dietarySnapshot: r.dietarySnapshot,
+        allergenCount,
+      }));
+    }),
     [allReviews],
   );
   // Calcola copertura esigenze e numero review rilevanti
@@ -397,9 +435,6 @@ export default function RestaurantDetailScreen() {
                 {userReview.comment && (
                   <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
                 )}
-                {(userReview.photos?.length ?? 0) > 0 && (
-                  <Text style={styles.ctaHint}>{userReview.photos.length} foto</Text>
-                )}
               </View>
             ) : (
               <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
@@ -419,40 +454,42 @@ export default function RestaurantDetailScreen() {
         {isAuthenticated ? (
           allReviews.length > 0 ? (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Recensioni ({allReviews.length})</Text>
-              {allReviews.length > 1 && (
-                <View style={styles.reviewSortRow}>
-                  {([
-                    { key: 'recent' as ReviewSortOrder, label: 'Recenti' },
-                    { key: 'rating' as ReviewSortOrder, label: 'Stelle' },
-                    ...(hasUserNeeds
-                      ? [{ key: 'relevance' as ReviewSortOrder, label: 'Per me' }]
-                      : []),
-                  ] as const).map(opt => {
-                    const active = reviewSortOrder === opt.key;
-                    return (
-                      <TouchableOpacity
-                        key={opt.key}
-                        onPress={() => setReviewSortOrder(opt.key)}
-                        style={[styles.reviewSortChip, active && styles.reviewSortChipActive]}
-                        activeOpacity={0.7}
-                      >
-                        {opt.key === 'relevance' && (
-                          <MaterialCommunityIcons
-                            name="shield-check"
-                            size={14}
-                            color={active ? theme.colors.onPrimary : theme.colors.primary}
-                            style={{ marginRight: 4 }}
-                          />
-                        )}
-                        <Text style={[styles.reviewSortChipText, active && styles.reviewSortChipTextActive]}>
-                          {opt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
+              <View style={styles.reviewsHeader}>
+                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Recensioni ({allReviews.length})</Text>
+                {allReviews.length > 1 && (
+                  <View style={styles.reviewSortRow}>
+                    {([
+                      { key: 'recent' as ReviewSortOrder, label: 'Recenti' },
+                      { key: 'rating' as ReviewSortOrder, label: 'Stelle' },
+                      ...(hasUserNeeds
+                        ? [{ key: 'relevance' as ReviewSortOrder, label: 'Per me' }]
+                        : []),
+                    ] as const).map(opt => {
+                      const active = reviewSortOrder === opt.key;
+                      return (
+                        <TouchableOpacity
+                          key={opt.key}
+                          onPress={() => setReviewSortOrder(opt.key)}
+                          style={[styles.reviewSortChip, active && styles.reviewSortChipActive]}
+                          activeOpacity={0.7}
+                        >
+                          {opt.key === 'relevance' && (
+                            <MaterialCommunityIcons
+                              name="shield-check"
+                              size={14}
+                              color={active ? theme.colors.onPrimary : theme.colors.primary}
+                              style={{ marginRight: 4 }}
+                            />
+                          )}
+                          <Text style={[styles.reviewSortChipText, active && styles.reviewSortChipTextActive]}>
+                            {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
               {allReviews.map((item, idx) => (
                 <View key={item.key}>
                   {idx > 0 && <Divider style={styles.divider} />}
@@ -786,10 +823,15 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontWeight: '500',
   },
+  reviewsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   reviewSortRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
+    gap: 6,
   },
   reviewSortChip: {
     flexDirection: 'row',

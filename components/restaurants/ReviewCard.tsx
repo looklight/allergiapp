@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import type { FoodRestrictionCategory } from '../../constants/foodRestrictions';
+import { getAvatarById } from '../../constants/avatars';
 import StarRating from '../StarRating';
 import i18n from '../../utils/i18n';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
@@ -22,12 +23,21 @@ interface ReviewCardProps {
   userNeeds?: string[];
 }
 
-const getInitial = (name: string) => (name.charAt(0) || '?').toUpperCase();
+const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toUpperCase();
 
-const REVIEW_PHOTO_SIZE = 56;
+function getAnonymousLabel(userId?: string): string {
+  if (!userId) return 'Utente';
+  const num = parseInt(userId.replace(/-/g, '').slice(0, 8), 16) % 10000;
+  return `Utente #${num.toString().padStart(4, '0')}`;
+}
+
+const REVIEW_PHOTO_SIZE = 80;
 
 export default function ReviewCard({ review: item, onImagePress, userNeeds }: ReviewCardProps) {
   const router = useRouter();
+  const avatarSource = item.avatarUrl ? getAvatarById(item.avatarUrl)?.source : null;
+  const displayName = item.isAnonymous ? getAnonymousLabel(item.userId) : (item.displayName ?? getAnonymousLabel(item.userId));
+  const canNavigateToProfile = !!item.userId && !item.isAnonymous;
 
   return (
     <View style={styles.contributionRow}>
@@ -35,15 +45,21 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds }: Re
       <View style={styles.contributionTop}>
         <TouchableOpacity
           style={styles.contributionAuthorTap}
-          activeOpacity={item.userId ? 0.6 : 1}
-          disabled={!item.userId}
-          onPress={() => item.userId && router.push(`/restaurants/user/${item.userId}`)}
+          activeOpacity={canNavigateToProfile ? 0.6 : 1}
+          disabled={!canNavigateToProfile}
+          onPress={() => canNavigateToProfile && router.push(`/restaurants/user/${item.userId}`)}
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{getInitial(item.displayName)}</Text>
-          </View>
+          {avatarSource ? (
+            <Image source={avatarSource} style={styles.avatarImage} />
+          ) : (
+            <View style={[styles.avatar, item.profileColor ? { backgroundColor: item.profileColor } : null]}>
+              <Text style={[styles.avatarText, item.profileColor ? styles.avatarTextOnColor : null]}>
+                {getInitial(item.isAnonymous ? null : item.displayName)}
+              </Text>
+            </View>
+          )}
           <View style={styles.contributionMeta}>
-            <Text style={styles.contributionAuthor}>{item.displayName}</Text>
+            <Text style={styles.contributionAuthor}>{displayName}</Text>
             <Text style={styles.contributionDate}>
               {item.createdAt.toLocaleDateString(i18n.locale, {
                 day: 'numeric', month: 'short', year: 'numeric',
@@ -85,11 +101,20 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds }: Re
       {/* Foto review */}
       {item.photos.length > 0 && (
         <View style={styles.photoGrid}>
-          {item.photos.map((photo, idx) => (
-            <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => onImagePress(photo.url)}>
-              <Image source={{ uri: photo.thumbnailUrl }} style={[styles.reviewPhoto, { width: REVIEW_PHOTO_SIZE, height: REVIEW_PHOTO_SIZE }]} />
-            </TouchableOpacity>
-          ))}
+          {item.photos.map((photo, idx) => {
+            const allergenCount = (item.allergensSnapshot?.length ?? 0) + (item.dietarySnapshot?.length ?? 0);
+            return (
+              <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => onImagePress(photo.url)}>
+                <Image source={{ uri: photo.thumbnailUrl }} style={[styles.reviewPhoto, { width: REVIEW_PHOTO_SIZE, height: REVIEW_PHOTO_SIZE }]} />
+                {allergenCount > 0 && (
+                  <View style={styles.photoBadge}>
+                    <MaterialCommunityIcons name="alert-circle" size={9} color={theme.colors.warning} />
+                    <Text style={styles.photoBadgeText}>{allergenCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
     </View>
@@ -111,6 +136,11 @@ const styles = StyleSheet.create({
     gap: 10,
     flex: 1,
   },
+  avatarImage: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+  },
   avatar: {
     width: 34,
     height: 34,
@@ -123,6 +153,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: theme.colors.primary,
+  },
+  avatarTextOnColor: {
+    color: '#FFF',
   },
   contributionMeta: {
     flex: 1,
@@ -166,5 +199,22 @@ const styles = StyleSheet.create({
   },
   reviewPhoto: {
     borderRadius: 10,
+  },
+  photoBadge: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  photoBadgeText: {
+    color: theme.colors.warning,
+    fontSize: 10,
+    fontWeight: '700',
   },
 });

@@ -12,6 +12,7 @@ import {
   Animated,
   LayoutAnimation,
   UIManager,
+  Switch,
 } from 'react-native';
 import { Text, Surface, TextInput, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -42,6 +43,7 @@ export default function EditProfileScreen() {
 
   const [displayName, setDisplayName] = useState(currentDisplayName);
   const [selectedColorHex, setSelectedColorHex] = useState(savedColorHex);
+  const [isAnonymous, setIsAnonymous] = useState(userProfile?.is_anonymous ?? false);
   const email = user?.email ?? '';
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -57,12 +59,13 @@ export default function EditProfileScreen() {
 
   const nameChanged = displayName.trim() !== currentDisplayName;
   const colorChanged = selectedColorHex !== savedColorHex;
-  const hasChanges = nameChanged || colorChanged;
+  const anonymousChanged = isAnonymous !== (userProfile?.is_anonymous ?? false);
+  const hasChanges = nameChanged || colorChanged || anonymousChanged;
 
   const handleSave = async () => {
     if (!user) return;
     const trimmed = displayName.trim();
-    if (!trimmed) {
+    if (!trimmed && !isAnonymous) {
       Alert.alert('Nome obbligatorio', 'Inserisci un nome visualizzato.');
       return;
     }
@@ -75,6 +78,7 @@ export default function EditProfileScreen() {
       const promises: Promise<void>[] = [];
       if (nameChanged) promises.push(AuthService.updateDisplayName(user.uid, trimmed));
       if (colorChanged && selectedColorHex) promises.push(AuthService.updateProfileColor(user.uid, selectedColorHex));
+      if (anonymousChanged) promises.push(AuthService.updateAnonymous(user.uid, isAnonymous));
       await Promise.all(promises);
       await refreshProfile();
       router.back();
@@ -207,6 +211,20 @@ export default function EditProfileScreen() {
             activeOutlineColor={theme.colors.primary}
             style={styles.textInput}
           />
+          <View style={styles.anonymousRow}>
+            <View style={styles.anonymousTextGroup}>
+              <Text style={styles.anonymousLabel}>Profilo anonimo</Text>
+              <Text style={styles.anonymousHint}>
+                Il tuo nome non sarà visibile ad altri utenti
+              </Text>
+            </View>
+            <Switch
+              value={isAnonymous}
+              onValueChange={setIsAnonymous}
+              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
           <TextInput
             mode="outlined"
             label="Email"
@@ -458,6 +476,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
     marginTop: -4,
+  },
+  anonymousRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  anonymousTextGroup: {
+    flex: 1,
+    marginRight: 12,
+    gap: 2,
+  },
+  anonymousLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  anonymousHint: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
   },
   saveButton: {
     borderRadius: 10,

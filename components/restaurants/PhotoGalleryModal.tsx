@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
 import {
-  Modal, View, FlatList, Image, TouchableOpacity, StyleSheet,
+  Modal, View, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView,
   useWindowDimensions, type ViewToken,
 } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -8,13 +8,27 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import StarRating from '../StarRating';
+import { getRestrictionById, type FoodRestrictionCategory } from '../../constants/foodRestrictions';
+import { getAvatarById } from '../../constants/avatars';
+import i18n from '../../utils/i18n';
 
 export interface GalleryPhoto {
   url: string;
   displayName: string;
+  avatarUrl?: string | null;
+  profileColor?: string | null;
   rating?: number;
   text?: string;
+  allergensSnapshot?: string[];
+  dietarySnapshot?: string[];
 }
+
+const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: string }> = {
+  eu_allergen:      { bg: 'rgba(255,140,0,0.25)',  text: theme.colors.warning },
+  intolerance:      { bg: 'rgba(255,180,0,0.25)',  text: '#FFB700' },
+  diet:             { bg: 'rgba(76,175,80,0.25)',   text: '#4CAF50' },
+  food_sensitivity: { bg: 'rgba(255,255,255,0.15)', text: 'rgba(255,255,255,0.7)' },
+};
 
 interface PhotoGalleryModalProps {
   photos: GalleryPhoto[];
@@ -26,6 +40,9 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose }: Pho
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const currentAvatarSource = photos[currentIndex]?.avatarUrl
+    ? getAvatarById(photos[currentIndex].avatarUrl!)?.source
+    : null;
 
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index != null) {
@@ -79,12 +96,36 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose }: Pho
         {/* Review info overlay */}
         {current && (
           <View style={[styles.infoOverlay, { paddingBottom: insets.bottom + 16 }]}>
+            {/* Allergen chips */}
+            {((current.allergensSnapshot?.length ?? 0) + (current.dietarySnapshot?.length ?? 0)) > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.allergenRow}
+              >
+                {[...(current.dietarySnapshot ?? []), ...(current.allergensSnapshot ?? [])].map(id => {
+                  const r = getRestrictionById(id);
+                  if (!r) return null;
+                  const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
+                  const colors = CATEGORY_COLORS[r.category];
+                  return (
+                    <View key={id} style={[styles.allergenChip, { backgroundColor: colors.bg }]}>
+                      <Text style={[styles.allergenChipText, { color: colors.text }]}>{label}</Text>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
             <View style={styles.infoRow}>
-              <View style={styles.infoAvatar}>
-                <Text style={styles.infoAvatarText}>
-                  {(current.displayName.charAt(0) || '?').toUpperCase()}
-                </Text>
-              </View>
+              {currentAvatarSource ? (
+                <Image source={currentAvatarSource} style={styles.infoAvatarImage} />
+              ) : (
+                <View style={[styles.infoAvatar, current.profileColor ? { backgroundColor: current.profileColor } : null]}>
+                  <Text style={styles.infoAvatarText}>
+                    {(current.displayName.charAt(0) || '?').toUpperCase()}
+                  </Text>
+                </View>
+              )}
               <View style={styles.infoMeta}>
                 <Text style={styles.infoName}>{current.displayName}</Text>
                 {current.rating != null && current.rating > 0 && (
@@ -141,6 +182,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  infoAvatarImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
   infoAvatar: {
     width: 32,
     height: 32,
@@ -167,5 +213,19 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     lineHeight: 18,
+  },
+  allergenRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingBottom: 4,
+  },
+  allergenChip: {
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  allergenChipText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

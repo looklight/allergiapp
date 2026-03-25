@@ -70,9 +70,7 @@ export default function OnboardingDietaryScreen() {
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={{ width: 24 }} />
         <Text style={styles.headerTitle}>Le tue esigenze</Text>
-        <TouchableOpacity onPress={handleSkip} hitSlop={8} activeOpacity={0.6}>
-          <Text style={styles.skipHeaderText}>Salta</Text>
-        </TouchableOpacity>
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView
@@ -156,12 +154,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: 'bold',
-  },
-  skipHeaderText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '500',
-    opacity: 0.9,
   },
   content: {
     padding: 24,

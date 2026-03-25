@@ -87,7 +87,12 @@ export default function ProfileScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileCard
-        profile={{ ...userProfile, display_name: userProfile.display_name || user?.displayName || '' }}
+        profile={{
+          ...userProfile,
+          display_name: userProfile.is_anonymous
+            ? `Utente #${(parseInt((user?.uid ?? '').replace(/-/g, '').slice(0, 8), 16) % 10000).toString().padStart(4, '0')}`
+            : (userProfile.display_name || user?.displayName || ''),
+        }}
         stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: favoriteCount }}
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}

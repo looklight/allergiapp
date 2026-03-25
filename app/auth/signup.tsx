@@ -10,14 +10,13 @@ import { AuthService } from '../../services/auth';
 export default function SignupScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (!displayName.trim() || !email.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       Alert.alert('Attenzione', 'Compila tutti i campi.');
       return;
     }
@@ -28,20 +27,21 @@ export default function SignupScreen() {
 
     setIsLoading(true);
     try {
-      await AuthService.signUp(email.trim(), password, displayName.trim());
-      router.push('/auth/onboarding-dietary');
+      await AuthService.signUp(email.trim(), password);
+      router.push('/auth/onboarding-nickname');
     } catch (error: any) {
-      console.warn('[Signup] Errore registrazione:', error.code, error.message);
+      console.warn('[Signup] Errore registrazione:', error.message);
+      const msg: string = (error?.message ?? '').toLowerCase();
       const message =
-        error.code === 'auth/email-already-in-use'
+        msg.includes('already registered') || msg.includes('already exists')
           ? 'Questa email è già registrata. Prova ad accedere.'
-          : error.code === 'auth/invalid-email'
+          : msg.includes('invalid email') || msg.includes('valid email')
           ? 'Email non valida.'
-          : error.code === 'auth/weak-password'
+          : msg.includes('weak') || msg.includes('at least 6')
           ? 'Password troppo debole. Usa almeno 6 caratteri.'
-          : error.code === 'auth/network-request-failed'
+          : msg.includes('network') || msg.includes('fetch') || msg.includes('connection')
           ? 'Errore di rete. Controlla la connessione.'
-          : `Si è verificato un errore (${error.code ?? 'unknown'}). Riprova.`;
+          : 'Si è verificato un errore. Riprova.';
       Alert.alert('Errore', message);
     } finally {
       setIsLoading(false);
@@ -71,15 +71,6 @@ export default function SignupScreen() {
         </Text>
 
         <Surface style={styles.form} elevation={1}>
-          <TextInput
-            label="Nome visualizzato"
-            value={displayName}
-            onChangeText={setDisplayName}
-            autoCapitalize="words"
-            autoCorrect={false}
-            style={styles.input}
-            mode="outlined"
-          />
           <TextInput
             label="Email"
             value={email}
