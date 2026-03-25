@@ -116,8 +116,10 @@ export default function OnboardingDietaryScreen() {
         />
 
         <Text style={styles.gdprNote}>
-          I dati sulle tue allergie sono trattati come dati sanitari ai sensi del GDPR.
-          Salvando, acconsenti al loro trattamento per migliorare l'esperienza della community.
+          Usate per mostrarti i ristoranti più adatti a te, mai associate alla tua identità.
+          Modificabili in qualsiasi momento dal profilo.{' '}
+          {/* TODO: sostituire con link reale prima del lancio */}
+          <Text style={styles.gdprLink}>Privacy policy</Text>
         </Text>
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
@@ -210,6 +212,10 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 16,
     paddingHorizontal: 8,
+  },
+  gdprLink: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
   bottomBar: {
     paddingHorizontal: 24,

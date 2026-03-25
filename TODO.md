@@ -6,6 +6,12 @@
 
 ## Prima del rilascio
 
+### Privacy & GDPR
+- [ ] **Scrivere Privacy Policy** — i dati allergenici sono dati sanitari (GDPR Art. 9), serve documento formale prima del lancio. Punti chiave da coprire: finalità del trattamento (personalizzazione + statistiche anonime aggregate), nessuna associazione dato↔identità, diritto di cancellazione (già implementato), base giuridica del consenso esplicito.
+- [ ] **Linkare Privacy Policy** nell'onboarding dietary (placeholder già presente nel codice, cercare `TODO: sostituire con link reale`)
+- [ ] **Consenso esplicito dati sanitari** — valutare se aggiungere checkbox separato per il trattamento dati allergenici (requisito GDPR Art. 9 per consenso esplicito, distinto dai T&C generali)
+- [ ] **Termini di Servizio** — documento separato dalla privacy policy
+
 ### Azioni manuali Supabase
 - [ ] Eseguire migrazione `019_admin_rls_policies.sql` nel SQL Editor (policy RLS per admin)
 - [ ] Creare bucket "images" (Public) dalla dashboard Supabase Storage
