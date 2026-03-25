@@ -2,16 +2,6 @@
 
 ## Bug attivi
 
-### [BUG] Filtri dietetici nella lista ristoranti non funzionano
-**Priorita: ALTA** — `app/(tabs)/restaurants.tsx`
-
-I chip "Gluten Free", "Vegan", "Vegetarian" non matchano nessun ristorante. Il filtro controlla `r.cuisine_types` ma quegli ID non finiscono mai in `cuisine_types` perche `add.tsx` e `add-review.tsx` mostrano solo tag cucina (pizza, sushi, ecc.).
-
-**Opzioni:**
-1. Rendere gluten_free/vegan/vegetarian votabili come tag cucina
-2. Filtro separato basato sulle recensioni (ristoranti dove utenti vegani/celiaci hanno dato buone valutazioni)
-3. Rimuovere temporaneamente i chip dietetici dalla lista
-
 ---
 
 ## Prima del rilascio
@@ -40,6 +30,26 @@ I chip "Gluten Free", "Vegan", "Vegetarian" non matchano nessun ristorante. Il f
 - [ ] Elimina account
 - [ ] Utente non loggato: redirect login su filtri, recensioni, preferiti
 - [ ] Persistenza filtro "Per me" tra sessioni
+
+---
+
+## Feature da implementare
+
+### Scheda ristorante come bottom sheet (stile Google Maps)
+**Priorità: media** — da fare dopo il merge di `feature/restaurants-v2` in `main`
+
+Attualmente la scheda ristorante si apre come schermata laterale. L'obiettivo è che si apra dal basso come Google Maps, con la mappa e la lista visibili dietro.
+
+**Approccio:**
+1. Estrarre il contenuto di `app/restaurants/[id].tsx` in un componente `RestaurantDetailSheet` (usa già `useRestaurantDetail` hook, che è separato)
+2. In `app/(tabs)/restaurants.tsx`, quando si tocca un ristorante, mostrare `RestaurantDetailSheet` in un secondo `DraggableBottomSheet` sovrapposto alla lista
+3. La lista sheet si abbassa parzialmente, la detail sheet appare sopra con snap points [0.55, 0.92]
+4. `app/restaurants/[id].tsx` continua ad esistere per navigazioni dirette (da preferiti, recensioni, profilo, ecc.)
+
+**File coinvolti:**
+- `app/restaurants/[id].tsx` → estrarre UI in `components/restaurants/RestaurantDetailSheet.tsx`
+- `app/(tabs)/restaurants.tsx` → gestire `selectedDetailId` + seconda sheet
+- `components/DraggableBottomSheet.tsx` → già funzionante, nessuna modifica prevista
 
 ---
 
@@ -119,6 +129,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 ### Priorità bassa
 - [ ] **Droppare `review_dishes` e `dish_likes`** — tabelle deprecate dalla migration 015 (foto migrate a `reviews.photos` JSONB). La `upsert_review` fa ancora `DELETE FROM review_dishes` inutilmente
 - [ ] **FK inconsistente `restaurant_cuisine_votes`** — referenzia `auth.users` direttamente invece di `profiles` come tutte le altre tabelle
+- [ ] **Audit schema Supabase vs app** — verificare che tutte le colonne/tabelle del DB siano ancora usate e coerenti con il codice attuale. Sospetti: colonna `dish_rating` (potrebbe essere legacy), tabelle `review_dishes` e `dish_likes` (già segnalate sopra), eventuali colonne orfane aggiunte in migrazioni intermedie. Confrontare lo schema live con le RPC e i tipi TypeScript.
 
 ## Futuri (quando il volume cresce)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
