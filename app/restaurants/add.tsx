@@ -78,6 +78,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
           value={query}
           onChangeText={handleQueryChange}
           placeholder="Es. Trattoria da Mario, Roma"
+          placeholderTextColor={theme.colors.textDisabled}
           mode="outlined"
           style={styles.searchInput}
           outlineStyle={styles.searchInputOutline}
