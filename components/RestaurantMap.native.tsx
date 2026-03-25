@@ -152,7 +152,7 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
                   <View style={styles.calloutTagsRow}>
                     {restaurant.cuisine_types.slice(0, 3).map(ct => (
                       <View key={ct} style={styles.calloutBadge}>
-                        <Text style={styles.calloutBadgeText}>{getCuisineLabel(ct, i18n.locale, { emoji: false })}</Text>
+                        <Text style={styles.calloutBadgeText}>{getCuisineLabel(ct, i18n.locale)}</Text>
                       </View>
                     ))}
                   </View>

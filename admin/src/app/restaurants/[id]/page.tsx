@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import type { Restaurant, Review, Report, ReportStatus } from '@/lib/types';
 import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/types';
+import { ALL_CATEGORIES, DIETARY_CATEGORIES, CUISINE_CATEGORIES } from '@/lib/restaurantCategories';
 import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
 
@@ -18,6 +19,9 @@ export default function RestaurantDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [editingCategories, setEditingCategories] = useState(false);
+  const [pendingCategories, setPendingCategories] = useState<string[]>([]);
+  const [isSavingCategories, setIsSavingCategories] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -111,6 +115,33 @@ export default function RestaurantDetailPage() {
     setReviews((prev) => prev.filter((r) => r.id !== reviewId));
   };
 
+  const startEditingCategories = () => {
+    setPendingCategories(restaurant?.cuisine_types ?? []);
+    setEditingCategories(true);
+  };
+
+  const toggleCategory = (id: string) => {
+    setPendingCategories(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+  };
+
+  const saveCuisineTypes = async () => {
+    if (!restaurant) return;
+    setIsSavingCategories(true);
+    const { error } = await supabase
+      .from('restaurants')
+      .update({ cuisine_types: pendingCategories })
+      .eq('id', restaurant.id);
+    setIsSavingCategories(false);
+    if (error) {
+      alert(`Errore durante il salvataggio: ${error.message}`);
+      return;
+    }
+    setRestaurant(prev => prev ? { ...prev, cuisine_types: pendingCategories } : prev);
+    setEditingCategories(false);
+  };
+
   const deleteRestaurant = async () => {
     if (!confirm(`Eliminare definitivamente "${restaurant?.name}"? Questa azione non puo essere annullata.`)) return;
     setIsDeleting(true);
@@ -142,11 +173,74 @@ export default function RestaurantDetailPage() {
             <p className="text-gray-400 text-sm">
               {restaurant.city}, {restaurant.country} &middot; Aggiunto da {restaurant.adder_name ?? restaurant.added_by ?? '—'}
             </p>
-            {restaurant.cuisine_types?.length > 0 && (
-              <p className="text-gray-400 text-sm mt-1">
-                Cucina: {restaurant.cuisine_types.join(', ')}
-              </p>
-            )}
+            {/* Categorie — visualizzazione e editing */}
+            <div className="mt-3">
+              {!editingCategories ? (
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {restaurant.cuisine_types?.length > 0
+                    ? restaurant.cuisine_types.map(id => {
+                        const cat = ALL_CATEGORIES.find(c => c.id === id);
+                        return (
+                          <span key={id} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                            {cat?.label ?? id}
+                          </span>
+                        );
+                      })
+                    : <span className="text-gray-400 text-sm">Nessuna categoria</span>
+                  }
+                  <button
+                    onClick={startEditingCategories}
+                    className="ml-1 text-xs text-blue-600 hover:underline"
+                  >
+                    Modifica
+                  </button>
+                </div>
+              ) : (
+                <div className="border rounded p-3 bg-gray-50">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Dietetico</p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {DIETARY_CATEGORIES.map(cat => (
+                      <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={pendingCategories.includes(cat.id)}
+                          onChange={() => toggleCategory(cat.id)}
+                        />
+                        {cat.label}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs font-medium text-gray-500 mb-2">Cucina</p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {CUISINE_CATEGORIES.map(cat => (
+                      <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={pendingCategories.includes(cat.id)}
+                          onChange={() => toggleCategory(cat.id)}
+                        />
+                        {cat.label}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={saveCuisineTypes}
+                      disabled={isSavingCategories}
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isSavingCategories ? 'Salvataggio...' : 'Salva'}
+                    </button>
+                    <button
+                      onClick={() => setEditingCategories(false)}
+                      className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-100"
+                    >
+                      Annulla
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

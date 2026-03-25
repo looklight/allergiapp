@@ -9,6 +9,7 @@ import { RestaurantService, CreateRestaurantInput } from '../../services/restaur
 import { PlacesService, PlaceAutocompleteResult } from '../../services/placesService';
 import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { useAuth } from '../../contexts/AuthContext';
+import i18n from '../../utils/i18n';
 import type { PlaceSuggestion } from '../../types/restaurants';
 import type { AppLanguage } from '../../types';
 
@@ -184,7 +185,7 @@ function ConfirmStep({
         <Text style={styles.stepHint}>Seleziona uno o più tipi di cucina (opzionale)</Text>
         <View style={styles.cuisineGrid}>
           {CUISINE_CATEGORIES.map(cat => {
-            const label = cat.translations['it' as AppLanguage] ?? cat.id;
+            const label = cat.translations[i18n.locale as AppLanguage] ?? cat.translations.it;
             const selected = cuisineTypes.includes(cat.id);
             return (
               <TouchableOpacity
@@ -193,7 +194,6 @@ function ConfirmStep({
                 onPress={() => onToggleCuisine(cat.id)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cuisineChipIcon}>{cat.icon}</Text>
                 <Text style={[styles.cuisineChipText, selected && styles.cuisineChipTextSelected]}>
                   {label}
                 </Text>
@@ -473,9 +473,6 @@ const styles = StyleSheet.create({
   cuisineChipSelected: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
-  },
-  cuisineChipIcon: {
-    fontSize: 14,
   },
   cuisineChipText: {
     fontSize: 13,

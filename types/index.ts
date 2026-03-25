@@ -51,31 +51,30 @@ export interface DietaryNeeds {
 }
 
 export type RestaurantCategoryId =
+  // Dietetico
   | 'gluten_free'
   | 'vegan'
   | 'vegetarian'
+  // Cucina
   | 'pizza'
+  | 'sushi'
+  | 'hamburger'
   | 'italian'
   | 'japanese'
   | 'chinese'
+  | 'thai'
   | 'mexican'
   | 'indian'
-  | 'thai'
-  | 'korean'
   | 'mediterranean'
-  | 'hamburger'
-  | 'greek'
-  | 'turkish'
-  | 'arabic'
-  | 'french'
-  | 'spanish'
-  | 'brazilian'
-  | 'peruvian'
-  | 'sushi';
+  | 'meat_grill'
+  | 'seafood'
+  | 'middle_eastern'
+  | 'korean'
+  | 'vietnamese'
+  | 'latin_american';
 
 export interface RestaurantCategory {
   id: RestaurantCategoryId;
-  icon: string;
   translations: Record<Language, string>;
 }
 

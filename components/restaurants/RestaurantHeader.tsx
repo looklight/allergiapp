@@ -88,7 +88,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             <View style={styles.tagsWrap}>
               {cuisineVotes.map(v => (
                 <View key={v.cuisine_id} style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{getCuisineLabel(v.cuisine_id, lang, { emoji: false })}</Text>
+                  <Text style={styles.categoryBadgeText}>{getCuisineLabel(v.cuisine_id, lang)}</Text>
                   <View style={styles.categoryBadgeCount}>
                     <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
                   </View>

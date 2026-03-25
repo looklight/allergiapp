@@ -268,7 +268,8 @@ export default function AddReviewScreen() {
         <TextInput
           value={comment}
           onChangeText={setComment}
-          placeholder="Racconta la tua esperienza: Quali piatti hai ordinato? Il personale è stato attento alle tue esigenze alimentari?"
+          placeholder={"Racconta la tua esperienza:\nQuali piatti hai ordinato?\nIl personale è stato attento alle tue esigenze?"}
+          placeholderTextColor="#BBBBBB"
           multiline
           mode="outlined"
           style={styles.textInput}
@@ -315,7 +316,7 @@ export default function AddReviewScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={[styles.cuisineChipText, selected && styles.cuisineChipTextSelected]}>
-                  {getCuisineLabel(v.cuisine_id, i18n.locale, { emoji: false })}
+                  {getCuisineLabel(v.cuisine_id, i18n.locale)}
                 </Text>
                 <Text style={[styles.cuisineChipCountInline, selected && styles.cuisineChipCountInlineSelected]}>
                   {count}
@@ -334,7 +335,7 @@ export default function AddReviewScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={[styles.cuisineChipText, styles.cuisineChipTextSelected]}>
-                  {getCuisineLabel(id, i18n.locale, { emoji: false })}
+                  {getCuisineLabel(id, i18n.locale)}
                 </Text>
                 <Text style={[styles.cuisineChipCountInline, styles.cuisineChipCountInlineSelected]}>1</Text>
               </TouchableOpacity>
@@ -569,8 +570,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
   },
   submitButton: {
     alignItems: 'center',
