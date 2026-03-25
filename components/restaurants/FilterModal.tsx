@@ -2,7 +2,7 @@ import { View, StyleSheet, Modal, ScrollView, TouchableOpacity } from 'react-nat
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import { RESTAURANT_CATEGORIES, CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
+import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import ChipGrid from '../ChipGrid';
 import DietaryNeedsPicker from '../DietaryNeedsPicker';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
@@ -98,17 +98,14 @@ export default function FilterModal({
               )}
             </View>
 
-            {/* Categorie */}
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Più cercati</Text>
-              <ChipGrid
-                items={RESTAURANT_CATEGORIES}
-                activeIds={activeFilters}
-                onToggle={(id) => onToggleFilter(id as RestaurantCategoryId)}
-                lang={lang}
-                hideIcons
-              />
-            </View>
+            {/*
+              CATEGORIE DIETETICHE (gluten_free, vegan, vegetarian) — nascoste intenzionalmente.
+              Mostrare questi filtri senza una certificazione ufficiale crea ambiguità con il
+              profilo allergie dell'utente e un falso senso di sicurezza (es. celiaci).
+              Da riabilitare quando sarà disponibile il sistema di "ristoranti certificati"
+              con badge verificato — in quel contesto il filtro avrà una garanzia reale.
+              I dati continuano ad essere raccolti nel DB tramite i voti community.
+            */}
 
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Tipo di cucina</Text>
