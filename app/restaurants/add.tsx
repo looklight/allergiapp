@@ -136,7 +136,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
                 style={styles.mapsBtn}
               >
                 <MaterialCommunityIcons name="google-maps" size={12} color={theme.colors.textSecondary} />
-                <Text style={styles.mapsBtnText}>Verifica su Maps</Text>
+                <Text style={styles.mapsBtnText}>Vedi su Maps</Text>
               </TouchableOpacity>
             </View>
           );
