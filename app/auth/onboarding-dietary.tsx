@@ -26,8 +26,10 @@ export default function OnboardingDietaryScreen() {
   const [allergens, setAllergens] = useState<FoodRestrictionId[]>([]);
   const [diets, setDiets] = useState<DietId[]>([]);
   const [saving, setSaving] = useState(false);
+  const [confirmedNoNeeds, setConfirmedNoNeeds] = useState(false);
 
   const hasSelection = allergens.length > 0 || diets.length > 0;
+  const canSave = hasSelection || confirmedNoNeeds;
 
   const toggleAllergen = (id: string) => {
     setAllergens((prev) =>
@@ -60,7 +62,7 @@ export default function OnboardingDietaryScreen() {
   };
 
   const handleSkip = () => {
-    router.dismiss(2); // Chiude onboarding + signup
+    setConfirmedNoNeeds(true);
   };
 
   return (
@@ -74,7 +76,7 @@ export default function OnboardingDietaryScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: 24 }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.introSection}>
@@ -118,21 +120,32 @@ export default function OnboardingDietaryScreen() {
           Salvando, acconsenti al loro trattamento per migliorare l'esperienza della community.
         </Text>
 
+        <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
+          <Text style={styles.skipText}>Non ho allergie o esigenze particolari</Text>
+        </TouchableOpacity>
+
+        {confirmedNoNeeds && (
+          <View style={styles.noNeedsNote}>
+            <MaterialCommunityIcons name="heart-outline" size={16} color={theme.colors.primary} />
+            <Text style={styles.noNeedsNoteText}>
+              AllergiApp funziona grazie alle recensioni degli utenti. Indicare le proprie esigenze aiuta altri con le stesse allergie o diete a trovare i ristoranti giusti. Puoi aggiungerle in qualsiasi momento dal tuo profilo.
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
         <Button
           mode="contained"
           onPress={handleSave}
           loading={saving}
-          disabled={saving || !hasSelection}
+          disabled={saving || !canSave}
           style={styles.saveButton}
           labelStyle={styles.saveButtonLabel}
         >
           Salva e continua
         </Button>
-
-        <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
-          <Text style={styles.skipText}>Non ho allergie o esigenze particolari</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -198,6 +211,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 8,
   },
+  bottomBar: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    backgroundColor: theme.colors.background,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.border,
+  },
   saveButton: {
     borderRadius: 10,
   },
@@ -213,5 +233,20 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     fontSize: 14,
     textDecorationLine: 'underline',
+  },
+  noNeedsNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+  },
+  noNeedsNoteText: {
+    flex: 1,
+    fontSize: 13,
+    color: theme.colors.primary,
+    lineHeight: 18,
   },
 });

@@ -8,6 +8,7 @@ import type { FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import { getAvatarById } from '../../constants/avatars';
 import StarRating from '../StarRating';
 import i18n from '../../utils/i18n';
+import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
 
 const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: string }> = {
@@ -25,11 +26,6 @@ interface ReviewCardProps {
 
 const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toUpperCase();
 
-function getAnonymousLabel(userId?: string): string {
-  if (!userId) return 'Utente';
-  const num = parseInt(userId.replace(/-/g, '').slice(0, 8), 16) % 10000;
-  return `Utente #${num.toString().padStart(4, '0')}`;
-}
 
 const REVIEW_PHOTO_SIZE = 80;
 

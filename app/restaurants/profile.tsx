@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth';
 import { RestaurantService } from '../../services/restaurantService';
 import type { Review } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
+import { getAnonymousLabel } from '../../utils/anonymousLabel';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -90,7 +91,7 @@ export default function ProfileScreen() {
         profile={{
           ...userProfile,
           display_name: userProfile.is_anonymous
-            ? `Utente #${(parseInt((user?.uid ?? '').replace(/-/g, '').slice(0, 8), 16) % 10000).toString().padStart(4, '0')}`
+            ? getAnonymousLabel(user?.uid ?? '')
             : (userProfile.display_name || user?.displayName || ''),
         }}
         stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: favoriteCount }}

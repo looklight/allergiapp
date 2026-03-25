@@ -13,6 +13,7 @@ import StarRating from '../../../components/StarRating';
 import ProfileCard from '../../../components/ProfileCard';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
+import { getAnonymousLabel } from '../../../utils/anonymousLabel';
 
 export default function PublicProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
@@ -49,10 +50,7 @@ export default function PublicProfileScreen() {
 
   // Mask display name for anonymous users when viewed by others
   const visibleProfile = profile?.is_anonymous
-    ? {
-        ...profile,
-        display_name: `Utente #${(parseInt((uid ?? '').replace(/-/g, '').slice(0, 8), 16) % 10000).toString().padStart(4, '0')}`,
-      }
+    ? { ...profile, display_name: getAnonymousLabel(uid) }
     : profile;
 
   // Loading & error states use a simple header (no profile color)

@@ -374,6 +374,12 @@ export default function AddRestaurantScreen() {
 
   const hasNeeds = selectedAllergens.length > 0 || selectedDiets.length > 0;
 
+  const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
+    if (!user) return;
+    await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
+    await refreshProfile();
+  }, [user, refreshProfile]);
+
   const handleSubmit = async () => {
     if (!selectedPlace || !user) return;
 
@@ -476,11 +482,7 @@ export default function AddRestaurantScreen() {
             onDietsChange={handleDietsChange}
             profileAllergens={dietaryNeeds.allergens}
             profileDiets={dietaryNeeds.diets ?? []}
-            onSyncProfile={async (a, d) => {
-              if (!user) return;
-              await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
-              await refreshProfile();
-            }}
+            onSyncProfile={handleSyncProfile}
             hasNeeds={hasNeeds}
             explicitlyNoNeeds={explicitlyNoNeeds}
             onSetNoNeeds={setExplicitlyNoNeeds}
