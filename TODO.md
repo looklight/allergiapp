@@ -45,6 +45,37 @@
 
 ## Feature da implementare
 
+### Like alle recensioni
+**Priorità: media**
+
+Permettere agli utenti di mettere like alle recensioni più utili. Serve a:
+- Dare visibilità alle recensioni di qualità
+- Aiutare chi legge a identificare i contributi più affidabili
+- Creare un incentivo per scrivere recensioni dettagliate
+
+**Da valutare:**
+- Tabella `review_likes` (userId + reviewId, unique constraint)
+- Ordinamento recensioni per like count vs. data
+- Limite like per utente non autenticato (solo utenti registrati)
+- Connessione con il sistema di gerarchia utenti (vedi sotto)
+
+---
+
+### Gerarchia utenti e riconoscimento community
+**Priorità: bassa — da pianificare dopo il lancio**
+
+Gli utenti più attivi e contributivi dovrebbero essere riconoscibili e "premiati" rispetto a chi usa l'app in modo passivo. Crea fiducia nelle recensioni e incentiva la partecipazione.
+
+**Idee:**
+- **Livelli/badge** basati su attività: numero recensioni, ristoranti aggiunti, like ricevuti, anzianità
+- **Titoli visibili** nel profilo e accanto alle recensioni (es. "Contributor", "Top Reviewer", "Explorer")
+- **Peso recensioni** — le recensioni di utenti con alto livello potrebbero avere più visibilità
+- **Connessione con la galleria avatar esistente** — il sistema di rarità (common/rare/epic/legendary) e sblocco per recensioni/ristoranti è già una base, può evolvere in questo senso
+
+**Da valutare:** soglie di attività, come mostrarlo in UI, se esporre il livello pubblicamente nelle recensioni
+
+---
+
 ### Scheda ristorante come bottom sheet (stile Google Maps)
 **Priorità: media** — da fare dopo il merge di `feature/restaurants-v2` in `main`
 
