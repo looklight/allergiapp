@@ -10,7 +10,11 @@
 - [ ] Eseguire migrazione `019_admin_rls_policies.sql` nel SQL Editor (policy RLS per admin)
 - [ ] Creare bucket "images" (Public) dalla dashboard Supabase Storage
 - [ ] Deploy Edge Function `delete-account`: `supabase functions deploy delete-account`
-- [ ] Riabilitare email confirmation in Supabase (attualmente disabilitata per sviluppo)
+- [ ] **Conferma email / anti-spam** — attualmente disabilitata. Opzioni prima del go-live:
+  - **Opzione A (consigliata):** flusso OTP — Supabase manda codice 6 cifre, utente lo inserisce in-app. Zero deep link, flusso moderno. Richiede schermata OTP + logica in `signup.tsx`.
+  - **Opzione B:** link di conferma — richiede deep link (`allergiapp://auth/confirm`) + schermata "Controlla la tua email" + gestione `onAuthStateChange`. Il flusso attuale si romperebbe senza questi.
+  - **Opzione C (minima):** lasciare disabilitata e alzare i rate limit in Supabase Dashboard → *Authentication → Rate Limits*. Sufficiente per app di nicchia su App Store (Apple ID è già un filtro forte).
+  - ⚠️ Non abilitare la conferma senza implementare prima A o B — navigherebbe all'onboarding senza sessione attiva.
 
 ### Robustezza
 - [ ] RPC `get_restaurants_by_allergens`: fix performance (subquery scansiona tutte le reviews)
