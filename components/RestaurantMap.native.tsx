@@ -141,7 +141,7 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
               {((showMatchInfo && filtersTotal > 0) || restaurant.cuisine_types?.length > 0) && (
                 <View style={styles.calloutInfoRow}>
                   {showMatchInfo && filtersTotal > 0 && (() => {
-                    const badgeColor = coveredTotal >= filtersTotal ? '#2E7D32' : coveredTotal > 0 ? '#F9A825' : theme.colors.textSecondary;
+                    const badgeColor = coveredTotal >= filtersTotal ? theme.colors.success : coveredTotal > 0 ? '#F9A825' : theme.colors.textSecondary;
                     const badgeStyle = coveredTotal >= filtersTotal ? styles.calloutMatchFull : coveredTotal > 0 ? styles.calloutMatchPartial : styles.calloutMatchNone;
                     return (
                       <View style={[styles.calloutMatchBadge, badgeStyle]}>
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
 
   // Callout
   callout: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 10,
     padding: 12,
     minWidth: 160,
@@ -277,8 +277,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
   },
-  calloutMatchFull: { backgroundColor: '#E8F5E9' },
-  calloutMatchPartial: { backgroundColor: '#FFF8E1' },
-  calloutMatchNone: { backgroundColor: '#F5F5F5' },
+  calloutMatchFull: { backgroundColor: theme.colors.primaryLight },
+  calloutMatchPartial: { backgroundColor: theme.colors.amberLight },
+  calloutMatchNone: { backgroundColor: theme.colors.background },
   calloutMatchText: { fontSize: 11, fontWeight: '700' },
 });

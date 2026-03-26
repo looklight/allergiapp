@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   compatChipCovered: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.primaryLight,
   },
   compatChipUncovered: {
     backgroundColor: theme.colors.background,

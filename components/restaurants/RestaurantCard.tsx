@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   matchBadgeFull: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.primaryLight,
   },
   matchBadgePartial: {
     backgroundColor: theme.colors.amberLight,

@@ -74,7 +74,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds }: Re
             const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
             const isMatch = userNeeds?.includes(id) ?? false;
             const bg = isMatch ? theme.colors.primaryLight : theme.colors.amberLight;
-            const color = isMatch ? theme.colors.primary : theme.colors.amberText;
+            const color = isMatch ? theme.colors.success : theme.colors.amberText;
             return (
               <View key={id} style={[styles.dietaryBadge, { backgroundColor: bg }]}>
                 {isMatch && (
