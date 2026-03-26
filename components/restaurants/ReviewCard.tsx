@@ -4,19 +4,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
-import type { FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import { getAvatarById } from '../../constants/avatars';
 import StarRating from '../StarRating';
 import i18n from '../../utils/i18n';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
-
-const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: string }> = {
-  eu_allergen:      { bg: theme.colors.orangeLight,  text: theme.colors.warning },
-  intolerance:      { bg: theme.colors.amberLight,   text: theme.colors.amberText },
-  diet:             { bg: theme.colors.primaryLight,  text: theme.colors.primary },
-  food_sensitivity: { bg: theme.colors.background,   text: theme.colors.textSecondary },
-};
 
 interface ReviewCardProps {
   review: UnifiedReview;
@@ -80,14 +72,15 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds }: Re
             const r = getRestrictionById(id);
             if (!r) return null;
             const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
-            const colors = CATEGORY_COLORS[r.category];
             const isMatch = userNeeds?.includes(id) ?? false;
+            const bg = isMatch ? theme.colors.primaryLight : theme.colors.amberLight;
+            const color = isMatch ? theme.colors.primary : theme.colors.amberText;
             return (
-              <View key={id} style={[styles.dietaryBadge, { backgroundColor: colors.bg }]}>
+              <View key={id} style={[styles.dietaryBadge, { backgroundColor: bg }]}>
                 {isMatch && (
-                  <MaterialCommunityIcons name="check" size={11} color={colors.text} />
+                  <MaterialCommunityIcons name="check" size={11} color={color} />
                 )}
-                <Text style={[styles.dietaryBadgeText, { color: colors.text }]}>{label}</Text>
+                <Text style={[styles.dietaryBadgeText, { color }]}>{label}</Text>
               </View>
             );
           })}

@@ -80,13 +80,13 @@ export default function RestaurantCard({
             </Text>
             {restaurant.cuisine_types?.length > 0 && (
               <View style={styles.cuisineRow}>
-                <View style={styles.cuisineBadge}>
-                  <Text style={styles.cuisineBadgeText}>
-                    {getCuisineLabel(restaurant.cuisine_types[0], i18n.locale)}
-                  </Text>
-                </View>
-                {restaurant.cuisine_types.length > 1 && (
-                  <Text style={styles.cuisineMore}>+{restaurant.cuisine_types.length - 1}</Text>
+                {restaurant.cuisine_types.slice(0, 2).map(ct => (
+                  <View key={ct} style={styles.cuisineBadge}>
+                    <Text style={styles.cuisineBadgeText}>{getCuisineLabel(ct, i18n.locale)}</Text>
+                  </View>
+                ))}
+                {restaurant.cuisine_types.length > 2 && (
+                  <Text style={styles.cuisineMore}>+{restaurant.cuisine_types.length - 2}</Text>
                 )}
               </View>
             )}
