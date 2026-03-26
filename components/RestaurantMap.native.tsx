@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, Text as RNText } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -73,16 +73,82 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
 
   useEffect(() => {
     if (!centerOn || mapHeight === 0) return;
-    const latDelta = 0.15;
+    const latDelta = 0.02;
     const sheetCoverage = centerOn.sheetFraction;
     const offset = latDelta * (sheetCoverage / 2);
     mapRef.current?.animateToRegion({
       latitude: centerOn.latitude - offset,
       longitude: centerOn.longitude,
       latitudeDelta: latDelta,
-      longitudeDelta: 0.15,
+      longitudeDelta: 0.02,
     }, 600);
   }, [centerOn, mapHeight]);
+
+  // Memoize marker elements so that ClusteredMapView's internal `propsChildren`
+  // only changes when restaurant data or selection actually change — not on every
+  // parent re-render triggered by unrelated state (mapRegion, showSearchArea, …).
+  // Without this, the library rebuilds supercluster on each re-render using a
+  // potentially stale `currentRegion`, causing nearby markers to disappear after
+  // a cluster press.
+  const markerElements = useMemo(() =>
+    restaurants.filter(r => r.location).map(restaurant => {
+      const rating = restaurant.average_rating ?? 0;
+      const hasRating = rating > 0;
+      const isSelected = selectedId === restaurant.id;
+      const color = isSelected ? theme.colors.primary : ratingColor(rating);
+
+      return (
+        <Marker
+          key={restaurant.id}
+          coordinate={{
+            latitude: restaurant.location!.latitude,
+            longitude: restaurant.location!.longitude,
+          }}
+          tracksViewChanges={isSelected}
+          zIndex={isSelected ? 999 : undefined}
+          onPress={() => onMarkerSelect?.(restaurant.id)}
+        >
+          <View style={[
+            styles.markerContainer,
+            { borderColor: color },
+            isSelected && styles.markerSelected,
+          ]}>
+            {hasRating ? (
+              <RNText style={[styles.markerText, { color }]}>
+                {rating.toFixed(1)}
+              </RNText>
+            ) : (
+              <View style={[styles.markerDot, { backgroundColor: theme.colors.primary }]} />
+            )}
+          </View>
+          <View style={styles.markerArrow}>
+            <View style={[styles.markerArrowInner, { borderTopColor: color }]} />
+          </View>
+
+          <Callout
+            tooltip
+            onPress={() => router.push(`/restaurants/${restaurant.id}`)}
+          >
+            <Surface style={styles.callout} elevation={3}>
+              <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
+              <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
+              {restaurant.cuisine_types?.length > 0 && (
+                <View style={styles.calloutTagsRow}>
+                  {restaurant.cuisine_types.slice(0, 3).map(ct => (
+                    <View key={ct} style={styles.calloutBadge}>
+                      <Text style={styles.calloutBadgeText}>{getCuisineLabel(ct, i18n.locale)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              <Text style={styles.calloutCta}>{i18n.t('map.tapToOpen')}</Text>
+            </Surface>
+          </Callout>
+        </Marker>
+      );
+    }),
+    [restaurants, selectedId, onMarkerSelect, router]
+  );
 
   return (
     <ClusteredMapView
@@ -101,68 +167,13 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
       clusterColor={theme.colors.primary}
       clusterTextColor={theme.colors.onPrimary}
       clusterFontFamily="System"
-      radius={50}
-      minZoomLevel={0}
-      maxZoom={16}
+      edgePadding={{ top: 120, right: 80, bottom: 80, left: 80 }}
+      radius={25}
+      maxZoom={10}
       extent={512}
       animationEnabled
     >
-      {restaurants.filter(r => r.location).map(restaurant => {
-        const rating = restaurant.average_rating ?? 0;
-        const hasRating = rating > 0;
-        const isSelected = selectedId === restaurant.id;
-        const color = isSelected ? theme.colors.primary : ratingColor(rating);
-
-        return (
-          <Marker
-            key={restaurant.id}
-            coordinate={{
-              latitude: restaurant.location!.latitude,
-              longitude: restaurant.location!.longitude,
-            }}
-            tracksViewChanges={isSelected}
-            zIndex={isSelected ? 999 : undefined}
-            onPress={() => onMarkerSelect?.(restaurant.id)}
-          >
-            <View style={[
-              styles.markerContainer,
-              { borderColor: color },
-              isSelected && styles.markerSelected,
-            ]}>
-              {hasRating ? (
-                <RNText style={[styles.markerText, { color }]}>
-                  {rating.toFixed(1)}
-                </RNText>
-              ) : (
-                <View style={[styles.markerDot, { backgroundColor: theme.colors.primary }]} />
-              )}
-            </View>
-            <View style={styles.markerArrow}>
-              <View style={[styles.markerArrowInner, { borderTopColor: color }]} />
-            </View>
-
-            <Callout
-              tooltip
-              onPress={() => router.push(`/restaurants/${restaurant.id}`)}
-            >
-              <Surface style={styles.callout} elevation={3}>
-                <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
-                <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
-                {restaurant.cuisine_types?.length > 0 && (
-                  <View style={styles.calloutTagsRow}>
-                    {restaurant.cuisine_types.slice(0, 3).map(ct => (
-                      <View key={ct} style={styles.calloutBadge}>
-                        <Text style={styles.calloutBadgeText}>{getCuisineLabel(ct, i18n.locale)}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-                <Text style={styles.calloutCta}>{i18n.t('map.tapToOpen')}</Text>
-              </Surface>
-            </Callout>
-          </Marker>
-        );
-      })}
+      {markerElements}
     </ClusteredMapView>
   );
 }

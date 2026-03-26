@@ -114,7 +114,8 @@ export function useRestaurantGeo(params: FilterParams) {
         lastQueryCenter.current.latitude, lastQueryCenter.current.longitude,
         region.latitude, region.longitude,
       );
-      setShowSearchArea(dist > lastQueryRadius.current * 0.7);
+      const viewportRadiusKm = (region.latitudeDelta * 111) / 2;
+      setShowSearchArea(dist > lastQueryRadius.current * 0.7 && viewportRadiusKm >= 2);
     }
   }, []);
 
