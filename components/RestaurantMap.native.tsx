@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, Text as RNText } from 'react-native';
+import { StyleSheet, View, Text as RNText, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import ClusteredMapView from 'react-native-map-clustering';
 import { Marker, Callout } from 'react-native-maps';
@@ -37,17 +38,18 @@ type Props = {
   onMarkerSelect?: (id: string) => void;
   /** Called when the user taps an empty area of the map */
   onDeselect?: () => void;
+  /** Mostra badge coverage nel callout e colora i marker per compatibilità */
+  showMatchInfo?: boolean;
 };
 
-/** Colore del pallino in base al rating */
-function ratingColor(rating: number): string {
-  if (rating >= 4) return '#2E7D32';   // green
-  if (rating >= 3) return '#F9A825';   // amber
-  if (rating > 0) return '#E65100';    // orange
-  return theme.colors.textSecondary;   // grey = no reviews
+/** Colore marker in base alla copertura esigenze (usato solo con showMatchInfo) */
+function coverageColor(covered: number, total: number): string {
+  if (total === 0 || covered === 0) return theme.colors.textSecondary; // grigio = nessuna info
+  if (covered >= total) return '#2E7D32';                              // verde = tutto coperto
+  return '#F9A825';                                                    // ambra = parziale
 }
 
-export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, onRegionChangeComplete, selectedId, onMarkerSelect, onDeselect }: Props) {
+export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, onRegionChangeComplete, selectedId, onMarkerSelect, onDeselect, showMatchInfo }: Props) {
   const router = useRouter();
   const mapRef = useRef<any>(null);
   const [mapHeight, setMapHeight] = useState(0);
@@ -95,7 +97,14 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
       const rating = restaurant.average_rating ?? 0;
       const hasRating = rating > 0;
       const isSelected = selectedId === restaurant.id;
-      const color = isSelected ? theme.colors.primary : ratingColor(rating);
+
+      const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
+      const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+      const markerColor = isSelected
+        ? theme.colors.primary
+        : showMatchInfo
+          ? coverageColor(coveredTotal, filtersTotal)
+          : theme.colors.primary;
 
       return (
         <Marker
@@ -110,44 +119,56 @@ export default function RestaurantMap({ restaurants, centerOn, hasUserLocation, 
         >
           <View style={[
             styles.markerContainer,
-            { borderColor: color },
+            { borderColor: markerColor },
             isSelected && styles.markerSelected,
           ]}>
             {hasRating ? (
-              <RNText style={[styles.markerText, { color }]}>
+              <RNText style={[styles.markerText, { color: markerColor }]}>
                 {rating.toFixed(1)}
               </RNText>
             ) : (
-              <View style={[styles.markerDot, { backgroundColor: theme.colors.primary }]} />
+              <View style={[styles.markerDot, { backgroundColor: markerColor }]} />
             )}
           </View>
           <View style={styles.markerArrow}>
-            <View style={[styles.markerArrowInner, { borderTopColor: color }]} />
+            <View style={[styles.markerArrowInner, { borderTopColor: markerColor }]} />
           </View>
 
-          <Callout
-            tooltip
-            onPress={() => router.push(`/restaurants/${restaurant.id}`)}
-          >
-            <Surface style={styles.callout} elevation={3}>
-              <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
-              <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
-              {restaurant.cuisine_types?.length > 0 && (
-                <View style={styles.calloutTagsRow}>
-                  {restaurant.cuisine_types.slice(0, 3).map(ct => (
-                    <View key={ct} style={styles.calloutBadge}>
-                      <Text style={styles.calloutBadgeText}>{getCuisineLabel(ct, i18n.locale)}</Text>
+          <Callout tooltip>
+            <TouchableOpacity onPress={() => router.push(`/restaurants/${restaurant.id}`)}>
+              <Surface style={styles.callout} elevation={3}>
+                <Text style={styles.calloutName} numberOfLines={2}>{restaurant.name}</Text>
+                <Text style={styles.calloutCity} numberOfLines={1}>{restaurant.city}</Text>
+                {showMatchInfo && filtersTotal > 0 && (() => {
+                  const badgeColor = coveredTotal >= filtersTotal ? '#2E7D32' : coveredTotal > 0 ? '#F9A825' : theme.colors.textSecondary;
+                  const badgeStyle = coveredTotal >= filtersTotal ? styles.calloutMatchFull : coveredTotal > 0 ? styles.calloutMatchPartial : styles.calloutMatchNone;
+                  return (
+                    <View style={[styles.calloutMatchBadge, badgeStyle]}>
+                      <MaterialCommunityIcons name="shield-check" size={11} color={badgeColor} />
+                      <RNText style={[styles.calloutMatchText, { color: badgeColor }]}>
+                        {coveredTotal}/{filtersTotal}
+                      </RNText>
                     </View>
-                  ))}
-                </View>
-              )}
-              <Text style={styles.calloutCta}>{i18n.t('map.tapToOpen')}</Text>
-            </Surface>
+                  );
+                })()}
+                {restaurant.cuisine_types?.length > 0 && (
+                  <View style={styles.calloutTagsRow}>
+                    <View style={styles.calloutBadge}>
+                      <Text style={styles.calloutBadgeText}>{getCuisineLabel(restaurant.cuisine_types[0], i18n.locale)}</Text>
+                    </View>
+                    {restaurant.cuisine_types.length > 1 && (
+                      <Text style={styles.calloutBadgeMore}>+{restaurant.cuisine_types.length - 1}</Text>
+                    )}
+                  </View>
+                )}
+                <Text style={styles.calloutCta}>{i18n.t('map.tapToOpen')}</Text>
+              </Surface>
+            </TouchableOpacity>
           </Callout>
         </Marker>
       );
     }),
-    [restaurants, selectedId, onMarkerSelect, router]
+    [restaurants, selectedId, onMarkerSelect, router, showMatchInfo]
   );
 
   return (
@@ -244,5 +265,20 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   calloutBadgeText: { fontSize: 10, fontWeight: '500', color: theme.colors.primary },
+  calloutBadgeMore: { fontSize: 10, fontWeight: '500', color: theme.colors.textSecondary },
   calloutCta: { fontSize: 11, color: theme.colors.primary, fontWeight: '600' },
+  calloutMatchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  calloutMatchFull: { backgroundColor: '#E8F5E9' },
+  calloutMatchPartial: { backgroundColor: '#FFF8E1' },
+  calloutMatchNone: { backgroundColor: '#F5F5F5' },
+  calloutMatchText: { fontSize: 11, fontWeight: '700' },
 });

@@ -7,7 +7,6 @@ import { isRemoteUrl } from '../utils/url';
 // ─── Costanti ────────────────────────────────────────────────────────────────
 
 const QUERY_LIMITS: Record<string, number> = {
-  ALL_RESTAURANTS: 200,
   NEARBY_DEFAULT: 50,
   USER_REVIEWS: 20,
 };
@@ -291,18 +290,6 @@ function applyStats(rows: any[], statsMap: Map<string, { review_count: number; t
   });
 }
 
-async function getAllRestaurants(): Promise<Restaurant[]> {
-  try {
-    const { data, error } = await supabase.rpc('get_all_restaurants', {
-      max_results: QUERY_LIMITS.ALL_RESTAURANTS,
-    });
-    if (error) throw error;
-    return (data ?? []).map(mapRestaurant);
-  } catch (error) {
-    console.warn('[RestaurantService] Errore getAllRestaurants:', error);
-    return [];
-  }
-}
 
 async function addRestaurant(
   input: CreateRestaurantInput,
@@ -1013,7 +1000,6 @@ export const RestaurantService = {
   checkExistingByPlaceIds,
   getNearbyRestaurants,
   getRestaurantsForMyNeeds,
-  getAllRestaurants,
   addRestaurant,
   getRestaurantsByUser,
   removeOwnRestaurant,

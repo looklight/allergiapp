@@ -35,23 +35,16 @@ export function useRestaurantGeo(params: FilterParams) {
   const loadGeo = useCallback(async (lat: number, lng: number) => {
     setIsLoading(true);
     const RADIUS = 50;
-    let results = await RestaurantService.getNearbyRestaurants(lat, lng, RADIUS);
-    let geoMode = results.length > 0;
-    if (results.length === 0) {
-      results = await RestaurantService.getAllRestaurants();
-      geoMode = false;
-    }
+    const results = await RestaurantService.getNearbyRestaurants(lat, lng, RADIUS);
     setRestaurants(results);
     lastQueryCenter.current = { latitude: lat, longitude: lng };
     lastQueryRadius.current = RADIUS;
-    setIsGeoMode(geoMode);
+    setIsGeoMode(results.length > 0);
     setIsLoading(false);
   }, []);
 
-  const loadAll = useCallback(async () => {
-    setIsLoading(true);
-    const results = await RestaurantService.getAllRestaurants();
-    setRestaurants(results);
+  const loadAll = useCallback(() => {
+    setRestaurants([]);
     setIsGeoMode(false);
     setIsLoading(false);
   }, []);
@@ -96,16 +89,16 @@ export function useRestaurantGeo(params: FilterParams) {
     }
   }, [userLocation, forMyNeeds, filterAllergens, loadGeo, loadForMyNeeds]);
 
-  // Fallback: se dopo 3s non c'e GPS, carica tutti
+  // Fallback: se dopo 3s non c'è GPS, ferma il loading e mostra lista vuota
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!hasLoadedGeo.current) {
         hasLoadedGeo.current = true;
-        loadAll();
+        setIsLoading(false);
       }
     }, 3000);
     return () => clearTimeout(timer);
-  }, [loadAll]);
+  }, []);
 
   const handleRegionChange = useCallback((region: MapRegion) => {
     setMapRegion(region);
@@ -115,13 +108,13 @@ export function useRestaurantGeo(params: FilterParams) {
         region.latitude, region.longitude,
       );
       const viewportRadiusKm = (region.latitudeDelta * 111) / 2;
-      setShowSearchArea(dist > lastQueryRadius.current * 0.7 && viewportRadiusKm >= 2);
+      setShowSearchArea(dist > lastQueryRadius.current * 0.7 && viewportRadiusKm >= 2 && viewportRadiusKm <= 500);
     }
   }, []);
 
   const handleSearchArea = useCallback(async () => {
     if (!mapRegion) return;
-    const radiusKm = Math.max(1, Math.min(100, (mapRegion.latitudeDelta * 111) / 2));
+    const radiusKm = Math.max(1, Math.min(500, (mapRegion.latitudeDelta * 111) / 2));
     setIsLoading(true);
     setShowSearchArea(false);
     setIsAreaSearch(true);

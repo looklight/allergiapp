@@ -34,12 +34,22 @@ export default function RestaurantsScreen() {
   const [filterDiets, setFilterDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
+  // Segnala che il prossimo cambio di filterAllergens/filterDiets viene dal profilo
+  const profileJustChanged = useRef(false);
+  // Segnala che i filtri sono stati modificati dentro il FilterModal
+  const filterChangedInModal = useRef(false);
+
+  // Sincronizza sempre (con o senza forMyNeeds) — necessario per aggiornamenti da Settings
   useEffect(() => {
-    if (!forMyNeeds) {
-      setFilterAllergens([...dietaryNeeds.allergens]);
-      setFilterDiets([...(dietaryNeeds.diets ?? [])]);
-    }
+    profileJustChanged.current = true;
+    setFilterAllergens([...dietaryNeeds.allergens]);
+    setFilterDiets([...(dietaryNeeds.diets ?? [])]);
   }, [dietaryNeeds.allergens, dietaryNeeds.diets]);
+
+  // Traccia modifiche ai filtri durante la sessione modale
+  useEffect(() => {
+    if (showFilterModal) filterChangedInModal.current = true;
+  }, [filterAllergens, filterDiets]);
 
   // Ripristina preferenza "Per me" da storage per utenti loggati
   const forMyNeedsRestored = useRef(false);
@@ -68,6 +78,17 @@ export default function RestaurantsScreen() {
 
   // --- Hooks ---
   const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, getSheetFraction });
+
+  // Re-interroga quando il profilo cambia con forMyNeeds attivo.
+  // geo.loadForMyNeeds si ri-crea ogni volta che filterAllergens/filterDiets cambiano,
+  // quindi questo effect scatta esattamente quando i filtri sono già aggiornati nello state.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!profileJustChanged.current) return;
+    profileJustChanged.current = false;
+    if (!forMyNeeds || !geo.userLocation) return;
+    geo.loadForMyNeeds(geo.userLocation.latitude, geo.userLocation.longitude);
+  }, [geo.loadForMyNeeds]);
 
   const { mapRestaurants, distanceMap, filteredRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
@@ -105,7 +126,18 @@ export default function RestaurantsScreen() {
     else router.push('/restaurants/add');
   };
 
-  const handleCloseFilterModal = useCallback(() => setShowFilterModal(false), []);
+  const handleOpenFilterModal = useCallback(() => {
+    filterChangedInModal.current = false;
+    setShowFilterModal(true);
+  }, []);
+
+  const handleCloseFilterModal = useCallback(() => {
+    setShowFilterModal(false);
+    if (filterChangedInModal.current && forMyNeeds && geo.userLocation) {
+      filterChangedInModal.current = false;
+      geo.loadForMyNeeds(geo.userLocation.latitude, geo.userLocation.longitude);
+    }
+  }, [forMyNeeds, geo.userLocation, geo.loadForMyNeeds]);
 
   const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
     if (!user) return;
@@ -210,7 +242,7 @@ export default function RestaurantsScreen() {
           )}
         </View>
         <TouchableOpacity
-          onPress={() => isAuthenticated ? setShowFilterModal(true) : router.push('/auth/login')}
+          onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
           style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
           activeOpacity={0.7}
         >
@@ -260,7 +292,7 @@ export default function RestaurantsScreen() {
               ? 'Prova con un altro termine di ricerca'
               : activeFilters.length > 0
                 ? 'Prova a rimuovere i filtri'
-                : 'Sii il primo ad aggiungerne uno!'}
+                : 'Cerca una città per vedere i ristoranti vicini'}
           </Text>
           {searchQuery.length < 2 && (
             <Button mode="contained" onPress={handleAddPress} style={styles.emptyButton}>
@@ -313,10 +345,11 @@ export default function RestaurantsScreen() {
           selectedId={selectedId}
           onMarkerSelect={handleMarkerSelect}
           onDeselect={handleDeselect}
+          showMatchInfo={forMyNeeds}
         />
         {geo.showSearchArea && (
           <TouchableOpacity
-            style={styles.searchAreaButton}
+            style={[styles.searchAreaButton, { top: insets.top + 6 }]}
             onPress={geo.handleSearchArea}
             activeOpacity={0.85}
           >
@@ -325,15 +358,15 @@ export default function RestaurantsScreen() {
           </TouchableOpacity>
         )}
         <View style={[styles.mapOverlayActions, { top: insets.top + 12 }]}>
-          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.primary} />
-          </TouchableOpacity>
           <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85}>
             <MaterialCommunityIcons
               name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
               size={22}
               color={theme.colors.primary}
             />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
+            <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -392,7 +425,6 @@ const styles = StyleSheet.create({
     right: 12,
     flexDirection: 'column',
     gap: 10,
-    zIndex: 10,
   },
   mapOverlayButton: {
     width: 44,
@@ -472,20 +504,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    opacity: 0.95,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 24,
-    elevation: 4,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
     zIndex: 10,
   },
   searchAreaText: {
     color: theme.colors.onPrimary,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '500',
   },
   centered: {
     justifyContent: 'center',

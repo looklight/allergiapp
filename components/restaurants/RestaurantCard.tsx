@@ -2,7 +2,9 @@ import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
+import { getCuisineLabel } from '../../constants/restaurantCategories';
 import StarRating from '../StarRating';
+import i18n from '../../utils/i18n';
 import type { Restaurant } from '../../services/restaurantService';
 
 /** Genera un colore consistente dal nome del ristorante per il placeholder. */
@@ -39,8 +41,7 @@ export default function RestaurantCard({
 }: RestaurantCardProps) {
   const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
   const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
-  const matchingReviews = restaurant.matching_reviews ?? 0;
-  const hasMatch = showMatchInfo && filtersTotal > 0 && matchingReviews > 0;
+  const hasMatch = showMatchInfo && filtersTotal > 0;
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
@@ -77,6 +78,18 @@ export default function RestaurantCard({
                 </Text>
               )}
             </Text>
+            {restaurant.cuisine_types?.length > 0 && (
+              <View style={styles.cuisineRow}>
+                <View style={styles.cuisineBadge}>
+                  <Text style={styles.cuisineBadgeText}>
+                    {getCuisineLabel(restaurant.cuisine_types[0], i18n.locale)}
+                  </Text>
+                </View>
+                {restaurant.cuisine_types.length > 1 && (
+                  <Text style={styles.cuisineMore}>+{restaurant.cuisine_types.length - 1}</Text>
+                )}
+              </View>
+            )}
             <View style={styles.cardBottom}>
               {(restaurant.review_count ?? 0) > 0 ? (
                 <View style={styles.cardRating}>
@@ -197,6 +210,28 @@ const styles = StyleSheet.create({
   },
   cardRatingText: {
     fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  cuisineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  cuisineBadge: {
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  cuisineBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: theme.colors.primary,
+  },
+  cuisineMore: {
+    fontSize: 11,
+    fontWeight: '500',
     color: theme.colors.textSecondary,
   },
   cardNoReviews: {
