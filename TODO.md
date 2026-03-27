@@ -13,18 +13,11 @@
 - [ ] **Termini di Servizio** — documento separato dalla privacy policy
 
 ### Azioni manuali Supabase
-- [ ] Eseguire migrazione `019_admin_rls_policies.sql` nel SQL Editor (policy RLS per admin)
-- [ ] Creare bucket "images" (Public) dalla dashboard Supabase Storage
-- [ ] Deploy Edge Function `delete-account`: `supabase functions deploy delete-account`
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Opzioni prima del go-live:
   - **Opzione A (consigliata):** flusso OTP — Supabase manda codice 6 cifre, utente lo inserisce in-app. Zero deep link, flusso moderno. Richiede schermata OTP + logica in `signup.tsx`.
   - **Opzione B:** link di conferma — richiede deep link (`allergiapp://auth/confirm`) + schermata "Controlla la tua email" + gestione `onAuthStateChange`. Il flusso attuale si romperebbe senza questi.
   - **Opzione C (minima):** lasciare disabilitata e alzare i rate limit in Supabase Dashboard → *Authentication → Rate Limits*. Sufficiente per app di nicchia su App Store (Apple ID è già un filtro forte).
   - ⚠️ Non abilitare la conferma senza implementare prima A o B — navigherebbe all'onboarding senza sessione attiva.
-
-### Robustezza
-- [ ] RPC `get_restaurants_by_allergens`: fix performance (subquery scansiona tutte le reviews)
-- [ ] `getRestaurant`: unificare in singola RPC (attualmente 2 request separate)
 
 ### Test manuali
 - [ ] Aggiungere recensione con piatti e foto
@@ -122,7 +115,6 @@ Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 
 ### Refactor add-review.tsx (~920 righe)
 - Estrarre sezione tag cucina in componente `CuisineTagsSection`
-- [x] ~~Estrarre sezione esigenze alimentari in componente `DietaryNeedsSection`~~
 
 ### Dipendenze Firebase residue
 - `@react-native-firebase/*` + `plugins/withModularHeaders.js`: necessari per Analytics + Remote Config
@@ -176,6 +168,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
 - Animazioni: migrare a `react-native-reanimated` + `react-native-gesture-handler`
 - **Uniformare le pagine e integrare la card nella scheda ristorante** — idea da investigare: mostrare la card allergenica direttamente nella pagina del ristorante, così l'utente ha in un unico posto sia le info del locale che la sua card da mostrare al cameriere. Valutare coerenza visiva con il resto dell'app e se ha senso come punto di accesso alternativo alla card.
+- **`getRestaurant` — unificare in singola RPC** — attualmente fa 2 request separate (SELECT restaurants + RPC get_restaurant_stats). Ottimizzazione non urgente, da fare solo se l'apertura scheda ristorante risulta lenta in produzione.
 
 ---
 
@@ -196,8 +189,10 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [x] Foto review con thumbnails efficienti (JSONB `photos`)
 - [x] Gallery foto utenti nella scheda ristorante
 - [x] Badge esigenze alimentari colorati per categoria
-- [x] Edge Function `delete-account` implementata (`supabase/functions/delete-account/`)
+- [x] Edge Function `delete-account` implementata e deployata
 - [x] Policy storage bucket "images" (`008_storage_policies.sql`)
+- [x] Bucket "images" creato (Public) su Supabase Storage
+- [x] Migrazione `019_admin_rls_policies.sql` eseguita (policy RLS per admin)
 - [x] Audit codice e fix (mar 2026): RLS admin, null checks, file size limit, context memoization, error handling, stale request protection, safe JSON parse
 - [x] Profilo: rimosso stat "Piatti" (legacy), contatori dinamici (ristoranti, recensioni, preferiti)
 - [x] Preferiti spostati dall'header ristoranti alla sezione profilo
