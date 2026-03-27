@@ -23,7 +23,6 @@
 - [ ] Aggiungere recensione con piatti e foto
 - [ ] Modifica/cancella recensione
 - [ ] Preferiti (toggle + lista da profilo)
-- [ ] Like piatti
 - [ ] Foto menu
 - [ ] Segnalazione ristorante
 - [ ] Profilo utente (contatori dinamici, preferiti, recensioni)
@@ -31,8 +30,6 @@
 - [ ] Modifica profilo + galleria avatar
 - [ ] Logout
 - [ ] Elimina account
-- [ ] Utente non loggato: redirect login su filtri, recensioni, preferiti
-- [ ] Persistenza filtro "Per me" tra sessioni
 
 ---
 
@@ -160,7 +157,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [ ] **Premium non verificato server-side** — `is_premium` e `subscription_expires_at` esistono ma nessuna RPC o policy verifica che la subscription sia ancora attiva. Un ristorante scaduto continua ad avere priorità nell'ordinamento (`ORDER BY is_premium DESC`)
 
 ### Priorità bassa
-- [ ] **Droppare `review_dishes` e `dish_likes`** — tabelle deprecate dalla migration 015 (foto migrate a `reviews.photos` JSONB). La `upsert_review` fa ancora `DELETE FROM review_dishes` inutilmente
+- [x] **Droppare `review_dishes` e `dish_likes`** — tabelle deprecate dalla migration 015 (foto migrate a `reviews.photos` JSONB). La `upsert_review` fa ancora `DELETE FROM review_dishes` inutilmente
 - [ ] **FK inconsistente `restaurant_cuisine_votes`** — referenzia `auth.users` direttamente invece di `profiles` come tutte le altre tabelle
 - [ ] **Audit schema Supabase vs app** — verificare che tutte le colonne/tabelle del DB siano ancora usate e coerenti con il codice attuale. Sospetti: colonna `dish_rating` (potrebbe essere legacy), tabelle `review_dishes` e `dish_likes` (già segnalate sopra), eventuali colonne orfane aggiunte in migrazioni intermedie. Confrontare lo schema live con le RPC e i tipi TypeScript.
 

@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 5. Elimina il profilo (cascade elimina favorites, dish_likes; SET NULL su reviews, reports)
+    // 5. Elimina il profilo (cascade elimina favorites; SET NULL su reviews, reports)
     const { error: profileError } = await adminClient
       .from("profiles")
       .delete()
