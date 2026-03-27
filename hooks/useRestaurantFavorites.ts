@@ -15,8 +15,12 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
     setFavoriteIds(new Set(favs.map(f => f.restaurant_id)));
   }, [userId]);
 
+  const pendingRef = useRef<Set<string>>(new Set());
+
   const toggleFavorite = useCallback(async (restaurantId: string): Promise<boolean> => {
     if (!userId) return false;
+    if (pendingRef.current.has(restaurantId)) return false;
+    pendingRef.current.add(restaurantId);
     const willBeFav = !favoriteIdsRef.current.has(restaurantId);
     // Optimistic update
     setFavoriteIds(prev => {
@@ -54,6 +58,8 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
         ...r, favorite_count: (r.favorite_count ?? 0) + (willBeFav ? -1 : 1),
       }));
       return false;
+    } finally {
+      pendingRef.current.delete(restaurantId);
     }
   }, [userId, updateRestaurant]);
 

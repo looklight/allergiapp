@@ -35,19 +35,74 @@
 
 ## Feature da implementare
 
-### Like alle recensioni
-**Priorità: media**
+---
 
-Permettere agli utenti di mettere like alle recensioni più utili. Serve a:
-- Dare visibilità alle recensioni di qualità
-- Aiutare chi legge a identificare i contributi più affidabili
-- Creare un incentivo per scrivere recensioni dettagliate
+### Risposte alle recensioni (solo ristoranti premium)
+**Priorità: media — da fare DOPO il merge restaurants-v2 e il flusso claim completo**
 
-**Da valutare:**
-- Tabella `review_likes` (userId + reviewId, unique constraint)
-- Ordinamento recensioni per like count vs. data
-- Limite like per utente non autenticato (solo utenti registrati)
-- Connessione con il sistema di gerarchia utenti (vedi sotto)
+I gestori dei ristoranti certificati (premium) possono rispondere pubblicamente alle recensioni degli utenti, come su Google Maps e Tripadvisor. Una sola risposta per recensione, modificabile e cancellabile.
+
+**Dipendenze bloccanti (da completare prima):**
+1. Merge `feature/restaurants-v2` in `main`
+2. Trigger `claim → owner_id` (debito tecnico — quando un claim viene approvato dall'admin, `restaurants.owner_id` deve essere settato automaticamente)
+3. Infrastruttura `isPremiumActive` (colonna `is_premium` + verifica `subscription_expires_at`)
+
+**DB — già da fare ora (migration `029_review_replies.sql`):**
+```sql
+CREATE TABLE review_replies (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  review_id     UUID NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  owner_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  text          TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (review_id) -- una sola risposta per recensione
+);
+-- RLS: tutti leggono, solo owner del ristorante premium può scrivere/modificare/eliminare
+```
+
+**Codice app (da fare dopo le dipendenze):**
+- [ ] Aggiornare `getReviews` per fare LEFT JOIN con `review_replies`
+- [ ] Aggiungere `reply?: { text, createdAt, updatedAt }` a `Review` e `UnifiedReview`
+- [ ] Service: `addReviewReply(reviewId, text)`, `updateReviewReply(replyId, text)`, `deleteReviewReply(replyId)`
+- [ ] Hook `useRestaurantDetail`: `handleAddReply`, `handleEditReply`, `handleDeleteReply` con optimistic update
+- [ ] `ReviewCard`: blocco risposta indentato sotto la recensione (icona + "Risposta del locale" + nome ristorante + testo + data)
+- [ ] `ReviewCard`: pulsante "Rispondi" / "Modifica" visibile solo se `user.uid === review.restaurantOwnerId`
+- [ ] Input risposta: `Alert.prompt` inline (stesso pattern del menu URL) o modale dedicata
+
+**UI — come appare:**
+```
+┌─ Avatar  Nome utente          ★★★★☆ ─┐
+│  "Ottimo posto, personale attento..."  │
+│  [👍 3]                                │
+│                                        │
+│  ┌─ 🏪 Risposta del locale ──────────┐ │
+│  │ "Grazie mille! Vi aspettiamo..."  │ │
+│  │ 12 apr 2026                       │ │
+│  └───────────────────────────────────┘ │
+└────────────────────────────────────────┘
+```
+
+---
+
+### Notifiche per incentivare le recensioni
+**Priorità: bassa — da valutare dopo il lancio**
+
+Ricordare agli utenti di lasciare una recensione dopo una visita a un ristorante salvato tra i preferiti o cercato di recente. L'obiettivo è aumentare il numero di recensioni con esigenze alimentari, che sono il cuore del valore dell'app.
+
+**Messaggio chiave:** "Sei stato da [ristorante]? Aiuta altri con allergie a scegliere in sicurezza — lascia una recensione."
+
+**Canali da valutare:**
+- **Push notification** — richiede `expo-notifications`, permesso esplicito utente. Trigger: X giorni dopo l'aggiunta ai preferiti senza recensione, oppure geofencing se nel raggio del ristorante (più invasivo).
+- **In-app prompt** — banner o modale alla riapertura dell'app dopo N giorni dall'ultimo accesso alla scheda ristorante senza aver scritto recensione. Meno intrusivo, nessun permesso aggiuntivo.
+- **Email** — tramite Supabase Edge Function + servizio email (es. Resend). Richiede consenso esplicito GDPR.
+
+**Considerazioni:**
+- Partire dall'in-app prompt (zero permessi, zero infrastruttura aggiuntiva)
+- Limitare a 1 reminder per ristorante per non essere invasivi
+- Collegabile al sistema gerarchia utenti: recensioni scritte dopo il reminder potrebbero valere di più per i badge
+- Valutare A/B test sul copy del messaggio
 
 ---
 
@@ -69,18 +124,31 @@ Gli utenti più attivi e contributivi dovrebbero essere riconoscibili e "premiat
 ### Scheda ristorante come bottom sheet (stile Google Maps)
 **Priorità: media** — da fare dopo il merge di `feature/restaurants-v2` in `main`
 
-Attualmente la scheda ristorante si apre come schermata laterale. L'obiettivo è che si apra dal basso come Google Maps, con la mappa e la lista visibili dietro.
+Attualmente la scheda ristorante si apre come schermata separata. L'obiettivo è che si apra dal basso come Google Maps: la mappa rimane sempre visibile, tap su pin o card della lista fa emergere il dettaglio dal basso senza cambiare pagina.
+
+**Infrastruttura già pronta:**
+- `DraggableBottomSheet` già funzionante con snap points configurabili
+- `useRestaurantDetail` hook già separato dalla UI
+- `selectedId` state già in `restaurants.tsx`
 
 **Approccio:**
-1. Estrarre il contenuto di `app/restaurants/[id].tsx` in un componente `RestaurantDetailSheet` (usa già `useRestaurantDetail` hook, che è separato)
-2. In `app/(tabs)/restaurants.tsx`, quando si tocca un ristorante, mostrare `RestaurantDetailSheet` in un secondo `DraggableBottomSheet` sovrapposto alla lista
-3. La lista sheet si abbassa parzialmente, la detail sheet appare sopra con snap points [0.55, 0.92]
-4. `app/restaurants/[id].tsx` continua ad esistere per navigazioni dirette (da preferiti, recensioni, profilo, ecc.)
+1. Estrarre il contenuto di `app/restaurants/[id].tsx` in `components/restaurants/RestaurantDetailSheet.tsx` (riusa `useRestaurantDetail` che è già hook puro)
+2. In `app/(tabs)/restaurants.tsx` aggiungere `selectedDetailId` state; intercettare il `router.push` su tap card/callout e invece impostare questo state
+3. Mostrare `RestaurantDetailSheet` in un secondo `DraggableBottomSheet` sovrapposto, snap points `[0.55, 0.92]`
+4. Quando la detail sheet si apre, il list sheet si abbassa al punto minimo
+5. `app/restaurants/[id].tsx` resta per navigazioni dirette (preferiti, recensioni, profilo, deep link notifiche)
 
 **File coinvolti:**
 - `app/restaurants/[id].tsx` → estrarre UI in `components/restaurants/RestaurantDetailSheet.tsx`
-- `app/(tabs)/restaurants.tsx` → gestire `selectedDetailId` + seconda sheet
-- `components/DraggableBottomSheet.tsx` → già funzionante, nessuna modifica prevista
+- `app/(tabs)/restaurants.tsx` → gestire `selectedDetailId` + seconda sheet + coordinamento snap
+- `components/RestaurantMap.native.tsx` → il callout `onPress` intercettato invece di `router.push`
+- `components/DraggableBottomSheet.tsx` → nessuna modifica prevista
+
+**Rischi e punti di attenzione:**
+- **Gesture conflict tra due sheet sovrapposti** — due `PanResponder` annidati: verificare che lo swipe sul detail sheet non attivi il list sheet sottostante
+- **Modal annidati** — la detail sheet contiene `PhotoGalleryModal` e altri modal; testare che si comportino correttamente dentro uno sheet
+- **Azioni secondarie** — "Aggiungi recensione", "Segnala", "Modifica" navigano a pagine separate: dal sheet possono fare `router.push` normalmente (e il sheet si chiude), oppure diventare modal inline (da decidere)
+- **Android back button** — con lo sheet, il tasto back deve chiudere il detail sheet (non navigare indietro); gestire con `BackHandler`
 
 ---
 
@@ -96,6 +164,31 @@ Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 - [ ] Creare le immagini per gli avatar bloccati (attualmente placeholder)
 - [ ] Valutare nuovi avatar e condizioni di sblocco
 
+### Ristoranti Premium (certificati)
+**Priorità: media — da pianificare dopo la stabilizzazione del lancio**
+
+Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium (verificati/certificati). La colonna `is_premium` esiste già su `restaurants`, manca il flusso completo.
+
+**Funzionalità esclusive premium:**
+- **Menu digitale** — link o caricamento PDF/immagini (già nascosto nell'UI, da riabilitare per premium)
+- **Risposta alle recensioni** — il gestore può rispondere pubblicamente alle recensioni degli utenti
+- **Badge "Verificato"** nella lista ristoranti e nella scheda, con tooltip esplicativo
+- **Priorità nell'ordinamento** — già implementata (`ORDER BY is_premium DESC`), da sfruttare esplicitamente
+- **Statistiche avanzate** — quanti utenti con allergie X li hanno visitati, andamento recensioni, allergie più cercate per quel locale
+- **Link prenotazione** — integrazione TheFork / OpenTable / URL custom
+- **Foto di copertina** — immagine hero personalizzata nella scheda (attualmente solo foto dalle recensioni)
+- **Notifiche al gestore** — nuova recensione ricevuta, nuovo preferito aggiunto
+
+**Flusso da costruire:**
+1. Utente/gestore richiede claim dal profilo ristorante (`restaurant_claims` esiste già)
+2. Admin approva il claim dall'admin dashboard → trigger setta `owner_id` + eventualmente `is_premium`
+3. Gestore accede a sezione "Il mio ristorante" con feature aggiuntive
+4. Subscription / scadenza gestita tramite `subscription_expires_at` (colonna già presente)
+
+**Note:**
+- Il trigger `claim → owner_id` è già nel debito tecnico (nessun automatismo attuale)
+- Valutare se `is_premium` viene dato con il claim o separatamente (es. freemium: claim gratuito, feature premium a pagamento)
+
 ### Admin dashboard
 - [x] Migrata da Firebase a Supabase (mar 2026)
 - [ ] Gestione claim ristoranti
@@ -105,10 +198,10 @@ Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 
 ## Debito tecnico
 
-### Due sistemi di diete/restrizioni non unificati
-- `types/index.ts` — `DietId` (profilo utente ristoranti)
-- `constants/dietModes.ts` — `DietModeId` (sezione card)
-- Usati in contesti diversi ma creano confusione. Valutare se unificare.
+### Due sistemi di diete/restrizioni — intenzionalmente separati
+- `types/index.ts` — `DietId` → profilo utente ristoranti (filtro "Per me", salvato su Supabase)
+- `constants/dietModes.ts` — `DietModeId` → sezione card (UI, colori, traduzioni, restrizioni auto-select)
+- Scopi distinti, non da unificare. `pregnancy` esiste solo in card, `vegan` solo in DietId.
 
 ### Refactor add-review.tsx (~920 righe)
 - Estrarre sezione tag cucina in componente `CuisineTagsSection`
@@ -119,12 +212,6 @@ Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 
 ---
 
-## Google Play / Android
-In attesa: closed testing con 12 tester (inviato ~inizio mar 2026).
-- [ ] Attendere completamento revisione closed testing
-- [ ] Aggiungere profilo Android submit in `eas.json` (serviceAccount + track)
-- [ ] Caricare AAB su Google Play Console e pubblicare
-- [ ] Aggiornare link Google Play nel sito (`index.html`) quando pubblicata
 
 ## Deploy
 - [ ] Deploy admin dashboard su Vercel
@@ -157,19 +244,19 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [ ] **Premium non verificato server-side** — `is_premium` e `subscription_expires_at` esistono ma nessuna RPC o policy verifica che la subscription sia ancora attiva. Un ristorante scaduto continua ad avere priorità nell'ordinamento (`ORDER BY is_premium DESC`)
 
 ### Priorità bassa
-- [x] **Droppare `review_dishes` e `dish_likes`** — tabelle deprecate dalla migration 015 (foto migrate a `reviews.photos` JSONB). La `upsert_review` fa ancora `DELETE FROM review_dishes` inutilmente
 - [ ] **FK inconsistente `restaurant_cuisine_votes`** — referenzia `auth.users` direttamente invece di `profiles` come tutte le altre tabelle
-- [ ] **Audit schema Supabase vs app** — verificare che tutte le colonne/tabelle del DB siano ancora usate e coerenti con il codice attuale. Sospetti: colonna `dish_rating` (potrebbe essere legacy), tabelle `review_dishes` e `dish_likes` (già segnalate sopra), eventuali colonne orfane aggiunte in migrazioni intermedie. Confrontare lo schema live con le RPC e i tipi TypeScript.
+- [ ] **Audit schema Supabase vs app** — verificare che tutte le colonne/tabelle del DB siano ancora usate e coerenti con il codice attuale. Sospetti: colonna `dish_rating` (potrebbe essere legacy), eventuali colonne orfane aggiunte in migrazioni intermedie. Confrontare lo schema live con le RPC e i tipi TypeScript.
 
 ## Futuri (quando il volume cresce)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
 - Animazioni: migrare a `react-native-reanimated` + `react-native-gesture-handler`
 - **Uniformare le pagine e integrare la card nella scheda ristorante** — idea da investigare: mostrare la card allergenica direttamente nella pagina del ristorante, così l'utente ha in un unico posto sia le info del locale che la sua card da mostrare al cameriere. Valutare coerenza visiva con il resto dell'app e se ha senso come punto di accesso alternativo alla card.
-- **`getRestaurant` — unificare in singola RPC** — attualmente fa 2 request separate (SELECT restaurants + RPC get_restaurant_stats). Ottimizzazione non urgente, da fare solo se l'apertura scheda ristorante risulta lenta in produzione.
+- **Consolidamento query dettaglio ristorante in singola RPC** — `useRestaurantDetail` fa 9 query parallele (ristorante+stats, recensioni, foto menu, segnalazioni, voti cucina + 4 query utente). Creare una RPC `get_restaurant_detail(id, user_id)` che ritorna tutto in un'unica chiamata. Tradeoff: meno latenza ma logica SQL più complessa e meno flessibile durante lo sviluppo. **Da fare quando la scheda ristorante è completata e lo schema si è stabilizzato.**
 
 ---
 
 ## Completati
+- [x] Like alle recensioni (tabella `review_likes`, trigger `likes_count`, RPC `toggle_review_like`, optimistic update UI)
 - [x] Migrazione Firebase → Supabase (auth, database, storage)
 - [x] Admin dashboard migrata da Firebase a Supabase
 - [x] Tag cucina multi-tag con voti community
@@ -200,6 +287,8 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [x] Card selezionata evidenziata con sfondo primaryLight
 - [x] Gate autenticazione su filtri e recensioni (redirect login)
 - [x] Preferenza "Per me" persistente in AsyncStorage
+- [x] Droppare `review_dishes` e `dish_likes` — migrazione 027, upsert_review e get_restaurant_stats aggiornate
+- [x] App pubblicata su Google Play
 
 ---
 

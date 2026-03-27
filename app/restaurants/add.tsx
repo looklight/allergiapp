@@ -393,6 +393,33 @@ export default function AddRestaurantScreen() {
 
     setIsSubmitting(true);
 
+    // Check duplicati per proximity (50m, stesso nome)
+    const duplicate = await RestaurantService.checkNearbyDuplicates(
+      selectedPlace.name,
+      selectedPlace.location.latitude,
+      selectedPlace.location.longitude,
+    );
+    if (duplicate) {
+      setIsSubmitting(false);
+      Alert.alert(
+        'Ristorante già presente',
+        `"${duplicate.name}" sembra essere già nella community.`,
+        [
+          { text: 'Vai al ristorante', onPress: () => router.replace(`/restaurants/${duplicate.id}`) },
+          { text: 'Aggiungi comunque', style: 'destructive', onPress: () => { doSubmit(); } },
+          { text: 'Annulla', style: 'cancel' },
+        ],
+      );
+      return;
+    }
+
+    await doSubmit();
+  };
+
+  const doSubmit = async () => {
+    if (!selectedPlace || !user) return;
+    setIsSubmitting(true);
+
     const input: CreateRestaurantInput = {
       name: selectedPlace.name,
       address: selectedPlace.address,

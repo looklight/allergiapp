@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -25,44 +25,56 @@ interface RestaurantHeaderProps {
   matchInfo?: MatchInfo;
   hasUserNeeds?: boolean;
   isAuthenticated?: boolean;
+  onScrollToReviews?: () => void;
+  hideMapsButton?: boolean;
+  /** When true, hides the restaurant name, rating row and Maps button (used in sheet context where they appear in the fixed header) */
+  hideNameAndRating?: boolean;
 }
 
-export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, isAuthenticated }: RestaurantHeaderProps) {
+export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, isAuthenticated, onScrollToReviews, hideMapsButton, hideNameAndRating }: RestaurantHeaderProps) {
   const [compatExpanded, setCompatExpanded] = useState(false);
   const [showCuisineHint, setShowCuisineHint] = useState(false);
   const isFull = matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
   const router = useRouter();
 
+  useEffect(() => {
+    setCompatExpanded(false);
+  }, [matchInfo]);
+
   return (
     <View style={styles.section}>
-      <View style={styles.sectionTopRow}>
-        <Text style={[styles.restaurantName, { flex: 1 }]}>{restaurant.name}</Text>
-        {(restaurant.google_place_id || restaurant.address) && (
-          <TouchableOpacity
-            style={styles.mapsBtn}
-            activeOpacity={0.7}
-            onPress={() => {
-              const url = restaurant.google_place_id
-                ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.google_place_id}`
-                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address!)}`;
-              Linking.openURL(url);
-            }}
-          >
-            <MaterialCommunityIcons name="google-maps" size={26} color="#EA4335" />
-            <Text style={styles.mapsBtnText}>Dettagli</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      {!hideNameAndRating && (
+        <>
+          <View style={styles.sectionTopRow}>
+            <Text style={[styles.restaurantName, { flex: 1 }]}>{restaurant.name}</Text>
+            {!hideMapsButton && (restaurant.google_place_id || restaurant.address) && (
+              <TouchableOpacity
+                style={styles.mapsBtn}
+                activeOpacity={0.7}
+                onPress={() => {
+                  const url = restaurant.google_place_id
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.google_place_id}`
+                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address!)}`;
+                  Linking.openURL(url).catch(() => Alert.alert('Errore', 'Impossibile aprire Maps'));
+                }}
+              >
+                <MaterialCommunityIcons name="google-maps" size={26} color="#EA4335" />
+                <Text style={styles.mapsBtnText}>Dettagli</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-      {(restaurant.review_count ?? 0) > 0 ? (
-        <View style={styles.ratingRow}>
-          <StarRating rating={restaurant.average_rating ?? 0} size={18} showValue />
-          <Text style={styles.ratingCount}>({restaurant.review_count} recensioni)</Text>
-        </View>
-      ) : (
-        <View style={styles.ratingRow}>
-          <Text style={styles.ratingCount}>Ancora nessuna recensione</Text>
-        </View>
+          {(restaurant.review_count ?? 0) > 0 ? (
+            <TouchableOpacity style={styles.ratingRow} activeOpacity={0.7} onPress={onScrollToReviews} disabled={!onScrollToReviews}>
+              <StarRating rating={restaurant.average_rating ?? 0} size={18} showValue />
+              <Text style={styles.ratingCount}>({restaurant.review_count} recensioni)</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.ratingRow}>
+              <Text style={styles.ratingCount}>Ancora nessuna recensione</Text>
+            </View>
+          )}
+        </>
       )}
 
       {restaurant.address && (
@@ -86,14 +98,18 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             onPress={() => setShowCuisineHint(prev => !prev)}
           >
             <View style={styles.tagsWrap}>
-              {cuisineVotes.map(v => (
-                <View key={v.cuisine_id} style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{getCuisineLabel(v.cuisine_id, lang)}</Text>
-                  <View style={styles.categoryBadgeCount}>
-                    <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
+              {cuisineVotes.map(v => {
+                const label = getCuisineLabel(v.cuisine_id, lang);
+                if (!label) return null;
+                return (
+                  <View key={v.cuisine_id} style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>{label}</Text>
+                    <View style={styles.categoryBadgeCount}>
+                      <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           </TouchableOpacity>
           {showCuisineHint && (
@@ -122,7 +138,10 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
       )}
 
       {isAuthenticated && hasUserNeeds && matchInfo && matchInfo.reviewCount > 0 && (
-        <View style={styles.compatContainer}>
+        <View style={[
+          styles.compatContainer,
+          { backgroundColor: isFull ? theme.colors.primaryLight : theme.colors.amberLight },
+        ]}>
           <TouchableOpacity
             onPress={() => setCompatExpanded(prev => !prev)}
             activeOpacity={0.7}
@@ -130,7 +149,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
           >
             <MaterialCommunityIcons
               name="shield-check"
-              size={15}
+              size={16}
               color={isFull ? theme.colors.success : theme.colors.amberDark}
             />
             <Text style={[styles.compatText, { color: isFull ? theme.colors.success : theme.colors.amberDark }]}>
@@ -139,7 +158,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             <MaterialCommunityIcons
               name={compatExpanded ? 'chevron-up' : 'chevron-down'}
               size={18}
-              color={theme.colors.textSecondary}
+              color={isFull ? theme.colors.success : theme.colors.amberDark}
             />
           </TouchableOpacity>
 
@@ -225,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     paddingLeft: 10,
     paddingRight: 4,
     paddingVertical: 3,
@@ -279,7 +298,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   compatContainer: {
-    marginTop: 8,
+    marginTop: 12,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   compatRow: {
     flexDirection: 'row',

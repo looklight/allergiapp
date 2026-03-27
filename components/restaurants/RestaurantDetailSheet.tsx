@@ -1,24 +1,43 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, useWindowDimensions } from 'react-native';
-import { Text, Button, Divider } from 'react-native-paper';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Linking,
+  useWindowDimensions,
+  BackHandler,
+  Platform,
+} from 'react-native';
+import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { REPORT_REASON_MAP } from '../../constants/reportReasons';
 import { useAuth } from '../../contexts/AuthContext';
-import StarRating from '../../components/StarRating';
-import ImageFullscreenModal from '../../components/ImageFullscreenModal';
-import RestaurantHeader from '../../components/restaurants/RestaurantHeader';
-import MenuPhotosSection from '../../components/restaurants/MenuPhotosSection';
-import ReviewCard from '../../components/restaurants/ReviewCard';
-import PhotoGalleryModal from '../../components/restaurants/PhotoGalleryModal';
-import LoginGateCta from '../../components/restaurants/LoginGateCta';
+import StarRating from '../StarRating';
+import ImageFullscreenModal from '../ImageFullscreenModal';
+import RestaurantHeader from './RestaurantHeader';
+import MenuPhotosSection from './MenuPhotosSection';
+import ReviewCard from './ReviewCard';
+import PhotoGalleryModal from './PhotoGalleryModal';
+import LoginGateCta from './LoginGateCta';
+import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../DraggableBottomSheet';
 import { useRestaurantDetail, type ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
 import i18n from '../../utils/i18n';
 
+// ─── snap points ─────────────────────────────────────────────────────────────
+// index 0 = off-screen (dismiss), index 1 = half open, index 2 = full open
+const SNAP_POINTS = [0, 0.55, 0.92];
+const INITIAL_INDEX = 1;
+
+// ─── Photo helpers (local to this file) ──────────────────────────────────────
 const PHOTO_GAP = 3;
 const MAX_VISIBLE_PHOTOS = 6;
 
@@ -46,7 +65,6 @@ function PhotoGrid({
   const hasMore = photos.length > MAX_VISIBLE_PHOTOS;
   const moreCount = photos.length - MAX_VISIBLE_PHOTOS;
   const visible = photos.slice(0, MAX_VISIBLE_PHOTOS);
-
   const placeholder = { backgroundColor: theme.colors.background };
 
   if (photos.length === 1) {
@@ -67,7 +85,7 @@ function PhotoGrid({
     return (
       <View style={{ flexDirection: 'row', gap: PHOTO_GAP }}>
         {photos.map((photo, idx) => (
-          <TouchableOpacity key={idx} onPress={() => onPress(idx)} activeOpacity={0.85}>
+          <TouchableOpacity key={photo.url} onPress={() => onPress(idx)} activeOpacity={0.85}>
             <Image
               source={{ uri: photo.url }}
               style={{ width: w, height: 190, borderRadius: 10, ...placeholder }}
@@ -80,12 +98,10 @@ function PhotoGrid({
     );
   }
 
-  // 3+ photos: hero left + 2 stacked right, optional second row
   const heroW = Math.floor(containerWidth * 0.62);
   const smallW = containerWidth - heroW - PHOTO_GAP;
   const heroH = 200;
   const smallH = Math.floor((heroH - PHOTO_GAP) / 2);
-
   const secondRow = visible.slice(3);
   const colCount = secondRow.length;
   const colW = colCount > 0
@@ -94,7 +110,6 @@ function PhotoGrid({
 
   return (
     <View style={{ gap: PHOTO_GAP }}>
-      {/* Row 1: hero + 2 stacked */}
       <View style={{ flexDirection: 'row', gap: PHOTO_GAP }}>
         <TouchableOpacity onPress={() => onPress(0)} activeOpacity={0.85}>
           <Image
@@ -106,7 +121,7 @@ function PhotoGrid({
         </TouchableOpacity>
         <View style={{ gap: PHOTO_GAP }}>
           {visible.slice(1, 3).map((photo, i) => (
-            <TouchableOpacity key={i + 1} onPress={() => onPress(i + 1)} activeOpacity={0.85}>
+            <TouchableOpacity key={photo.url} onPress={() => onPress(i + 1)} activeOpacity={0.85}>
               <Image
                 source={{ uri: photo.thumbnailUrl }}
                 style={{ width: smallW, height: smallH, borderRadius: 10, ...placeholder }}
@@ -117,15 +132,13 @@ function PhotoGrid({
           ))}
         </View>
       </View>
-
-      {/* Row 2: up to 3 photos, last has "+X" overlay if more exist */}
       {secondRow.length > 0 && (
         <View style={{ flexDirection: 'row', gap: PHOTO_GAP }}>
           {secondRow.map((photo, i) => {
             const idx = i + 3;
             const isLast = i === secondRow.length - 1 && hasMore;
             return (
-              <TouchableOpacity key={idx} onPress={() => onPress(idx)} activeOpacity={0.85}>
+              <TouchableOpacity key={photo.url} onPress={() => onPress(idx)} activeOpacity={0.85}>
                 <Image
                   source={{ uri: photo.thumbnailUrl }}
                   style={{ width: colW, height: 104, borderRadius: 10, ...placeholder }}
@@ -149,49 +162,36 @@ function PhotoGrid({
 
 const photoGridStyles = StyleSheet.create({
   moreOverlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.52)',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.52)', borderRadius: 10,
+    justifyContent: 'center', alignItems: 'center',
   },
-  moreCount: {
-    color: '#fff',
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 30,
-  },
-  moreLabel: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 12,
-    fontWeight: '500',
-  },
+  moreCount: { color: '#fff', fontSize: 26, fontWeight: '700', lineHeight: 30 },
+  moreLabel: { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '500' },
   allergenBadge: {
-    position: 'absolute',
-    bottom: 6,
-    left: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    position: 'absolute', bottom: 6, left: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10,
+    paddingHorizontal: 6, paddingVertical: 3,
   },
-  allergenBadgeText: {
-    color: theme.colors.warning,
-    fontSize: 11,
-    fontWeight: '700',
-  },
+  allergenBadgeText: { color: theme.colors.warning, fontSize: 11, fontWeight: '700' },
 });
 
-export default function RestaurantDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+// ─── Main component ───────────────────────────────────────────────────────────
+
+type Props = {
+  restaurantId: string;
+  onClose: () => void;
+};
+
+export default function RestaurantDetailSheet({ restaurantId, onClose }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
   const lang = i18n.locale as AppLanguage;
+  const { width: screenWidth } = useWindowDimensions();
+
+  const sheetRef = useRef<DraggableBottomSheetRef>(null);
 
   const {
     restaurant, allReviews, menuPhotos,
@@ -200,7 +200,7 @@ export default function RestaurantDetailScreen() {
     reviewSortOrder, setReviewSortOrder, hasUserNeeds,
     handleToggleFavorite, handleToggleReviewLike, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
-  } = useRestaurantDetail(id);
+  } = useRestaurantDetail(restaurantId);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const reviewsOffsetY = useRef(0);
@@ -208,9 +208,28 @@ export default function RestaurantDetailScreen() {
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
-  const { width: screenWidth } = useWindowDimensions();
 
-  // Raccogli tutte le foto dalle recensioni con metadata autore
+  // Dismiss animation → triggers onClose via onSnapChange(0)
+  const handleDismiss = useCallback(() => {
+    sheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleSnapChange = useCallback((fraction: number) => {
+    if (fraction < 0.1) {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Android back button closes the sheet
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleDismiss();
+      return true;
+    });
+    return () => sub.remove();
+  }, [handleDismiss]);
+
   const reviewPhotos = useMemo(
     () => allReviews.flatMap(r => {
       const allergenCount = (r.allergensSnapshot?.length ?? 0) + (r.dietarySnapshot?.length ?? 0);
@@ -229,7 +248,7 @@ export default function RestaurantDetailScreen() {
     }),
     [allReviews],
   );
-  // Calcola copertura esigenze e numero review rilevanti
+
   const matchInfo = useMemo(() => {
     if (!hasUserNeeds) return { reviewCount: 0, coveredCount: 0, totalFilters: 0, covered: [] as string[], uncovered: [] as string[] };
     const userAll: string[] = [...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])];
@@ -267,7 +286,7 @@ export default function RestaurantDetailScreen() {
             const ok = await RestaurantService.removeOwnRestaurant(restaurant.id, user.uid);
             setIsRemoving(false);
             if (ok) {
-              router.back();
+              handleDismiss();
             } else {
               Alert.alert('Errore', 'Non è stato possibile eliminare il ristorante.');
             }
@@ -279,89 +298,88 @@ export default function RestaurantDetailScreen() {
 
   // Auto-cleanup: rimuovi favorito orfano se il ristorante non esiste più
   useEffect(() => {
-    if (!isLoading && !restaurant && user?.uid && id) {
-      RestaurantService.removeFavorite(user.uid, id);
+    if (!isLoading && !restaurant && user?.uid && restaurantId) {
+      RestaurantService.removeFavorite(user.uid, restaurantId);
     }
-  }, [isLoading, restaurant, user?.uid, id]);
+  }, [isLoading, restaurant, user?.uid, restaurantId]);
 
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}> </Text>
-          <View style={{ width: 24 }} />
+  // ─── Sheet header (azioni + pulsante Maps) ────────────────────────────────
+  const mapsUrl = restaurant?.google_place_id
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.google_place_id}`
+    : restaurant?.address
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`
+      : null;
+
+  const sheetHeader = (
+    <View style={styles.sheetHeader}>
+      {/* Row 1: name (multiline, flex-1) + heart + close — all top-aligned */}
+      <View style={styles.sheetNameRow}>
+        <Text style={styles.sheetName}>{restaurant?.name ?? ''}</Text>
+        <TouchableOpacity onPress={handleToggleFavorite} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
+          <MaterialCommunityIcons
+            name={isFavorite ? 'heart' : 'heart-outline'}
+            size={24}
+            color={isFavorite ? theme.colors.error : theme.colors.textSecondary}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleDismiss} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
+          <MaterialCommunityIcons name="close" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+      {/* Row 2: rating + Maps chip — only when data available */}
+      {restaurant && (
+        <View style={styles.sheetRatingRow}>
+          {(restaurant.review_count ?? 0) > 0 ? (
+            <View style={styles.sheetRatingGroup}>
+              <StarRating rating={restaurant.average_rating ?? 0} size={15} showValue />
+              <Text style={styles.sheetRatingCount}>({restaurant.review_count})</Text>
+            </View>
+          ) : (
+            <Text style={styles.sheetNoRating}>Nessuna recensione</Text>
+          )}
+          {mapsUrl && (
+            <TouchableOpacity
+              style={styles.mapsChip}
+              activeOpacity={0.7}
+              onPress={() => Linking.openURL(mapsUrl).catch(() => Alert.alert('Errore', 'Impossibile aprire Maps'))}
+            >
+              <MaterialCommunityIcons name="google-maps" size={15} color="#EA4335" />
+              <Text style={styles.mapsChipText}>Maps</Text>
+            </TouchableOpacity>
+          )}
         </View>
+      )}
+    </View>
+  );
+
+  // ─── Body content ──────────────────────────────────────────────────────────
+  const bodyContent = () => {
+    if (isLoading) {
+      return (
         <View style={styles.centered}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
         </View>
-      </View>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Errore</Text>
-          <View style={{ width: 24 }} />
-        </View>
+    if (error || !restaurant) {
+      return (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Button onPress={() => router.back()}>Torna indietro</Button>
+          <Text style={styles.errorText}>{error ?? 'Ristorante non trovato.'}</Text>
+          <TouchableOpacity onPress={handleDismiss} style={styles.errorBack}>
+            <Text style={styles.errorBackText}>Chiudi</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-    );
-  }
+      );
+    }
 
-  if (!restaurant) {
     return (
-      <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Ristorante</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>Ristorante non trovato.</Text>
-          <Button onPress={() => router.back()}>Torna indietro</Button>
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{restaurant.name}</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={handleToggleFavorite} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
-              color={theme.colors.onPrimary}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ScrollView ref={scrollViewRef} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
-
-        {/* Info principali */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <RestaurantHeader
           restaurant={restaurant}
           lang={lang}
@@ -370,11 +388,11 @@ export default function RestaurantDetailScreen() {
           hasUserNeeds={hasUserNeeds}
           isAuthenticated={isAuthenticated}
           onScrollToReviews={() => scrollViewRef.current?.scrollTo({ y: reviewsOffsetY.current, animated: true })}
+          hideNameAndRating
         />
 
         <View style={styles.separator} />
 
-        {/* Menu */}
         {isAuthenticated ? (
           <MenuPhotosSection
             menuPhotos={menuPhotos}
@@ -395,7 +413,6 @@ export default function RestaurantDetailScreen() {
           />
         )}
 
-        {/* Foto degli utenti — griglia stile Google Maps */}
         {isAuthenticated && reviewPhotos.length > 0 && (
           <>
             <View style={styles.separator} />
@@ -417,7 +434,6 @@ export default function RestaurantDetailScreen() {
           </>
         )}
 
-        {/* CTA — Contributo utente o valuta con stelle */}
         {isAuthenticated && (
           <>
             <View style={styles.separator} />
@@ -454,7 +470,6 @@ export default function RestaurantDetailScreen() {
 
         <View style={styles.separator} onLayout={(e) => { reviewsOffsetY.current = e.nativeEvent.layout.y; }} />
 
-        {/* Recensioni */}
         {isAuthenticated ? (
           allReviews.length > 0 ? (
             <View style={styles.section}>
@@ -518,8 +533,8 @@ export default function RestaurantDetailScreen() {
                     review={item}
                     userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
                     onImagePress={(url) => {
-                      const idx = reviewPhotos.findIndex(p => p.url === url);
-                      if (idx >= 0) setGalleryIndex(idx);
+                      const i = reviewPhotos.findIndex(p => p.url === url);
+                      if (i >= 0) setGalleryIndex(i);
                       else setFullscreenImage(url);
                     }}
                     onLike={() => handleToggleReviewLike(item.reviewId)}
@@ -541,7 +556,6 @@ export default function RestaurantDetailScreen() {
           />
         )}
 
-        {/* Segnalazioni della community */}
         {reports.length > 0 && (
           <>
             <View style={styles.separator} />
@@ -583,7 +597,6 @@ export default function RestaurantDetailScreen() {
 
         <View style={styles.separator} />
 
-        {/* Footer: aggiunto da + azioni */}
         <View style={styles.footerSection}>
           {restaurant.added_by && (
             <TouchableOpacity
@@ -603,15 +616,9 @@ export default function RestaurantDetailScreen() {
             style={styles.footerRow}
             activeOpacity={0.6}
             onPress={() => {
-              if (!isAuthenticated) {
-                router.push('/auth/login');
-                return;
-              }
-              if (userReport) {
-                Alert.alert('Già segnalato', 'Hai già segnalato questo ristorante.');
-                return;
-              }
-              router.push(`/restaurants/report?restaurantId=${id}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
+              if (!isAuthenticated) { router.push('/auth/login'); return; }
+              if (userReport) { Alert.alert('Già segnalato', 'Hai già segnalato questo ristorante.'); return; }
+              router.push(`/restaurants/report?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
             }}
           >
             <MaterialCommunityIcons
@@ -648,17 +655,30 @@ export default function RestaurantDetailScreen() {
             </>
           )}
         </View>
-
       </ScrollView>
+    );
+  };
 
-      {/* Modal immagine singola (menu, review inline) */}
+  return (
+    <>
+      <DraggableBottomSheet
+        ref={sheetRef}
+        snapPoints={SNAP_POINTS}
+        initialIndex={INITIAL_INDEX}
+        enterFromBottom
+        headerContent={sheetHeader}
+        onSnapChange={handleSnapChange}
+        style={styles.detailSheetElevation}
+      >
+        {bodyContent()}
+      </DraggableBottomSheet>
+
       <ImageFullscreenModal
         visible={!!fullscreenImage}
         imageUrl={fullscreenImage}
         onClose={() => setFullscreenImage(null)}
       />
 
-      {/* Gallery fullscreen — foto utenti con swipe */}
       {galleryIndex !== null && (
         <PhotoGalleryModal
           photos={reviewPhotos}
@@ -666,45 +686,101 @@ export default function RestaurantDetailScreen() {
           onClose={() => setGalleryIndex(null)}
         />
       )}
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  detailSheetElevation: {
+    elevation: 16,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+  },
+  sheetHeader: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 10,
   },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
+  sheetNameRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
+  sheetName: {
     flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 8,
+    fontSize: 20,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    lineHeight: 26,
   },
-  headerActions: {
+  sheetActionBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  sheetRatingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    marginTop: 6,
   },
-  container: {
+  sheetRatingGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     flex: 1,
+  },
+  sheetRatingCount: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+  },
+  sheetNoRating: {
+    flex: 1,
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+  },
+  mapsChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
+  },
+  mapsChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: theme.colors.textPrimary,
+  },
+  scrollView: {
+    flex: 1,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 32,
   },
   errorText: {
     color: theme.colors.textSecondary,
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  errorBack: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 8,
+  },
+  errorBackText: {
+    color: theme.colors.onPrimary,
+    fontWeight: '600',
   },
   separator: {
     height: 8,
@@ -720,6 +796,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.textPrimary,
     marginBottom: 12,
+  },
+  photosSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
   ctaSection: {
     paddingHorizontal: 16,
@@ -748,102 +835,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     lineHeight: 20,
     textAlign: 'center',
-  },
-  emptySection: {
-    paddingHorizontal: 16,
-    paddingVertical: 28,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    gap: 8,
-  },
-  emptySectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  emptySectionText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-  },
-  divider: {
-    marginVertical: 14,
-  },
-  reportSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 12,
-  },
-  reportRow: {
-    gap: 6,
-  },
-  reportTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  reportAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contributionMeta: {
-    flex: 1,
-  },
-  contributionAuthor: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  contributionDate: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-  },
-  contributionText: {
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    lineHeight: 20,
-  },
-  reportReasonBadge: {
-    backgroundColor: theme.colors.amberLight,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  reportReasonBadgeText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: theme.colors.amberText,
-  },
-  footerSection: {
-    backgroundColor: theme.colors.surface,
-  },
-  footerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  footerRowText: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    flex: 1,
-  },
-  photosSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '500',
   },
   reviewsHeader: {
     flexDirection: 'row',
@@ -878,4 +869,57 @@ const styles = StyleSheet.create({
   reviewSortChipTextActive: {
     color: theme.colors.onPrimary,
   },
+  emptySection: {
+    paddingHorizontal: 16,
+    paddingVertical: 28,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    gap: 8,
+  },
+  emptySectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  emptySectionText: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+  divider: {
+    marginVertical: 14,
+  },
+  reportSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  reportRow: { gap: 6 },
+  reportTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  reportAvatar: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  contributionMeta: { flex: 1 },
+  contributionAuthor: { fontSize: 14, fontWeight: '600', color: theme.colors.textPrimary },
+  contributionDate: { fontSize: 12, color: theme.colors.textSecondary },
+  contributionText: { fontSize: 14, color: theme.colors.textPrimary, lineHeight: 20 },
+  reportReasonBadge: {
+    backgroundColor: theme.colors.amberLight,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  reportReasonBadgeText: { fontSize: 11, fontWeight: '500', color: theme.colors.amberText },
+  footerSection: { backgroundColor: theme.colors.surface },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  footerRowText: { fontSize: 14, color: theme.colors.textSecondary, flex: 1 },
 });

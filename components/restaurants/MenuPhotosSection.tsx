@@ -33,33 +33,11 @@ export default function MenuPhotosSection({
 
   return (
     <View style={styles.menuSection}>
-      {/* Titolo + azione link */}
+      {/* Titolo */}
+      {/* Link menu: nascosto — funzionalità premium, da riabilitare */}
       <View style={styles.titleRow}>
         <Text style={styles.sectionTitle}>Menu{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
-        {canUpload && (
-          <TouchableOpacity onPress={onUpdateMenuUrl} disabled={isUpdatingMenuUrl} style={styles.linkAction} activeOpacity={0.7}>
-            {isUpdatingMenuUrl ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            ) : (hasPhotos || menuUrl) ? (
-              <MaterialCommunityIcons name="pencil-outline" size={18} color={theme.colors.textSecondary} />
-            ) : (
-              <>
-                <MaterialCommunityIcons name="link-variant" size={15} color={theme.colors.primary} />
-                <Text style={styles.linkActionText}>Aggiungi link</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        )}
       </View>
-
-      {/* Link menu — visibile a tutti se presente */}
-      {menuUrl && (
-        <TouchableOpacity onPress={() => Linking.openURL(menuUrl)} style={styles.menuLinkRow} activeOpacity={0.7}>
-          <MaterialCommunityIcons name="link-variant" size={18} color={theme.colors.primary} />
-          <Text style={styles.menuLinkText} numberOfLines={1}>Vedi menu online</Text>
-          <MaterialCommunityIcons name="open-in-new" size={16} color={theme.colors.primary} />
-        </TouchableOpacity>
-      )}
 
       {/* Foto */}
       {hasPhotos ? (
@@ -116,7 +94,7 @@ export default function MenuPhotosSection({
             <MaterialCommunityIcons name="image-outline" size={28} color={theme.colors.textDisabled} />
             <Text style={styles.ctaHint}>
               {currentUserId
-                ? 'Scrivi una recensione per aggiungere foto o il link del menu'
+                ? 'Scrivi una recensione per aggiungere foto del menu'
                 : 'Ancora nessuna foto del menu'}
             </Text>
           </View>

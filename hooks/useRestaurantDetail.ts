@@ -8,6 +8,7 @@ import type { Restaurant, Review, ReviewPhoto, MenuPhoto, Report, CuisineVote } 
 
 export interface UnifiedReview {
   key: string;
+  reviewId: string;
   userId?: string;
   displayName: string | null;
   isAnonymous?: boolean;
@@ -19,9 +20,11 @@ export interface UnifiedReview {
   createdAt: Date;
   allergensSnapshot?: string[];
   dietarySnapshot?: string[];
+  likesCount: number;
+  likedByMe: boolean;
 }
 
-export type ReviewSortOrder = 'recent' | 'rating' | 'relevance';
+export type ReviewSortOrder = 'recent' | 'rating' | 'rating-asc' | 'relevance' | 'likes';
 
 export function useRestaurantDetail(restaurantId: string | undefined) {
   const router = useRouter();
@@ -52,7 +55,7 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     try {
       const basePromise = Promise.all([
         RestaurantService.getRestaurant(restaurantId),
-        RestaurantService.getReviews(restaurantId),
+        RestaurantService.getReviews(restaurantId, user?.uid),
         RestaurantService.getMenuPhotos(restaurantId),
         RestaurantService.getReports(restaurantId),
         RestaurantService.getCuisineVotes(restaurantId),
@@ -103,6 +106,7 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     for (const r of reviews) {
       items.push({
         key: `review-${r.id}`,
+        reviewId: r.id,
         userId: r.user_id ?? undefined,
         displayName: r.user_display_name ?? null,
         isAnonymous: r.user_is_anonymous ?? false,
@@ -114,12 +118,17 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
         createdAt: new Date(r.created_at),
         allergensSnapshot: r.allergens_snapshot,
         dietarySnapshot: r.dietary_snapshot,
+        likesCount: r.likes_count ?? 0,
+        likedByMe: r.liked_by_me ?? false,
       });
     }
 
     switch (reviewSortOrder) {
       case 'rating':
         items.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+        break;
+      case 'rating-asc':
+        items.sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
         break;
       case 'relevance':
         if (hasUserNeeds) {
@@ -136,6 +145,9 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
         } else {
           items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         }
+        break;
+      case 'likes':
+        items.sort((a, b) => b.likesCount - a.likesCount || b.createdAt.getTime() - a.createdAt.getTime());
         break;
       default: // 'recent'
         items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -195,16 +207,24 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     if (!restaurantId) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 1,
+      quality: 0.8,
+      exif: false,
     });
     if (result.canceled || !result.assets[0]) return;
 
     setIsUploadingMenu(true);
-    const photo = await RestaurantService.addMenuPhoto(restaurantId, result.assets[0].uri, user.uid);
-    if (photo) {
-      setMenuPhotos(prev => [photo, ...prev]);
+    try {
+      const photo = await RestaurantService.addMenuPhoto(restaurantId, result.assets[0].uri, user.uid);
+      if (photo) {
+        setMenuPhotos(prev => [photo, ...prev]);
+      } else {
+        Alert.alert('Errore', 'Non è stato possibile caricare la foto.');
+      }
+    } catch {
+      Alert.alert('Errore', 'Non è stato possibile caricare la foto.');
+    } finally {
+      setIsUploadingMenu(false);
     }
-    setIsUploadingMenu(false);
   }, [isAuthenticated, user, restaurantId, router]);
 
   const handleUpdateMenuUrl = useCallback(() => {
@@ -218,8 +238,23 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
       async (input?: string) => {
         if (input === undefined) return;
         let url = input.trim();
-        if (url && !/^https?:\/\//i.test(url)) {
+        if (!url) {
+          // Rimuovi URL
+          setIsUpdatingMenuUrl(true);
+          const ok = await RestaurantService.updateMenuUrl(restaurantId!, null);
+          setIsUpdatingMenuUrl(false);
+          if (ok) setRestaurant(prev => prev ? { ...prev, menu_url: null } : prev);
+          else Alert.alert('Errore', 'Non è stato possibile aggiornare il link.');
+          return;
+        }
+        if (!/^https?:\/\//i.test(url)) {
           url = 'https://' + url;
+        }
+        try {
+          new URL(url);
+        } catch {
+          Alert.alert('URL non valido', 'Inserisci un indirizzo web valido (es. www.ristorante.it/menu).');
+          return;
         }
         setIsUpdatingMenuUrl(true);
         const ok = await RestaurantService.updateMenuUrl(restaurantId!, url || null);
@@ -256,6 +291,43 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     );
   }, [user, restaurantId]);
 
+  const pendingLikes = useRef<Set<string>>(new Set());
+
+  const handleToggleReviewLike = useCallback(async (reviewId: string) => {
+    if (!isAuthenticated || !user) {
+      router.push('/auth/login');
+      return;
+    }
+    if (pendingLikes.current.has(reviewId)) return;
+    pendingLikes.current.add(reviewId);
+    // Leggi lo stato corrente dalla lista più recente
+    let wasLiked = false;
+    setReviews(prev => {
+      const target = prev.find(r => r.id === reviewId);
+      if (!target) return prev;
+      wasLiked = target.liked_by_me;
+      return prev.map(r => r.id === reviewId
+        ? { ...r, liked_by_me: !wasLiked, likes_count: r.likes_count + (wasLiked ? -1 : 1) }
+        : r
+      );
+    });
+    try {
+      const result = await RestaurantService.toggleReviewLike(reviewId);
+      setReviews(prev => prev.map(r => r.id === reviewId
+        ? { ...r, liked_by_me: result.liked, likes_count: result.likes_count }
+        : r
+      ));
+    } catch {
+      // Rollback
+      setReviews(prev => prev.map(r => r.id === reviewId
+        ? { ...r, liked_by_me: wasLiked, likes_count: r.likes_count + (wasLiked ? 1 : -1) }
+        : r
+      ));
+    } finally {
+      pendingLikes.current.delete(reviewId);
+    }
+  }, [isAuthenticated, user, router]);
+
   return {
     restaurant,
     allReviews,
@@ -274,6 +346,7 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     userHasReviews,
     isUpdatingMenuUrl,
     handleToggleFavorite,
+    handleToggleReviewLike,
     navigateToContribute,
     handleAddMenuPhoto,
     handleDeleteMenuPhoto,

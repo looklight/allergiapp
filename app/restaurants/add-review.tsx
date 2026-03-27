@@ -104,9 +104,10 @@ export default function AddReviewScreen() {
     if (remaining <= 0) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 1,
+      quality: 0.8,
       allowsMultipleSelection: true,
       selectionLimit: remaining,
+      exif: false,
     });
     if (!result.canceled && result.assets.length > 0) {
       setPhotos(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, MAX_PHOTOS));
@@ -122,9 +123,10 @@ export default function AddReviewScreen() {
     }
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
-      quality: 1,
+      quality: 0.8,
       allowsEditing: true,
       aspect: [1, 1],
+      exif: false,
     });
     if (!result.canceled && result.assets[0]) {
       setPhotos(prev => [...prev, result.assets[0].uri]);
@@ -271,6 +273,7 @@ export default function AddReviewScreen() {
           placeholder={"Racconta la tua esperienza:\nQuali piatti hai ordinato?\nIl personale è stato attento alle tue esigenze?"}
           placeholderTextColor="#BBBBBB"
           multiline
+          maxLength={1000}
           mode="outlined"
           style={styles.textInput}
           outlineStyle={styles.textInputOutline}

@@ -10,8 +10,9 @@ import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import RestaurantCard from '../../components/restaurants/RestaurantCard';
 import RestaurantMap from '../../components/RestaurantMap';
-import DraggableBottomSheet from '../../components/DraggableBottomSheet';
+import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../../components/DraggableBottomSheet';
 import FilterModal from '../../components/restaurants/FilterModal';
+import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetailSheet';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
 import i18n from '../../utils/i18n';
 import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
@@ -70,6 +71,25 @@ export default function RestaurantsScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
 
+  // --- Detail sheet state ---
+  const [selectedDetailId, setSelectedDetailId] = useState<string | null>(null);
+  const listSheetRef = useRef<DraggableBottomSheetRef>(null);
+
+  // Snap list sheet down when detail opens, restore when detail closes
+  useEffect(() => {
+    if (selectedDetailId) {
+      listSheetRef.current?.snapToIndex(0); // collapse to minimum
+    } else {
+      listSheetRef.current?.snapToIndex(1); // restore to medium
+    }
+  }, [selectedDetailId]);
+
+  const handleOpenDetail = useCallback((id: string) => {
+    setSelectedId(id);
+    setSelectedDetailId(id);
+    Keyboard.dismiss();
+  }, []);
+
   // --- Bottom sheet fraction (UI concern, stays in screen) ---
   const sheetFractionRef = useRef(0.60);
   const getSheetFraction = useCallback(() => sheetFractionRef.current, []);
@@ -106,6 +126,13 @@ export default function RestaurantsScreen() {
   );
 
   useFocusEffect(useCallback(() => { loadFavorites(); }, [loadFavorites]));
+
+  // Sincronizza cuore nella lista quando la detail sheet si chiude
+  const handleCloseDetail = useCallback(() => {
+    setSelectedDetailId(null);
+    setSelectedId(null);
+    loadFavorites();
+  }, [loadFavorites]);
 
   // Scroll alla card selezionata dopo il re-render
   useEffect(() => {
@@ -183,11 +210,6 @@ export default function RestaurantsScreen() {
     setSearchQuery('');
     geo.resetToUserLocation();
   }, [geo.resetToUserLocation]);
-
-  const handleMarkerSelect = useCallback((id: string) => {
-    Keyboard.dismiss();
-    setSelectedId(prev => (prev === id ? null : id));
-  }, []);
 
   const handleDeselect = useCallback(() => {
     setSelectedId(null);
@@ -290,9 +312,11 @@ export default function RestaurantsScreen() {
           <Text style={styles.emptySubtitle}>
             {searchQuery.length >= 2
               ? 'Prova con un altro termine di ricerca'
-              : activeFilters.length > 0
-                ? 'Prova a rimuovere i filtri'
-                : 'Cerca una città per vedere i ristoranti vicini'}
+              : geo.locationDenied
+                ? 'Attiva la posizione nelle impostazioni per trovare ristoranti vicino a te, oppure cerca una città'
+                : activeFilters.length > 0
+                  ? 'Prova a rimuovere i filtri'
+                  : 'Cerca una città per vedere i ristoranti vicini'}
           </Text>
           {searchQuery.length < 2 && (
             <Button mode="contained" onPress={handleAddPress} style={styles.emptyButton}>
@@ -324,7 +348,7 @@ export default function RestaurantsScreen() {
             distance={distanceMap.get(item.id) ?? null}
             showMatchInfo={forMyNeeds}
             selected={selectedId === item.id}
-            onPress={() => router.push(`/restaurants/${item.id}`)}
+            onPress={() => handleOpenDetail(item.id)}
             onToggleFavorite={() => handleToggleFavorite(item.id)}
           />
         )}
@@ -343,9 +367,9 @@ export default function RestaurantsScreen() {
           hasUserLocation={!!geo.userLocation}
           onRegionChangeComplete={handleRegionChange}
           selectedId={selectedId}
-          onMarkerSelect={handleMarkerSelect}
           onDeselect={handleDeselect}
           showMatchInfo={forMyNeeds}
+          onRestaurantPress={handleOpenDetail}
         />
         {geo.showSearchArea && (
           <TouchableOpacity
@@ -372,6 +396,7 @@ export default function RestaurantsScreen() {
       </View>
 
       <DraggableBottomSheet
+        ref={listSheetRef}
         snapPoints={snapPoints}
         initialIndex={1}
         headerContent={sheetHeaderContent}
@@ -380,13 +405,22 @@ export default function RestaurantsScreen() {
         {renderBodyContent()}
       </DraggableBottomSheet>
 
-      <TouchableOpacity
-        style={[styles.fab, { bottom: insets.bottom + 24 }]}
-        onPress={handleAddPress}
-        activeOpacity={0.85}
-      >
-        <MaterialCommunityIcons name="plus" size={28} color={theme.colors.onPrimary} />
-      </TouchableOpacity>
+      {selectedDetailId && (
+        <RestaurantDetailSheet
+          restaurantId={selectedDetailId}
+          onClose={handleCloseDetail}
+        />
+      )}
+
+      {!selectedDetailId && (
+        <TouchableOpacity
+          style={[styles.fab, { bottom: insets.bottom + 24 }]}
+          onPress={handleAddPress}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="plus" size={28} color={theme.colors.onPrimary} />
+        </TouchableOpacity>
+      )}
 
       <FilterModal
         visible={showFilterModal}

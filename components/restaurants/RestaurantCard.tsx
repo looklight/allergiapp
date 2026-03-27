@@ -80,11 +80,15 @@ export default function RestaurantCard({
             </Text>
             {restaurant.cuisine_types?.length > 0 && (
               <View style={styles.cuisineRow}>
-                {restaurant.cuisine_types.slice(0, 2).map(ct => (
-                  <View key={ct} style={styles.cuisineBadge}>
-                    <Text style={styles.cuisineBadgeText}>{getCuisineLabel(ct, i18n.locale)}</Text>
-                  </View>
-                ))}
+                {restaurant.cuisine_types.slice(0, 2).map(ct => {
+                  const label = getCuisineLabel(ct, i18n.locale);
+                  if (!label) return null;
+                  return (
+                    <View key={ct} style={styles.cuisineBadge}>
+                      <Text style={styles.cuisineBadgeText}>{label}</Text>
+                    </View>
+                  );
+                })}
                 {restaurant.cuisine_types.length > 2 && (
                   <Text style={styles.cuisineMore}>+{restaurant.cuisine_types.length - 2}</Text>
                 )}
@@ -219,15 +223,17 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   cuisineBadge: {
-    backgroundColor: theme.colors.primaryLight,
-    borderRadius: 8,
+    backgroundColor: theme.colors.background,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
   cuisineBadgeText: {
     fontSize: 11,
     fontWeight: '500',
-    color: theme.colors.primary,
+    color: theme.colors.textPrimary,
   },
   cuisineMore: {
     fontSize: 11,

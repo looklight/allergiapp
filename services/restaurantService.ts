@@ -72,6 +72,8 @@ export interface Review {
   language: string | null;
   created_at: string;
   updated_at: string;
+  likes_count: number;
+  liked_by_me: boolean;
   // Dal profilo utente (join)
   user_display_name?: string | null;
   user_avatar_url?: string | null;
@@ -199,16 +201,27 @@ async function getRestaurant(restaurantId: string): Promise<Restaurant | null> {
   if (error) throw error;
   if (!data) return null;
 
-  // Carica stats
-  const { data: stats } = await supabase.rpc('get_restaurant_stats', {
-    restaurant_uuid: restaurantId,
-  });
+  // Carica stats (non blocca il caricamento del ristorante se fallisce)
+  let reviewCount = 0, averageRating = 0, favoriteCount = 0;
+  try {
+    const { data: stats, error: statsError } = await supabase.rpc('get_restaurant_stats', {
+      restaurant_uuid: restaurantId,
+    });
+    if (statsError) console.warn('[RestaurantService] Errore caricamento stats:', statsError);
+    else if (stats?.[0]) {
+      reviewCount = stats[0].review_count ?? 0;
+      averageRating = stats[0].average_rating ?? 0;
+      favoriteCount = stats[0].favorite_count ?? 0;
+    }
+  } catch (e) {
+    console.warn('[RestaurantService] Errore caricamento stats:', e);
+  }
 
   return mapRestaurant({
     ...extractLatLng(data),
-    review_count: stats?.[0]?.review_count ?? 0,
-    average_rating: stats?.[0]?.average_rating ?? 0,
-    favorite_count: stats?.[0]?.favorite_count ?? 0,
+    review_count: reviewCount,
+    average_rating: averageRating,
+    favorite_count: favoriteCount,
   });
 }
 
@@ -262,6 +275,9 @@ async function batchLoadStats(ids: string[]): Promise<Map<string, { review_count
     supabase.from('favorites').select('restaurant_id').in('restaurant_id', ids),
   ]);
 
+  if (reviewStats.error) console.warn('[RestaurantService] Errore caricamento stats recensioni:', reviewStats.error);
+  if (favCounts.error) console.warn('[RestaurantService] Errore caricamento stats favoriti:', favCounts.error);
+
   const statsMap = new Map<string, { review_count: number; total_rating: number; favorite_count: number }>();
   for (const r of reviewStats.data ?? []) {
     const s = statsMap.get(r.restaurant_id) ?? { review_count: 0, total_rating: 0, favorite_count: 0 };
@@ -290,6 +306,21 @@ function applyStats(rows: any[], statsMap: Map<string, { review_count: number; t
   });
 }
 
+
+async function checkNearbyDuplicates(
+  name: string,
+  lat: number,
+  lng: number,
+): Promise<{ id: string; name: string } | null> {
+  try {
+    const nearby = await getNearbyRestaurants(lat, lng, 0.05, 10); // 50m
+    const normName = name.trim().toLowerCase();
+    const match = nearby.find(r => r.name.trim().toLowerCase() === normName);
+    return match ? { id: match.id, name: match.name } : null;
+  } catch {
+    return null; // In caso di errore, non bloccare l'aggiunta
+  }
+}
 
 async function addRestaurant(
   input: CreateRestaurantInput,
@@ -368,11 +399,11 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
       .eq('restaurant_id', restaurantId);
     if ((count ?? 0) > 0) return false;
 
-    // Cleanup Storage delle menu_photos prima della CASCADE
-    const { data: menuPhotos } = await supabase
-      .from('menu_photos')
-      .select('image_url, thumbnail_url')
-      .eq('restaurant_id', restaurantId);
+    // Cleanup Storage delle menu_photos e review photos prima della CASCADE
+    const [{ data: menuPhotos }, { data: reviewsWithPhotos }] = await Promise.all([
+      supabase.from('menu_photos').select('image_url, thumbnail_url').eq('restaurant_id', restaurantId),
+      supabase.from('reviews').select('photos').eq('restaurant_id', restaurantId),
+    ]);
 
     const { error } = await supabase
       .from('restaurants')
@@ -384,6 +415,11 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
     for (const mp of menuPhotos ?? []) {
       StorageService.deleteImageWithThumbnail(mp.image_url, mp.thumbnail_url).catch(() => {});
     }
+    for (const rv of reviewsWithPhotos ?? []) {
+      for (const p of rv.photos ?? []) {
+        StorageService.deleteImageWithThumbnail(p.url, p.thumbnailUrl).catch(() => {});
+      }
+    }
 
     return true;
   } catch (error) {
@@ -394,7 +430,7 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
 
 // ─── Reviews ────────────────────────────────────────────────────────────────
 
-async function getReviews(restaurantId: string): Promise<Review[]> {
+async function getReviews(restaurantId: string, userId?: string): Promise<Review[]> {
   const { data, error } = await supabase
     .from('reviews')
     .select(`
@@ -404,14 +440,34 @@ async function getReviews(restaurantId: string): Promise<Review[]> {
     .eq('restaurant_id', restaurantId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((r: any) => ({
+  const reviews: Review[] = (data ?? []).map((r: any) => ({
     ...r,
     photos: r.photos ?? [],
+    likes_count: r.likes_count ?? 0,
+    liked_by_me: false,
     user_display_name: r.profile?.is_anonymous ? null : (r.profile?.display_name ?? null),
     user_avatar_url: r.profile?.avatar_url ?? null,
     user_profile_color: r.profile?.profile_color ?? null,
     user_is_anonymous: r.profile?.is_anonymous ?? false,
   }));
+
+  if (userId && reviews.length > 0) {
+    const { data: likedData } = await supabase
+      .from('review_likes')
+      .select('review_id')
+      .eq('user_id', userId)
+      .in('review_id', reviews.map(r => r.id));
+    const likedSet = new Set((likedData ?? []).map((l: any) => l.review_id as string));
+    return reviews.map(r => ({ ...r, liked_by_me: likedSet.has(r.id) }));
+  }
+
+  return reviews;
+}
+
+async function toggleReviewLike(reviewId: string): Promise<{ liked: boolean; likes_count: number }> {
+  const { data, error } = await supabase.rpc('toggle_review_like', { p_review_id: reviewId });
+  if (error) throw error;
+  return data as { liked: boolean; likes_count: number };
 }
 
 async function getUserReview(restaurantId: string, userId: string): Promise<Review | null> {
@@ -1001,6 +1057,7 @@ export const RestaurantService = {
   getNearbyRestaurants,
   getRestaurantsForMyNeeds,
   addRestaurant,
+  checkNearbyDuplicates,
   getRestaurantsByUser,
   removeOwnRestaurant,
   // Reviews
@@ -1010,6 +1067,7 @@ export const RestaurantService = {
   addReview,
   updateReview,
   deleteReview,
+  toggleReviewLike,
   // Favorites
   getFavorites,
   isFavorite,

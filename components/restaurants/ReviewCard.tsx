@@ -14,6 +14,7 @@ interface ReviewCardProps {
   review: UnifiedReview;
   onImagePress: (imageUrl: string) => void;
   userNeeds?: string[];
+  onLike?: () => void;
 }
 
 const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toUpperCase();
@@ -21,7 +22,7 @@ const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toU
 
 const REVIEW_PHOTO_SIZE = 80;
 
-export default function ReviewCard({ review: item, onImagePress, userNeeds }: ReviewCardProps) {
+export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike }: ReviewCardProps) {
   const router = useRouter();
   const avatarSource = item.avatarUrl ? getAvatarById(item.avatarUrl)?.source : null;
   const displayName = item.isAnonymous ? getAnonymousLabel(item.userId) : (item.displayName ?? getAnonymousLabel(item.userId));
@@ -106,6 +107,18 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds }: Re
           })}
         </View>
       )}
+
+      {/* Like */}
+      <TouchableOpacity onPress={onLike} activeOpacity={0.7} style={styles.likeRow}>
+        <MaterialCommunityIcons
+          name={item.likedByMe ? 'thumb-up' : 'thumb-up-outline'}
+          size={16}
+          color={item.likedByMe ? theme.colors.primary : theme.colors.textSecondary}
+        />
+        <Text style={[styles.likeCount, item.likedByMe && { color: theme.colors.primary }, item.likesCount === 0 && { opacity: 0 }]}>
+          {item.likesCount}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -185,6 +198,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginTop: 4,
+  },
+  likeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    paddingVertical: 2,
+  },
+  likeCount: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
   },
   reviewPhoto: {
     borderRadius: 10,

@@ -27,6 +27,7 @@ export function useRestaurantGeo(params: FilterParams) {
   const [isGeoMode, setIsGeoMode] = useState(false);
   const [showSearchArea, setShowSearchArea] = useState(false);
   const [isAreaSearch, setIsAreaSearch] = useState(false);
+  const [locationDenied, setLocationDenied] = useState(false);
 
   const lastQueryCenter = useRef<LatLng | null>(null);
   const lastQueryRadius = useRef(50);
@@ -66,7 +67,10 @@ export function useRestaurantGeo(params: FilterParams) {
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') return;
+        if (status !== 'granted') {
+          setLocationDenied(true);
+          return;
+        }
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
         setUserLocation(coords);
@@ -137,7 +141,12 @@ export function useRestaurantGeo(params: FilterParams) {
     setIsLocating(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') { setIsLocating(false); return; }
+      if (status !== 'granted') {
+        setLocationDenied(true);
+        setIsLocating(false);
+        return;
+      }
+      setLocationDenied(false);
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
       setUserLocation(coords);
@@ -199,6 +208,7 @@ export function useRestaurantGeo(params: FilterParams) {
     isGeoMode,
     isAreaSearch,
     showSearchArea,
+    locationDenied,
     loadGeo,
     loadAll,
     loadForMyNeeds,

@@ -127,7 +127,10 @@ async function uploadMenuPhoto(
 async function deleteByUrl(url: string): Promise<void> {
   // Estrai il path dal public URL: .../storage/v1/object/public/images/PATH
   const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
-  if (!match) return;
+  if (!match) {
+    console.warn('[Storage] URL non riconosciuto, impossibile eliminare:', url);
+    return;
+  }
   const { error } = await supabase.storage.from(BUCKET).remove([match[1]]);
   if (error) console.warn('[Storage] Errore eliminazione:', error.message);
 }
