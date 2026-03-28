@@ -14,6 +14,7 @@ export interface PlaceSuggestion {
   country: string;
   countryCode: string;
   location: GeoPoint;
+  cuisineTypes?: string[];
 }
 
 // Motivi segnalazione

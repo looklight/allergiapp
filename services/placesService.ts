@@ -57,7 +57,160 @@ interface NewApiPlaceDetails {
   formattedAddress?: string;
   location?: { latitude: number; longitude: number };
   addressComponents?: NewApiAddressComponent[];
+  primaryType?: string;
 }
+
+// Mappa primaryType di Google → cuisine ID dell'app
+const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
+  // Italiana
+  italian_restaurant:         'italian',
+  modern_italian_restaurant:  'italian',
+
+  // Pizza
+  pizza_restaurant:           'pizza',
+
+  // Francese
+  french_restaurant:          'french',
+  modern_french_restaurant:   'french',
+  bistro:                     'french',
+  crepe_restaurant:           'french',
+
+  // Spagnola
+  spanish_restaurant:         'spanish',
+  tapas_bar:                  'spanish',
+  tapas_restaurant:           'spanish',
+  basque_restaurant:          'spanish',
+
+  // Mediterranea
+  mediterranean_restaurant:   'mediterranean',
+  greek_restaurant:           'mediterranean',
+  portuguese_restaurant:      'mediterranean',
+
+  // Carne e grigliate
+  steak_house:                'meat_grill',
+  barbecue_restaurant:        'meat_grill',
+  bar_and_grill:              'meat_grill',
+
+  // Pesce
+  seafood_restaurant:         'seafood',
+  fish_and_chips_restaurant:  'seafood',
+  poke_restaurant:            'seafood',
+
+  // Hamburger e panini
+  hamburger_restaurant:       'hamburger',
+  sandwich_shop:              'hamburger',
+  fast_food_restaurant:       'hamburger',
+  american_restaurant:        'hamburger',
+  new_american_restaurant:    'hamburger',
+  hot_dog_restaurant:         'hamburger',
+  hoagie_restaurant:          'hamburger',
+  deli:                       'hamburger',
+
+  // Sushi
+  sushi_restaurant:           'sushi',
+
+  // Giapponese
+  japanese_restaurant:        'japanese',
+  ramen_restaurant:           'japanese',
+  japanese_curry_restaurant:  'japanese',
+  izakaya_restaurant:         'japanese',
+  teppanyaki_restaurant:      'japanese',
+  omakase_restaurant:         'japanese',
+  shabu_shabu_restaurant:     'japanese',
+  tempura_restaurant:         'japanese',
+  tonkatsu_restaurant:        'japanese',
+  udon_noodle_restaurant:     'japanese',
+  yakitori_restaurant:        'japanese',
+  yakiniku_restaurant:        'japanese',
+
+  // Cinese
+  chinese_restaurant:         'chinese',
+  dim_sum_restaurant:         'chinese',
+  cantonese_restaurant:       'chinese',
+  szechuan_restaurant:        'chinese',
+  taiwanese_restaurant:       'chinese',
+  hot_pot_restaurant:         'chinese',
+
+  // Coreana
+  korean_restaurant:          'korean',
+  korean_barbecue_restaurant: 'korean',
+
+  // Vietnamita
+  vietnamese_restaurant:      'vietnamese',
+  cambodian_restaurant:       'vietnamese',
+
+  // Thailandese
+  thai_restaurant:            'thai',
+  indonesian_restaurant:      'thai',
+  malaysian_restaurant:       'thai',
+  singaporean_restaurant:     'thai',
+
+  // Indiana
+  indian_restaurant:          'indian',
+  modern_indian_restaurant:   'indian',
+  pakistani_restaurant:       'indian',
+  punjabi_restaurant:         'indian',
+  sri_lankan_restaurant:      'indian',
+  bangladeshi_restaurant:     'indian',
+  nepalese_restaurant:        'indian',
+
+  // Arabo e mediorientale
+  middle_eastern_restaurant:  'middle_eastern',
+  lebanese_restaurant:        'middle_eastern',
+  turkish_restaurant:         'middle_eastern',
+  iranian_restaurant:         'middle_eastern',
+  iraqi_restaurant:           'middle_eastern',
+  israeli_restaurant:         'middle_eastern',
+  moroccan_restaurant:        'middle_eastern',
+  afghani_restaurant:         'middle_eastern',
+  kebab_restaurant:           'middle_eastern',
+  uzbek_restaurant:           'middle_eastern',
+  caucasian_restaurant:       'middle_eastern',
+  falafel_restaurant:         'middle_eastern',
+
+  // Messicana
+  mexican_restaurant:         'mexican',
+  tex_mex_restaurant:         'mexican',
+
+  // Latino americana
+  latin_american_restaurant:  'latin_american',
+  brazilian_restaurant:       'latin_american',
+  peruvian_restaurant:        'latin_american',
+  caribbean_restaurant:       'latin_american',
+  cuban_restaurant:           'latin_american',
+  colombian_restaurant:       'latin_american',
+  argentinian_restaurant:     'latin_american',
+
+  // Bakery
+  bakery:                     'bakery',
+  pastry_shop:                'bakery',
+  donut_shop:                 'bakery',
+  bagel_shop:                 'bakery',
+  chocolate_shop:             'bakery',
+  candy_store:                'bakery',
+  confectionery:              'bakery',
+  waffle_shop:                'bakery',
+
+  // Caffè e bar
+  cafe:                       'cafe',
+  coffee_shop:                'cafe',
+  coffee_roastery:            'cafe',
+  pub:                        'cafe',
+  bar:                        'cafe',
+  tea_house:                  'cafe',
+  juice_shop:                 'cafe',
+  brewery:                    'cafe',
+  cocktail_bar:               'cafe',
+  beer_garden:                'cafe',
+  wine_bar:                   'cafe',
+  brunch_restaurant:          'cafe',
+  breakfast_restaurant:       'cafe',
+
+  // Gelateria
+  ice_cream_shop:             'ice_cream',
+  dessert_shop:               'ice_cream',
+  gelato_shop:                'ice_cream',
+};
 
 // ---------------------------------------------------------------------------
 // Estrazione città/country dagli address components (da Altrove)
@@ -146,7 +299,7 @@ async function fetchPlaceDetails(placeId: string): Promise<PlaceSuggestion | nul
     method: 'GET',
     headers: {
       'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-      'X-Goog-FieldMask': 'id,displayName,formattedAddress,location,addressComponents',
+      'X-Goog-FieldMask': 'id,displayName,formattedAddress,location,addressComponents,primaryType',
     },
   });
 
@@ -175,6 +328,10 @@ async function fetchPlaceDetails(placeId: string): Promise<PlaceSuggestion | nul
     });
   }
 
+  const mappedCuisine = place.primaryType
+    ? GOOGLE_TYPE_TO_CUISINE[place.primaryType]
+    : undefined;
+
   return {
     googlePlaceId: placeId,
     name: place.displayName?.text ?? '',
@@ -186,6 +343,7 @@ async function fetchPlaceDetails(placeId: string): Promise<PlaceSuggestion | nul
       latitude: place.location.latitude,
       longitude: place.location.longitude,
     },
+    cuisineTypes: mappedCuisine ? [mappedCuisine] : [],
   };
 }
 

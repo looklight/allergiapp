@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Linking } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Linking, Image } from 'react-native';
 import { Text, TextInput, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -14,6 +14,7 @@ import StarRating from '../../components/StarRating';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import HeaderBar from '../../components/HeaderBar';
 import i18n from '../../utils/i18n';
+import { useImagePicker } from '../../hooks/useImagePicker';
 import type { PlaceSuggestion } from '../../types/restaurants';
 import type { AppLanguage } from '../../types';
 
@@ -70,6 +71,14 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
 
   return (
     <View style={styles.stepContainer}>
+      <Surface style={styles.introBanner} elevation={0}>
+        <MaterialCommunityIcons name="map-marker-plus-outline" size={22} color={theme.colors.primary} />
+        <Text style={styles.introTitle}>Aggiungi un ristorante</Text>
+        <Text style={styles.introHint}>
+          Ogni locale che aggiungi aiuta chi ha esigenze alimentari a trovare posti sicuri dove mangiare.
+        </Text>
+      </Surface>
+
       <Surface style={styles.section} elevation={0}>
         <Text style={styles.sectionTitle}>Cerca il ristorante</Text>
         <Text style={styles.stepHint}>
@@ -147,6 +156,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
           );
         })}
       </Surface>
+
     </View>
   );
 }
@@ -175,6 +185,10 @@ function ConfirmStep({
   hasNeeds,
   explicitlyNoNeeds,
   onSetNoNeeds,
+  photos,
+  remaining,
+  onAddPhoto,
+  onRemovePhoto,
 }: {
   place: PlaceSuggestion;
   cuisineTypes: string[];
@@ -196,6 +210,10 @@ function ConfirmStep({
   hasNeeds: boolean;
   explicitlyNoNeeds: boolean;
   onSetNoNeeds: (v: boolean) => void;
+  photos: string[];
+  remaining: number;
+  onAddPhoto: () => void;
+  onRemovePhoto: (index: number) => void;
 }) {
   return (
     <View style={styles.stepContainer}>
@@ -241,7 +259,7 @@ function ConfirmStep({
       <Surface style={styles.section} elevation={0}>
         {!skipReview ? (
           <>
-            <Text style={styles.sectionTitle}>Come ti sei trovato?</Text>
+            <Text style={styles.sectionTitle}>Come lo valuteresti?</Text>
             <Text style={styles.stepHint}>
               La tua valutazione aiuta gli utenti con esigenze simili a trovare questo ristorante
             </Text>
@@ -254,17 +272,36 @@ function ConfirmStep({
               )}
             </View>
             {rating > 0 && (
-              <TextInput
-                value={comment}
-                onChangeText={onCommentChange}
-                placeholder="Racconta la tua esperienza (opzionale)"
-                placeholderTextColor={theme.colors.textDisabled}
-                multiline
-                mode="outlined"
-                style={styles.commentInput}
-                outlineStyle={styles.commentInputOutline}
-              />
+              <>
+                <TextInput
+                  value={comment}
+                  onChangeText={onCommentChange}
+                  placeholder="Racconta la tua esperienza (opzionale)"
+                  placeholderTextColor={theme.colors.textDisabled}
+                  multiline
+                  mode="outlined"
+                  style={styles.commentInput}
+                  outlineStyle={styles.commentInputOutline}
+                />
+                <View style={styles.photosRow}>
+                  {photos.map((uri, i) => (
+                    <View key={i} style={styles.photoThumb}>
+                      <Image source={{ uri }} style={styles.photoThumbImg} />
+                      <TouchableOpacity style={styles.photoRemove} onPress={() => onRemovePhoto(i)} hitSlop={4}>
+                        <MaterialCommunityIcons name="close-circle" size={18} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  {remaining > 0 && (
+                    <TouchableOpacity style={styles.photoAdd} onPress={onAddPhoto} activeOpacity={0.7}>
+                      <MaterialCommunityIcons name="camera-plus-outline" size={20} color={theme.colors.textSecondary} />
+                      <Text style={styles.photoAddText}>Foto</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
             )}
+
             {rating === 0 && (
               <TouchableOpacity onPress={onToggleSkip} style={styles.skipLink} hitSlop={8}>
                 <Text style={styles.skipLinkText}>Non ci sono ancora stato</Text>
@@ -336,12 +373,23 @@ export default function AddRestaurantScreen() {
 
   const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(null);
   const [cuisineTypes, setCuisineTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (selectedPlace?.cuisineTypes?.length) {
+      setCuisineTypes(selectedPlace.cuisineTypes);
+    }
+  }, [selectedPlace]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Stato recensione iniziale
   const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [comment, setComment] = useState('');
   const [skipReview, setSkipReview] = useState(false);
+  const { photos, remaining, showPickerAlert, removePhoto, resetPhotos } = useImagePicker({
+    maxPhotos: 3,
+    allowsMultipleSelection: true,
+    cameraAspect: [1, 1],
+  });
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [selectedDiets, setSelectedDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
   const [explicitlyNoNeeds, setExplicitlyNoNeeds] = useState(false);
@@ -361,6 +409,7 @@ export default function AddRestaurantScreen() {
     setSelectedAllergens([...dietaryNeeds.allergens]);
     setSelectedDiets([...(dietaryNeeds.diets ?? [])]);
     setExplicitlyNoNeeds(false);
+    resetPhotos();
   };
 
   const handleAllergensChange = (a: string[]) => {
@@ -440,7 +489,7 @@ export default function AddRestaurantScreen() {
         input: {
           rating,
           ...(comment.trim() && { comment: comment.trim() }),
-          photos: [],
+          photos,
         },
         userId: user.uid,
         userDietaryNeeds: hasNeeds ? { allergens: selectedAllergens, diets: selectedDiets } : undefined,
@@ -508,9 +557,26 @@ export default function AddRestaurantScreen() {
             hasNeeds={hasNeeds}
             explicitlyNoNeeds={explicitlyNoNeeds}
             onSetNoNeeds={setExplicitlyNoNeeds}
+            photos={photos}
+            remaining={remaining}
+            onAddPhoto={showPickerAlert}
+            onRemovePhoto={removePhoto}
           />
         )}
       </ScrollView>
+
+      {!selectedPlace && (
+        <TouchableOpacity
+          style={[styles.contactsLink, { paddingBottom: insets.bottom + 24 }]}
+          onPress={() => Linking.openURL('https://allergiapp.com/contacts')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.contactsLinkText}>
+            Cerchi qualcos'altro?{' '}
+            <Text style={styles.contactsLinkAnchor}>Contattaci</Text>
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {selectedPlace && (
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
@@ -542,6 +608,71 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     gap: 12,
+  },
+  introBanner: {
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primaryLight,
+    alignItems: 'center',
+    gap: 6,
+  },
+  introTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  introHint: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 19,
+  },
+  photosRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  photoThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  photoThumbImg: {
+    width: '100%',
+    height: '100%',
+  },
+  photoRemove: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+  },
+  photoAdd: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 2,
+  },
+  photoAddText: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  contactsLink: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  contactsLinkText: {
+    fontSize: 13,
+    color: theme.colors.textDisabled,
+  },
+  contactsLinkAnchor: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
   section: {
     padding: 16,
