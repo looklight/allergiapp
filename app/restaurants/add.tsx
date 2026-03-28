@@ -12,6 +12,7 @@ import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../../components/StarRating';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
+import HeaderBar from '../../components/HeaderBar';
 import i18n from '../../utils/i18n';
 import type { PlaceSuggestion } from '../../types/restaurants';
 import type { AppLanguage } from '../../types';
@@ -477,13 +478,7 @@ export default function AddRestaurantScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Aggiungi ristorante</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title="Aggiungi ristorante" />
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingBottom: selectedPlace ? insets.bottom + 96 : insets.bottom + 24 }]}
@@ -537,19 +532,6 @@ export default function AddRestaurantScreen() {
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

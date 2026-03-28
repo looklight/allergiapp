@@ -27,6 +27,7 @@ import {
   type AvatarOption,
 } from '../../constants/avatars';
 import { getProfileColor } from '../../constants/profileColors';
+import HeaderBar from '../../components/HeaderBar';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_PADDING = 16;
@@ -113,14 +114,7 @@ export default function AvatarGalleryScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>I miei Avatar</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title="I miei Avatar" />
 
       <ScrollView
         style={styles.scroll}

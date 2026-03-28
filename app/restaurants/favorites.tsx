@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Text, Surface, Button } from 'react-native-paper';
+import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
-import { useAuth } from '../../contexts/AuthContext';
 import type { Favorite } from '../../services/restaurantService';
+import { useUserItemList } from '../../hooks/useUserItemList';
+import HeaderBar from '../../components/HeaderBar';
+import EmptyStateCard from '../../components/EmptyStateCard';
 
 function FavoriteCard({
   item,
@@ -18,7 +20,6 @@ function FavoriteCard({
   onPress: () => void;
   onRemove: () => void;
 }) {
-
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Surface style={styles.card} elevation={1}>
@@ -31,74 +32,44 @@ function FavoriteCard({
             <MaterialCommunityIcons name="heart" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
-
         <Text style={styles.cardCity} numberOfLines={1}>
           {item.restaurant?.city ?? ''} · {item.restaurant?.country ?? ''}
         </Text>
-
       </Surface>
     </TouchableOpacity>
   );
 }
 
+const fetchFavorites = (userId: string) => RestaurantService.getFavorites(userId);
+
 export default function FavoritesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { items: favorites, setItems: setFavorites, isLoading, user } = useUserItemList<Favorite>(fetchFavorites);
 
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const load = useCallback(async () => {
+  const handleRemove = useCallback(async (item: Favorite) => {
     if (!user) return;
-    setIsLoading(true);
-    const result = await RestaurantService.getFavorites(user.uid);
-    setFavorites(result);
-    setIsLoading(false);
-  }, [user]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const handleRemove = async (item: Favorite) => {
-    if (!user) return;
-    // Aggiorna UI subito (ottimistic update), poi chiama il servizio
     setFavorites(prev => prev.filter(f => f.restaurant_id !== item.restaurant_id));
     await RestaurantService.removeFavorite(user.uid, item.restaurant_id);
-  };
+  }, [user, setFavorites]);
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>I miei preferiti</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title="I miei preferiti" />
 
       {isLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
         </View>
       ) : favorites.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyIcon}>💚</Text>
-          <Text style={styles.emptyTitle}>Nessun preferito ancora</Text>
-          <Text style={styles.emptySubtitle}>
-            Esplora i ristoranti e salva quelli che ti piacciono toccando il cuore.
-          </Text>
-          <Button
-            mode="contained"
-            onPress={() => router.back()}
-            style={styles.emptyButton}
-          >
-            Esplora ristoranti
-          </Button>
-        </View>
+        <EmptyStateCard
+          icon="💚"
+          title="Nessun preferito ancora"
+          subtitle="Esplora i ristoranti e salva quelli che ti piacciono toccando il cuore."
+          buttonLabel="Esplora ristoranti"
+          onPress={() => router.back()}
+        />
       ) : (
         <FlatList
           data={favorites}
@@ -118,19 +89,6 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -140,27 +98,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  emptyButton: {
-    borderRadius: 10,
   },
   list: {
     padding: 12,

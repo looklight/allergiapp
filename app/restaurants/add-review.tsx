@@ -4,7 +4,6 @@ import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
@@ -13,11 +12,14 @@ import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantC
 import ChipGrid from '../../components/ChipGrid';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import StarRating from '../../components/StarRating';
+import HeaderBar from '../../components/HeaderBar';
+import { useImagePicker } from '../../hooks/useImagePicker';
 import i18n from '../../utils/i18n';
 import type { Review, CuisineVote } from '../../services/restaurantService';
 import type { DietId, AppLanguage } from '../../types';
 
 const MAX_PHOTOS = 3;
+const MAX_COMMENT_LENGTH = 1500;
 
 export default function AddReviewScreen() {
   const router = useRouter();
@@ -44,7 +46,11 @@ export default function AddReviewScreen() {
   const initialRating = (parseInt(prefillRating ?? '0', 10) || 0) as 0 | 1 | 2 | 3 | 4 | 5;
   const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(initialRating);
   const [comment, setComment] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const { photos, remaining, showPickerAlert: handleAddPhoto, removePhoto, resetPhotos } = useImagePicker({
+    maxPhotos: MAX_PHOTOS,
+    allowsMultipleSelection: true,
+    cameraAspect: [1, 1],
+  });
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [selectedDiets, setSelectedDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,7 +83,7 @@ export default function AddReviewScreen() {
         setExistingReview(r);
         setRating((r.rating ?? 0) as 0 | 1 | 2 | 3 | 4 | 5);
         setComment(r.comment ?? '');
-        setPhotos((r.photos ?? []).map(p => p.url));
+        resetPhotos((r.photos ?? []).map(p => p.url));
         if (r.allergens_snapshot?.length) setSelectedAllergens([...r.allergens_snapshot]);
         if (r.dietary_snapshot?.length) setSelectedDiets(r.dietary_snapshot as DietId[]);
       } else {
@@ -97,54 +103,6 @@ export default function AddReviewScreen() {
   };
 
   const hasContent = rating > 0 || comment.trim().length > 0 || photos.length > 0;
-
-  const remaining = MAX_PHOTOS - photos.length;
-
-  const pickFromGallery = async () => {
-    if (remaining <= 0) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-      allowsMultipleSelection: true,
-      selectionLimit: remaining,
-      exif: false,
-    });
-    if (!result.canceled && result.assets.length > 0) {
-      setPhotos(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, MAX_PHOTOS));
-    }
-  };
-
-  const takePhoto = async () => {
-    if (remaining <= 0) return;
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permesso necessario', 'Consenti l\'accesso alla fotocamera per scattare foto.');
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-      allowsEditing: true,
-      aspect: [1, 1],
-      exif: false,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setPhotos(prev => [...prev, result.assets[0].uri]);
-    }
-  };
-
-  const handleAddPhoto = () => {
-    if (remaining <= 0) return;
-    Alert.alert('Aggiungi foto', undefined, [
-      { text: 'Galleria', onPress: pickFromGallery },
-      { text: 'Fotocamera', onPress: takePhoto },
-      { text: 'Annulla', style: 'cancel' },
-    ]);
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotos(prev => prev.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = async () => {
     if (!restaurantId || !user) return;
@@ -208,14 +166,7 @@ export default function AddReviewScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isEditMode ? 'Modifica recensione' : 'La tua recensione'}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title={isEditMode ? 'Modifica recensione' : 'La tua recensione'} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -273,7 +224,7 @@ export default function AddReviewScreen() {
           placeholder={"Racconta la tua esperienza:\nQuali piatti hai ordinato?\nIl personale è stato attento alle tue esigenze?"}
           placeholderTextColor="#BBBBBB"
           multiline
-          maxLength={1000}
+          maxLength={MAX_COMMENT_LENGTH}
           mode="outlined"
           style={styles.textInput}
           outlineStyle={styles.textInputOutline}
@@ -303,7 +254,7 @@ export default function AddReviewScreen() {
         <Text style={styles.cuisineTitle}>Tipo di cucina</Text>
         <Text style={styles.cuisineHint}>
           {cuisineVotes.length > 0
-            ? 'Seleziona i tag che ritieni corretti per questo ristorante'
+            ? 'Fai tap sui tag che ritieni corretti per questo ristorante'
             : 'Aggiungi il tipo di cucina di questo ristorante'}
         </Text>
         {/* Tag esistenti — posizione fissa, ordinati per voti */}
@@ -451,22 +402,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    flex: 1,
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginHorizontal: 8,
   },
   // Info ristorante
   restaurantInfo: {

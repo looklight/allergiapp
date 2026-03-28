@@ -8,6 +8,7 @@ import { theme } from '../../constants/theme';
 import { REPORT_REASONS } from '../../constants/reportReasons';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
+import HeaderBar from '../../components/HeaderBar';
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -64,14 +65,7 @@ export default function ReportScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Segnala un problema</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title="Segnala un problema" />
 
       <ScrollView
         ref={scrollRef}

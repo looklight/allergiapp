@@ -23,6 +23,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import { PROFILE_COLORS, getProfileColor } from '../../constants/profileColors';
 import DietaryNeedsEditor from '../../components/restaurants/DietaryNeedsEditor';
+import HeaderBar from '../../components/HeaderBar';
 import i18n from '../../utils/i18n';
 import type { DietaryNeeds } from '../../types';
 
@@ -140,14 +141,7 @@ export default function EditProfileScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Modifica profilo</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title="Modifica profilo" />
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
 

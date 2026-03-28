@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth';
 import { RestaurantService } from '../../services/restaurantService';
 import type { Review } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
+import HeaderBar from '../../components/HeaderBar';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 
 export default function ProfileScreen() {
@@ -54,13 +55,7 @@ export default function ProfileScreen() {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profilo</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <HeaderBar title="Profilo" />
         <View style={styles.centered}>
           <Image
             source={require('../../assets/happy_plate_language.png')}

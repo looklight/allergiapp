@@ -1,13 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Text, Surface, Button } from 'react-native-paper';
+import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
-import { useAuth } from '../../contexts/AuthContext';
 import type { Review } from '../../services/restaurantService';
+import { useUserItemList } from '../../hooks/useUserItemList';
+import HeaderBar from '../../components/HeaderBar';
+import EmptyStateCard from '../../components/EmptyStateCard';
 import StarRating from '../../components/StarRating';
 import i18n from '../../utils/i18n';
 
@@ -56,57 +57,30 @@ function ReviewCard({
   );
 }
 
+const fetchReviews = (userId: string) => RestaurantService.getReviewsByUser(userId);
+
 export default function MyReviewsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
-
-  const [reviews, setReviews] = useState<(Review & { restaurant_name?: string })[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (!user) return;
-    setIsLoading(true);
-    const result = await RestaurantService.getReviewsByUser(user.uid);
-    setReviews(result);
-    setIsLoading(false);
-  }, [user]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const { items: reviews, isLoading } = useUserItemList<Review & { restaurant_name?: string }>(fetchReviews);
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Le mie recensioni</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <HeaderBar title="Le mie recensioni" />
 
       {isLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
         </View>
       ) : reviews.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyIcon}>⭐</Text>
-          <Text style={styles.emptyTitle}>Nessuna recensione ancora</Text>
-          <Text style={styles.emptySubtitle}>
-            Visita un ristorante e condividi la tua esperienza con gli altri utenti.
-          </Text>
-          <Button
-            mode="contained"
-            onPress={() => router.back()}
-            style={styles.emptyButton}
-          >
-            Esplora ristoranti
-          </Button>
-        </View>
+        <EmptyStateCard
+          icon="⭐"
+          title="Nessuna recensione ancora"
+          subtitle="Visita un ristorante e condividi la tua esperienza con gli altri utenti."
+          buttonLabel="Esplora ristoranti"
+          onPress={() => router.back()}
+        />
       ) : (
         <FlatList
           data={reviews}
@@ -129,45 +103,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  emptyButton: {
-    borderRadius: 10,
   },
   list: {
     padding: 12,
