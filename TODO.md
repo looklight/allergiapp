@@ -203,6 +203,10 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - `constants/dietModes.ts` — `DietModeId` → sezione card (UI, colori, traduzioni, restrizioni auto-select)
 - Scopi distinti, non da unificare. `pregnancy` esiste solo in card, `vegan` solo in DietId.
 
+### Google Places API — dati gratuiti non ancora sfruttati
+- [ ] **Confrontare `primaryType` con le cucine dell'app** — Google restituisce già la categoria del locale (es. `italian_restaurant`, `sushi_restaurant`) nel campo `primaryType` (Basic Data, già pagato). Mapparlo sulle `cuisine_types` esistenti per pre-compilare il campo durante l'inserimento. Richiede una tabella di mapping `googleType → CuisineId`.
+- [ ] **Decidere quali altri campi Basic Data includere** — campi gratuiti/già pagati non ancora richiesti: `types` (array di categorie), `photos` (riferimenti foto), `plusCode`, `viewport`. Da valutare se e quali portare nella `FieldMask` e nel DB.
+
 ### Refactor add-review.tsx (~920 righe)
 - Estrarre sezione tag cucina in componente `CuisineTagsSection`
 
@@ -249,7 +253,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 
 ## Futuri (quando il volume cresce)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
-- Animazioni: migrare a `react-native-reanimated` + `react-native-gesture-handler`
+- **DraggableBottomSheet → reanimated** — attualmente usa `PanGestureHandler` (RNGH) + `Animated` built-in (RN), perché `react-native-reanimated` crasha in Expo Go (native module JSI non inizializzabile). Funziona correttamente su tutte le piattaforme. Quando si passerà a development build (`npx expo prebuild`), reanimated funzionerà nativamente e si potrà riscrivere il componente con worklet per avere gesture handling sul UI thread anche durante il drag — ottimizzazione marginale, non necessaria
 - **Uniformare le pagine e integrare la card nella scheda ristorante** — idea da investigare: mostrare la card allergenica direttamente nella pagina del ristorante, così l'utente ha in un unico posto sia le info del locale che la sua card da mostrare al cameriere. Valutare coerenza visiva con il resto dell'app e se ha senso come punto di accesso alternativo alla card.
 - **Consolidamento query dettaglio ristorante in singola RPC** — `useRestaurantDetail` fa 9 query parallele (ristorante+stats, recensioni, foto menu, segnalazioni, voti cucina + 4 query utente). Creare una RPC `get_restaurant_detail(id, user_id)` che ritorna tutto in un'unica chiamata. Tradeoff: meno latenza ma logica SQL più complessa e meno flessibile durante lo sviluppo. **Da fare quando la scheda ristorante è completata e lo schema si è stabilizzato.**
 

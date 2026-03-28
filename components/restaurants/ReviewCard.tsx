@@ -39,7 +39,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
           onPress={() => canNavigateToProfile && router.push(`/restaurants/user/${item.userId}`)}
         >
           {avatarSource ? (
-            <Image source={avatarSource} style={styles.avatarImage} />
+            <Image source={avatarSource} style={styles.avatarImage} resizeMode="contain" />
           ) : (
             <View style={[styles.avatar, item.profileColor ? { backgroundColor: item.profileColor } : null]}>
               <Text style={[styles.avatarText, item.profileColor ? styles.avatarTextOnColor : null]}>
@@ -91,20 +91,11 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
       {/* Foto review */}
       {item.photos.length > 0 && (
         <View style={styles.photoGrid}>
-          {item.photos.map((photo, idx) => {
-            const allergenCount = (item.allergensSnapshot?.length ?? 0) + (item.dietarySnapshot?.length ?? 0);
-            return (
-              <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => onImagePress(photo.url)}>
-                <Image source={{ uri: photo.thumbnailUrl }} style={[styles.reviewPhoto, { width: REVIEW_PHOTO_SIZE, height: REVIEW_PHOTO_SIZE }]} />
-                {allergenCount > 0 && (
-                  <View style={styles.photoBadge}>
-                    <MaterialCommunityIcons name="alert-circle" size={9} color={theme.colors.warning} />
-                    <Text style={styles.photoBadgeText}>{allergenCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
+          {item.photos.map((photo, idx) => (
+            <TouchableOpacity key={idx} activeOpacity={0.8} onPress={() => onImagePress(photo.url)}>
+              <Image source={{ uri: photo.thumbnailUrl }} style={[styles.reviewPhoto, { width: REVIEW_PHOTO_SIZE, height: REVIEW_PHOTO_SIZE }]} />
+            </TouchableOpacity>
+          ))}
         </View>
       )}
 
@@ -139,9 +130,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   avatarImage: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 40,
+    height: 40,
   },
   avatar: {
     width: 34,
@@ -213,22 +203,5 @@ const styles = StyleSheet.create({
   },
   reviewPhoto: {
     borderRadius: 10,
-  },
-  photoBadge: {
-    position: 'absolute',
-    bottom: 4,
-    left: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  photoBadgeText: {
-    color: theme.colors.warning,
-    fontSize: 10,
-    fontWeight: '700',
   },
 });

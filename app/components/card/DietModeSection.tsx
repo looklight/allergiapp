@@ -4,7 +4,7 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RestrictionItemId } from '../../../constants/otherRestrictions';
 import { theme } from '../../../constants/theme';
-import { DietModeSectionData } from './_types';
+import { DietModeSectionData } from '../../../types/card';
 
 interface DietModeSectionProps {
   data: DietModeSectionData;

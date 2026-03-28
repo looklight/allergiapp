@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -34,6 +35,7 @@ interface RestaurantHeaderProps {
 export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, isAuthenticated, onScrollToReviews, hideMapsButton, hideNameAndRating }: RestaurantHeaderProps) {
   const [compatExpanded, setCompatExpanded] = useState(false);
   const [showCuisineHint, setShowCuisineHint] = useState(false);
+  const [addressCopied, setAddressCopied] = useState(false);
   const isFull = matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
   const router = useRouter();
 
@@ -42,7 +44,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   }, [matchInfo]);
 
   return (
-    <View style={styles.section}>
+    <View style={[styles.section, hideNameAndRating && { paddingTop: 4 }]}>
       {!hideNameAndRating && (
         <>
           <View style={styles.sectionTopRow}>
@@ -78,10 +80,20 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
       )}
 
       {restaurant.address && (
-        <View style={styles.infoRow}>
+        <TouchableOpacity
+          style={styles.infoRow}
+          activeOpacity={1}
+          onLongPress={async () => {
+            await Clipboard.setStringAsync(restaurant.address!);
+            setAddressCopied(true);
+            setTimeout(() => setAddressCopied(false), 2000);
+          }}
+        >
           <MaterialCommunityIcons name="map-marker-outline" size={16} color={theme.colors.textSecondary} />
-          <Text style={styles.infoText}>{restaurant.address}</Text>
-        </View>
+          <Text style={styles.infoText}>
+            {addressCopied ? 'Indirizzo copiato' : restaurant.address}
+          </Text>
+        </TouchableOpacity>
       )}
 
       {restaurant.price_range && (
@@ -140,12 +152,18 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
       {isAuthenticated && hasUserNeeds && matchInfo && matchInfo.reviewCount > 0 && (
         <View style={[
           styles.compatContainer,
-          { backgroundColor: isFull ? theme.colors.primaryLight : theme.colors.amberLight },
+          compatExpanded && {
+            borderWidth: 1,
+            borderColor: isFull ? theme.colors.primaryLight : theme.colors.amberLight,
+            borderRadius: 8,
+            paddingBottom: 8,
+            backgroundColor: isFull ? '#E8F5E926' : '#FFF8E126',
+          },
         ]}>
           <TouchableOpacity
             onPress={() => setCompatExpanded(prev => !prev)}
             activeOpacity={0.7}
-            style={styles.compatRow}
+            style={[styles.compatRow, { backgroundColor: isFull ? theme.colors.primaryLight : theme.colors.amberLight }]}
           >
             <MaterialCommunityIcons
               name="shield-check"
@@ -163,27 +181,35 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
           </TouchableOpacity>
 
           {compatExpanded && (
-            <View style={styles.compatDetail}>
-              {matchInfo.covered.map(code => {
-                const r = getRestrictionById(code);
-                const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
-                return (
-                  <View key={code} style={[styles.compatChip, styles.compatChipCovered]}>
-                    <MaterialCommunityIcons name="check" size={12} color={theme.colors.success} />
-                    <Text style={[styles.compatChipText, { color: theme.colors.success }]}>{label}</Text>
-                  </View>
-                );
-              })}
-              {matchInfo.uncovered.map(code => {
-                const r = getRestrictionById(code);
-                const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
-                return (
-                  <View key={code} style={[styles.compatChip, styles.compatChipUncovered]}>
-                    <MaterialCommunityIcons name="minus" size={12} color={theme.colors.textDisabled} />
-                    <Text style={[styles.compatChipText, { color: theme.colors.textDisabled }]}>{label}</Text>
-                  </View>
-                );
-              })}
+            <View style={styles.compatExpandedBody}>
+              <View style={styles.compatDetail}>
+                {matchInfo.covered.map(code => {
+                  const r = getRestrictionById(code);
+                  const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
+                  return (
+                    <View key={code} style={[styles.compatChip, styles.compatChipCovered]}>
+                      <MaterialCommunityIcons name="check" size={12} color={theme.colors.success} />
+                      <Text style={[styles.compatChipText, { color: theme.colors.success }]}>{label}</Text>
+                    </View>
+                  );
+                })}
+                {matchInfo.uncovered.map(code => {
+                  const r = getRestrictionById(code);
+                  const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
+                  return (
+                    <View key={code} style={[styles.compatChip, styles.compatChipUncovered]}>
+                      <MaterialCommunityIcons name="minus" size={12} color={theme.colors.textDisabled} />
+                      <Text style={[styles.compatChipText, { color: theme.colors.textDisabled }]}>{label}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+              {onScrollToReviews && (
+                <TouchableOpacity onPress={onScrollToReviews} activeOpacity={0.7} style={styles.compatReadReviews}>
+                  <Text style={styles.compatReadReviewsText}>Leggi le recensioni</Text>
+                  <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -299,14 +325,14 @@ const styles = StyleSheet.create({
   },
   compatContainer: {
     marginTop: 12,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
   },
   compatRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   compatText: {
     fontSize: 13,
@@ -336,5 +362,20 @@ const styles = StyleSheet.create({
   compatChipText: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  compatExpandedBody: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  compatReadReviews: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  compatReadReviewsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
 });

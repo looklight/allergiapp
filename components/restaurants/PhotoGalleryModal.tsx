@@ -1,8 +1,10 @@
 import { useRef, useCallback, useState } from 'react';
 import {
-  Modal, View, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView,
+  Animated, Modal, View, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView,
   useWindowDimensions, type ViewToken,
 } from 'react-native';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+import ZoomableImage from '../ZoomableImage';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +13,7 @@ import StarRating from '../StarRating';
 import { getRestrictionById, type FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import { getAvatarById } from '../../constants/avatars';
 import i18n from '../../utils/i18n';
+import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
 
 export interface GalleryPhoto {
   url: string;
@@ -34,11 +37,15 @@ interface PhotoGalleryModalProps {
   photos: GalleryPhoto[];
   initialIndex: number;
   onClose: () => void;
+  userNeeds?: string[];
 }
 
-export default function PhotoGalleryModal({ photos, initialIndex, onClose }: PhotoGalleryModalProps) {
+export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds }: PhotoGalleryModalProps) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const { translateY, backgroundOpacity, onPanGestureEvent, onPanStateChange, reset } =
+    useSwipeToDismiss(onClose);
+
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const currentAvatarSource = photos[currentIndex]?.avatarUrl
     ? getAvatarById(photos[currentIndex].avatarUrl!)?.source
@@ -55,90 +62,106 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose }: Pho
   const current = photos[currentIndex];
 
   return (
-    <Modal visible transparent animationType="fade">
-      <View style={styles.container}>
-        {/* Close button */}
-        <TouchableOpacity
-          style={[styles.closeBtn, { top: insets.top + 12 }]}
-          onPress={onClose}
-          hitSlop={12}
+    <Modal visible transparent animationType="fade" onShow={reset}>
+      <PanGestureHandler
+        onGestureEvent={onPanGestureEvent}
+        onHandlerStateChange={onPanStateChange}
+        activeOffsetY={20}
+        failOffsetX={[-20, 20]}
+      >
+        <Animated.View
+          style={[
+            styles.container,
+            { transform: [{ translateY }], opacity: backgroundOpacity },
+          ]}
         >
-          <MaterialCommunityIcons name="close" size={28} color="#FFF" />
-        </TouchableOpacity>
+          {/* Close button */}
+          <TouchableOpacity
+            style={[styles.closeBtn, { top: insets.top + 12 }]}
+            onPress={onClose}
+            hitSlop={12}
+          >
+            <MaterialCommunityIcons name="close" size={28} color="#FFF" />
+          </TouchableOpacity>
 
-        {/* Counter */}
-        <View style={[styles.counter, { top: insets.top + 16 }]}>
-          <Text style={styles.counterText}>{currentIndex + 1} / {photos.length}</Text>
-        </View>
+          {/* Counter */}
+          <View style={[styles.counter, { top: insets.top + 16 }]}>
+            <Text style={styles.counterText}>{currentIndex + 1} / {photos.length}</Text>
+          </View>
 
-        {/* Swipeable images */}
-        <FlatList
-          data={photos}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          initialScrollIndex={initialIndex}
-          getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={viewabilityConfig}
-          keyExtractor={(_, i) => String(i)}
-          renderItem={({ item }) => (
-            <View style={{ width, height, justifyContent: 'center', alignItems: 'center' }}>
-              <Image
-                source={{ uri: item.url }}
-                style={styles.image}
-                resizeMode="contain"
-              />
+          {/* Swipeable images */}
+          <FlatList
+            data={photos}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={initialIndex}
+            getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            keyExtractor={(_, i) => String(i)}
+            renderItem={({ item }) => (
+              <View style={[styles.pageContainer, { width }]}>
+                <ZoomableImage
+                  uri={item.url}
+                  style={{ width, height: height * 0.7 }}
+                />
+              </View>
+            )}
+          />
+
+          {/* Review info overlay */}
+          {current && (
+            <View style={[styles.infoOverlay, { paddingBottom: insets.bottom + 16 }]}>
+              {/* Allergen chips */}
+              {((current.allergensSnapshot?.length ?? 0) + (current.dietarySnapshot?.length ?? 0)) > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.allergenRow}
+                >
+                  {[...(current.dietarySnapshot ?? []), ...(current.allergensSnapshot ?? [])].map(id => {
+                    const r = getRestrictionById(id);
+                    if (!r) return null;
+                    const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
+                    const isMatch = userNeeds?.includes(id) ?? false;
+                    const bg = isMatch ? 'rgba(76,175,80,0.30)' : CATEGORY_COLORS[r.category].bg;
+                    const color = isMatch ? '#66BB6A' : CATEGORY_COLORS[r.category].text;
+                    return (
+                      <View key={id} style={[styles.allergenChip, { backgroundColor: bg }]}>
+                        {isMatch && (
+                          <MaterialCommunityIcons name="shield-check" size={11} color={color} />
+                        )}
+                        <Text style={[styles.allergenChipText, { color }]}>{label}</Text>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              )}
+              <View style={styles.infoRow}>
+                {currentAvatarSource ? (
+                  <Image source={currentAvatarSource} style={styles.infoAvatarImage} />
+                ) : (
+                  <View style={[styles.infoAvatar, current.profileColor ? { backgroundColor: current.profileColor } : null]}>
+                    <Text style={styles.infoAvatarText}>
+                      {(current.displayName.charAt(0) || '?').toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.infoMeta}>
+                  <Text style={styles.infoName}>{current.displayName}</Text>
+                  {current.rating != null && current.rating > 0 && (
+                    <StarRating rating={current.rating} size={12} />
+                  )}
+                </View>
+              </View>
+              {current.text && (
+                <Text style={styles.infoText} numberOfLines={2}>{current.text}</Text>
+              )}
             </View>
           )}
-        />
-
-        {/* Review info overlay */}
-        {current && (
-          <View style={[styles.infoOverlay, { paddingBottom: insets.bottom + 16 }]}>
-            {/* Allergen chips */}
-            {((current.allergensSnapshot?.length ?? 0) + (current.dietarySnapshot?.length ?? 0)) > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.allergenRow}
-              >
-                {[...(current.dietarySnapshot ?? []), ...(current.allergensSnapshot ?? [])].map(id => {
-                  const r = getRestrictionById(id);
-                  if (!r) return null;
-                  const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
-                  const colors = CATEGORY_COLORS[r.category];
-                  return (
-                    <View key={id} style={[styles.allergenChip, { backgroundColor: colors.bg }]}>
-                      <Text style={[styles.allergenChipText, { color: colors.text }]}>{label}</Text>
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            )}
-            <View style={styles.infoRow}>
-              {currentAvatarSource ? (
-                <Image source={currentAvatarSource} style={styles.infoAvatarImage} />
-              ) : (
-                <View style={[styles.infoAvatar, current.profileColor ? { backgroundColor: current.profileColor } : null]}>
-                  <Text style={styles.infoAvatarText}>
-                    {(current.displayName.charAt(0) || '?').toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <View style={styles.infoMeta}>
-                <Text style={styles.infoName}>{current.displayName}</Text>
-                {current.rating != null && current.rating > 0 && (
-                  <StarRating rating={current.rating} size={12} />
-                )}
-              </View>
-            </View>
-            {current.text && (
-              <Text style={styles.infoText} numberOfLines={2}>{current.text}</Text>
-            )}
-          </View>
-        )}
-      </View>
+        </Animated.View>
+      </PanGestureHandler>
     </Modal>
   );
 }
@@ -163,9 +186,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  image: {
-    width: '100%',
-    height: '70%',
+  pageContainer: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   infoOverlay: {
     position: 'absolute',
@@ -220,6 +244,9 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   allergenChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 4,

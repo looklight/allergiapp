@@ -75,6 +75,16 @@ export interface UserProfile {
   email?: string;
 }
 
+export interface MenuPhoto {
+  id: string;
+  restaurant_id: string;
+  user_id: string | null;
+  image_url: string;
+  thumbnail_url: string | null;
+  created_at: string;
+  uploader_name?: string | null;
+}
+
 export interface Report {
   id: string;
   restaurant_id: string | null;

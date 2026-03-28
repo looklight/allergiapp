@@ -1,7 +1,7 @@
-import { AllergenId, Language, DownloadableLanguageCode, DownloadedLanguageData } from '../../../types';
-import { RestrictionItemId } from '../../../constants/otherRestrictions';
-import { OtherFoodId } from '../../../constants/otherFoods';
-import { DietModeId } from '../../../constants/dietModes';
+import { AllergenId, Language, DownloadableLanguageCode, DownloadedLanguageData } from '.';
+import { RestrictionItemId } from '../constants/otherRestrictions';
+import { OtherFoodId } from '../constants/otherFoods';
+import { DietModeId } from '../constants/dietModes';
 
 export type CardDisplayMode = 'card' | 'app' | 'english';
 

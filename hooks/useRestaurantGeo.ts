@@ -5,7 +5,7 @@ import { haversineKm } from '../utils/geo';
 
 export type LatLng = { latitude: number; longitude: number };
 export type MapRegion = LatLng & { latitudeDelta: number; longitudeDelta: number };
-export type CenterOn = LatLng & { sheetFraction: number };
+export type CenterOn = LatLng & { sheetFraction: number; latDelta?: number };
 
 type FilterParams = {
   forMyNeeds: boolean;
@@ -74,7 +74,7 @@ export function useRestaurantGeo(params: FilterParams) {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
         setUserLocation(coords);
-        setCenterOn({ ...coords, sheetFraction: getSheetFraction() });
+        setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
       } catch {
         // GPS non disponibile
       }
@@ -150,7 +150,7 @@ export function useRestaurantGeo(params: FilterParams) {
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
       setUserLocation(coords);
-      setCenterOn({ ...coords, sheetFraction: getSheetFraction() });
+      setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
       setIsAreaSearch(false);
       setShowSearchArea(false);
       await loadGeo(coords.latitude, coords.longitude);
@@ -167,7 +167,7 @@ export function useRestaurantGeo(params: FilterParams) {
       const results = await Location.geocodeAsync(query);
       if (results.length === 0) return false;
       const { latitude, longitude } = results[0];
-      setCenterOn({ latitude, longitude, sheetFraction: getSheetFraction() });
+      setCenterOn({ latitude, longitude, sheetFraction: getSheetFraction(), latDelta: 0.02 });
       setIsAreaSearch(true);
       setShowSearchArea(false);
       setIsLoading(true);
@@ -187,7 +187,7 @@ export function useRestaurantGeo(params: FilterParams) {
   const resetToUserLocation = useCallback(() => {
     setIsAreaSearch(false);
     if (userLocation) {
-      setCenterOn({ ...userLocation, sheetFraction: getSheetFraction() });
+      setCenterOn({ ...userLocation, sheetFraction: getSheetFraction(), latDelta: 0.02 });
       loadGeo(userLocation.latitude, userLocation.longitude);
     } else {
       setCenterOn(null);
@@ -204,6 +204,7 @@ export function useRestaurantGeo(params: FilterParams) {
     isLoading,
     userLocation,
     centerOn,
+    setCenterOn,
     isLocating,
     isGeoMode,
     isAreaSearch,

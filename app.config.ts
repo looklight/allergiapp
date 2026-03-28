@@ -7,7 +7,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "default",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
-  newArchEnabled: false,
   scheme: "allergiapp",
   splash: {
     image: "./assets/splash-icon.png",

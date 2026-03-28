@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { deleteRestaurantWithCleanup } from '@/lib/storageCleanup';
 import type { Restaurant } from '@/lib/types';
 import Link from 'next/link';
 
@@ -100,9 +101,9 @@ export default function RestaurantsPage() {
 
   const deleteRestaurant = async (id: string) => {
     if (!confirm('Eliminare definitivamente questo ristorante?')) return;
-    const { error } = await supabase.from('restaurants').delete().eq('id', id);
+    const { error } = await deleteRestaurantWithCleanup(supabase, id);
     if (error) {
-      alert(`Errore durante l'eliminazione: ${error.message}`);
+      alert(`Errore durante l'eliminazione: ${error}`);
       return;
     }
     setRestaurants((prev) => prev.filter((r) => r.id !== id));

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import type { Restaurant, Review, Report, ReportStatus } from '@/lib/types';
+import { deleteRestaurantWithCleanup, deleteReviewWithCleanup, deleteMenuPhotoWithCleanup } from '@/lib/storageCleanup';
+import type { Restaurant, Review, Report, ReportStatus, MenuPhoto } from '@/lib/types';
 import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/types';
 import { ALL_CATEGORIES, DIETARY_CATEGORIES, CUISINE_CATEGORIES } from '@/lib/restaurantCategories';
 import StatusBadge from '@/components/StatusBadge';
@@ -18,6 +19,7 @@ export default function RestaurantDetailPage() {
   const [stats, setStats] = useState({ review_count: 0, average_rating: 0, favorite_count: 0 });
   const [isDeleting, setIsDeleting] = useState(false);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
+  const [menuPhotos, setMenuPhotos] = useState<MenuPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCategories, setEditingCategories] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<string[]>([]);
@@ -85,6 +87,21 @@ export default function RestaurantDetailPage() {
         })));
       }
 
+      // Foto menu con nome uploader
+      const { data: menuPhotosData } = await supabase
+        .from('menu_photos')
+        .select('*, profiles!user_id(display_name)')
+        .eq('restaurant_id', id)
+        .order('created_at', { ascending: false });
+
+      if (menuPhotosData) {
+        setMenuPhotos(menuPhotosData.map((p: any) => ({
+          ...p,
+          uploader_name: p.profiles?.display_name ?? null,
+          profiles: undefined,
+        })));
+      }
+
       setLoading(false);
     }
     load();
@@ -102,14 +119,27 @@ export default function RestaurantDetailPage() {
     setReports((prev) => prev.filter((r) => r.id !== reportId));
   };
 
+  const deleteMenuPhoto = async (photoId: string) => {
+    if (!confirm('Eliminare questa foto del menu?')) return;
+    if (busyIds.has(photoId)) return;
+    setBusyIds((prev) => new Set(prev).add(photoId));
+    const { error } = await deleteMenuPhotoWithCleanup(supabase, photoId);
+    setBusyIds((prev) => { const next = new Set(prev); next.delete(photoId); return next; });
+    if (error) {
+      alert(`Errore: ${error}`);
+      return;
+    }
+    setMenuPhotos((prev) => prev.filter((p) => p.id !== photoId));
+  };
+
   const deleteReview = async (reviewId: string) => {
     if (!confirm('Eliminare questa recensione?')) return;
     if (busyIds.has(reviewId)) return;
     setBusyIds((prev) => new Set(prev).add(reviewId));
-    const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+    const { error } = await deleteReviewWithCleanup(supabase, reviewId);
     setBusyIds((prev) => { const next = new Set(prev); next.delete(reviewId); return next; });
     if (error) {
-      alert(`Errore: ${error.message}`);
+      alert(`Errore: ${error}`);
       return;
     }
     setReviews((prev) => prev.filter((r) => r.id !== reviewId));
@@ -145,10 +175,9 @@ export default function RestaurantDetailPage() {
   const deleteRestaurant = async () => {
     if (!confirm(`Eliminare definitivamente "${restaurant?.name}"? Questa azione non puo essere annullata.`)) return;
     setIsDeleting(true);
-    // CASCADE elimina automaticamente reviews, reports, favorites, ecc.
-    const { error } = await supabase.from('restaurants').delete().eq('id', id);
+    const { error } = await deleteRestaurantWithCleanup(supabase, id);
     if (error) {
-      alert(`Errore durante l'eliminazione: ${error.message}`);
+      alert(`Errore durante l'eliminazione: ${error}`);
       setIsDeleting(false);
       return;
     }
@@ -296,6 +325,41 @@ export default function RestaurantDetailPage() {
                   </div>
                 </div>
                 {r.details && <p className="text-gray-600 mt-1">{r.details}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Foto menu */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="font-semibold mb-3">Foto menu ({menuPhotos.length})</h2>
+        {menuPhotos.length === 0 ? (
+          <p className="text-sm text-gray-400">Nessuna foto del menu</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {menuPhotos.map((p) => (
+              <div key={p.id} className="border rounded overflow-hidden">
+                <img
+                  src={p.thumbnail_url ?? p.image_url}
+                  alt="Foto menu"
+                  className="w-full h-32 object-cover"
+                />
+                <div className="p-2">
+                  <p className="text-xs font-medium text-gray-700 truncate">
+                    {p.uploader_name ?? 'Utente della community'}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(p.created_at).toLocaleDateString('it-IT')}
+                  </p>
+                  <button
+                    onClick={() => deleteMenuPhoto(p.id)}
+                    disabled={busyIds.has(p.id)}
+                    className="mt-1.5 text-xs text-red-600 hover:underline disabled:opacity-50"
+                  >
+                    {busyIds.has(p.id) ? '...' : 'Elimina'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>

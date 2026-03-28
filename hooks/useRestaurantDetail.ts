@@ -26,7 +26,10 @@ export interface UnifiedReview {
 
 export type ReviewSortOrder = 'recent' | 'rating' | 'rating-asc' | 'relevance' | 'likes';
 
-export function useRestaurantDetail(restaurantId: string | undefined) {
+export function useRestaurantDetail(
+  restaurantId: string | undefined,
+  onFavoriteToggled?: (restaurantId: string, delta: number) => void,
+) {
   const router = useRouter();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
 
@@ -163,30 +166,35 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
     }
     if (!restaurant) return;
     const expected = !isFavorite;
+    const delta = expected ? 1 : -1;
     setIsFavorite(expected);
     setRestaurant(prev => prev ? {
       ...prev,
-      favorite_count: (prev.favorite_count ?? 0) + (expected ? 1 : -1),
+      favorite_count: (prev.favorite_count ?? 0) + delta,
     } : prev);
+    onFavoriteToggled?.(restaurant.id, delta);
 
     try {
       const actual = await RestaurantService.toggleFavorite(user.uid, restaurant.id);
       if (actual !== expected) {
+        const correction = (actual ? 1 : -1) - delta;
         setIsFavorite(actual);
         setRestaurant(prev => prev ? {
           ...prev,
-          favorite_count: (prev.favorite_count ?? 0) + (actual ? 1 : -1) - (expected ? 1 : -1),
+          favorite_count: (prev.favorite_count ?? 0) + correction,
         } : prev);
+        onFavoriteToggled?.(restaurant.id, correction);
       }
     } catch {
       // Rollback optimistic update
       setIsFavorite(!expected);
       setRestaurant(prev => prev ? {
         ...prev,
-        favorite_count: (prev.favorite_count ?? 0) + (expected ? -1 : 1),
+        favorite_count: (prev.favorite_count ?? 0) - delta,
       } : prev);
+      onFavoriteToggled?.(restaurant.id, -delta);
     }
-  }, [isAuthenticated, user, restaurant, isFavorite, router]);
+  }, [isAuthenticated, user, restaurant, isFavorite, router, onFavoriteToggled]);
 
   const navigateToContribute = useCallback((prefilledRating?: 1 | 2 | 3 | 4 | 5, editReviewId?: string) => {
     if (!isAuthenticated) {

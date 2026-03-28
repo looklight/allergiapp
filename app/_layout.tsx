@@ -3,6 +3,7 @@ import { View, StyleSheet, Image } from 'react-native';
 import { Stack, ErrorBoundary, usePathname, useRouter } from 'expo-router';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
@@ -131,14 +132,16 @@ function AppContent() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <PaperProvider theme={theme}>
-        <AppProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </AppProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <PaperProvider theme={theme}>
+          <AppProvider>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </AppProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

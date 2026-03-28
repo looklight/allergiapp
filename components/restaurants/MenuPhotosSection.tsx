@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Linking } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -12,34 +12,35 @@ interface MenuPhotosSectionProps {
   menuUrl?: string | null;
   onAddPhoto: () => void;
   onDeletePhoto: (photo: MenuPhoto) => void;
-  onPhotoPress: (imageUrl: string) => void;
+  onPhotoPress: (index: number) => void;
   onUpdateMenuUrl: () => void;
   isUpdatingMenuUrl?: boolean;
+  onManage?: () => void;
 }
 
 export default function MenuPhotosSection({
   menuPhotos,
   currentUserId,
-  isUploading,
   canUpload,
   menuUrl,
-  onAddPhoto,
-  onDeletePhoto,
   onPhotoPress,
-  onUpdateMenuUrl,
-  isUpdatingMenuUrl,
+  onManage,
 }: MenuPhotosSectionProps) {
   const hasPhotos = menuPhotos.length > 0;
 
   return (
     <View style={styles.menuSection}>
-      {/* Titolo */}
-      {/* Link menu: nascosto — funzionalità premium, da riabilitare */}
+
       <View style={styles.titleRow}>
         <Text style={styles.sectionTitle}>Menu{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
+        {canUpload && (
+          <TouchableOpacity onPress={onManage} activeOpacity={0.7} style={styles.manageBtn}>
+            <Text style={styles.manageBtnText}>Gestisci</Text>
+            <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.primary} />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Foto */}
       {hasPhotos ? (
         <ScrollView
           horizontal
@@ -47,58 +48,16 @@ export default function MenuPhotosSection({
           contentContainerStyle={styles.menuScroll}
           style={styles.menuScrollOuter}
         >
-          {menuPhotos.map(photo => (
-            <View key={photo.id} style={styles.menuThumbWrap}>
-              <TouchableOpacity onPress={() => onPhotoPress(photo.image_url)} activeOpacity={0.8}>
-                <Image source={{ uri: photo.thumbnail_url ?? photo.image_url }} style={styles.menuThumb} />
-              </TouchableOpacity>
-              {photo.user_id === currentUserId && (
-                <TouchableOpacity style={styles.menuDeleteBtn} onPress={() => onDeletePhoto(photo)} hitSlop={6}>
-                  <MaterialCommunityIcons name="close-circle" size={20} color={theme.colors.error} />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
-          {canUpload && (
-            <TouchableOpacity
-              onPress={onAddPhoto}
-              disabled={isUploading}
-              activeOpacity={0.7}
-              style={styles.menuAddThumb}
-            >
-              {isUploading ? (
-                <ActivityIndicator size="small" color={theme.colors.primary} />
-              ) : (
-                <>
-                  <MaterialCommunityIcons name="camera-plus-outline" size={24} color={theme.colors.primary} />
-                  <Text style={styles.menuAddText}>Aggiungi</Text>
-                </>
-              )}
+          {menuPhotos.map((photo, index) => (
+            <TouchableOpacity key={photo.id} onPress={() => onPhotoPress(index)} activeOpacity={0.8}>
+              <Image source={{ uri: photo.thumbnail_url ?? photo.image_url }} style={styles.menuThumb} />
             </TouchableOpacity>
-          )}
+          ))}
         </ScrollView>
       ) : !menuUrl && (
-        canUpload ? (
-          <TouchableOpacity onPress={onAddPhoto} disabled={isUploading} activeOpacity={0.7} style={styles.menuEmpty}>
-            {isUploading ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            ) : (
-              <>
-                <MaterialCommunityIcons name="camera-plus-outline" size={28} color={theme.colors.textSecondary} />
-                <Text style={styles.ctaHint}>Tocca per aggiungere una foto del menu</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.menuEmpty}>
-            <MaterialCommunityIcons name="image-outline" size={28} color={theme.colors.textDisabled} />
-            <Text style={styles.ctaHint}>
-              {currentUserId
-                ? 'Scrivi una recensione per aggiungere foto del menu'
-                : 'Ancora nessuna foto del menu'}
-            </Text>
-          </View>
-        )
+        <Text style={styles.menuEmptyHint}>
+          {canUpload ? 'Aggiungi le prime foto del menu' : 'Ancora nessuna foto del menu'}
+        </Text>
       )}
     </View>
   );
@@ -115,6 +74,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  manageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  manageBtnText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
   sectionTitle: {
     fontSize: 16,
@@ -155,46 +124,15 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 4,
   },
-  menuThumbWrap: {
-    position: 'relative',
-  },
   menuThumb: {
     width: 110,
     height: 150,
     borderRadius: 10,
     backgroundColor: theme.colors.background,
   },
-  menuDeleteBtn: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: theme.colors.overlayLight,
-    borderRadius: 10,
-  },
-  menuAddThumb: {
-    width: 80,
-    height: 150,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: theme.colors.primary,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-  },
-  menuAddText: {
-    fontSize: 11,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  menuEmpty: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    gap: 8,
-  },
-  ctaHint: {
+  menuEmptyHint: {
     fontSize: 13,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    paddingVertical: 4,
   },
 });

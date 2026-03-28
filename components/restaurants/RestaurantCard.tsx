@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -26,11 +27,11 @@ interface RestaurantCardProps {
   showMatchInfo?: boolean;
   /** Evidenzia la card (selezionata dalla mappa) */
   selected?: boolean;
-  onPress: () => void;
-  onToggleFavorite: () => void;
+  onPress: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
 }
 
-export default function RestaurantCard({
+export default memo(function RestaurantCard({
   restaurant,
   isFavorite,
   distance,
@@ -43,8 +44,11 @@ export default function RestaurantCard({
   const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
   const hasMatch = showMatchInfo && filtersTotal > 0;
 
+  const handlePress = useCallback(() => onPress(restaurant.id), [onPress, restaurant.id]);
+  const handleToggleFav = useCallback(() => onToggleFavorite(restaurant.id), [onToggleFavorite, restaurant.id]);
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
       <Surface style={[styles.card, selected && styles.cardSelected]} elevation={selected ? 2 : 1}>
         <View style={styles.cardRow}>
           {restaurant.photo_urls?.[0] ? (
@@ -58,7 +62,7 @@ export default function RestaurantCard({
           <View style={styles.cardContent}>
             <View style={styles.cardTop}>
               <Text style={styles.cardName} numberOfLines={1}>{restaurant.name}</Text>
-              <TouchableOpacity onPress={onToggleFavorite} hitSlop={10} activeOpacity={0.6} style={styles.favRow}>
+              <TouchableOpacity onPress={handleToggleFav} hitSlop={10} activeOpacity={0.6} style={styles.favRow}>
                 <MaterialCommunityIcons
                   name={isFavorite ? 'heart' : 'heart-outline'}
                   size={18}
@@ -131,7 +135,7 @@ export default function RestaurantCard({
       </Surface>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
