@@ -253,7 +253,13 @@ function extractCityFromComponents(
 // Autocomplete — POST /v1/places:autocomplete
 // ---------------------------------------------------------------------------
 
-async function fetchAutocomplete(query: string): Promise<PlaceAutocompleteResult[]> {
+// Gruppi di tipi (max 5 per chiamata API Google)
+const PLACE_TYPE_GROUPS = [
+  ['restaurant', 'bakery', 'pastry_shop', 'cafe', 'bar'],
+  ['ice_cream_shop', 'dessert_shop', 'gelato_shop'],
+];
+
+async function fetchAutocomplete(query: string, types: string[]): Promise<PlaceAutocompleteResult[]> {
   const response = await fetch(`${BASE_URL}/places:autocomplete`, {
     method: 'POST',
     headers: {
@@ -263,7 +269,7 @@ async function fetchAutocomplete(query: string): Promise<PlaceAutocompleteResult
     body: JSON.stringify({
       input: query.trim(),
       languageCode: 'it',
-      includedPrimaryTypes: ['restaurant'],
+      includedPrimaryTypes: types,
     }),
   });
 
@@ -358,9 +364,22 @@ async function searchPlaces(query: string): Promise<PlaceAutocompleteResult[]> {
   if (cached) return cached;
 
   try {
-    const results = await deduplicatedSearch(query, () => fetchAutocomplete(query));
-    setCachedSearch(query, results);
-    return results;
+    const groupResults = await Promise.all(
+      PLACE_TYPE_GROUPS.map((types, i) =>
+        deduplicatedSearch(`${query}:${i}`, () => fetchAutocomplete(query, types)),
+      ),
+    );
+
+    // Unisci e deduplica per placeId
+    const seen = new Set<string>();
+    const merged = groupResults.flat().filter(r => {
+      if (seen.has(r.placeId)) return false;
+      seen.add(r.placeId);
+      return true;
+    });
+
+    setCachedSearch(query, merged);
+    return merged;
   } catch (error) {
     console.warn('[PlacesService] Errore searchPlaces:', error);
     return [];
