@@ -36,7 +36,10 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   const [compatExpanded, setCompatExpanded] = useState(false);
   const [showCuisineHint, setShowCuisineHint] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
-  const isFull = matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
+  const isNoReviews = !matchInfo || matchInfo.reviewCount === 0;
+  const isFull = !isNoReviews && matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
+  const badgeBg = isNoReviews ? theme.colors.background : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
+  const badgeColor = isNoReviews ? theme.colors.textSecondary : (isFull ? theme.colors.success : theme.colors.amberDark);
   const router = useRouter();
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                   Linking.openURL(url).catch(() => Alert.alert('Errore', 'Impossibile aprire Maps'));
                 }}
               >
-                <MaterialCommunityIcons name="google-maps" size={26} color="#EA4335" />
+                <MaterialCommunityIcons name="google-maps" size={26} color={theme.colors.brandGoogleMaps} />
                 <Text style={styles.mapsBtnText}>Dettagli</Text>
               </TouchableOpacity>
             )}
@@ -149,39 +152,46 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
         </TouchableOpacity>
       )}
 
-      {isAuthenticated && hasUserNeeds && matchInfo && matchInfo.reviewCount > 0 && (
+      {isAuthenticated && hasUserNeeds && matchInfo && (
         <View style={[
           styles.compatContainer,
-          compatExpanded && {
+          {
             borderWidth: 1,
-            borderColor: isFull ? theme.colors.primaryLight : theme.colors.amberLight,
+            borderColor: compatExpanded ? badgeBg : 'transparent',
             borderRadius: 8,
-            paddingBottom: 8,
-            backgroundColor: isFull ? '#E8F5E926' : '#FFF8E126',
+            paddingBottom: compatExpanded ? 8 : 0,
+            backgroundColor: compatExpanded && !isNoReviews
+              ? (isFull ? '#E8F5E926' : '#FFF8E126')
+              : 'transparent',
           },
         ]}>
           <TouchableOpacity
             onPress={() => setCompatExpanded(prev => !prev)}
             activeOpacity={0.7}
-            style={[styles.compatRow, { backgroundColor: isFull ? theme.colors.primaryLight : theme.colors.amberLight }]}
+            style={[styles.compatRow, { backgroundColor: badgeBg }]}
           >
             <MaterialCommunityIcons
-              name="shield-check"
+              name={isNoReviews ? 'shield-check-outline' : 'shield-check'}
               size={16}
-              color={isFull ? theme.colors.success : theme.colors.amberDark}
+              color={badgeColor}
             />
-            <Text style={[styles.compatText, { color: isFull ? theme.colors.success : theme.colors.amberDark }]}>
-              {matchInfo.coveredCount}/{matchInfo.totalFilters} esigenze confermate da {matchInfo.reviewCount} {matchInfo.reviewCount === 1 ? 'utente' : 'utenti'}
+            <Text style={[styles.compatText, { color: badgeColor }]}>
+              {isNoReviews
+                ? `0/${matchInfo.totalFilters} esigenze confermate`
+                : `${matchInfo.coveredCount}/${matchInfo.totalFilters} esigenze confermate da ${matchInfo.reviewCount} ${matchInfo.reviewCount === 1 ? 'utente' : 'utenti'}`}
             </Text>
             <MaterialCommunityIcons
               name={compatExpanded ? 'chevron-up' : 'chevron-down'}
               size={18}
-              color={isFull ? theme.colors.success : theme.colors.amberDark}
+              color={badgeColor}
             />
           </TouchableOpacity>
 
           {compatExpanded && (
             <View style={styles.compatExpandedBody}>
+              <Text style={styles.compatSourceNote}>
+                Basato sulle esigenze alimentari segnalate dagli utenti.
+              </Text>
               <View style={styles.compatDetail}>
                 {matchInfo.covered.map(code => {
                   const r = getRestrictionById(code);
@@ -204,7 +214,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                   );
                 })}
               </View>
-              {onScrollToReviews && (
+              {onScrollToReviews && !isNoReviews && (
                 <TouchableOpacity onPress={onScrollToReviews} activeOpacity={0.7} style={styles.compatReadReviews}>
                   <Text style={styles.compatReadReviewsText}>Leggi le recensioni</Text>
                   <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.textSecondary} />
@@ -343,7 +353,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginTop: 8,
   },
   compatChip: {
     flexDirection: 'row',
@@ -366,11 +375,16 @@ const styles = StyleSheet.create({
   compatExpandedBody: {
     marginTop: 8,
     paddingHorizontal: 4,
+    gap: 8,
+  },
+  compatSourceNote: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    fontStyle: 'italic',
   },
   compatReadReviews: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
     alignSelf: 'flex-start',
   },
   compatReadReviewsText: {

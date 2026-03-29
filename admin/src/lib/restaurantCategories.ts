@@ -15,10 +15,12 @@ export const DIETARY_CATEGORIES: AdminCategory[] = [
 export const CUISINE_CATEGORIES: AdminCategory[] = [
   { id: 'italian', label: 'Italiana' },
   { id: 'pizza', label: 'Pizza' },
-  { id: 'hamburger', label: 'Hamburger e panini' },
+  { id: 'french', label: 'Francese' },
+  { id: 'spanish', label: 'Spagnola' },
   { id: 'mediterranean', label: 'Mediterranea' },
   { id: 'meat_grill', label: 'Carne e grigliate' },
   { id: 'seafood', label: 'Pesce e frutti di mare' },
+  { id: 'hamburger', label: 'Hamburger e panini' },
   { id: 'sushi', label: 'Sushi' },
   { id: 'japanese', label: 'Giapponese' },
   { id: 'chinese', label: 'Cinese' },
@@ -29,6 +31,9 @@ export const CUISINE_CATEGORIES: AdminCategory[] = [
   { id: 'middle_eastern', label: 'Arabo e mediorientale' },
   { id: 'mexican', label: 'Messicana' },
   { id: 'latin_american', label: 'Latino americana' },
+  { id: 'bakery', label: 'Bakery' },
+  { id: 'cafe', label: 'Caffè e bar' },
+  { id: 'ice_cream', label: 'Gelateria' },
 ];
 
 export const ALL_CATEGORIES: AdminCategory[] = [

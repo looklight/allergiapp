@@ -79,6 +79,12 @@ export const theme = {
     brandInstagram: '#E1306C',
     brandYoutube: '#FF0000',
     brandWebsite: '#FFDD00',
+    brandGoogleMaps: '#EA4335',
+
+    // UI components
+    favoriteRed: '#E53935',
+    starFilled: '#F5A623',
+    starEmpty: '#D0D0D0',
   },
 
   // Layout constants

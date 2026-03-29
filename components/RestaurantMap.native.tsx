@@ -33,6 +33,8 @@ type Props = {
   showMatchInfo?: boolean;
   /** Called when a marker is tapped (opens restaurant detail) */
   onRestaurantPress?: (id: string) => void;
+  /** Set di ID dei ristoranti preferiti dall'utente */
+  favoriteIds?: Set<string>;
 };
 
 // ---------------------------------------------------------------------------
@@ -49,6 +51,7 @@ type Props = {
 // ---------------------------------------------------------------------------
 
 const SelectionContext = createContext<string | null | undefined>(null);
+const FavoritesContext = createContext<Set<string> | undefined>(undefined);
 
 // ---------------------------------------------------------------------------
 // RestaurantMarker
@@ -62,7 +65,7 @@ type MarkerProps = {
 
 /** Colore marker in base alla copertura esigenze (usato solo con showMatchInfo) */
 function coverageColor(covered: number, total: number): string {
-  if (total === 0 || covered === 0) return theme.colors.textSecondary;
+  if (total === 0 || covered === 0) return theme.colors.textDisabled;
   if (covered >= total) return '#2E7D32';
   return '#F9A825';
 }
@@ -71,10 +74,13 @@ function coverageColor(covered: number, total: number): string {
  * Marker singolo. Legge lo stato di selezione da SelectionContext anziché
  * da prop, in modo da non invalidare il useMemo dei children di ClusteredMapView.
  *
- * tracksViewChanges è sempre true: react-native-maps mostra la view React Native
- * live senza snapshot intermedi, eliminando qualsiasi flash/sparizione.
- * Con il clustering il numero di marker visibili è limitato (~20-30),
- * quindi il costo del tracking continuo è trascurabile.
+ * tracksViewChanges: attivo solo per il marker selezionato (+ un ciclo extra
+ * per il marker appena deselezionato, così il bitmap nativo cattura lo stile
+ * corretto prima di congelarsi). Questo evita aggiornamenti nativi di massa
+ * ed elimina la scomparsa dei pin durante selezioni rapide sequenziali.
+ *
+ * zIndex rimosso: su iOS cambiare zIndex rimuove e ri-aggiunge l'annotation,
+ * causando scomparsa momentanea. Lo scale 1.25x e il colore sono sufficienti.
  */
 const RestaurantMarker = memo(function RestaurantMarker({
   restaurant,
@@ -82,7 +88,30 @@ const RestaurantMarker = memo(function RestaurantMarker({
   onRestaurantPress,
 }: MarkerProps) {
   const selectedId = useContext(SelectionContext);
+  const favoriteIds = useContext(FavoritesContext);
   const isSelected = selectedId === restaurant.id;
+  const isFavorite = favoriteIds?.has(restaurant.id) ?? false;
+
+  // tracksViewChanges lifecycle — useState (non useRef) per garantire
+  // il re-render che congela il bitmap nativo dopo il ciclo extra:
+  //
+  //  selezionato        → tracksViewChanges = true  (bitmap live)
+  //  appena deselezionato → tracksViewChanges = true  (un frame extra per catturare lo stile normale)
+  //  stabile            → tracksViewChanges = false (bitmap congelato, zero costo)
+  //
+  // Bug precedente: useRef non triggera re-render, quindi il flag restava
+  // true all'infinito → il bitmap veniva ricreato ogni frame anche dopo
+  // la deselezione, e su iOS poteva diventare vuoto (pin sparisce).
+  const [prevSelected, setPrevSelected] = useState(false);
+  const [prevFavorite, setPrevFavorite] = useState(isFavorite);
+  const shouldTrack = isSelected || prevSelected || isFavorite !== prevFavorite;
+  useEffect(() => { setPrevSelected(isSelected); }, [isSelected]);
+  useEffect(() => { setPrevFavorite(isFavorite); }, [isFavorite]);
+
+  // Stabile: evita che ogni re-render da context crei una nuova closure nativa
+  const handlePress = useCallback(() => {
+    onRestaurantPress?.(restaurant.id);
+  }, [onRestaurantPress, restaurant.id]);
 
   const rating = restaurant.average_rating ?? 0;
   const hasRating = rating > 0;
@@ -95,32 +124,45 @@ const RestaurantMarker = memo(function RestaurantMarker({
       ? coverageColor(coveredTotal, filtersTotal)
       : theme.colors.primary;
 
+  // Stile stabile: la struttura del view tree e le proprietà sono sempre le
+  // stesse — cambiano solo i VALORI. Questo evita che MKAnnotationView su iOS
+  // catturi un bitmap corrotto durante le transizioni (selezione, cuore).
+  const bgColor = isSelected ? markerColor : '#FFFFFF';
+  const fgColor = isSelected ? '#fff' : markerColor;
+
   return (
     <Marker
       coordinate={{
         latitude: restaurant.location!.latitude,
         longitude: restaurant.location!.longitude,
       }}
-      tracksViewChanges
-      zIndex={isSelected ? 999 : 1}
-      onPress={() => onRestaurantPress?.(restaurant.id)}
+      tracksViewChanges={shouldTrack}
+      onPress={handlePress}
     >
-      <View style={[styles.markerWrap, isSelected && styles.markerWrapSelected]}>
+      <View style={[styles.markerWrap, { transform: [{ scale: isSelected ? 1.25 : 1 }] }]}>
         <View style={[
           styles.markerContainer,
-          { borderColor: markerColor },
-          isSelected && { backgroundColor: markerColor, shadowOpacity: 0.4, shadowRadius: 5, elevation: 8 },
+          {
+            borderColor: markerColor,
+            backgroundColor: bgColor,
+            shadowOpacity: isSelected ? 0.4 : 0.2,
+            shadowRadius: isSelected ? 5 : 2,
+            elevation: isSelected ? 8 : 3,
+          },
         ]}>
           {hasRating ? (
-            <RNText style={[styles.markerText, { color: isSelected ? '#fff' : markerColor }]}>
+            <RNText style={[styles.markerText, { color: fgColor }]}>
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <View style={[styles.markerDot, { backgroundColor: isSelected ? '#fff' : markerColor }]} />
+            <View style={[styles.markerDot, { backgroundColor: fgColor }]} />
           )}
         </View>
         <View style={styles.markerArrow}>
           <View style={[styles.markerArrowInner, { borderTopColor: markerColor }]} />
+        </View>
+        <View style={[styles.heartBadge, { opacity: isFavorite ? 1 : 0 }]} pointerEvents="none">
+          <RNText style={styles.heartText}>{'\u2665'}</RNText>
         </View>
       </View>
     </Marker>
@@ -138,6 +180,9 @@ const DEFAULT_REGION: Region = {
   longitudeDelta: 8,
 };
 
+const CLUSTER_EDGE_PADDING = { top: 120, right: 80, bottom: 80, left: 80 };
+const FIT_EDGE_PADDING = { top: 80, right: 50, bottom: 50, left: 50 };
+
 export default function RestaurantMap({
   restaurants,
   centerOn,
@@ -147,6 +192,7 @@ export default function RestaurantMap({
   onDeselect,
   showMatchInfo,
   onRestaurantPress,
+  favoriteIds,
 }: Props) {
   const mapRef = useRef<any>(null);
   const [mapHeight, setMapHeight] = useState(0);
@@ -154,22 +200,43 @@ export default function RestaurantMap({
   const [hasAnimatedToUser, setHasAnimatedToUser] = useState(false);
   const currentRegion = useRef<Region | null>(null);
 
+  // ---- Refs for prop callbacks (used by stable callbacks below) ----
+  const onRegionChangeCompleteRef = useRef(onRegionChangeComplete);
+  onRegionChangeCompleteRef.current = onRegionChangeComplete;
+  const onDeselectRef = useRef(onDeselect);
+  onDeselectRef.current = onDeselect;
+  const centerOnRef = useRef(centerOn);
+  centerOnRef.current = centerOn;
+
+  // ---- Stable ref for restaurants (used by fitToMarkers & markerElements) ----
+  const restaurantsRef = useRef(restaurants);
+  restaurantsRef.current = restaurants;
+
   const fitToMarkers = useCallback(() => {
-    const coords = restaurants
+    const coords = restaurantsRef.current
       .filter(r => r.location)
       .map(r => ({ latitude: r.location!.latitude, longitude: r.location!.longitude }));
     if (coords.length === 0) return;
     mapRef.current?.fitToCoordinates(coords, {
-      edgePadding: { top: 80, right: 50, bottom: 50, left: 50 },
+      edgePadding: FIT_EDGE_PADDING,
       animated: true,
     });
-  }, [restaurants]);
+  }, []);
+
+  // Restaurant ID hash — only changes when restaurants are added/removed,
+  // NOT on field-only updates (e.g. favorite_count from optimistic toggle).
+  const restaurantKey = useMemo(
+    () => restaurants.filter(r => r.location).map(r => r.id).join(','),
+    [restaurants],
+  );
 
   // Fit to all markers only when there is no user position to center on.
+  // Uses restaurantKey so field-only updates don't trigger fitToMarkers.
   useEffect(() => {
-    if (restaurants.length === 0 || centerOn || !mapReady.current) return;
+    if (restaurantsRef.current.length === 0 || centerOnRef.current || !mapReady.current) return;
     fitToMarkers();
-  }, [restaurants, centerOn, fitToMarkers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurantKey, fitToMarkers]);
 
   useEffect(() => {
     if (!centerOn || mapHeight === 0) return;
@@ -200,11 +267,31 @@ export default function RestaurantMap({
     }
   }, [centerOn, mapHeight]);
 
-  // Marker elements are stable: selectedId is NOT a dependency.
-  // Selection state flows through SelectionContext, keeping ClusteredMapView
+  // ---- Stable callbacks for ClusteredMapView (prevent memo bypass) ----
+
+  const handleMapReady = useCallback(() => {
+    mapReady.current = true;
+    if (!centerOnRef.current && restaurantsRef.current.length > 0) fitToMarkers();
+  }, [fitToMarkers]);
+
+  const handleRegionChange = useCallback((region: Region) => {
+    currentRegion.current = region;
+    onRegionChangeCompleteRef.current?.(region);
+  }, []);
+
+  const handleMapPress = useCallback(() => {
+    onDeselectRef.current?.();
+  }, []);
+
+  const handleLayout = useCallback((e: any) => {
+    setMapHeight(e.nativeEvent.layout.height);
+  }, []);
+
+  // Marker elements are stable: selectedId and favoriteIds are NOT dependencies.
+  // Selection/favorites state flows through Context, keeping ClusteredMapView
   // children reference unchanged and preventing supercluster rebuilds.
   const markerElements = useMemo(() =>
-    restaurants.filter(r => r.location).map(restaurant => (
+    restaurantsRef.current.filter(r => r.location).map(restaurant => (
       <RestaurantMarker
         key={restaurant.id}
         restaurant={restaurant}
@@ -212,7 +299,8 @@ export default function RestaurantMap({
         onRestaurantPress={onRestaurantPress}
       />
     )),
-    [restaurants, showMatchInfo, onRestaurantPress],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [restaurantKey, showMatchInfo, onRestaurantPress],
   );
 
   // Show markers immediately on pin/card tap (no latDelta).
@@ -222,26 +310,22 @@ export default function RestaurantMap({
 
   return (
     <SelectionContext.Provider value={selectedId}>
+    <FavoritesContext.Provider value={favoriteIds}>
       <ClusteredMapView
         ref={mapRef}
         style={styles.map}
         initialRegion={DEFAULT_REGION}
         showsUserLocation={!!hasUserLocation}
         showsMyLocationButton={false}
-        onMapReady={() => {
-          mapReady.current = true;
-          if (!centerOn && restaurants.length > 0) fitToMarkers();
-        }}
-        onRegionChangeComplete={(region: Region) => {
-          currentRegion.current = region;
-          onRegionChangeComplete?.(region);
-        }}
-        onPress={() => onDeselect?.()}
-        onLayout={(e: any) => setMapHeight(e.nativeEvent.layout.height)}
+        showsCompass
+        onMapReady={handleMapReady}
+        onRegionChangeComplete={handleRegionChange}
+        onPress={handleMapPress}
+        onLayout={handleLayout}
         clusterColor={theme.colors.primary}
         clusterTextColor={theme.colors.onPrimary}
         clusterFontFamily="System"
-        edgePadding={{ top: 120, right: 80, bottom: 80, left: 80 }}
+        edgePadding={CLUSTER_EDGE_PADDING}
         radius={45}
         maxZoom={7}
         minPoints={3}
@@ -251,6 +335,7 @@ export default function RestaurantMap({
       >
         {showMarkers ? markerElements : null}
       </ClusteredMapView>
+    </FavoritesContext.Provider>
     </SelectionContext.Provider>
   );
 }
@@ -264,9 +349,6 @@ const styles = StyleSheet.create({
 
   markerWrap: {
     alignItems: 'center',
-  },
-  markerWrapSelected: {
-    transform: [{ scale: 1.25 }],
   },
   markerContainer: {
     backgroundColor: '#FFFFFF',
@@ -304,5 +386,26 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
+  },
+  heartBadge: {
+    position: 'absolute',
+    top: -3,
+    right: -6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 7,
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0.5 },
+    shadowOpacity: 0.15,
+    shadowRadius: 1,
+    elevation: 2,
+  },
+  heartText: {
+    fontSize: 9,
+    lineHeight: 13,
+    color: theme.colors.favoriteRed,
   },
 });

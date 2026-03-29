@@ -1,9 +1,10 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme } from '../constants/theme';
 
-const STAR_COLOR = '#F5A623';
-const STAR_EMPTY_COLOR = '#D0D0D0';
+const STAR_COLOR = theme.colors.starFilled;
+const STAR_EMPTY_COLOR = theme.colors.starEmpty;
 
 interface StarRatingProps {
   rating: number;
@@ -67,6 +68,6 @@ const styles = StyleSheet.create({
   value: {
     marginLeft: 4,
     fontWeight: '600',
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
 });

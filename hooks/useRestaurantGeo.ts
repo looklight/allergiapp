@@ -112,13 +112,17 @@ export function useRestaurantGeo(params: FilterParams) {
         region.latitude, region.longitude,
       );
       const viewportRadiusKm = (region.latitudeDelta * 111) / 2;
-      setShowSearchArea(dist > lastQueryRadius.current * 0.7 && viewportRadiusKm >= 2 && viewportRadiusKm <= 500);
+      // Soglia adattiva: min tra 70% dell'ultimo raggio e 1.5x il viewport corrente.
+      // Così funziona anche quando l'utente è molto ingrandito su una strada.
+      const moveThreshold = Math.min(lastQueryRadius.current * 0.7, viewportRadiusKm * 1.5);
+      setShowSearchArea(dist > moveThreshold && viewportRadiusKm <= 500);
     }
   }, []);
 
   const handleSearchArea = useCallback(async () => {
     if (!mapRegion) return;
-    const radiusKm = Math.max(1, Math.min(500, (mapRegion.latitudeDelta * 111) / 2));
+    // Raggio minimo 3 km: anche zoomati su una via si cercano i locali nelle vicinanze.
+    const radiusKm = Math.max(3, Math.min(500, (mapRegion.latitudeDelta * 111) / 2));
     setIsLoading(true);
     setShowSearchArea(false);
     setIsAreaSearch(true);

@@ -265,7 +265,7 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
           simultaneousHandlers={collapseScrollRef ? [collapseScrollRef] : undefined}
           enabled={bodyPanActive}
         >
-          <View style={styles.body}>
+          <View style={[styles.body, { paddingBottom: screenHeight * (1 - snapPoints[snapPoints.length - 1]) }]}>
             {children}
           </View>
         </PanGestureHandler>
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#CCCCCC',
+    backgroundColor: theme.colors.separator,
   },
   body: {
     flex: 1,

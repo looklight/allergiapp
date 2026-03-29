@@ -222,7 +222,7 @@ export default function AddReviewScreen() {
           value={comment}
           onChangeText={setComment}
           placeholder={"Racconta la tua esperienza:\nQuali piatti hai ordinato?\nIl personale è stato attento alle tue esigenze?"}
-          placeholderTextColor="#BBBBBB"
+          placeholderTextColor={theme.colors.textDisabled}
           multiline
           maxLength={MAX_COMMENT_LENGTH}
           mode="outlined"

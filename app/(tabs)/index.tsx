@@ -75,7 +75,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + 49 + insets.bottom }]}>
         {/* Banner Carousel */}
         <BannerCarousel />
 

@@ -298,3 +298,10 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 
 ## Note
 - Valutare se passare alla gestione nativa del menu dal basso (tab bar). Verificare se c'e un vantaggio concreto rispetto all'implementazione attuale.
+
+Domanda, abbiamo rimosso i cluster di pin? Forse è la scelta giusta dato che non danno un gran valore aggiunto (neanche google maps li ha). Puoi solo verificare che non sia presente codice legacy e che tutto sia pulito?
+
+- Nella scheda preferiti possiamo pensare a un modo per vederli sulla mappa? 
+
+Se le recensioni sono più lunghe di un tot, ad esempio 5 righe possiamo mettere il pulsante leggi tutto o qualcosa di simile? Almeno la pagina resta più compatta
+

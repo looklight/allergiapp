@@ -56,22 +56,27 @@ export type RestaurantCategoryId =
   | 'vegan'
   | 'vegetarian'
   // Cucina
-  | 'pizza'
-  | 'sushi'
-  | 'hamburger'
   | 'italian'
-  | 'japanese'
-  | 'chinese'
-  | 'thai'
-  | 'mexican'
-  | 'indian'
+  | 'pizza'
+  | 'french'
+  | 'spanish'
   | 'mediterranean'
   | 'meat_grill'
   | 'seafood'
-  | 'middle_eastern'
+  | 'hamburger'
+  | 'sushi'
+  | 'japanese'
+  | 'chinese'
   | 'korean'
   | 'vietnamese'
-  | 'latin_american';
+  | 'thai'
+  | 'indian'
+  | 'middle_eastern'
+  | 'mexican'
+  | 'latin_american'
+  | 'bakery'
+  | 'cafe'
+  | 'ice_cream';
 
 export interface RestaurantCategory {
   id: RestaurantCategoryId;

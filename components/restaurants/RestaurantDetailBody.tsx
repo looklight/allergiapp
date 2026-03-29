@@ -207,7 +207,7 @@ export default function RestaurantDetailBody({
       <ScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: safeAreaBottom + 32 }}
         keyboardShouldPersistTaps="handled"
         scrollEnabled={scrollEnabled}
         showsVerticalScrollIndicator={false}
@@ -237,7 +237,7 @@ export default function RestaurantDetailBody({
                 activeOpacity={0.7}
                 onPress={() => Linking.openURL(mapsUrl).catch(() => Alert.alert('Errore', 'Impossibile aprire Maps'))}
               >
-                <MaterialCommunityIcons name="google-maps" size={15} color="#EA4335" />
+                <MaterialCommunityIcons name="google-maps" size={15} color={theme.colors.brandGoogleMaps} />
                 <Text style={styles.mapsChipText}>Indicazioni (Maps)</Text>
               </TouchableOpacity>
             )}
@@ -277,10 +277,20 @@ export default function RestaurantDetailBody({
                         style={styles.photoThumb}
                         resizeMode="cover"
                       />
-                      {item.matchCount > 0 && (
+                      {userNeedsSet.size > 0 && (
                         <View style={styles.thumbMatchBadge}>
-                          <MaterialCommunityIcons name="shield-check" size={10} color={theme.colors.success} />
-                          <Text style={styles.thumbMatchText}>{item.matchCount}</Text>
+                          <MaterialCommunityIcons
+                            name="shield-check"
+                            size={10}
+                            color={item.matchCount >= userNeedsSet.size ? theme.colors.success
+                              : item.matchCount > 0 ? theme.colors.amberDark
+                              : theme.colors.textSecondary}
+                          />
+                          <Text style={[styles.thumbMatchText, {
+                            color: item.matchCount >= userNeedsSet.size ? theme.colors.success
+                              : item.matchCount > 0 ? theme.colors.amberDark
+                              : theme.colors.textSecondary,
+                          }]}>{item.matchCount}/{userNeedsSet.size}</Text>
                         </View>
                       )}
                       {isLast && (
@@ -376,7 +386,7 @@ export default function RestaurantDetailBody({
 
         <View style={styles.separator} />
 
-        <View style={[styles.footerSection, { paddingBottom: safeAreaBottom + 32 }]}>
+        <View style={styles.footerSection}>
           {restaurant.added_by && (
             <TouchableOpacity
               style={styles.footerRow}
@@ -559,7 +569,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5, paddingVertical: 2,
   },
   thumbMatchText: {
-    fontSize: 10, fontWeight: '700', color: theme.colors.success,
+    fontSize: 10, fontWeight: '700',
   },
   thumbMoreOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,

@@ -63,5 +63,16 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
     }
   }, [userId, updateRestaurant]);
 
-  return { favoriteIds, loadFavorites, toggleFavorite };
+  /** Aggiorna solo lo stato locale di un singolo preferito (senza chiamata API).
+   *  Usato dal callback onFavoriteToggled della detail sheet, che gestisce l'API da sé. */
+  const syncFavoriteId = useCallback((id: string, isFavorite: boolean) => {
+    setFavoriteIds(prev => {
+      const next = new Set(prev);
+      if (isFavorite) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+
+  return { favoriteIds, loadFavorites, toggleFavorite, syncFavoriteId };
 }

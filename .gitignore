@@ -3,6 +3,11 @@
 # dependencies
 node_modules/
 
+# Seed data (contiene ID specifici del DB di produzione)
+scripts/seed-users.json
+scripts/import/seed-users-log.json
+scripts/import/failed-restaurants.json
+
 # Expo
 .expo/
 dist/
