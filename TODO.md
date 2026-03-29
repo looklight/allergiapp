@@ -243,6 +243,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [ ] **`voteCuisines` non atomico** — DELETE + INSERT in due chiamate separate senza transazione. Se l'app crasha tra le due, i voti vanno persi. Spostare in una RPC con transazione unica
 
 ### Priorità media
+- [ ] **Ricerca globale ristoranti per nome** — quando il geocoding non trova una città, cercare nel DB per nome ristorante. Aggiungere indice `pg_trgm` su `restaurants.name` per ricerche parziali veloci (< 10ms anche con 10k+ record). Utile per trovare ristoranti fuori dall'area corrente della mappa.
 - [ ] **`toggleFavorite` anti-pattern** — usa try/catch su errore PostgreSQL 23505 (UNIQUE violation) per toggle. Sostituire con RPC che usa `INSERT ... ON CONFLICT DO NOTHING RETURNING id` (atomico, nessuna race condition)
 - [ ] **Claim → owner_id non automatizzato** — quando un claim viene approvato (`status = 'approved'`), nessun trigger setta `restaurants.owner_id`. Aggiungere trigger `AFTER UPDATE ON restaurant_claims` che assegni automaticamente l'owner
 - [ ] **Premium non verificato server-side** — `is_premium` e `subscription_expires_at` esistono ma nessuna RPC o policy verifica che la subscription sia ancora attiva. Un ristorante scaduto continua ad avere priorità nell'ordinamento (`ORDER BY is_premium DESC`)
