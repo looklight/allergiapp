@@ -81,4 +81,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   owner: "looklight",
+  newArchEnabled: true,
 });
