@@ -7,8 +7,15 @@ import {
   useWindowDimensions,
   type ViewStyle,
 } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import type { PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import {
+  PanGestureHandler,
+  State,
+  type HandlerStateChangeEvent,
+  type PanGestureHandlerEventPayload,
+  type PanGestureHandlerGestureEvent,
+} from 'react-native-gesture-handler';
+
+type PanStateChangeEvent = HandlerStateChangeEvent<PanGestureHandlerEventPayload>;
 import { theme } from '../constants/theme';
 
 export type DraggableBottomSheetRef = {
@@ -136,7 +143,7 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
       translateY.setValue(clamped);
     }, [translateY]);
 
-    const onHeaderHandlerStateChange = useCallback((event: PanGestureHandlerGestureEvent) => {
+    const onHeaderHandlerStateChange = useCallback((event: PanStateChangeEvent) => {
       const { state, oldState, translationY, velocityY } = event.nativeEvent;
 
       if (state === State.ACTIVE) {
@@ -203,7 +210,7 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
       }
     }, [translateY, bodyPanEnabled, scrollPositionRef]);
 
-    const onBodyHandlerStateChange = useCallback((event: PanGestureHandlerGestureEvent) => {
+    const onBodyHandlerStateChange = useCallback((event: PanStateChangeEvent) => {
       const { state, oldState, translationY, velocityY } = event.nativeEvent;
       const positions = snapsRef.current;
       const minTop = positions[positions.length - 1];

@@ -1,6 +1,12 @@
 import { useRef, useCallback } from 'react';
 import { Animated } from 'react-native';
-import { State, type PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import {
+  State,
+  type HandlerStateChangeEvent,
+  type PanGestureHandlerEventPayload,
+} from 'react-native-gesture-handler';
+
+type PanStateChangeEvent = HandlerStateChangeEvent<PanGestureHandlerEventPayload>;
 
 const DISMISS_THRESHOLD = 120;
 
@@ -13,7 +19,7 @@ export function useSwipeToDismiss(onDismiss: () => void) {
   );
 
   const onPanStateChange = useCallback(
-    (e: PanGestureHandlerGestureEvent) => {
+    (e: PanStateChangeEvent) => {
       if (e.nativeEvent.oldState === State.ACTIVE) {
         if (e.nativeEvent.translationY > DISMISS_THRESHOLD) {
           onDismiss();
