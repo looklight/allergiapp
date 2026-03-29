@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Stack, ErrorBoundary, usePathname } from 'expo-router';
+import * as Updates from 'expo-updates';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -70,14 +71,30 @@ function AppContent() {
 
   useEffect(() => {
     if (isReady) {
-      // Attiva i valori Remote Config in cache prima di mostrare l'home screen,
-      // così il banner promo è disponibile al primo render (nessuna chiamata di rete)
-      RemoteConfig.activateCached().then(() => {
-        SplashScreen.hideAsync();
-      });
-
-      // Fetch in background per la prossima sessione
-      RemoteConfig.initialize();
+      // Controlla OTA update: se disponibile, scarica e ricarica subito
+      // (mantiene lo splash visibile durante il download per UX fluida)
+      if (!__DEV__) {
+        Updates.checkForUpdateAsync()
+          .then(async ({ isAvailable }) => {
+            if (isAvailable) {
+              await Updates.fetchUpdateAsync();
+              await Updates.reloadAsync();
+              return; // reloadAsync non ritorna, ma per chiarezza
+            }
+            // Nessun aggiornamento: procedi normalmente
+            RemoteConfig.activateCached().then(() => SplashScreen.hideAsync());
+            RemoteConfig.initialize();
+          })
+          .catch(() => {
+            // Errore di rete o altro: procedi normalmente
+            RemoteConfig.activateCached().then(() => SplashScreen.hideAsync());
+            RemoteConfig.initialize();
+          });
+      } else {
+        RemoteConfig.activateCached().then(() => SplashScreen.hideAsync());
+        // Fetch in background per la prossima sessione
+        RemoteConfig.initialize();
+      }
 
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
