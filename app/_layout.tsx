@@ -70,10 +70,13 @@ function AppContent() {
 
   useEffect(() => {
     if (isReady) {
-      // Nascondi lo splash screen quando l'app è pronta
-      SplashScreen.hideAsync();
+      // Attiva i valori Remote Config in cache prima di mostrare l'home screen,
+      // così il banner promo è disponibile al primo render (nessuna chiamata di rete)
+      RemoteConfig.activateCached().then(() => {
+        SplashScreen.hideAsync();
+      });
 
-      // Initialize Remote Config (fetches banner configuration)
+      // Fetch in background per la prossima sessione
       RemoteConfig.initialize();
 
       // Initialize analytics tracking based on stored consent

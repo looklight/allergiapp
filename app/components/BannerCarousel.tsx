@@ -37,6 +37,7 @@ export default function BannerCarousel({
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewedBanners = useRef<Set<string>>(new Set());
+  const prevExtraCount = useRef(0);
 
   // Banner predefiniti informativi
   const infoBanners: BannerItem[] = [
@@ -116,6 +117,17 @@ export default function BannerCarousel({
       }
     };
   }, [allBanners.length]);
+
+  // Safety net: se il promo banner arriva dopo il primo render, resetta il carosello
+  useEffect(() => {
+    if (allExtraBanners.length > prevExtraCount.current) {
+      setActiveIndex(0);
+      try {
+        flatListRef.current?.scrollToIndex({ index: 0, animated: false });
+      } catch {}
+    }
+    prevExtraCount.current = allExtraBanners.length;
+  }, [allExtraBanners.length]);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {

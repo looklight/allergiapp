@@ -52,6 +52,22 @@ try {
 }
 
 /**
+ * Attiva i valori in cache dalla sessione precedente, senza chiamate di rete.
+ * Da chiamare prima di nascondere lo splash screen, così i valori sono
+ * disponibili al primo render dei componenti.
+ */
+async function activateCached(): Promise<void> {
+  if (!isRemoteConfigAvailable || !remoteConfig) return;
+  try {
+    await remoteConfig.setDefaults(DEFAULT_CONFIG);
+    await remoteConfig.activate();
+    if (__DEV__) console.log('[RemoteConfig] Cached config activated');
+  } catch (error) {
+    // Silenzioso — i default saranno usati come fallback
+  }
+}
+
+/**
  * Initialize Remote Config with default values and fetch settings
  */
 async function initialize(): Promise<void> {
@@ -198,6 +214,7 @@ async function refresh(): Promise<void> {
 }
 
 export const RemoteConfig = {
+  activateCached,
   initialize,
   getString,
   getBoolean,
