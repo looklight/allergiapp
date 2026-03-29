@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Scarica AllergiApp — Gratis su App Store e Google Play</title>
+    <meta name="description" content="Scarica AllergiApp gratis. Comunica le tue allergie alimentari in oltre 60 lingue. Disponibile su App Store e Google Play.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://allergiapp.com/download">
+
+    <!-- Open Graph — preview su WhatsApp, Telegram, iMessage, etc. -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://allergiapp.com/download">
+    <meta property="og:title" content="Scarica AllergiApp — Gratis">
+    <meta property="og:description" content="Comunica le tue allergie in 60+ lingue. Mostra una card ai camerieri quando sei all'estero. Gratuita, offline, senza registrazione.">
+    <meta property="og:image" content="https://allergiapp.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="AllergiApp">
+    <meta property="og:locale" content="it_IT">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Scarica AllergiApp — Gratis">
+    <meta name="twitter:description" content="Comunica le tue allergie in 60+ lingue. Gratuita, offline, senza registrazione.">
+    <meta name="twitter:image" content="https://allergiapp.com/images/og-image.jpg">
+
+    <!-- Apple Smart App Banner (mostra banner nativo in Safari iOS) -->
+    <meta name="apple-itunes-app" content="app-id=6758859853">
+
+    <link rel="icon" type="image/png" href="images/logo_app.png">
+    <link rel="apple-touch-icon" href="images/logo_app.png">
+    <meta name="theme-color" content="#4CAF50">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --text: #212121;
+            --text-secondary: #666666;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #E8F5E9 0%, #ffffff 60%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            color: var(--text);
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            text-decoration: none;
+        }
+
+        .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 22%;
+        }
+
+        .logo-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* ── MOBILE VIEW (redirect in corso) ── */
+        #mobile-view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 380px;
+            width: 100%;
+        }
+
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 22%;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(76, 175, 80, 0.25);
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .app-tagline {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .redirect-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(76, 175, 80, 0.25);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .manual-btn {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 14px;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.35);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .manual-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* ── DESKTOP VIEW ── */
+        #desktop-view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        #desktop-view .app-icon {
+            width: 96px;
+            height: 96px;
+        }
+
+        .desktop-title {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .desktop-desc {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 40px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .feature-item span:first-child {
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .store-buttons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .store-button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 28px;
+            background: var(--text);
+            color: white;
+            border-radius: 14px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .store-button:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+
+        .store-text {
+            font-size: 11px;
+            opacity: 0.8;
+            line-height: 1;
+        }
+
+        .store-name {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .footer-link {
+            margin-top: 48px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .footer-link a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="logo-wrap">
+        <img src="images/happyplate.png" alt="AllergiApp" class="logo-img" style="border-radius:0">
+        <span class="logo-name">AllergiApp</span>
+    </a>
+
+    <!-- Mobile: redirect in corso -->
+    <div id="mobile-view">
+        <img src="images/logo_app.png" alt="AllergiApp" class="app-icon">
+        <h1 class="app-title">AllergiApp</h1>
+        <p class="app-tagline">Comunica le tue allergie in 60+ lingue.<br>Gratuita, offline, senza registrazione.</p>
+
+        <div class="redirect-status">
+            <div class="spinner"></div>
+            <span id="status-msg">Apertura store...</span>
+        </div>
+
+        <!-- Pulsante manuale (mostrato dopo timeout se il redirect non parte) -->
+        <a id="manual-btn" href="#" class="manual-btn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="btn-icon-ios" style="display:none">
+                <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/>
+            </svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="btn-icon-android" style="display:none">
+                <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+            </svg>
+            <span id="btn-label">Apri store</span>
+        </a>
+    </div>
+
+    <!-- Desktop: entrambi i pulsanti -->
+    <div id="desktop-view">
+        <img src="images/logo_app.png" alt="AllergiApp" class="app-icon">
+        <h1 class="desktop-title">Scarica <span class="gradient-text">AllergiApp</span></h1>
+        <p class="desktop-desc">
+            Comunica le tue allergie alimentari in oltre 60 lingue.<br>
+            Mostra una card chiara a camerieri e chef quando sei all'estero.
+        </p>
+
+        <div class="features-list">
+            <div class="feature-item"><span>🌍</span><span>60+ lingue disponibili, con download offline</span></div>
+            <div class="feature-item"><span>📵</span><span>Funziona senza connessione internet</span></div>
+            <div class="feature-item"><span>🔒</span><span>Nessuna registrazione, privacy totale</span></div>
+            <div class="feature-item"><span>✅</span><span>Completamente gratuita</span></div>
+        </div>
+
+        <div class="store-buttons">
+            <a href="https://apps.apple.com/app/allergiapp/id6758859853" target="_blank" rel="noopener noreferrer" class="store-button">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/>
+                </svg>
+                <div>
+                    <div class="store-text">Download on the</div>
+                    <div class="store-name">App Store</div>
+                </div>
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.allergiapp.mobile" target="_blank" rel="noopener noreferrer" class="store-button">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                </svg>
+                <div>
+                    <div class="store-text">Get it on</div>
+                    <div class="store-name">Google Play</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <p class="footer-link"><a href="/">allergiapp.com</a></p>
+
+    <script>
+        var APP_STORE = 'https://apps.apple.com/app/allergiapp/id6758859853';
+        var PLAY_STORE = 'https://play.google.com/store/apps/details?id=com.allergiapp.mobile';
+
+        var ua = navigator.userAgent || navigator.vendor || window.opera;
+        var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+        var isAndroid = /android/i.test(ua);
+
+        if (isIOS || isAndroid) {
+            var storeUrl = isIOS ? APP_STORE : PLAY_STORE;
+            var statusMsg = isIOS ? 'Apertura App Store...' : 'Apertura Google Play...';
+            var btnLabel = isIOS ? 'Apri App Store' : 'Apri Google Play';
+            var iconId = isIOS ? 'btn-icon-ios' : 'btn-icon-android';
+
+            document.getElementById('mobile-view').style.display = 'flex';
+            document.getElementById('status-msg').textContent = statusMsg;
+            document.getElementById('btn-label').textContent = btnLabel;
+            document.getElementById('manual-btn').href = storeUrl;
+            document.getElementById(iconId).style.display = 'block';
+
+            // Redirect dopo 1.2s
+            setTimeout(function () {
+                window.location.href = storeUrl;
+            }, 1200);
+
+            // Mostra il pulsante manuale dopo 3s (fallback se il redirect è bloccato)
+            setTimeout(function () {
+                var btn = document.getElementById('manual-btn');
+                btn.style.display = 'flex';
+                document.getElementById('status-msg').textContent = 'Tap per aprire lo store';
+                document.querySelector('.spinner').style.display = 'none';
+            }, 3000);
+
+        } else {
+            document.getElementById('desktop-view').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
