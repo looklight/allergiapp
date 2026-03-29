@@ -47,6 +47,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
     useSwipeToDismiss(onClose);
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isZoomed, setIsZoomed] = useState(false);
   const currentAvatarSource = photos[currentIndex]?.avatarUrl
     ? getAvatarById(photos[currentIndex].avatarUrl!)?.source
     : null;
@@ -62,12 +63,13 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const current = photos[currentIndex];
 
   return (
-    <Modal visible transparent animationType="fade" onShow={reset}>
+    <Modal visible transparent animationType="fade" onShow={() => { reset(); setIsZoomed(false); }}>
       <PanGestureHandler
         onGestureEvent={onPanGestureEvent}
         onHandlerStateChange={onPanStateChange}
         activeOffsetY={20}
         failOffsetX={[-20, 20]}
+        enabled={!isZoomed}
       >
         <Animated.View
           style={[
@@ -100,11 +102,15 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             keyExtractor={(_, i) => String(i)}
+            scrollEnabled={!isZoomed}
             renderItem={({ item }) => (
               <View style={[styles.pageContainer, { width }]}>
                 <ZoomableImage
                   uri={item.url}
                   style={{ width, height: height * 0.7 }}
+                  onZoomedIn={() => setIsZoomed(true)}
+                  onZoomedOut={() => setIsZoomed(false)}
+                  onSingleTap={onClose}
                 />
               </View>
             )}

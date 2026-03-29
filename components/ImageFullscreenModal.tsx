@@ -44,6 +44,7 @@ export default function ImageFullscreenModal({
   const showCounter = allImages.length > 1;
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index != null) {
@@ -58,13 +59,14 @@ export default function ImageFullscreenModal({
       visible={visible}
       transparent
       animationType="fade"
-      onShow={() => { reset(); setCurrentIndex(initialIndex); }}
+      onShow={() => { reset(); setCurrentIndex(initialIndex); setIsZoomed(false); }}
     >
       <PanGestureHandler
         onGestureEvent={onPanGestureEvent}
         onHandlerStateChange={onPanStateChange}
         activeOffsetY={20}
         failOffsetX={[-20, 20]}
+        enabled={!isZoomed}
       >
         <Animated.View
           style={[
@@ -94,11 +96,15 @@ export default function ImageFullscreenModal({
               onViewableItemsChanged={onViewableItemsChanged}
               viewabilityConfig={viewabilityConfig}
               keyExtractor={(_, i) => String(i)}
+              scrollEnabled={!isZoomed}
               renderItem={({ item }) => (
                 <View style={[styles.pageContainer, { width }]}>
                   <ZoomableImage
                     uri={item}
                     style={{ width, height: height * 0.8 }}
+                    onZoomedIn={() => setIsZoomed(true)}
+                    onZoomedOut={() => setIsZoomed(false)}
+                    onSingleTap={onClose}
                   />
                 </View>
               )}
