@@ -24,6 +24,7 @@ const DEFAULT_CONFIG = {
   banner_title: '',
   banner_subtitle: '',
   banner_url: '',
+  banner_action: 'open_url', // 'open_url' = apre adUrl, 'share' = apre native share sheet
   banner_button_text: '',
   // Layout and styling
   banner_layout: 'default', // 'default' = icon + text, 'full_image' = image fills entire banner
@@ -133,6 +134,7 @@ function getPromoBanner(): BannerItem | null {
     title: title,
     subtitle: getString('banner_subtitle'),
     adUrl: getString('banner_url'),
+    adAction: (getString('banner_action') || 'open_url') as 'open_url' | 'share',
     adButtonText: getString('banner_button_text'),
     // Layout and styling
     layout: (getString('banner_layout') || 'default') as 'default' | 'full_image',

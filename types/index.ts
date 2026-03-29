@@ -11,6 +11,7 @@ export interface BannerItem {
   title?: string;
   subtitle?: string;
   adUrl?: string;
+  adAction?: 'open_url' | 'share';
   adImage?: string;
   adButtonText?: string;
   layout?: 'default' | 'full_image';

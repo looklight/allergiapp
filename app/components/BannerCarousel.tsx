@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image } from 'react-native';
+import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image, Share } from 'react-native';
 import { Text } from 'react-native-paper';
 import { BannerItem, BannerType } from '../../types';
 import i18n from '../../utils/i18n';
@@ -169,8 +169,9 @@ export default function BannerCarousel({
     // Traccia il click sul banner/ad
     Analytics.logBannerClicked(item.id, item.type, item.title, item.adUrl);
 
-    // Apri l'URL se presente
-    if (item.adUrl) {
+    if (item.adAction === 'share' && item.adUrl) {
+      Share.share({ url: item.adUrl, message: item.adUrl });
+    } else if (item.adUrl) {
       Linking.openURL(item.adUrl);
     }
   };
