@@ -48,6 +48,25 @@ module.exports = {
   s: { username: 'Saravvl93_',        allergens: ['gluten'],              diets: [] },
 
   // ── Formato nuovo (chiave = Nickname, colonna Excel "Nickname") ────────────
+
+  // gf_europa_nuove_citta.xlsx
+  AnnaPace:             { username: 'AnnaPace',             allergens: ['gluten'], diets: [] },
+  PallaAlCentro:        { username: 'PallaAlCentro',        allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  chiaraveronese:       { username: 'chiaraveronese',       allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  ines_pt:              { username: 'ines_pt',              allergens: ['gluten'], diets: ['vegetarian'] },
+  lapo82:               { username: 'lapo82',               allergens: ['gluten'], diets: [] },
+  luka10:               { username: 'luka10',               allergens: ['gluten'], diets: ['vegetarian'] },
+  marco_to:             { username: 'marco_to',             allergens: ['gluten'], diets: [] },
+  mariekeH:             { username: 'mariekeH',             allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  ondre_p:              { username: 'ondre_p',              allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  rosa_vlc:             { username: 'rosa_vlc',             allergens: ['gluten'], diets: [] },
+  ruhr_felix:           { username: 'ruhr_felix',           allergens: ['gluten'], diets: [] },
+  signe_d:              { username: 'signe_d',              allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  stevem:               { username: 'stevem',               allergens: ['gluten'], diets: ['vegetarian'] },
+  tobias_n:             { username: 'tobias_n',             allergens: ['gluten'], diets: [] },
+  wagata:               { username: 'wagata',               allergens: ['gluten'], diets: ['vegetarian'] },
+
+  // Precedenti file
   Angelldn:             { username: 'Angelldn',             allergens: ['gluten'], diets: [] },
   AntonioParos:         { username: 'AntonioParos',         allergens: ['gluten'], diets: [] },
   barnard69:            { username: 'barnard69',            allergens: ['gluten'], diets: ['vegetarian'] },

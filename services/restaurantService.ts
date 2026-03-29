@@ -298,7 +298,7 @@ async function checkExistingByPlaceIds(
 import { getReviews, getUserReview, getReviewsByUser, addReview, updateReview, deleteReview, toggleReviewLike, getUserHasAnyReview } from './reviewService';
 import { getFavorites, isFavorite, toggleFavorite, removeFavorite } from './favoriteService';
 import { updateMenuUrl, getMenuPhotos, addMenuPhoto, deleteMenuPhoto } from './menuService';
-import { getReports, getUserReport, addReport } from './reportService';
+import { getReports, getUserReport, addReport, reportMenuPhoto } from './reportService';
 import { getCuisineVotes } from './cuisineVoteService';
 import { getLeaderboard } from './leaderboardService';
 
@@ -338,6 +338,7 @@ export const RestaurantService = {
   getReports,
   getUserReport,
   addReport,
+  reportMenuPhoto,
   // Cuisine Votes (da cuisineVoteService)
   getCuisineVotes,
   voteCuisines,

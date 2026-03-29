@@ -28,6 +28,7 @@ export default function MenuPhotosScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [reportedPhotoIds, setReportedPhotoIds] = useState<Set<string>>(new Set());
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
 
   const loadPhotos = useCallback(async () => {
@@ -70,6 +71,43 @@ export default function MenuPhotosScreen() {
       Alert.alert('Errore', 'Impossibile caricare la foto. Riprova.');
     }
     setIsUploading(false);
+  };
+
+  const handleReport = (photo: MenuPhoto) => {
+    if (reportedPhotoIds.has(photo.id)) {
+      Alert.alert('Segnalazione inviata', 'Hai già segnalato questa foto. La esamineremo al più presto.');
+      return;
+    }
+    Alert.alert(
+      'Segnala foto',
+      'Perché vuoi segnalare questa foto?',
+      [
+        {
+          text: 'Non è un menu / non pertinente',
+          onPress: () => submitReport(photo, 'incorrect_image'),
+        },
+        {
+          text: 'Contenuto inappropriato',
+          onPress: () => submitReport(photo, 'inappropriate'),
+        },
+        {
+          text: 'Altro',
+          onPress: () => submitReport(photo, 'other'),
+        },
+        { text: 'Annulla', style: 'cancel' },
+      ],
+    );
+  };
+
+  const submitReport = async (photo: MenuPhoto, reason: string) => {
+    if (!restaurantId || !user) return;
+    const result = await RestaurantService.reportMenuPhoto(restaurantId, photo.id, reason);
+    if (result) {
+      setReportedPhotoIds(prev => new Set(prev).add(photo.id));
+      Alert.alert('Grazie', 'La tua segnalazione è stata inviata. La esamineremo al più presto.');
+    } else {
+      Alert.alert('Errore', 'Impossibile inviare la segnalazione. Riprova.');
+    }
   };
 
   const handleDelete = (photo: MenuPhoto) => {
@@ -173,7 +211,7 @@ export default function MenuPhotosScreen() {
                       })}
                     </Text>
                   </View>
-                  {photo.user_id === user?.uid && (
+                  {photo.user_id === user?.uid ? (
                     deletingId === photo.id ? (
                       <ActivityIndicator size="small" color={theme.colors.error} />
                     ) : (
@@ -181,7 +219,18 @@ export default function MenuPhotosScreen() {
                         <MaterialCommunityIcons name="delete-outline" size={20} color={theme.colors.error} />
                       </TouchableOpacity>
                     )
-                  )}
+                  ) : user ? (
+                    <TouchableOpacity onPress={() => handleReport(photo)} hitSlop={8} activeOpacity={0.6} style={styles.reportButton}>
+                      <MaterialCommunityIcons
+                        name={reportedPhotoIds.has(photo.id) ? 'flag' : 'flag-outline'}
+                        size={16}
+                        color={theme.colors.textDisabled}
+                      />
+                      <Text style={styles.reportButtonText}>
+                        {reportedPhotoIds.has(photo.id) ? 'Segnalata' : 'Segnala'}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
               </View>
             ))
@@ -321,5 +370,14 @@ const styles = StyleSheet.create({
   uploadDate: {
     fontSize: 12,
     color: theme.colors.textSecondary,
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  reportButtonText: {
+    fontSize: 12,
+    color: theme.colors.textDisabled,
   },
 });

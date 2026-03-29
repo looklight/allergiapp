@@ -83,6 +83,7 @@ export interface Report {
   id: string;
   restaurant_id: string | null;
   review_id: string | null;
+  menu_photo_id: string | null;
   user_id: string | null;
   reason: string;
   details: string | null;
