@@ -71,30 +71,29 @@ function AppContent() {
 
   useEffect(() => {
     if (isReady) {
-      // Controlla OTA update: se disponibile, scarica e ricarica subito
-      // (mantiene lo splash visibile durante il download per UX fluida)
-      if (!__DEV__) {
-        Updates.checkForUpdateAsync()
-          .then(async ({ isAvailable }) => {
+      // Inizializzazione con splash visibile:
+      // 1) Controlla OTA → se disponibile, scarica e ricarica subito
+      // 2) Fetch Remote Config (max 3s) → splash si nasconde con valori già pronti
+      (async () => {
+        if (!__DEV__) {
+          try {
+            const { isAvailable } = await Updates.checkForUpdateAsync();
             if (isAvailable) {
               await Updates.fetchUpdateAsync();
-              await Updates.reloadAsync();
-              return; // reloadAsync non ritorna, ma per chiarezza
+              await Updates.reloadAsync(); // non ritorna
+              return;
             }
-            // Nessun aggiornamento: procedi normalmente
-            RemoteConfig.activateCached().then(() => SplashScreen.hideAsync());
-            RemoteConfig.initialize();
-          })
-          .catch(() => {
-            // Errore di rete o altro: procedi normalmente
-            RemoteConfig.activateCached().then(() => SplashScreen.hideAsync());
-            RemoteConfig.initialize();
-          });
-      } else {
-        RemoteConfig.activateCached().then(() => SplashScreen.hideAsync());
-        // Fetch in background per la prossima sessione
-        RemoteConfig.initialize();
-      }
+          } catch {}
+        }
+
+        // Fetch Remote Config con timeout di 3s — garantisce valori corretti al primo render
+        await Promise.race([
+          RemoteConfig.initialize(),
+          new Promise<void>(resolve => setTimeout(resolve, 3000)),
+        ]);
+
+        SplashScreen.hideAsync();
+      })();
 
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
