@@ -196,6 +196,57 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 
 ---
 
+## Architettura — decisioni pendenti
+
+### ~~Rimozione Firebase~~ — COMPLETATA (apr 2026)
+Firebase rimosso al 100% dal progetto. Analytics temporaneamente no-op, traduzioni scaricabili migrate su Supabase (71 lingue). Expo Go sbloccato.
+
+**Da fare quando si riattivano le analytics:**
+- [ ] Scegliere backend analytics (Supabase tabella `analytics_events` / PostHog / altro)
+- [ ] Implementare `trackEvent()` in `services/analytics.ts` (interfaccia pubblica già pronta, tutti i call site funzionano)
+- [ ] Creare tabella `app_config` su Supabase per banner promo e popup message (sostituisce Remote Config)
+- [ ] Se si decide di NON riattivare analytics, rimuovere `expo-tracking-transparency` da `app.config.ts` e la logica di consenso ATT
+
+### Compatibilità Expo Go
+Nessun blocco rimasto. Firebase rimosso, Reanimated 4 e react-native-worklets inclusi in Expo Go SDK 54.
+
+### Migrazione RNGH v1 → v2 + Reanimated 4
+`ZoomableImage` è già su RNGH v2 + Reanimated 4. Resto ancora su v1:
+- `useSwipeToDismiss.ts` — swipe-to-dismiss dei modal
+- `DraggableBottomSheet.tsx` — sheet ristoranti (il più complesso)
+- `ImageFullscreenModal.tsx` + `PhotoGalleryModal.tsx` — dipendono da `useSwipeToDismiss`
+
+Vantaggi migrazione completa: gesture su UI thread, coordinazione nativa scroll+sheet, codice più leggibile. Bloccante: `scrollPositionRef: useRef<number>` deve diventare `SharedValue<number>` con `useAnimatedScrollHandler` in `RestaurantDetailBody.tsx`.
+
+---
+
+## Qualità codice & DevOps
+
+### ESLint + Prettier + Husky
+- [ ] Configurare ESLint (con regole React Native / Expo)
+- [ ] Configurare Prettier
+- [ ] Installare Husky + lint-staged per pre-commit hook (typecheck + lint + format)
+
+### Testing
+- [ ] Aggiungere Jest + React Native Testing Library
+- [ ] Scrivere test per i service critici: `restaurantService`, `auth`, `translationService`
+- [ ] Scrivere test per i custom hook principali (`useRestaurantDetail`, `useRestaurantGeo`)
+- [ ] **Da fare prima del merge restaurants→main** — le due codebase si uniscono senza rete di sicurezza
+
+### CI/CD — GitHub Actions
+- [ ] Workflow base su PR: `tsc --noEmit` + lint + test
+- [ ] Valutare EAS build preview automatico su PR
+
+### Error reporting
+- [ ] Valutare Sentry per error reporting (source maps, breadcrumbs, crash reporting)
+
+### Performance
+- [ ] Aggiungere `useMemo`/`useCallback` negli screen con liste e computazioni ripetute
+- [ ] Ottimizzare FlatList: `removeClippedSubviews`, `maxToRenderPerBatch`, `React.memo` sugli item
+- [ ] Spezzare componenti grossi: `RestaurantDetailBody` (619 righe), `RestaurantMap` (411), `card.tsx` (473)
+
+---
+
 ## Debito tecnico
 
 ### Due sistemi di diete/restrizioni — intenzionalmente separati
@@ -210,9 +261,8 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 ### Refactor add-review.tsx (~920 righe)
 - Estrarre sezione tag cucina in componente `CuisineTagsSection`
 
-### Dipendenze Firebase residue
-- `@react-native-firebase/*` + `plugins/withModularHeaders.js`: necessari per Analytics + Remote Config
-- Pacchetto `firebase` JS SDK: necessario per Firestore traduzioni card (`firestoreTranslations.ts`)
+### ~~Dipendenze Firebase residue~~ — RISOLTO (apr 2026)
+Firebase rimosso completamente. Traduzioni migrate su Supabase (tabella `translations`, 71 lingue). Analytics no-op, da riattivare con backend a scelta.
 
 ---
 
@@ -254,7 +304,7 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 
 ## Futuri (quando il volume cresce)
 - Scalabilita query geo — gia su PostGIS, valutare indici aggiuntivi
-- **DraggableBottomSheet → reanimated** — attualmente usa `PanGestureHandler` (RNGH) + `Animated` built-in (RN), perché `react-native-reanimated` crasha in Expo Go (native module JSI non inizializzabile). Funziona correttamente su tutte le piattaforme. Quando si passerà a development build (`npx expo prebuild`), reanimated funzionerà nativamente e si potrà riscrivere il componente con worklet per avere gesture handling sul UI thread anche durante il drag — ottimizzazione marginale, non necessaria
+- **DraggableBottomSheet → reanimated** — attualmente usa `PanGestureHandler` (RNGH) + `Animated` built-in (RN). Reanimated 4 è disponibile sia in dev build che in Expo Go SDK 54, quindi la riscrittura con worklet è fattibile in qualsiasi momento per avere gesture handling sul UI thread — ottimizzazione marginale, non necessaria
 - **Uniformare le pagine e integrare la card nella scheda ristorante** — idea da investigare: mostrare la card allergenica direttamente nella pagina del ristorante, così l'utente ha in un unico posto sia le info del locale che la sua card da mostrare al cameriere. Valutare coerenza visiva con il resto dell'app e se ha senso come punto di accesso alternativo alla card.
 - **Consolidamento query dettaglio ristorante in singola RPC** — `useRestaurantDetail` fa 9 query parallele (ristorante+stats, recensioni, foto menu, segnalazioni, voti cucina + 4 query utente). Creare una RPC `get_restaurant_detail(id, user_id)` che ritorna tutto in un'unica chiamata. Tradeoff: meno latenza ma logica SQL più complessa e meno flessibile durante lo sviluppo. **Da fare quando la scheda ristorante è completata e lo schema si è stabilizzato.**
 

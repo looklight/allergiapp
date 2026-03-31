@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "I-Gluten (okusanhlamvu)",
+    "crustaceans": "Ama-crustaceans",
+    "eggs": "Amaqanda",
+    "fish": "Inhlanzi",
+    "peanuts": "Amantongomane",
+    "soy": "Isoya",
+    "milk": "Ubisi nemikhiqizo yobisi",
+    "celery": "Isilimo esidliwayo esinamagatsha anamanzi",
+    "mustard": "Isinaphi",
+    "sesame": "Isesame",
+    "sulfites": "Sulfur dioxide kanye sulfites",
+    "lupin": "I-Lupine",
+    "mollusks": "Ama-mollusk",
+    "nuts": "Amantongomane esihlahla",
+    "fava_beans": "Ubhontshisi be-Fava (favism)"
+  },
+  "descriptions": {
+    "gluten": "Konke ukudla okusanhlamvu noma ufulawa (ukolweni, ibhali, rye, isipelingi): isinkwa, i-pasta, i-pizza, amakhekhe, amakhukhi, ubhiya",
+    "crustaceans": "Ama-shrimp, ama-lobster, inkalankala, ama-prawns",
+    "eggs": "Amaqanda, ama-omelettes, amaqebelengwane, imayonnaise, i-pasta entsha",
+    "fish": "Izinhlanzi, i-sushi, amasoso wezinhlanzi, ama-broths",
+    "peanuts": "Amantongomane, ibhotela lamantongomane, ukudla okulula, ama-dessert",
+    "soy": "Tofu, soy sauce, soy milk, edamame",
+    "milk": "Ubisi, ushizi, ibhotela, u-ayisikhilimu, ukhilimu",
+    "celery": "Isilimo esidliwayo esinamagatsha anamanzi, amasaladi, amasobho, imihluzi yemifino",
+    "mustard": "Isinaphi, amasoso, ukugqoka, ama-marinades",
+    "sesame": "Imbewu yeSesame, i-sesame oil, i-hummus, isinkwa",
+    "sulfites": "Iwayini, ubhiya, izithelo ezomisiwe, chips",
+    "lupin": "Ufulawa we-lupine, isinkwa, i-pasta, ukudla okulula",
+    "mollusks": "Izimbaza, izimbaza, ama-oyster, ama-squid, ingwane",
+    "nuts": "Amantongomane, ama-alimondi, ama-hazelnuts, ama-pistachios, ama-cashews",
+    "fava_beans": "Ubhontshisi be-fava, isobho likabhontshisi we-fava, i-fava bean puree, isitshulu"
+  },
+  "warnings": {
+    "gluten": "⚠️ Isexwayiso: isoso yesoya ingase ibe ne-gluten",
+    "fava_beans": "Ukushoda kwe-G6PD: ngisho amanani amancane angabangela inkinga ye-hemolytic"
+  },
+  "cardTexts": {
+    "header": "QAPHELA",
+    "subtitle": "UKWALIWA KOKUDLA",
+    "pregnancySubtitle": "UKUKHULELWA NOKWALIWA KOKUDLA",
+    "message": "Nginokungezwani nokudla okulandelayo. Sicela uqinisekise ukuthi ukudla kwami ​​akuqukethe lezi zithako, okuhlanganisa nokungcoliswa okuphambene.",
+    "pregnancyMessage": "Ngikhulelwe futhi nginokungezwani nokudla okulandelayo. Sicela uqinisekise ukuthi ukudla kwami ​​akuqukethe lezi zithako, okuhlanganisa nokungcoliswa okuphambene.",
+    "thanks": "Ngiyabonga kakhulu ngokuqonda kwakho nosizo lwakho.",
+    "tapToSee": "Thepha ukuze ubone izibonelo",
+    "examples": "Izibonelo:"
+  },
+  "dietFoods": {
+    "meat": "Inyama",
+    "fish": "Inhlanzi",
+    "seafood": "Ukudla kwasolwandle",
+    "eggs": "Amaqanda",
+    "dairy": "Ubisi",
+    "honey": "Uju"
+  },
+  "otherFoods": {
+    "garlic": "Ugaliki",
+    "onion": "U-anyanini",
+    "tomato": "Utamatisi",
+    "mushrooms": "Amakhowe",
+    "bell_pepper": "u-Bell pepper",
+    "corn": "Ukolweni",
+    "strawberries": "Ama-Strawberries",
+    "kiwi": "ikiwi",
+    "stone_fruits": "Izithelo zamatshe (ipentshisi, i-cherry, ibhilikosi)",
+    "citrus": "Izithelo ezisawolintshi",
+    "banana": "Ibhanana",
+    "buckwheat": "Ubhakwheat",
+    "spicy": "Ukudla okubabayo"
+  },
+  "restrictions": {
+    "raw_fish": "Inhlanzi eluhlaza / i-sushi",
+    "raw_cured_meats": "Inyama eluhlaza",
+    "raw_eggs": "Amaqanda aluhlaza",
+    "raw_sprouts": "Amahlumela aluhlaza",
+    "unpasteurized_cheese": "Ushizi ongafakwanga",
+    "unpasteurized_milk": "Ubisi olungenayo i-pasteurized",
+    "alcohol": "Utshwala",
+    "excessive_caffeine": "I-caffeine eyeqile",
+    "nickel_chocolate": "Ushokoledi / ukhokho",
+    "nickel_tomato": "Amasoso katamatisi notamatisi",
+    "nickel_legumes": "Imifino (i-lentils, i-chickpeas, ubhontshisi)",
+    "nickel_nuts": "Amantongomane (ama-hazelnuts, amantongomane, ama-cashews)",
+    "nickel_whole_grains": "Okusanhlamvu / oats",
+    "nickel_spinach": "Isipinashi kanye nemifino enamaqabunga",
+    "nickel_canned_food": "Ukudla okusemathinini",
+    "nickel_tea_coffee": "Itiye nekhofi",
+    "histamine_aged_cheese": "Oshizi abadala",
+    "histamine_cured_meats": "Inyama ephekiwe namasoseji",
+    "histamine_fish": "Izinhlanzi ezisemathinini nezibhenyiwe",
+    "histamine_fermented": "Ukudla okuvutshiwe (i-sauerkraut, i-kimchi, i-miso)",
+    "histamine_wine_beer": "Iwayini nobhiya",
+    "histamine_vinegar": "Uviniga nama-pickle",
+    "histamine_chocolate": "Ushokoledi / ukhokho",
+    "histamine_tomato": "Amasoso katamatisi notamatisi",
+    "histamine_strawberries": "Ama-Strawberries",
+    "histamine_eggplant": "Isitshalo seqanda",
+    "histamine_avocado": "Ukwatapheya",
+    "histamine_spinach": "Isipinashi",
+    "diabetes_added_sugar": "Kungezwe ushukela / isiraphu",
+    "diabetes_honey_sweeteners": "Uju nama-sweeteners",
+    "diabetes_sweet_sauces": "Amasoso amnandi (ketchup, amnandi futhi amuncu, teriyaki)",
+    "diabetes_sweet_glazes": "Ama-glazes amnandi nama-marinades",
+    "diabetes_fruit_juice": "Ijusi yezithelo njengesithako",
+    "diabetes_candied_fruit": "Isithelo / ujamu"
+  },
+  "restrictionCardTexts": {
+    "header": "UKUDLA OKUMELE UKUGWEME",
+    "message": "Ngenxa yezizathu zempilo, ngidinga ukugwema ukudla okulandelayo:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "UKUKHULELWA",
+        "message": "Ngikhulelwe. Sicela uqinisekise ukuthi ukudla kwami ​​akuqukethe okulandelayo:",
+        "sectionMessage": "Ukwengeza, ngenxa yokukhulelwa kwami, kufanele futhi ngigweme:"
+      },
+      "no_meat": {
+        "header": "UKUDLA OKUDLA NGEMVELO",
+        "message": "Angiyidli inyama. \nIzinhlanzi neminye imikhiqizo yezilwane kulungile.",
+        "sectionMessage": "Ukwengeza, angiyidli inyama. \nIzinhlanzi neminye imikhiqizo yezilwane kulungile."
+      },
+      "no_meat_fish": {
+        "header": "UKUDLA OKUDLA NGEMVELO",
+        "message": "Ngilandela ukudla kwemifino. \nAngiyidli inyama nenhlanzi.",
+        "sectionMessage": "Ukwengeza, ngilandela ukudla kwemifino futhi angiyidli inyama noma inhlanzi."
+      },
+      "no_animal_products": {
+        "header": "UKUDLA KWE-VEGAN",
+        "message": "Ngilandela ukudla kwe-vegan. \nAngiyidli inyama, inhlanzi, ukudla kwasolwandle, amaqanda, ubisi, uju nanoma yimiphi imikhiqizo yezilwane.",
+        "sectionMessage": "Ukwengeza, ngilandela ukudla kwe-vegan futhi angidli inyama, inhlanzi, ukudla kwasolwandle, amaqanda, ubisi, uju nanoma yimiphi imikhiqizo yezilwane."
+      },
+      "nickel": {
+        "header": "I-NICKEL Allergies",
+        "message": "Nginokungezwani ne-nickel. I-nickel iyinsimbi etholakala ekudleni okuningi. Sicela uqinisekise ukuthi ukudla kwami ​​akuqukethe:",
+        "sectionMessage": "Ukwengeza, nginokungezwani ne-nickel. I-nickel iyinsimbi etholakala ekudleni okuningi. Sicela uqinisekise ukuthi ukudla kwami ​​akuqukethe:"
+      },
+      "histamine": {
+        "header": "UKUNGEKELELA KWE-HISTAMINE",
+        "message": "Angikwazi ukudla ukudla okunothe nge-histamine. I-Histamine itholakala ekudleni osekukhulile, okubilile noma okugcinwe isikhathi eside. Ngokwesibonelo:",
+        "sectionMessage": "Ukwengeza, angikwazi ukudla ukudla okunothe nge-histamine. I-Histamine itholakala ekudleni osekukhulile, okubilile noma okugcinwe isikhathi eside. Ngokwesibonelo:"
+      },
+      "diabetes": {
+        "header": "ISIFO SIKASHUKELA",
+        "message": "Nginesifo sikashukela futhi ngidinga ukulawula indlela engidla ngayo ushukela. Ngicela ungangifaki ushukela ekudleni kwami ​​futhi ungazise uma uqukethe:",
+        "sectionMessage": "Ukwengeza, nginesifo sikashukela futhi ngidinga ukulawula izinga lami likashukela. Ngicela ungafaki ushukela ekudleni kwami ​​futhi ungazise uma uqukethe:"
+      }
+    }
+  }
+}

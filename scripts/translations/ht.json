@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (sereyal)",
+    "crustaceans": "Krustazyen",
+    "eggs": "Ze",
+    "fish": "Pwason",
+    "peanuts": "Pistach",
+    "soy": "Soya",
+    "milk": "Lèt ak pwodwi letye",
+    "celery": "Seleri",
+    "mustard": "Moutad",
+    "sesame": "Sezam",
+    "sulfites": "diyoksid souf ak sulfit",
+    "lupin": "Lupin",
+    "mollusks": "Molusk",
+    "nuts": "Pye bwa nwa",
+    "fava_beans": "Pwa Fava (favism)"
+  },
+  "descriptions": {
+    "gluten": "Tout manje ki gen sereyal oswa farin (ble, lòj, RYE, epèt): pen, pasta, pitza, gato, bonbon, byè.",
+    "crustaceans": "Kribich, woma, krab, krevèt",
+    "eggs": "Ze, omlèt, gato, mayonèz, pasta fre",
+    "fish": "Pwason, susi, sòs pwason, bouyon",
+    "peanuts": "Pistach, manba, ti goute, desè",
+    "soy": "Tofou, sòs soya, lèt soya, edamame",
+    "milk": "Lèt, fwomaj, bè, krèm glase, krèm",
+    "celery": "Seleri, salad, soup, bouyon legim",
+    "mustard": "Moutad, sòs, pansman, marinad",
+    "sesame": "Grenn wowoli, lwil oliv wowoli, hummus, pen",
+    "sulfites": "Diven, byè, fwi sèk, chips",
+    "lupin": "Lupine farin frans, pen, pasta, ti goute",
+    "mollusks": "Moules, paloud, witr, kalma, poulp",
+    "nuts": "Nwaye, nwa, nwazèt, pistache, kajou",
+    "fava_beans": "Pwa fava, soup pwa fava, pure pwa fava, bouyon"
+  },
+  "warnings": {
+    "gluten": "⚠️ Avètisman: sòs soya ka gen gluten",
+    "fava_beans": "Defisi G6PD: menm ti kantite ka lakòz kriz emolitik"
+  },
+  "cardTexts": {
+    "header": "ATANSYON",
+    "subtitle": "ALERJI MANJE",
+    "pregnancySubtitle": "Gwosès ak Alèji Manje",
+    "message": "Mwen gen alèji manje sa yo. Tanpri asire ke manje mwen an pa genyen engredyan sa yo, ki gen ladan kontaminasyon kwaze.",
+    "pregnancyMessage": "Mwen ansent e mwen gen alèji manje sa yo. Tanpri asire ke manje mwen an pa genyen engredyan sa yo, ki gen ladan kontaminasyon kwaze.",
+    "thanks": "Mèsi anpil pou konpreyansyon ou ak èd ou.",
+    "tapToSee": "Tape pou w wè egzanp",
+    "examples": "Egzanp:"
+  },
+  "dietFoods": {
+    "meat": "Vyann",
+    "fish": "Pwason",
+    "seafood": "Fwidmè",
+    "eggs": "Ze",
+    "dairy": "Letye",
+    "honey": "siwo myèl"
+  },
+  "otherFoods": {
+    "garlic": "Lay",
+    "onion": "Zonyon",
+    "tomato": "Tomat",
+    "mushrooms": "Chanpiyon",
+    "bell_pepper": "Bell piman",
+    "corn": "Mayi",
+    "strawberries": "Frèz",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Fwi wòch (pèch, Cherry, abiko)",
+    "citrus": "Fwi Citrus",
+    "banana": "Bannann",
+    "buckwheat": "Buckwheat",
+    "spicy": "Manje pikant"
+  },
+  "restrictions": {
+    "raw_fish": "Pwason kri / susi",
+    "raw_cured_meats": "Vyann kri geri",
+    "raw_eggs": "Ze kri",
+    "raw_sprouts": "Choux kri",
+    "unpasteurized_cheese": "Fwomaj ki pa pasterize",
+    "unpasteurized_milk": "Lèt ki pa pasterize",
+    "alcohol": "Alkòl",
+    "excessive_caffeine": "Twòp kafeyin",
+    "nickel_chocolate": "Chokola / kakawo",
+    "nickel_tomato": "Tomat ak sòs tomat",
+    "nickel_legumes": "Legum (lantiy, pwa chich)",
+    "nickel_nuts": "Nwa (nwaye, nwazèt, kajou)",
+    "nickel_whole_grains": "Grenn antye / avwan",
+    "nickel_spinach": "Epina ak fèy vèt",
+    "nickel_canned_food": "Manje nan bwat",
+    "nickel_tea_coffee": "Te ak kafe",
+    "histamine_aged_cheese": "Fwomaj ki gen laj",
+    "histamine_cured_meats": "Vyann geri ak sosis",
+    "histamine_fish": "Pwason nan bwat ak fimen",
+    "histamine_fermented": "Manje fèrmante (chourout, kimchi, miso)",
+    "histamine_wine_beer": "Diven ak byè",
+    "histamine_vinegar": "Vinèg ak vinegar",
+    "histamine_chocolate": "Chokola / kakawo",
+    "histamine_tomato": "Tomat ak sòs tomat",
+    "histamine_strawberries": "Frèz",
+    "histamine_eggplant": "Berejenn",
+    "histamine_avocado": "Zaboka",
+    "histamine_spinach": "Epina",
+    "diabetes_added_sugar": "Te ajoute sik / siwo",
+    "diabetes_honey_sweeteners": "Siwo myèl ak sik",
+    "diabetes_sweet_sauces": "Sòs dous (sòs tomat, dous ak tounen, teriyaki)",
+    "diabetes_sweet_glazes": "Glaze dous ak marinad",
+    "diabetes_fruit_juice": "Ji fwi kòm engredyan",
+    "diabetes_candied_fruit": "Fwi sirèt / konfiti"
+  },
+  "restrictionCardTexts": {
+    "header": "MANJE POU EVITE",
+    "message": "Pou rezon sante, mwen bezwen evite manje sa yo:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "Gwosès",
+        "message": "Mwen ansent. Tanpri asire manje mwen an pa genyen bagay sa yo:",
+        "sectionMessage": "Anplis de sa, akòz gwosès mwen, mwen dwe evite tou:"
+      },
+      "no_meat": {
+        "header": "REJIM ALIMANTE VEGETATÈ",
+        "message": "Mwen pa manje vyann. \nPwason ak lòt pwodwi bèt yo byen.",
+        "sectionMessage": "Anplis de sa, mwen pa manje vyann. \nPwason ak lòt pwodwi bèt yo byen."
+      },
+      "no_meat_fish": {
+        "header": "REJIM ALIMANTE VEGETATÈ",
+        "message": "Mwen swiv yon rejim vejetaryen. \nMwen pa manje vyann ni pwason.",
+        "sectionMessage": "Anplis de sa, mwen swiv yon rejim vejetaryen epi mwen pa manje vyann oswa pwason."
+      },
+      "no_animal_products": {
+        "header": "VEGAN REJIM",
+        "message": "Mwen swiv yon rejim vejetalyen. \nMwen pa manje vyann, pwason, fwidmè, ze, letye, siwo myèl oswa nenpòt pwodwi bèt.",
+        "sectionMessage": "Anplis de sa, mwen swiv yon rejim vejetalyen epi mwen pa manje vyann, pwason, fwidmè, ze, letye, siwo myèl oswa nenpòt pwodwi bèt."
+      },
+      "nickel": {
+        "header": "ALERJI NIKÈL",
+        "message": "Mwen gen yon alèji nikèl. Nikèl se yon metal yo jwenn nan anpil manje. Tanpri asire w ke manje mwen an pa genyen:",
+        "sectionMessage": "Anplis de sa, mwen gen yon alèji nikèl. Nikèl se yon metal yo jwenn nan anpil manje. Tanpri asire w ke manje mwen an pa genyen:"
+      },
+      "histamine": {
+        "header": "ENTOLERANS HISTAMIN",
+        "message": "Mwen pa ka manje manje ki rich nan histamin. Histamine yo jwenn nan manje ki gen laj, fèrmante oswa ki konsève lontan. Pou egzanp:",
+        "sectionMessage": "Anplis de sa, mwen pa ka manje manje ki rich nan histamin. Histamine yo jwenn nan manje ki gen laj, fèrmante oswa ki konsève lontan. Pou egzanp:"
+      },
+      "diabetes": {
+        "header": "Dyabèt",
+        "message": "Mwen gen dyabèt epi mwen bezwen kontwole konsomasyon sik mwen an. Tanpri pa ajoute sik nan manje mwen an epi fè m konnen si li genyen:",
+        "sectionMessage": "Anplis de sa, mwen gen dyabèt epi mwen bezwen kontwole konsomasyon sik mwen an. Tanpri pa ajoute sik nan manje mwen an epi fè m konnen si li genyen:"
+      }
+    }
+  }
+}

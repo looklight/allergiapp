@@ -17,7 +17,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
     buildNumber: "4",
-    googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSLocationWhenInUseUsageDescription:
@@ -33,11 +32,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     versionCode: 4,
     permissions: [
-      "com.google.android.gms.permission.AD_ID",
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
     ],
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json",
     config: {
       googleMaps: {
         apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? "",
@@ -50,7 +47,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     "expo-router",
-    "@react-native-firebase/app",
     [
       "expo-location",
       {
@@ -65,7 +61,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           "AllergiApp uses this permission to collect anonymous analytics data (such as which allergens are searched most frequently and which languages are most commonly translated) to improve app features and user experience. This data is not linked to your personal identity.",
       },
     ],
-    "./plugins/withModularHeaders",
   ],
   updates: {
     url: "https://u.expo.dev/6b6299aa-f37d-4e8d-9c33-c438a02060f8",

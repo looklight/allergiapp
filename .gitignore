@@ -47,10 +47,6 @@ yarn-error.*
 /android
 .npm-cache/
 
-# Firebase
-google-services.json
-GoogleService-Info.plist
-
 # Supabase CLI
 supabase/.temp/
 

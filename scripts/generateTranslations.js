@@ -279,7 +279,7 @@ async function main() {
       'lt','lv','et','is','mk','sq','bs','mt','ga','cy','ca','eu','gl',
       'he','hi','pa','gu','kn','ml','vi','id','ms','tl','bn','ta','te',
       'mr','ur','fa','ps','ku','ne','si','dv','km','lo','my','ka','hy',
-      'az','kk','uz','tg','ky','tk','mn',
+      'az','kk','uz','tg','ky','tk','mn','dz',
       'sw','af','am','ha','yo','zu','so','mg',
       'ht','eo',
     ];
@@ -312,8 +312,8 @@ async function main() {
   }
 
   console.log(`\n✅ Fatto: ${generated}/${langCodes.length} lingue generate.`);
-  console.log(`\nPer caricarle su Firestore:`);
-  console.log(`  node scripts/uploadTranslations.js ${langCodes.join(' ')}\n`);
+  console.log(`\nPer caricarle su Supabase:`);
+  console.log(`  node scripts/uploadToSupabase.js ${langCodes.join(' ')}\n`);
 }
 
 main().catch(err => {

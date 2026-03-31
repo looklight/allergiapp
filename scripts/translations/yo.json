@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluteni (ọkà)",
+    "crustaceans": "Crustaceans",
+    "eggs": "Eyin",
+    "fish": "Eja",
+    "peanuts": "Epa",
+    "soy": "Soy",
+    "milk": "Wara ati awọn ọja ifunwara",
+    "celery": "Seleri",
+    "mustard": "eweko",
+    "sesame": "Sesame",
+    "sulfites": "Efin oloro ati sulfites",
+    "lupin": "Lupin",
+    "mollusks": "Mollusks",
+    "nuts": "Awọn eso igi",
+    "fava_beans": "Awọn ewa Fava (favism)"
+  },
+  "descriptions": {
+    "gluten": "Gbogbo ounjẹ pẹlu awọn woro irugbin tabi iyẹfun (alikama, barle, rye, spelt): akara, pasita, pizza, awọn akara oyinbo, kukisi, ọti",
+    "crustaceans": "Ede, lobster, akan, prawns",
+    "eggs": "Eyin, omelettes, àkara, mayonnaise, alabapade pasita",
+    "fish": "Eja, sushi, eja obe, broths",
+    "peanuts": "Epa, bota epa, ipanu, ajẹkẹyin",
+    "soy": "Tofu, obe soyi, wara soy, edamame",
+    "milk": "Wara, warankasi, bota, yinyin ipara, ipara",
+    "celery": "Seleri, awọn saladi, awọn ọbẹ, awọn broths ẹfọ",
+    "mustard": "eweko, obe, imura, marinades",
+    "sesame": "Awọn irugbin Sesame, epo sesame, hummus, akara",
+    "sulfites": "Waini, ọti, awọn eso ti o gbẹ, awọn eerun igi",
+    "lupin": "Lupine iyẹfun, akara, pasita, ipanu",
+    "mollusks": "Eso, kilamu, oysters, squid, octopus",
+    "nuts": "Walnuts, almondi, hazelnuts, pistachios, cashews",
+    "fava_beans": "Ewa Fava, obe ewa fava, fava bean puree, stews"
+  },
+  "warnings": {
+    "gluten": "⚠️ Ikilo: obe soy le ni giluteni ninu",
+    "fava_beans": "Aipe G6PD: paapaa awọn oye kekere le fa aawọ hemolytic"
+  },
+  "cardTexts": {
+    "header": "AKIYESI",
+    "subtitle": "OUNJE Ẹhun",
+    "pregnancySubtitle": "Oyun & OUNJE Ẹhun",
+    "message": "Mo ni awọn nkan ti ara korira wọnyi. Jọwọ rii daju pe ounjẹ mi ko ni awọn eroja wọnyi ninu, pẹlu nipasẹ ibajẹ agbelebu.",
+    "pregnancyMessage": "Mo loyun ati pe Mo ni awọn nkan ti ara korira wọnyi. Jọwọ rii daju pe ounjẹ mi ko ni awọn eroja wọnyi ninu, pẹlu nipasẹ ibajẹ agbelebu.",
+    "thanks": "O ṣeun pupọ fun oye rẹ ati iranlọwọ rẹ.",
+    "tapToSee": "Fọwọ ba lati wo awọn apẹẹrẹ",
+    "examples": "Awọn apẹẹrẹ:"
+  },
+  "dietFoods": {
+    "meat": "Eran",
+    "fish": "Eja",
+    "seafood": "Ounjẹ okun",
+    "eggs": "Eyin",
+    "dairy": "Ibi ifunwara",
+    "honey": "Oyin"
+  },
+  "otherFoods": {
+    "garlic": "Ata ilẹ",
+    "onion": "Alubosa",
+    "tomato": "Tomati",
+    "mushrooms": "Awọn olu",
+    "bell_pepper": "Belii ata",
+    "corn": "Agbado",
+    "strawberries": "Strawberries",
+    "kiwi": "KIWI",
+    "stone_fruits": "Awọn eso okuta (peach, ṣẹẹri, apricot)",
+    "citrus": "Awọn eso Citrus",
+    "banana": "Ogede",
+    "buckwheat": "Buckwheat",
+    "spicy": "Lata onjẹ"
+  },
+  "restrictions": {
+    "raw_fish": "Eja aise / sushi",
+    "raw_cured_meats": "Aise si bojuto eran",
+    "raw_eggs": "Eyin aise",
+    "raw_sprouts": "Aise sprouts",
+    "unpasteurized_cheese": "Awọn oyinbo ti a ko pamọ",
+    "unpasteurized_milk": "Wara ti a ko pa",
+    "alcohol": "Oti",
+    "excessive_caffeine": "Kafeini ti o pọju",
+    "nickel_chocolate": "Chocolate / koko",
+    "nickel_tomato": "Awọn tomati ati awọn obe tomati",
+    "nickel_legumes": "Awọn ẹfọ (lentils, chickpeas, awọn ewa)",
+    "nickel_nuts": "Eso (walnuts, hazelnuts, cashews)",
+    "nickel_whole_grains": "Gbogbo oka / oats",
+    "nickel_spinach": "Owo ati ewe",
+    "nickel_canned_food": "Ounjẹ akolo",
+    "nickel_tea_coffee": "Tii ati kofi",
+    "histamine_aged_cheese": "Awọn oyinbo ti ogbo",
+    "histamine_cured_meats": "Siwon eran ati soseji",
+    "histamine_fish": "Fi sinu akolo ati ki o mu ẹja",
+    "histamine_fermented": "Awọn ounjẹ jiini (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Waini ati ọti",
+    "histamine_vinegar": "Kikan ati pickles",
+    "histamine_chocolate": "Chocolate / koko",
+    "histamine_tomato": "Awọn tomati ati awọn obe tomati",
+    "histamine_strawberries": "Strawberries",
+    "histamine_eggplant": "Igba",
+    "histamine_avocado": "Piha oyinbo",
+    "histamine_spinach": "Owo",
+    "diabetes_added_sugar": "Fi kun suga / syrups",
+    "diabetes_honey_sweeteners": "Honey ati sweeteners",
+    "diabetes_sweet_sauces": "Awọn obe ti o dun (ketchup, dun ati ekan, teriyaki)",
+    "diabetes_sweet_glazes": "Didun glazes ati awọn marinades",
+    "diabetes_fruit_juice": "Oje eso bi eroja",
+    "diabetes_candied_fruit": "Candied eso / jams"
+  },
+  "restrictionCardTexts": {
+    "header": "OUNJE LATI YOO",
+    "message": "Fun awọn idi ilera, Mo nilo lati yago fun awọn ounjẹ wọnyi:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "Oyun",
+        "message": "Mo loyun. Jọwọ rii daju pe ounjẹ mi ko ni awọn atẹle wọnyi:",
+        "sectionMessage": "Ni afikun, nitori oyun mi, Mo tun gbọdọ yago fun:"
+      },
+      "no_meat": {
+        "header": "OUNJE JEWE",
+        "message": "Nko je eran. \nEja ati awọn ọja eranko miiran dara.",
+        "sectionMessage": "Ni afikun, Emi ko jẹ ẹran. \nEja ati awọn ọja eranko miiran dara."
+      },
+      "no_meat_fish": {
+        "header": "OUNJE JEWE",
+        "message": "Mo tẹle ounjẹ ajewebe. \nNko je eran tabi eja.",
+        "sectionMessage": "Ni afikun, Mo tẹle ounjẹ ajewebe ati pe emi ko jẹ ẹran tabi ẹja."
+      },
+      "no_animal_products": {
+        "header": "OUNJE VEGAN",
+        "message": "Mo tẹle ounjẹ ajewebe. \nNko je eran, eja, eja, eyin, ifunwara, oyin tabi eyikeyi ohun elo eranko.",
+        "sectionMessage": "Ni afikun, Mo tẹle ounjẹ vegan kan ati pe ko jẹ ẹran, ẹja, ẹja okun, ẹyin, ibi ifunwara, oyin tabi eyikeyi awọn ọja ẹranko."
+      },
+      "nickel": {
+        "header": "Àrùn NICKEL",
+        "message": "Mo ni aleji nickel. Nickel jẹ irin ti a rii ni ọpọlọpọ awọn ounjẹ. Jọwọ rii daju pe ounjẹ mi ko ni ninu:",
+        "sectionMessage": "Ni afikun, Mo ni aleji nickel kan. Nickel jẹ irin ti a rii ni ọpọlọpọ awọn ounjẹ. Jọwọ rii daju pe ounjẹ mi ko ni ninu:"
+      },
+      "histamine": {
+        "header": "ÀÌGBÀGBÀ HISTAMIN",
+        "message": "Mi o le jẹ ounjẹ ti o ni histamini. Histamine wa ninu awọn ounjẹ ti o ti dagba, fermented tabi awọn ounjẹ ti a tọju pipẹ. Fun apere:",
+        "sectionMessage": "Ni afikun, Emi ko le jẹ ounjẹ ti o ni histamini. Histamine wa ninu awọn ounjẹ ti o ti dagba, fermented tabi awọn ounjẹ ti a tọju pipẹ. Fun apere:"
+      },
+      "diabetes": {
+        "header": "ÀTÚRÒ",
+        "message": "Mo ni àtọgbẹ ati nilo lati ṣakoso gbigbemi suga mi. Jọwọ maṣe fi suga kun ounjẹ mi ki o jẹ ki n mọ boya o ni:",
+        "sectionMessage": "Ni afikun, Mo ni àtọgbẹ ati nilo lati ṣakoso gbigbemi suga mi. Jọwọ maṣe fi suga kun ounjẹ mi ki o jẹ ki n mọ boya o ni:"
+      }
+    }
+  }
+}

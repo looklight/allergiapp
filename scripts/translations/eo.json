@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluteno (cerealoj)",
+    "crustaceans": "Krustacoj",
+    "eggs": "Ovoj",
+    "fish": "Fiŝoj",
+    "peanuts": "Arakidoj",
+    "soy": "Sojo",
+    "milk": "Lakto kaj laktaĵoj",
+    "celery": "Celerio",
+    "mustard": "Mustardo",
+    "sesame": "Sezamo",
+    "sulfites": "Sulfura dioksido kaj sulfitoj",
+    "lupin": "Lupeno",
+    "mollusks": "Moluskoj",
+    "nuts": "Arbaj nuksoj",
+    "fava_beans": "Fava faboj (favismo)"
+  },
+  "descriptions": {
+    "gluten": "Ĉiuj manĝaĵoj kun cerealoj aŭ faruno (tritiko, hordeo, sekalo, spelto): pano, pasto, pico, kukoj, kuketoj, biero",
+    "crustaceans": "Salikoko, omaro, krabo, salikokoj",
+    "eggs": "Ovoj, omletoj, kukoj, majonezo, freŝa pasto",
+    "fish": "Fiŝoj, suŝioj, fiŝsaŭcoj, buljonoj",
+    "peanuts": "Arakidoj, arakida butero, etmanĝaĵoj, desertoj",
+    "soy": "Tofuo, sojsaŭco, sojlakto, edamame",
+    "milk": "Lakto, fromaĝo, butero, glaciaĵo, kremo",
+    "celery": "Celerio, salatoj, supoj, legomaj buljonoj",
+    "mustard": "Mustardo, saŭcoj, pansaĵoj, marinadoj",
+    "sesame": "Sezamaj semoj, sezama oleo, humo, pano",
+    "sulfites": "Vino, biero, sekaj fruktoj, blatoj",
+    "lupin": "Lupina faruno, pano, pasto, etmanĝaĵoj",
+    "mollusks": "Mituloj, konkoj, ostroj, kalmaroj, polpo",
+    "nuts": "Juglandoj, migdaloj, aveloj, pistakoj, anakaĵoj",
+    "fava_beans": "Faboj, supo de faboj, pureo de faboj, stufaĵoj"
+  },
+  "warnings": {
+    "gluten": "⚠️ Averto: sojsaŭco povas enhavi glutenon",
+    "fava_beans": "G6PD-manko: eĉ malgrandaj kvantoj povas kaŭzi hemolitikan krizon"
+  },
+  "cardTexts": {
+    "header": "ATENTU",
+    "subtitle": "MANTRAJ ALERGIOJ",
+    "pregnancySubtitle": "GRADEDECO & MANTRAĜA ALERGIO",
+    "message": "Mi havas la jenajn manĝajn alergiojn. Bonvolu certigi, ke mia manĝaĵo ne enhavas ĉi tiujn ingrediencojn, inkluzive per kruca poluado.",
+    "pregnancyMessage": "Mi estas graveda kaj mi havas la jenajn manĝajn alergiojn. Bonvolu certigi, ke mia manĝaĵo ne enhavas ĉi tiujn ingrediencojn, inkluzive per kruca poluado.",
+    "thanks": "Koran dankon pro via kompreno kaj via helpo.",
+    "tapToSee": "Frapu por vidi ekzemplojn",
+    "examples": "Ekzemploj:"
+  },
+  "dietFoods": {
+    "meat": "Viando",
+    "fish": "Fiŝoj",
+    "seafood": "Marmanĝaĵo",
+    "eggs": "Ovoj",
+    "dairy": "Lakto",
+    "honey": "Mielo"
+  },
+  "otherFoods": {
+    "garlic": "Ajlo",
+    "onion": "Cepo",
+    "tomato": "Tomato",
+    "mushrooms": "Fungoj",
+    "bell_pepper": "Sonorilpipro",
+    "corn": "Maizo",
+    "strawberries": "Fragoj",
+    "kiwi": "Kivio",
+    "stone_fruits": "Ŝtonfruktoj (persiko, ĉerizo, abrikoto)",
+    "citrus": "Citrusfruktoj",
+    "banana": "Banano",
+    "buckwheat": "Poligono",
+    "spicy": "Pikaj manĝaĵoj"
+  },
+  "restrictions": {
+    "raw_fish": "Kruda fiŝo/suŝio",
+    "raw_cured_meats": "Krudaj kuracitaj karnoj",
+    "raw_eggs": "Krudaj ovoj",
+    "raw_sprouts": "Krudaj ĝermoj",
+    "unpasteurized_cheese": "Nepasteŭrizitaj fromaĝoj",
+    "unpasteurized_milk": "Nepasteŭrizita lakto",
+    "alcohol": "Alkoholo",
+    "excessive_caffeine": "Troa kafeino",
+    "nickel_chocolate": "Ĉokolado / kakao",
+    "nickel_tomato": "Tomataj kaj tomataj saŭcoj",
+    "nickel_legumes": "Legumoj (lentoj, kikeroj, faboj)",
+    "nickel_nuts": "Nuksoj (juglandoj, aveloj, anakaĵoj)",
+    "nickel_whole_grains": "Tutaj grenoj / aveno",
+    "nickel_spinach": "Spinaco kaj foliaj verdaĵoj",
+    "nickel_canned_food": "Enlatigita manĝaĵo",
+    "nickel_tea_coffee": "Teo kaj kafo",
+    "histamine_aged_cheese": "Maljunigitaj fromaĝoj",
+    "histamine_cured_meats": "Kuracoj kaj kolbasoj",
+    "histamine_fish": "Enlatigita kaj fumita fiŝo",
+    "histamine_fermented": "Fermentitaj manĝaĵoj (saŭrkraŭto, kimĉio, miso)",
+    "histamine_wine_beer": "Vino kaj biero",
+    "histamine_vinegar": "Vinagro kaj pikloj",
+    "histamine_chocolate": "Ĉokolado / kakao",
+    "histamine_tomato": "Tomataj kaj tomataj saŭcoj",
+    "histamine_strawberries": "Fragoj",
+    "histamine_eggplant": "Melongeno",
+    "histamine_avocado": "Avocado",
+    "histamine_spinach": "Spinaco",
+    "diabetes_added_sugar": "Aldonita sukero / siropoj",
+    "diabetes_honey_sweeteners": "Mielo kaj dolĉigiloj",
+    "diabetes_sweet_sauces": "Dolĉaj saŭcoj (keĉupo, dolĉa kaj acida, teriyaki)",
+    "diabetes_sweet_glazes": "Dolĉaj glazuroj kaj marinadoj",
+    "diabetes_fruit_juice": "Frukta suko kiel ingredienco",
+    "diabetes_candied_fruit": "Kandita frukto/konfitaĵoj"
+  },
+  "restrictionCardTexts": {
+    "header": "MANĜAĴOJ EVITINDAJ",
+    "message": "Pro sanaj kialoj, mi devas eviti la jenajn manĝaĵojn:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "GRADEDECO",
+        "message": "Mi estas graveda. Bonvolu certigi, ke mia manĝaĵo ne enhavas la jenon:",
+        "sectionMessage": "Krome, pro mia gravedeco, mi ankaŭ devas eviti:"
+      },
+      "no_meat": {
+        "header": "VEGETARA DIETO",
+        "message": "Mi ne manĝas viandon. \nFiŝoj kaj aliaj bestaj produktoj estas bone.",
+        "sectionMessage": "Krome mi ne manĝas viandon. \nFiŝoj kaj aliaj bestaj produktoj estas bone."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIANA DIETO",
+        "message": "Mi sekvas vegetaran dieton. \nMi ne manĝas viandon aŭ fiŝon.",
+        "sectionMessage": "Aldone, mi sekvas vegetaran dieton kaj ne manĝas viandon aŭ fiŝon."
+      },
+      "no_animal_products": {
+        "header": "VEGANA DIETO",
+        "message": "Mi sekvas veganan dieton. \nMi ne manĝas viandon, fiŝon, marmanĝaĵon, ovojn, laktaĵon, mielon aŭ ajnajn bestajn produktojn.",
+        "sectionMessage": "Aldone, mi sekvas veganan dieton kaj ne manĝas viandon, fiŝon, marmanĝaĵon, ovojn, laktaĵojn, mielon aŭ ajnajn bestajn produktojn."
+      },
+      "nickel": {
+        "header": "NIKELA ALERGIO",
+        "message": "Mi havas nikelo-alergion. Nikelo estas metalo trovita en multaj manĝaĵoj. Bonvolu certigi, ke mia manĝaĵo ne enhavas:",
+        "sectionMessage": "Aldone, mi havas nikelalergion. Nikelo estas metalo trovita en multaj manĝaĵoj. Bonvolu certigi, ke mia manĝaĵo ne enhavas:"
+      },
+      "histamine": {
+        "header": "NTOLERANCO AL HISTAMINO",
+        "message": "Mi ne povas manĝi manĝaĵojn riĉajn je histamino. Histamino troviĝas en aĝaj, fermentitaj aŭ longe konservitaj manĝaĵoj. Ekzemple:",
+        "sectionMessage": "Krome, mi ne povas manĝi manĝaĵojn riĉajn je histamino. Histamino troviĝas en aĝaj, fermentitaj aŭ longe konservitaj manĝaĵoj. Ekzemple:"
+      },
+      "diabetes": {
+        "header": "DIABETO",
+        "message": "Mi havas diabeton kaj bezonas kontroli mian konsumon de sukero. Bonvolu ne aldoni sukeron al mia manĝaĵo kaj sciigi min ĉu ĝi enhavas:",
+        "sectionMessage": "Krome, mi havas diabeton kaj bezonas kontroli mian konsumon de sukero. Bonvolu ne aldoni sukeron al mia manĝaĵo kaj sciigi min ĉu ĝi enhavas:"
+      }
+    }
+  }
+}

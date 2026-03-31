@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (firiley)",
+    "crustaceans": "Crustaceans",
+    "eggs": "Ukun",
+    "fish": "Kalluunka",
+    "peanuts": "Lawska",
+    "soy": "Soy",
+    "milk": "Caanaha iyo waxyaabaha caanaha laga sameeyo",
+    "celery": "Selery",
+    "mustard": "Khardal",
+    "sesame": "Sisin",
+    "sulfites": "Sulfites iyo sulfur dioxide",
+    "lupin": "Lupine",
+    "mollusks": "Mollusks",
+    "nuts": "Geed nuts",
+    "fava_beans": "Digirta Fava (favism)"
+  },
+  "descriptions": {
+    "gluten": "Dhammaan cuntooyinka leh badarka ama daqiiqda (qamadiga, shaciir, galley, hingaag): rooti, ​​baasto, pizza, keega, buskud, biir",
+    "crustaceans": "Shilinka, aargoosatada, carsaanyada, prawns",
+    "eggs": "Ukun, omelettes, keega, majones, baasto cusub",
+    "fish": "Kalluun, sushi, suugo kalluunka, maraq",
+    "peanuts": "Lawska, subagga lawska, cuntooyinka fudud, macmacaanka",
+    "soy": "Tofu, maraqa soy, caano soy, edamame",
+    "milk": "Caano, farmaajo, subag, jalaatada, kareemka",
+    "celery": "Celery, saladh, maraq, maraq khudradeed",
+    "mustard": "Khardal, suugo, dhaymo, marinades",
+    "sesame": "Sisinta, saliid sisinta, humus, rooti",
+    "sulfites": "Khamri, biir, miraha la qalajiyey, jajabyo",
+    "lupin": "Daqiiqda Lupine, rooti, ​​baasto, cunto fudud",
+    "mollusks": "Mussels, clams, lohod, squid, octopus",
+    "nuts": "Walnuts, almonds, hazelnuts, pistachios, cashews",
+    "fava_beans": "Digir fawa, maraq digir ah, fawa bean saafi ah, fuud"
+  },
+  "warnings": {
+    "gluten": "⚠️ Digniin: suugo soy ah waxaa ku jiri kara gluten",
+    "fava_beans": "Yaraanta G6PD: xitaa xaddi yar ayaa sababi kara qalalaasaha hemolytic"
+  },
+  "cardTexts": {
+    "header": "FIIRO GAAR AH",
+    "subtitle": "Xasaasiyadda cuntada",
+    "pregnancySubtitle": "Uurka & Xasaasiyadda Cuntada",
+    "message": "Waxa aan leeyahay xasaasiyadda cuntada ee soo socota. Fadlan hubi in cuntadaydu aanay ku jirin maaddooyinkan, oo ay ku jiraan faddaraynta.",
+    "pregnancyMessage": "Waxaan ahay uur waxaana igu dhacay xasaasiyadda cuntada ee soo socota. Fadlan hubi in cuntadaydu aanay ku jirin maaddooyinkan, oo ay ku jiraan faddaraynta.",
+    "thanks": "Aad baad ugu mahadsantahay fahamkaaga iyo caawintaada.",
+    "tapToSee": "Taabo si aad u aragto tusaalooyin",
+    "examples": "Tusaalooyinka:"
+  },
+  "dietFoods": {
+    "meat": "Hilibka",
+    "fish": "Kalluunka",
+    "seafood": "Cunto badda",
+    "eggs": "Ukun",
+    "dairy": "Caanaha",
+    "honey": "Malabka"
+  },
+  "otherFoods": {
+    "garlic": "Toonta",
+    "onion": "Basasha",
+    "tomato": "Tamaandho",
+    "mushrooms": "Mushrooms",
+    "bell_pepper": "Basbaaska dawan",
+    "corn": "Galley",
+    "strawberries": "Strawberries",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Miraha dhagaxa ah (miro, cherry, khudaar)",
+    "citrus": "Miraha liinta",
+    "banana": "Muuska",
+    "buckwheat": "Buckwheat",
+    "spicy": "Cuntooyinka basbaaska leh"
+  },
+  "restrictions": {
+    "raw_fish": "Kalluunka ceeriin / sushi",
+    "raw_cured_meats": "Hilibka ceeriin ee la daaweeyay",
+    "raw_eggs": "Ukun ceeriin",
+    "raw_sprouts": "Biqil ceeriin",
+    "unpasteurized_cheese": "farmaajo aan la dhaqin",
+    "unpasteurized_milk": "Caano aan la dhaqin",
+    "alcohol": "Khamriga",
+    "excessive_caffeine": "Kaafiin xad dhaaf ah",
+    "nickel_chocolate": "Chocolate / kookaha",
+    "nickel_tomato": "Suugo yaanyo iyo yaanyo ah",
+    "nickel_legumes": "Digirta (lentil, digir, digir)",
+    "nickel_nuts": "lawska (walnuts, hazelnuts, cashews)",
+    "nickel_whole_grains": "Hilibka/miraha oo dhan",
+    "nickel_spinach": "Spinach iyo cagaarka caleenta leh",
+    "nickel_canned_food": "Cunto qasacadaysan",
+    "nickel_tea_coffee": "Shaaha iyo kafeega",
+    "histamine_aged_cheese": "Farmaajada duqowday",
+    "histamine_cured_meats": "Hilibka la daaweeyay iyo sausages",
+    "histamine_fish": "Kalluun qasacadaysan oo la qiiqay",
+    "histamine_fermented": "Cuntooyinka khamiirka leh (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Khamri iyo biir",
+    "histamine_vinegar": "Khalka iyo pickles",
+    "histamine_chocolate": "Chocolate / kookaha",
+    "histamine_tomato": "Suugo yaanyo iyo yaanyo ah",
+    "histamine_strawberries": "Strawberries",
+    "histamine_eggplant": "Eggplant",
+    "histamine_avocado": "Avokado",
+    "histamine_spinach": "Spinach",
+    "diabetes_added_sugar": "Sonkor / sharoobada lagu daray",
+    "diabetes_honey_sweeteners": "Malabka iyo macaanayaasha",
+    "diabetes_sweet_sauces": "Suugo macaan (ketchup, macaan iyo dhanaan, teriyaki)",
+    "diabetes_sweet_glazes": "glazes macaan iyo marinades",
+    "diabetes_fruit_juice": "Casiirka miraha sida qayb ahaan",
+    "diabetes_candied_fruit": "Miraha qasacadaysan / macaanka"
+  },
+  "restrictionCardTexts": {
+    "header": "CUNTOOYINKA LAGU FOGAADO",
+    "message": "Sababo caafimaad awgood, waxaan u baahanahay inaan iska ilaaliyo cuntooyinka soo socda:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "UUR",
+        "message": "waxaan ahay uur Fadlan hubi in cuntadaydu aanay ku jirin kuwa soo socda:",
+        "sectionMessage": "Intaa waxaa dheer, uurkayga dartiis, waa inaan sidoo kale iska ilaaliyaa:"
+      },
+      "no_meat": {
+        "header": "Cunto khudradeed",
+        "message": "Hilib ma cuno. \nKalluunka iyo waxyaabaha kale ee xayawaanku waa fiican yihiin.",
+        "sectionMessage": "Intaa waxaa dheer, ma cuno hilib. \nKalluunka iyo waxyaabaha kale ee xayawaanku waa fiican yihiin."
+      },
+      "no_meat_fish": {
+        "header": "Cunto khudradeed",
+        "message": "Waxaan raacaa cunto khudradeed. \nMa cuno hilib iyo kalluun.",
+        "sectionMessage": "Intaa waxaa dheer, waxaan raacaa cunto khudradeed oo ma cuno hilib ama kalluun."
+      },
+      "no_animal_products": {
+        "header": "CUNTO VEGAN",
+        "message": "Waxaan raacaa cuntada vegan \nMa cuno hilibka, kalluunka, cuntooyinka badda, ukunta, caanaha, malab ama wax kasta oo xayawaan ah.",
+        "sectionMessage": "Intaa waxaa dheer, waxaan raacaa cuntada vegan oo ma cunin hilibka, kalluunka, cuntooyinka badda, ukunta, caanaha, malab ama wax kasta oo xayawaan ah."
+      },
+      "nickel": {
+        "header": "Xasaasiyadda NICKEL",
+        "message": "Waxa aan leeyahay xasaasiyad nikkel Nickel waa bir laga helo cuntooyin badan. Fadlan hubi in cuntadaydu aanay ku jirin:",
+        "sectionMessage": "Intaa waxaa dheer, waxaan leeyahay xasaasiyad nikkel ah. Nickel waa bir laga helo cuntooyin badan. Fadlan hubi in cuntadaydu aanay ku jirin:"
+      },
+      "histamine": {
+        "header": "XULQAAD LA'AAN AH",
+        "message": "Ma cuni karo cuntooyinka qani ku ah histamine. Histamine-ka waxaa laga helaa cuntooyinka da'da ah, khamiirsan ama muddada dheer la ilaaliyo. Tusaale ahaan:",
+        "sectionMessage": "Intaa waxaa dheer, ma cuni karo cuntooyinka qani ku ah histamine. Histamine-ka waxaa laga helaa cuntooyinka da'da ah, khamiirsan ama muddada dheer la ilaaliyo. Tusaale ahaan:"
+      },
+      "diabetes": {
+        "header": "MACAANKA",
+        "message": "Waxaan qabaa sonkorow waxaanan u baahanahay inaan xakameeyo qaadashada sonkortayda. Fadlan ha ku darin sonkorta cuntada oo ii sheeg haddii ay ka kooban tahay:",
+        "sectionMessage": "Intaa waxaa dheer, waxaan qabaa sonkorow waxaanan u baahanahay inaan xakameeyo qaadashada sonkortayda. Fadlan ha ku darin sonkorta cuntada oo ii sheeg haddii ay ka kooban tahay:"
+      }
+    }
+  }
+}

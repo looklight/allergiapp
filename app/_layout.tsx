@@ -10,7 +10,6 @@ import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { Analytics } from '../services/analytics';
-import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
 import ConsentModal from './consent';
 
@@ -76,9 +75,6 @@ function AppContent() {
     if (isReady) {
       // Nascondi lo splash screen quando l'app è pronta
       SplashScreen.hideAsync();
-
-      // Initialize Remote Config (fetches banner configuration)
-      RemoteConfig.initialize();
 
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {

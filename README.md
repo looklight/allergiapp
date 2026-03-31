@@ -37,26 +37,6 @@ Questo è necessario per evitare errori di build con React Native.
 
 ---
 
-## Firebase Analytics
-
-L'app usa Firebase Analytics per statistiche anonime.
-
-### Setup
-1. Crea progetto su [Firebase Console](https://console.firebase.google.com/)
-2. Scarica `google-services.json` (Android) e `GoogleService-Info.plist` (iOS)
-3. Posiziona i file nella root del progetto
-4. I file sono già in `.gitignore`
-
-**Nota:** Firebase funziona solo in build native, non in Expo Go.
-
-### Eventi tracciati
-- Allergie: aggiunte, rimosse, salvate
-- Lingue: download, cambio lingua app/card
-- Card: visualizzazioni
-- App: apertura, reset dati
-
----
-
 ## Build per Produzione
 
 ### EAS Build (consigliato)

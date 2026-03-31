@@ -18,7 +18,7 @@ export const LEGAL_CONTENT: Record<'it' | 'en', LegalDocument> = {
 Le tue allergie e preferenze lingua sono salvate solo sul tuo dispositivo. Non vengono mai inviate a nessun server.
 
 ### Dati analytics anonimi
-Raccogliamo solo statistiche anonime di utilizzo tramite Google Firebase Analytics per migliorare l'app:
+Raccogliamo solo statistiche anonime di utilizzo per migliorare l'app:
 - Paese approssimativo
 - Tipo di dispositivo
 - Funzioni utilizzate
@@ -87,7 +87,7 @@ Usando l'app accetti questi termini e il disclaimer medico.`
 Your allergies and language preferences are saved only on your device. Never sent to any server.
 
 ### Anonymous analytics
-We collect only anonymous usage statistics via Google Firebase Analytics to improve the app:
+We collect only anonymous usage statistics to improve the app:
 - Approximate country
 - Device type
 - Features used

@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image } from 'react-native';
 import { Text } from 'react-native-paper';
-import { BannerItem, BannerType } from '../../types';
+import { BannerItem } from '../../types';
 import i18n from '../../utils/i18n';
 import { theme } from '../../constants/theme';
 import { Analytics } from '../../services/analytics';
-import { RemoteConfig } from '../../services/remoteConfig';
 
 // Immagini logo per i banner
 const bannerImages = {
@@ -63,14 +62,7 @@ export default function BannerCarousel({
     },
   ];
 
-  // Get promotional banner from Remote Config (if enabled)
-  const promoBanner = RemoteConfig.getPromoBanner();
-
-  // Combine extra banners with Remote Config banner
-  const allExtraBanners: BannerItem[] = [
-    ...extraBanners,
-    ...(promoBanner ? [promoBanner] : []),
-  ];
+  const allExtraBanners: BannerItem[] = [...extraBanners];
 
   // Promo banner per primo, poi i banner informativi
   const allBanners: BannerItem[] = [

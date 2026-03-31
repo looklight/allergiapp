@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (hatsi)",
+    "crustaceans": "Crustaceans",
+    "eggs": "Qwai",
+    "fish": "Kifi",
+    "peanuts": "Gyada",
+    "soy": "Soja",
+    "milk": "Madara da kayayyakin kiwo",
+    "celery": "Seleri",
+    "mustard": "Mustard",
+    "sesame": "Sesame",
+    "sulfites": "Sulfites da sulfur dioxide",
+    "lupin": "Lupine",
+    "mollusks": "Mollusks",
+    "nuts": "Itace kwayoyi",
+    "fava_beans": "Fava wake (favism)"
+  },
+  "descriptions": {
+    "gluten": "Duk abinci tare da hatsi ko gari (alkama, sha'ir, hatsin rai, spelt): burodi, taliya, pizza, da wuri, kukis, giya",
+    "crustaceans": "Shrimp, lobster, kaguwa, prawns",
+    "eggs": "Qwai, omelet, da wuri, mayonnaise, sabon taliya",
+    "fish": "Kifi, sushi, kifi miya, broths",
+    "peanuts": "Gyada, man gyada, kayan ciye-ciye, kayan zaki",
+    "soy": "Tofu, soya miya, madara soya, edamame",
+    "milk": "Madara, cuku, man shanu, ice cream, cream",
+    "celery": "Seleri, salads, miya, kayan lambu broths",
+    "mustard": "Gurasa, miya, miya, marinades",
+    "sesame": "Sesame man, man kazar, humus, burodi",
+    "sulfites": "Wine, giya, busassun 'ya'yan itatuwa, kwakwalwan kwamfuta",
+    "lupin": "Lupine gari, burodi, taliya, abun ciye-ciye",
+    "mollusks": "Mussels, clams, kawa, squid, dorinar ruwa",
+    "nuts": "Walnuts, almonds, hazelnuts, pistachios, cashews",
+    "fava_beans": "Fava wake, fava waken soup, fava wake puree, stews"
+  },
+  "warnings": {
+    "gluten": "⚠️ Gargadi: miya soya na iya ƙunsar alkama",
+    "fava_beans": "Rashin G6PD: ko da ƙananan kuɗi na iya haifar da rikicin hemolytic"
+  },
+  "cardTexts": {
+    "header": "HANKALI",
+    "subtitle": "ALJANIN ABINCI",
+    "pregnancySubtitle": "CIGABA DA CIWON ABINCI",
+    "message": "Ina da ciwon abinci masu zuwa. Da fatan za a tabbatar cewa abinci na bai ƙunshi waɗannan sinadarai ba, gami da ta hanyar gurɓatawa.",
+    "pregnancyMessage": "Ina da ciki kuma ina da ciwon abinci kamar haka. Da fatan za a tabbatar cewa abinci na bai ƙunshi waɗannan sinadarai ba, gami da ta hanyar gurɓatawa.",
+    "thanks": "Na gode sosai don fahimtar ku da taimakon ku.",
+    "tapToSee": "Matsa don ganin misalai",
+    "examples": "Misalai:"
+  },
+  "dietFoods": {
+    "meat": "Nama",
+    "fish": "Kifi",
+    "seafood": "Abincin teku",
+    "eggs": "Qwai",
+    "dairy": "Kiwo",
+    "honey": "zuma"
+  },
+  "otherFoods": {
+    "garlic": "Tafarnuwa",
+    "onion": "Albasa",
+    "tomato": "Tumatir",
+    "mushrooms": "Namomin kaza",
+    "bell_pepper": "barkono barkono",
+    "corn": "Masara",
+    "strawberries": "Strawberries",
+    "kiwi": "Kiwi",
+    "stone_fruits": "'Ya'yan itãcen marmari (peach, ceri, apricot)",
+    "citrus": "Citrus 'ya'yan itatuwa",
+    "banana": "Ayaba",
+    "buckwheat": "Buckwheat",
+    "spicy": "Abincin yaji"
+  },
+  "restrictions": {
+    "raw_fish": "Danyen kifi / sushi",
+    "raw_cured_meats": "Danyen naman da aka warke",
+    "raw_eggs": "Danyen qwai",
+    "raw_sprouts": "Danye sprouts",
+    "unpasteurized_cheese": "Cikakkun da ba a daɗe ba",
+    "unpasteurized_milk": "Nonon da ba a gama ba",
+    "alcohol": "Barasa",
+    "excessive_caffeine": "Yawan caffeine",
+    "nickel_chocolate": "Chocolate / koko",
+    "nickel_tomato": "Tumatir da tumatir miya",
+    "nickel_legumes": "Legumes (lentil, chickpeas, wake)",
+    "nickel_nuts": "Kwayoyi (walnuts, hazelnuts, cashews)",
+    "nickel_whole_grains": "Dukan hatsi / hatsi",
+    "nickel_spinach": "Alayyahu da ganyen ganye",
+    "nickel_canned_food": "Abincin gwangwani",
+    "nickel_tea_coffee": "Tea da kofi",
+    "histamine_aged_cheese": "Cikakkun tsofaffi",
+    "histamine_cured_meats": "Magance nama da tsiran alade",
+    "histamine_fish": "Gwangwani da kyafaffen kifi",
+    "histamine_fermented": "Abinci mai gina jiki (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Giya da giya",
+    "histamine_vinegar": "Vinegar da pickles",
+    "histamine_chocolate": "Chocolate / koko",
+    "histamine_tomato": "Tumatir da tumatir miya",
+    "histamine_strawberries": "Strawberries",
+    "histamine_eggplant": "Eggplant",
+    "histamine_avocado": "Avocado",
+    "histamine_spinach": "Alayyahu",
+    "diabetes_added_sugar": "Add sugar / syrups",
+    "diabetes_honey_sweeteners": "zuma da kayan zaki",
+    "diabetes_sweet_sauces": "Sauce mai zaki (ketchup, zaki da tsami, teriyaki)",
+    "diabetes_sweet_glazes": "Kyakkyawan glazes da marinades",
+    "diabetes_fruit_juice": "Ruwan 'ya'yan itace a matsayin sashi",
+    "diabetes_candied_fruit": "Candied fruit / jams"
+  },
+  "restrictionCardTexts": {
+    "header": "ABINCI DON GUJEWA",
+    "message": "Don dalilai na lafiya, Ina buƙatar guje wa abinci masu zuwa:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "CIKI",
+        "message": "Ina da ciki. Don Allah a tabbata abinci na bai ƙunshi abubuwa masu zuwa ba:",
+        "sectionMessage": "Bugu da ƙari, saboda ciki na, dole ne in guje wa:"
+      },
+      "no_meat": {
+        "header": "CIWAN KARYA",
+        "message": "Ba na cin nama. \nKifi da sauran kayayyakin dabbobi suna da kyau.",
+        "sectionMessage": "Bugu da ƙari, ba na cin nama. \nKifi da sauran kayayyakin dabbobi suna da kyau."
+      },
+      "no_meat_fish": {
+        "header": "CIWAN KARYA",
+        "message": "Ina bin tsarin cin ganyayyaki. \nBa na cin nama ko kifi.",
+        "sectionMessage": "Bugu da ƙari, Ina bin tsarin cin ganyayyaki kuma ba na cin nama ko kifi."
+      },
+      "no_animal_products": {
+        "header": "CIWAN VIGA",
+        "message": "Ina bin tsarin cin ganyayyaki. \nBa na cin nama, kifi, abincin teku, ƙwai, kiwo, zuma ko kowane kayan dabba.",
+        "sectionMessage": "Bugu da ƙari, Ina bin tsarin cin ganyayyaki kuma ba na cin nama, kifi, abincin teku, qwai, kiwo, zuma ko kowane kayan dabba."
+      },
+      "nickel": {
+        "header": "CIWON NICKEL",
+        "message": "Ina da rashin lafiyar nickel. Nickel karfe ne da ake samu a yawancin abinci. Don Allah a tabbata abinci na bai ƙunshi:",
+        "sectionMessage": "Bugu da ƙari, Ina da rashin lafiyar nickel. Nickel karfe ne da ake samu a yawancin abinci. Don Allah a tabbata abinci na bai ƙunshi:"
+      },
+      "histamine": {
+        "header": "RASHIN HANKALI",
+        "message": "Ba zan iya cin abinci mai arziki a cikin histamine ba. Ana samun histamine a cikin abinci na tsufa, datti ko dadewa. Misali:",
+        "sectionMessage": "Har ila yau, ba zan iya cin abinci mai arziki a cikin histamine ba. Ana samun histamine a cikin abinci na tsufa, datti ko dadewa. Misali:"
+      },
+      "diabetes": {
+        "header": "CIWON SUGA",
+        "message": "Ina da ciwon sukari kuma ina buƙatar sarrafa yawan sukari na. Don Allah kar a ƙara sukari a abinci na kuma sanar da ni idan ya ƙunshi:",
+        "sectionMessage": "Bugu da ƙari, Ina da ciwon sukari kuma ina buƙatar sarrafa yawan sukari na. Don Allah kar a ƙara sukari a abinci na kuma sanar da ni idan ya ƙunshi:"
+      }
+    }
+  }
+}

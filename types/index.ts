@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import type { OtherFoodId } from '../constants/otherFoods';
 
-// Banner types (used by services/remoteConfig and components/BannerCarousel)
+// Banner types (used by components/BannerCarousel)
 export type BannerType = 'info' | 'ad' | 'custom';
 
 export interface BannerItem {
@@ -217,6 +217,7 @@ export type DownloadableLanguageCode =
   | 'ky'  // Kirghiso
   | 'tk'  // Turkmeno
   | 'mn'  // Mongolo
+  | 'dz'  // Dzongkha (Bhutan)
   // Africa
   | 'sw'  // Swahili
   | 'af'  // Afrikaans

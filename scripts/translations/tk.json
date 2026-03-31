@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Glýuten (galla)",
+    "crustaceans": "Gabygy",
+    "eggs": "Gsumurtga",
+    "fish": "Balyk",
+    "peanuts": "Arahis",
+    "soy": "Soya",
+    "milk": "Süýt we süýt önümleri",
+    "celery": "Selderýa",
+    "mustard": "Gorçisa",
+    "sesame": "Künji",
+    "sulfites": "Kükürt dioksidi we sulfitler",
+    "lupin": "Lupine",
+    "mollusks": "Mollusks",
+    "nuts": "Agaç hozy",
+    "fava_beans": "Fava noýbasy (favism)"
+  },
+  "descriptions": {
+    "gluten": "Däneli ýa-da unly ähli iýmitler (bugdaý, arpa, çowdary, ýazylan): çörek, makaron, pizza, tort, köke, piwo",
+    "crustaceans": "Käşir, leňňeç, gyrgyç, çorbalar",
+    "eggs": "Gsumurtga, omlet, tort, maýonez, täze makaron",
+    "fish": "Balyk, suşi, balyk souslary, çorbalar",
+    "peanuts": "Arahis, nohut ýagy, naharlar, desertler",
+    "soy": "Tofu, soýa sousy, soýa süýdü, edamame",
+    "milk": "Süýt, peýnir, ýag, doňdurma, krem",
+    "celery": "Selderýa, salatlar, çorbalar, gök önüm çorbalary",
+    "mustard": "Gant, souslar, geýimler, marinadlar",
+    "sesame": "Künji tohumy, künji ýagy, humus, çörek",
+    "sulfites": "Şerap, piwo, guradylan miweler, çipler",
+    "lupin": "Lupin uny, çörek, makaron, nahar",
+    "mollusks": "Musseller, gysgyçlar, oysterler, skid, oktopus",
+    "nuts": "Hoz, badam, hoz, pisse, kawaý",
+    "fava_beans": "Fava noýbasy, fava noýba çorbasy, fava noýba püresi, stew"
+  },
+  "warnings": {
+    "gluten": "⚠️ Duýduryş: soýa sousunda glýuten bolup biler",
+    "fava_beans": "G6PD ýetmezçiligi: az mukdarda hem gemolitiki krizise sebäp bolup biler"
+  },
+  "cardTexts": {
+    "header": "Üns beriň",
+    "subtitle": "IOMIT HEMMESI",
+    "pregnancySubtitle": "Göwrelilik we iýmit önümleri",
+    "message": "Aşakdaky iýmit allergiýasy bar. Iýmitimde bu maddalaryň, şol sanda hapanyň üsti bilen ýoklugyna göz ýetiriň.",
+    "pregnancyMessage": "Men göwreli we aşakdaky iýmit allergiýasy bar. Iýmitimde bu maddalaryň, şol sanda hapanyň üsti bilen ýoklugyna göz ýetiriň.",
+    "thanks": "Düşüneniňiz we kömekiňiz üçin köp sag boluň.",
+    "tapToSee": "Mysallary görmek üçin basyň",
+    "examples": "Mysallar:"
+  },
+  "dietFoods": {
+    "meat": "Et",
+    "fish": "Balyk",
+    "seafood": "Deňiz önümleri",
+    "eggs": "Gsumurtga",
+    "dairy": "Süýt",
+    "honey": "Bal"
+  },
+  "otherFoods": {
+    "garlic": "Sarymsak",
+    "onion": "Sogan",
+    "tomato": "Pomidor",
+    "mushrooms": "Kömelek",
+    "bell_pepper": "Jaň burç",
+    "corn": "Mekgejöwen",
+    "strawberries": "Awertudana",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Daş miweler (şetdaly, alça, erik)",
+    "citrus": "Sitrus miweleri",
+    "banana": "Banan",
+    "buckwheat": "Garga",
+    "spicy": "Ajy iýmitler"
+  },
+  "restrictions": {
+    "raw_fish": "Çig balyk / suşi",
+    "raw_cured_meats": "Çig eti bejerdi",
+    "raw_eggs": "Çig ýumurtga",
+    "raw_sprouts": "Çig ösümlikler",
+    "unpasteurized_cheese": "Pasterizasiýa edilmedik peýnirler",
+    "unpasteurized_milk": "Pasterizasiýa edilmedik süýt",
+    "alcohol": "Alkogol",
+    "excessive_caffeine": "Artykmaç kofein",
+    "nickel_chocolate": "Şokolad / kakao",
+    "nickel_tomato": "Pomidor we pomidor souslary",
+    "nickel_legumes": "Tohumlar (mekgejöwen, nohut, noýba)",
+    "nickel_nuts": "Nokatlar (hoz, hoz, kawaý)",
+    "nickel_whole_grains": "Bütin däneler / süle",
+    "nickel_spinach": "Ysmanak we ýaprakly gök önümler",
+    "nickel_canned_food": "Konserwirlenen iýmit",
+    "nickel_tea_coffee": "Çaý we kofe",
+    "histamine_aged_cheese": "Garry peýnirler",
+    "histamine_cured_meats": "Bejerilen etler we kolbasa",
+    "histamine_fish": "Konserwirlenen we kakadylan balyklar",
+    "histamine_fermented": "Fermentlenen iýmitler (sogan, kimçi, miso)",
+    "histamine_wine_beer": "Şerap we piwo",
+    "histamine_vinegar": "Sirke we duz",
+    "histamine_chocolate": "Şokolad / kakao",
+    "histamine_tomato": "Pomidor we pomidor souslary",
+    "histamine_strawberries": "Awertudana",
+    "histamine_eggplant": "Bägül",
+    "histamine_avocado": "Awakado",
+    "histamine_spinach": "Ysmanak",
+    "diabetes_added_sugar": "Şeker / şerap goşuldy",
+    "diabetes_honey_sweeteners": "Bal we süýjüdirijiler",
+    "diabetes_sweet_sauces": "Süýji souslar (ketçup, süýji we turş, teriýaki)",
+    "diabetes_sweet_glazes": "Süýji syrçalar we marinadlar",
+    "diabetes_fruit_juice": "Miwe suwy düzümi hökmünde",
+    "diabetes_candied_fruit": "Bişirilen miweler / mürepbeler"
+  },
+  "restrictionCardTexts": {
+    "header": "Gaýtadan iýmitlenmek",
+    "message": "Saglyk sebäpli aşakdaky iýmitlerden gaça durmaly:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "Göwrelilik",
+        "message": "Men göwreli Iýmitimde aşakdakylaryň ýokdugyna göz ýetiriň:",
+        "sectionMessage": "Mundan başga-da, göwreliligim sebäpli, şeýle hem gaça durmalydyryn:"
+      },
+      "no_meat": {
+        "header": "WEGETARIAN DIETI",
+        "message": "Men et iýemok \nBalyk we beýleki haýwan önümleri gowy.",
+        "sectionMessage": "Mundan başga-da, men et iýemok. \nBalyk we beýleki haýwan önümleri gowy."
+      },
+      "no_meat_fish": {
+        "header": "WEGETARIAN DIETI",
+        "message": "Wegetarian dietasyna eýerýärin. \nMen et ýa balyk iýemok.",
+        "sectionMessage": "Mundan başga-da, men wegetarian dietasyna eýerýärin we et ýa-da balyk iýmeýärin."
+      },
+      "no_animal_products": {
+        "header": "WEGAN DIET",
+        "message": "Wegetarian diýeta eýerýärin. \nEt, balyk, deňiz önümleri, ýumurtga, süýt, bal ýa-da haýwan önümlerini iýemok.",
+        "sectionMessage": "Mundan başga-da, men wegetarian dietasyna eýerýärin we et, balyk, deňiz önümleri, ýumurtga, süýt, bal ýa-da haýwan önümlerini iýmeýärin."
+      },
+      "nickel": {
+        "header": "Nikel ALLERGI",
+        "message": "Nikel allergiýam bar. Nikel köp iýmitde tapylan metaldyr. Iýmitimiň ýokdugyna göz ýetiriň:",
+        "sectionMessage": "Mundan başga-da, meniň nikel allergiýam bar. Nikel köp iýmitde tapylan metaldyr. Iýmitimiň ýokdugyna göz ýetiriň:"
+      },
+      "histamine": {
+        "header": "TARYH INTOLERANSI .ASY",
+        "message": "Gistamine baý iýmitleri iýip bilemok. Gistamin garry, fermentlenen ýa-da uzak wagtlap saklanýan iýmitlerde bolýar. Mysal üçin:",
+        "sectionMessage": "Mundan başga-da, gistamine baý iýmitleri iýip bilemok. Gistamin garry, fermentlenen ýa-da uzak wagtlap saklanýan iýmitlerde bolýar. Mysal üçin:"
+      },
+      "diabetes": {
+        "header": "DIABETLER",
+        "message": "Süýji keseli bar we şekeriň kabul edilmegine gözegçilik etmeli. Iýmitime şeker goşmaň we düzüminde bardygyny maňa habar bermegiňizi haýyş edýärin:",
+        "sectionMessage": "Mundan başga-da, süýji keseli bar we şekeriň kabul edilmegine gözegçilik etmeli. Iýmitime şeker goşmaň we düzüminde bardygyny maňa habar bermegiňizi haýyş edýärin:"
+      }
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (dexle)",
+    "crustaceans": "Crustaceans",
+    "eggs": "Hêk",
+    "fish": "Masî",
+    "peanuts": "Peanuts",
+    "soy": "Soy",
+    "milk": "Şîr û berhemên şîr",
+    "celery": "Kerfes",
+    "mustard": "Xerdel",
+    "sesame": "Sesame",
+    "sulfites": "Sulfur dioxide û sulfît",
+    "lupin": "Lupin",
+    "mollusks": "Mollusks",
+    "nuts": "Gûzên daran",
+    "fava_beans": "fasûlî (favîzm)"
+  },
+  "descriptions": {
+    "gluten": "Hemî xwarinên bi dexl an jî ard (genim, ceh, nîsk, sift): nan, pasta, pîzza, kek, çerez, bîra.",
+    "crustaceans": "Shrimp, lobster, kevroşk, kevçî",
+    "eggs": "Hêk, omlet, kek, mayonez, makarona teze",
+    "fish": "Masî, sushi, sosên masî, bîhnxweş",
+    "peanuts": "Fîstiq, rûnê fistiq, xwarin, şîrîn",
+    "soy": "Tofu, soya soyê, şîrê soyê, edamame",
+    "milk": "Şîr, penêr, rûn, qeşa, îsotê",
+    "celery": "Kerfûs, selete, şorbe, bîhnên sebzeyan",
+    "mustard": "Xerdel, sos, cil, marinades",
+    "sesame": "Tovên konûjê, rûnê rûnê, hummus, nan",
+    "sulfites": "Şerab, bîra, fêkiyên hişk, çips",
+    "lupin": "Hevîrê lupin, nan, makarona, xwarinên xwarinê",
+    "mollusks": "Midye, kilam, îstir, squid, heştap",
+    "nuts": "Gûz, bihîv, nok, fistiq, kaşûn",
+    "fava_beans": "fasûlî, şorba fasûlî, pûreya fasûlî, şorbe"
+  },
+  "warnings": {
+    "gluten": "⚠️ Hişyarî: sosê soya dibe ku gluten hebe",
+    "fava_beans": "Kêmasiya G6PD: hêjmarên piçûk jî dibe sedema krîza hemolîtîk"
+  },
+  "cardTexts": {
+    "header": "BALDARÎ",
+    "subtitle": "ALERJIYÊN Xwarinê",
+    "pregnancySubtitle": "ALERJIYÊN DUBANÎ Û Xwarinê",
+    "message": "Alerjiya xwarinên min ên jêrîn hene. Ji kerema xwe pê ewle bibin ku xwarina min van malzemeyan nagire, di nav de bi navgîniya gemarî.",
+    "pregnancyMessage": "Ez ducanî me û alerjiyên min ên xwarinê yên jêrîn hene. Ji kerema xwe pê ewle bibin ku xwarina min van malzemeyan nagire, di nav de bi navgîniya gemarî.",
+    "thanks": "Gelek spas ji bo têgihiştin û alîkariya we.",
+    "tapToSee": "Ji bo dîtina mînakan bikirtînin",
+    "examples": "Nimûne:"
+  },
+  "dietFoods": {
+    "meat": "Goşt",
+    "fish": "Masî",
+    "seafood": "Mêwê derya",
+    "eggs": "Hêk",
+    "dairy": "Şîrxane",
+    "honey": "Hûngiv"
+  },
+  "otherFoods": {
+    "garlic": "Sîr",
+    "onion": "Pîvaz",
+    "tomato": "Bacanê sor",
+    "mushrooms": "Mushrooms",
+    "bell_pepper": "îsota bell",
+    "corn": "Garis",
+    "strawberries": "Strawberries",
+    "kiwi": "Kiwi",
+    "stone_fruits": "Fêkiyên kevirî (pişk, kiraz, behîv)",
+    "citrus": "Fêkiyên citrus",
+    "banana": "Mûz",
+    "buckwheat": "Buckwheat",
+    "spicy": "Xwarinên tûj"
+  },
+  "restrictions": {
+    "raw_fish": "Masiyê xav / sushi",
+    "raw_cured_meats": "Goştên xav",
+    "raw_eggs": "Hêkên xav",
+    "raw_sprouts": "Çivîkên xav",
+    "unpasteurized_cheese": "Penêrên nepasterîzekirî",
+    "unpasteurized_milk": "Şîrê nepasterîzekirî",
+    "alcohol": "Alkol",
+    "excessive_caffeine": "Caffeine zêde",
+    "nickel_chocolate": "Çîkolata / kakao",
+    "nickel_tomato": "Tomato û sosê tomato",
+    "nickel_legumes": "Bişkojk (nîsik, nok, fasûlî)",
+    "nickel_nuts": "Gûz (gûz, nok, gûz)",
+    "nickel_whole_grains": "Gêvên tevahî / îsot",
+    "nickel_spinach": "Îspenax û hêşînahiyên pelan",
+    "nickel_canned_food": "Xwarina konservekirî",
+    "nickel_tea_coffee": "Çay û qehwe",
+    "histamine_aged_cheese": "Penêrên pîr",
+    "histamine_cured_meats": "Goşt û sosîsên saxkirî",
+    "histamine_fish": "Masiyên konservekirî û kişandin",
+    "histamine_fermented": "Xwarinên tirşkirî (tirş, kimchi, miso)",
+    "histamine_wine_beer": "Şerab û bîra",
+    "histamine_vinegar": "Sîrke û tirş",
+    "histamine_chocolate": "Çîkolata / kakao",
+    "histamine_tomato": "Tomato û sosê tomato",
+    "histamine_strawberries": "Strawberries",
+    "histamine_eggplant": "Eggplant",
+    "histamine_avocado": "Avocado",
+    "histamine_spinach": "Îspenax",
+    "diabetes_added_sugar": "Şekir / şerbet lê zêde kirin",
+    "diabetes_honey_sweeteners": "Hingivîn û şîrînker",
+    "diabetes_sweet_sauces": "Sosên şîrîn (ketçap, şîrîn û tirş, teriyaki)",
+    "diabetes_sweet_glazes": "Glazes û marinades şîrîn",
+    "diabetes_fruit_juice": "Ava fêkiyan wekî malzemeyek",
+    "diabetes_candied_fruit": "Fêkiyên şêrîn / jam"
+  },
+  "restrictionCardTexts": {
+    "header": "XWARINÊN KU DIXWAZIN",
+    "message": "Ji ber sedemên tenduristiyê, divê ez dev ji xwarinên jêrîn berdim:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "DÛCANÎ",
+        "message": "Ez ducanî me. Ji kerema xwe piştrast bikin ku xwarina min tiştên jêrîn tune:",
+        "sectionMessage": "Wekî din, ji ber ducaniya min, divê ez jî xwe dûr bixim:"
+      },
+      "no_meat": {
+        "header": "Xwarina VEGETARIAN",
+        "message": "Ez goşt naxwim. \nMasî û hilberên heywanên din baş in.",
+        "sectionMessage": "Wekî din ez goşt naxwim. \nMasî û hilberên heywanên din baş in."
+      },
+      "no_meat_fish": {
+        "header": "Xwarina VEGETARIAN",
+        "message": "Ez parêzek zebzeyan dişopînim. \nEz goşt û masî naxwim.",
+        "sectionMessage": "Wekî din, ez parêzek zebzeyan dişopînim û goşt û masî naxwim."
+      },
+      "no_animal_products": {
+        "header": "Xwarina VEGAN",
+        "message": "Ez parêzek vegan dişopînim. \nEz goşt, masî, xwarinên deryayê, hêk, şîr, hingiv û berhemên heywanan naxwim.",
+        "sectionMessage": "Wekî din, ez parêzek vegan dişopînim û goşt, masî, xwarinên deryayê, hêk, şîr, hingiv an hilberên heywanan naxwim."
+      },
+      "nickel": {
+        "header": "ALERJÎYA NÎKEL",
+        "message": "Alerjiya min a nîkelê heye. Nîkel metalek e ku di gelek xwarinan de tê dîtin. Ji kerema xwe pê ewle bine ku xwarina min tê de nîne:",
+        "sectionMessage": "Wekî din, alerjiya min a nîkelê heye. Nîkel metalek e ku di gelek xwarinan de tê dîtin. Ji kerema xwe pê ewle bine ku xwarina min tê de nîne:"
+      },
+      "histamine": {
+        "header": "BÊHÎSTAMINÊ",
+        "message": "Ez nikarim xwarinên bi histaminê dewlemend bixwim. Histamine di xwarinên pîrbûyî, tehtkirî an dirêj-parastî de tê dîtin. Bo nimûne:",
+        "sectionMessage": "Wekî din, ez nikarim xwarinên bi histamîn dewlemend bixwim. Histamine di xwarinên pîrbûyî, tehtkirî an dirêj-parastî de tê dîtin. Bo nimûne:"
+      },
+      "diabetes": {
+        "header": "NEXWEŞÎYA ŞEKIR",
+        "message": "Diyabetê min heye û pêdivî ye ku şekirê xwe kontrol bikim. Ji kerema xwe şekir li xwarina min zêde nekin û ji min re agahdar bikin ka ew tê de heye:",
+        "sectionMessage": "Wekî din, şekirê min heye û pêdivî ye ku şekirê xwe kontrol bikim. Ji kerema xwe şekir li xwarina min zêde nekin û ji min re agahdar bikin ka ew tê de heye:"
+      }
+    }
+  }
+}

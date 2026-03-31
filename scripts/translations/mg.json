@@ -1,0 +1,150 @@
+{
+  "allergens": {
+    "gluten": "Gluten (vary)",
+    "crustaceans": "hazandrano",
+    "eggs": "atody",
+    "fish": "TRONDRO",
+    "peanuts": "voanjo",
+    "soy": "soja",
+    "milk": "Ronono sy vokatra vita amin'ny ronono",
+    "celery": "Seleria",
+    "mustard": "tsinapy",
+    "sesame": "Sesame",
+    "sulfites": "Dioxide solifara sy solifara",
+    "lupin": "Lupin",
+    "mollusks": "Moluska",
+    "nuts": "Hazo voanjo",
+    "fava_beans": "tsaramaso fava (favism)"
+  },
+  "descriptions": {
+    "gluten": "Ny sakafo rehetra misy voamaina na lafarinina (vary, vary orza, ampemby, tsipelina): mofo, paty, pizza, mofomamy, mofomamy, labiera",
+    "crustaceans": "Shrimp, lobster, foza, makamba",
+    "eggs": "Atody, omelettes, mofomamy, mayonnaise, paty vaovao",
+    "fish": "Trondro, sushi, saosy trondro, ron-kena",
+    "peanuts": "Voanjo, dibera voanjo, tsakitsaky, tsindrin-tsakafo",
+    "soy": "Tofu, saosy soja, ronono soja, edamame",
+    "milk": "Ronono, fromazy, dibera, gilasy, crème",
+    "celery": "Seleria, salady, lasopy, lasopy legioma",
+    "mustard": "Voanjo, saosy, akanjo, marinades",
+    "sesame": "Sesame voa, menaka sesame, hummus, mofo",
+    "sulfites": "Divay, labiera, voankazo maina, poti",
+    "lupin": "Lafarinina lupine, mofo, paty, tsakitsaky",
+    "mollusks": "Mussels, clams, oysters, angisy, horita",
+    "nuts": "Walnut, amandy, hazelnut, pistachios, cashews",
+    "fava_beans": "tsaramaso fava, lasopy tsaramaso fava, tsaramaso fava, lasopy"
+  },
+  "warnings": {
+    "gluten": "⚠️ Fampitandremana: mety misy gluten ny saosy soja",
+    "fava_beans": "Ny tsy fahampian'ny G6PD: na dia kely aza dia mety hiteraka krizy hemolytika"
+  },
+  "cardTexts": {
+    "header": "TSARA",
+    "subtitle": "ALERGIE SAKAFO",
+    "pregnancySubtitle": "ALOHA NY BEVOKA & SAKAFO",
+    "message": "Manana alèjy ara-tsakafo manaraka ireto aho. Azafady, ataovy izay hahazoana antoka fa tsy misy ireo akora ireo ny sakafoko, anisan'izany ny fandotoana.",
+    "pregnancyMessage": "Bevohoka aho ary manana alèjy ara-tsakafo manaraka ireto. Azafady mba ataovy izay hahazoana antoka fa tsy misy ireo akora ireo ny sakafoko, anisan'izany ny fandotoana.",
+    "thanks": "Misaotra betsaka noho ny fahatakaranao sy ny fanampianao.",
+    "tapToSee": "Tsindrio raha hijery ohatra",
+    "examples": "Ohatra:"
+  },
+  "dietFoods": {
+    "meat": "hena",
+    "fish": "TRONDRO",
+    "seafood": "hazan-dranomasina",
+    "eggs": "atody",
+    "dairy": "ronono",
+    "honey": "Honey"
+  },
+  "otherFoods": {
+    "garlic": "Tongolo gasy",
+    "onion": "Tongolo",
+    "tomato": "Voatabia",
+    "mushrooms": "holatra",
+    "bell_pepper": "lakolosy dipoavatra",
+    "corn": "Katsaka",
+    "strawberries": "frezy",
+    "kiwi": "kiwi",
+    "stone_fruits": "Voankazo vato (peach, serizy, apricot)",
+    "citrus": "Voankazo citrus",
+    "banana": "Akondro",
+    "buckwheat": "Buckwheat",
+    "spicy": "Sakafo masiaka"
+  },
+  "restrictions": {
+    "raw_fish": "Trondro manta / sushi",
+    "raw_cured_meats": "Hena manta sitrana",
+    "raw_eggs": "atody manta",
+    "raw_sprouts": "Tsimoka manta",
+    "unpasteurized_cheese": "fromazy tsy vita pasteur",
+    "unpasteurized_milk": "Ronono tsy vita pasteur",
+    "alcohol": "toaka",
+    "excessive_caffeine": "kafeinina be loatra",
+    "nickel_chocolate": "Chocolate / kakao",
+    "nickel_tomato": "Saosy voatabia sy voatabia",
+    "nickel_legumes": "Legumes (lentil, chickpeas, tsaramaso)",
+    "nickel_nuts": "Voanjo (voanjo, hazelnut, cashews)",
+    "nickel_whole_grains": "Voamaina manontolo / oats",
+    "nickel_spinach": "Spinach sy anana ravina",
+    "nickel_canned_food": "Sakafo am-bifotsy",
+    "nickel_tea_coffee": "Dite sy kafe",
+    "histamine_aged_cheese": "fromazy efa antitra",
+    "histamine_cured_meats": "Hena sy saosisy sitrana",
+    "histamine_fish": "Trondro am-bifotsy sy nifoka",
+    "histamine_fermented": "Sakafo masirasira (sauerkraut, kimchi, miso)",
+    "histamine_wine_beer": "Divay sy labiera",
+    "histamine_vinegar": "Vinaingitra sy piesy",
+    "histamine_chocolate": "Chocolate / kakao",
+    "histamine_tomato": "Saosy voatabia sy voatabia",
+    "histamine_strawberries": "frezy",
+    "histamine_eggplant": "Baranjely",
+    "histamine_avocado": "Zavoka",
+    "histamine_spinach": "Epinara",
+    "diabetes_added_sugar": "Nampiana siramamy / siropia",
+    "diabetes_honey_sweeteners": "Tantely sy mamy",
+    "diabetes_sweet_sauces": "Saosy mamy (ketchup, mamy sy marikivy, teriyaki)",
+    "diabetes_sweet_glazes": "Mamy glazes sy marinades",
+    "diabetes_fruit_juice": "ranom-boankazo ho ingredient",
+    "diabetes_candied_fruit": "Voankazo / jams"
+  },
+  "restrictionCardTexts": {
+    "header": "SAKAFO TSY MIALA",
+    "message": "Noho ny antony ara-pahasalamana dia mila misoroka ireto sakafo manaraka ireto aho:",
+    "dietModeTexts": {
+      "pregnancy": {
+        "header": "bevohoka",
+        "message": "Bevohoka aho. Ataovy azo antoka fa tsy misy ireto manaraka ireto ny sakafoko:",
+        "sectionMessage": "Ankoatra izany, noho ny fitondrana vohoka dia tsy maintsy misoroka ihany koa aho:"
+      },
+      "no_meat": {
+        "header": "VEGETARIAN DIET",
+        "message": "Tsy mihinana hena aho. \nNy trondro sy ny biby hafa dia tsara.",
+        "sectionMessage": "Ankoatra izany, tsy mihinana hena aho. \nNy trondro sy ny biby hafa dia tsara."
+      },
+      "no_meat_fish": {
+        "header": "VEGETARIAN DIET",
+        "message": "Manaraka ny fihinanana zava-maniry aho. \nTsy mihinana hena na trondro aho.",
+        "sectionMessage": "Fanampin'izany, manaraka ny fihinanana zava-maniry aho ary tsy mihinana hena na trondro."
+      },
+      "no_animal_products": {
+        "header": "VEGAN DIET",
+        "message": "Manaraka sakafo vegan aho. \nTsy mihinana hena, trondro, hazan-dranomasina, atody, ronono, tantely na vokatra biby aho.",
+        "sectionMessage": "Fanampin'izany, manaraka ny sakafo vegan aho ary tsy mihinana hena, trondro, hazan-dranomasina, atody, ronono, tantely na vokatra biby."
+      },
+      "nickel": {
+        "header": "ALERJE NICKEL",
+        "message": "Manana alèjy nikela aho. Ny nikela dia metaly hita amin'ny sakafo maro. Ataovy azo antoka fa tsy misy ny sakafoko:",
+        "sectionMessage": "Ankoatra izany, manana allergy nikela aho. Ny nikela dia metaly hita amin'ny sakafo maro. Ataovy azo antoka fa tsy misy ny sakafoko:"
+      },
+      "histamine": {
+        "header": "HISTAMINE INTOLERANCE",
+        "message": "Tsy afaka mihinana sakafo be histamine aho. Ny histamine dia hita ao amin'ny sakafo efa antitra, navotsotra na voatahiry ela. Ohatra:",
+        "sectionMessage": "Ankoatra izany, tsy afaka mihinana sakafo be histamine aho. Ny histamine dia hita ao amin'ny sakafo efa antitra, navotsotra na voatahiry ela. Ohatra:"
+      },
+      "diabetes": {
+        "header": "diabeta",
+        "message": "Manana diabeta aho ary mila mifehy ny fihinanana siramamy. Aza asiana siramamy amin'ny sakafoko, azafady, ampahafantaro ahy raha misy:",
+        "sectionMessage": "Fanampin'izany, manana diabeta aho ary mila mifehy ny fihinanana siramamy. Aza asiana siramamy amin'ny sakafoko, azafady, ampahafantaro ahy raha misy:"
+      }
+    }
+  }
+}

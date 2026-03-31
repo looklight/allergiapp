@@ -154,13 +154,15 @@
 - [x] Rimosso dead code (`isAvailable`, `_displayName`, WKB parser, Firebase error codes)
 - [x] Rimossi campi legacy da `UserProfile` (`avatarId`, `profileColor`)
 - [x] Rename `contribution` → `review` (file, componenti, variabili, hook, route, parametri)
-- [ ] `plugins/withModularHeaders.js`: resta necessario per Analytics + Remote Config, non modificabile ora
-- [ ] Pacchetto `firebase` JS SDK: resta necessario per Firestore traduzioni card (`firestoreTranslations.ts`)
+- [x] `plugins/withModularHeaders.js`: rimosso (apr 2026)
+- [x] Pacchetto `firebase` JS SDK: rimosso — traduzioni migrate su Supabase (tabella `translations`, 71 lingue) (apr 2026)
+- [x] `@react-native-firebase/*`: rimosso — analytics no-op, remote config eliminato (apr 2026)
+- [x] `GoogleService-Info.plist`, `google-services.json`, `firebase.json`: rimossi (apr 2026)
 
 ---
 
 ## Decisioni architetturali
-- Firebase resta solo per: Analytics, Remote Config (banner + traduzioni card)
+- Firebase completamente rimosso (apr 2026). Analytics no-op, traduzioni su Supabase, remote config eliminato
 - Tutte le proprieta in snake_case (convenzione PostgreSQL)
 - Rename chiave: contribution → review, googlePlaceId → id, displayName → display_name
 - Le recensioni portano snapshot allergie utente (non join al profilo)
