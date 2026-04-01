@@ -114,9 +114,6 @@ export default function RestaurantsScreen() {
   const [selection, dispatch] = useReducer(selectionReducer, INITIAL_SELECTION);
   const listRef = useRef<FlatList>(null);
   const listSheetRef = useRef<DraggableBottomSheetRef>(null);
-  // Ricorda la posizione della lista scelta dall'utente prima dell'apertura del detail
-  const userSnapIndexRef = useRef(1); // inizia a initialIndex (50%)
-  const detailOpenRef = useRef(false);
 
   // Nasconde la tab bar quando il detail sheet è aperto.
   // Con position: absolute, display: 'none' non causa reflow di layout.
@@ -131,33 +128,14 @@ export default function RestaurantsScreen() {
   const collapseScrollRef = useRef(null);
   const scrollPositionRef = useRef(0);
 
-  // Snap list sheet down when detail opens, restore previous position when detail closes
-  useEffect(() => {
-    if (selection.detailId) {
-      detailOpenRef.current = true;
-      listSheetRef.current?.snapToIndex(0);
-    } else {
-      const restoreIndex = userSnapIndexRef.current;
-      detailOpenRef.current = false;
-      listSheetRef.current?.snapToIndex(restoreIndex);
-    }
-  }, [selection.detailId]);
-
   // --- Bottom sheet fraction (UI concern, stays in screen) ---
   const sheetFractionRef = useRef(0.50);
   const getSheetFraction = useCallback(() => sheetFractionRef.current, []);
   const snapPoints = useMemo(() => [0.18, 0.50, 0.85], []);
   const handleSnapChange = useCallback((f: number) => {
     sheetFractionRef.current = f;
-    // Traccia la posizione scelta dall'utente (ignora snap programmatici del detail)
-    if (!detailOpenRef.current) {
-      const idx = snapPoints.reduce((best, sp, i) =>
-        Math.abs(sp - f) < Math.abs(snapPoints[best] - f) ? i : best, 0);
-      userSnapIndexRef.current = idx;
-    }
-    // Scroll abilitato solo al massimo snap (85%)
     setListScrollEnabled(f >= 0.8);
-  }, [snapPoints]);
+  }, []);
 
   // --- Hooks ---
   const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, getSheetFraction });
@@ -464,12 +442,12 @@ export default function RestaurantsScreen() {
         />
       </View>
 
-      {/* Floating search bar — nascosta (non smontata) quando detail sheet è aperto */}
+      {/* Floating search bar — sempre visibile sopra gli sheet */}
       <View
         style={[styles.floatingSearchOverlay, { top: insets.top + 8 }]}
-        pointerEvents={selection.detailId ? 'none' : 'box-none'}
+        pointerEvents="box-none"
       >
-        <View style={[styles.floatingSearchRow, selection.detailId && styles.hidden]}>
+        <View style={styles.floatingSearchRow}>
           <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85}>
             <MaterialCommunityIcons
               name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
@@ -509,7 +487,7 @@ export default function RestaurantsScreen() {
       </View>
 
       {/* Autocomplete overlay — sotto la search bar flottante */}
-      {!selection.detailId && mapSearch.results.length > 0 && (
+      {mapSearch.results.length > 0 && (
         <View style={[styles.autocompleteOverlay, { top: insets.top + 8 + 48 + 4 }]}>
           <SearchAutocomplete
             results={mapSearch.results}
@@ -530,6 +508,7 @@ export default function RestaurantsScreen() {
         bodyPanEnabled={!listScrollEnabled}
         collapseScrollRef={collapseScrollRef}
         scrollPositionRef={scrollPositionRef}
+        pointerEvents={selection.detailId ? 'none' : undefined}
       >
         {renderBodyContent()}
       </DraggableBottomSheet>
@@ -593,9 +572,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  hidden: {
-    opacity: 0,
   },
   floatingSearchContainer: {
     flex: 1,

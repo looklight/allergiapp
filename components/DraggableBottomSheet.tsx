@@ -37,6 +37,8 @@ type Props = {
   onSnapChange?: (fraction: number) => void;
   /** Extra styles for the container (e.g. elevation override) */
   style?: ViewStyle;
+  /** Pointer events passthrough to the root Animated.View */
+  pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only';
   /**
    * When true, the body area responds to pan gestures to move the sheet.
    * Enable when body scroll is disabled (sheet at half height) so the user
@@ -80,7 +82,7 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
   function DraggableBottomSheet(
     {
       snapPoints, initialIndex = 1, enterFromBottom = false,
-      headerContent, children, onSnapChange, style,
+      headerContent, children, onSnapChange, style, pointerEvents,
       bodyPanEnabled = false, collapseScrollRef, scrollPositionRef,
     },
     ref,
@@ -249,7 +251,7 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
     const bodyPanActive = bodyPanEnabled || !!collapseScrollRef;
 
     return (
-      <Animated.View style={[styles.container, { transform: [{ translateY }] }, style]}>
+      <Animated.View pointerEvents={pointerEvents} style={[styles.container, { transform: [{ translateY }] }, style]}>
         {/* Handle + header: draggabile sempre */}
         <PanGestureHandler
           onGestureEvent={onHeaderGestureEvent}
