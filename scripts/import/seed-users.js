@@ -83,4 +83,22 @@ module.exports = {
   Rossi_Cristiano_DE:   { username: 'Rossi_Cristiano_DE',   allergens: ['gluten'], diets: ['vegetarian'] },
   Sarah_Lisetti:        { username: 'Sarah_Lisetti',        allergens: ['gluten'], diets: ['vegetarian'] },
   TravelFabio:          { username: 'TravelFabio',          allergens: ['gluten'], diets: ['vegetarian'] },
+
+  // gf_asia2.xlsx
+  '3graces':            { username: '3graces',              allergens: ['gluten'], diets: ['vegetarian'] },
+  agnesegrazie:         { username: 'agnesegrazie',         allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  AnnaDeLuc:            { username: 'AnnaDeLuc',            allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  dewin_CC:             { username: 'dewin_CC',             allergens: ['gluten'], diets: [] },
+  Gabriette7:           { username: 'Gabriette7',           allergens: ['gluten'], diets: [] },
+  GomuGomuDan:          { username: 'GomuGomuDan',          allergens: ['gluten'], diets: [] },
+  its_Sara:             { username: 'its_Sara',             allergens: ['gluten'], diets: [] },
+  Jack_GF:              { username: 'Jack_GF',              allergens: ['gluten'], diets: [] },
+  Jhonny5Jack:          { username: 'Jhonny5Jack',          allergens: ['gluten'], diets: ['vegetarian'] },
+  LeleStories:          { username: 'LeleStories',          allergens: ['gluten'], diets: ['vegetarian'] },
+  LolloLOL:             { username: 'LolloLOL',             allergens: ['gluten'], diets: ['vegetarian'] },
+  marcocolombini:       { username: 'marcocolombini',       allergens: ['gluten'], diets: ['vegetarian'] },
+  nana_osaka:           { username: 'nana_osaka',           allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  delfoandrea:          { username: 'delfoandrea',          allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  somchai:              { username: 'somchai',              allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  VivianaGastaldi:      { username: 'VivianaGastaldi',      allergens: ['gluten'], diets: [] },
 };
