@@ -75,8 +75,8 @@ export default function RestaurantDetailBody({
   const lang = i18n.locale as AppLanguage;
 
   const {
-    restaurant, allReviews, menuPhotos,
-    reports, cuisineVotes, userReview, userReport, isFavorite,
+    restaurant, allReviews, reviewsTotalCount, hasMoreReviews, loadMoreReviews, isLoadingMoreReviews,
+    menuPhotos, reports, cuisineVotes, userReview, userReport, isFavorite,
     isLoading, error, isUploadingMenu, userHasReviews, isUpdatingMenuUrl,
     reviewSortOrder, setReviewSortOrder, hasUserNeeds,
     handleToggleFavorite, handleToggleReviewLike, navigateToContribute,
@@ -363,6 +363,10 @@ export default function RestaurantDetailBody({
         {isAuthenticated ? (
           <ReviewsSection
             reviews={allReviews}
+            totalCount={reviewsTotalCount}
+            hasMore={hasMoreReviews}
+            onLoadMore={loadMoreReviews}
+            isLoadingMore={isLoadingMoreReviews}
             reviewPhotos={reviewPhotos}
             reviewSortOrder={reviewSortOrder}
             setReviewSortOrder={setReviewSortOrder}

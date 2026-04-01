@@ -222,10 +222,8 @@ Vantaggi migrazione completa: gesture su UI thread, coordinazione nativa scroll+
 
 ## Qualità codice & DevOps
 
-### ESLint + Prettier + Husky
-- [ ] Configurare ESLint (con regole React Native / Expo)
-- [ ] Configurare Prettier
-- [ ] Installare Husky + lint-staged per pre-commit hook (typecheck + lint + format)
+### ~~ESLint + Prettier + Husky~~ — SCARTATO (apr 2026)
+Valutato e rimosso: overhead eccessivo per sviluppatore singolo. `tsc --noEmit` sufficiente come safety net.
 
 ### Testing
 - [ ] Aggiungere Jest + React Native Testing Library
@@ -288,9 +286,9 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 ## Ristoranti — Miglioramenti DB & Backend
 
 ### Priorità alta
-- [ ] **Indexes mancanti** — aggiungere index su `restaurants.added_by`, `restaurants.owner_id`, `reviews.created_at`, `profiles.role`. Senza questi, le RLS policy eseguono seq scan su ogni operazione di write
-- [ ] **Paginazione review** — `getReviews()` carica tutte le review senza limit. Aggiungere paginazione (cursor-based o offset) per evitare OOM su ristoranti popolari
-- [ ] **`voteCuisines` non atomico** — DELETE + INSERT in due chiamate separate senza transazione. Se l'app crasha tra le due, i voti vanno persi. Spostare in una RPC con transazione unica
+- [x] **Indexes mancanti** — migration `031_performance_indexes.sql`: indici su `restaurants.added_by`, `restaurants.owner_id`, `reviews(restaurant_id, created_at DESC)`, `profiles.role` (partial WHERE role='admin'). Applicata apr 2026.
+- [x] **Paginazione review** — migration `032_paginated_reviews.sql`: RPC `get_paginated_reviews` con sort server-side (recent/rating-desc/rating-asc/relevance), LIMIT/OFFSET, COUNT(*) OVER(). Hook dedicato `useReviewsPaginated` con stale-request protection. Applicata apr 2026.
+- [x] **`voteCuisines` atomico** — migration `033_vote_cuisines_rpc.sql`: RPC `vote_cuisines` con DELETE + INSERT in transazione unica (plpgsql). Applicata apr 2026.
 
 ### Priorità media
 - [ ] **Ricerca globale ristoranti per nome** — quando il geocoding non trova una città, cercare nel DB per nome ristorante. Aggiungere indice `pg_trgm` su `restaurants.name` per ricerche parziali veloci (< 10ms anche con 10k+ record). Utile per trovare ristoranti fuori dall'area corrente della mappa.
@@ -355,4 +353,7 @@ Domanda, abbiamo rimosso i cluster di pin? Forse è la scelta giusta dato che no
 - Nella scheda preferiti possiamo pensare a un modo per vederli sulla mappa? 
 
 Se le recensioni sono più lunghe di un tot, ad esempio 5 righe possiamo mettere il pulsante leggi tutto o qualcosa di simile? Almeno la pagina resta più compatta
+
+
+- Volevo ripensare il modo in cui si vedono i pin sulla mappa e vorrei ispirarmi a Google maps dove i preferiti sono sempre visibili e se si fa tanto zoom out si ridimensionano diventando dei piccoli pallini. L'idea sarebbe che siano piccoli pallini finchè non si zoomma abbastanza da mostrarli come pin con il voto. Secondo me è una funzione migliore per la UI almeno l'utente non deve usare la funzione "mostra in quest'area. Possiamo valutare se può essere una soluzione sostenibile e scalabile? A livello di chiamate e gestione vorrei fosse fattibile ed economica. Inoltre in ogni caso vorrei pulire tutto quello che riguarda i cluster che avevamo implementato una volta, forse avevamo già rimosso ma controlla che sia pulito.
 

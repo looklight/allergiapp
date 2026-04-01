@@ -1,4 +1,7 @@
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import {
+  useSharedValue, useAnimatedStyle, withTiming, cancelAnimation,
+  runOnJS, Easing,
+} from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Image } from 'react-native';
@@ -7,19 +10,18 @@ interface Props {
   uri: string;
   style: { width: number; height: number };
   maxScale?: number;
-  onZoomedIn?: () => void;
-  onZoomedOut?: () => void;
+  onZoomChange?: (zoomed: boolean) => void;
   onSingleTap?: () => void;
 }
 
-const SPRING = { damping: 15, stiffness: 120 };
+// Animazioni fluide senza rimbalzo — stile iOS Photos
+const TIMING = { duration: 250, easing: Easing.out(Easing.cubic) };
 
 export default function ZoomableImage({
   uri,
   style,
   maxScale = 4,
-  onZoomedIn,
-  onZoomedOut,
+  onZoomChange,
   onSingleTap,
 }: Props) {
   const W = style.width;
@@ -31,68 +33,87 @@ export default function ZoomableImage({
   const ty = useSharedValue(0);
   const savedTx = useSharedValue(0);
   const savedTy = useSharedValue(0);
-  const focalX = useSharedValue(0);
-  const focalY = useSharedValue(0);
-
-  function maxTx(s: number) {
-    'worklet';
-    return Math.max(0, (W * (s - 1)) / 2);
-  }
-
-  function maxTy(s: number) {
-    'worklet';
-    return Math.max(0, (H * (s - 1)) / 2);
-  }
 
   function clampTx(val: number, s: number) {
     'worklet';
-    const m = maxTx(s);
+    const m = Math.max(0, (W * (s - 1)) / 2);
     return Math.min(m, Math.max(-m, val));
   }
 
   function clampTy(val: number, s: number) {
     'worklet';
-    const m = maxTy(s);
+    const m = Math.max(0, (H * (s - 1)) / 2);
     return Math.min(m, Math.max(-m, val));
   }
 
-  // Pinch: zoom toward focal point (where fingers are)
+  function notifyZoom(zoomed: boolean) {
+    'worklet';
+    if (onZoomChange) runOnJS(onZoomChange)(zoomed);
+  }
+
+  /** Ferma animazioni in corso e salva i valori correnti come base per il nuovo gesto */
+  function freezeCurrentValues() {
+    'worklet';
+    cancelAnimation(scale);
+    cancelAnimation(tx);
+    cancelAnimation(ty);
+    savedScale.value = scale.value;
+    savedTx.value = tx.value;
+    savedTy.value = ty.value;
+  }
+
+  // ─── Pinch: zoom verso il punto focale + pan a due dita ─────────
+  // Traccia il focal point iniziale in coordinate schermo.
+  // onUpdate combina: (1) zoom centrato sul focal point + (2) pan dalle dita che si muovono
+  const startFocalX = useSharedValue(0);
+  const startFocalY = useSharedValue(0);
+
   const pinch = Gesture.Pinch()
     .onStart((e) => {
-      focalX.value = e.focalX - W / 2;
-      focalY.value = e.focalY - H / 2;
+      freezeCurrentValues();
+      startFocalX.value = e.focalX;
+      startFocalY.value = e.focalY;
     })
     .onUpdate((e) => {
       const newScale = Math.min(maxScale, Math.max(1, savedScale.value * e.scale));
-      const ratio = newScale / savedScale.value;
       scale.value = newScale;
-      // Keep focal point fixed while zooming
-      tx.value = focalX.value * (1 - ratio) + savedTx.value * ratio;
-      ty.value = focalY.value * (1 - ratio) + savedTy.value * ratio;
+      // Focal point relativo al centro dell'immagine
+      const fx = startFocalX.value - W / 2;
+      const fy = startFocalY.value - H / 2;
+      // (1) Zoom: mantieni il focal point fisso sullo schermo
+      const zoomTx = savedTx.value + fx * (savedScale.value - newScale);
+      const zoomTy = savedTy.value + fy * (savedScale.value - newScale);
+      // (2) Pan: delta del punto medio tra le dita
+      const panTx = e.focalX - startFocalX.value;
+      const panTy = e.focalY - startFocalY.value;
+      tx.value = zoomTx + panTx;
+      ty.value = zoomTy + panTy;
     })
     .onEnd(() => {
       if (scale.value < 1.1) {
-        scale.value = withSpring(1, SPRING);
-        tx.value = withSpring(0, SPRING);
-        ty.value = withSpring(0, SPRING);
+        // Reset a scala 1
+        scale.value = withTiming(1, TIMING);
+        tx.value = withTiming(0, TIMING);
+        ty.value = withTiming(0, TIMING);
         savedScale.value = 1;
         savedTx.value = 0;
         savedTy.value = 0;
-        if (onZoomedOut) onZoomedOut();
+        notifyZoom(false);
       } else {
+        // Clamp nella regione visibile e salva i target per il prossimo gesto
         const s = scale.value;
         const cx = clampTx(tx.value, s);
         const cy = clampTy(ty.value, s);
-        tx.value = withSpring(cx, SPRING);
-        ty.value = withSpring(cy, SPRING);
+        tx.value = withTiming(cx, TIMING);
+        ty.value = withTiming(cy, TIMING);
         savedScale.value = s;
         savedTx.value = cx;
         savedTy.value = cy;
-        if (onZoomedIn) onZoomedIn();
+        notifyZoom(true);
       }
     });
 
-  // Pan: only with 1 finger and only when zoomed in
+  // ─── Pan: solo 1 dito e solo quando zoomato ─────────────────────
   const pan = Gesture.Pan()
     .manualActivation(true)
     .onTouchesMove((e, state) => {
@@ -101,6 +122,9 @@ export default function ZoomableImage({
       } else {
         state.activate();
       }
+    })
+    .onStart(() => {
+      freezeCurrentValues();
     })
     .onUpdate((e) => {
       tx.value = clampTx(savedTx.value + e.translationX, savedScale.value);
@@ -111,41 +135,42 @@ export default function ZoomableImage({
       savedTy.value = ty.value;
     });
 
-  // Double-tap: zoom in at tap point, or reset
+  // ─── Double-tap: zoom in al punto toccato, o reset ──────────────
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
+    .maxDuration(200) // Riduce l'attesa del single-tap da ~300ms a ~200ms
     .onEnd((e) => {
       if (savedScale.value > 1) {
-        scale.value = withSpring(1, SPRING);
-        tx.value = withSpring(0, SPRING);
-        ty.value = withSpring(0, SPRING);
+        scale.value = withTiming(1, TIMING);
+        tx.value = withTiming(0, TIMING);
+        ty.value = withTiming(0, TIMING);
         savedScale.value = 1;
         savedTx.value = 0;
         savedTy.value = 0;
-        if (onZoomedOut) onZoomedOut();
+        notifyZoom(false);
       } else {
         const target = 2.5;
         const fx = e.x - W / 2;
         const fy = e.y - H / 2;
         const newTx = clampTx(fx * (1 - target), target);
         const newTy = clampTy(fy * (1 - target), target);
-        scale.value = withSpring(target, SPRING);
-        tx.value = withSpring(newTx, SPRING);
-        ty.value = withSpring(newTy, SPRING);
+        scale.value = withTiming(target, TIMING);
+        tx.value = withTiming(newTx, TIMING);
+        ty.value = withTiming(newTy, TIMING);
         savedScale.value = target;
         savedTx.value = newTx;
         savedTy.value = newTy;
-        if (onZoomedIn) onZoomedIn();
+        notifyZoom(true);
       }
     });
 
-  // Single-tap: close (waits for doubleTap to fail, only when not zoomed)
+  // ─── Single-tap: chiudi (aspetta che doubleTap fallisca) ────────
   const singleTap = Gesture.Tap()
     .numberOfTaps(1)
     .requireExternalGestureToFail(doubleTap)
     .onEnd(() => {
       if (savedScale.value <= 1 && onSingleTap) {
-        onSingleTap();
+        runOnJS(onSingleTap)();
       }
     });
 

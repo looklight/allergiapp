@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -7,6 +7,10 @@ import type { UnifiedReview, ReviewSortOrder } from '../../hooks/useRestaurantDe
 
 type Props = {
   reviews: UnifiedReview[];
+  totalCount: number;
+  hasMore: boolean;
+  onLoadMore: () => void;
+  isLoadingMore: boolean;
   reviewPhotos: { url: string }[];
   reviewSortOrder: ReviewSortOrder;
   setReviewSortOrder: (order: ReviewSortOrder) => void;
@@ -18,6 +22,10 @@ type Props = {
 
 export default function ReviewsSection({
   reviews,
+  totalCount,
+  hasMore,
+  onLoadMore,
+  isLoadingMore,
   reviewPhotos,
   reviewSortOrder,
   setReviewSortOrder,
@@ -48,8 +56,8 @@ export default function ReviewsSection({
   return (
     <View style={styles.section}>
       <View style={styles.reviewsHeader}>
-        <Text style={styles.sectionTitle}>Recensioni ({reviews.length})</Text>
-        {reviews.length > 1 && (
+        <Text style={styles.sectionTitle}>Recensioni ({totalCount})</Text>
+        {totalCount > 1 && (
           <View style={styles.sortRow}>
             {sortOptions.map(opt => {
               const isRating = opt.key === 'rating';
@@ -107,6 +115,20 @@ export default function ReviewsSection({
           />
         </View>
       ))}
+      {hasMore && (
+        <TouchableOpacity
+          style={styles.loadMoreBtn}
+          onPress={onLoadMore}
+          disabled={isLoadingMore}
+          activeOpacity={0.7}
+        >
+          {isLoadingMore ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <Text style={styles.loadMoreText}>Carica altre recensioni</Text>
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -171,5 +193,19 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 14,
+  },
+  loadMoreBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginTop: 8,
+    borderRadius: 8,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: theme.colors.primary,
   },
 });

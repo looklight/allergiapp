@@ -2,16 +2,20 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
-import type { Restaurant } from '../services/restaurantService';
+import type { Restaurant, RestaurantPin } from '../services/restaurantService';
 
 type Props = {
   restaurants: Restaurant[];
-  centerOn?: { latitude: number; longitude: number; sheetFraction: number } | null;
+  allPins?: RestaurantPin[];
+  centerOn?: { latitude: number; longitude: number; sheetFraction: number; latDelta?: number } | null;
   hasUserLocation?: boolean;
   onRegionChangeComplete?: (region: { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number }) => void;
   selectedId?: string | null;
-  onMarkerSelect?: (id: string) => void;
   onDeselect?: () => void;
+  showMatchInfo?: boolean;
+  onRestaurantPress?: (id: string) => void;
+  favoriteIds?: Set<string>;
+  favoriteRestaurants?: Map<string, Restaurant>;
 };
 
 export default function RestaurantMap(_props: Props) {

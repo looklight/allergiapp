@@ -21,25 +21,12 @@ export async function voteCuisines(
   cuisineIds: string[],
 ): Promise<void> {
   try {
-    // 1. Rimuovi tutti i voti precedenti dell'utente per questo ristorante
-    await supabase
-      .from('restaurant_cuisine_votes')
-      .delete()
-      .eq('restaurant_id', restaurantId)
-      .eq('user_id', userId);
-
-    // 2. Inserisci i nuovi voti
-    if (cuisineIds.length > 0) {
-      const rows = cuisineIds.map(id => ({
-        restaurant_id: restaurantId,
-        user_id: userId,
-        cuisine_id: id,
-      }));
-      const { error } = await supabase
-        .from('restaurant_cuisine_votes')
-        .insert(rows);
-      if (error) throw error;
-    }
+    const { error } = await supabase.rpc('vote_cuisines', {
+      p_restaurant_id: restaurantId,
+      p_user_id: userId,
+      p_cuisine_ids: cuisineIds,
+    });
+    if (error) throw error;
   } catch (error) {
     console.warn('[CuisineVoteService] Errore voteCuisines:', error);
   }

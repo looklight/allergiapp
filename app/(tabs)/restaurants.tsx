@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, useWindowDimensions } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
@@ -15,10 +15,13 @@ import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../../compon
 import FilterModal from '../../components/restaurants/FilterModal';
 import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetailSheet';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
+import { getCuisineLabel } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
 import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
+import { useMapSearch } from '../../hooks/useMapSearch';
+import SearchAutocomplete from '../../components/SearchAutocomplete';
 import { storage } from '../../utils/storage';
 
 // ─── Selection reducer ─────────────────────────────────────────────────────
@@ -165,8 +168,8 @@ export default function RestaurantsScreen() {
     if (!profileJustChanged.current) return;
     profileJustChanged.current = false;
     if (!forMyNeeds || !geo.userLocation) return;
-    geo.loadForMyNeeds(geo.userLocation.latitude, geo.userLocation.longitude);
-  }, [geo.loadForMyNeeds]);
+    geo.clearAndReload();
+  }, [geo.clearAndReload]);
 
   const { mapRestaurants, distanceMap, filteredRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
@@ -174,16 +177,20 @@ export default function RestaurantsScreen() {
     activeFilters,
     searchQuery,
     sortBy,
-    isAreaSearch: geo.isAreaSearch,
     forMyNeeds,
   });
 
-  const { favoriteIds, loadFavorites, toggleFavorite, syncFavoriteId } = useRestaurantFavorites(
+  const { favoriteIds, favoriteRestaurants, loadFavorites, toggleFavorite, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
     geo.updateRestaurant,
   );
 
-  useFocusEffect(useCallback(() => { loadFavorites(); }, [loadFavorites]));
+  useFocusEffect(useCallback(() => {
+    loadFavorites();
+    geo.refreshAllPins();
+  }, [loadFavorites, geo.refreshAllPins]));
+
+  const mapSearch = useMapSearch({ restaurants: geo.restaurants, userLocation: geo.userLocation });
 
   // Ref per lookup ristoranti senza destabilizzare il callback
   const mapRestaurantsRef = useRef(mapRestaurants);
@@ -240,11 +247,11 @@ export default function RestaurantsScreen() {
 
   const handleCloseFilterModal = useCallback(() => {
     setShowFilterModal(false);
-    if (filterChangedInModal.current && forMyNeeds && geo.userLocation) {
+    if (filterChangedInModal.current && forMyNeeds) {
       filterChangedInModal.current = false;
-      geo.loadForMyNeeds(geo.userLocation.latitude, geo.userLocation.longitude);
+      geo.clearAndReload();
     }
-  }, [forMyNeeds, geo.userLocation, geo.loadForMyNeeds]);
+  }, [forMyNeeds, geo.clearAndReload]);
 
   const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
     if (!user) return;
@@ -264,32 +271,47 @@ export default function RestaurantsScreen() {
     const newValue = !forMyNeeds;
     setForMyNeeds(newValue);
     storage.setForMyNeeds(newValue);
-    if (newValue) {
-      if (geo.userLocation) await geo.loadForMyNeeds(geo.userLocation.latitude, geo.userLocation.longitude);
-    } else {
-      if (geo.userLocation) await geo.loadGeo(geo.userLocation.latitude, geo.userLocation.longitude);
-      else await geo.loadAll();
-    }
-  }, [isAuthenticated, filterHasNeeds, forMyNeeds, geo.userLocation, geo.loadForMyNeeds, geo.loadGeo, geo.loadAll, router]);
+    // La cache va svuotata perché i dati forMyNeeds hanno campi diversi (coverage metrics)
+    await geo.clearAndReload();
+  }, [isAuthenticated, filterHasNeeds, forMyNeeds, geo.clearAndReload, router]);
 
   const handleToggleFavorite = useCallback(async (restaurantId: string) => {
     if (!isAuthenticated || !user) { router.push('/auth/login'); return; }
     await toggleFavorite(restaurantId);
   }, [isAuthenticated, user, toggleFavorite, router]);
 
-  const handleSearchSubmit = useCallback(async () => {
-    const found = await geo.searchByCity(searchQuery);
-    if (found) {
-      setSearchQuery('');
-    } else if (searchQuery.length >= 2) {
-      Alert.alert(i18n.t('app.errorTitle'), i18n.t('map.noGeocodingResults'));
-    }
-  }, [searchQuery, geo.searchByCity]);
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text);
+    mapSearch.search(text);
+  }, [mapSearch.search]);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
-    geo.resetToUserLocation();
-  }, [geo.resetToUserLocation]);
+    mapSearch.clear();
+  }, [mapSearch.clear]);
+
+  const handleSelectRestaurant = useCallback((id: string, lat: number, lng: number) => {
+    setSearchQuery('');
+    mapSearch.clear();
+    Keyboard.dismiss();
+    dispatch({ type: 'SELECT', id });
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0.55 });
+  }, [mapSearch.clear, geo.setCenterOn]);
+
+  const handleSelectPlace = useCallback((lat: number, lng: number, placeType?: string) => {
+    setSearchQuery('');
+    mapSearch.clear();
+    Keyboard.dismiss();
+    // Zoom adattivo in base al tipo di luogo
+    const latDelta =
+      placeType === 'country' ? 12 :
+      placeType === 'state' ? 3 :
+      placeType === 'county' ? 0.5 :
+      placeType === 'city' ? 0.08 :
+      placeType === 'district' || placeType === 'locality' ? 0.03 :
+      0.02; // street, house, default
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: getSheetFraction(), latDelta });
+  }, [mapSearch.clear, geo.setCenterOn, getSheetFraction]);
 
   const handleDeselect = useCallback(() => {
     dispatch({ type: 'DESELECT' });
@@ -307,41 +329,14 @@ export default function RestaurantsScreen() {
     if (forMyNeeds) {
       setForMyNeeds(false);
       storage.setForMyNeeds(false);
-      if (geo.userLocation) await geo.loadGeo(geo.userLocation.latitude, geo.userLocation.longitude);
-      else await geo.loadAll();
+      await geo.clearAndReload();
     }
     setShowFilterModal(false);
-  }, [forMyNeeds, geo.userLocation, geo.loadGeo, geo.loadAll]);
+  }, [forMyNeeds, geo.clearAndReload]);
 
   // --- Render ---
   const sheetHeaderContent = (
-    <View style={styles.searchRow}>
-      <View style={styles.searchContainer}>
-        <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Cerca ristorante o città..."
-          placeholderTextColor={theme.colors.textSecondary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearchSubmit}
-          returnKeyType="search"
-          autoCorrect={false}
-        />
-        {searchQuery.length > 0 ? (
-          <TouchableOpacity onPress={handleClearSearch} hitSlop={8}>
-            <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textSecondary} />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={geo.handleLocateMe} hitSlop={8} disabled={geo.isLocating}>
-            {geo.isLocating ? (
-              <ActivityIndicator size={16} color={theme.colors.primary} />
-            ) : (
-              <MaterialCommunityIcons name="crosshairs-gps" size={18} color={theme.colors.primary} />
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
+    <View style={styles.sheetFilterRow}>
       <TouchableOpacity
         onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
         style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
@@ -353,22 +348,29 @@ export default function RestaurantsScreen() {
           color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
         />
       </TouchableOpacity>
-    </View>
-  );
-
-  const listHeaderComponent = (
-    <View style={styles.badgeRow}>
-      {geo.isLoading && geo.restaurants.length === 0 ? (
-        <ActivityIndicator size="small" color={theme.colors.primary} />
-      ) : (
-        <Text style={styles.badgeText}>
-          {filteredRestaurants.length === 0
-            ? 'Nessun ristorante'
-            : `${filteredRestaurants.length} ristorant${filteredRestaurants.length === 1 ? 'e' : 'i'}${
-                geo.isAreaSearch ? ' in quest\'area' : geo.isGeoMode ? ' vicino a te' : ''
-              }`}
-        </Text>
+      {activeFilters.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
+          {activeFilters.map(id => (
+            <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
+              <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
+              <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       )}
+      <View style={styles.badgeRow}>
+        {geo.isLoading && geo.restaurants.length === 0 ? (
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+        ) : (
+          <Text style={styles.badgeText}>
+            {filteredRestaurants.length === 0
+              ? 'Nessun ristorante'
+              : `${filteredRestaurants.length} ristorant${filteredRestaurants.length === 1 ? 'e' : 'i'}${
+                  geo.isGeoMode ? ' vicino a te' : ''
+                }`}
+          </Text>
+        )}
+      </View>
     </View>
   );
 
@@ -420,7 +422,6 @@ export default function RestaurantsScreen() {
           scrollEnabled={listScrollEnabled}
           onScroll={handleListScroll}
           scrollEventThrottle={16}
-          ListHeaderComponent={listHeaderComponent}
           contentContainerStyle={[styles.list, { paddingBottom: screenHeight * 0.15 + 49 + insets.bottom }]}
           onScrollToIndexFailed={info => {
             setTimeout(() => {
@@ -450,6 +451,7 @@ export default function RestaurantsScreen() {
       <View style={styles.mapContainer}>
         <RestaurantMap
           restaurants={mapRestaurants}
+          allPins={geo.allPins}
           centerOn={geo.centerOn}
           hasUserLocation={!!geo.userLocation}
           onRegionChangeComplete={handleRegionChange}
@@ -458,18 +460,16 @@ export default function RestaurantsScreen() {
           showMatchInfo={forMyNeeds}
           onRestaurantPress={handleOpenDetail}
           favoriteIds={favoriteIds}
+          favoriteRestaurants={favoriteRestaurants}
         />
-        {geo.showSearchArea && (
-          <TouchableOpacity
-            style={[styles.searchAreaButton, { top: insets.top + 6 }]}
-            onPress={geo.handleSearchArea}
-            activeOpacity={0.85}
-          >
-            <MaterialCommunityIcons name="magnify" size={16} color={theme.colors.onPrimary} style={{ marginRight: 6 }} />
-            <Text style={styles.searchAreaText}>{i18n.t('map.searchArea')}</Text>
-          </TouchableOpacity>
-        )}
-        <View style={[styles.mapOverlayActions, { top: insets.top + 12 }]}>
+      </View>
+
+      {/* Floating search bar — nascosta (non smontata) quando detail sheet è aperto */}
+      <View
+        style={[styles.floatingSearchOverlay, { top: insets.top + 8 }]}
+        pointerEvents={selection.detailId ? 'none' : 'box-none'}
+      >
+        <View style={[styles.floatingSearchRow, selection.detailId && styles.hidden]}>
           <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85}>
             <MaterialCommunityIcons
               name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
@@ -477,11 +477,49 @@ export default function RestaurantsScreen() {
               color={theme.colors.primary}
             />
           </TouchableOpacity>
+          <View style={styles.floatingSearchContainer}>
+            <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Cerca ristorante o luogo..."
+              placeholderTextColor={theme.colors.textSecondary}
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              returnKeyType="search"
+              autoCorrect={false}
+            />
+            {searchQuery.length > 0 ? (
+              <TouchableOpacity onPress={handleClearSearch} hitSlop={8}>
+                <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={geo.handleLocateMe} hitSlop={8} disabled={geo.isLocating}>
+                {geo.isLocating ? (
+                  <ActivityIndicator size={16} color={theme.colors.primary} />
+                ) : (
+                  <MaterialCommunityIcons name="crosshairs-gps" size={18} color={theme.colors.primary} />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
           <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
             <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Autocomplete overlay — sotto la search bar flottante */}
+      {!selection.detailId && mapSearch.results.length > 0 && (
+        <View style={[styles.autocompleteOverlay, { top: insets.top + 8 + 48 + 4 }]}>
+          <SearchAutocomplete
+            results={mapSearch.results}
+            isSearching={mapSearch.isSearching}
+            onSelectRestaurant={handleSelectRestaurant}
+            onSelectPlace={handleSelectPlace}
+            onDismiss={handleClearSearch}
+          />
+        </View>
+      )}
 
       <DraggableBottomSheet
         ref={listSheetRef}
@@ -538,60 +576,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    overflow: 'visible', // Il bottom sheet si estende oltre il content area per coprire la tab bar
+    overflow: 'visible',
   },
   mapContainer: {
     flex: 1,
   },
-  mapOverlayActions: {
+
+  // --- Floating search bar ---
+  floatingSearchOverlay: {
     position: 'absolute',
     left: 12,
-    flexDirection: 'column',
-    gap: 10,
+    right: 12,
+    zIndex: 10,
+  },
+  floatingSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  hidden: {
+    opacity: 0,
+  },
+  floatingSearchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: 14,
+    height: 48,
+    borderRadius: 24,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   mapOverlayButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 2,
-    gap: 10,
-  },
-  badgeText: {
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
-    flex: 1,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingBottom: 6,
-    gap: 10,
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 12,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   searchIcon: {
     marginRight: 8,
@@ -602,10 +633,27 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     paddingVertical: 0,
   },
+
+  // --- Autocomplete overlay ---
+  autocompleteOverlay: {
+    position: 'absolute',
+    left: 68,
+    right: 68,
+    zIndex: 20,
+  },
+
+  // --- Sheet header (filtri + chip + badge) ---
+  sheetFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingBottom: 6,
+    gap: 8,
+  },
   cuisineToggle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -616,32 +664,40 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
+  chipScroll: {
+    gap: 6,
+    paddingRight: 4,
+  },
+  activeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${theme.colors.primary}18`,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    gap: 4,
+  },
+  activeChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+    flexShrink: 0,
+  },
+  badgeText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
+  },
+
+  // --- List ---
   list: {
     padding: 12,
     gap: 10,
-  },
-  searchAreaButton: {
-    position: 'absolute',
-    top: 12,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    opacity: 0.95,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 24,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    zIndex: 10,
-  },
-  searchAreaText: {
-    color: theme.colors.onPrimary,
-    fontSize: 13,
-    fontWeight: '500',
   },
   centered: {
     justifyContent: 'center',

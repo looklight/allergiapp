@@ -1,9 +1,13 @@
 import { useRef, useCallback, useState } from 'react';
 import {
-  Animated, Modal, View, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView,
+  Modal, View, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView,
   useWindowDimensions, type ViewToken,
 } from 'react-native';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import ReAnimated, {
+  useSharedValue, useAnimatedStyle, withSpring, withTiming,
+  runOnJS, interpolate, Extrapolation, Easing,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import ZoomableImage from '../ZoomableImage';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -13,7 +17,6 @@ import StarRating from '../StarRating';
 import { getRestrictionById, type FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import { getAvatarById } from '../../constants/avatars';
 import i18n from '../../utils/i18n';
-import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
 
 export interface GalleryPhoto {
   url: string;
@@ -33,6 +36,8 @@ const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: strin
   food_sensitivity: { bg: 'rgba(255,255,255,0.15)', text: 'rgba(255,255,255,0.7)' },
 };
 
+const DISMISS_THRESHOLD = 120;
+
 interface PhotoGalleryModalProps {
   photos: GalleryPhoto[];
   initialIndex: number;
@@ -43,14 +48,50 @@ interface PhotoGalleryModalProps {
 export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds }: PhotoGalleryModalProps) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { translateY, backgroundOpacity, onPanGestureEvent, onPanStateChange, reset } =
-    useSwipeToDismiss(onClose);
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
   const currentAvatarSource = photos[currentIndex]?.avatarUrl
     ? getAvatarById(photos[currentIndex].avatarUrl!)?.source
     : null;
+
+  // ─── Swipe-to-dismiss (Reanimated) ──────────────────────────────
+  const translateY = useSharedValue(0);
+
+  const dismissPan = Gesture.Pan()
+    .activeOffsetY(20)
+    .failOffsetX([-20, 20])
+    .enabled(!isZoomed)
+    .onUpdate((e) => {
+      translateY.value = e.translationY;
+    })
+    .onEnd((e) => {
+      if (e.translationY > DISMISS_THRESHOLD) {
+        translateY.value = withTiming(
+          height,
+          { duration: 200, easing: Easing.in(Easing.cubic) },
+          (finished) => { if (finished) runOnJS(onClose)(); },
+        );
+      } else {
+        translateY.value = withSpring(0, { damping: 30, stiffness: 400 });
+      }
+    });
+
+  const dismissStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: interpolate(
+      Math.abs(translateY.value),
+      [0, 300],
+      [1, 0.3],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const handleShow = useCallback(() => {
+    translateY.value = 0;
+    setCurrentIndex(initialIndex);
+    setIsZoomed(false);
+  }, [initialIndex, translateY]);
 
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index != null) {
@@ -60,23 +101,16 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
+  const handleZoomChange = useCallback((zoomed: boolean) => {
+    setIsZoomed(zoomed);
+  }, []);
+
   const current = photos[currentIndex];
 
   return (
-    <Modal visible transparent animationType="fade" onShow={() => { reset(); setIsZoomed(false); }}>
-      <PanGestureHandler
-        onGestureEvent={onPanGestureEvent}
-        onHandlerStateChange={onPanStateChange}
-        activeOffsetY={20}
-        failOffsetX={[-20, 20]}
-        enabled={!isZoomed}
-      >
-        <Animated.View
-          style={[
-            styles.container,
-            { transform: [{ translateY }], opacity: backgroundOpacity },
-          ]}
-        >
+    <Modal visible transparent animationType="fade" onShow={handleShow}>
+      <GestureDetector gesture={dismissPan}>
+        <ReAnimated.View style={[styles.container, dismissStyle]}>
           {/* Close button */}
           <TouchableOpacity
             style={[styles.closeBtn, { top: insets.top + 12 }]}
@@ -108,8 +142,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                 <ZoomableImage
                   uri={item.url}
                   style={{ width, height: height * 0.7 }}
-                  onZoomedIn={() => setIsZoomed(true)}
-                  onZoomedOut={() => setIsZoomed(false)}
+                  onZoomChange={handleZoomChange}
                   onSingleTap={onClose}
                 />
               </View>
@@ -166,8 +199,8 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
               )}
             </View>
           )}
-        </Animated.View>
-      </PanGestureHandler>
+        </ReAnimated.View>
+      </GestureDetector>
     </Modal>
   );
 }

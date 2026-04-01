@@ -133,7 +133,9 @@
   "map": {
     "tapToOpen": "Tippen zum Öffnen →",
     "noGeocodingResults": "Keine Ergebnisse für diese Suche",
-    "searchArea": "In diesem Bereich suchen"
+    "searchRestaurants": "Restaurants",
+    "searchPlaces": "Orte",
+    "searchPlaceholder": "Restaurant oder Ort suchen..."
   },
   "leaderboard": {
     "title": "Rangliste",

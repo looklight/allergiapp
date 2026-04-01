@@ -1,5 +1,8 @@
 // ─── Tipi condivisi per il modulo ristoranti ──────────────────────────────
 
+/** Pin leggero: solo id + coordinate, per la mappa a zoom lontano */
+export type RestaurantPin = { id: string; latitude: number; longitude: number };
+
 export interface Restaurant {
   id: string;
   name: string;
@@ -99,6 +102,15 @@ export interface CuisineVote {
 
 export type SortBy = 'recent' | 'rating' | 'distance' | 'relevance';
 
+export type ReviewSortOrder = 'recent' | 'rating' | 'rating-asc' | 'relevance' | 'likes';
+
+export const REVIEWS_PAGE_SIZE = 15;
+
+export interface PaginatedReviews {
+  reviews: Review[];
+  totalCount: number;
+}
+
 export interface CreateRestaurantInput {
   name: string;
   address?: string;
@@ -117,6 +129,19 @@ export interface CreateReviewInput {
   rating: number;
   comment?: string;
   photos: string[]; // URI locali delle foto
+}
+
+/** Risultato leggero dalla RPC search_restaurants_by_name (per autocomplete) */
+export interface RestaurantSearchResult {
+  id: string;
+  name: string;
+  city: string | null;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+  average_rating: number;
+  distance_km: number | null;
+  similarity_score: number;
 }
 
 export interface CreateReportInput {

@@ -9,7 +9,6 @@ type Params = {
   activeFilters: RestaurantCategoryId[];
   searchQuery: string;
   sortBy: SortBy;
-  isAreaSearch: boolean;
   forMyNeeds: boolean;
 };
 
@@ -19,7 +18,6 @@ export function useRestaurantList({
   activeFilters,
   searchQuery,
   sortBy,
-  isAreaSearch,
   forMyNeeds,
 }: Params) {
   /** Ristoranti filtrati per ricerca e categorie (usati anche per i pin mappa) */
@@ -62,11 +60,10 @@ export function useRestaurantList({
     return (a.distance_km ?? 999) - (b.distance_km ?? 999);
   }, []);
 
-  /** Lista finale ordinata e con cap progressivo */
+  /** Lista finale ordinata (il cap marker è gestito dalla logica zoom in RestaurantMap) */
   const filteredRestaurants = useMemo(() => {
     let list = mapRestaurants;
 
-    // Ordinamento
     if (forMyNeeds) {
       list = [...list].sort(compareMyNeeds);
     } else if (sortBy === 'distance' && userLocation) {
@@ -77,34 +74,8 @@ export function useRestaurantList({
       list = [...list].sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0));
     }
 
-    // Cap progressivo per distanza reale (solo caricamento iniziale, non "Cerca in quest'area")
-    if (!isAreaSearch && userLocation && list.length > 0) {
-      const withDist = list
-        .filter(r => distanceMap.has(r.id))
-        .map(r => ({ r, d: distanceMap.get(r.id)! }));
-      withDist.sort((a, b) => a.d - b.d);
-      const capped: Restaurant[] = [];
-      for (const { r, d } of withDist) {
-        if (d <= 10) { capped.push(r); continue; }
-        if (d <= 30 && capped.length < 50) { capped.push(r); continue; }
-        if (d <= 50 && capped.length < 15) { capped.push(r); continue; }
-        if (capped.length < 5) { capped.push(r); continue; }
-      }
-      const noLocation = list.filter(r => !distanceMap.has(r.id));
-      const allCapped = [...capped, ...noLocation];
-      if (forMyNeeds) {
-        list = allCapped.sort(compareMyNeeds);
-      } else if (sortBy === 'distance') {
-        list = allCapped;
-      } else if (sortBy === 'rating') {
-        list = allCapped.sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0));
-      } else {
-        list = allCapped;
-      }
-    }
-
     return list;
-  }, [mapRestaurants, distanceMap, sortBy, userLocation, isAreaSearch, forMyNeeds, compareMyNeeds]);
+  }, [mapRestaurants, distanceMap, sortBy, userLocation, forMyNeeds, compareMyNeeds]);
 
   return { mapRestaurants, distanceMap, filteredRestaurants };
 }

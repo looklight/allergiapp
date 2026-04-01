@@ -2,43 +2,73 @@ import * as Crypto from 'expo-crypto';
 import { supabase } from './supabase';
 import { StorageService, type UploadResult } from './storageService';
 import { isRemoteUrl } from '../utils/url';
-import type { Review, ReviewPhoto, CreateReviewInput } from './restaurant.types';
-import { QUERY_LIMITS } from './restaurant.types';
+import {
+  QUERY_LIMITS,
+  REVIEWS_PAGE_SIZE,
+  type Review,
+  type ReviewPhoto,
+  type CreateReviewInput,
+  type PaginatedReviews,
+  type ReviewSortOrder,
+} from './restaurant.types';
 
 // ─── Reviews ────────────────────────────────────────────────────────────────
 
-export async function getReviews(restaurantId: string, userId?: string): Promise<Review[]> {
-  const { data, error } = await supabase
-    .from('reviews')
-    .select(`
-      *,
-      profile:profiles!user_id(display_name, avatar_url, profile_color, is_anonymous)
-    `)
-    .eq('restaurant_id', restaurantId)
-    .order('created_at', { ascending: false });
+export async function getReviews(
+  restaurantId: string,
+  options?: {
+    userId?: string;
+    sort?: ReviewSortOrder;
+    userAllergens?: string[];
+    userDiets?: string[];
+    limit?: number;
+    offset?: number;
+  },
+): Promise<PaginatedReviews> {
+  const {
+    userId,
+    sort = 'recent',
+    userAllergens = [],
+    userDiets = [],
+    limit = REVIEWS_PAGE_SIZE,
+    offset = 0,
+  } = options ?? {};
+
+  const { data, error } = await supabase.rpc('get_paginated_reviews', {
+    p_restaurant_id: restaurantId,
+    p_user_id: userId ?? null,
+    p_sort: sort,
+    p_user_allergens: userAllergens,
+    p_user_diets: userDiets,
+    p_limit: limit,
+    p_offset: offset,
+  });
   if (error) throw error;
-  const reviews: Review[] = (data ?? []).map((r: any) => ({
-    ...r,
+
+  const rows = data ?? [];
+  const totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
+
+  const reviews: Review[] = rows.map((r: any) => ({
+    id: r.id,
+    restaurant_id: r.restaurant_id,
+    user_id: r.user_id,
+    rating: r.rating,
+    comment: r.comment,
+    allergens_snapshot: r.allergens_snapshot ?? [],
+    dietary_snapshot: r.dietary_snapshot ?? [],
     photos: r.photos ?? [],
+    language: r.language,
+    created_at: r.created_at,
+    updated_at: r.updated_at,
     likes_count: r.likes_count ?? 0,
-    liked_by_me: false,
-    user_display_name: r.profile?.is_anonymous ? null : (r.profile?.display_name ?? null),
-    user_avatar_url: r.profile?.avatar_url ?? null,
-    user_profile_color: r.profile?.profile_color ?? null,
-    user_is_anonymous: r.profile?.is_anonymous ?? false,
+    liked_by_me: r.liked_by_me ?? false,
+    user_display_name: r.user_display_name ?? null,
+    user_avatar_url: r.user_avatar_url ?? null,
+    user_profile_color: r.user_profile_color ?? null,
+    user_is_anonymous: r.user_is_anonymous ?? false,
   }));
 
-  if (userId && reviews.length > 0) {
-    const { data: likedData } = await supabase
-      .from('review_likes')
-      .select('review_id')
-      .eq('user_id', userId)
-      .in('review_id', reviews.map(r => r.id));
-    const likedSet = new Set((likedData ?? []).map((l: any) => l.review_id as string));
-    return reviews.map(r => ({ ...r, liked_by_me: likedSet.has(r.id) }));
-  }
-
-  return reviews;
+  return { reviews, totalCount };
 }
 
 export async function toggleReviewLike(reviewId: string): Promise<{ liked: boolean; likes_count: number }> {

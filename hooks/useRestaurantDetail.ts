@@ -2,9 +2,16 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { RestaurantService } from '../services/restaurantService';
+import {
+  RestaurantService,
+  type Restaurant,
+  type ReviewPhoto,
+  type MenuPhoto,
+  type Report,
+  type CuisineVote,
+} from '../services/restaurantService';
 import { useAuth } from '../contexts/AuthContext';
-import type { Restaurant, Review, ReviewPhoto, MenuPhoto, Report, CuisineVote } from '../services/restaurantService';
+import { useReviewsPaginated } from './useReviewsPaginated';
 
 export interface UnifiedReview {
   key: string;
@@ -24,7 +31,7 @@ export interface UnifiedReview {
   likedByMe: boolean;
 }
 
-export type ReviewSortOrder = 'recent' | 'rating' | 'rating-asc' | 'relevance' | 'likes';
+export type { ReviewSortOrder } from '../services/restaurant.types';
 
 export function useRestaurantDetail(
   restaurantId: string | undefined,
@@ -34,11 +41,10 @@ export function useRestaurantDetail(
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
 
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [userReview, setUserReview] = useState<import('../services/restaurantService').Review | null>(null);
   const [menuPhotos, setMenuPhotos] = useState<MenuPhoto[]>([]);
   const [isUploadingMenu, setIsUploadingMenu] = useState(false);
   const [userHasReviews, setUserHasReviews] = useState(false);
@@ -46,9 +52,27 @@ export function useRestaurantDetail(
   const [userReport, setUserReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
-  const [reviewSortOrder, setReviewSortOrder] = useState<ReviewSortOrder>('recent');
   const loadIdRef = useRef(0);
 
+  // ─── Reviews (delegated to dedicated hook) ─────────────────────────────────
+  const {
+    reviews: rawReviews,
+    totalCount: reviewsTotalCount,
+    sortOrder: reviewSortOrder,
+    setSortOrder: setReviewSortOrder,
+    hasMore: hasMoreReviews,
+    loadMore: loadMoreReviews,
+    isLoadingMore: isLoadingMoreReviews,
+    fetchFirstPage: fetchReviewsFirstPage,
+    updateReviews,
+  } = useReviewsPaginated(
+    restaurantId,
+    user?.uid,
+    dietaryNeeds.allergens ?? [],
+    dietaryNeeds.diets ?? [],
+  );
+
+  // ─── Initial load ──────────────────────────────────────────────────────────
   const load = useCallback(async () => {
     if (!restaurantId) return;
     const loadId = ++loadIdRef.current;
@@ -58,7 +82,7 @@ export function useRestaurantDetail(
     try {
       const basePromise = Promise.all([
         RestaurantService.getRestaurant(restaurantId),
-        RestaurantService.getReviews(restaurantId, user?.uid),
+        fetchReviewsFirstPage(),
         RestaurantService.getMenuPhotos(restaurantId),
         RestaurantService.getReports(restaurantId),
         RestaurantService.getCuisineVotes(restaurantId),
@@ -72,12 +96,11 @@ export function useRestaurantDetail(
           ])
         : Promise.resolve([null, false, null, false] as const);
 
-      const [[rest, rv, mp, rp, cv], [ur, fav, urp, hasReviews]] = await Promise.all([basePromise, userPromise]);
+      const [[rest, , mp, rp, cv], [ur, fav, urp, hasReviews]] = await Promise.all([basePromise, userPromise]);
 
       if (loadId !== loadIdRef.current) return;
 
       setRestaurant(rest);
-      setReviews(rv);
       setMenuPhotos(mp);
       setReports(rp);
       setCuisineVotes(cv);
@@ -91,11 +114,12 @@ export function useRestaurantDetail(
     } finally {
       if (loadId === loadIdRef.current) setIsLoading(false);
     }
-  }, [restaurantId, user?.uid]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- restaurant read for loading optimization only
+  }, [restaurantId, user?.uid, fetchReviewsFirstPage]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  /** Allergie+diete dell'utente corrente (per ordinamento "per me") */
+  // ─── Derived state ─────────────────────────────────────────────────────────
   const userNeedsSet = useMemo(() => {
     const all: string[] = [...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])];
     return new Set(all);
@@ -103,62 +127,27 @@ export function useRestaurantDetail(
 
   const hasUserNeeds = userNeedsSet.size > 0;
 
-  const allReviews = useMemo((): UnifiedReview[] => {
-    const items: UnifiedReview[] = [];
+  const allReviews = useMemo((): UnifiedReview[] =>
+    rawReviews.map(r => ({
+      key: `review-${r.id}`,
+      reviewId: r.id,
+      userId: r.user_id ?? undefined,
+      displayName: r.user_display_name ?? null,
+      isAnonymous: r.user_is_anonymous ?? false,
+      avatarUrl: r.user_avatar_url ?? null,
+      profileColor: r.user_profile_color ?? null,
+      rating: r.rating,
+      text: r.comment ?? undefined,
+      photos: r.photos ?? [],
+      createdAt: new Date(r.created_at),
+      allergensSnapshot: r.allergens_snapshot,
+      dietarySnapshot: r.dietary_snapshot,
+      likesCount: r.likes_count ?? 0,
+      likedByMe: r.liked_by_me ?? false,
+    })),
+  [rawReviews]);
 
-    for (const r of reviews) {
-      items.push({
-        key: `review-${r.id}`,
-        reviewId: r.id,
-        userId: r.user_id ?? undefined,
-        displayName: r.user_display_name ?? null,
-        isAnonymous: r.user_is_anonymous ?? false,
-        avatarUrl: r.user_avatar_url ?? null,
-        profileColor: r.user_profile_color ?? null,
-        rating: r.rating,
-        text: r.comment ?? undefined,
-        photos: r.photos ?? [],
-        createdAt: new Date(r.created_at),
-        allergensSnapshot: r.allergens_snapshot,
-        dietarySnapshot: r.dietary_snapshot,
-        likesCount: r.likes_count ?? 0,
-        likedByMe: r.liked_by_me ?? false,
-      });
-    }
-
-    switch (reviewSortOrder) {
-      case 'rating':
-        items.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-        break;
-      case 'rating-asc':
-        items.sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
-        break;
-      case 'relevance':
-        if (hasUserNeeds) {
-          items.sort((a, b) => {
-            const aSnap = [...(a.allergensSnapshot ?? []), ...(a.dietarySnapshot ?? [])];
-            const bSnap = [...(b.allergensSnapshot ?? []), ...(b.dietarySnapshot ?? [])];
-            const aMatch = aSnap.filter(x => userNeedsSet.has(x)).length;
-            const bMatch = bSnap.filter(x => userNeedsSet.has(x)).length;
-            // Prima per match, poi per rating, poi per data
-            return bMatch - aMatch
-              || (b.rating ?? 0) - (a.rating ?? 0)
-              || b.createdAt.getTime() - a.createdAt.getTime();
-          });
-        } else {
-          items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        }
-        break;
-      case 'likes':
-        items.sort((a, b) => b.likesCount - a.likesCount || b.createdAt.getTime() - a.createdAt.getTime());
-        break;
-      default: // 'recent'
-        items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    }
-
-    return items;
-  }, [reviews, reviewSortOrder, hasUserNeeds, userNeedsSet]);
-
+  // ─── Actions ───────────────────────────────────────────────────────────────
   const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated || !user) {
       router.push('/auth/login');
@@ -186,7 +175,6 @@ export function useRestaurantDetail(
         onFavoriteToggled?.(restaurant.id, correction);
       }
     } catch {
-      // Rollback optimistic update
       setIsFavorite(!expected);
       setRestaurant(prev => prev ? {
         ...prev,
@@ -247,7 +235,6 @@ export function useRestaurantDetail(
         if (input === undefined) return;
         let url = input.trim();
         if (!url) {
-          // Rimuovi URL
           setIsUpdatingMenuUrl(true);
           const ok = await RestaurantService.updateMenuUrl(restaurantId!, null);
           setIsUpdatingMenuUrl(false);
@@ -308,9 +295,9 @@ export function useRestaurantDetail(
     }
     if (pendingLikes.current.has(reviewId)) return;
     pendingLikes.current.add(reviewId);
-    // Leggi lo stato corrente dalla lista più recente
+
     let wasLiked = false;
-    setReviews(prev => {
+    updateReviews(prev => {
       const target = prev.find(r => r.id === reviewId);
       if (!target) return prev;
       wasLiked = target.liked_by_me;
@@ -321,24 +308,27 @@ export function useRestaurantDetail(
     });
     try {
       const result = await RestaurantService.toggleReviewLike(reviewId);
-      setReviews(prev => prev.map(r => r.id === reviewId
+      updateReviews(prev => prev.map(r => r.id === reviewId
         ? { ...r, liked_by_me: result.liked, likes_count: result.likes_count }
         : r
       ));
     } catch {
-      // Rollback
-      setReviews(prev => prev.map(r => r.id === reviewId
+      updateReviews(prev => prev.map(r => r.id === reviewId
         ? { ...r, liked_by_me: wasLiked, likes_count: r.likes_count + (wasLiked ? 1 : -1) }
         : r
       ));
     } finally {
       pendingLikes.current.delete(reviewId);
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, updateReviews]);
 
   return {
     restaurant,
     allReviews,
+    reviewsTotalCount,
+    hasMoreReviews,
+    loadMoreReviews,
+    isLoadingMoreReviews,
     menuPhotos,
     reports,
     cuisineVotes,

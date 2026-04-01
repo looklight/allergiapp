@@ -133,7 +133,9 @@
   "map": {
     "tapToOpen": "Appuyer pour ouvrir →",
     "noGeocodingResults": "Aucun résultat pour cette recherche",
-    "searchArea": "Rechercher dans cette zone"
+    "searchRestaurants": "Restaurants",
+    "searchPlaces": "Lieux",
+    "searchPlaceholder": "Rechercher restaurant ou lieu..."
   },
   "leaderboard": {
     "title": "Classement",

@@ -133,7 +133,9 @@
   "map": {
     "tapToOpen": "Tap to open →",
     "noGeocodingResults": "No results for this search",
-    "searchArea": "Search this area"
+    "searchRestaurants": "Restaurants",
+    "searchPlaces": "Places",
+    "searchPlaceholder": "Search restaurant or place..."
   },
   "leaderboard": {
     "title": "Leaderboard",

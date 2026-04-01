@@ -5,14 +5,26 @@ type UpdateRestaurant = (id: string, updater: (r: Restaurant) => Restaurant) => 
 
 export function useRestaurantFavorites(userId: string | undefined, updateRestaurant: UpdateRestaurant) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [favoriteRestaurants, setFavoriteRestaurants] = useState<Map<string, Restaurant>>(new Map());
+
   // Ref per evitare che toggleFavorite si ricrei ad ogni cambio di favoriteIds
   const favoriteIdsRef = useRef(favoriteIds);
   favoriteIdsRef.current = favoriteIds;
 
   const loadFavorites = useCallback(async () => {
-    if (!userId) { setFavoriteIds(new Set()); return; }
+    if (!userId) {
+      setFavoriteIds(new Set());
+      setFavoriteRestaurants(new Map());
+      return;
+    }
     const favs = await RestaurantService.getFavorites(userId);
     setFavoriteIds(new Set(favs.map(f => f.restaurant_id)));
+
+    const restMap = new Map<string, Restaurant>();
+    for (const f of favs) {
+      if (f.restaurant) restMap.set(f.restaurant_id, f.restaurant);
+    }
+    setFavoriteRestaurants(restMap);
   }, [userId]);
 
   const pendingRef = useRef<Set<string>>(new Set());
@@ -29,6 +41,13 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
       else next.delete(restaurantId);
       return next;
     });
+    if (!willBeFav) {
+      setFavoriteRestaurants(prev => {
+        const next = new Map(prev);
+        next.delete(restaurantId);
+        return next;
+      });
+    }
     updateRestaurant(restaurantId, r => ({
       ...r, favorite_count: (r.favorite_count ?? 0) + (willBeFav ? 1 : -1),
     }));
@@ -72,7 +91,23 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
       else next.delete(id);
       return next;
     });
+    if (!isFavorite) {
+      setFavoriteRestaurants(prev => {
+        const next = new Map(prev);
+        next.delete(id);
+        return next;
+      });
+    }
   }, []);
 
-  return { favoriteIds, loadFavorites, toggleFavorite, syncFavoriteId };
+  /** Aggiunge un ristorante alla mappa dei preferiti (usato quando si ha il dato completo) */
+  const addFavoriteRestaurant = useCallback((restaurant: Restaurant) => {
+    setFavoriteRestaurants(prev => {
+      const next = new Map(prev);
+      next.set(restaurant.id, restaurant);
+      return next;
+    });
+  }, []);
+
+  return { favoriteIds, favoriteRestaurants, loadFavorites, toggleFavorite, syncFavoriteId, addFavoriteRestaurant };
 }

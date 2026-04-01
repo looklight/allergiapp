@@ -3,7 +3,8 @@ import { StorageService } from './storageService';
 import {
   DEFAULTS, QUERY_LIMITS,
   mapRestaurant, extractLatLng,
-  type Restaurant, type RestaurantRow, type CreateRestaurantInput,
+  type Restaurant, type RestaurantPin, type RestaurantRow, type CreateRestaurantInput,
+  type RestaurantSearchResult,
 } from './restaurant.types';
 import { voteCuisines } from './cuisineVoteService';
 
@@ -11,11 +12,12 @@ import { voteCuisines } from './cuisineVoteService';
 // I consumer possono continuare a importare tutto da 'restaurantService'.
 
 export type {
-  Restaurant, RestaurantRow, ReviewPhoto, Review, Favorite, MenuPhoto,
+  Restaurant, RestaurantPin, RestaurantRow, ReviewPhoto, Review, Favorite, MenuPhoto,
   Report, CuisineVote, SortBy, CreateRestaurantInput, CreateReviewInput,
-  CreateReportInput, LeaderboardEntry,
+  CreateReportInput, LeaderboardEntry, ReviewSortOrder, PaginatedReviews,
+  RestaurantSearchResult,
 } from './restaurant.types';
-export { mapRestaurant, extractLatLng, QUERY_LIMITS, DEFAULTS, PG_UNIQUE_VIOLATION } from './restaurant.types';
+export { mapRestaurant, extractLatLng, QUERY_LIMITS, DEFAULTS, PG_UNIQUE_VIOLATION, REVIEWS_PAGE_SIZE } from './restaurant.types';
 
 // ─── Restaurant CRUD ────────────────────────────────────────────────────────
 
@@ -131,6 +133,22 @@ function applyStats(rows: any[], statsMap: Map<string, { review_count: number; t
       favorite_count: s?.favorite_count ?? 0,
     });
   });
+}
+
+async function getAllPositions(): Promise<RestaurantPin[]> {
+  try {
+    const { data, error } = await supabase.rpc('get_all_restaurant_positions');
+    if (error) throw error;
+    if (__DEV__) console.log(`[RestaurantService] getAllPositions: ${(data ?? []).length} pin caricati`);
+    return (data ?? []).map((row: any) => ({
+      id: row.id as string,
+      latitude: row.latitude as number,
+      longitude: row.longitude as number,
+    }));
+  } catch (error) {
+    console.warn('[RestaurantService] Errore getAllPositions:', error);
+    return [];
+  }
 }
 
 async function checkNearbyDuplicates(
@@ -254,6 +272,37 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
   }
 }
 
+// ─── Fuzzy search per nome (autocomplete) ───────────────────────────────────
+
+async function searchRestaurantsByName(
+  query: string,
+  userLat?: number,
+  userLng?: number,
+): Promise<RestaurantSearchResult[]> {
+  try {
+    const { data, error } = await supabase.rpc('search_restaurants_by_name', {
+      query,
+      user_lat: userLat ?? null,
+      user_lng: userLng ?? null,
+    });
+    if (error) throw error;
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      city: row.city ?? null,
+      country: row.country ?? null,
+      latitude: row.latitude,
+      longitude: row.longitude,
+      average_rating: Number(row.average_rating ?? 0),
+      distance_km: row.distance_km != null ? Number(row.distance_km) : null,
+      similarity_score: row.similarity_score ?? 0,
+    }));
+  } catch (error) {
+    console.warn('[RestaurantService] Errore searchRestaurantsByName:', error);
+    return [];
+  }
+}
+
 // ─── Lookup by Google Place ID ───────────────────────────────────────────────
 
 async function getRestaurantByGooglePlaceId(googlePlaceId: string): Promise<Restaurant | null> {
@@ -306,6 +355,7 @@ import { getLeaderboard } from './leaderboardService';
 
 export const RestaurantService = {
   // Restaurant CRUD
+  getAllPositions,
   getRestaurant,
   getRestaurantByGooglePlaceId,
   checkExistingByPlaceIds,
@@ -315,6 +365,7 @@ export const RestaurantService = {
   checkNearbyDuplicates,
   getRestaurantsByUser,
   removeOwnRestaurant,
+  searchRestaurantsByName,
   // Reviews (da reviewService)
   getReviews,
   getUserReview,
