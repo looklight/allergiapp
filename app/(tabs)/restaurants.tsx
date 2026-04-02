@@ -117,11 +117,22 @@ export default function RestaurantsScreen() {
 
   // Nasconde la tab bar quando il detail sheet è aperto.
   // Con position: absolute, display: 'none' non causa reflow di layout.
+  // Collassa il list sheet al minimo così il detail sheet lo copre completamente.
   useEffect(() => {
     navigation.setOptions({
       tabBarStyle: selection.detailId ? { display: 'none' } : TAB_BAR_STYLE,
     });
+    if (selection.detailId) {
+      listSheetRef.current?.snapToIndex(0);
+    } else {
+      listSheetRef.current?.snapToIndex(1);
+    }
   }, [selection.detailId, navigation]);
+
+  // Regione corrente della mappa — usata per filtrare la lista coerentemente col viewport
+  const [currentRegion, setCurrentRegion] = useState<{
+    latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number;
+  } | null>(null);
 
   // Scroll abilitato solo al massimo snap (85%) — altrimenti il body è draggabile
   const [listScrollEnabled, setListScrollEnabled] = useState(false);
@@ -141,13 +152,16 @@ export default function RestaurantsScreen() {
   const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, getSheetFraction });
 
   // Re-interroga quando il profilo cambia con forMyNeeds attivo.
+  // filterAllergens/filterDiets nelle deps: l'effect 87-91 li aggiorna quando
+  // dietaryNeeds cambia → questa effect si riattiva → profileJustChanged è true → reload.
+  // Per cambi manuali nel modal, profileJustChanged è false → skip.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!profileJustChanged.current) return;
     profileJustChanged.current = false;
     if (!forMyNeeds || !geo.userLocation) return;
     geo.clearAndReload();
-  }, [geo.clearAndReload]);
+  }, [filterAllergens, filterDiets, geo.clearAndReload]);
 
   const { mapRestaurants, distanceMap, filteredRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
@@ -156,6 +170,7 @@ export default function RestaurantsScreen() {
     searchQuery,
     sortBy,
     forMyNeeds,
+    mapRegion: currentRegion,
   });
 
   const { favoriteIds, favoriteRestaurants, loadFavorites, toggleFavorite, syncFavoriteId } = useRestaurantFavorites(
@@ -223,19 +238,36 @@ export default function RestaurantsScreen() {
     setShowFilterModal(true);
   }, []);
 
-  const handleCloseFilterModal = useCallback(() => {
-    setShowFilterModal(false);
-    if (filterChangedInModal.current && forMyNeeds) {
-      filterChangedInModal.current = false;
-      geo.clearAndReload();
-    }
-  }, [forMyNeeds, geo.clearAndReload]);
-
   const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
     if (!user) return;
     await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
     await refreshProfile();
   }, [user, refreshProfile]);
+
+  const handleCloseFilterModal = useCallback(async () => {
+    setShowFilterModal(false);
+    const filtersChanged = filterChangedInModal.current;
+    filterChangedInModal.current = false;
+
+    if (!forMyNeeds || !filtersChanged) return;
+
+    // Auto-sync profilo se le esigenze differiscono da quelle salvate.
+    // Evita che l'utente chiuda il modal pensando di aver salvato,
+    // mentre badge e card resterebbero con i dati vecchi.
+    const allergensMatch =
+      filterAllergens.length === dietaryNeeds.allergens.length &&
+      filterAllergens.every(a => dietaryNeeds.allergens.includes(a as any));
+    const dietsMatch =
+      filterDiets.length === (dietaryNeeds.diets ?? []).length &&
+      filterDiets.every(d => (dietaryNeeds.diets ?? []).includes(d as any));
+
+    if (!allergensMatch || !dietsMatch) {
+      // Sync silenzioso → useDietarySync propaga a AppContext/Card/Home
+      handleSyncProfile(filterAllergens, filterDiets).catch(() => {});
+    }
+
+    geo.clearAndReload();
+  }, [forMyNeeds, geo.clearAndReload, filterAllergens, filterDiets, dietaryNeeds, handleSyncProfile]);
 
   const handleToggleMyNeeds = useCallback(async () => {
     if (!isAuthenticated) { router.push('/auth/login'); return; }
@@ -258,38 +290,34 @@ export default function RestaurantsScreen() {
     await toggleFavorite(restaurantId);
   }, [isAuthenticated, user, toggleFavorite, router]);
 
+  const dismissAutocomplete = useCallback(() => {
+    setSearchQuery('');
+    mapSearch.clear();
+    Keyboard.dismiss();
+  }, [mapSearch.clear]);
+
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
     mapSearch.search(text);
   }, [mapSearch.search]);
 
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    mapSearch.clear();
-  }, [mapSearch.clear]);
-
   const handleSelectRestaurant = useCallback((id: string, lat: number, lng: number) => {
-    setSearchQuery('');
-    mapSearch.clear();
-    Keyboard.dismiss();
+    dismissAutocomplete();
     dispatch({ type: 'SELECT', id });
-    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0.55 });
-  }, [mapSearch.clear, geo.setCenterOn]);
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0.55, latDelta: 0.01 });
+  }, [dismissAutocomplete, geo.setCenterOn]);
 
   const handleSelectPlace = useCallback((lat: number, lng: number, placeType?: string) => {
-    setSearchQuery('');
-    mapSearch.clear();
-    Keyboard.dismiss();
-    // Zoom adattivo in base al tipo di luogo
+    dismissAutocomplete();
     const latDelta =
       placeType === 'country' ? 12 :
       placeType === 'state' ? 3 :
       placeType === 'county' ? 0.5 :
       placeType === 'city' ? 0.08 :
       placeType === 'district' || placeType === 'locality' ? 0.03 :
-      0.02; // street, house, default
+      0.02;
     geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: getSheetFraction(), latDelta });
-  }, [mapSearch.clear, geo.setCenterOn, getSheetFraction]);
+  }, [dismissAutocomplete, geo.setCenterOn, getSheetFraction]);
 
   const handleDeselect = useCallback(() => {
     dispatch({ type: 'DESELECT' });
@@ -298,6 +326,7 @@ export default function RestaurantsScreen() {
 
   const handleRegionChange = useCallback((region: Parameters<typeof geo.handleRegionChange>[0]) => {
     dispatch({ type: 'DESELECT' });
+    setCurrentRegion(region);
     geo.handleRegionChange(region);
   }, [geo.handleRegionChange]);
 
@@ -313,18 +342,29 @@ export default function RestaurantsScreen() {
   }, [forMyNeeds, geo.clearAndReload]);
 
   // --- Render ---
+  const countLabel = geo.isLoading && geo.restaurants.length === 0
+    ? null
+    : filteredRestaurants.length === 0
+      ? 'Nessun ristorante'
+      : `${filteredRestaurants.length} ristorant${filteredRestaurants.length === 1 ? 'e' : 'i'}${
+          geo.isGeoMode ? ' vicino a te' : ''
+        }`;
+
   const sheetHeaderContent = (
     <View style={styles.sheetFilterRow}>
       <TouchableOpacity
-        onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
-        style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
+        onPress={handleToggleMyNeeds}
+        style={[styles.headerToggle, forMyNeeds && styles.headerToggleActive]}
         activeOpacity={0.7}
       >
         <MaterialCommunityIcons
-          name="tune-vertical"
-          size={20}
-          color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
+          name="shield-check"
+          size={18}
+          color={forMyNeeds ? theme.colors.onPrimary : theme.colors.textSecondary}
         />
+        <Text style={[styles.headerToggleText, forMyNeeds && styles.headerToggleTextActive]}>
+          Per me
+        </Text>
       </TouchableOpacity>
       {activeFilters.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
@@ -336,19 +376,17 @@ export default function RestaurantsScreen() {
           ))}
         </ScrollView>
       )}
-      <View style={styles.badgeRow}>
-        {geo.isLoading && geo.restaurants.length === 0 ? (
-          <ActivityIndicator size="small" color={theme.colors.primary} />
-        ) : (
-          <Text style={styles.badgeText}>
-            {filteredRestaurants.length === 0
-              ? 'Nessun ristorante'
-              : `${filteredRestaurants.length} ristorant${filteredRestaurants.length === 1 ? 'e' : 'i'}${
-                  geo.isGeoMode ? ' vicino a te' : ''
-                }`}
-          </Text>
-        )}
-      </View>
+      <TouchableOpacity
+        onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
+        style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons
+          name="tune-vertical"
+          size={20}
+          color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
+        />
+      </TouchableOpacity>
     </View>
   );
 
@@ -400,6 +438,11 @@ export default function RestaurantsScreen() {
           scrollEnabled={listScrollEnabled}
           onScroll={handleListScroll}
           scrollEventThrottle={16}
+          ListHeaderComponent={countLabel ? (
+            <Text style={styles.listCountLabel}>{countLabel}</Text>
+          ) : (
+            <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginBottom: 8 }} />
+          )}
           contentContainerStyle={[styles.list, { paddingBottom: screenHeight * 0.15 + 49 + insets.bottom }]}
           onScrollToIndexFailed={info => {
             setTimeout(() => {
@@ -467,7 +510,7 @@ export default function RestaurantsScreen() {
               autoCorrect={false}
             />
             {searchQuery.length > 0 ? (
-              <TouchableOpacity onPress={handleClearSearch} hitSlop={8}>
+              <TouchableOpacity onPress={dismissAutocomplete} hitSlop={8}>
                 <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             ) : (
@@ -487,14 +530,14 @@ export default function RestaurantsScreen() {
       </View>
 
       {/* Autocomplete overlay — sotto la search bar flottante */}
-      {mapSearch.results.length > 0 && (
+      {searchQuery.length >= 2 && (mapSearch.results.length > 0 || mapSearch.isSearching) && (
         <View style={[styles.autocompleteOverlay, { top: insets.top + 8 + 48 + 4 }]}>
           <SearchAutocomplete
             results={mapSearch.results}
             isSearching={mapSearch.isSearching}
             onSelectRestaurant={handleSelectRestaurant}
             onSelectPlace={handleSelectPlace}
-            onDismiss={handleClearSearch}
+            onDismiss={dismissAutocomplete}
           />
         </View>
       )}
@@ -640,6 +683,29 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
+  headerToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    height: 38,
+    paddingHorizontal: 12,
+    borderRadius: 19,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  headerToggleActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  headerToggleText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  headerToggleTextActive: {
+    color: theme.colors.onPrimary,
+  },
   chipScroll: {
     gap: 6,
     paddingRight: 4,
@@ -658,19 +724,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.primary,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 'auto',
-    flexShrink: 0,
-  },
-  badgeText: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-
   // --- List ---
+  listCountLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+  },
   list: {
     padding: 12,
     gap: 10,

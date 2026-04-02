@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { Stack, ErrorBoundary, usePathname, useRouter } from 'expo-router';
+import { View, StyleSheet, Image, ScrollView } from 'react-native';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,6 +11,7 @@ import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { Analytics } from '../services/analytics';
 import i18n from '../utils/i18n';
+import { useDietarySync } from '../hooks/useDietarySync';
 import ConsentModal from './consent';
 
 const splashLogo = require('../assets/splash-icon.png');
@@ -18,14 +19,31 @@ const splashLogo = require('../assets/splash-icon.png');
 // Mantieni lo splash screen visibile finché non siamo pronti
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-export { ErrorBoundary };
+// --- Global error handler: cattura errori JS e promise rejection non gestite ---
+if (__DEV__) {
+  const originalHandler = ErrorUtils.getGlobalHandler();
+  ErrorUtils.setGlobalHandler((error, isFatal) => {
+    console.error(
+      `\n[GlobalError] ${isFatal ? 'FATAL' : 'NON-FATAL'}:\n${error?.message}\n${error?.stack?.split('\n').slice(0, 8).join('\n')}`
+    );
+    originalHandler?.(error, isFatal);
+  });
+}
 
-function AppErrorFallback({ error, retry }: { error: Error; retry: () => void }) {
+// --- ErrorBoundary custom per expo-router ---
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => void }) {
   return (
     <View style={errorStyles.container}>
-      <Text style={errorStyles.icon}>⚠️</Text>
+      <Text style={errorStyles.icon}>!</Text>
       <Text style={errorStyles.title}>{i18n.t('app.errorTitle')}</Text>
       <Text style={errorStyles.message}>{error.message}</Text>
+      {__DEV__ && error.stack && (
+        <ScrollView style={errorStyles.stackContainer}>
+          <Text style={errorStyles.stack} selectable>
+            {error.stack.split('\n').slice(0, 12).join('\n')}
+          </Text>
+        </ScrollView>
+      )}
       <Button mode="contained" onPress={retry} style={errorStyles.button}>
         {i18n.t('app.errorRetry')}
       </Button>
@@ -41,9 +59,11 @@ const errorStyles = StyleSheet.create({
     padding: 24,
     backgroundColor: theme.colors.background,
   },
-  icon: { fontSize: 48, marginBottom: 16 },
+  icon: { fontSize: 48, marginBottom: 16, color: theme.colors.error, fontWeight: 'bold' },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8, color: theme.colors.error },
-  message: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 24 },
+  message: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 16 },
+  stackContainer: { maxHeight: 200, width: '100%', marginBottom: 16 },
+  stack: { fontSize: 11, fontFamily: 'monospace', color: '#666', lineHeight: 16 },
   button: { minWidth: 120 },
 });
 
@@ -67,6 +87,7 @@ const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary
 function AppContent() {
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
+  useDietarySync();
   const router = useRouter();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
