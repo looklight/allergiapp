@@ -77,10 +77,10 @@ function AppContent() {
       (async () => {
         if (!__DEV__) {
           try {
-            const { isAvailable } = await Updates.checkForUpdateAsync();
-            if (isAvailable) {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
               await Updates.fetchUpdateAsync();
-              await Updates.reloadAsync(); // non ritorna
+              await Updates.reloadAsync();
               return;
             }
           } catch {}
