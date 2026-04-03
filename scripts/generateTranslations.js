@@ -142,6 +142,7 @@ const RESTRICTIONS = {
   raw_cured_meats: 'Raw cured meats',
   raw_eggs: 'Raw eggs',
   raw_sprouts: 'Raw sprouts',
+  raw_vegetables: 'Raw vegetables',
   unpasteurized_cheese: 'Unpasteurized cheeses',
   unpasteurized_milk: 'Unpasteurized milk',
   alcohol: 'Alcohol',

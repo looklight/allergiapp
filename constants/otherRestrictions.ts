@@ -7,6 +7,7 @@ export type RestrictionItemId =
   | 'raw_cured_meats'
   | 'raw_eggs'
   | 'raw_sprouts'
+  | 'raw_vegetables'
   | 'unpasteurized_cheese'
   | 'unpasteurized_milk'
   | 'alcohol'
@@ -226,6 +227,28 @@ export const RESTRICTION_ITEMS: readonly RestrictionItem[] = [
       ko: '생 새싹',
       th: 'ถั่วงอกดิบ',
       ar: 'البراعم النيئة',
+    },
+  },
+  {
+    id: 'raw_vegetables',
+    icon: '🥬',
+    categoryId: 'pregnancy',
+    translations: {
+      it: 'Verdure crude',
+      en: 'Raw vegetables',
+      fr: 'Légumes crus',
+      de: 'Rohes Gemüse',
+      es: 'Verduras crudas',
+      pt: 'Vegetais crus',
+      nl: 'Rauwe groenten',
+      pl: 'Surowe warzywa',
+      ru: 'Сырые овощи',
+      sv: 'Råa grönsaker',
+      zh: '生蔬菜',
+      ja: '生野菜',
+      ko: '생채소',
+      th: 'ผักดิบ',
+      ar: 'الخضروات النيئة',
     },
   },
   // --- Latticini non pastorizzati (rischio listeria) ---
