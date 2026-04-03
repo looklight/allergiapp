@@ -1,12 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
 import { deleteRestaurantWithCleanup } from '@/lib/storageCleanup';
 import type { Restaurant } from '@/lib/types';
+import type { MapRestaurant } from '@/components/map/RestaurantMap';
+import StatCard from '@/components/StatCard';
+import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import Link from 'next/link';
 
-const PAGE_SIZE = 25;
+const RestaurantMap = dynamic(() => import('@/components/map/RestaurantMap'), { ssr: false });
 
 interface CountryStats {
   restaurant_count: number;
@@ -17,14 +21,41 @@ interface CountryStats {
 }
 
 export default function RestaurantsPage() {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [countries, setCountries] = useState<{ code: string; name: string; count: number }[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [stats, setStats] = useState<CountryStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [mapRestaurants, setMapRestaurants] = useState<MapRestaurant[]>([]);
+
+  const fetchRestaurants = useCallback(async (pageNum: number) => {
+    let query = supabase
+      .from('restaurants')
+      .select('id, name, address, city, country, country_code, cuisine_types, created_at, reviews(count), menu_photos(count)')
+      .order('created_at', { ascending: false })
+      .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
+
+    if (countryFilter !== 'all') {
+      query = query.eq('country_code', countryFilter);
+    }
+
+    if (search.trim()) {
+      const term = `%${search.trim()}%`;
+      query = query.or(`name.ilike.${term},city.ilike.${term}`);
+    }
+
+    const { data } = await query;
+    return (data ?? []).map((r: any) => ({
+      ...r,
+      review_count: r.reviews?.[0]?.count ?? 0,
+      menu_photo_count: r.menu_photos?.[0]?.count ?? 0,
+      reviews: undefined,
+      menu_photos: undefined,
+    })) as Restaurant[];
+  }, [countryFilter, search]);
+
+  const { items: restaurants, setItems: setRestaurants, loading, hasMore, loadMore, reset } =
+    usePagination<Restaurant>({ fetchPage: fetchRestaurants });
 
   // Carica lista paesi con conteggio (raggruppati per country_code)
   useEffect(() => {
@@ -52,37 +83,6 @@ export default function RestaurantsPage() {
       });
   }, []);
 
-  const loadRestaurants = async (pageNum: number, append = false) => {
-    setLoading(true);
-
-    let query = supabase
-      .from('restaurants')
-      .select('id, name, address, city, country, country_code, cuisine_types, created_at')
-      .order('created_at', { ascending: false })
-      .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
-
-    if (countryFilter !== 'all') {
-      query = query.eq('country_code', countryFilter);
-    }
-
-    if (search.trim()) {
-      const term = `%${search.trim()}%`;
-      query = query.or(`name.ilike.${term},city.ilike.${term}`);
-    }
-
-    const { data } = await query;
-    const items = (data ?? []) as Restaurant[];
-    setHasMore(items.length > PAGE_SIZE);
-    const pageItems = items.slice(0, PAGE_SIZE);
-
-    if (append) {
-      setRestaurants((prev) => [...prev, ...pageItems]);
-    } else {
-      setRestaurants(pageItems);
-    }
-    setLoading(false);
-  };
-
   const loadStats = async () => {
     const { data } = await supabase.rpc('get_restaurant_country_stats', {
       filter_country: countryFilter === 'all' ? null : countryFilter,
@@ -99,15 +99,41 @@ export default function RestaurantsPage() {
   };
 
   useEffect(() => {
-    setPage(0);
-    loadRestaurants(0);
+    reset();
     loadStats();
+    if (showMap) loadMapData();
   }, [countryFilter, search]);
 
-  const loadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    loadRestaurants(nextPage, true);
+  const loadMapData = async () => {
+    // RPC restituisce id + lat/lng (leggera)
+    const { data: positions } = await supabase.rpc('get_all_restaurant_positions');
+    if (!positions) { setMapRestaurants([]); return; }
+
+    // Arricchisci con nome/city/country/country_code
+    const ids = positions.map((r: any) => r.id);
+    const { data: details } = await supabase
+      .from('restaurants')
+      .select('id, name, city, country, country_code')
+      .in('id', ids);
+
+    const detailMap = new Map((details ?? []).map((d: any) => [d.id, d]));
+
+    setMapRestaurants(positions
+      .map((r: any) => {
+        const d = detailMap.get(r.id);
+        return {
+          id: r.id,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          name: d?.name ?? '—',
+          city: d?.city ?? null,
+          country: d?.country ?? null,
+          country_code: d?.country_code ?? null,
+          average_rating: 0,
+        };
+      })
+      .filter((r: any) => countryFilter === 'all' || r.country_code === countryFilter)
+    );
   };
 
   const deleteRestaurant = async (id: string) => {
@@ -123,7 +149,36 @@ export default function RestaurantsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Ristoranti</h1>
+      <div className="flex items-center gap-3 mb-4">
+        <h1 className="text-2xl font-bold">Ristoranti</h1>
+        <button
+          onClick={() => { setShowMap(!showMap); if (!showMap) loadMapData(); }}
+          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+            showMap ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {showMap ? 'Chiudi mappa' : 'Vedi su mappa'}
+        </button>
+      </div>
+
+      {showMap && (
+        <div className="fixed inset-0 z-50 bg-white flex flex-col">
+          <div className="flex items-center gap-3 px-4 py-3 border-b">
+            <button
+              onClick={() => setShowMap(false)}
+              className="px-3 py-1.5 bg-gray-900 text-white rounded text-sm hover:bg-gray-800"
+            >
+              Chiudi mappa
+            </button>
+            <h2 className="font-semibold">
+              Mappa ristoranti{countryFilter !== 'all' ? ` — ${countries.find(c => c.code === countryFilter)?.name ?? countryFilter}` : ''}
+            </h2>
+          </div>
+          <div className="flex-1">
+            <RestaurantMap restaurants={mapRestaurants} />
+          </div>
+        </div>
+      )}
 
       {/* Filtro paesi */}
       <div className="flex gap-2 mb-4 flex-wrap">
@@ -181,6 +236,7 @@ export default function RestaurantsPage() {
               <th className="px-4 py-3 font-medium">Citta</th>
               {countryFilter === 'all' && <th className="px-4 py-3 font-medium">Paese</th>}
               <th className="px-4 py-3 font-medium">Cucina</th>
+              <th className="px-4 py-3 font-medium text-center">Media</th>
               <th className="px-4 py-3 font-medium">Data</th>
               <th className="px-4 py-3 font-medium text-right">Azioni</th>
             </tr>
@@ -197,6 +253,17 @@ export default function RestaurantsPage() {
                 {countryFilter === 'all' && <td className="px-4 py-3 text-gray-500">{r.country ?? '—'}</td>}
                 <td className="px-4 py-3 text-gray-500">
                   {r.cuisine_types?.join(', ') || '—'}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {((r.review_count ?? 0) > 0 || (r.menu_photo_count ?? 0) > 0) ? (
+                    <span className="text-xs text-gray-500">
+                      {(r.review_count ?? 0) > 0 && <span title="Foto recensioni">{r.review_count} foto</span>}
+                      {(r.review_count ?? 0) > 0 && (r.menu_photo_count ?? 0) > 0 && ' · '}
+                      {(r.menu_photo_count ?? 0) > 0 && <span title="Foto menu">{r.menu_photo_count} menu</span>}
+                    </span>
+                  ) : (
+                    <span className="text-gray-300 text-xs">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-xs">
                   {new Date(r.created_at).toLocaleDateString('it-IT')}
@@ -225,15 +292,6 @@ export default function RestaurantsPage() {
           Carica altri
         </button>
       )}
-    </div>
-  );
-}
-
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <p className="text-xs text-gray-400 uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>
     </div>
   );
 }

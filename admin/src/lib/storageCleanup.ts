@@ -83,6 +83,36 @@ export async function deleteMenuPhotoWithCleanup(
 /**
  * Elimina una recensione e i relativi file storage.
  */
+/**
+ * Rimuove una singola foto da una recensione (aggiorna il JSONB photos).
+ */
+export async function deleteReviewPhotoWithCleanup(
+  supabase: SupabaseClient,
+  reviewId: string,
+  photoIndex: number,
+): Promise<{ error: string | null }> {
+  const { data: review } = await supabase
+    .from('reviews')
+    .select('photos')
+    .eq('id', reviewId)
+    .single();
+
+  const photos = (review?.photos as { url: string; thumbnailUrl?: string }[]) ?? [];
+  if (photoIndex < 0 || photoIndex >= photos.length) return { error: 'Indice foto non valido' };
+
+  const removed = photos[photoIndex];
+  const updated = photos.filter((_, i) => i !== photoIndex);
+
+  const { error } = await supabase
+    .from('reviews')
+    .update({ photos: updated })
+    .eq('id', reviewId);
+  if (error) return { error: error.message };
+
+  await deleteStorageFiles(supabase, [removed.url, removed.thumbnailUrl]);
+  return { error: null };
+}
+
 export async function deleteReviewWithCleanup(
   supabase: SupabaseClient,
   reviewId: string,

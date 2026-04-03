@@ -1,28 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Report, ReportReason, ReportStatus } from '@/lib/types';
 import { REPORT_REASON_LABELS } from '@/lib/types';
 import { deleteMenuPhotoWithCleanup, deleteReviewWithCleanup } from '@/lib/storageCleanup';
+import { flattenReportJoins } from '@/lib/flattenJoin';
 import StatusBadge from '@/components/StatusBadge';
+import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
+import { useBusyIds } from '@/hooks/useBusyIds';
 import Link from 'next/link';
 
-const PAGE_SIZE = 25;
-
 export default function ReportsPage() {
-  const [reports, setReports] = useState<Report[]>([]);
+  const [showHelp, setShowHelp] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('pending');
   const [reasonFilter, setReasonFilter] = useState<ReportReason | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'restaurant' | 'photo' | 'review'>('all');
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
+  const { isBusy, withBusy } = useBusyIds();
 
-  const loadReports = async (pageNum: number, append = false) => {
-    setLoading(true);
-
+  const fetchReports = useCallback(async (pageNum: number) => {
     let query = supabase
       .from('reports')
       .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name), menu_photos!menu_photo_id(thumbnail_url, image_url), reviews!review_id(comment, rating, profiles!user_id(display_name))')
@@ -44,87 +40,85 @@ export default function ReportsPage() {
     }
 
     const { data } = await query;
-    const items = (data ?? []).map((r: any) => ({
-      ...r,
-      reporter_name: r.profiles?.display_name ?? null,
-      restaurant_name: r.restaurants?.name ?? null,
-      restaurant_city: r.restaurants?.city ?? null,
-      menu_photo_thumbnail_url: r.menu_photos?.thumbnail_url ?? null,
-      menu_photo_image_url: r.menu_photos?.image_url ?? null,
-      review_comment: r.reviews?.comment ?? null,
-      review_rating: r.reviews?.rating ?? null,
-      review_reviewer_name: (r.reviews?.profiles as any)?.display_name ?? null,
-      profiles: undefined,
-      restaurants: undefined,
-      menu_photos: undefined,
-      reviews: undefined,
-    }));
+    return (data ?? []).map((r: any) => flattenReportJoins(r, true)) as Report[];
+  }, [statusFilter, reasonFilter, typeFilter]);
 
-    setHasMore(items.length > PAGE_SIZE);
-    const pageItems = items.slice(0, PAGE_SIZE);
-
-    if (append) {
-      setReports((prev) => [...prev, ...pageItems]);
-    } else {
-      setReports(pageItems);
-    }
-    setLoading(false);
-  };
+  const { items: reports, setItems: setReports, loading, hasMore, loadMore, reset } =
+    usePagination<Report>({ fetchPage: fetchReports });
 
   useEffect(() => {
-    setPage(0);
-    loadReports(0);
+    reset();
   }, [statusFilter, reasonFilter, typeFilter]);
 
   const updateStatus = async (reportId: string, status: ReportStatus) => {
-    if (busyIds.has(reportId)) return;
-    setBusyIds((prev) => new Set(prev).add(reportId));
-    const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
-    setBusyIds((prev) => { const next = new Set(prev); next.delete(reportId); return next; });
-    if (error) {
-      alert(`Errore: ${error.message}`);
-      return;
-    }
-    setReports((prev) =>
-      prev.map((r) => (r.id === reportId ? { ...r, status } : r))
-    );
+    await withBusy(reportId, async () => {
+      const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
+      if (error) {
+        alert(`Errore: ${error.message}`);
+        return;
+      }
+      setReports((prev) =>
+        prev.map((r) => (r.id === reportId ? { ...r, status } : r))
+      );
+    });
   };
 
   const deleteMenuPhoto = async (report: Report) => {
-    if (!report.menu_photo_id || busyIds.has(report.id)) return;
+    if (!report.menu_photo_id) return;
     if (!confirm('Eliminare questa foto del menu e risolvere la segnalazione?')) return;
-    setBusyIds((prev) => new Set(prev).add(report.id));
-    // Risolvi TUTTI i report pending per questa foto (ON DELETE SET NULL li renderebbe orfani)
-    await supabase.from('reports').update({ status: 'resolved' }).eq('menu_photo_id', report.menu_photo_id).eq('status', 'pending');
-    const { error } = await deleteMenuPhotoWithCleanup(supabase, report.menu_photo_id);
-    setBusyIds((prev) => { const next = new Set(prev); next.delete(report.id); return next; });
-    if (error) {
-      alert(`Errore eliminazione foto: ${error}`);
-      return;
-    }
-    // Aggiorna UI: tutti i report per questa foto → resolved
-    const photoId = report.menu_photo_id;
-    setReports((prev) => prev.map((r) => r.menu_photo_id === photoId ? { ...r, status: 'resolved' as ReportStatus } : r));
+    await withBusy(report.id, async () => {
+      // Risolvi TUTTI i report pending per questa foto (ON DELETE SET NULL li renderebbe orfani)
+      await supabase.from('reports').update({ status: 'resolved' }).eq('menu_photo_id', report.menu_photo_id).eq('status', 'pending');
+      const { error } = await deleteMenuPhotoWithCleanup(supabase, report.menu_photo_id!);
+      if (error) {
+        alert(`Errore eliminazione foto: ${error}`);
+        return;
+      }
+      // Aggiorna UI: tutti i report per questa foto → resolved
+      const photoId = report.menu_photo_id;
+      setReports((prev) => prev.map((r) => r.menu_photo_id === photoId ? { ...r, status: 'resolved' as ReportStatus } : r));
+    });
   };
 
   const deleteReview = async (report: Report) => {
-    if (!report.review_id || busyIds.has(report.id)) return;
+    if (!report.review_id) return;
     if (!confirm('Eliminare questa recensione e risolvere la segnalazione?')) return;
-    setBusyIds((prev) => new Set(prev).add(report.id));
-    const { error } = await deleteReviewWithCleanup(supabase, report.review_id);
-    setBusyIds((prev) => { const next = new Set(prev); next.delete(report.id); return next; });
-    if (error) {
-      alert(`Errore eliminazione recensione: ${error}`);
-      return;
-    }
-    // CASCADE elimina i report dal DB — rimuovi dalla UI tutti quelli per questa review
-    const reviewId = report.review_id;
-    setReports((prev) => prev.filter((r) => r.review_id !== reviewId));
+    await withBusy(report.id, async () => {
+      const { error } = await deleteReviewWithCleanup(supabase, report.review_id!);
+      if (error) {
+        alert(`Errore eliminazione recensione: ${error}`);
+        return;
+      }
+      // CASCADE elimina i report dal DB — rimuovi dalla UI tutti quelli per questa review
+      const reviewId = report.review_id;
+      setReports((prev) => prev.filter((r) => r.review_id !== reviewId));
+    });
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Segnalazioni</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-2xl font-bold">Segnalazioni</h1>
+        <button
+          onClick={() => setShowHelp(!showHelp)}
+          className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 text-xs font-bold flex items-center justify-center transition-colors"
+          title="Come funzionano le segnalazioni"
+        >
+          i
+        </button>
+      </div>
+
+      {showHelp && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm text-gray-700">
+          <p className="font-semibold mb-2">Come gestire le segnalazioni</p>
+          <p className="mb-2">Gli utenti segnalano contenuti problematici: ristoranti con info errate, foto non pertinenti o recensioni inappropriate. Ogni segnalazione finisce qui in stato <strong>In attesa</strong>.</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li><strong>Elimina foto / Elimina recensione</strong> — Rimuove il contenuto segnalato e risolve automaticamente tutte le segnalazioni associate.</li>
+            <li><strong>Risolvi</strong> — Segna la segnalazione come gestita (es. hai contattato il ristorante o corretto i dati).</li>
+            <li><strong>Archivia</strong> — La segnalazione non era fondata o non richiede azione. Viene chiusa senza intervenire.</li>
+          </ul>
+        </div>
+      )}
 
       {/* Filtro tipo */}
       <div className="flex gap-2 mb-3">
@@ -252,7 +246,11 @@ export default function ReportsPage() {
                   <td className="px-4 py-3 text-gray-600 max-w-xs truncate" title={r.details ?? ''}>
                     {r.details || '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">{r.reporter_name ?? 'Anonimo'}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {r.user_id ? (
+                      <Link href={`/users/${r.user_id}`} className="text-blue-600 hover:underline">{r.reporter_name ?? 'Anonimo'}</Link>
+                    ) : (r.reporter_name ?? 'Anonimo')}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={r.status} />
                   </td>
@@ -262,31 +260,31 @@ export default function ReportsPage() {
                         {r.menu_photo_id && (
                           <button
                             onClick={() => deleteMenuPhoto(r)}
-                            disabled={busyIds.has(r.id)}
+                            disabled={isBusy(r.id)}
                             className="text-red-600 hover:underline text-xs disabled:opacity-50"
                           >
-                            {busyIds.has(r.id) ? '...' : 'Elimina foto'}
+                            {isBusy(r.id) ? '...' : 'Elimina foto'}
                           </button>
                         )}
                         {r.review_id && (
                           <button
                             onClick={() => deleteReview(r)}
-                            disabled={busyIds.has(r.id)}
+                            disabled={isBusy(r.id)}
                             className="text-red-600 hover:underline text-xs disabled:opacity-50"
                           >
-                            {busyIds.has(r.id) ? '...' : 'Elimina recensione'}
+                            {isBusy(r.id) ? '...' : 'Elimina recensione'}
                           </button>
                         )}
                         <button
                           onClick={() => updateStatus(r.id, 'resolved')}
-                          disabled={busyIds.has(r.id)}
+                          disabled={isBusy(r.id)}
                           className="text-green-600 hover:underline text-xs disabled:opacity-50"
                         >
-                          {busyIds.has(r.id) ? '...' : 'Risolvi'}
+                          {isBusy(r.id) ? '...' : 'Risolvi'}
                         </button>
                         <button
                           onClick={() => updateStatus(r.id, 'dismissed')}
-                          disabled={busyIds.has(r.id)}
+                          disabled={isBusy(r.id)}
                           className="text-gray-600 hover:underline text-xs disabled:opacity-50"
                         >
                           Archivia
@@ -305,11 +303,7 @@ export default function ReportsPage() {
 
       {hasMore && !loading && (
         <button
-          onClick={() => {
-            const nextPage = page + 1;
-            setPage(nextPage);
-            loadReports(nextPage, true);
-          }}
+          onClick={loadMore}
           className="mt-4 px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50"
         >
           Carica altre

@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+html, body {
+  overscroll-behavior: none;
+}
+
+.restaurant-tooltip {
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 6px 10px;
+}

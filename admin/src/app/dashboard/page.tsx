@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { safeQuery, safeCount } from '@/lib/safeQuery';
 import type { Restaurant } from '@/lib/types';
+import StatCard from '@/components/StatCard';
 import Link from 'next/link';
 
 interface Stats {
@@ -20,34 +22,30 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const [restaurantsRes, usersRes, reviewsRes, reportsRes] = await Promise.all([
-        supabase.from('restaurants').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('reviews').select('*', { count: 'exact', head: true }),
-        supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      const [totalRestaurants, totalUsers, totalReviews, pendingReports] = await Promise.all([
+        safeCount(() => supabase.from('restaurants').select('*', { count: 'exact', head: true })),
+        safeCount(() => supabase.from('profiles').select('*', { count: 'exact', head: true })),
+        safeCount(() => supabase.from('reviews').select('*', { count: 'exact', head: true })),
+        safeCount(() => supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending')),
       ]);
 
-      setStats({
-        totalRestaurants: restaurantsRes.count ?? 0,
-        totalUsers: usersRes.count ?? 0,
-        totalReviews: reviewsRes.count ?? 0,
-        pendingReports: reportsRes.count ?? 0,
-      });
+      setStats({ totalRestaurants, totalUsers, totalReviews, pendingReports });
 
       // Top 5 ristoranti con piu segnalazioni pending (aggregato in Postgres)
-      const { data: reportedData } = await supabase.rpc('get_top_reported_restaurants', { top_n: 5 });
+      const reportedData = await safeQuery(
+        () => supabase.rpc('get_top_reported_restaurants', { top_n: 5 }),
+        'Top segnalati',
+      );
       if (reportedData) {
         setTopReported(reportedData as (Restaurant & { report_count: number })[]);
       }
 
       // Ultimi 5 ristoranti aggiunti
-      const { data: recentData } = await supabase
-        .from('restaurants')
-        .select('id, name, city, country, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      setRecent(recentData as Restaurant[] ?? []);
+      const recentData = await safeQuery(
+        () => supabase.from('restaurants').select('id, name, city, country, created_at').order('created_at', { ascending: false }).limit(5),
+        'Ristoranti recenti',
+      );
+      setRecent((recentData as Restaurant[]) ?? []);
       setLoading(false);
     }
     load();
@@ -62,7 +60,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-4 gap-3 mb-8">
         <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-green-600" />
         <StatCard label="Utenti" value={stats.totalUsers} color="text-blue-600" />
         <StatCard label="Recensioni" value={stats.totalReviews} color="text-purple-600" />
@@ -72,7 +70,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-6">
         {/* Top segnalati */}
         <div className="bg-white rounded-lg shadow p-4">
-          <h2 className="font-semibold mb-3">Piu segnalati</h2>
+          <h2 className="font-semibold mb-3">Più segnalati</h2>
           {topReported.length === 0 ? (
             <p className="text-sm text-gray-400">Nessuna segnalazione</p>
           ) : (
@@ -118,15 +116,6 @@ export default function DashboardPage() {
           </table>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
     </div>
   );
 }

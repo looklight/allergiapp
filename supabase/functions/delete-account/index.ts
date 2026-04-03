@@ -30,8 +30,8 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
-    if (userError || !user) {
+    const { data: { user: caller }, error: userError } = await userClient.auth.getUser();
+    if (userError || !caller) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -42,6 +42,28 @@ Deno.serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // 3b. Se target_user_id presente, verifica che il chiamante sia admin
+    let body: { target_user_id?: string } = {};
+    try { body = await req.json(); } catch { /* no body = self-delete */ }
+
+    let targetUserId = caller.id;
+    if (body.target_user_id && body.target_user_id !== caller.id) {
+      const { data: callerProfile } = await adminClient
+        .from("profiles")
+        .select("role")
+        .eq("id", caller.id)
+        .single();
+      if (callerProfile?.role !== "admin") {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      targetUserId = body.target_user_id;
+    }
+
+    const user = { id: targetUserId };
 
     // 4. Elimina tutti i file dell'utente dallo Storage (best-effort, prima del cascade)
     //    Struttura: {userId}/{type}/{restaurantId}/{file}.jpg — serve ricorsione a 2 livelli

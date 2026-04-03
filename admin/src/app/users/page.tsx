@@ -1,53 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { safeCount } from '@/lib/safeQuery';
 import type { UserProfile } from '@/lib/types';
+import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import Link from 'next/link';
 
-const PAGE_SIZE = 25;
-
 export default function UsersPage() {
-  const [users, setUsers] = useState<UserProfile[]>([]);
   const [totalCount, setTotalCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
 
-  const loadUsers = async (pageNum: number, append = false) => {
-    setLoading(true);
+  const fetchUsers = useCallback(async (pageNum: number) => {
     const { data } = await supabase.rpc('get_profiles_with_email', {
       page_limit: PAGE_SIZE + 1,
       page_offset: pageNum * PAGE_SIZE,
       search_query: search.trim() || null,
     });
-
-    const items = (data ?? []) as UserProfile[];
-    setHasMore(items.length > PAGE_SIZE);
-    const pageItems = items.slice(0, PAGE_SIZE);
-
-    if (append) {
-      setUsers((prev) => [...prev, ...pageItems]);
-    } else {
-      setUsers(pageItems);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    setPage(0);
-    loadUsers(0);
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).then(({ count }) => {
-      setTotalCount(count ?? 0);
-    });
+    return (data ?? []) as UserProfile[];
   }, [search]);
 
-  const loadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    loadUsers(nextPage, true);
-  };
+  const { items: users, loading, hasMore, loadMore, reset } =
+    usePagination<UserProfile>({ fetchPage: fetchUsers });
+
+  useEffect(() => {
+    reset();
+    safeCount(() => supabase.from('profiles').select('*', { count: 'exact', head: true })).then(setTotalCount);
+  }, [search]);
 
   return (
     <div>
