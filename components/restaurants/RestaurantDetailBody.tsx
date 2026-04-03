@@ -403,7 +403,7 @@ export default function RestaurantDetailBody({
             ) : (
               <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
                 <View style={styles.ctaSection}>
-                  <Text style={styles.ctaTitle}>Sei stato qui?</Text>
+                  <Text style={styles.ctaTitle}>Lascia la tua opinione</Text>
                   <StarRating rating={0} size={36} onRate={(r) => navigateToContribute(r)} />
                   <Text style={styles.ctaHint}>La tua recensione aiuta chi ha le tue stesse esigenze</Text>
                 </View>

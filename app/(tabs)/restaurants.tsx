@@ -538,6 +538,7 @@ export default function RestaurantsScreen() {
           onRestaurantPress={handleOpenDetail}
           favoriteIds={favoriteIds}
           favoriteRestaurants={favoriteRestaurants}
+          compassOffset={{ x: -12, y: insets.top + 8 }}
         />
       </View>
 
@@ -580,7 +581,7 @@ export default function RestaurantsScreen() {
             )}
           </View>
           <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
 

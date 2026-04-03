@@ -1,6 +1,7 @@
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { theme } from '../../constants/theme';
 import ReviewCard from './ReviewCard';
 import type { UnifiedReview, ReviewSortOrder } from '../../hooks/useRestaurantDetail';
@@ -50,6 +51,8 @@ export default function ReviewsSection({
     );
   }
 
+  const [disclaimerVisible, setDisclaimerVisible] = useState(false);
+
   const sortOptions: { key: ReviewSortOrder; label: string; icon: string }[] = [
     { key: 'recent', label: 'Recenti', icon: 'clock-outline' },
     { key: 'rating', label: 'Stelle', icon: 'star-outline' },
@@ -62,7 +65,16 @@ export default function ReviewsSection({
   return (
     <View style={styles.section}>
       <View style={styles.reviewsHeader}>
-        <Text style={styles.sectionTitle}>Recensioni ({totalCount})</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.sectionTitle}>Recensioni ({totalCount})</Text>
+          <TouchableOpacity onPress={() => setDisclaimerVisible(v => !v)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <MaterialCommunityIcons
+              name="information-outline"
+              size={16}
+              color={disclaimerVisible ? theme.colors.primary : theme.colors.textDisabled}
+            />
+          </TouchableOpacity>
+        </View>
         {totalCount > 1 && (
           <View style={styles.sortRow}>
             {sortOptions.map(opt => {
@@ -107,6 +119,11 @@ export default function ReviewsSection({
           </View>
         )}
       </View>
+      {disclaimerVisible && (
+        <View style={styles.disclaimerBox}>
+          <Text style={styles.disclaimer}>Le recensioni non sono verificate e riflettono le esperienze personali degli utenti. Contribuisci scrivendone una, mettendo un like o segnalando contenuti inappropriati.</Text>
+        </View>
+      )}
       {reviews.map((item, idx) => (
         <View key={item.key}>
           {idx > 0 && <Divider style={styles.divider} />}
@@ -147,6 +164,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: theme.colors.surface,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   sectionTitle: {
     fontSize: 16,
@@ -189,6 +211,16 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     alignItems: 'center',
     gap: 8,
+  },
+  disclaimerBox: {
+    backgroundColor: theme.colors.background,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+  },
+  disclaimer: {
+    fontSize: 11,
+    color: theme.colors.textDisabled,
   },
   emptySectionTitle: {
     fontSize: 15,

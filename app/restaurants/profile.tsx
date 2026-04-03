@@ -129,6 +129,7 @@ export default function ProfileScreen() {
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
+
       </ProfileCard>
     </>
   );

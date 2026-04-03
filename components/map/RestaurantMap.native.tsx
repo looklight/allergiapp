@@ -71,6 +71,7 @@ export default function RestaurantMap({
   onRestaurantPress,
   favoriteIds,
   favoriteRestaurants,
+  compassOffset,
 }: RestaurantMapProps) {
   const mapRef = useRef<any>(null);
   const [mapHeight, setMapHeight] = useState(0);
@@ -281,6 +282,7 @@ export default function RestaurantMap({
       showsUserLocation={!!hasUserLocation}
       showsMyLocationButton={false}
       showsCompass
+      compassOffset={compassOffset}
       onMapReady={handleMapReady}
       onRegionChangeComplete={handleRegionChange}
       onPress={handleMapPress}

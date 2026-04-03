@@ -31,6 +31,7 @@ export type RestaurantMapProps = {
   onRestaurantPress?: (id: string) => void;
   favoriteIds?: Set<string>;
   favoriteRestaurants?: Map<string, Restaurant>;
+  compassOffset?: { x: number; y: number };
 };
 
 // ---------------------------------------------------------------------------

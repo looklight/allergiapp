@@ -13,7 +13,7 @@ export const DIETS: readonly DietInfo[] = [
     id: 'vegetarian',
     icon: '🥬',
     translations: {
-      it: 'Vegetariano',
+      it: 'Vegetarian',
       en: 'Vegetarian',
       fr: 'Végétarien',
       de: 'Vegetarisch',
@@ -34,7 +34,7 @@ export const DIETS: readonly DietInfo[] = [
     id: 'vegan',
     icon: '🌱',
     translations: {
-      it: 'Vegano',
+      it: 'Vegan',
       en: 'Vegan',
       fr: 'Végétalien',
       de: 'Vegan',

@@ -181,8 +181,8 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             />
             <Text style={[styles.compatText, { color: badgeColor }]}>
               {isNoReviews
-                ? `0/${matchInfo.totalFilters} esigenze confermate`
-                : `${inferredCount > 0 ? `${directCount > 0 ? directCount : ''}(+${inferredCount})` : matchInfo.coveredCount}/${matchInfo.totalFilters} esigenze confermate da ${matchInfo.reviewCount} ${matchInfo.reviewCount === 1 ? 'utente' : 'utenti'}`}
+                ? 'Nessuna informazione sulle tue esigenze'
+                : `${inferredCount > 0 ? `${directCount > 0 ? directCount : ''}(+${inferredCount})` : matchInfo.coveredCount}/${matchInfo.totalFilters} compatibile · secondo ${matchInfo.reviewCount} ${matchInfo.reviewCount === 1 ? 'recensione' : 'recensioni'}`}
             </Text>
             <MaterialCommunityIcons
               name={compatExpanded ? 'chevron-up' : 'chevron-down'}
@@ -191,41 +191,74 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             />
           </TouchableOpacity>
 
-          {compatExpanded && (
-            <View style={styles.compatExpandedBody}>
-              <Text style={styles.compatSourceNote}>
-                Basato sulle esigenze alimentari segnalate dagli utenti.
-              </Text>
+          {compatExpanded && (() => {
+            const getChipLabel = (code: string) => {
+              const r = getRestrictionById(code);
+              if (!r) return code;
+              const base = r.translations[lang as keyof typeof r.translations] ?? r.translations.en;
+              if (r.category === 'intolerance') {
+                if (lang === 'it') return `Bass${base.endsWith('a') ? 'a' : 'o'} ${base.toLowerCase()}`;
+                return `Low ${base.toLowerCase()}`;
+              }
+              return base;
+            };
+
+            const renderChips = (codes: string[], style: typeof styles.compatChipCovered) => (
               <View style={styles.compatDetail}>
-                {matchInfo.covered.map(code => {
-                  const r = getRestrictionById(code);
-                  const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
+                {codes.map(code => {
+                  const label = getChipLabel(code);
                   const inferSource = matchInfo.inferredSources?.[code];
                   const sourceRestriction = inferSource ? getRestrictionById(inferSource) : null;
                   const sourceLabel = sourceRestriction
-                    ? (sourceRestriction.translations[lang as keyof typeof sourceRestriction.translations] ?? sourceRestriction.translations.en)
+                    ? getChipLabel(inferSource!)
                     : null;
+                  const isCovered = style === styles.compatChipCovered;
                   return (
-                    <View key={code} style={[styles.compatChip, inferSource ? styles.compatChipInferred : styles.compatChipCovered]}>
-                      <MaterialCommunityIcons name={inferSource ? 'link-variant' : 'check'} size={12} color={inferSource ? theme.colors.textSecondary : theme.colors.success} />
-                      <Text style={[styles.compatChipText, { color: inferSource ? theme.colors.textSecondary : theme.colors.success }]}>
+                    <View key={code} style={[styles.compatChip, inferSource ? styles.compatChipInferred : style]}>
+                      <MaterialCommunityIcons
+                        name={!isCovered ? 'minus' : 'check'}
+                        size={12}
+                        color={!isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.textSecondary : theme.colors.success)}
+                      />
+                      <Text style={[styles.compatChipText, { color: !isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.textSecondary : theme.colors.success) }]}>
                         {label}
-                        {sourceLabel ? ` · da ${sourceLabel}` : ''}
+                        {isCovered && sourceLabel ? ` · da ${sourceLabel}` : ''}
                       </Text>
                     </View>
                   );
                 })}
-                {matchInfo.uncovered.map(code => {
-                  const r = getRestrictionById(code);
-                  const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
-                  return (
-                    <View key={code} style={[styles.compatChip, styles.compatChipUncovered]}>
-                      <MaterialCommunityIcons name="minus" size={12} color={theme.colors.textDisabled} />
-                      <Text style={[styles.compatChipText, { color: theme.colors.textDisabled }]}>{label}</Text>
-                    </View>
-                  );
-                })}
               </View>
+            );
+
+            const isAllergenOrSensitivity = (code: string) => { const r = getRestrictionById(code); return !r || r.category === 'eu_allergen' || r.category === 'food_sensitivity'; };
+            const coveredAllergens = matchInfo.covered.filter(isAllergenOrSensitivity);
+            const coveredDietsIntol = matchInfo.covered.filter(c => !isAllergenOrSensitivity(c));
+            const uncoveredAllergens = matchInfo.uncovered.filter(isAllergenOrSensitivity);
+            const uncoveredDietsIntol = matchInfo.uncovered.filter(c => !isAllergenOrSensitivity(c));
+
+            return (
+            <View style={styles.compatExpandedBody}>
+              {coveredAllergens.length > 0 && (
+                <>
+                  <Text style={styles.compatSourceNote}>Recensioni confermano opzioni senza:</Text>
+                  {renderChips(coveredAllergens, styles.compatChipCovered)}
+                </>
+              )}
+              {coveredDietsIntol.length > 0 && (
+                <>
+                  <Text style={styles.compatSourceNote}>{coveredAllergens.length > 0 ? 'E opzioni per:' : 'Recensioni confermano opzioni per:'}</Text>
+                  {renderChips(coveredDietsIntol, styles.compatChipCovered)}
+                </>
+              )}
+              {(uncoveredAllergens.length > 0 || uncoveredDietsIntol.length > 0) && (
+                <>
+                  <Text style={styles.compatSourceNote}>Nessuna recensione menziona:</Text>
+                  {renderChips([...uncoveredAllergens, ...uncoveredDietsIntol], styles.compatChipUncovered)}
+                </>
+              )}
+              <Text style={styles.compatDisclaimer}>
+                Le informazioni sono basate sulle esperienze condivise dagli utenti della community. Non sono verificate, verifica sempre prima di ordinare.
+              </Text>
               {onScrollToReviews && !isNoReviews && (
                 <TouchableOpacity onPress={onScrollToReviews} activeOpacity={0.7} style={styles.compatReadReviews}>
                   <Text style={styles.compatReadReviewsText}>Leggi le recensioni</Text>
@@ -233,7 +266,8 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                 </TouchableOpacity>
               )}
             </View>
-          )}
+            );
+          })()}
         </View>
       )}
     </View>
@@ -397,6 +431,11 @@ const styles = StyleSheet.create({
   compatSourceNote: {
     fontSize: 11,
     color: theme.colors.textSecondary,
+    fontStyle: 'italic',
+  },
+  compatDisclaimer: {
+    fontSize: 11,
+    color: theme.colors.textDisabled,
     fontStyle: 'italic',
   },
   compatReadReviews: {

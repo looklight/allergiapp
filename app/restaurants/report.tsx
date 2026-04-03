@@ -14,6 +14,7 @@ export default function ReportScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
+  const descriptionY = useRef(0);
   const isDescriptionFocused = useRef(false);
   const { restaurantId, restaurantName } = useLocalSearchParams<{
     restaurantId: string;
@@ -69,7 +70,7 @@ export default function ReportScreen() {
 
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
         automaticallyAdjustKeyboardInsets
@@ -105,7 +106,12 @@ export default function ReportScreen() {
               <TouchableOpacity
                 key={reason.id}
                 style={[styles.reasonChip, isActive && styles.reasonChipActive]}
-                onPress={() => setSelectedReason(reason.id)}
+                onPress={() => {
+                  setSelectedReason(reason.id);
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: descriptionY.current - 20, animated: true });
+                  }, 100);
+                }}
                 activeOpacity={0.7}
               >
                 <Text style={styles.reasonIcon}>{reason.icon}</Text>
@@ -120,6 +126,7 @@ export default function ReportScreen() {
         <View style={styles.separator} />
 
         {/* Descrizione */}
+        <View onLayout={e => { descriptionY.current = e.nativeEvent.layout.y; }} />
         <Text style={styles.sectionTitle}>Descrizione</Text>
         <TextInput
           value={description}
@@ -135,7 +142,16 @@ export default function ReportScreen() {
         />
         <Text style={styles.charCount}>{description.length}/500</Text>
 
-        {/* Bottone submit */}
+        <View style={styles.reviewHint}>
+          <MaterialCommunityIcons name="lightbulb-outline" size={16} color={theme.colors.textSecondary} />
+          <Text style={styles.reviewHintText}>
+            Se la tua esperienza può essere utile ad altri, considera di lasciare una recensione. Spesso una recensione rispettosa e costruttiva aiuta più di una segnalazione.
+          </Text>
+        </View>
+      </ScrollView>
+
+      {/* Bottone submit fisso in basso */}
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity
           style={[styles.submitButton, (!canSubmit || isSubmitting) && styles.submitButtonDisabled]}
           onPress={handleSubmit}
@@ -146,7 +162,7 @@ export default function ReportScreen() {
             {isSubmitting ? 'Invio in corso...' : 'Invia segnalazione'}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -155,22 +171,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    flex: 1,
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginHorizontal: 8,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -259,13 +259,34 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 4,
   },
+  reviewHint: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 24,
+    backgroundColor: theme.colors.background,
+    borderRadius: 12,
+    padding: 14,
+  },
+  reviewHintText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 19,
+    color: theme.colors.textSecondary,
+  },
+  bottomBar: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
   submitButton: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.primary,
     paddingVertical: 16,
     borderRadius: 14,
-    marginTop: 32,
   },
   submitButtonDisabled: {
     opacity: 0.4,
