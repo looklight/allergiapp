@@ -119,6 +119,9 @@ const OTHER_FOODS = {
   lentils: 'Lentils',
   corn: 'Corn',
   buckwheat: 'Buckwheat',
+  pepper: 'Pepper',
+  nutmeg: 'Nutmeg',
+  turmeric: 'Turmeric',
   coriander: 'Coriander',
   spicy: 'Spicy foods',
   beans: 'Beans',
@@ -130,6 +133,7 @@ const OTHER_FOODS = {
   ginger: 'Ginger',
   cacao_chocolate: 'Cacao / Chocolate',
   oats: 'Oats',
+  flax_seeds: 'Flax seeds',
   olive_oil: 'Olive oil',
   // Proteine
   pork: 'Pork',

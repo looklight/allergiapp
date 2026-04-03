@@ -36,22 +36,28 @@ export type OtherFoodId =
   | 'watermelon'
   | 'fig'
   | 'passion_fruit'
-  // Legumi/Cereali/Altro
+  // Legumi
   | 'chickpeas'
   | 'lentils'
-  | 'corn'
-  | 'buckwheat'
-  | 'coriander'
-  | 'spicy'
   | 'beans'
   | 'peas'
+  // Cereali
+  | 'corn'
+  | 'buckwheat'
   | 'rice'
-  | 'poppy_seeds'
-  | 'sunflower_seeds'
+  | 'oats'
+  // Spezie, semi e altro
+  | 'pepper'
+  | 'nutmeg'
+  | 'turmeric'
+  | 'coriander'
+  | 'spicy'
   | 'cinnamon'
   | 'ginger'
+  | 'poppy_seeds'
+  | 'sunflower_seeds'
+  | 'flax_seeds'
   | 'cacao_chocolate'
-  | 'oats'
   | 'olive_oil'
   // Proteine
   | 'pork'
@@ -233,23 +239,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
     it: 'Frutto della passione', en: 'Passion fruit', fr: 'Fruit de la passion', de: 'Passionsfrucht', es: 'Maracuyá', pt: 'Maracujá', nl: 'Passievrucht', pl: 'Marakuja', ru: 'Маракуйя', sv: 'Passionsfrukt', zh: '百香果', ja: 'パッションフルーツ', ko: '패션프루트', th: 'เสาวรส', ar: 'فاكهة العاطفة',
   }},
   // — Legumi, cereali e altro —
+  // Legumi
   { id: 'chickpeas', icon: '🫘', category: 'legumes_other', translations: {
     it: 'Ceci', en: 'Chickpeas', fr: 'Pois chiches', de: 'Kichererbsen', es: 'Garbanzos', pt: 'Grão-de-bico', nl: 'Kikkererwten', pl: 'Ciecierzyca', ru: 'Нут', sv: 'Kikärter', zh: '鹰嘴豆', ja: 'ひよこ豆', ko: '병아리콩', th: 'ถั่วลูกไก่', ar: 'حمص',
   }},
   { id: 'lentils', icon: '🫘', category: 'legumes_other', translations: {
     it: 'Lenticchie', en: 'Lentils', fr: 'Lentilles', de: 'Linsen', es: 'Lentejas', pt: 'Lentilhas', nl: 'Linzen', pl: 'Soczewica', ru: 'Чечевица', sv: 'Linser', zh: '扁豆', ja: 'レンズ豆', ko: '렌틸콩', th: 'ถั่วเลนทิล', ar: 'عدس',
-  }},
-  { id: 'corn', icon: '🌽', category: 'legumes_other', translations: {
-    it: 'Mais', en: 'Corn', fr: 'Maïs', de: 'Mais', es: 'Maíz', pt: 'Milho', nl: 'Maïs', pl: 'Kukurydza', ru: 'Кукуруза', sv: 'Majs', zh: '玉米', ja: 'トウモロコシ', ko: '옥수수', th: 'ข้าวโพด', ar: 'الذرة',
-  }},
-  { id: 'buckwheat', icon: '🍜', category: 'legumes_other', translations: {
-    it: 'Grano saraceno', en: 'Buckwheat', fr: 'Sarrasin', de: 'Buchweizen', es: 'Trigo sarraceno', pt: 'Trigo sarraceno', nl: 'Boekweit', pl: 'Gryka', ru: 'Гречка', sv: 'Bovete', zh: '荞麦', ja: 'そば', ko: '메밀', th: 'บัควีท', ar: 'الحنطة السوداء',
-  }},
-  { id: 'coriander', icon: '🌿', category: 'legumes_other', translations: {
-    it: 'Coriandolo', en: 'Coriander', fr: 'Coriandre', de: 'Koriander', es: 'Cilantro', pt: 'Coentro', nl: 'Koriander', pl: 'Kolendra', ru: 'Кориандр', sv: 'Koriander', zh: '香菜', ja: 'コリアンダー', ko: '고수', th: 'ผักชี', ar: 'كزبرة',
-  }},
-  { id: 'spicy', icon: '🌶️', category: 'legumes_other', translations: {
-    it: 'Spezie piccanti', en: 'Spicy foods', fr: 'Épices piquantes', de: 'Scharfe Gewürze', es: 'Especias picantes', pt: 'Especiarias picantes', nl: 'Pittige kruiden', pl: 'Ostre przyprawy', ru: 'Острые специи', sv: 'Starka kryddor', zh: '辛辣食物', ja: '辛い香辛料', ko: '매운 향신료', th: 'เครื่องเทศรสเผ็ด', ar: 'التوابل الحارة',
   }},
   { id: 'beans', icon: '🫘', category: 'legumes_other', translations: {
     it: 'Fagioli', en: 'Beans', fr: 'Haricots', de: 'Bohnen', es: 'Judías', pt: 'Feijão', nl: 'Bonen', pl: 'Fasola', ru: 'Фасоль', sv: 'Bönor', zh: '豆子', ja: '豆', ko: '콩', th: 'ถั่ว', ar: 'الفاصوليا',
@@ -257,14 +252,34 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'peas', icon: '🫛', category: 'legumes_other', translations: {
     it: 'Piselli', en: 'Peas', fr: 'Petits pois', de: 'Erbsen', es: 'Guisantes', pt: 'Ervilhas', nl: 'Erwten', pl: 'Groch', ru: 'Горох', sv: 'Ärtor', zh: '豌豆', ja: 'エンドウ豆', ko: '완두콩', th: 'ถั่วลันเตา', ar: 'البازلاء',
   }},
+  // Cereali
+  { id: 'corn', icon: '🌽', category: 'legumes_other', translations: {
+    it: 'Mais', en: 'Corn', fr: 'Maïs', de: 'Mais', es: 'Maíz', pt: 'Milho', nl: 'Maïs', pl: 'Kukurydza', ru: 'Кукуруза', sv: 'Majs', zh: '玉米', ja: 'トウモロコシ', ko: '옥수수', th: 'ข้าวโพด', ar: 'الذرة',
+  }},
+  { id: 'buckwheat', icon: '🍜', category: 'legumes_other', translations: {
+    it: 'Grano saraceno', en: 'Buckwheat', fr: 'Sarrasin', de: 'Buchweizen', es: 'Trigo sarraceno', pt: 'Trigo sarraceno', nl: 'Boekweit', pl: 'Gryka', ru: 'Гречка', sv: 'Bovete', zh: '荞麦', ja: 'そば', ko: '메밀', th: 'บัควีท', ar: 'الحنطة السوداء',
+  }},
   { id: 'rice', icon: '🍚', category: 'legumes_other', translations: {
     it: 'Riso', en: 'Rice', fr: 'Riz', de: 'Reis', es: 'Arroz', pt: 'Arroz', nl: 'Rijst', pl: 'Ryż', ru: 'Рис', sv: 'Ris', zh: '大米', ja: '米', ko: '쌀', th: 'ข้าว', ar: 'الأرز',
   }},
-  { id: 'poppy_seeds', icon: '🌸', category: 'legumes_other', translations: {
-    it: 'Semi di papavero', en: 'Poppy seeds', fr: 'Graines de pavot', de: 'Mohnsamen', es: 'Semillas de amapola', pt: 'Sementes de papoula', nl: 'Maanzaad', pl: 'Nasiona maku', ru: 'Семена мака', sv: 'Vallmofrön', zh: '罂粟籽', ja: 'ケシの実', ko: '양귀비씨', th: 'เมล็ดฝิ่น', ar: 'بذور الخشخاش',
+  { id: 'oats', icon: '🌾', category: 'legumes_other', translations: {
+    it: 'Avena', en: 'Oats', fr: 'Avoine', de: 'Hafer', es: 'Avena', pt: 'Aveia', nl: 'Haver', pl: 'Owies', ru: 'Овёс', sv: 'Havre', zh: '燕麦', ja: 'オーツ麦', ko: '귀리', th: 'ข้าวโอ๊ต', ar: 'الشوفان',
   }},
-  { id: 'sunflower_seeds', icon: '🌻', category: 'legumes_other', translations: {
-    it: 'Semi di girasole', en: 'Sunflower seeds', fr: 'Graines de tournesol', de: 'Sonnenblumenkerne', es: 'Semillas de girasol', pt: 'Sementes de girassol', nl: 'Zonnebloempitten', pl: 'Nasiona słonecznika', ru: 'Семена подсолнечника', sv: 'Solrosfrön', zh: '葵花籽', ja: 'ヒマワリの種', ko: '해바라기씨', th: 'เมล็ดทานตะวัน', ar: 'بذور دوار الشمس',
+  // Spezie, semi e altro
+  { id: 'pepper', icon: '🫙', category: 'legumes_other', translations: {
+    it: 'Pepe', en: 'Pepper', fr: 'Poivre', de: 'Pfeffer', es: 'Pimienta', pt: 'Pimenta', nl: 'Peper', pl: 'Pieprz', ru: 'Перец', sv: 'Peppar', zh: '胡椒', ja: 'コショウ', ko: '후추', th: 'พริกไทย', ar: 'الفلفل',
+  }},
+  { id: 'nutmeg', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Noce moscata', en: 'Nutmeg', fr: 'Noix de muscade', de: 'Muskatnuss', es: 'Nuez moscada', pt: 'Noz-moscada', nl: 'Nootmuskaat', pl: 'Gałka muszkatołowa', ru: 'Мускатный орех', sv: 'Muskotnöt', zh: '肉豆蔻', ja: 'ナツメグ', ko: '육두구', th: 'ลูกจันทน์เทศ', ar: 'جوزة الطيب',
+  }},
+  { id: 'turmeric', icon: '🟡', category: 'legumes_other', translations: {
+    it: 'Curcuma', en: 'Turmeric', fr: 'Curcuma', de: 'Kurkuma', es: 'Cúrcuma', pt: 'Cúrcuma', nl: 'Kurkuma', pl: 'Kurkuma', ru: 'Куркума', sv: 'Gurkmeja', zh: '姜黄', ja: 'ターメリック', ko: '강황', th: 'ขมิ้น', ar: 'الكركم',
+  }},
+  { id: 'coriander', icon: '🌿', category: 'legumes_other', translations: {
+    it: 'Coriandolo', en: 'Coriander', fr: 'Coriandre', de: 'Koriander', es: 'Cilantro', pt: 'Coentro', nl: 'Koriander', pl: 'Kolendra', ru: 'Кориандр', sv: 'Koriander', zh: '香菜', ja: 'コリアンダー', ko: '고수', th: 'ผักชี', ar: 'كزبرة',
+  }},
+  { id: 'spicy', icon: '🌶️', category: 'legumes_other', translations: {
+    it: 'Spezie piccanti', en: 'Spicy foods', fr: 'Épices piquantes', de: 'Scharfe Gewürze', es: 'Especias picantes', pt: 'Especiarias picantes', nl: 'Pittige kruiden', pl: 'Ostre przyprawy', ru: 'Острые специи', sv: 'Starka kryddor', zh: '辛辣食物', ja: '辛い香辛料', ko: '매운 향신료', th: 'เครื่องเทศรสเผ็ด', ar: 'التوابل الحارة',
   }},
   { id: 'cinnamon', icon: '🍂', category: 'legumes_other', translations: {
     it: 'Cannella', en: 'Cinnamon', fr: 'Cannelle', de: 'Zimt', es: 'Canela', pt: 'Canela', nl: 'Kaneel', pl: 'Cynamon', ru: 'Корица', sv: 'Kanel', zh: '肉桂', ja: 'シナモン', ko: '계피', th: 'อบเชย', ar: 'القرفة',
@@ -272,11 +287,17 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'ginger', icon: '🫚', category: 'legumes_other', translations: {
     it: 'Zenzero', en: 'Ginger', fr: 'Gingembre', de: 'Ingwer', es: 'Jengibre', pt: 'Gengibre', nl: 'Gember', pl: 'Imbir', ru: 'Имбирь', sv: 'Ingefära', zh: '生姜', ja: 'ショウガ', ko: '생강', th: 'ขิง', ar: 'الزنجبيل',
   }},
+  { id: 'poppy_seeds', icon: '🌸', category: 'legumes_other', translations: {
+    it: 'Semi di papavero', en: 'Poppy seeds', fr: 'Graines de pavot', de: 'Mohnsamen', es: 'Semillas de amapola', pt: 'Sementes de papoula', nl: 'Maanzaad', pl: 'Nasiona maku', ru: 'Семена мака', sv: 'Vallmofrön', zh: '罂粟籽', ja: 'ケシの実', ko: '양귀비씨', th: 'เมล็ดฝิ่น', ar: 'بذور الخشخاش',
+  }},
+  { id: 'sunflower_seeds', icon: '🌻', category: 'legumes_other', translations: {
+    it: 'Semi di girasole', en: 'Sunflower seeds', fr: 'Graines de tournesol', de: 'Sonnenblumenkerne', es: 'Semillas de girasol', pt: 'Sementes de girassol', nl: 'Zonnebloempitten', pl: 'Nasiona słonecznika', ru: 'Семена подсолнечника', sv: 'Solrosfrön', zh: '葵花籽', ja: 'ヒマワリの種', ko: '해바라기씨', th: 'เมล็ดทานตะวัน', ar: 'بذور دوار الشمس',
+  }},
+  { id: 'flax_seeds', icon: '🌾', category: 'legumes_other', translations: {
+    it: 'Semi di lino', en: 'Flax seeds', fr: 'Graines de lin', de: 'Leinsamen', es: 'Semillas de lino', pt: 'Sementes de linhaça', nl: 'Lijnzaad', pl: 'Siemię lniane', ru: 'Семена льна', sv: 'Linfrön', zh: '亚麻籽', ja: '亜麻仁', ko: '아마씨', th: 'เมล็ดแฟลกซ์', ar: 'بذور الكتان',
+  }},
   { id: 'cacao_chocolate', icon: '🍫', category: 'legumes_other', translations: {
     it: 'Cacao/Cioccolato', en: 'Cacao/Chocolate', fr: 'Cacao/Chocolat', de: 'Kakao/Schokolade', es: 'Cacao/Chocolate', pt: 'Cacau/Chocolate', nl: 'Cacao/Chocolade', pl: 'Kakao/Czekolada', ru: 'Какао/Шоколад', sv: 'Kakao/Choklad', zh: '可可/巧克力', ja: 'カカオ/チョコレート', ko: '카카오/초콜릿', th: 'โกโก้/ช็อกโกแลต', ar: 'الكاكاو/الشوكولاتة',
-  }},
-  { id: 'oats', icon: '🌾', category: 'legumes_other', translations: {
-    it: 'Avena', en: 'Oats', fr: 'Avoine', de: 'Hafer', es: 'Avena', pt: 'Aveia', nl: 'Haver', pl: 'Owies', ru: 'Овёс', sv: 'Havre', zh: '燕麦', ja: 'オーツ麦', ko: '귀리', th: 'ข้าวโอ๊ต', ar: 'الشوفان',
   }},
   { id: 'olive_oil', icon: '🫒', category: 'legumes_other', translations: {
     it: 'Olio d\'oliva', en: 'Olive oil', fr: 'Huile d\'olive', de: 'Olivenöl', es: 'Aceite de oliva', pt: 'Azeite', nl: 'Olijfolie', pl: 'Oliwa z oliwek', ru: 'Оливковое масло', sv: 'Olivolja', zh: '橄榄油', ja: 'オリーブオイル', ko: '올리브유', th: 'น้ำมันมะกอก', ar: 'زيت الزيتون',
