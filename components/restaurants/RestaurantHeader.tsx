@@ -17,6 +17,8 @@ interface MatchInfo {
   totalFilters: number;
   covered: string[];
   uncovered: string[];
+  /** Coperture dedotte per implicazione: need -> source (es. { eggs: 'vegan' }) */
+  inferredSources?: Record<string, string>;
 }
 
 interface RestaurantHeaderProps {
@@ -37,6 +39,8 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   const [showCuisineHint, setShowCuisineHint] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
   const isNoReviews = !matchInfo || matchInfo.reviewCount === 0;
+  const inferredCount = matchInfo ? Object.keys(matchInfo.inferredSources ?? {}).length : 0;
+  const directCount = matchInfo ? matchInfo.coveredCount - inferredCount : 0;
   const isFull = !isNoReviews && matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
   const badgeBg = isNoReviews ? theme.colors.background : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
   const badgeColor = isNoReviews ? theme.colors.textSecondary : (isFull ? theme.colors.success : theme.colors.amberDark);
@@ -178,7 +182,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             <Text style={[styles.compatText, { color: badgeColor }]}>
               {isNoReviews
                 ? `0/${matchInfo.totalFilters} esigenze confermate`
-                : `${matchInfo.coveredCount}/${matchInfo.totalFilters} esigenze confermate da ${matchInfo.reviewCount} ${matchInfo.reviewCount === 1 ? 'utente' : 'utenti'}`}
+                : `${inferredCount > 0 ? `${directCount > 0 ? directCount : ''}(+${inferredCount})` : matchInfo.coveredCount}/${matchInfo.totalFilters} esigenze confermate da ${matchInfo.reviewCount} ${matchInfo.reviewCount === 1 ? 'utente' : 'utenti'}`}
             </Text>
             <MaterialCommunityIcons
               name={compatExpanded ? 'chevron-up' : 'chevron-down'}
@@ -196,10 +200,18 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                 {matchInfo.covered.map(code => {
                   const r = getRestrictionById(code);
                   const label = r ? (r.translations[lang as keyof typeof r.translations] ?? r.translations.en) : code;
+                  const inferSource = matchInfo.inferredSources?.[code];
+                  const sourceRestriction = inferSource ? getRestrictionById(inferSource) : null;
+                  const sourceLabel = sourceRestriction
+                    ? (sourceRestriction.translations[lang as keyof typeof sourceRestriction.translations] ?? sourceRestriction.translations.en)
+                    : null;
                   return (
-                    <View key={code} style={[styles.compatChip, styles.compatChipCovered]}>
-                      <MaterialCommunityIcons name="check" size={12} color={theme.colors.success} />
-                      <Text style={[styles.compatChipText, { color: theme.colors.success }]}>{label}</Text>
+                    <View key={code} style={[styles.compatChip, inferSource ? styles.compatChipInferred : styles.compatChipCovered]}>
+                      <MaterialCommunityIcons name={inferSource ? 'link-variant' : 'check'} size={12} color={inferSource ? theme.colors.textSecondary : theme.colors.success} />
+                      <Text style={[styles.compatChipText, { color: inferSource ? theme.colors.textSecondary : theme.colors.success }]}>
+                        {label}
+                        {sourceLabel ? ` · da ${sourceLabel}` : ''}
+                      </Text>
                     </View>
                   );
                 })}
@@ -364,6 +376,11 @@ const styles = StyleSheet.create({
   },
   compatChipCovered: {
     backgroundColor: theme.colors.primaryLight,
+  },
+  compatChipInferred: {
+    backgroundColor: theme.colors.inferredBg,
+    borderWidth: 1,
+    borderColor: theme.colors.inferredBorder,
   },
   compatChipUncovered: {
     backgroundColor: theme.colors.background,

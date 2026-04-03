@@ -355,5 +355,3 @@ Domanda, abbiamo rimosso i cluster di pin? Forse è la scelta giusta dato che no
 Se le recensioni sono più lunghe di un tot, ad esempio 5 righe possiamo mettere il pulsante leggi tutto o qualcosa di simile? Almeno la pagina resta più compatta
 
 
-- Volevo ripensare il modo in cui si vedono i pin sulla mappa e vorrei ispirarmi a Google maps dove i preferiti sono sempre visibili e se si fa tanto zoom out si ridimensionano diventando dei piccoli pallini. L'idea sarebbe che siano piccoli pallini finchè non si zoomma abbastanza da mostrarli come pin con il voto. Secondo me è una funzione migliore per la UI almeno l'utente non deve usare la funzione "mostra in quest'area. Possiamo valutare se può essere una soluzione sostenibile e scalabile? A livello di chiamate e gestione vorrei fosse fattibile ed economica. Inoltre in ogni caso vorrei pulire tutto quello che riguarda i cluster che avevamo implementato una volta, forse avevamo già rimosso ma controlla che sia pulito.
-

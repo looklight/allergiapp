@@ -2,7 +2,7 @@
 
 export type ReportStatus = 'pending' | 'resolved' | 'dismissed';
 
-export type ReportReason = 'closed' | 'incorrect_info' | 'hygiene' | 'inappropriate' | 'incorrect_image' | 'other';
+export type ReportReason = 'closed' | 'incorrect_info' | 'hygiene' | 'inappropriate' | 'incorrect_image' | 'spam' | 'false_info' | 'other';
 
 export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
   closed: 'Chiuso definitivamente',
@@ -10,6 +10,8 @@ export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
   hygiene: 'Condizioni igieniche',
   inappropriate: 'Contenuto inappropriato',
   incorrect_image: 'Foto non pertinente',
+  spam: 'Spam o pubblicità',
+  false_info: 'Informazioni false',
   other: 'Altro',
 };
 
@@ -102,4 +104,7 @@ export interface Report {
   restaurant_city?: string | null;
   menu_photo_thumbnail_url?: string | null;
   menu_photo_image_url?: string | null;
+  review_comment?: string | null;
+  review_rating?: number | null;
+  review_reviewer_name?: string | null;
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Report, ReportReason, ReportStatus } from '@/lib/types';
 import { REPORT_REASON_LABELS } from '@/lib/types';
+import { deleteMenuPhotoWithCleanup, deleteReviewWithCleanup } from '@/lib/storageCleanup';
 import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
 
@@ -13,7 +14,7 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('pending');
   const [reasonFilter, setReasonFilter] = useState<ReportReason | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'restaurant' | 'photo'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'restaurant' | 'photo' | 'review'>('all');
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -24,7 +25,7 @@ export default function ReportsPage() {
 
     let query = supabase
       .from('reports')
-      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name), menu_photos!menu_photo_id(thumbnail_url, image_url)')
+      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name), menu_photos!menu_photo_id(thumbnail_url, image_url), reviews!review_id(comment, rating, profiles!user_id(display_name))')
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
 
@@ -36,8 +37,10 @@ export default function ReportsPage() {
     }
     if (typeFilter === 'photo') {
       query = query.not('menu_photo_id', 'is', null);
+    } else if (typeFilter === 'review') {
+      query = query.not('review_id', 'is', null);
     } else if (typeFilter === 'restaurant') {
-      query = query.is('menu_photo_id', null);
+      query = query.is('menu_photo_id', null).is('review_id', null);
     }
 
     const { data } = await query;
@@ -48,9 +51,13 @@ export default function ReportsPage() {
       restaurant_city: r.restaurants?.city ?? null,
       menu_photo_thumbnail_url: r.menu_photos?.thumbnail_url ?? null,
       menu_photo_image_url: r.menu_photos?.image_url ?? null,
+      review_comment: r.reviews?.comment ?? null,
+      review_rating: r.reviews?.rating ?? null,
+      review_reviewer_name: (r.reviews?.profiles as any)?.display_name ?? null,
       profiles: undefined,
       restaurants: undefined,
       menu_photos: undefined,
+      reviews: undefined,
     }));
 
     setHasMore(items.length > PAGE_SIZE);
@@ -87,18 +94,32 @@ export default function ReportsPage() {
     if (!report.menu_photo_id || busyIds.has(report.id)) return;
     if (!confirm('Eliminare questa foto del menu e risolvere la segnalazione?')) return;
     setBusyIds((prev) => new Set(prev).add(report.id));
-    const { error: deleteError } = await supabase
-      .from('menu_photos')
-      .delete()
-      .eq('id', report.menu_photo_id);
-    if (deleteError) {
-      alert(`Errore eliminazione foto: ${deleteError.message}`);
-      setBusyIds((prev) => { const next = new Set(prev); next.delete(report.id); return next; });
+    // Risolvi TUTTI i report pending per questa foto (ON DELETE SET NULL li renderebbe orfani)
+    await supabase.from('reports').update({ status: 'resolved' }).eq('menu_photo_id', report.menu_photo_id).eq('status', 'pending');
+    const { error } = await deleteMenuPhotoWithCleanup(supabase, report.menu_photo_id);
+    setBusyIds((prev) => { const next = new Set(prev); next.delete(report.id); return next; });
+    if (error) {
+      alert(`Errore eliminazione foto: ${error}`);
       return;
     }
-    await supabase.from('reports').update({ status: 'resolved' }).eq('id', report.id);
+    // Aggiorna UI: tutti i report per questa foto → resolved
+    const photoId = report.menu_photo_id;
+    setReports((prev) => prev.map((r) => r.menu_photo_id === photoId ? { ...r, status: 'resolved' as ReportStatus } : r));
+  };
+
+  const deleteReview = async (report: Report) => {
+    if (!report.review_id || busyIds.has(report.id)) return;
+    if (!confirm('Eliminare questa recensione e risolvere la segnalazione?')) return;
+    setBusyIds((prev) => new Set(prev).add(report.id));
+    const { error } = await deleteReviewWithCleanup(supabase, report.review_id);
     setBusyIds((prev) => { const next = new Set(prev); next.delete(report.id); return next; });
-    setReports((prev) => prev.map((r) => (r.id === report.id ? { ...r, status: 'resolved' } : r)));
+    if (error) {
+      alert(`Errore eliminazione recensione: ${error}`);
+      return;
+    }
+    // CASCADE elimina i report dal DB — rimuovi dalla UI tutti quelli per questa review
+    const reviewId = report.review_id;
+    setReports((prev) => prev.filter((r) => r.review_id !== reviewId));
   };
 
   return (
@@ -107,7 +128,7 @@ export default function ReportsPage() {
 
       {/* Filtro tipo */}
       <div className="flex gap-2 mb-3">
-        {(['all', 'restaurant', 'photo'] as const).map((t) => (
+        {(['all', 'restaurant', 'photo', 'review'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTypeFilter(t)}
@@ -115,7 +136,7 @@ export default function ReportsPage() {
               typeFilter === t ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
             }`}
           >
-            {t === 'all' ? 'Tutti i tipi' : t === 'restaurant' ? 'Ristorante' : 'Foto menu'}
+            {t === 'all' ? 'Tutti i tipi' : t === 'restaurant' ? 'Ristorante' : t === 'photo' ? 'Foto menu' : 'Recensione'}
           </button>
         ))}
       </div>
@@ -168,7 +189,8 @@ export default function ReportsPage() {
             <thead className="bg-gray-50 text-left">
               <tr>
                 <th className="px-4 py-3 font-medium">Ristorante</th>
-                <th className="px-4 py-3 font-medium">Foto</th>
+                <th className="px-4 py-3 font-medium">Tipo</th>
+                <th className="px-4 py-3 font-medium">Contenuto</th>
                 <th className="px-4 py-3 font-medium">Motivo</th>
                 <th className="px-4 py-3 font-medium">Descrizione</th>
                 <th className="px-4 py-3 font-medium">Segnalato da</th>
@@ -190,6 +212,15 @@ export default function ReportsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
+                    {r.review_id ? (
+                      <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Recensione</span>
+                    ) : r.menu_photo_id ? (
+                      <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Foto menu</span>
+                    ) : (
+                      <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">Ristorante</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
                     {r.menu_photo_thumbnail_url ? (
                       <a href={r.menu_photo_image_url ?? r.menu_photo_thumbnail_url} target="_blank" rel="noreferrer">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -201,6 +232,18 @@ export default function ReportsPage() {
                           className="rounded object-cover"
                         />
                       </a>
+                    ) : r.review_id ? (
+                      <div className="max-w-xs">
+                        {r.review_reviewer_name && (
+                          <span className="text-xs text-gray-500">{r.review_reviewer_name}</span>
+                        )}
+                        {r.review_rating != null && r.review_rating > 0 && (
+                          <span className="ml-1 text-yellow-600 text-xs">{'★'.repeat(r.review_rating)}</span>
+                        )}
+                        {r.review_comment && (
+                          <p className="text-xs text-gray-600 truncate mt-0.5" title={r.review_comment}>{r.review_comment}</p>
+                        )}
+                      </div>
                     ) : '—'}
                   </td>
                   <td className="px-4 py-3">
@@ -223,6 +266,15 @@ export default function ReportsPage() {
                             className="text-red-600 hover:underline text-xs disabled:opacity-50"
                           >
                             {busyIds.has(r.id) ? '...' : 'Elimina foto'}
+                          </button>
+                        )}
+                        {r.review_id && (
+                          <button
+                            onClick={() => deleteReview(r)}
+                            disabled={busyIds.has(r.id)}
+                            className="text-red-600 hover:underline text-xs disabled:opacity-50"
+                          >
+                            {busyIds.has(r.id) ? '...' : 'Elimina recensione'}
                           </button>
                         )}
                         <button

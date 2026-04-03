@@ -116,9 +116,59 @@ export async function reportMenuPhoto(
   }
 }
 
+export async function reportReview(
+  restaurantId: string,
+  reviewId: string,
+  reason: string,
+  details?: string,
+): Promise<Report | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    // Se esiste già una segnalazione pending per questa recensione, aggiorna
+    const { data: existing } = await supabase
+      .from('reports')
+      .select('id')
+      .eq('review_id', reviewId)
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (existing) {
+      const { data, error } = await supabase
+        .from('reports')
+        .update({ reason, details: details ?? null })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    const { data, error } = await supabase
+      .from('reports')
+      .insert({
+        restaurant_id: restaurantId,
+        review_id: reviewId,
+        user_id: user.id,
+        reason,
+        details: details ?? null,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.warn('[ReportService] Errore reportReview:', error);
+    return null;
+  }
+}
+
 export const ReportService = {
   getReports,
   getUserReport,
   addReport,
   reportMenuPhoto,
+  reportReview,
 };

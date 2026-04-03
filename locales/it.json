@@ -158,6 +158,9 @@
     "saveDietary": "Salva esigenze alimentari",
     "saveDietaryError": "Impossibile salvare le esigenze alimentari. Riprova."
   },
+  "gallery": {
+    "reviewerNeeds": "Esigenze di chi ha recensito:"
+  },
   "aboutStory": {
     "title": "Perché è gratuita?",
     "intro": "Questa app nasce da un'esperienza personale. Come persona con allergie alimentari, ho sempre amato viaggiare e scoprire nuove culture attraverso il cibo.",

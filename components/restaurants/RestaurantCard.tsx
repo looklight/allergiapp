@@ -41,6 +41,8 @@ export default memo(function RestaurantCard({
   onToggleFavorite,
 }: RestaurantCardProps) {
   const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
+  const inferredTotal = (restaurant.inferred_allergen_count ?? 0) + (restaurant.inferred_dietary_count ?? 0);
+  const directTotal = coveredTotal - inferredTotal;
   const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
   const hasMatch = showMatchInfo && filtersTotal > 0;
 
@@ -78,7 +80,7 @@ export default memo(function RestaurantCard({
               {distance != null && (
                 <Text style={styles.cardDistance}>
                   {' · '}
-                  {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
+                  {distance < 0.05 ? 'Qui vicino' : distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
                 </Text>
               )}
             </Text>
@@ -124,7 +126,7 @@ export default memo(function RestaurantCard({
                       styles.matchBadgeText,
                       { color: coveredTotal >= filtersTotal ? theme.colors.success : theme.colors.amberDark },
                     ]}>
-                      {coveredTotal}/{filtersTotal}
+                      {inferredTotal > 0 ? `${directTotal > 0 ? directTotal : ''}(+${inferredTotal})` : coveredTotal}/{filtersTotal}
                     </Text>
                   </View>
                 )}

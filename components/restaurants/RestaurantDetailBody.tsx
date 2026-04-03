@@ -27,6 +27,7 @@ import PhotoGalleryModal from './PhotoGalleryModal';
 import LoginGateCta from './LoginGateCta';
 import { useRestaurantDetail, type ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
+import { getExpandedCoverage, forwardMap } from '../../constants/restrictionImplications';
 import type { AppLanguage } from '../../types';
 import i18n from '../../utils/i18n';
 
@@ -90,6 +91,7 @@ export default function RestaurantDetailBody({
   const [menuGalleryIndex, setMenuGalleryIndex] = useState<number | null>(null);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [reportedReviewIds, setReportedReviewIds] = useState<Set<string>>(new Set());
 
   // ─── Derived data ───────────────────────────────────────────────────────
   const userNeedsSet = useMemo(
@@ -105,6 +107,7 @@ export default function RestaurantDetailBody({
       return r.photos.map(p => ({
         url: p.url,
         thumbnailUrl: p.thumbnailUrl,
+        reviewId: r.reviewId,
         displayName: r.displayName ?? '',
         avatarUrl: r.avatarUrl,
         profileColor: r.profileColor,
@@ -120,21 +123,35 @@ export default function RestaurantDetailBody({
   );
 
   const matchInfo = useMemo(() => {
-    if (!hasUserNeeds) return { reviewCount: 0, coveredCount: 0, totalFilters: 0, covered: [] as string[], uncovered: [] as string[] };
+    if (!hasUserNeeds) return { reviewCount: 0, coveredCount: 0, totalFilters: 0, covered: [] as string[], uncovered: [] as string[], inferredSources: {} as Record<string, string> };
     const userAll: string[] = [...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])];
     const userSet = new Set(userAll);
-    const coveredSet = new Set<string>();
+    const directCovered = new Set<string>();
+    const inferredSources: Record<string, string> = {}; // need -> source (es. eggs -> vegan)
     let reviewCount = 0;
     for (const r of allReviews) {
       const snap = [...(r.allergensSnapshot ?? []), ...(r.dietarySnapshot ?? [])];
-      if (snap.some(a => userSet.has(a))) {
+      const expanded = getExpandedCoverage(snap);
+      const expandedArr = [...expanded];
+      if (expandedArr.some(a => userSet.has(a))) {
         reviewCount++;
-        snap.forEach(a => { if (userSet.has(a)) coveredSet.add(a); });
+        for (const a of expandedArr) {
+          if (!userSet.has(a)) continue;
+          if (snap.includes(a)) {
+            directCovered.add(a);
+          } else if (!directCovered.has(a) && !inferredSources[a]) {
+            const source = snap.find(s => forwardMap.has(s) && forwardMap.get(s)!.includes(a));
+            if (source) inferredSources[a] = source;
+          }
+        }
       }
     }
-    const covered = userAll.filter(a => coveredSet.has(a));
-    const uncovered = userAll.filter(a => !coveredSet.has(a));
-    return { reviewCount, coveredCount: coveredSet.size, totalFilters: userAll.length, covered, uncovered };
+    // Le coperture dirette hanno priorita sulle dedotte
+    for (const a of directCovered) delete inferredSources[a];
+    const allCovered = new Set([...directCovered, ...Object.keys(inferredSources)]);
+    const covered = userAll.filter(a => allCovered.has(a));
+    const uncovered = userAll.filter(a => !allCovered.has(a));
+    return { reviewCount, coveredCount: allCovered.size, totalFilters: userAll.length, covered, uncovered, inferredSources };
   }, [allReviews, dietaryNeeds, hasUserNeeds]);
 
   const canRemove = restaurant
@@ -171,6 +188,43 @@ export default function RestaurantDetailBody({
         },
       ],
     );
+  };
+
+  const handleReportReview = (reviewId: string) => {
+    if (reportedReviewIds.has(reviewId)) {
+      Alert.alert('Segnalazione inviata', 'Hai già segnalato questa recensione. La esamineremo al più presto.');
+      return;
+    }
+    Alert.alert(
+      'Segnala recensione',
+      'Perché vuoi segnalare questa recensione?',
+      [
+        {
+          text: 'Contenuto inappropriato',
+          onPress: () => submitReviewReport(reviewId, 'inappropriate'),
+        },
+        {
+          text: 'Spam o pubblicità',
+          onPress: () => submitReviewReport(reviewId, 'spam'),
+        },
+        {
+          text: 'Informazioni false',
+          onPress: () => submitReviewReport(reviewId, 'false_info'),
+        },
+        { text: 'Annulla', style: 'cancel' },
+      ],
+    );
+  };
+
+  const submitReviewReport = async (reviewId: string, reason: string) => {
+    if (!restaurant) return;
+    const result = await RestaurantService.reportReview(restaurant.id, reviewId, reason);
+    if (result) {
+      setReportedReviewIds(prev => new Set(prev).add(reviewId));
+      Alert.alert('Grazie', 'La tua segnalazione è stata inviata. La esamineremo al più presto.');
+    } else {
+      Alert.alert('Errore', 'Impossibile inviare la segnalazione. Riprova.');
+    }
   };
 
   // Auto-cleanup: rimuovi favorito orfano se il ristorante non esiste più
@@ -378,6 +432,9 @@ export default function RestaurantDetailBody({
               if (i >= 0) setGalleryIndex(i);
               else setFullscreenImage(url);
             }}
+            onReportReview={handleReportReview}
+            reportedReviewIds={reportedReviewIds}
+            currentUserId={user?.uid}
           />
         ) : (
           <LoginGateCta
@@ -472,6 +529,8 @@ export default function RestaurantDetailBody({
           initialIndex={galleryIndex}
           onClose={() => setGalleryIndex(null)}
           userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
+          onReportReview={isAuthenticated ? handleReportReview : undefined}
+          reportedReviewIds={reportedReviewIds}
         />
       )}
     </>

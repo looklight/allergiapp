@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
@@ -21,6 +21,7 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
 
   return (
     <View style={styles.container}>
+      <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
       {places.length > 0 && (
         <>
           <Text style={styles.sectionHeader}>Luoghi</Text>
@@ -35,9 +36,9 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
                 <MaterialCommunityIcons name="map-marker-outline" size={18} color={theme.colors.textSecondary} style={styles.icon} />
                 <View style={styles.textContainer}>
                   <Text style={styles.name} numberOfLines={1}>{r.name}</Text>
-                  {(r.city || r.state || r.country) && (
+                  {r.subtitle && (
                     <Text style={styles.subtitle} numberOfLines={1}>
-                      {[r.city, r.state, r.country].filter(Boolean).join(', ')}
+                      {r.subtitle}
                     </Text>
                   )}
                 </View>
@@ -79,6 +80,7 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
           <ActivityIndicator size="small" color={theme.colors.primary} />
         </View>
       )}
+      </ScrollView>
     </View>
   );
 }

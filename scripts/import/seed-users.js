@@ -84,6 +84,21 @@ module.exports = {
   Sarah_Lisetti:        { username: 'Sarah_Lisetti',        allergens: ['gluten'], diets: ['vegetarian'] },
   TravelFabio:          { username: 'TravelFabio',          allergens: ['gluten'], diets: ['vegetarian'] },
 
+  // gf_usa.xlsx
+  AlbertoC92:           { username: 'AlbertoC92',           allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  carlos_95:            { username: 'carlos_95',            allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  miku_fku:             { username: 'miku_fku',             allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  mia_maria:            { username: 'mia_maria',            allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },
+  beatricebebe:         { username: 'beatricebebe',         allergens: ['gluten'], diets: ['vegetarian'] },
+  sofia_88:             { username: 'sofia_88',             allergens: ['gluten'], diets: ['vegetarian'] },
+  laguardini:           { username: 'laguardini',           allergens: ['gluten'], diets: ['vegetarian'] },
+  ash_ketchup:          { username: 'ash_ketchup',          allergens: ['gluten'], diets: [] },
+  Lancetti2:            { username: 'Lancetti2',            allergens: ['gluten'], diets: [] },
+  cigaflavio:           { username: 'cigaflavio',           allergens: ['gluten'], diets: [] },
+  bossi_noemi:          { username: 'bossi_noemi',          allergens: ['gluten'], diets: [] },
+  LaShuri:              { username: 'LaShuri',              allergens: ['gluten'], diets: [] },
+  'celiachia_portami_via_3': { username: 'celiachia_portami_via_3', allergens: ['gluten'], diets: [] },
+
   // gf_asia2.xlsx
   '3graces':            { username: '3graces',              allergens: ['gluten'], diets: ['vegetarian'] },
   agnesegrazie:         { username: 'agnesegrazie',         allergens: ['gluten'], diets: ['vegetarian', 'vegan'] },

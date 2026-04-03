@@ -1,9 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { RestaurantService, type Restaurant } from '../services/restaurantService';
 
-type UpdateRestaurant = (id: string, updater: (r: Restaurant) => Restaurant) => void;
-
-export function useRestaurantFavorites(userId: string | undefined, updateRestaurant: UpdateRestaurant) {
+export function useRestaurantFavorites(userId: string | undefined) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [favoriteRestaurants, setFavoriteRestaurants] = useState<Map<string, Restaurant>>(new Map());
 
@@ -34,7 +32,8 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
     if (pendingRef.current.has(restaurantId)) return false;
     pendingRef.current.add(restaurantId);
     const willBeFav = !favoriteIdsRef.current.has(restaurantId);
-    // Optimistic update
+    // Optimistic update — solo favoriteIds/favoriteRestaurants, nessun side-effect
+    // su geo.restaurants (i pin non mostrano favorite_count).
     setFavoriteIds(prev => {
       const next = new Set(prev);
       if (willBeFav) next.add(restaurantId);
@@ -48,9 +47,6 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
         return next;
       });
     }
-    updateRestaurant(restaurantId, r => ({
-      ...r, favorite_count: (r.favorite_count ?? 0) + (willBeFav ? 1 : -1),
-    }));
     try {
       const actual = await RestaurantService.toggleFavorite(userId, restaurantId);
       if (actual !== willBeFav) {
@@ -60,9 +56,6 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
           else next.delete(restaurantId);
           return next;
         });
-        updateRestaurant(restaurantId, r => ({
-          ...r, favorite_count: (r.favorite_count ?? 0) + (actual ? 1 : -1),
-        }));
       }
       return true;
     } catch {
@@ -73,14 +66,11 @@ export function useRestaurantFavorites(userId: string | undefined, updateRestaur
         else next.add(restaurantId);
         return next;
       });
-      updateRestaurant(restaurantId, r => ({
-        ...r, favorite_count: (r.favorite_count ?? 0) + (willBeFav ? -1 : 1),
-      }));
       return false;
     } finally {
       pendingRef.current.delete(restaurantId);
     }
-  }, [userId, updateRestaurant]);
+  }, [userId]);
 
   /** Aggiorna solo lo stato locale di un singolo preferito (senza chiamata API).
    *  Usato dal callback onFavoriteToggled della detail sheet, che gestisce l'API da sé. */

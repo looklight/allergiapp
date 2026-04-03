@@ -97,10 +97,20 @@ function normalizeRow(row, format) {
   if (format === 'B') {
     const userKey = row['Nickname'];
     const user    = SEED_USERS[userKey];
+
+    // "Nazione" classico, oppure "Stato" (US state code / country name)
+    let nazione = row['Nazione'];
+    if (!nazione && row['Stato']) {
+      const stato = row['Stato'].trim();
+      // Codici US a 2 lettere → aggiungi ", USA" per Google Places
+      const US_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'];
+      nazione = US_STATES.includes(stato) ? `${stato}, USA` : stato;
+    }
+
     return {
       nome:     row['Nome Locale'],
       citta:    row['Città'] || row['Citta'],
-      nazione:  row['Nazione'],
+      nazione,
       stelle:   Number(row['⭐']),
       rec:      row['Recensione'] || null,
       url:      null,

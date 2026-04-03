@@ -158,6 +158,9 @@
     "saveDietary": "Guardar necesidades alimentarias",
     "saveDietaryError": "No se pudieron guardar las necesidades alimentarias. Int\u00e9ntalo de nuevo."
   },
+  "gallery": {
+    "reviewerNeeds": "Necesidades de quien reseñó:"
+  },
   "aboutStory": {
     "title": "¿Por qué es gratuita?",
     "intro": "Esta aplicación nace de una experiencia personal. Como persona con alergias alimentarias, siempre me ha encantado viajar y descubrir nuevas culturas a través de la comida.",

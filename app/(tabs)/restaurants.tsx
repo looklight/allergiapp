@@ -10,7 +10,7 @@ import { type SortBy, type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import RestaurantCard from '../../components/restaurants/RestaurantCard';
-import RestaurantMap from '../../components/RestaurantMap';
+import RestaurantMap from '../../components/map/RestaurantMap';
 import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../../components/DraggableBottomSheet';
 import FilterModal from '../../components/restaurants/FilterModal';
 import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetailSheet';
@@ -112,20 +112,33 @@ export default function RestaurantsScreen() {
 
   // --- Selection state (reducer — niente ref, niente timing issue) ---
   const [selection, dispatch] = useReducer(selectionReducer, INITIAL_SELECTION);
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
   const listRef = useRef<FlatList>(null);
   const listSheetRef = useRef<DraggableBottomSheetRef>(null);
 
+  // Snap index del list sheet prima che il detail lo collassi — per ripristinarlo alla chiusura
+  const listSheetIndexBeforeDetail = useRef(1);
+
   // Nasconde la tab bar quando il detail sheet è aperto.
   // Con position: absolute, display: 'none' non causa reflow di layout.
-  // Collassa il list sheet al minimo così il detail sheet lo copre completamente.
+  // Collassa il list sheet al minimo così il detail sheet lo copre completamente,
+  // e lo ripristina alla posizione precedente quando il detail si chiude.
   useEffect(() => {
     navigation.setOptions({
       tabBarStyle: selection.detailId ? { display: 'none' } : TAB_BAR_STYLE,
     });
     if (selection.detailId) {
+      // Salva la posizione corrente e collassa
+      const fraction = sheetFractionRef.current;
+      const snaps = [0.18, 0.50, 0.85];
+      const closest = snaps.reduce((best, sp, i) =>
+        Math.abs(sp - fraction) < Math.abs(snaps[best] - fraction) ? i : best, 0);
+      listSheetIndexBeforeDetail.current = closest;
       listSheetRef.current?.snapToIndex(0);
     } else {
-      listSheetRef.current?.snapToIndex(1);
+      // Ripristina la posizione precedente
+      listSheetRef.current?.snapToIndex(listSheetIndexBeforeDetail.current);
     }
   }, [selection.detailId, navigation]);
 
@@ -173,9 +186,9 @@ export default function RestaurantsScreen() {
     mapRegion: currentRegion,
   });
 
+
   const { favoriteIds, favoriteRestaurants, loadFavorites, toggleFavorite, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
-    geo.updateRestaurant,
   );
 
   useFocusEffect(useCallback(() => {
@@ -185,15 +198,32 @@ export default function RestaurantsScreen() {
 
   const mapSearch = useMapSearch({ restaurants: geo.restaurants, userLocation: geo.userLocation });
 
-  // Ref per lookup ristoranti senza destabilizzare il callback
-  const mapRestaurantsRef = useRef(mapRestaurants);
-  mapRestaurantsRef.current = mapRestaurants;
+  // Ref per lookup ristoranti senza destabilizzare il callback.
+  // Usa geo.restaurants (cache completa) per trovare ristoranti anche fuori viewport.
+  const allRestaurantsRef = useRef(geo.restaurants);
+  allRestaurantsRef.current = geo.restaurants;
+
+  // Cache il ristorante selezionato: se l'utente toglie il preferito e il ristorante
+  // era solo in favoriteRestaurants (non nel geo cache), senza questo ref
+  // selectedRestaurant diventerebbe null → il pin sulla mappa sparisce.
+  const selectedRestaurantRef = useRef<Restaurant | null>(null);
+  const selectedRestaurant = selection.selectedId
+    ? geo.restaurants.find(r => r.id === selection.selectedId)
+      ?? favoriteRestaurants.get(selection.selectedId!)
+      ?? selectedRestaurantRef.current
+      ?? null
+    : null;
+  selectedRestaurantRef.current = selectedRestaurant;
 
   const handleOpenDetail = useCallback((id: string) => {
+    // Se il detail è già aperto per questo ristorante, non fare nulla (come Google Maps).
+    if (selectionRef.current.detailId === id) return;
     dispatch({ type: 'SELECT', id });
     Keyboard.dismiss();
-    // Centra la mappa sul ristorante selezionato (mantiene zoom corrente)
-    const restaurant = mapRestaurantsRef.current.find(r => r.id === id);
+    // Centra la mappa sul ristorante selezionato (mantiene zoom corrente).
+    // Cerca nella cache completa, non solo in mapRestaurants (filtrata per viewport).
+    const restaurant = allRestaurantsRef.current.find(r => r.id === id)
+      ?? favoriteRestaurants.get(id);
     if (restaurant?.location) {
       geo.setCenterOn({
         latitude: restaurant.location.latitude,
@@ -201,7 +231,7 @@ export default function RestaurantsScreen() {
         sheetFraction: 0.55, // copertura attesa del detail sheet
       });
     }
-  }, [geo.setCenterOn]);
+  }, [geo.setCenterOn, favoriteRestaurants]);
 
   // Chiudi scheda dettaglio. I preferiti sono già sincronizzati in tempo reale
   // tramite syncFavoriteId nel callback onFavoriteToggled — non serve ricaricarli
@@ -477,6 +507,7 @@ export default function RestaurantsScreen() {
           hasUserLocation={!!geo.userLocation}
           onRegionChangeComplete={handleRegionChange}
           selectedId={selection.selectedId}
+          selectedRestaurant={selectedRestaurant}
           onDeselect={handleDeselect}
           showMatchInfo={forMyNeeds}
           onRestaurantPress={handleOpenDetail}
@@ -485,7 +516,7 @@ export default function RestaurantsScreen() {
         />
       </View>
 
-      {/* Floating search bar — sempre visibile sopra gli sheet */}
+      {/* Floating search bar + autocomplete — stesso parent per z-index affidabile */}
       <View
         style={[styles.floatingSearchOverlay, { top: insets.top + 8 }]}
         pointerEvents="box-none"
@@ -527,20 +558,20 @@ export default function RestaurantsScreen() {
             <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Autocomplete overlay — sotto la search bar flottante */}
-      {searchQuery.length >= 2 && (mapSearch.results.length > 0 || mapSearch.isSearching) && (
-        <View style={[styles.autocompleteOverlay, { top: insets.top + 8 + 48 + 4 }]}>
-          <SearchAutocomplete
-            results={mapSearch.results}
-            isSearching={mapSearch.isSearching}
-            onSelectRestaurant={handleSelectRestaurant}
-            onSelectPlace={handleSelectPlace}
-            onDismiss={dismissAutocomplete}
-          />
-        </View>
-      )}
+        {/* Autocomplete — dentro lo stesso parent della search bar, zIndex alto per coprire i pulsanti */}
+        {searchQuery.length >= 2 && (mapSearch.results.length > 0 || mapSearch.isSearching) && (
+          <View style={styles.autocompleteContainer}>
+            <SearchAutocomplete
+              results={mapSearch.results}
+              isSearching={mapSearch.isSearching}
+              onSelectRestaurant={handleSelectRestaurant}
+              onSelectPlace={handleSelectPlace}
+              onDismiss={dismissAutocomplete}
+            />
+          </View>
+        )}
+      </View>
 
       <DraggableBottomSheet
         ref={listSheetRef}
@@ -560,13 +591,7 @@ export default function RestaurantsScreen() {
         <RestaurantDetailSheet
           restaurantId={selection.detailId}
           onClose={handleCloseDetail}
-          onFavoriteToggled={(id, delta) => {
-            geo.updateRestaurant(id, r => ({
-              ...r,
-              favorite_count: (r.favorite_count ?? 0) + delta,
-            }));
-            syncFavoriteId(id, delta > 0);
-          }}
+          onFavoriteToggled={(id, delta) => syncFavoriteId(id, delta > 0)}
         />
       )}
 
@@ -653,12 +678,12 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
 
-  // --- Autocomplete overlay ---
-  autocompleteOverlay: {
-    position: 'absolute',
-    left: 68,
-    right: 68,
-    zIndex: 20,
+  // --- Autocomplete (dentro floatingSearchOverlay) ---
+  autocompleteContainer: {
+    marginTop: 4,
+    marginHorizontal: 56,
+    zIndex: 10,
+    elevation: 10,
   },
 
   // --- Sheet header (filtri + chip + badge) ---

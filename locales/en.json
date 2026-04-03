@@ -158,6 +158,9 @@
     "saveDietary": "Save dietary needs",
     "saveDietaryError": "Unable to save dietary needs. Please try again."
   },
+  "gallery": {
+    "reviewerNeeds": "Reviewer's dietary needs:"
+  },
   "aboutStory": {
     "title": "Why is it free?",
     "intro": "This app was born from personal experience. As someone with food allergies, I've always loved traveling and discovering new cultures through food.",

@@ -8,47 +8,27 @@ export async function getLeaderboard(): Promise<{
   topReviewers: LeaderboardEntry[];
 }> {
   try {
-    const [restaurantsRes, reviewsRes] = await Promise.all([
-      supabase
-        .from('restaurants')
-        .select('added_by, profiles!added_by(display_name, avatar_url, profile_color, allergens, dietary_preferences)')
-        .not('added_by', 'is', null),
-      supabase
-        .from('reviews')
-        .select('user_id, profiles!user_id(display_name, avatar_url, profile_color, allergens, dietary_preferences)')
-        .not('user_id', 'is', null),
-    ]);
+    const { data, error } = await supabase.rpc('get_leaderboard', { p_limit: 20 });
+    if (error) throw error;
 
-    const countByUser = (rows: any[], userField: string): LeaderboardEntry[] => {
-      const map = new Map<string, { display_name: string | null; avatar_url: string | null; profile_color: string | null; allergens: string[]; dietary_preferences: string[]; count: number }>();
-      for (const row of rows) {
-        const uid = row[userField];
-        if (!uid) continue;
-        const existing = map.get(uid);
-        if (existing) {
-          existing.count++;
-        } else {
-          const profile = row.profiles;
-          map.set(uid, {
-            display_name: profile?.display_name ?? null,
-            avatar_url: profile?.avatar_url ?? null,
-            profile_color: profile?.profile_color ?? null,
-            allergens: profile?.allergens ?? [],
-            dietary_preferences: profile?.dietary_preferences ?? [],
-            count: 1,
-          });
-        }
-      }
-      return Array.from(map.entries())
-        .map(([user_id, data]) => ({ user_id, ...data }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 20);
-    };
+    const topRestaurants: LeaderboardEntry[] = [];
+    const topReviewers: LeaderboardEntry[] = [];
 
-    return {
-      topRestaurants: countByUser(restaurantsRes.data ?? [], 'added_by'),
-      topReviewers: countByUser(reviewsRes.data ?? [], 'user_id'),
-    };
+    for (const row of data ?? []) {
+      const entry: LeaderboardEntry = {
+        user_id: row.user_id,
+        display_name: row.display_name,
+        avatar_url: row.avatar_url,
+        profile_color: row.profile_color,
+        allergens: row.allergens ?? [],
+        dietary_preferences: row.dietary_preferences ?? [],
+        count: Number(row.count),
+      };
+      if (row.category === 'restaurants') topRestaurants.push(entry);
+      else topReviewers.push(entry);
+    }
+
+    return { topRestaurants, topReviewers };
   } catch (error) {
     console.warn('[LeaderboardService] Errore getLeaderboard:', error);
     return { topRestaurants: [], topReviewers: [] };

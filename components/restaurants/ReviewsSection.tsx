@@ -18,6 +18,9 @@ type Props = {
   userNeeds: string[];
   onToggleReviewLike: (reviewId: string) => void;
   onImagePress: (url: string) => void;
+  onReportReview: (reviewId: string) => void;
+  reportedReviewIds: Set<string>;
+  currentUserId?: string;
 };
 
 export default function ReviewsSection({
@@ -33,6 +36,9 @@ export default function ReviewsSection({
   userNeeds,
   onToggleReviewLike,
   onImagePress,
+  onReportReview,
+  reportedReviewIds,
+  currentUserId,
 }: Props) {
   if (reviews.length === 0) {
     return (
@@ -112,6 +118,9 @@ export default function ReviewsSection({
               if (i >= 0) onImagePress(url);
             }}
             onLike={() => onToggleReviewLike(item.reviewId)}
+            onReport={() => onReportReview(item.reviewId)}
+            isReported={reportedReviewIds.has(item.reviewId)}
+            isOwnReview={item.userId === currentUserId}
           />
         </View>
       ))}

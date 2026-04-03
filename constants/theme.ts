@@ -85,6 +85,10 @@ export const theme = {
     favoriteRed: '#E53935',
     starFilled: '#F5A623',
     starEmpty: '#D0D0D0',
+
+    // Inferred state (compatibility chips)
+    inferredBg: '#F3F4F6',
+    inferredBorder: '#D1D5DB',
   },
 
   // Layout constants

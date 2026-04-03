@@ -20,9 +20,8 @@ export type SearchResult =
   | {
       type: 'place';
       name: string;
-      city?: string;
-      state?: string;
-      country?: string;
+      /** Sottotitolo derivato da display_name di Nominatim (es. "Lazio, Italia") */
+      subtitle?: string;
       /** Tipo OSM: country, state, city, district, street, house, locality, etc. */
       placeType?: string;
       latitude: number;
@@ -34,9 +33,9 @@ type Params = {
   userLocation: { latitude: number; longitude: number } | null;
 };
 
-const SEARCH_DEBOUNCE = 300;
+const SEARCH_DEBOUNCE = 1000;
 const MIN_QUERY_LENGTH = 2;
-const PHOTON_URL = 'https://photon.komoot.io/api/';
+const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -93,45 +92,48 @@ export function useMapSearch({ restaurants, userLocation }: Params) {
     }
   }, [userLocation]);
 
-  /** Cerca luoghi su Photon (geocoding OSM) */
-  const searchPhoton = useCallback(async (query: string): Promise<SearchResult[]> => {
+  /** Cerca luoghi su Nominatim (geocoding OSM, supporta tutte le lingue) */
+  const searchPlaces = useCallback(async (query: string): Promise<SearchResult[]> => {
     try {
-      const PHOTON_LANGS = new Set(['de', 'en', 'fr']);
       const userLang = i18n.locale?.substring(0, 2) || 'en';
-      const lang = PHOTON_LANGS.has(userLang) ? userLang : 'default';
-      const params = new URLSearchParams({ q: query, lang, limit: '5' });
-      if (userLocation) {
-        params.set('lat', String(userLocation.latitude));
-        params.set('lon', String(userLocation.longitude));
-      }
-      const response = await fetch(`${PHOTON_URL}?${params}`);
+      const params = new URLSearchParams({
+        q: query,
+        format: 'json',
+        'accept-language': userLang,
+        limit: '5',
+        addressdetails: '1',
+        // Solo città e nazioni — nessun viewbox, l'importanza conta più della vicinanza
+        featuretype: 'country,city',
+      });
+      const response = await fetch(`${NOMINATIM_URL}?${params}`, {
+        headers: { 'User-Agent': 'AllergiApp/1.0' },
+      });
       if (!response.ok) return [];
 
-      const data = await response.json();
-      const features: any[] = data.features ?? [];
+      const data: any[] = await response.json();
 
-      return features
-        .filter((f: any) => f.geometry?.coordinates?.length === 2)
-        .map((f: any) => {
-          const [lng, lat] = f.geometry.coordinates;
-          const props = f.properties ?? {};
-          return {
-            type: 'place' as const,
-            name: props.name || props.street || 'Unknown',
-            city: props.city || props.county || undefined,
-            state: props.state || undefined,
-            country: props.country || undefined,
-            placeType: props.type || undefined, // country, state, city, district, street, etc.
-            latitude: lat,
-            longitude: lng,
-          };
-        });
+      return data.map((item: any) => {
+        const name = item.name || 'Unknown';
+        // display_name è "Roma, Lazio, Italia" — togliamo il nome per ottenere "Lazio, Italia"
+        const display = (item.display_name as string) || '';
+        const subtitle = display.startsWith(name)
+          ? display.slice(name.length).replace(/^[,\s]+/, '')
+          : display;
+        return {
+          type: 'place' as const,
+          name,
+          subtitle: subtitle || undefined,
+          placeType: item.addresstype || item.type || undefined,
+          latitude: parseFloat(item.lat),
+          longitude: parseFloat(item.lon),
+        };
+      });
     } catch {
       return [];
     }
   }, [userLocation]);
 
-  /** Esegue la ricerca completa (cache + Supabase + Photon) con debounce */
+  /** Esegue la ricerca completa (cache + Supabase + Nominatim) con debounce */
   const search = useCallback((query: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
 
@@ -151,10 +153,10 @@ export function useMapSearch({ restaurants, userLocation }: Params) {
     setIsSearching(true);
 
     timerRef.current = setTimeout(async () => {
-      // Fetch parallelo: Supabase + Photon
-      const [supabaseResults, photonResults] = await Promise.all([
+      // Fetch parallelo: Supabase + Nominatim
+      const [supabaseResults, placeResults_] = await Promise.all([
         searchSupabase(query),
-        searchPhoton(query),
+        searchPlaces(query),
       ]);
 
       // Se è arrivata una query più recente, ignora questi risultati
@@ -172,13 +174,13 @@ export function useMapSearch({ restaurants, userLocation }: Params) {
         }
       }
 
-      const placeResults = photonResults.slice(0, 3);
+      const placeResults = placeResults_.slice(0, 3);
       const restaurantResults = restaurantMerged.slice(0, 5);
 
       setResults([...placeResults, ...restaurantResults]);
       setIsSearching(false);
     }, SEARCH_DEBOUNCE);
-  }, [searchLocalCache, searchSupabase, searchPhoton]);
+  }, [searchLocalCache, searchSupabase, searchPlaces]);
 
   const clear = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);

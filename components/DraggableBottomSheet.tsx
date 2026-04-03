@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Keyboard,
   Animated,
+  AppState,
   useWindowDimensions,
   type ViewStyle,
 } from 'react-native';
@@ -122,6 +123,26 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
       });
     }, [translateY, notifySnap]);
 
+    // Ri-sincronizza quando l'app torna in foreground.
+    // Con useNativeDriver le animazioni girano sul thread nativo e il listener JS
+    // può perdere aggiornamenti durante il background → currentY diventa stale.
+    useEffect(() => {
+      const sub = AppState.addEventListener('change', (status) => {
+        if (status === 'active') {
+          translateY.stopAnimation((value) => {
+            currentY.current = value;
+            const target = findNearestSnap(snapsRef.current, value, 0);
+            if (Math.abs(value - target) > 2) {
+              animateTo(target);
+            } else {
+              notifySnap(target);
+            }
+          });
+        }
+      });
+      return () => sub.remove();
+    }, [translateY, animateTo, notifySnap]);
+
     // Animazione di ingresso
     useEffect(() => { animateTo(initialTop); }, []);
 
@@ -150,7 +171,9 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
 
       if (state === State.ACTIVE) {
         Keyboard.dismiss();
-        translateY.stopAnimation();
+        // stopAnimation con callback estrae il valore attuale dal thread nativo,
+        // evitando di usare currentY.current che può essere stale dopo background.
+        translateY.stopAnimation((value) => { currentY.current = value; });
         gestureStartY.current = currentY.current;
       }
 
@@ -220,7 +243,7 @@ const DraggableBottomSheet = forwardRef<DraggableBottomSheetRef, Props>(
 
       if (state === State.ACTIVE) {
         Keyboard.dismiss();
-        translateY.stopAnimation();
+        translateY.stopAnimation((value) => { currentY.current = value; });
         gestureStartY.current = currentY.current;
         translationAtTopRef.current = null;
       }
@@ -293,13 +316,14 @@ const styles = StyleSheet.create({
     right: 0,
     height: '100%',
     backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
+    zIndex: 15,
   },
   handleArea: {
     alignItems: 'center',

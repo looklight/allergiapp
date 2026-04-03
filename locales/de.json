@@ -158,6 +158,9 @@
     "saveDietary": "Ern\u00e4hrungsbed\u00fcrfnisse speichern",
     "saveDietaryError": "Ern\u00e4hrungsbed\u00fcrfnisse konnten nicht gespeichert werden. Versuche es erneut."
   },
+  "gallery": {
+    "reviewerNeeds": "Bedürfnisse des Rezensenten:"
+  },
   "aboutStory": {
     "title": "Warum ist sie kostenlos?",
     "intro": "Diese App entstand aus einer persönlichen Erfahrung. Als Person mit Nahrungsmittelallergien habe ich es immer geliebt zu reisen und neue Kulturen durch Essen zu entdecken.",

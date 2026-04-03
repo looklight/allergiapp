@@ -15,6 +15,9 @@ interface ReviewCardProps {
   onImagePress: (imageUrl: string) => void;
   userNeeds?: string[];
   onLike?: () => void;
+  onReport?: () => void;
+  isReported?: boolean;
+  isOwnReview?: boolean;
 }
 
 const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toUpperCase();
@@ -22,7 +25,7 @@ const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toU
 
 const REVIEW_PHOTO_SIZE = 80;
 
-export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike }: ReviewCardProps) {
+export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview }: ReviewCardProps) {
   const router = useRouter();
   const avatarSource = item.avatarUrl ? getAvatarById(item.avatarUrl)?.source : null;
   const displayName = item.isAnonymous ? getAnonymousLabel(item.userId) : (item.displayName ?? getAnonymousLabel(item.userId));
@@ -99,17 +102,29 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
         </View>
       )}
 
-      {/* Like */}
-      <TouchableOpacity onPress={onLike} activeOpacity={0.7} style={styles.likeRow}>
-        <MaterialCommunityIcons
-          name={item.likedByMe ? 'thumb-up' : 'thumb-up-outline'}
-          size={16}
-          color={item.likedByMe ? theme.colors.primary : theme.colors.textSecondary}
-        />
-        <Text style={[styles.likeCount, item.likedByMe && { color: theme.colors.primary }, item.likesCount === 0 && { opacity: 0 }]}>
-          {item.likesCount}
-        </Text>
-      </TouchableOpacity>
+      {/* Like + Report */}
+      <View style={styles.actionRow}>
+        <TouchableOpacity onPress={onLike} activeOpacity={0.7} style={styles.likeRow}>
+          <MaterialCommunityIcons
+            name={item.likedByMe ? 'thumb-up' : 'thumb-up-outline'}
+            size={16}
+            color={item.likedByMe ? theme.colors.primary : theme.colors.textSecondary}
+          />
+          <Text style={[styles.likeCount, item.likedByMe && { color: theme.colors.primary }, item.likesCount === 0 && { opacity: 0 }]}>
+            {item.likesCount}
+          </Text>
+        </TouchableOpacity>
+        {!isOwnReview && onReport && (
+          <TouchableOpacity onPress={onReport} activeOpacity={0.6} style={styles.reportRow} hitSlop={8}>
+            <MaterialCommunityIcons
+              name={isReported ? 'flag' : 'flag-outline'}
+              size={14}
+              color={theme.colors.textDisabled}
+            />
+            <Text style={styles.reportText}>{isReported ? 'Segnalata' : 'Segnala'}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
@@ -189,17 +204,31 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 4,
   },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
   likeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    alignSelf: 'flex-start',
-    marginTop: 4,
     paddingVertical: 2,
   },
   likeCount: {
     fontSize: 13,
     color: theme.colors.textSecondary,
+  },
+  reportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 2,
+  },
+  reportText: {
+    fontSize: 12,
+    color: theme.colors.textDisabled,
   },
   reviewPhoto: {
     borderRadius: 10,

@@ -32,6 +32,8 @@ export interface Restaurant {
   matching_avg_rating?: number;
   covered_allergen_count?: number;
   covered_dietary_count?: number;
+  inferred_allergen_count?: number;
+  inferred_dietary_count?: number;
   total_allergen_filters?: number;
   total_dietary_filters?: number;
 }
@@ -177,7 +179,7 @@ export const PG_UNIQUE_VIOLATION = '23505';
 
 // ─── Helper: mappa riga RPC → Restaurant ────────────────────────────────────
 
-export type RestaurantRow = Omit<Restaurant, 'location' | 'review_count' | 'average_rating' | 'favorite_count' | 'distance_km' | 'matching_reviews' | 'matching_avg_rating' | 'covered_allergen_count' | 'covered_dietary_count' | 'total_allergen_filters' | 'total_dietary_filters'> & {
+export type RestaurantRow = Omit<Restaurant, 'location' | 'review_count' | 'average_rating' | 'favorite_count' | 'distance_km' | 'matching_reviews' | 'matching_avg_rating' | 'covered_allergen_count' | 'covered_dietary_count' | 'inferred_allergen_count' | 'inferred_dietary_count' | 'total_allergen_filters' | 'total_dietary_filters'> & {
   latitude?: number | null;
   longitude?: number | null;
   review_count?: number;
@@ -188,15 +190,29 @@ export type RestaurantRow = Omit<Restaurant, 'location' | 'review_count' | 'aver
   matching_avg_rating?: number | string | null;
   covered_allergen_count?: number | null;
   covered_dietary_count?: number | null;
+  inferred_allergen_count?: number | null;
+  inferred_dietary_count?: number | null;
   total_allergen_filters?: number | null;
   total_dietary_filters?: number | null;
 };
 
 export function mapRestaurant(row: RestaurantRow): Restaurant {
+  // Latitude/longitude can come as separate fields (from RPC with explicit lat/lng)
+  // or inside a GeoJSON `location` object (from RPC returning GEOGRAPHY).
+  // Handle both for resilience.
+  let lat = row.latitude;
+  let lng = row.longitude;
+  if (lat == null || lng == null) {
+    const loc = (row as any).location;
+    if (loc?.coordinates) {
+      lat = loc.coordinates[1];
+      lng = loc.coordinates[0];
+    }
+  }
   return {
     ...row,
-    location: row.latitude != null && row.longitude != null
-      ? { latitude: row.latitude, longitude: row.longitude }
+    location: lat != null && lng != null
+      ? { latitude: lat, longitude: lng }
       : null,
     review_count: row.review_count ?? 0,
     average_rating: Number(row.average_rating ?? 0),
@@ -206,6 +222,8 @@ export function mapRestaurant(row: RestaurantRow): Restaurant {
     matching_avg_rating: row.matching_avg_rating != null ? Number(row.matching_avg_rating) : undefined,
     covered_allergen_count: row.covered_allergen_count ?? undefined,
     covered_dietary_count: row.covered_dietary_count ?? undefined,
+    inferred_allergen_count: row.inferred_allergen_count ?? undefined,
+    inferred_dietary_count: row.inferred_dietary_count ?? undefined,
     total_allergen_filters: row.total_allergen_filters ?? undefined,
     total_dietary_filters: row.total_dietary_filters ?? undefined,
   };

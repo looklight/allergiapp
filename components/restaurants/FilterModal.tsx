@@ -108,7 +108,33 @@ export default function FilterModal({
             */}
 
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Tipo di cucina</Text>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionLabel}>Tipo di cucina</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    const allSelected = CUISINE_CATEGORIES.every(c => activeFilters.includes(c.id as RestaurantCategoryId));
+                    if (allSelected) {
+                      // Deseleziona tutti: rimuovi ognuno
+                      activeFilters.forEach(id => onToggleFilter(id));
+                    } else {
+                      // Seleziona tutti: aggiungi quelli mancanti
+                      CUISINE_CATEGORIES.forEach(c => {
+                        if (!activeFilters.includes(c.id as RestaurantCategoryId)) {
+                          onToggleFilter(c.id as RestaurantCategoryId);
+                        }
+                      });
+                    }
+                  }}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                >
+                  <Text style={styles.selectAllText}>
+                    {CUISINE_CATEGORIES.every(c => activeFilters.includes(c.id as RestaurantCategoryId))
+                      ? 'Deseleziona tutti'
+                      : 'Seleziona tutti'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <ChipGrid
                 items={CUISINE_CATEGORIES}
                 activeIds={activeFilters}
@@ -198,6 +224,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '600',
@@ -205,6 +236,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 10,
+  },
+  selectAllText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   myNeedsToggle: {
     flexDirection: 'row',

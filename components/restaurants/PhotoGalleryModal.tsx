@@ -20,6 +20,7 @@ import i18n from '../../utils/i18n';
 
 export interface GalleryPhoto {
   url: string;
+  reviewId?: string;
   displayName: string;
   avatarUrl?: string | null;
   profileColor?: string | null;
@@ -43,9 +44,13 @@ interface PhotoGalleryModalProps {
   initialIndex: number;
   onClose: () => void;
   userNeeds?: string[];
+  /** Callback per segnalare la recensione della foto corrente. */
+  onReportReview?: (reviewId: string) => void;
+  /** Set di reviewId già segnalati (per mostrare la flag piena). */
+  reportedReviewIds?: Set<string>;
 }
 
-export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds }: PhotoGalleryModalProps) {
+export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds, onReportReview, reportedReviewIds }: PhotoGalleryModalProps) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -152,31 +157,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
           {/* Review info overlay */}
           {current && (
             <View style={[styles.infoOverlay, { paddingBottom: insets.bottom + 16 }]}>
-              {/* Allergen chips */}
-              {((current.allergensSnapshot?.length ?? 0) + (current.dietarySnapshot?.length ?? 0)) > 0 && (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.allergenRow}
-                >
-                  {[...(current.dietarySnapshot ?? []), ...(current.allergensSnapshot ?? [])].map(id => {
-                    const r = getRestrictionById(id);
-                    if (!r) return null;
-                    const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
-                    const isMatch = userNeeds?.includes(id) ?? false;
-                    const bg = isMatch ? 'rgba(76,175,80,0.30)' : CATEGORY_COLORS[r.category].bg;
-                    const color = isMatch ? '#66BB6A' : CATEGORY_COLORS[r.category].text;
-                    return (
-                      <View key={id} style={[styles.allergenChip, { backgroundColor: bg }]}>
-                        {isMatch && (
-                          <MaterialCommunityIcons name="shield-check" size={11} color={color} />
-                        )}
-                        <Text style={[styles.allergenChipText, { color }]}>{label}</Text>
-                      </View>
-                    );
-                  })}
-                </ScrollView>
-              )}
+              {/* Reviewer info */}
               <View style={styles.infoRow}>
                 {currentAvatarSource ? (
                   <Image source={currentAvatarSource} style={styles.infoAvatarImage} />
@@ -193,9 +174,50 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                     <StarRating rating={current.rating} size={12} />
                   )}
                 </View>
+                {onReportReview && current.reviewId && (
+                  <TouchableOpacity
+                    onPress={() => onReportReview(current.reviewId!)}
+                    hitSlop={10}
+                    activeOpacity={0.6}
+                  >
+                    <MaterialCommunityIcons
+                      name={reportedReviewIds?.has(current.reviewId) ? 'flag' : 'flag-outline'}
+                      size={18}
+                      color="rgba(255,255,255,0.5)"
+                    />
+                  </TouchableOpacity>
+                )}
               </View>
               {current.text && (
                 <Text style={styles.infoText} numberOfLines={2}>{current.text}</Text>
+              )}
+              {/* Reviewer dietary needs */}
+              {((current.allergensSnapshot?.length ?? 0) + (current.dietarySnapshot?.length ?? 0)) > 0 && (
+                <>
+                  <Text style={styles.needsLabel}>{i18n.t('gallery.reviewerNeeds')}</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.allergenRow}
+                  >
+                    {[...(current.dietarySnapshot ?? []), ...(current.allergensSnapshot ?? [])].map(id => {
+                      const r = getRestrictionById(id);
+                      if (!r) return null;
+                      const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;
+                      const isMatch = userNeeds?.includes(id) ?? false;
+                      const bg = isMatch ? 'rgba(76,175,80,0.30)' : CATEGORY_COLORS[r.category].bg;
+                      const color = isMatch ? '#66BB6A' : CATEGORY_COLORS[r.category].text;
+                      return (
+                        <View key={id} style={[styles.allergenChip, { backgroundColor: bg }]}>
+                          {isMatch && (
+                            <MaterialCommunityIcons name="shield-check" size={11} color={color} />
+                          )}
+                          <Text style={[styles.allergenChipText, { color }]}>{label}</Text>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                </>
               )}
             </View>
           )}
@@ -276,6 +298,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     lineHeight: 18,
+  },
+  needsLabel: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 11,
+    fontWeight: '600',
   },
   allergenRow: {
     flexDirection: 'row',

@@ -158,6 +158,9 @@
     "saveDietary": "Enregistrer les besoins alimentaires",
     "saveDietaryError": "Impossible d'enregistrer les besoins alimentaires. R\u00e9essayez."
   },
+  "gallery": {
+    "reviewerNeeds": "Besoins de l'auteur de l'avis :"
+  },
   "aboutStory": {
     "title": "Pourquoi est-elle gratuite ?",
     "intro": "Cette application est née d'une expérience personnelle. En tant que personne souffrant d'allergies alimentaires, j'ai toujours aimé voyager et découvrir de nouvelles cultures à travers la nourriture.",

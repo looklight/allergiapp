@@ -151,6 +151,26 @@ async function getAllPositions(): Promise<RestaurantPin[]> {
   }
 }
 
+/** Pin leggeri limitati al bounding box visibile — sostituisce getAllPositions per scalabilità */
+async function getPinsInBounds(
+  minLat: number, minLng: number, maxLat: number, maxLng: number, limit = 1000,
+): Promise<RestaurantPin[]> {
+  try {
+    const { data, error } = await supabase.rpc('get_pins_in_bounds', {
+      min_lat: minLat, min_lng: minLng, max_lat: maxLat, max_lng: maxLng, lim: limit,
+    });
+    if (error) throw error;
+    return (data ?? []).map((row: any) => ({
+      id: row.id as string,
+      latitude: row.latitude as number,
+      longitude: row.longitude as number,
+    }));
+  } catch (error) {
+    console.warn('[RestaurantService] Errore getPinsInBounds:', error);
+    return [];
+  }
+}
+
 async function checkNearbyDuplicates(
   name: string,
   lat: number,
@@ -347,7 +367,7 @@ async function checkExistingByPlaceIds(
 import { getReviews, getUserReview, getReviewsByUser, addReview, updateReview, deleteReview, toggleReviewLike, getUserHasAnyReview } from './reviewService';
 import { getFavorites, isFavorite, toggleFavorite, removeFavorite } from './favoriteService';
 import { updateMenuUrl, getMenuPhotos, addMenuPhoto, deleteMenuPhoto } from './menuService';
-import { getReports, getUserReport, addReport, reportMenuPhoto } from './reportService';
+import { getReports, getUserReport, addReport, reportMenuPhoto, reportReview } from './reportService';
 import { getCuisineVotes } from './cuisineVoteService';
 import { getLeaderboard } from './leaderboardService';
 
@@ -356,6 +376,7 @@ import { getLeaderboard } from './leaderboardService';
 export const RestaurantService = {
   // Restaurant CRUD
   getAllPositions,
+  getPinsInBounds,
   getRestaurant,
   getRestaurantByGooglePlaceId,
   checkExistingByPlaceIds,
@@ -390,6 +411,7 @@ export const RestaurantService = {
   getUserReport,
   addReport,
   reportMenuPhoto,
+  reportReview,
   // Cuisine Votes (da cuisineVoteService)
   getCuisineVotes,
   voteCuisines,
