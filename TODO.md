@@ -354,4 +354,6 @@ Domanda, abbiamo rimosso i cluster di pin? Forse è la scelta giusta dato che no
 
 Se le recensioni sono più lunghe di un tot, ad esempio 5 righe possiamo mettere il pulsante leggi tutto o qualcosa di simile? Almeno la pagina resta più compatta
 
+- puoi verificare il comportamento del toggle le mie esigenze? è possibile avere zero esigenze?
 
+- 
