@@ -38,6 +38,8 @@ export function useImagePicker(options: Options = {}) {
       allowsMultipleSelection,
       selectionLimit: remaining,
       exif: false,
+      preferredAssetRepresentationMode:
+        ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
     });
     if (result.canceled || result.assets.length === 0) {
       return { uris: [], cancelled: true };

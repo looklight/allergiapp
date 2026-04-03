@@ -45,7 +45,7 @@ export default function MenuPhotosScreen() {
 
   useEffect(() => { loadPhotos(); }, [loadPhotos]);
 
-  const { pickFromGallery, takePhoto } = useImagePicker({ maxPhotos: 1 });
+  const { pickFromGallery, takePhoto, resetPhotos } = useImagePicker({ maxPhotos: 1 });
 
   const handleAddPhoto = async () => {
     Alert.alert('Aggiungi foto', undefined, [
@@ -67,6 +67,7 @@ export default function MenuPhotosScreen() {
     const photo = await RestaurantService.addMenuPhoto(restaurantId, uri, user.uid);
     if (photo) {
       setPhotos(prev => [photo, ...prev]);
+      resetPhotos();
     } else {
       Alert.alert('Errore', 'Impossibile caricare la foto. Riprova.');
     }

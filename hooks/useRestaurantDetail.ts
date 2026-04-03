@@ -205,6 +205,8 @@ export function useRestaurantDetail(
       mediaTypes: ['images'],
       quality: 0.8,
       exif: false,
+      preferredAssetRepresentationMode:
+        ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
     });
     if (result.canceled || !result.assets[0]) return;
 
