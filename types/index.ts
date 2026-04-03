@@ -172,6 +172,7 @@ export type DownloadableLanguageCode =
   | 'ky'  // Kirghiso
   | 'tk'  // Turkmeno
   | 'mn'  // Mongolo
+  | 'dz'  // Dzongkha (Bhutan)
   // Africa
   | 'sw'  // Swahili
   | 'af'  // Afrikaans
