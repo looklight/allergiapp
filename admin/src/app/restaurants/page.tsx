@@ -18,29 +18,35 @@ interface CountryStats {
 
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [countries, setCountries] = useState<{ name: string; count: number }[]>([]);
+  const [countries, setCountries] = useState<{ code: string; name: string; count: number }[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [stats, setStats] = useState<CountryStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
 
-  // Carica lista paesi con conteggio
+  // Carica lista paesi con conteggio (raggruppati per country_code)
   useEffect(() => {
     supabase
       .from('restaurants')
-      .select('country')
-      .not('country', 'is', null)
+      .select('country, country_code')
+      .not('country_code', 'is', null)
       .then(({ data }) => {
         if (data) {
-          const counts = new Map<string, number>();
+          const map = new Map<string, { name: string; count: number }>();
           for (const r of data) {
-            const c = r.country as string;
-            counts.set(c, (counts.get(c) ?? 0) + 1);
+            const code = r.country_code as string;
+            const existing = map.get(code);
+            if (existing) {
+              existing.count++;
+            } else {
+              map.set(code, { name: r.country as string, count: 1 });
+            }
           }
-          const sorted = [...counts.entries()]
-            .sort((a, b) => b[1] - a[1])
-            .map(([name, count]) => ({ name, count }));
+          const sorted = [...map.entries()]
+            .sort((a, b) => b[1].count - a[1].count)
+            .map(([code, { name, count }]) => ({ code, name, count }));
           setCountries(sorted);
         }
       });
@@ -51,12 +57,17 @@ export default function RestaurantsPage() {
 
     let query = supabase
       .from('restaurants')
-      .select('id, name, address, city, country, cuisine_types, created_at')
+      .select('id, name, address, city, country, country_code, cuisine_types, created_at')
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
 
     if (countryFilter !== 'all') {
-      query = query.eq('country', countryFilter);
+      query = query.eq('country_code', countryFilter);
+    }
+
+    if (search.trim()) {
+      const term = `%${search.trim()}%`;
+      query = query.or(`name.ilike.${term},city.ilike.${term}`);
     }
 
     const { data } = await query;
@@ -91,7 +102,7 @@ export default function RestaurantsPage() {
     setPage(0);
     loadRestaurants(0);
     loadStats();
-  }, [countryFilter]);
+  }, [countryFilter, search]);
 
   const loadMore = () => {
     const nextPage = page + 1;
@@ -128,10 +139,10 @@ export default function RestaurantsPage() {
         </button>
         {countries.map((c) => (
           <button
-            key={c.name}
-            onClick={() => setCountryFilter(c.name)}
+            key={c.code}
+            onClick={() => setCountryFilter(c.code)}
             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-              countryFilter === c.name
+              countryFilter === c.code
                 ? 'bg-gray-900 text-white'
                 : 'bg-white border text-gray-600 hover:bg-gray-100'
             }`}
@@ -140,6 +151,15 @@ export default function RestaurantsPage() {
           </button>
         ))}
       </div>
+
+      {/* Cerca */}
+      <input
+        type="text"
+        placeholder="Cerca per nome o citta..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full max-w-md px-4 py-2 mb-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+      />
 
       {/* Stats cards */}
       {stats && (

@@ -9,6 +9,7 @@ export interface Restaurant {
   address: string | null;
   city: string | null;
   country: string | null;
+  country_code: string | null;
   location: { latitude: number; longitude: number } | null;
   phone: string | null;
   website: string | null;
@@ -118,6 +119,7 @@ export interface CreateRestaurantInput {
   address?: string;
   city?: string;
   country?: string;
+  country_code?: string;
   latitude: number;
   longitude: number;
   phone?: string;

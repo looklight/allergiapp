@@ -11,6 +11,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
 
@@ -19,6 +20,7 @@ export default function UsersPage() {
     const { data } = await supabase.rpc('get_profiles_with_email', {
       page_limit: PAGE_SIZE + 1,
       page_offset: pageNum * PAGE_SIZE,
+      search_query: search.trim() || null,
     });
 
     const items = (data ?? []) as UserProfile[];
@@ -34,11 +36,12 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
+    setPage(0);
     loadUsers(0);
     supabase.from('profiles').select('*', { count: 'exact', head: true }).then(({ count }) => {
       setTotalCount(count ?? 0);
     });
-  }, []);
+  }, [search]);
 
   const loadMore = () => {
     const nextPage = page + 1;
@@ -52,6 +55,14 @@ export default function UsersPage() {
         <h1 className="text-2xl font-bold">Utenti</h1>
         {totalCount !== null && <span className="text-gray-400 text-sm">({totalCount})</span>}
       </div>
+
+      <input
+        type="text"
+        placeholder="Cerca per nome o email..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full max-w-md px-4 py-2 mb-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+      />
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="w-full text-sm">

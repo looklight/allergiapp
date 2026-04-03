@@ -205,6 +205,7 @@ async function addRestaurant(
         address: input.address ?? null,
         city: input.city ?? null,
         country: input.country ?? null,
+        country_code: input.country_code ?? null,
         location: `POINT(${lng} ${lat})`,
         phone: input.phone ?? null,
         website: input.website ?? null,

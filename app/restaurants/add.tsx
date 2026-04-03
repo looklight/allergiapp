@@ -475,6 +475,7 @@ export default function AddRestaurantScreen() {
       address: selectedPlace.address,
       city: selectedPlace.city,
       country: selectedPlace.country,
+      country_code: selectedPlace.countryCode,
       latitude: selectedPlace.location.latitude,
       longitude: selectedPlace.location.longitude,
       google_place_id: selectedPlace.googlePlaceId,

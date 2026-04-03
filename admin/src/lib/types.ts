@@ -27,6 +27,7 @@ export interface Restaurant {
   address: string | null;
   city: string | null;
   country: string | null;
+  country_code: string | null;
   phone: string | null;
   website: string | null;
   cuisine_types: string[];
