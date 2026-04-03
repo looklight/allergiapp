@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
-import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, useWindowDimensions, Image } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
@@ -383,6 +383,17 @@ export default function RestaurantsScreen() {
   const sheetHeaderContent = (
     <View style={styles.sheetFilterRow}>
       <TouchableOpacity
+        onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
+        style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons
+          name="tune-vertical"
+          size={20}
+          color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
         onPress={handleToggleMyNeeds}
         style={[styles.headerToggle, forMyNeeds && styles.headerToggleActive]}
         activeOpacity={0.7}
@@ -396,42 +407,50 @@ export default function RestaurantsScreen() {
           Per me
         </Text>
       </TouchableOpacity>
-      {activeFilters.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
-          {activeFilters.map(id => (
-            <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
-              <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
-              <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
+      <View style={{ flex: 1 }} />
       <TouchableOpacity
-        onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
-        style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
+        onPress={handleAddPress}
+        style={styles.addButton}
         activeOpacity={0.7}
       >
-        <MaterialCommunityIcons
-          name="tune-vertical"
-          size={20}
-          color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
+        <Image
+          source={require('../../assets/happy_plate_forks.png')}
+          style={styles.addButtonImage}
         />
+        <MaterialCommunityIcons name="plus" size={16} color={theme.colors.onPrimary} />
+        <Text style={styles.addButtonText}>Aggiungi</Text>
       </TouchableOpacity>
     </View>
   );
 
+  const activeFiltersChips = activeFilters.length > 0 ? (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll} style={styles.chipScrollContainer}>
+      {activeFilters.map(id => (
+        <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
+          <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
+          <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  ) : null;
+
   const renderBodyContent = () => {
     if (geo.isLoading && geo.restaurants.length === 0) {
       return (
-        <View style={[styles.centered, { paddingVertical: 40 }]}>
-          <ActivityIndicator color={theme.colors.primary} size="large" />
+        <View>
+          {activeFiltersChips}
+          <View style={[styles.centered, { paddingVertical: 40 }]}>
+            <ActivityIndicator color={theme.colors.primary} size="large" />
+          </View>
         </View>
       );
     }
 
     if (filteredRestaurants.length === 0) {
       return (
-        <View style={[styles.centered, { flex: 1 }]}>
+        <View>
+          {activeFiltersChips}
+          <View style={[styles.centered, { flex: 1 }]}>
           <Text style={styles.emptyTitle}>
             {searchQuery.length >= 2
               ? `Nessun risultato per "${searchQuery}"`
@@ -451,6 +470,7 @@ export default function RestaurantsScreen() {
               Aggiungi ristorante
             </Button>
           )}
+          </View>
         </View>
       );
     }
@@ -468,11 +488,16 @@ export default function RestaurantsScreen() {
           scrollEnabled={listScrollEnabled}
           onScroll={handleListScroll}
           scrollEventThrottle={16}
-          ListHeaderComponent={countLabel ? (
-            <Text style={styles.listCountLabel}>{countLabel}</Text>
-          ) : (
-            <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginBottom: 8 }} />
-          )}
+          ListHeaderComponent={
+            <View>
+              {activeFiltersChips}
+              {countLabel ? (
+                <Text style={styles.listCountLabel}>{countLabel}</Text>
+              ) : (
+                <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginBottom: 8 }} />
+              )}
+            </View>
+          }
           contentContainerStyle={[styles.list, { paddingBottom: screenHeight * 0.15 + 49 + insets.bottom }]}
           onScrollToIndexFailed={info => {
             setTimeout(() => {
@@ -731,6 +756,10 @@ const styles = StyleSheet.create({
   headerToggleTextActive: {
     color: theme.colors.onPrimary,
   },
+  chipScrollContainer: {
+    marginHorizontal: 12,
+    marginBottom: 6,
+  },
   chipScroll: {
     gap: 6,
     paddingRight: 4,
@@ -748,6 +777,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: theme.colors.primary,
+  },
+  // --- Add button ---
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    height: 38,
+    paddingLeft: 4,
+    paddingRight: 12,
+    borderRadius: 19,
+    backgroundColor: theme.colors.primary,
+  },
+  addButtonImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  addButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.onPrimary,
   },
   // --- List ---
   listCountLabel: {
