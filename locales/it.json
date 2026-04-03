@@ -29,7 +29,10 @@
     "title": "Cosa devo comunicare?",
     "subtitle": "Seleziona gli alimenti da evitare",
     "save": "Salva",
-    "otherFoods": "Altri alimenti"
+    "otherFoods": "Altri alimenti",
+    "allergens": "Allergeni",
+    "searchPlaceholder": "Cerca alimento...",
+    "noResults": "Nessun alimento trovato"
   },
   "otherRestrictions": {
     "title": "Altre esigenze",

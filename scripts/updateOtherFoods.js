@@ -19,6 +19,7 @@ const TRANSLATIONS_DIR = path.join(__dirname, 'translations');
 const RATE_LIMIT_MS = 250;
 
 const NEW_OTHER_FOODS = {
+  // Verdure
   tomato: 'Tomato',
   onion: 'Onion',
   garlic: 'Garlic',
@@ -27,6 +28,12 @@ const NEW_OTHER_FOODS = {
   carrot: 'Carrot',
   mushrooms: 'Mushrooms',
   pumpkin: 'Pumpkin',
+  zucchini: 'Zucchini',
+  fennel: 'Fennel',
+  celeriac: 'Celeriac',
+  spinach: 'Spinach',
+  potato: 'Potato',
+  // Frutta
   peach: 'Peach',
   kiwi: 'Kiwi',
   strawberries: 'Strawberries',
@@ -40,12 +47,32 @@ const NEW_OTHER_FOODS = {
   pineapple: 'Pineapple',
   mango: 'Mango',
   avocado: 'Avocado',
+  grapes: 'Grapes',
+  melon: 'Melon',
+  watermelon: 'Watermelon',
+  fig: 'Fig',
+  passion_fruit: 'Passion fruit',
+  // Legumi, cereali e altro
   chickpeas: 'Chickpeas',
   lentils: 'Lentils',
   corn: 'Corn',
   buckwheat: 'Buckwheat',
   coriander: 'Coriander',
   spicy: 'Spicy foods',
+  beans: 'Beans',
+  peas: 'Peas',
+  rice: 'Rice',
+  poppy_seeds: 'Poppy seeds',
+  sunflower_seeds: 'Sunflower seeds',
+  cinnamon: 'Cinnamon',
+  ginger: 'Ginger',
+  cacao_chocolate: 'Cacao / Chocolate',
+  oats: 'Oats',
+  olive_oil: 'Olive oil',
+  // Proteine
+  pork: 'Pork',
+  red_meat: 'Red meat',
+  chicken: 'Chicken',
 };
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

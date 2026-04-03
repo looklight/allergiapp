@@ -29,7 +29,10 @@
     "title": "What do I need to communicate?",
     "subtitle": "Select foods to avoid",
     "save": "Save",
-    "otherFoods": "Other foods"
+    "otherFoods": "Other foods",
+    "allergens": "Allergens",
+    "searchPlaceholder": "Search food...",
+    "noResults": "No food found"
   },
   "otherRestrictions": {
     "title": "Other needs",
