@@ -10,7 +10,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "default",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
-  newArchEnabled: false,
   scheme: "allergiapp",
   splash: {
     image: "./assets/splash-icon.png",
@@ -21,7 +20,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
     buildNumber: "9",
-    googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
+    ...(isEasBuild && { googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist" }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSLocationWhenInUseUsageDescription:
@@ -46,7 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? "",
       },
     },
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json",
+    ...(isEasBuild && { googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json" }),
   },
   web: {
     favicon: "./assets/favicon.png",
