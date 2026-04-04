@@ -19,7 +19,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
-    buildNumber: "9",
+    buildNumber: "10",
     ...(isEasBuild && { googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist" }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -34,7 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
-    versionCode: 9,
+    versionCode: 10,
     permissions: [
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
