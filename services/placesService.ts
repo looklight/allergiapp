@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import type { PlaceSuggestion } from '../types/restaurants';
 import {
@@ -11,11 +12,18 @@ import {
 
 // ---------------------------------------------------------------------------
 // Google Places API (New) — https://places.googleapis.com/v1
-// Migrato dalla Legacy REST API per allineamento con Altrove e futuro Google.
+// Key separate per piattaforma con restrizioni app in Google Cloud Console.
 // ---------------------------------------------------------------------------
 
-const GOOGLE_PLACES_API_KEY =
-  (Constants.expoConfig?.extra?.googlePlacesApiKey as string) ?? '';
+const GOOGLE_PLACES_API_KEY = Platform.OS === 'ios'
+  ? (Constants.expoConfig?.extra?.googlePlacesApiKeyIos as string) ?? ''
+  : (Constants.expoConfig?.extra?.googlePlacesApiKeyAndroid as string) ?? '';
+
+// Header di identità per far funzionare le restrizioni app sulle chiamate REST
+const PLATFORM_IDENTITY_HEADERS: Record<string, string> = Platform.OS === 'ios'
+  ? { 'X-Ios-Bundle-Identifier': 'com.allergiapp' }
+  : { 'X-Android-Package': 'com.allergiapp.mobile',
+      'X-Android-Cert': '739F2289ED4F9A5693E63B8C2A06B0C0D0F3D1A2' };
 
 const BASE_URL = 'https://places.googleapis.com/v1';
 
@@ -265,6 +273,7 @@ async function fetchAutocomplete(query: string, types: string[]): Promise<PlaceA
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+      ...PLATFORM_IDENTITY_HEADERS,
     },
     body: JSON.stringify({
       input: query.trim(),
@@ -306,6 +315,7 @@ async function fetchPlaceDetails(placeId: string): Promise<PlaceSuggestion | nul
     headers: {
       'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
       'X-Goog-FieldMask': 'id,displayName,formattedAddress,location,addressComponents,primaryType',
+      ...PLATFORM_IDENTITY_HEADERS,
     },
   });
 

@@ -70,7 +70,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     router: {},
-    googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY ?? "",
+    googlePlacesApiKeyIos: process.env.GOOGLE_PLACES_API_KEY_IOS ?? "",
+    googlePlacesApiKeyAndroid: process.env.GOOGLE_PLACES_API_KEY_ANDROID ?? "",
     eas: {
       projectId: "6b6299aa-f37d-4e8d-9c33-c438a02060f8",
     },
