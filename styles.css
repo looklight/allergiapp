@@ -650,6 +650,82 @@ body {
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
+/* Card Types Carousel */
+.card-types {
+    padding: 60px 0;
+    background: var(--bg-alt);
+    overflow: hidden;
+}
+
+.card-types-carousel {
+    display: flex;
+    gap: 16px;
+    padding: 8px 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.card-types-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.card-type-badge {
+    padding: 20px 32px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 200px;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    scroll-snap-align: center;
+}
+
+.card-type-badge:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-type-red {
+    background: #FFCDD2;
+    border-color: #E53935;
+    color: #B71C1C;
+}
+
+.card-type-green {
+    background: #C8E6C9;
+    border-color: #43A047;
+    color: #1B5E20;
+}
+
+.card-type-pink {
+    background: #F8BBD0;
+    border-color: #EC407A;
+    color: #880E4F;
+}
+
+.card-type-grey {
+    background: #CFD8DC;
+    border-color: #78909C;
+    color: #263238;
+}
+
+.card-type-yellow {
+    background: #FFF9C4;
+    border-color: #FDD835;
+    color: #F57F17;
+}
+
+.card-type-blue {
+    background: #B3E5FC;
+    border-color: #29B6F6;
+    color: #01579B;
+}
+
 /* Story Section */
 .story {
     padding: 100px 0 35px;
@@ -1080,6 +1156,20 @@ body {
     .quote-image-placeholder {
         width: 40px;
         height: 40px;
+    }
+
+    .card-types {
+        padding: 40px 0;
+    }
+
+    .card-types-carousel {
+        gap: 12px;
+    }
+
+    .card-type-badge {
+        padding: 16px 24px;
+        font-size: 16px;
+        min-width: 180px;
     }
 
     .allergens-preview {

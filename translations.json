@@ -16,7 +16,7 @@
     },
     "hero": {
       "title1": "Viaggia sereno.",
-      "title2": "Le tue allergie, in ogni lingua.",
+      "title2": "Le tue esigenze, in ogni lingua.",
       "subtitle1": "Comunica le tue esigenze alimentari in più di 60 lingue.",
       "subtitle2": "Mostra una card chiara e comprensibile a camerieri e chef in tutto il mondo.",
       "cta": "Scopri come funziona",
@@ -56,6 +56,15 @@
       "highlight3Text": "I tuoi dati rimangono sul tuo dispositivo. Nessuna registrazione richiesta",
       "ctaTitle": "Provaci anche tu",
       "ctaButton": "Scarica gratis"
+    },
+    "cardTypes": {
+      "title": "Cosa puoi comunicare",
+      "allergies": "Allergie o esigenze alimentari",
+      "vegetarian": "Diete vegetariane o vegane",
+      "pregnancy": "Gravidanza",
+      "nickel": "Allergia al nichel",
+      "histamine": "Allergia all'istamina",
+      "diabetes": "Diabete"
     },
     "story": {
       "title": "Perché è gratuita?",
@@ -292,7 +301,7 @@
     },
     "hero": {
       "title1": "Travel with confidence.",
-      "title2": "Your allergies, in every language.",
+      "title2": "Your needs, in every language.",
       "subtitle1": "Communicate your dietary needs in 60+ languages.",
       "subtitle2": "Show a clear, easy-to-understand card to waiters and chefs around the world.",
       "cta": "See how it works",
@@ -332,6 +341,15 @@
       "highlight3Text": "Your data stays on your device. No registration required",
       "ctaTitle": "Try it yourself",
       "ctaButton": "Download for free"
+    },
+    "cardTypes": {
+      "title": "What you can communicate",
+      "allergies": "Food allergies or dietary needs",
+      "vegetarian": "Vegetarian or vegan diets",
+      "pregnancy": "Pregnancy",
+      "nickel": "Nickel allergy",
+      "histamine": "Histamine intolerance",
+      "diabetes": "Diabetes"
     },
     "story": {
       "title": "Why is it free?",
