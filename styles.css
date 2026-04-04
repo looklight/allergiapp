@@ -660,15 +660,9 @@ body {
 .card-types-carousel {
     display: flex;
     gap: 16px;
-    padding: 8px 0;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.card-types-carousel::-webkit-scrollbar {
-    display: none;
+    padding: 8px 24px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .card-type-badge {
@@ -678,11 +672,8 @@ body {
     font-weight: 600;
     text-align: center;
     white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 200px;
     transition: all 0.3s;
     border: 2px solid transparent;
-    scroll-snap-align: center;
 }
 
 .card-type-badge:hover {
@@ -1163,13 +1154,24 @@ body {
     }
 
     .card-types-carousel {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
         gap: 12px;
+    }
+
+    .card-types-carousel::-webkit-scrollbar {
+        display: none;
     }
 
     .card-type-badge {
         padding: 16px 24px;
         font-size: 16px;
-        min-width: 180px;
+        flex-shrink: 0;
+        scroll-snap-align: center;
     }
 
     .allergens-preview {
@@ -1435,6 +1437,16 @@ body {
     color: var(--text-secondary);
     line-height: 1.7;
     margin: 0;
+}
+
+.faq-donate-link {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.faq-donate-link:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 768px) {
