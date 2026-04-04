@@ -1,5 +1,8 @@
 import { ExpoConfig, ConfigContext } from "expo/config";
 
+// Firebase plugins solo in build EAS (non servono in Expo Go — i servizi JS degradano a no-op)
+const isEasBuild = !!process.env.EAS_BUILD;
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "AllergiApp",
   slug: "allergiapp",
@@ -58,8 +61,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           "AllergiApp usa la posizione per mostrarti i ristoranti vicini a te.",
       },
     ],
-    "@react-native-firebase/app",
-    "@react-native-firebase/crashlytics",
+    // Firebase native plugins — solo in EAS build, in Expo Go i servizi JS fanno fallback a no-op
+    ...(isEasBuild ? [
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics",
+      "./plugins/withModularHeaders",
+    ] as const : []),
     [
       "expo-tracking-transparency",
       {
@@ -67,7 +74,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           "AllergiApp uses this permission to collect anonymous analytics data (such as which allergens are searched most frequently and which languages are most commonly translated) to improve app features and user experience. This data is not linked to your personal identity.",
       },
     ],
-    "./plugins/withModularHeaders",
   ],
   updates: {
     url: "https://u.expo.dev/6b6299aa-f37d-4e8d-9c33-c438a02060f8",
