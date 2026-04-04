@@ -15,6 +15,13 @@
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhd3JlcGdsY21vbXJsd2lrZnp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjkwMjUsImV4cCI6MjA4ODY0NTAyNX0.8ZQtvmpO-uvGjnMZFiK1r1civbnvvCLGRK6HHnYe1ps"
       }
     },
+    "beta": {
+      "channel": "beta",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dawrepglcmomrlwikfzx.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhd3JlcGdsY21vbXJsd2lrZnp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjkwMjUsImV4cCI6MjA4ODY0NTAyNX0.8ZQtvmpO-uvGjnMZFiK1r1civbnvvCLGRK6HHnYe1ps"
+      }
+    },
     "production": {
       "channel": "production",
       "env": {
