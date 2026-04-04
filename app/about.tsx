@@ -58,7 +58,7 @@ export default function AboutScreen() {
       {/* Content */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 16) + 24 }]}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
@@ -177,7 +177,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 40,
   },
   intro: {
     fontSize: 15,

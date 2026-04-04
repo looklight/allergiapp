@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image, ScrollView } from 'react-native';
 import { Stack, usePathname, useRouter } from 'expo-router';
+import * as Updates from 'expo-updates';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -10,9 +11,12 @@ import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { Analytics } from '../services/analytics';
+import { Crashlytics } from '../services/crashlytics';
+import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
 import { useDietarySync } from '../hooks/useDietarySync';
 import ConsentModal from './consent';
+import AnnouncementPopup from './components/AnnouncementPopup';
 
 const splashLogo = require('../assets/splash-icon.png');
 
@@ -85,7 +89,7 @@ const splashStyles = StyleSheet.create({
 const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary', '/auth/onboarding-tutorial'];
 
 function AppContent() {
-  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent } = useAppContext();
+  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, selectedOtherFoods, activeDietModes, vegetarianLevel, selectedRestrictions, settings } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
   useDietarySync();
   const router = useRouter();
@@ -94,13 +98,44 @@ function AppContent() {
 
   useEffect(() => {
     if (isReady) {
-      // Nascondi lo splash screen quando l'app è pronta
-      SplashScreen.hideAsync();
+      // Inizializzazione con splash visibile:
+      // 1) Controlla OTA → se disponibile, scarica e ricarica subito
+      // 2) Fetch Remote Config (max 3s) → splash si nasconde con valori già pronti
+      (async () => {
+        if (!__DEV__) {
+          try {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+              await Updates.fetchUpdateAsync();
+              await Updates.reloadAsync();
+              return;
+            }
+          } catch {}
+        }
+
+        // Fetch Remote Config con timeout di 3s — garantisce valori corretti al primo render
+        await Promise.race([
+          RemoteConfig.initialize(),
+          new Promise<void>(resolve => setTimeout(resolve, 3000)),
+        ]);
+
+        SplashScreen.hideAsync();
+      })();
 
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
         Analytics.setTrackingConsent(trackingConsent);
+        Crashlytics.setCollectionEnabled(trackingConsent.status === 'authorized');
         Analytics.logAppOpened();
+        Analytics.updateUserProperties({
+          allergenCount: selectedAllergens.length + selectedOtherFoods.length,
+          allergenIds: selectedAllergens,
+          otherFoodIds: selectedOtherFoods,
+          dietModes: activeDietModes,
+          cardLanguage: settings.cardLanguage,
+          vegetarianLevel: activeDietModes.includes('vegetarian') ? vegetarianLevel : undefined,
+          restrictionCount: selectedRestrictions.length,
+        });
       }
     }
   }, [isReady, hasAcceptedLegalTerms, trackingConsent]);
@@ -143,6 +178,8 @@ function AppContent() {
       />
       {/* Consent modal overlay - shown on top of the app */}
       <ConsentModal visible={needsLegalConsent} />
+      {/* Announcement popup - shown once per popup_id after consent */}
+      {hasAcceptedLegalTerms && <AnnouncementPopup />}
     </>
   );
 }

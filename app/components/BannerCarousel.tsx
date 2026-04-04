@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image } from 'react-native';
+import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image, Share } from 'react-native';
 import { Text } from 'react-native-paper';
 import { BannerItem } from '../../types';
 import i18n from '../../utils/i18n';
@@ -64,10 +64,11 @@ export default function BannerCarousel({
 
   const allExtraBanners: BannerItem[] = [...extraBanners];
 
-  // Promo banner per primo, poi i banner informativi
+  // Primo banner informativo, poi promo, poi il resto degli informativi
   const allBanners: BannerItem[] = [
+    infoBanners[0],
     ...allExtraBanners,
-    ...infoBanners,
+    ...infoBanners.slice(1),
   ];
 
   // Get display duration for current banner
@@ -108,6 +109,7 @@ export default function BannerCarousel({
       }
     };
   }, [allBanners.length]);
+
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
@@ -161,8 +163,9 @@ export default function BannerCarousel({
     // Traccia il click sul banner/ad
     Analytics.logBannerClicked(item.id, item.type, item.title, item.adUrl);
 
-    // Apri l'URL se presente
-    if (item.adUrl) {
+    if (item.adAction === 'share' && item.adUrl) {
+      Share.share({ url: item.adUrl, message: item.adUrl });
+    } else if (item.adUrl) {
       Linking.openURL(item.adUrl);
     }
   };
@@ -171,11 +174,11 @@ export default function BannerCarousel({
     // Info banner (default)
     if (item.type === 'info') {
       return (
-        <View style={styles.bannerItem}>
+        <View style={styles.bannerItem} accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}>
           {item.image ? (
-            <Image source={item.image} style={styles.bannerImage} resizeMode="contain" />
+            <Image source={item.image} style={styles.bannerImage} resizeMode="contain" accessibilityElementsHidden />
           ) : (
-            <Text style={styles.bannerIcon}>{item.icon}</Text>
+            <Text style={styles.bannerIcon} accessibilityElementsHidden>{item.icon}</Text>
           )}
           <View style={styles.bannerTextContainer}>
             <Text style={styles.bannerTitle}>{item.title}</Text>
@@ -196,11 +199,14 @@ export default function BannerCarousel({
             style={styles.fullImageBanner}
             onPress={() => handleAdPress(item)}
             activeOpacity={0.9}
+            accessibilityRole="link"
+            accessibilityLabel={item.title}
           >
             <Image
               source={{ uri: item.adImage }}
               style={styles.fullImage}
               resizeMode="cover"
+              accessibilityElementsHidden
             />
           </TouchableOpacity>
         );
@@ -215,6 +221,8 @@ export default function BannerCarousel({
           style={[styles.adBannerItem, customBgStyle]}
           onPress={() => handleAdPress(item)}
           activeOpacity={0.8}
+          accessibilityRole="link"
+          accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
         >
           {item.adImage ? (
             <Image
@@ -263,10 +271,15 @@ export default function BannerCarousel({
         onScrollBeginDrag={onScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
         onScrollToIndexFailed={onScrollToIndexFailed}
+        getItemLayout={(_, index) => ({
+          length: SCREEN_WIDTH - 32,
+          offset: (SCREEN_WIDTH - 32) * index,
+          index,
+        })}
         bounces={false}
       />
       {allBanners.length > 1 && (
-        <View style={styles.paginationDots}>
+        <View style={styles.paginationDots} accessible accessibilityLabel={`${activeIndex + 1}/${allBanners.length}`}>
           {allBanners.map((_, index) => (
             <View
               key={index}
@@ -274,6 +287,7 @@ export default function BannerCarousel({
                 styles.dot,
                 index === activeIndex && styles.dotActive,
               ]}
+              accessibilityElementsHidden
             />
           ))}
         </View>
@@ -324,10 +338,12 @@ const styles = StyleSheet.create({
   },
   bannerIcon: {
     fontSize: 48,
+    lineHeight: 58,
     marginRight: 16,
   },
   adIcon: {
     fontSize: 48,
+    lineHeight: 58,
     marginRight: 16,
   },
   adImageIcon: {

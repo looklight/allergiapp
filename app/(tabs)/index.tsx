@@ -70,6 +70,8 @@ export default function HomeScreen() {
           onPress={() => router.push('/settings')}
           hitSlop={8}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('home.settings')}
         >
           <MaterialCommunityIcons name="cog" size={26} color={theme.colors.onPrimary} />
         </TouchableOpacity>
@@ -95,6 +97,8 @@ export default function HomeScreen() {
                 onPress={() => router.push('/add-allergy')}
                 hitSlop={8}
                 activeOpacity={0.6}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t('home.editAllergies')}
               >
                 <Text style={styles.editLink}>
                   {i18n.t('home.editAllergies')}
@@ -279,7 +283,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 32,
   },
   card: {
     padding: 20,
@@ -331,6 +334,7 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 48,
+    lineHeight: 58,
     marginBottom: 12,
   },
   emptyText: {
@@ -361,6 +365,7 @@ const styles = StyleSheet.create({
   },
   chipIcon: {
     fontSize: 16,
+    lineHeight: 22,
   },
   languageSelector: {
     flexDirection: 'row',
@@ -372,6 +377,7 @@ const styles = StyleSheet.create({
   },
   languageFlag: {
     fontSize: 40,
+    lineHeight: 50,
     marginRight: 16,
   },
   languageInfo: {

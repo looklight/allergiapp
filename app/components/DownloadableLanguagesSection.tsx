@@ -271,6 +271,7 @@ export default function DownloadableLanguagesSection({
               onChangeText={setSearchQuery}
               autoCapitalize="none"
               autoCorrect={false}
+              underlineColorAndroid="transparent"
               accessibilityLabel={i18n.t('settings.searchLanguage')}
             />
             {searchQuery.length > 0 && (
@@ -472,6 +473,7 @@ const styles = StyleSheet.create({
   },
   downloadedChipFlag: {
     fontSize: 24,
+    lineHeight: 32,
   },
   downloadedChipContent: {
     flex: 1,
@@ -516,6 +518,7 @@ const styles = StyleSheet.create({
   },
   regionIcon: {
     fontSize: 28,
+    lineHeight: 36,
   },
   regionTitle: {
     fontSize: 15,
@@ -539,6 +542,7 @@ const styles = StyleSheet.create({
   },
   langFlag: {
     fontSize: 28,
+    lineHeight: 36,
   },
   langInfo: {
     flex: 1,

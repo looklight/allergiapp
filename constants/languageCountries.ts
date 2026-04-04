@@ -83,6 +83,7 @@ export const LANGUAGE_COUNTRIES: Record<string, string[]> = {
   ky: ['Kyrgyzstan', 'Kirghizistan', 'Kirgisistan', 'Kirghizstan'],
   tk: ['Turkmenistan', 'Turkménistan'],
   mn: ['Mongolia', 'Mongolie', 'Mongolei'],
+  dz: ['Bhutan', 'Butan', 'Bhoutan', 'Bután'],
 
   // ── Africa ──
   sw: ['Kenya', 'Kenia', 'Tanzania', 'Tansania', 'Tanzanie', 'Tansanien', 'Uganda', 'Zanzibar', 'Sansibar'],

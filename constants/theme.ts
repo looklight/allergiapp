@@ -23,7 +23,7 @@ export const theme = {
     textPrimary: '#333333',
     textSecondary: '#666666',
     textDisabled: '#999999',
-    textHint: '#888888',
+    textHint: '#6E6E6E',
     textMuted: '#616161',
     onPrimary: '#FFFFFF',
 

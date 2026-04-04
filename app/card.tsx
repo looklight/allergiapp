@@ -322,7 +322,9 @@ export default function CardScreen() {
     if (showAppToggle) modes.push('app');
     if (showEnglishToggle) modes.push('english');
     const nextIndex = (modes.indexOf(displayMode) + 1) % modes.length;
-    setDisplayMode(modes[nextIndex]);
+    const nextMode = modes[nextIndex];
+    setDisplayMode(nextMode);
+    Analytics.logCardLanguageToggled(nextMode, cardLanguage, appLanguage);
   };
 
   const hasAllergens = selectedAllergens.length > 0 || selectedOtherFoods.length > 0;
@@ -437,7 +439,10 @@ export default function CardScreen() {
           getOtherFoodTranslation={getOtherFoodTranslation}
           fontBoost={fontBoost}
           toggleExpand={toggleExpand}
-          onDisplayModeChange={setDisplayMode}
+          onDisplayModeChange={(mode) => {
+            setDisplayMode(mode);
+            Analytics.logCardLanguageToggled(mode, cardLanguage, appLanguage);
+          }}
         />
       )}
     </View>

@@ -61,8 +61,8 @@ export default function DietModeSection({
             const item = getRestrictionInfo(id);
             if (!item) return null;
             return (
-              <View key={id} style={[styles.restrictionRow, { borderBottomColor: rColors.restrictionBorder }]}>
-                <Text style={styles.restrictionIcon}>{item.icon}</Text>
+              <View key={id} style={[styles.restrictionRow, { borderBottomColor: rColors.restrictionBorder }]} accessibilityLabel={getRestrictionTranslation(id)}>
+                <Text style={styles.restrictionIcon} accessibilityElementsHidden>{item.icon}</Text>
                 <Text style={[styles.restrictionText, { color: rColors.restrictionTextColor }]}>
                   {getRestrictionTranslation(id)}
                 </Text>
@@ -90,8 +90,8 @@ export default function DietModeSection({
             const item = getRestrictionInfo(id);
             if (!item) return null;
             return (
-              <View key={id} style={[styles.landscapeRestrictionItem, { borderColor: rColors.restrictionBorder }]}>
-                <Text style={styles.landscapeRestrictionIcon}>{item.icon}</Text>
+              <View key={id} style={[styles.landscapeRestrictionItem, { borderColor: rColors.restrictionBorder }]} accessibilityLabel={getRestrictionTranslation(id)}>
+                <Text style={styles.landscapeRestrictionIcon} accessibilityElementsHidden>{item.icon}</Text>
                 <Text style={[styles.landscapeRestrictionName, { color: rColors.restrictionTextColor }, fontBoost > 0 && { fontSize: 14 + fontBoost }]}>
                   {getRestrictionTranslation(id)}
                 </Text>
@@ -127,6 +127,9 @@ export default function DietModeSection({
             <Pressable
               onPress={() => setFoodExpanded(!foodExpanded)}
               style={[styles.foodToggle, { borderColor: sectionColors.border }]}
+              accessibilityRole="button"
+              accessibilityLabel={data.header}
+              accessibilityState={{ expanded: foodExpanded }}
             >
               <MaterialCommunityIcons
                 name={foodExpanded ? 'chevron-up' : 'chevron-down'}
@@ -137,9 +140,9 @@ export default function DietModeSection({
             {foodExpanded && (
               <View style={styles.foodListContainer}>
                 {data.foodItems!.forbidden.map((item, i) => (
-                  <View key={`f-${i}`} style={styles.foodRow}>
-                    <MaterialCommunityIcons name="close-circle" size={20} color={theme.colors.error} />
-                    <Text style={styles.foodEmoji}>{item.emoji}</Text>
+                  <View key={`f-${i}`} style={styles.foodRow} accessibilityLabel={item.name}>
+                    <MaterialCommunityIcons name="close-circle" size={20} color={theme.colors.error} accessibilityElementsHidden />
+                    <Text style={styles.foodEmoji} accessibilityElementsHidden>{item.emoji}</Text>
                     <Text style={[styles.foodRowText, { color: theme.colors.errorDark }]}>{item.name}</Text>
                   </View>
                 ))}
@@ -147,9 +150,9 @@ export default function DietModeSection({
                   <>
                     <View style={[styles.foodDivider, { borderBottomColor: sectionColors.border }]} />
                     {data.foodItems!.allowed.map((item, i) => (
-                      <View key={`a-${i}`} style={styles.foodRow}>
-                        <MaterialCommunityIcons name="check-circle" size={20} color={theme.colors.success} />
-                        <Text style={styles.foodEmoji}>{item.emoji}</Text>
+                      <View key={`a-${i}`} style={styles.foodRow} accessibilityLabel={item.name}>
+                        <MaterialCommunityIcons name="check-circle" size={20} color={theme.colors.success} accessibilityElementsHidden />
+                        <Text style={styles.foodEmoji} accessibilityElementsHidden>{item.emoji}</Text>
                         <Text style={[styles.foodRowText, { color: theme.colors.successDark }]}>{item.name}</Text>
                       </View>
                     ))}
@@ -183,6 +186,9 @@ export default function DietModeSection({
           <Pressable
             onPress={() => setFoodExpanded(!foodExpanded)}
             style={[styles.foodToggle, { borderColor: sectionColors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={data.header}
+            accessibilityState={{ expanded: foodExpanded }}
           >
             <MaterialCommunityIcons
               name={foodExpanded ? 'chevron-up' : 'chevron-down'}
@@ -193,9 +199,9 @@ export default function DietModeSection({
           {foodExpanded && (
             <View style={styles.foodListContainer}>
               {data.foodItems!.forbidden.map((item, i) => (
-                <View key={`f-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
-                  <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.error} />
-                  <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
+                <View key={`f-${i}`} style={[styles.foodRow, styles.foodRowLandscape]} accessibilityLabel={item.name}>
+                  <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.error} accessibilityElementsHidden />
+                  <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]} accessibilityElementsHidden>{item.emoji}</Text>
                   <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.errorDark }, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{item.name}</Text>
                 </View>
               ))}
@@ -203,9 +209,9 @@ export default function DietModeSection({
                 <>
                   <View style={[styles.foodDivider, { borderBottomColor: sectionColors.border }]} />
                   {data.foodItems!.allowed.map((item, i) => (
-                    <View key={`a-${i}`} style={[styles.foodRow, styles.foodRowLandscape]}>
-                      <MaterialCommunityIcons name="check-circle" size={18} color={theme.colors.success} />
-                      <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]}>{item.emoji}</Text>
+                    <View key={`a-${i}`} style={[styles.foodRow, styles.foodRowLandscape]} accessibilityLabel={item.name}>
+                      <MaterialCommunityIcons name="check-circle" size={18} color={theme.colors.success} accessibilityElementsHidden />
+                      <Text style={[styles.foodEmoji, styles.foodEmojiLandscape]} accessibilityElementsHidden>{item.emoji}</Text>
                       <Text style={[styles.foodRowText, styles.foodRowTextLandscape, { color: theme.colors.successDark }, fontBoost > 0 && { fontSize: 13 + fontBoost }]}>{item.name}</Text>
                     </View>
                   ))}

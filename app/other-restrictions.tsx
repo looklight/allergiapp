@@ -11,6 +11,7 @@ import { Language } from '../types';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
+import { Analytics } from '../services/analytics';
 
 const VEGETARIAN_LEVELS: VegetarianLevel[] = ['no_meat', 'no_meat_fish', 'no_animal_products'];
 
@@ -81,6 +82,9 @@ export default function OtherRestrictionsScreen() {
     setActiveDietModes: saveDietModes,
     vegetarianLevel: savedVegetarianLevel,
     setVegetarianLevel: saveVegetarianLevel,
+    selectedAllergens,
+    selectedOtherFoods,
+    settings,
   } = useAppContext();
   const [selectedRestrictions, setSelectedRestrictions] = useState<RestrictionItemId[]>(savedRestrictions);
   const [localDietModes, setLocalDietModes] = useState<DietModeId[]>(savedDietModes);
@@ -116,6 +120,7 @@ export default function OtherRestrictionsScreen() {
   const isModeActive = (modeId: DietModeId) => localDietModes.includes(modeId);
 
   const handleDietModeToggle = (mode: DietMode, enabled: boolean) => {
+    Analytics.logDietModeToggled(mode.id, enabled);
     let newModes = [...localDietModes];
 
     if (enabled) {
@@ -150,9 +155,40 @@ export default function OtherRestrictionsScreen() {
   };
 
   const handleSave = async () => {
+    // Traccia restrizioni aggiunte e rimosse
+    const addedRestrictions = selectedRestrictions.filter((id) => !savedRestrictions.includes(id));
+    const removedRestrictions = savedRestrictions.filter((id) => !selectedRestrictions.includes(id));
+
+    for (const restriction of addedRestrictions) {
+      await Analytics.logRestrictionAdded(restriction);
+    }
+    for (const restriction of removedRestrictions) {
+      await Analytics.logRestrictionRemoved(restriction);
+    }
+
+    // Log vegetarian level change
+    if (localVegetarianLevel !== savedVegetarianLevel) {
+      Analytics.logVegetarianLevelChanged(localVegetarianLevel);
+    }
+
+    // Log aggregate save event
+    await Analytics.logRestrictionsSaved(selectedRestrictions, localDietModes, localVegetarianLevel);
+
     await saveRestrictions(selectedRestrictions);
     await saveDietModes(localDietModes);
     await saveVegetarianLevel(localVegetarianLevel);
+
+    // Update user properties
+    Analytics.updateUserProperties({
+      allergenCount: selectedAllergens.length + selectedOtherFoods.length,
+      allergenIds: selectedAllergens,
+      otherFoodIds: selectedOtherFoods,
+      dietModes: localDietModes,
+      cardLanguage: settings.cardLanguage,
+      vegetarianLevel: localDietModes.includes('vegetarian') ? localVegetarianLevel : undefined,
+      restrictionCount: selectedRestrictions.length,
+    });
+
     router.back();
   };
 
@@ -263,7 +299,7 @@ export default function OtherRestrictionsScreen() {
         ))}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}>
         <Button
           mode="contained"
           onPress={handleSave}
@@ -322,6 +358,7 @@ const styles = StyleSheet.create({
   },
   dietModeIcon: {
     fontSize: 28,
+    lineHeight: 36,
     marginRight: 12,
   },
   dietModeTextContainer: {
@@ -378,6 +415,7 @@ const styles = StyleSheet.create({
   },
   pregnancyItemIcon: {
     fontSize: 18,
+    lineHeight: 24,
     marginRight: 8,
   },
   pregnancySectionLabel: {
@@ -405,7 +443,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    paddingBottom: 32,
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,

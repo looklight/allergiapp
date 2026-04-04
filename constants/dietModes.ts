@@ -113,6 +113,7 @@ export const DIET_MODES: readonly DietMode[] = [
       'raw_cured_meats',
       'raw_eggs',
       'raw_sprouts',
+      'raw_vegetables',
       'unpasteurized_cheese',
       'unpasteurized_milk',
       'alcohol',

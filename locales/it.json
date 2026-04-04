@@ -29,13 +29,16 @@
     "title": "Cosa devo comunicare?",
     "subtitle": "Seleziona gli alimenti da evitare",
     "save": "Salva",
-    "otherFoods": "Altri alimenti"
+    "otherFoods": "Altri alimenti",
+    "allergens": "Allergeni",
+    "searchPlaceholder": "Cerca alimento...",
+    "noResults": "Nessun alimento trovato"
   },
   "otherRestrictions": {
     "title": "Altre esigenze",
     "subtitle": "Seleziona cosa comunicare",
     "save": "Salva",
-    "other": "Altro",
+    "other": "Altre esigenze",
     "selectedCount": "{{count}} selezionati",
     "pregnancyToggle": "Sono in gravidanza",
     "pregnancyHint": "Mostrerà nella card che sei in gravidanza",
@@ -59,7 +62,7 @@
     "histamineLabel": "Intolleranza all'istamina",
     "histamineActive": "Modalità istamina attiva",
     "diabetesToggle": "Diabete",
-    "diabetesHint": "Comunicherà sulla card che sei diabetico e indicherà gli alimenti da evitare",
+    "diabetesHint": "Comunicherà sulla card che hai il diabete e indicherà gli alimenti da evitare",
     "diabetesLabel": "Diabete",
     "diabetesActive": "Modalità diabete attiva",
     "foodsToAvoid": "Alimenti sconsigliati",

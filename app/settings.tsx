@@ -118,6 +118,8 @@ export default function SettingsScreen() {
           onPress={() => router.back()}
           hitSlop={8}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('settings.back')}
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
@@ -130,6 +132,9 @@ export default function SettingsScreen() {
           <Pressable
             onPress={() => setShowLangMenu(!showLangMenu)}
             style={styles.langPickerRow}
+            accessibilityRole="button"
+            accessibilityLabel={`${i18n.t('settings.appLanguage')}: ${APP_LANGUAGES.find((l) => l.code === appLang)?.name}`}
+            accessibilityState={{ expanded: showLangMenu }}
           >
             <MaterialCommunityIcons name="translate" size={22} color={theme.colors.primary} />
             <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.appLanguage')}</Text>
@@ -161,6 +166,9 @@ export default function SettingsScreen() {
                     lang.code === appLang && styles.langPickerOptionSelected,
                     pressed && styles.langPickerOptionPressed,
                   ]}
+                  accessibilityRole="radio"
+                  accessibilityLabel={lang.name}
+                  accessibilityState={{ checked: lang.code === appLang }}
                 >
                   <Text style={styles.langPickerOptionFlag}>{lang.flag}</Text>
                   <Text style={[
@@ -192,6 +200,7 @@ export default function SettingsScreen() {
           onPress={() => router.push('/about')}
           style={({ pressed }) => [styles.sectionHeaderRow, pressed && styles.settingsRowPressed]}
           accessibilityRole="button"
+          accessibilityLabel={i18n.t('settings.whyFree')}
         >
           <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
           <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.whyFree')}</Text>
@@ -209,6 +218,7 @@ export default function SettingsScreen() {
           onPress={handleResetApp}
           style={({ pressed }) => [styles.settingsRow, pressed && styles.settingsRowPressed]}
           accessibilityRole="button"
+          accessibilityLabel={i18n.t('settings.clearData')}
         >
           <MaterialCommunityIcons name="restart" size={22} color={theme.colors.error} />
           <View style={styles.settingsRowText}>
@@ -223,23 +233,25 @@ export default function SettingsScreen() {
               onPress={() => setShowPrivacyDialog(true)}
               style={({ pressed }) => [styles.legalLink, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
+              accessibilityLabel={i18n.t('settings.privacyPolicy')}
             >
               <Text style={styles.legalLinkText}>{i18n.t('settings.privacyPolicy')}</Text>
             </Pressable>
 
-            <Text style={styles.legalSeparator}>•</Text>
+            <Text style={styles.legalSeparator} accessibilityElementsHidden>•</Text>
 
             <Pressable
               onPress={() => setShowDisclaimerDialog(true)}
               style={({ pressed }) => [styles.legalLink, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
+              accessibilityLabel={i18n.t('settings.disclaimer')}
             >
               <Text style={styles.legalLinkText}>{i18n.t('settings.disclaimer')}</Text>
             </Pressable>
           </View>
         </View>
 
-        <View style={{ height: 32 }} />
+        <View style={{ height: Math.max(insets.bottom, 16) + 16 }} />
       </ScrollView>
 
       <LegalDialogs
@@ -294,6 +306,7 @@ const styles = StyleSheet.create({
   },
   langPickerFlag: {
     fontSize: 18,
+    lineHeight: 24,
   },
   langPickerLabel: {
     fontSize: 15,
@@ -326,6 +339,7 @@ const styles = StyleSheet.create({
   },
   langPickerOptionFlag: {
     fontSize: 24,
+    lineHeight: 32,
     marginRight: 12,
   },
   langPickerOptionName: {
