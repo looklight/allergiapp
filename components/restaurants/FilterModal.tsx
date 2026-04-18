@@ -6,13 +6,6 @@ import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import ChipGrid from '../ChipGrid';
 import DietaryNeedsPicker from '../DietaryNeedsPicker';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
-import type { SortBy } from '../../services/restaurantService';
-
-const SORT_OPTIONS: { key: SortBy; label: string }[] = [
-  { key: 'distance', label: 'Distanza' },
-  { key: 'recent', label: 'Recenti' },
-  { key: 'rating', label: 'Stelle' },
-];
 
 type Props = {
   visible: boolean;
@@ -20,9 +13,6 @@ type Props = {
   // Filtri categoria
   activeFilters: RestaurantCategoryId[];
   onToggleFilter: (id: RestaurantCategoryId) => void;
-  // Ordinamento
-  sortBy: SortBy;
-  onSortChange: (sort: SortBy) => void;
   // Per le mie esigenze
   forMyNeeds: boolean;
   onToggleMyNeeds: () => void;
@@ -44,8 +34,6 @@ export default function FilterModal({
   onClose,
   activeFilters,
   onToggleFilter,
-  sortBy,
-  onSortChange,
   forMyNeeds,
   onToggleMyNeeds,
   filterAllergens,
@@ -107,7 +95,7 @@ export default function FilterModal({
               I dati continuano ad essere raccolti nel DB tramite i voti community.
             */}
 
-            <View style={styles.section}>
+            <View style={[styles.section, { borderBottomWidth: 0 }]}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionLabel}>Tipo di cucina</Text>
                 <TouchableOpacity
@@ -141,28 +129,6 @@ export default function FilterModal({
                 onToggle={(id) => onToggleFilter(id as RestaurantCategoryId)}
                 lang={lang}
               />
-            </View>
-
-            {/* Ordina per */}
-            <View style={[styles.section, { borderBottomWidth: 0 }]}>
-              <Text style={styles.sectionLabel}>Ordina per</Text>
-              <View style={styles.sortRow}>
-                {SORT_OPTIONS.map(opt => {
-                  const isActive = sortBy === opt.key;
-                  return (
-                    <TouchableOpacity
-                      key={opt.key}
-                      onPress={() => onSortChange(opt.key)}
-                      style={[styles.chip, isActive && styles.chipActive]}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
             </View>
           </ScrollView>
 
@@ -278,34 +244,6 @@ const styles = StyleSheet.create({
   switchThumbActive: {
     alignSelf: 'flex-end',
     backgroundColor: '#FFFFFF',
-  },
-  sortRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  chipActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  chipTextActive: {
-    color: theme.colors.onPrimary,
   },
   footer: {
     flexDirection: 'row',

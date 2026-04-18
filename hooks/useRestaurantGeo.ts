@@ -282,14 +282,14 @@ export function useRestaurantGeo(params: FilterParams) {
     }, 500);
   }, [isCovered, fetchArea, loadPinsForViewport]);
 
-  const handleLocateMe = useCallback(async () => {
+  const handleLocateMe = useCallback(async (): Promise<LatLng | null> => {
     setIsLocating(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setLocationDenied(true);
         setIsLocating(false);
-        return;
+        return null;
       }
       setLocationDenied(false);
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -297,10 +297,12 @@ export function useRestaurantGeo(params: FilterParams) {
       setUserLocation(coords);
       setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
       await loadGeo(coords.latitude, coords.longitude);
+      setIsLocating(false);
+      return coords;
     } catch {
-      // GPS non disponibile
+      setIsLocating(false);
+      return null;
     }
-    setIsLocating(false);
   }, [loadGeo, getSheetFraction]);
 
   /** Resetta la vista alla posizione utente */

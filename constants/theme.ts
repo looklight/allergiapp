@@ -42,6 +42,10 @@ export const theme = {
     warning: '#E65100',
     warningDark: '#D84315',
 
+    // Info (blue — distance, links, neutral highlights)
+    info: '#1976D2',
+    infoLight: '#E3F2FD',
+
     // Amber tones (cards, highlights)
     amberLight: '#FFF8E1',
     amber: '#FFC107',

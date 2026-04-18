@@ -254,7 +254,7 @@ export function useMapSearch({
           place.latitude, place.longitude,
           allergensRef.current, dietsRef.current, radius,
         )
-      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 20);
+      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 50);
 
     if (nearbySeqRef.current !== seq) return;
     setNearbyResults(nearby);

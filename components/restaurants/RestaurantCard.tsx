@@ -115,16 +115,18 @@ export default memo(function RestaurantCard({
                 {hasMatch && (
                   <View style={[
                     styles.matchBadge,
-                    coveredTotal >= filtersTotal ? styles.matchBadgeFull : styles.matchBadgePartial,
+                    coveredTotal >= filtersTotal ? styles.matchBadgeFull
+                    : coveredTotal === 0 ? styles.matchBadgeNone
+                    : styles.matchBadgePartial,
                   ]}>
                     <MaterialCommunityIcons
                       name="shield-check"
                       size={11}
-                      color={coveredTotal >= filtersTotal ? theme.colors.success : theme.colors.amberDark}
+                      color={coveredTotal >= filtersTotal ? theme.colors.success : coveredTotal === 0 ? theme.colors.textDisabled : theme.colors.amberDark}
                     />
                     <Text style={[
                       styles.matchBadgeText,
-                      { color: coveredTotal >= filtersTotal ? theme.colors.success : theme.colors.amberDark },
+                      { color: coveredTotal >= filtersTotal ? theme.colors.success : coveredTotal === 0 ? theme.colors.textDisabled : theme.colors.amberDark },
                     ]}>
                       {inferredTotal > 0 ? `${directTotal > 0 ? directTotal : ''}(+${inferredTotal})` : coveredTotal}/{filtersTotal}
                     </Text>
@@ -263,6 +265,9 @@ const styles = StyleSheet.create({
   },
   matchBadgePartial: {
     backgroundColor: theme.colors.amberLight,
+  },
+  matchBadgeNone: {
+    backgroundColor: '#EEEEEE',
   },
   matchBadgeText: {
     fontSize: 11,

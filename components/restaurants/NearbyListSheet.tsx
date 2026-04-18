@@ -25,6 +25,7 @@ type Props = {
   results: Restaurant[];
   isLoading: boolean;
   showMatchInfo: boolean;
+  hasActiveFilters: boolean;
   userLocation: { latitude: number; longitude: number } | null;
   onSelectRestaurant: (id: string) => void;
   onClose: () => void;
@@ -40,8 +41,9 @@ function MatchBadge({ restaurant }: { restaurant: Restaurant }) {
   if (filtersTotal === 0) return null;
 
   const full = coveredTotal >= filtersTotal;
-  const color = full ? theme.colors.success : theme.colors.amberDark;
-  const bg = full ? theme.colors.primaryLight : theme.colors.amberLight;
+  const none = coveredTotal === 0;
+  const color = full ? theme.colors.success : none ? theme.colors.textDisabled : theme.colors.amberDark;
+  const bg = full ? theme.colors.primaryLight : none ? '#EEEEEE' : theme.colors.amberLight;
 
   return (
     <View style={[styles.matchBadge, { backgroundColor: bg }]}>
@@ -61,6 +63,7 @@ export default function NearbyListSheet({
   results,
   isLoading,
   showMatchInfo,
+  hasActiveFilters,
   userLocation,
   onSelectRestaurant,
   onClose,
@@ -132,7 +135,7 @@ export default function NearbyListSheet({
         {!isLoading && (
           <Text style={styles.headerSubtitle}>
             {results.length === 0
-              ? 'Nessun ristorante in zona'
+              ? hasActiveFilters ? 'Nessun risultato con i filtri attivi' : 'Nessun ristorante in zona'
               : `${results.length} ${results.length === 1 ? 'trovato' : 'trovati'}`}
           </Text>
         )}
@@ -219,7 +222,9 @@ export default function NearbyListSheet({
       ) : results.length === 0 ? (
         <View style={styles.centered}>
           <Text style={styles.emptyText}>
-            Nessun ristorante trovato nelle vicinanze di {place.name}.
+            {hasActiveFilters
+              ? `Nessun ristorante a ${place.name} corrisponde ai filtri selezionati. Prova a modificarli.`
+              : `Nessun ristorante trovato nelle vicinanze di ${place.name}.`}
           </Text>
         </View>
       ) : (
@@ -242,6 +247,9 @@ export default function NearbyListSheet({
               const reviewCount = item.review_count ?? 0;
               const rating = item.average_rating ?? 0;
               const hasReviews = reviewCount > 0 && rating > 0;
+              const distanceKm = sortBy === 'distance' && userLocation && item.location
+                ? haversineKm(userLocation.latitude, userLocation.longitude, item.location.latitude, item.location.longitude)
+                : null;
               return (
                 <TouchableOpacity
                   style={styles.row}
@@ -260,6 +268,11 @@ export default function NearbyListSheet({
                         </View>
                       ) : (
                         <Text style={styles.reviewCount}>Nessuna recensione</Text>
+                      )}
+                      {distanceKm !== null && (
+                        <Text style={styles.distance}>
+                          · {distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km`}
+                        </Text>
                       )}
                       {cuisineLabels.length > 0 ? (
                         cuisineLabels.map((label, i) => (
@@ -444,6 +457,12 @@ const styles = StyleSheet.create({
   reviewCount: {
     fontSize: 11,
     color: theme.colors.textSecondary,
+  },
+  distance: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.info,
+    marginLeft: -2,
   },
   cuisineBadge: {
     alignSelf: 'flex-start',

@@ -1,11 +1,14 @@
-import { useState, useCallback, useEffect, useRef, useReducer } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Location from 'expo-location';
 import { theme } from '../../constants/theme';
-import { type SortBy, type Restaurant } from '../../services/restaurantService';
+import { getAvatarById } from '../../constants/avatars';
+import { getProfileColor } from '../../constants/profileColors';
+import { type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import RestaurantMap from '../../components/map/RestaurantMap';
@@ -67,13 +70,12 @@ export default function RestaurantsScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { isAuthenticated, user, dietaryNeeds, refreshProfile } = useAuth();
+  const { isAuthenticated, user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
   // --- Filter state ---
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<RestaurantCategoryId[]>([]);
-  const [sortBy, setSortBy] = useState<SortBy>('distance');
   const [forMyNeeds, setForMyNeeds] = useState(false);
   const [filterAllergens, setFilterAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [filterDiets, setFilterDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
@@ -109,7 +111,7 @@ export default function RestaurantsScreen() {
   }, [isAuthenticated, dietaryNeeds.allergens, dietaryNeeds.diets]);
 
   const filterHasNeeds = filterAllergens.length > 0 || filterDiets.length > 0;
-  const hasActiveSettings = activeFilters.length > 0 || sortBy !== 'distance' || forMyNeeds;
+  const hasActiveSettings = activeFilters.length > 0 || forMyNeeds;
 
   // --- Selection state (reducer — niente ref, niente timing issue) ---
   const [selection, dispatch] = useReducer(selectionReducer, INITIAL_SELECTION);
@@ -162,11 +164,8 @@ export default function RestaurantsScreen() {
 
   const { mapRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
-    userLocation: geo.userLocation,
     activeFilters,
     searchQuery: mapFilterQuery,
-    sortBy,
-    forMyNeeds,
     mapRegion: currentRegion,
   });
 
@@ -324,26 +323,47 @@ export default function RestaurantsScreen() {
     openRestaurantDetail(id, r.location.latitude, r.location.longitude);
   }, [openRestaurantDetail, mapSearch.nearbyResults]);
 
+  /** Zoom adatto al tipo di luogo (country → molto ampio, locality → stretto). */
+  const zoomForPlaceType = (placeType?: string): number =>
+    placeType === 'country' ? 12 :
+    placeType === 'state' ? 3 :
+    placeType === 'county' ? 0.5 :
+    placeType === 'city' ? 0.08 :
+    placeType === 'district' || placeType === 'locality' ? 0.03 :
+    0.02;
+
+  /** Attiva la modalità "Ristoranti nell'area": centra mappa, autocompila search, popola banner. */
+  const activateNearbyPlace = useCallback((name: string, lat: number, lng: number, placeType?: string) => {
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta: zoomForPlaceType(placeType) });
+    setSearchQuery(name);
+    mapSearch.clear();
+    mapSearch.selectPlace({ name, latitude: lat, longitude: lng, placeType });
+    setNearbyExpanded(false);
+  }, [geo.setCenterOn, mapSearch.clear, mapSearch.selectPlace]);
+
+  /** GPS → reverse-geocode → autocompila la search bar e mostra banner con i ristoranti della città rilevata. */
+  const handleLocateMeAndShowCity = useCallback(async () => {
+    const coords = await geo.handleLocateMe();
+    if (!coords) return;
+    try {
+      const places = await Location.reverseGeocodeAsync(coords);
+      const place = places[0];
+      const cityName = place?.city ?? place?.subregion ?? place?.region;
+      if (!cityName) return;
+      activateNearbyPlace(cityName, coords.latitude, coords.longitude, 'city');
+    } catch {
+      // Reverse geocode non disponibile — centra solo la mappa (già fatto da handleLocateMe).
+    }
+  }, [geo.handleLocateMe, activateNearbyPlace]);
+
   const handleSelectPlace = useCallback((lat: number, lng: number, placeType?: string, name?: string) => {
     Keyboard.dismiss();
-    const latDelta =
-      placeType === 'country' ? 12 :
-      placeType === 'state' ? 3 :
-      placeType === 'county' ? 0.5 :
-      placeType === 'city' ? 0.08 :
-      placeType === 'district' || placeType === 'locality' ? 0.03 :
-      0.02;
-    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta });
     if (name) {
-      // Sostituisci il testo della search con il nome del luogo (UX Google Maps-like),
-      // senza far ripartire la ricerca testuale.
-      setSearchQuery(name);
-      mapSearch.clear();
-      mapSearch.selectPlace({ name, latitude: lat, longitude: lng, placeType });
-      // Default: banner collassata; l'utente espande con tap.
-      setNearbyExpanded(false);
+      activateNearbyPlace(name, lat, lng, placeType);
+    } else {
+      geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta: zoomForPlaceType(placeType) });
     }
-  }, [geo.setCenterOn, mapSearch.clear, mapSearch.selectPlace]);
+  }, [geo.setCenterOn, activateNearbyPlace]);
 
   const handleDeselect = useCallback(() => {
     dispatch({ type: 'DESELECT' });
@@ -358,7 +378,6 @@ export default function RestaurantsScreen() {
 
   const handleResetFilters = useCallback(async () => {
     setActiveFilters([]);
-    setSortBy('distance');
     if (forMyNeeds) {
       setForMyNeeds(false);
       storage.setForMyNeeds(false);
@@ -372,14 +391,24 @@ export default function RestaurantsScreen() {
     searchQuery.length >= 2 &&
     (mapSearch.results.length > 0 || mapSearch.isSearching);
 
-  // Conta i ristoranti da mostrare nella banner collassata.
-  // Con "Per me" attivo, conta solo quelli con almeno una corrispondenza (coveredTotal > 0).
-  const nearbyCount = forMyNeeds
-    ? mapSearch.nearbyResults.filter(r => {
+  // Applica i filtri cuisine e forMyNeeds ai risultati nearby prima di passarli alla banner/sheet.
+  const filteredNearbyResults = useMemo(() => {
+    let list = mapSearch.nearbyResults;
+    if (activeFilters.length > 0) {
+      list = list.filter(r =>
+        r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
+      );
+    }
+    if (forMyNeeds) {
+      list = list.filter(r => {
         const covered = (r.covered_allergen_count ?? 0) + (r.covered_dietary_count ?? 0);
         return covered > 0;
-      }).length
-    : mapSearch.nearbyResults.length;
+      });
+    }
+    return list;
+  }, [mapSearch.nearbyResults, activeFilters, forMyNeeds]);
+
+  const nearbyCount = filteredNearbyResults.length;
 
   const showNearbyBanner =
     mapSearch.nearbyPlace !== null && !nearbyExpanded && !selection.detailId;
@@ -412,15 +441,27 @@ export default function RestaurantsScreen() {
         pointerEvents="box-none"
       >
         <View style={styles.floatingSearchRow}>
-          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85}>
-            <MaterialCommunityIcons
-              name={isAuthenticated ? 'account-circle' : 'account-circle-outline'}
-              size={22}
-              color={theme.colors.primary}
-            />
-          </TouchableOpacity>
           <View style={styles.floatingSearchContainer}>
-            <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
+            <TouchableOpacity onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85} style={styles.avatarButton}>
+              {(() => {
+                const avatarObj = userProfile?.avatar_url ? getAvatarById(userProfile.avatar_url) : undefined;
+                const profileColor = getProfileColor(userProfile?.profile_color ?? undefined);
+                const initial = (userProfile?.display_name?.charAt(0) || '?').toUpperCase();
+                if (avatarObj?.source) {
+                  return <Image source={avatarObj.source} style={styles.avatarImage} />;
+                }
+                if (isAuthenticated) {
+                  return (
+                    <View style={[styles.avatarFallback, { backgroundColor: profileColor.hex }]}>
+                      <Text style={styles.avatarInitial}>{initial}</Text>
+                    </View>
+                  );
+                }
+                return (
+                  <MaterialCommunityIcons name="account-circle-outline" size={28} color={theme.colors.primary} />
+                );
+              })()}
+            </TouchableOpacity>
             <TextInput
               style={styles.searchInput}
               placeholder="Cerca ristorante o luogo..."
@@ -435,7 +476,7 @@ export default function RestaurantsScreen() {
                 <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={geo.handleLocateMe} hitSlop={8} disabled={geo.isLocating}>
+              <TouchableOpacity onPress={handleLocateMeAndShowCity} hitSlop={8} disabled={geo.isLocating}>
                 {geo.isLocating ? (
                   <ActivityIndicator size={16} color={theme.colors.primary} />
                 ) : (
@@ -444,50 +485,19 @@ export default function RestaurantsScreen() {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Riga filtri: tune + Per me + Aggiungi */}
-        <View style={styles.filterRow}>
           <TouchableOpacity
             onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
-            style={[styles.filterPill, hasActiveSettings && styles.filterPillActive]}
-            activeOpacity={0.7}
+            style={[styles.mapOverlayButton, hasActiveSettings && styles.filterPillActive]}
+            activeOpacity={0.85}
           >
             <MaterialCommunityIcons
               name="tune-vertical"
-              size={18}
-              color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
+              size={22}
+              color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.primary}
             />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleToggleMyNeeds}
-            style={[styles.filterPillWide, forMyNeeds && styles.filterPillActive]}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons
-              name="shield-check"
-              size={16}
-              color={forMyNeeds ? theme.colors.onPrimary : theme.colors.textSecondary}
-            />
-            <Text style={[styles.filterPillText, forMyNeeds && styles.filterPillTextActive]}>
-              Per me
-            </Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1 }} />
-          <TouchableOpacity
-            onPress={handleAddPress}
-            style={styles.addButton}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={require('../../assets/happy_plate_forks.png')}
-              style={styles.addButtonImage}
-            />
-            <MaterialCommunityIcons name="plus" size={14} color={theme.colors.onPrimary} />
-            <Text style={styles.addButtonText}>Aggiungi</Text>
+          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
+            <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -551,9 +561,10 @@ export default function RestaurantsScreen() {
       {mapSearch.nearbyPlace && nearbyExpanded && !selection.detailId && (
         <NearbyListSheet
           place={mapSearch.nearbyPlace}
-          results={mapSearch.nearbyResults}
+          results={filteredNearbyResults}
           isLoading={mapSearch.isLoadingNearby}
           showMatchInfo={forMyNeeds}
+          hasActiveFilters={hasActiveSettings}
           userLocation={geo.userLocation}
           onSelectRestaurant={handleSelectFromNearbySheet}
           onClose={handleCloseNearbySheet}
@@ -573,8 +584,6 @@ export default function RestaurantsScreen() {
         onClose={handleCloseFilterModal}
         activeFilters={activeFilters}
         onToggleFilter={toggleFilter}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
         forMyNeeds={forMyNeeds}
         onToggleMyNeeds={handleToggleMyNeeds}
         filterAllergens={filterAllergens}
@@ -588,6 +597,21 @@ export default function RestaurantsScreen() {
         onReset={handleResetFilters}
         lang={lang}
       />
+
+      {!selection.detailId && !nearbyExpanded && !showNearbyBanner && (
+        <TouchableOpacity
+          onPress={handleAddPress}
+          style={[styles.fab, { bottom: 49 + insets.bottom + 16 }]}
+          activeOpacity={0.85}
+        >
+          <Image
+            source={require('../../assets/happy_plate_forks.png')}
+            style={styles.fabImage}
+          />
+          <MaterialCommunityIcons name="plus" size={14} color={theme.colors.onPrimary} />
+          <Text style={styles.fabText}>Aggiungi</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -619,7 +643,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    paddingHorizontal: 14,
+    paddingLeft: 8,
+    paddingRight: 14,
     height: 48,
     borderRadius: 24,
     elevation: 4,
@@ -641,8 +666,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
   },
-  searchIcon: {
+  avatarButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     marginRight: 8,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarImage: {
+    width: 34,
+    height: 34,
+    resizeMode: 'contain',
+  },
+  avatarFallback: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitial: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.onPrimary,
   },
   searchInput: {
     flex: 1,
@@ -651,55 +699,9 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
 
-  // --- Filter row (under search bar) ---
-  filterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 8,
-  },
-  filterPill: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
-  filterPillWide: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    height: 40,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
   filterPillActive: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
-  },
-  filterPillText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  filterPillTextActive: {
-    color: theme.colors.onPrimary,
   },
 
   // --- Active filter chips ---
@@ -732,30 +734,33 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
 
-  // --- Add button ---
-  addButton: {
+  // --- FAB Aggiungi ---
+  fab: {
+    position: 'absolute',
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    height: 40,
+    height: 48,
     paddingLeft: 4,
-    paddingRight: 12,
-    borderRadius: 20,
+    paddingRight: 14,
+    borderRadius: 24,
     backgroundColor: theme.colors.primary,
-    elevation: 4,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    zIndex: 20,
   },
-  addButtonImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  fabImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
-  addButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
+  fabText: {
+    fontSize: 14,
+    fontWeight: '700',
     color: theme.colors.onPrimary,
   },
 
