@@ -129,7 +129,15 @@ export default function ProfileScreen() {
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
-
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/leaderboard')}
+          activeOpacity={0.6}
+        >
+          <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.menuItemText}>Classifica</Text>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
       </ProfileCard>
     </>
   );

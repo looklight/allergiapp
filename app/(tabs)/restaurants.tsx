@@ -169,6 +169,32 @@ export default function RestaurantsScreen() {
     mapRegion: currentRegion,
   });
 
+  // Quando i filtri cambiano e ci sono risultati, incrementa il trigger per fare fit della mappa.
+  const filterKey = useMemo(
+    () => `${[...activeFilters].sort().join('|')}_${forMyNeeds ? '1' : '0'}`,
+    [activeFilters, forMyNeeds],
+  );
+  const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
+  useEffect(() => {
+    if (!mapRestaurants.some(r => r.location)) return;
+    setFitBoundsTrigger(n => n + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey]); // mapRestaurants letto al momento dell'esecuzione, non come dipendenza
+
+  // allPins viene da una RPC separata che non conosce i filtri attivi.
+  // Lo filtriamo in base a geo.restaurants (già filtrato lato server per allergie)
+  // + activeFilters cucina lato client, così la mappa è coerente con la lista.
+  const filteredAllPins = useMemo(() => {
+    if (activeFilters.length === 0 && !forMyNeeds) return geo.allPins;
+    const allowed = new Set(
+      (activeFilters.length > 0
+        ? geo.restaurants.filter(r => r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId)))
+        : geo.restaurants
+      ).map(r => r.id)
+    );
+    return geo.allPins?.filter(p => allowed.has(p.id)) ?? null;
+  }, [geo.allPins, geo.restaurants, activeFilters, forMyNeeds]);
+
   const { favoriteIds, favoriteRestaurants, loadFavorites, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
   );
@@ -383,8 +409,13 @@ export default function RestaurantsScreen() {
       storage.setForMyNeeds(false);
       await geo.clearAndReload();
     }
-    setShowFilterModal(false);
   }, [forMyNeeds, geo.clearAndReload]);
+
+  const handleRemoveNeedsChip = useCallback(async () => {
+    setForMyNeeds(false);
+    storage.setForMyNeeds(false);
+    await geo.clearAndReload();
+  }, [geo.clearAndReload]);
 
   const autocompleteVisible =
     mapSearch.nearbyPlace === null &&
@@ -420,7 +451,8 @@ export default function RestaurantsScreen() {
       <View style={styles.mapContainer}>
         <RestaurantMap
           restaurants={mapRestaurants}
-          allPins={geo.allPins}
+          allPins={filteredAllPins}
+          fitBounds={fitBoundsTrigger}
           centerOn={geo.centerOn}
           hasUserLocation={!!geo.userLocation}
           onRegionChangeComplete={handleRegionChange}
@@ -458,7 +490,7 @@ export default function RestaurantsScreen() {
                   );
                 }
                 return (
-                  <MaterialCommunityIcons name="account-circle-outline" size={28} color={theme.colors.primary} />
+                  <MaterialCommunityIcons name="account-circle-outline" size={32} color={theme.colors.primary} />
                 );
               })()}
             </TouchableOpacity>
@@ -487,27 +519,31 @@ export default function RestaurantsScreen() {
           </View>
           <TouchableOpacity
             onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
-            style={[styles.mapOverlayButton, hasActiveSettings && styles.filterPillActive]}
+            style={styles.mapOverlayButton}
             activeOpacity={0.85}
           >
             <MaterialCommunityIcons
               name="tune-vertical"
               size={22}
-              color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.primary}
+              color={theme.colors.primary}
             />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.mapOverlayButton} onPress={() => router.push('/leaderboard')} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
 
-        {activeFilters.length > 0 && (
+        {(activeFilters.length > 0 || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chipScroll}
             style={styles.chipScrollContainer}
           >
+            {forMyNeeds && (
+              <TouchableOpacity key="needs" style={styles.activeChip} onPress={handleRemoveNeedsChip} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="shield-check" size={13} color={theme.colors.primary} />
+                <Text style={styles.activeChipText}>Per me</Text>
+                <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            )}
             {activeFilters.map(id => (
               <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
                 <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
@@ -632,6 +668,7 @@ const styles = StyleSheet.create({
     left: 12,
     right: 12,
     zIndex: 10,
+    overflow: 'visible',
   },
   floatingSearchRow: {
     flexDirection: 'row',
@@ -667,28 +704,28 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   avatarButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 8,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarImage: {
-    width: 34,
-    height: 34,
+    width: 40,
+    height: 40,
     resizeMode: 'contain',
   },
   avatarFallback: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: theme.colors.onPrimary,
   },
@@ -699,18 +736,14 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
 
-  filterPillActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-
   // --- Active filter chips ---
   chipScrollContainer: {
     marginTop: 6,
+    marginHorizontal: -12,
   },
   chipScroll: {
     gap: 6,
-    paddingRight: 4,
+    paddingHorizontal: 12,
   },
   activeChip: {
     flexDirection: 'row',

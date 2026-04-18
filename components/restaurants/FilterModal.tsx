@@ -68,9 +68,11 @@ export default function FilterModal({
                   <View style={[styles.switchThumb, forMyNeeds && styles.switchThumbActive]} />
                 </View>
               </TouchableOpacity>
+              <Text style={styles.sectionHint}>
+                Mostra i ristoranti con esperienze lasciate da utenti con le tue stesse allergie o esigenze alimentari.
+              </Text>
               {forMyNeeds && (
                 <>
-                  <View style={{ height: 12 }} />
                   <DietaryNeedsPicker
                     allergens={filterAllergens}
                     diets={filterDiets}
@@ -96,33 +98,10 @@ export default function FilterModal({
             */}
 
             <View style={[styles.section, { borderBottomWidth: 0 }]}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionLabel}>Tipo di cucina</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    const allSelected = CUISINE_CATEGORIES.every(c => activeFilters.includes(c.id as RestaurantCategoryId));
-                    if (allSelected) {
-                      // Deseleziona tutti: rimuovi ognuno
-                      activeFilters.forEach(id => onToggleFilter(id));
-                    } else {
-                      // Seleziona tutti: aggiungi quelli mancanti
-                      CUISINE_CATEGORIES.forEach(c => {
-                        if (!activeFilters.includes(c.id as RestaurantCategoryId)) {
-                          onToggleFilter(c.id as RestaurantCategoryId);
-                        }
-                      });
-                    }
-                  }}
-                  hitSlop={8}
-                  activeOpacity={0.6}
-                >
-                  <Text style={styles.selectAllText}>
-                    {CUISINE_CATEGORIES.every(c => activeFilters.includes(c.id as RestaurantCategoryId))
-                      ? 'Deseleziona tutti'
-                      : 'Seleziona tutti'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.sectionLabel}>Tipo di cucina</Text>
+              <Text style={styles.sectionHint}>
+                Basato sui tag aggiunti dalla community per descrivere il tipo di cucina del ristorante.
+              </Text>
               <ChipGrid
                 items={CUISINE_CATEGORIES}
                 activeIds={activeFilters}
@@ -190,23 +169,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 10,
+    marginBottom: 2,
   },
-  selectAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
+  sectionHint: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    lineHeight: 17,
+    marginTop: 6,
+    marginBottom: 12,
   },
   myNeedsToggle: {
     flexDirection: 'row',

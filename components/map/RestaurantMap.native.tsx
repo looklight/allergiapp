@@ -72,6 +72,7 @@ export default function RestaurantMap({
   favoriteIds,
   favoriteRestaurants,
   compassOffset,
+  fitBounds,
 }: RestaurantMapProps) {
   const mapRef = useRef<any>(null);
   const [mapHeight, setMapHeight] = useState(0);
@@ -135,6 +136,28 @@ export default function RestaurantMap({
     fitToMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantKey, fitToMarkers]);
+
+  // ---- Camera: fitBounds (filtro attivo → adatta mappa ai risultati) ----
+  useEffect(() => {
+    if (!fitBounds || !mapReady.current) return;
+    const coords = restaurantsRef.current
+      .filter(r => r.location && isValidCoord(r.location.latitude, r.location.longitude))
+      .map(r => ({ latitude: r.location!.latitude, longitude: r.location!.longitude }));
+    if (coords.length === 0) return;
+    const lats = coords.map(c => c.latitude);
+    const lngs = coords.map(c => c.longitude);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const MIN_DELTA = 0.05;
+    if (maxLat - minLat < MIN_DELTA && maxLng - minLng < MIN_DELTA) {
+      mapRef.current?.animateToRegion(
+        { latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2, latitudeDelta: MIN_DELTA, longitudeDelta: MIN_DELTA },
+        600,
+      );
+    } else {
+      mapRef.current?.fitToCoordinates(coords, { edgePadding: FIT_EDGE_PADDING, animated: true });
+    }
+  }, [fitBounds]);
 
   // ---- Camera: centerOn (pin selection, search, locate me) ----
   useEffect(() => {
