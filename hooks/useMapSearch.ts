@@ -31,22 +31,69 @@ export type SearchResult =
 type Params = {
   restaurants: Restaurant[];
   userLocation: { latitude: number; longitude: number } | null;
+  /** Se true, il fetch "Ristoranti nell'area" usa getRestaurantsForMyNeeds per popolare il match coverage. */
+  forMyNeeds?: boolean;
+  filterAllergens?: string[];
+  filterDiets?: string[];
 };
 
 const SEARCH_DEBOUNCE = 1000;
 const MIN_QUERY_LENGTH = 2;
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 
+// Raggio usato per la sezione "Ristoranti a [Città]" dopo il tap su un luogo.
+// Scelto in base al placeType: country/state troppo ampi → ridotto a scala città.
+function nearbyRadiusKm(placeType?: string): number {
+  switch (placeType) {
+    case 'country': return 50;
+    case 'state':
+    case 'region': return 30;
+    case 'county':
+    case 'province': return 20;
+    case 'city':
+    case 'town': return 15;
+    case 'district':
+    case 'locality':
+    case 'village': return 5;
+    default: return 10;
+  }
+}
+
+export type NearbyPlace = {
+  name: string;
+  latitude: number;
+  longitude: number;
+  placeType?: string;
+};
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useMapSearch({ restaurants, userLocation }: Params) {
+export function useMapSearch({
+  restaurants,
+  userLocation,
+  forMyNeeds = false,
+  filterAllergens = [],
+  filterDiets = [],
+}: Params) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [nearbyPlace, setNearbyPlace] = useState<NearbyPlace | null>(null);
+  const [nearbyResults, setNearbyResults] = useState<Restaurant[]>([]);
+  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
 
   const sequenceRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nearbySeqRef = useRef(0);
+
+  // Refs per accedere ai filtri correnti dentro selectPlace senza destabilizzarlo
+  const forMyNeedsRef = useRef(forMyNeeds);
+  forMyNeedsRef.current = forMyNeeds;
+  const allergensRef = useRef(filterAllergens);
+  allergensRef.current = filterAllergens;
+  const dietsRef = useRef(filterDiets);
+  dietsRef.current = filterDiets;
 
   /** Cerca nei ristoranti già in cache (sincrono, istantaneo) */
   const searchLocalCache = useCallback((query: string): SearchResult[] => {
@@ -185,9 +232,51 @@ export function useMapSearch({ restaurants, userLocation }: Params) {
   const clear = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     sequenceRef.current++;
+    nearbySeqRef.current++;
     setResults([]);
     setIsSearching(false);
+    setNearbyPlace(null);
+    setNearbyResults([]);
+    setIsLoadingNearby(false);
   }, []);
 
-  return { results, isSearching, search, clear };
+  /** Selezione di un luogo: carica ristoranti entro un raggio coerente col placeType.
+   *  Se forMyNeeds è attivo, usa l'RPC che restituisce anche il match coverage (covered/inferred). */
+  const selectPlace = useCallback(async (place: NearbyPlace) => {
+    const seq = ++nearbySeqRef.current;
+    setNearbyPlace(place);
+    setNearbyResults([]);
+    setIsLoadingNearby(true);
+
+    const radius = nearbyRadiusKm(place.placeType);
+    const nearby = forMyNeedsRef.current
+      ? await RestaurantService.getRestaurantsForMyNeeds(
+          place.latitude, place.longitude,
+          allergensRef.current, dietsRef.current, radius,
+        )
+      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 20);
+
+    if (nearbySeqRef.current !== seq) return;
+    setNearbyResults(nearby);
+    setIsLoadingNearby(false);
+  }, []);
+
+  const clearNearbyPlace = useCallback(() => {
+    nearbySeqRef.current++;
+    setNearbyPlace(null);
+    setNearbyResults([]);
+    setIsLoadingNearby(false);
+  }, []);
+
+  return {
+    results,
+    isSearching,
+    search,
+    clear,
+    nearbyPlace,
+    nearbyResults,
+    isLoadingNearby,
+    selectPlace,
+    clearNearbyPlace,
+  };
 }

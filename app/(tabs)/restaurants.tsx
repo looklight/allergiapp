@@ -1,18 +1,16 @@
-import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
-import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, useWindowDimensions, Image } from 'react-native';
-import { Text, Button } from 'react-native-paper';
+import { useState, useCallback, useEffect, useRef, useReducer } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
-import { NativeViewGestureHandler } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { type SortBy, type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
-import RestaurantCard from '../../components/restaurants/RestaurantCard';
 import RestaurantMap from '../../components/map/RestaurantMap';
-import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../../components/DraggableBottomSheet';
 import FilterModal from '../../components/restaurants/FilterModal';
+import NearbyListSheet from '../../components/restaurants/NearbyListSheet';
 import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetailSheet';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
@@ -38,8 +36,8 @@ function selectionReducer(state: SelectionState, action: SelectionAction): Selec
     case 'CLOSE_DETAIL':
       // Mantieni selectedId invariato: il pin resta visibile (selezionato) finché
       // l'utente non tocca/pan la mappa (DESELECT). Se azzerassimo selectedId qui,
-      // tracksViewChanges farebbe il ciclo true→false mentre tab bar / list sheet
-      // animano simultaneamente → iOS cattura un bitmap vuoto → pin sparisce.
+      // tracksViewChanges farebbe il ciclo true→false mentre la tab bar anima
+      // simultaneamente → iOS cattura un bitmap vuoto → pin sparisce.
       return { ...state, detailId: null };
     case 'DESELECT':
       if (state.detailId || state.selectedId === null) return state;
@@ -61,11 +59,14 @@ const TAB_BAR_STYLE = {
   borderTopWidth: 1,
 };
 
+// Frazione stimata di copertura della detail sheet: usata per offsettare la camera
+// in modo che il marker selezionato resti visibile sopra lo sheet.
+const DETAIL_SHEET_COVERAGE = 0.55;
+
 export default function RestaurantsScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { height: screenHeight } = useWindowDimensions();
   const { isAuthenticated, user, dietaryNeeds, refreshProfile } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
@@ -114,60 +115,31 @@ export default function RestaurantsScreen() {
   const [selection, dispatch] = useReducer(selectionReducer, INITIAL_SELECTION);
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
-  const listRef = useRef<FlatList>(null);
-  const listSheetRef = useRef<DraggableBottomSheetRef>(null);
 
-  // Snap index del list sheet prima che il detail lo collassi — per ripristinarlo alla chiusura
-  const listSheetIndexBeforeDetail = useRef(1);
+  // Nearby panel: quando c'è un luogo selezionato, mostriamo prima una banner
+  // collassata in basso; il tap la espande nell'autocomplete nearby.
+  const [nearbyExpanded, setNearbyExpanded] = useState(false);
 
-  // Nasconde la tab bar quando il detail sheet è aperto.
-  // Con position: absolute, display: 'none' non causa reflow di layout.
-  // Collassa il list sheet al minimo così il detail sheet lo copre completamente,
-  // e lo ripristina alla posizione precedente quando il detail si chiude.
+  // Nasconde la tab bar quando un bottom sheet (detail o nearby) è aperto.
   useEffect(() => {
+    const hide = Boolean(selection.detailId) || nearbyExpanded;
     navigation.setOptions({
-      tabBarStyle: selection.detailId ? { display: 'none' } : TAB_BAR_STYLE,
+      tabBarStyle: hide ? { display: 'none' } : TAB_BAR_STYLE,
     });
-    if (selection.detailId) {
-      // Salva la posizione corrente e collassa
-      const fraction = sheetFractionRef.current;
-      const snaps = [0.18, 0.50, 0.85];
-      const closest = snaps.reduce((best, sp, i) =>
-        Math.abs(sp - fraction) < Math.abs(snaps[best] - fraction) ? i : best, 0);
-      listSheetIndexBeforeDetail.current = closest;
-      listSheetRef.current?.snapToIndex(0);
-    } else {
-      // Ripristina la posizione precedente
-      listSheetRef.current?.snapToIndex(listSheetIndexBeforeDetail.current);
-    }
-  }, [selection.detailId, navigation]);
+  }, [selection.detailId, nearbyExpanded, navigation]);
 
   // Regione corrente della mappa — usata per filtrare la lista coerentemente col viewport
   const [currentRegion, setCurrentRegion] = useState<{
     latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number;
   } | null>(null);
 
-  // Scroll abilitato solo al massimo snap (85%) — altrimenti il body è draggabile
-  const [listScrollEnabled, setListScrollEnabled] = useState(false);
-  const collapseScrollRef = useRef(null);
-  const scrollPositionRef = useRef(0);
-
-  // --- Bottom sheet fraction (UI concern, stays in screen) ---
-  const sheetFractionRef = useRef(0.50);
-  const getSheetFraction = useCallback(() => sheetFractionRef.current, []);
-  const snapPoints = useMemo(() => [0.18, 0.50, 0.85], []);
-  const handleSnapChange = useCallback((f: number) => {
-    sheetFractionRef.current = f;
-    setListScrollEnabled(f >= 0.8);
-  }, []);
+  // Nessuna bottom sheet: il geo hook non ha più bisogno di un'offset dinamica.
+  const getSheetFraction = useCallback(() => 0, []);
 
   // --- Hooks ---
   const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, getSheetFraction });
 
   // Re-interroga quando il profilo cambia con forMyNeeds attivo.
-  // filterAllergens/filterDiets nelle deps: l'effect 87-91 li aggiorna quando
-  // dietaryNeeds cambia → questa effect si riattiva → profileJustChanged è true → reload.
-  // Per cambi manuali nel modal, profileJustChanged è false → skip.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!profileJustChanged.current) return;
@@ -176,18 +148,29 @@ export default function RestaurantsScreen() {
     geo.clearAndReload();
   }, [filterAllergens, filterDiets, geo.clearAndReload]);
 
-  const { mapRestaurants, distanceMap, filteredRestaurants } = useRestaurantList({
+  const mapSearch = useMapSearch({
+    restaurants: geo.restaurants,
+    userLocation: geo.userLocation,
+    forMyNeeds,
+    filterAllergens,
+    filterDiets,
+  });
+
+  // Quando c'è un luogo selezionato, la query testuale non deve filtrare i pin sulla mappa:
+  // l'utente sta esplorando un'area, non cercando per nome.
+  const mapFilterQuery = mapSearch.nearbyPlace ? '' : searchQuery;
+
+  const { mapRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
     userLocation: geo.userLocation,
     activeFilters,
-    searchQuery,
+    searchQuery: mapFilterQuery,
     sortBy,
     forMyNeeds,
     mapRegion: currentRegion,
   });
 
-
-  const { favoriteIds, favoriteRestaurants, loadFavorites, toggleFavorite, syncFavoriteId } = useRestaurantFavorites(
+  const { favoriteIds, favoriteRestaurants, loadFavorites, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
   );
 
@@ -196,10 +179,7 @@ export default function RestaurantsScreen() {
     geo.refreshAllPins();
   }, [loadFavorites, geo.refreshAllPins]));
 
-  const mapSearch = useMapSearch({ restaurants: geo.restaurants, userLocation: geo.userLocation });
-
   // Ref per lookup ristoranti senza destabilizzare il callback.
-  // Usa geo.restaurants (cache completa) per trovare ristoranti anche fuori viewport.
   const allRestaurantsRef = useRef(geo.restaurants);
   allRestaurantsRef.current = geo.restaurants;
 
@@ -221,37 +201,22 @@ export default function RestaurantsScreen() {
     dispatch({ type: 'SELECT', id });
     Keyboard.dismiss();
     // Centra la mappa sul ristorante selezionato (mantiene zoom corrente).
-    // Cerca nella cache completa, non solo in mapRestaurants (filtrata per viewport).
     const restaurant = allRestaurantsRef.current.find(r => r.id === id)
       ?? favoriteRestaurants.get(id);
     if (restaurant?.location) {
       geo.setCenterOn({
         latitude: restaurant.location.latitude,
         longitude: restaurant.location.longitude,
-        sheetFraction: 0.55, // copertura attesa del detail sheet
+        sheetFraction: DETAIL_SHEET_COVERAGE,
       });
     }
   }, [geo.setCenterOn, favoriteRestaurants]);
 
   // Chiudi scheda dettaglio. I preferiti sono già sincronizzati in tempo reale
-  // tramite syncFavoriteId nel callback onFavoriteToggled — non serve ricaricarli
-  // dal DB (evita un re-render che congela il bitmap del pin prima che iOS lo catturi).
+  // tramite syncFavoriteId nel callback onFavoriteToggled.
   const handleCloseDetail = useCallback(() => {
     dispatch({ type: 'CLOSE_DETAIL' });
   }, []);
-
-  const handleListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
-    scrollPositionRef.current = e.nativeEvent.contentOffset.y;
-  }, []);
-
-  // Scroll alla card selezionata dopo il re-render
-  useEffect(() => {
-    if (!selection.selectedId) return;
-    const idx = filteredRestaurants.findIndex(r => r.id === selection.selectedId);
-    if (idx >= 0) {
-      listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
-    }
-  }, [selection.selectedId, filteredRestaurants]);
 
   // --- Handlers ---
   const toggleFilter = useCallback((id: RestaurantCategoryId) => {
@@ -282,8 +247,6 @@ export default function RestaurantsScreen() {
     if (!forMyNeeds || !filtersChanged) return;
 
     // Auto-sync profilo se le esigenze differiscono da quelle salvate.
-    // Evita che l'utente chiuda il modal pensando di aver salvato,
-    // mentre badge e card resterebbero con i dati vecchi.
     const allergensMatch =
       filterAllergens.length === dietaryNeeds.allergens.length &&
       filterAllergens.every(a => dietaryNeeds.allergens.includes(a as any));
@@ -292,7 +255,6 @@ export default function RestaurantsScreen() {
       filterDiets.every(d => (dietaryNeeds.diets ?? []).includes(d as any));
 
     if (!allergensMatch || !dietsMatch) {
-      // Sync silenzioso → useDietarySync propaga a AppContext/Card/Home
       handleSyncProfile(filterAllergens, filterDiets).catch(() => {});
     }
 
@@ -311,34 +273,59 @@ export default function RestaurantsScreen() {
     const newValue = !forMyNeeds;
     setForMyNeeds(newValue);
     storage.setForMyNeeds(newValue);
-    // La cache va svuotata perché i dati forMyNeeds hanno campi diversi (coverage metrics)
     await geo.clearAndReload();
   }, [isAuthenticated, filterHasNeeds, forMyNeeds, geo.clearAndReload, router]);
 
-  const handleToggleFavorite = useCallback(async (restaurantId: string) => {
-    if (!isAuthenticated || !user) { router.push('/auth/login'); return; }
-    await toggleFavorite(restaurantId);
-  }, [isAuthenticated, user, toggleFavorite, router]);
-
   const dismissAutocomplete = useCallback(() => {
     setSearchQuery('');
+    setNearbyExpanded(false);
     mapSearch.clear();
     Keyboard.dismiss();
   }, [mapSearch.clear]);
 
+  // Chiude la vista "Ristoranti nell'area" e riporta la search a stato vuoto.
+  const handleClearNearbyPlace = useCallback(() => {
+    setSearchQuery('');
+    setNearbyExpanded(false);
+    mapSearch.clearNearbyPlace();
+  }, [mapSearch.clearNearbyPlace]);
+
+  // Chiusura dello sheet nearby: torna alla banner mantenendo il luogo corrente.
+  const handleCloseNearbySheet = useCallback(() => {
+    setNearbyExpanded(false);
+  }, []);
+
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
+    // Se l'utente ricomincia a digitare dopo aver selezionato un luogo, esci dalla modalità nearby.
+    if (mapSearch.nearbyPlace) mapSearch.clearNearbyPlace();
     mapSearch.search(text);
-  }, [mapSearch.search]);
+  }, [mapSearch.search, mapSearch.clearNearbyPlace, mapSearch.nearbyPlace]);
 
-  const handleSelectRestaurant = useCallback((id: string, lat: number, lng: number) => {
-    dismissAutocomplete();
+  /** Apre il detail sheet centrando la mappa sul ristorante. */
+  const openRestaurantDetail = useCallback((id: string, lat: number, lng: number) => {
     dispatch({ type: 'SELECT', id });
-    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0.55, latDelta: 0.01 });
-  }, [dismissAutocomplete, geo.setCenterOn]);
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: DETAIL_SHEET_COVERAGE, latDelta: 0.01 });
+  }, [geo.setCenterOn]);
 
-  const handleSelectPlace = useCallback((lat: number, lng: number, placeType?: string) => {
+  /** Tap su un ristorante dall'autocomplete di ricerca: pulisce la search. */
+  const handleSelectFromAutocomplete = useCallback((id: string, lat: number, lng: number) => {
     dismissAutocomplete();
+    openRestaurantDetail(id, lat, lng);
+  }, [dismissAutocomplete, openRestaurantDetail]);
+
+  /** Tap su un ristorante dal NearbyListSheet: collassa lo sheet mantenendo la banner sul luogo. */
+  const handleSelectFromNearbySheet = useCallback((id: string) => {
+    const r = allRestaurantsRef.current.find(x => x.id === id)
+      ?? mapSearch.nearbyResults.find(x => x.id === id);
+    if (!r?.location) return;
+    setNearbyExpanded(false);
+    Keyboard.dismiss();
+    openRestaurantDetail(id, r.location.latitude, r.location.longitude);
+  }, [openRestaurantDetail, mapSearch.nearbyResults]);
+
+  const handleSelectPlace = useCallback((lat: number, lng: number, placeType?: string, name?: string) => {
+    Keyboard.dismiss();
     const latDelta =
       placeType === 'country' ? 12 :
       placeType === 'state' ? 3 :
@@ -346,8 +333,17 @@ export default function RestaurantsScreen() {
       placeType === 'city' ? 0.08 :
       placeType === 'district' || placeType === 'locality' ? 0.03 :
       0.02;
-    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: getSheetFraction(), latDelta });
-  }, [dismissAutocomplete, geo.setCenterOn, getSheetFraction]);
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta });
+    if (name) {
+      // Sostituisci il testo della search con il nome del luogo (UX Google Maps-like),
+      // senza far ripartire la ricerca testuale.
+      setSearchQuery(name);
+      mapSearch.clear();
+      mapSearch.selectPlace({ name, latitude: lat, longitude: lng, placeType });
+      // Default: banner collassata; l'utente espande con tap.
+      setNearbyExpanded(false);
+    }
+  }, [geo.setCenterOn, mapSearch.clear, mapSearch.selectPlace]);
 
   const handleDeselect = useCallback(() => {
     dispatch({ type: 'DESELECT' });
@@ -371,154 +367,22 @@ export default function RestaurantsScreen() {
     setShowFilterModal(false);
   }, [forMyNeeds, geo.clearAndReload]);
 
-  // --- Render ---
-  const countLabel = geo.isLoading && geo.restaurants.length === 0
-    ? null
-    : filteredRestaurants.length === 0
-      ? 'Nessun ristorante'
-      : `${filteredRestaurants.length} ristorant${filteredRestaurants.length === 1 ? 'e' : 'i'}${
-          geo.isGeoMode ? ' vicino a te' : ''
-        }`;
+  const autocompleteVisible =
+    mapSearch.nearbyPlace === null &&
+    searchQuery.length >= 2 &&
+    (mapSearch.results.length > 0 || mapSearch.isSearching);
 
-  const sheetHeaderContent = (
-    <View style={styles.sheetFilterRow}>
-      <TouchableOpacity
-        onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
-        style={[styles.cuisineToggle, hasActiveSettings && styles.cuisineToggleActive]}
-        activeOpacity={0.7}
-      >
-        <MaterialCommunityIcons
-          name="tune-vertical"
-          size={20}
-          color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={handleToggleMyNeeds}
-        style={[styles.headerToggle, forMyNeeds && styles.headerToggleActive]}
-        activeOpacity={0.7}
-      >
-        <MaterialCommunityIcons
-          name="shield-check"
-          size={18}
-          color={forMyNeeds ? theme.colors.onPrimary : theme.colors.textSecondary}
-        />
-        <Text style={[styles.headerToggleText, forMyNeeds && styles.headerToggleTextActive]}>
-          Per me
-        </Text>
-      </TouchableOpacity>
-      <View style={{ flex: 1 }} />
-      <TouchableOpacity
-        onPress={handleAddPress}
-        style={styles.addButton}
-        activeOpacity={0.7}
-      >
-        <Image
-          source={require('../../assets/happy_plate_forks.png')}
-          style={styles.addButtonImage}
-        />
-        <MaterialCommunityIcons name="plus" size={16} color={theme.colors.onPrimary} />
-        <Text style={styles.addButtonText}>Aggiungi</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  // Conta i ristoranti da mostrare nella banner collassata.
+  // Con "Per me" attivo, conta solo quelli con almeno una corrispondenza (coveredTotal > 0).
+  const nearbyCount = forMyNeeds
+    ? mapSearch.nearbyResults.filter(r => {
+        const covered = (r.covered_allergen_count ?? 0) + (r.covered_dietary_count ?? 0);
+        return covered > 0;
+      }).length
+    : mapSearch.nearbyResults.length;
 
-  const activeFiltersChips = activeFilters.length > 0 ? (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll} style={styles.chipScrollContainer}>
-      {activeFilters.map(id => (
-        <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
-          <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
-          <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  ) : null;
-
-  const renderBodyContent = () => {
-    if (geo.isLoading && geo.restaurants.length === 0) {
-      return (
-        <View>
-          {activeFiltersChips}
-          <View style={[styles.centered, { paddingVertical: 40 }]}>
-            <ActivityIndicator color={theme.colors.primary} size="large" />
-          </View>
-        </View>
-      );
-    }
-
-    if (filteredRestaurants.length === 0) {
-      return (
-        <View>
-          {activeFiltersChips}
-          <View style={[styles.centered, { flex: 1 }]}>
-          <Text style={styles.emptyTitle}>
-            {searchQuery.length >= 2
-              ? `Nessun risultato per "${searchQuery}"`
-              : 'Nessun ristorante trovato'}
-          </Text>
-          <Text style={styles.emptySubtitle}>
-            {searchQuery.length >= 2
-              ? 'Prova con un altro termine di ricerca'
-              : geo.locationDenied
-                ? 'Attiva la posizione nelle impostazioni per trovare ristoranti vicino a te, oppure cerca una città'
-                : activeFilters.length > 0
-                  ? 'Prova a rimuovere i filtri'
-                  : 'Cerca una città per vedere i ristoranti vicini'}
-          </Text>
-          {searchQuery.length < 2 && (
-            <Button mode="contained" onPress={handleAddPress} style={styles.emptyButton}>
-              Aggiungi ristorante
-            </Button>
-          )}
-          </View>
-        </View>
-      );
-    }
-
-    return (
-      <NativeViewGestureHandler ref={collapseScrollRef}>
-        <FlatList
-          ref={listRef}
-          data={filteredRestaurants}
-          extraData={selection.selectedId}
-          keyExtractor={r => r.id}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
-          showsVerticalScrollIndicator={false}
-          scrollEnabled={listScrollEnabled}
-          onScroll={handleListScroll}
-          scrollEventThrottle={16}
-          ListHeaderComponent={
-            <View>
-              {activeFiltersChips}
-              {countLabel ? (
-                <Text style={styles.listCountLabel}>{countLabel}</Text>
-              ) : (
-                <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginBottom: 8 }} />
-              )}
-            </View>
-          }
-          contentContainerStyle={[styles.list, { paddingBottom: screenHeight * 0.15 + 49 + insets.bottom }]}
-          onScrollToIndexFailed={info => {
-            setTimeout(() => {
-              listRef.current?.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.5 });
-            }, 200);
-          }}
-          renderItem={({ item }) => (
-            <RestaurantCard
-              restaurant={item}
-              isFavorite={favoriteIds.has(item.id)}
-              distance={distanceMap.get(item.id) ?? null}
-              showMatchInfo={forMyNeeds}
-              selected={selection.selectedId === item.id}
-              onPress={handleOpenDetail}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          )}
-        />
-      </NativeViewGestureHandler>
-    );
-  };
+  const showNearbyBanner =
+    mapSearch.nearbyPlace !== null && !nearbyExpanded && !selection.detailId;
 
   return (
     <View style={styles.container}>
@@ -542,7 +406,7 @@ export default function RestaurantsScreen() {
         />
       </View>
 
-      {/* Floating search bar + autocomplete — stesso parent per z-index affidabile */}
+      {/* Overlay flottante: search bar + riga filtri + chip attivi + autocomplete */}
       <View
         style={[styles.floatingSearchOverlay, { top: insets.top + 8 }]}
         pointerEvents="box-none"
@@ -585,33 +449,116 @@ export default function RestaurantsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Autocomplete — dentro lo stesso parent della search bar, zIndex alto per coprire i pulsanti */}
-        {searchQuery.length >= 2 && (mapSearch.results.length > 0 || mapSearch.isSearching) && (
+        {/* Riga filtri: tune + Per me + Aggiungi */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            onPress={() => isAuthenticated ? handleOpenFilterModal() : router.push('/auth/login')}
+            style={[styles.filterPill, hasActiveSettings && styles.filterPillActive]}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name="tune-vertical"
+              size={18}
+              color={hasActiveSettings ? theme.colors.onPrimary : theme.colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleToggleMyNeeds}
+            style={[styles.filterPillWide, forMyNeeds && styles.filterPillActive]}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name="shield-check"
+              size={16}
+              color={forMyNeeds ? theme.colors.onPrimary : theme.colors.textSecondary}
+            />
+            <Text style={[styles.filterPillText, forMyNeeds && styles.filterPillTextActive]}>
+              Per me
+            </Text>
+          </TouchableOpacity>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity
+            onPress={handleAddPress}
+            style={styles.addButton}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={require('../../assets/happy_plate_forks.png')}
+              style={styles.addButtonImage}
+            />
+            <MaterialCommunityIcons name="plus" size={14} color={theme.colors.onPrimary} />
+            <Text style={styles.addButtonText}>Aggiungi</Text>
+          </TouchableOpacity>
+        </View>
+
+        {activeFilters.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipScroll}
+            style={styles.chipScrollContainer}
+          >
+            {activeFilters.map(id => (
+              <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
+                <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
+                <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {autocompleteVisible && (
           <View style={styles.autocompleteContainer}>
             <SearchAutocomplete
               results={mapSearch.results}
               isSearching={mapSearch.isSearching}
-              onSelectRestaurant={handleSelectRestaurant}
+              onSelectRestaurant={handleSelectFromAutocomplete}
               onSelectPlace={handleSelectPlace}
-              onDismiss={dismissAutocomplete}
             />
           </View>
         )}
       </View>
 
-      <DraggableBottomSheet
-        ref={listSheetRef}
-        snapPoints={snapPoints}
-        initialIndex={1}
-        headerContent={sheetHeaderContent}
-        onSnapChange={handleSnapChange}
-        bodyPanEnabled={!listScrollEnabled}
-        collapseScrollRef={collapseScrollRef}
-        scrollPositionRef={scrollPositionRef}
-        pointerEvents={selection.detailId ? 'none' : undefined}
-      >
-        {renderBodyContent()}
-      </DraggableBottomSheet>
+      {showNearbyBanner && (
+        <View style={[styles.nearbyBanner, { bottom: 49 + insets.bottom + 12 }]}>
+          <TouchableOpacity
+            onPress={() => setNearbyExpanded(true)}
+            activeOpacity={0.85}
+            style={styles.nearbyBannerExpand}
+          >
+            <MaterialCommunityIcons name="map-marker" size={18} color={theme.colors.primary} />
+            <Text style={styles.nearbyBannerTitle} numberOfLines={1}>
+              {mapSearch.isLoadingNearby
+                ? `Cerco ristoranti a ${mapSearch.nearbyPlace!.name}...`
+                : nearbyCount === 0
+                  ? `Nessun ristorante a ${mapSearch.nearbyPlace!.name}`
+                  : `${nearbyCount} ${nearbyCount === 1 ? 'ristorante' : 'ristoranti'}${forMyNeeds ? (nearbyCount === 1 ? ' compatibile' : ' compatibili') : ''} a ${mapSearch.nearbyPlace!.name}`}
+            </Text>
+            {!mapSearch.isLoadingNearby && nearbyCount > 0 && (
+              <MaterialCommunityIcons name="chevron-up" size={20} color={theme.colors.textSecondary} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleClearNearbyPlace}
+            hitSlop={10}
+            style={styles.nearbyBannerClose}
+          >
+            <MaterialCommunityIcons name="close" size={18} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {mapSearch.nearbyPlace && nearbyExpanded && !selection.detailId && (
+        <NearbyListSheet
+          place={mapSearch.nearbyPlace}
+          results={mapSearch.nearbyResults}
+          isLoading={mapSearch.isLoadingNearby}
+          showMatchInfo={forMyNeeds}
+          userLocation={geo.userLocation}
+          onSelectRestaurant={handleSelectFromNearbySheet}
+          onClose={handleCloseNearbySheet}
+        />
+      )}
 
       {selection.detailId && (
         <RestaurantDetailSheet
@@ -655,7 +602,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // --- Floating search bar ---
+  // --- Floating overlay ---
   floatingSearchOverlay: {
     position: 'absolute',
     left: 12,
@@ -704,62 +651,60 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
 
-  // --- Autocomplete (dentro floatingSearchOverlay) ---
-  autocompleteContainer: {
-    marginTop: 4,
-    marginHorizontal: 56,
-    zIndex: 10,
-    elevation: 10,
-  },
-
-  // --- Sheet header (filtri + chip + badge) ---
-  sheetFilterRow: {
+  // --- Filter row (under search bar) ---
+  filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingBottom: 6,
     gap: 8,
+    marginTop: 8,
   },
-  cuisineToggle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  filterPill: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
-  cuisineToggleActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  headerToggle: {
+  filterPillWide: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    height: 38,
+    height: 40,
     paddingHorizontal: 12,
-    borderRadius: 19,
+    borderRadius: 20,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
-  headerToggleActive: {
+  filterPillActive: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
-  headerToggleText: {
+  filterPillText: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },
-  headerToggleTextActive: {
+  filterPillTextActive: {
     color: theme.colors.onPrimary,
   },
+
+  // --- Active filter chips ---
   chipScrollContainer: {
-    marginHorizontal: 12,
-    marginBottom: 6,
+    marginTop: 6,
   },
   chipScroll: {
     gap: 6,
@@ -768,68 +713,91 @@ const styles = StyleSheet.create({
   activeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${theme.colors.primary}18`,
-    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 14,
     paddingHorizontal: 10,
     paddingVertical: 5,
     gap: 4,
+    borderWidth: 1,
+    borderColor: `${theme.colors.primary}40`,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   activeChipText: {
     fontSize: 12,
     fontWeight: '600',
     color: theme.colors.primary,
   },
+
   // --- Add button ---
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    height: 38,
+    height: 40,
     paddingLeft: 4,
     paddingRight: 12,
-    borderRadius: 19,
+    borderRadius: 20,
     backgroundColor: theme.colors.primary,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   addButtonImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   addButtonText: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.onPrimary,
   },
-  // --- List ---
-  listCountLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-    marginBottom: 8,
+
+  // --- Autocomplete ---
+  autocompleteContainer: {
+    marginTop: 8,
+    zIndex: 10,
+    elevation: 10,
   },
-  list: {
-    padding: 12,
-    gap: 10,
-  },
-  centered: {
-    justifyContent: 'center',
+
+  // --- Nearby banner (collassata, in basso) ---
+  nearbyBanner: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 32,
+    backgroundColor: theme.colors.surface,
+    paddingLeft: 14,
+    paddingRight: 8,
+    paddingVertical: 12,
+    borderRadius: 24,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
   },
-  emptyTitle: {
-    fontSize: 18,
+  nearbyBannerExpand: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  nearbyBannerTitle: {
+    flex: 1,
+    fontSize: 14,
     fontWeight: '600',
     color: theme.colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
   },
-  emptySubtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  emptyButton: {
-    borderRadius: 10,
+  nearbyBannerClose: {
+    padding: 8,
+    marginLeft: 4,
   },
 });

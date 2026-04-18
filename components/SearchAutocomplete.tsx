@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,11 +9,10 @@ type Props = {
   results: SearchResult[];
   isSearching: boolean;
   onSelectRestaurant: (id: string, lat: number, lng: number) => void;
-  onSelectPlace: (lat: number, lng: number, placeType?: string) => void;
-  onDismiss: () => void;
+  onSelectPlace: (lat: number, lng: number, placeType?: string, name?: string) => void;
 };
 
-function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelectPlace, onDismiss }: Props) {
+function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelectPlace }: Props) {
   if (results.length === 0 && !isSearching) return null;
 
   const restaurants = results.filter(r => r.type === 'restaurant');
@@ -22,64 +21,62 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
   return (
     <View style={styles.container}>
       <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
-      {places.length > 0 && (
-        <>
-          <Text style={styles.sectionHeader}>Luoghi</Text>
-          {places.map((r, i) => (
-            r.type === 'place' && (
-              <TouchableOpacity
-                key={`p-${i}-${r.name}`}
-                style={styles.row}
-                onPress={() => onSelectPlace(r.latitude, r.longitude, r.placeType)}
-                activeOpacity={0.7}
-              >
-                <MaterialCommunityIcons name="map-marker-outline" size={18} color={theme.colors.textSecondary} style={styles.icon} />
-                <View style={styles.textContainer}>
-                  <Text style={styles.name} numberOfLines={1}>{r.name}</Text>
-                  {r.subtitle && (
-                    <Text style={styles.subtitle} numberOfLines={1}>
-                      {r.subtitle}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-            )
-          ))}
-        </>
-      )}
-
-      {restaurants.length > 0 && (
-        <>
-          <Text style={styles.sectionHeader}>Ristoranti</Text>
-          {restaurants.map((r, i) => (
-            r.type === 'restaurant' && (
-              <TouchableOpacity
-                key={`r-${r.id}`}
-                style={styles.row}
-                onPress={() => onSelectRestaurant(r.id, r.latitude, r.longitude)}
-                activeOpacity={0.7}
-              >
-                <MaterialCommunityIcons name="silverware-fork-knife" size={18} color={theme.colors.primary} style={styles.icon} />
-                <View style={styles.textContainer}>
-                  <Text style={styles.name} numberOfLines={1}>{r.name}</Text>
-                  {r.city && <Text style={styles.subtitle} numberOfLines={1}>{r.city}</Text>}
-                </View>
-                {r.rating > 0 && (
-                  <View style={styles.ratingBadge}>
-                    <Text style={styles.ratingText}>{r.rating.toFixed(1)}</Text>
+        {places.length > 0 && (
+          <>
+            <Text style={styles.sectionHeader}>Luoghi</Text>
+            {places.map((r, i) => (
+              r.type === 'place' && (
+                <TouchableOpacity
+                  key={`p-${i}-${r.name}`}
+                  style={styles.row}
+                  onPress={() => onSelectPlace(r.latitude, r.longitude, r.placeType, r.name)}
+                  activeOpacity={0.7}
+                >
+                  <MaterialCommunityIcons name="map-marker-outline" size={18} color={theme.colors.textSecondary} style={styles.icon} />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.name} numberOfLines={1}>{r.name}</Text>
+                    {r.subtitle && (
+                      <Text style={styles.subtitle} numberOfLines={1}>{r.subtitle}</Text>
+                    )}
                   </View>
-                )}
-              </TouchableOpacity>
-            )
-          ))}
-        </>
-      )}
+                </TouchableOpacity>
+              )
+            ))}
+          </>
+        )}
 
-      {isSearching && results.length === 0 && (
-        <View style={styles.loadingRow}>
-          <ActivityIndicator size="small" color={theme.colors.primary} />
-        </View>
-      )}
+        {restaurants.length > 0 && (
+          <>
+            <Text style={styles.sectionHeader}>Ristoranti</Text>
+            {restaurants.map(r => (
+              r.type === 'restaurant' && (
+                <TouchableOpacity
+                  key={`r-${r.id}`}
+                  style={styles.row}
+                  onPress={() => onSelectRestaurant(r.id, r.latitude, r.longitude)}
+                  activeOpacity={0.7}
+                >
+                  <MaterialCommunityIcons name="silverware-fork-knife" size={18} color={theme.colors.primary} style={styles.icon} />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.name} numberOfLines={1}>{r.name}</Text>
+                    {r.city && <Text style={styles.subtitle} numberOfLines={1}>{r.city}</Text>}
+                  </View>
+                  {r.rating > 0 && (
+                    <View style={styles.ratingBadge}>
+                      <Text style={styles.ratingText}>{r.rating.toFixed(1)}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )
+            ))}
+          </>
+        )}
+
+        {isSearching && results.length === 0 && (
+          <View style={styles.loadingRow}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -93,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    maxHeight: 300,
+    maxHeight: 320,
     overflow: 'hidden',
     elevation: 8,
     shadowColor: '#000',
