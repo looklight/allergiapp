@@ -78,6 +78,10 @@ export default function RestaurantDetailBody({
   const scrollViewRef = useRef<Animated.ScrollView>(null);
   const reviewsOffsetY = useRef(0);
 
+  const scrollToReviews = () => {
+    scrollViewRef.current?.scrollTo({ y: reviewsOffsetY.current, animated: true });
+  };
+
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [menuGalleryIndex, setMenuGalleryIndex] = useState<number | null>(null);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
@@ -266,7 +270,7 @@ export default function RestaurantDetailBody({
               <TouchableOpacity
                 style={styles.bodyRatingGroup}
                 activeOpacity={0.7}
-                onPress={() => scrollViewRef.current?.scrollTo({ y: reviewsOffsetY.current, animated: true })}
+                onPress={scrollToReviews}
               >
                 <StarRating rating={restaurant.average_rating ?? 0} size={16} showValue />
                 <Text style={styles.bodyRatingCount}>({restaurant.review_count})</Text>
@@ -294,7 +298,7 @@ export default function RestaurantDetailBody({
           matchInfo={matchInfo}
           hasUserNeeds={hasUserNeeds}
           isAuthenticated={isAuthenticated}
-          onScrollToReviews={() => scrollViewRef.current?.scrollTo({ y: reviewsOffsetY.current, animated: true })}
+          onScrollToReviews={scrollToReviews}
           hideNameAndRating={hideNameAndRating}
         />
 
