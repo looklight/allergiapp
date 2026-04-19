@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
-  ScrollView,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
@@ -10,11 +9,11 @@ import {
   Image,
   Linking,
 } from 'react-native';
-import { NativeViewGestureHandler } from 'react-native-gesture-handler';
+import type Animated from 'react-native-reanimated';
 import { Text, Divider } from 'react-native-paper';
+import { BottomSheetScrollView } from '../BottomSheet';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../StarRating';
@@ -51,14 +50,8 @@ type Props = {
   hideNameAndRating?: boolean;
   /** Controls whether the ScrollView can scroll (false when sheet is not fully open) */
   scrollEnabled?: boolean;
-  /**
-   * Ref to the NativeViewGestureHandler wrapping the ScrollView.
-   * Used by the parent DraggableBottomSheet for simultaneousHandlers coordination
-   * (fluid drag-to-collapse from the body when the sheet is fully open).
-   */
-  scrollHandlerRef?: React.RefObject<any>;
-  /** Scroll callback (e.g. for compact header in sheet mode) */
-  onScroll?: (e: { nativeEvent: { contentOffset: { y: number } } }) => void;
+  /** Callback JS thread con l'offset Y (usato per compact header dentro il sheet). */
+  onScrollOffset?: (y: number) => void;
 };
 
 export default function RestaurantDetailBody({
@@ -67,11 +60,9 @@ export default function RestaurantDetailBody({
   onDismiss,
   hideNameAndRating,
   scrollEnabled = true,
-  scrollHandlerRef,
-  onScroll,
+  onScrollOffset,
 }: Props) {
   const router = useRouter();
-  const { bottom: safeAreaBottom } = useSafeAreaInsets();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
@@ -84,7 +75,7 @@ export default function RestaurantDetailBody({
     handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
   } = detail;
 
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<Animated.ScrollView>(null);
   const reviewsOffsetY = useRef(0);
 
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
@@ -257,18 +248,16 @@ export default function RestaurantDetailBody({
   // ─── Main content ───────────────────────────────────────────────────────
   return (
     <>
-      <NativeViewGestureHandler ref={scrollHandlerRef}>
-      <ScrollView
+      <BottomSheetScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
-        contentContainerStyle={{ paddingBottom: safeAreaBottom + 32 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"
         scrollEnabled={scrollEnabled}
         showsVerticalScrollIndicator={false}
         bounces={false}
         overScrollMode="never"
-        onScroll={onScroll}
-        scrollEventThrottle={onScroll ? 16 : 0}
+        onScrollOffset={onScrollOffset}
       >
         {/* Rating + Maps row (only when parent shows name separately) */}
         {hideNameAndRating && (
@@ -384,7 +373,12 @@ export default function RestaurantDetailBody({
             {userReview ? (
               <View style={styles.ctaSection}>
                 <View style={styles.ctaTopRow}>
-                  <Text style={styles.ctaTitle}>La tua recensione</Text>
+                  <View style={styles.ctaInlineRow}>
+                    <Text style={styles.ctaTitle}>La tua recensione:</Text>
+                    {userReview.rating != null && userReview.rating > 0 && (
+                      <StarRating rating={userReview.rating} size={20} />
+                    )}
+                  </View>
                   <TouchableOpacity
                     onPress={() => navigateToContribute(undefined, userReview.id)}
                     hitSlop={8}
@@ -393,19 +387,21 @@ export default function RestaurantDetailBody({
                     <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
                   </TouchableOpacity>
                 </View>
-                {userReview.rating != null && userReview.rating > 0 && (
-                  <StarRating rating={userReview.rating} size={24} />
-                )}
                 {userReview.comment && (
                   <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
                 )}
               </View>
             ) : (
               <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
-                <View style={styles.ctaSection}>
-                  <Text style={styles.ctaTitle}>Lascia la tua opinione</Text>
-                  <StarRating rating={0} size={36} onRate={(r) => navigateToContribute(r)} />
-                  <Text style={styles.ctaHint}>La tua recensione aiuta chi ha le tue stesse esigenze</Text>
+                <View style={[styles.ctaSection, styles.ctaSectionWithChevron]}>
+                  <View style={styles.ctaSectionInner}>
+                    <View style={styles.ctaInlineRow}>
+                      <Text style={styles.ctaTitle}>La tua opinione:</Text>
+                      <StarRating rating={0} size={32} onRate={(r) => navigateToContribute(r)} />
+                    </View>
+                    <Text style={styles.ctaHint}>La tua recensione aiuta chi ha le tue stesse esigenze</Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.primary} />
                 </View>
               </TouchableOpacity>
             )}
@@ -505,8 +501,7 @@ export default function RestaurantDetailBody({
             </>
           )}
         </View>
-      </ScrollView>
-      </NativeViewGestureHandler>
+      </BottomSheetScrollView>
 
       <ImageFullscreenModal
         visible={!!fullscreenImage}
@@ -654,6 +649,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  ctaInlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  ctaSectionWithChevron: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  ctaSectionInner: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 10,
   },
   ctaTitle: {
     fontSize: 16,

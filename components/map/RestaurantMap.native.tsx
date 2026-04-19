@@ -258,10 +258,12 @@ export default function RestaurantMap({
     const elements: React.ReactElement[] = [];
     const seen = new Set<string>();
     const pins = allPins ?? [];
-    // Il pin selezionato è gestito esclusivamente da SelectedMarkerOverlay.
-    // Renderizzarlo anche qui crea due Marker alla stessa coordinata e su iOS
-    // lo z-ordering è imprevedibile → il pin normale "emerge" sopra l'overlay.
-    const skip = selectedId ?? '';
+    // Il pin selezionato è gestito esclusivamente da SelectedMarkerOverlay,
+    // ma SOLO se l'overlay può effettivamente renderizzarlo (restaurantById
+    // contiene l'id). Se i dati del ristorante non sono ancora caricati
+    // (pin presente solo in allPins, non in restaurants/favorites), lasciamo
+    // il pin normale visibile per evitare che sparisca durante il tap.
+    const skip = (selectedId && restaurantById.has(selectedId)) ? selectedId : '';
 
     // allPins first (lightweight, covers the whole viewport)
     for (const p of pins) {

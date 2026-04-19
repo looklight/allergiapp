@@ -3,12 +3,11 @@
  *
  * Rules:
  * - No context, no state (except tracksViewChanges one-frame flip).
- * - `isSelected` is a prop, NOT derived from context — only the
- *   SelectedMarkerOverlay renders the selected state, so regular pins
- *   never receive isSelected=true. This eliminates 1000+ re-renders
- *   on selection change.
- * - Dot vs pin is controlled by the `asDot` prop. The parent changes
- *   the React key on zoom threshold crossing → fresh mount → clean bitmap.
+ * - The selected state is rendered exclusively by SelectedMarkerOverlay;
+ *   regular MapPins never render as "selected". This eliminates 1000+
+ *   re-renders on selection change.
+ * - Dot vs pin is controlled by the `asDot` prop. On threshold crossing,
+ *   tracksViewChanges flips true for one frame so iOS recaptures a clean bitmap.
  * - When `restaurant` is null at close zoom, a placeholder pin (same 32px
  *   container) is rendered so iOS can recapture the bitmap when data arrives.
  * - At dot zoom without restaurant data, coverage is computed from
@@ -31,7 +30,6 @@ export type MapPinProps = {
   restaurant?: Restaurant;
   asDot: boolean;
   isFavorite: boolean;
-  isSelected?: boolean;
   showMatchInfo?: boolean;
   onPress?: (id: string) => void;
   /** Allergens aggregated from all reviews of this restaurant */
@@ -51,7 +49,6 @@ export default memo(function MapPin({
   restaurant,
   asDot,
   isFavorite,
-  isSelected,
   showMatchInfo,
   onPress,
   supportedAllergens,
@@ -67,7 +64,6 @@ export default memo(function MapPin({
   const prevFavorite = useRef(isFavorite);
   const prevShowMatch = useRef(showMatchInfo);
   const prevHasRest = useRef(hasRest);
-  const prevSelected = useRef(isSelected);
   const prevSupportedAllergens = useRef(supportedAllergens);
   const prevSupportedDiets = useRef(supportedDiets);
   const justChanged =
@@ -75,7 +71,6 @@ export default memo(function MapPin({
     isFavorite !== prevFavorite.current ||
     showMatchInfo !== prevShowMatch.current ||
     hasRest !== prevHasRest.current ||
-    isSelected !== prevSelected.current ||
     supportedAllergens !== prevSupportedAllergens.current ||
     supportedDiets !== prevSupportedDiets.current;
 
@@ -84,10 +79,9 @@ export default memo(function MapPin({
     prevFavorite.current = isFavorite;
     prevShowMatch.current = showMatchInfo;
     prevHasRest.current = hasRest;
-    prevSelected.current = isSelected;
     prevSupportedAllergens.current = supportedAllergens;
     prevSupportedDiets.current = supportedDiets;
-  }, [asDot, isFavorite, showMatchInfo, hasRest, isSelected, supportedAllergens, supportedDiets]);
+  }, [asDot, isFavorite, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
 
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 
@@ -115,6 +109,13 @@ export default memo(function MapPin({
           for (const d of (userDiets ?? [])) if (expanded.has(d)) dotCovered++;
         }
       }
+    }
+
+    // Hide grey dots at far zoom to declutter the map: if filters are active
+    // and this restaurant matches none of them, skip rendering.
+    // Favorites stay visible regardless so the user never "loses" a saved place.
+    if (showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isFavorite) {
+      return null;
     }
 
     const dotColor = showMatchInfo
@@ -182,14 +183,9 @@ export default memo(function MapPin({
   const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
   const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
 
-  const markerColor = isSelected
-    ? theme.colors.primary
-    : showMatchInfo
-      ? coverageColor(coveredTotal, filtersTotal)
-      : theme.colors.primary;
-
-  const bgColor = isSelected ? markerColor : '#FFFFFF';
-  const fgColor = isSelected ? '#FFFFFF' : markerColor;
+  const markerColor = showMatchInfo
+    ? coverageColor(coveredTotal, filtersTotal)
+    : theme.colors.primary;
 
   return (
     <Marker
@@ -197,25 +193,16 @@ export default memo(function MapPin({
       coordinate={{ latitude, longitude }}
       tracksViewChanges={justChanged}
       onPress={handlePress}
-      {...(Platform.OS === 'android' && { zIndex: isSelected ? 9999 : isFavorite ? 2 : 1 })}
+      {...(Platform.OS === 'android' && { zIndex: isFavorite ? 2 : 1 })}
     >
-      <View style={[styles.markerWrap, isSelected && { transform: [{ scale: 1.25 }] }]}>
-        <View style={[
-          styles.markerContainer,
-          {
-            borderColor: markerColor,
-            backgroundColor: bgColor,
-            shadowOpacity: isSelected ? 0.4 : 0.2,
-            shadowRadius: isSelected ? 5 : 2,
-            elevation: isSelected ? 8 : 3,
-          },
-        ]}>
+      <View style={styles.markerWrap}>
+        <View style={[styles.markerContainer, { borderColor: markerColor }]}>
           {hasRating ? (
-            <RNText style={[styles.markerText, { color: fgColor }]}>
+            <RNText style={[styles.markerText, { color: markerColor }]}>
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <MaterialCommunityIcons name="silverware-fork-knife" size={13} color={fgColor} />
+            <MaterialCommunityIcons name="silverware-fork-knife" size={13} color={markerColor} />
           )}
         </View>
         <View style={styles.markerArrow}>

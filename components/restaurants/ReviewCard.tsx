@@ -72,7 +72,14 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
       {/* Esigenze alimentari dell'autore */}
       {((item.allergensSnapshot?.length ?? 0) > 0 || (item.dietarySnapshot?.length ?? 0) > 0) && (
         <View style={styles.dietaryBadges}>
-          {[...(item.dietarySnapshot ?? []), ...(item.allergensSnapshot ?? [])].map(id => {
+          {[...(item.dietarySnapshot ?? []), ...(item.allergensSnapshot ?? [])]
+            .slice()
+            .sort((a, b) => {
+              const aMatch = userNeeds?.includes(a) ? 1 : 0;
+              const bMatch = userNeeds?.includes(b) ? 1 : 0;
+              return bMatch - aMatch;
+            })
+            .map(id => {
             const r = getRestrictionById(id);
             if (!r) return null;
             const label = r.translations[i18n.locale as keyof typeof r.translations] ?? r.translations.en;

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
@@ -412,6 +412,7 @@ export default function RestaurantsScreen() {
 
   const autocompleteVisible =
     mapSearch.nearbyPlace === null &&
+    isSearchFocused &&
     searchQuery.length >= 2 &&
     (mapSearch.results.length > 0 || mapSearch.isSearching);
 
@@ -420,6 +421,11 @@ export default function RestaurantsScreen() {
     searchQuery.length === 0 &&
     isSearchFocused &&
     recentPlaces.length > 0;
+
+  const dismissDropdowns = useCallback(() => {
+    setIsSearchFocused(false);
+    Keyboard.dismiss();
+  }, []);
 
   // Applica il filtro cucina ai risultati nearby prima di passarli alla banner/sheet.
   // forMyNeeds non filtra ulteriormente: la RPC restituisce già tutti i ristoranti nel
@@ -461,6 +467,13 @@ export default function RestaurantsScreen() {
           userDiets={filterDiets}
         />
       </View>
+
+      {(autocompleteVisible || recentsVisible) && (
+        <Pressable
+          style={styles.dropdownBackdrop}
+          onPress={dismissDropdowns}
+        />
+      )}
 
       {/* Overlay flottante: search bar + riga filtri + chip attivi + autocomplete */}
       <View
@@ -668,6 +681,10 @@ const styles = StyleSheet.create({
   },
 
   // --- Floating overlay ---
+  dropdownBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+  },
   floatingSearchOverlay: {
     position: 'absolute',
     left: 12,

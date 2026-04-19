@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -98,8 +98,8 @@ export default function FilterModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.content}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <View style={styles.content} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
             <Text style={styles.title}>Filtri</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8} activeOpacity={0.6}>
@@ -176,7 +176,7 @@ export default function FilterModal({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 }

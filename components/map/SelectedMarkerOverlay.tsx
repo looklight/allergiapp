@@ -10,7 +10,7 @@
  * so iOS always has a fresh bitmap after any visual change.
  */
 import { memo, useCallback } from 'react';
-import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
+import { StyleSheet, View, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 import { theme } from '../../constants/theme';
@@ -94,7 +94,7 @@ const SelectedPin = memo(function SelectedPin({
       tracksViewChanges
       cluster={false}
       onPress={handlePress}
-      {...(Platform.OS === 'android' && { zIndex: 9999 })}
+      zIndex={9999}
     >
       <View style={[styles.markerWrap, { transform: [{ scale: 1.25 }] }]}>
         <View style={[

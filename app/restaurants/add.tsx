@@ -72,8 +72,15 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
   return (
     <View style={styles.stepContainer}>
       <Surface style={styles.introBanner} elevation={0}>
-        <MaterialCommunityIcons name="map-marker-plus-outline" size={22} color={theme.colors.primary} />
-        <Text style={styles.introTitle}>Aggiungi un ristorante</Text>
+        <Image
+          source={require('../../assets/happy_plate_forks.png')}
+          style={styles.introImage}
+          resizeMode="contain"
+        />
+        <View style={styles.introTitleRow}>
+          <MaterialCommunityIcons name="map-marker-plus-outline" size={20} color={theme.colors.primary} />
+          <Text style={styles.introTitle}>Aggiungi un ristorante</Text>
+        </View>
         <Text style={styles.introHint}>
           Ogni locale che aggiungi aiuta chi ha esigenze alimentari a trovare posti sicuri dove mangiare.
         </Text>
@@ -168,7 +175,6 @@ function ConfirmStep({
   place,
   cuisineTypes,
   onToggleCuisine,
-  onBack,
   rating,
   onRatingChange,
   comment,
@@ -193,7 +199,6 @@ function ConfirmStep({
   place: PlaceSuggestion;
   cuisineTypes: string[];
   onToggleCuisine: (id: string) => void;
-  onBack: () => void;
   rating: 0 | 1 | 2 | 3 | 4 | 5;
   onRatingChange: (r: 0 | 1 | 2 | 3 | 4 | 5) => void;
   comment: string;
@@ -225,8 +230,16 @@ function ConfirmStep({
             <Text style={styles.placeName}>{place.name}</Text>
             <Text style={styles.placeAddress} numberOfLines={1}>{place.address}</Text>
           </View>
-          <TouchableOpacity onPress={onBack} hitSlop={8}>
-            <Text style={styles.changePlace}>Cambia</Text>
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => Linking.openURL(
+              `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + place.address)}&query_place_id=${place.googlePlaceId}`
+            )}
+            style={styles.placeMapsBtn}
+            hitSlop={8}
+          >
+            <MaterialCommunityIcons name="google-maps" size={12} color={theme.colors.textSecondary} />
+            <Text style={styles.placeMapsBtnText}>Verifica</Text>
           </TouchableOpacity>
         </View>
       </Surface>
@@ -528,7 +541,7 @@ export default function AddRestaurantScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title="Aggiungi ristorante" />
+      <HeaderBar title="Aggiungi ristorante" onBack={selectedPlace ? handleBack : undefined} />
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingBottom: selectedPlace ? insets.bottom + 96 : insets.bottom + 24 }]}
@@ -541,7 +554,6 @@ export default function AddRestaurantScreen() {
             place={selectedPlace}
             cuisineTypes={cuisineTypes}
             onToggleCuisine={toggleCuisine}
-            onBack={handleBack}
             rating={rating}
             onRatingChange={setRating}
             comment={comment}
@@ -611,15 +623,24 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   introBanner: {
-    padding: 14,
+    padding: 16,
     borderRadius: 14,
     backgroundColor: theme.colors.primaryLight,
+    alignItems: 'center',
+    gap: 8,
+  },
+  introImage: {
+    width: 96,
+    height: 96,
+  },
+  introTitleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   introTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
   },
   introHint: {
@@ -780,6 +801,20 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 12,
   },
+  placeMapsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+  },
+  placeMapsBtnText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
+  },
   placeSummaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -797,11 +832,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
     marginTop: 2,
-  },
-  changePlace: {
-    color: theme.colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
   },
   cuisineGrid: {
     flexDirection: 'row',

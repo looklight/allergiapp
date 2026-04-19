@@ -1,17 +1,16 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, BackHandler, Platform, TouchableOpacity, Pressable } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, BackHandler, Platform, TouchableOpacity, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { NativeViewGestureHandler } from 'react-native-gesture-handler';
 import { theme } from '../../constants/theme';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 import { haversineKm } from '../../utils/geo';
-import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../DraggableBottomSheet';
+import BottomSheet, { BottomSheetFlatList, type BottomSheetRef } from '../BottomSheet';
 import type { NearbyPlace } from '../../hooks/useMapSearch';
 import type { Restaurant } from '../../services/restaurantService';
 
-const SNAP_POINTS = [0, 0.55, 0.92];
+const SNAP_POINTS = [0.55, 0.92];
 
 type SortKey = 'distance' | 'rating' | 'popularity' | 'compatibility';
 const SORT_OPTIONS: { key: SortKey; label: string; icon: string; requiresMatchInfo?: boolean }[] = [
@@ -70,27 +69,17 @@ export default function NearbyListSheet({
   onClose,
   onAddPress,
 }: Props) {
-  const sheetRef = useRef<DraggableBottomSheetRef>(null);
+  const sheetRef = useRef<BottomSheetRef>(null);
   const [bodyScrollEnabled, setBodyScrollEnabled] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>(showMatchInfo ? 'compatibility' : userLocation ? 'distance' : 'rating');
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const collapseScrollRef = useRef(null);
-  const scrollPositionRef = useRef(0);
 
   const handleDismiss = useCallback(() => {
-    sheetRef.current?.snapToIndex(0);
+    sheetRef.current?.close();
   }, []);
 
   const handleSnapChange = useCallback((fraction: number) => {
-    if (fraction < 0.1) {
-      onClose();
-      return;
-    }
     setBodyScrollEnabled(fraction >= 0.9);
-  }, [onClose]);
-
-  const handleBodyScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
-    scrollPositionRef.current = e.nativeEvent.contentOffset.y;
   }, []);
 
   const sortedResults = useMemo(() => {
@@ -174,16 +163,14 @@ export default function NearbyListSheet({
   );
 
   return (
-    <DraggableBottomSheet
+    <BottomSheet
       ref={sheetRef}
       snapPoints={SNAP_POINTS}
-      initialIndex={1}
+      initialIndex={0}
       enterFromBottom
       headerContent={header}
       onSnapChange={handleSnapChange}
-      bodyPanEnabled={!bodyScrollEnabled}
-      collapseScrollRef={collapseScrollRef}
-      scrollPositionRef={scrollPositionRef}
+      onClose={onClose}
       style={styles.sheet}
     >
       <View style={styles.bodyWrap}>
@@ -249,25 +236,21 @@ export default function NearbyListSheet({
           )}
         </View>
       ) : (
-        <NativeViewGestureHandler ref={collapseScrollRef}>
-          <FlatList
-            data={sortedResults}
-            keyExtractor={r => r.id}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={bodyScrollEnabled}
-            onScroll={handleBodyScroll}
-            scrollEventThrottle={16}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            ListFooterComponent={onAddPress ? (
-              <TouchableOpacity style={styles.addFooter} onPress={onAddPress} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="plus-circle-outline" size={16} color={theme.colors.primary} />
-                <Text style={styles.addFooterText}>Manca un ristorante? Aggiungilo</Text>
-              </TouchableOpacity>
-            ) : null}
-            renderItem={({ item }) => {
+        <BottomSheetFlatList
+          data={sortedResults}
+          keyExtractor={r => r.id}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={bodyScrollEnabled}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListFooterComponent={onAddPress ? (
+            <TouchableOpacity style={styles.addFooter} onPress={onAddPress} activeOpacity={0.7}>
+              <MaterialCommunityIcons name="plus-circle-outline" size={16} color={theme.colors.primary} />
+              <Text style={styles.addFooterText}>Manca un ristorante? Aggiungilo</Text>
+            </TouchableOpacity>
+          ) : null}
+          renderItem={({ item }) => {
               const cuisineLabels = (item.cuisine_types ?? [])
                 .slice(0, 3)
                 .map(id => getCuisineLabel(id, i18n.locale));
@@ -319,11 +302,10 @@ export default function NearbyListSheet({
                 </TouchableOpacity>
               );
             }}
-          />
-        </NativeViewGestureHandler>
+        />
       )}
       </View>
-    </DraggableBottomSheet>
+    </BottomSheet>
   );
 }
 
@@ -427,7 +409,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingVertical: 4,
-    paddingBottom: 80,
+    paddingBottom: 24,
   },
   separator: {
     height: 1,

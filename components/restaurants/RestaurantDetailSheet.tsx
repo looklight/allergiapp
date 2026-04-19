@@ -5,11 +5,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
 import { theme } from '../../constants/theme';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
-import DraggableBottomSheet, { type DraggableBottomSheetRef } from '../DraggableBottomSheet';
+import BottomSheet, { type BottomSheetRef } from '../BottomSheet';
 import RestaurantDetailBody from './RestaurantDetailBody';
 
 const HEADER_LINE_HEIGHT = 26;
-const SNAP_POINTS = [0, 0.55, 0.92];
+const SNAP_POINTS = [0.55, 0.92];
 
 type Props = {
   restaurantId: string;
@@ -18,37 +18,25 @@ type Props = {
 };
 
 export default function RestaurantDetailSheet({ restaurantId, onClose, onFavoriteToggled }: Props) {
-  const sheetRef = useRef<DraggableBottomSheetRef>(null);
+  const sheetRef = useRef<BottomSheetRef>(null);
   const detail = useRestaurantDetail(restaurantId, onFavoriteToggled);
   const [isCompactHeader, setIsCompactHeader] = useState(false);
   // Scroll is enabled only when the sheet is fully open (snap 0.92).
   // At half height (0.55) the body is a static preview: the user drags
   // the handle to open fully, exactly like Google Maps / Apple Maps.
   const [bodyScrollEnabled, setBodyScrollEnabled] = useState(false);
-  // Ref to the NativeViewGestureHandler wrapping the inner ScrollView,
-  // used by DraggableBottomSheet for simultaneousHandlers coordination.
-  const collapseScrollRef = useRef(null);
-  // Tracks the inner ScrollView's current contentOffset.y so the sheet's
-  // body PanGestureHandler knows when to take over the drag gesture.
-  const scrollPositionRef = useRef(0);
 
   const handleDismiss = useCallback(() => {
-    sheetRef.current?.snapToIndex(0);
+    sheetRef.current?.close();
   }, []);
 
   const handleSnapChange = useCallback((fraction: number) => {
-    if (fraction < 0.1) {
-      onClose();
-      return;
-    }
     const fullyOpen = fraction >= 0.9;
     setBodyScrollEnabled(fullyOpen);
     if (!fullyOpen) setIsCompactHeader(false);
-  }, [onClose]);
+  }, []);
 
-  const handleBodyScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
-    const y = e.nativeEvent.contentOffset.y;
-    scrollPositionRef.current = y;
+  const handleScrollOffset = useCallback((y: number) => {
     const compact = y > 10;
     setIsCompactHeader(prev => prev === compact ? prev : compact);
   }, []);
@@ -87,17 +75,15 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onFavorit
   );
 
   return (
-    <DraggableBottomSheet
+    <BottomSheet
       ref={sheetRef}
       snapPoints={SNAP_POINTS}
-      initialIndex={1}
+      initialIndex={0}
       enterFromBottom
       headerContent={header}
       onSnapChange={handleSnapChange}
+      onClose={onClose}
       style={styles.sheetShadow}
-      bodyPanEnabled={!bodyScrollEnabled}
-      collapseScrollRef={collapseScrollRef}
-      scrollPositionRef={scrollPositionRef}
     >
       <RestaurantDetailBody
         restaurantId={restaurantId}
@@ -105,10 +91,9 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onFavorit
         onDismiss={handleDismiss}
         hideNameAndRating
         scrollEnabled={bodyScrollEnabled}
-        scrollHandlerRef={collapseScrollRef}
-        onScroll={handleBodyScroll}
+        onScrollOffset={handleScrollOffset}
       />
-    </DraggableBottomSheet>
+    </BottomSheet>
   );
 }
 
