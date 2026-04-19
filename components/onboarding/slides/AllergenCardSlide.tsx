@@ -31,17 +31,20 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
       Animated.timing(cardTranslate, {
         toValue: 0,
         duration: 360,
+        delay: 80,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(cardOpacity, {
         toValue: 1,
         duration: 300,
+        delay: 80,
         useNativeDriver: true,
       }),
       Animated.timing(cardScale, {
         toValue: 1,
         duration: 360,
+        delay: 80,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),

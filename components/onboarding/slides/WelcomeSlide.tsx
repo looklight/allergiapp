@@ -53,17 +53,20 @@ export default function WelcomeSlide({ isActive }: OnboardingSlideProps) {
       return;
     }
 
-    const seq = Animated.stagger(
-      STAGGER_MS,
-      chipAnims.map(a =>
-        Animated.timing(a, {
-          toValue: 1,
-          duration: 380,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        })
-      )
-    );
+    const seq = Animated.sequence([
+      Animated.delay(80),
+      Animated.stagger(
+        STAGGER_MS,
+        chipAnims.map(a =>
+          Animated.timing(a, {
+            toValue: 1,
+            duration: 380,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          })
+        )
+      ),
+    ]);
 
     seq.start();
     return () => seq.stop();
