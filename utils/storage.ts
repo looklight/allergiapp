@@ -334,12 +334,13 @@ export const storage = {
     }
   },
 
-  async getForMyNeeds(): Promise<boolean> {
+  async getForMyNeeds(): Promise<boolean | null> {
     try {
       const data = await AsyncStorage.getItem(STORAGE_KEYS.FOR_MY_NEEDS);
+      if (data == null) return null;
       return data === 'true';
     } catch {
-      return false;
+      return null;
     }
   },
 

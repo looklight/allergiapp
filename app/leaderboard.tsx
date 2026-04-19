@@ -40,7 +40,14 @@ function AvatarCircle({ name, avatarId, profileColor }: { name: string | null; a
     );
   }
 
-  const initials = (name ?? '?').slice(0, 2).toUpperCase();
+  const initials = name?.slice(0, 2).toUpperCase();
+  if (!initials) {
+    return (
+      <View style={styles.avatarContainer}>
+        <MaterialCommunityIcons name="account-circle-outline" size={60} color={theme.colors.primary} />
+      </View>
+    );
+  }
   return (
     <View style={[styles.avatarFallback, { backgroundColor: bgColor }]}>
       <Text style={styles.avatarText}>{initials}</Text>

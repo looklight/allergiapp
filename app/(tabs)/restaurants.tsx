@@ -92,15 +92,17 @@ export default function RestaurantsScreen() {
     setFilterDiets([...(dietaryNeeds.diets ?? [])]);
   }, [dietaryNeeds.allergens, dietaryNeeds.diets]);
 
-  // Ripristina preferenza "Per me" da storage per utenti loggati
+  // Default: ON al primo avvio se l'utente ha esigenze nel profilo (saved === null).
   const forMyNeedsRestored = useRef(false);
   useEffect(() => {
     if (!isAuthenticated || forMyNeedsRestored.current) return;
-    forMyNeedsRestored.current = true;
     const hasNeeds = dietaryNeeds.allergens.length > 0 || (dietaryNeeds.diets ?? []).length > 0;
     if (!hasNeeds) return;
+    forMyNeedsRestored.current = true;
     storage.getForMyNeeds().then(saved => {
-      if (saved) setForMyNeeds(true);
+      const shouldEnable = saved ?? true;
+      if (saved === null) storage.setForMyNeeds(true);
+      if (shouldEnable) setForMyNeeds(true);
     });
   }, [isAuthenticated, dietaryNeeds.allergens, dietaryNeeds.diets]);
 
@@ -481,11 +483,11 @@ export default function RestaurantsScreen() {
               {(() => {
                 const avatarObj = userProfile?.avatar_url ? getAvatarById(userProfile.avatar_url) : undefined;
                 const profileColor = getProfileColor(userProfile?.profile_color ?? undefined);
-                const initial = (userProfile?.display_name?.charAt(0) || '?').toUpperCase();
+                const initial = userProfile?.display_name?.charAt(0)?.toUpperCase();
                 if (avatarObj?.source) {
                   return <Image source={avatarObj.source} style={styles.avatarImage} />;
                 }
-                if (isAuthenticated) {
+                if (isAuthenticated && initial) {
                   return (
                     <View style={[styles.avatarFallback, { backgroundColor: profileColor.hex }]}>
                       <Text style={styles.avatarInitial}>{initial}</Text>
