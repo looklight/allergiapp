@@ -1,4 +1,5 @@
-import { View, StyleSheet, Modal, ScrollView, TouchableOpacity } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -7,24 +8,30 @@ import ChipGrid from '../ChipGrid';
 import DietaryNeedsPicker from '../DietaryNeedsPicker';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
 
+export type FilterApplyResult = {
+  filters: RestaurantCategoryId[];
+  forMyNeeds: boolean;
+  allergens: string[];
+  diets: string[];
+};
+
 type Props = {
   visible: boolean;
   onClose: () => void;
-  // Filtri categoria
+  // Valori iniziali (snapshot all'apertura del modal)
   activeFilters: RestaurantCategoryId[];
-  onToggleFilter: (id: RestaurantCategoryId) => void;
-  // Per le mie esigenze
   forMyNeeds: boolean;
-  onToggleMyNeeds: () => void;
   filterAllergens: string[];
   filterDiets: string[];
-  onAllergensChange: (a: string[]) => void;
-  onDietsChange: (d: string[]) => void;
+  // Profilo (per DietaryNeedsPicker)
   profileAllergens: string[];
   profileDiets: string[];
   onSyncProfile: (allergens: string[], diets: string[]) => Promise<void>;
-  // Reset
-  hasActiveSettings: boolean;
+  // Auth
+  isAuthenticated: boolean;
+  onRequestLogin: () => void;
+  // Apply / Reset
+  onApply: (result: FilterApplyResult) => void;
   onReset: () => void;
   lang: AppLanguage;
 };
@@ -33,20 +40,62 @@ export default function FilterModal({
   visible,
   onClose,
   activeFilters,
-  onToggleFilter,
   forMyNeeds,
-  onToggleMyNeeds,
   filterAllergens,
   filterDiets,
-  onAllergensChange,
-  onDietsChange,
   profileAllergens,
   profileDiets,
   onSyncProfile,
-  hasActiveSettings,
+  isAuthenticated,
+  onRequestLogin,
+  onApply,
   onReset,
   lang,
 }: Props) {
+  // Tutto il pending state vive qui — nessuna modifica al parent fino ad "Applica".
+  const [pendingFilters, setPendingFilters] = useState<RestaurantCategoryId[]>(activeFilters);
+  const [pendingMyNeeds, setPendingMyNeeds] = useState(forMyNeeds);
+  const [pendingAllergens, setPendingAllergens] = useState(filterAllergens);
+  const [pendingDiets, setPendingDiets] = useState(filterDiets);
+
+  useEffect(() => {
+    if (visible) {
+      setPendingFilters(activeFilters);
+      setPendingMyNeeds(forMyNeeds);
+      setPendingAllergens(filterAllergens);
+      setPendingDiets(filterDiets);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  const handleToggleMyNeeds = () => {
+    if (!isAuthenticated) { onRequestLogin(); return; }
+    if (!pendingMyNeeds) {
+      const hasNeeds = pendingAllergens.length > 0 || pendingDiets.length > 0;
+      if (!hasNeeds) {
+        Alert.alert(
+          'Nessuna esigenza selezionata',
+          "Seleziona almeno un'allergia o dieta per usare questo filtro.",
+        );
+        return;
+      }
+    }
+    setPendingMyNeeds(prev => !prev);
+  };
+
+  const handleApply = () => {
+    onApply({ filters: pendingFilters, forMyNeeds: pendingMyNeeds, allergens: pendingAllergens, diets: pendingDiets });
+    onClose();
+  };
+
+  const handleReset = () => {
+    setPendingFilters([]);
+    onReset();
+    onClose();
+  };
+
+  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds;
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -61,30 +110,28 @@ export default function FilterModal({
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
             {/* Per le mie esigenze */}
             <View style={styles.section}>
-              <TouchableOpacity onPress={onToggleMyNeeds} style={styles.myNeedsToggle} activeOpacity={0.7}>
+              <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.myNeedsToggle} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
                 <Text style={styles.myNeedsText}>Filtra per le mie esigenze</Text>
-                <View style={[styles.switchTrack, forMyNeeds && styles.switchTrackActive]}>
-                  <View style={[styles.switchThumb, forMyNeeds && styles.switchThumbActive]} />
+                <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
+                  <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
                 </View>
               </TouchableOpacity>
               <Text style={styles.sectionHint}>
                 Mostra i ristoranti con esperienze lasciate da utenti con le tue stesse allergie o esigenze alimentari.
               </Text>
-              {forMyNeeds && (
-                <>
-                  <DietaryNeedsPicker
-                    allergens={filterAllergens}
-                    diets={filterDiets}
-                    onAllergensChange={onAllergensChange}
-                    onDietsChange={onDietsChange}
-                    profileAllergens={profileAllergens}
-                    profileDiets={profileDiets}
-                    onSyncProfile={onSyncProfile}
-                    lang={lang}
-                    subtitle="Mostra i ristoranti con recensioni di utenti che condividono le tue stesse esigenze."
-                  />
-                </>
+              {pendingMyNeeds && (
+                <DietaryNeedsPicker
+                  allergens={pendingAllergens}
+                  diets={pendingDiets}
+                  onAllergensChange={setPendingAllergens}
+                  onDietsChange={setPendingDiets}
+                  profileAllergens={profileAllergens}
+                  profileDiets={profileDiets}
+                  onSyncProfile={onSyncProfile}
+                  lang={lang}
+                  subtitle="Mostra i ristoranti con recensioni di utenti che condividono le tue stesse esigenze."
+                />
               )}
             </View>
 
@@ -104,8 +151,12 @@ export default function FilterModal({
               </Text>
               <ChipGrid
                 items={CUISINE_CATEGORIES}
-                activeIds={activeFilters}
-                onToggle={(id) => onToggleFilter(id as RestaurantCategoryId)}
+                activeIds={pendingFilters}
+                onToggle={(id) => setPendingFilters(prev =>
+                  prev.includes(id as RestaurantCategoryId)
+                    ? prev.filter(x => x !== id)
+                    : [...prev, id as RestaurantCategoryId]
+                )}
                 lang={lang}
               />
             </View>
@@ -113,14 +164,14 @@ export default function FilterModal({
 
           {/* Footer */}
           <View style={styles.footer}>
-            {hasActiveSettings ? (
-              <TouchableOpacity onPress={onReset} style={styles.resetButton} activeOpacity={0.7}>
+            {hasPendingOrActive ? (
+              <TouchableOpacity onPress={handleReset} style={styles.resetButton} activeOpacity={0.7}>
                 <Text style={styles.resetText}>Resetta filtri</Text>
               </TouchableOpacity>
             ) : (
               <View />
             )}
-            <TouchableOpacity onPress={onClose} style={styles.applyButton} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleApply} style={styles.applyButton} activeOpacity={0.7}>
               <Text style={styles.applyText}>Applica</Text>
             </TouchableOpacity>
           </View>

@@ -9,8 +9,9 @@
  * Key architecture decisions:
  * 1. No SelectionContext — SelectedMarkerOverlay is the sole consumer of
  *    selectedId. Regular MapPins never re-render on selection change.
- * 2. Dot↔pin transition via key suffix ('-d'). React unmounts/remounts →
- *    fresh bitmap capture on iOS.
+ * 2. Dot↔pin transition via tracksViewChanges (NOT key change). MapPin tracks
+ *    asDot in justChanged → iOS recaptures the bitmap for one frame.
+ *    Key changes caused a flash of the default Apple Maps red pin on iOS.
  * 3. showMatchInfo does NOT change keys (would cause mass remount → crash).
  *    Colors update via tracksViewChanges for one frame.
  * 4. restaurantById is a stable Map ref used by both markerElements and
@@ -34,24 +35,15 @@ import {
 import type { Restaurant } from '../../services/restaurantService';
 
 // ---------------------------------------------------------------------------
-// Cluster renderer (static — never changes)
+// Cluster color helper (pure)
 // ---------------------------------------------------------------------------
 
-function renderCluster(cluster: any) {
-  const { id, geometry, onPress, properties } = cluster;
-  const count = properties.point_count;
-  return (
-    <Marker
-      key={`cluster-${id}`}
-      coordinate={{ latitude: geometry.coordinates[1], longitude: geometry.coordinates[0] }}
-      onPress={onPress}
-      tracksViewChanges={false}
-    >
-      <View style={styles.clusterContainer}>
-        <RNText style={styles.clusterText}>{count}</RNText>
-      </View>
-    </Marker>
-  );
+/** Punteggio di copertura: 3=verde, 2=giallo, 1=grigio, 0=sconosciuto */
+function leafScore(r: import('../../services/restaurantService').Restaurant): number {
+  const covered = (r.covered_allergen_count ?? 0) + (r.covered_dietary_count ?? 0);
+  const total = (r.total_allergen_filters ?? 0) + (r.total_dietary_filters ?? 0);
+  if (total === 0 || covered === 0) return 1;
+  return covered >= total ? 3 : 2;
 }
 
 // ---------------------------------------------------------------------------
@@ -72,7 +64,8 @@ export default function RestaurantMap({
   favoriteIds,
   favoriteRestaurants,
   compassOffset,
-  fitBounds,
+  userAllergens,
+  userDiets,
 }: RestaurantMapProps) {
   const mapRef = useRef<any>(null);
   const [mapHeight, setMapHeight] = useState(0);
@@ -90,6 +83,12 @@ export default function RestaurantMap({
   centerOnRef.current = centerOn;
   const restaurantsRef = useRef(restaurants);
   restaurantsRef.current = restaurants;
+  const onRestaurantPressRef = useRef(onRestaurantPress);
+  onRestaurantPressRef.current = onRestaurantPress;
+  const showMatchInfoRef = useRef(showMatchInfo);
+  showMatchInfoRef.current = showMatchInfo;
+  // Esposto alla libreria per getLeaves nei cluster
+  const superClusterRef = useRef<any>({});
 
   // ---- restaurantById — stable lookup for markerElements and overlay ----
   // Includes selectedRestaurant so the overlay can render even if the
@@ -113,6 +112,9 @@ export default function RestaurantMap({
     return map;
   }, [restaurants, favoriteRestaurants, selectedRestaurant]);
 
+  const restaurantByIdRef = useRef(restaurantById);
+  restaurantByIdRef.current = restaurantById;
+
   // ---- Camera: fit to markers on first load ----
   const fitToMarkers = useCallback(() => {
     const coords = restaurantsRef.current
@@ -125,7 +127,6 @@ export default function RestaurantMap({
     });
   }, []);
 
-  // Trigger fitToMarkers when restaurant set changes substantially
   const restaurantKey = useMemo(() => {
     const withLoc = restaurants.filter(r => r.location);
     return `${withLoc.length}_${withLoc[0]?.id ?? ''}_${withLoc[withLoc.length - 1]?.id ?? ''}`;
@@ -136,28 +137,6 @@ export default function RestaurantMap({
     fitToMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantKey, fitToMarkers]);
-
-  // ---- Camera: fitBounds (filtro attivo → adatta mappa ai risultati) ----
-  useEffect(() => {
-    if (!fitBounds || !mapReady.current) return;
-    const coords = restaurantsRef.current
-      .filter(r => r.location && isValidCoord(r.location.latitude, r.location.longitude))
-      .map(r => ({ latitude: r.location!.latitude, longitude: r.location!.longitude }));
-    if (coords.length === 0) return;
-    const lats = coords.map(c => c.latitude);
-    const lngs = coords.map(c => c.longitude);
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-    const MIN_DELTA = 0.05;
-    if (maxLat - minLat < MIN_DELTA && maxLng - minLng < MIN_DELTA) {
-      mapRef.current?.animateToRegion(
-        { latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2, latitudeDelta: MIN_DELTA, longitudeDelta: MIN_DELTA },
-        600,
-      );
-    } else {
-      mapRef.current?.fitToCoordinates(coords, { edgePadding: FIT_EDGE_PADDING, animated: true });
-    }
-  }, [fitBounds]);
 
   // ---- Camera: centerOn (pin selection, search, locate me) ----
   useEffect(() => {
@@ -207,12 +186,63 @@ export default function RestaurantMap({
   const handleRegionChange = useCallback((region: Region) => {
     currentRegion.current = region;
     onRegionChangeCompleteRef.current?.(region);
-    const nowDot = region.latitudeDelta > ZOOM_PIN_THRESHOLD;
-    setIsDotZoom(prev => prev !== nowDot ? nowDot : prev);
+    // Isteresi ±0.05 attorno a ZOOM_PIN_THRESHOLD: evita oscillazione rapida quando
+    // lo zoom si trova vicino alla soglia (es. durante pinch-zoom lento), che causerebbe
+    // mass-update di tutti i marker in loop con tracksViewChanges=true.
+    setIsDotZoom(prev => {
+      if (!prev && region.latitudeDelta > ZOOM_PIN_THRESHOLD + 0.05) return true;
+      if (prev && region.latitudeDelta < ZOOM_PIN_THRESHOLD - 0.05) return false;
+      return prev;
+    });
   }, []);
 
   const handleMapPress = useCallback(() => {
     onDeselectRef.current?.();
+  }, []);
+
+  // Callback stabile per i marker: non incluso nelle dipendenze di markerElements,
+  // così il cambio di onRestaurantPress nel parent non causa mass-remount di tutti i pin.
+  const handleMarkerPress = useCallback((id: string) => {
+    onRestaurantPressRef.current?.(id);
+  }, []);
+
+  // Cluster colorato: verde se almeno un ristorante è completamente coperto,
+  // giallo se parzialmente, grigio se nessuno coperto, primary se nessun dato.
+  const renderCluster = useCallback((cluster: any) => {
+    const { id, geometry, onPress, properties } = cluster;
+    const count = properties.point_count;
+
+    let clusterColor = theme.colors.primary;
+    if (showMatchInfoRef.current) {
+      // Limite 50: sufficiente per determinare il colore del cluster (break su score=3),
+      // evita loop O(n) su cluster grandi durante pan veloce con showMatchInfo attivo.
+      const leaves: any[] = superClusterRef.current?.getLeaves?.(properties.cluster_id, 50) ?? [];
+      let best = 0;
+      for (const leaf of leaves) {
+        const rid = leaf.properties?.identifier;
+        const r = rid ? restaurantByIdRef.current.get(rid) : undefined;
+        if (!r) continue;
+        const score = leafScore(r);
+        if (score > best) best = score;
+        if (best === 3) break; // verde → non può migliorare
+      }
+      if (best === 3) clusterColor = theme.colors.success;
+      else if (best === 2) clusterColor = '#F9A825';
+      else if (best === 1) clusterColor = theme.colors.textDisabled;
+    }
+
+    return (
+      <Marker
+        key={`cluster-${id}`}
+        coordinate={{ latitude: geometry.coordinates[1], longitude: geometry.coordinates[0] }}
+        onPress={onPress}
+        tracksViewChanges={false}
+      >
+        <View style={[styles.clusterContainer, { backgroundColor: clusterColor }]}>
+          <RNText style={styles.clusterText}>{count}</RNText>
+        </View>
+      </Marker>
+    );
   }, []);
 
   const handleLayout = useCallback((e: any) => {
@@ -222,13 +252,12 @@ export default function RestaurantMap({
   // ---- Marker elements ----
   // isDotZoom changes the key suffix → React remounts all markers → fresh bitmap.
   // showMatchInfo does NOT change keys → colors update via tracksViewChanges.
-  const favIds = favoriteIds ?? new Set<string>();
+  const favIds = useMemo(() => favoriteIds ?? new Set<string>(), [favoriteIds]);
 
   const markerElements = useMemo(() => {
     const elements: React.ReactElement[] = [];
     const seen = new Set<string>();
     const pins = allPins ?? [];
-    const keySuffix = isDotZoom ? '-d' : '';
     // Il pin selezionato è gestito esclusivamente da SelectedMarkerOverlay.
     // Renderizzarlo anche qui crea due Marker alla stessa coordinata e su iOS
     // lo z-ordering è imprevedibile → il pin normale "emerge" sopra l'overlay.
@@ -237,18 +266,23 @@ export default function RestaurantMap({
     // allPins first (lightweight, covers the whole viewport)
     for (const p of pins) {
       if (p.id === skip || seen.has(p.id) || !isValidCoord(p.latitude, p.longitude)) continue;
+      const restaurant = restaurantById.get(p.id);
       seen.add(p.id);
       elements.push(
         <MapPin
-          key={p.id + keySuffix}
+          key={p.id}
           id={p.id}
           latitude={p.latitude}
           longitude={p.longitude}
-          restaurant={restaurantById.get(p.id)}
+          restaurant={restaurant}
           asDot={isDotZoom}
           isFavorite={favIds.has(p.id)}
           showMatchInfo={showMatchInfo}
-          onPress={onRestaurantPress}
+          onPress={handleMarkerPress}
+          supportedAllergens={p.supported_allergens}
+          supportedDiets={p.supported_diets}
+          userAllergens={userAllergens}
+          userDiets={userDiets}
         />,
       );
     }
@@ -259,7 +293,7 @@ export default function RestaurantMap({
       seen.add(r.id);
       elements.push(
         <MapPin
-          key={r.id + keySuffix}
+          key={r.id}
           id={r.id}
           latitude={r.location.latitude}
           longitude={r.location.longitude}
@@ -267,7 +301,7 @@ export default function RestaurantMap({
           asDot={isDotZoom}
           isFavorite={favIds.has(r.id)}
           showMatchInfo={showMatchInfo}
-          onPress={onRestaurantPress}
+          onPress={handleMarkerPress}
         />,
       );
     }
@@ -279,7 +313,7 @@ export default function RestaurantMap({
       seen.add(id);
       elements.push(
         <MapPin
-          key={id + keySuffix}
+          key={id}
           id={id}
           latitude={r.location.latitude}
           longitude={r.location.longitude}
@@ -287,13 +321,13 @@ export default function RestaurantMap({
           asDot={isDotZoom}
           isFavorite
           showMatchInfo={showMatchInfo}
-          onPress={onRestaurantPress}
+          onPress={handleMarkerPress}
         />,
       );
     }
 
     return elements;
-  }, [restaurants, allPins, favoriteRestaurants, favIds, isDotZoom, showMatchInfo, onRestaurantPress, restaurantById, selectedId]);
+  }, [restaurants, allPins, favoriteRestaurants, favIds, isDotZoom, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   const showMarkers = hasAnimatedToUser || !centerOn || !centerOn.latDelta;
 
@@ -314,6 +348,7 @@ export default function RestaurantMap({
       clusterTextColor="#FFFFFF"
       clusterFontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif-medium'}
       renderCluster={renderCluster}
+      superClusterRef={superClusterRef}
       radius={40}
       minPoints={4}
       maxZoom={11}

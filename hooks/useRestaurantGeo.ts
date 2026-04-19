@@ -18,7 +18,7 @@ type FilterParams = {
 type FetchedArea = { center: LatLng; radiusKm: number };
 
 const AUTO_FETCH_DEBOUNCE = 800;
-const CACHE_MAX_SIZE = 500;
+const CACHE_MAX_SIZE = 1000;
 const OVERLAP_MARGIN = 0.7; // 30% overlap: fetch solo se centro fuori dal 70% del raggio
 const MAX_FETCHED_AREAS = 50; // Limita la crescita di fetchedAreas
 
@@ -47,6 +47,10 @@ export function useRestaurantGeo(params: FilterParams) {
   /** Cache pin viewport — accumula pin leggeri da viste diverse */
   const pinCache = useRef<Map<string, RestaurantPin>>(new Map());
   const pinDebounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Epoch per loadPinsForViewport — scarta risposte stale durante pan veloce */
+  const pinFetchEpoch = useRef(0);
+  /** Centro mappa corrente — aggiornato ad ogni region change */
+  const lastMapCenterRef = useRef<LatLng | null>(null);
 
   // Refs per accedere a valori correnti nei callback stabili
   const forMyNeedsRef = useRef(forMyNeeds);
@@ -111,6 +115,10 @@ export function useRestaurantGeo(params: FilterParams) {
       return;
     }
     isFetching.current = true;
+    // Cattura l'epoch prima dell'await: se clearAndReload scatta durante il fetch
+    // (es. toggle forMyNeeds), i risultati stale vengono scartati e non
+    // sovrascrivono i dati già ricaricati con il nuovo filtro.
+    const epoch = reloadEpoch.current;
     try {
       const results = forMyNeedsRef.current
         ? await RestaurantService.getRestaurantsForMyNeeds(
@@ -119,8 +127,8 @@ export function useRestaurantGeo(params: FilterParams) {
           )
         : await RestaurantService.getNearbyRestaurants(center.latitude, center.longitude, radiusKm);
 
+      if (reloadEpoch.current !== epoch) return;
       mergeIntoCache(results);
-      // Limita la crescita di fetchedAreas tenendo le piu recenti
       if (fetchedAreas.current.length >= MAX_FETCHED_AREAS) {
         fetchedAreas.current = fetchedAreas.current.slice(-MAX_FETCHED_AREAS / 2);
       }
@@ -129,7 +137,6 @@ export function useRestaurantGeo(params: FilterParams) {
       syncState();
     } finally {
       isFetching.current = false;
-      // Esegui fetch pendente se presente
       const next = pendingFetch.current;
       if (next) {
         pendingFetch.current = null;
@@ -150,32 +157,39 @@ export function useRestaurantGeo(params: FilterParams) {
 
   /** Svuota cache e ricarica (usato quando si toggl forMyNeeds).
    *  Fetch diretto (bypassa la coda fetchArea) per evitare race condition
-   *  con toggle rapidi. Epoch counter scarta risultati stale. */
-  const clearAndReload = useCallback(async () => {
+   *  con toggle rapidi. Epoch counter scarta risultati stale.
+   *  forMyNeedsOverride: usa questo valore invece di forMyNeedsRef.current.
+   *  Necessario perché setForMyNeeds è asincrono — la ref non è ancora
+   *  aggiornata quando clearAndReload è chiamato nello stesso handler. */
+  const clearAndReload = useCallback(async (forMyNeedsOverride?: boolean) => {
     const epoch = ++reloadEpoch.current;
     pendingFetch.current = null;
     fetchedAreas.current = [];
     // NON svuotare pinCache — i pin viewport sono dati geometrici,
     // non dipendono da forMyNeeds. Svuotandoli i pallini spariscono.
-    if (!userLocation) {
+    // Usa il centro mappa corrente (se disponibile) invece della posizione GPS:
+    // l'utente potrebbe star esplorando un'area diversa dalla propria posizione.
+    const fetchCenter = lastMapCenterRef.current ?? userLocation;
+    if (!fetchCenter) {
       restaurantCache.current.clear();
       setRestaurants([]);
       return;
     }
     setIsLoading(true);
     try {
-      const results = forMyNeedsRef.current
+      const useForMyNeeds = forMyNeedsOverride !== undefined ? forMyNeedsOverride : forMyNeedsRef.current;
+      const results = useForMyNeeds
         ? await RestaurantService.getRestaurantsForMyNeeds(
-            userLocation.latitude, userLocation.longitude,
+            fetchCenter.latitude, fetchCenter.longitude,
             filterAllergensRef.current, filterDietsRef.current, 50,
           )
         : await RestaurantService.getNearbyRestaurants(
-            userLocation.latitude, userLocation.longitude, 50,
+            fetchCenter.latitude, fetchCenter.longitude, 50,
           );
       if (reloadEpoch.current !== epoch) return;
       restaurantCache.current.clear();
       for (const r of results) restaurantCache.current.set(r.id, r);
-      fetchedAreas.current = [{ center: userLocation, radiusKm: 50 }];
+      fetchedAreas.current = [{ center: fetchCenter, radiusKm: 50 }];
       syncState();
     } finally {
       if (reloadEpoch.current === epoch) {
@@ -187,14 +201,17 @@ export function useRestaurantGeo(params: FilterParams) {
 
   // Al mount, centra la mappa sulla posizione dell'utente
   useEffect(() => {
+    let mounted = true;
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
+        if (!mounted) return;
         if (status !== 'granted') {
           setLocationDenied(true);
           return;
         }
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        if (!mounted) return;
         const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
         setUserLocation(coords);
         setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
@@ -202,25 +219,38 @@ export function useRestaurantGeo(params: FilterParams) {
         // GPS non disponibile
       }
     })();
+    return () => { mounted = false; };
   }, []);
 
   /** Carica pin leggeri per il viewport corrente.
    *  Chiamato dal handleRegionChange (debounced separatamente). */
   const loadPinsForViewport = useCallback((region: MapRegion) => {
-    const margin = region.latitudeDelta * 0.3;
-    const minLat = region.latitude - region.latitudeDelta / 2 - margin;
-    const maxLat = region.latitude + region.latitudeDelta / 2 + margin;
-    const minLng = region.longitude - region.longitudeDelta / 2 - margin;
-    const maxLng = region.longitude + region.longitudeDelta / 2 + margin;
+    // Epoch locale: se arriva una risposta più vecchia di un fetch successivo, viene scartata.
+    // Fondamentale durante pan veloce dove più richieste sono in volo contemporaneamente.
+    const epoch = ++pinFetchEpoch.current;
+
+    const latDelta = region.latitudeDelta;
+    const lngDelta = region.longitudeDelta;
+    const margin = Math.min(latDelta * 0.3, 10);
+    const minLat = Math.max(-90, region.latitude - latDelta / 2 - margin);
+    const maxLat = Math.min(90, region.latitude + latDelta / 2 + margin);
+    const minLng = Math.max(-180, region.longitude - lngDelta / 2 - margin);
+    const maxLng = Math.min(180, region.longitude + lngDelta / 2 + margin);
+
     RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng)
       .then(pins => {
+        if (pinFetchEpoch.current !== epoch) return; // risposta stale, ignora
+        const sizeBefore = pinCache.current.size;
         for (const p of pins) pinCache.current.set(p.id, p);
-        // Limita la dimensione della pin cache (max 3000)
+        let trimmed = false;
         if (pinCache.current.size > 3000) {
           const entries = Array.from(pinCache.current.entries());
           pinCache.current = new Map(entries.slice(-2000));
+          trimmed = true;
         }
-        setViewportPins(Array.from(pinCache.current.values()));
+        if (pinCache.current.size !== sizeBefore || trimmed) {
+          setViewportPins(Array.from(pinCache.current.values()));
+        }
       })
       .catch(() => { /* rete non disponibile — mantieni i pin precedenti */ });
   }, []);
@@ -266,6 +296,7 @@ export function useRestaurantGeo(params: FilterParams) {
 
   /** Auto-fetch debounced on region change */
   const handleRegionChange = useCallback((region: MapRegion) => {
+    lastMapCenterRef.current = { latitude: region.latitude, longitude: region.longitude };
     // 1. Fetch dati completi ristoranti (debounce lungo)
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(async () => {
@@ -275,11 +306,12 @@ export function useRestaurantGeo(params: FilterParams) {
       await fetchArea(center, radiusKm);
     }, AUTO_FETCH_DEBOUNCE);
 
-    // 2. Fetch pin leggeri per viewport (debounce separato, più veloce)
+    // 2. Fetch pin leggeri per viewport (300ms: bilancia reattività e numero di fetch
+    //    concorrenti durante pan veloce; l'epoch in loadPinsForViewport scarta i stale)
     if (pinDebounceTimer.current) clearTimeout(pinDebounceTimer.current);
     pinDebounceTimer.current = setTimeout(() => {
       loadPinsForViewport(region);
-    }, 500);
+    }, 300);
   }, [isCovered, fetchArea, loadPinsForViewport]);
 
   const handleLocateMe = useCallback(async (): Promise<LatLng | null> => {

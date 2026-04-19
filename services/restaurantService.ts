@@ -164,6 +164,9 @@ async function getPinsInBounds(
       id: row.id as string,
       latitude: row.latitude as number,
       longitude: row.longitude as number,
+      supported_allergens: (row.supported_allergens ?? []) as string[],
+      supported_diets: (row.supported_diets ?? []) as string[],
+      cuisine_types: (row.cuisine_types ?? []) as string[],
     }));
   } catch (error) {
     console.warn('[RestaurantService] Errore getPinsInBounds:', error);

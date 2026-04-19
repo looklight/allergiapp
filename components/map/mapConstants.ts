@@ -32,8 +32,10 @@ export type RestaurantMapProps = {
   favoriteIds?: Set<string>;
   favoriteRestaurants?: Map<string, Restaurant>;
   compassOffset?: { x: number; y: number };
-  /** Incrementare questo valore per fare fit della mappa sui ristoranti filtrati correnti. */
-  fitBounds?: number;
+  /** Filtri allergenici attivi dell'utente — per calcolo coverage lato client sui pin */
+  userAllergens?: string[];
+  /** Filtri dietetici attivi dell'utente — per calcolo coverage lato client sui pin */
+  userDiets?: string[];
 };
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,17 @@
 // ─── Tipi condivisi per il modulo ristoranti ──────────────────────────────
 
-/** Pin leggero: solo id + coordinate, per la mappa a zoom lontano */
-export type RestaurantPin = { id: string; latitude: number; longitude: number };
+/** Pin leggero con dati di copertura allergenica aggregati dalle recensioni */
+export type RestaurantPin = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  /** Unione degli allergens_snapshot di tutte le recensioni del ristorante */
+  supported_allergens: string[];
+  /** Unione dei dietary_snapshot di tutte le recensioni del ristorante */
+  supported_diets: string[];
+  /** Tipi di cucina votati per il ristorante */
+  cuisine_types: string[];
+};
 
 export interface Restaurant {
   id: string;
@@ -166,7 +176,7 @@ export interface LeaderboardEntry {
 // ─── Costanti ────────────────────────────────────────────────────────────────
 
 export const QUERY_LIMITS: Record<string, number> = {
-  NEARBY_DEFAULT: 50,
+  NEARBY_DEFAULT: 100,
   USER_REVIEWS: 20,
 };
 

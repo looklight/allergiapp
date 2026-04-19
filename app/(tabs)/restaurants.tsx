@@ -12,7 +12,7 @@ import { type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import RestaurantMap from '../../components/map/RestaurantMap';
-import FilterModal from '../../components/restaurants/FilterModal';
+import FilterModal, { type FilterApplyResult } from '../../components/restaurants/FilterModal';
 import NearbyListSheet from '../../components/restaurants/NearbyListSheet';
 import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetailSheet';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
@@ -83,8 +83,6 @@ export default function RestaurantsScreen() {
 
   // Segnala che il prossimo cambio di filterAllergens/filterDiets viene dal profilo
   const profileJustChanged = useRef(false);
-  // Segnala che i filtri sono stati modificati dentro il FilterModal
-  const filterChangedInModal = useRef(false);
 
   // Sincronizza sempre (con o senza forMyNeeds) — necessario per aggiornamenti da Settings
   useEffect(() => {
@@ -92,11 +90,6 @@ export default function RestaurantsScreen() {
     setFilterAllergens([...dietaryNeeds.allergens]);
     setFilterDiets([...(dietaryNeeds.diets ?? [])]);
   }, [dietaryNeeds.allergens, dietaryNeeds.diets]);
-
-  // Traccia modifiche ai filtri durante la sessione modale
-  useEffect(() => {
-    if (showFilterModal) filterChangedInModal.current = true;
-  }, [filterAllergens, filterDiets]);
 
   // Ripristina preferenza "Per me" da storage per utenti loggati
   const forMyNeedsRestored = useRef(false);
@@ -130,11 +123,6 @@ export default function RestaurantsScreen() {
     });
   }, [selection.detailId, nearbyExpanded, navigation]);
 
-  // Regione corrente della mappa — usata per filtrare la lista coerentemente col viewport
-  const [currentRegion, setCurrentRegion] = useState<{
-    latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number;
-  } | null>(null);
-
   // Nessuna bottom sheet: il geo hook non ha più bisogno di un'offset dinamica.
   const getSheetFraction = useCallback(() => 0, []);
 
@@ -166,34 +154,22 @@ export default function RestaurantsScreen() {
     restaurants: geo.restaurants,
     activeFilters,
     searchQuery: mapFilterQuery,
-    mapRegion: currentRegion,
   });
 
-  // Quando i filtri cambiano e ci sono risultati, incrementa il trigger per fare fit della mappa.
-  const filterKey = useMemo(
-    () => `${[...activeFilters].sort().join('|')}_${forMyNeeds ? '1' : '0'}`,
-    [activeFilters, forMyNeeds],
-  );
-  const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
-  useEffect(() => {
-    if (!mapRestaurants.some(r => r.location)) return;
-    setFitBoundsTrigger(n => n + 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey]); // mapRestaurants letto al momento dell'esecuzione, non come dipendenza
-
-  // allPins viene da una RPC separata che non conosce i filtri attivi.
-  // Lo filtriamo in base a geo.restaurants (già filtrato lato server per allergie)
-  // + activeFilters cucina lato client, così la mappa è coerente con la lista.
+  // allPins accumula pin da tutti i viewport visitati (max 3000, gestito in useRestaurantGeo).
+  // SuperCluster gestisce internamente la viewport culling: riceve tutti i pin ma renderizza
+  // solo i cluster visibili. Il limite di 3000 pin nella cache è il guardrail sufficiente.
+  // — forMyNeeds NON restringe allPins: i pin non compatibili compaiono grigi (non coperti).
+  // — Il filtro cucina (activeFilters) usa cuisine_types direttamente dal pin (campo restituito
+  //   da get_pins_in_bounds), evitando la dipendenza da geo.restaurants che contiene al max 50
+  //   record e causerebbe la scomparsa di tutti i pin extra-viewport.
   const filteredAllPins = useMemo(() => {
-    if (activeFilters.length === 0 && !forMyNeeds) return geo.allPins;
-    const allowed = new Set(
-      (activeFilters.length > 0
-        ? geo.restaurants.filter(r => r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId)))
-        : geo.restaurants
-      ).map(r => r.id)
+    const pins = geo.allPins ?? [];
+    if (activeFilters.length === 0) return pins;
+    return pins.filter(p =>
+      p.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
     );
-    return geo.allPins?.filter(p => allowed.has(p.id)) ?? null;
-  }, [geo.allPins, geo.restaurants, activeFilters, forMyNeeds]);
+  }, [geo.allPins, activeFilters]);
 
   const { favoriteIds, favoriteRestaurants, loadFavorites, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
@@ -254,7 +230,6 @@ export default function RestaurantsScreen() {
   };
 
   const handleOpenFilterModal = useCallback(() => {
-    filterChangedInModal.current = false;
     setShowFilterModal(true);
   }, []);
 
@@ -264,42 +239,37 @@ export default function RestaurantsScreen() {
     await refreshProfile();
   }, [user, refreshProfile]);
 
-  const handleCloseFilterModal = useCallback(async () => {
-    setShowFilterModal(false);
-    const filtersChanged = filterChangedInModal.current;
-    filterChangedInModal.current = false;
+  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets }: FilterApplyResult) => {
+    setActiveFilters(filters);
+    setFilterAllergens(allergens);
+    setFilterDiets(diets);
 
-    if (!forMyNeeds || !filtersChanged) return;
+    const fmnChanged = newFmn !== forMyNeeds;
+    const allergensChanged = allergens.length !== filterAllergens.length || allergens.some(a => !filterAllergens.includes(a));
+    const dietsChanged = diets.length !== filterDiets.length || diets.some(d => !filterDiets.includes(d));
 
-    // Auto-sync profilo se le esigenze differiscono da quelle salvate.
-    const allergensMatch =
-      filterAllergens.length === dietaryNeeds.allergens.length &&
-      filterAllergens.every(a => dietaryNeeds.allergens.includes(a as any));
-    const dietsMatch =
-      filterDiets.length === (dietaryNeeds.diets ?? []).length &&
-      filterDiets.every(d => (dietaryNeeds.diets ?? []).includes(d as any));
+    setForMyNeeds(newFmn);
+    storage.setForMyNeeds(newFmn);
 
-    if (!allergensMatch || !dietsMatch) {
-      handleSyncProfile(filterAllergens, filterDiets).catch(() => {});
+    if (newFmn && (fmnChanged || allergensChanged || dietsChanged)) {
+      await geo.clearAndReload(newFmn);
+    } else if (!newFmn && fmnChanged) {
+      await geo.clearAndReload(false);
     }
 
-    geo.clearAndReload();
-  }, [forMyNeeds, geo.clearAndReload, filterAllergens, filterDiets, dietaryNeeds, handleSyncProfile]);
-
-  const handleToggleMyNeeds = useCallback(async () => {
-    if (!isAuthenticated) { router.push('/auth/login'); return; }
-    if (!filterHasNeeds) {
-      Alert.alert(
-        'Nessuna esigenza selezionata',
-        'Seleziona almeno un\'allergia o dieta per usare questo filtro.',
-      );
-      return;
+    // Auto-sync profilo se le esigenze differiscono da quelle salvate
+    if (newFmn && (allergensChanged || dietsChanged)) {
+      const profileAllergensMatch =
+        allergens.length === (dietaryNeeds.allergens as string[]).length &&
+        allergens.every(a => (dietaryNeeds.allergens as string[]).includes(a));
+      const profileDietsMatch =
+        diets.length === (dietaryNeeds.diets ?? []).length &&
+        diets.every(d => (dietaryNeeds.diets as string[] ?? []).includes(d));
+      if (!profileAllergensMatch || !profileDietsMatch) {
+        handleSyncProfile(allergens, diets).catch(() => {});
+      }
     }
-    const newValue = !forMyNeeds;
-    setForMyNeeds(newValue);
-    storage.setForMyNeeds(newValue);
-    await geo.clearAndReload();
-  }, [isAuthenticated, filterHasNeeds, forMyNeeds, geo.clearAndReload, router]);
+  }, [forMyNeeds, filterAllergens, filterDiets, dietaryNeeds, geo.clearAndReload, handleSyncProfile]);
 
   const dismissAutocomplete = useCallback(() => {
     setSearchQuery('');
@@ -398,7 +368,6 @@ export default function RestaurantsScreen() {
 
   const handleRegionChange = useCallback((region: Parameters<typeof geo.handleRegionChange>[0]) => {
     dispatch({ type: 'DESELECT' });
-    setCurrentRegion(region);
     geo.handleRegionChange(region);
   }, [geo.handleRegionChange]);
 
@@ -407,14 +376,14 @@ export default function RestaurantsScreen() {
     if (forMyNeeds) {
       setForMyNeeds(false);
       storage.setForMyNeeds(false);
-      await geo.clearAndReload();
+      await geo.clearAndReload(false);
     }
   }, [forMyNeeds, geo.clearAndReload]);
 
   const handleRemoveNeedsChip = useCallback(async () => {
     setForMyNeeds(false);
     storage.setForMyNeeds(false);
-    await geo.clearAndReload();
+    await geo.clearAndReload(false);
   }, [geo.clearAndReload]);
 
   const autocompleteVisible =
@@ -422,22 +391,17 @@ export default function RestaurantsScreen() {
     searchQuery.length >= 2 &&
     (mapSearch.results.length > 0 || mapSearch.isSearching);
 
-  // Applica i filtri cuisine e forMyNeeds ai risultati nearby prima di passarli alla banner/sheet.
+  // Applica il filtro cucina ai risultati nearby prima di passarli alla banner/sheet.
+  // forMyNeeds non filtra ulteriormente: la RPC restituisce già tutti i ristoranti nel
+  // raggio ordinati per copertura. Filtrare covered > 0 nasconderebbe ristoranti esistenti
+  // non ancora recensiti per gli allergeni dell'utente (incoerente con la mappa che mostra
+  // tutti i pin, anche quelli grigi = non coperti).
   const filteredNearbyResults = useMemo(() => {
-    let list = mapSearch.nearbyResults;
-    if (activeFilters.length > 0) {
-      list = list.filter(r =>
-        r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
-      );
-    }
-    if (forMyNeeds) {
-      list = list.filter(r => {
-        const covered = (r.covered_allergen_count ?? 0) + (r.covered_dietary_count ?? 0);
-        return covered > 0;
-      });
-    }
-    return list;
-  }, [mapSearch.nearbyResults, activeFilters, forMyNeeds]);
+    if (activeFilters.length === 0) return mapSearch.nearbyResults;
+    return mapSearch.nearbyResults.filter(r =>
+      r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
+    );
+  }, [mapSearch.nearbyResults, activeFilters]);
 
   const nearbyCount = filteredNearbyResults.length;
 
@@ -452,7 +416,6 @@ export default function RestaurantsScreen() {
         <RestaurantMap
           restaurants={mapRestaurants}
           allPins={filteredAllPins}
-          fitBounds={fitBoundsTrigger}
           centerOn={geo.centerOn}
           hasUserLocation={!!geo.userLocation}
           onRegionChangeComplete={handleRegionChange}
@@ -464,6 +427,8 @@ export default function RestaurantsScreen() {
           favoriteIds={favoriteIds}
           favoriteRestaurants={favoriteRestaurants}
           compassOffset={{ x: -12, y: insets.top + 8 }}
+          userAllergens={filterAllergens}
+          userDiets={filterDiets}
         />
       </View>
 
@@ -578,7 +543,7 @@ export default function RestaurantsScreen() {
                 ? `Cerco ristoranti a ${mapSearch.nearbyPlace!.name}...`
                 : nearbyCount === 0
                   ? `Nessun ristorante a ${mapSearch.nearbyPlace!.name}`
-                  : `${nearbyCount} ${nearbyCount === 1 ? 'ristorante' : 'ristoranti'}${forMyNeeds ? (nearbyCount === 1 ? ' compatibile' : ' compatibili') : ''} a ${mapSearch.nearbyPlace!.name}`}
+                  : `${nearbyCount} ${nearbyCount === 1 ? 'ristorante' : 'ristoranti'} a ${mapSearch.nearbyPlace!.name}`}
             </Text>
             {!mapSearch.isLoadingNearby && nearbyCount > 0 && (
               <MaterialCommunityIcons name="chevron-up" size={20} color={theme.colors.textSecondary} />
@@ -617,19 +582,17 @@ export default function RestaurantsScreen() {
 
       <FilterModal
         visible={showFilterModal}
-        onClose={handleCloseFilterModal}
+        onClose={() => setShowFilterModal(false)}
         activeFilters={activeFilters}
-        onToggleFilter={toggleFilter}
         forMyNeeds={forMyNeeds}
-        onToggleMyNeeds={handleToggleMyNeeds}
         filterAllergens={filterAllergens}
         filterDiets={filterDiets}
-        onAllergensChange={setFilterAllergens}
-        onDietsChange={setFilterDiets}
         profileAllergens={dietaryNeeds.allergens as string[]}
         profileDiets={dietaryNeeds.diets as string[]}
         onSyncProfile={handleSyncProfile}
-        hasActiveSettings={hasActiveSettings}
+        isAuthenticated={isAuthenticated}
+        onRequestLogin={() => router.push('/auth/login')}
+        onApply={handleApplyFilters}
         onReset={handleResetFilters}
         lang={lang}
       />

@@ -11,6 +11,9 @@
  *   the React key on zoom threshold crossing → fresh mount → clean bitmap.
  * - When `restaurant` is null at close zoom, a placeholder pin (same 32px
  *   container) is rendered so iOS can recapture the bitmap when data arrives.
+ * - At dot zoom without restaurant data, coverage is computed from
+ *   supportedAllergens/supportedDiets + userAllergens/userDiets using
+ *   getExpandedCoverage (implication-aware, same logic del server).
  */
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
@@ -18,6 +21,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 import { theme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
+import { getExpandedCoverage } from '../../constants/restrictionImplications';
 import type { Restaurant } from '../../services/restaurantService';
 
 export type MapPinProps = {
@@ -30,6 +34,14 @@ export type MapPinProps = {
   isSelected?: boolean;
   showMatchInfo?: boolean;
   onPress?: (id: string) => void;
+  /** Allergens aggregated from all reviews of this restaurant */
+  supportedAllergens?: string[];
+  /** Dietary preferences aggregated from all reviews of this restaurant */
+  supportedDiets?: string[];
+  /** Active allergen filters of the current user */
+  userAllergens?: string[];
+  /** Active dietary filters of the current user */
+  userDiets?: string[];
 };
 
 export default memo(function MapPin({
@@ -42,25 +54,40 @@ export default memo(function MapPin({
   isSelected,
   showMatchInfo,
   onPress,
+  supportedAllergens,
+  supportedDiets,
+  userAllergens,
+  userDiets,
 }: MapPinProps) {
   // --- tracksViewChanges: true for ONE frame after visual change, then false ---
+  // asDot è incluso qui (invece di usare key change nel parent) per evitare il
+  // flash del pin rosso Apple Maps che si vede durante l'unmount/remount.
   const hasRest = !!restaurant;
+  const prevAsDot = useRef(asDot);
   const prevFavorite = useRef(isFavorite);
   const prevShowMatch = useRef(showMatchInfo);
   const prevHasRest = useRef(hasRest);
   const prevSelected = useRef(isSelected);
+  const prevSupportedAllergens = useRef(supportedAllergens);
+  const prevSupportedDiets = useRef(supportedDiets);
   const justChanged =
+    asDot !== prevAsDot.current ||
     isFavorite !== prevFavorite.current ||
     showMatchInfo !== prevShowMatch.current ||
     hasRest !== prevHasRest.current ||
-    isSelected !== prevSelected.current;
+    isSelected !== prevSelected.current ||
+    supportedAllergens !== prevSupportedAllergens.current ||
+    supportedDiets !== prevSupportedDiets.current;
 
   useEffect(() => {
+    prevAsDot.current = asDot;
     prevFavorite.current = isFavorite;
     prevShowMatch.current = showMatchInfo;
     prevHasRest.current = hasRest;
     prevSelected.current = isSelected;
-  }, [isFavorite, showMatchInfo, hasRest, isSelected]);
+    prevSupportedAllergens.current = supportedAllergens;
+    prevSupportedDiets.current = supportedDiets;
+  }, [asDot, isFavorite, showMatchInfo, hasRest, isSelected, supportedAllergens, supportedDiets]);
 
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 
@@ -68,18 +95,45 @@ export default memo(function MapPin({
 
   // ---- Dot (far zoom) ----
   if (asDot) {
-    const dotColor = (showMatchInfo && restaurant)
-      ? coverageColor(
-          (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0),
-          (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0),
-        )
+    // Coverage: prefer server-computed data from Restaurant object (accurate),
+    // fall back to client-computed from pin's aggregated review data.
+    let dotCovered = 0;
+    let dotTotal = 0;
+
+    if (showMatchInfo) {
+      if (restaurant) {
+        dotCovered = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
+        dotTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+      } else {
+        dotTotal = (userAllergens?.length ?? 0) + (userDiets?.length ?? 0);
+        if (dotTotal > 0 && (supportedAllergens?.length || supportedDiets?.length)) {
+          const expanded = getExpandedCoverage([
+            ...(supportedAllergens ?? []),
+            ...(supportedDiets ?? []),
+          ]);
+          for (const a of (userAllergens ?? [])) if (expanded.has(a)) dotCovered++;
+          for (const d of (userDiets ?? [])) if (expanded.has(d)) dotCovered++;
+        }
+      }
+    }
+
+    const dotColor = showMatchInfo
+      ? coverageColor(dotCovered, dotTotal)
       : theme.colors.primary;
+
+    // Verde/giallo emergono sopra i pallini grigi/primary (non valutati).
+    const dotZ = isFavorite ? 3
+      : dotCovered > 0 && dotTotal > 0
+        ? (dotCovered >= dotTotal ? 3 : 2)
+        : 0;
+
     return (
       <Marker
+        identifier={id}
         coordinate={{ latitude, longitude }}
         tracksViewChanges={justChanged}
         onPress={handlePress}
-        {...(Platform.OS === 'android' && { zIndex: isFavorite ? 2 : 0 })}
+        {...(Platform.OS === 'android' && { zIndex: dotZ })}
       >
         <View style={styles.dotWrap}>
           <View style={[
@@ -101,6 +155,7 @@ export default memo(function MapPin({
   if (!restaurant) {
     return (
       <Marker
+        identifier={id}
         coordinate={{ latitude, longitude }}
         tracksViewChanges={justChanged}
         onPress={handlePress}
@@ -138,6 +193,7 @@ export default memo(function MapPin({
 
   return (
     <Marker
+      identifier={id}
       coordinate={{ latitude, longitude }}
       tracksViewChanges={justChanged}
       onPress={handlePress}
