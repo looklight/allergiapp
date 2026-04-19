@@ -172,5 +172,39 @@
     "quoteAuthor": "Marta Di Muro",
     "learnMore": "Mehr erfahren",
     "followMe": "Meine Socials"
+  },
+  "onboardingTutorial": {
+    "welcome": {
+      "title": "Schön, dass du da bist.",
+      "description": "AllergiApp ist eine Community von Menschen, die echte Erfahrungen teilen, um die richtigen Orte zum sorgenfreien Essen zu finden.",
+      "chipGluten": "Gluten",
+      "chipVegan": "Vegan",
+      "chipEggs": "Eier"
+    },
+    "share": {
+      "title": "Teile deine Erfahrungen",
+      "description": "Jede Bewertung trägt die Bedürfnisse der Autor:in in sich: so wissen andere, ob diese Erfahrung wirklich zu ihnen passt.",
+      "reviewText": "Sehr klare Allergenkarte und der Kellner hat sich bestens um mich gekümmert.",
+      "dateLabel": "Mär 2026",
+      "chipGluten": "Gluten",
+      "chipVegan": "Vegan"
+    },
+    "find": {
+      "title": "Sieh auf einen Blick, was zu dir passt",
+      "description": "Basierend auf Community-Bewertungen zeigt jedes Restaurant, wie gut es zu deinen Bedürfnissen passt."
+    },
+    "card": {
+      "title": "Deine Allergenkarte",
+      "descriptionPart1": "Zeige vor dem Bestellen die ",
+      "descriptionBold": "Karte",
+      "descriptionPart2": " dem Kellner, um deine Bedürfnisse klar und in der Landessprache zu kommunizieren.",
+      "header": "ALLERGIE",
+      "subtitle": "Ich bin allergisch gegen:"
+    },
+    "buttons": {
+      "next": "Weiter",
+      "start": "Los geht's",
+      "skip": "Überspringen"
+    }
   }
 }

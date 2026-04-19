@@ -4,6 +4,7 @@ import { Text, Button } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
+import i18n from '../../utils/i18n';
 import type { OnboardingSlideProps } from '../../components/onboarding/types';
 import WelcomeSlide from '../../components/onboarding/slides/WelcomeSlide';
 import FindRestaurantsSlide from '../../components/onboarding/slides/FindRestaurantsSlide';
@@ -74,7 +75,7 @@ export default function OnboardingTutorialScreen() {
           style={styles.button}
           labelStyle={styles.buttonLabel}
         >
-          {isLast ? 'Inizia' : 'Avanti'}
+          {isLast ? i18n.t('onboardingTutorial.buttons.start') : i18n.t('onboardingTutorial.buttons.next')}
         </Button>
 
         <TouchableOpacity
@@ -82,7 +83,7 @@ export default function OnboardingTutorialScreen() {
           style={[styles.skipRow, isLast && { opacity: 0 }]}
           disabled={isLast}
         >
-          <Text style={styles.skipText}>Salta</Text>
+          <Text style={styles.skipText}>{i18n.t('onboardingTutorial.buttons.skip')}</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { theme } from '../../../constants/theme';
+import i18n from '../../../utils/i18n';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
 
@@ -17,26 +18,26 @@ type Member = {
   chips: readonly Chip[];
 };
 
-const MEMBERS: readonly Member[] = [
+const buildMembers = (): readonly Member[] => [
   {
     name: 'Marco',
     avatar: require('../../../assets/avatars/plate_forks.png'),
     chips: [
-      { label: 'Glutine', isDiet: false },
-      { label: 'Vegan', isDiet: true },
+      { label: i18n.t('onboardingTutorial.welcome.chipGluten'), isDiet: false },
+      { label: i18n.t('onboardingTutorial.welcome.chipVegan'), isDiet: true },
     ],
   },
   {
     name: 'Giulia',
     avatar: require('../../../assets/avatars/plate_language.png'),
-    chips: [{ label: 'Vegan', isDiet: true }],
+    chips: [{ label: i18n.t('onboardingTutorial.welcome.chipVegan'), isDiet: true }],
   },
   {
     name: 'Anna',
     avatar: require('../../../assets/avatars/plate_passport.png'),
     chips: [
-      { label: 'Glutine', isDiet: false },
-      { label: 'Uova', isDiet: false },
+      { label: i18n.t('onboardingTutorial.welcome.chipGluten'), isDiet: false },
+      { label: i18n.t('onboardingTutorial.welcome.chipEggs'), isDiet: false },
     ],
   },
 ];
@@ -44,7 +45,8 @@ const MEMBERS: readonly Member[] = [
 const STAGGER_MS = 160;
 
 export default function WelcomeSlide({ isActive }: OnboardingSlideProps) {
-  const totalChips = useMemo(() => MEMBERS.reduce((sum, m) => sum + m.chips.length, 0), []);
+  const members = useMemo(() => buildMembers(), []);
+  const totalChips = useMemo(() => members.reduce((sum, m) => sum + m.chips.length, 0), [members]);
   const chipAnims = useRef(Array.from({ length: totalChips }, () => new Animated.Value(0))).current;
 
   useEffect(() => {
@@ -76,11 +78,11 @@ export default function WelcomeSlide({ isActive }: OnboardingSlideProps) {
 
   return (
     <OnboardingSlide
-      title="È bello averti qui."
-      description="AllergiApp è una community di persone che condividono esperienze reali per trovare i posti giusti dove mangiare bene, senza pensieri."
+      title={i18n.t('onboardingTutorial.welcome.title')}
+      description={i18n.t('onboardingTutorial.welcome.description')}
       visual={
         <View style={styles.row}>
-          {MEMBERS.map(member => (
+          {members.map(member => (
             <View key={member.name} style={styles.member}>
               <Image source={member.avatar} style={styles.avatar} resizeMode="contain" />
               <Text style={styles.memberName}>{member.name}</Text>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { theme } from '../../../constants/theme';
+import i18n from '../../../utils/i18n';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
 
@@ -69,10 +70,12 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
 
   return (
     <OnboardingSlide
-      title="La tua card allergeni"
+      title={i18n.t('onboardingTutorial.card.title')}
       description={
         <>
-          Prima di ordinare mostra la <Text style={styles.bold}>card</Text> al cameriere per comunicare le tue esigenze in modo chiaro, nella lingua del posto.
+          {i18n.t('onboardingTutorial.card.descriptionPart1')}
+          <Text style={styles.bold}>{i18n.t('onboardingTutorial.card.descriptionBold')}</Text>
+          {i18n.t('onboardingTutorial.card.descriptionPart2')}
         </>
       }
       visual={
@@ -90,8 +93,8 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
         >
           <Surface style={styles.card} elevation={4}>
             <View style={styles.header}>
-              <Text style={styles.headerTitle}>⚠️ ALLERGIA</Text>
-              <Text style={styles.headerSubtitle}>Sono allergico a:</Text>
+              <Text style={styles.headerTitle}>⚠️ {i18n.t('onboardingTutorial.card.header')}</Text>
+              <Text style={styles.headerSubtitle}>{i18n.t('onboardingTutorial.card.subtitle')}</Text>
             </View>
 
             <View style={styles.rows}>

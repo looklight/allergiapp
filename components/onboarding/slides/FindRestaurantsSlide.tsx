@@ -3,6 +3,7 @@ import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../constants/theme';
+import i18n from '../../../utils/i18n';
 import StarRating from '../../StarRating';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
@@ -89,8 +90,8 @@ export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps)
 
   return (
     <OnboardingSlide
-      title="Vedi subito cosa fa per te"
-      description="In base alle recensioni della community ogni ristorante può mostrare la compatibilità con le tue esigenze."
+      title={i18n.t('onboardingTutorial.find.title')}
+      description={i18n.t('onboardingTutorial.find.description')}
       visual={
         <View style={styles.stack}>
           {RESTAURANTS.map((r, i) => {
