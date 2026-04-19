@@ -155,14 +155,9 @@ export default function RestaurantsScreen() {
     filterDiets,
   });
 
-  // Quando c'è un luogo selezionato, la query testuale non deve filtrare i pin sulla mappa:
-  // l'utente sta esplorando un'area, non cercando per nome.
-  const mapFilterQuery = mapSearch.nearbyPlace ? '' : searchQuery;
-
   const { mapRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
     activeFilters,
-    searchQuery: mapFilterQuery,
   });
 
   // allPins accumula pin da tutti i viewport visitati (max 3000, gestito in useRestaurantGeo).
@@ -731,7 +726,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   mapContainer: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
   },
 
   // --- Floating overlay ---
