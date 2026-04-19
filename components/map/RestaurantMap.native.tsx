@@ -356,7 +356,7 @@ export default function RestaurantMap({
       animationEnabled={false}
     >
       {showMarkers ? markerElements : null}
-      {showMarkers && !isDotZoom && (
+      {showMarkers && (
         <SelectedMarkerOverlay
           selectedId={selectedId}
           restaurantById={restaurantById}

@@ -93,7 +93,7 @@ export default function PublicProfileScreen() {
             {reviews.map((c) => {
               const restaurantName = c.restaurant_name ?? 'Ristorante';
               const date = new Date(c.created_at).toLocaleDateString(i18n.locale, {
-                day: 'numeric', month: 'short', year: 'numeric',
+                month: 'short', year: 'numeric',
               });
               return (
                 <Surface key={c.id} style={styles.reviewCard} elevation={1}>

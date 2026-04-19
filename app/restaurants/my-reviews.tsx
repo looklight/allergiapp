@@ -20,7 +20,7 @@ function ReviewCard({
   onPress: () => void;
 }) {
   const date = new Date(item.created_at).toLocaleDateString(i18n.locale, {
-    day: 'numeric', month: 'short', year: 'numeric',
+    month: 'short', year: 'numeric',
   });
 
   return (

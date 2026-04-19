@@ -92,6 +92,7 @@ const SelectedPin = memo(function SelectedPin({
     <Marker
       coordinate={{ latitude, longitude }}
       tracksViewChanges
+      cluster={false}
       onPress={handlePress}
       {...(Platform.OS === 'android' && { zIndex: 9999 })}
     >

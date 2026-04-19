@@ -23,7 +23,8 @@ import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
 import { useMapSearch } from '../../hooks/useMapSearch';
 import SearchAutocomplete from '../../components/SearchAutocomplete';
-import { storage } from '../../utils/storage';
+import RecentSearches from '../../components/RecentSearches';
+import { storage, type RecentPlace } from '../../utils/storage';
 
 // ─── Selection reducer ─────────────────────────────────────────────────────
 type SelectionState = { selectedId: string | null; detailId: string | null };
@@ -114,6 +115,14 @@ export default function RestaurantsScreen() {
   // Nearby panel: quando c'è un luogo selezionato, mostriamo prima una banner
   // collassata in basso; il tap la espande nell'autocomplete nearby.
   const [nearbyExpanded, setNearbyExpanded] = useState(false);
+
+  // Cronologia delle ultime ricerche di luoghi (tap su un place nell'autocomplete o "locate me").
+  const [recentPlaces, setRecentPlaces] = useState<RecentPlace[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  useEffect(() => {
+    storage.getRecentPlaces().then(setRecentPlaces);
+  }, []);
 
   // Nasconde la tab bar quando un bottom sheet (detail o nearby) è aperto.
   useEffect(() => {
@@ -256,6 +265,8 @@ export default function RestaurantsScreen() {
     } else if (!newFmn && fmnChanged) {
       await geo.clearAndReload(false);
     }
+    // Nota: il re-fetch della lista "Ristoranti nell'area" è gestito dentro useMapSearch
+    // via useEffect reattivo su forMyNeeds/filterAllergens/filterDiets.
 
     // Auto-sync profilo se le esigenze differiscono da quelle salvate
     if (newFmn && (allergensChanged || dietsChanged)) {
@@ -274,6 +285,7 @@ export default function RestaurantsScreen() {
   const dismissAutocomplete = useCallback(() => {
     setSearchQuery('');
     setNearbyExpanded(false);
+    setIsSearchFocused(false);
     mapSearch.clear();
     Keyboard.dismiss();
   }, [mapSearch.clear]);
@@ -335,7 +347,19 @@ export default function RestaurantsScreen() {
     mapSearch.clear();
     mapSearch.selectPlace({ name, latitude: lat, longitude: lng, placeType });
     setNearbyExpanded(false);
+    setIsSearchFocused(false);
+    storage.addRecentPlace({ name, latitude: lat, longitude: lng, placeType }).then(setRecentPlaces);
   }, [geo.setCenterOn, mapSearch.clear, mapSearch.selectPlace]);
+
+  const handleSelectRecentPlace = useCallback((place: RecentPlace) => {
+    Keyboard.dismiss();
+    activateNearbyPlace(place.name, place.latitude, place.longitude, place.placeType);
+  }, [activateNearbyPlace]);
+
+  const handleClearRecentPlaces = useCallback(() => {
+    setRecentPlaces([]);
+    storage.clearRecentPlaces();
+  }, []);
 
   /** GPS → reverse-geocode → autocompila la search bar e mostra banner con i ristoranti della città rilevata. */
   const handleLocateMeAndShowCity = useCallback(async () => {
@@ -390,6 +414,12 @@ export default function RestaurantsScreen() {
     mapSearch.nearbyPlace === null &&
     searchQuery.length >= 2 &&
     (mapSearch.results.length > 0 || mapSearch.isSearching);
+
+  const recentsVisible =
+    mapSearch.nearbyPlace === null &&
+    searchQuery.length === 0 &&
+    isSearchFocused &&
+    recentPlaces.length > 0;
 
   // Applica il filtro cucina ai risultati nearby prima di passarli alla banner/sheet.
   // forMyNeeds non filtra ulteriormente: la RPC restituisce già tutti i ristoranti nel
@@ -465,6 +495,7 @@ export default function RestaurantsScreen() {
               placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={handleSearchChange}
+              onFocus={() => setIsSearchFocused(true)}
               returnKeyType="search"
               autoCorrect={false}
             />
@@ -528,6 +559,16 @@ export default function RestaurantsScreen() {
             />
           </View>
         )}
+
+        {recentsVisible && (
+          <View style={styles.autocompleteContainer}>
+            <RecentSearches
+              places={recentPlaces}
+              onSelect={handleSelectRecentPlace}
+              onClear={handleClearRecentPlaces}
+            />
+          </View>
+        )}
       </View>
 
       {showNearbyBanner && (
@@ -569,6 +610,7 @@ export default function RestaurantsScreen() {
           userLocation={geo.userLocation}
           onSelectRestaurant={handleSelectFromNearbySheet}
           onClose={handleCloseNearbySheet}
+          onAddPress={handleAddPress}
         />
       )}
 

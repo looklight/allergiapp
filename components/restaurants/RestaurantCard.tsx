@@ -128,7 +128,9 @@ export default memo(function RestaurantCard({
                       styles.matchBadgeText,
                       { color: coveredTotal >= filtersTotal ? theme.colors.success : coveredTotal === 0 ? theme.colors.textDisabled : theme.colors.amberDark },
                     ]}>
-                      {inferredTotal > 0 ? `${directTotal > 0 ? directTotal : ''}(+${inferredTotal})` : coveredTotal}/{filtersTotal}
+                      {inferredTotal > 0 ? (
+                        <>{directTotal > 0 ? directTotal : ''}<Text style={{ color: theme.colors.amberDark, fontWeight: '700' }}>+{inferredTotal}</Text> /{filtersTotal}</>
+                      ) : `${coveredTotal}/${filtersTotal}`}
                     </Text>
                   </View>
                 )}

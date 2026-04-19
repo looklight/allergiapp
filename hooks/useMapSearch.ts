@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { RestaurantService, type Restaurant } from '../services/restaurantService';
 import i18n from '../utils/i18n';
 
@@ -240,19 +240,32 @@ export function useMapSearch({
     setIsLoadingNearby(false);
   }, []);
 
-  /** Selezione di un luogo: carica ristoranti entro un raggio coerente col placeType.
-   *  Se forMyNeeds è attivo, usa l'RPC che restituisce anche il match coverage (covered/inferred). */
-  const selectPlace = useCallback(async (place: NearbyPlace) => {
+  /** Chiave dei filtri usati nell'ultimo fetch nearby: serve al useEffect per
+   *  saltare refetch quando il risultato non cambierebbe (fmn=false) o quando
+   *  i filtri correnti combaciano con quelli appena usati da selectPlace. */
+  const lastFetchKeyRef = useRef<string>('');
+
+  const computeFilterKey = (fmn: boolean, allergens: string[], diets: string[]) =>
+    fmn
+      ? `fmn:${[...allergens].sort().join(',')}|${[...diets].sort().join(',')}`
+      : 'no-fmn';
+
+  /** Esegue la query nearby per un place con i filtri correnti.
+   *  Aggiorna lastFetchKeyRef prima dell'await per evitare che il useEffect reattivo
+   *  avvii un fetch duplicato quando il render successivo osserva nearbyPlace cambiato. */
+  const fetchNearby = useCallback(async (place: NearbyPlace) => {
+    const fmn = forMyNeedsRef.current;
+    const allergens = allergensRef.current;
+    const diets = dietsRef.current;
     const seq = ++nearbySeqRef.current;
-    setNearbyPlace(place);
-    setNearbyResults([]);
+    lastFetchKeyRef.current = computeFilterKey(fmn, allergens, diets);
     setIsLoadingNearby(true);
 
     const radius = nearbyRadiusKm(place.placeType);
-    const nearby = forMyNeedsRef.current
+    const nearby = fmn
       ? await RestaurantService.getRestaurantsForMyNeeds(
           place.latitude, place.longitude,
-          allergensRef.current, dietsRef.current, radius,
+          allergens, diets, radius,
         )
       : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 50);
 
@@ -260,6 +273,26 @@ export function useMapSearch({
     setNearbyResults(nearby);
     setIsLoadingNearby(false);
   }, []);
+
+  /** Selezione di un luogo: carica ristoranti entro un raggio coerente col placeType.
+   *  Se forMyNeeds è attivo, usa l'RPC che restituisce anche il match coverage (covered/inferred). */
+  const selectPlace = useCallback(async (place: NearbyPlace) => {
+    setNearbyPlace(place);
+    setNearbyResults([]);
+    await fetchNearby(place);
+  }, [fetchNearby]);
+
+  /** Re-fetch nearby quando filtri/esigenze cambiano mentre un place è selezionato.
+   *  I badge di copertura (covered/inferred) sono calcolati server-side al momento del
+   *  fetch iniziale: senza questo effetto, qualsiasi modifica alle allergie o al toggle
+   *  "Per me" lascerebbe la lista nearby stale. Copre in modo uniforme tutti i callsite
+   *  (apply filtri, rimuovi chip "Per me", reset, sync profilo da altra schermata). */
+  useEffect(() => {
+    if (!nearbyPlace) return;
+    const key = computeFilterKey(forMyNeeds, filterAllergens, filterDiets);
+    if (key === lastFetchKeyRef.current) return;
+    fetchNearby(nearbyPlace).catch(() => {});
+  }, [forMyNeeds, filterAllergens, filterDiets, nearbyPlace, fetchNearby]);
 
   const clearNearbyPlace = useCallback(() => {
     nearbySeqRef.current++;

@@ -54,7 +54,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
             <Text style={styles.contributionAuthor}>{displayName}</Text>
             <Text style={styles.contributionDate}>
               {item.createdAt.toLocaleDateString(i18n.locale, {
-                day: 'numeric', month: 'short', year: 'numeric',
+                month: 'short', year: 'numeric',
               })}
             </Text>
           </View>

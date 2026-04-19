@@ -208,7 +208,7 @@ export default function MenuPhotosScreen() {
                     </Text>
                     <Text style={styles.uploadDate}>
                       {new Date(photo.created_at).toLocaleDateString(i18n.locale, {
-                        day: 'numeric', month: 'long', year: 'numeric',
+                        month: 'long', year: 'numeric',
                       })}
                     </Text>
                   </View>

@@ -35,7 +35,7 @@ export default function ReportsSection({ reports }: Props) {
                     <Text style={styles.author}>Utente</Text>
                     <Text style={styles.date}>
                       {new Date(report.created_at).toLocaleDateString(i18n.locale, {
-                        day: 'numeric', month: 'short', year: 'numeric',
+                        month: 'short', year: 'numeric',
                       })}
                     </Text>
                   </View>

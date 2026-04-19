@@ -182,7 +182,9 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             <Text style={[styles.compatText, { color: badgeColor }]}>
               {isNoReviews
                 ? 'Nessuna informazione sulle tue esigenze'
-                : `${inferredCount > 0 ? `${directCount > 0 ? directCount : ''}(+${inferredCount})` : matchInfo.coveredCount}/${matchInfo.totalFilters} compatibile · secondo ${matchInfo.reviewCount} ${matchInfo.reviewCount === 1 ? 'recensione' : 'recensioni'}`}
+                : inferredCount > 0
+                  ? <>{directCount > 0 ? directCount : ''}<Text style={{ color: theme.colors.amberDark, fontWeight: '700' }}>+{inferredCount}</Text> /{matchInfo!.totalFilters} compatibile · secondo {matchInfo!.reviewCount} {matchInfo!.reviewCount === 1 ? 'recensione' : 'recensioni'}</>
+                  : `${matchInfo!.coveredCount}/${matchInfo!.totalFilters} compatibile · secondo ${matchInfo!.reviewCount} ${matchInfo!.reviewCount === 1 ? 'recensione' : 'recensioni'}`}
             </Text>
             <MaterialCommunityIcons
               name={compatExpanded ? 'chevron-up' : 'chevron-down'}

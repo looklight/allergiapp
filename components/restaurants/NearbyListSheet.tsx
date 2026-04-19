@@ -13,11 +13,12 @@ import type { Restaurant } from '../../services/restaurantService';
 
 const SNAP_POINTS = [0, 0.55, 0.92];
 
-type SortKey = 'distance' | 'rating' | 'popularity';
-const SORT_OPTIONS: { key: SortKey; label: string; icon: 'map-marker-distance' | 'star' | 'comment-multiple' }[] = [
-  { key: 'distance', label: 'Distanza da me', icon: 'map-marker-distance' },
-  { key: 'rating', label: 'Valutazione', icon: 'star' },
+type SortKey = 'distance' | 'rating' | 'popularity' | 'compatibility';
+const SORT_OPTIONS: { key: SortKey; label: string; icon: string; requiresMatchInfo?: boolean }[] = [
+  { key: 'compatibility', label: 'Compatibilità', icon: 'shield-check', requiresMatchInfo: true },
   { key: 'popularity', label: 'Popolarità', icon: 'comment-multiple' },
+  { key: 'rating', label: 'Valutazione', icon: 'star' },
+  { key: 'distance', label: 'Distanza da me', icon: 'map-marker-distance' },
 ];
 
 type Props = {
@@ -29,6 +30,7 @@ type Props = {
   userLocation: { latitude: number; longitude: number } | null;
   onSelectRestaurant: (id: string) => void;
   onClose: () => void;
+  onAddPress?: () => void;
 };
 
 /** Badge compatto per la compatibilità con le esigenze dell'utente. */
@@ -49,10 +51,9 @@ function MatchBadge({ restaurant }: { restaurant: Restaurant }) {
     <View style={[styles.matchBadge, { backgroundColor: bg }]}>
       <MaterialCommunityIcons name="shield-check" size={11} color={color} />
       <Text style={[styles.matchBadgeText, { color }]}>
-        {inferredTotal > 0
-          ? `${directTotal > 0 ? directTotal : ''}(+${inferredTotal})`
-          : coveredTotal}
-        /{filtersTotal}
+        {inferredTotal > 0 ? (
+          <>{directTotal > 0 ? directTotal : ''}<Text style={{ color: theme.colors.amberDark, fontWeight: '700' }}>+{inferredTotal}</Text> /{filtersTotal}</>
+        ) : `${coveredTotal}/${filtersTotal}`}
       </Text>
     </View>
   );
@@ -67,10 +68,11 @@ export default function NearbyListSheet({
   userLocation,
   onSelectRestaurant,
   onClose,
+  onAddPress,
 }: Props) {
   const sheetRef = useRef<DraggableBottomSheetRef>(null);
   const [bodyScrollEnabled, setBodyScrollEnabled] = useState(false);
-  const [sortBy, setSortBy] = useState<SortKey>(userLocation ? 'distance' : 'rating');
+  const [sortBy, setSortBy] = useState<SortKey>(showMatchInfo ? 'compatibility' : userLocation ? 'distance' : 'rating');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const collapseScrollRef = useRef(null);
   const scrollPositionRef = useRef(0);
@@ -98,6 +100,15 @@ export default function NearbyListSheet({
         return list.sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0));
       case 'popularity':
         return list.sort((a, b) => (b.review_count ?? 0) - (a.review_count ?? 0));
+      case 'compatibility': {
+        const score = (r: Restaurant) => {
+          const total = (r.total_allergen_filters ?? 0) + (r.total_dietary_filters ?? 0);
+          if (total === 0) return -1;
+          const covered = (r.covered_allergen_count ?? 0) + (r.covered_dietary_count ?? 0);
+          return covered / total;
+        };
+        return list.sort((a, b) => score(b) - score(a));
+      }
       case 'distance':
       default:
         if (!userLocation) return list;
@@ -110,10 +121,12 @@ export default function NearbyListSheet({
   }, [results, sortBy, userLocation]);
 
   const availableSortOptions = useMemo(
-    () => SORT_OPTIONS.filter(o => o.key !== 'distance' || userLocation !== null),
-    [userLocation],
+    () => SORT_OPTIONS.filter(o =>
+      (o.key !== 'distance' || userLocation !== null) &&
+      (!o.requiresMatchInfo || showMatchInfo),
+    ),
+    [userLocation, showMatchInfo],
   );
-  const currentSort = SORT_OPTIONS.find(o => o.key === sortBy)!;
 
   // Android back chiude lo sheet
   useEffect(() => {
@@ -144,12 +157,14 @@ export default function NearbyListSheet({
         <TouchableOpacity
           onPress={() => setShowSortMenu(v => !v)}
           hitSlop={8}
-          style={[styles.sortBtn, !bodyScrollEnabled && styles.sortBtnCompact]}
+          style={styles.sortBtn}
         >
           <MaterialCommunityIcons name="sort-variant" size={18} color={theme.colors.textSecondary} />
-          {bodyScrollEnabled && (
-            <Text style={styles.sortBtnLabel} numberOfLines={1}>{currentSort.label}</Text>
-          )}
+        </TouchableOpacity>
+      )}
+      {onAddPress && !isLoading && (
+        <TouchableOpacity onPress={onAddPress} hitSlop={8} style={styles.sortBtn}>
+          <MaterialCommunityIcons name="plus" size={18} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       )}
       <TouchableOpacity onPress={handleDismiss} hitSlop={10} style={styles.closeBtn}>
@@ -226,6 +241,12 @@ export default function NearbyListSheet({
               ? `Nessun ristorante a ${place.name} corrisponde ai filtri selezionati. Prova a modificarli.`
               : `Nessun ristorante trovato nelle vicinanze di ${place.name}.`}
           </Text>
+          {onAddPress && (
+            <TouchableOpacity style={styles.addBtn} onPress={onAddPress} activeOpacity={0.7}>
+              <MaterialCommunityIcons name="plus-circle-outline" size={18} color={theme.colors.primary} />
+              <Text style={styles.addBtnText}>Aggiungi un ristorante</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <NativeViewGestureHandler ref={collapseScrollRef}>
@@ -240,6 +261,12 @@ export default function NearbyListSheet({
             scrollEventThrottle={16}
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListFooterComponent={onAddPress ? (
+              <TouchableOpacity style={styles.addFooter} onPress={onAddPress} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="plus-circle-outline" size={16} color={theme.colors.primary} />
+                <Text style={styles.addFooterText}>Manca un ristorante? Aggiungilo</Text>
+              </TouchableOpacity>
+            ) : null}
             renderItem={({ item }) => {
               const cuisineLabels = (item.cuisine_types ?? [])
                 .slice(0, 3)
@@ -330,25 +357,14 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   sortBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: theme.colors.background,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    maxWidth: 140,
-  },
-  sortBtnCompact: {
-    paddingHorizontal: 6,
-    maxWidth: undefined,
-  },
-  sortBtnLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bodyWrap: {
     flex: 1,
@@ -477,6 +493,37 @@ const styles = StyleSheet.create({
   },
   cuisineBadgeText: {
     fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  addBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  addFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 14,
+    marginTop: 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.divider,
+  },
+  addFooterText: {
+    fontSize: 13,
     fontWeight: '600',
     color: theme.colors.primary,
   },

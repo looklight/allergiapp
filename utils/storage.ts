@@ -17,7 +17,20 @@ const STORAGE_KEYS = {
   TRACKING_CONSENT: 'allergiapp_tracking_consent',
   FOR_MY_NEEDS: 'allergiapp_for_my_needs',
   DISMISSED_POPUPS: 'allergiapp_dismissed_popups',
+  RECENT_PLACES: 'allergiapp_recent_places',
 };
+
+export type RecentPlace = {
+  name: string;
+  latitude: number;
+  longitude: number;
+  placeType?: string;
+};
+
+const MAX_RECENT_PLACES = 4;
+
+const recentPlaceKey = (p: RecentPlace) =>
+  `${p.name}|${p.latitude.toFixed(3)}|${p.longitude.toFixed(3)}`;
 
 export const CURRENT_LEGAL_VERSION = '1.0';
 
@@ -357,6 +370,36 @@ export const storage = {
       }
     } catch {
       // Storage write failed silently
+    }
+  },
+
+  async getRecentPlaces(): Promise<RecentPlace[]> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.RECENT_PLACES);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async addRecentPlace(place: RecentPlace): Promise<RecentPlace[]> {
+    try {
+      const current = await this.getRecentPlaces();
+      const k = recentPlaceKey(place);
+      const filtered = current.filter(p => recentPlaceKey(p) !== k);
+      const updated = [place, ...filtered].slice(0, MAX_RECENT_PLACES);
+      await AsyncStorage.setItem(STORAGE_KEYS.RECENT_PLACES, JSON.stringify(updated));
+      return updated;
+    } catch {
+      return [];
+    }
+  },
+
+  async clearRecentPlaces(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEYS.RECENT_PLACES);
+    } catch {
+      // Storage clear failed silently
     }
   },
 };
