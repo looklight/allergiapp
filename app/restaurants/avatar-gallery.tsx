@@ -52,7 +52,7 @@ export default function AvatarGalleryScreen() {
 
   const profileColor = getProfileColor(userProfile?.profile_color ?? undefined);
   const currentAvatar = selectedId ? getAvatarById(selectedId) : undefined;
-  const initial = (userProfile?.display_name?.charAt(0) || '?').toUpperCase();
+  const initial = userProfile?.display_name?.charAt(0)?.toUpperCase();
 
   const unlockedCount = AVATARS.filter((a) => isAvatarUnlocked(a, stats)).length;
 
@@ -125,10 +125,12 @@ export default function AvatarGalleryScreen() {
           <View style={[styles.currentAvatarRing, { borderColor: profileColor.hex }]}>
             {currentAvatar?.source ? (
               <Image source={currentAvatar.source} style={styles.currentAvatarImage} />
-            ) : (
+            ) : initial ? (
               <View style={[styles.currentAvatarFallback, { backgroundColor: profileColor.hex }]}>
                 <Text style={styles.currentAvatarText}>{initial}</Text>
               </View>
+            ) : (
+              <MaterialCommunityIcons name="account-circle-outline" size={100} color={theme.colors.primary} />
             )}
           </View>
           {currentAvatar && <Text style={styles.currentAvatarName}>{currentAvatar.name}</Text>}

@@ -22,10 +22,7 @@ import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import { PROFILE_COLORS, getProfileColor } from '../../constants/profileColors';
-import DietaryNeedsEditor from '../../components/restaurants/DietaryNeedsEditor';
 import HeaderBar from '../../components/HeaderBar';
-import i18n from '../../utils/i18n';
-import type { DietaryNeeds } from '../../types';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -37,7 +34,7 @@ const toggleLayout = () =>
 export default function EditProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
+  const { user, userProfile, refreshProfile } = useAuth();
 
   const currentDisplayName = userProfile?.display_name ?? user?.displayName ?? '';
   const savedColorHex = userProfile?.profile_color ?? null;
@@ -241,19 +238,6 @@ export default function EditProfileScreen() {
         >
           Salva
         </Button>
-
-        {/* Esigenze alimentari */}
-        <Surface style={[styles.card, { marginTop: 20 }]} elevation={1}>
-          <DietaryNeedsEditor
-            initialNeeds={dietaryNeeds}
-            lang={i18n.locale}
-            onSave={async (needs: DietaryNeeds) => {
-              if (!user) return;
-              await AuthService.updateDietaryNeeds(user.uid, needs);
-              await refreshProfile();
-            }}
-          />
-        </Surface>
 
         {/* Elimina account */}
         <Button
