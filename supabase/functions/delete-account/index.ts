@@ -1,27 +1,55 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-Deno.serve(async (req) => {
-  // Preflight CORS
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
-  try {
-    // 1. Verifica che il chiamante sia autenticato
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+// Purge ricorsivo di un prefix dello storage, con paginazione.
+// Supabase storage mostra "cartelle" come entry con id=null; i file hanno id.
+async function purgePrefix(bucket: ReturnType<SupabaseClient["storage"]["from"]>, prefix: string) {
+  const pageSize = 100;
+  while (true) {
+    const { data, error } = await bucket.list(prefix, { limit: pageSize });
+    if (error) {
+      console.warn(`[delete-account] list error on ${prefix}:`, error.message);
+      return;
+    }
+    if (!data || data.length === 0) return;
+
+    const files: string[] = [];
+    const folders: string[] = [];
+    for (const entry of data) {
+      if (entry.id) files.push(`${prefix}/${entry.name}`);
+      else folders.push(`${prefix}/${entry.name}`);
     }
 
-    // 2. Client con anon key per verificare l'identita del chiamante
+    for (const sub of folders) await purgePrefix(bucket, sub);
+
+    if (files.length > 0) {
+      const { error: rmErr } = await bucket.remove(files);
+      if (rmErr) console.warn(`[delete-account] remove error on ${prefix}:`, rmErr.message);
+    }
+
+    // Se la pagina non è piena e non abbiamo cancellato nulla in questo giro,
+    // non c'è più altro da fare.
+    if (data.length < pageSize && files.length === 0) return;
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return json(401, { error: "Missing authorization" });
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -31,93 +59,49 @@ Deno.serve(async (req) => {
     });
 
     const { data: { user: caller }, error: userError } = await userClient.auth.getUser();
-    if (userError || !caller) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (userError || !caller) return json(401, { error: "Invalid token" });
 
-    // 3. Client con service_role per eliminare l'utente
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // 3b. Se target_user_id presente, verifica che il chiamante sia admin
     let body: { target_user_id?: string } = {};
     try { body = await req.json(); } catch { /* no body = self-delete */ }
 
     let targetUserId = caller.id;
     if (body.target_user_id && body.target_user_id !== caller.id) {
-      const { data: callerProfile } = await adminClient
+      const { data: callerProfile, error: profErr } = await adminClient
         .from("profiles")
         .select("role")
         .eq("id", caller.id)
-        .single();
-      if (callerProfile?.role !== "admin") {
-        return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        .maybeSingle();
+      if (profErr) {
+        console.error("[delete-account] caller profile lookup failed:", profErr);
+        return json(500, { error: `Profile lookup failed: ${profErr.message}` });
       }
+      if (callerProfile?.role !== "admin") return json(403, { error: "Forbidden" });
       targetUserId = body.target_user_id;
     }
 
-    const user = { id: targetUserId };
-
-    // 4. Elimina tutti i file dell'utente dallo Storage (best-effort, prima del cascade)
-    //    Struttura: {userId}/{type}/{restaurantId}/{file}.jpg — serve ricorsione a 2 livelli
+    // 1. Storage cleanup (best-effort, paginato). Struttura: {userId}/{type}/{restaurantId}/{file}.webp
     const bucket = adminClient.storage.from("images");
-    const topFolders = ["reviews", "dishes", "menus"];
+    const topFolders = ["reviews", "menus"];
     for (const folder of topFolders) {
-      const prefix = `${user.id}/${folder}`;
-      const { data: subFolders } = await bucket.list(prefix, { limit: 500 });
-      if (!subFolders) continue;
-      for (const sub of subFolders) {
-        if (sub.id) {
-          // È un file direttamente in questa cartella
-          await bucket.remove([`${prefix}/${sub.name}`]);
-        } else {
-          // È una sottocartella (restaurantId) — lista i file al suo interno
-          const subPath = `${prefix}/${sub.name}`;
-          const { data: files } = await bucket.list(subPath, { limit: 500 });
-          if (files && files.length > 0) {
-            const paths = files.map((f) => `${subPath}/${f.name}`);
-            await bucket.remove(paths);
-          }
-        }
-      }
+      await purgePrefix(bucket, `${targetUserId}/${folder}`);
     }
 
-    // 5. Elimina il profilo (cascade elimina favorites; SET NULL su reviews, reports)
-    const { error: profileError } = await adminClient
-      .from("profiles")
-      .delete()
-      .eq("id", user.id);
-    if (profileError) {
-      return new Response(JSON.stringify({ error: "Failed to delete profile" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 6. Elimina l'utente da auth.users
-    const { error: authError } = await adminClient.auth.admin.deleteUser(user.id);
+    // 2. Delete auth user → cascades: profiles → favorites, review_likes, cuisine_votes;
+    //    SET NULL su reviews.user_id e reports.user_id.
+    const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId);
     if (authError) {
-      return new Response(JSON.stringify({ error: "Failed to delete auth user" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("[delete-account] auth delete failed:", authError);
+      return json(500, { error: `Failed to delete auth user: ${authError.message}` });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json(200, { success: true });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("[delete-account] unhandled error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return json(500, { error: `Internal error: ${message}` });
   }
 });
