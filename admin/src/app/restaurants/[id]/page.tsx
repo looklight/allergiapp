@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { deleteRestaurantWithCleanup, deleteReviewWithCleanup, deleteReviewPhotoWithCleanup, deleteMenuPhotoWithCleanup } from '@/lib/storageCleanup';
+import { confirmDestructive } from '@/lib/confirm';
 import { flattenJoin, flattenJoinAll, flattenReportJoins } from '@/lib/flattenJoin';
-import type { Restaurant, Review, Report, ReportStatus, MenuPhoto } from '@/lib/types';
+import type { Restaurant, Review, Report, MenuPhoto } from '@/lib/types';
 import { useBusyIds } from '@/hooks/useBusyIds';
 import RestaurantHeader from './components/RestaurantHeader';
 import ReportsSection from './components/ReportsSection';
@@ -97,9 +98,9 @@ export default function RestaurantDetailPage() {
   }, [id]);
 
   // -- Azioni report --
-  const updateReportStatus = async (reportId: string, status: ReportStatus) => {
+  const dismissReport = async (reportId: string) => {
     await withBusy(reportId, async () => {
-      const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
+      const { error } = await supabase.from('reports').update({ status: 'dismissed' }).eq('id', reportId);
       if (error) {
         alert(`Errore: ${error.message}`);
         return;
@@ -168,22 +169,25 @@ export default function RestaurantDetailPage() {
 
   const deleteReviewPhoto = async (reviewId: string, photoIndex: number) => {
     if (!confirm('Eliminare questa foto dalla recensione?')) return;
-    const { error } = await deleteReviewPhotoWithCleanup(supabase, reviewId, photoIndex);
-    if (error) {
-      alert(`Errore: ${error}`);
-      return;
-    }
-    setReviews((prev) => prev.map((r) => {
-      if (r.id !== reviewId) return r;
-      const photos = [...(r.photos as any[])];
-      photos.splice(photoIndex, 1);
-      return { ...r, photos };
-    }));
+    const key = `rv_${reviewId}_${photoIndex}`;
+    await withBusy(key, async () => {
+      const { error } = await deleteReviewPhotoWithCleanup(supabase, reviewId, photoIndex);
+      if (error) {
+        alert(`Errore: ${error}`);
+        return;
+      }
+      setReviews((prev) => prev.map((r) => {
+        if (r.id !== reviewId) return r;
+        const photos = [...(r.photos as any[])];
+        photos.splice(photoIndex, 1);
+        return { ...r, photos };
+      }));
+    });
   };
 
   // -- Elimina ristorante --
   const deleteRestaurant = async () => {
-    if (!confirm(`Eliminare definitivamente "${restaurant?.name}"? Questa azione non puo essere annullata.`)) return;
+    if (!confirmDestructive(`Eliminerai definitivamente il ristorante "${restaurant?.name ?? ''}". Tutte le segnalazioni, recensioni e foto associate verranno rimosse.`)) return;
     setIsDeleting(true);
     const { error } = await deleteRestaurantWithCleanup(supabase, id);
     if (error) {
@@ -215,9 +219,10 @@ export default function RestaurantDetailPage() {
       <ReportsSection
         reports={reports}
         isBusy={isBusy}
-        onUpdateStatus={updateReportStatus}
+        onDismiss={dismissReport}
         onDeletePhoto={deleteReportedMenuPhoto}
         onDeleteReview={deleteReportedReview}
+        onDeleteRestaurant={() => deleteRestaurant()}
       />
 
       <MenuPhotosSection

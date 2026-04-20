@@ -1,16 +1,17 @@
-import type { Report, ReportStatus } from '@/lib/types';
+import type { Report } from '@/lib/types';
 import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/types';
 import Link from 'next/link';
 
 interface Props {
   reports: Report[];
   isBusy: (id: string) => boolean;
-  onUpdateStatus: (reportId: string, status: ReportStatus) => void;
+  onDismiss: (reportId: string) => void;
   onDeletePhoto: (report: Report) => void;
   onDeleteReview: (report: Report) => void;
+  onDeleteRestaurant: (report: Report) => void;
 }
 
-export default function ReportsSection({ reports, isBusy, onUpdateStatus, onDeletePhoto, onDeleteReview }: Props) {
+export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePhoto, onDeleteReview, onDeleteRestaurant }: Props) {
   if (reports.length === 0) return null;
 
   return (
@@ -20,9 +21,8 @@ export default function ReportsSection({ reports, isBusy, onUpdateStatus, onDele
         <div className="group relative">
           <button className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 text-xs font-bold flex items-center justify-center">i</button>
           <div className="hidden group-hover:block absolute left-0 top-7 z-10 w-80 bg-white border rounded-lg shadow-lg p-3 text-xs text-gray-600">
-            <strong>Elimina</strong> — rimuove il contenuto e risolve le segnalazioni associate.<br/>
-            <strong>Risolvi</strong> — segnalazione gestita.<br/>
-            <strong>Archivia</strong> — non fondata, chiusa senza azione.
+            <strong>Elimina</strong> — rimuove foto, recensione o ristorante segnalato e chiude le segnalazioni associate.<br/>
+            <strong>Ignora</strong> — segnalazione non fondata o già gestita, chiusa senza azione.
           </div>
         </div>
       </div>
@@ -69,37 +69,23 @@ export default function ReportsSection({ reports, isBusy, onUpdateStatus, onDele
                 {r.details && <p className="text-gray-600 mt-1">{r.details}</p>}
               </div>
               <div className="flex gap-2 ml-4 shrink-0">
-                {r.menu_photo_id && (
-                  <button
-                    onClick={() => onDeletePhoto(r)}
-                    disabled={isBusy(r.id)}
-                    className="text-red-600 hover:underline text-xs disabled:opacity-50"
-                  >
-                    {isBusy(r.id) ? '...' : 'Elimina foto'}
-                  </button>
-                )}
-                {r.review_id && (
-                  <button
-                    onClick={() => onDeleteReview(r)}
-                    disabled={isBusy(r.id)}
-                    className="text-red-600 hover:underline text-xs disabled:opacity-50"
-                  >
-                    {isBusy(r.id) ? '...' : 'Elimina recensione'}
-                  </button>
-                )}
                 <button
-                  onClick={() => onUpdateStatus(r.id, 'resolved')}
+                  onClick={() => {
+                    if (r.menu_photo_id) onDeletePhoto(r);
+                    else if (r.review_id) onDeleteReview(r);
+                    else onDeleteRestaurant(r);
+                  }}
                   disabled={isBusy(r.id)}
-                  className="text-green-600 hover:underline text-xs disabled:opacity-50"
+                  className="text-red-600 hover:underline text-xs disabled:opacity-50"
                 >
-                  {isBusy(r.id) ? '...' : 'Risolvi'}
+                  {isBusy(r.id) ? '...' : r.menu_photo_id ? 'Elimina foto' : r.review_id ? 'Elimina recensione' : 'Elimina ristorante'}
                 </button>
                 <button
-                  onClick={() => onUpdateStatus(r.id, 'dismissed')}
+                  onClick={() => onDismiss(r.id)}
                   disabled={isBusy(r.id)}
                   className="text-gray-600 hover:underline text-xs disabled:opacity-50"
                 >
-                  Archivia
+                  Ignora
                 </button>
               </div>
             </div>

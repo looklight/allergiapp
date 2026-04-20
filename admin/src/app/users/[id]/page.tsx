@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { deleteReviewPhotoWithCleanup, deleteMenuPhotoWithCleanup } from '@/lib/storageCleanup';
+import { confirmDestructive } from '@/lib/confirm';
 import { flattenJoinAll } from '@/lib/flattenJoin';
 import type { UserProfile, Restaurant, Review, MenuPhoto } from '@/lib/types';
 import { useBusyIds } from '@/hooks/useBusyIds';
@@ -134,8 +135,7 @@ export default function UserDetailPage() {
 
   const deleteUser = async () => {
     const name = user?.display_name || user?.email || id;
-    const input = prompt(`Eliminerai definitivamente "${name}" e tutti i suoi dati. Digita "ok" per confermare.`);
-    if (input?.trim().toLowerCase() !== 'ok') return;
+    if (!confirmDestructive(`Eliminerai definitivamente l'utente "${name}" e tutti i suoi dati.`)) return;
 
     setIsDeleting(true);
     const res = await supabase.functions.invoke('delete-account', {

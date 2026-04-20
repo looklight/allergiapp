@@ -1,6 +1,8 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Output standalone per deploy Vercel ottimale
+  outputFileTracingRoot: path.join(__dirname),
 };
 
 module.exports = nextConfig;

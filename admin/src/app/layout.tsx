@@ -15,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="it">
       <head>
         <title>AllergiApp Admin</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body>
         <AuthContext.Provider value={authState}>
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthGuard>
               <div className="flex min-h-screen">
                 <Sidebar />
-                <main className="flex-1 bg-gray-50 p-6">{children}</main>
+                <main className="flex-1 bg-gray-50 p-4 pt-20 md:p-6 md:pt-6 min-w-0">{children}</main>
               </div>
             </AuthGuard>
           )}

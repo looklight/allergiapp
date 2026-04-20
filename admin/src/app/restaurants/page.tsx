@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
 import { deleteRestaurantWithCleanup } from '@/lib/storageCleanup';
+import { confirmDestructive } from '@/lib/confirm';
 import type { Restaurant } from '@/lib/types';
 import type { MapRestaurant } from '@/components/map/RestaurantMap';
 import StatCard from '@/components/StatCard';
@@ -136,14 +137,14 @@ export default function RestaurantsPage() {
     );
   };
 
-  const deleteRestaurant = async (id: string) => {
-    if (!confirm('Eliminare definitivamente questo ristorante?')) return;
-    const { error } = await deleteRestaurantWithCleanup(supabase, id);
+  const deleteRestaurant = async (restaurant: Restaurant) => {
+    if (!confirmDestructive(`Eliminerai definitivamente il ristorante "${restaurant.name}". Tutte le segnalazioni, recensioni e foto associate verranno rimosse.`)) return;
+    const { error } = await deleteRestaurantWithCleanup(supabase, restaurant.id);
     if (error) {
       alert(`Errore durante l'eliminazione: ${error}`);
       return;
     }
-    setRestaurants((prev) => prev.filter((r) => r.id !== id));
+    setRestaurants((prev) => prev.filter((r) => r.id !== restaurant.id));
     loadStats();
   };
 
@@ -218,7 +219,7 @@ export default function RestaurantsPage() {
 
       {/* Stats cards */}
       {stats && (
-        <div className="grid grid-cols-5 gap-3 mb-5">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
           <StatCard label="Ristoranti" value={stats.restaurant_count} />
           <StatCard label="Recensioni" value={stats.review_count} />
           <StatCard label="Rating medio" value={stats.average_rating.toFixed(1)} />
@@ -229,6 +230,7 @@ export default function RestaurantsPage() {
 
       {/* Tabella */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
@@ -270,7 +272,7 @@ export default function RestaurantsPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
-                    onClick={() => deleteRestaurant(r.id)}
+                    onClick={() => deleteRestaurant(r)}
                     className="text-red-600 hover:underline text-xs"
                   >
                     Elimina
@@ -280,6 +282,7 @@ export default function RestaurantsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {loading && <p className="text-gray-500 mt-4">Caricamento...</p>}

@@ -17,8 +17,8 @@ export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
 
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
   pending: 'In attesa',
-  resolved: 'Risolta',
-  dismissed: 'Archiviata',
+  resolved: 'Eliminata',
+  dismissed: 'Ignorata',
 };
 
 export interface Restaurant {
