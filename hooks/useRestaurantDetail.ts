@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { Alert } from 'react-native';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { Alert, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
 import {
@@ -118,6 +118,19 @@ export function useRestaurantDetail(
   }, [restaurantId, user?.uid, fetchReviewsFirstPage]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // Prefetch thumbnail URLs appena i dati arrivano: riduce il lag visivo
+  // tra il mount della FlatList/ScrollView e la comparsa delle immagini.
+  useEffect(() => {
+    for (const p of menuPhotos) {
+      if (p.thumbnail_url) Image.prefetch(p.thumbnail_url).catch(() => {});
+    }
+    for (const r of rawReviews) {
+      for (const photo of r.photos ?? []) {
+        if (photo.thumbnailUrl) Image.prefetch(photo.thumbnailUrl).catch(() => {});
+      }
+    }
+  }, [menuPhotos, rawReviews]);
 
   // ─── Derived state ─────────────────────────────────────────────────────────
   const userNeedsSet = useMemo(() => {
