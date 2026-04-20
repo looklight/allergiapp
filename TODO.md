@@ -121,6 +121,27 @@ Gli utenti più attivi e contributivi dovrebbero essere riconoscibili e "premiat
 
 ---
 
+### Filtrare POI nativi della mappa (nascondere business, tenere landmark)
+**Priorità: bassa**
+
+I pin nativi di Apple Maps / Google Maps (negozi, ristoranti, bar) danno fastidio e "sporcano" la mappa, ma vanno mantenuti i luoghi di interesse (Colosseo, musei, parchi).
+
+**Android (Google Maps):**
+- Soluzione immediata: prop `customMapStyle` su `MapView` con JSON che nasconde `poi.business` e mantiene `poi.attraction`, `poi.park`, `poi.government`
+- Zero codice nativo, solo JSON in `components/RestaurantMap.native.tsx`
+
+**iOS (Apple MapKit):**
+- `react-native-maps` non espone `MKPointOfInterestFilter` (controllo granulare per categoria)
+- `showsPointsOfInterest` è solo true/false → perderebbe anche il Colosseo
+- Opzioni:
+  1. Patch nativa Swift + config plugin Expo per esporre `pointOfInterestFilter` (pulita, ~30-50 righe)
+  2. Passare a `PROVIDER_GOOGLE` anche su iOS (uniforma stile, ma richiede Google Maps iOS SDK + API key iOS, build più pesante, perde look Apple)
+  3. Accettare all-or-nothing con `showsPointsOfInterest={false}`
+
+**Approccio consigliato:** partire da (1) Android con `customMapStyle` come quick win, poi valutare patch nativa iOS se il fastidio giustifica la complessità.
+
+---
+
 ### Scheda ristorante come bottom sheet (stile Google Maps)
 **Priorità: media** — da fare dopo il merge di `feature/restaurants-v2` in `main`
 
