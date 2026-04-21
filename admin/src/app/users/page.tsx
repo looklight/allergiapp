@@ -31,18 +31,22 @@ function UserAvatar({ user }: { user: UserProfile }) {
   );
 }
 
+type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc';
+
 export default function UsersPage() {
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<SortBy>('created_desc');
 
   const fetchUsers = useCallback(async (pageNum: number) => {
     const { data } = await supabase.rpc('get_profiles_with_email', {
       page_limit: PAGE_SIZE + 1,
       page_offset: pageNum * PAGE_SIZE,
       search_query: search.trim() || null,
+      sort_by: sortBy,
     });
     return (data ?? []) as UserProfile[];
-  }, [search]);
+  }, [search, sortBy]);
 
   const { items: users, loading, hasMore, loadMore, reset } =
     usePagination<UserProfile>({ fetchPage: fetchUsers });
@@ -50,7 +54,7 @@ export default function UsersPage() {
   useEffect(() => {
     reset();
     safeCount(() => supabase.from('profiles').select('*', { count: 'exact', head: true })).then(setTotalCount);
-  }, [search]);
+  }, [search, sortBy]);
 
   return (
     <div>
@@ -59,13 +63,24 @@ export default function UsersPage() {
         {totalCount !== null && <span className="text-gray-400 text-sm">({totalCount})</span>}
       </div>
 
-      <input
-        type="text"
-        placeholder="Cerca per nome o email..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full max-w-md px-4 py-2 mb-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-      />
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="Cerca per nome o email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 max-w-md px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+        />
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortBy)}
+          className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        >
+          <option value="created_desc">Più recenti</option>
+          <option value="reviews_desc">Più recensioni</option>
+          <option value="reviews_asc">Meno recensioni</option>
+        </select>
+      </div>
 
       {/* Desktop: tabella */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
