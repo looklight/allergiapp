@@ -21,7 +21,7 @@ import i18n from '../../utils/i18n';
 import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
 import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
-import { useMapSearch } from '../../hooks/useMapSearch';
+import { useMapSearch, MIN_PLACE_QUERY_LENGTH } from '../../hooks/useMapSearch';
 import SearchAutocomplete from '../../components/SearchAutocomplete';
 import RecentSearches from '../../components/RecentSearches';
 import { storage, type RecentPlace } from '../../utils/storage';
@@ -282,13 +282,26 @@ export default function RestaurantsScreen() {
     }
   }, [forMyNeeds, filterAllergens, filterDiets, dietaryNeeds, geo.clearAndReload, handleSyncProfile]);
 
+  /** Query in attesa di auto-selezione da invio tastiera (v. handleSearchSubmit sotto). */
+  const pendingEnterQueryRef = useRef<string | null>(null);
+  const pendingEnterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearPendingEnter = useCallback(() => {
+    pendingEnterQueryRef.current = null;
+    if (pendingEnterTimerRef.current) {
+      clearTimeout(pendingEnterTimerRef.current);
+      pendingEnterTimerRef.current = null;
+    }
+  }, []);
+
   const dismissAutocomplete = useCallback(() => {
     setSearchQuery('');
     setNearbyExpanded(false);
     setIsSearchFocused(false);
     mapSearch.clear();
+    clearPendingEnter();
     Keyboard.dismiss();
-  }, [mapSearch.clear]);
+  }, [mapSearch.clear, clearPendingEnter]);
 
   // Chiude la vista "Ristoranti nell'area" e riporta la search a stato vuoto.
   const handleClearNearbyPlace = useCallback(() => {
@@ -384,6 +397,46 @@ export default function RestaurantsScreen() {
       geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta: zoomForPlaceType(placeType) });
     }
   }, [geo.setCenterOn, activateNearbyPlace]);
+
+  /** Seleziona il primo risultato di tipo 'place' se presente. Ritorna true se ha selezionato. */
+  const selectFirstPlaceIfAny = useCallback((): boolean => {
+    const p = mapSearch.results.find((r) => r.type === 'place');
+    if (!p || p.type !== 'place') return false;
+    handleSelectPlace(p.latitude, p.longitude, p.placeType, p.name);
+    return true;
+  }, [mapSearch.results, handleSelectPlace]);
+
+  /** Invio sulla tastiera: pattern "Google-like" → seleziona automaticamente il primo
+   *  risultato della sezione Luoghi. Se i risultati non sono ancora arrivati (debounce
+   *  o fetch in volo), forziamo la ricerca immediata e memorizziamo la query in attesa:
+   *  quando i place results si popolano per quella stessa query, l'effetto sotto
+   *  completa la selezione. Il match su searchQuery invalida l'attesa se l'utente
+   *  ricomincia a digitare dopo aver premuto invio. */
+  const handleSearchSubmit = useCallback(() => {
+    const q = searchQuery;
+    if (q.length < MIN_PLACE_QUERY_LENGTH) return;
+
+    if (selectFirstPlaceIfAny()) {
+      clearPendingEnter();
+      return;
+    }
+
+    clearPendingEnter();
+    pendingEnterQueryRef.current = q;
+    mapSearch.search(q, { immediate: true });
+
+    // Safety net: se dopo 6s i risultati non sono arrivati (Nominatim + Photon falliti
+    // o rete assente), abbandoniamo l'attesa per non intrappolare il prossimo invio.
+    pendingEnterTimerRef.current = setTimeout(() => {
+      if (pendingEnterQueryRef.current === q) clearPendingEnter();
+    }, 6000);
+  }, [searchQuery, selectFirstPlaceIfAny, clearPendingEnter, mapSearch.search]);
+
+  useEffect(() => {
+    const pending = pendingEnterQueryRef.current;
+    if (!pending || pending !== searchQuery) return;
+    if (selectFirstPlaceIfAny()) clearPendingEnter();
+  }, [mapSearch.results, searchQuery, selectFirstPlaceIfAny, clearPendingEnter]);
 
   const handleDeselect = useCallback(() => {
     dispatch({ type: 'DESELECT' });
@@ -509,6 +562,7 @@ export default function RestaurantsScreen() {
               value={searchQuery}
               onChangeText={handleSearchChange}
               onFocus={() => setIsSearchFocused(true)}
+              onSubmitEditing={handleSearchSubmit}
               returnKeyType="search"
               autoCorrect={false}
             />
