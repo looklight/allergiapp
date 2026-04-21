@@ -31,7 +31,18 @@ function UserAvatar({ user }: { user: UserProfile }) {
   );
 }
 
-type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc';
+type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc' | 'last_sign_in_desc';
+
+function formatLastSignIn(iso: string | null | undefined): string {
+  if (!iso) return 'Mai';
+  const then = new Date(iso).getTime();
+  const diffMs = Date.now() - then;
+  const day = 86400000;
+  if (diffMs < day) return 'Oggi';
+  if (diffMs < 2 * day) return 'Ieri';
+  if (diffMs < 30 * day) return `${Math.floor(diffMs / day)} gg fa`;
+  return new Date(iso).toLocaleDateString('it-IT');
+}
 
 export default function UsersPage() {
   const [totalCount, setTotalCount] = useState<number | null>(null);
@@ -79,6 +90,7 @@ export default function UsersPage() {
           ['created_desc', 'Più recenti'],
           ['reviews_desc', 'Più recensioni'],
           ['reviews_asc', 'Meno recensioni'],
+          ['last_sign_in_desc', 'Accesso recente'],
         ] as const).map(([value, label]) => (
           <button
             key={value}
@@ -120,6 +132,18 @@ export default function UsersPage() {
                 <th className="px-4 py-3 font-medium">
                   <button
                     type="button"
+                    onClick={() => setSortBy('last_sign_in_desc')}
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                  >
+                    Ultimo accesso
+                    <span className="text-gray-400 text-xs w-3 text-center">
+                      {sortBy === 'last_sign_in_desc' ? '▼' : ''}
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-3 font-medium">
+                  <button
+                    type="button"
                     onClick={() => setSortBy('created_desc')}
                     className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
                   >
@@ -140,6 +164,14 @@ export default function UsersPage() {
                       <span className="text-blue-600 group-hover:underline">
                         {u.display_name || 'Anonimo'}
                       </span>
+                      {!u.email_confirmed_at && (
+                        <span
+                          title="Email non verificata"
+                          className="text-amber-500 text-xs"
+                        >
+                          ⚠
+                        </span>
+                      )}
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-500">{u.email ?? '—'}</td>
@@ -156,6 +188,9 @@ export default function UsersPage() {
                     ) : (
                       <span className="text-gray-300">0</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {formatLastSignIn(u.last_sign_in_at)}
                   </td>
                   <td className="px-4 py-3 text-gray-500">
                     {new Date(u.created_at).toLocaleDateString('it-IT')}
@@ -181,6 +216,9 @@ export default function UsersPage() {
                 <span className="text-blue-600 font-medium text-sm truncate">
                   {u.display_name || 'Anonimo'}
                 </span>
+                {!u.email_confirmed_at && (
+                  <span title="Email non verificata" className="text-amber-500 text-xs shrink-0">⚠</span>
+                )}
                 {u.role === 'admin' && (
                   <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800 shrink-0">Admin</span>
                 )}
@@ -191,7 +229,7 @@ export default function UsersPage() {
               <p className="text-xs text-gray-400 mt-0.5">
                 {(u.reviews_count ?? 0)} {(u.reviews_count ?? 0) === 1 ? 'recensione' : 'recensioni'}
                 {' · '}
-                {new Date(u.created_at).toLocaleDateString('it-IT')}
+                Accesso {formatLastSignIn(u.last_sign_in_at).toLowerCase()}
               </p>
             </div>
           </Link>

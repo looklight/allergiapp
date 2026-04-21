@@ -21,39 +21,27 @@ interface CountryStats {
   city_count: number;
 }
 
+type SortBy = 'created_desc' | 'city_asc' | 'reviews_desc';
+
 export default function RestaurantsPage() {
   const [countries, setCountries] = useState<{ code: string; name: string; count: number }[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [stats, setStats] = useState<CountryStats | null>(null);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<SortBy>('created_desc');
   const [showMap, setShowMap] = useState(false);
   const [mapRestaurants, setMapRestaurants] = useState<MapRestaurant[]>([]);
 
   const fetchRestaurants = useCallback(async (pageNum: number) => {
-    let query = supabase
-      .from('restaurants')
-      .select('id, name, address, city, country, country_code, cuisine_types, created_at, reviews(count), menu_photos(count)')
-      .order('created_at', { ascending: false })
-      .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
-
-    if (countryFilter !== 'all') {
-      query = query.eq('country_code', countryFilter);
-    }
-
-    if (search.trim()) {
-      const term = `%${search.trim()}%`;
-      query = query.or(`name.ilike.${term},city.ilike.${term}`);
-    }
-
-    const { data } = await query;
-    return (data ?? []).map((r: any) => ({
-      ...r,
-      review_count: r.reviews?.[0]?.count ?? 0,
-      menu_photo_count: r.menu_photos?.[0]?.count ?? 0,
-      reviews: undefined,
-      menu_photos: undefined,
-    })) as Restaurant[];
-  }, [countryFilter, search]);
+    const { data } = await supabase.rpc('get_restaurants_admin', {
+      page_limit: PAGE_SIZE + 1,
+      page_offset: pageNum * PAGE_SIZE,
+      country_filter: countryFilter === 'all' ? null : countryFilter,
+      search_query: search.trim() || null,
+      sort_by: sortBy,
+    });
+    return (data ?? []) as Restaurant[];
+  }, [countryFilter, search, sortBy]);
 
   const { items: restaurants, setItems: setRestaurants, loading, hasMore, loadMore, reset } =
     usePagination<Restaurant>({ fetchPage: fetchRestaurants });
@@ -103,7 +91,7 @@ export default function RestaurantsPage() {
     reset();
     loadStats();
     if (showMap) loadMapData();
-  }, [countryFilter, search]);
+  }, [countryFilter, search, sortBy]);
 
   const loadMapData = async () => {
     // RPC restituisce id + lat/lng (leggera)
@@ -235,11 +223,45 @@ export default function RestaurantsPage() {
           <thead className="bg-gray-50 text-left">
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
-              <th className="px-4 py-3 font-medium">Citta</th>
+              <th className="px-4 py-3 font-medium">
+                <button
+                  type="button"
+                  onClick={() => setSortBy('city_asc')}
+                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                >
+                  Citta
+                  <span className="text-gray-400 text-xs w-3 text-center">
+                    {sortBy === 'city_asc' ? '▲' : ''}
+                  </span>
+                </button>
+              </th>
               {countryFilter === 'all' && <th className="px-4 py-3 font-medium">Paese</th>}
               <th className="px-4 py-3 font-medium">Cucina</th>
-              <th className="px-4 py-3 font-medium text-center">Media</th>
-              <th className="px-4 py-3 font-medium">Data</th>
+              <th className="px-4 py-3 font-medium text-right">
+                <button
+                  type="button"
+                  onClick={() => setSortBy('reviews_desc')}
+                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                >
+                  Recensioni
+                  <span className="text-gray-400 text-xs w-3 text-center">
+                    {sortBy === 'reviews_desc' ? '▼' : ''}
+                  </span>
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium text-center">Foto</th>
+              <th className="px-4 py-3 font-medium">
+                <button
+                  type="button"
+                  onClick={() => setSortBy('created_desc')}
+                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                >
+                  Data
+                  <span className="text-gray-400 text-xs w-3 text-center">
+                    {sortBy === 'created_desc' ? '▼' : ''}
+                  </span>
+                </button>
+              </th>
               <th className="px-4 py-3 font-medium text-right">Azioni</th>
             </tr>
           </thead>
@@ -256,13 +278,16 @@ export default function RestaurantsPage() {
                 <td className="px-4 py-3 text-gray-500">
                   {r.cuisine_types?.join(', ') || '—'}
                 </td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {(r.review_count ?? 0) > 0 ? (
+                    <span className="font-medium text-gray-700">{r.review_count}</span>
+                  ) : (
+                    <span className="text-gray-300">0</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-center">
-                  {((r.review_count ?? 0) > 0 || (r.menu_photo_count ?? 0) > 0) ? (
-                    <span className="text-xs text-gray-500">
-                      {(r.review_count ?? 0) > 0 && <span title="Foto recensioni">{r.review_count} foto</span>}
-                      {(r.review_count ?? 0) > 0 && (r.menu_photo_count ?? 0) > 0 && ' · '}
-                      {(r.menu_photo_count ?? 0) > 0 && <span title="Foto menu">{r.menu_photo_count} menu</span>}
-                    </span>
+                  {(r.menu_photo_count ?? 0) > 0 ? (
+                    <span className="text-xs text-gray-500" title="Foto menu">{r.menu_photo_count}</span>
                   ) : (
                     <span className="text-gray-300 text-xs">—</span>
                   )}
