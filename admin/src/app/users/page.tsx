@@ -63,23 +63,35 @@ export default function UsersPage() {
         {totalCount !== null && <span className="text-gray-400 text-sm">({totalCount})</span>}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+      <div className="mb-4">
         <input
           type="text"
           placeholder="Cerca per nome o email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 max-w-md px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+          className="w-full max-w-md px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
         />
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
-        >
-          <option value="created_desc">Più recenti</option>
-          <option value="reviews_desc">Più recensioni</option>
-          <option value="reviews_asc">Meno recensioni</option>
-        </select>
+      </div>
+
+      {/* Mobile: chip di ordinamento (sul desktop si usano gli header della tabella) */}
+      <div className="md:hidden flex gap-2 mb-3 overflow-x-auto">
+        {([
+          ['created_desc', 'Più recenti'],
+          ['reviews_desc', 'Più recensioni'],
+          ['reviews_asc', 'Meno recensioni'],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            onClick={() => setSortBy(value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border ${
+              sortBy === value
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-600 border-gray-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Desktop: tabella */}
@@ -91,8 +103,32 @@ export default function UsersPage() {
                 <th className="px-4 py-3 font-medium">Utente</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Ruolo</th>
-                <th className="px-4 py-3 font-medium text-right">Recensioni</th>
-                <th className="px-4 py-3 font-medium">Registrazione</th>
+                <th className="px-4 py-3 font-medium text-right">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSortBy(sortBy === 'reviews_desc' ? 'reviews_asc' : 'reviews_desc')
+                    }
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                  >
+                    Recensioni
+                    <span className="text-gray-400 text-xs w-3 text-center">
+                      {sortBy === 'reviews_desc' ? '▼' : sortBy === 'reviews_asc' ? '▲' : ''}
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-3 font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setSortBy('created_desc')}
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                  >
+                    Registrazione
+                    <span className="text-gray-400 text-xs w-3 text-center">
+                      {sortBy === 'created_desc' ? '▼' : ''}
+                    </span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
