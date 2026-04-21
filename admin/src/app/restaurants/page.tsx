@@ -249,7 +249,8 @@ export default function RestaurantsPage() {
                   </span>
                 </button>
               </th>
-              <th className="px-4 py-3 font-medium text-center">Foto</th>
+              <th className="px-4 py-3 font-medium text-right" title="Foto nelle recensioni">Foto</th>
+              <th className="px-4 py-3 font-medium text-right" title="Foto del menu">Menu</th>
               <th className="px-4 py-3 font-medium">
                 <button
                   type="button"
@@ -268,8 +269,12 @@ export default function RestaurantsPage() {
           <tbody>
             {restaurants.map((r) => (
               <tr key={r.id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
+                <td className="px-4 py-3 max-w-[220px]">
+                  <Link
+                    href={`/restaurants/${r.id}`}
+                    className="text-blue-600 hover:underline block truncate"
+                    title={r.name}
+                  >
                     {r.name}
                   </Link>
                 </td>
@@ -285,12 +290,11 @@ export default function RestaurantsPage() {
                     <span className="text-gray-300">0</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-center">
-                  {(r.menu_photo_count ?? 0) > 0 ? (
-                    <span className="text-xs text-gray-500" title="Foto menu">{r.menu_photo_count}</span>
-                  ) : (
-                    <span className="text-gray-300 text-xs">—</span>
-                  )}
+                <td className="px-4 py-3 text-right tabular-nums text-gray-500">
+                  {(r.review_photo_count ?? 0) > 0 ? r.review_photo_count : <span className="text-gray-300">—</span>}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums text-gray-500">
+                  {(r.menu_photo_count ?? 0) > 0 ? r.menu_photo_count : <span className="text-gray-300">—</span>}
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-xs">
                   {new Date(r.created_at).toLocaleDateString('it-IT')}
@@ -298,9 +302,16 @@ export default function RestaurantsPage() {
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => deleteRestaurant(r)}
-                    className="text-red-600 hover:underline text-xs"
+                    className="text-red-600 hover:text-red-800 p-1 -m-1"
+                    title="Elimina ristorante"
+                    aria-label="Elimina ristorante"
                   >
-                    Elimina
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
                   </button>
                 </td>
               </tr>

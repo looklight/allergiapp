@@ -41,6 +41,7 @@ export interface Restaurant {
   updated_at: string;
   // Aggregati (calcolati nelle query)
   review_count?: number;
+  review_photo_count?: number;
   menu_photo_count?: number;
   average_rating?: number;
   favorite_count?: number;

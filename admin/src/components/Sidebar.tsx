@@ -118,7 +118,7 @@ export default function Sidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 bg-gray-900 text-white h-screen sticky top-0 flex-col">
+      <aside className="hidden md:flex w-48 bg-gray-900 text-white h-screen sticky top-0 flex-col">
         {navBody}
       </aside>
     </>

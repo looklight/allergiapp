@@ -3,20 +3,24 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { safeCount } from '@/lib/safeQuery';
+import { resolveAvatarSrc } from '@/lib/avatar';
 import type { UserProfile } from '@/lib/types';
 import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import Link from 'next/link';
 
 function UserAvatar({ user }: { user: UserProfile }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const initial = (user.display_name || user.email || '?').trim().charAt(0).toUpperCase();
   const bg = user.profile_color || '#9CA3AF';
+  const src = resolveAvatarSrc(user.avatar_url);
 
-  if (user.avatar_url) {
+  if (src && !imgFailed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={user.avatar_url}
+        src={src}
         alt=""
+        onError={() => setImgFailed(true)}
         className="w-9 h-9 rounded-full object-cover bg-gray-100"
       />
     );
