@@ -92,7 +92,6 @@ export default function ProfileScreen() {
         stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: favoriteCount }}
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
-        onEditDietary={() => router.push('/restaurants/edit-dietary')}
         headerRight={
           <TouchableOpacity onPress={handleLogout} hitSlop={8} activeOpacity={0.6}>
             <MaterialCommunityIcons name="logout" size={22} color={theme.colors.onPrimary} />

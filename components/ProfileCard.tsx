@@ -20,17 +20,16 @@ interface ProfileCardProps {
   stats?: ProfileStats;
   onBack: () => void;
   onEdit?: () => void;
-  onEditDietary?: () => void;
   title?: string;
   headerRight?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, title = 'Profilo', headerRight, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, onBack, onEdit, title = 'Profilo', headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
 
   const avatarOption = profile.avatar_url ? getAvatarById(profile.avatar_url) : undefined;
-  const initial = profile.display_name?.charAt(0)?.toUpperCase();
+  const initial = (profile.display_name?.charAt(0) || '?').toUpperCase();
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })
@@ -56,12 +55,10 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
           <View style={styles.profileRow}>
             {avatarOption?.source ? (
               <Image source={avatarOption.source} style={styles.avatarImage} />
-            ) : initial ? (
+            ) : (
               <View style={styles.avatarFallback}>
                 <Text style={styles.avatarText}>{initial}</Text>
               </View>
-            ) : (
-              <MaterialCommunityIcons name="account-circle-outline" size={AVATAR_SIZE} color={theme.colors.primary} />
             )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
@@ -104,20 +101,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
           {((profile.allergens?.length ?? 0) > 0 || (profile.dietary_preferences?.length ?? 0) > 0) && (
             <>
               <View style={styles.divider} />
-              <View style={styles.dietaryHeaderRow}>
-                <Text style={styles.allergensLabel}>Profilo alimentare</Text>
-                {onEditDietary && (
-                  <TouchableOpacity
-                    onPress={onEditDietary}
-                    hitSlop={8}
-                    activeOpacity={0.6}
-                    style={styles.dietaryEditButton}
-                  >
-                    <MaterialCommunityIcons name="pencil-outline" size={14} color={theme.colors.primary} />
-                    <Text style={styles.dietaryEditButtonText}>Modifica</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+              <Text style={styles.allergensLabel}>Profilo alimentare</Text>
               <DietaryNeedsChips
                 allergens={profile.allergens ?? []}
                 diets={profile.dietary_preferences ?? []}
@@ -239,25 +223,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textSecondary,
-  },
-  dietaryHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 10,
-  },
-  dietaryEditButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryLight,
-  },
-  dietaryEditButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
   },
 });
