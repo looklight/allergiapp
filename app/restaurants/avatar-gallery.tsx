@@ -8,6 +8,7 @@ import {
   Modal,
   Pressable,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -26,8 +27,8 @@ import {
   RARITY_LABELS,
   type AvatarOption,
 } from '../../constants/avatars';
-import { getProfileColor } from '../../constants/profileColors';
 import HeaderBar from '../../components/HeaderBar';
+import Avatar from '../../components/Avatar';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_PADDING = 16;
@@ -50,9 +51,7 @@ export default function AvatarGalleryScreen() {
   const [detailAvatar, setDetailAvatar] = useState<AvatarOption | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const profileColor = getProfileColor(userProfile?.profile_color ?? undefined);
   const currentAvatar = selectedId ? getAvatarById(selectedId) : undefined;
-  const initial = userProfile?.display_name?.charAt(0)?.toUpperCase();
 
   const unlockedCount = AVATARS.filter((a) => isAvatarUnlocked(a, stats)).length;
 
@@ -84,6 +83,17 @@ export default function AvatarGalleryScreen() {
         setDetailAvatar(avatar);
         return;
       }
+      if (userProfile?.is_anonymous) {
+        Alert.alert(
+          'Modalità anonima attiva',
+          'Per scegliere un avatar disattiva la modalità anonima nel tuo profilo.',
+          [
+            { text: 'Annulla', style: 'cancel' },
+            { text: 'Vai al profilo', onPress: () => router.push('/restaurants/edit-profile') },
+          ],
+        );
+        return;
+      }
       // Se è già selezionato, non fare nulla
       if (selectedId === avatar.id) return;
 
@@ -99,7 +109,7 @@ export default function AvatarGalleryScreen() {
         setSaving(false);
       }
     },
-    [user?.uid, saving, stats, selectedId, userProfile?.avatar_url, refreshProfile],
+    [user?.uid, saving, stats, selectedId, userProfile?.avatar_url, userProfile?.is_anonymous, refreshProfile, router],
   );
 
   const renderProgressLabel = (avatar: AvatarOption) => {
@@ -116,22 +126,35 @@ export default function AvatarGalleryScreen() {
 
       <HeaderBar title="I miei Avatar" />
 
+      {userProfile?.is_anonymous && (
+        <View style={styles.anonymousBanner}>
+          <MaterialCommunityIcons name="incognito" size={20} color={theme.colors.textSecondary} />
+          <Text style={styles.anonymousBannerText}>
+            In modalità anonima il tuo avatar non è visibile agli altri.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/restaurants/edit-profile')}
+            hitSlop={8}
+            activeOpacity={0.6}
+          >
+            <Text style={styles.anonymousBannerCta}>Modifica</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
       >
         {/* Avatar attuale */}
         <View style={styles.currentSection}>
-          <View style={[styles.currentAvatarRing, { borderColor: profileColor.hex }]}>
-            {currentAvatar?.source ? (
-              <Image source={currentAvatar.source} style={styles.currentAvatarImage} />
-            ) : initial ? (
-              <View style={[styles.currentAvatarFallback, { backgroundColor: profileColor.hex }]}>
-                <Text style={styles.currentAvatarText}>{initial}</Text>
-              </View>
-            ) : (
-              <MaterialCommunityIcons name="account-circle-outline" size={100} color={theme.colors.primary} />
-            )}
+          <View style={[styles.currentAvatarRing, { borderColor: theme.colors.primary }]}>
+            <Avatar
+              avatarId={selectedId}
+              isAnonymous={userProfile?.is_anonymous}
+              initial={userProfile?.display_name ?? undefined}
+              size="lg"
+            />
           </View>
           {currentAvatar && <Text style={styles.currentAvatarName}>{currentAvatar.name}</Text>}
           <Text style={styles.unlockedCounter}>
@@ -318,21 +341,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   scroll: {
     flex: 1,
+  },
+
+  // ── Anonymous banner ────────────────────────────────
+  anonymousBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.amberLight,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.amberBorder,
+  },
+  anonymousBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: theme.colors.amberText,
+    lineHeight: 18,
+  },
+  anonymousBannerCta: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.primary,
   },
 
   // ── Current avatar ──────────────────────────────────
@@ -349,23 +382,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-  },
-  currentAvatarImage: {
-    width: 100,
-    height: 100,
-    resizeMode: 'contain',
-  },
-  currentAvatarFallback: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  currentAvatarText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: theme.colors.onPrimary,
   },
   currentAvatarName: {
     fontSize: 18,

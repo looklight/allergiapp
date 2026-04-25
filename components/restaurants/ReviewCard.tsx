@@ -4,8 +4,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
-import { getAvatarById } from '../../constants/avatars';
 import StarRating from '../StarRating';
+import Avatar from '../Avatar';
 import i18n from '../../utils/i18n';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
@@ -20,14 +20,10 @@ interface ReviewCardProps {
   isOwnReview?: boolean;
 }
 
-const getInitial = (name: string | null) => ((name ?? '?').charAt(0) || '?').toUpperCase();
-
-
 const REVIEW_PHOTO_SIZE = 80;
 
 export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview }: ReviewCardProps) {
   const router = useRouter();
-  const avatarSource = item.avatarUrl ? getAvatarById(item.avatarUrl)?.source : null;
   const displayName = item.isAnonymous ? getAnonymousLabel(item.userId) : (item.displayName ?? getAnonymousLabel(item.userId));
   const canNavigateToProfile = !!item.userId && !item.isAnonymous;
 
@@ -41,15 +37,12 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
           disabled={!canNavigateToProfile}
           onPress={() => canNavigateToProfile && router.push(`/restaurants/user/${item.userId}`)}
         >
-          {avatarSource ? (
-            <Image source={avatarSource} style={styles.avatarImage} resizeMode="contain" />
-          ) : (
-            <View style={[styles.avatar, item.profileColor ? { backgroundColor: item.profileColor } : null]}>
-              <Text style={[styles.avatarText, item.profileColor ? styles.avatarTextOnColor : null]}>
-                {getInitial(item.isAnonymous ? null : item.displayName)}
-              </Text>
-            </View>
-          )}
+          <Avatar
+            avatarId={item.avatarUrl}
+            isAnonymous={item.isAnonymous}
+            initial={item.isAnonymous ? undefined : item.displayName ?? undefined}
+            size="sm"
+          />
           <View style={styles.contributionMeta}>
             <Text style={styles.contributionAuthor}>{displayName}</Text>
             <Text style={styles.contributionDate}>
@@ -150,26 +143,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     flex: 1,
-  },
-  avatarImage: {
-    width: 40,
-    height: 40,
-  },
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  avatarTextOnColor: {
-    color: '#FFF',
   },
   contributionMeta: {
     flex: 1,

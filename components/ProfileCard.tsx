@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
-import { getAvatarById } from '../constants/avatars';
 import { getRestrictionById } from '../constants/foodRestrictions';
 import i18n from '../utils/i18n';
 import type { UserProfile } from '../services/auth';
+import Avatar from './Avatar';
 
 interface ProfileStats {
   restaurants: number;
@@ -28,9 +28,6 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, title = 'Profilo', headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
-
-  const avatarOption = profile.avatar_url ? getAvatarById(profile.avatar_url) : undefined;
-  const initial = profile.display_name?.charAt(0)?.toUpperCase();
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })
@@ -54,15 +51,12 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
         {/* Profilo: avatar + nome in riga, stile Airbnb */}
         <Surface style={styles.profileCard} elevation={1}>
           <View style={styles.profileRow}>
-            {avatarOption?.source ? (
-              <Image source={avatarOption.source} style={styles.avatarImage} />
-            ) : initial ? (
-              <View style={styles.avatarFallback}>
-                <Text style={styles.avatarText}>{initial}</Text>
-              </View>
-            ) : (
-              <MaterialCommunityIcons name="account-circle-outline" size={AVATAR_SIZE} color={theme.colors.primary} />
-            )}
+            <Avatar
+              avatarId={profile.avatar_url}
+              isAnonymous={profile.is_anonymous}
+              initial={profile.display_name ?? undefined}
+              size="lg"
+            />
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
                 <Text style={styles.displayName}>{profile.display_name || 'Utente'}</Text>
@@ -141,8 +135,6 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
   );
 }
 
-const AVATAR_SIZE = 100;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -177,24 +169,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-  },
-  avatarImage: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    resizeMode: 'contain',
-  },
-  avatarFallback: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: theme.colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.primary,
   },
   profileText: {
     flex: 1,

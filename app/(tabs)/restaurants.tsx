@@ -6,8 +6,7 @@ import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { theme } from '../../constants/theme';
-import { getAvatarById } from '../../constants/avatars';
-import { getProfileColor } from '../../constants/profileColors';
+import Avatar from '../../components/Avatar';
 import { type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
@@ -533,24 +532,12 @@ export default function RestaurantsScreen() {
         <View style={styles.floatingSearchRow}>
           <View style={styles.floatingSearchContainer}>
             <TouchableOpacity onPress={() => router.push('/restaurants/profile')} activeOpacity={0.85} style={styles.avatarButton}>
-              {(() => {
-                const avatarObj = userProfile?.avatar_url ? getAvatarById(userProfile.avatar_url) : undefined;
-                const profileColor = getProfileColor(userProfile?.profile_color ?? undefined);
-                const initial = userProfile?.display_name?.charAt(0)?.toUpperCase();
-                if (avatarObj?.source) {
-                  return <Image source={avatarObj.source} style={styles.avatarImage} />;
-                }
-                if (isAuthenticated && initial) {
-                  return (
-                    <View style={[styles.avatarFallback, { backgroundColor: profileColor.hex }]}>
-                      <Text style={styles.avatarInitial}>{initial}</Text>
-                    </View>
-                  );
-                }
-                return (
-                  <MaterialCommunityIcons name="account-circle-outline" size={32} color={theme.colors.primary} />
-                );
-              })()}
+              <Avatar
+                avatarId={userProfile?.avatar_url}
+                isAnonymous={userProfile?.is_anonymous}
+                initial={isAuthenticated ? userProfile?.display_name ?? undefined : undefined}
+                size="sm"
+              />
             </TouchableOpacity>
             <TextInput
               style={styles.searchInput}
@@ -784,23 +771,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarImage: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-  },
-  avatarFallback: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.onPrimary,
   },
   searchInput: {
     flex: 1,

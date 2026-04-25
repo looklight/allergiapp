@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
 import {
-  Modal, View, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView,
+  Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView,
   useWindowDimensions, type ViewToken,
 } from 'react-native';
 import ReAnimated, {
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import StarRating from '../StarRating';
 import { getRestrictionById, type FoodRestrictionCategory } from '../../constants/foodRestrictions';
-import { getAvatarById } from '../../constants/avatars';
+import Avatar from '../Avatar';
 import i18n from '../../utils/i18n';
 
 export interface GalleryPhoto {
@@ -23,7 +23,6 @@ export interface GalleryPhoto {
   reviewId?: string;
   displayName: string;
   avatarUrl?: string | null;
-  profileColor?: string | null;
   rating?: number;
   text?: string;
   allergensSnapshot?: string[];
@@ -56,9 +55,6 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
-  const currentAvatarSource = photos[currentIndex]?.avatarUrl
-    ? getAvatarById(photos[currentIndex].avatarUrl!)?.source
-    : null;
 
   // ─── Swipe-to-dismiss (Reanimated) ──────────────────────────────
   const translateY = useSharedValue(0);
@@ -159,15 +155,12 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
             <View style={[styles.infoOverlay, { paddingBottom: insets.bottom + 16 }]}>
               {/* Reviewer info */}
               <View style={styles.infoRow}>
-                {currentAvatarSource ? (
-                  <Image source={currentAvatarSource} style={styles.infoAvatarImage} />
-                ) : (
-                  <View style={[styles.infoAvatar, current.profileColor ? { backgroundColor: current.profileColor } : null]}>
-                    <Text style={styles.infoAvatarText}>
-                      {(current.displayName.charAt(0) || '?').toUpperCase()}
-                    </Text>
-                  </View>
-                )}
+                <Avatar
+                  avatarId={current.avatarUrl}
+                  initial={current.displayName}
+                  size="xs"
+                  backgroundColor={theme.colors.primary}
+                />
                 <View style={styles.infoMeta}>
                   <Text style={styles.infoName}>{current.displayName}</Text>
                   {current.rating != null && current.rating > 0 && (
@@ -266,24 +259,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  infoAvatarImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  infoAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoAvatarText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFF',
   },
   infoMeta: {
     flex: 1,

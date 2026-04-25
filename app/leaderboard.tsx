@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Image, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
-import { getAvatarById } from '../constants/avatars';
+import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
 
@@ -28,40 +28,19 @@ function RankBadge({ rank }: { rank: number }) {
   );
 }
 
-function AvatarCircle({ name, avatarId, profileColor }: { name: string | null; avatarId: string | null; profileColor: string | null }) {
-  const avatar = avatarId ? getAvatarById(avatarId) : undefined;
-  const bgColor = profileColor || theme.colors.primaryContainer;
-
-  if (avatar?.source) {
-    return (
-      <View style={styles.avatarContainer}>
-        <Image source={avatar.source} style={styles.avatarImage} />
-      </View>
-    );
-  }
-
-  const initials = name?.slice(0, 2).toUpperCase();
-  if (!initials) {
-    return (
-      <View style={styles.avatarContainer}>
-        <MaterialCommunityIcons name="account-circle-outline" size={60} color={theme.colors.primary} />
-      </View>
-    );
-  }
-  return (
-    <View style={[styles.avatarFallback, { backgroundColor: bgColor }]}>
-      <Text style={styles.avatarText}>{initials}</Text>
-    </View>
-  );
-}
-
-
 function LeaderboardRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
   const displayName = entry.display_name || i18n.t('leaderboard.anonymous');
   return (
     <View style={[styles.row, rank <= 3 && styles.topRow]}>
       <RankBadge rank={rank} />
-      <AvatarCircle name={entry.display_name} avatarId={entry.avatar_url} profileColor={entry.profile_color} />
+      <View style={styles.avatarSlot}>
+        <Avatar
+          avatarId={entry.avatar_url}
+          initial={entry.display_name ?? undefined}
+          size="md"
+          backgroundColor={theme.colors.primaryContainer}
+        />
+      </View>
       <View style={styles.rowInfo}>
         <Text style={styles.rowName} numberOfLines={1}>{displayName}</Text>
       </View>
@@ -277,30 +256,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  avatarContainer: {
-    width: 60,
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
+  avatarSlot: {
     marginRight: 10,
-  },
-  avatarImage: {
-    width: 60,
-    height: 60,
-    resizeMode: 'contain',
-  },
-  avatarFallback: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  avatarText: {
-    color: theme.colors.primary,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   rowInfo: {
     flex: 1,
