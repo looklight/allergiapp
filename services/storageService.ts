@@ -11,13 +11,10 @@ const BUCKET = 'images';
 
 // Presets compressione immagini: { maxWidth, quality }
 const IMAGE_PRESETS = {
-  thumbnailReview: { width: 250, quality: 0.65 },
-  thumbnailMenu:   { width: 400, quality: 0.7 },
-  review:          { width: 600, quality: 0.7 },
-  menu:            { width: 1000, quality: 0.8 },
+  thumbnail: { width: 150, quality: 0.5 },
+  review:    { width: 600, quality: 0.7 },
+  menu:      { width: 1000, quality: 0.8 },
 } as const;
-
-type ImagePreset = { width: number; quality: number };
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -91,13 +88,13 @@ async function uploadWithThumbnail(
   localUri: string,
   fullPath: string,
   thumbPath: string,
-  fullPreset: ImagePreset,
-  thumbPreset: ImagePreset,
+  fullMaxWidth: number,
+  fullQuality: number,
   crop?: 'square',
 ): Promise<UploadResult> {
   const [fullUri, thumbUri] = await Promise.all([
-    compressImage(localUri, fullPreset.width, fullPreset.quality, crop),
-    compressImage(localUri, thumbPreset.width, thumbPreset.quality, crop),
+    compressImage(localUri, fullMaxWidth, fullQuality, crop),
+    compressImage(localUri, IMAGE_PRESETS.thumbnail.width, IMAGE_PRESETS.thumbnail.quality, 'square'),
   ]);
   const [imageUrl, thumbnailUrl] = await Promise.all([
     uploadSingle(fullUri, fullPath),
@@ -114,7 +111,7 @@ async function uploadReviewPhoto(
 ): Promise<UploadResult> {
   const userId = await getCurrentUserId();
   const base = `${userId}/reviews/${restaurantId}/${reviewId}_${index}`;
-  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.review, IMAGE_PRESETS.thumbnailReview, 'square');
+  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.review.width, IMAGE_PRESETS.review.quality, 'square');
 }
 
 async function uploadMenuPhoto(
@@ -124,7 +121,7 @@ async function uploadMenuPhoto(
 ): Promise<UploadResult> {
   const userId = await getCurrentUserId();
   const base = `${userId}/menus/${restaurantId}/${photoId}`;
-  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.menu, IMAGE_PRESETS.thumbnailMenu);
+  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.menu.width, IMAGE_PRESETS.menu.quality);
 }
 
 async function deleteByUrl(url: string): Promise<void> {
