@@ -19,7 +19,6 @@ export async function getLeaderboard(): Promise<{
         user_id: row.user_id,
         display_name: row.display_name,
         avatar_url: row.avatar_url,
-        profile_color: row.profile_color,
         allergens: row.allergens ?? [],
         dietary_preferences: row.dietary_preferences ?? [],
         count: Number(row.count),

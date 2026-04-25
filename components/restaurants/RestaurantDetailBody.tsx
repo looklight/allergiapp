@@ -105,7 +105,6 @@ export default function RestaurantDetailBody({
         reviewId: r.reviewId,
         displayName: r.displayName ?? '',
         avatarUrl: r.avatarUrl,
-        profileColor: r.profileColor,
         rating: r.rating,
         text: r.text,
         allergensSnapshot: r.allergensSnapshot,

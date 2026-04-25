@@ -15,7 +15,6 @@ export interface UserProfile {
   avatar_url: string | null;
   allergens: string[];
   dietary_preferences: string[];
-  profile_color: string | null;
   role: 'user' | 'restaurant_owner' | 'admin';
   created_at: string;
   is_anonymous: boolean;
@@ -118,14 +117,6 @@ async function updateUserAvatar(userId: string, avatarId: string): Promise<void>
   if (error) throw error;
 }
 
-async function updateProfileColor(userId: string, color: string): Promise<void> {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ profile_color: color })
-    .eq('id', userId);
-  if (error) throw error;
-}
-
 async function updateAnonymous(userId: string, isAnonymous: boolean): Promise<void> {
   const { error } = await supabase
     .from('profiles')
@@ -196,7 +187,6 @@ export const AuthService = {
   ensureProfile,
   getUserProfile,
   updateUserAvatar,
-  updateProfileColor,
   updateDisplayName,
   updateAnonymous,
   deleteAccount,

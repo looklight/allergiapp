@@ -2,7 +2,6 @@ import { useState, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   Alert,
   ScrollView,
   Modal,
@@ -10,8 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
-  LayoutAnimation,
-  UIManager,
   Switch,
 } from 'react-native';
 import { Text, Surface, TextInput, Button } from 'react-native-paper';
@@ -21,15 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
-import { PROFILE_COLORS, getProfileColor } from '../../constants/profileColors';
 import HeaderBar from '../../components/HeaderBar';
-
-if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
-
-const toggleLayout = () =>
-  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -37,10 +26,8 @@ export default function EditProfileScreen() {
   const { user, userProfile, refreshProfile } = useAuth();
 
   const currentDisplayName = userProfile?.display_name ?? user?.displayName ?? '';
-  const savedColorHex = userProfile?.profile_color ?? null;
 
   const [displayName, setDisplayName] = useState(currentDisplayName);
-  const [selectedColorHex, setSelectedColorHex] = useState(savedColorHex);
   const [isAnonymous, setIsAnonymous] = useState(userProfile?.is_anonymous ?? false);
   const email = user?.email ?? '';
   const [saving, setSaving] = useState(false);
@@ -50,15 +37,9 @@ export default function EditProfileScreen() {
   const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
   const stepAnim = useRef(new Animated.Value(0)).current;
 
-  // Accordion state
-  const [colorOpen, setColorOpen] = useState(false);
-
-  const currentProfileColor = getProfileColor(selectedColorHex ?? undefined);
-
   const nameChanged = displayName.trim() !== currentDisplayName;
-  const colorChanged = selectedColorHex !== savedColorHex;
   const anonymousChanged = isAnonymous !== (userProfile?.is_anonymous ?? false);
-  const hasChanges = nameChanged || colorChanged || anonymousChanged;
+  const hasChanges = nameChanged || anonymousChanged;
 
   const handleSave = async () => {
     if (!user) return;
@@ -75,7 +56,6 @@ export default function EditProfileScreen() {
     try {
       const promises: Promise<void>[] = [];
       if (nameChanged) promises.push(AuthService.updateDisplayName(user.uid, trimmed));
-      if (colorChanged && selectedColorHex) promises.push(AuthService.updateProfileColor(user.uid, selectedColorHex));
       if (anonymousChanged) promises.push(AuthService.updateAnonymous(user.uid, isAnonymous));
       await Promise.all(promises);
       await refreshProfile();
@@ -141,53 +121,6 @@ export default function EditProfileScreen() {
       <HeaderBar title="Modifica profilo" />
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
-
-        {/* Colore profilo — menuItem espandibile */}
-        <View style={styles.expandableCard}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => { toggleLayout(); setColorOpen((v) => !v); }}
-            activeOpacity={0.6}
-          >
-            <MaterialCommunityIcons name="palette-outline" size={22} color={theme.colors.primary} />
-            <Text style={styles.menuItemText}>Colore profilo</Text>
-            <View style={[styles.colorPreviewDot, { backgroundColor: currentProfileColor.hex }]} />
-            <MaterialCommunityIcons
-              name={colorOpen ? 'chevron-up' : 'chevron-down'}
-              size={22}
-              color={theme.colors.textSecondary}
-            />
-          </TouchableOpacity>
-          {colorOpen && (
-            <View style={styles.expandedContent}>
-              <View style={styles.colorRow}>
-                {PROFILE_COLORS.map((color) => {
-                  const isSelected = selectedColorHex === color.hex;
-                  return (
-                    <TouchableOpacity
-                      key={color.id}
-                      onPress={() => setSelectedColorHex(color.hex)}
-                      activeOpacity={0.7}
-                      accessibilityLabel={color.label}
-                    >
-                      <View
-                        style={[
-                          styles.colorCircle,
-                          { backgroundColor: color.hex },
-                          isSelected && styles.colorCircleSelected,
-                        ]}
-                      >
-                        {isSelected && (
-                          <MaterialCommunityIcons name="check" size={18} color={theme.colors.onPrimary} />
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-        </View>
 
         {/* Informazioni account */}
         <Surface style={styles.card} elevation={1}>
@@ -360,74 +293,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   content: {
     flex: 1,
     padding: 20,
-  },
-
-  // Menu item espandibile (stile profile.tsx)
-  expandableCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    gap: 12,
-  },
-  menuItemText: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.colors.textPrimary,
-  },
-  expandedContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-
-  // Color picker
-  colorPreviewDot: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    marginRight: 4,
-  },
-  colorRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'space-between',
-  },
-  colorCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  colorCircleSelected: {
-    borderWidth: 3,
-    borderColor: theme.colors.onPrimary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 4,
   },
 
   // Card info account

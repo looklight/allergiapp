@@ -64,7 +64,6 @@ export async function getReviews(
     liked_by_me: r.liked_by_me ?? false,
     user_display_name: r.user_display_name ?? null,
     user_avatar_url: r.user_avatar_url ?? null,
-    user_profile_color: r.user_profile_color ?? null,
     user_is_anonymous: r.user_is_anonymous ?? false,
   }));
 

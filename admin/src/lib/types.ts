@@ -71,7 +71,6 @@ export interface UserProfile {
   avatar_url: string | null;
   allergens: string[];
   dietary_preferences: string[];
-  profile_color: string | null;
   role: 'user' | 'restaurant_owner' | 'admin';
   created_at: string;
   // Aggregati

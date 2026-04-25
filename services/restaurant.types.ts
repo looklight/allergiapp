@@ -71,7 +71,6 @@ export interface Review {
   // Dal profilo utente (join)
   user_display_name?: string | null;
   user_avatar_url?: string | null;
-  user_profile_color?: string | null;
   user_is_anonymous?: boolean;
 }
 
@@ -167,7 +166,6 @@ export interface LeaderboardEntry {
   user_id: string;
   display_name: string | null;
   avatar_url: string | null;
-  profile_color: string | null;
   allergens: string[];
   dietary_preferences: string[];
   count: number;
