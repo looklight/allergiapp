@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Text, Button } from 'react-native-paper';
+import { Text, Button, Checkbox } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,9 +27,10 @@ export default function OnboardingDietaryScreen() {
   const [diets, setDiets] = useState<DietId[]>([]);
   const [saving, setSaving] = useState(false);
   const [confirmedNoNeeds, setConfirmedNoNeeds] = useState(false);
+  const [healthConsent, setHealthConsent] = useState(false);
 
   const hasSelection = allergens.length > 0 || diets.length > 0;
-  const canSave = hasSelection || confirmedNoNeeds;
+  const canSave = (hasSelection && healthConsent) || confirmedNoNeeds;
 
   const toggleAllergen = (id: string) => {
     setAllergens((prev) =>
@@ -114,9 +115,22 @@ export default function OnboardingDietaryScreen() {
           keyPrefix="intol"
         />
 
-        <Text style={styles.gdprNote}>
-          Le tue preferenze vengono usate solo per mostrarti i ristoranti più adatti a te e non vengono mai associate alla tua identità.
-        </Text>
+        {hasSelection && (
+          <TouchableOpacity
+            onPress={() => setHealthConsent(v => !v)}
+            style={styles.consentRow}
+            activeOpacity={0.7}
+          >
+            <Checkbox
+              status={healthConsent ? 'checked' : 'unchecked'}
+              onPress={() => setHealthConsent(v => !v)}
+              color={theme.colors.primary}
+            />
+            <Text style={styles.consentText}>
+              Acconsento a salvare allergie e restrizioni sul mio profilo per personalizzare la ricerca ristoranti e per associarle alle mie recensioni, in modo da aiutare altri utenti con le stesse esigenze. Sono dati sulla salute (Art. 9 GDPR), revocabili dalle impostazioni.
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
           <Text style={styles.skipText}>Non ho allergie o esigenze particolari</Text>
@@ -195,14 +209,20 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     marginBottom: 10,
   },
-  gdprNote: {
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 4,
+    marginTop: 24,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  consentText: {
+    flex: 1,
     fontSize: 12,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
     lineHeight: 17,
-    marginTop: 24,
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    paddingTop: 8,
   },
   bottomBar: {
     paddingHorizontal: 24,

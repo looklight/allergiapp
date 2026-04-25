@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Modal, StyleSheet, Image, Platform } from 'react-native';
 import { Text, Button, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, usePathname } from 'expo-router';
 import { useAppContext } from '../contexts/AppContext';
 import { useTrackingPermission } from '../hooks/useTrackingPermission';
 import { Analytics } from '../services/analytics';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
-import LegalDialogs from './components/LegalDialogs';
 
 interface ConsentModalProps {
   visible: boolean;
@@ -15,11 +15,24 @@ interface ConsentModalProps {
 
 export default function ConsentModal({ visible }: ConsentModalProps) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const pathname = usePathname();
   const { acceptLegalTerms, setTrackingConsent } = useAppContext();
   const { requestPermission, canRequestPermission } = useTrackingPermission();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
-  const [showTermsDialog, setShowTermsDialog] = useState(false);
+  const [legalScreenOpen, setLegalScreenOpen] = useState(false);
+
+  // Hide consent modal while user reads /legal, restore when they return
+  useEffect(() => {
+    if (legalScreenOpen && pathname !== '/legal') {
+      setLegalScreenOpen(false);
+    }
+  }, [pathname, legalScreenOpen]);
+
+  const openLegal = (tab: 'privacy' | 'terms') => {
+    setLegalScreenOpen(true);
+    router.push(`/legal?tab=${tab}`);
+  };
 
   const handleAccept = async () => {
     if (isProcessing) return;
@@ -51,13 +64,10 @@ export default function ConsentModal({ visible }: ConsentModalProps) {
     }
   };
 
-  // Hide consent modal when legal dialogs are open to prevent z-index issues
-  const isLegalDialogOpen = showPrivacyDialog || showTermsDialog;
-
   return (
     <>
       <Modal
-        visible={visible && !isLegalDialogOpen}
+        visible={visible && !legalScreenOpen}
         transparent
         animationType="fade"
         statusBarTranslucent
@@ -83,14 +93,14 @@ export default function ConsentModal({ visible }: ConsentModalProps) {
               {/* Legal links */}
               <View style={styles.legalLinks}>
                 <TouchableRipple
-                  onPress={() => setShowPrivacyDialog(true)}
+                  onPress={() => openLegal('privacy')}
                   style={styles.legalLink}
                 >
                   <Text style={styles.legalLinkText}>{i18n.t('consent.privacyTitle')}</Text>
                 </TouchableRipple>
                 <Text style={styles.separator}>|</Text>
                 <TouchableRipple
-                  onPress={() => setShowTermsDialog(true)}
+                  onPress={() => openLegal('terms')}
                   style={styles.legalLink}
                 >
                   <Text style={styles.legalLinkText}>{i18n.t('consent.termsTitle')}</Text>
@@ -117,14 +127,6 @@ export default function ConsentModal({ visible }: ConsentModalProps) {
           </View>
         </View>
       </Modal>
-
-      {/* Legal dialogs - rendered outside of Modal to appear on top */}
-      <LegalDialogs
-        showPrivacyDialog={showPrivacyDialog}
-        showDisclaimerDialog={showTermsDialog}
-        onDismissPrivacy={() => setShowPrivacyDialog(false)}
-        onDismissDisclaimer={() => setShowTermsDialog(false)}
-      />
     </>
   );
 }

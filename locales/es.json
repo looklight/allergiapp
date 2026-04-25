@@ -116,9 +116,6 @@
     "disclaimer": "Términos de Servicio",
     "disclaimerDesc": "Importante de leer",
     "about": "Acerca de",
-    "privacyContent": "AllergiApp almacena tus alergias localmente en tu dispositivo, no se recopila ni comparte ningún dato personal identificable. Algunas traducciones se gestionan mediante servicios externos pero sin compartir los datos personales de los usuarios. La app puede recopilar datos anónimos de uso con fines estadísticos y para mejorar el servicio.",
-    "readFullDocument": "Leer documento completo",
-    "disclaimerContent": "IMPORTANTE: AllergiApp es una herramienta de comunicación y NO sustituye el consejo médico.\n\nLa app no garantiza la integridad de la información, la ausencia de contaminación cruzada o la correcta comprensión por parte del personal.\n\nEn caso de alergias graves: lleva siempre los medicamentos recetados, informa siempre específicamente a los demás sobre tus alergias y no confíes únicamente en esta app.\n\nEl usuario asume toda la responsabilidad por el uso de la aplicación. Los desarrolladores no son responsables de reacciones alérgicas o daños derivados del uso de la app.",
     "whyFree": "¿Por qué es gratuita?",
     "aboutSection": "Información y Soporte"
   },

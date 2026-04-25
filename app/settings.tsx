@@ -13,7 +13,6 @@ import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import { useLanguageDownload } from '../hooks/useLanguageDownload';
 import DownloadableLanguagesSection from './components/DownloadableLanguagesSection';
-import LegalDialogs from './components/LegalDialogs';
 
 const APP_LANGUAGES = [
   { code: 'it' as const, name: 'Italiano', flag: '🇮🇹' },
@@ -36,8 +35,6 @@ export default function SettingsScreen() {
   } = useAppContext();
   const appLang = settings.appLanguage;
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
-  const [showDisclaimerDialog, setShowDisclaimerDialog] = useState(false);
   const { downloadingLang, downloadProgress, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
 
   // Blocca orientamento in portrait
@@ -230,7 +227,7 @@ export default function SettingsScreen() {
         <View style={styles.legalFooter}>
           <View style={styles.legalRow}>
             <Pressable
-              onPress={() => setShowPrivacyDialog(true)}
+              onPress={() => router.push('/legal?tab=privacy')}
               style={({ pressed }) => [styles.legalLink, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
               accessibilityLabel={i18n.t('settings.privacyPolicy')}
@@ -241,7 +238,7 @@ export default function SettingsScreen() {
             <Text style={styles.legalSeparator} accessibilityElementsHidden>•</Text>
 
             <Pressable
-              onPress={() => setShowDisclaimerDialog(true)}
+              onPress={() => router.push('/legal?tab=terms')}
               style={({ pressed }) => [styles.legalLink, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
               accessibilityLabel={i18n.t('settings.disclaimer')}
@@ -253,13 +250,6 @@ export default function SettingsScreen() {
 
         <View style={{ height: Math.max(insets.bottom, 16) + 16 }} />
       </ScrollView>
-
-      <LegalDialogs
-        showPrivacyDialog={showPrivacyDialog}
-        showDisclaimerDialog={showDisclaimerDialog}
-        onDismissPrivacy={() => setShowPrivacyDialog(false)}
-        onDismissDisclaimer={() => setShowDisclaimerDialog(false)}
-      />
     </View>
   );
 }

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, ReactElement } from 'react';
+import React, { useState, useEffect, useRef, ReactElement } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, SegmentedButtons } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { theme } from '../constants/theme';
@@ -18,14 +18,23 @@ const AVAILABLE_LANGUAGES = [
 export default function LegalScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedDoc, setSelectedDoc] = useState<'privacy' | 'terms'>('privacy');
+  const { tab } = useLocalSearchParams<{ tab?: string }>();
+  const [selectedDoc, setSelectedDoc] = useState<'privacy' | 'terms'>(
+    tab === 'terms' ? 'terms' : 'privacy'
+  );
   const [selectedLang, setSelectedLang] = useState<'it' | 'en'>(
     (i18n.locale === 'it' || i18n.locale === 'en') ? i18n.locale as 'it' | 'en' : 'en'
   );
 
+  const scrollRef = useRef<ScrollView>(null);
+
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
   }, []);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [selectedDoc]);
 
   const content = LEGAL_CONTENT[selectedLang][selectedDoc];
 
@@ -155,7 +164,7 @@ export default function LegalScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView ref={scrollRef} style={styles.scrollView} contentContainerStyle={styles.content}>
         {renderContent(content)}
       </ScrollView>
     </View>

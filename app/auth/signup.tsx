@@ -117,9 +117,13 @@ export default function SignupScreen() {
 
         <Text style={styles.legalNote}>
           Creando un account accetti i nostri{' '}
-          <Text style={styles.legalLink}>Termini di servizio</Text>
+          <Text style={styles.legalLink} onPress={() => router.push('/legal?tab=terms')}>
+            Termini di servizio
+          </Text>
           {' '}e la{' '}
-          <Text style={styles.legalLink}>Privacy Policy</Text>
+          <Text style={styles.legalLink} onPress={() => router.push('/legal?tab=privacy')}>
+            Privacy Policy
+          </Text>
         </Text>
 
         <View style={styles.row}>
