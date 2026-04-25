@@ -1,24 +1,18 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../constants/theme';
-import i18n from '../../../utils/i18n';
 import StarRating from '../../StarRating';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
 
+const CHIPS: readonly string[] = ['Glutine', 'Vegan'];
+
 export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps) {
-  const chips = useMemo(
-    () => [
-      i18n.t('onboardingTutorial.share.chipGluten'),
-      i18n.t('onboardingTutorial.share.chipVegan'),
-    ],
-    []
-  );
   const cardTranslate = useRef(new Animated.Value(40)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
-  const chipAnims = useRef(chips.map(() => new Animated.Value(0))).current;
+  const chipAnims = useRef(CHIPS.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     if (!isActive) {
@@ -63,8 +57,8 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
 
   return (
     <OnboardingSlide
-      title={i18n.t('onboardingTutorial.share.title')}
-      description={i18n.t('onboardingTutorial.share.description')}
+      title="Condividi le tue esperienze"
+      description="Ogni recensione porta con sé le esigenze di chi l'ha scritta: così gli altri sanno se quell'esperienza è davvero per loro."
       visual={
         <Animated.View
           style={[
@@ -87,17 +81,17 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
               </View>
               <View style={styles.authorMeta}>
                 <Text style={styles.authorName}>Marco</Text>
-                <Text style={styles.authorDate}>{i18n.t('onboardingTutorial.share.dateLabel')}</Text>
+                <Text style={styles.authorDate}>mar 2026</Text>
               </View>
               <StarRating rating={5} size={14} />
             </View>
 
             <Text style={styles.reviewText} numberOfLines={2}>
-              {i18n.t('onboardingTutorial.share.reviewText')}
+              Carta allergeni chiarissima e il cameriere mi ha seguito benissimo.
             </Text>
 
             <View style={styles.chipsRow}>
-              {chips.map((label, i) => {
+              {CHIPS.map((label, i) => {
                 const anim = chipAnims[i];
                 return (
                   <Animated.View
