@@ -22,9 +22,10 @@ import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import { PROFILE_COLORS, getProfileColor } from '../../constants/profileColors';
-import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
+import DietaryNeedsEditor from '../../components/restaurants/DietaryNeedsEditor';
 import HeaderBar from '../../components/HeaderBar';
 import i18n from '../../utils/i18n';
+import type { DietaryNeeds } from '../../types';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -44,8 +45,6 @@ export default function EditProfileScreen() {
   const [displayName, setDisplayName] = useState(currentDisplayName);
   const [selectedColorHex, setSelectedColorHex] = useState(savedColorHex);
   const [isAnonymous, setIsAnonymous] = useState(userProfile?.is_anonymous ?? false);
-  const [pendingAllergens, setPendingAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
-  const [pendingDiets, setPendingDiets] = useState<string[]>([...dietaryNeeds.diets]);
   const email = user?.email ?? '';
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -244,24 +243,17 @@ export default function EditProfileScreen() {
         </Button>
 
         {/* Esigenze alimentari */}
-        <View style={styles.dietarySection}>
-          <DietaryNeedsPicker
-            allergens={pendingAllergens}
-            diets={pendingDiets}
-            onAllergensChange={setPendingAllergens}
-            onDietsChange={setPendingDiets}
-            profileAllergens={dietaryNeeds.allergens}
-            profileDiets={dietaryNeeds.diets}
-            onSyncProfile={async (allergens, diets) => {
+        <Surface style={[styles.card, { marginTop: 20 }]} elevation={1}>
+          <DietaryNeedsEditor
+            initialNeeds={dietaryNeeds}
+            lang={i18n.locale}
+            onSave={async (needs: DietaryNeeds) => {
               if (!user) return;
-              await AuthService.updateDietaryNeeds(user.uid, { allergens, diets });
+              await AuthService.updateDietaryNeeds(user.uid, needs);
               await refreshProfile();
             }}
-            lang={i18n.locale}
-            initialExpanded
-            subtitle="Allergie e diete salvate nel tuo profilo. Usate per filtrare i ristoranti per le tue esigenze."
           />
-        </View>
+        </Surface>
 
         {/* Elimina account */}
         <Button
@@ -509,9 +501,6 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginTop: 32,
-  },
-  dietarySection: {
-    marginTop: 20,
   },
 
   // Delete modal

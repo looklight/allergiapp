@@ -5,22 +5,47 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
-import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
+import {
+  FOOD_RESTRICTIONS,
+  getRestrictionsByCategory,
+  INTOLERANCE_RESTRICTION_IDS,
+} from '../../constants/foodRestrictions';
+import ChipGrid from '../../components/ChipGrid';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import i18n from '../../utils/i18n';
+import type { FoodRestrictionId, DietId } from '../../types';
+
+const DIETS_GROUP = getRestrictionsByCategory('diet');
+const ALLERGENS_GROUP = FOOD_RESTRICTIONS.filter(r => r.category !== 'diet');
 
 export default function OnboardingDietaryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, refreshProfile } = useAuth();
-  const [allergens, setAllergens] = useState<string[]>([]);
-  const [diets, setDiets] = useState<string[]>([]);
+  const [allergens, setAllergens] = useState<FoodRestrictionId[]>([]);
+  const [diets, setDiets] = useState<DietId[]>([]);
   const [saving, setSaving] = useState(false);
   const [confirmedNoNeeds, setConfirmedNoNeeds] = useState(false);
 
   const hasSelection = allergens.length > 0 || diets.length > 0;
   const canSave = hasSelection || confirmedNoNeeds;
+
+  const toggleAllergen = (id: string) => {
+    setAllergens((prev) =>
+      prev.includes(id as FoodRestrictionId)
+        ? prev.filter((a) => a !== id)
+        : [...prev, id as FoodRestrictionId]
+    );
+  };
+
+  const toggleDiet = (id: string) => {
+    setDiets((prev) =>
+      prev.includes(id as DietId)
+        ? prev.filter((d) => d !== id)
+        : [...prev, id as DietId]
+    );
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -58,20 +83,35 @@ export default function OnboardingDietaryScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.introSection}>
+          <MaterialCommunityIcons name="shield-check-outline" size={40} color={theme.colors.primary} />
           <Text style={styles.introTitle}>Trova le soluzioni giuste per te</Text>
           <Text style={styles.introText}>
             Indica le tue allergie e preferenze alimentari e trova subito i ristoranti più adatti a te.
           </Text>
         </View>
 
-        <DietaryNeedsPicker
-          allergens={allergens}
-          diets={diets}
-          onAllergensChange={setAllergens}
-          onDietsChange={setDiets}
+        <Text style={styles.sectionTitle}>{i18n.t('profile.diets')}</Text>
+        <ChipGrid
+          items={DIETS_GROUP}
+          activeIds={diets}
+          onToggle={toggleDiet}
           lang={i18n.locale}
-          initialExpanded
-          subtitle="Seleziona allergie e diete: salveremo le tue preferenze nel profilo."
+          keyPrefix="diet"
+        />
+
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{i18n.t('profile.allergensIntolerances')}</Text>
+        <ChipGrid
+          items={ALLERGENS_GROUP}
+          activeIds={[...diets, ...allergens]}
+          onToggle={(id) => {
+            if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
+              toggleDiet(id);
+            } else {
+              toggleAllergen(id);
+            }
+          }}
+          lang={i18n.locale}
+          keyPrefix="intol"
         />
 
         <Text style={styles.gdprNote}>
@@ -132,13 +172,14 @@ const styles = StyleSheet.create({
   },
   introSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 28,
   },
   introTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textPrimary,
     textAlign: 'center',
+    marginTop: 12,
     marginBottom: 8,
   },
   introText: {
@@ -146,6 +187,13 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 6,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    marginBottom: 10,
   },
   gdprNote: {
     fontSize: 12,

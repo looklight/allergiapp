@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 import { getAvatarById } from '../constants/avatars';
-import DietaryNeedsChips from './DietaryNeedsChips';
+import { ALLERGENS } from '../constants/allergens';
 import i18n from '../utils/i18n';
 import type { UserProfile } from '../services/auth';
 
@@ -97,16 +97,24 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, title = 'P
             </View>
           </View>
 
-          {/* Esigenze alimentari (allergeni + diete) */}
-          {((profile.allergens?.length ?? 0) > 0 || (profile.dietary_preferences?.length ?? 0) > 0) && (
+          {/* Allergie */}
+          {(profile.allergens?.length ?? 0) > 0 && (
             <>
               <View style={styles.divider} />
               <Text style={styles.allergensLabel}>Profilo alimentare</Text>
-              <DietaryNeedsChips
-                allergens={profile.allergens ?? []}
-                diets={profile.dietary_preferences ?? []}
-                lang={i18n.locale?.split('-')[0] ?? 'it'}
-              />
+              <View style={styles.allergensRow}>
+                {profile.allergens.map((id) => {
+                  const allergen = ALLERGENS.find((a) => a.id === id);
+                  if (!allergen) return null;
+                  const lang = i18n.locale?.split('-')[0] as keyof typeof allergen.translations;
+                  const name = allergen.translations[lang] ?? allergen.translations.it ?? allergen.translations.en;
+                  return (
+                    <View key={id} style={styles.allergenBadge}>
+                      <Text style={styles.allergenBadgeText}>{allergen.icon} {name}</Text>
+                    </View>
+                  );
+                })}
+              </View>
             </>
           )}
         </Surface>
@@ -224,5 +232,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.textSecondary,
     marginBottom: 10,
+  },
+  allergensRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  allergenBadge: {
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  allergenBadgeText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
 });
