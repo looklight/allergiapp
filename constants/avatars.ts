@@ -35,9 +35,14 @@ export const RARITY_LABELS: Record<AvatarRarity, string> = {
 
 /**
  * Catalogo avatar.
- * Per aggiungerne di nuovi: salva l'immagine 400×400 PNG in assets/avatars/
- * con nome plate_<nome>.png, imposta source e aggiungi una riga qui sotto.
- * Se il disegno non è ancora pronto, usa source: null (verrà mostrato un placeholder).
+ *
+ * Workflow per aggiungere/modificare un avatar:
+ *   1. Salva il master in `_design/avatars/plate_<nome>.png`
+ *   2. Lancia `npm run build:avatars` (genera il bundle 400×400 in assets/avatars/)
+ *   3. Aggiungi una riga qui sotto con `source: require('../assets/avatars/plate_<nome>.png')`
+ *
+ * Note: nomi e condizioni di sblocco sotto sono PLACEHOLDER — da rivedere quando si
+ * disegnerà la struttura definitiva delle "task" per gli utenti (segrete + dichiarate).
  */
 export const AVATARS: AvatarOption[] = [
   // ── Free ──────────────────────────────────────────────
@@ -58,6 +63,7 @@ export const AVATARS: AvatarOption[] = [
     unlock: { type: 'free' },
   },
   {
+    // TODO: master da ridisegnare con disco centrato e proporzionato (vecchia versione mantenuta 1:1)
     id: 'plate_passport',
     source: require('../assets/avatars/plate_passport.png'),
     name: 'Il Viaggiatore',
@@ -69,7 +75,7 @@ export const AVATARS: AvatarOption[] = [
   // ── Reviews ───────────────────────────────────────────
   {
     id: 'plate_critic',
-    source: null,
+    source: require('../assets/avatars/plate_critic.png'),
     name: 'Il Critico',
     description: 'Scrivi 5 recensioni per sbloccarlo.',
     rarity: 'rare',
@@ -77,7 +83,7 @@ export const AVATARS: AvatarOption[] = [
   },
   {
     id: 'plate_gourmet',
-    source: null,
+    source: require('../assets/avatars/plate_gourmet.png'),
     name: 'Il Gourmet',
     description: 'Scrivi 15 recensioni per sbloccarlo.',
     rarity: 'epic',
@@ -85,7 +91,7 @@ export const AVATARS: AvatarOption[] = [
   },
   {
     id: 'plate_michelin',
-    source: null,
+    source: require('../assets/avatars/plate_michelin.png'),
     name: 'La Guida Michelin',
     description: 'Scrivi 30 recensioni per sbloccarlo.',
     rarity: 'legendary',
@@ -95,7 +101,7 @@ export const AVATARS: AvatarOption[] = [
   // ── Restaurants ───────────────────────────────────────
   {
     id: 'plate_explorer',
-    source: null,
+    source: require('../assets/avatars/plate_explorer.png'),
     name: "L'Esploratore",
     description: 'Aggiungi 5 ristoranti per sbloccarlo.',
     rarity: 'rare',
@@ -103,7 +109,7 @@ export const AVATARS: AvatarOption[] = [
   },
   {
     id: 'plate_mapper',
-    source: null,
+    source: require('../assets/avatars/plate_mapper.png'),
     name: 'Il Mappatore',
     description: 'Aggiungi 15 ristoranti per sbloccarlo.',
     rarity: 'epic',
@@ -111,11 +117,29 @@ export const AVATARS: AvatarOption[] = [
   },
   {
     id: 'plate_atlas',
-    source: null,
+    source: require('../assets/avatars/plate_atlas.png'),
     name: "L'Atlante Vivente",
     description: 'Aggiungi 30 ristoranti per sbloccarlo.',
     rarity: 'legendary',
     unlock: { type: 'restaurants', count: 30 },
+  },
+
+  // ── Belts (TBD: regole di sblocco da definire) ────────
+  {
+    id: 'plate_green_belt',
+    source: require('../assets/avatars/plate_green_belt.png'),
+    name: 'Cintura Verde',
+    description: 'Avatar speciale.',
+    rarity: 'rare',
+    unlock: { type: 'free' },
+  },
+  {
+    id: 'plate_pink_belt',
+    source: require('../assets/avatars/plate_pink_belt.png'),
+    name: 'Cintura Rosa',
+    description: 'Avatar speciale.',
+    rarity: 'epic',
+    unlock: { type: 'free' },
   },
 ];
 
@@ -124,12 +148,19 @@ export function getAvatarById(id: string): AvatarOption | undefined {
 }
 
 /**
+ * TEMP: se true sblocca tutti gli avatar a prescindere dalle condizioni.
+ * Usato per test del catalogo. Rimettere a false prima del rilascio.
+ */
+const UNLOCK_ALL_FOR_TESTING = true;
+
+/**
  * Determina se un avatar è sbloccato in base alle stats dell'utente.
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
   stats: { reviews: number; restaurants: number },
 ): boolean {
+  if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
     case 'free':
       return true;
