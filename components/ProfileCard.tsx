@@ -21,12 +21,13 @@ interface ProfileCardProps {
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
+  onAvatarPress?: () => void;
   title?: string;
   headerRight?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, title = 'Profilo', headerRight, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = 'Profilo', headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
 
   const memberSince = profile.created_at
@@ -51,12 +52,28 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
         {/* Profilo: avatar + nome in riga, stile Airbnb */}
         <Surface style={styles.profileCard} elevation={1}>
           <View style={styles.profileRow}>
-            <Avatar
-              avatarId={profile.avatar_url}
-              isAnonymous={profile.is_anonymous}
-              initial={profile.display_name ?? undefined}
-              size="lg"
-            />
+            {onAvatarPress ? (
+              <TouchableOpacity
+                onPress={onAvatarPress}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Apri i miei avatar"
+              >
+                <Avatar
+                  avatarId={profile.avatar_url}
+                  isAnonymous={profile.is_anonymous}
+                  initial={profile.display_name ?? undefined}
+                  size={110}
+                />
+              </TouchableOpacity>
+            ) : (
+              <Avatar
+                avatarId={profile.avatar_url}
+                isAnonymous={profile.is_anonymous}
+                initial={profile.display_name ?? undefined}
+                size={110}
+              />
+            )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
                 <Text style={styles.displayName}>{profile.display_name || 'Utente'}</Text>

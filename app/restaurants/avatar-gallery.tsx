@@ -20,7 +20,6 @@ import { AuthService } from '../../services/auth';
 import { supabase } from '../../services/supabase';
 import {
   AVATARS,
-  getAvatarById,
   isAvatarUnlocked,
   getUnlockProgress,
   RARITY_COLORS,
@@ -28,12 +27,16 @@ import {
   type AvatarOption,
 } from '../../constants/avatars';
 import HeaderBar from '../../components/HeaderBar';
-import Avatar from '../../components/Avatar';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_PADDING = 16;
 const GRID_GAP = 10;
-const NUM_COLUMNS = 3;
+// Colonne adattive: target ~120px per item, minimo 3 (phone), libero di salire su tablet.
+const TARGET_ITEM_SIZE = 120;
+const NUM_COLUMNS = Math.max(
+  3,
+  Math.floor((SCREEN_WIDTH - GRID_PADDING * 2) / TARGET_ITEM_SIZE),
+);
 const ITEM_SIZE = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 
 interface UserStats {
@@ -50,10 +53,6 @@ export default function AvatarGalleryScreen() {
   const [selectedId, setSelectedId] = useState(userProfile?.avatar_url ?? null);
   const [detailAvatar, setDetailAvatar] = useState<AvatarOption | null>(null);
   const [saving, setSaving] = useState(false);
-
-  const currentAvatar = selectedId ? getAvatarById(selectedId) : undefined;
-
-  const unlockedCount = AVATARS.filter((a) => isAvatarUnlocked(a, stats)).length;
 
   // Carica conteggi utente
   useEffect(() => {
@@ -144,24 +143,8 @@ export default function AvatarGalleryScreen() {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        contentContainerStyle={{ paddingTop: 20, paddingBottom: insets.bottom + 24 }}
       >
-        {/* Avatar attuale */}
-        <View style={styles.currentSection}>
-          <View style={[styles.currentAvatarRing, { borderColor: theme.colors.primary }]}>
-            <Avatar
-              avatarId={selectedId}
-              isAnonymous={userProfile?.is_anonymous}
-              initial={userProfile?.display_name ?? undefined}
-              size="lg"
-            />
-          </View>
-          {currentAvatar && <Text style={styles.currentAvatarName}>{currentAvatar.name}</Text>}
-          <Text style={styles.unlockedCounter}>
-            {unlockedCount}/{AVATARS.length} sbloccati
-          </Text>
-        </View>
-
         {/* Griglia avatar */}
         <View style={styles.grid}>
           {AVATARS.map((avatar) => {
@@ -368,33 +351,6 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
 
-  // ── Current avatar ──────────────────────────────────
-  currentSection: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: GRID_PADDING,
-  },
-  currentAvatarRing: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  currentAvatarName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginTop: 10,
-  },
-  unlockedCounter: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: 4,
-  },
-
   // ── Grid ────────────────────────────────────────────
   grid: {
     flexDirection: 'row',
@@ -411,8 +367,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   gridImageWrap: {
-    width: ITEM_SIZE - 24,
-    height: ITEM_SIZE - 24,
+    width: ITEM_SIZE - 12,
+    height: ITEM_SIZE - 12,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',

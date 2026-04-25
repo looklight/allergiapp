@@ -536,7 +536,7 @@ export default function RestaurantsScreen() {
                 avatarId={userProfile?.avatar_url}
                 isAnonymous={userProfile?.is_anonymous}
                 initial={isAuthenticated ? userProfile?.display_name ?? undefined : undefined}
-                size="sm"
+                size={44}
               />
             </TouchableOpacity>
             <TextInput
@@ -764,9 +764,9 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   avatarButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: 8,
     overflow: 'hidden',
     justifyContent: 'center',

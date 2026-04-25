@@ -25,7 +25,7 @@ const SIZE_MAP: Record<AvatarSize, number> = {
 };
 
 export interface AvatarProps {
-  /** ID dell'avatar selezionato dall'utente (es. "plate_forks"). */
+  /** ID dell'avatar selezionato dall'utente (es. "plate_main_logo"). */
   avatarId?: string | null;
   /** Se true, mostra l'icona incognito a prescindere da avatarId. */
   isAnonymous?: boolean;

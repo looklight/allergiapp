@@ -21,7 +21,7 @@ type Member = {
 const buildMembers = (): readonly Member[] => [
   {
     name: 'Marco',
-    avatar: require('../../../assets/avatars/plate_forks.png'),
+    avatar: require('../../../assets/avatars/plate_main_logo.png'),
     chips: [
       { label: i18n.t('onboardingTutorial.welcome.chipGluten'), isDiet: false },
       { label: i18n.t('onboardingTutorial.welcome.chipVegan'), isDiet: true },

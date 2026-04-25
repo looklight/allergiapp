@@ -47,8 +47,8 @@ export const RARITY_LABELS: Record<AvatarRarity, string> = {
 export const AVATARS: AvatarOption[] = [
   // ── Free ──────────────────────────────────────────────
   {
-    id: 'plate_forks',
-    source: require('../assets/avatars/plate_forks.png'),
+    id: 'plate_main_logo',
+    source: require('../assets/avatars/plate_main_logo.png'),
     name: 'Il Buongustaio',
     description: 'Un classico per chi ama mangiare bene.',
     rarity: 'common',
@@ -74,24 +74,24 @@ export const AVATARS: AvatarOption[] = [
 
   // ── Reviews ───────────────────────────────────────────
   {
-    id: 'plate_critic',
-    source: require('../assets/avatars/plate_critic.png'),
+    id: 'plate_wolfe',
+    source: require('../assets/avatars/plate_wolfe.png'),
     name: 'Il Critico',
     description: 'Scrivi 5 recensioni per sbloccarlo.',
     rarity: 'rare',
     unlock: { type: 'reviews', count: 5 },
   },
   {
-    id: 'plate_gourmet',
-    source: require('../assets/avatars/plate_gourmet.png'),
+    id: 'plate_veget',
+    source: require('../assets/avatars/plate_veget.png'),
     name: 'Il Gourmet',
     description: 'Scrivi 15 recensioni per sbloccarlo.',
     rarity: 'epic',
     unlock: { type: 'reviews', count: 15 },
   },
   {
-    id: 'plate_michelin',
-    source: require('../assets/avatars/plate_michelin.png'),
+    id: 'plate_wizard',
+    source: require('../assets/avatars/plate_wizard.png'),
     name: 'La Guida Michelin',
     description: 'Scrivi 30 recensioni per sbloccarlo.',
     rarity: 'legendary',
@@ -100,24 +100,24 @@ export const AVATARS: AvatarOption[] = [
 
   // ── Restaurants ───────────────────────────────────────
   {
-    id: 'plate_explorer',
-    source: require('../assets/avatars/plate_explorer.png'),
+    id: 'plate_straw',
+    source: require('../assets/avatars/plate_straw.png'),
     name: "L'Esploratore",
     description: 'Aggiungi 5 ristoranti per sbloccarlo.',
     rarity: 'rare',
     unlock: { type: 'restaurants', count: 5 },
   },
   {
-    id: 'plate_mapper',
-    source: require('../assets/avatars/plate_mapper.png'),
+    id: 'plate_bat',
+    source: require('../assets/avatars/plate_bat.png'),
     name: 'Il Mappatore',
     description: 'Aggiungi 15 ristoranti per sbloccarlo.',
     rarity: 'epic',
     unlock: { type: 'restaurants', count: 15 },
   },
   {
-    id: 'plate_atlas',
-    source: require('../assets/avatars/plate_atlas.png'),
+    id: 'plate_bl_mask',
+    source: require('../assets/avatars/plate_bl_mask.png'),
     name: "L'Atlante Vivente",
     description: 'Aggiungi 30 ristoranti per sbloccarlo.',
     rarity: 'legendary',

@@ -93,6 +93,7 @@ export default function ProfileScreen() {
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}
+        onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
         headerRight={
           <TouchableOpacity onPress={handleLogout} hitSlop={8} activeOpacity={0.6}>
             <MaterialCommunityIcons name="logout" size={22} color={theme.colors.onPrimary} />

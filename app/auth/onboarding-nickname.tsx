@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -54,7 +54,13 @@ export default function OnboardingNicknameScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.introSection}>
-          <MaterialCommunityIcons name="account-circle-outline" size={44} color={theme.colors.primary} />
+          <Image
+            source={isAnonymous
+              ? require('../../assets/avatars/plate_incognito.png')
+              : require('../../assets/avatars/plate_main_logo.png')}
+            style={styles.profileIcon}
+            resizeMode="contain"
+          />
           <Text style={styles.introTitle}>Come vuoi apparire nella community?</Text>
           <Text style={styles.introText}>
             Scegli un nickname con cui gli altri utenti ti vedranno nelle recensioni.
@@ -146,6 +152,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 28,
     gap: 8,
+  },
+  profileIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 24,
   },
   introTitle: {
     fontSize: 18,
