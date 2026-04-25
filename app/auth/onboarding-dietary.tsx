@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Text, Button, Checkbox } from 'react-native-paper';
+import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,6 +25,7 @@ export default function OnboardingDietaryScreen() {
   const canSave = (hasSelection && healthConsent) || confirmedNoNeeds;
 
   const toggleAllergen = (id: string) => {
+    setConfirmedNoNeeds(false);
     setAllergens((prev) =>
       prev.includes(id as FoodRestrictionId)
         ? prev.filter((a) => a !== id)
@@ -33,6 +34,7 @@ export default function OnboardingDietaryScreen() {
   };
 
   const toggleDiet = (id: string) => {
+    setConfirmedNoNeeds(false);
     setDiets((prev) =>
       prev.includes(id as DietId)
         ? prev.filter((d) => d !== id)
@@ -92,23 +94,6 @@ export default function OnboardingDietaryScreen() {
           keyPrefix="onboarding"
         />
 
-        {hasSelection && (
-          <TouchableOpacity
-            onPress={() => setHealthConsent(v => !v)}
-            style={styles.consentRow}
-            activeOpacity={0.7}
-          >
-            <Checkbox
-              status={healthConsent ? 'checked' : 'unchecked'}
-              onPress={() => setHealthConsent(v => !v)}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.consentText}>
-              Acconsento a salvare allergie e restrizioni sul mio profilo per personalizzare la ricerca ristoranti e per associarle alle mie recensioni, in modo da aiutare altri utenti con le stesse esigenze. Sono dati sulla salute (Art. 9 GDPR), revocabili dalle impostazioni.
-            </Text>
-          </TouchableOpacity>
-        )}
-
         <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
           <Text style={styles.skipText}>Non ho allergie o esigenze particolari</Text>
         </TouchableOpacity>
@@ -134,7 +119,29 @@ export default function OnboardingDietaryScreen() {
         >
           Salva e continua
         </Button>
-        <Text style={styles.saveNote}>Potrai modificarle in qualsiasi momento dal tuo profilo.</Text>
+        {hasSelection && (
+          <TouchableOpacity
+            onPress={() => setHealthConsent(v => !v)}
+            style={styles.consentRow}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons
+              name={healthConsent ? 'checkbox-marked' : 'checkbox-blank-outline'}
+              size={22}
+              color={healthConsent ? theme.colors.primary : theme.colors.textSecondary}
+            />
+            <Text style={styles.consentText}>
+              Acconsento a salvare le mie esigenze nel profilo per personalizzare la mia esperienza (
+              <Text
+                style={styles.consentLink}
+                onPress={() => router.push('/legal?tab=privacy')}
+              >
+                Art. 9 GDPR
+              </Text>
+              ).
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -182,18 +189,20 @@ const styles = StyleSheet.create({
   },
   consentRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 4,
-    marginTop: 24,
-    marginBottom: 8,
+    marginTop: 10,
     paddingHorizontal: 4,
   },
   consentText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 11,
     color: theme.colors.textSecondary,
-    lineHeight: 17,
-    paddingTop: 8,
+    lineHeight: 15,
+  },
+  consentLink: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
   bottomBar: {
     paddingHorizontal: 24,
@@ -208,13 +217,6 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontSize: 16,
     paddingVertical: 4,
-  },
-  saveNote: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 10,
-    fontStyle: 'italic',
   },
   skipRow: {
     alignItems: 'center',

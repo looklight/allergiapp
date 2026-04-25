@@ -86,7 +86,7 @@ const splashStyles = StyleSheet.create({
 });
 
 
-const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary', '/auth/onboarding-tutorial'];
+const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary', '/auth/onboarding-tutorial', '/legal'];
 
 function AppContent() {
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, selectedOtherFoods, activeDietModes, vegetarianLevel, selectedRestrictions, settings } = useAppContext();

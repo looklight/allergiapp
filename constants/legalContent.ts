@@ -28,7 +28,7 @@ Se scegli di salvare le tue allergie e restrizioni sul profilo, le usiamo per pe
 
 Le allergie collegate a ciascuna recensione sono visibili pubblicamente come badge sotto il testo, insieme al tuo nickname (l'email non viene mai mostrata). Restano associate alla recensione anche se in seguito modifichi il profilo, salvo richiesta esplicita di rimozione.
 
-Sono trattate come dati sulla salute (categoria speciale, art. 9 GDPR): la memorizzazione sul profilo richiede consenso esplicito (art. 9.2.a) revocabile dalle impostazioni; la pubblicazione tramite recensioni rende questi dati manifestamente pubblici (art. 9.2.e).
+Sono trattate come dati sulla salute (categoria speciale, art. 9 GDPR): la memorizzazione sul profilo richiede consenso esplicito (art. 9.2.a) modificabile dalle impostazioni; la pubblicazione tramite recensioni rende questi dati manifestamente pubblici (art. 9.2.e).
 
 Senza consenso, l'app continua a funzionare e le tue allergie restano solo sul dispositivo per la card.
 
@@ -51,8 +51,8 @@ Le card sono già tradotte in 15 lingue principali e incluse nell'app: usarle no
 
 ## Base giuridica (GDPR)
 - **Account e contenuti**: esecuzione del contratto (art. 6.1.b)
-- **Allergie e restrizioni sul profilo**: consenso esplicito (art. 9.2.a) — revocabile dalle impostazioni
-- **Posizione e foto**: consenso (art. 6.1.a) — revocabile dalle impostazioni del dispositivo
+- **Allergie e restrizioni sul profilo**: consenso esplicito (art. 9.2.a) — modificabile dalle impostazioni
+- **Posizione e foto**: consenso (art. 6.1.a) — modificabile dalle impostazioni del dispositivo
 - **Analytics e crash report**: legittimo interesse (art. 6.1.f) — dati anonimi
 
 ## Conservazione
@@ -168,7 +168,7 @@ If you choose to save your allergies and restrictions on your profile, we use th
 
 The allergies linked to each review are publicly visible as badges under the review text, alongside your nickname (your email is never shown). They remain attached to the review even if you later change your profile, unless you explicitly request removal.
 
-They are treated as health data (special category, art. 9 GDPR): saving them on your profile requires explicit consent (art. 9.2.a) revocable from settings; publishing them through reviews makes this data manifestly public (art. 9.2.e).
+They are treated as health data (special category, art. 9 GDPR): saving them on your profile requires explicit consent (art. 9.2.a) changeable from settings; publishing them through reviews makes this data manifestly public (art. 9.2.e).
 
 Without consent, the app keeps working and your allergies stay only on-device for the card.
 
@@ -191,8 +191,8 @@ Cards are pre-translated in 15 main languages bundled with the app: using them r
 
 ## Legal basis (GDPR)
 - **Account and content**: contract performance (art. 6.1.b)
-- **Allergies and restrictions on profile**: explicit consent (art. 9.2.a) — revocable from settings
-- **Location and photos**: consent (art. 6.1.a) — revocable from device settings
+- **Allergies and restrictions on profile**: explicit consent (art. 9.2.a) — changeable from settings
+- **Location and photos**: consent (art. 6.1.a) — changeable from device settings
 - **Analytics and crash reports**: legitimate interest (art. 6.1.f) — anonymous data
 
 ## Retention
