@@ -92,8 +92,6 @@ const SelectedPin = memo(function SelectedPin({
     <Marker
       coordinate={{ latitude, longitude }}
       tracksViewChanges
-      // @ts-expect-error — prop custom di react-native-map-clustering (helpers.js:isMarker)
-      // per escludere il marker selezionato dal clustering. Non tipizzata da react-native-maps.
       cluster={false}
       onPress={handlePress}
       zIndex={9999}

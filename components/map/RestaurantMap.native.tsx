@@ -68,9 +68,7 @@ export default function RestaurantMap({
   userDiets,
 }: RestaurantMapProps) {
   const mapRef = useRef<any>(null);
-  // Gate "pronto ad animare" per l'effect centerOn. Flippa una sola volta al
-  // primo layout: i resize successivi (tastiera) non ri-triggerano l'effect.
-  const [isLaidOut, setIsLaidOut] = useState(false);
+  const [mapHeight, setMapHeight] = useState(0);
   const mapReady = useRef(false);
   const [hasAnimatedToUser, setHasAnimatedToUser] = useState(false);
   const currentRegion = useRef<Region | null>(null);
@@ -142,7 +140,7 @@ export default function RestaurantMap({
 
   // ---- Camera: centerOn (pin selection, search, locate me) ----
   useEffect(() => {
-    if (!centerOn || !isLaidOut) return;
+    if (!centerOn || mapHeight === 0) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -176,7 +174,7 @@ export default function RestaurantMap({
       if (timer) clearTimeout(timer);
       if (animTimer) clearTimeout(animTimer);
     };
-  }, [centerOn, isLaidOut]);
+  }, [centerOn, mapHeight]);
 
   // ---- Stable event handlers ----
 
@@ -247,8 +245,8 @@ export default function RestaurantMap({
     );
   }, []);
 
-  const handleLayout = useCallback(() => {
-    setIsLaidOut(true);
+  const handleLayout = useCallback((e: any) => {
+    setMapHeight(e.nativeEvent.layout.height);
   }, []);
 
   // ---- Marker elements ----
