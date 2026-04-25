@@ -26,14 +26,12 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
       Animated.timing(cardTranslate, {
         toValue: 0,
         duration: 380,
-        delay: 80,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(cardOpacity, {
         toValue: 1,
         duration: 320,
-        delay: 80,
         useNativeDriver: true,
       }),
     ]);

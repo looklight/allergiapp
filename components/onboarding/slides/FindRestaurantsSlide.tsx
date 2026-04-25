@@ -43,20 +43,17 @@ export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps)
       return;
     }
 
-    const cardsIn = Animated.sequence([
-      Animated.delay(80),
-      Animated.stagger(
-        CARD_STAGGER_MS,
-        cardAnims.map(a =>
-          Animated.timing(a, {
-            toValue: 1,
-            duration: 320,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          })
-        )
-      ),
-    ]);
+    const cardsIn = Animated.stagger(
+      CARD_STAGGER_MS,
+      cardAnims.map(a =>
+        Animated.timing(a, {
+          toValue: 1,
+          duration: 320,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        })
+      )
+    );
 
     const pulse = Animated.loop(
       Animated.sequence([
