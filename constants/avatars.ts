@@ -5,7 +5,20 @@ export type AvatarRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type UnlockCondition =
   | { type: 'free' }
   | { type: 'reviews'; count: number }
-  | { type: 'restaurants'; count: number };
+  | { type: 'restaurants'; count: number }
+  | { type: 'likes_received'; count: number };
+
+/**
+ * Stats utente usate per valutare le condizioni di sblocco.
+ * Per aggiungere un nuovo tipo di condizione: estendi `UnlockCondition`,
+ * aggiungi il campo qui, gestiscilo in `isAvatarUnlocked` / `getUnlockProgress`,
+ * e popolalo in `services/unlockedAvatarsService.fetchUnlockStats`.
+ */
+export interface UnlockStats {
+  reviews: number;
+  restaurants: number;
+  likes: number;
+}
 
 export interface AvatarOption {
   id: string;
@@ -158,7 +171,7 @@ const UNLOCK_ALL_FOR_TESTING = true;
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number },
+  stats: { reviews: number; restaurants: number; likes?: number },
 ): boolean {
   if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
@@ -168,6 +181,8 @@ export function isAvatarUnlocked(
       return stats.reviews >= avatar.unlock.count;
     case 'restaurants':
       return stats.restaurants >= avatar.unlock.count;
+    case 'likes_received':
+      return (stats.likes ?? 0) >= avatar.unlock.count;
     default:
       return false;
   }
@@ -178,7 +193,7 @@ export function isAvatarUnlocked(
  */
 export function getUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number },
+  stats: { reviews: number; restaurants: number; likes?: number },
 ): number {
   switch (avatar.unlock.type) {
     case 'free':
@@ -187,6 +202,8 @@ export function getUnlockProgress(
       return Math.min(stats.reviews / avatar.unlock.count, 1);
     case 'restaurants':
       return Math.min(stats.restaurants / avatar.unlock.count, 1);
+    case 'likes_received':
+      return Math.min((stats.likes ?? 0) / avatar.unlock.count, 1);
     default:
       return 0;
   }

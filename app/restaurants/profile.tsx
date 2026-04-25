@@ -19,20 +19,20 @@ export default function ProfileScreen() {
   const { user, userProfile, isAuthenticated } = useAuth();
 
   const [reviews, setReviews] = useState<(Review & { restaurant_name?: string })[]>([]);
-  const [restaurantCount, setRestaurantCount] = useState(0);
+  const [likesReceived, setLikesReceived] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
     if (!user?.uid) return;
 
     (async () => {
-      const [userReviews, userRestaurants, userFavorites] = await Promise.all([
+      const [userReviews, totalLikes, userFavorites] = await Promise.all([
         RestaurantService.getReviewsByUser(user.uid),
-        RestaurantService.getRestaurantsByUser(user.uid),
+        RestaurantService.getLikesReceivedByUser(user.uid),
         RestaurantService.getFavorites(user.uid),
       ]);
       setReviews(userReviews);
-      setRestaurantCount(userRestaurants.length);
+      setLikesReceived(totalLikes);
       setFavoriteCount(userFavorites.length);
     })().catch((err) => console.warn('[Profile] Errore caricamento dati:', err));
   }, [user?.uid]);
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
             ? getAnonymousLabel(user?.uid ?? '')
             : (userProfile.display_name || user?.displayName || ''),
         }}
-        stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: favoriteCount }}
+        stats={{ likes: likesReceived, reviews: reviews.length, favorites: favoriteCount }}
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}

@@ -23,7 +23,7 @@ export default function PublicProfileScreen() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setContributions] = useState<(Review & { restaurant_name?: string })[]>([]);
-  const [restaurantCount, setRestaurantCount] = useState(0);
+  const [likesReceived, setLikesReceived] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -35,14 +35,14 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, restaurants] = await Promise.all([
+        const [prof, contribs, totalLikes] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
-          RestaurantService.getRestaurantsByUser(uid),
+          RestaurantService.getLikesReceivedByUser(uid),
         ]);
         setProfile(prof);
         setContributions(contribs);
-        setRestaurantCount(restaurants.length);
+        setLikesReceived(totalLikes);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
@@ -85,7 +85,7 @@ export default function PublicProfileScreen() {
       <ProfileCard
         profile={visibleProfile!}
         onBack={() => router.back()}
-        stats={{ restaurants: restaurantCount, reviews: reviews.length, favorites: 0 }}
+        stats={{ likes: likesReceived, reviews: reviews.length, favorites: 0 }}
       >
         {reviews.length > 0 && (
           <>

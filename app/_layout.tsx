@@ -10,6 +10,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { UnlockedAvatarsProvider } from '../contexts/UnlockedAvatarsContext';
 import { Analytics } from '../services/analytics';
 import { Crashlytics } from '../services/crashlytics';
 import { RemoteConfig } from '../services/remoteConfig';
@@ -17,6 +18,7 @@ import i18n from '../utils/i18n';
 import { useDietarySync } from '../hooks/useDietarySync';
 import ConsentModal from './consent';
 import AnnouncementPopup from './components/AnnouncementPopup';
+import UnlockedAvatarsPopup from './components/UnlockedAvatarsPopup';
 
 const splashLogo = require('../assets/splash-icon.png');
 
@@ -180,6 +182,8 @@ function AppContent() {
       <ConsentModal visible={needsLegalConsent} />
       {/* Announcement popup - shown once per popup_id after consent */}
       {hasAcceptedLegalTerms && <AnnouncementPopup />}
+      {/* Avatar unlock popup - shown when user unlocks new avatars */}
+      <UnlockedAvatarsPopup />
     </>
   );
 }
@@ -191,7 +195,9 @@ export default function RootLayout() {
         <PaperProvider theme={theme}>
           <AppProvider>
             <AuthProvider>
-              <AppContent />
+              <UnlockedAvatarsProvider>
+                <AppContent />
+              </UnlockedAvatarsProvider>
             </AuthProvider>
           </AppProvider>
         </PaperProvider>

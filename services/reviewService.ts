@@ -89,6 +89,20 @@ export async function getUserReview(restaurantId: string, userId: string): Promi
   return data;
 }
 
+export async function getLikesReceivedByUser(userId: string): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('likes_count')
+      .eq('user_id', userId);
+    if (error) throw error;
+    return (data ?? []).reduce((sum, r: any) => sum + (r.likes_count ?? 0), 0);
+  } catch (error) {
+    console.warn('[ReviewService] Errore getLikesReceivedByUser:', error);
+    return 0;
+  }
+}
+
 export async function getReviewsByUser(userId: string): Promise<(Review & { restaurant_name?: string })[]> {
   try {
     const { data, error } = await supabase

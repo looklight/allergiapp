@@ -10,7 +10,7 @@ import type { UserProfile } from '../services/auth';
 import Avatar from './Avatar';
 
 interface ProfileStats {
-  restaurants: number;
+  likes: number;
   reviews: number;
   favorites: number;
 }
@@ -96,13 +96,13 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
           <View style={styles.divider} />
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats?.restaurants ?? 0}</Text>
-              <Text style={styles.statLabel}>Ristoranti</Text>
+              <Text style={styles.statNumber}>{stats?.reviews ?? 0}</Text>
+              <Text style={styles.statLabel}>Recensioni</Text>
             </View>
             <View style={styles.statSep} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats?.reviews ?? 0}</Text>
-              <Text style={styles.statLabel}>Recensioni</Text>
+              <Text style={styles.statNumber}>{stats?.likes ?? 0}</Text>
+              <Text style={styles.statLabel}>Like ricevuti</Text>
             </View>
             <View style={styles.statSep} />
             <View style={styles.statItem}>
