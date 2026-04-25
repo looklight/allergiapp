@@ -8,6 +8,7 @@ import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantCategories';
 import ChipGrid from '../../components/ChipGrid';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
@@ -36,6 +37,7 @@ export default function AddReviewScreen() {
   const ratingNum = parseFloat(restaurantRating ?? '0');
   const ratingCountNum = parseInt(restaurantRatingCount ?? '0', 10);
   const { user, dietaryNeeds, refreshProfile } = useAuth();
+  const { refresh: refreshUnlockedAvatars } = useUnlockedAvatars();
 
   const { width: screenWidth } = useWindowDimensions();
   // Foto: dimensione dinamica per stare in riga su qualsiasi schermo
@@ -145,6 +147,9 @@ export default function AddReviewScreen() {
 
       // Salva voti cucina (pre-selezionati = baseline, nessun rischio di perdita)
       await RestaurantService.voteCuisines(restaurantId, user.uid, selectedCuisines);
+
+      // Triggera re-check sblocchi avatar (es. raggiunta soglia recensioni / paesi).
+      refreshUnlockedAvatars();
 
       if (review) {
         Alert.alert(

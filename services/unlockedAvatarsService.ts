@@ -21,7 +21,7 @@ import { AVATARS, isAvatarUnlocked, type AvatarOption, type UnlockStats } from '
  */
 export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
   try {
-    const [reviewsRes, restaurantsRes, likesRes] = await Promise.all([
+    const [reviewsRes, restaurantsRes, likesRes, countriesRes, dietaryLikesRes] = await Promise.all([
       supabase
         .from('reviews')
         .select('*', { count: 'exact', head: true })
@@ -34,19 +34,57 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
         .from('reviews')
         .select('likes_count')
         .eq('user_id', userId),
+      // Per "Poliglotta": numero di paesi distinti in cui l'utente ha recensito.
+      // JOIN inline su restaurants tramite la relazione restaurant_id.
+      supabase
+        .from('reviews')
+        .select('restaurant:restaurants!restaurant_id(country_code)')
+        .eq('user_id', userId),
+      // Per le condizioni `likes_to_dietary_reviews`: like dati dall'utente
+      // a recensioni filtrate per dieta del recensore (dietary_snapshot).
+      // Una sola query per tutte le diete: filtraggio in memoria.
+      supabase
+        .from('review_likes')
+        .select('review:reviews!review_id(dietary_snapshot)')
+        .eq('user_id', userId),
     ]);
     const likesTotal = (likesRes.data ?? []).reduce(
       (sum, r: any) => sum + (r.likes_count ?? 0),
       0,
     );
+    const countriesSet = new Set<string>();
+    for (const row of countriesRes.data ?? []) {
+      const code = (row as any)?.restaurant?.country_code;
+      if (code) countriesSet.add(code);
+    }
+    // Diete da tracciare: quelle effettivamente usate dal catalogo AVATARS.
+    // Aggiungere una nuova `likes_to_dietary_reviews` al catalogo basta a popolarne il count.
+    const dietsToTrack = Array.from(
+      new Set(
+        AVATARS.flatMap((a) =>
+          a.unlock.type === 'likes_to_dietary_reviews' ? [a.unlock.dietary] : [],
+        ),
+      ),
+    );
+    const likesToDietaryReviews: Record<string, number> = {};
+    for (const diet of dietsToTrack) likesToDietaryReviews[diet] = 0;
+    for (const row of dietaryLikesRes.data ?? []) {
+      const snapshot: string[] | undefined = (row as any)?.review?.dietary_snapshot;
+      if (!snapshot) continue;
+      for (const diet of dietsToTrack) {
+        if (snapshot.includes(diet)) likesToDietaryReviews[diet]++;
+      }
+    }
     return {
       reviews: reviewsRes.count ?? 0,
       restaurants: restaurantsRes.count ?? 0,
       likes: likesTotal,
+      countriesReviewed: countriesSet.size,
+      likesToDietaryReviews,
     };
   } catch (error) {
     console.warn('[UnlockedAvatarsService] fetchUnlockStats error:', error);
-    return { reviews: 0, restaurants: 0, likes: 0 };
+    return { reviews: 0, restaurants: 0, likes: 0, countriesReviewed: 0, likesToDietaryReviews: {} };
   }
 }
 

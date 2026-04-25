@@ -99,12 +99,20 @@ Attualmente la scheda ristorante si apre come schermata separata. L'obiettivo è
 ### Galleria avatar ("Pokedex")
 Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 - [x] Pagina dedicata con griglia avatar
-- [x] Sistema rarità (common/rare/epic/legendary)
-- [x] Condizioni sblocco (free/reviews/restaurants)
+- [x] Sistema rarità (rimosso apr 2026 — over-engineering per 11 avatar)
+- [x] Condizioni sblocco (free/reviews/restaurants/likes_received/countries_reviewed/likes_to_dietary_reviews)
 - [x] Barra progresso per avatar bloccati
 - [x] Rimosso picker avatar da edit-profile
+- [x] Sistema notifica popup nuovi sblocchi (UnlockedAvatarsContext + popup globale)
+- [x] Cleanup avatar legacy + default plate_main_logo a livello DB (migration 049)
 - [ ] Creare le immagini per gli avatar bloccati (attualmente placeholder)
 - [ ] Valutare nuovi avatar e condizioni di sblocco
+
+### Avatar gamification — miglioramenti pianificati
+**Priorità: bassa — polish UX, da fare quando l'app cresce**
+
+- [ ] **Badge "NUOVO" sugli avatar appena sbloccati nella galleria** — dopo che il popup è stato confermato, l'utente entra in galleria ma non sa quali sono i nuovi. Soluzione: tracciare un set `viewed_in_gallery` (oltre a `seen_unlocked_avatars`) e mostrare un piccolo badge/glow finché l'utente non li ha "visti" tappandoli o scorrendoci sopra. ~30 min. Effort medio, valore UX alto se la gamification cresce.
+- [ ] **Aggregazioni server-side via RPC Postgres** — oggi `fetchUnlockStats` fa 5 query parallele e somma/distinct lato client. Per utenti con >100 recensioni significa scaricare molte righe per fare `SUM`/`COUNT DISTINCT`. Una RPC `get_user_unlock_stats(uid) RETURNS jsonb` farebbe tutto server-side: ~10ms e ~1KB di traffico invece di ~50KB. **Da fare quando avrai utenti con >100 recensioni**, prima è premature optimization.
 
 ### Ristoranti Premium (certificati)
 **Priorità: media — da pianificare dopo la stabilizzazione del lancio**
@@ -216,3 +224,40 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [ ] Sostituire `Alert` con modal custom per coerenza visiva cross-platform
 - [ ] Verificare responsive layout su schermi desktop
 
+
+---
+
+### Asset optimization (audit pre-rilascio)
+**Priorità: bassa — quick wins per ridurre dimensione bundle/repo**
+
+Audit fatto 2026-04-25 dopo refactor avatar.
+
+#### Già risolto
+- [x] `profile_pic.jpg` ridotta da 1.5 MB → 7.2 KB (200×200, qualità 80) — backup in `/tmp/profile_pic_original.jpg`
+
+#### App icons sorgenti (1.16 MB nel repo)
+- [ ] Comprimere lossless `assets/icon.png` (1024×1024, attualmente 644 KB → atteso ~150 KB con `pngquant` o `oxipng`)
+- [ ] Comprimere lossless `assets/adaptive-icon.png` (1024×1024, attualmente 516 KB → atteso ~150 KB)
+- [ ] Comprimere `assets/splash-icon.png` (400×400, 176 KB)
+- **Nota:** non vengono spediti agli utenti (EAS al build genera le rasterizzazioni platform-specific). Pesano solo su repo size + tempo build EAS.
+
+#### Banner shipping (`happy_plate_*.png`, ~450 KB)
+Usati in 8 punti: login, signup, add ristorante, profile guest, FAB ristoranti, BannerCarousel x3.
+- [ ] **Decidere architettura** prima di lavorare sui file: vedi sezione sotto
+- [ ] Comprimere lossless `pngquant` quando definitiva (-30/40%)
+
+#### Banner architecture — decisione da prendere
+3 opzioni:
+- **A. Stesso pipeline degli avatar** (`_design/banners/` → `assets/banners/` con script). Workflow uniforme. Cambi banner = nuovo build.
+- **B. Banner remoti via Supabase Storage** (BannerCarousel li scarica via URL + cache). Cambi banner senza rilasciare app, A/B test, banner stagionali. ~30 min lavoro, gestione cache/fallback.
+- **C. Hybrid**: 1-2 default bundlati come fallback, gli altri remoti.
+- [ ] Decidere se i banner cambieranno spesso (promo/eventi/seasonal → B) o sono evergreen (→ A)
+
+#### Avatar plate_passport
+- [ ] Ridisegnare master con disco centrato (vedi convention in `memory/project_avatar_pipeline.md`). Quando pronto, drop in `_design/avatars/plate_passport.png` + `npm run build:avatars`. Bundle calerà da 176 KB → ~60 KB come gli altri.
+
+#### Compressione automatica avatar nel build script (opzionale)
+- [ ] Aggiungere step `pngquant` in `scripts/build-avatars.mjs` dopo lo step `sips`. Bundle avatar ~700 KB → ~400 KB. Richiede `brew install pngquant`.
+
+#### Pulizia dipendenze Firebase
+- [ ] Falso allarme verificato 2026-04-25: `firebase` e `@firebase` (142 MB in node_modules) sono dipendenze transitive (probabilmente da Supabase), non incidono sul bundle. **Nessuna azione richiesta.** Lasciato qui per memoria storica.

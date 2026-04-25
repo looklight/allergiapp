@@ -10,6 +10,7 @@ import { PlacesService, PlaceAutocompleteResult } from '../../services/placesSer
 import { AuthService } from '../../services/auth';
 import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import StarRating from '../../components/StarRating';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import HeaderBar from '../../components/HeaderBar';
@@ -383,6 +384,7 @@ export default function AddRestaurantScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, dietaryNeeds, refreshProfile } = useAuth();
+  const { refresh: refreshUnlockedAvatars } = useUnlockedAvatars();
 
   const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(null);
   const [cuisineTypes, setCuisineTypes] = useState<string[]>([]);
@@ -510,6 +512,9 @@ export default function AddRestaurantScreen() {
         language: i18n.locale,
       }).catch(() => { /* review non critica, ristorante già creato */ });
     }
+
+    // Triggera re-check sblocchi avatar (es. raggiunta soglia ristoranti / paesi).
+    if (result) refreshUnlockedAvatars();
 
     setIsSubmitting(false);
 

@@ -11,6 +11,7 @@ import {
   type CuisineVote,
 } from '../services/restaurantService';
 import { useAuth } from '../contexts/AuthContext';
+import { useUnlockedAvatars } from '../contexts/UnlockedAvatarsContext';
 import { useReviewsPaginated } from './useReviewsPaginated';
 
 export interface UnifiedReview {
@@ -38,6 +39,7 @@ export function useRestaurantDetail(
 ) {
   const router = useRouter();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
+  const { refresh: refreshUnlockedAvatars } = useUnlockedAvatars();
 
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -325,6 +327,8 @@ export function useRestaurantDetail(
         ? { ...r, liked_by_me: result.liked, likes_count: result.likes_count }
         : r
       ));
+      // Triggera re-check sblocchi avatar (es. like a recensione di vegano).
+      refreshUnlockedAvatars();
     } catch {
       updateReviews(prev => prev.map(r => r.id === reviewId
         ? { ...r, liked_by_me: wasLiked, likes_count: r.likes_count + (wasLiked ? 1 : -1) }
@@ -333,7 +337,7 @@ export function useRestaurantDetail(
     } finally {
       pendingLikes.current.delete(reviewId);
     }
-  }, [isAuthenticated, user, router, updateReviews]);
+  }, [isAuthenticated, user, router, updateReviews, refreshUnlockedAvatars]);
 
   return {
     restaurant,

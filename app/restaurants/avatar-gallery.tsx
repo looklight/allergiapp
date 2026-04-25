@@ -10,22 +10,21 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
-import { supabase } from '../../services/supabase';
 import {
   AVATARS,
   isAvatarUnlocked,
   getUnlockProgress,
-  RARITY_COLORS,
-  RARITY_LABELS,
   type AvatarOption,
+  type UnlockStats,
 } from '../../constants/avatars';
+import { fetchUnlockStats } from '../../services/unlockedAvatarsService';
 import HeaderBar from '../../components/HeaderBar';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -39,9 +38,54 @@ const NUM_COLUMNS = Math.max(
 );
 const ITEM_SIZE = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 
-interface UserStats {
-  reviews: number;
-  restaurants: number;
+/** Etichetta plurale per una dieta (es. "vegan" → "vegani"). */
+const DIETARY_PLURAL: Record<string, string> = {
+  vegan: 'vegani',
+  vegetarian: 'vegetariani',
+  gluten_free: 'celiaci',
+  lactose_free: 'intolleranti al lattosio',
+};
+
+function dietaryPlural(diet: string): string {
+  return DIETARY_PLURAL[diet] ?? diet;
+}
+
+/** Etichetta progresso per una condizione (es. "3/5 like ricevuti"). */
+function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
+  switch (avatar.unlock.type) {
+    case 'free':
+      return '';
+    case 'reviews':
+      return `${stats.reviews}/${avatar.unlock.count} recensioni`;
+    case 'restaurants':
+      return `${stats.restaurants}/${avatar.unlock.count} ristoranti`;
+    case 'likes_received':
+      return `${stats.likes}/${avatar.unlock.count} like ricevuti`;
+    case 'countries_reviewed':
+      return `${stats.countriesReviewed}/${avatar.unlock.count} paesi recensiti`;
+    case 'likes_to_dietary_reviews': {
+      const current = stats.likesToDietaryReviews[avatar.unlock.dietary] ?? 0;
+      return `${current}/${avatar.unlock.count} like a recensioni di ${dietaryPlural(avatar.unlock.dietary)}`;
+    }
+  }
+}
+
+/** Etichetta della condizione (es. "Scrivi 5 recensioni"). */
+function formatConditionLabel(avatar: AvatarOption): string {
+  switch (avatar.unlock.type) {
+    case 'free':
+      return 'Avatar gratuito';
+    case 'reviews':
+      return `Scrivi ${avatar.unlock.count} recensioni`;
+    case 'restaurants':
+      return `Aggiungi ${avatar.unlock.count} ristoranti`;
+    case 'likes_received':
+      return `Ricevi ${avatar.unlock.count} like sulle tue recensioni`;
+    case 'countries_reviewed':
+      return `Recensisci ristoranti in ${avatar.unlock.count} paesi diversi`;
+    case 'likes_to_dietary_reviews':
+      return `Metti like a ${avatar.unlock.count} recensioni di utenti ${dietaryPlural(avatar.unlock.dietary)}`;
+  }
 }
 
 export default function AvatarGalleryScreen() {
@@ -49,30 +93,21 @@ export default function AvatarGalleryScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, refreshProfile } = useAuth();
 
-  const [stats, setStats] = useState<UserStats>({ reviews: 0, restaurants: 0 });
+  const [stats, setStats] = useState<UnlockStats>({
+    reviews: 0,
+    restaurants: 0,
+    likes: 0,
+    countriesReviewed: 0,
+    likesToDietaryReviews: {},
+  });
   const [selectedId, setSelectedId] = useState(userProfile?.avatar_url ?? null);
   const [detailAvatar, setDetailAvatar] = useState<AvatarOption | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Carica conteggi utente
+  // Carica conteggi utente per valutare le condizioni di sblocco.
   useEffect(() => {
     if (!user?.uid) return;
-    (async () => {
-      const [reviewsRes, restaurantsRes] = await Promise.all([
-        supabase
-          .from('reviews')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.uid),
-        supabase
-          .from('restaurants')
-          .select('*', { count: 'exact', head: true })
-          .eq('added_by', user.uid),
-      ]);
-      setStats({
-        reviews: reviewsRes.count ?? 0,
-        restaurants: restaurantsRes.count ?? 0,
-      });
-    })().catch((err) => console.warn('[AvatarGallery] Errore stats:', err));
+    fetchUnlockStats(user.uid).then(setStats);
   }, [user?.uid]);
 
   const handleSelect = useCallback(
@@ -150,7 +185,6 @@ export default function AvatarGalleryScreen() {
           {AVATARS.map((avatar) => {
             const unlocked = isAvatarUnlocked(avatar, stats);
             const isSelected = selectedId === avatar.id;
-            const rarityColor = RARITY_COLORS[avatar.rarity];
 
             return (
               <TouchableOpacity
@@ -159,8 +193,8 @@ export default function AvatarGalleryScreen() {
                 activeOpacity={0.7}
                 style={[
                   styles.gridItem,
-                  { borderColor: isSelected ? rarityColor : 'transparent' },
-                  isSelected && { backgroundColor: `${rarityColor}15` },
+                  { borderColor: isSelected ? theme.colors.primary : 'transparent' },
+                  isSelected && { backgroundColor: theme.colors.primaryLight },
                 ]}
               >
                 {/* Immagine o placeholder */}
@@ -171,47 +205,37 @@ export default function AvatarGalleryScreen() {
                       style={[styles.gridImage, !unlocked && styles.gridImageLocked]}
                     />
                   ) : (
-                    <View
-                      style={[
-                        styles.gridPlaceholder,
-                        { backgroundColor: unlocked ? `${rarityColor}25` : theme.colors.background },
-                      ]}
-                    >
+                    <View style={styles.gridPlaceholder}>
                       <MaterialCommunityIcons
                         name="help-circle-outline"
                         size={36}
-                        color={unlocked ? rarityColor : theme.colors.textDisabled}
+                        color={unlocked ? theme.colors.primary : theme.colors.textDisabled}
                       />
                     </View>
                   )}
 
-                  {/* Lock overlay */}
+                  {/* Velo grigio + badge in alto a sinistra per avatar bloccati */}
+                  {!unlocked && <View style={styles.lockedVeil} />}
                   {!unlocked && (
-                    <View style={styles.lockOverlay}>
-                      <MaterialCommunityIcons name="lock" size={24} color="#FFF" />
+                    <View style={styles.lockBadge}>
+                      <MaterialCommunityIcons name="lock" size={12} color="#FFF" />
                     </View>
                   )}
 
                   {/* Check badge */}
                   {isSelected && (
-                    <View style={[styles.checkBadge, { backgroundColor: rarityColor }]}>
+                    <View style={styles.checkBadge}>
                       <MaterialCommunityIcons name="check" size={14} color="#FFF" />
                     </View>
                   )}
                 </View>
 
-                {/* Nome + rarità */}
                 <Text
                   style={[styles.gridName, !unlocked && styles.gridNameLocked]}
                   numberOfLines={1}
                 >
                   {avatar.name}
                 </Text>
-                <View style={[styles.rarityBadge, { backgroundColor: `${rarityColor}20` }]}>
-                  <Text style={[styles.rarityText, { color: rarityColor }]}>
-                    {RARITY_LABELS[avatar.rarity]}
-                  </Text>
-                </View>
               </TouchableOpacity>
             );
           })}
@@ -246,19 +270,11 @@ function DetailCard({
   stats,
 }: {
   avatar: AvatarOption;
-  stats: UserStats;
+  stats: UnlockStats;
 }) {
   const unlocked = isAvatarUnlocked(avatar, stats);
   const progress = getUnlockProgress(avatar, stats);
-  const rarityColor = RARITY_COLORS[avatar.rarity];
-
-  const { unlock } = avatar;
-  let progressLabel = '';
-  if (unlock.type === 'reviews') {
-    progressLabel = `${stats.reviews}/${unlock.count} recensioni`;
-  } else if (unlock.type === 'restaurants') {
-    progressLabel = `${stats.restaurants}/${unlock.count} ristoranti`;
-  }
+  const progressLabel = formatProgressLabel(avatar, stats);
 
   return (
     <View style={styles.detailCard}>
@@ -270,11 +286,11 @@ function DetailCard({
             style={[styles.detailAvatar, !unlocked && styles.gridImageLocked]}
           />
         ) : (
-          <View style={[styles.detailPlaceholder, { backgroundColor: `${rarityColor}20` }]}>
+          <View style={styles.detailPlaceholder}>
             <MaterialCommunityIcons
               name="help-circle-outline"
               size={56}
-              color={unlocked ? rarityColor : theme.colors.textDisabled}
+              color={unlocked ? theme.colors.primary : theme.colors.textDisabled}
             />
           </View>
         )}
@@ -287,12 +303,7 @@ function DetailCard({
 
       {/* Info */}
       <Text style={styles.detailName}>{avatar.name}</Text>
-      <View style={[styles.detailRarityBadge, { backgroundColor: `${rarityColor}20` }]}>
-        <Text style={[styles.detailRarityText, { color: rarityColor }]}>
-          {RARITY_LABELS[avatar.rarity]}
-        </Text>
-      </View>
-      <Text style={styles.detailDescription}>{avatar.description}</Text>
+      <Text style={styles.detailDescription}>{formatConditionLabel(avatar)}</Text>
 
       {/* Barra progresso */}
       {!unlocked && progressLabel !== '' && (
@@ -301,7 +312,7 @@ function DetailCard({
             <View
               style={[
                 styles.progressFill,
-                { width: `${Math.round(progress * 100)}%`, backgroundColor: rarityColor },
+                { width: `${Math.round(progress * 100)}%`, backgroundColor: theme.colors.primary },
               ]}
             />
           </View>
@@ -388,12 +399,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lockOverlay: {
+  lockedVeil: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.2)',
     borderRadius: 12,
-    alignItems: 'center',
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
   },
   checkBadge: {
     position: 'absolute',
@@ -404,6 +424,7 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.primary,
   },
   gridName: {
     fontSize: 12,
@@ -414,16 +435,6 @@ const styles = StyleSheet.create({
   },
   gridNameLocked: {
     color: theme.colors.textDisabled,
-  },
-  rarityBadge: {
-    marginTop: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  rarityText: {
-    fontSize: 10,
-    fontWeight: '700',
   },
 
   // ── Modal ───────────────────────────────────────────
@@ -478,16 +489,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textPrimary,
     marginBottom: 6,
-  },
-  detailRarityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  detailRarityText: {
-    fontSize: 12,
-    fontWeight: '700',
   },
   detailDescription: {
     fontSize: 14,

@@ -1,12 +1,12 @@
 import { ImageSourcePropType } from 'react-native';
 
-export type AvatarRarity = 'common' | 'rare' | 'epic' | 'legendary';
-
 export type UnlockCondition =
   | { type: 'free' }
   | { type: 'reviews'; count: number }
   | { type: 'restaurants'; count: number }
-  | { type: 'likes_received'; count: number };
+  | { type: 'likes_received'; count: number }
+  | { type: 'countries_reviewed'; count: number }
+  | { type: 'likes_to_dietary_reviews'; count: number; dietary: string };
 
 /**
  * Stats utente usate per valutare le condizioni di sblocco.
@@ -18,33 +18,17 @@ export interface UnlockStats {
   reviews: number;
   restaurants: number;
   likes: number;
+  countriesReviewed: number;
+  /** Like dati a recensioni filtrati per dieta (chiave = id della dieta nel snapshot). */
+  likesToDietaryReviews: Record<string, number>;
 }
 
 export interface AvatarOption {
   id: string;
   source: ImageSourcePropType | null;
   name: string;
-  description: string;
-  rarity: AvatarRarity;
   unlock: UnlockCondition;
 }
-
-/**
- * Colori per rarità avatar.
- */
-export const RARITY_COLORS: Record<AvatarRarity, string> = {
-  common: '#9E9E9E',
-  rare: '#2196F3',
-  epic: '#9C27B0',
-  legendary: '#FF9800',
-};
-
-export const RARITY_LABELS: Record<AvatarRarity, string> = {
-  common: 'Comune',
-  rare: 'Raro',
-  epic: 'Epico',
-  legendary: 'Leggendario',
-};
 
 /**
  * Catalogo avatar.
@@ -63,26 +47,19 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_main_logo',
     source: require('../assets/avatars/plate_main_logo.png'),
     name: 'Il Buongustaio',
-    description: 'Un classico per chi ama mangiare bene.',
-    rarity: 'common',
+    unlock: { type: 'free' },
+  },
+  {
+    id: 'plate_passport',
+    source: require('../assets/avatars/plate_passport.png'),
+    name: 'Il Viaggiatore',
     unlock: { type: 'free' },
   },
   {
     id: 'plate_language',
     source: require('../assets/avatars/plate_language.png'),
     name: 'Il Poliglotta',
-    description: 'Per chi parla la lingua del cibo.',
-    rarity: 'common',
-    unlock: { type: 'free' },
-  },
-  {
-    // TODO: master da ridisegnare con disco centrato e proporzionato (vecchia versione mantenuta 1:1)
-    id: 'plate_passport',
-    source: require('../assets/avatars/plate_passport.png'),
-    name: 'Il Viaggiatore',
-    description: 'Sempre in viaggio, sempre a tavola.',
-    rarity: 'common',
-    unlock: { type: 'free' },
+    unlock: { type: 'countries_reviewed', count: 3 },
   },
 
   // ── Reviews ───────────────────────────────────────────
@@ -90,24 +67,18 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_wolfe',
     source: require('../assets/avatars/plate_wolfe.png'),
     name: 'Il Critico',
-    description: 'Scrivi 5 recensioni per sbloccarlo.',
-    rarity: 'rare',
     unlock: { type: 'reviews', count: 5 },
   },
   {
     id: 'plate_veget',
     source: require('../assets/avatars/plate_veget.png'),
     name: 'Il Gourmet',
-    description: 'Scrivi 15 recensioni per sbloccarlo.',
-    rarity: 'epic',
     unlock: { type: 'reviews', count: 15 },
   },
   {
     id: 'plate_wizard',
     source: require('../assets/avatars/plate_wizard.png'),
     name: 'La Guida Michelin',
-    description: 'Scrivi 30 recensioni per sbloccarlo.',
-    rarity: 'legendary',
     unlock: { type: 'reviews', count: 30 },
   },
 
@@ -116,24 +87,18 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_straw',
     source: require('../assets/avatars/plate_straw.png'),
     name: "L'Esploratore",
-    description: 'Aggiungi 5 ristoranti per sbloccarlo.',
-    rarity: 'rare',
-    unlock: { type: 'restaurants', count: 5 },
+    unlock: { type: 'countries_reviewed', count: 2 },
   },
   {
     id: 'plate_bat',
     source: require('../assets/avatars/plate_bat.png'),
     name: 'Il Mappatore',
-    description: 'Aggiungi 15 ristoranti per sbloccarlo.',
-    rarity: 'epic',
     unlock: { type: 'restaurants', count: 15 },
   },
   {
     id: 'plate_bl_mask',
     source: require('../assets/avatars/plate_bl_mask.png'),
     name: "L'Atlante Vivente",
-    description: 'Aggiungi 30 ristoranti per sbloccarlo.',
-    rarity: 'legendary',
     unlock: { type: 'restaurants', count: 30 },
   },
 
@@ -142,17 +107,13 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_green_belt',
     source: require('../assets/avatars/plate_green_belt.png'),
     name: 'Cintura Verde',
-    description: 'Avatar speciale.',
-    rarity: 'rare',
-    unlock: { type: 'free' },
+    unlock: { type: 'likes_to_dietary_reviews', count: 3, dietary: 'vegan' },
   },
   {
     id: 'plate_pink_belt',
     source: require('../assets/avatars/plate_pink_belt.png'),
     name: 'Cintura Rosa',
-    description: 'Avatar speciale.',
-    rarity: 'epic',
-    unlock: { type: 'free' },
+    unlock: { type: 'likes_to_dietary_reviews', count: 5, dietary: 'vegetarian' },
   },
 ];
 
@@ -164,14 +125,14 @@ export function getAvatarById(id: string): AvatarOption | undefined {
  * TEMP: se true sblocca tutti gli avatar a prescindere dalle condizioni.
  * Usato per test del catalogo. Rimettere a false prima del rilascio.
  */
-const UNLOCK_ALL_FOR_TESTING = true;
+const UNLOCK_ALL_FOR_TESTING = false;
 
 /**
  * Determina se un avatar è sbloccato in base alle stats dell'utente.
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number },
+  stats: { reviews: number; restaurants: number; likes?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
 ): boolean {
   if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
@@ -183,6 +144,10 @@ export function isAvatarUnlocked(
       return stats.restaurants >= avatar.unlock.count;
     case 'likes_received':
       return (stats.likes ?? 0) >= avatar.unlock.count;
+    case 'countries_reviewed':
+      return (stats.countriesReviewed ?? 0) >= avatar.unlock.count;
+    case 'likes_to_dietary_reviews':
+      return (stats.likesToDietaryReviews?.[avatar.unlock.dietary] ?? 0) >= avatar.unlock.count;
     default:
       return false;
   }
@@ -193,7 +158,7 @@ export function isAvatarUnlocked(
  */
 export function getUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number },
+  stats: { reviews: number; restaurants: number; likes?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
 ): number {
   switch (avatar.unlock.type) {
     case 'free':
@@ -204,6 +169,10 @@ export function getUnlockProgress(
       return Math.min(stats.restaurants / avatar.unlock.count, 1);
     case 'likes_received':
       return Math.min((stats.likes ?? 0) / avatar.unlock.count, 1);
+    case 'countries_reviewed':
+      return Math.min((stats.countriesReviewed ?? 0) / avatar.unlock.count, 1);
+    case 'likes_to_dietary_reviews':
+      return Math.min((stats.likesToDietaryReviews?.[avatar.unlock.dietary] ?? 0) / avatar.unlock.count, 1);
     default:
       return 0;
   }
