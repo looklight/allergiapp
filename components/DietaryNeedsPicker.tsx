@@ -3,16 +3,8 @@ import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-nat
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
-import {
-  FOOD_RESTRICTIONS,
-  getRestrictionsByCategory,
-  getRestrictionById,
-  INTOLERANCE_RESTRICTION_IDS,
-} from '../constants/foodRestrictions';
-import ChipGrid from './ChipGrid';
-
-const DIETS_GROUP = getRestrictionsByCategory('diet');
-const INTOLERANCES_GROUP = FOOD_RESTRICTIONS.filter(r => r.category !== 'diet');
+import { getRestrictionById } from '../constants/foodRestrictions';
+import DietaryChipsSelector from './restaurants/DietaryChipsSelector';
 
 interface DietaryNeedsPickerProps {
   allergens: string[];
@@ -155,27 +147,13 @@ export default function DietaryNeedsPicker({
               <Text style={styles.syncDone}>Profilo aggiornato</Text>
             </View>
           )}
-          <Text style={styles.editorLabel}>Diete</Text>
-          <ChipGrid
-            items={DIETS_GROUP}
-            activeIds={diets}
-            onToggle={handleToggleDiet}
+          <DietaryChipsSelector
+            allergens={allergens}
+            diets={diets}
+            onToggleAllergen={handleToggleAllergen}
+            onToggleDiet={handleToggleDiet}
             lang={lang}
-            keyPrefix="dnp-diet"
-          />
-          <Text style={[styles.editorLabel, { marginTop: 14 }]}>Intolleranze e allergeni</Text>
-          <ChipGrid
-            items={INTOLERANCES_GROUP}
-            activeIds={[...diets, ...allergens]}
-            onToggle={(id) => {
-              if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
-                handleToggleDiet(id);
-              } else {
-                handleToggleAllergen(id);
-              }
-            }}
-            lang={lang}
-            keyPrefix="dnp-intol"
+            keyPrefix="dnp"
           />
           <TouchableOpacity onPress={() => setExpanded(false)} activeOpacity={0.6} style={styles.bottomLink}>
             <MaterialCommunityIcons name="chevron-up" size={16} color={theme.colors.primary} />
@@ -245,12 +223,6 @@ const styles = StyleSheet.create({
   editor: {
     marginTop: 4,
     gap: 4,
-  },
-  editorLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    marginBottom: 4,
   },
   syncCard: {
     flexDirection: 'row',

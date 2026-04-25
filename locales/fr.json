@@ -152,6 +152,7 @@
     "diets": "R\u00e9gimes",
     "dietaryHint": "S\u00e9lectionnez vos besoins. Ils seront automatiquement associ\u00e9s \u00e0 vos contributions.",
     "allergensIntolerances": "Allerg\u00e8nes et intol\u00e9rances",
+    "others": "Autres",
     "saveDietary": "Enregistrer les besoins alimentaires",
     "saveDietaryError": "Impossible d'enregistrer les besoins alimentaires. R\u00e9essayez."
   },

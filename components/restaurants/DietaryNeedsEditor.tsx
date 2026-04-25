@@ -3,18 +3,9 @@ import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import {
-  FOOD_RESTRICTIONS,
-  getRestrictionsByCategory,
-  INTOLERANCE_RESTRICTION_IDS,
-} from '../../constants/foodRestrictions';
-import ChipGrid from '../ChipGrid';
+import DietaryChipsSelector from './DietaryChipsSelector';
 import i18n from '../../utils/i18n';
 import type { FoodRestrictionId, DietId, DietaryNeeds } from '../../types';
-
-// Stessi gruppi di add-review: diete separate, tutto il resto insieme
-const DIETS_GROUP = getRestrictionsByCategory('diet');
-const ALLERGENS_GROUP = FOOD_RESTRICTIONS.filter(r => r.category !== 'diet');
 
 interface DietaryNeedsEditorProps {
   initialNeeds: DietaryNeeds;
@@ -67,31 +58,14 @@ export default function DietaryNeedsEditor({ initialNeeds, lang, onSave }: Dieta
           <Text style={styles.unsavedBannerAction}>{saving ? 'Salvataggio...' : 'Salva'}</Text>
         </TouchableOpacity>
       )}
-      <Text style={styles.sectionTitle}>{i18n.t('profile.diets')}</Text>
-      <Text style={styles.sectionHint}>
-        {i18n.t('profile.dietaryHint')}
-      </Text>
-      <ChipGrid
-        items={DIETS_GROUP}
-        activeIds={diets}
-        onToggle={toggleDiet}
+      <DietaryChipsSelector
+        allergens={allergens}
+        diets={diets}
+        onToggleAllergen={toggleAllergen}
+        onToggleDiet={toggleDiet}
         lang={lang}
-        keyPrefix="diet"
-      />
-
-      <Text style={[styles.sectionTitle, { marginTop: 20 }]}>{i18n.t('profile.allergensIntolerances')}</Text>
-      <ChipGrid
-        items={ALLERGENS_GROUP}
-        activeIds={[...diets, ...allergens]}
-        onToggle={(id) => {
-          if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
-            toggleDiet(id);
-          } else {
-            toggleAllergen(id);
-          }
-        }}
-        lang={lang}
-        keyPrefix="intol"
+        showHint
+        keyPrefix="editor"
       />
 
       {hasChanges && (
@@ -134,18 +108,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.primary,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 6,
-  },
-  sectionHint: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginBottom: 12,
-    lineHeight: 18,
   },
   saveButton: {
     borderRadius: 10,

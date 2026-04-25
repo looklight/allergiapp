@@ -155,6 +155,7 @@
     "diets": "Diets",
     "dietaryHint": "Select your needs. They will be automatically linked to your contributions.",
     "allergensIntolerances": "Allergens & intolerances",
+    "others": "Other",
     "saveDietary": "Save dietary needs",
     "saveDietaryError": "Unable to save dietary needs. Please try again."
   },

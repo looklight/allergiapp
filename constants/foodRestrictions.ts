@@ -13,7 +13,7 @@
 
 import { ALLERGENS } from './allergens';
 import { DIETS } from './diets';
-import { OTHER_FOODS } from './otherFoods';
+import { OTHER_FOODS, type OtherFoodCategory } from './otherFoods';
 import type { Language } from '../types';
 
 export type FoodRestrictionCategory = 'diet' | 'eu_allergen' | 'intolerance' | 'food_sensitivity';
@@ -21,6 +21,8 @@ export type FoodRestrictionCategory = 'diet' | 'eu_allergen' | 'intolerance' | '
 export interface FoodRestriction {
   id: string;
   category: FoodRestrictionCategory;
+  /** Sotto-categoria, valorizzata solo per i food_sensitivity (verdure, frutta, ...) */
+  subcategory?: OtherFoodCategory;
   icon?: string;
   translations: Record<Language, string>;
 }
@@ -47,7 +49,13 @@ export const FOOD_RESTRICTIONS: readonly FoodRestriction[] = [
   // Sensibilità alimentari (ordine alfabetico IT)
   ...[...OTHER_FOODS]
     .sort((a, b) => a.translations.it.localeCompare(b.translations.it, 'it'))
-    .map(f => ({ id: f.id, category: 'food_sensitivity' as const, icon: f.icon, translations: f.translations })),
+    .map(f => ({
+      id: f.id,
+      category: 'food_sensitivity' as const,
+      subcategory: f.category,
+      icon: f.icon,
+      translations: f.translations,
+    })),
 ];
 
 // ─── Helper ──────────────────────────────────────────────────────────────────

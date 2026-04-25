@@ -155,6 +155,7 @@
     "diets": "Diete",
     "dietaryHint": "Seleziona le tue esigenze. Verranno associate automaticamente ai tuoi contributi.",
     "allergensIntolerances": "Allergeni e intolleranze",
+    "others": "Altre",
     "saveDietary": "Salva esigenze alimentari",
     "saveDietaryError": "Impossibile salvare le esigenze alimentari. Riprova."
   },

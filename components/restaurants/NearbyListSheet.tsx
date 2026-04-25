@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect, type ComponentProps } from 'react';
 import { View, StyleSheet, ActivityIndicator, BackHandler, Platform, TouchableOpacity, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -13,7 +13,9 @@ import type { Restaurant } from '../../services/restaurantService';
 const SNAP_POINTS = [0.55, 0.92];
 
 type SortKey = 'distance' | 'rating' | 'popularity' | 'compatibility';
-const SORT_OPTIONS: { key: SortKey; label: string; icon: string; requiresMatchInfo?: boolean }[] = [
+type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+const SORT_OPTIONS: { key: SortKey; label: string; icon: IconName; requiresMatchInfo?: boolean }[] = [
   { key: 'compatibility', label: 'Compatibilità', icon: 'shield-check', requiresMatchInfo: true },
   { key: 'popularity', label: 'Popolarità', icon: 'comment-multiple' },
   { key: 'rating', label: 'Valutazione', icon: 'star' },

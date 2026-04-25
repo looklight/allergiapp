@@ -92,6 +92,7 @@ const SelectedPin = memo(function SelectedPin({
     <Marker
       coordinate={{ latitude, longitude }}
       tracksViewChanges
+      // @ts-expect-error `cluster` prop is consumed by react-native-map-clustering parent, not typed on Marker
       cluster={false}
       onPress={handlePress}
       zIndex={9999}

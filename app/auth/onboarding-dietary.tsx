@@ -5,19 +5,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
-import {
-  FOOD_RESTRICTIONS,
-  getRestrictionsByCategory,
-  INTOLERANCE_RESTRICTION_IDS,
-} from '../../constants/foodRestrictions';
-import ChipGrid from '../../components/ChipGrid';
+import DietaryChipsSelector from '../../components/restaurants/DietaryChipsSelector';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import i18n from '../../utils/i18n';
 import type { FoodRestrictionId, DietId } from '../../types';
-
-const DIETS_GROUP = getRestrictionsByCategory('diet');
-const ALLERGENS_GROUP = FOOD_RESTRICTIONS.filter(r => r.category !== 'diet');
 
 export default function OnboardingDietaryScreen() {
   const router = useRouter();
@@ -85,34 +77,19 @@ export default function OnboardingDietaryScreen() {
       >
         <View style={styles.introSection}>
           <MaterialCommunityIcons name="shield-check-outline" size={40} color={theme.colors.primary} />
-          <Text style={styles.introTitle}>Trova le soluzioni giuste per te</Text>
+          <Text style={styles.introTitle}>Una community che si aiuta a vicenda</Text>
           <Text style={styles.introText}>
-            Indica le tue allergie e preferenze alimentari e trova subito i ristoranti più adatti a te.
+            Indica le tue esigenze: filtreremo i ristoranti per te e renderemo le tue recensioni utili a chi ha le stesse allergie.
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>{i18n.t('profile.diets')}</Text>
-        <ChipGrid
-          items={DIETS_GROUP}
-          activeIds={diets}
-          onToggle={toggleDiet}
+        <DietaryChipsSelector
+          allergens={allergens}
+          diets={diets}
+          onToggleAllergen={toggleAllergen}
+          onToggleDiet={toggleDiet}
           lang={i18n.locale}
-          keyPrefix="diet"
-        />
-
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{i18n.t('profile.allergensIntolerances')}</Text>
-        <ChipGrid
-          items={ALLERGENS_GROUP}
-          activeIds={[...diets, ...allergens]}
-          onToggle={(id) => {
-            if (INTOLERANCE_RESTRICTION_IDS.has(id)) {
-              toggleDiet(id);
-            } else {
-              toggleAllergen(id);
-            }
-          }}
-          lang={i18n.locale}
-          keyPrefix="intol"
+          keyPrefix="onboarding"
         />
 
         {hasSelection && (
@@ -202,12 +179,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 6,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 10,
   },
   consentRow: {
     flexDirection: 'row',
