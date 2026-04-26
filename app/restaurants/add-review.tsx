@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Image, ActivityIndicator, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -61,6 +61,9 @@ export default function AddReviewScreen() {
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [cuisinePickerOpen, setCuisinePickerOpen] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollOffsetY = useRef(0);
+  const viewportHeight = useRef(0);
   const isEditMode = !!reviewId;
   const hasNeeds = selectedAllergens.length > 0 || selectedDiets.length > 0;
 
@@ -179,9 +182,13 @@ export default function AddReviewScreen() {
         keyboardVerticalOffset={0}
       >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 130 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        onScroll={e => { scrollOffsetY.current = e.nativeEvent.contentOffset.y; }}
+        scrollEventThrottle={16}
+        onLayout={e => { viewportHeight.current = e.nativeEvent.layout.height; }}
       >
 
         {isLoadingExisting && (
@@ -274,6 +281,11 @@ export default function AddReviewScreen() {
                 onPress={() => toggleCuisine(v.cuisine_id)}
                 activeOpacity={0.7}
               >
+                <MaterialCommunityIcons
+                  name={selected ? 'check-circle' : 'plus-circle-outline'}
+                  size={15}
+                  color={selected ? theme.colors.onPrimary : theme.colors.textSecondary}
+                />
                 <Text style={[styles.cuisineChipText, selected && styles.cuisineChipTextSelected]}>
                   {getCuisineLabel(v.cuisine_id, i18n.locale)}
                 </Text>
@@ -293,6 +305,11 @@ export default function AddReviewScreen() {
                 onPress={() => toggleCuisine(id)}
                 activeOpacity={0.7}
               >
+                <MaterialCommunityIcons
+                  name="check-circle"
+                  size={15}
+                  color={theme.colors.onPrimary}
+                />
                 <Text style={[styles.cuisineChipText, styles.cuisineChipTextSelected]}>
                   {getCuisineLabel(id, i18n.locale)}
                 </Text>
@@ -307,7 +324,7 @@ export default function AddReviewScreen() {
           >
             <MaterialCommunityIcons
               name={cuisinePickerOpen ? 'close' : 'plus'}
-              size={14}
+              size={15}
               color={cuisinePickerOpen ? theme.colors.primary : theme.colors.textSecondary}
             />
             <Text style={[styles.cuisineChipAddText, cuisinePickerOpen && styles.cuisineChipAddTextOpen]}>
@@ -317,7 +334,22 @@ export default function AddReviewScreen() {
         </View>
         {/* Picker tag aggiuntivi */}
         {cuisinePickerOpen && (
-          <View style={[styles.cuisineGrid, { marginTop: 8 }]}>
+          <View
+            style={[styles.cuisineGrid, { marginTop: 8 }]}
+            onLayout={e => {
+              // Scroll into view: scrolla solo del minimo necessario per
+              // rivelare il picker, senza riposizionare la vista se è già
+              // visibile.
+              const { y, height } = e.nativeEvent.layout;
+              const visibleTop = scrollOffsetY.current;
+              const visibleBottom = visibleTop + viewportHeight.current;
+              const pickerBottom = y + height;
+              if (pickerBottom > visibleBottom) {
+                const newOffset = visibleTop + (pickerBottom - visibleBottom) + 16;
+                scrollRef.current?.scrollTo({ y: newOffset, animated: true });
+              }
+            }}
+          >
             {CUISINE_CATEGORIES
               .filter(cat => !selectedCuisines.includes(cat.id) && !cuisineVotes.some(v => v.cuisine_id === cat.id))
               .map(cat => (
@@ -553,33 +585,33 @@ const styles = StyleSheet.create({
   cuisineGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     marginBottom: 4,
   },
   cuisineChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    borderRadius: 16,
+    gap: 6,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   cuisineChipSelected: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
   cuisineChipText: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.textPrimary,
   },
   cuisineChipTextSelected: {
     color: theme.colors.onPrimary,
   },
   cuisineChipCountInline: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     color: theme.colors.textSecondary,
     marginLeft: 1,
@@ -590,13 +622,13 @@ const styles = StyleSheet.create({
   cuisineChipAdd: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    borderRadius: 16,
+    gap: 4,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderStyle: 'dashed',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   cuisineChipAddOpen: {
     borderStyle: 'solid',
@@ -604,7 +636,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLight,
   },
   cuisineChipAddText: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.textSecondary,
   },
   cuisineChipAddTextOpen: {
