@@ -21,7 +21,7 @@ import { AVATARS, isAvatarUnlocked, type AvatarOption, type UnlockStats } from '
  */
 export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
   try {
-    const [reviewsRes, restaurantsRes, likesRes, countriesRes, dietaryLikesRes] = await Promise.all([
+    const [reviewsRes, restaurantsRes, likesRes, uniqueLikersRes, countriesRes, dietaryLikesRes] = await Promise.all([
       supabase
         .from('reviews')
         .select('*', { count: 'exact', head: true })
@@ -34,6 +34,9 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
         .from('reviews')
         .select('likes_count')
         .eq('user_id', userId),
+      // Per `unique_likers_received`: usa RPC server-side per evitare doppio
+      // JOIN lato client e fragilità della sintassi PostgREST.
+      supabase.rpc('get_unique_likers_count', { p_user_id: userId }),
       // Per "Poliglotta": numero di paesi distinti in cui l'utente ha recensito.
       // JOIN inline su restaurants tramite la relazione restaurant_id.
       supabase
@@ -79,12 +82,13 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       reviews: reviewsRes.count ?? 0,
       restaurants: restaurantsRes.count ?? 0,
       likes: likesTotal,
+      uniqueLikersReceived: (uniqueLikersRes.data as number | null) ?? 0,
       countriesReviewed: countriesSet.size,
       likesToDietaryReviews,
     };
   } catch (error) {
     console.warn('[UnlockedAvatarsService] fetchUnlockStats error:', error);
-    return { reviews: 0, restaurants: 0, likes: 0, countriesReviewed: 0, likesToDietaryReviews: {} };
+    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToDietaryReviews: {} };
   }
 }
 

@@ -139,14 +139,14 @@
   },
   "leaderboard": {
     "title": "Leaderboard",
-    "restaurants": "Restaurants",
     "reviews": "Reviews",
-    "restaurantsAdded": "restaurants added",
-    "restaurantsSubtitle": "Those who helped the community the most by helping others discover allergy-friendly restaurants",
+    "likes": "Likes received",
     "reviewsWritten": "reviews written",
     "reviewsSubtitle": "Those who helped the community the most by sharing their experiences",
+    "likesReceived": "likes received",
+    "likesSubtitle": "The voices most appreciated by the community: those who received the most likes on their reviews",
     "infoTitle": "How does it work?",
-    "infoBody": "Here you can see who contributes the most to the community by adding restaurants and writing reviews.\n\nAdd restaurants and leave reviews to climb the leaderboard!",
+    "infoBody": "Here you can see who contributes the most to the community by writing reviews that other users find helpful.\n\nWrite useful reviews to climb the leaderboard!",
     "empty": "No contributions yet",
     "anonymous": "Anonymous user"
   },

@@ -104,16 +104,30 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
 
       {/* Like + Report */}
       <View style={styles.actionRow}>
-        <TouchableOpacity onPress={onLike} activeOpacity={0.7} style={styles.likeRow}>
-          <MaterialCommunityIcons
-            name={item.likedByMe ? 'thumb-up' : 'thumb-up-outline'}
-            size={16}
-            color={item.likedByMe ? theme.colors.primary : theme.colors.textSecondary}
-          />
-          <Text style={[styles.likeCount, item.likedByMe && { color: theme.colors.primary }, item.likesCount === 0 && { opacity: 0 }]}>
-            {item.likesCount}
-          </Text>
-        </TouchableOpacity>
+        {isOwnReview ? (
+          // Sulle proprie recensioni mostriamo solo il counter (non interattivo).
+          <View style={styles.likeRow}>
+            <MaterialCommunityIcons
+              name="thumb-up-outline"
+              size={16}
+              color={theme.colors.textSecondary}
+            />
+            <Text style={[styles.likeCount, item.likesCount === 0 && { opacity: 0 }]}>
+              {item.likesCount}
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity onPress={onLike} activeOpacity={0.7} style={styles.likeRow}>
+            <MaterialCommunityIcons
+              name={item.likedByMe ? 'thumb-up' : 'thumb-up-outline'}
+              size={16}
+              color={item.likedByMe ? theme.colors.primary : theme.colors.textSecondary}
+            />
+            <Text style={[styles.likeCount, item.likedByMe && { color: theme.colors.primary }, item.likesCount === 0 && { opacity: 0 }]}>
+              {item.likesCount}
+            </Text>
+          </TouchableOpacity>
+        )}
         {!isOwnReview && onReport && (
           <TouchableOpacity onPress={onReport} activeOpacity={0.6} style={styles.reportRow} hitSlop={8}>
             <MaterialCommunityIcons

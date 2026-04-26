@@ -5,6 +5,7 @@ export type UnlockCondition =
   | { type: 'reviews'; count: number }
   | { type: 'restaurants'; count: number }
   | { type: 'likes_received'; count: number }
+  | { type: 'unique_likers_received'; count: number }
   | { type: 'countries_reviewed'; count: number }
   | { type: 'likes_to_dietary_reviews'; count: number; dietary: string };
 
@@ -17,7 +18,10 @@ export type UnlockCondition =
 export interface UnlockStats {
   reviews: number;
   restaurants: number;
+  /** Eventi like ricevuti totali (somma likes_count su tutte le proprie recensioni). */
   likes: number;
+  /** Persone uniche che hanno likato almeno una propria recensione. */
+  uniqueLikersReceived: number;
   countriesReviewed: number;
   /** Like dati a recensioni filtrati per dieta (chiave = id della dieta nel snapshot). */
   likesToDietaryReviews: Record<string, number>;
@@ -132,7 +136,7 @@ const UNLOCK_ALL_FOR_TESTING = false;
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
 ): boolean {
   if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
@@ -144,6 +148,8 @@ export function isAvatarUnlocked(
       return stats.restaurants >= avatar.unlock.count;
     case 'likes_received':
       return (stats.likes ?? 0) >= avatar.unlock.count;
+    case 'unique_likers_received':
+      return (stats.uniqueLikersReceived ?? 0) >= avatar.unlock.count;
     case 'countries_reviewed':
       return (stats.countriesReviewed ?? 0) >= avatar.unlock.count;
     case 'likes_to_dietary_reviews':
@@ -158,7 +164,7 @@ export function isAvatarUnlocked(
  */
 export function getUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
 ): number {
   switch (avatar.unlock.type) {
     case 'free':
@@ -169,6 +175,8 @@ export function getUnlockProgress(
       return Math.min(stats.restaurants / avatar.unlock.count, 1);
     case 'likes_received':
       return Math.min((stats.likes ?? 0) / avatar.unlock.count, 1);
+    case 'unique_likers_received':
+      return Math.min((stats.uniqueLikersReceived ?? 0) / avatar.unlock.count, 1);
     case 'countries_reviewed':
       return Math.min((stats.countriesReviewed ?? 0) / avatar.unlock.count, 1);
     case 'likes_to_dietary_reviews':

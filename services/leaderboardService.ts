@@ -4,15 +4,15 @@ import type { LeaderboardEntry } from './restaurant.types';
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
 
 export async function getLeaderboard(): Promise<{
-  topRestaurants: LeaderboardEntry[];
   topReviewers: LeaderboardEntry[];
+  topLiked: LeaderboardEntry[];
 }> {
   try {
     const { data, error } = await supabase.rpc('get_leaderboard', { p_limit: 20 });
     if (error) throw error;
 
-    const topRestaurants: LeaderboardEntry[] = [];
     const topReviewers: LeaderboardEntry[] = [];
+    const topLiked: LeaderboardEntry[] = [];
 
     for (const row of data ?? []) {
       const entry: LeaderboardEntry = {
@@ -23,14 +23,14 @@ export async function getLeaderboard(): Promise<{
         dietary_preferences: row.dietary_preferences ?? [],
         count: Number(row.count),
       };
-      if (row.category === 'restaurants') topRestaurants.push(entry);
+      if (row.category === 'likes') topLiked.push(entry);
       else topReviewers.push(entry);
     }
 
-    return { topRestaurants, topReviewers };
+    return { topReviewers, topLiked };
   } catch (error) {
     console.warn('[LeaderboardService] Errore getLeaderboard:', error);
-    return { topRestaurants: [], topReviewers: [] };
+    return { topReviewers: [], topLiked: [] };
   }
 }
 

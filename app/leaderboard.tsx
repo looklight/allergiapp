@@ -9,7 +9,7 @@ import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
 
-type Tab = 'restaurants' | 'reviews';
+type Tab = 'reviews' | 'likes';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] as const;
 
@@ -52,16 +52,16 @@ function LeaderboardRow({ entry, rank }: { entry: LeaderboardEntry; rank: number
 export default function LeaderboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState<Tab>('restaurants');
-  const [topRestaurants, setTopRestaurants] = useState<LeaderboardEntry[]>([]);
+  const [activeTab, setActiveTab] = useState<Tab>('reviews');
   const [topReviewers, setTopReviewers] = useState<LeaderboardEntry[]>([]);
+  const [topLiked, setTopLiked] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async () => {
     const data = await RestaurantService.getLeaderboard();
-    setTopRestaurants(data.topRestaurants);
     setTopReviewers(data.topReviewers);
+    setTopLiked(data.topLiked);
   }, []);
 
   useEffect(() => {
@@ -74,10 +74,10 @@ export default function LeaderboardScreen() {
     setRefreshing(false);
   }, [loadData]);
 
-  const currentData = activeTab === 'restaurants' ? topRestaurants : topReviewers;
-  const sectionSubtitle = activeTab === 'restaurants'
-    ? i18n.t('leaderboard.restaurantsSubtitle')
-    : i18n.t('leaderboard.reviewsSubtitle');
+  const currentData = activeTab === 'reviews' ? topReviewers : topLiked;
+  const sectionSubtitle = activeTab === 'reviews'
+    ? i18n.t('leaderboard.reviewsSubtitle')
+    : i18n.t('leaderboard.likesSubtitle');
 
   return (
     <View style={styles.container}>
@@ -99,20 +99,6 @@ export default function LeaderboardScreen() {
       {/* Tabs */}
       <View style={styles.tabBar}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'restaurants' && styles.tabActive]}
-          onPress={() => setActiveTab('restaurants')}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons
-            name="silverware-fork-knife"
-            size={18}
-            color={activeTab === 'restaurants' ? theme.colors.primary : theme.colors.textSecondary}
-          />
-          <Text style={[styles.tabText, activeTab === 'restaurants' && styles.tabTextActive]}>
-            {i18n.t('leaderboard.restaurants')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={[styles.tab, activeTab === 'reviews' && styles.tabActive]}
           onPress={() => setActiveTab('reviews')}
           activeOpacity={0.7}
@@ -124,6 +110,20 @@ export default function LeaderboardScreen() {
           />
           <Text style={[styles.tabText, activeTab === 'reviews' && styles.tabTextActive]}>
             {i18n.t('leaderboard.reviews')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'likes' && styles.tabActive]}
+          onPress={() => setActiveTab('likes')}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons
+            name="heart"
+            size={18}
+            color={activeTab === 'likes' ? theme.colors.primary : theme.colors.textSecondary}
+          />
+          <Text style={[styles.tabText, activeTab === 'likes' && styles.tabTextActive]}>
+            {i18n.t('leaderboard.likes')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -136,14 +136,14 @@
   },
   "leaderboard": {
     "title": "Rangliste",
-    "restaurants": "Restaurants",
     "reviews": "Bewertungen",
-    "restaurantsAdded": "Restaurants hinzugef\u00fcgt",
-    "restaurantsSubtitle": "Wer der Community am meisten geholfen hat, allergikerfreundliche Restaurants f\u00fcr andere zu entdecken",
+    "likes": "Erhaltene Likes",
     "reviewsWritten": "Bewertungen geschrieben",
     "reviewsSubtitle": "Wer der Community am meisten geholfen hat, indem er seine Erfahrungen geteilt hat",
+    "likesReceived": "erhaltene Likes",
+    "likesSubtitle": "Die von der Community am meisten gesch\u00e4tzten Stimmen: wer die meisten Likes auf seinen Bewertungen erhalten hat",
     "infoTitle": "Wie funktioniert es?",
-    "infoBody": "Hier siehst du, wer am meisten zur Community beitr\u00e4gt, indem er Restaurants hinzuf\u00fcgt und Bewertungen schreibt.\n\nF\u00fcge Restaurants hinzu und schreibe Bewertungen, um in der Rangliste aufzusteigen!",
+    "infoBody": "Hier siehst du, wer am meisten zur Community beitr\u00e4gt, indem er Bewertungen schreibt, die andere Nutzer hilfreich finden.\n\nSchreibe n\u00fctzliche Bewertungen, um in der Rangliste aufzusteigen!",
     "empty": "Noch keine Beitr\u00e4ge",
     "anonymous": "Anonymer Benutzer"
   },

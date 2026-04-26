@@ -61,6 +61,8 @@ function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
       return `${stats.restaurants}/${avatar.unlock.count} ristoranti`;
     case 'likes_received':
       return `${stats.likes}/${avatar.unlock.count} like ricevuti`;
+    case 'unique_likers_received':
+      return `${stats.uniqueLikersReceived}/${avatar.unlock.count} persone diverse ti apprezzano`;
     case 'countries_reviewed':
       return `${stats.countriesReviewed}/${avatar.unlock.count} paesi recensiti`;
     case 'likes_to_dietary_reviews': {
@@ -81,6 +83,8 @@ function formatConditionLabel(avatar: AvatarOption): string {
       return `Aggiungi ${avatar.unlock.count} ristoranti`;
     case 'likes_received':
       return `Ricevi ${avatar.unlock.count} like sulle tue recensioni`;
+    case 'unique_likers_received':
+      return `Fatti apprezzare da ${avatar.unlock.count} persone diverse`;
     case 'countries_reviewed':
       return `Recensisci ristoranti in ${avatar.unlock.count} paesi diversi`;
     case 'likes_to_dietary_reviews':
@@ -97,6 +101,7 @@ export default function AvatarGalleryScreen() {
     reviews: 0,
     restaurants: 0,
     likes: 0,
+    uniqueLikersReceived: 0,
     countriesReviewed: 0,
     likesToDietaryReviews: {},
   });
