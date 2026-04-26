@@ -11,11 +11,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
   scheme: "allergiapp",
-  splash: {
-    image: "./assets/splash-icon.png",
-    resizeMode: "contain",
-    backgroundColor: "#FFFFFF",
-  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
@@ -53,6 +48,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/splash-icon.png",
+        imageWidth: 200,
+        resizeMode: "contain",
+        backgroundColor: "#F7DCB3",
+      },
+    ],
     [
       "expo-location",
       {
