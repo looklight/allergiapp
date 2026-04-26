@@ -19,8 +19,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import {
   AVATARS,
-  isAvatarUnlocked,
-  getUnlockProgress,
+  isAvatarEffectivelyUnlocked,
+  getEffectiveUnlockProgress,
   type AvatarOption,
   type UnlockStats,
 } from '../../constants/avatars';
@@ -126,10 +126,12 @@ export default function AvatarGalleryScreen() {
     fetchUnlockStats(user.uid).then(setStats);
   }, [user?.uid]);
 
+  const everUnlocked = userProfile?.unlocked_avatars ?? [];
+
   const handleSelect = useCallback(
     async (avatar: AvatarOption) => {
       if (!user?.uid || saving) return;
-      if (!isAvatarUnlocked(avatar, stats)) {
+      if (!isAvatarEffectivelyUnlocked(avatar, stats, everUnlocked)) {
         setDetailAvatar(avatar);
         return;
       }
@@ -159,7 +161,7 @@ export default function AvatarGalleryScreen() {
         setSaving(false);
       }
     },
-    [user?.uid, saving, stats, selectedId, userProfile?.avatar_url, userProfile?.is_anonymous, refreshProfile, router],
+    [user?.uid, saving, stats, everUnlocked, selectedId, userProfile?.avatar_url, userProfile?.is_anonymous, refreshProfile, router],
   );
 
   const renderProgressLabel = (avatar: AvatarOption) => {
@@ -200,7 +202,7 @@ export default function AvatarGalleryScreen() {
         {/* Griglia avatar */}
         <View style={styles.grid}>
           {AVATARS.map((avatar) => {
-            const unlocked = isAvatarUnlocked(avatar, stats);
+            const unlocked = isAvatarEffectivelyUnlocked(avatar, stats, everUnlocked);
             const isSelected = selectedId === avatar.id;
 
             return (
@@ -273,6 +275,7 @@ export default function AvatarGalleryScreen() {
               <DetailCard
                 avatar={detailAvatar}
                 stats={stats}
+                everUnlocked={everUnlocked}
               />
             )}
           </Pressable>
@@ -286,12 +289,14 @@ export default function AvatarGalleryScreen() {
 function DetailCard({
   avatar,
   stats,
+  everUnlocked,
 }: {
   avatar: AvatarOption;
   stats: UnlockStats;
+  everUnlocked: readonly string[];
 }) {
-  const unlocked = isAvatarUnlocked(avatar, stats);
-  const progress = getUnlockProgress(avatar, stats);
+  const unlocked = isAvatarEffectivelyUnlocked(avatar, stats, everUnlocked);
+  const progress = getEffectiveUnlockProgress(avatar, stats, everUnlocked);
   const progressLabel = formatProgressLabel(avatar, stats);
   const hint = getQuestHint(avatar);
   const [hintExpanded, setHintExpanded] = useState(false);

@@ -20,6 +20,7 @@ export interface UserProfile {
   is_anonymous: boolean;
   onboarding_complete: boolean;
   seen_unlocked_avatars: string[];
+  unlocked_avatars: string[];
 }
 
 function mapUser(user: SupabaseUser | null): AppUser | null {

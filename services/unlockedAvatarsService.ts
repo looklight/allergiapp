@@ -118,6 +118,40 @@ export function computeNewlyUnlocked(
 }
 
 /**
+ * Persiste su `profiles.unlocked_avatars` tutti gli id attualmente sbloccati
+ * che non vi sono già presenti. Implementa il "grandfathering": una volta che
+ * un avatar entra qui, resta sbloccato per l'utente anche se in futuro la
+ * condizione di catalogo verrà inasprita.
+ *
+ * Idempotente: se non c'è delta non scrive nulla. Da chiamare prima della
+ * logica popup, così lo sblocco è registrato anche se l'utente chiude l'app
+ * prima di dismissare il popup.
+ *
+ * Ritorna l'unione (alreadyUnlocked ∪ currentlyUnlocked).
+ */
+export async function persistUnlocks(
+  userId: string,
+  alreadyUnlocked: readonly string[],
+  currentlyUnlocked: readonly string[],
+): Promise<string[]> {
+  const alreadySet = new Set(alreadyUnlocked);
+  const newOnes = currentlyUnlocked.filter((id) => !alreadySet.has(id));
+  if (newOnes.length === 0) return [...alreadyUnlocked];
+  const merged = [...alreadyUnlocked, ...newOnes];
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ unlocked_avatars: merged })
+      .eq('id', userId);
+    if (error) throw error;
+  } catch (error) {
+    console.warn('[UnlockedAvatarsService] persistUnlocks error:', error);
+    return [...alreadyUnlocked];
+  }
+  return merged;
+}
+
+/**
  * Marca un set di avatar come "visti" lato server, fondendoli con quelli già
  * presenti su `profiles.seen_unlocked_avatars`.
  *

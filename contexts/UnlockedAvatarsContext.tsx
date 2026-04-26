@@ -30,9 +30,13 @@ import {
   computeNewlyUnlocked,
   fetchUnlockStats,
   markAvatarsAsSeen,
+  persistUnlocks,
 } from '../services/unlockedAvatarsService';
+import { AVATARS, isAvatarUnlocked } from '../constants/avatars';
 
 interface UnlockedAvatarsContextValue {
+  /** Id degli avatar appena sbloccati, in attesa di conferma da parte dell'utente. */
+  newlyUnlockedIds: readonly string[];
   /** Numero di nuovi avatar sbloccati e non ancora confermati dall'utente. */
   newlyUnlockedCount: number;
   /**
@@ -49,6 +53,7 @@ interface UnlockedAvatarsContextValue {
 }
 
 const UnlockedAvatarsContext = createContext<UnlockedAvatarsContextValue>({
+  newlyUnlockedIds: [],
   newlyUnlockedCount: 0,
   acknowledgeUnlocks: async () => {},
   refresh: async () => {},
@@ -66,6 +71,23 @@ export function UnlockedAvatarsProvider({ children }: { children: ReactNode }) {
     if (shownThisSessionRef.current) return;
     try {
       const stats = await fetchUnlockStats(user.uid);
+
+      // Grandfathering: persisti subito gli sblocchi correnti, prima della logica
+      // popup. Così l'utente non perde lo sblocco anche se chiude l'app prima
+      // di dismissare il popup, o se la condizione viene inasprita in futuro.
+      const currentlyUnlockedIds = AVATARS
+        .filter((a) => isAvatarUnlocked(a, stats))
+        .map((a) => a.id);
+      const persisted = await persistUnlocks(
+        user.uid,
+        userProfile.unlocked_avatars ?? [],
+        currentlyUnlockedIds,
+      );
+      // Se abbiamo aggiunto qualcosa, allinea il profilo locale.
+      if (persisted.length !== (userProfile.unlocked_avatars ?? []).length) {
+        await refreshProfile();
+      }
+
       const newOnes = computeNewlyUnlocked(stats, userProfile.seen_unlocked_avatars ?? []);
       if (newOnes.length > 0) {
         setNewlyUnlockedIds(newOnes.map((a) => a.id));
@@ -73,7 +95,7 @@ export function UnlockedAvatarsProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn('[UnlockedAvatarsContext] refresh error:', err);
     }
-  }, [user?.uid, userProfile]);
+  }, [user?.uid, userProfile, refreshProfile]);
 
   const acknowledgeUnlocks = useCallback(async () => {
     if (!user?.uid || newlyUnlockedIds.length === 0) return;
@@ -109,6 +131,7 @@ export function UnlockedAvatarsProvider({ children }: { children: ReactNode }) {
   return (
     <UnlockedAvatarsContext.Provider
       value={{
+        newlyUnlockedIds,
         newlyUnlockedCount: newlyUnlockedIds.length,
         acknowledgeUnlocks,
         refresh,

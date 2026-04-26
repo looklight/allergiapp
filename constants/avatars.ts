@@ -49,6 +49,16 @@ export interface AvatarOption {
  *
  * Note: nomi e condizioni di sblocco sotto sono PLACEHOLDER — da rivedere quando si
  * disegnerà la struttura definitiva delle "task" per gli utenti (segrete + dichiarate).
+ *
+ * INVARIANTI (non infrangere mai una volta in produzione):
+ *  - Mai cambiare l'`id` di un avatar esistente. È la chiave persistita su
+ *    `profiles.avatar_url`, `profiles.unlocked_avatars` e `profiles.seen_unlocked_avatars`.
+ *    Cambia liberamente `name`, immagine e `unlock`.
+ *  - Mai rimuovere un avatar dal catalogo. Se non vuoi più che sia sbloccabile,
+ *    impostagli una `unlock` irraggiungibile, ma lasciane qui la voce — gli utenti
+ *    che l'hanno già sbloccato in passato continueranno a vederlo come tale.
+ *  - Inasprire le condizioni di unlock è sicuro: gli utenti che hanno già sbloccato
+ *    mantengono lo sblocco grazie a `profiles.unlocked_avatars` (sblocco "grandfathered").
  */
 // Ordine: free → esplorazione geo → cinture (like a restrizioni) → like ricevuti (asc).
 export const AVATARS: AvatarOption[] = [
@@ -82,9 +92,9 @@ export const AVATARS: AvatarOption[] = [
     unlock: { type: 'likes_to_restriction_reviews', count: 3, restriction: 'vegan' },
   },
   {
-    id: 'plate_yellow_belt',
-    source: require('../assets/avatars/plate_yellow_belt.png'),
-    name: 'Yellow Belt',
+    id: 'plate_blue_belt',
+    source: require('../assets/avatars/plate_blue_belt.png'),
+    name: 'Blue Belt',
     unlock: { type: 'likes_to_restriction_reviews', count: 5, restriction: 'gluten' },
   },
   {
@@ -175,6 +185,21 @@ export function isAvatarUnlocked(
 }
 
 /**
+ * Sblocco "effettivo": include il grandfathering.
+ * True se l'avatar è sbloccato live OPPURE se è già nella lista persistita
+ * `profiles.unlocked_avatars` (cioè l'utente l'ha sbloccato in passato e lo
+ * mantiene anche se le condizioni del catalogo sono state inasprite).
+ */
+export function isAvatarEffectivelyUnlocked(
+  avatar: AvatarOption,
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
+  everUnlockedIds: readonly string[],
+): boolean {
+  if (everUnlockedIds.includes(avatar.id)) return true;
+  return isAvatarUnlocked(avatar, stats);
+}
+
+/**
  * Progresso (0‥1) verso lo sblocco di un avatar.
  */
 export function getUnlockProgress(
@@ -199,4 +224,17 @@ export function getUnlockProgress(
     default:
       return 0;
   }
+}
+
+/**
+ * Progresso "effettivo": ritorna 1 se l'avatar è già nella lista grandfathered
+ * (`everUnlockedIds`), altrimenti il progresso live verso la condizione corrente.
+ */
+export function getEffectiveUnlockProgress(
+  avatar: AvatarOption,
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
+  everUnlockedIds: readonly string[],
+): number {
+  if (everUnlockedIds.includes(avatar.id)) return 1;
+  return getUnlockProgress(avatar, stats);
 }

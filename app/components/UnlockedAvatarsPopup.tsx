@@ -5,17 +5,23 @@
  * È sopposto durante i flussi di autenticazione/onboarding (path `/auth/*`,
  * `/legal`) per non interrompere il flusso di registrazione.
  *
- * Mostra un solo messaggio aggregato ("X nuovi avatar") e rimanda alla galleria
- * dove l'utente vede quali sono e può sceglierne uno. Non distingue per-avatar
- * — la galleria fa già quel lavoro.
+ * Layout:
+ *  - 1 avatar  → immagine grande + nome
+ *  - 2-4       → riga di immagini medie affiancate
+ *  - 5+        → prime 4 immagini + tile "+N"
+ *
+ * Dimensioni del popup costanti in tutti i casi (niente scroll, niente carousel).
  */
 
-import { Modal, Pressable, View, StyleSheet } from 'react-native';
+import { Modal, Pressable, View, StyleSheet, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
+import { getAvatarById } from '../../constants/avatars';
+
+const VISIBLE_TILES = 4;
 
 /** Path durante i quali il popup non deve apparire (registrazione/onboarding). */
 function isSuppressedPath(pathname: string): boolean {
@@ -25,7 +31,7 @@ function isSuppressedPath(pathname: string): boolean {
 export default function UnlockedAvatarsPopup() {
   const router = useRouter();
   const pathname = usePathname();
-  const { newlyUnlockedCount, acknowledgeUnlocks } = useUnlockedAvatars();
+  const { newlyUnlockedIds, newlyUnlockedCount, acknowledgeUnlocks } = useUnlockedAvatars();
 
   const visible = newlyUnlockedCount > 0 && !isSuppressedPath(pathname ?? '');
   const isPlural = newlyUnlockedCount > 1;
@@ -39,6 +45,11 @@ export default function UnlockedAvatarsPopup() {
     await acknowledgeUnlocks();
   };
 
+  const avatars = newlyUnlockedIds
+    .map((id) => getAvatarById(id))
+    .filter((a): a is NonNullable<ReturnType<typeof getAvatarById>> => !!a);
+  const singleAvatar = avatars.length === 1 ? avatars[0] : null;
+
   return (
     <Modal
       visible={visible}
@@ -48,13 +59,44 @@ export default function UnlockedAvatarsPopup() {
     >
       <Pressable style={styles.overlay} onPress={handleDismiss}>
         <Pressable style={styles.card} onPress={() => {}}>
-          <View style={styles.iconWrap}>
-            <MaterialCommunityIcons
-              name="party-popper"
-              size={48}
-              color={theme.colors.primary}
-            />
-          </View>
+          {singleAvatar ? (
+            <View style={styles.singleWrap}>
+              {singleAvatar.source ? (
+                <Image source={singleAvatar.source} style={styles.singleImage} />
+              ) : (
+                <MaterialCommunityIcons
+                  name="party-popper"
+                  size={80}
+                  color={theme.colors.primary}
+                />
+              )}
+              <Text style={styles.singleName}>{singleAvatar.name}</Text>
+            </View>
+          ) : (
+            <View style={styles.row}>
+              {avatars.slice(0, VISIBLE_TILES).map((avatar) => (
+                <View key={avatar.id} style={styles.rowTile}>
+                  {avatar.source ? (
+                    <Image source={avatar.source} style={styles.rowImage} />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="help-circle-outline"
+                      size={36}
+                      color={theme.colors.primary}
+                    />
+                  )}
+                </View>
+              ))}
+              {avatars.length > VISIBLE_TILES && (
+                <View style={[styles.rowTile, styles.overflowTile]}>
+                  <Text style={styles.overflowText}>
+                    +{avatars.length - VISIBLE_TILES}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
           <Text style={styles.title}>
             {isPlural
               ? `Hai sbloccato ${newlyUnlockedCount} nuovi avatar!`
@@ -101,9 +143,53 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 340,
   },
-  iconWrap: {
+
+  // ── 1 avatar ────────────────────────────────
+  singleWrap: {
+    alignItems: 'center',
     marginBottom: 12,
   },
+  singleImage: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  singleName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    marginTop: 4,
+  },
+
+  // ── 2+ avatar ───────────────────────────────
+  row: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+    justifyContent: 'center',
+  },
+  rowTile: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  overflowTile: {
+    backgroundColor: theme.colors.background,
+    borderRadius: 28,
+  },
+  overflowText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+  },
+
+  // ── Testi e azioni ──────────────────────────
   title: {
     fontSize: 18,
     fontWeight: '700',
