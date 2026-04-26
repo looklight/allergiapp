@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
 import type { Restaurant } from '@/lib/types';
-import { ALL_CATEGORIES, DIETARY_CATEGORIES, CUISINE_CATEGORIES } from '@/lib/restaurantCategories';
+import { CUISINE_CATEGORIES } from '@/lib/restaurantCategories';
 import Link from 'next/link';
 
 interface Props {
@@ -14,12 +15,31 @@ interface Props {
 }
 
 export default function RestaurantHeader({ restaurant, stats, reportCount, isDeleting, onDelete, onRestaurantUpdate }: Props) {
+  const { session } = useAuth();
   const [editingCategories, setEditingCategories] = useState(false);
+  // adminVotes = stato dei voti dell'admin loggato per questo ristorante.
+  // pendingCategories = stato in editing (diff con adminVotes per save).
+  const [adminVotes, setAdminVotes] = useState<string[]>([]);
   const [pendingCategories, setPendingCategories] = useState<string[]>([]);
   const [isSavingCategories, setIsSavingCategories] = useState(false);
 
-  const startEditingCategories = () => {
-    setPendingCategories(restaurant.cuisine_types ?? []);
+  const startEditingCategories = async () => {
+    if (!session) {
+      alert('Sessione non valida');
+      return;
+    }
+    const { data, error } = await supabase
+      .from('restaurant_cuisine_votes')
+      .select('cuisine_id')
+      .eq('restaurant_id', restaurant.id)
+      .eq('user_id', session.user.id);
+    if (error) {
+      alert(`Errore durante il caricamento dei voti: ${error.message}`);
+      return;
+    }
+    const votes = (data ?? []).map(v => v.cuisine_id as string);
+    setAdminVotes(votes);
+    setPendingCategories(votes);
     setEditingCategories(true);
   };
 
@@ -30,17 +50,57 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
   };
 
   const saveCuisineTypes = async () => {
+    if (!session) return;
     setIsSavingCategories(true);
-    const { error } = await supabase
+
+    const toAdd = pendingCategories.filter(c => !adminVotes.includes(c));
+    const toRemove = adminVotes.filter(c => !pendingCategories.includes(c));
+
+    if (toAdd.length > 0) {
+      const { error } = await supabase
+        .from('restaurant_cuisine_votes')
+        .insert(toAdd.map(cuisine_id => ({
+          restaurant_id: restaurant.id,
+          user_id: session.user.id,
+          cuisine_id,
+        })));
+      if (error) {
+        setIsSavingCategories(false);
+        alert(`Errore aggiunta voti: ${error.message}`);
+        return;
+      }
+    }
+
+    if (toRemove.length > 0) {
+      const { error } = await supabase
+        .from('restaurant_cuisine_votes')
+        .delete()
+        .eq('restaurant_id', restaurant.id)
+        .eq('user_id', session.user.id)
+        .in('cuisine_id', toRemove);
+      if (error) {
+        setIsSavingCategories(false);
+        alert(`Errore rimozione voti: ${error.message}`);
+        return;
+      }
+    }
+
+    // Trigger sync_restaurant_cuisine_types (migration 014) ricalcola
+    // restaurants.cuisine_types da tutti i voti — rileggiamo per la UI.
+    const { data: refreshed, error: refreshError } = await supabase
       .from('restaurants')
-      .update({ cuisine_types: pendingCategories })
-      .eq('id', restaurant.id);
+      .select('cuisine_types')
+      .eq('id', restaurant.id)
+      .single();
+
     setIsSavingCategories(false);
-    if (error) {
-      alert(`Errore durante il salvataggio: ${error.message}`);
+    if (refreshError) {
+      alert(`Errore aggiornamento UI: ${refreshError.message}`);
       return;
     }
-    onRestaurantUpdate({ ...restaurant, cuisine_types: pendingCategories });
+
+    setAdminVotes(pendingCategories);
+    onRestaurantUpdate({ ...restaurant, cuisine_types: refreshed?.cuisine_types ?? [] });
     setEditingCategories(false);
   };
 
@@ -77,14 +137,14 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
               <div className="flex flex-wrap gap-1.5 items-center">
                 {restaurant.cuisine_types?.length > 0
                   ? restaurant.cuisine_types.map(id => {
-                      const cat = ALL_CATEGORIES.find(c => c.id === id);
+                      const cat = CUISINE_CATEGORIES.find(c => c.id === id);
                       return (
                         <span key={id} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
                           {cat?.label ?? id}
                         </span>
                       );
                     })
-                  : <span className="text-gray-400 text-sm">Nessuna categoria</span>
+                  : <span className="text-gray-400 text-sm">Nessuna cucina</span>
                 }
                 <button
                   onClick={startEditingCategories}
@@ -95,20 +155,10 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
               </div>
             ) : (
               <div className="border rounded p-3 bg-gray-50">
-                <p className="text-xs font-medium text-gray-500 mb-2">Dietetico</p>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {DIETARY_CATEGORIES.map(cat => (
-                    <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={pendingCategories.includes(cat.id)}
-                        onChange={() => toggleCategory(cat.id)}
-                      />
-                      {cat.label}
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs font-medium text-gray-500 mb-2">Cucina</p>
+                <p className="text-xs font-medium text-gray-500 mb-1">Cucina</p>
+                <p className="text-xs text-gray-500 mb-2">
+                  Le tue selezioni contano come 1 voto. I voti della community restano invariati.
+                </p>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {CUISINE_CATEGORIES.map(cat => (
                     <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer text-sm">

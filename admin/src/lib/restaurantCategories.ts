@@ -6,12 +6,6 @@ export interface AdminCategory {
   label: string;
 }
 
-export const DIETARY_CATEGORIES: AdminCategory[] = [
-  { id: 'gluten_free', label: 'Gluten Free' },
-  { id: 'vegan', label: 'Vegan' },
-  { id: 'vegetarian', label: 'Vegetariano' },
-];
-
 export const CUISINE_CATEGORIES: AdminCategory[] = [
   { id: 'italian', label: 'Italiana' },
   { id: 'pizza', label: 'Pizza' },
@@ -34,9 +28,4 @@ export const CUISINE_CATEGORIES: AdminCategory[] = [
   { id: 'bakery', label: 'Bakery' },
   { id: 'cafe', label: 'Caffè e bar' },
   { id: 'ice_cream', label: 'Gelateria' },
-];
-
-export const ALL_CATEGORIES: AdminCategory[] = [
-  ...DIETARY_CATEGORIES,
-  ...CUISINE_CATEGORIES,
 ];
