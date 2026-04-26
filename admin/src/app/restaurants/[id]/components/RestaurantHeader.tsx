@@ -160,16 +160,23 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
                   Le tue selezioni contano come 1 voto. I voti della community restano invariati.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {CUISINE_CATEGORIES.map(cat => (
-                    <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={pendingCategories.includes(cat.id)}
-                        onChange={() => toggleCategory(cat.id)}
-                      />
-                      {cat.label}
-                    </label>
-                  ))}
+                  {CUISINE_CATEGORIES.map(cat => {
+                    const isActive = pendingCategories.includes(cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => toggleCategory(cat.id)}
+                        className={`px-3 py-1.5 rounded-full text-sm border transition ${
+                          isActive
+                            ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-2">
                   <button
