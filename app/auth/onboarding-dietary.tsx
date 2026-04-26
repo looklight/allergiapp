@@ -51,7 +51,7 @@ export default function OnboardingDietaryScreen() {
       await refreshProfile();
       router.replace('/auth/onboarding-tutorial');
     } catch {
-      Alert.alert('Errore', 'Impossibile salvare. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('onboardingDietary.alerts.saveError.message'));
     } finally {
       setSaving(false);
     }
@@ -69,7 +69,7 @@ export default function OnboardingDietaryScreen() {
         <TouchableOpacity onPress={() => router.replace('/auth/onboarding-nickname')} hitSlop={8} activeOpacity={0.6}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Le tue esigenze</Text>
+        <Text style={styles.headerTitle}>{i18n.t('onboardingDietary.headerTitle')}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -79,10 +79,8 @@ export default function OnboardingDietaryScreen() {
       >
         <View style={styles.introSection}>
           <MaterialCommunityIcons name="shield-check-outline" size={40} color={theme.colors.primary} />
-          <Text style={styles.introTitle}>Una community che si aiuta a vicenda</Text>
-          <Text style={styles.introText}>
-            Indica le tue esigenze: filtreremo i ristoranti per te e renderemo le tue recensioni utili a chi ha le stesse allergie.
-          </Text>
+          <Text style={styles.introTitle}>{i18n.t('onboardingDietary.introTitle')}</Text>
+          <Text style={styles.introText}>{i18n.t('onboardingDietary.introText')}</Text>
         </View>
 
         <DietaryChipsSelector
@@ -95,15 +93,13 @@ export default function OnboardingDietaryScreen() {
         />
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
-          <Text style={styles.skipText}>Non ho allergie o esigenze particolari</Text>
+          <Text style={styles.skipText}>{i18n.t('onboardingDietary.skipLink')}</Text>
         </TouchableOpacity>
 
         {confirmedNoNeeds && (
           <View style={styles.noNeedsNote}>
             <MaterialCommunityIcons name="heart-outline" size={16} color={theme.colors.primary} />
-            <Text style={styles.noNeedsNoteText}>
-              AllergiApp funziona grazie alle recensioni degli utenti. Indicare le proprie esigenze aiuta altri con le stesse allergie o diete a trovare i ristoranti giusti. Puoi aggiungerle in qualsiasi momento dal tuo profilo.
-            </Text>
+            <Text style={styles.noNeedsNoteText}>{i18n.t('onboardingDietary.noNeedsNote')}</Text>
           </View>
         )}
       </ScrollView>
@@ -117,7 +113,7 @@ export default function OnboardingDietaryScreen() {
           style={styles.saveButton}
           labelStyle={styles.saveButtonLabel}
         >
-          Salva e continua
+          {i18n.t('onboardingDietary.saveButton')}
         </Button>
         {hasSelection && (
           <TouchableOpacity
@@ -131,14 +127,14 @@ export default function OnboardingDietaryScreen() {
               color={healthConsent ? theme.colors.primary : theme.colors.textSecondary}
             />
             <Text style={styles.consentText}>
-              Acconsento a salvare le mie esigenze nel profilo per personalizzare la mia esperienza (
+              {i18n.t('onboardingDietary.consentPart1')}
               <Text
                 style={styles.consentLink}
                 onPress={() => router.push('/legal?tab=privacy')}
               >
-                Art. 9 GDPR
+                {i18n.t('onboardingDietary.consentLink')}
               </Text>
-              ).
+              {i18n.t('onboardingDietary.consentPart2')}
             </Text>
           </TouchableOpacity>
         )}

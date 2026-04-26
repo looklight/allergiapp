@@ -590,5 +590,121 @@
       "start": "Start",
       "skip": "Skip"
     }
+  },
+  "login": {
+    "headerTitle": "Sign in",
+    "subtitle": "Sign in to add restaurants, save favorites and leave reviews.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submitButton": "Sign in",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "registerButton": "Sign up",
+    "skipLink": "Continue without an account",
+    "alerts": {
+      "missingFields": {
+        "title": "Heads up",
+        "message": "Please enter your email and password."
+      },
+      "errors": {
+        "invalidCredentials": "Incorrect email or password.",
+        "tooManyAttempts": "Too many attempts. Try again later.",
+        "network": "Network error. Check your connection.",
+        "generic": "Something went wrong. Please try again."
+      },
+      "resetMissingEmail": {
+        "title": "Reset password",
+        "message": "Enter your email in the field above first."
+      },
+      "resetSent": {
+        "title": "Email sent",
+        "message": "Check your inbox to reset your password."
+      },
+      "resetError": {
+        "message": "Couldn't send the reset. Check the email you entered."
+      }
+    }
+  },
+  "signup": {
+    "headerTitle": "Create account",
+    "subtitle": "Find restaurants, share your experience and help users with the same needs as you.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordHint": "At least 6 characters",
+    "submitButton": "Create account",
+    "legalNotePart1": "By creating an account you accept our ",
+    "legalTerms": "Terms of Service",
+    "legalAnd": " and our ",
+    "legalPrivacy": "Privacy Policy",
+    "haveAccount": "Already have an account? ",
+    "loginLink": "Sign in",
+    "skipLink": "Continue without an account",
+    "alerts": {
+      "missingFields": {
+        "title": "Heads up",
+        "message": "Please fill in all the fields."
+      },
+      "shortPassword": {
+        "title": "Heads up",
+        "message": "Password must be at least 6 characters."
+      },
+      "errors": {
+        "alreadyRegistered": "This email is already registered. Try signing in.",
+        "invalidEmail": "Invalid email.",
+        "weakPassword": "Password too weak. Use at least 6 characters.",
+        "network": "Network error. Check your connection.",
+        "generic": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "onboardingNickname": {
+    "headerTitle": "Your profile",
+    "introTitle": "How would you like to appear in the community?",
+    "introText": "Choose a nickname others will see in your reviews. If you prefer, you can stay anonymous: your name will never be visible to others.",
+    "nicknameLabel": "Nickname",
+    "nicknamePlaceholder": "How would you like to be called?",
+    "anonymousLabel": "Stay anonymous",
+    "anonymousHint": "Your name won't be visible to other users",
+    "anonymousNote": "Your reviews will show a generic identifier. Your name will never be visible to others.",
+    "saving": "Saving...",
+    "continue": "Continue",
+    "changeNote": "You can change these settings any time from your profile.",
+    "alerts": {
+      "missing": {
+        "title": "Nickname missing",
+        "message": "Enter a nickname or choose to stay anonymous."
+      },
+      "saveError": {
+        "message": "Couldn't save. Please try again."
+      }
+    }
+  },
+  "onboardingDietary": {
+    "headerTitle": "Your needs",
+    "introTitle": "A community helping each other",
+    "introText": "Tell us about your needs: we'll filter restaurants for you and make your reviews useful to people with the same allergies.",
+    "skipLink": "I have no allergies or special needs",
+    "noNeedsNote": "AllergiApp works thanks to user reviews. Sharing your needs helps others with the same allergies or diets find the right restaurants. You can add them any time from your profile.",
+    "saveButton": "Save and continue",
+    "consentPart1": "I agree to save my needs in my profile to personalize my experience (",
+    "consentLink": "Art. 9 GDPR",
+    "consentPart2": ").",
+    "alerts": {
+      "saveError": {
+        "message": "Couldn't save. Please try again."
+      }
+    }
+  },
+  "unlockedAvatarsPopup": {
+    "title": {
+      "one": "You unlocked a new avatar!",
+      "other": "You unlocked {{count}} new avatars!"
+    },
+    "subtitle": {
+      "one": "Go to the gallery to see it and set it as your avatar.",
+      "other": "Go to the gallery to see them and set one as your avatar."
+    },
+    "viewGallery": "See gallery",
+    "later": "Later"
   }
 }

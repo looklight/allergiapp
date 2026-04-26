@@ -6,6 +6,7 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
+import i18n from '../../utils/i18n';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -17,11 +18,17 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Attenzione', 'Compila tutti i campi.');
+      Alert.alert(
+        i18n.t('signup.alerts.missingFields.title'),
+        i18n.t('signup.alerts.missingFields.message')
+      );
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Attenzione', 'La password deve essere di almeno 6 caratteri.');
+      Alert.alert(
+        i18n.t('signup.alerts.shortPassword.title'),
+        i18n.t('signup.alerts.shortPassword.message')
+      );
       return;
     }
 
@@ -34,15 +41,15 @@ export default function SignupScreen() {
       const msg: string = (error?.message ?? '').toLowerCase();
       const message =
         msg.includes('already registered') || msg.includes('already exists')
-          ? 'Questa email è già registrata. Prova ad accedere.'
+          ? i18n.t('signup.alerts.errors.alreadyRegistered')
           : msg.includes('invalid email') || msg.includes('valid email')
-          ? 'Email non valida.'
+          ? i18n.t('signup.alerts.errors.invalidEmail')
           : msg.includes('weak') || msg.includes('at least 6')
-          ? 'Password troppo debole. Usa almeno 6 caratteri.'
+          ? i18n.t('signup.alerts.errors.weakPassword')
           : msg.includes('network') || msg.includes('fetch') || msg.includes('connection')
-          ? 'Errore di rete. Controlla la connessione.'
-          : 'Si è verificato un errore. Riprova.';
-      Alert.alert('Errore', message);
+          ? i18n.t('signup.alerts.errors.network')
+          : i18n.t('signup.alerts.errors.generic');
+      Alert.alert(i18n.t('common.error'), message);
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +65,7 @@ export default function SignupScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Crea account</Text>
+        <Text style={styles.headerTitle}>{i18n.t('signup.headerTitle')}</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView
@@ -71,13 +78,11 @@ export default function SignupScreen() {
           resizeMode="contain"
         />
 
-        <Text style={styles.subtitle}>
-          Trova ristoranti, condividi la tua esperienza e aiuta altri utenti con le tue stesse esigenze.
-        </Text>
+        <Text style={styles.subtitle}>{i18n.t('signup.subtitle')}</Text>
 
         <Surface style={styles.form} elevation={1}>
           <TextInput
-            label="Email"
+            label={i18n.t('signup.emailLabel')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -87,7 +92,7 @@ export default function SignupScreen() {
             mode="outlined"
           />
           <TextInput
-            label="Password"
+            label={i18n.t('signup.passwordLabel')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -101,7 +106,7 @@ export default function SignupScreen() {
             }
           />
 
-          <Text style={styles.passwordHint}>Minimo 6 caratteri</Text>
+          <Text style={styles.passwordHint}>{i18n.t('signup.passwordHint')}</Text>
 
           <Button
             mode="contained"
@@ -111,30 +116,30 @@ export default function SignupScreen() {
             style={styles.button}
             contentStyle={styles.buttonContent}
           >
-            Crea account
+            {i18n.t('signup.submitButton')}
           </Button>
         </Surface>
 
         <Text style={styles.legalNote}>
-          Creando un account accetti i nostri{' '}
+          {i18n.t('signup.legalNotePart1')}
           <Text style={styles.legalLink} onPress={() => router.push('/legal?tab=terms')}>
-            Termini di servizio
+            {i18n.t('signup.legalTerms')}
           </Text>
-          {' '}e la{' '}
+          {i18n.t('signup.legalAnd')}
           <Text style={styles.legalLink} onPress={() => router.push('/legal?tab=privacy')}>
-            Privacy Policy
+            {i18n.t('signup.legalPrivacy')}
           </Text>
         </Text>
 
         <View style={styles.row}>
-          <Text style={styles.rowText}>Hai già un account? </Text>
+          <Text style={styles.rowText}>{i18n.t('signup.haveAccount')}</Text>
           <TouchableOpacity onPress={() => router.replace('/auth/login')}>
-            <Text style={styles.rowLink}>Accedi</Text>
+            <Text style={styles.rowLink}>{i18n.t('signup.loginLink')}</Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity onPress={() => router.back()} style={styles.skipRow}>
-          <Text style={styles.skipText}>Continua senza account</Text>
+          <Text style={styles.skipText}>{i18n.t('signup.skipLink')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

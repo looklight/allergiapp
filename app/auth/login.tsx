@@ -6,6 +6,7 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
+import i18n from '../../utils/i18n';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -17,7 +18,10 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Attenzione', 'Inserisci email e password.');
+      Alert.alert(
+        i18n.t('login.alerts.missingFields.title'),
+        i18n.t('login.alerts.missingFields.message')
+      );
       return;
     }
 
@@ -30,13 +34,13 @@ export default function LoginScreen() {
       const msg: string = (error?.message ?? '').toLowerCase();
       const message =
         msg.includes('invalid') || msg.includes('credentials') || msg.includes('wrong password') || msg.includes('user not found')
-          ? 'Email o password non corretti.'
+          ? i18n.t('login.alerts.errors.invalidCredentials')
           : msg.includes('too many') || msg.includes('rate limit') || msg.includes('blocked')
-          ? 'Troppi tentativi. Riprova più tardi.'
+          ? i18n.t('login.alerts.errors.tooManyAttempts')
           : msg.includes('network') || msg.includes('fetch') || msg.includes('connection')
-          ? 'Errore di rete. Controlla la connessione.'
-          : 'Si è verificato un errore. Riprova.';
-      Alert.alert('Errore', message);
+          ? i18n.t('login.alerts.errors.network')
+          : i18n.t('login.alerts.errors.generic');
+      Alert.alert(i18n.t('common.error'), message);
     } finally {
       setIsLoading(false);
     }
@@ -44,14 +48,20 @@ export default function LoginScreen() {
 
   const handleResetPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('Reset password', 'Inserisci prima la tua email nel campo sopra.');
+      Alert.alert(
+        i18n.t('login.alerts.resetMissingEmail.title'),
+        i18n.t('login.alerts.resetMissingEmail.message')
+      );
       return;
     }
     try {
       await AuthService.sendPasswordReset(email.trim());
-      Alert.alert('Email inviata', 'Controlla la tua casella di posta per reimpostare la password.');
+      Alert.alert(
+        i18n.t('login.alerts.resetSent.title'),
+        i18n.t('login.alerts.resetSent.message')
+      );
     } catch {
-      Alert.alert('Errore', 'Impossibile inviare il reset. Controlla l\'email inserita.');
+      Alert.alert(i18n.t('common.error'), i18n.t('login.alerts.resetError.message'));
     }
   };
 
@@ -65,7 +75,7 @@ export default function LoginScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Accedi</Text>
+        <Text style={styles.headerTitle}>{i18n.t('login.headerTitle')}</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView
@@ -78,13 +88,11 @@ export default function LoginScreen() {
           resizeMode="contain"
         />
 
-        <Text style={styles.subtitle}>
-          Accedi per aggiungere ristoranti, salvare preferiti e lasciare recensioni.
-        </Text>
+        <Text style={styles.subtitle}>{i18n.t('login.subtitle')}</Text>
 
         <Surface style={styles.form} elevation={1}>
           <TextInput
-            label="Email"
+            label={i18n.t('login.emailLabel')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -94,7 +102,7 @@ export default function LoginScreen() {
             mode="outlined"
           />
           <TextInput
-            label="Password"
+            label={i18n.t('login.passwordLabel')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -116,28 +124,28 @@ export default function LoginScreen() {
             style={styles.button}
             contentStyle={styles.buttonContent}
           >
-            Accedi
+            {i18n.t('login.submitButton')}
           </Button>
 
           <TouchableOpacity onPress={handleResetPassword} style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Password dimenticata?</Text>
+            <Text style={styles.forgotPasswordText}>{i18n.t('login.forgotPassword')}</Text>
           </TouchableOpacity>
         </Surface>
 
         <View style={styles.registerSection}>
-          <Text style={styles.rowText}>Non hai un account?</Text>
+          <Text style={styles.rowText}>{i18n.t('login.noAccount')}</Text>
           <Button
             mode="outlined"
             onPress={() => router.replace('/auth/signup')}
             style={styles.registerButton}
             contentStyle={styles.buttonContent}
           >
-            Registrati
+            {i18n.t('login.registerButton')}
           </Button>
         </View>
 
         <TouchableOpacity onPress={() => router.back()} style={styles.skipRow}>
-          <Text style={styles.skipText}>Continua senza account</Text>
+          <Text style={styles.skipText}>{i18n.t('login.skipLink')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

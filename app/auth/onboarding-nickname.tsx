@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
+import i18n from '../../utils/i18n';
 
 export default function OnboardingNicknameScreen() {
   const router = useRouter();
@@ -19,7 +20,10 @@ export default function OnboardingNicknameScreen() {
   const handleContinue = async () => {
     if (!user) return;
     if (!isAnonymous && !nickname.trim()) {
-      Alert.alert('Nickname mancante', 'Inserisci un nickname oppure scegli di restare anonimo.');
+      Alert.alert(
+        i18n.t('onboardingNickname.alerts.missing.title'),
+        i18n.t('onboardingNickname.alerts.missing.message')
+      );
       return;
     }
     setSaving(true);
@@ -33,7 +37,7 @@ export default function OnboardingNicknameScreen() {
       await refreshProfile();
       router.replace('/auth/onboarding-dietary');
     } catch {
-      Alert.alert('Errore', 'Impossibile salvare. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('onboardingNickname.alerts.saveError.message'));
     } finally {
       setSaving(false);
     }
@@ -44,7 +48,7 @@ export default function OnboardingNicknameScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={{ width: 24 }} />
-        <Text style={styles.headerTitle}>Il tuo profilo</Text>
+        <Text style={styles.headerTitle}>{i18n.t('onboardingNickname.headerTitle')}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -61,15 +65,12 @@ export default function OnboardingNicknameScreen() {
             style={styles.profileIcon}
             resizeMode="contain"
           />
-          <Text style={styles.introTitle}>Come vuoi apparire nella community?</Text>
-          <Text style={styles.introText}>
-            Scegli un nickname con cui gli altri utenti ti vedranno nelle recensioni.
-            Se preferisci, puoi restare anonimo: il tuo nome non sarà mai visibile ad altri.
-          </Text>
+          <Text style={styles.introTitle}>{i18n.t('onboardingNickname.introTitle')}</Text>
+          <Text style={styles.introText}>{i18n.t('onboardingNickname.introText')}</Text>
         </View>
 
         <TextInput
-          label="Nickname"
+          label={i18n.t('onboardingNickname.nicknameLabel')}
           value={nickname}
           onChangeText={setNickname}
           autoCapitalize="words"
@@ -77,16 +78,14 @@ export default function OnboardingNicknameScreen() {
           mode="outlined"
           style={[styles.input, isAnonymous && styles.inputDisabled]}
           disabled={isAnonymous}
-          placeholder="Come vuoi essere chiamato?"
+          placeholder={i18n.t('onboardingNickname.nicknamePlaceholder')}
           placeholderTextColor={theme.colors.textDisabled}
         />
 
         <View style={styles.anonymousRow}>
           <View style={styles.anonymousTextGroup}>
-            <Text style={styles.anonymousLabel}>Resta anonimo</Text>
-            <Text style={styles.anonymousHint}>
-              Il tuo nome non sarà visibile ad altri utenti
-            </Text>
+            <Text style={styles.anonymousLabel}>{i18n.t('onboardingNickname.anonymousLabel')}</Text>
+            <Text style={styles.anonymousHint}>{i18n.t('onboardingNickname.anonymousHint')}</Text>
           </View>
           <Switch
             value={isAnonymous}
@@ -102,9 +101,7 @@ export default function OnboardingNicknameScreen() {
         {isAnonymous && (
           <View style={styles.anonymousNote}>
             <MaterialCommunityIcons name="shield-check-outline" size={16} color={theme.colors.primary} />
-            <Text style={styles.anonymousNoteText}>
-              Le tue recensioni mostreranno un identificativo generico. Il tuo nome non sarà mai visibile ad altri utenti.
-            </Text>
+            <Text style={styles.anonymousNoteText}>{i18n.t('onboardingNickname.anonymousNote')}</Text>
           </View>
         )}
 
@@ -115,13 +112,11 @@ export default function OnboardingNicknameScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.continueButtonText}>
-            {saving ? 'Salvataggio...' : 'Continua'}
+            {saving ? i18n.t('onboardingNickname.saving') : i18n.t('onboardingNickname.continue')}
           </Text>
         </TouchableOpacity>
 
-        <Text style={styles.changeNote}>
-          Potrai modificare queste impostazioni in qualsiasi momento dal tuo profilo.
-        </Text>
+        <Text style={styles.changeNote}>{i18n.t('onboardingNickname.changeNote')}</Text>
       </ScrollView>
     </View>
   );

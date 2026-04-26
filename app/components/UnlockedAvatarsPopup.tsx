@@ -20,6 +20,7 @@ import { usePathname, useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import { getAvatarById } from '../../constants/avatars';
+import i18n from '../../utils/i18n';
 
 const VISIBLE_TILES = 4;
 
@@ -34,7 +35,6 @@ export default function UnlockedAvatarsPopup() {
   const { newlyUnlockedIds, newlyUnlockedCount, acknowledgeUnlocks } = useUnlockedAvatars();
 
   const visible = newlyUnlockedCount > 0 && !isSuppressedPath(pathname ?? '');
-  const isPlural = newlyUnlockedCount > 1;
 
   const handleViewGallery = async () => {
     await acknowledgeUnlocks();
@@ -98,28 +98,24 @@ export default function UnlockedAvatarsPopup() {
           )}
 
           <Text style={styles.title}>
-            {isPlural
-              ? `Hai sbloccato ${newlyUnlockedCount} nuovi avatar!`
-              : 'Hai sbloccato un nuovo avatar!'}
+            {i18n.t('unlockedAvatarsPopup.title', { count: newlyUnlockedCount })}
           </Text>
           <Text style={styles.subtitle}>
-            {isPlural
-              ? 'Vai alla galleria per vederli e impostarne uno come tuo avatar.'
-              : 'Vai alla galleria per vederlo e impostarlo come tuo avatar.'}
+            {i18n.t('unlockedAvatarsPopup.subtitle', { count: newlyUnlockedCount })}
           </Text>
           <Pressable
             style={styles.primaryBtn}
             onPress={handleViewGallery}
             accessibilityRole="button"
           >
-            <Text style={styles.primaryBtnText}>Vedi galleria</Text>
+            <Text style={styles.primaryBtnText}>{i18n.t('unlockedAvatarsPopup.viewGallery')}</Text>
           </Pressable>
           <Pressable
             style={styles.secondaryBtn}
             onPress={handleDismiss}
             accessibilityRole="button"
           >
-            <Text style={styles.secondaryBtnText}>Più tardi</Text>
+            <Text style={styles.secondaryBtnText}>{i18n.t('unlockedAvatarsPopup.later')}</Text>
           </Pressable>
         </Pressable>
       </Pressable>

@@ -590,5 +590,121 @@
       "start": "Inizia",
       "skip": "Salta"
     }
+  },
+  "login": {
+    "headerTitle": "Accedi",
+    "subtitle": "Accedi per aggiungere ristoranti, salvare preferiti e lasciare recensioni.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submitButton": "Accedi",
+    "forgotPassword": "Password dimenticata?",
+    "noAccount": "Non hai un account?",
+    "registerButton": "Registrati",
+    "skipLink": "Continua senza account",
+    "alerts": {
+      "missingFields": {
+        "title": "Attenzione",
+        "message": "Inserisci email e password."
+      },
+      "errors": {
+        "invalidCredentials": "Email o password non corretti.",
+        "tooManyAttempts": "Troppi tentativi. Riprova più tardi.",
+        "network": "Errore di rete. Controlla la connessione.",
+        "generic": "Si è verificato un errore. Riprova."
+      },
+      "resetMissingEmail": {
+        "title": "Reset password",
+        "message": "Inserisci prima la tua email nel campo sopra."
+      },
+      "resetSent": {
+        "title": "Email inviata",
+        "message": "Controlla la tua casella di posta per reimpostare la password."
+      },
+      "resetError": {
+        "message": "Impossibile inviare il reset. Controlla l'email inserita."
+      }
+    }
+  },
+  "signup": {
+    "headerTitle": "Crea account",
+    "subtitle": "Trova ristoranti, condividi la tua esperienza e aiuta altri utenti con le tue stesse esigenze.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordHint": "Minimo 6 caratteri",
+    "submitButton": "Crea account",
+    "legalNotePart1": "Creando un account accetti i nostri ",
+    "legalTerms": "Termini di servizio",
+    "legalAnd": " e la ",
+    "legalPrivacy": "Privacy Policy",
+    "haveAccount": "Hai già un account? ",
+    "loginLink": "Accedi",
+    "skipLink": "Continua senza account",
+    "alerts": {
+      "missingFields": {
+        "title": "Attenzione",
+        "message": "Compila tutti i campi."
+      },
+      "shortPassword": {
+        "title": "Attenzione",
+        "message": "La password deve essere di almeno 6 caratteri."
+      },
+      "errors": {
+        "alreadyRegistered": "Questa email è già registrata. Prova ad accedere.",
+        "invalidEmail": "Email non valida.",
+        "weakPassword": "Password troppo debole. Usa almeno 6 caratteri.",
+        "network": "Errore di rete. Controlla la connessione.",
+        "generic": "Si è verificato un errore. Riprova."
+      }
+    }
+  },
+  "onboardingNickname": {
+    "headerTitle": "Il tuo profilo",
+    "introTitle": "Come vuoi apparire nella community?",
+    "introText": "Scegli un nickname con cui gli altri utenti ti vedranno nelle recensioni. Se preferisci, puoi restare anonimo: il tuo nome non sarà mai visibile ad altri.",
+    "nicknameLabel": "Nickname",
+    "nicknamePlaceholder": "Come vuoi essere chiamato?",
+    "anonymousLabel": "Resta anonimo",
+    "anonymousHint": "Il tuo nome non sarà visibile ad altri utenti",
+    "anonymousNote": "Le tue recensioni mostreranno un identificativo generico. Il tuo nome non sarà mai visibile ad altri utenti.",
+    "saving": "Salvataggio...",
+    "continue": "Continua",
+    "changeNote": "Potrai modificare queste impostazioni in qualsiasi momento dal tuo profilo.",
+    "alerts": {
+      "missing": {
+        "title": "Nickname mancante",
+        "message": "Inserisci un nickname oppure scegli di restare anonimo."
+      },
+      "saveError": {
+        "message": "Impossibile salvare. Riprova."
+      }
+    }
+  },
+  "onboardingDietary": {
+    "headerTitle": "Le tue esigenze",
+    "introTitle": "Una community che si aiuta a vicenda",
+    "introText": "Indica le tue esigenze: filtreremo i ristoranti per te e renderemo le tue recensioni utili a chi ha le stesse allergie.",
+    "skipLink": "Non ho allergie o esigenze particolari",
+    "noNeedsNote": "AllergiApp funziona grazie alle recensioni degli utenti. Indicare le proprie esigenze aiuta altri con le stesse allergie o diete a trovare i ristoranti giusti. Puoi aggiungerle in qualsiasi momento dal tuo profilo.",
+    "saveButton": "Salva e continua",
+    "consentPart1": "Acconsento a salvare le mie esigenze nel profilo per personalizzare la mia esperienza (",
+    "consentLink": "Art. 9 GDPR",
+    "consentPart2": ").",
+    "alerts": {
+      "saveError": {
+        "message": "Impossibile salvare. Riprova."
+      }
+    }
+  },
+  "unlockedAvatarsPopup": {
+    "title": {
+      "one": "Hai sbloccato un nuovo avatar!",
+      "other": "Hai sbloccato {{count}} nuovi avatar!"
+    },
+    "subtitle": {
+      "one": "Vai alla galleria per vederlo e impostarlo come tuo avatar.",
+      "other": "Vai alla galleria per vederli e impostarne uno come tuo avatar."
+    },
+    "viewGallery": "Vedi galleria",
+    "later": "Più tardi"
   }
 }
