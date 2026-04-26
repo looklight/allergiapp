@@ -5,6 +5,17 @@
     "errorRetry": "Retry",
     "ok": "OK"
   },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "add": "Add",
+    "error": "Error",
+    "thanks": "Thanks",
+    "save": "Save"
+  },
   "home": {
     "title": "What do I need to communicate?",
     "noAllergies": "You haven't added anything yet",
@@ -161,6 +172,376 @@
   },
   "gallery": {
     "reviewerNeeds": "Reviewer's dietary needs:"
+  },
+  "restaurants": {
+    "review": {
+      "title": "Your review",
+      "editTitle": "Edit review",
+      "howWasIt": "How was your experience?",
+      "commentPlaceholder": "Tell us about your experience:\nWhich dishes did you order?\nWas the staff attentive to your needs?",
+      "photoLabel": "Photo",
+      "cuisineTitle": "Cuisine type",
+      "cuisineHintExisting": "Tap the tags you think describe this restaurant",
+      "cuisineHintEmpty": "Add the cuisine type for this restaurant",
+      "ratingRequiredTitle": "Heads up",
+      "ratingRequiredMsg": "Please select at least one star to rate this place.",
+      "thanksTitle": "Thanks!",
+      "publishedMsg": "Your review has been shared with the community.",
+      "updatedMsg": "Your review has been updated.",
+      "submitError": "Couldn't submit. Please try again.",
+      "notFound": "Review not found.",
+      "loadError": "Couldn't load the review.",
+      "deleteTitle": "Delete review",
+      "deleteConfirm": "Are you sure you want to delete your review? This action cannot be undone.",
+      "deleteAction": "Delete your review",
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "update": "Update",
+      "updating": "Updating...",
+      "helpsCommunity": "Your review helps the community"
+    },
+    "add": {
+      "title": "Add restaurant",
+      "intro": "Add a restaurant",
+      "introHint": "Every place you add helps people with dietary needs find safe spots to eat.",
+      "searchTitle": "Search the restaurant",
+      "searchHint": "Type the name or address to find it on Google Maps.",
+      "searchNotConfigured": "⚠️ Google Places API not configured. Please enter the details manually below.",
+      "searchPlaceholder": "E.g. Trattoria da Mario, Rome",
+      "loadingDetails": "Loading details...",
+      "alreadyExists": "Already in the community — view page",
+      "viewOnMaps": "View on Maps",
+      "verify": "Verify",
+      "cuisineTitle": "Cuisine type",
+      "cuisineHint": "Select one or more cuisine types (optional)",
+      "howRate": "How would you rate it?",
+      "ratingHelpsUsers": "Your rating helps users with similar needs find this restaurant",
+      "commentPlaceholder": "Tell us about your experience (optional)",
+      "photoLabel": "Photo",
+      "notYetVisited": "I haven't been there yet",
+      "helpCommunityTitle": "Help the community",
+      "haveVisited": "I've visited",
+      "skipBoxText": "Reviews with dietary needs are the heart of AllergiApp: they help users with allergies find safe restaurants. You can add your review anytime from the restaurant page.",
+      "dietarySubtitle": "Your dietary needs for this review — they help users with similar needs find this place",
+      "noNeeds": "I don't have dietary needs",
+      "noNeedsConfirmed": "No dietary needs indicated",
+      "ratingRequiredTitle": "Rating required",
+      "ratingRequiredMsg": "Add at least one star or select \"I haven't been there yet\".",
+      "duplicateTitle": "Restaurant already exists",
+      "duplicateMsg": "\"{{name}}\" seems to already be in the community.",
+      "duplicateGoTo": "Go to restaurant",
+      "duplicateAddAnyway": "Add anyway",
+      "successTitle": "Restaurant added!",
+      "successMsg": "{{name}} has been added to the community.",
+      "submitError": "Couldn't add the restaurant. It might already exist or there was a network error.",
+      "placeDetailsError": "Couldn't fetch the place details. Please try again.",
+      "contactPrompt": "Looking for something else?",
+      "contactLink": "Contact us",
+      "submit": "Add restaurant"
+    },
+    "filter": {
+      "title": "Filters",
+      "myNeeds": "Filter by my needs",
+      "myNeedsHint": "Show restaurants with experiences left by users with the same allergies or dietary needs as yours.",
+      "dietarySubtitle": "Show restaurants with reviews from users who share your dietary needs.",
+      "noNeedsTitle": "No needs selected",
+      "noNeedsMsg": "Select at least one allergy or diet to use this filter.",
+      "cuisineLabel": "Cuisine type",
+      "cuisineHint": "Based on tags added by the community to describe the restaurant's cuisine type.",
+      "reset": "Reset filters",
+      "apply": "Apply"
+    },
+    "list": {
+      "titleAt": "Restaurants in {{place}}",
+      "noResultsFiltered": "No results with the active filters",
+      "noResultsArea": "No restaurants in this area",
+      "found": {
+        "one": "{{count}} found",
+        "other": "{{count}} found"
+      },
+      "emptyFiltered": "No restaurants in {{place}} match the selected filters. Try changing them.",
+      "emptyNearby": "No restaurants found near {{place}}.",
+      "add": "Add a restaurant",
+      "missingPrompt": "Missing a restaurant? Add it",
+      "noReviews": "No reviews",
+      "sort": {
+        "compatibility": "Compatibility",
+        "popularity": "Popularity",
+        "rating": "Rating",
+        "distance": "Distance from me"
+      }
+    },
+    "detail": {
+      "notFound": "Restaurant not found.",
+      "noReviews": "No reviews",
+      "directions": "Directions (Maps)",
+      "mapsError": "Unable to open Maps",
+      "yourReviewLabel": "Your review:",
+      "yourOpinion": "Your opinion:",
+      "yourReviewHint": "Your review helps users with the same needs as you",
+      "loginGatePhotosTitle": "Sign in to see photos and the menu",
+      "loginGatePhotosSubtitle": "Community photos and menu photos",
+      "loginGateReviewsTitle": "Sign in to see reviews",
+      "loginGateReviewsSubtitle": "Read community experiences and leave your own rating",
+      "addedByUser": "Added by a user",
+      "deleteTitle": "Delete restaurant",
+      "deleteConfirm": "Do you want to delete \"{{name}}\"? This action cannot be undone.",
+      "deleteError": "Couldn't delete the restaurant.",
+      "deleteRestaurant": "Delete restaurant",
+      "reportTitle": "Report review",
+      "reportPrompt": "Why do you want to report this review?",
+      "reportInappropriate": "Inappropriate content",
+      "reportSpam": "Spam or advertising",
+      "reportFalse": "False information",
+      "reportSent": "Your report has been sent. We'll review it as soon as possible.",
+      "reportError": "Couldn't send the report. Please try again.",
+      "reportAlreadySent": "Report sent",
+      "reportAlreadyMsg": "You've already reported this review. We'll review it as soon as possible.",
+      "reportRestDone": "You've already reported this restaurant",
+      "reportRest": "Report a problem",
+      "reportRestAlreadyTitle": "Already reported",
+      "reportRestAlreadyMsg": "You've already reported this restaurant."
+    },
+    "header": {
+      "mapsDetails": "Details",
+      "reviewsCount": {
+        "one": "({{count}} review)",
+        "other": "({{count}} reviews)"
+      },
+      "noReviewsYet": "No reviews yet",
+      "addressCopied": "Address copied",
+      "cuisineHint": "Tags suggested by the community. The number shows how many users confirmed each cuisine type.",
+      "compatLogin": "Sign in to see how this matches your needs",
+      "compatNoInfo": "No information for your needs",
+      "compatBased": {
+        "one": "compatible · based on {{count}} review",
+        "other": "compatible · based on {{count}} reviews"
+      },
+      "confirmOptionsWithout": "Reviews confirm options without:",
+      "confirmOptionsFor": "Reviews confirm options for:",
+      "andOptionsFor": "And options for:",
+      "noReviewsMention": "No reviews mention:",
+      "disclaimer": "Information is based on experiences shared by community users. It's not verified — always check before ordering.",
+      "readReviews": "Read reviews",
+      "fromSource": " · from {{source}}"
+    },
+    "reviews": {
+      "empty": "No reviews yet",
+      "emptyHint": "Be the first to share your experience",
+      "titleWithCount": "Reviews ({{count}})",
+      "disclaimer": "Reviews are not verified and reflect users' personal experiences. Contribute by writing one, liking, or reporting inappropriate content.",
+      "loadMore": "Load more reviews",
+      "sort": {
+        "recent": "Recent",
+        "rating": "Stars",
+        "helpful": "Most helpful",
+        "forMe": "For me"
+      },
+      "card": {
+        "reportFlag": "Report",
+        "reportedFlag": "Reported"
+      }
+    },
+    "menu": {
+      "title": "Menu",
+      "manage": "Manage",
+      "addFirst": "Add the first menu photos",
+      "empty": "No menu photos yet",
+      "loadError": "Couldn't load menu photos.",
+      "addTitle": "Add photo",
+      "gallery": "Gallery",
+      "camera": "Camera",
+      "uploadError": "Couldn't upload the photo. Please try again.",
+      "reportAlreadyTitle": "Report sent",
+      "reportAlreadyMsg": "You've already reported this photo. We'll review it as soon as possible.",
+      "reportTitle": "Report photo",
+      "reportPrompt": "Why do you want to report this photo?",
+      "reportIncorrect": "Not a menu / not relevant",
+      "reportInappropriate": "Inappropriate content",
+      "reportOther": "Other",
+      "deleteTitle": "Delete photo",
+      "deleteConfirm": "Do you want to delete this menu photo?",
+      "deleteError": "Couldn't delete the photo.",
+      "screenTitle": "Menu photos",
+      "infoText": "Menu photos help people with dietary needs know what they can order, even before walking in.",
+      "infoSubtext": "If you have the menu in front of you or more recent photos, feel free to add them — every contribution makes the app more useful for everyone.",
+      "uploading": "Uploading...",
+      "addAction": "Add a menu photo",
+      "beFirst": "Be the first to add one",
+      "uploaderYou": "You",
+      "uploaderCommunity": "Community user"
+    },
+    "reports": {
+      "titleWithCount": "Reports ({{count}})",
+      "userLabel": "User"
+    },
+    "tabs": {
+      "searchPlaceholder": "Search restaurant or place...",
+      "activeChipForMe": "For me",
+      "loadingNearby": "Looking for restaurants in {{place}}...",
+      "bannerNoneAt": "No restaurants in {{place}}",
+      "bannerCountAt": {
+        "one": "{{count}} restaurant in {{place}}",
+        "other": "{{count}} restaurants in {{place}}"
+      },
+      "tabCards": "My Cards",
+      "tabRestaurants": "Restaurants"
+    },
+    "profileCard": {
+      "title": "Profile",
+      "openAvatars": "Open my avatars",
+      "defaultName": "User",
+      "memberSince": "Member since {{date}}",
+      "statReviews": "Reviews",
+      "statLikes": "Likes received",
+      "statFavorites": "Favorites",
+      "dietaryProfile": "Dietary profile"
+    },
+    "dietaryPicker": {
+      "title": "Your dietary needs",
+      "descriptionWithNeeds": "This data helps other users with the same needs find compatible restaurants.",
+      "descriptionEmpty": "Have allergies or follow a diet? Add them to help others with similar needs.",
+      "addNeeds": "Add needs",
+      "syncTitle": "Use these needs as default",
+      "syncDone": "Profile updated"
+    },
+    "search": {
+      "places": "Places",
+      "restaurants": "Restaurants",
+      "recent": "Recent searches",
+      "clear": "Clear"
+    },
+    "web": {
+      "mapNotAvailable": "Map not available",
+      "notSupported": "The map is not supported on web."
+    },
+    "profile": {
+      "title": "Profile",
+      "logoutTitle": "Logout",
+      "logoutConfirm": "Do you want to log out of your account?",
+      "logoutAction": "Log out",
+      "guestTitle": "You're not signed in",
+      "guestSubtitle": "Sign in to save your favorite restaurants, add reviews, and much more.",
+      "signIn": "Sign in",
+      "menuAvatars": "My Avatars",
+      "menuFavorites": "My favorites",
+      "menuReviews": "My reviews",
+      "menuLeaderboard": "Leaderboard"
+    },
+    "report": {
+      "title": "Report a problem",
+      "infoBanner": "AllergiApp is a collaborative platform: restaurants and reviews are entirely managed by the community. Use this report only for real issues (incorrect information, inappropriate content, etc.). The actions we can take are limited because we don't have direct relationships with restaurants.",
+      "reasonLabel": "Reason for the report",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe the issue in detail...",
+      "reviewHint": "If your experience could help others, consider leaving a review. A respectful and constructive review often helps more than a report.",
+      "submitting": "Sending...",
+      "submit": "Send report",
+      "thanksTitle": "Thanks!",
+      "sent": "Your report has been sent. We'll review it as soon as possible.",
+      "error": "Couldn't send the report. Please try again."
+    },
+    "reportReasons": {
+      "closed": "Permanently closed",
+      "incorrect_info": "Incorrect information",
+      "hygiene": "Hygiene conditions",
+      "inappropriate": "Inappropriate content",
+      "other": "Other"
+    },
+    "editDietary": {
+      "title": "Dietary profile",
+      "subtitle": "Allergies and diets saved in your profile. Used to filter restaurants by your needs."
+    },
+    "editProfile": {
+      "title": "Edit profile",
+      "accountSection": "Account information",
+      "nicknameLabel": "Nickname",
+      "anonymousLabel": "Anonymous profile",
+      "anonymousHint": "Your name won't be visible to other users",
+      "emailLabel": "Email",
+      "emailHint": "The email address cannot be changed.",
+      "save": "Save",
+      "deleteAccount": "Delete account",
+      "deleteWillRemove": "These will be permanently deleted:",
+      "deleteBullet1": "•  Your profile and avatar",
+      "deleteBullet2": "•  Your preferences",
+      "deleteBullet3": "•  You won't be able to recover this data",
+      "deleteNote": "Your community contributions (restaurants, dishes, reviews) will remain visible anonymously.",
+      "continue": "Continue",
+      "back": "Back",
+      "deleteFinal": "Delete permanently",
+      "deleteWord": "DELETE",
+      "deleteWriteConfirm": "Type {{word}} to confirm",
+      "deletePlaceholder": "Type {{word}}",
+      "nameRequiredTitle": "Name required",
+      "nameRequiredMsg": "Please enter a display name.",
+      "saveError": "Couldn't save changes. Please try again.",
+      "deleteError": "Couldn't delete the account. Please try again."
+    },
+    "favorites": {
+      "title": "My favorites",
+      "emptyTitle": "No favorites yet",
+      "emptySubtitle": "Explore restaurants and save the ones you like by tapping the heart.",
+      "emptyButton": "Explore restaurants"
+    },
+    "myRestaurants": {
+      "title": "My restaurants",
+      "emptyTitle": "You haven't added any restaurants yet",
+      "emptySubtitle": "Add your first restaurant and help the community!"
+    },
+    "myReviews": {
+      "title": "My reviews",
+      "emptyTitle": "No reviews yet",
+      "emptySubtitle": "Visit a restaurant and share your experience with other users.",
+      "restaurantFallback": "Restaurant",
+      "photosCount": {
+        "one": "{{count}} photo",
+        "other": "{{count}} photos"
+      }
+    },
+    "user": {
+      "notFound": "Profile not found.",
+      "reviewsLabel": "Reviews"
+    },
+    "avatarGallery": {
+      "anonymousBanner": "In anonymous mode your avatar is not visible to others.",
+      "anonymousAlertTitle": "Anonymous mode active",
+      "anonymousAlertMsg": "To choose an avatar, turn off anonymous mode in your profile.",
+      "goToProfile": "Go to profile",
+      "hideHint": "Hide hint",
+      "showHint": "Show hint",
+      "hintLabel": "Hint",
+      "unlocked": "Unlocked!",
+      "questHint": {
+        "likes": "Add photos, describe the dishes, and tell about your experience. Complete reviews are appreciated more by the community."
+      },
+      "peopleLabel": {
+        "vegan": "vegans",
+        "vegetarian": "vegetarians",
+        "gluten": "gluten-free",
+        "lactose": "lactose intolerant",
+        "histamine": "histamine intolerant",
+        "nickel": "nickel intolerant",
+        "diabetes": "diabetic"
+      },
+      "progress": {
+        "reviews": "{{current}}/{{total}} reviews",
+        "restaurants": "{{current}}/{{total}} restaurants",
+        "likes": "{{current}}/{{total}} likes received",
+        "uniqueLikers": "{{current}}/{{total}} different users",
+        "countries": "{{current}}/{{total}} countries reviewed",
+        "likesToRestriction": "{{current}}/{{total}} likes to reviews from {{people}}"
+      },
+      "conditions": {
+        "free": "Free avatar",
+        "reviews": "Write {{count}} reviews",
+        "restaurants": "Add {{count}} restaurants",
+        "likes": "Your reviews must receive {{count}} likes from users",
+        "uniqueLikers": "Receive likes from {{count}} different users on your reviews",
+        "countries": "Review restaurants in {{count}} different countries",
+        "likesToRestriction": "Like {{count}} reviews from {{people}} users"
+      }
+    }
   },
   "aboutStory": {
     "title": "Why is it free?",

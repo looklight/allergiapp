@@ -162,12 +162,12 @@ export default function RestaurantDetailBody({
   const handleRemoveRestaurant = () => {
     if (!restaurant || !user?.uid) return;
     Alert.alert(
-      'Elimina ristorante',
-      `Vuoi eliminare "${restaurant.name}"? Questa azione non può essere annullata.`,
+      i18n.t('restaurants.detail.deleteTitle'),
+      i18n.t('restaurants.detail.deleteConfirm', { name: restaurant.name }),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: i18n.t('common.cancel'), style: 'cancel' },
         {
-          text: 'Elimina',
+          text: i18n.t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             setIsRemoving(true);
@@ -176,7 +176,7 @@ export default function RestaurantDetailBody({
             if (ok) {
               onDismiss();
             } else {
-              Alert.alert('Errore', 'Non è stato possibile eliminare il ristorante.');
+              Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.deleteError'));
             }
           },
         },
@@ -186,26 +186,26 @@ export default function RestaurantDetailBody({
 
   const handleReportReview = (reviewId: string) => {
     if (reportedReviewIds.has(reviewId)) {
-      Alert.alert('Segnalazione inviata', 'Hai già segnalato questa recensione. La esamineremo al più presto.');
+      Alert.alert(i18n.t('restaurants.detail.reportAlreadySent'), i18n.t('restaurants.detail.reportAlreadyMsg'));
       return;
     }
     Alert.alert(
-      'Segnala recensione',
-      'Perché vuoi segnalare questa recensione?',
+      i18n.t('restaurants.detail.reportTitle'),
+      i18n.t('restaurants.detail.reportPrompt'),
       [
         {
-          text: 'Contenuto inappropriato',
+          text: i18n.t('restaurants.detail.reportInappropriate'),
           onPress: () => submitReviewReport(reviewId, 'inappropriate'),
         },
         {
-          text: 'Spam o pubblicità',
+          text: i18n.t('restaurants.detail.reportSpam'),
           onPress: () => submitReviewReport(reviewId, 'spam'),
         },
         {
-          text: 'Informazioni false',
+          text: i18n.t('restaurants.detail.reportFalse'),
           onPress: () => submitReviewReport(reviewId, 'false_info'),
         },
-        { text: 'Annulla', style: 'cancel' },
+        { text: i18n.t('common.cancel'), style: 'cancel' },
       ],
     );
   };
@@ -215,9 +215,9 @@ export default function RestaurantDetailBody({
     const result = await RestaurantService.reportReview(restaurant.id, reviewId, reason);
     if (result) {
       setReportedReviewIds(prev => new Set(prev).add(reviewId));
-      Alert.alert('Grazie', 'La tua segnalazione è stata inviata. La esamineremo al più presto.');
+      Alert.alert(i18n.t('common.thanks'), i18n.t('restaurants.detail.reportSent'));
     } else {
-      Alert.alert('Errore', 'Impossibile inviare la segnalazione. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.reportError'));
     }
   };
 
@@ -240,9 +240,9 @@ export default function RestaurantDetailBody({
   if (error || !restaurant) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorText}>{error ?? 'Ristorante non trovato.'}</Text>
+        <Text style={styles.errorText}>{error ?? i18n.t('restaurants.detail.notFound')}</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.errorBack}>
-          <Text style={styles.errorBackText}>Chiudi</Text>
+          <Text style={styles.errorBackText}>{i18n.t('common.close')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -275,16 +275,16 @@ export default function RestaurantDetailBody({
                 <Text style={styles.bodyRatingCount}>({restaurant.review_count})</Text>
               </TouchableOpacity>
             ) : (
-              <Text style={styles.bodyNoRating}>Nessuna recensione</Text>
+              <Text style={styles.bodyNoRating}>{i18n.t('restaurants.detail.noReviews')}</Text>
             )}
             {mapsUrl && (
               <TouchableOpacity
                 style={styles.mapsChip}
                 activeOpacity={0.7}
-                onPress={() => Linking.openURL(mapsUrl).catch(() => Alert.alert('Errore', 'Impossibile aprire Maps'))}
+                onPress={() => Linking.openURL(mapsUrl).catch(() => Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.mapsError')))}
               >
                 <MaterialCommunityIcons name="google-maps" size={15} color={theme.colors.brandGoogleMaps} />
-                <Text style={styles.mapsChipText}>Indicazioni (Maps)</Text>
+                <Text style={styles.mapsChipText}>{i18n.t('restaurants.detail.directions')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -365,8 +365,8 @@ export default function RestaurantDetailBody({
           </View>
         ) : (
           <LoginGateCta
-            title="Accedi per vedere le foto e il menu"
-            subtitle="Foto della community e foto del menu"
+            title={i18n.t('restaurants.detail.loginGatePhotosTitle')}
+            subtitle={i18n.t('restaurants.detail.loginGatePhotosSubtitle')}
           />
         )}
 
@@ -377,7 +377,7 @@ export default function RestaurantDetailBody({
               <View style={styles.ctaSection}>
                 <View style={styles.ctaTopRow}>
                   <View style={styles.ctaInlineRow}>
-                    <Text style={styles.ctaTitle}>La tua recensione:</Text>
+                    <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourReviewLabel')}</Text>
                     {userReview.rating != null && userReview.rating > 0 && (
                       <StarRating rating={userReview.rating} size={20} />
                     )}
@@ -399,10 +399,10 @@ export default function RestaurantDetailBody({
                 <View style={[styles.ctaSection, styles.ctaSectionWithChevron]}>
                   <View style={styles.ctaSectionInner}>
                     <View style={styles.ctaInlineRow}>
-                      <Text style={styles.ctaTitle}>La tua opinione:</Text>
+                      <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourOpinion')}</Text>
                       <StarRating rating={0} size={32} onRate={(r) => navigateToContribute(r)} />
                     </View>
-                    <Text style={styles.ctaHint}>La tua recensione aiuta chi ha le tue stesse esigenze</Text>
+                    <Text style={styles.ctaHint}>{i18n.t('restaurants.detail.yourReviewHint')}</Text>
                   </View>
                   <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.primary} />
                 </View>
@@ -437,8 +437,8 @@ export default function RestaurantDetailBody({
           />
         ) : (
           <LoginGateCta
-            title="Accedi per vedere le recensioni"
-            subtitle="Leggi le esperienze della community e lascia la tua valutazione"
+            title={i18n.t('restaurants.detail.loginGateReviewsTitle')}
+            subtitle={i18n.t('restaurants.detail.loginGateReviewsSubtitle')}
           />
         )}
 
@@ -454,7 +454,7 @@ export default function RestaurantDetailBody({
               onPress={() => router.push(`/restaurants/user/${restaurant.added_by}`)}
             >
               <MaterialCommunityIcons name="account-outline" size={18} color={theme.colors.textSecondary} />
-              <Text style={styles.footerRowText}>Aggiunto da un utente</Text>
+              <Text style={styles.footerRowText}>{i18n.t('restaurants.detail.addedByUser')}</Text>
               <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
             </TouchableOpacity>
           )}
@@ -466,7 +466,7 @@ export default function RestaurantDetailBody({
             activeOpacity={0.6}
             onPress={() => {
               if (!isAuthenticated) { router.push('/auth/login'); return; }
-              if (userReport) { Alert.alert('Già segnalato', 'Hai già segnalato questo ristorante.'); return; }
+              if (userReport) { Alert.alert(i18n.t('restaurants.detail.reportRestAlreadyTitle'), i18n.t('restaurants.detail.reportRestAlreadyMsg')); return; }
               router.push(`/restaurants/report?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
             }}
           >
@@ -476,7 +476,7 @@ export default function RestaurantDetailBody({
               color={userReport ? theme.colors.textDisabled : theme.colors.warning}
             />
             <Text style={[styles.footerRowText, userReport && { color: theme.colors.textDisabled }]}>
-              {userReport ? 'Hai già segnalato questo ristorante' : 'Segnala un problema'}
+              {userReport ? i18n.t('restaurants.detail.reportRestDone') : i18n.t('restaurants.detail.reportRest')}
             </Text>
             {!userReport && (
               <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
@@ -497,7 +497,7 @@ export default function RestaurantDetailBody({
                 ) : (
                   <>
                     <MaterialCommunityIcons name="delete-outline" size={18} color={theme.colors.error} />
-                    <Text style={[styles.footerRowText, { color: theme.colors.error }]}>Elimina ristorante</Text>
+                    <Text style={[styles.footerRowText, { color: theme.colors.error }]}>{i18n.t('restaurants.detail.deleteRestaurant')}</Text>
                   </>
                 )}
               </TouchableOpacity>

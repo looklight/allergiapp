@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } fro
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
+import i18n from '../utils/i18n';
 import type { SearchResult } from '../hooks/useMapSearch';
 
 type Props = {
@@ -23,7 +24,7 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
       <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
         {places.length > 0 && (
           <>
-            <Text style={styles.sectionHeader}>Luoghi</Text>
+            <Text style={styles.sectionHeader}>{i18n.t('restaurants.search.places')}</Text>
             {places.map((r, i) => (
               r.type === 'place' && (
                 <TouchableOpacity
@@ -47,7 +48,7 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
 
         {restaurants.length > 0 && (
           <>
-            <Text style={styles.sectionHeader}>Ristoranti</Text>
+            <Text style={styles.sectionHeader}>{i18n.t('restaurants.search.restaurants')}</Text>
             {restaurants.map(r => (
               r.type === 'restaurant' && (
                 <TouchableOpacity

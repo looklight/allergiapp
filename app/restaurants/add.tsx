@@ -66,7 +66,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
     if (details) {
       onSelect(details);
     } else {
-      Alert.alert('Errore', 'Impossibile recuperare i dettagli del luogo. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.add.placeDetailsError'));
     }
   };
 
@@ -80,25 +80,25 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
         />
         <View style={styles.introTitleRow}>
           <MaterialCommunityIcons name="map-marker-plus-outline" size={20} color={theme.colors.primary} />
-          <Text style={styles.introTitle}>Aggiungi un ristorante</Text>
+          <Text style={styles.introTitle}>{i18n.t('restaurants.add.intro')}</Text>
         </View>
         <Text style={styles.introHint}>
-          Ogni locale che aggiungi aiuta chi ha esigenze alimentari a trovare posti sicuri dove mangiare.
+          {i18n.t('restaurants.add.introHint')}
         </Text>
       </Surface>
 
       <Surface style={styles.section} elevation={0}>
-        <Text style={styles.sectionTitle}>Cerca il ristorante</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.searchTitle')}</Text>
         <Text style={styles.stepHint}>
           {PlacesService.isConfigured()
-            ? 'Digita il nome o l\'indirizzo per trovarlo su Google Maps.'
-            : '⚠️ Google Places API non configurata. Inserisci i dati manualmente qui sotto.'}
+            ? i18n.t('restaurants.add.searchHint')
+            : i18n.t('restaurants.add.searchNotConfigured')}
         </Text>
 
         <TextInput
           value={query}
           onChangeText={handleQueryChange}
-          placeholder="Es. Trattoria da Mario, Roma"
+          placeholder={i18n.t('restaurants.add.searchPlaceholder')}
           placeholderTextColor={theme.colors.textDisabled}
           mode="outlined"
           style={styles.searchInput}
@@ -110,7 +110,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
         {isLoadingDetails && (
           <View style={styles.loadingRow}>
             <ActivityIndicator color={theme.colors.primary} size="small" />
-            <Text style={styles.loadingText}>Caricamento dettagli...</Text>
+            <Text style={styles.loadingText}>{i18n.t('restaurants.add.loadingDetails')}</Text>
           </View>
         )}
 
@@ -131,7 +131,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
                 onPress={() => router.push(`/restaurants/${existing.id}`)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.resultExistingBtnText}>Già nella community — vedi scheda</Text>
+                <Text style={styles.resultExistingBtnText}>{i18n.t('restaurants.add.alreadyExists')}</Text>
                 <MaterialCommunityIcons name="arrow-right" size={16} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
@@ -158,7 +158,7 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
                 style={styles.mapsBtn}
               >
                 <MaterialCommunityIcons name="google-maps" size={12} color={theme.colors.textSecondary} />
-                <Text style={styles.mapsBtnText}>Vedi su Maps</Text>
+                <Text style={styles.mapsBtnText}>{i18n.t('restaurants.add.viewOnMaps')}</Text>
               </TouchableOpacity>
             </View>
           );
@@ -240,15 +240,15 @@ function ConfirmStep({
             hitSlop={8}
           >
             <MaterialCommunityIcons name="google-maps" size={12} color={theme.colors.textSecondary} />
-            <Text style={styles.placeMapsBtnText}>Verifica</Text>
+            <Text style={styles.placeMapsBtnText}>{i18n.t('restaurants.add.verify')}</Text>
           </TouchableOpacity>
         </View>
       </Surface>
 
       {/* Tipo di cucina */}
       <Surface style={styles.section} elevation={0}>
-        <Text style={styles.sectionTitle}>Tipo di cucina</Text>
-        <Text style={styles.stepHint}>Seleziona uno o più tipi di cucina (opzionale)</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.cuisineTitle')}</Text>
+        <Text style={styles.stepHint}>{i18n.t('restaurants.add.cuisineHint')}</Text>
         <View style={styles.cuisineGrid}>
           {CUISINE_CATEGORIES.map(cat => {
             const label = cat.translations[i18n.locale as AppLanguage] ?? cat.translations.it;
@@ -273,9 +273,9 @@ function ConfirmStep({
       <Surface style={styles.section} elevation={0}>
         {!skipReview ? (
           <>
-            <Text style={styles.sectionTitle}>Come lo valuteresti?</Text>
+            <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.howRate')}</Text>
             <Text style={styles.stepHint}>
-              La tua valutazione aiuta gli utenti con esigenze simili a trovare questo ristorante
+              {i18n.t('restaurants.add.ratingHelpsUsers')}
             </Text>
             <View style={styles.ratingRow}>
               <StarRating rating={rating} size={36} onRate={onRatingChange} />
@@ -290,7 +290,7 @@ function ConfirmStep({
                 <TextInput
                   value={comment}
                   onChangeText={onCommentChange}
-                  placeholder="Racconta la tua esperienza (opzionale)"
+                  placeholder={i18n.t('restaurants.add.commentPlaceholder')}
                   placeholderTextColor={theme.colors.textDisabled}
                   multiline
                   mode="outlined"
@@ -309,7 +309,7 @@ function ConfirmStep({
                   {remaining > 0 && (
                     <TouchableOpacity style={styles.photoAdd} onPress={onAddPhoto} activeOpacity={0.7}>
                       <MaterialCommunityIcons name="camera-plus-outline" size={20} color={theme.colors.textSecondary} />
-                      <Text style={styles.photoAddText}>Foto</Text>
+                      <Text style={styles.photoAddText}>{i18n.t('restaurants.add.photoLabel')}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -318,7 +318,7 @@ function ConfirmStep({
 
             {rating === 0 && (
               <TouchableOpacity onPress={onToggleSkip} style={styles.skipLink} hitSlop={8}>
-                <Text style={styles.skipLinkText}>Non ci sono ancora stato</Text>
+                <Text style={styles.skipLinkText}>{i18n.t('restaurants.add.notYetVisited')}</Text>
               </TouchableOpacity>
             )}
           </>
@@ -326,11 +326,11 @@ function ConfirmStep({
           <View style={styles.skipBox}>
             <TouchableOpacity onPress={onToggleSkip} style={styles.skipBoxHeader} activeOpacity={0.7}>
               <MaterialCommunityIcons name="heart-outline" size={18} color={theme.colors.primary} />
-              <Text style={styles.skipBoxTitle}>Aiuta la community</Text>
-              <Text style={styles.skipUndoText}>Ho visitato</Text>
+              <Text style={styles.skipBoxTitle}>{i18n.t('restaurants.add.helpCommunityTitle')}</Text>
+              <Text style={styles.skipUndoText}>{i18n.t('restaurants.add.haveVisited')}</Text>
             </TouchableOpacity>
             <Text style={styles.skipBoxText}>
-              Le recensioni con il piano alimentare sono il cuore di AllergiApp: permettono agli utenti con allergie di trovare ristoranti sicuri per loro. Puoi aggiungere la tua recensione in qualsiasi momento dalla scheda del ristorante.
+              {i18n.t('restaurants.add.skipBoxText')}
             </Text>
           </View>
         )}
@@ -349,7 +349,7 @@ function ConfirmStep({
             onSyncProfile={onSyncProfile}
             lang={i18n.locale}
             initialExpanded={profileAllergens.length === 0 && profileDiets.length === 0}
-            subtitle="Le tue esigenze alimentari per questa recensione — aiutano utenti con bisogni simili a trovare questo posto"
+            subtitle={i18n.t('restaurants.add.dietarySubtitle')}
           />
           {!hasNeeds && !explicitlyNoNeeds && (
             <TouchableOpacity
@@ -358,15 +358,15 @@ function ConfirmStep({
               activeOpacity={0.7}
             >
               <MaterialCommunityIcons name="check-circle-outline" size={16} color={theme.colors.textSecondary} />
-              <Text style={styles.noNeedsBtnText}>Non ho esigenze alimentari</Text>
+              <Text style={styles.noNeedsBtnText}>{i18n.t('restaurants.add.noNeeds')}</Text>
             </TouchableOpacity>
           )}
           {explicitlyNoNeeds && (
             <View style={styles.noNeedsConfirmed}>
               <MaterialCommunityIcons name="check-circle" size={16} color={theme.colors.primary} />
-              <Text style={styles.noNeedsConfirmedText}>Nessuna esigenza indicata</Text>
+              <Text style={styles.noNeedsConfirmedText}>{i18n.t('restaurants.add.noNeedsConfirmed')}</Text>
               <TouchableOpacity onPress={() => onSetNoNeeds(false)} hitSlop={8}>
-                <Text style={styles.noNeedsUndoText}>Modifica</Text>
+                <Text style={styles.noNeedsUndoText}>{i18n.t('common.edit')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -450,8 +450,8 @@ export default function AddRestaurantScreen() {
 
     if (!skipReview && rating === 0) {
       Alert.alert(
-        'Valutazione richiesta',
-        'Aggiungi almeno una stella oppure seleziona "Non ci sono ancora stato".'
+        i18n.t('restaurants.add.ratingRequiredTitle'),
+        i18n.t('restaurants.add.ratingRequiredMsg')
       );
       return;
     }
@@ -467,12 +467,12 @@ export default function AddRestaurantScreen() {
     if (duplicate) {
       setIsSubmitting(false);
       Alert.alert(
-        'Ristorante già presente',
-        `"${duplicate.name}" sembra essere già nella community.`,
+        i18n.t('restaurants.add.duplicateTitle'),
+        i18n.t('restaurants.add.duplicateMsg', { name: duplicate.name }),
         [
-          { text: 'Vai al ristorante', onPress: () => router.replace(`/restaurants/${duplicate.id}`) },
-          { text: 'Aggiungi comunque', style: 'destructive', onPress: () => { doSubmit(); } },
-          { text: 'Annulla', style: 'cancel' },
+          { text: i18n.t('restaurants.add.duplicateGoTo'), onPress: () => router.replace(`/restaurants/${duplicate.id}`) },
+          { text: i18n.t('restaurants.add.duplicateAddAnyway'), style: 'destructive', onPress: () => { doSubmit(); } },
+          { text: i18n.t('common.cancel'), style: 'cancel' },
         ],
       );
       return;
@@ -520,14 +520,14 @@ export default function AddRestaurantScreen() {
 
     if (result) {
       Alert.alert(
-        'Ristorante aggiunto!',
-        `${result.name} è stato aggiunto alla community.`,
+        i18n.t('restaurants.add.successTitle'),
+        i18n.t('restaurants.add.successMsg', { name: result.name }),
         [{ text: 'OK', onPress: () => router.replace(`/restaurants/${result.id}`) }]
       );
     } else {
       Alert.alert(
-        'Errore',
-        'Impossibile aggiungere il ristorante. Potrebbe già essere presente oppure si è verificato un errore di rete.'
+        i18n.t('common.error'),
+        i18n.t('restaurants.add.submitError')
       );
     }
   };
@@ -546,7 +546,7 @@ export default function AddRestaurantScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title="Aggiungi ristorante" onBack={selectedPlace ? handleBack : undefined} />
+      <HeaderBar title={i18n.t('restaurants.add.title')} onBack={selectedPlace ? handleBack : undefined} />
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingBottom: selectedPlace ? insets.bottom + 96 : insets.bottom + 24 }]}
@@ -590,8 +590,8 @@ export default function AddRestaurantScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.contactsLinkText}>
-            Cerchi qualcos'altro?{' '}
-            <Text style={styles.contactsLinkAnchor}>Contattaci</Text>
+            {i18n.t('restaurants.add.contactPrompt')}{' '}
+            <Text style={styles.contactsLinkAnchor}>{i18n.t('restaurants.add.contactLink')}</Text>
           </Text>
         </TouchableOpacity>
       )}
@@ -606,7 +606,7 @@ export default function AddRestaurantScreen() {
           >
             {isSubmitting
               ? <ActivityIndicator color={theme.colors.onPrimary} size="small" />
-              : <Text style={styles.submitText}>Aggiungi ristorante</Text>
+              : <Text style={styles.submitText}>{i18n.t('restaurants.add.submit')}</Text>
             }
           </TouchableOpacity>
         </View>

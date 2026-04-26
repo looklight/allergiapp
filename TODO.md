@@ -200,6 +200,29 @@ Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compr
 
 ## Debito tecnico
 
+### `reviews.language` non aggiornato su edit — fix differito
+**Priorità: bassa — da rivalutare quando si implementerà la traduzione recensioni**
+
+Verificato 2026-04-26 durante refactor i18n ristoranti. Il campo `reviews.language` viene popolato correttamente all'**insert** ma NON viene aggiornato sull'**edit** di una recensione, in due punti:
+
+1. **Client** (`app/restaurants/add-review.tsx:130-137`): `RestaurantService.updateReview` viene chiamato senza passare `language`. Anche la signature di `updateReview` in `services/reviewService.ts:195-202` non accetta il parametro.
+2. **Database** (RPC `upsert_review` in `supabase/migrations/027_drop_review_dishes.sql`): la `SET` clause dell'`UPDATE` quando `p_review_id IS NOT NULL` non include la colonna `language`.
+
+**Conseguenza**: se un utente crea una recensione in IT, cambia lingua app a EN e poi riscrive il commento in inglese, la riga DB resta `language = 'it'` con commento in EN. Inconsistenza dato/realtà.
+
+**Perché differito**: la traduzione recensioni è rimandata (vedi `memory/project_review_translation.md`). Senza consumatore del campo, dato sporco = dato che nessuno legge. Volume del danno minimo (utente raramente edita + cambia lingua). Recuperabile in futuro con un backfill o auto-detect dal testo.
+
+**Fix minimo quando servirà** (~1h):
+1. Migration `051_review_language_update.sql`: aggiungere `language = COALESCE(p_language, language)` alla SET clause + CHECK constraint ISO 639-1 (`CHECK (language IS NULL OR language ~ '^[a-z]{2}(-[A-Z]{2})?$')`)
+2. `services/reviewService.ts updateReview`: aggiungere parametro `language?: string` e passare come `p_language`
+3. `app/restaurants/add-review.tsx`: passare `language: i18n.locale` anche su edit
+
+**Opzionali da differire ulteriormente**:
+- Backfill di righe NULL (review pre-migration 011)
+- Indice su `language` (utile solo se si fanno aggregazioni su milioni di righe)
+
+**Possibile alternativa**: se la strategia di traduzione sarà on-device (Apple Translation / ML Kit), questi framework rilevano la lingua da soli dal testo. In quel caso `reviews.language` diventa hint non autoritativo e il fix potrebbe non servire affatto.
+
 ### Due sistemi di diete/restrizioni — intenzionalmente separati
 - `types/index.ts` — `DietId` → profilo utente ristoranti (filtro "Per me", salvato su Supabase)
 - `constants/dietModes.ts` — `DietModeId` → sezione card (UI, colori, traduzioni, restrizioni auto-select)

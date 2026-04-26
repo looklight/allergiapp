@@ -27,7 +27,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = 'Profilo', headerRight, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
 
   const memberSince = profile.created_at
@@ -57,7 +57,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
                 onPress={onAvatarPress}
                 activeOpacity={0.7}
                 accessibilityRole="button"
-                accessibilityLabel="Apri i miei avatar"
+                accessibilityLabel={i18n.t('restaurants.profileCard.openAvatars')}
               >
                 <Avatar
                   avatarId={profile.avatar_url}
@@ -76,13 +76,13 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
             )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{profile.display_name || 'Utente'}</Text>
+                <Text style={styles.displayName}>{profile.display_name || i18n.t('restaurants.profileCard.defaultName')}</Text>
                 {profile.is_anonymous && (
                   <MaterialCommunityIcons name="incognito" size={18} color={theme.colors.textSecondary} />
                 )}
               </View>
               {memberSince ? (
-                <Text style={styles.memberSince}>Membro da {memberSince}</Text>
+                <Text style={styles.memberSince}>{i18n.t('restaurants.profileCard.memberSince', { date: memberSince })}</Text>
               ) : null}
             </View>
             {onEdit && (
@@ -97,17 +97,17 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{stats?.reviews ?? 0}</Text>
-              <Text style={styles.statLabel}>Recensioni</Text>
+              <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statReviews')}</Text>
             </View>
             <View style={styles.statSep} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{stats?.likes ?? 0}</Text>
-              <Text style={styles.statLabel}>Like ricevuti</Text>
+              <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
             </View>
             <View style={styles.statSep} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{stats?.favorites ?? 0}</Text>
-              <Text style={styles.statLabel}>Preferiti</Text>
+              <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statFavorites')}</Text>
             </View>
           </View>
 
@@ -116,7 +116,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
             <>
               <View style={styles.divider} />
               <View style={styles.dietaryHeaderRow}>
-                <Text style={styles.allergensLabel}>Profilo alimentare</Text>
+                <Text style={styles.allergensLabel}>{i18n.t('restaurants.profileCard.dietaryProfile')}</Text>
                 {onEditDietary && (
                   <TouchableOpacity
                     onPress={onEditDietary}
@@ -125,7 +125,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
                     style={styles.dietaryEditButton}
                   >
                     <MaterialCommunityIcons name="pencil-outline" size={14} color={theme.colors.primary} />
-                    <Text style={styles.dietaryEditButtonText}>Modifica</Text>
+                    <Text style={styles.dietaryEditButtonText}>{i18n.t('common.edit')}</Text>
                   </TouchableOpacity>
                 )}
               </View>

@@ -65,14 +65,14 @@ export default function PublicProfileScreen() {
           <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
             <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profilo</Text>
+          <Text style={styles.headerTitle}>{i18n.t('restaurants.profile.title')}</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.centered}>
           {isLoading ? (
             <ActivityIndicator color={theme.colors.primary} size="large" />
           ) : (
-            <Text style={styles.errorText}>Profilo non trovato.</Text>
+            <Text style={styles.errorText}>{i18n.t('restaurants.user.notFound')}</Text>
           )}
         </View>
       </View>
@@ -89,9 +89,9 @@ export default function PublicProfileScreen() {
       >
         {reviews.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Recensioni</Text>
+            <Text style={styles.sectionTitle}>{i18n.t('restaurants.user.reviewsLabel')}</Text>
             {reviews.map((c) => {
-              const restaurantName = c.restaurant_name ?? 'Ristorante';
+              const restaurantName = c.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback');
               const date = new Date(c.created_at).toLocaleDateString(i18n.locale, {
                 month: 'short', year: 'numeric',
               });
@@ -118,7 +118,7 @@ export default function PublicProfileScreen() {
                     ) : null}
                     {(c.photos?.length ?? 0) > 0 && (
                       <Text style={styles.reviewDishes}>
-                        {c.photos.length} foto
+                        {i18n.t('restaurants.myReviews.photosCount', { count: c.photos.length })}
                       </Text>
                     )}
                     <Text style={styles.reviewDate}>{date}</Text>

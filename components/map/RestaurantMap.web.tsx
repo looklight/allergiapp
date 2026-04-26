@@ -2,14 +2,15 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
+import i18n from '../../utils/i18n';
 import type { RestaurantMapProps } from './mapConstants';
 
 export default function RestaurantMap(_props: RestaurantMapProps) {
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons name="map-outline" size={52} color={theme.colors.textSecondary} />
-      <Text style={styles.title}>Mappa non disponibile</Text>
-      <Text style={styles.subtitle}>La mappa non è supportata su web.</Text>
+      <Text style={styles.title}>{i18n.t('restaurants.web.mapNotAvailable')}</Text>
+      <Text style={styles.subtitle}>{i18n.t('restaurants.web.notSupported')}</Text>
     </View>
   );
 }

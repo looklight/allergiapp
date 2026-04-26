@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { getRestrictionById } from '../constants/foodRestrictions';
 import DietaryChipsSelector from './restaurants/DietaryChipsSelector';
+import i18n from '../utils/i18n';
 
 interface DietaryNeedsPickerProps {
   allergens: string[];
@@ -79,14 +80,14 @@ export default function DietaryNeedsPicker({
     <View style={styles.container}>
       <View style={styles.header}>
         <MaterialCommunityIcons name="shield-check-outline" size={20} color={theme.colors.primary} />
-        <Text style={styles.title}>Le tue esigenze alimentari</Text>
+        <Text style={styles.title}>{i18n.t('restaurants.dietaryPicker.title')}</Text>
       </View>
 
       <Text style={styles.description}>
         {subtitle
           ?? (hasNeeds
-            ? 'Questi dati aiutano altri utenti con le stesse esigenze a trovare ristoranti compatibili.'
-            : 'Hai allergie o segui una dieta? Aggiungile per aiutare chi ha le tue stesse esigenze.')}
+            ? i18n.t('restaurants.dietaryPicker.descriptionWithNeeds')
+            : i18n.t('restaurants.dietaryPicker.descriptionEmpty'))}
       </Text>
 
       {/* Chip riepilogo (quando collassato) */}
@@ -118,7 +119,7 @@ export default function DietaryNeedsPicker({
       {/* Link Modifica/Aggiungi */}
       {!expanded && (
         <TouchableOpacity onPress={() => setExpanded(true)} activeOpacity={0.6} style={styles.bottomLink}>
-          <Text style={styles.bottomLinkText}>{hasNeeds ? 'Modifica' : 'Aggiungi esigenze'}</Text>
+          <Text style={styles.bottomLinkText}>{hasNeeds ? i18n.t('common.edit') : i18n.t('restaurants.dietaryPicker.addNeeds')}</Text>
         </TouchableOpacity>
       )}
 
@@ -127,7 +128,7 @@ export default function DietaryNeedsPicker({
         <View style={styles.editor}>
           {needsDifferFromProfile && (
             <View style={styles.syncCard}>
-              <Text style={styles.syncText}>Usa queste esigenze come predefinite</Text>
+              <Text style={styles.syncText}>{i18n.t('restaurants.dietaryPicker.syncTitle')}</Text>
               <TouchableOpacity
                 onPress={handleSync}
                 disabled={syncing}
@@ -136,7 +137,7 @@ export default function DietaryNeedsPicker({
               >
                 {syncing
                   ? <ActivityIndicator size="small" color={theme.colors.primary} />
-                  : <Text style={styles.syncBtnText}>Salva</Text>
+                  : <Text style={styles.syncBtnText}>{i18n.t('common.save')}</Text>
                 }
               </TouchableOpacity>
             </View>
@@ -144,7 +145,7 @@ export default function DietaryNeedsPicker({
           {justSynced && !needsDifferFromProfile && (
             <View style={styles.syncCardDone}>
               <MaterialCommunityIcons name="check-circle-outline" size={16} color={theme.colors.success} />
-              <Text style={styles.syncDone}>Profilo aggiornato</Text>
+              <Text style={styles.syncDone}>{i18n.t('restaurants.dietaryPicker.syncDone')}</Text>
             </View>
           )}
           <DietaryChipsSelector
@@ -157,7 +158,7 @@ export default function DietaryNeedsPicker({
           />
           <TouchableOpacity onPress={() => setExpanded(false)} activeOpacity={0.6} style={styles.bottomLink}>
             <MaterialCommunityIcons name="chevron-up" size={16} color={theme.colors.primary} />
-            <Text style={styles.bottomLinkText}>Chiudi</Text>
+            <Text style={styles.bottomLinkText}>{i18n.t('common.close')}</Text>
           </TouchableOpacity>
         </View>
       )}

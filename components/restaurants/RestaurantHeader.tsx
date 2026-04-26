@@ -8,6 +8,7 @@ import { theme } from '../../constants/theme';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
+import i18n from '../../utils/i18n';
 import type { Restaurant, CuisineVote } from '../../services/restaurantService';
 import type { AppLanguage } from '../../types';
 
@@ -64,11 +65,11 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                   const url = restaurant.google_place_id
                     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.google_place_id}`
                     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address!)}`;
-                  Linking.openURL(url).catch(() => Alert.alert('Errore', 'Impossibile aprire Maps'));
+                  Linking.openURL(url).catch(() => Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.mapsError')));
                 }}
               >
                 <MaterialCommunityIcons name="google-maps" size={26} color={theme.colors.brandGoogleMaps} />
-                <Text style={styles.mapsBtnText}>Dettagli</Text>
+                <Text style={styles.mapsBtnText}>{i18n.t('restaurants.header.mapsDetails')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -76,11 +77,11 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
           {(restaurant.review_count ?? 0) > 0 ? (
             <TouchableOpacity style={styles.ratingRow} activeOpacity={0.7} onPress={onScrollToReviews} disabled={!onScrollToReviews}>
               <StarRating rating={restaurant.average_rating ?? 0} size={18} showValue />
-              <Text style={styles.ratingCount}>({restaurant.review_count} recensioni)</Text>
+              <Text style={styles.ratingCount}>{i18n.t('restaurants.header.reviewsCount', { count: restaurant.review_count ?? 0 })}</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.ratingRow}>
-              <Text style={styles.ratingCount}>Ancora nessuna recensione</Text>
+              <Text style={styles.ratingCount}>{i18n.t('restaurants.header.noReviewsYet')}</Text>
             </View>
           )}
         </>
@@ -98,7 +99,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
         >
           <MaterialCommunityIcons name="map-marker-outline" size={16} color={theme.colors.textSecondary} />
           <Text style={styles.infoText}>
-            {addressCopied ? 'Indirizzo copiato' : restaurant.address}
+            {addressCopied ? i18n.t('restaurants.header.addressCopied') : restaurant.address}
           </Text>
         </TouchableOpacity>
       )}
@@ -135,7 +136,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             <View style={styles.cuisineHint}>
               <MaterialCommunityIcons name="information-outline" size={14} color={theme.colors.textSecondary} />
               <Text style={styles.cuisineHintText}>
-                Tag suggeriti dalla community. Il numero indica quanti utenti hanno confermato ogni tipo di cucina.
+                {i18n.t('restaurants.header.cuisineHint')}
               </Text>
             </View>
           )}
@@ -150,7 +151,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
         >
           <MaterialCommunityIcons name="shield-check-outline" size={15} color={theme.colors.textSecondary} />
           <Text style={[styles.compatText, { color: theme.colors.textSecondary, fontWeight: '400' }]}>
-            Accedi per vedere la compatibilità con le tue esigenze
+            {i18n.t('restaurants.header.compatLogin')}
           </Text>
           <MaterialCommunityIcons name="lock-outline" size={15} color={theme.colors.textSecondary} />
         </TouchableOpacity>
@@ -181,10 +182,10 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             />
             <Text style={[styles.compatText, { color: badgeColor }]}>
               {isNoReviews
-                ? 'Nessuna informazione sulle tue esigenze'
+                ? i18n.t('restaurants.header.compatNoInfo')
                 : inferredCount > 0
-                  ? <>{directCount > 0 ? directCount : ''}<Text style={{ color: theme.colors.amberDark, fontWeight: '700' }}>+{inferredCount}</Text> /{matchInfo!.totalFilters} compatibile · secondo {matchInfo!.reviewCount} {matchInfo!.reviewCount === 1 ? 'recensione' : 'recensioni'}</>
-                  : `${matchInfo!.coveredCount}/${matchInfo!.totalFilters} compatibile · secondo ${matchInfo!.reviewCount} ${matchInfo!.reviewCount === 1 ? 'recensione' : 'recensioni'}`}
+                  ? <>{directCount > 0 ? directCount : ''}<Text style={{ color: theme.colors.amberDark, fontWeight: '700' }}>+{inferredCount}</Text> /{matchInfo!.totalFilters} {i18n.t('restaurants.header.compatBased', { count: matchInfo!.reviewCount })}</>
+                  : `${matchInfo!.coveredCount}/${matchInfo!.totalFilters} ${i18n.t('restaurants.header.compatBased', { count: matchInfo!.reviewCount })}`}
             </Text>
             <MaterialCommunityIcons
               name={compatExpanded ? 'chevron-up' : 'chevron-down'}
@@ -224,7 +225,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                       />
                       <Text style={[styles.compatChipText, { color: !isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.textSecondary : theme.colors.success) }]}>
                         {label}
-                        {isCovered && sourceLabel ? ` · da ${sourceLabel}` : ''}
+                        {isCovered && sourceLabel ? i18n.t('restaurants.header.fromSource', { source: sourceLabel }) : ''}
                       </Text>
                     </View>
                   );
@@ -242,28 +243,28 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             <View style={styles.compatExpandedBody}>
               {coveredAllergens.length > 0 && (
                 <>
-                  <Text style={styles.compatSourceNote}>Recensioni confermano opzioni senza:</Text>
+                  <Text style={styles.compatSourceNote}>{i18n.t('restaurants.header.confirmOptionsWithout')}</Text>
                   {renderChips(coveredAllergens, styles.compatChipCovered)}
                 </>
               )}
               {coveredDietsIntol.length > 0 && (
                 <>
-                  <Text style={styles.compatSourceNote}>{coveredAllergens.length > 0 ? 'E opzioni per:' : 'Recensioni confermano opzioni per:'}</Text>
+                  <Text style={styles.compatSourceNote}>{coveredAllergens.length > 0 ? i18n.t('restaurants.header.andOptionsFor') : i18n.t('restaurants.header.confirmOptionsFor')}</Text>
                   {renderChips(coveredDietsIntol, styles.compatChipCovered)}
                 </>
               )}
               {(uncoveredAllergens.length > 0 || uncoveredDietsIntol.length > 0) && (
                 <>
-                  <Text style={styles.compatSourceNote}>Nessuna recensione menziona:</Text>
+                  <Text style={styles.compatSourceNote}>{i18n.t('restaurants.header.noReviewsMention')}</Text>
                   {renderChips([...uncoveredAllergens, ...uncoveredDietsIntol], styles.compatChipUncovered)}
                 </>
               )}
               <Text style={styles.compatDisclaimer}>
-                Le informazioni sono basate sulle esperienze condivise dagli utenti della community. Non sono verificate, verifica sempre prima di ordinare.
+                {i18n.t('restaurants.header.disclaimer')}
               </Text>
               {onScrollToReviews && !isNoReviews && (
                 <TouchableOpacity onPress={onScrollToReviews} activeOpacity={0.7} style={styles.compatReadReviews}>
-                  <Text style={styles.compatReadReviewsText}>Leggi le recensioni</Text>
+                  <Text style={styles.compatReadReviewsText}>{i18n.t('restaurants.header.readReviews')}</Text>
                   <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
               )}

@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
+import i18n from '../utils/i18n';
 import type { RecentPlace } from '../utils/storage';
 
 type Props = {
@@ -18,9 +19,9 @@ function RecentSearches({ places, onSelect, onClear }: Props) {
     <View style={styles.container}>
       <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
         <View style={styles.headerRow}>
-          <Text style={styles.sectionHeader}>Ricerche recenti</Text>
+          <Text style={styles.sectionHeader}>{i18n.t('restaurants.search.recent')}</Text>
           <TouchableOpacity onPress={onClear} hitSlop={8}>
-            <Text style={styles.clearText}>Cancella</Text>
+            <Text style={styles.clearText}>{i18n.t('restaurants.search.clear')}</Text>
           </TouchableOpacity>
         </View>
         {places.map((p, i) => (

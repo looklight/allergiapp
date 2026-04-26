@@ -20,7 +20,7 @@ export default function EditDietaryScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title="Profilo alimentare" />
+      <HeaderBar title={i18n.t('restaurants.editDietary.title')} />
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         <DietaryNeedsPicker
@@ -37,7 +37,7 @@ export default function EditDietaryScreen() {
           }}
           lang={i18n.locale}
           initialExpanded
-          subtitle="Allergie e diete salvate nel tuo profilo. Usate per filtrare i ristoranti per le tue esigenze."
+          subtitle={i18n.t('restaurants.editDietary.subtitle')}
         />
       </ScrollView>
     </View>

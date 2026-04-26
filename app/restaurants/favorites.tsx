@@ -10,6 +10,7 @@ import type { Favorite } from '../../services/restaurantService';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import HeaderBar from '../../components/HeaderBar';
 import EmptyStateCard from '../../components/EmptyStateCard';
+import i18n from '../../utils/i18n';
 
 function FavoriteCard({
   item,
@@ -56,7 +57,7 @@ export default function FavoritesScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title="I miei preferiti" />
+      <HeaderBar title={i18n.t('restaurants.favorites.title')} />
 
       {isLoading ? (
         <View style={styles.centered}>
@@ -65,9 +66,9 @@ export default function FavoritesScreen() {
       ) : favorites.length === 0 ? (
         <EmptyStateCard
           icon="💚"
-          title="Nessun preferito ancora"
-          subtitle="Esplora i ristoranti e salva quelli che ti piacciono toccando il cuore."
-          buttonLabel="Esplora ristoranti"
+          title={i18n.t('restaurants.favorites.emptyTitle')}
+          subtitle={i18n.t('restaurants.favorites.emptySubtitle')}
+          buttonLabel={i18n.t('restaurants.favorites.emptyButton')}
           onPress={() => router.back()}
         />
       ) : (

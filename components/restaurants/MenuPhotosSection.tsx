@@ -2,6 +2,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-nat
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
+import i18n from '../../utils/i18n';
 import type { MenuPhoto } from '../../services/restaurantService';
 
 interface MenuPhotosSectionProps {
@@ -32,10 +33,10 @@ export default function MenuPhotosSection({
     <View style={styles.menuSection}>
 
       <View style={styles.titleRow}>
-        <Text style={styles.sectionTitle}>Menu{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.menu.title')}{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
         {canUpload && (
           <TouchableOpacity onPress={onManage} activeOpacity={0.7} style={styles.manageBtn}>
-            <Text style={styles.manageBtnText}>Gestisci</Text>
+            <Text style={styles.manageBtnText}>{i18n.t('restaurants.menu.manage')}</Text>
             <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.primary} />
           </TouchableOpacity>
         )}
@@ -56,7 +57,7 @@ export default function MenuPhotosSection({
         </ScrollView>
       ) : !menuUrl && (
         <Text style={styles.menuEmptyHint}>
-          {canUpload ? 'Aggiungi le prime foto del menu' : 'Ancora nessuna foto del menu'}
+          {canUpload ? i18n.t('restaurants.menu.addFirst') : i18n.t('restaurants.menu.empty')}
         </Text>
       )}
     </View>

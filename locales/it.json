@@ -5,6 +5,17 @@
     "errorRetry": "Riprova",
     "ok": "OK"
   },
+  "common": {
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "add": "Aggiungi",
+    "error": "Errore",
+    "thanks": "Grazie",
+    "save": "Salva"
+  },
   "home": {
     "title": "Cosa devo comunicare?",
     "noAllergies": "Non hai ancora aggiunto nulla",
@@ -161,6 +172,376 @@
   },
   "gallery": {
     "reviewerNeeds": "Esigenze di chi ha recensito:"
+  },
+  "restaurants": {
+    "review": {
+      "title": "La tua recensione",
+      "editTitle": "Modifica recensione",
+      "howWasIt": "Come ti sei trovato?",
+      "commentPlaceholder": "Racconta la tua esperienza:\nQuali piatti hai ordinato?\nIl personale è stato attento alle tue esigenze?",
+      "photoLabel": "Foto",
+      "cuisineTitle": "Tipo di cucina",
+      "cuisineHintExisting": "Fai tap sui tag che ritieni corretti per questo ristorante",
+      "cuisineHintEmpty": "Aggiungi il tipo di cucina di questo ristorante",
+      "ratingRequiredTitle": "Attenzione",
+      "ratingRequiredMsg": "Seleziona almeno una stella per la valutazione.",
+      "thanksTitle": "Grazie!",
+      "publishedMsg": "La tua recensione è stata condivisa con la community.",
+      "updatedMsg": "La tua recensione è stata aggiornata.",
+      "submitError": "Non è stato possibile inviare. Riprova.",
+      "notFound": "Recensione non trovata.",
+      "loadError": "Impossibile caricare la recensione.",
+      "deleteTitle": "Elimina recensione",
+      "deleteConfirm": "Sei sicuro di voler eliminare la tua recensione? Questa azione non può essere annullata.",
+      "deleteAction": "Elimina la tua recensione",
+      "publish": "Pubblica",
+      "publishing": "Pubblicazione...",
+      "update": "Aggiorna",
+      "updating": "Aggiornamento...",
+      "helpsCommunity": "La tua recensione aiuta la community"
+    },
+    "add": {
+      "title": "Aggiungi ristorante",
+      "intro": "Aggiungi un ristorante",
+      "introHint": "Ogni locale che aggiungi aiuta chi ha esigenze alimentari a trovare posti sicuri dove mangiare.",
+      "searchTitle": "Cerca il ristorante",
+      "searchHint": "Digita il nome o l'indirizzo per trovarlo su Google Maps.",
+      "searchNotConfigured": "⚠️ Google Places API non configurata. Inserisci i dati manualmente qui sotto.",
+      "searchPlaceholder": "Es. Trattoria da Mario, Roma",
+      "loadingDetails": "Caricamento dettagli...",
+      "alreadyExists": "Già nella community — vedi scheda",
+      "viewOnMaps": "Vedi su Maps",
+      "verify": "Verifica",
+      "cuisineTitle": "Tipo di cucina",
+      "cuisineHint": "Seleziona uno o più tipi di cucina (opzionale)",
+      "howRate": "Come lo valuteresti?",
+      "ratingHelpsUsers": "La tua valutazione aiuta gli utenti con esigenze simili a trovare questo ristorante",
+      "commentPlaceholder": "Racconta la tua esperienza (opzionale)",
+      "photoLabel": "Foto",
+      "notYetVisited": "Non ci sono ancora stato",
+      "helpCommunityTitle": "Aiuta la community",
+      "haveVisited": "Ho visitato",
+      "skipBoxText": "Le recensioni con il piano alimentare sono il cuore di AllergiApp: permettono agli utenti con allergie di trovare ristoranti sicuri per loro. Puoi aggiungere la tua recensione in qualsiasi momento dalla scheda del ristorante.",
+      "dietarySubtitle": "Le tue esigenze alimentari per questa recensione — aiutano utenti con bisogni simili a trovare questo posto",
+      "noNeeds": "Non ho esigenze alimentari",
+      "noNeedsConfirmed": "Nessuna esigenza indicata",
+      "ratingRequiredTitle": "Valutazione richiesta",
+      "ratingRequiredMsg": "Aggiungi almeno una stella oppure seleziona \"Non ci sono ancora stato\".",
+      "duplicateTitle": "Ristorante già presente",
+      "duplicateMsg": "\"{{name}}\" sembra essere già nella community.",
+      "duplicateGoTo": "Vai al ristorante",
+      "duplicateAddAnyway": "Aggiungi comunque",
+      "successTitle": "Ristorante aggiunto!",
+      "successMsg": "{{name}} è stato aggiunto alla community.",
+      "submitError": "Impossibile aggiungere il ristorante. Potrebbe già essere presente oppure si è verificato un errore di rete.",
+      "placeDetailsError": "Impossibile recuperare i dettagli del luogo. Riprova.",
+      "contactPrompt": "Cerchi qualcos'altro?",
+      "contactLink": "Contattaci",
+      "submit": "Aggiungi ristorante"
+    },
+    "filter": {
+      "title": "Filtri",
+      "myNeeds": "Filtra per le mie esigenze",
+      "myNeedsHint": "Mostra i ristoranti con esperienze lasciate da utenti con le tue stesse allergie o esigenze alimentari.",
+      "dietarySubtitle": "Mostra i ristoranti con recensioni di utenti che condividono le tue stesse esigenze.",
+      "noNeedsTitle": "Nessuna esigenza selezionata",
+      "noNeedsMsg": "Seleziona almeno un'allergia o dieta per usare questo filtro.",
+      "cuisineLabel": "Tipo di cucina",
+      "cuisineHint": "Basato sui tag aggiunti dalla community per descrivere il tipo di cucina del ristorante.",
+      "reset": "Resetta filtri",
+      "apply": "Applica"
+    },
+    "list": {
+      "titleAt": "Ristoranti a {{place}}",
+      "noResultsFiltered": "Nessun risultato con i filtri attivi",
+      "noResultsArea": "Nessun ristorante in zona",
+      "found": {
+        "one": "{{count}} trovato",
+        "other": "{{count}} trovati"
+      },
+      "emptyFiltered": "Nessun ristorante a {{place}} corrisponde ai filtri selezionati. Prova a modificarli.",
+      "emptyNearby": "Nessun ristorante trovato nelle vicinanze di {{place}}.",
+      "add": "Aggiungi un ristorante",
+      "missingPrompt": "Manca un ristorante? Aggiungilo",
+      "noReviews": "Nessuna recensione",
+      "sort": {
+        "compatibility": "Compatibilità",
+        "popularity": "Popolarità",
+        "rating": "Valutazione",
+        "distance": "Distanza da me"
+      }
+    },
+    "detail": {
+      "notFound": "Ristorante non trovato.",
+      "noReviews": "Nessuna recensione",
+      "directions": "Indicazioni (Maps)",
+      "mapsError": "Impossibile aprire Maps",
+      "yourReviewLabel": "La tua recensione:",
+      "yourOpinion": "La tua opinione:",
+      "yourReviewHint": "La tua recensione aiuta chi ha le tue stesse esigenze",
+      "loginGatePhotosTitle": "Accedi per vedere le foto e il menu",
+      "loginGatePhotosSubtitle": "Foto della community e foto del menu",
+      "loginGateReviewsTitle": "Accedi per vedere le recensioni",
+      "loginGateReviewsSubtitle": "Leggi le esperienze della community e lascia la tua valutazione",
+      "addedByUser": "Aggiunto da un utente",
+      "deleteTitle": "Elimina ristorante",
+      "deleteConfirm": "Vuoi eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+      "deleteError": "Non è stato possibile eliminare il ristorante.",
+      "deleteRestaurant": "Elimina ristorante",
+      "reportTitle": "Segnala recensione",
+      "reportPrompt": "Perché vuoi segnalare questa recensione?",
+      "reportInappropriate": "Contenuto inappropriato",
+      "reportSpam": "Spam o pubblicità",
+      "reportFalse": "Informazioni false",
+      "reportSent": "La tua segnalazione è stata inviata. La esamineremo al più presto.",
+      "reportError": "Impossibile inviare la segnalazione. Riprova.",
+      "reportAlreadySent": "Segnalazione inviata",
+      "reportAlreadyMsg": "Hai già segnalato questa recensione. La esamineremo al più presto.",
+      "reportRestDone": "Hai già segnalato questo ristorante",
+      "reportRest": "Segnala un problema",
+      "reportRestAlreadyTitle": "Già segnalato",
+      "reportRestAlreadyMsg": "Hai già segnalato questo ristorante."
+    },
+    "header": {
+      "mapsDetails": "Dettagli",
+      "reviewsCount": {
+        "one": "({{count}} recensione)",
+        "other": "({{count}} recensioni)"
+      },
+      "noReviewsYet": "Ancora nessuna recensione",
+      "addressCopied": "Indirizzo copiato",
+      "cuisineHint": "Tag suggeriti dalla community. Il numero indica quanti utenti hanno confermato ogni tipo di cucina.",
+      "compatLogin": "Accedi per vedere la compatibilità con le tue esigenze",
+      "compatNoInfo": "Nessuna informazione sulle tue esigenze",
+      "compatBased": {
+        "one": "compatibile · secondo {{count}} recensione",
+        "other": "compatibile · secondo {{count}} recensioni"
+      },
+      "confirmOptionsWithout": "Recensioni confermano opzioni senza:",
+      "confirmOptionsFor": "Recensioni confermano opzioni per:",
+      "andOptionsFor": "E opzioni per:",
+      "noReviewsMention": "Nessuna recensione menziona:",
+      "disclaimer": "Le informazioni sono basate sulle esperienze condivise dagli utenti della community. Non sono verificate, verifica sempre prima di ordinare.",
+      "readReviews": "Leggi le recensioni",
+      "fromSource": " · da {{source}}"
+    },
+    "reviews": {
+      "empty": "Ancora nessuna recensione",
+      "emptyHint": "Sii il primo a condividere la tua esperienza",
+      "titleWithCount": "Recensioni ({{count}})",
+      "disclaimer": "Le recensioni non sono verificate e riflettono le esperienze personali degli utenti. Contribuisci scrivendone una, mettendo un like o segnalando contenuti inappropriati.",
+      "loadMore": "Carica altre recensioni",
+      "sort": {
+        "recent": "Recenti",
+        "rating": "Stelle",
+        "helpful": "Più utili",
+        "forMe": "Per me"
+      },
+      "card": {
+        "reportFlag": "Segnala",
+        "reportedFlag": "Segnalata"
+      }
+    },
+    "menu": {
+      "title": "Menu",
+      "manage": "Gestisci",
+      "addFirst": "Aggiungi le prime foto del menu",
+      "empty": "Ancora nessuna foto del menu",
+      "loadError": "Impossibile caricare le foto del menu.",
+      "addTitle": "Aggiungi foto",
+      "gallery": "Galleria",
+      "camera": "Fotocamera",
+      "uploadError": "Impossibile caricare la foto. Riprova.",
+      "reportAlreadyTitle": "Segnalazione inviata",
+      "reportAlreadyMsg": "Hai già segnalato questa foto. La esamineremo al più presto.",
+      "reportTitle": "Segnala foto",
+      "reportPrompt": "Perché vuoi segnalare questa foto?",
+      "reportIncorrect": "Non è un menu / non pertinente",
+      "reportInappropriate": "Contenuto inappropriato",
+      "reportOther": "Altro",
+      "deleteTitle": "Elimina foto",
+      "deleteConfirm": "Vuoi eliminare questa foto del menu?",
+      "deleteError": "Impossibile eliminare la foto.",
+      "screenTitle": "Foto menu",
+      "infoText": "Le foto del menu aiutano chi ha esigenze alimentari a sapere cosa può ordinare, prima ancora di entrare.",
+      "infoSubtext": "Se hai il menu davanti o hai foto più aggiornate, aggiungile liberamente — ogni contributo rende l'app più utile per tutti.",
+      "uploading": "Caricamento...",
+      "addAction": "Aggiungi foto del menu",
+      "beFirst": "Sii il primo ad aggiungerne una",
+      "uploaderYou": "Tu",
+      "uploaderCommunity": "Utente della community"
+    },
+    "reports": {
+      "titleWithCount": "Segnalazioni ({{count}})",
+      "userLabel": "Utente"
+    },
+    "tabs": {
+      "searchPlaceholder": "Cerca ristorante o luogo...",
+      "activeChipForMe": "Per me",
+      "loadingNearby": "Cerco ristoranti a {{place}}...",
+      "bannerNoneAt": "Nessun ristorante a {{place}}",
+      "bannerCountAt": {
+        "one": "{{count}} ristorante a {{place}}",
+        "other": "{{count}} ristoranti a {{place}}"
+      },
+      "tabCards": "Le mie Card",
+      "tabRestaurants": "Ristoranti"
+    },
+    "profileCard": {
+      "title": "Profilo",
+      "openAvatars": "Apri i miei avatar",
+      "defaultName": "Utente",
+      "memberSince": "Membro da {{date}}",
+      "statReviews": "Recensioni",
+      "statLikes": "Like ricevuti",
+      "statFavorites": "Preferiti",
+      "dietaryProfile": "Profilo alimentare"
+    },
+    "dietaryPicker": {
+      "title": "Le tue esigenze alimentari",
+      "descriptionWithNeeds": "Questi dati aiutano altri utenti con le stesse esigenze a trovare ristoranti compatibili.",
+      "descriptionEmpty": "Hai allergie o segui una dieta? Aggiungile per aiutare chi ha le tue stesse esigenze.",
+      "addNeeds": "Aggiungi esigenze",
+      "syncTitle": "Usa queste esigenze come predefinite",
+      "syncDone": "Profilo aggiornato"
+    },
+    "search": {
+      "places": "Luoghi",
+      "restaurants": "Ristoranti",
+      "recent": "Ricerche recenti",
+      "clear": "Cancella"
+    },
+    "web": {
+      "mapNotAvailable": "Mappa non disponibile",
+      "notSupported": "La mappa non è supportata su web."
+    },
+    "profile": {
+      "title": "Profilo",
+      "logoutTitle": "Logout",
+      "logoutConfirm": "Vuoi uscire dal tuo account?",
+      "logoutAction": "Esci",
+      "guestTitle": "Non hai effettuato l'accesso",
+      "guestSubtitle": "Accedi per salvare i tuoi ristoranti preferiti, aggiungere recensioni e molto altro.",
+      "signIn": "Accedi",
+      "menuAvatars": "I miei Avatar",
+      "menuFavorites": "I miei preferiti",
+      "menuReviews": "Le mie recensioni",
+      "menuLeaderboard": "Classifica"
+    },
+    "report": {
+      "title": "Segnala un problema",
+      "infoBanner": "AllergiApp è una piattaforma collaborativa: i ristoranti e le recensioni sono interamente gestiti dalla community. Usa questa segnalazione solo in caso di problemi reali (informazioni errate, contenuti inappropriati, ecc.). Le azioni che possiamo intraprendere sono limitate poiché non abbiamo rapporti diretti con i ristoranti.",
+      "reasonLabel": "Motivo della segnalazione",
+      "descriptionLabel": "Descrizione",
+      "descriptionPlaceholder": "Descrivi il problema in dettaglio...",
+      "reviewHint": "Se la tua esperienza può essere utile ad altri, considera di lasciare una recensione. Spesso una recensione rispettosa e costruttiva aiuta più di una segnalazione.",
+      "submitting": "Invio in corso...",
+      "submit": "Invia segnalazione",
+      "thanksTitle": "Grazie!",
+      "sent": "La tua segnalazione è stata inviata. La esamineremo il prima possibile.",
+      "error": "Non è stato possibile inviare la segnalazione. Riprova."
+    },
+    "reportReasons": {
+      "closed": "Chiuso definitivamente",
+      "incorrect_info": "Informazioni errate",
+      "hygiene": "Condizioni igieniche",
+      "inappropriate": "Contenuto inappropriato",
+      "other": "Altro"
+    },
+    "editDietary": {
+      "title": "Profilo alimentare",
+      "subtitle": "Allergie e diete salvate nel tuo profilo. Usate per filtrare i ristoranti per le tue esigenze."
+    },
+    "editProfile": {
+      "title": "Modifica profilo",
+      "accountSection": "Informazioni account",
+      "nicknameLabel": "Nickname",
+      "anonymousLabel": "Profilo anonimo",
+      "anonymousHint": "Il tuo nome non sarà visibile ad altri utenti",
+      "emailLabel": "Email",
+      "emailHint": "L'indirizzo email non è modificabile.",
+      "save": "Salva",
+      "deleteAccount": "Elimina account",
+      "deleteWillRemove": "Verranno eliminati in modo permanente:",
+      "deleteBullet1": "•  Il tuo profilo e avatar",
+      "deleteBullet2": "•  Le tue preferenze",
+      "deleteBullet3": "•  Non potrai recuperare questi dati",
+      "deleteNote": "I contributi alla community (ristoranti, piatti, recensioni) resteranno visibili in forma anonima.",
+      "continue": "Continua",
+      "back": "Indietro",
+      "deleteFinal": "Elimina definitivamente",
+      "deleteWord": "ELIMINA",
+      "deleteWriteConfirm": "Scrivi {{word}} per confermare",
+      "deletePlaceholder": "Scrivi {{word}}",
+      "nameRequiredTitle": "Nome obbligatorio",
+      "nameRequiredMsg": "Inserisci un nome visualizzato.",
+      "saveError": "Impossibile salvare le modifiche. Riprova.",
+      "deleteError": "Impossibile eliminare l'account. Riprova."
+    },
+    "favorites": {
+      "title": "I miei preferiti",
+      "emptyTitle": "Nessun preferito ancora",
+      "emptySubtitle": "Esplora i ristoranti e salva quelli che ti piacciono toccando il cuore.",
+      "emptyButton": "Esplora ristoranti"
+    },
+    "myRestaurants": {
+      "title": "I miei ristoranti",
+      "emptyTitle": "Non hai ancora aggiunto ristoranti",
+      "emptySubtitle": "Aggiungi il tuo primo ristorante e aiuta la community!"
+    },
+    "myReviews": {
+      "title": "Le mie recensioni",
+      "emptyTitle": "Nessuna recensione ancora",
+      "emptySubtitle": "Visita un ristorante e condividi la tua esperienza con gli altri utenti.",
+      "restaurantFallback": "Ristorante",
+      "photosCount": {
+        "one": "{{count}} foto",
+        "other": "{{count}} foto"
+      }
+    },
+    "user": {
+      "notFound": "Profilo non trovato.",
+      "reviewsLabel": "Recensioni"
+    },
+    "avatarGallery": {
+      "anonymousBanner": "In modalità anonima il tuo avatar non è visibile agli altri.",
+      "anonymousAlertTitle": "Modalità anonima attiva",
+      "anonymousAlertMsg": "Per scegliere un avatar disattiva la modalità anonima nel tuo profilo.",
+      "goToProfile": "Vai al profilo",
+      "hideHint": "Nascondi suggerimento",
+      "showHint": "Mostra suggerimento",
+      "hintLabel": "Suggerimento",
+      "unlocked": "Sbloccato!",
+      "questHint": {
+        "likes": "Aggiungi foto, descrivi i piatti e racconta come è stata la tua esperienza. Le recensioni complete vengono apprezzate di più dalla community."
+      },
+      "peopleLabel": {
+        "vegan": "vegani",
+        "vegetarian": "vegetariani",
+        "gluten": "gluten free",
+        "lactose": "intolleranti al lattosio",
+        "histamine": "intolleranti all'istamina",
+        "nickel": "intolleranti al nichel",
+        "diabetes": "diabetici"
+      },
+      "progress": {
+        "reviews": "{{current}}/{{total}} recensioni",
+        "restaurants": "{{current}}/{{total}} ristoranti",
+        "likes": "{{current}}/{{total}} like ricevuti",
+        "uniqueLikers": "{{current}}/{{total}} utenti diversi",
+        "countries": "{{current}}/{{total}} paesi recensiti",
+        "likesToRestriction": "{{current}}/{{total}} like a recensioni di {{people}}"
+      },
+      "conditions": {
+        "free": "Avatar gratuito",
+        "reviews": "Scrivi {{count}} recensioni",
+        "restaurants": "Aggiungi {{count}} ristoranti",
+        "likes": "Le tue recensioni devono ricevere {{count}} like dagli utenti",
+        "uniqueLikers": "Ricevi like da {{count}} utenti diversi sulle tue recensioni",
+        "countries": "Recensisci ristoranti in {{count}} paesi diversi",
+        "likesToRestriction": "Metti like a {{count}} recensioni di utenti {{people}}"
+      }
+    }
   },
   "aboutStory": {
     "title": "Perché è gratuita?",

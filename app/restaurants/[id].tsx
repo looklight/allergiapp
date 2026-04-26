@@ -5,6 +5,7 @@ import { theme } from '../../constants/theme';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import RestaurantDetailBody from '../../components/restaurants/RestaurantDetailBody';
 import HeaderBar from '../../components/HeaderBar';
+import i18n from '../../utils/i18n';
 
 export default function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,7 +19,7 @@ export default function RestaurantDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <HeaderBar
-        title={detail.restaurant?.name ?? (detail.isLoading ? ' ' : 'Ristorante')}
+        title={detail.restaurant?.name ?? (detail.isLoading ? ' ' : i18n.t('restaurants.myReviews.restaurantFallback'))}
         onBack={handleDismiss}
         right={detail.restaurant ? (
           <TouchableOpacity onPress={detail.handleToggleFavorite} hitSlop={8} activeOpacity={0.6}>

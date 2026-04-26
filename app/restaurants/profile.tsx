@@ -12,6 +12,7 @@ import type { Review } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
 import HeaderBar from '../../components/HeaderBar';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
+import i18n from '../../utils/i18n';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -38,10 +39,10 @@ export default function ProfileScreen() {
   }, [user?.uid]);
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Vuoi uscire dal tuo account?', [
-      { text: 'Annulla', style: 'cancel' },
+    Alert.alert(i18n.t('restaurants.profile.logoutTitle'), i18n.t('restaurants.profile.logoutConfirm'), [
+      { text: i18n.t('common.cancel'), style: 'cancel' },
       {
-        text: 'Esci',
+        text: i18n.t('restaurants.profile.logoutAction'),
         style: 'destructive',
         onPress: async () => {
           await AuthService.signOut();
@@ -55,16 +56,16 @@ export default function ProfileScreen() {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
-        <HeaderBar title="Profilo" />
+        <HeaderBar title={i18n.t('restaurants.profile.title')} />
         <View style={styles.centered}>
           <Image
             source={require('../../assets/happy_plate_language.png')}
             style={styles.guestImage}
             resizeMode="contain"
           />
-          <Text style={styles.guestTitle}>Non hai effettuato l'accesso</Text>
+          <Text style={styles.guestTitle}>{i18n.t('restaurants.profile.guestTitle')}</Text>
           <Text style={styles.guestSubtitle}>
-            Accedi per salvare i tuoi ristoranti preferiti, aggiungere recensioni e molto altro.
+            {i18n.t('restaurants.profile.guestSubtitle')}
           </Text>
           <Button
             mode="contained"
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
             style={styles.loginButton}
             labelStyle={styles.loginButtonLabel}
           >
-            Accedi
+            {i18n.t('restaurants.profile.signIn')}
           </Button>
         </View>
       </View>
@@ -107,7 +108,7 @@ export default function ProfileScreen() {
           activeOpacity={0.6}
         >
           <MaterialCommunityIcons name="emoticon-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>I miei Avatar</Text>
+          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuAvatars')}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
@@ -117,7 +118,7 @@ export default function ProfileScreen() {
           activeOpacity={0.6}
         >
           <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>I miei preferiti</Text>
+          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuFavorites')}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
@@ -127,7 +128,7 @@ export default function ProfileScreen() {
           activeOpacity={0.6}
         >
           <MaterialCommunityIcons name="comment-text-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>Le mie recensioni</Text>
+          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuReviews')}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
@@ -137,7 +138,7 @@ export default function ProfileScreen() {
           activeOpacity={0.6}
         >
           <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>Classifica</Text>
+          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuLeaderboard')}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </ProfileCard>

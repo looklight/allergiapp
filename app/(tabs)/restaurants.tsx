@@ -541,7 +541,7 @@ export default function RestaurantsScreen() {
             </TouchableOpacity>
             <TextInput
               style={styles.searchInput}
-              placeholder="Cerca ristorante o luogo..."
+              placeholder={i18n.t('restaurants.tabs.searchPlaceholder')}
               placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={handleSearchChange}
@@ -587,7 +587,7 @@ export default function RestaurantsScreen() {
             {forMyNeeds && (
               <TouchableOpacity key="needs" style={styles.activeChip} onPress={handleRemoveNeedsChip} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={13} color={theme.colors.primary} />
-                <Text style={styles.activeChipText}>Per me</Text>
+                <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipForMe')}</Text>
                 <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
               </TouchableOpacity>
             )}
@@ -632,10 +632,10 @@ export default function RestaurantsScreen() {
             <MaterialCommunityIcons name="map-marker" size={18} color={theme.colors.primary} />
             <Text style={styles.nearbyBannerTitle} numberOfLines={1}>
               {mapSearch.isLoadingNearby
-                ? `Cerco ristoranti a ${mapSearch.nearbyPlace!.name}...`
+                ? i18n.t('restaurants.tabs.loadingNearby', { place: mapSearch.nearbyPlace!.name })
                 : nearbyCount === 0
-                  ? `Nessun ristorante a ${mapSearch.nearbyPlace!.name}`
-                  : `${nearbyCount} ${nearbyCount === 1 ? 'ristorante' : 'ristoranti'} a ${mapSearch.nearbyPlace!.name}`}
+                  ? i18n.t('restaurants.tabs.bannerNoneAt', { place: mapSearch.nearbyPlace!.name })
+                  : i18n.t('restaurants.tabs.bannerCountAt', { count: nearbyCount, place: mapSearch.nearbyPlace!.name })}
             </Text>
             {!mapSearch.isLoadingNearby && nearbyCount > 0 && (
               <MaterialCommunityIcons name="chevron-up" size={20} color={theme.colors.textSecondary} />
@@ -701,7 +701,7 @@ export default function RestaurantsScreen() {
             style={styles.fabImage}
           />
           <MaterialCommunityIcons name="plus" size={14} color={theme.colors.onPrimary} />
-          <Text style={styles.fabText}>Aggiungi</Text>
+          <Text style={styles.fabText}>{i18n.t('common.add')}</Text>
         </TouchableOpacity>
       )}
     </View>

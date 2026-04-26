@@ -29,7 +29,7 @@ function ReviewCard({
         <View style={styles.cardHeader}>
           <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
           <Text style={styles.cardName} numberOfLines={1}>
-            {item.restaurant_name ?? 'Ristorante'}
+            {item.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback')}
           </Text>
           <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textSecondary} />
         </View>
@@ -47,7 +47,7 @@ function ReviewCard({
         <View style={styles.footer}>
           {(item.photos?.length ?? 0) > 0 && (
             <Text style={styles.footerText}>
-              {item.photos.length} foto
+              {i18n.t('restaurants.myReviews.photosCount', { count: item.photos.length })}
             </Text>
           )}
           <Text style={styles.date}>{date}</Text>
@@ -67,7 +67,7 @@ export default function MyReviewsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title="Le mie recensioni" />
+      <HeaderBar title={i18n.t('restaurants.myReviews.title')} />
 
       {isLoading ? (
         <View style={styles.centered}>
@@ -76,9 +76,9 @@ export default function MyReviewsScreen() {
       ) : reviews.length === 0 ? (
         <EmptyStateCard
           icon="⭐"
-          title="Nessuna recensione ancora"
-          subtitle="Visita un ristorante e condividi la tua esperienza con gli altri utenti."
-          buttonLabel="Esplora ristoranti"
+          title={i18n.t('restaurants.myReviews.emptyTitle')}
+          subtitle={i18n.t('restaurants.myReviews.emptySubtitle')}
+          buttonLabel={i18n.t('restaurants.favorites.emptyButton')}
           onPress={() => router.back()}
         />
       ) : (

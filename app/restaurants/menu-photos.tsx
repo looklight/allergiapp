@@ -37,7 +37,7 @@ export default function MenuPhotosScreen() {
       const data = await RestaurantService.getMenuPhotos(restaurantId);
       setPhotos(data);
     } catch {
-      Alert.alert('Errore', 'Impossibile caricare le foto del menu.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.menu.loadError'));
     } finally {
       setIsLoading(false);
     }
@@ -48,16 +48,16 @@ export default function MenuPhotosScreen() {
   const { pickFromGallery, takePhoto, resetPhotos } = useImagePicker({ maxPhotos: 1 });
 
   const handleAddPhoto = async () => {
-    Alert.alert('Aggiungi foto', undefined, [
-      { text: 'Galleria', onPress: async () => {
+    Alert.alert(i18n.t('restaurants.menu.addTitle'), undefined, [
+      { text: i18n.t('restaurants.menu.gallery'), onPress: async () => {
         const result = await pickFromGallery();
         if (!result.cancelled && result.uris[0]) await uploadPhoto(result.uris[0]);
       }},
-      { text: 'Fotocamera', onPress: async () => {
+      { text: i18n.t('restaurants.menu.camera'), onPress: async () => {
         const result = await takePhoto();
         if (!result.cancelled && result.uris[0]) await uploadPhoto(result.uris[0]);
       }},
-      { text: 'Annulla', style: 'cancel' },
+      { text: i18n.t('common.cancel'), style: 'cancel' },
     ]);
   };
 
@@ -69,33 +69,33 @@ export default function MenuPhotosScreen() {
       setPhotos(prev => [photo, ...prev]);
       resetPhotos();
     } else {
-      Alert.alert('Errore', 'Impossibile caricare la foto. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.menu.uploadError'));
     }
     setIsUploading(false);
   };
 
   const handleReport = (photo: MenuPhoto) => {
     if (reportedPhotoIds.has(photo.id)) {
-      Alert.alert('Segnalazione inviata', 'Hai già segnalato questa foto. La esamineremo al più presto.');
+      Alert.alert(i18n.t('restaurants.menu.reportAlreadyTitle'), i18n.t('restaurants.menu.reportAlreadyMsg'));
       return;
     }
     Alert.alert(
-      'Segnala foto',
-      'Perché vuoi segnalare questa foto?',
+      i18n.t('restaurants.menu.reportTitle'),
+      i18n.t('restaurants.menu.reportPrompt'),
       [
         {
-          text: 'Non è un menu / non pertinente',
+          text: i18n.t('restaurants.menu.reportIncorrect'),
           onPress: () => submitReport(photo, 'incorrect_image'),
         },
         {
-          text: 'Contenuto inappropriato',
+          text: i18n.t('restaurants.menu.reportInappropriate'),
           onPress: () => submitReport(photo, 'inappropriate'),
         },
         {
-          text: 'Altro',
+          text: i18n.t('restaurants.menu.reportOther'),
           onPress: () => submitReport(photo, 'other'),
         },
-        { text: 'Annulla', style: 'cancel' },
+        { text: i18n.t('common.cancel'), style: 'cancel' },
       ],
     );
   };
@@ -105,20 +105,20 @@ export default function MenuPhotosScreen() {
     const result = await RestaurantService.reportMenuPhoto(restaurantId, photo.id, reason);
     if (result) {
       setReportedPhotoIds(prev => new Set(prev).add(photo.id));
-      Alert.alert('Grazie', 'La tua segnalazione è stata inviata. La esamineremo al più presto.');
+      Alert.alert(i18n.t('common.thanks'), i18n.t('restaurants.detail.reportSent'));
     } else {
-      Alert.alert('Errore', 'Impossibile inviare la segnalazione. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.reportError'));
     }
   };
 
   const handleDelete = (photo: MenuPhoto) => {
     Alert.alert(
-      'Elimina foto',
-      'Vuoi eliminare questa foto del menu?',
+      i18n.t('restaurants.menu.deleteTitle'),
+      i18n.t('restaurants.menu.deleteConfirm'),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: i18n.t('common.cancel'), style: 'cancel' },
         {
-          text: 'Elimina',
+          text: i18n.t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             if (!restaurantId || !user) return;
@@ -127,7 +127,7 @@ export default function MenuPhotosScreen() {
             if (ok) {
               setPhotos(prev => prev.filter(p => p.id !== photo.id));
             } else {
-              Alert.alert('Errore', 'Impossibile eliminare la foto.');
+              Alert.alert(i18n.t('common.error'), i18n.t('restaurants.menu.deleteError'));
             }
             setDeletingId(null);
           },
@@ -140,7 +140,7 @@ export default function MenuPhotosScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title="Foto menu" />
+      <HeaderBar title={i18n.t('restaurants.menu.screenTitle')} />
 
       {restaurantName && (
         <View style={styles.restaurantRow}>
@@ -151,10 +151,10 @@ export default function MenuPhotosScreen() {
 
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
-          Le foto del menu aiutano chi ha esigenze alimentari a sapere cosa può ordinare, prima ancora di entrare.
+          {i18n.t('restaurants.menu.infoText')}
         </Text>
         <Text style={styles.infoSubtext}>
-          Se hai il menu davanti o hai foto più aggiornate, aggiungile liberamente — ogni contributo rende l'app più utile per tutti.
+          {i18n.t('restaurants.menu.infoSubtext')}
         </Text>
       </View>
 
@@ -179,15 +179,15 @@ export default function MenuPhotosScreen() {
               <MaterialCommunityIcons name="camera-plus-outline" size={20} color={theme.colors.primary} />
             )}
             <Text style={styles.addRowText}>
-              {isUploading ? 'Caricamento...' : 'Aggiungi foto del menu'}
+              {isUploading ? i18n.t('restaurants.menu.uploading') : i18n.t('restaurants.menu.addAction')}
             </Text>
           </TouchableOpacity>
 
           {photos.length === 0 ? (
             <View style={styles.emptyState}>
               <MaterialCommunityIcons name="image-outline" size={40} color={theme.colors.textDisabled} />
-              <Text style={styles.emptyText}>Ancora nessuna foto del menu</Text>
-              <Text style={styles.emptySubtext}>Sii il primo ad aggiungerne una</Text>
+              <Text style={styles.emptyText}>{i18n.t('restaurants.menu.empty')}</Text>
+              <Text style={styles.emptySubtext}>{i18n.t('restaurants.menu.beFirst')}</Text>
             </View>
           ) : (
             photos.map((photo, idx) => (
@@ -203,8 +203,8 @@ export default function MenuPhotosScreen() {
                   <View style={styles.photoMeta}>
                     <Text style={styles.uploaderName}>
                       {photo.user_id === user?.uid
-                        ? 'Tu'
-                        : (photo.user_display_name ?? 'Utente della community')}
+                        ? i18n.t('restaurants.menu.uploaderYou')
+                        : (photo.user_display_name ?? i18n.t('restaurants.menu.uploaderCommunity'))}
                     </Text>
                     <Text style={styles.uploadDate}>
                       {new Date(photo.created_at).toLocaleDateString(i18n.locale, {
@@ -228,7 +228,7 @@ export default function MenuPhotosScreen() {
                         color={theme.colors.textDisabled}
                       />
                       <Text style={styles.reportButtonText}>
-                        {reportedPhotoIds.has(photo.id) ? 'Segnalata' : 'Segnala'}
+                        {reportedPhotoIds.has(photo.id) ? i18n.t('restaurants.reviews.card.reportedFlag') : i18n.t('restaurants.reviews.card.reportFlag')}
                       </Text>
                     </TouchableOpacity>
                   ) : null}

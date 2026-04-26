@@ -19,6 +19,7 @@ import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import HeaderBar from '../../components/HeaderBar';
+import i18n from '../../utils/i18n';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function EditProfileScreen() {
     if (!user) return;
     const trimmed = displayName.trim();
     if (!trimmed && !isAnonymous) {
-      Alert.alert('Nome obbligatorio', 'Inserisci un nome visualizzato.');
+      Alert.alert(i18n.t('restaurants.editProfile.nameRequiredTitle'), i18n.t('restaurants.editProfile.nameRequiredMsg'));
       return;
     }
     if (!hasChanges) {
@@ -61,7 +62,7 @@ export default function EditProfileScreen() {
       await refreshProfile();
       router.back();
     } catch {
-      Alert.alert('Errore', 'Impossibile salvare le modifiche. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.editProfile.saveError'));
     } finally {
       setSaving(false);
     }
@@ -106,28 +107,31 @@ export default function EditProfileScreen() {
       router.dismissAll();
     } catch (error: any) {
       closeDeleteModal();
-      Alert.alert('Errore', 'Impossibile eliminare l\'account. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.editProfile.deleteError'));
     } finally {
       setDeleting(false);
     }
   };
 
-  const deleteConfirmValid = deleteConfirmText.trim().toUpperCase() === 'ELIMINA';
+  const deleteWord = i18n.t('restaurants.editProfile.deleteWord');
+  const deleteConfirmValid = deleteConfirmText.trim().toUpperCase() === deleteWord.toUpperCase();
+  const writeConfirmTemplate = i18n.t('restaurants.editProfile.deleteWriteConfirm');
+  const [writeConfirmPrefix, writeConfirmSuffix = ''] = writeConfirmTemplate.split('{{word}}');
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title="Modifica profilo" />
+      <HeaderBar title={i18n.t('restaurants.editProfile.title')} />
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
 
         {/* Informazioni account */}
         <Surface style={styles.card} elevation={1}>
-          <Text style={styles.sectionTitle}>Informazioni account</Text>
+          <Text style={styles.sectionTitle}>{i18n.t('restaurants.editProfile.accountSection')}</Text>
           <TextInput
             mode="outlined"
-            label="Nickname"
+            label={i18n.t('restaurants.editProfile.nicknameLabel')}
             value={displayName}
             onChangeText={setDisplayName}
             maxLength={30}
@@ -137,9 +141,9 @@ export default function EditProfileScreen() {
           />
           <View style={styles.anonymousRow}>
             <View style={styles.anonymousTextGroup}>
-              <Text style={styles.anonymousLabel}>Profilo anonimo</Text>
+              <Text style={styles.anonymousLabel}>{i18n.t('restaurants.editProfile.anonymousLabel')}</Text>
               <Text style={styles.anonymousHint}>
-                Il tuo nome non sarà visibile ad altri utenti
+                {i18n.t('restaurants.editProfile.anonymousHint')}
               </Text>
             </View>
             <Switch
@@ -151,14 +155,14 @@ export default function EditProfileScreen() {
           </View>
           <TextInput
             mode="outlined"
-            label="Email"
+            label={i18n.t('restaurants.editProfile.emailLabel')}
             value={email}
             editable={false}
             outlineColor={theme.colors.divider}
             style={[styles.textInput, styles.textInputDisabled]}
             textColor={theme.colors.textSecondary}
           />
-          <Text style={styles.emailHint}>L'indirizzo email non è modificabile.</Text>
+          <Text style={styles.emailHint}>{i18n.t('restaurants.editProfile.emailHint')}</Text>
         </Surface>
 
         <Button
@@ -169,7 +173,7 @@ export default function EditProfileScreen() {
           style={styles.saveButton}
           labelStyle={styles.saveButtonLabel}
         >
-          Salva
+          {i18n.t('restaurants.editProfile.save')}
         </Button>
 
         {/* Elimina account */}
@@ -182,7 +186,7 @@ export default function EditProfileScreen() {
           icon="delete-outline"
           style={styles.deleteButton}
         >
-          Elimina account
+          {i18n.t('restaurants.editProfile.deleteAccount')}
         </Button>
       </ScrollView>
 
@@ -208,17 +212,17 @@ export default function EditProfileScreen() {
                     color={theme.colors.error}
                     style={styles.deleteModalIcon}
                   />
-                  <Text style={styles.deleteModalTitle}>Elimina account</Text>
+                  <Text style={styles.deleteModalTitle}>{i18n.t('restaurants.editProfile.deleteAccount')}</Text>
                   <Text style={styles.deleteModalText}>
-                    Verranno eliminati in modo permanente:
+                    {i18n.t('restaurants.editProfile.deleteWillRemove')}
                   </Text>
                   <View style={styles.deleteBulletList}>
-                    <Text style={styles.deleteBulletItem}>{'•  Il tuo profilo e avatar'}</Text>
-                    <Text style={styles.deleteBulletItem}>{'•  Le tue preferenze'}</Text>
-                    <Text style={[styles.deleteBulletItem, styles.deleteBulletItemBold]}>{'•  Non potrai recuperare questi dati'}</Text>
+                    <Text style={styles.deleteBulletItem}>{i18n.t('restaurants.editProfile.deleteBullet1')}</Text>
+                    <Text style={styles.deleteBulletItem}>{i18n.t('restaurants.editProfile.deleteBullet2')}</Text>
+                    <Text style={[styles.deleteBulletItem, styles.deleteBulletItemBold]}>{i18n.t('restaurants.editProfile.deleteBullet3')}</Text>
                   </View>
                   <Text style={styles.deleteNote}>
-                    I contributi alla community (ristoranti, piatti, recensioni) resteranno visibili in forma anonima.
+                    {i18n.t('restaurants.editProfile.deleteNote')}
                   </Text>
                   <View style={styles.deleteModalButtons}>
                     <Button
@@ -226,7 +230,7 @@ export default function EditProfileScreen() {
                       onPress={closeDeleteModal}
                       style={styles.deleteModalCancelBtn}
                     >
-                      Annulla
+                      {i18n.t('common.cancel')}
                     </Button>
                     <Button
                       mode="contained"
@@ -234,7 +238,7 @@ export default function EditProfileScreen() {
                       buttonColor={theme.colors.error}
                       style={styles.deleteModalConfirmBtn}
                     >
-                      Continua
+                      {i18n.t('restaurants.editProfile.continue')}
                     </Button>
                   </View>
                 </>
@@ -247,11 +251,11 @@ export default function EditProfileScreen() {
                     style={styles.deleteModalIcon}
                   />
                   <Text style={styles.deleteModalText}>
-                    Scrivi <Text style={styles.deleteModalBold}>ELIMINA</Text> per confermare
+                    {writeConfirmPrefix}<Text style={styles.deleteModalBold}>{deleteWord}</Text>{writeConfirmSuffix}
                   </Text>
                   <TextInput
                     mode="outlined"
-                    placeholder="Scrivi ELIMINA"
+                    placeholder={i18n.t('restaurants.editProfile.deletePlaceholder', { word: deleteWord })}
                     value={deleteConfirmText}
                     onChangeText={setDeleteConfirmText}
                     autoCapitalize="characters"
@@ -265,7 +269,7 @@ export default function EditProfileScreen() {
                       onPress={() => animateToStep(1)}
                       style={styles.deleteModalCancelBtn}
                     >
-                      Indietro
+                      {i18n.t('restaurants.editProfile.back')}
                     </Button>
                     <Button
                       mode="contained"
@@ -275,7 +279,7 @@ export default function EditProfileScreen() {
                       buttonColor={theme.colors.error}
                       style={styles.deleteModalConfirmBtn}
                     >
-                      Elimina definitivamente
+                      {i18n.t('restaurants.editProfile.deleteFinal')}
                     </Button>
                   </View>
                 </>

@@ -15,11 +15,11 @@ const SNAP_POINTS = [0.55, 0.92];
 type SortKey = 'distance' | 'rating' | 'popularity' | 'compatibility';
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-const SORT_OPTIONS: { key: SortKey; label: string; icon: IconName; requiresMatchInfo?: boolean }[] = [
-  { key: 'compatibility', label: 'Compatibilità', icon: 'shield-check', requiresMatchInfo: true },
-  { key: 'popularity', label: 'Popolarità', icon: 'comment-multiple' },
-  { key: 'rating', label: 'Valutazione', icon: 'star' },
-  { key: 'distance', label: 'Distanza da me', icon: 'map-marker-distance' },
+const SORT_OPTIONS: { key: SortKey; labelKey: string; icon: IconName; requiresMatchInfo?: boolean }[] = [
+  { key: 'compatibility', labelKey: 'restaurants.list.sort.compatibility', icon: 'shield-check', requiresMatchInfo: true },
+  { key: 'popularity', labelKey: 'restaurants.list.sort.popularity', icon: 'comment-multiple' },
+  { key: 'rating', labelKey: 'restaurants.list.sort.rating', icon: 'star' },
+  { key: 'distance', labelKey: 'restaurants.list.sort.distance', icon: 'map-marker-distance' },
 ];
 
 type Props = {
@@ -134,13 +134,13 @@ export default function NearbyListSheet({
       <MaterialCommunityIcons name="map-marker" size={20} color={theme.colors.primary} />
       <View style={styles.headerText}>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Ristoranti a {place.name}
+          {i18n.t('restaurants.list.titleAt', { place: place.name })}
         </Text>
         {!isLoading && (
           <Text style={styles.headerSubtitle}>
             {results.length === 0
-              ? hasActiveFilters ? 'Nessun risultato con i filtri attivi' : 'Nessun ristorante in zona'
-              : `${results.length} ${results.length === 1 ? 'trovato' : 'trovati'}`}
+              ? hasActiveFilters ? i18n.t('restaurants.list.noResultsFiltered') : i18n.t('restaurants.list.noResultsArea')
+              : i18n.t('restaurants.list.found', { count: results.length })}
           </Text>
         )}
       </View>
@@ -208,7 +208,7 @@ export default function NearbyListSheet({
                       styles.sortMenuItemText,
                       active && styles.sortMenuItemTextActive,
                     ]}>
-                      {opt.label}
+                      {i18n.t(opt.labelKey)}
                     </Text>
                     {active && (
                       <MaterialCommunityIcons name="check" size={16} color={theme.colors.primary} />
@@ -227,13 +227,13 @@ export default function NearbyListSheet({
         <View style={styles.centered}>
           <Text style={styles.emptyText}>
             {hasActiveFilters
-              ? `Nessun ristorante a ${place.name} corrisponde ai filtri selezionati. Prova a modificarli.`
-              : `Nessun ristorante trovato nelle vicinanze di ${place.name}.`}
+              ? i18n.t('restaurants.list.emptyFiltered', { place: place.name })
+              : i18n.t('restaurants.list.emptyNearby', { place: place.name })}
           </Text>
           {onAddPress && (
             <TouchableOpacity style={styles.addBtn} onPress={onAddPress} activeOpacity={0.7}>
               <MaterialCommunityIcons name="plus-circle-outline" size={18} color={theme.colors.primary} />
-              <Text style={styles.addBtnText}>Aggiungi un ristorante</Text>
+              <Text style={styles.addBtnText}>{i18n.t('restaurants.list.add')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -249,7 +249,7 @@ export default function NearbyListSheet({
           ListFooterComponent={onAddPress ? (
             <TouchableOpacity style={styles.addFooter} onPress={onAddPress} activeOpacity={0.7}>
               <MaterialCommunityIcons name="plus-circle-outline" size={16} color={theme.colors.primary} />
-              <Text style={styles.addFooterText}>Manca un ristorante? Aggiungilo</Text>
+              <Text style={styles.addFooterText}>{i18n.t('restaurants.list.missingPrompt')}</Text>
             </TouchableOpacity>
           ) : null}
           renderItem={({ item }) => {
@@ -279,7 +279,7 @@ export default function NearbyListSheet({
                           <Text style={styles.reviewCount}>({reviewCount})</Text>
                         </View>
                       ) : (
-                        <Text style={styles.reviewCount}>Nessuna recensione</Text>
+                        <Text style={styles.reviewCount}>{i18n.t('restaurants.list.noReviews')}</Text>
                       )}
                       {distanceKm !== null && (
                         <Text style={styles.distance}>

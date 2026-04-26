@@ -89,11 +89,11 @@ export default function AddReviewScreen() {
         if (r.allergens_snapshot?.length) setSelectedAllergens([...r.allergens_snapshot]);
         if (r.dietary_snapshot?.length) setSelectedDiets(r.dietary_snapshot as DietId[]);
       } else {
-        Alert.alert('Errore', 'Recensione non trovata.', [{ text: 'OK', onPress: () => router.back() }]);
+        Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.notFound'), [{ text: 'OK', onPress: () => router.back() }]);
       }
       setIsLoadingExisting(false);
     }).catch(() => {
-      Alert.alert('Errore', 'Impossibile caricare la recensione.', [{ text: 'OK', onPress: () => router.back() }]);
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.loadError'), [{ text: 'OK', onPress: () => router.back() }]);
       setIsLoadingExisting(false);
     });
   }, [reviewId, restaurantId, user]);
@@ -109,7 +109,7 @@ export default function AddReviewScreen() {
   const handleSubmit = async () => {
     if (!restaurantId || !user) return;
     if (rating === 0) {
-      Alert.alert('Attenzione', 'Seleziona almeno una stella per la valutazione.');
+      Alert.alert(i18n.t('restaurants.review.ratingRequiredTitle'), i18n.t('restaurants.review.ratingRequiredMsg'));
       return;
     }
 
@@ -153,15 +153,15 @@ export default function AddReviewScreen() {
 
       if (review) {
         Alert.alert(
-          'Grazie!',
-          isEditMode ? 'La tua recensione è stata aggiornata.' : 'La tua recensione è stata condivisa con la community.',
+          i18n.t('restaurants.review.thanksTitle'),
+          isEditMode ? i18n.t('restaurants.review.updatedMsg') : i18n.t('restaurants.review.publishedMsg'),
           [{ text: 'OK', onPress: () => router.back() }],
         );
       } else {
-        Alert.alert('Errore', 'Non è stato possibile inviare. Riprova.');
+        Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.submitError'));
       }
     } catch {
-      Alert.alert('Errore', 'Non è stato possibile inviare. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.submitError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +171,7 @@ export default function AddReviewScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={isEditMode ? 'Modifica recensione' : 'La tua recensione'} />
+      <HeaderBar title={i18n.t(isEditMode ? 'restaurants.review.editTitle' : 'restaurants.review.title')} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -213,7 +213,7 @@ export default function AddReviewScreen() {
         <View style={styles.separator} />
 
         {/* Valutazione */}
-        <Text style={styles.sectionTitle}>Come ti sei trovato?</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.review.howWasIt')}</Text>
         <View style={styles.ratingRow}>
           <StarRating rating={rating} size={40} onRate={(r) => setRating(r)} />
           {rating > 0 && (
@@ -226,7 +226,7 @@ export default function AddReviewScreen() {
         <TextInput
           value={comment}
           onChangeText={setComment}
-          placeholder={"Racconta la tua esperienza:\nQuali piatti hai ordinato?\nIl personale è stato attento alle tue esigenze?"}
+          placeholder={i18n.t('restaurants.review.commentPlaceholder')}
           placeholderTextColor={theme.colors.textDisabled}
           multiline
           maxLength={MAX_COMMENT_LENGTH}
@@ -249,18 +249,18 @@ export default function AddReviewScreen() {
             {remaining > 0 && (
               <TouchableOpacity style={[styles.photoAddBtn, { width: photoSize, height: photoSize }]} onPress={handleAddPhoto} activeOpacity={0.6}>
                 <MaterialCommunityIcons name="camera-plus-outline" size={24} color={theme.colors.primary} />
-                <Text style={styles.photoAddText}>Foto</Text>
+                <Text style={styles.photoAddText}>{i18n.t('restaurants.review.photoLabel')}</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
         {/* Tag tipo di cucina — community */}
-        <Text style={styles.cuisineTitle}>Tipo di cucina</Text>
+        <Text style={styles.cuisineTitle}>{i18n.t('restaurants.review.cuisineTitle')}</Text>
         <Text style={styles.cuisineHint}>
           {cuisineVotes.length > 0
-            ? 'Fai tap sui tag che ritieni corretti per questo ristorante'
-            : 'Aggiungi il tipo di cucina di questo ristorante'}
+            ? i18n.t('restaurants.review.cuisineHintExisting')
+            : i18n.t('restaurants.review.cuisineHintEmpty')}
         </Text>
         {/* Tag esistenti — posizione fissa, ordinati per voti */}
         <View style={styles.cuisineGrid}>
@@ -311,7 +311,7 @@ export default function AddReviewScreen() {
               color={cuisinePickerOpen ? theme.colors.primary : theme.colors.textSecondary}
             />
             <Text style={[styles.cuisineChipAddText, cuisinePickerOpen && styles.cuisineChipAddTextOpen]}>
-              {cuisinePickerOpen ? 'Chiudi' : 'Aggiungi'}
+              {cuisinePickerOpen ? i18n.t('common.close') : i18n.t('common.add')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -358,12 +358,12 @@ export default function AddReviewScreen() {
           <TouchableOpacity
             onPress={() => {
               Alert.alert(
-                'Elimina recensione',
-                'Sei sicuro di voler eliminare la tua recensione? Questa azione non può essere annullata.',
+                i18n.t('restaurants.review.deleteTitle'),
+                i18n.t('restaurants.review.deleteConfirm'),
                 [
-                  { text: 'Annulla', style: 'cancel' },
+                  { text: i18n.t('common.cancel'), style: 'cancel' },
                   {
-                    text: 'Elimina',
+                    text: i18n.t('common.delete'),
                     style: 'destructive',
                     onPress: async () => {
                       if (!user) return;
@@ -380,7 +380,7 @@ export default function AddReviewScreen() {
             style={styles.deleteRow}
           >
             <MaterialCommunityIcons name="delete-outline" size={16} color={theme.colors.error} />
-            <Text style={styles.deleteRowText}>Elimina la tua recensione</Text>
+            <Text style={styles.deleteRowText}>{i18n.t('restaurants.review.deleteAction')}</Text>
           </TouchableOpacity>
         )}
 
@@ -394,9 +394,9 @@ export default function AddReviewScreen() {
           disabled={isSubmitting || !hasContent}
           activeOpacity={0.7}
         >
-          <Text style={styles.submitText}>{isSubmitting ? (isEditMode ? 'Aggiornamento...' : 'Pubblicazione...') : (isEditMode ? 'Aggiorna' : 'Pubblica')}</Text>
+          <Text style={styles.submitText}>{isSubmitting ? (isEditMode ? i18n.t('restaurants.review.updating') : i18n.t('restaurants.review.publishing')) : (isEditMode ? i18n.t('restaurants.review.update') : i18n.t('restaurants.review.publish'))}</Text>
         </TouchableOpacity>
-        <Text style={styles.submitCaption}>La tua recensione aiuta la community</Text>
+        <Text style={styles.submitCaption}>{i18n.t('restaurants.review.helpsCommunity')}</Text>
       </View>
       </KeyboardAvoidingView>
     </View>

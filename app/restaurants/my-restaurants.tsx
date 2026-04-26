@@ -9,6 +9,7 @@ import type { Restaurant } from '../../services/restaurantService';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import HeaderBar from '../../components/HeaderBar';
 import EmptyStateCard from '../../components/EmptyStateCard';
+import i18n from '../../utils/i18n';
 
 function MyRestaurantCard({
   item,
@@ -42,7 +43,7 @@ export default function MyRestaurantsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title="I miei ristoranti" />
+      <HeaderBar title={i18n.t('restaurants.myRestaurants.title')} />
 
       {isLoading ? (
         <View style={styles.centered}>
@@ -51,9 +52,9 @@ export default function MyRestaurantsScreen() {
       ) : restaurants.length === 0 ? (
         <EmptyStateCard
           icon="🍽️"
-          title="Non hai ancora aggiunto ristoranti"
-          subtitle="Aggiungi il tuo primo ristorante e aiuta la community!"
-          buttonLabel="Aggiungi ristorante"
+          title={i18n.t('restaurants.myRestaurants.emptyTitle')}
+          subtitle={i18n.t('restaurants.myRestaurants.emptySubtitle')}
+          buttonLabel={i18n.t('restaurants.add.submit')}
           onPress={() => router.push('/restaurants/add')}
         />
       ) : (

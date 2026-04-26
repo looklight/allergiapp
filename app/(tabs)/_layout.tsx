@@ -1,6 +1,7 @@
 import { Tabs, Stack } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
+import i18n from '../../utils/i18n';
 
 export default function TabLayout() {
   return (
@@ -31,7 +32,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Le mie Card',
+            title: i18n.t('restaurants.tabs.tabCards'),
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="card-account-details" color={color} size={size} />
             ),
@@ -44,7 +45,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="restaurants"
           options={{
-            title: 'Ristoranti',
+            title: i18n.t('restaurants.tabs.tabRestaurants'),
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="silverware-fork-knife" color={color} size={size} />
             ),

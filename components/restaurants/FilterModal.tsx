@@ -6,6 +6,7 @@ import { theme } from '../../constants/theme';
 import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import ChipGrid from '../ChipGrid';
 import DietaryNeedsPicker from '../DietaryNeedsPicker';
+import i18n from '../../utils/i18n';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
 
 export type FilterApplyResult = {
@@ -74,8 +75,8 @@ export default function FilterModal({
       const hasNeeds = pendingAllergens.length > 0 || pendingDiets.length > 0;
       if (!hasNeeds) {
         Alert.alert(
-          'Nessuna esigenza selezionata',
-          "Seleziona almeno un'allergia o dieta per usare questo filtro.",
+          i18n.t('restaurants.filter.noNeedsTitle'),
+          i18n.t('restaurants.filter.noNeedsMsg'),
         );
         return;
       }
@@ -101,7 +102,7 @@ export default function FilterModal({
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.content} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
-            <Text style={styles.title}>Filtri</Text>
+            <Text style={styles.title}>{i18n.t('restaurants.filter.title')}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8} activeOpacity={0.6}>
               <MaterialCommunityIcons name="close" size={24} color={theme.colors.textPrimary} />
             </TouchableOpacity>
@@ -112,13 +113,13 @@ export default function FilterModal({
             <View style={styles.section}>
               <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.myNeedsToggle} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
-                <Text style={styles.myNeedsText}>Filtra per le mie esigenze</Text>
+                <Text style={styles.myNeedsText}>{i18n.t('restaurants.filter.myNeeds')}</Text>
                 <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
                   <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
                 </View>
               </TouchableOpacity>
               <Text style={styles.sectionHint}>
-                Mostra i ristoranti con esperienze lasciate da utenti con le tue stesse allergie o esigenze alimentari.
+                {i18n.t('restaurants.filter.myNeedsHint')}
               </Text>
               {pendingMyNeeds && (
                 <DietaryNeedsPicker
@@ -130,7 +131,7 @@ export default function FilterModal({
                   profileDiets={profileDiets}
                   onSyncProfile={onSyncProfile}
                   lang={lang}
-                  subtitle="Mostra i ristoranti con recensioni di utenti che condividono le tue stesse esigenze."
+                  subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
                 />
               )}
             </View>
@@ -145,9 +146,9 @@ export default function FilterModal({
             */}
 
             <View style={[styles.section, { borderBottomWidth: 0 }]}>
-              <Text style={styles.sectionLabel}>Tipo di cucina</Text>
+              <Text style={styles.sectionLabel}>{i18n.t('restaurants.filter.cuisineLabel')}</Text>
               <Text style={styles.sectionHint}>
-                Basato sui tag aggiunti dalla community per descrivere il tipo di cucina del ristorante.
+                {i18n.t('restaurants.filter.cuisineHint')}
               </Text>
               <ChipGrid
                 items={CUISINE_CATEGORIES}
@@ -166,13 +167,13 @@ export default function FilterModal({
           <View style={styles.footer}>
             {hasPendingOrActive ? (
               <TouchableOpacity onPress={handleReset} style={styles.resetButton} activeOpacity={0.7}>
-                <Text style={styles.resetText}>Resetta filtri</Text>
+                <Text style={styles.resetText}>{i18n.t('restaurants.filter.reset')}</Text>
               </TouchableOpacity>
             ) : (
               <View />
             )}
             <TouchableOpacity onPress={handleApply} style={styles.applyButton} activeOpacity={0.7}>
-              <Text style={styles.applyText}>Applica</Text>
+              <Text style={styles.applyText}>{i18n.t('restaurants.filter.apply')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -9,6 +9,7 @@ import { REPORT_REASONS } from '../../constants/reportReasons';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
 import HeaderBar from '../../components/HeaderBar';
+import i18n from '../../utils/i18n';
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -53,12 +54,12 @@ export default function ReportScreen() {
 
     if (report) {
       Alert.alert(
-        'Grazie!',
-        'La tua segnalazione è stata inviata. La esamineremo il prima possibile.',
+        i18n.t('restaurants.report.thanksTitle'),
+        i18n.t('restaurants.report.sent'),
         [{ text: 'OK', onPress: () => router.back() }],
       );
     } else {
-      Alert.alert('Errore', 'Non è stato possibile inviare la segnalazione. Riprova.');
+      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.report.error'));
     }
   };
 
@@ -66,7 +67,7 @@ export default function ReportScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title="Segnala un problema" />
+      <HeaderBar title={i18n.t('restaurants.report.title')} />
 
       <ScrollView
         ref={scrollRef}
@@ -80,7 +81,7 @@ export default function ReportScreen() {
         <View style={styles.infoBanner}>
           <MaterialCommunityIcons name="information-outline" size={20} color={theme.colors.primary} />
           <Text style={styles.infoBannerText}>
-            AllergiApp è una piattaforma collaborativa: i ristoranti e le recensioni sono interamente gestiti dalla community. Usa questa segnalazione solo in caso di problemi reali (informazioni errate, contenuti inappropriati, ecc.). Le azioni che possiamo intraprendere sono limitate poiché non abbiamo rapporti diretti con i ristoranti.
+            {i18n.t('restaurants.report.infoBanner')}
           </Text>
         </View>
 
@@ -98,7 +99,7 @@ export default function ReportScreen() {
         )}
 
         {/* Motivi */}
-        <Text style={styles.sectionTitle}>Motivo della segnalazione</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.report.reasonLabel')}</Text>
         <View style={styles.reasonList}>
           {REPORT_REASONS.map(reason => {
             const isActive = selectedReason === reason.id;
@@ -116,7 +117,7 @@ export default function ReportScreen() {
               >
                 <Text style={styles.reasonIcon}>{reason.icon}</Text>
                 <Text style={[styles.reasonText, isActive && styles.reasonTextActive]}>
-                  {reason.label}
+                  {i18n.t(reason.labelKey)}
                 </Text>
               </TouchableOpacity>
             );
@@ -127,11 +128,11 @@ export default function ReportScreen() {
 
         {/* Descrizione */}
         <View onLayout={e => { descriptionY.current = e.nativeEvent.layout.y; }} />
-        <Text style={styles.sectionTitle}>Descrizione</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.report.descriptionLabel')}</Text>
         <TextInput
           value={description}
           onChangeText={setDescription}
-          placeholder="Descrivi il problema in dettaglio..."
+          placeholder={i18n.t('restaurants.report.descriptionPlaceholder')}
           multiline
           maxLength={500}
           mode="outlined"
@@ -145,7 +146,7 @@ export default function ReportScreen() {
         <View style={styles.reviewHint}>
           <MaterialCommunityIcons name="lightbulb-outline" size={16} color={theme.colors.textSecondary} />
           <Text style={styles.reviewHintText}>
-            Se la tua esperienza può essere utile ad altri, considera di lasciare una recensione. Spesso una recensione rispettosa e costruttiva aiuta più di una segnalazione.
+            {i18n.t('restaurants.report.reviewHint')}
           </Text>
         </View>
       </ScrollView>
@@ -159,7 +160,7 @@ export default function ReportScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.submitText}>
-            {isSubmitting ? 'Invio in corso...' : 'Invia segnalazione'}
+            {isSubmitting ? i18n.t('restaurants.report.submitting') : i18n.t('restaurants.report.submit')}
           </Text>
         </TouchableOpacity>
       </View>

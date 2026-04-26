@@ -26,6 +26,7 @@ import {
 } from '../../constants/avatars';
 import { fetchUnlockStats } from '../../services/unlockedAvatarsService';
 import HeaderBar from '../../components/HeaderBar';
+import i18n from '../../utils/i18n';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_PADDING = 16;
@@ -38,23 +39,11 @@ const NUM_COLUMNS = Math.max(
 );
 const ITEM_SIZE = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 
-/**
- * Etichetta "noun per persone con questa restrizione" (es. "vegan" → "vegani",
- * "gluten" → "gluten free"). Da estendere quando si aggiunge un avatar che
- * usa una restrizione non ancora mappata. Fallback: ritorna l'id grezzo.
- */
-const RESTRICTION_PEOPLE_LABEL: Record<string, string> = {
-  vegan: 'vegani',
-  vegetarian: 'vegetariani',
-  gluten: 'gluten free',
-  lactose: 'intolleranti al lattosio',
-  histamine: 'intolleranti all\'istamina',
-  nickel: 'intolleranti al nichel',
-  diabetes: 'diabetici',
-};
-
 function restrictionPeopleLabel(restrictionId: string): string {
-  return RESTRICTION_PEOPLE_LABEL[restrictionId] ?? restrictionId;
+  const key = `restaurants.avatarGallery.peopleLabel.${restrictionId}`;
+  const translated = i18n.t(key);
+  // i18n-js returns "[missing ...]" se la chiave non esiste: fallback all'id grezzo.
+  return translated.startsWith('[missing') ? restrictionId : translated;
 }
 
 /** Etichetta progresso per una condizione (es. "3/5 like ricevuti"). */
@@ -63,18 +52,18 @@ function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
     case 'free':
       return '';
     case 'reviews':
-      return `${stats.reviews}/${avatar.unlock.count} recensioni`;
+      return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: avatar.unlock.count });
     case 'restaurants':
-      return `${stats.restaurants}/${avatar.unlock.count} ristoranti`;
+      return i18n.t('restaurants.avatarGallery.progress.restaurants', { current: stats.restaurants, total: avatar.unlock.count });
     case 'likes_received':
-      return `${stats.likes}/${avatar.unlock.count} like ricevuti`;
+      return i18n.t('restaurants.avatarGallery.progress.likes', { current: stats.likes, total: avatar.unlock.count });
     case 'unique_likers_received':
-      return `${stats.uniqueLikersReceived}/${avatar.unlock.count} utenti diversi`;
+      return i18n.t('restaurants.avatarGallery.progress.uniqueLikers', { current: stats.uniqueLikersReceived, total: avatar.unlock.count });
     case 'countries_reviewed':
-      return `${stats.countriesReviewed}/${avatar.unlock.count} paesi recensiti`;
+      return i18n.t('restaurants.avatarGallery.progress.countries', { current: stats.countriesReviewed, total: avatar.unlock.count });
     case 'likes_to_restriction_reviews': {
       const current = stats.likesToRestrictionReviews[avatar.unlock.restriction] ?? 0;
-      return `${current}/${avatar.unlock.count} like a recensioni di ${restrictionPeopleLabel(avatar.unlock.restriction)}`;
+      return i18n.t('restaurants.avatarGallery.progress.likesToRestriction', { current, total: avatar.unlock.count, people: restrictionPeopleLabel(avatar.unlock.restriction) });
     }
   }
 }
@@ -88,7 +77,7 @@ function getQuestHint(avatar: AvatarOption): string | null {
   switch (avatar.unlock.type) {
     case 'likes_received':
     case 'unique_likers_received':
-      return 'Aggiungi foto, descrivi i piatti e racconta come è stata la tua esperienza. Le recensioni complete vengono apprezzate di più dalla community.';
+      return i18n.t('restaurants.avatarGallery.questHint.likes');
     default:
       return null;
   }
@@ -98,19 +87,19 @@ function getQuestHint(avatar: AvatarOption): string | null {
 function formatConditionLabel(avatar: AvatarOption): string {
   switch (avatar.unlock.type) {
     case 'free':
-      return 'Avatar gratuito';
+      return i18n.t('restaurants.avatarGallery.conditions.free');
     case 'reviews':
-      return `Scrivi ${avatar.unlock.count} recensioni`;
+      return i18n.t('restaurants.avatarGallery.conditions.reviews', { count: avatar.unlock.count });
     case 'restaurants':
-      return `Aggiungi ${avatar.unlock.count} ristoranti`;
+      return i18n.t('restaurants.avatarGallery.conditions.restaurants', { count: avatar.unlock.count });
     case 'likes_received':
-      return `Le tue recensioni devono ricevere ${avatar.unlock.count} like dagli utenti`;
+      return i18n.t('restaurants.avatarGallery.conditions.likes', { count: avatar.unlock.count });
     case 'unique_likers_received':
-      return `Ricevi like da ${avatar.unlock.count} utenti diversi sulle tue recensioni`;
+      return i18n.t('restaurants.avatarGallery.conditions.uniqueLikers', { count: avatar.unlock.count });
     case 'countries_reviewed':
-      return `Recensisci ristoranti in ${avatar.unlock.count} paesi diversi`;
+      return i18n.t('restaurants.avatarGallery.conditions.countries', { count: avatar.unlock.count });
     case 'likes_to_restriction_reviews':
-      return `Metti like a ${avatar.unlock.count} recensioni di utenti ${restrictionPeopleLabel(avatar.unlock.restriction)}`;
+      return i18n.t('restaurants.avatarGallery.conditions.likesToRestriction', { count: avatar.unlock.count, people: restrictionPeopleLabel(avatar.unlock.restriction) });
   }
 }
 
@@ -146,11 +135,11 @@ export default function AvatarGalleryScreen() {
       }
       if (userProfile?.is_anonymous) {
         Alert.alert(
-          'Modalità anonima attiva',
-          'Per scegliere un avatar disattiva la modalità anonima nel tuo profilo.',
+          i18n.t('restaurants.avatarGallery.anonymousAlertTitle'),
+          i18n.t('restaurants.avatarGallery.anonymousAlertMsg'),
           [
-            { text: 'Annulla', style: 'cancel' },
-            { text: 'Vai al profilo', onPress: () => router.push('/restaurants/edit-profile') },
+            { text: i18n.t('common.cancel'), style: 'cancel' },
+            { text: i18n.t('restaurants.avatarGallery.goToProfile'), onPress: () => router.push('/restaurants/edit-profile') },
           ],
         );
         return;
@@ -176,29 +165,30 @@ export default function AvatarGalleryScreen() {
   const renderProgressLabel = (avatar: AvatarOption) => {
     const { unlock } = avatar;
     if (unlock.type === 'free') return null;
-    const current = unlock.type === 'reviews' ? stats.reviews : stats.restaurants;
-    const label = unlock.type === 'reviews' ? 'recensioni' : 'ristoranti';
-    return `${current}/${unlock.count} ${label}`;
+    if (unlock.type === 'reviews') {
+      return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: unlock.count });
+    }
+    return i18n.t('restaurants.avatarGallery.progress.restaurants', { current: stats.restaurants, total: unlock.count });
   };
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title="I miei Avatar" />
+      <HeaderBar title={i18n.t('restaurants.profile.menuAvatars')} />
 
       {userProfile?.is_anonymous && (
         <View style={styles.anonymousBanner}>
           <MaterialCommunityIcons name="incognito" size={20} color={theme.colors.textSecondary} />
           <Text style={styles.anonymousBannerText}>
-            In modalità anonima il tuo avatar non è visibile agli altri.
+            {i18n.t('restaurants.avatarGallery.anonymousBanner')}
           </Text>
           <TouchableOpacity
             onPress={() => router.push('/restaurants/edit-profile')}
             hitSlop={8}
             activeOpacity={0.6}
           >
-            <Text style={styles.anonymousBannerCta}>Modifica</Text>
+            <Text style={styles.anonymousBannerCta}>{i18n.t('common.edit')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -340,10 +330,10 @@ function DetailCard({
           activeOpacity={0.7}
           style={styles.hintWrap}
           accessibilityRole="button"
-          accessibilityLabel={hintExpanded ? 'Nascondi suggerimento' : 'Mostra suggerimento'}
+          accessibilityLabel={hintExpanded ? i18n.t('restaurants.avatarGallery.hideHint') : i18n.t('restaurants.avatarGallery.showHint')}
         >
           <View style={styles.hintHeader}>
-            <Text style={styles.hintLabel}>Suggerimento</Text>
+            <Text style={styles.hintLabel}>{i18n.t('restaurants.avatarGallery.hintLabel')}</Text>
             <MaterialCommunityIcons
               name={hintExpanded ? 'chevron-up' : 'chevron-down'}
               size={14}
@@ -372,7 +362,7 @@ function DetailCard({
       {unlocked && (
         <View style={styles.unlockedBadgeRow}>
           <MaterialCommunityIcons name="check-circle" size={18} color={theme.colors.primary} />
-          <Text style={styles.unlockedBadgeText}>Sbloccato!</Text>
+          <Text style={styles.unlockedBadgeText}>{i18n.t('restaurants.avatarGallery.unlocked')}</Text>
         </View>
       )}
     </View>

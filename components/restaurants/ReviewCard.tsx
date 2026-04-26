@@ -135,7 +135,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
               size={14}
               color={theme.colors.textDisabled}
             />
-            <Text style={styles.reportText}>{isReported ? 'Segnalata' : 'Segnala'}</Text>
+            <Text style={styles.reportText}>{isReported ? i18n.t('restaurants.reviews.card.reportedFlag') : i18n.t('restaurants.reviews.card.reportFlag')}</Text>
           </TouchableOpacity>
         )}
       </View>

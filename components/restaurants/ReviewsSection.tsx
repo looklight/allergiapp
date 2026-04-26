@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { theme } from '../../constants/theme';
 import ReviewCard from './ReviewCard';
+import i18n from '../../utils/i18n';
 import type { UnifiedReview, ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 
 type Props = {
@@ -45,20 +46,20 @@ export default function ReviewsSection({
     return (
       <View style={styles.emptySection}>
         <MaterialCommunityIcons name="comment-text-outline" size={36} color={theme.colors.textDisabled} />
-        <Text style={styles.emptySectionTitle}>Ancora nessuna recensione</Text>
-        <Text style={styles.emptySectionText}>Sii il primo a condividere la tua esperienza</Text>
+        <Text style={styles.emptySectionTitle}>{i18n.t('restaurants.reviews.empty')}</Text>
+        <Text style={styles.emptySectionText}>{i18n.t('restaurants.reviews.emptyHint')}</Text>
       </View>
     );
   }
 
   const [disclaimerVisible, setDisclaimerVisible] = useState(false);
 
-  const sortOptions: { key: ReviewSortOrder; label: string; icon: string }[] = [
-    { key: 'recent', label: 'Recenti', icon: 'clock-outline' },
-    { key: 'rating', label: 'Stelle', icon: 'star-outline' },
-    { key: 'likes', label: 'Più utili', icon: 'thumb-up-outline' },
+  const sortOptions: { key: ReviewSortOrder; labelKey: string; icon: string }[] = [
+    { key: 'recent', labelKey: 'restaurants.reviews.sort.recent', icon: 'clock-outline' },
+    { key: 'rating', labelKey: 'restaurants.reviews.sort.rating', icon: 'star-outline' },
+    { key: 'likes', labelKey: 'restaurants.reviews.sort.helpful', icon: 'thumb-up-outline' },
     ...(hasUserNeeds
-      ? [{ key: 'relevance' as ReviewSortOrder, label: 'Per me', icon: 'shield-check' }]
+      ? [{ key: 'relevance' as ReviewSortOrder, labelKey: 'restaurants.reviews.sort.forMe', icon: 'shield-check' }]
       : []),
   ];
 
@@ -66,7 +67,7 @@ export default function ReviewsSection({
     <View style={styles.section}>
       <View style={styles.reviewsHeader}>
         <View style={styles.titleRow}>
-          <Text style={styles.sectionTitle}>Recensioni ({totalCount})</Text>
+          <Text style={styles.sectionTitle}>{i18n.t('restaurants.reviews.titleWithCount', { count: totalCount })}</Text>
           <TouchableOpacity onPress={() => setDisclaimerVisible(v => !v)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <MaterialCommunityIcons
               name="information-outline"
@@ -103,7 +104,7 @@ export default function ReviewsSection({
                   />
                   {active && (
                     <Text style={styles.sortChipTextActive}>
-                      {opt.label}
+                      {i18n.t(opt.labelKey)}
                     </Text>
                   )}
                   {active && isRating && (
@@ -121,7 +122,7 @@ export default function ReviewsSection({
       </View>
       {disclaimerVisible && (
         <View style={styles.disclaimerBox}>
-          <Text style={styles.disclaimer}>Le recensioni non sono verificate e riflettono le esperienze personali degli utenti. Contribuisci scrivendone una, mettendo un like o segnalando contenuti inappropriati.</Text>
+          <Text style={styles.disclaimer}>{i18n.t('restaurants.reviews.disclaimer')}</Text>
         </View>
       )}
       {reviews.map((item, idx) => (
@@ -151,7 +152,7 @@ export default function ReviewsSection({
           {isLoadingMore ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
-            <Text style={styles.loadMoreText}>Carica altre recensioni</Text>
+            <Text style={styles.loadMoreText}>{i18n.t('restaurants.reviews.loadMore')}</Text>
           )}
         </TouchableOpacity>
       )}

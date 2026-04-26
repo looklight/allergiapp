@@ -19,7 +19,7 @@ export default function ReportsSection({ reports }: Props) {
       <View style={styles.section}>
         <View style={styles.header}>
           <MaterialCommunityIcons name="flag-outline" size={18} color={theme.colors.amberDark} />
-          <Text style={styles.sectionTitle}>Segnalazioni ({reports.length})</Text>
+          <Text style={styles.sectionTitle}>{i18n.t('restaurants.reports.titleWithCount', { count: reports.length })}</Text>
         </View>
         {reports.map((report, idx) => {
           const reasonInfo = REPORT_REASON_MAP[report.reason as keyof typeof REPORT_REASON_MAP] ?? REPORT_REASON_MAP.other;
@@ -32,7 +32,7 @@ export default function ReportsSection({ reports }: Props) {
                     <MaterialCommunityIcons name="account-outline" size={16} color={theme.colors.textSecondary} />
                   </View>
                   <View style={styles.meta}>
-                    <Text style={styles.author}>Utente</Text>
+                    <Text style={styles.author}>{i18n.t('restaurants.reports.userLabel')}</Text>
                     <Text style={styles.date}>
                       {new Date(report.created_at).toLocaleDateString(i18n.locale, {
                         month: 'short', year: 'numeric',
@@ -40,7 +40,7 @@ export default function ReportsSection({ reports }: Props) {
                     </Text>
                   </View>
                   <View style={styles.reasonBadge}>
-                    <Text style={styles.reasonBadgeText}>{reasonInfo.icon} {reasonInfo.label}</Text>
+                    <Text style={styles.reasonBadgeText}>{reasonInfo.icon} {i18n.t(reasonInfo.labelKey)}</Text>
                   </View>
                 </View>
                 <Text style={styles.details}>{report.details}</Text>
