@@ -14,6 +14,7 @@
 
 import { supabase } from './supabase';
 import { AVATARS, isAvatarUnlocked, type AvatarOption, type UnlockStats } from '../constants/avatars';
+import { getSnapshotColumnFor } from '../constants/foodRestrictions';
 
 /**
  * Recupera dal DB tutte le metriche aggregate necessarie a valutare le condizioni
@@ -43,12 +44,13 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
         .from('reviews')
         .select('restaurant:restaurants!restaurant_id(country_code)')
         .eq('user_id', userId),
-      // Per le condizioni `likes_to_dietary_reviews`: like dati dall'utente
-      // a recensioni filtrate per dieta del recensore (dietary_snapshot).
-      // Una sola query per tutte le diete: filtraggio in memoria.
+      // Per le condizioni `likes_to_restriction_reviews`: like dati dall'utente
+      // a recensioni filtrate per restrizione del recensore. Selezioniamo
+      // ENTRAMBI gli snapshot (dietary + allergens), il routing avviene per
+      // category via getSnapshotColumnFor.
       supabase
         .from('review_likes')
-        .select('review:reviews!review_id(dietary_snapshot)')
+        .select('review:reviews!review_id(dietary_snapshot, allergens_snapshot)')
         .eq('user_id', userId),
     ]);
     const likesTotal = (likesRes.data ?? []).reduce(
@@ -60,22 +62,28 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       const code = (row as any)?.restaurant?.country_code;
       if (code) countriesSet.add(code);
     }
-    // Diete da tracciare: quelle effettivamente usate dal catalogo AVATARS.
-    // Aggiungere una nuova `likes_to_dietary_reviews` al catalogo basta a popolarne il count.
-    const dietsToTrack = Array.from(
+    // Restrizioni da tracciare: quelle effettivamente usate dal catalogo AVATARS.
+    // Aggiungere un nuovo `likes_to_restriction_reviews` al catalogo basta a popolarne
+    // il count: il routing snapshot (dietary vs allergens) avviene per category
+    // via getSnapshotColumnFor di constants/foodRestrictions.
+    const restrictionsToTrack = Array.from(
       new Set(
         AVATARS.flatMap((a) =>
-          a.unlock.type === 'likes_to_dietary_reviews' ? [a.unlock.dietary] : [],
+          a.unlock.type === 'likes_to_restriction_reviews' ? [a.unlock.restriction] : [],
         ),
       ),
     );
-    const likesToDietaryReviews: Record<string, number> = {};
-    for (const diet of dietsToTrack) likesToDietaryReviews[diet] = 0;
+    const likesToRestrictionReviews: Record<string, number> = {};
+    for (const r of restrictionsToTrack) likesToRestrictionReviews[r] = 0;
     for (const row of dietaryLikesRes.data ?? []) {
-      const snapshot: string[] | undefined = (row as any)?.review?.dietary_snapshot;
-      if (!snapshot) continue;
-      for (const diet of dietsToTrack) {
-        if (snapshot.includes(diet)) likesToDietaryReviews[diet]++;
+      const review = (row as any)?.review;
+      if (!review) continue;
+      const dietary: string[] = review.dietary_snapshot ?? [];
+      const allergens: string[] = review.allergens_snapshot ?? [];
+      for (const r of restrictionsToTrack) {
+        const col = getSnapshotColumnFor(r);
+        const arr = col === 'allergens_snapshot' ? allergens : dietary;
+        if (arr.includes(r)) likesToRestrictionReviews[r]++;
       }
     }
     return {
@@ -84,11 +92,11 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       likes: likesTotal,
       uniqueLikersReceived: (uniqueLikersRes.data as number | null) ?? 0,
       countriesReviewed: countriesSet.size,
-      likesToDietaryReviews,
+      likesToRestrictionReviews,
     };
   } catch (error) {
     console.warn('[UnlockedAvatarsService] fetchUnlockStats error:', error);
-    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToDietaryReviews: {} };
+    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToRestrictionReviews: {} };
   }
 }
 

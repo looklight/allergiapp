@@ -7,7 +7,7 @@ export type UnlockCondition =
   | { type: 'likes_received'; count: number }
   | { type: 'unique_likers_received'; count: number }
   | { type: 'countries_reviewed'; count: number }
-  | { type: 'likes_to_dietary_reviews'; count: number; dietary: string };
+  | { type: 'likes_to_restriction_reviews'; count: number; restriction: string };
 
 /**
  * Stats utente usate per valutare le condizioni di sblocco.
@@ -23,8 +23,13 @@ export interface UnlockStats {
   /** Persone uniche che hanno likato almeno una propria recensione. */
   uniqueLikersReceived: number;
   countriesReviewed: number;
-  /** Like dati a recensioni filtrati per dieta (chiave = id della dieta nel snapshot). */
-  likesToDietaryReviews: Record<string, number>;
+  /**
+   * Like dati a recensioni dell'utente filtrati per restrizione alimentare.
+   * Chiave = id della restrizione (es. 'vegan', 'gluten'). Il sistema cerca
+   * automaticamente nel snapshot giusto (dietary o allergens) tramite
+   * `getSnapshotColumnFor` di constants/foodRestrictions.ts.
+   */
+  likesToRestrictionReviews: Record<string, number>;
 }
 
 export interface AvatarOption {
@@ -45,79 +50,89 @@ export interface AvatarOption {
  * Note: nomi e condizioni di sblocco sotto sono PLACEHOLDER — da rivedere quando si
  * disegnerà la struttura definitiva delle "task" per gli utenti (segrete + dichiarate).
  */
+// Ordine: free → esplorazione geo → cinture (like a restrizioni) → like ricevuti (asc).
 export const AVATARS: AvatarOption[] = [
   // ── Free ──────────────────────────────────────────────
   {
     id: 'plate_main_logo',
     source: require('../assets/avatars/plate_main_logo.png'),
-    name: 'Il Buongustaio',
+    name: 'Foodie',
     unlock: { type: 'free' },
   },
   {
     id: 'plate_passport',
     source: require('../assets/avatars/plate_passport.png'),
-    name: 'Il Viaggiatore',
+    name: 'Traveler',
     unlock: { type: 'free' },
   },
+
+  // ── Esplorazione geografica ──────────────────────────
   {
     id: 'plate_language',
     source: require('../assets/avatars/plate_language.png'),
-    name: 'Il Poliglotta',
+    name: 'Globetrotter',
     unlock: { type: 'countries_reviewed', count: 3 },
   },
 
-  // ── Reviews ───────────────────────────────────────────
-  {
-    id: 'plate_wolfe',
-    source: require('../assets/avatars/plate_wolfe.png'),
-    name: 'Il Critico',
-    unlock: { type: 'reviews', count: 5 },
-  },
-  {
-    id: 'plate_veget',
-    source: require('../assets/avatars/plate_veget.png'),
-    name: 'Il Gourmet',
-    unlock: { type: 'reviews', count: 15 },
-  },
-  {
-    id: 'plate_wizard',
-    source: require('../assets/avatars/plate_wizard.png'),
-    name: 'La Guida Michelin',
-    unlock: { type: 'reviews', count: 30 },
-  },
-
-  // ── Restaurants ───────────────────────────────────────
-  {
-    id: 'plate_straw',
-    source: require('../assets/avatars/plate_straw.png'),
-    name: "L'Esploratore",
-    unlock: { type: 'countries_reviewed', count: 2 },
-  },
-  {
-    id: 'plate_bat',
-    source: require('../assets/avatars/plate_bat.png'),
-    name: 'Il Mappatore',
-    unlock: { type: 'restaurants', count: 15 },
-  },
-  {
-    id: 'plate_bl_mask',
-    source: require('../assets/avatars/plate_bl_mask.png'),
-    name: "L'Atlante Vivente",
-    unlock: { type: 'restaurants', count: 30 },
-  },
-
-  // ── Belts (TBD: regole di sblocco da definire) ────────
+  // ── Cinture (like dati a recensioni di utenti con restrizione) ─
   {
     id: 'plate_green_belt',
     source: require('../assets/avatars/plate_green_belt.png'),
-    name: 'Cintura Verde',
-    unlock: { type: 'likes_to_dietary_reviews', count: 3, dietary: 'vegan' },
+    name: 'Green Belt',
+    unlock: { type: 'likes_to_restriction_reviews', count: 3, restriction: 'vegan' },
+  },
+  {
+    id: 'plate_yellow_belt',
+    source: require('../assets/avatars/plate_yellow_belt.png'),
+    name: 'Yellow Belt',
+    unlock: { type: 'likes_to_restriction_reviews', count: 5, restriction: 'gluten' },
   },
   {
     id: 'plate_pink_belt',
     source: require('../assets/avatars/plate_pink_belt.png'),
-    name: 'Cintura Rosa',
-    unlock: { type: 'likes_to_dietary_reviews', count: 5, dietary: 'vegetarian' },
+    name: 'Pink Belt',
+    unlock: { type: 'likes_to_restriction_reviews', count: 5, restriction: 'vegetarian' },
+  },
+
+  // ── Like ricevuti (ladder progressivo) ────────────────
+  // Ogni piatto rappresenta un personaggio pop (cappello di paglia → One Piece,
+  // bacchetta → Harry Potter, artigli → Wolverine, maschera → Bleach,
+  // pipistrello → Batman, armatura → Vegeta). Nomi in inglese: non da tradurre.
+  {
+    id: 'plate_straw',
+    source: require('../assets/avatars/plate_straw.png'),
+    name: 'Pirate',
+    unlock: { type: 'unique_likers_received', count: 2 },
+  },
+  {
+    id: 'plate_wizard',
+    source: require('../assets/avatars/plate_wizard.png'),
+    name: 'Patronus',
+    unlock: { type: 'unique_likers_received', count: 4 },
+  },
+  {
+    id: 'plate_wolfe',
+    source: require('../assets/avatars/plate_wolfe.png'),
+    name: 'Wolfe',
+    unlock: { type: 'unique_likers_received', count: 6 },
+  },
+  {
+    id: 'plate_bl_mask',
+    source: require('../assets/avatars/plate_bl_mask.png'),
+    name: 'Soul',
+    unlock: { type: 'unique_likers_received', count: 9 },
+  },
+  {
+    id: 'plate_bat',
+    source: require('../assets/avatars/plate_bat.png'),
+    name: 'Knight',
+    unlock: { type: 'unique_likers_received', count: 12 },
+  },
+  {
+    id: 'plate_veget',
+    source: require('../assets/avatars/plate_veget.png'),
+    name: 'Prince',
+    unlock: { type: 'unique_likers_received', count: 14 },
   },
 ];
 
@@ -136,7 +151,7 @@ const UNLOCK_ALL_FOR_TESTING = false;
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
 ): boolean {
   if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
@@ -152,8 +167,8 @@ export function isAvatarUnlocked(
       return (stats.uniqueLikersReceived ?? 0) >= avatar.unlock.count;
     case 'countries_reviewed':
       return (stats.countriesReviewed ?? 0) >= avatar.unlock.count;
-    case 'likes_to_dietary_reviews':
-      return (stats.likesToDietaryReviews?.[avatar.unlock.dietary] ?? 0) >= avatar.unlock.count;
+    case 'likes_to_restriction_reviews':
+      return (stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) >= avatar.unlock.count;
     default:
       return false;
   }
@@ -164,7 +179,7 @@ export function isAvatarUnlocked(
  */
 export function getUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToDietaryReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
 ): number {
   switch (avatar.unlock.type) {
     case 'free':
@@ -179,8 +194,8 @@ export function getUnlockProgress(
       return Math.min((stats.uniqueLikersReceived ?? 0) / avatar.unlock.count, 1);
     case 'countries_reviewed':
       return Math.min((stats.countriesReviewed ?? 0) / avatar.unlock.count, 1);
-    case 'likes_to_dietary_reviews':
-      return Math.min((stats.likesToDietaryReviews?.[avatar.unlock.dietary] ?? 0) / avatar.unlock.count, 1);
+    case 'likes_to_restriction_reviews':
+      return Math.min((stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) / avatar.unlock.count, 1);
     default:
       return 0;
   }

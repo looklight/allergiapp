@@ -77,3 +77,28 @@ export const DIET_RESTRICTION_IDS = new Set(
 export const INTOLERANCE_RESTRICTION_IDS = new Set(
   FOOD_RESTRICTIONS.filter(r => r.category === 'intolerance').map(r => r.id),
 );
+
+/**
+ * Determina in quale "snapshot column" della tabella `reviews` vive una
+ * restrizione, in base alla sua categoria nel registro centrale.
+ *
+ * - `dietary_snapshot`: diete + intolleranze (DietId)
+ * - `allergens_snapshot`: allergeni EU + sensibilità alimentari (AllergenId | OtherFoodId)
+ *
+ * Usato dal sistema di sblocco avatar (`likes_to_restriction_reviews`) per
+ * cercare automaticamente nel campo giusto senza hardcoding per id.
+ */
+export type ReviewSnapshotColumn = 'dietary_snapshot' | 'allergens_snapshot';
+
+export function getSnapshotColumnFor(restrictionId: string): ReviewSnapshotColumn | null {
+  const r = getRestrictionById(restrictionId);
+  if (!r) return null;
+  switch (r.category) {
+    case 'diet':
+    case 'intolerance':
+      return 'dietary_snapshot';
+    case 'eu_allergen':
+    case 'food_sensitivity':
+      return 'allergens_snapshot';
+  }
+}

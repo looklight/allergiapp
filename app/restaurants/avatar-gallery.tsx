@@ -38,16 +38,23 @@ const NUM_COLUMNS = Math.max(
 );
 const ITEM_SIZE = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 
-/** Etichetta plurale per una dieta (es. "vegan" → "vegani"). */
-const DIETARY_PLURAL: Record<string, string> = {
+/**
+ * Etichetta "noun per persone con questa restrizione" (es. "vegan" → "vegani",
+ * "gluten" → "gluten free"). Da estendere quando si aggiunge un avatar che
+ * usa una restrizione non ancora mappata. Fallback: ritorna l'id grezzo.
+ */
+const RESTRICTION_PEOPLE_LABEL: Record<string, string> = {
   vegan: 'vegani',
   vegetarian: 'vegetariani',
-  gluten_free: 'celiaci',
-  lactose_free: 'intolleranti al lattosio',
+  gluten: 'gluten free',
+  lactose: 'intolleranti al lattosio',
+  histamine: 'intolleranti all\'istamina',
+  nickel: 'intolleranti al nichel',
+  diabetes: 'diabetici',
 };
 
-function dietaryPlural(diet: string): string {
-  return DIETARY_PLURAL[diet] ?? diet;
+function restrictionPeopleLabel(restrictionId: string): string {
+  return RESTRICTION_PEOPLE_LABEL[restrictionId] ?? restrictionId;
 }
 
 /** Etichetta progresso per una condizione (es. "3/5 like ricevuti"). */
@@ -62,13 +69,28 @@ function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
     case 'likes_received':
       return `${stats.likes}/${avatar.unlock.count} like ricevuti`;
     case 'unique_likers_received':
-      return `${stats.uniqueLikersReceived}/${avatar.unlock.count} persone diverse ti apprezzano`;
+      return `${stats.uniqueLikersReceived}/${avatar.unlock.count} utenti diversi`;
     case 'countries_reviewed':
       return `${stats.countriesReviewed}/${avatar.unlock.count} paesi recensiti`;
-    case 'likes_to_dietary_reviews': {
-      const current = stats.likesToDietaryReviews[avatar.unlock.dietary] ?? 0;
-      return `${current}/${avatar.unlock.count} like a recensioni di ${dietaryPlural(avatar.unlock.dietary)}`;
+    case 'likes_to_restriction_reviews': {
+      const current = stats.likesToRestrictionReviews[avatar.unlock.restriction] ?? 0;
+      return `${current}/${avatar.unlock.count} like a recensioni di ${restrictionPeopleLabel(avatar.unlock.restriction)}`;
     }
+  }
+}
+
+/**
+ * Hint motivazionale opzionale, mostrato sotto la condizione nel DetailCard.
+ * Solo per le quest dove un suggerimento "come fare" è utile (es. like ricevuti).
+ * Ritorna null per condizioni autoesplicative (free, dietary likes given).
+ */
+function getQuestHint(avatar: AvatarOption): string | null {
+  switch (avatar.unlock.type) {
+    case 'likes_received':
+    case 'unique_likers_received':
+      return 'Aggiungi foto, descrivi i piatti e racconta come è stata la tua esperienza. Le recensioni complete vengono apprezzate di più dalla community.';
+    default:
+      return null;
   }
 }
 
@@ -82,13 +104,13 @@ function formatConditionLabel(avatar: AvatarOption): string {
     case 'restaurants':
       return `Aggiungi ${avatar.unlock.count} ristoranti`;
     case 'likes_received':
-      return `Ricevi ${avatar.unlock.count} like sulle tue recensioni`;
+      return `Le tue recensioni devono ricevere ${avatar.unlock.count} like dagli utenti`;
     case 'unique_likers_received':
-      return `Fatti apprezzare da ${avatar.unlock.count} persone diverse`;
+      return `Ricevi like da ${avatar.unlock.count} utenti diversi sulle tue recensioni`;
     case 'countries_reviewed':
       return `Recensisci ristoranti in ${avatar.unlock.count} paesi diversi`;
-    case 'likes_to_dietary_reviews':
-      return `Metti like a ${avatar.unlock.count} recensioni di utenti ${dietaryPlural(avatar.unlock.dietary)}`;
+    case 'likes_to_restriction_reviews':
+      return `Metti like a ${avatar.unlock.count} recensioni di utenti ${restrictionPeopleLabel(avatar.unlock.restriction)}`;
   }
 }
 
@@ -103,7 +125,7 @@ export default function AvatarGalleryScreen() {
     likes: 0,
     uniqueLikersReceived: 0,
     countriesReviewed: 0,
-    likesToDietaryReviews: {},
+    likesToRestrictionReviews: {},
   });
   const [selectedId, setSelectedId] = useState(userProfile?.avatar_url ?? null);
   const [detailAvatar, setDetailAvatar] = useState<AvatarOption | null>(null);
@@ -219,14 +241,6 @@ export default function AvatarGalleryScreen() {
                     </View>
                   )}
 
-                  {/* Velo grigio + badge in alto a sinistra per avatar bloccati */}
-                  {!unlocked && <View style={styles.lockedVeil} />}
-                  {!unlocked && (
-                    <View style={styles.lockBadge}>
-                      <MaterialCommunityIcons name="lock" size={12} color="#FFF" />
-                    </View>
-                  )}
-
                   {/* Check badge */}
                   {isSelected && (
                     <View style={styles.checkBadge}>
@@ -241,6 +255,15 @@ export default function AvatarGalleryScreen() {
                 >
                   {avatar.name}
                 </Text>
+
+                {/* Velo grigio + badge a livello gridItem: copre l'intera card
+                    (image + name) con la stessa estensione del border di selezione. */}
+                {!unlocked && <View style={styles.lockedVeil} />}
+                {!unlocked && (
+                  <View style={styles.lockBadge}>
+                    <MaterialCommunityIcons name="lock" size={12} color="#FFF" />
+                  </View>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -280,6 +303,8 @@ function DetailCard({
   const unlocked = isAvatarUnlocked(avatar, stats);
   const progress = getUnlockProgress(avatar, stats);
   const progressLabel = formatProgressLabel(avatar, stats);
+  const hint = getQuestHint(avatar);
+  const [hintExpanded, setHintExpanded] = useState(false);
 
   return (
     <View style={styles.detailCard}>
@@ -309,6 +334,25 @@ function DetailCard({
       {/* Info */}
       <Text style={styles.detailName}>{avatar.name}</Text>
       <Text style={styles.detailDescription}>{formatConditionLabel(avatar)}</Text>
+      {hint && (
+        <TouchableOpacity
+          onPress={() => setHintExpanded((v) => !v)}
+          activeOpacity={0.7}
+          style={styles.hintWrap}
+          accessibilityRole="button"
+          accessibilityLabel={hintExpanded ? 'Nascondi suggerimento' : 'Mostra suggerimento'}
+        >
+          <View style={styles.hintHeader}>
+            <Text style={styles.hintLabel}>Suggerimento</Text>
+            <MaterialCommunityIcons
+              name={hintExpanded ? 'chevron-up' : 'chevron-down'}
+              size={14}
+              color={theme.colors.textDisabled}
+            />
+          </View>
+          {hintExpanded && <Text style={styles.hintBody}>{hint}</Text>}
+        </TouchableOpacity>
+      )}
 
       {/* Barra progresso */}
       {!unlocked && progressLabel !== '' && (
@@ -379,12 +423,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 14,
     borderWidth: 2.5,
-    paddingVertical: 10,
+    paddingVertical: 4,
     paddingHorizontal: 4,
   },
   gridImageWrap: {
-    width: ITEM_SIZE - 12,
-    height: ITEM_SIZE - 12,
+    width: ITEM_SIZE - 9,
+    height: ITEM_SIZE - 9,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
@@ -395,7 +439,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   gridImageLocked: {
-    opacity: 0.35,
+    opacity: 0.2,
   },
   gridPlaceholder: {
     width: '100%',
@@ -406,8 +450,8 @@ const styles = StyleSheet.create({
   },
   lockedVeil: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 14,
   },
   lockBadge: {
     position: 'absolute',
@@ -500,7 +544,30 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 8,
+  },
+  hintWrap: {
     marginBottom: 16,
+    alignItems: 'center',
+  },
+  hintHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: 4,
+  },
+  hintLabel: {
+    fontSize: 12,
+    color: theme.colors.textDisabled,
+  },
+  hintBody: {
+    fontSize: 12,
+    color: theme.colors.textDisabled,
+    textAlign: 'center',
+    lineHeight: 17,
+    fontStyle: 'italic',
+    marginTop: 4,
+    paddingHorizontal: 8,
   },
 
   // Progress
