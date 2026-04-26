@@ -24,6 +24,7 @@ import ReviewsSection from './ReviewsSection';
 import ReportsSection from './ReportsSection';
 import PhotoGalleryModal from './PhotoGalleryModal';
 import LoginGateCta from './LoginGateCta';
+import ReportReviewModal, { type ReviewReportReason } from './ReportReviewModal';
 import { useRestaurantDetail, type ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 import { RestaurantService } from '../../services/restaurantService';
 import { getExpandedCoverage, forwardMap } from '../../constants/restrictionImplications';
@@ -87,6 +88,7 @@ export default function RestaurantDetailBody({
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [reportedReviewIds, setReportedReviewIds] = useState<Set<string>>(new Set());
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
 
   // ─── Derived data ───────────────────────────────────────────────────────
   const userNeedsSet = useMemo(
@@ -189,30 +191,14 @@ export default function RestaurantDetailBody({
       Alert.alert(i18n.t('restaurants.detail.reportAlreadySent'), i18n.t('restaurants.detail.reportAlreadyMsg'));
       return;
     }
-    Alert.alert(
-      i18n.t('restaurants.detail.reportTitle'),
-      i18n.t('restaurants.detail.reportPrompt'),
-      [
-        {
-          text: i18n.t('restaurants.detail.reportInappropriate'),
-          onPress: () => submitReviewReport(reviewId, 'inappropriate'),
-        },
-        {
-          text: i18n.t('restaurants.detail.reportSpam'),
-          onPress: () => submitReviewReport(reviewId, 'spam'),
-        },
-        {
-          text: i18n.t('restaurants.detail.reportFalse'),
-          onPress: () => submitReviewReport(reviewId, 'false_info'),
-        },
-        { text: i18n.t('common.cancel'), style: 'cancel' },
-      ],
-    );
+    setReportingReviewId(reviewId);
   };
 
-  const submitReviewReport = async (reviewId: string, reason: string) => {
-    if (!restaurant) return;
+  const submitReviewReport = async (reason: ReviewReportReason) => {
+    const reviewId = reportingReviewId;
+    if (!restaurant || !reviewId) return;
     const result = await RestaurantService.reportReview(restaurant.id, reviewId, reason);
+    setReportingReviewId(null);
     if (result) {
       setReportedReviewIds(prev => new Set(prev).add(reviewId));
       Alert.alert(i18n.t('common.thanks'), i18n.t('restaurants.detail.reportSent'));
@@ -447,20 +433,6 @@ export default function RestaurantDetailBody({
         <View style={styles.separator} />
 
         <View style={styles.footerSection}>
-          {restaurant.added_by && (
-            <TouchableOpacity
-              style={styles.footerRow}
-              activeOpacity={0.6}
-              onPress={() => router.push(`/restaurants/user/${restaurant.added_by}`)}
-            >
-              <MaterialCommunityIcons name="account-outline" size={18} color={theme.colors.textSecondary} />
-              <Text style={styles.footerRowText}>{i18n.t('restaurants.detail.addedByUser')}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
-            </TouchableOpacity>
-          )}
-
-          {restaurant.added_by && <Divider />}
-
           <TouchableOpacity
             style={styles.footerRow}
             activeOpacity={0.6}
@@ -531,6 +503,12 @@ export default function RestaurantDetailBody({
           reportedReviewIds={reportedReviewIds}
         />
       )}
+
+      <ReportReviewModal
+        visible={reportingReviewId !== null}
+        onClose={() => setReportingReviewId(null)}
+        onSubmit={submitReviewReport}
+      />
     </>
   );
 }
