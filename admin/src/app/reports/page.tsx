@@ -205,7 +205,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Filtri status */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
+      <div className="flex gap-2 mb-3 flex-wrap">
         {(['all', 'pending', 'resolved', 'dismissed'] as const).map((s) => (
           <button
             key={s}
@@ -217,16 +217,18 @@ export default function ReportsPage() {
             {s === 'all' ? 'Tutti' : s === 'pending' ? 'In attesa' : s === 'resolved' ? 'Eliminate' : 'Ignorate'}
           </button>
         ))}
-        {(statusFilter === 'resolved' || statusFilter === 'dismissed') && (
+      </div>
+      {(statusFilter === 'resolved' || statusFilter === 'dismissed') && (
+        <div className="flex justify-end mb-3">
           <button
             onClick={cleanupReports}
             disabled={cleaningUp}
-            className="ml-auto px-3 py-1 rounded text-sm text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50 transition-colors"
+            className="px-3 py-1 rounded text-sm text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50 transition-colors"
           >
             {cleaningUp ? 'Eliminazione...' : 'Pulisci storico'}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Filtri motivo */}
       <div className="flex gap-2 mb-4 flex-wrap">
@@ -457,7 +459,7 @@ export default function ReportsPage() {
                 </p>
 
                 {r.status === 'pending' && (
-                  <div className="flex flex-wrap gap-2 pt-2 border-t">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t justify-end">
                     <button
                       onClick={() => {
                         if (r.menu_photo_id) deleteMenuPhoto(r);

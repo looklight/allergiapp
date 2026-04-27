@@ -89,7 +89,7 @@ export default function UsersPage() {
       </div>
 
       {/* Mobile: chip di ordinamento (sul desktop si usano gli header della tabella) */}
-      <div className="md:hidden flex gap-2 mb-3 overflow-x-auto">
+      <div className="md:hidden flex gap-2 mb-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {([
           ['created_desc', 'Più recenti'],
           ['reviews_desc', 'Più recensioni'],
