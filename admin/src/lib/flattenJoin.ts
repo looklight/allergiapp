@@ -46,6 +46,7 @@ export function flattenReportJoins(row: Record<string, any>, includeRestaurant =
   const result: any = {
     ...row,
     reporter_name: row.profiles?.display_name ?? null,
+    reporter_is_anonymous: row.profiles?.is_anonymous ?? null,
     menu_photo_thumbnail_url: row.menu_photos?.thumbnail_url ?? null,
     menu_photo_image_url: row.menu_photos?.image_url ?? null,
     review_comment: row.reviews?.comment ?? null,

@@ -105,6 +105,7 @@ export interface Report {
   created_at: string;
   // Join
   reporter_name?: string | null;
+  reporter_is_anonymous?: boolean | null;
   restaurant_name?: string | null;
   restaurant_city?: string | null;
   menu_photo_thumbnail_url?: string | null;

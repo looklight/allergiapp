@@ -17,12 +17,13 @@ export default function ReportsPage() {
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('pending');
   const [reasonFilter, setReasonFilter] = useState<ReportReason | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'restaurant' | 'photo' | 'review'>('all');
+  const [reviewModal, setReviewModal] = useState<Report | null>(null);
   const { isBusy, withBusy } = useBusyIds();
 
   const fetchReports = useCallback(async (pageNum: number) => {
     let query = supabase
       .from('reports')
-      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name), menu_photos!menu_photo_id(thumbnail_url, image_url), reviews!review_id(comment, rating, profiles!user_id(display_name))')
+      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name, is_anonymous), menu_photos!menu_photo_id(thumbnail_url, image_url), reviews!review_id(comment, rating, profiles!user_id(display_name))')
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
 
@@ -50,6 +51,21 @@ export default function ReportsPage() {
   useEffect(() => {
     reset();
   }, [statusFilter, reasonFilter, typeFilter]);
+
+  const [cleaningUp, setCleaningUp] = useState(false);
+
+  const cleanupReports = async () => {
+    const label = statusFilter === 'resolved' ? 'eliminate' : 'ignorate';
+    if (!confirmDestructive(`Eliminare definitivamente tutte le segnalazioni ${label}? L'operazione è irreversibile.`)) return;
+    setCleaningUp(true);
+    const { error } = await supabase.from('reports').delete().eq('status', statusFilter);
+    setCleaningUp(false);
+    if (error) {
+      alert(`Errore: ${error.message}`);
+      return;
+    }
+    reset();
+  };
 
   const dismissReport = async (reportId: string) => {
     await withBusy(reportId, async () => {
@@ -113,6 +129,44 @@ export default function ReportsPage() {
 
   return (
     <div>
+      {reviewModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setReviewModal(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-gray-800">Recensione segnalata</h2>
+              <button onClick={() => setReviewModal(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              {reviewModal.review_reviewer_name && (
+                <span className="text-sm font-medium text-gray-700">{reviewModal.review_reviewer_name}</span>
+              )}
+              {reviewModal.review_rating != null && reviewModal.review_rating > 0 && (
+                <span className="text-yellow-500">{'★'.repeat(reviewModal.review_rating)}{'☆'.repeat(5 - reviewModal.review_rating)}</span>
+              )}
+            </div>
+            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+              {reviewModal.review_comment ?? <span className="italic text-gray-400">Nessun testo</span>}
+            </p>
+            {reviewModal.restaurant_id && (
+              <div className="mt-4 pt-4 border-t">
+                <Link
+                  href={`/restaurants/${reviewModal.restaurant_id}`}
+                  className="text-blue-600 hover:underline text-sm"
+                  onClick={() => setReviewModal(null)}
+                >
+                  Vai al ristorante &rarr;
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">Segnalazioni</h1>
         <button
@@ -151,7 +205,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Filtri status */}
-      <div className="flex gap-2 mb-3 flex-wrap">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         {(['all', 'pending', 'resolved', 'dismissed'] as const).map((s) => (
           <button
             key={s}
@@ -163,6 +217,15 @@ export default function ReportsPage() {
             {s === 'all' ? 'Tutti' : s === 'pending' ? 'In attesa' : s === 'resolved' ? 'Eliminate' : 'Ignorate'}
           </button>
         ))}
+        {(statusFilter === 'resolved' || statusFilter === 'dismissed') && (
+          <button
+            onClick={cleanupReports}
+            disabled={cleaningUp}
+            className="ml-auto px-3 py-1 rounded text-sm text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50 transition-colors"
+          >
+            {cleaningUp ? 'Eliminazione...' : 'Pulisci storico'}
+          </button>
+        )}
       </div>
 
       {/* Filtri motivo */}
@@ -196,111 +259,121 @@ export default function ReportsPage() {
         <>
           {/* Desktop: tabella */}
           <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Ristorante</th>
-                    <th className="px-4 py-3 font-medium">Tipo</th>
-                    <th className="px-4 py-3 font-medium">Contenuto</th>
-                    <th className="px-4 py-3 font-medium">Motivo</th>
-                    <th className="px-4 py-3 font-medium">Descrizione</th>
-                    <th className="px-4 py-3 font-medium">Segnalato da</th>
-                    <th className="px-4 py-3 font-medium">Stato</th>
-                    <th className="px-4 py-3 font-medium text-right">Azioni</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reports.map((r) => (
-                    <tr key={r.id} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-3">
+            <table className="w-full text-xs table-fixed">
+              <thead className="bg-gray-50 text-left">
+                <tr>
+                  <th className="px-3 py-3 font-medium w-[24%]">Ristorante</th>
+                  <th className="px-3 py-3 font-medium w-[12%]">Tipo</th>
+                  <th className="px-3 py-3 font-medium w-[22%]">Contenuto</th>
+                  <th className="px-3 py-3 font-medium w-[24%]">Motivo</th>
+                  <th className="px-3 py-3 font-medium w-[18%]">Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.map((r) => (
+                  <tr key={r.id} className="border-t hover:bg-gray-50">
+                    <td className="px-3 py-3 align-top overflow-hidden">
+                      <div className="truncate">
                         {r.restaurant_id ? (
-                          <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline">
+                          <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline font-medium">
                             {r.restaurant_name ?? '—'}
                           </Link>
-                        ) : '—'}
-                        {r.restaurant_city && (
-                          <span className="text-gray-400 ml-1 text-xs">{r.restaurant_city}</span>
+                        ) : <span className="text-gray-400">—</span>}
+                      </div>
+                      {r.restaurant_city && (
+                        <div className="truncate text-gray-400 mt-0.5">{r.restaurant_city}</div>
+                      )}
+                      <div className="overflow-hidden flex items-center gap-1 text-gray-400 mt-0.5">
+                        <span className="shrink-0">Da:</span>
+                        {r.user_id ? (
+                          <Link href={`/users/${r.user_id}`} className="text-blue-600 underline truncate min-w-0">
+                            {r.reporter_name ?? 'Anonimo'}
+                          </Link>
+                        ) : <span className="italic truncate">Non rintracciabile</span>}
+                        {r.reporter_is_anonymous && (
+                          <span className="shrink-0 px-1 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">anonimo</span>
                         )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {r.review_id ? (
-                          <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Recensione</span>
-                        ) : r.menu_photo_id ? (
-                          <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Foto menu</span>
-                        ) : (
-                          <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">Ristorante</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {r.menu_photo_thumbnail_url ? (
-                          <a href={r.menu_photo_image_url ?? r.menu_photo_thumbnail_url} target="_blank" rel="noreferrer">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={r.menu_photo_thumbnail_url}
-                              alt="Foto segnalata"
-                              width={48}
-                              height={48}
-                              className="rounded object-cover"
-                            />
-                          </a>
-                        ) : r.review_id ? (
-                          <div className="max-w-xs">
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 align-top overflow-hidden">
+                      {r.review_id ? (
+                        <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded">Recensione</span>
+                      ) : r.menu_photo_id ? (
+                        <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded">Foto menu</span>
+                      ) : (
+                        <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 rounded">Ristorante</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 align-top overflow-hidden">
+                      {r.menu_photo_thumbnail_url ? (
+                        <a href={r.menu_photo_image_url ?? r.menu_photo_thumbnail_url} target="_blank" rel="noreferrer">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={r.menu_photo_thumbnail_url}
+                            alt="Foto segnalata"
+                            width={48}
+                            height={48}
+                            className="rounded object-cover"
+                          />
+                        </a>
+                      ) : r.review_id ? (
+                        <button
+                          onClick={() => setReviewModal(r)}
+                          className="text-left w-full hover:bg-gray-50 rounded -mx-1 px-1 py-0.5 transition-colors"
+                          title="Clicca per leggere la recensione completa"
+                        >
+                          <div className="flex items-center gap-1 mb-0.5">
                             {r.review_reviewer_name && (
-                              <span className="text-xs text-gray-500">{r.review_reviewer_name}</span>
+                              <span className="text-gray-500 truncate">{r.review_reviewer_name}</span>
                             )}
                             {r.review_rating != null && r.review_rating > 0 && (
-                              <span className="ml-1 text-yellow-600 text-xs">{'★'.repeat(r.review_rating)}</span>
-                            )}
-                            {r.review_comment && (
-                              <p className="text-xs text-gray-600 truncate mt-0.5" title={r.review_comment}>{r.review_comment}</p>
+                              <span className="text-yellow-500 shrink-0">{'★'.repeat(r.review_rating)}</span>
                             )}
                           </div>
-                        ) : '—'}
-                      </td>
-                      <td className="px-4 py-3">
+                          {r.review_comment && (
+                            <p className="text-gray-600 truncate">{r.review_comment}</p>
+                          )}
+                        </button>
+                      ) : <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="px-3 py-3 align-top overflow-hidden">
+                      <div className="truncate font-medium text-gray-700">
                         {REPORT_REASON_LABELS[r.reason as ReportReason] ?? r.reason}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 max-w-xs truncate" title={r.details ?? ''}>
-                        {r.details || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">
-                        {r.user_id ? (
-                          <Link href={`/users/${r.user_id}`} className="text-blue-600 hover:underline">{r.reporter_name ?? 'Anonimo'}</Link>
-                        ) : (r.reporter_name ?? 'Anonimo')}
-                      </td>
-                      <td className="px-4 py-3">
+                      </div>
+                      {r.details && (
+                        <div className="truncate text-gray-400 mt-0.5" title={r.details}>{r.details}</div>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 align-top overflow-hidden">
+                      {r.status === 'pending' ? (
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => {
+                              if (r.menu_photo_id) deleteMenuPhoto(r);
+                              else if (r.review_id) deleteReview(r);
+                              else if (r.restaurant_id) deleteRestaurant(r);
+                            }}
+                            disabled={isBusy(r.id)}
+                            className="px-2.5 py-1 rounded bg-red-50 text-red-700 font-medium hover:bg-red-100 disabled:opacity-50 transition-colors"
+                          >
+                            {isBusy(r.id) ? '...' : 'Elimina'}
+                          </button>
+                          <button
+                            onClick={() => dismissReport(r.id)}
+                            disabled={isBusy(r.id)}
+                            className="px-2.5 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                          >
+                            Ignora
+                          </button>
+                        </div>
+                      ) : (
                         <StatusBadge status={r.status} />
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {r.status === 'pending' && (
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              onClick={() => {
-                                if (r.menu_photo_id) deleteMenuPhoto(r);
-                                else if (r.review_id) deleteReview(r);
-                                else if (r.restaurant_id) deleteRestaurant(r);
-                              }}
-                              disabled={isBusy(r.id)}
-                              className="text-red-600 hover:underline text-xs disabled:opacity-50"
-                            >
-                              {isBusy(r.id) ? '...' : r.menu_photo_id ? 'Elimina foto' : r.review_id ? 'Elimina recensione' : 'Elimina ristorante'}
-                            </button>
-                            <button
-                              onClick={() => dismissReport(r.id)}
-                              disabled={isBusy(r.id)}
-                              className="text-gray-600 hover:underline text-xs disabled:opacity-50"
-                            >
-                              Ignora
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Mobile: card */}
@@ -350,7 +423,11 @@ export default function ReportsPage() {
                 )}
 
                 {r.review_id && (r.review_reviewer_name || r.review_comment) && (
-                  <div className="mb-2 text-xs bg-gray-50 rounded p-2">
+                  <button
+                    onClick={() => setReviewModal(r)}
+                    className="w-full text-left mb-2 text-xs bg-gray-50 rounded p-2 hover:bg-gray-100 transition-colors"
+                    title="Clicca per leggere la recensione completa"
+                  >
                     {r.review_reviewer_name && (
                       <span className="text-gray-500">{r.review_reviewer_name}</span>
                     )}
@@ -358,20 +435,25 @@ export default function ReportsPage() {
                       <span className="ml-1 text-yellow-600">{'★'.repeat(r.review_rating)}</span>
                     )}
                     {r.review_comment && (
-                      <p className="text-gray-700 mt-1">{r.review_comment}</p>
+                      <p className="text-gray-700 mt-1 line-clamp-2">{r.review_comment}</p>
                     )}
-                  </div>
+                  </button>
                 )}
 
                 {r.details && (
                   <p className="text-sm text-gray-700 mb-2 break-words">{r.details}</p>
                 )}
 
-                <p className="text-xs text-gray-500 mb-3">
-                  Da:{' '}
+                <p className="text-xs text-gray-500 mb-3 flex items-center gap-1 flex-wrap">
+                  <span>Da:</span>
                   {r.user_id ? (
-                    <Link href={`/users/${r.user_id}`} className="text-blue-600 hover:underline">{r.reporter_name ?? 'Anonimo'}</Link>
-                  ) : (r.reporter_name ?? 'Anonimo')}
+                    <Link href={`/users/${r.user_id}`} className="text-blue-600 underline">
+                      {r.reporter_name ?? 'Anonimo'}
+                    </Link>
+                  ) : <span className="italic">Non rintracciabile</span>}
+                  {r.reporter_is_anonymous && (
+                    <span className="px-1 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">anonimo</span>
+                  )}
                 </p>
 
                 {r.status === 'pending' && (
