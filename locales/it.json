@@ -171,7 +171,9 @@
     "saveDietaryError": "Impossibile salvare le esigenze alimentari. Riprova."
   },
   "gallery": {
-    "reviewerNeeds": "Esigenze di chi ha recensito:"
+    "reviewerNeeds": "Esigenze di chi ha recensito:",
+    "readMore": "Leggi tutto",
+    "readLess": "Mostra meno"
   },
   "restaurants": {
     "review": {

@@ -157,7 +157,9 @@
     "saveDietaryError": "No se pudieron guardar las necesidades alimentarias. Int\u00e9ntalo de nuevo."
   },
   "gallery": {
-    "reviewerNeeds": "Necesidades de quien reseñó:"
+    "reviewerNeeds": "Necesidades de quien reseñó:",
+    "readMore": "Leer más",
+    "readLess": "Mostrar menos"
   },
   "aboutStory": {
     "title": "¿Por qué es gratuita?",

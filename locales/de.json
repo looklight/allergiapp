@@ -157,7 +157,9 @@
     "saveDietaryError": "Ern\u00e4hrungsbed\u00fcrfnisse konnten nicht gespeichert werden. Versuche es erneut."
   },
   "gallery": {
-    "reviewerNeeds": "Bedürfnisse des Rezensenten:"
+    "reviewerNeeds": "Bedürfnisse des Rezensenten:",
+    "readMore": "Mehr lesen",
+    "readLess": "Weniger anzeigen"
   },
   "aboutStory": {
     "title": "Warum ist sie kostenlos?",

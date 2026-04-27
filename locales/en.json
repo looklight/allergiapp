@@ -171,7 +171,9 @@
     "saveDietaryError": "Unable to save dietary needs. Please try again."
   },
   "gallery": {
-    "reviewerNeeds": "Reviewer's dietary needs:"
+    "reviewerNeeds": "Reviewer's dietary needs:",
+    "readMore": "Read more",
+    "readLess": "Show less"
   },
   "restaurants": {
     "review": {

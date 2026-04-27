@@ -157,7 +157,9 @@
     "saveDietaryError": "Impossible d'enregistrer les besoins alimentaires. R\u00e9essayez."
   },
   "gallery": {
-    "reviewerNeeds": "Besoins de l'auteur de l'avis :"
+    "reviewerNeeds": "Besoins de l'auteur de l'avis :",
+    "readMore": "Lire la suite",
+    "readLess": "Voir moins"
   },
   "aboutStory": {
     "title": "Pourquoi est-elle gratuite ?",

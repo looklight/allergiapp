@@ -55,6 +55,8 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [textExpanded, setTextExpanded] = useState(false);
+  const [textTruncated, setTextTruncated] = useState(false);
 
   // ─── Swipe-to-dismiss (Reanimated) ──────────────────────────────
   const translateY = useSharedValue(0);
@@ -97,6 +99,8 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index != null) {
       setCurrentIndex(viewableItems[0].index);
+      setTextExpanded(false);
+      setTextTruncated(false);
     }
   }, []);
 
@@ -182,7 +186,30 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                 )}
               </View>
               {current.text && (
-                <Text style={styles.infoText} numberOfLines={2}>{current.text}</Text>
+                <TouchableOpacity
+                  activeOpacity={textTruncated || textExpanded ? 0.7 : 1}
+                  onPress={() => { if (textTruncated || textExpanded) setTextExpanded(e => !e); }}
+                >
+                  {/* Testo nascosto per misurare le righe reali senza il limite numberOfLines */}
+                  <Text
+                    style={[styles.infoText, styles.measureText]}
+                    onTextLayout={(e) => setTextTruncated(e.nativeEvent.lines.length > 2)}
+                  >
+                    {current.text}
+                  </Text>
+                  <Text
+                    style={styles.infoText}
+                    numberOfLines={textExpanded ? undefined : 2}
+                  >
+                    {current.text}
+                  </Text>
+                  {textTruncated && !textExpanded && (
+                    <Text style={styles.readMore}>{i18n.t('gallery.readMore')}</Text>
+                  )}
+                  {textExpanded && (
+                    <Text style={styles.readMore}>{i18n.t('gallery.readLess')}</Text>
+                  )}
+                </TouchableOpacity>
               )}
               {/* Reviewer dietary needs */}
               {((current.allergensSnapshot?.length ?? 0) + (current.dietarySnapshot?.length ?? 0)) > 0 && (
@@ -273,6 +300,16 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     lineHeight: 18,
+  },
+  measureText: {
+    position: 'absolute',
+    opacity: 0,
+    pointerEvents: 'none',
+  },
+  readMore: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    marginTop: 2,
   },
   needsLabel: {
     color: 'rgba(255,255,255,0.5)',
