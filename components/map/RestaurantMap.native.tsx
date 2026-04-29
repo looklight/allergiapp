@@ -342,6 +342,7 @@ export default function RestaurantMap({
       initialRegion={DEFAULT_REGION}
       showsUserLocation={!!hasUserLocation}
       showsMyLocationButton={false}
+      customMapStyle={Platform.OS === 'android' ? ANDROID_MAP_STYLE : undefined}
       showsCompass
       compassOffset={compassOffset}
       onMapReady={handleMapReady}
@@ -374,8 +375,12 @@ export default function RestaurantMap({
 }
 
 // ---------------------------------------------------------------------------
-// Styles
+// Styles & map config
 // ---------------------------------------------------------------------------
+
+const ANDROID_MAP_STYLE = [
+  { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+];
 
 const styles = StyleSheet.create({
   map: { ...StyleSheet.absoluteFillObject },
