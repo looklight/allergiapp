@@ -221,9 +221,9 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                       <MaterialCommunityIcons
                         name={!isCovered ? 'minus' : 'check'}
                         size={12}
-                        color={!isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.textSecondary : theme.colors.success)}
+                        color={!isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.amberDark : theme.colors.success)}
                       />
-                      <Text style={[styles.compatChipText, { color: !isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.textSecondary : theme.colors.success) }]}>
+                      <Text style={[styles.compatChipText, { color: !isCovered ? theme.colors.textDisabled : (inferSource ? theme.colors.amberDark : theme.colors.success) }]}>
                         {label}
                         {isCovered && sourceLabel ? i18n.t('restaurants.header.fromSource', { source: sourceLabel }) : ''}
                       </Text>
@@ -234,8 +234,10 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             );
 
             const isAllergenOrSensitivity = (code: string) => { const r = getRestrictionById(code); return !r || r.category === 'eu_allergen' || r.category === 'food_sensitivity'; };
-            const coveredAllergens = matchInfo.covered.filter(isAllergenOrSensitivity);
-            const coveredDietsIntol = matchInfo.covered.filter(c => !isAllergenOrSensitivity(c));
+            const isInferred = (code: string) => !!matchInfo.inferredSources?.[code];
+            const sortDirectFirst = (a: string, b: string) => (isInferred(a) ? 1 : 0) - (isInferred(b) ? 1 : 0);
+            const coveredAllergens = matchInfo.covered.filter(isAllergenOrSensitivity).sort(sortDirectFirst);
+            const coveredDietsIntol = matchInfo.covered.filter(c => !isAllergenOrSensitivity(c)).sort(sortDirectFirst);
             const uncoveredAllergens = matchInfo.uncovered.filter(isAllergenOrSensitivity);
             const uncoveredDietsIntol = matchInfo.uncovered.filter(c => !isAllergenOrSensitivity(c));
 
@@ -413,14 +415,18 @@ const styles = StyleSheet.create({
   },
   compatChipCovered: {
     backgroundColor: theme.colors.primaryLight,
+    borderWidth: 1,
+    borderColor: theme.colors.primaryContainer,
   },
   compatChipInferred: {
-    backgroundColor: theme.colors.inferredBg,
+    backgroundColor: theme.colors.amberLight,
     borderWidth: 1,
-    borderColor: theme.colors.inferredBorder,
+    borderColor: theme.colors.amberBorder,
   },
   compatChipUncovered: {
     backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   compatChipText: {
     fontSize: 12,
