@@ -16,6 +16,7 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [pendingCount, setPendingCount] = useState(0);
+  const [hasActiveAnnouncement, setHasActiveAnnouncement] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -24,6 +25,11 @@ export default function Sidebar() {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .then(({ count }) => setPendingCount(count ?? 0));
+    supabase
+      .from('announcements')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .then(({ count }) => setHasActiveAnnouncement((count ?? 0) > 0));
   }, [pathname]);
 
   useEffect(() => {
@@ -52,6 +58,9 @@ export default function Sidebar() {
               <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1.5">
                 {pendingCount}
               </span>
+            )}
+            {item.href === '/announcements' && hasActiveAnnouncement && (
+              <span className="w-2 h-2 rounded-full bg-green-400" />
             )}
           </Link>
         ))}
