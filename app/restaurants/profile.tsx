@@ -133,13 +133,13 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.menuItem}
+          style={[styles.menuItem, styles.menuItemLeaderboard]}
           onPress={() => router.push('/leaderboard')}
           activeOpacity={0.6}
         >
-          <MaterialCommunityIcons name="trophy-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuLeaderboard')}</Text>
-          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
+          <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.amberDark} />
+          <Text style={[styles.menuItemText, styles.menuItemLeaderboardText]}>{i18n.t('restaurants.profile.menuLeaderboard')}</Text>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.amberDark} />
         </TouchableOpacity>
       </ProfileCard>
     </>
@@ -208,5 +208,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.colors.textPrimary,
+  },
+  menuItemLeaderboard: {
+    backgroundColor: theme.colors.amberLight,
+    borderWidth: 1,
+    borderColor: theme.colors.amberBorder,
+  },
+  menuItemLeaderboardText: {
+    fontWeight: '600',
+    color: theme.colors.amberText,
   },
 });

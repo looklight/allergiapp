@@ -81,6 +81,11 @@ export default function DietaryNeedsPicker({
       <View style={styles.header}>
         <MaterialCommunityIcons name="shield-check-outline" size={20} color={theme.colors.primary} />
         <Text style={styles.title}>{i18n.t('restaurants.dietaryPicker.title')}</Text>
+        {expanded && (
+          <TouchableOpacity onPress={() => setExpanded(false)} hitSlop={8} activeOpacity={0.6}>
+            <MaterialCommunityIcons name="chevron-up" size={22} color={theme.colors.primary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={styles.description}>
@@ -98,7 +103,7 @@ export default function DietaryNeedsPicker({
             return (
               <View key={code} style={styles.chip}>
                 <Text style={styles.chipText}>
-                  {a ? `${a.icon ? a.icon + ' ' : ''}${a.translations[lang as keyof typeof a.translations] ?? a.translations.en}` : code}
+                  {a ? (a.translations[lang as keyof typeof a.translations] ?? a.translations.en) : code}
                 </Text>
               </View>
             );
@@ -196,18 +201,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   chip: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryContainer,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
   },
-  chipDiet: {
-    borderColor: theme.colors.secondaryContainer,
-  },
+  chipDiet: {},
   chipText: {
     fontSize: 13,
+    fontWeight: '500',
     color: theme.colors.textPrimary,
   },
   bottomLink: {

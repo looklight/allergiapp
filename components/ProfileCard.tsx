@@ -111,40 +111,40 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
             </View>
           </View>
 
-          {/* Profilo alimentare (allergeni + diete) */}
-          {((profile.allergens?.length ?? 0) > 0 || (profile.dietary_preferences?.length ?? 0) > 0) && (
-            <>
-              <View style={styles.divider} />
-              <View style={styles.dietaryHeaderRow}>
-                <Text style={styles.allergensLabel}>{i18n.t('restaurants.profileCard.dietaryProfile')}</Text>
-                {onEditDietary && (
-                  <TouchableOpacity
-                    onPress={onEditDietary}
-                    hitSlop={8}
-                    activeOpacity={0.6}
-                    style={styles.dietaryEditButton}
-                  >
-                    <MaterialCommunityIcons name="pencil-outline" size={14} color={theme.colors.primary} />
-                    <Text style={styles.dietaryEditButtonText}>{i18n.t('common.edit')}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={styles.allergensRow}>
-                {[...(profile.dietary_preferences ?? []), ...(profile.allergens ?? [])].map((id) => {
-                  const r = getRestrictionById(id);
-                  if (!r) return null;
-                  const lang = i18n.locale?.split('-')[0] as keyof typeof r.translations;
-                  const name = r.translations[lang] ?? r.translations.it ?? r.translations.en;
-                  return (
-                    <View key={id} style={styles.allergenBadge}>
-                      <Text style={styles.allergenBadgeText}>{name}</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </>
-          )}
         </Surface>
+
+        {/* Profilo alimentare (card separata) */}
+        {((profile.allergens?.length ?? 0) > 0 || (profile.dietary_preferences?.length ?? 0) > 0) && (
+          <Surface style={styles.dietaryCard} elevation={1}>
+            <View style={styles.dietaryHeaderRow}>
+              <Text style={styles.allergensLabel}>{i18n.t('restaurants.profileCard.dietaryProfile')}</Text>
+              {onEditDietary && (
+                <TouchableOpacity
+                  onPress={onEditDietary}
+                  hitSlop={8}
+                  activeOpacity={0.6}
+                  style={styles.dietaryEditButton}
+                >
+                  <MaterialCommunityIcons name="pencil-outline" size={14} color={theme.colors.textSecondary} />
+                  <Text style={styles.dietaryEditButtonText}>{i18n.t('common.edit')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.allergensRow}>
+              {[...(profile.dietary_preferences ?? []), ...(profile.allergens ?? [])].map((id) => {
+                const r = getRestrictionById(id);
+                if (!r) return null;
+                const lang = i18n.locale?.split('-')[0] as keyof typeof r.translations;
+                const name = r.translations[lang] ?? r.translations.it ?? r.translations.en;
+                return (
+                  <View key={id} style={styles.allergenBadge}>
+                    <Text style={styles.allergenBadgeText}>{name}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </Surface>
+        )}
 
         {children}
       </ScrollView>
@@ -234,6 +234,11 @@ const styles = StyleSheet.create({
     height: 28,
     backgroundColor: theme.colors.divider,
   },
+  dietaryCard: {
+    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+    padding: 20,
+  },
   allergensLabel: {
     fontSize: 13,
     fontWeight: '600',
@@ -268,11 +273,13 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 14,
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   dietaryEditButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.primary,
+    color: theme.colors.textSecondary,
   },
 });
