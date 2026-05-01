@@ -63,37 +63,6 @@ I pin nativi di Apple Maps / Google Maps (negozi, ristoranti, bar) danno fastidi
 
 ---
 
-### Scheda ristorante come bottom sheet (stile Google Maps)
-**Priorità: media** — da fare dopo il merge di `feature/restaurants-v2` in `main`
-
-Attualmente la scheda ristorante si apre come schermata separata. L'obiettivo è che si apra dal basso come Google Maps: la mappa rimane sempre visibile, tap su pin o card della lista fa emergere il dettaglio dal basso senza cambiare pagina.
-
-**Infrastruttura già pronta:**
-- `DraggableBottomSheet` già funzionante con snap points configurabili
-- `useRestaurantDetail` hook già separato dalla UI
-- `selectedId` state già in `restaurants.tsx`
-
-**Approccio:**
-1. Estrarre il contenuto di `app/restaurants/[id].tsx` in `components/restaurants/RestaurantDetailSheet.tsx` (riusa `useRestaurantDetail` che è già hook puro)
-2. In `app/(tabs)/restaurants.tsx` aggiungere `selectedDetailId` state; intercettare il `router.push` su tap card/callout e invece impostare questo state
-3. Mostrare `RestaurantDetailSheet` in un secondo `DraggableBottomSheet` sovrapposto, snap points `[0.55, 0.92]`
-4. Quando la detail sheet si apre, il list sheet si abbassa al punto minimo
-5. `app/restaurants/[id].tsx` resta per navigazioni dirette (preferiti, recensioni, profilo, deep link notifiche)
-
-**File coinvolti:**
-- `app/restaurants/[id].tsx` → estrarre UI in `components/restaurants/RestaurantDetailSheet.tsx`
-- `app/(tabs)/restaurants.tsx` → gestire `selectedDetailId` + seconda sheet + coordinamento snap
-- `components/RestaurantMap.native.tsx` → il callout `onPress` intercettato invece di `router.push`
-- `components/DraggableBottomSheet.tsx` → nessuna modifica prevista
-
-**Rischi e punti di attenzione:**
-- **Gesture conflict tra due sheet sovrapposti** — due `PanResponder` annidati: verificare che lo swipe sul detail sheet non attivi il list sheet sottostante
-- **Modal annidati** — la detail sheet contiene `PhotoGalleryModal` e altri modal; testare che si comportino correttamente dentro uno sheet
-- **Azioni secondarie** — "Aggiungi recensione", "Segnala", "Modifica" navigano a pagine separate: dal sheet possono fare `router.push` normalmente (e il sheet si chiude), oppure diventare modal inline (da decidere)
-- **Android back button** — con lo sheet, il tasto back deve chiudere il detail sheet (non navigare indietro); gestire con `BackHandler`
-
----
-
 ## Feature da completare
 
 ### Galleria avatar ("Pokedex")
@@ -142,8 +111,8 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 
 ### Admin dashboard
 - [x] Migrata da Firebase a Supabase (mar 2026)
+- [x] Deploy su Vercel — live su https://admin.allergiapp.com (branch `admin-prod`)
 - [ ] Gestione claim ristoranti
-- [ ] Deploy su Vercel
 
 ---
 
@@ -196,6 +165,21 @@ Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compr
 - [ ] Ottimizzare FlatList: `removeClippedSubviews`, `maxToRenderPerBatch`, `React.memo` sugli item
 - [ ] Spezzare componenti grossi: `RestaurantDetailBody` (619 righe), `RestaurantMap` (411), `card.tsx` (473)
 
+### Scalabilità — analisi 2026-04-28
+Analisi completa fatta su `feature/restaurants-v2`. L'app non è pronta per migliaia di utenti / ristoranti / recensioni in questa forma. Problemi e fix ordinati per priorità:
+
+**Critici (bloccherebbero con 1000+ utenti)**
+- [ ] **Materialized view per stats ristorante** — `get_restaurants_for_my_needs` aggrega review con subquery O(N×M): 500 ristoranti × 100k review = 50M row scan per chiamata. Fix: colonne `review_count`, `avg_rating`, `favorite_count` pre-calcolate su `restaurants` aggiornate da trigger su insert/delete review. Medio effort (~mezza giornata), massimo impatto. (`get_restaurant_stats` per singolo ristorante già ottimizzato in migration 039.)
+- [ ] **Rate limiting sulle RPC** — nessun limite attuale. 1000 utenti che fanno pan della mappa = ~2000 RPC/sec → DOS garantito. Fix minimo: throttle lato client più aggressivo (attuale debounce 800ms non basta); fix completo: middleware Supabase Edge Function o pg_net rate limit per IP.
+
+**Alti (degradano l'UX con dati reali)**
+- [ ] **FlatList per reviews in `ReviewsSection`** — usa `.map()`, nessuna virtualizzazione. Con 50+ review accumulate lo scroll perde frame. Fix: sostituire con `FlatList` + `removeClippedSubviews={true}` + `windowSize={5}`. Effort basso (~2-3h).
+- [ ] **Filtrare `allPins` al viewport corrente prima del render** — oggi `allPins` accumula pin di tutte le aree visitate (cap 3000). Un cap fisso (`slice`) peggiorerebbe l'UX (pin spariscono tornando su aree già visitate). Fix corretto: passare solo i pin nel bounding box corrente, come fanno Google Maps/Yelp. Da fare quando il DB avrà abbastanza ristoranti da rendere il problema reale.
+
+**Medi (ottimizzazioni)**
+- [ ] **`reviewPhotos` useMemo deps** — array di 100+ foto ricalcolato ad ogni sort change / like toggle / loadMore. Restringere le dipendenze. `ReviewsSection.tsx`. Effort minimo.
+- [ ] **Pre-compute `allergen_match_count`** — sort `relevance` esegue `INTERSECT` array per ogni review paginata (30 INTERSECT/pagina). Aggiungere colonna calcolata o fare insieme alla materialized view. Effort medio, da fare in coppia col punto 1.
+
 ---
 
 ## Debito tecnico
@@ -229,7 +213,7 @@ Verificato 2026-04-26 durante refactor i18n ristoranti. Il campo `reviews.langua
 - Scopi distinti, non da unificare. `pregnancy` esiste solo in card, `vegan` solo in DietId.
 
 ### Google Places API — dati gratuiti non ancora sfruttati
-- [ ] **Confrontare `primaryType` con le cucine dell'app** — Google restituisce già la categoria del locale (es. `italian_restaurant`, `sushi_restaurant`) nel campo `primaryType` (Basic Data, già pagato). Mapparlo sulle `cuisine_types` esistenti per pre-compilare il campo durante l'inserimento. Richiede una tabella di mapping `googleType → CuisineId`.
+- [x] **Mappare `primaryType` sulle cucine dell'app** — `GOOGLE_TYPE_TO_CUISINE` implementato in `services/placesService.ts`, `primaryType` incluso nella `FieldMask`.
 - [ ] **Decidere quali altri campi Basic Data includere** — campi gratuiti/già pagati non ancora richiesti: `types` (array di categorie), `photos` (riferimenti foto), `plusCode`, `viewport`. Da valutare se e quali portare nella `FieldMask` e nel DB.
 
 

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 type Options = {
@@ -73,6 +73,10 @@ export function useImagePicker(options: Options = {}) {
 
   const showPickerAlert = useCallback(() => {
     if (remaining <= 0) return;
+    if (Platform.OS === 'web') {
+      pickFromGallery();
+      return;
+    }
     Alert.alert('Aggiungi foto', undefined, [
       { text: 'Galleria', onPress: pickFromGallery },
       { text: 'Fotocamera', onPress: takePhoto },

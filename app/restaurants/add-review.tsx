@@ -255,7 +255,7 @@ export default function AddReviewScreen() {
             ))}
             {remaining > 0 && (
               <TouchableOpacity style={[styles.photoAddBtn, { width: photoSize, height: photoSize }]} onPress={handleAddPhoto} activeOpacity={0.6}>
-                <MaterialCommunityIcons name="camera-plus-outline" size={24} color={theme.colors.primary} />
+                <MaterialCommunityIcons name={Platform.OS === 'web' ? 'image-plus' : 'camera-plus-outline'} size={24} color={theme.colors.primary} />
                 <Text style={styles.photoAddText}>{i18n.t('restaurants.review.photoLabel')}</Text>
               </TouchableOpacity>
             )}
