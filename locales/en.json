@@ -538,6 +538,7 @@
       },
       "conditions": {
         "free": "Free avatar",
+        "secret": "Secret mission",
         "reviews": "Write {{count}} reviews",
         "restaurants": "Add {{count}} restaurants",
         "likes": "Your reviews must receive {{count}} likes from users",

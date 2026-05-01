@@ -538,6 +538,7 @@
       },
       "conditions": {
         "free": "Avatar gratuito",
+        "secret": "Missione segreta",
         "reviews": "Scrivi {{count}} recensioni",
         "restaurants": "Aggiungi {{count}} ristoranti",
         "likes": "Le tue recensioni devono ricevere {{count}} like dagli utenti",

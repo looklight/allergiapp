@@ -50,6 +50,7 @@ function restrictionPeopleLabel(restrictionId: string): string {
 function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
   switch (avatar.unlock.type) {
     case 'free':
+    case 'secret':
       return '';
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: avatar.unlock.count });
@@ -78,6 +79,7 @@ function getQuestHint(avatar: AvatarOption): string | null {
     case 'likes_received':
     case 'unique_likers_received':
       return i18n.t('restaurants.avatarGallery.questHint.likes');
+    case 'secret':
     default:
       return null;
   }
@@ -88,6 +90,8 @@ function formatConditionLabel(avatar: AvatarOption): string {
   switch (avatar.unlock.type) {
     case 'free':
       return i18n.t('restaurants.avatarGallery.conditions.free');
+    case 'secret':
+      return i18n.t('restaurants.avatarGallery.conditions.secret');
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.conditions.reviews', { count: avatar.unlock.count });
     case 'restaurants':
@@ -166,7 +170,7 @@ export default function AvatarGalleryScreen() {
 
   const renderProgressLabel = (avatar: AvatarOption) => {
     const { unlock } = avatar;
-    if (unlock.type === 'free') return null;
+    if (unlock.type === 'free' || unlock.type === 'secret') return null;
     if (unlock.type === 'reviews') {
       return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: unlock.count });
     }

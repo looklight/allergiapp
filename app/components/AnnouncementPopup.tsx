@@ -32,7 +32,7 @@ export default function AnnouncementPopup() {
     setImageHeight(160);
     setPopup(announcement);
     setVisible(true);
-    Analytics.logBannerViewed(announcement.id, 'info', announcement.title);
+    Analytics.logBannerViewed(announcement.id, 'info', resolveText(announcement.title, getAppLanguage()));
     trackAnnouncementView(announcement.id);
   };
 
@@ -44,7 +44,7 @@ export default function AnnouncementPopup() {
 
   const handleButton = async () => {
     if (!popup) return;
-    Analytics.logBannerClicked(popup.id, 'info', popup.title, popup.button_url ?? undefined);
+    Analytics.logBannerClicked(popup.id, 'info', resolveText(popup.title, getAppLanguage()), popup.button_url ?? undefined);
     if (popup.button_action === 'share' || popup.button_action === 'url') {
       trackAnnouncementClick(popup.id);
     }

@@ -2,6 +2,7 @@ import { ImageSourcePropType } from 'react-native';
 
 export type UnlockCondition =
   | { type: 'free' }
+  | { type: 'secret' }
   | { type: 'reviews'; count: number }
   | { type: 'restaurants'; count: number }
   | { type: 'likes_received'; count: number }
@@ -60,7 +61,7 @@ export interface AvatarOption {
  *  - Inasprire le condizioni di unlock è sicuro: gli utenti che hanno già sbloccato
  *    mantengono lo sblocco grazie a `profiles.unlocked_avatars` (sblocco "grandfathered").
  */
-// Ordine: free → esplorazione geo → cinture (like a restrizioni) → like ricevuti (asc).
+// Ordine: free → esplorazione geo → cinture (like a restrizioni) → like ricevuti (asc) → segreti.
 export const AVATARS: AvatarOption[] = [
   // ── Free ──────────────────────────────────────────────
   {
@@ -144,6 +145,32 @@ export const AVATARS: AvatarOption[] = [
     name: 'Prince',
     unlock: { type: 'unique_likers_received', count: 14 },
   },
+
+  // ── Missioni segrete (nessuna condizione pubblica) ────
+  {
+    id: 'plate_mario',
+    source: require('../assets/avatars/plate_mario.png'),
+    name: 'Mario',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_lela',
+    source: require('../assets/avatars/plate_lela.png'),
+    name: 'Lela',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_anakin',
+    source: require('../assets/avatars/plate_anakin.png'),
+    name: 'Anakin',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_kurom',
+    source: require('../assets/avatars/plate_kurom.png'),
+    name: 'Kurom',
+    unlock: { type: 'secret' },
+  },
 ];
 
 export function getAvatarById(id: string): AvatarOption | undefined {
@@ -167,6 +194,8 @@ export function isAvatarUnlocked(
   switch (avatar.unlock.type) {
     case 'free':
       return true;
+    case 'secret':
+      return false;
     case 'reviews':
       return stats.reviews >= avatar.unlock.count;
     case 'restaurants':
@@ -209,6 +238,8 @@ export function getUnlockProgress(
   switch (avatar.unlock.type) {
     case 'free':
       return 1;
+    case 'secret':
+      return 0;
     case 'reviews':
       return Math.min(stats.reviews / avatar.unlock.count, 1);
     case 'restaurants':
