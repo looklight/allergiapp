@@ -171,6 +171,18 @@ export const AVATARS: AvatarOption[] = [
     name: 'Skull',
     unlock: { type: 'secret' },
   },
+  {
+    id: 'plate_squid',
+    source: require('../assets/avatars/plate_squid.png'),
+    name: 'Ink',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_raven',
+    source: require('../assets/avatars/plate_raven.png'),
+    name: 'Raven',
+    unlock: { type: 'secret' },
+  },
 ];
 
 export function getAvatarById(id: string): AvatarOption | undefined {
