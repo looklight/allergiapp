@@ -150,25 +150,25 @@ export const AVATARS: AvatarOption[] = [
   {
     id: 'plate_mario',
     source: require('../assets/avatars/plate_mario.png'),
-    name: 'Mario',
+    name: 'Plumber',
     unlock: { type: 'secret' },
   },
   {
     id: 'plate_lela',
     source: require('../assets/avatars/plate_lela.png'),
-    name: 'Lela',
+    name: 'Purple',
     unlock: { type: 'secret' },
   },
   {
     id: 'plate_anakin',
     source: require('../assets/avatars/plate_anakin.png'),
-    name: 'Anakin',
+    name: 'Apprentice',
     unlock: { type: 'secret' },
   },
   {
     id: 'plate_kurom',
     source: require('../assets/avatars/plate_kurom.png'),
-    name: 'Kurom',
+    name: 'Punk',
     unlock: { type: 'secret' },
   },
 ];
