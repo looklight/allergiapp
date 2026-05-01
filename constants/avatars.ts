@@ -168,7 +168,7 @@ export const AVATARS: AvatarOption[] = [
   {
     id: 'plate_kurom',
     source: require('../assets/avatars/plate_kurom.png'),
-    name: 'Punk',
+    name: 'Skull',
     unlock: { type: 'secret' },
   },
 ];
