@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
@@ -76,7 +76,7 @@ export default function DietaryNeedsPicker({
     }
   };
 
-  const renderNeedsPills = (containerStyle?: object) =>
+  const renderNeedsPills = (containerStyle?: StyleProp<ViewStyle>) =>
     hasNeeds ? (
       <View style={[styles.chips, containerStyle]}>
         {allergens.map(code => {
