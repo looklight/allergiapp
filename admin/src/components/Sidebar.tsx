@@ -10,7 +10,6 @@ const navItems = [
   { href: '/restaurants', label: 'Ristoranti' },
   { href: '/users', label: 'Utenti' },
   { href: '/reports', label: 'Segnalazioni' },
-  { href: '/announcements', label: 'Annunci' },
 ];
 
 export default function Sidebar() {
