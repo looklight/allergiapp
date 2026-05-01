@@ -76,6 +76,32 @@ export default function DietaryNeedsPicker({
     }
   };
 
+  const renderNeedsPills = (containerStyle?: object) =>
+    hasNeeds ? (
+      <View style={[styles.chips, containerStyle]}>
+        {allergens.map(code => {
+          const a = getRestrictionById(code);
+          return (
+            <View key={code} style={styles.chip}>
+              <Text style={styles.chipText}>
+                {a ? (a.translations[lang as keyof typeof a.translations] ?? a.translations.en) : code}
+              </Text>
+            </View>
+          );
+        })}
+        {diets.map(code => {
+          const d = getRestrictionById(code);
+          return (
+            <View key={code} style={[styles.chip, styles.chipDiet]}>
+              <Text style={styles.chipText}>
+                {d ? (d.translations[lang as keyof typeof d.translations] ?? d.translations.en) : code}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    ) : null;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -96,30 +122,7 @@ export default function DietaryNeedsPicker({
       </Text>
 
       {/* Chip riepilogo (quando collassato) */}
-      {!expanded && hasNeeds && (
-        <View style={styles.chips}>
-          {allergens.map(code => {
-            const a = getRestrictionById(code);
-            return (
-              <View key={code} style={styles.chip}>
-                <Text style={styles.chipText}>
-                  {a ? (a.translations[lang as keyof typeof a.translations] ?? a.translations.en) : code}
-                </Text>
-              </View>
-            );
-          })}
-          {diets.map(code => {
-            const d = getRestrictionById(code);
-            return (
-              <View key={code} style={[styles.chip, styles.chipDiet]}>
-                <Text style={styles.chipText}>
-                  {d ? (d.translations[lang as keyof typeof d.translations] ?? d.translations.en) : code}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      )}
+      {!expanded && renderNeedsPills()}
 
       {/* Link Modifica/Aggiungi */}
       {!expanded && (
@@ -131,6 +134,8 @@ export default function DietaryNeedsPicker({
       {/* Editor espanso */}
       {expanded && (
         <View style={styles.editor}>
+          {/* Riepilogo selezioni correnti */}
+          {renderNeedsPills(styles.chipsExpanded)}
           {needsDifferFromProfile && (
             <View style={styles.syncCard}>
               <Text style={styles.syncText}>{i18n.t('restaurants.dietaryPicker.syncTitle')}</Text>
@@ -199,6 +204,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     marginTop: 2,
+  },
+  chipsExpanded: {
+    marginBottom: 6,
   },
   chip: {
     backgroundColor: '#FFFFFF',
