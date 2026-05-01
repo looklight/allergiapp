@@ -1,33 +1,39 @@
 import { useState, useEffect } from 'react';
-import { View, Modal, StyleSheet, Image, Linking, Dimensions, Pressable } from 'react-native';
+import { View, Modal, StyleSheet, Image, Linking, Share, Dimensions, Pressable } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { theme } from '../../constants/theme';
-import { RemoteConfig, PopupConfig } from '../../services/remoteConfig';
+import { fetchActiveAnnouncement, trackAnnouncementView, trackAnnouncementClick, resolveText, Announcement } from '../../services/announcements';
 import { storage } from '../../utils/storage';
 import { Analytics } from '../../services/analytics';
+import { getAppLanguage } from '../../utils/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const POPUP_WIDTH = Math.min(SCREEN_WIDTH * 0.85, 380);
+const IMAGE_WIDTH = POPUP_WIDTH - 48; // content padding 24 su ogni lato
+const MAX_IMAGE_HEIGHT = 220;
 
 export default function AnnouncementPopup() {
-  const [popup, setPopup] = useState<PopupConfig | null>(null);
+  const [popup, setPopup] = useState<Announcement | null>(null);
   const [visible, setVisible] = useState(false);
+  const [imageHeight, setImageHeight] = useState(160);
 
   useEffect(() => {
-    // Delay check to ensure Remote Config has fetched after app init
     const timer = setTimeout(checkPopup, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   const checkPopup = async () => {
-    const config = RemoteConfig.getPopup();
-    if (!config) return;
+    const announcement = await fetchActiveAnnouncement();
+    if (!announcement) return;
 
     const dismissed = await storage.getDismissedPopups();
-    if (dismissed.includes(config.id)) return;
+    if (dismissed.includes(announcement.id)) return;
 
-    setPopup(config);
+    setImageHeight(160);
+    setPopup(announcement);
     setVisible(true);
-    Analytics.logBannerViewed(config.id, 'info', config.title);
+    Analytics.logBannerViewed(announcement.id, 'info', announcement.title);
+    trackAnnouncementView(announcement.id);
   };
 
   const handleDismiss = async () => {
@@ -38,19 +44,34 @@ export default function AnnouncementPopup() {
 
   const handleButton = async () => {
     if (!popup) return;
-    Analytics.logBannerClicked(popup.id, 'info', popup.title, popup.buttonUrl);
-    if (popup.buttonUrl) {
-      try {
-        await Linking.openURL(popup.buttonUrl);
-      } catch {
-        // Invalid URL, ignore
-      }
+    Analytics.logBannerClicked(popup.id, 'info', popup.title, popup.button_url ?? undefined);
+    if (popup.button_action === 'share' || popup.button_action === 'url') {
+      trackAnnouncementClick(popup.id);
     }
+
+    if (popup.button_action === 'share') {
+      try {
+        const message = shareText ?? title;
+        const url = popup.button_url ?? null;
+        await Share.share(url ? { message: `${message}\n${url}` } : { message });
+      } catch {}
+    } else if (popup.button_action === 'url' && popup.button_url) {
+      try {
+        await Linking.openURL(popup.button_url);
+      } catch {}
+    }
+
     await storage.dismissPopup(popup.id);
     setVisible(false);
   };
 
   if (!popup) return null;
+
+  const lang = getAppLanguage();
+  const title = resolveText(popup.title, lang);
+  const body = resolveText(popup.body, lang);
+  const buttonLabel = popup.button_label ? resolveText(popup.button_label, lang) : null;
+  const shareText = popup.share_text ? resolveText(popup.share_text, lang) : null;
 
   return (
     <Modal
@@ -62,44 +83,44 @@ export default function AnnouncementPopup() {
     >
       <Pressable style={styles.overlay} onPress={handleDismiss}>
         <Pressable style={styles.container} onPress={() => {}}>
-          {/* Accent bar */}
           <View style={styles.accentBar} />
-
-          <View style={styles.content}>
-            {/* Image */}
-            {popup.imageUrl && (
-              <Image
-                source={{ uri: popup.imageUrl }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            )}
-
-            {/* Title */}
-            <Text style={styles.title}>{popup.title}</Text>
-
-            {/* Message */}
-            <Text style={styles.message}>{popup.message}</Text>
-
-            {/* Buttons */}
+          <Pressable style={styles.closeButton} onPress={handleDismiss} hitSlop={8}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </Pressable>
+          {popup.image_url && (
+            <Image
+              source={{ uri: popup.image_url }}
+              style={[styles.image, { height: imageHeight }]}
+              resizeMode="contain"
+              onLoad={e => {
+                const { width, height } = e.nativeEvent.source;
+                if (width && height) {
+                  setImageHeight(Math.min(POPUP_WIDTH * (height / width), MAX_IMAGE_HEIGHT));
+                }
+              }}
+            />
+          )}
+          <View style={[styles.content, popup.image_url && styles.contentWithImage]}>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.message}>{body}</Text>
             <View style={styles.buttons}>
-              {popup.buttonText && (
+              {buttonLabel && (
                 <Button
                   mode="contained"
                   onPress={handleButton}
                   style={styles.primaryButton}
                   labelStyle={styles.primaryButtonLabel}
                 >
-                  {popup.buttonText}
+                  {buttonLabel}
                 </Button>
               )}
               <Button
-                mode={popup.buttonText ? 'text' : 'contained'}
+                mode={buttonLabel ? 'text' : 'contained'}
                 onPress={handleDismiss}
-                style={popup.buttonText ? styles.dismissButton : styles.primaryButton}
-                labelStyle={popup.buttonText ? styles.dismissButtonLabel : styles.primaryButtonLabel}
+                style={buttonLabel ? styles.dismissButton : styles.primaryButton}
+                labelStyle={buttonLabel ? styles.dismissButtonLabel : styles.primaryButtonLabel}
               >
-                {popup.dismissText}
+                OK
               </Button>
             </View>
           </View>
@@ -132,15 +153,25 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: theme.colors.primary,
   },
+  image: {
+    width: '100%',
+  },
   content: {
     padding: 24,
     alignItems: 'center',
   },
-  image: {
-    width: '100%',
-    height: 160,
-    borderRadius: 12,
-    marginBottom: 20,
+  contentWithImage: {
+    paddingTop: 16,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 14,
+    zIndex: 1,
+  },
+  closeIcon: {
+    fontSize: 22,
+    color: theme.colors.textSecondary,
   },
   title: {
     fontSize: 20,

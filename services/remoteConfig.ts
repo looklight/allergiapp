@@ -30,15 +30,6 @@ const DEFAULT_CONFIG = {
   banner_layout: 'default', // 'default' = icon + text, 'full_image' = image fills entire banner
   banner_background_color: '', // e.g., "#FF6B6B" - empty uses default
   banner_text_color: '',       // e.g., "#FFFFFF" - empty uses default
-  // Popup configuration
-  popup_enabled: false,
-  popup_id: '',
-  popup_title: '',
-  popup_message: '',
-  popup_image_url: '',
-  popup_button_text: '',
-  popup_button_url: '',
-  popup_dismiss_text: '',
 };
 
 try {
@@ -161,41 +152,6 @@ function getPromoBanner(): BannerItem | null {
   };
 }
 
-export interface PopupConfig {
-  id: string;
-  title: string;
-  message: string;
-  imageUrl?: string;
-  buttonText?: string;
-  buttonUrl?: string;
-  dismissText: string;
-}
-
-/**
- * Get the popup configuration from Remote Config
- * Returns null if popup is disabled or not configured
- */
-function getPopup(): PopupConfig | null {
-  const enabled = getBoolean('popup_enabled');
-  if (!enabled) return null;
-
-  const id = getString('popup_id');
-  const title = getString('popup_title');
-  const message = getString('popup_message');
-
-  if (!id || !title || !message) return null;
-
-  return {
-    id,
-    title,
-    message,
-    imageUrl: getString('popup_image_url') || undefined,
-    buttonText: getString('popup_button_text') || undefined,
-    buttonUrl: getString('popup_button_url') || undefined,
-    dismissText: getString('popup_dismiss_text') || 'OK',
-  };
-}
-
 /**
  * Force refresh configuration from server
  */
@@ -219,7 +175,6 @@ export const RemoteConfig = {
   getString,
   getBoolean,
   getPromoBanner,
-  getPopup,
   refresh,
   isAvailable: () => isRemoteConfigAvailable,
 };
