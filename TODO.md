@@ -184,6 +184,15 @@ Analisi completa fatta su `feature/restaurants-v2`. L'app non è pronta per migl
 
 ## Debito tecnico
 
+### Separare la dashboard admin in repository indipendente
+**Priorità: bassa — non urgente**
+
+Attualmente `admin/` vive dentro il repo `allergiapp/` ed è presente su tutti i branch. Questo causa confusione: versioni diverse dell'admin su branch diversi, rischio di sovrascritture durante i merge, ambiguità su quale sia la versione "vera". Per ora la regola operativa è: **modifiche admin solo su `admin-prod`**.
+
+Soluzione a lungo termine: spostare `admin/` in un repo separato con il proprio deploy Vercel. App e admin non condividono codice direttamente (client Supabase separati, nessun tipo condiviso rilevante).
+
+---
+
 ### `reviews.language` non aggiornato su edit — fix differito
 **Priorità: bassa — da rivalutare quando si implementerà la traduzione recensioni**
 
