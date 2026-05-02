@@ -190,18 +190,15 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                   activeOpacity={textTruncated || textExpanded ? 0.7 : 1}
                   onPress={() => { if (textTruncated || textExpanded) setTextExpanded(e => !e); }}
                 >
-                  {/* Testo nascosto per misurare le righe reali senza il limite numberOfLines */}
-                  <View style={styles.measureWrapper} pointerEvents="none">
-                    <Text
-                      style={styles.infoText}
-                      onTextLayout={(e) => setTextTruncated(e.nativeEvent.lines.length > 2)}
-                    >
-                      {current.text}
-                    </Text>
-                  </View>
                   <Text
                     style={styles.infoText}
                     numberOfLines={textExpanded ? undefined : 2}
+                    onTextLayout={(e) => {
+                      if (!textExpanded) {
+                        const rendered = e.nativeEvent.lines.reduce((sum, l) => sum + l.text.length, 0);
+                        setTextTruncated(rendered < (current.text?.length ?? 0));
+                      }
+                    }}
                   >
                     {current.text}
                   </Text>
@@ -302,10 +299,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     lineHeight: 18,
-  },
-  measureWrapper: {
-    height: 0,
-    overflow: 'hidden',
   },
   readMore: {
     color: 'rgba(255,255,255,0.5)',
