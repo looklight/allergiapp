@@ -57,8 +57,13 @@ export default function AnnouncementPopup() {
       } catch {}
     } else if (popup.button_action === 'url' && popup.button_url) {
       try {
-        await Linking.openURL(popup.button_url);
-      } catch {}
+        const url = popup.button_url.match(/^https?:\/\//)
+          ? popup.button_url
+          : `https://${popup.button_url}`;
+        await Linking.openURL(url);
+      } catch (e) {
+        console.error('AnnouncementPopup: failed to open URL', e);
+      }
     }
 
     await storage.dismissPopup(popup.id);
