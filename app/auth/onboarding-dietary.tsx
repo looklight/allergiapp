@@ -46,7 +46,11 @@ export default function OnboardingDietaryScreen() {
     if (!user) return;
     setSaving(true);
     try {
-      await AuthService.updateDietaryNeeds(user.uid, { allergens, diets });
+      await AuthService.updateDietaryNeeds(
+        user.uid,
+        { allergens, diets },
+        healthConsent ? new Date().toISOString() : undefined,
+      );
       await AuthService.completeOnboarding(user.uid);
       await refreshProfile();
       router.replace('/auth/onboarding-tutorial');

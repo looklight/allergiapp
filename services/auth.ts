@@ -156,14 +156,17 @@ async function deleteAccount(userId: string): Promise<void> {
   await supabase.auth.signOut();
 }
 
-async function updateDietaryNeeds(userId: string, dietaryNeeds: { allergens: string[]; diets: string[] }): Promise<void> {
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      allergens: dietaryNeeds.allergens,
-      dietary_preferences: dietaryNeeds.diets,
-    })
-    .eq('id', userId);
+async function updateDietaryNeeds(
+  userId: string,
+  dietaryNeeds: { allergens: string[]; diets: string[] },
+  consentAt?: string,
+): Promise<void> {
+  const update: Record<string, unknown> = {
+    allergens: dietaryNeeds.allergens,
+    dietary_preferences: dietaryNeeds.diets,
+  };
+  if (consentAt) update.health_consent_at = consentAt;
+  const { error } = await supabase.from('profiles').update(update).eq('id', userId);
   if (error) throw error;
 }
 
