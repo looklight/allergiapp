@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import {
   Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView,
   useWindowDimensions, type ViewToken,
@@ -57,6 +57,12 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const [isZoomed, setIsZoomed] = useState(false);
   const [textExpanded, setTextExpanded] = useState(false);
   const [textTruncated, setTextTruncated] = useState(false);
+  const [measureKey, setMeasureKey] = useState(0);
+
+  // Re-trigger measurement after mount: inside a Modal the native layout
+  // is not ready on the first JS render, so onTextLayout fires with wrong
+  // dimensions. useEffect runs after the native layer has committed layout.
+  useEffect(() => { setMeasureKey(k => k + 1); }, []);
 
   // ─── Swipe-to-dismiss (Reanimated) ──────────────────────────────
   const translateY = useSharedValue(0);
@@ -191,6 +197,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                   onPress={() => { if (textTruncated || textExpanded) setTextExpanded(e => !e); }}
                 >
                   <View
+                    key={measureKey}
                     style={[styles.measureWrapper, { width: width - 40 }]}
                     pointerEvents="none"
                   >
