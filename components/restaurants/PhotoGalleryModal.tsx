@@ -305,6 +305,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     opacity: 0,
     pointerEvents: 'none',
+    left: 0,
+    right: 0,
   },
   readMore: {
     color: 'rgba(255,255,255,0.5)',
