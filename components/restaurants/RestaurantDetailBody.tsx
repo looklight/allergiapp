@@ -349,12 +349,7 @@ export default function RestaurantDetailBody({
               onManage={() => router.push(`/restaurants/menu-photos?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant.name)}`)}
             />
           </View>
-        ) : (
-          <LoginGateCta
-            title={i18n.t('restaurants.detail.loginGatePhotosTitle')}
-            subtitle={i18n.t('restaurants.detail.loginGatePhotosSubtitle')}
-          />
-        )}
+        ) : null}
 
         {isAuthenticated && (
           <>

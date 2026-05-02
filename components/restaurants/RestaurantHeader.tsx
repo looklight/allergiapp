@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native
 import * as Clipboard from 'expo-clipboard';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
 import { getRestrictionById } from '../../constants/foodRestrictions';
@@ -45,8 +44,6 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   const isFull = !isNoReviews && matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
   const badgeBg = isNoReviews ? theme.colors.background : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
   const badgeColor = isNoReviews ? theme.colors.textSecondary : (isFull ? theme.colors.success : theme.colors.amberDark);
-  const router = useRouter();
-
   useEffect(() => {
     setCompatExpanded(false);
   }, [matchInfo]);
@@ -143,19 +140,6 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
         </View>
       )}
 
-      {!isAuthenticated && (restaurant.review_count ?? 0) > 0 && (
-        <TouchableOpacity
-          onPress={() => router.push('/auth/login')}
-          activeOpacity={0.7}
-          style={[styles.compatContainer, styles.compatRow]}
-        >
-          <MaterialCommunityIcons name="shield-check-outline" size={15} color={theme.colors.textSecondary} />
-          <Text style={[styles.compatText, { color: theme.colors.textSecondary, fontWeight: '400' }]}>
-            {i18n.t('restaurants.header.compatLogin')}
-          </Text>
-          <MaterialCommunityIcons name="lock-outline" size={15} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-      )}
 
       {isAuthenticated && hasUserNeeds && matchInfo && (
         <View style={[
