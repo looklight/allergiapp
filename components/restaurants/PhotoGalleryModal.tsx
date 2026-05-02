@@ -304,10 +304,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   measureWrapper: {
-    position: 'absolute',
-    opacity: 0,
-    left: 0,
-    right: 0,
+    height: 0,
+    overflow: 'hidden',
   },
   readMore: {
     color: 'rgba(255,255,255,0.5)',
