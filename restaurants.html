@@ -6,6 +6,7 @@
 
     <title>Ristoranti — AllergiApp</title>
     <meta name="description" content="Trova ristoranti sicuri grazie alle recensioni di persone con le tue stesse allergie. Non algoritmi: esperienze reali da una community che capisce davvero.">
+    <meta name="keywords" content="ristoranti allergie, trovare ristorante sicuro, allergie alimentari ristorante, recensioni allergie, app ristoranti allergie, mangiare fuori con allergie, ristoranti celiachia, ristoranti lattosio">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://allergiapp.com/restaurants">
 
@@ -22,9 +23,13 @@
     <meta property="og:title" content="Ristoranti — AllergiApp">
     <meta property="og:description" content="Trova ristoranti sicuri grazie alle recensioni di persone con le tue stesse allergie.">
     <meta property="og:image" content="https://allergiapp.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="AllergiApp">
+    <meta property="og:locale" content="it_IT">
 
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://allergiapp.com/restaurants">
     <meta name="twitter:title" content="Ristoranti — AllergiApp">
     <meta name="twitter:description" content="Trova ristoranti sicuri grazie alle recensioni di persone con le tue stesse allergie.">
     <meta name="twitter:image" content="https://allergiapp.com/images/og-image.jpg">
@@ -35,17 +40,40 @@
 
         /* Hero */
         .rest-hero {
-            padding: 100px 24px 56px;
+            padding-bottom: 56px;
             background: linear-gradient(160deg, #f0faf1 0%, #ffffff 60%);
             text-align: center;
         }
 
-        .rest-hero-plate {
+        .hero-map-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            border-radius: 0 0 24px 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(76,175,80,0.12), 0 2px 8px rgba(0,0,0,0.06);
+            animation: heroPop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .hero-map {
             display: block;
-            width: 96px;
+            width: 100%;
             height: auto;
-            margin: 0 auto 20px;
-            animation: heroPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+            padding-top: 60px; /* nav clearance */
+        }
+
+        .hero-map-plate {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: auto;
+        }
+
+        .rest-hero-text {
+            padding: 0 24px;
         }
 
         .rest-badge {
@@ -154,43 +182,100 @@
             padding: 0 24px 56px;
         }
 
+        .cycle-intro-label {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+
         .rest-cycle-inner {
             max-width: 860px;
             margin: 0 auto;
             background: #fff;
             border: 1.5px solid #A5D6A7;
             border-radius: 16px;
-            padding: 36px 40px;
+            padding: 28px 28px;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             gap: 0;
         }
 
         .cycle-half {
             flex: 1;
-            text-align: center;
-            padding: 0 24px;
+            background: #F7FBF7;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .cycle-half-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
         .cycle-half-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+            font-size: 20px;
+            line-height: 1;
         }
 
         .cycle-half-label {
             font-size: 13px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.07em;
             color: var(--primary-dark);
-            margin-bottom: 8px;
         }
 
         .cycle-half p {
             font-size: 14px;
             line-height: 1.6;
             color: var(--text-secondary);
-            margin: 0;
+            margin: 0 0 16px;
+        }
+
+        .cycle-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .cycle-flow-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cycle-flow-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #C8E6C9;
+            color: var(--primary-dark);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .cycle-flow-step {
+            font-size: 13px;
+            color: var(--text);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .cycle-flow-line {
+            width: 1.5px;
+            height: 10px;
+            background: #C8E6C9;
+            margin-left: 9px;
         }
 
         .cycle-connector {
@@ -198,6 +283,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             color: var(--primary);
             font-size: 22px;
@@ -387,15 +473,34 @@
         }
 
         .mock-card-chevron {
-            font-size: 13px;
-            color: var(--text-secondary);
-            transition: transform 0.25s ease;
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
             margin-left: 4px;
+            position: relative;
         }
 
-        .mock-restaurant-card.expanded .mock-card-chevron {
-            transform: rotate(180deg);
+        .mock-card-chevron::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid #BDBDBD;
+            border-bottom: 2px solid #BDBDBD;
+            transform: translate(-50%, -65%) rotate(45deg);
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                        border-color 0.2s ease;
+        }
+
+        .mock-restaurant-card:hover .mock-card-chevron::before {
+            border-color: var(--primary-dark);
+        }
+
+        .mock-restaurant-card.expanded .mock-card-chevron::before {
+            transform: translate(-50%, -35%) rotate(-135deg);
+            border-color: var(--primary-dark);
         }
 
         .mock-card-detail {
@@ -586,11 +691,22 @@
         /* Mobile */
         @media (max-width: 800px) {
             .rest-hero {
-                padding: 80px 20px 44px;
+                padding-bottom: 40px;
             }
 
-            .rest-hero-plate {
-                width: 76px;
+            .hero-map-wrap {
+                max-width: none;
+                border-radius: 0;
+                box-shadow: none;
+                margin-bottom: 32px;
+            }
+
+            .hero-map {
+                padding-top: 56px;
+            }
+
+            .hero-map-plate {
+                width: 88px;
             }
 
             .rest-section {
@@ -619,13 +735,14 @@
 
             .rest-cycle-inner {
                 flex-direction: column;
-                gap: 24px;
-                padding: 28px 20px;
+                gap: 12px;
+                padding: 20px 16px;
             }
 
             .cycle-connector {
                 flex-direction: row;
                 gap: 6px;
+                padding: 4px 0;
             }
 
             .cycle-connector-line {
@@ -639,11 +756,12 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/" class="logo">
-                <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav">
+                <img src="images/happyplate.webp" alt="AllergiApp" class="logo-icon logo-nav">
                 <span class="logo-text">AllergiApp</span>
             </a>
             <div class="nav-links">
                 <a href="/#story" data-i18n="nav.features">Funzionalità</a>
+                <a href="/#how-it-works" data-i18n="nav.howItWorks">Come funziona</a>
                 <a href="contacts" class="nav-about" data-i18n="nav.aboutUs">Il progetto</a>
                 <a href="download" class="cta-button" data-i18n="nav.download">Scarica</a>
             </div>
@@ -652,8 +770,11 @@
 
     <!-- Hero -->
     <section class="rest-hero">
-        <div class="container">
-            <img src="images/happyplate.png" alt="AllergiApp" class="rest-hero-plate">
+        <div class="hero-map-wrap">
+            <img src="images/world_map.svg" class="hero-map" alt="" aria-hidden="true">
+            <img src="images/happyplate.webp" class="hero-map-plate" alt="AllergiApp">
+        </div>
+        <div class="container rest-hero-text">
             <div class="rest-badge">
                 <span>🍽️</span>
                 <span data-i18n="restaurants.badge">Nuova funzione</span>
@@ -663,7 +784,7 @@
                 <span class="gradient-text" data-i18n="restaurants.heroTitle2">senza pensieri.</span>
             </h1>
             <p class="rest-hero-subtitle" data-i18n="restaurants.introText" data-i18n-html>
-                Con la sezione <span class="gradient-text" style="font-size:inherit;">Ristoranti</span> puoi cercare locali in tutto il mondo o vicino a te, e vedere quanto possono essere compatibili con le tue esigenze alimentari.
+                Con la sezione <span class="gradient-text">Ristoranti</span> puoi cercare locali in tutto il mondo o vicino a te, e vedere quanto possono essere compatibili con le tue esigenze alimentari.
             </p>
         </div>
     </section>
@@ -689,7 +810,7 @@
                     <p class="mock-review-text" data-i18n="restaurants.mockReviewText">"Staff gentilissimo e comprensivo, hanno capito subito le mie esigenze e mi hanno proposto pure un dolce rivisitato senza glutine e senza lattosio."</p>
                     <div class="mock-chips-row">
                         <span class="mock-chip">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
-                        <span class="mock-chip">🥛 Latte e Latticini</span>
+                        <span class="mock-chip">🥛 <span data-i18n="allergens.dairy">Latticini</span></span>
                     </div>
                 </div>
             </div>
@@ -709,9 +830,9 @@
                     <div class="mock-filter-bar">
                         <span class="mock-filter-label">Le tue esigenze</span>
                         <div class="mock-filter-chips">
-                            <span class="mock-filter-chip">🌾 Glutine</span>
-                            <span class="mock-filter-chip">🥛 Latte e Latticini</span>
-                            <span class="mock-filter-chip">🥚 Uova</span>
+                            <span class="mock-filter-chip">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
+                            <span class="mock-filter-chip">🥛 <span data-i18n="allergens.dairy">Latticini</span></span>
+                            <span class="mock-filter-chip">🥚 <span data-i18n="allergens.eggs">Uova</span></span>
                         </div>
                     </div>
                     <div class="mock-restaurant-card highlighted anim-ready">
@@ -722,14 +843,14 @@
                                 <div class="mock-rest-meta">450m · ★ 4.5</div>
                             </div>
                             <div class="mock-badge match-full">3/3</div>
-                            <span class="mock-card-chevron">▾</span>
+                            <span class="mock-card-chevron"></span>
                         </div>
                         <div class="mock-card-detail">
                             <div>
                                 <div class="mock-card-detail-inner">
-                                    <span class="mock-need-pill covered">🌾 Glutine</span>
-                                    <span class="mock-need-pill covered">🥛 Latte e Latticini</span>
-                                    <span class="mock-need-pill covered">🥚 Uova</span>
+                                    <span class="mock-need-pill covered">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
+                                    <span class="mock-need-pill covered">🥛 <span data-i18n="allergens.dairy">Latticini</span></span>
+                                    <span class="mock-need-pill covered">🥚 <span data-i18n="allergens.eggs">Uova</span></span>
                                     <span class="mock-card-detail-note">8 recensioni da utenti con le tue stesse esigenze</span>
                                 </div>
                             </div>
@@ -743,14 +864,14 @@
                                 <div class="mock-rest-meta">800m · ★ 4.2</div>
                             </div>
                             <div class="mock-badge match-partial">2/3</div>
-                            <span class="mock-card-chevron">▾</span>
+                            <span class="mock-card-chevron"></span>
                         </div>
                         <div class="mock-card-detail">
                             <div>
                                 <div class="mock-card-detail-inner">
-                                    <span class="mock-need-pill covered">🌾 Glutine</span>
-                                    <span class="mock-need-pill covered">🥛 Latte e Latticini</span>
-                                    <span class="mock-need-pill missing">🥚 Uova</span>
+                                    <span class="mock-need-pill covered">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
+                                    <span class="mock-need-pill covered">🥛 <span data-i18n="allergens.dairy">Latticini</span></span>
+                                    <span class="mock-need-pill missing">🥚 <span data-i18n="allergens.eggs">Uova</span></span>
                                     <span class="mock-card-detail-note">5 recensioni da utenti con le tue stesse esigenze</span>
                                 </div>
                             </div>
@@ -764,14 +885,14 @@
                                 <div class="mock-rest-meta">1.2km · ★ 4.7</div>
                             </div>
                             <div class="mock-badge match-partial">1/3</div>
-                            <span class="mock-card-chevron">▾</span>
+                            <span class="mock-card-chevron"></span>
                         </div>
                         <div class="mock-card-detail">
                             <div>
                                 <div class="mock-card-detail-inner">
-                                    <span class="mock-need-pill covered">🌾 Glutine</span>
-                                    <span class="mock-need-pill missing">🥛 Latte e Latticini</span>
-                                    <span class="mock-need-pill missing">🥚 Uova</span>
+                                    <span class="mock-need-pill covered">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
+                                    <span class="mock-need-pill missing">🥛 <span data-i18n="allergens.dairy">Latticini</span></span>
+                                    <span class="mock-need-pill missing">🥚 <span data-i18n="allergens.eggs">Uova</span></span>
                                     <span class="mock-card-detail-note">2 recensioni da utenti con le tue stesse esigenze</span>
                                 </div>
                             </div>
@@ -798,7 +919,7 @@
                             <div class="mock-user-name">Marco</div>
                             <div class="mock-chips-row">
                                 <span class="mock-chip">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
-                                <span class="mock-chip">🥛 Latte e Latticini</span>
+                                <span class="mock-chip">🥛 <span data-i18n="allergens.dairy">Latticini</span></span>
                             </div>
                         </div>
                     </div>
@@ -829,11 +950,32 @@
 
     <!-- Cycle callout -->
     <section class="rest-cycle">
+        <div style="max-width:860px;margin:0 auto;padding:0 28px;">
+            <p class="cycle-intro-label" data-i18n="restaurants.inBreve">In breve</p>
+        </div>
         <div class="rest-cycle-inner">
             <div class="cycle-half anim-ready">
-                <div class="cycle-half-icon">✍️</div>
-                <div class="cycle-half-label" data-i18n="restaurants.cycleGiveLabel">Tu condividi</div>
-                <p data-i18n="restaurants.cycleGiveText">La tua recensione aiuta chi ha le tue stesse esigenze a trovare dove mangiare</p>
+                <div class="cycle-half-header">
+                    <span class="cycle-half-icon">✍️</span>
+                    <span class="cycle-half-label" data-i18n="restaurants.cycleGiveLabel">Tu condividi</span>
+                </div>
+                <p data-i18n="restaurants.cycleGiveText">Le tue recensioni aiutano chi ha le tue stesse esigenze a trovare dove mangiare</p>
+                <div class="cycle-flow">
+                    <div class="cycle-flow-item">
+                        <span class="cycle-flow-num">1</span>
+                        <span class="cycle-flow-step" data-i18n="restaurants.cycleGiveStep1">visiti un ristorante</span>
+                    </div>
+                    <div class="cycle-flow-line"></div>
+                    <div class="cycle-flow-item">
+                        <span class="cycle-flow-num">2</span>
+                        <span class="cycle-flow-step" data-i18n="restaurants.cycleGiveStep2">scrivi una recensione</span>
+                    </div>
+                    <div class="cycle-flow-line"></div>
+                    <div class="cycle-flow-item">
+                        <span class="cycle-flow-num">3</span>
+                        <span class="cycle-flow-step" data-i18n="restaurants.cycleGiveStep3">aiuti persone come te</span>
+                    </div>
+                </div>
             </div>
             <div class="cycle-connector">
                 <div class="cycle-connector-line"></div>
@@ -841,9 +983,27 @@
                 <div class="cycle-connector-line"></div>
             </div>
             <div class="cycle-half anim-ready anim-d1">
-                <div class="cycle-half-icon">🔍</div>
-                <div class="cycle-half-label" data-i18n="restaurants.cycleReceiveLabel">Tu scopri</div>
+                <div class="cycle-half-header">
+                    <span class="cycle-half-icon">🔍</span>
+                    <span class="cycle-half-label" data-i18n="restaurants.cycleReceiveLabel">Tu scopri</span>
+                </div>
                 <p data-i18n="restaurants.cycleReceiveText">Le recensioni degli altri ti aiutano a trovare i ristoranti più adatti a te</p>
+                <div class="cycle-flow">
+                    <div class="cycle-flow-item">
+                        <span class="cycle-flow-num">1</span>
+                        <span class="cycle-flow-step" data-i18n="restaurants.cycleReceiveStep1">cerchi un ristorante</span>
+                    </div>
+                    <div class="cycle-flow-line"></div>
+                    <div class="cycle-flow-item">
+                        <span class="cycle-flow-num">2</span>
+                        <span class="cycle-flow-step" data-i18n="restaurants.cycleReceiveStep2">filtri in base alle tue esigenze</span>
+                    </div>
+                    <div class="cycle-flow-line"></div>
+                    <div class="cycle-flow-item">
+                        <span class="cycle-flow-num">3</span>
+                        <span class="cycle-flow-step" data-i18n="restaurants.cycleReceiveStep3">trovi dove poter mangiare in modo sicuro</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -851,17 +1011,17 @@
     <!-- Final CTA -->
     <section class="rest-final-cta">
         <div class="container">
-            <img src="images/happy_plate_forks.png" alt="AllergiApp Ristoranti" class="rest-final-cta-plate">
+            <img src="images/happy_plate_forks.webp" alt="AllergiApp Ristoranti" class="rest-final-cta-plate">
             <h2 class="rest-final-cta-title" data-i18n="restaurants.ctaTitle">Entra a far parte della community che ti aiuta a trovare i ristoranti più adatti a te.</h2>
-            <p class="rest-final-cta-sub" data-i18n="restaurants.ctaSubtitle">AllergiApp è gratuita e lo sarà sempre. Perché mangiare fuori senza pensieri dovrebbe essere un diritto per tutti.</p>
-            <a href="download" class="button primary button-large" data-i18n="nav.download">Scarica</a>
+            <p class="rest-final-cta-sub" data-i18n="restaurants.ctaSubtitle">AllergiApp è gratuita e lo sarà per sempre e ora ti può aiutare a trovare ristoranti in tutto il mondo, in modo semplice.</p>
+            <a href="download" class="button primary button-large" data-i18n="restaurants.downloadCta">Scarica Gratis</a>
         </div>
     </section>
 
     <!-- Download CTA -->
     <section class="download">
         <div class="container">
-            <img src="images/logo_app.png" alt="Scarica AllergiApp" class="download-icon" loading="lazy">
+            <img src="images/logo_app.webp" alt="Scarica AllergiApp" class="download-icon" loading="lazy">
             <h2 class="section-title" data-i18n="downloadSection.title">Scarica AllergiApp</h2>
             <p class="section-subtitle" data-i18n="downloadSection.subtitleBreak" data-i18n-html>Disponibile gratuitamente<br>su App Store e Google Play</p>
             <div class="download-buttons">
@@ -892,7 +1052,7 @@
         <div class="container">
             <div class="footer-simple">
                 <a href="/" class="logo">
-                    <img src="images/happyplate.png" alt="AllergiApp" class="logo-icon logo-nav" loading="lazy">
+                    <img src="images/happyplate.webp" alt="AllergiApp" class="logo-icon logo-nav" loading="lazy">
                     <span class="logo-text">AllergiApp</span>
                 </a>
                 <p class="footer-tagline" data-i18n="footer.tagline">Viaggia sicuro, comunica ovunque.</p>
@@ -926,6 +1086,15 @@
             document.querySelectorAll('.anim-ready').forEach(function(el) {
                 restObserver.observe(el);
             });
+
+            const firstCard = document.querySelector('.mock-restaurant-card');
+            const autoOpenObserver = new IntersectionObserver(function(entries) {
+                if (entries[0].isIntersecting) {
+                    firstCard.classList.add('expanded');
+                    autoOpenObserver.disconnect();
+                }
+            }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
+            autoOpenObserver.observe(firstCard);
 
             document.querySelectorAll('.mock-restaurant-card').forEach(function(card) {
                 card.addEventListener('click', function() {
