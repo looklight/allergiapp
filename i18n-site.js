@@ -100,6 +100,8 @@ function applyTranslations(lang) {
     // Se l'elemento ha data-i18n-attr, traduci l'attributo specificato
     if (element.dataset.i18nAttr) {
       element.setAttribute(element.dataset.i18nAttr, translation);
+    } else if (element.dataset.i18nHtml !== undefined) {
+      element.innerHTML = translation;
     } else {
       element.textContent = translation;
     }

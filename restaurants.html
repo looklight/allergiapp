@@ -166,30 +166,49 @@
             gap: 0;
         }
 
-        .cycle-step {
+        .cycle-half {
             flex: 1;
             text-align: center;
-            padding: 0 12px;
+            padding: 0 24px;
         }
 
-        .cycle-icon {
-            font-size: 28px;
-            margin-bottom: 10px;
+        .cycle-half-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
         }
 
-        .cycle-step p {
+        .cycle-half-label {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .cycle-half p {
             font-size: 14px;
-            line-height: 1.5;
-            color: var(--text);
-            font-weight: 500;
+            line-height: 1.6;
+            color: var(--text-secondary);
             margin: 0;
         }
 
-        .cycle-arrow {
-            font-size: 20px;
-            color: var(--primary);
-            font-weight: 700;
+        .cycle-connector {
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 8px;
+        }
+
+        .cycle-connector-line {
+            width: 1.5px;
+            height: 32px;
+            background: #A5D6A7;
         }
 
         /* Mock UI: allergen chips */
@@ -483,12 +502,18 @@
 
             .rest-cycle-inner {
                 flex-direction: column;
-                gap: 16px;
+                gap: 24px;
                 padding: 28px 20px;
             }
 
-            .cycle-arrow {
-                transform: rotate(90deg);
+            .cycle-connector {
+                flex-direction: row;
+                gap: 6px;
+            }
+
+            .cycle-connector-line {
+                width: 32px;
+                height: 1.5px;
             }
         }
     </style>
@@ -520,64 +545,19 @@
                 <span data-i18n="restaurants.heroTitle1">Mangia fuori,</span><br>
                 <span class="gradient-text" data-i18n="restaurants.heroTitle2">senza pensieri.</span>
             </h1>
-            <p class="rest-hero-subtitle" data-i18n="restaurants.introText">
-                Con la sezione Ristoranti puoi cercare locali vicino a te, vedere quanto sono compatibili con le tue allergie e leggere le recensioni di chi ci ha mangiato con le tue stesse esigenze.
+            <p class="rest-hero-subtitle" data-i18n="restaurants.introText" data-i18n-html>
+                Con la sezione <span class="gradient-text" style="font-size:inherit;">Ristoranti</span> puoi cercare locali in tutto il mondo o vicino a te, e vedere quanto possono essere compatibili con le tue esigenze alimentari.
             </p>
         </div>
     </section>
 
-    <!-- Section 1: Community -->
+    <!-- Section 1: Reviews that matter -->
     <section class="rest-section">
         <div class="rest-section-inner">
             <div class="rest-section-text">
-                <span class="rest-tag" data-i18n="restaurants.sec1Tag">Community</span>
-                <h2 class="rest-section-title" data-i18n="restaurants.sec1Title">Una community di persone come te</h2>
-                <p data-i18n="restaurants.sec1Text">La community fa funzionare tutto. Le esperienze segnalate sono il motore dell'app.</p>
-            </div>
-            <div class="rest-section-visual">
-                <div class="mock-users">
-                    <div class="mock-user-card anim-ready">
-                        <div class="mock-avatar" style="background: #E57373;">M</div>
-                        <div class="mock-user-info">
-                            <div class="mock-user-name">Marco</div>
-                            <div class="mock-chips-row">
-                                <span class="mock-chip">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
-                                <span class="mock-chip">🥛 Latte e Latticini</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mock-user-card anim-ready anim-d1">
-                        <div class="mock-avatar" style="background: #64B5F6;">G</div>
-                        <div class="mock-user-info">
-                            <div class="mock-user-name">Giulia</div>
-                            <div class="mock-chips-row">
-                                <span class="mock-chip">🌱 Dieta vegana</span>
-                                <span class="mock-chip">🥜 <span data-i18n="allergens.peanuts">Arachidi</span></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mock-user-card anim-ready anim-d2">
-                        <div class="mock-avatar" style="background: #81C784;">A</div>
-                        <div class="mock-user-info">
-                            <div class="mock-user-name">Anna</div>
-                            <div class="mock-chips-row">
-                                <span class="mock-chip">🥚 <span data-i18n="allergens.eggs">Uova</span></span>
-                                <span class="mock-chip">🐟 <span data-i18n="allergens.fish">Pesce</span></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Section 2: Reviews that matter -->
-    <section class="rest-section rest-section-alt">
-        <div class="rest-section-inner reverse">
-            <div class="rest-section-text">
                 <span class="rest-tag" data-i18n="restaurants.sec2Tag">Recensioni</span>
                 <h2 class="rest-section-title" data-i18n="restaurants.sec2Title">Recensioni che contano davvero</h2>
-                <p data-i18n="restaurants.sec2Text">Una recensione da 5 stelle scritta da chi non ha allergie non ti dice nulla. Ogni recensione porta con sé le esigenze di chi l'ha scritta — così sai subito se è davvero rilevante per te.</p>
+                <p data-i18n="restaurants.sec2Text">Quando leggi una recensione, vedi anche le esigenze di chi l'ha scritta. Così sai subito se quel ristorante può soddisfare le tue necessità.</p>
             </div>
             <div class="rest-section-visual">
                 <div class="mock-review-card anim-ready">
@@ -602,19 +582,65 @@
     <!-- Cycle callout -->
     <section class="rest-cycle">
         <div class="rest-cycle-inner">
-            <div class="cycle-step anim-ready">
-                <div class="cycle-icon">✍️</div>
-                <p data-i18n="restaurants.cycleStep1">Recensisci un ristorante</p>
+            <div class="cycle-half anim-ready">
+                <div class="cycle-half-icon">✍️</div>
+                <div class="cycle-half-label" data-i18n="restaurants.cycleGiveLabel">Tu condividi</div>
+                <p data-i18n="restaurants.cycleGiveText">La tua recensione aiuta chi ha le tue stesse esigenze a trovare dove mangiare</p>
             </div>
-            <div class="cycle-arrow">→</div>
-            <div class="cycle-step anim-ready anim-d1">
-                <div class="cycle-icon">👥</div>
-                <p data-i18n="restaurants.cycleStep2">La community guadagna un'esperienza reale</p>
+            <div class="cycle-connector">
+                <div class="cycle-connector-line"></div>
+                ⇄
+                <div class="cycle-connector-line"></div>
             </div>
-            <div class="cycle-arrow">→</div>
-            <div class="cycle-step anim-ready anim-d2">
-                <div class="cycle-icon">🎯</div>
-                <p data-i18n="restaurants.cycleStep3">Chi viene dopo di te trova dove mangiare sicuro</p>
+            <div class="cycle-half anim-ready anim-d1">
+                <div class="cycle-half-icon">🔍</div>
+                <div class="cycle-half-label" data-i18n="restaurants.cycleReceiveLabel">Tu scopri</div>
+                <p data-i18n="restaurants.cycleReceiveText">Le recensioni degli altri ti aiutano a trovare i ristoranti più adatti a te</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Community -->
+    <section class="rest-section rest-section-alt">
+        <div class="rest-section-inner reverse">
+            <div class="rest-section-text">
+                <span class="rest-tag" data-i18n="restaurants.sec1Tag">Community</span>
+                <h2 class="rest-section-title" data-i18n="restaurants.sec1Title">Una community di persone come te</h2>
+                <p data-i18n="restaurants.sec1Text">La community fa funzionare tutto. Le esperienze segnalate sono il motore dell'app. Puoi scegliere se condividere la tua esperienza o rimanere anonimo.</p>
+            </div>
+            <div class="rest-section-visual">
+                <div class="mock-users">
+                    <div class="mock-user-card anim-ready">
+                        <div class="mock-avatar" style="background: #E57373;">M</div>
+                        <div class="mock-user-info">
+                            <div class="mock-user-name">Marco</div>
+                            <div class="mock-chips-row">
+                                <span class="mock-chip">🌾 <span data-i18n="allergens.gluten">Glutine</span></span>
+                                <span class="mock-chip">🥛 Latte e Latticini</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mock-user-card anim-ready anim-d1">
+                        <div class="mock-avatar" style="background: #64B5F6;">G</div>
+                        <div class="mock-user-info">
+                            <div class="mock-user-name">Giulia</div>
+                            <div class="mock-chips-row">
+                                <span class="mock-chip">🌱 Dieta vegana</span>
+                                <span class="mock-chip">🥜 <span data-i18n="allergens.peanuts">Arachidi</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mock-user-card anim-ready anim-d2">
+                        <div class="mock-avatar" style="background: #81C784;">?</div>
+                        <div class="mock-user-info">
+                            <div class="mock-user-name" data-i18n="restaurants.anonymousUser">Utente Anonimo</div>
+                            <div class="mock-chips-row">
+                                <span class="mock-chip">🥚 <span data-i18n="allergens.eggs">Uova</span></span>
+                                <span class="mock-chip">🐟 <span data-i18n="allergens.fish">Pesce</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
