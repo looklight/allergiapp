@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import {
   Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView,
   useWindowDimensions, type ViewToken,
@@ -57,12 +57,6 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const [isZoomed, setIsZoomed] = useState(false);
   const [textExpanded, setTextExpanded] = useState(false);
   const [textTruncated, setTextTruncated] = useState(false);
-  const [measureKey, setMeasureKey] = useState(0);
-
-  // Re-trigger measurement after mount: inside a Modal the native layout
-  // is not ready on the first JS render, so onTextLayout fires with wrong
-  // dimensions. useEffect runs after the native layer has committed layout.
-  useEffect(() => { setMeasureKey(k => k + 1); }, []);
 
   // ─── Swipe-to-dismiss (Reanimated) ──────────────────────────────
   const translateY = useSharedValue(0);
@@ -196,18 +190,13 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                   activeOpacity={textTruncated || textExpanded ? 0.7 : 1}
                   onPress={() => { if (textTruncated || textExpanded) setTextExpanded(e => !e); }}
                 >
-                  <View
-                    key={measureKey}
-                    style={[styles.measureWrapper, { width: width - 40 }]}
-                    pointerEvents="none"
+                  {/* Testo nascosto per misurare le righe reali senza il limite numberOfLines */}
+                  <Text
+                    style={[styles.infoText, styles.measureText]}
+                    onTextLayout={(e) => setTextTruncated(e.nativeEvent.lines.length > 2)}
                   >
-                    <Text
-                      style={styles.infoText}
-                      onTextLayout={(e) => setTextTruncated(e.nativeEvent.lines.length > 2)}
-                    >
-                      {current.text}
-                    </Text>
-                  </View>
+                    {current.text}
+                  </Text>
                   <Text
                     style={styles.infoText}
                     numberOfLines={textExpanded ? undefined : 2}
@@ -312,10 +301,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  measureWrapper: {
+  measureText: {
     position: 'absolute',
     opacity: 0,
-    top: 0,
+    pointerEvents: 'none',
   },
   readMore: {
     color: 'rgba(255,255,255,0.5)',
