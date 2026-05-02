@@ -99,6 +99,7 @@
     "downloadSection": {
       "title": "Scarica AllergiApp",
       "subtitle": "Disponibile gratuitamente su App Store e Google Play",
+      "subtitleBreak": "Disponibile gratuitamente<br>su App Store e Google Play",
       "backToTop": "Torna su"
     },
     "footer": {
@@ -411,6 +412,7 @@
     "downloadSection": {
       "title": "Download AllergiApp",
       "subtitle": "Available for free on App Store and Google Play",
+      "subtitleBreak": "Available for free<br>on App Store and Google Play",
       "backToTop": "Back to top"
     },
     "footer": {
