@@ -184,6 +184,25 @@ Analisi completa fatta su `feature/restaurants-v2`. L'app non è pronta per migl
 
 ## Debito tecnico
 
+### `PhotoGalleryModal` — pulsante "Leggi tutto" non appare al primo render
+**Priorità: bassa — workaround parziale già presente (funziona dopo swipe)**
+
+Il meccanismo di rilevamento troncatura testo usa un `Text` nascosto (`measureText`, `position: absolute, opacity: 0`) senza `numberOfLines` per misurare le righe reali via `onTextLayout`. La logica è corretta e funziona dopo uno swipe avanti/indietro tra foto.
+
+**Problema**: al primo render dentro la `Modal` animata (Reanimated + GestureDetector), il layout nativo non è ancora stabilizzato quando `onTextLayout` si triggera, quindi la misurazione restituisce valori errati e `textTruncated` rimane `false`. Il pulsante "Leggi tutto" non compare finché un re-render successivo (es. swipe) non forza una nuova misurazione a layout stabilizzato.
+
+**Tentativi già fatti e falliti** (maggio 2026):
+- `left: 0, right: 0` sul View di misura → stessa radice
+- `height: 0, overflow: hidden` → `onTextLayout` potrebbe non triggerare
+- `onTextLayout` sul testo visibile con conta caratteri → `numberOfLines` restituisce tutte le righe in alcune versioni RN
+- `useEffect + key` per forzare remount post-mount → non ha risolto
+
+**Debug necessario**: aggiungere `console.log` nell'`onTextLayout` per vedere quante righe e con quale larghezza viene misurato al primo render vs. dopo lo swipe. Richiede dev build sul dispositivo.
+
+**File**: `components/restaurants/PhotoGalleryModal.tsx` — funzione `onTextLayout` alla riga ~196
+
+---
+
 ### Separare la dashboard admin in repository indipendente
 **Priorità: bassa — non urgente**
 
