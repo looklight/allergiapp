@@ -156,8 +156,8 @@
     },
     "restaurants": {
       "badge": "Nuova funzione",
-      "heroTitle1": "Mangia fuori,",
-      "heroTitle2": "senza pensieri.",
+      "heroTitle1": "Trova ristoranti",
+      "heroTitle2": "adatti a te.",
       "heroSubtitle": "Ogni esperienza condivisa rende l'app più utile per tutti. Più siamo, più è facile trovare dove mangiare sicuro.",
       "introText": "Con la sezione <span class=\"gradient-text\">Ristoranti</span> puoi cercare locali in tutto il mondo o vicino a te, e vedere quanto possono essere compatibili con le tue esigenze alimentari.",
       "sec1Tag": "Community",
@@ -477,8 +477,8 @@
     },
     "restaurants": {
       "badge": "New feature",
-      "heroTitle1": "Eat out,",
-      "heroTitle2": "without worry.",
+      "heroTitle1": "Find restaurants,",
+      "heroTitle2": "just for you.",
       "heroSubtitle": "Every shared experience makes the app more useful for everyone. The more of us there are, the easier it is to find safe places to eat.",
       "heroCta": "Download for free",
       "introText": "The <span class=\"gradient-text\">Restaurants</span> section lets you search for places anywhere in the world or near you, and see how compatible they might be with your dietary needs.",
