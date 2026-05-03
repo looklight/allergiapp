@@ -54,7 +54,6 @@
             border-radius: 24px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(76,175,80,0.12), 0 2px 8px rgba(0,0,0,0.06);
-            animation: heroPop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
         .hero-map {
@@ -83,19 +82,19 @@
             align-items: flex-start;
             gap: 10px;
             margin-bottom: 24px;
-            filter: drop-shadow(0 2px 8px rgba(76,175,80,0.18));
         }
 
         .badge-plate {
             height: 80px;
             width: auto;
+            flex-shrink: 0;
+            will-change: transform;
         }
 
         .hero-map-overlay .rest-hero-title {
             font-size: clamp(36px, 6vw, 64px);
             text-shadow: 0 1px 4px rgba(255,255,255,0.8);
             margin-bottom: 0;
-            animation: heroSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
         }
 
         .hero-map-overlay .gradient-text {
@@ -114,6 +113,7 @@
             position: relative;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             background: var(--primary-light);
             color: var(--primary-dark);
@@ -121,7 +121,12 @@
             font-weight: 600;
             padding: 6px 14px;
             border-radius: 100px 100px 100px 0;
-            animation: heroPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+            min-width: 160px;
+            /* Initial state explicit in CSS — no reliance on animation fill-mode backwards */
+            opacity: 0;
+            transform: scale(0.9);
+            transform-origin: bottom left;
+            animation: heroPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
         }
 
         .rest-badge::before {
@@ -141,7 +146,6 @@
             line-height: 1.1;
             color: var(--text);
             margin-bottom: 20px;
-            animation: heroSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
         }
 
         .rest-hero-subtitle {
@@ -150,7 +154,6 @@
             max-width: 580px;
             margin: 0 auto;
             line-height: 1.7;
-            animation: heroSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
         }
 
         @keyframes heroPop {
@@ -823,9 +826,9 @@
         </div>
         <div class="container rest-hero-text">
             <div class="rest-badge-wrap">
-                <img src="images/happy_plate_forks.webp" class="badge-plate" alt="">
+                <img src="images/happy_plate_forks.webp" class="badge-plate" width="80" height="80" alt="">
                 <div class="rest-badge">
-                    <span data-i18n="restaurants.badge">Nuova funzione</span>
+                    <span data-i18n="restaurants.badge">Scarica la app!</span>
                 </div>
             </div>
             <p class="rest-hero-subtitle" data-i18n="restaurants.introText" data-i18n-html>
