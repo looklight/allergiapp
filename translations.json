@@ -155,7 +155,7 @@
       "faq3Answer": "L'app include già diverse lingue di default e molte altre scaricabili per l'uso offline. Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla."
     },
     "restaurants": {
-      "badge": "Scarica la app!",
+      "badge": "Come funziona?",
       "heroTitle1": "Trova ristoranti",
       "heroTitle2": "adatti a te.",
       "heroSubtitle": "Ogni esperienza condivisa rende l'app più utile per tutti. Più siamo, più è facile trovare dove mangiare sicuro.",
@@ -186,7 +186,17 @@
       "downloadCta": "Scarica Gratis",
       "downloadTitle": "Disponibile su AllergiApp",
       "downloadSubtitle": "Gratuita, su App Store e Google Play",
-      "inBreve": "In breve"
+      "inBreve": "In breve",
+      "hiwLabel": "Come funziona",
+      "hiw1Title": "Cerchi un ristorante",
+      "hiw1Text": "Imposti le tue esigenze alimentari e cerchi nei dintorni o in qualsiasi città del mondo.",
+      "hiw2Title": "Su AllergiApp trovi",
+      "hiw2Text": "Una mappa con ristoranti già recensiti da persone con le tue stesse esigenze, ovunque nel mondo.",
+      "hiw3Title": "Lascia una recensione",
+      "hiw3Text": "Se condividi anche la tua esperienza, aiuterai tutta la community.",
+      "narr1": "Immagina: sei a Milano con un'allergia al glutine. Come sai se quel ristorante è davvero sicuro per te?",
+      "narr2": "Filtri per le tue esigenze e vedi subito quanti ristoranti vicino a te le coprono già.",
+      "narr3": "Lascia una recensione!"
     },
     "faq": {
       "title": "Domande Frequenti",
@@ -476,7 +486,7 @@
       "faq3Answer": "The app already includes several default languages and many more that can be downloaded for offline use. If you need a specific language that isn't available yet, write to me and I'll do my best to add it."
     },
     "restaurants": {
-      "badge": "Download the app!",
+      "badge": "How does it work?",
       "heroTitle1": "Find restaurants,",
       "heroTitle2": "just for you.",
       "heroSubtitle": "Every shared experience makes the app more useful for everyone. The more of us there are, the easier it is to find safe places to eat.",
@@ -508,7 +518,17 @@
       "downloadCta": "Download Free",
       "downloadTitle": "Available on AllergiApp",
       "downloadSubtitle": "Free, on App Store and Google Play",
-      "inBreve": "In brief"
+      "inBreve": "In brief",
+      "hiwLabel": "How it works",
+      "hiw1Title": "You search for a restaurant",
+      "hiw1Text": "Set your dietary needs and search for restaurants nearby or in any city worldwide.",
+      "hiw2Title": "On AllergiApp you find",
+      "hiw2Text": "A map with restaurants already reviewed by people with your same dietary needs, anywhere in the world.",
+      "hiw3Title": "Leave a review",
+      "hiw3Text": "Share your experience and help the whole community find safe places to eat.",
+      "narr1": "Imagine you're in Milan with a gluten allergy. How do you know if that restaurant is really safe for you?",
+      "narr2": "Filter by your needs and instantly see which nearby restaurants already cover them.",
+      "narr3": "Leave a review!"
     },
     "faq": {
       "title": "Frequently Asked Questions",

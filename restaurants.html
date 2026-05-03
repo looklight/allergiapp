@@ -35,767 +35,7 @@
     <meta name="twitter:image" content="https://allergiapp.com/images/og-image.jpg">
 
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* ===== RESTAURANTS PAGE ===== */
-
-        /* Hero */
-        .rest-hero {
-            padding-top: 80px;
-            padding-bottom: 56px;
-            background: linear-gradient(160deg, #f0faf1 0%, #ffffff 60%);
-            text-align: center;
-        }
-
-        .hero-map-wrap {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto 40px;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(76,175,80,0.12), 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .hero-map {
-            display: block;
-            width: 100%;
-            height: auto;
-            transform: scale(1.1);
-            transform-origin: center 20%;
-        }
-
-        .hero-map-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            text-align: center;
-            width: 90%;
-        }
-
-        .rest-badge-wrap {
-            display: inline-flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-
-        .badge-plate {
-            height: 80px;
-            width: auto;
-            flex-shrink: 0;
-            will-change: transform;
-        }
-
-        .hero-map-overlay .rest-hero-title {
-            font-size: clamp(36px, 6vw, 64px);
-            text-shadow: 0 1px 4px rgba(255,255,255,0.8);
-            margin-bottom: 0;
-        }
-
-        .hero-map-overlay .gradient-text {
-            background: none;
-            -webkit-background-clip: unset;
-            -webkit-text-fill-color: var(--primary-dark);
-            background-clip: unset;
-            color: var(--primary-dark);
-        }
-
-        .rest-hero-text {
-            padding: 0 24px;
-        }
-
-        .rest-badge {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            font-size: 13px;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 100px 100px 100px 0;
-            min-width: 160px;
-            /* Initial state explicit in CSS — no reliance on animation fill-mode backwards */
-            opacity: 0;
-            transform: scale(0.9);
-            transform-origin: bottom left;
-            animation: heroPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
-        }
-
-        .rest-badge::before {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 14px;
-            height: 8px;
-            background: var(--primary-light);
-            clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
-        }
-
-        .rest-hero-title {
-            font-size: clamp(40px, 7vw, 72px);
-            font-weight: 800;
-            line-height: 1.1;
-            color: var(--text);
-            margin-bottom: 20px;
-        }
-
-        .rest-hero-subtitle {
-            font-size: clamp(16px, 2vw, 20px);
-            color: var(--text-secondary);
-            max-width: 580px;
-            margin: 0 auto;
-            line-height: 1.7;
-        }
-
-        @keyframes heroPop {
-            from { opacity: 0; transform: scale(0.9); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes heroSlideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Feature sections */
-        .rest-section {
-            padding: 56px 0;
-        }
-
-        .rest-section-alt {
-            background: #f0faf1;
-        }
-
-        .rest-section-inner {
-            display: flex;
-            align-items: center;
-            gap: 64px;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        .rest-section-inner.reverse {
-            flex-direction: row-reverse;
-        }
-
-        .rest-section-text {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .rest-section-visual {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            justify-content: center;
-        }
-
-        .rest-tag {
-            display: inline-block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary-dark);
-            background: var(--primary-light);
-            padding: 4px 12px;
-            border-radius: 100px;
-            margin-bottom: 16px;
-        }
-
-        .rest-section-title {
-            font-size: clamp(26px, 4vw, 38px);
-            font-weight: 800;
-            line-height: 1.2;
-            color: var(--text);
-            margin-bottom: 16px;
-        }
-
-        .rest-section-text p {
-            font-size: 17px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-        }
-
-        /* Cycle callout */
-        .rest-cycle {
-            padding: 0 24px 56px;
-        }
-
-        .cycle-intro-label {
-            text-align: center;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-secondary);
-            margin-bottom: 14px;
-        }
-
-        .rest-cycle-inner {
-            max-width: 860px;
-            margin: 0 auto;
-            background: #fff;
-            border: 1.5px solid #A5D6A7;
-            border-radius: 16px;
-            padding: 28px 28px;
-            display: flex;
-            align-items: stretch;
-            gap: 0;
-        }
-
-        .cycle-half {
-            flex: 1;
-            background: #F7FBF7;
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .cycle-half-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .cycle-half-icon {
-            font-size: 20px;
-            line-height: 1;
-        }
-
-        .cycle-half-label {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: var(--primary-dark);
-        }
-
-        .cycle-half p {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            margin: 0 0 16px;
-        }
-
-        .cycle-flow {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-
-        .cycle-flow-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .cycle-flow-num {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #C8E6C9;
-            color: var(--primary-dark);
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .cycle-flow-step {
-            font-size: 13px;
-            color: var(--text);
-            font-weight: 500;
-            line-height: 1.4;
-        }
-
-        .cycle-flow-line {
-            width: 1.5px;
-            height: 10px;
-            background: #C8E6C9;
-            margin-left: 9px;
-        }
-
-        .cycle-connector {
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            color: var(--primary);
-            font-size: 22px;
-            font-weight: 700;
-            padding: 0 8px;
-        }
-
-        .cycle-connector-line {
-            width: 1.5px;
-            height: 32px;
-            background: #A5D6A7;
-        }
-
-        /* Mock UI: allergen chips */
-        .mock-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            border: 1.5px solid #4CAF50;
-            background: #E8F5E9;
-            color: #2E7D32;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 100px;
-        }
-
-.mock-chips-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        /* Mock UI: avatar */
-        .mock-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        /* Mock UI: user cards */
-        .mock-users {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .mock-user-card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-            padding: 14px 16px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .mock-user-info {
-            min-width: 0;
-        }
-
-        .mock-user-name {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        /* Mock UI: review card */
-        .mock-review-card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .mock-restaurant-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 14px;
-        }
-
-        .mock-review-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .mock-review-meta {
-            min-width: 0;
-        }
-
-        .mock-author {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text);
-        }
-
-        .mock-stars {
-            font-size: 13px;
-            color: #FFC107;
-            letter-spacing: 1px;
-        }
-
-        .mock-review-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-bottom: 14px;
-        }
-
-        /* Mock UI: restaurant cards */
-        .mock-restaurants {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            max-width: 340px;
-        }
-
-        .mock-filter-bar {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .mock-filter-chips {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .mock-filter-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .mock-filter-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: var(--primary);
-            color: #fff;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 100px;
-        }
-
-        .mock-restaurant-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            cursor: pointer;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
-        }
-
-        .mock-card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .mock-card-chevron {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-            margin-left: 4px;
-            position: relative;
-        }
-
-        .mock-card-chevron::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 8px;
-            height: 8px;
-            border-right: 2px solid #BDBDBD;
-            border-bottom: 2px solid #BDBDBD;
-            transform: translate(-50%, -65%) rotate(45deg);
-            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-                        border-color 0.2s ease;
-        }
-
-        .mock-restaurant-card:hover .mock-card-chevron::before {
-            border-color: var(--primary-dark);
-        }
-
-        .mock-restaurant-card.expanded .mock-card-chevron::before {
-            transform: translate(-50%, -35%) rotate(-135deg);
-            border-color: var(--primary-dark);
-        }
-
-        .mock-card-detail {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            overflow: hidden;
-        }
-
-        .mock-card-detail > div {
-            overflow: hidden;
-        }
-
-        .mock-restaurant-card.expanded .mock-card-detail {
-            grid-template-rows: 1fr;
-        }
-
-        .mock-card-detail-inner {
-            padding-top: 12px;
-            margin-top: 12px;
-            border-top: 1px solid #F0F0F0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .mock-need-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 100px;
-        }
-
-        .mock-need-pill.covered {
-            background: #E8F5E9;
-            color: #2E7D32;
-        }
-
-        .mock-need-pill.missing {
-            background: #F5F5F5;
-            color: #BDBDBD;
-        }
-
-        .mock-card-detail-note {
-            width: 100%;
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .mock-restaurant-card.highlighted {
-            border: 1.5px solid #A5D6A7;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 4px 20px rgba(76, 175, 80, 0.18); }
-            50%       { box-shadow: 0 6px 32px rgba(76, 175, 80, 0.42); }
-        }
-
-        .mock-restaurant-card.highlighted.anim-done {
-            animation: pulseGlow 2.6s ease-in-out infinite;
-        }
-
-        .mock-thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .mock-rest-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .mock-rest-name {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text);
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .mock-rest-meta {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .mock-badge {
-            font-size: 12px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 100px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .match-full {
-            background: #E8F5E9;
-            color: #2E7D32;
-        }
-
-        .match-partial {
-            background: #FFF8E1;
-            color: #F57F17;
-        }
-
-        /* Intro */
-        .rest-intro {
-            padding: 32px 24px 48px;
-            text-align: center;
-        }
-
-        .rest-intro-text {
-            max-width: 620px;
-            margin: 0 auto;
-            font-size: clamp(17px, 2.2vw, 21px);
-            line-height: 1.7;
-            color: var(--text);
-        }
-
-        /* Final CTA */
-        .rest-final-cta {
-            background: #f0faf1;
-            padding: 72px 24px;
-            text-align: center;
-        }
-
-        .rest-final-cta-title {
-            font-size: clamp(24px, 4vw, 38px);
-            font-weight: 800;
-            line-height: 1.25;
-            color: var(--text);
-            max-width: 640px;
-            margin: 0 auto 16px;
-        }
-
-        .rest-final-cta-sub {
-            font-size: clamp(15px, 1.8vw, 18px);
-            line-height: 1.7;
-            color: var(--text-secondary);
-            max-width: 520px;
-            margin: 0 auto 32px;
-        }
-
-        .rest-final-cta-plate {
-            display: block;
-            width: 96px;
-            height: auto;
-            margin: 0 auto 24px;
-        }
-
-        /* Scroll animations */
-        .anim-ready {
-            opacity: 0;
-            transform: translateY(28px);
-            transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-                        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .anim-ready.anim-done {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .anim-ready.anim-from-right {
-            transform: translateX(48px);
-        }
-
-        .anim-ready.anim-from-right.anim-done {
-            transform: translateX(0);
-            transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-                        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .anim-d1 { transition-delay: 130ms; }
-        .anim-d2 { transition-delay: 260ms; }
-
-        /* Mobile */
-        @media (max-width: 800px) {
-            .rest-hero {
-                padding-top: 70px;
-                padding-bottom: 40px;
-            }
-
-            .hero-map-wrap {
-                max-width: none;
-                border-radius: 0;
-                box-shadow: none;
-                margin-bottom: 32px;
-            }
-
-            .hero-map-overlay .rest-hero-title {
-                font-size: clamp(28px, 8vw, 40px);
-            }
-
-            .rest-section {
-                padding: 40px 0;
-            }
-
-            .rest-section-inner,
-            .rest-section-inner.reverse {
-                flex-direction: column;
-                gap: 36px;
-            }
-
-            .rest-section-visual {
-                width: 100%;
-            }
-
-            .mock-users,
-            .mock-review-card,
-            .mock-restaurants {
-                max-width: 100%;
-            }
-
-            .rest-cycle {
-                padding: 0 16px 40px;
-            }
-
-            .rest-cycle-inner {
-                flex-direction: column;
-                gap: 12px;
-                padding: 20px 16px;
-            }
-
-            .cycle-connector {
-                flex-direction: row;
-                gap: 6px;
-                padding: 4px 0;
-            }
-
-            .cycle-connector-line {
-                width: 32px;
-                height: 1.5px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="restaurants.css">
 </head>
 <body>
     <nav class="nav">
@@ -828,12 +68,53 @@
             <div class="rest-badge-wrap">
                 <img src="images/happy_plate_forks.webp" class="badge-plate" width="80" height="80" alt="">
                 <div class="rest-badge">
-                    <span data-i18n="restaurants.badge">Scarica la app!</span>
+                    <span data-i18n="restaurants.badge">Come funziona?</span>
                 </div>
             </div>
             <p class="rest-hero-subtitle" data-i18n="restaurants.introText" data-i18n-html>
                 Con la sezione <span class="gradient-text">Ristoranti</span> puoi cercare locali in tutto il mondo o vicino a te, e vedere quanto possono essere compatibili con le tue esigenze alimentari.
             </p>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="rest-hiw">
+        <div class="rest-hiw-inner">
+<div class="rest-hiw-steps">
+                <div class="rest-hiw-step">
+                    <div class="rest-hiw-step-header">
+                        <span class="rest-hiw-num">01</span>
+                        <div class="rest-hiw-icon">🔍</div>
+                    </div>
+                    <h3 class="rest-hiw-step-title" data-i18n="restaurants.hiw1Title">Cerchi un ristorante</h3>
+                    <p class="rest-hiw-step-text" data-i18n="restaurants.hiw1Text">Imposti le tue esigenze alimentari e cerchi nei dintorni o in qualsiasi città del mondo.</p>
+                </div>
+                <div class="rest-hiw-arrow" aria-hidden="true"></div>
+                <div class="rest-hiw-step">
+                    <div class="rest-hiw-step-header">
+                        <span class="rest-hiw-num">02</span>
+                        <div class="rest-hiw-icon">
+                            <img src="images/happy_plate_forks.webp" width="28" height="28" alt="" aria-hidden="true">
+                        </div>
+                    </div>
+                    <h3 class="rest-hiw-step-title" data-i18n="restaurants.hiw2Title">Su AllergiApp trovi</h3>
+                    <p class="rest-hiw-step-text" data-i18n="restaurants.hiw2Text">Una mappa con ristoranti già recensiti da persone con le tue stesse esigenze, ovunque nel mondo.</p>
+                </div>
+                <div class="rest-hiw-arrow" aria-hidden="true"></div>
+                <div class="rest-hiw-step">
+                    <div class="rest-hiw-step-header">
+                        <span class="rest-hiw-num">03</span>
+                        <div class="rest-hiw-icon">✍️</div>
+                    </div>
+                    <h3 class="rest-hiw-step-title" data-i18n="restaurants.hiw3Title">Lascia una recensione</h3>
+                    <p class="rest-hiw-step-text" data-i18n="restaurants.hiw3Text">Se condividi anche la tua esperienza, aiuterai tutta la community.</p>
+                </div>
+            </div>
+            <div class="rest-hiw-dots" aria-hidden="true">
+                <span class="rest-hiw-dot active"></span>
+                <span class="rest-hiw-dot"></span>
+                <span class="rest-hiw-dot"></span>
+            </div>
         </div>
     </section>
 
@@ -846,7 +127,7 @@
                 <p data-i18n="restaurants.sec2Text">Quando leggi una recensione, vedi anche le esigenze di chi l'ha scritta. Così sai subito se quel ristorante può soddisfare le tue necessità.</p>
             </div>
             <div class="rest-section-visual">
-                <div class="mock-review-card anim-ready anim-from-right">
+                <div class="mock-review-card anim-ready anim-from-right anim-late">
                     <div class="mock-restaurant-label">🍴 Gino's Bistrot, New York</div>
                     <div class="mock-review-header">
                         <div class="mock-avatar" style="background: #E57373;">M</div>
@@ -994,12 +275,17 @@
                 </div>
             </div>
         </div>
+        </div>
     </section>
 
     <!-- Cycle callout -->
     <section class="rest-cycle">
         <div style="max-width:860px;margin:0 auto;padding:0 28px;">
             <p class="cycle-intro-label" data-i18n="restaurants.inBreve">In breve</p>
+        </div>
+        <div class="plate-narrator">
+            <img src="images/happy_plate_forks.webp" class="plate-narrator-img anim-ready" width="80" height="80" alt="" aria-hidden="true">
+            <div class="plate-narrator-bubble anim-ready anim-pop anim-narrator-delay" data-i18n="restaurants.narr3">Lascia una recensione!</div>
         </div>
         <div class="rest-cycle-inner">
             <div class="cycle-half anim-ready">
@@ -1120,37 +406,7 @@
         </div>
     </footer>
 
-    <script>
-        {
-            const restObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('anim-done');
-                        restObserver.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.15 });
-
-            document.querySelectorAll('.anim-ready').forEach(function(el) {
-                restObserver.observe(el);
-            });
-
-            const firstCard = document.querySelector('.mock-restaurant-card');
-            const autoOpenObserver = new IntersectionObserver(function(entries) {
-                if (entries[0].isIntersecting) {
-                    firstCard.classList.add('expanded');
-                    autoOpenObserver.disconnect();
-                }
-            }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
-            autoOpenObserver.observe(firstCard);
-
-            document.querySelectorAll('.mock-restaurant-card').forEach(function(card) {
-                card.addEventListener('click', function() {
-                    card.classList.toggle('expanded');
-                });
-            });
-        }
-    </script>
+    <script src="restaurants.js"></script>
     <script src="i18n-site.js"></script>
     <script src="script.js"></script>
 </body>
