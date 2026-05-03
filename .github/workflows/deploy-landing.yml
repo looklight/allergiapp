@@ -1,0 +1,22 @@
+name: Deploy Landing to Vercel Production
+
+on:
+  push:
+    branches:
+      - landing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        run: |
+          npm install -g vercel
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: team_whl7w4bug3bxXUqQvTVQ0RRT
+          VERCEL_PROJECT_ID: prj_nhfzaVfwIlDMxkkMgdX3scPfjiaw
