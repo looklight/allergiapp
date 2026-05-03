@@ -705,6 +705,7 @@
 .rest-hiw {
     padding: 48px 0;
     background: #f0faf1;
+    overflow: hidden;
 }
 
 .rest-hiw-inner {
