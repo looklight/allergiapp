@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
@@ -56,6 +57,10 @@ const INITIAL_SELECTION: SelectionState = { selectedId: null, detailId: null };
 // Frazione stimata di copertura della detail sheet: usata per offsettare la camera
 // in modo che il marker selezionato resti visibile sopra lo sheet.
 const DETAIL_SHEET_COVERAGE = 0.55;
+
+// Curva del FAB allineata a quella della tab bar (TabBarVisibility.tsx) per
+// dare la sensazione che escano di scena insieme.
+const FAB_ANIM_CONFIG = { duration: 280, easing: Easing.out(Easing.cubic) };
 
 export default function RestaurantsScreen() {
   const router = useRouter();
@@ -127,6 +132,11 @@ export default function RestaurantsScreen() {
       return () => tabBar.show();
     }, [selection.detailId, nearbyExpanded, tabBar]),
   );
+
+  // FAB animation: scivola via insieme alla tab bar quando un bottom sheet (o il
+  // banner nearby compatto) è visibile. Curva allineata a quella della tab bar.
+  const fabProgress = useSharedValue(0);
+  const [fabHidden, setFabHidden] = useState(false);
 
   // Nessuna bottom sheet: il geo hook non ha più bisogno di un'offset dinamica.
   const getSheetFraction = useCallback(() => 0, []);
@@ -501,6 +511,20 @@ export default function RestaurantsScreen() {
   const showNearbyBanner =
     mapSearch.nearbyPlace !== null && !nearbyExpanded && !selection.detailId;
 
+  // Asimmetrico: sparizione istantanea (snap a 1) come comportamento originale,
+  // ricomparsa animata in sincronia con il sheet/banner che si chiude.
+  useEffect(() => {
+    const shouldHide = Boolean(selection.detailId) || nearbyExpanded || showNearbyBanner;
+    setFabHidden(shouldHide);
+    if (shouldHide) fabProgress.value = 1;
+    else fabProgress.value = withTiming(0, FAB_ANIM_CONFIG);
+  }, [selection.detailId, nearbyExpanded, showNearbyBanner, fabProgress]);
+
+  const fabAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: 1 - fabProgress.value,
+    transform: [{ translateY: fabProgress.value * 80 }],
+  }));
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -707,10 +731,13 @@ export default function RestaurantsScreen() {
         lang={lang}
       />
 
-      {!selection.detailId && !nearbyExpanded && !showNearbyBanner && (
+      <Animated.View
+        pointerEvents={fabHidden ? 'none' : 'auto'}
+        style={[styles.fabWrapper, { bottom: 49 + insets.bottom + 16 }, fabAnimatedStyle]}
+      >
         <TouchableOpacity
           onPress={handleAddPress}
-          style={[styles.fab, { bottom: 49 + insets.bottom + 16 }]}
+          style={styles.fab}
           activeOpacity={0.85}
         >
           <Image
@@ -720,7 +747,7 @@ export default function RestaurantsScreen() {
           <MaterialCommunityIcons name="plus" size={14} color={theme.colors.onPrimary} />
           <Text style={styles.fabText}>{i18n.t('common.add')}</Text>
         </TouchableOpacity>
-      )}
+      </Animated.View>
     </View>
   );
 }
@@ -828,9 +855,12 @@ const styles = StyleSheet.create({
   },
 
   // --- FAB Aggiungi ---
-  fab: {
+  fabWrapper: {
     position: 'absolute',
     alignSelf: 'center',
+    zIndex: 20,
+  },
+  fab: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -844,7 +874,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    zIndex: 20,
   },
   fabImage: {
     width: 36,
