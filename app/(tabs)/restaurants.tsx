@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'r
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
+import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { theme } from '../../constants/theme';
@@ -24,6 +24,7 @@ import { useMapSearch, MIN_PLACE_QUERY_LENGTH } from '../../hooks/useMapSearch';
 import SearchAutocomplete from '../../components/SearchAutocomplete';
 import RecentSearches from '../../components/RecentSearches';
 import { storage, type RecentPlace } from '../../utils/storage';
+import { useTabBarVisibility } from '../../components/TabBarVisibility';
 
 // ─── Selection reducer ─────────────────────────────────────────────────────
 type SelectionState = { selectedId: string | null; detailId: string | null };
@@ -52,24 +53,14 @@ function selectionReducer(state: SelectionState, action: SelectionAction): Selec
 
 const INITIAL_SELECTION: SelectionState = { selectedId: null, detailId: null };
 
-const TAB_BAR_STYLE = {
-  position: 'absolute' as const,
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: theme.colors.surface,
-  borderTopColor: theme.colors.divider,
-  borderTopWidth: 1,
-};
-
 // Frazione stimata di copertura della detail sheet: usata per offsettare la camera
 // in modo che il marker selezionato resti visibile sopra lo sheet.
 const DETAIL_SHEET_COVERAGE = 0.55;
 
 export default function RestaurantsScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const tabBar = useTabBarVisibility();
   const { isAuthenticated, user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
@@ -126,13 +117,16 @@ export default function RestaurantsScreen() {
     storage.getRecentPlaces().then(setRecentPlaces);
   }, []);
 
-  // Nasconde la tab bar quando un bottom sheet (detail o nearby) è aperto.
-  useEffect(() => {
-    const hide = Boolean(selection.detailId) || nearbyExpanded;
-    navigation.setOptions({
-      tabBarStyle: hide ? { display: 'none' } : TAB_BAR_STYLE,
-    });
-  }, [selection.detailId, nearbyExpanded, navigation]);
+  // Cleanup show() garantisce che le altre tab trovino la tab bar visibile
+  // se l'utente cambia tab con un sheet ancora aperto.
+  useFocusEffect(
+    useCallback(() => {
+      const shouldHide = Boolean(selection.detailId) || nearbyExpanded;
+      if (shouldHide) tabBar.hide();
+      else tabBar.show();
+      return () => tabBar.show();
+    }, [selection.detailId, nearbyExpanded, tabBar]),
+  );
 
   // Nessuna bottom sheet: il geo hook non ha più bisogno di un'offset dinamica.
   const getSheetFraction = useCallback(() => 0, []);
@@ -681,6 +675,7 @@ export default function RestaurantsScreen() {
           userLocation={geo.userLocation}
           onSelectRestaurant={handleSelectFromNearbySheet}
           onClose={handleCloseNearbySheet}
+          onCloseStart={tabBar.show}
           onAddPress={handleAddPress}
         />
       )}
@@ -689,6 +684,7 @@ export default function RestaurantsScreen() {
         <RestaurantDetailSheet
           restaurantId={selection.detailId}
           onClose={handleCloseDetail}
+          onCloseStart={tabBar.show}
           onFavoriteToggled={(id, delta) => syncFavoriteId(id, delta > 0)}
         />
       )}

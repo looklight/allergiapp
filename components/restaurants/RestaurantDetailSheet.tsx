@@ -14,10 +14,11 @@ const SNAP_POINTS = [0.55, 0.92];
 type Props = {
   restaurantId: string;
   onClose: () => void;
+  onCloseStart?: () => void;
   onFavoriteToggled?: (restaurantId: string, delta: number) => void;
 };
 
-export default function RestaurantDetailSheet({ restaurantId, onClose, onFavoriteToggled }: Props) {
+export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseStart, onFavoriteToggled }: Props) {
   const sheetRef = useRef<BottomSheetRef>(null);
   const detail = useRestaurantDetail(restaurantId, onFavoriteToggled);
   const [isCompactHeader, setIsCompactHeader] = useState(false);
@@ -34,7 +35,10 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onFavorit
     const fullyOpen = fraction >= 0.9;
     setBodyScrollEnabled(fullyOpen);
     if (!fullyOpen) setIsCompactHeader(false);
-  }, []);
+    // Notifica l'inizio dell'animazione di chiusura: il BottomSheet riporta fraction=0
+    // appena parte lo spring verso closedY (sia via close() che via drag-past-threshold).
+    if (fraction <= 0) onCloseStart?.();
+  }, [onCloseStart]);
 
   const handleScrollOffset = useCallback((y: number) => {
     const compact = y > 10;

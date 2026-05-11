@@ -31,6 +31,7 @@ type Props = {
   userLocation: { latitude: number; longitude: number } | null;
   onSelectRestaurant: (id: string) => void;
   onClose: () => void;
+  onCloseStart?: () => void;
   onAddPress?: () => void;
 };
 
@@ -69,6 +70,7 @@ export default function NearbyListSheet({
   userLocation,
   onSelectRestaurant,
   onClose,
+  onCloseStart,
   onAddPress,
 }: Props) {
   const sheetRef = useRef<BottomSheetRef>(null);
@@ -82,7 +84,10 @@ export default function NearbyListSheet({
 
   const handleSnapChange = useCallback((fraction: number) => {
     setBodyScrollEnabled(fraction >= 0.9);
-  }, []);
+    // Notifica l'inizio dell'animazione di chiusura: il BottomSheet riporta fraction=0
+    // appena parte lo spring verso closedY (sia via close() che via drag-past-threshold).
+    if (fraction <= 0) onCloseStart?.();
+  }, [onCloseStart]);
 
   const sortedResults = useMemo(() => {
     const list = [...results];
