@@ -44,8 +44,9 @@ export default function ReportReviewModal({ visible, onClose, onSubmit }: Props)
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <View style={styles.content} onStartShouldSetResponder={() => true}>
+      <View style={styles.overlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>{i18n.t('restaurants.detail.reportTitle')}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8} activeOpacity={0.6}>
@@ -101,7 +102,7 @@ export default function ReportReviewModal({ visible, onClose, onSubmit }: Props)
             </TouchableOpacity>
           </View>
         </View>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
