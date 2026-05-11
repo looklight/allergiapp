@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     borderRadius: 20,
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   chipTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
 });

@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryBtnText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 15,
     fontWeight: '700',
   },

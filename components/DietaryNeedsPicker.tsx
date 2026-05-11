@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   chip: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,

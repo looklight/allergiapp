@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   },
   switchThumbActive: {
     alignSelf: 'flex-end',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   footer: {
     flexDirection: 'row',

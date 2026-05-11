@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   continueButtonText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
