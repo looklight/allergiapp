@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { type ScrollViewProps } from 'react-native';
 import Animated, { runOnJS, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -25,6 +25,15 @@ const BottomSheetScrollView = forwardRef<AnimatedScrollViewRef, Props>(
         if (onScrollOffset) runOnJS(onScrollOffset)(e.contentOffset.y);
       },
     });
+
+    // La shared value `scrollOffset` vive nel <BottomSheet> padre e sopravvive
+    // al remount di questo ScrollView (es. ritorno da uno stack screen pushato
+    // che fa flippare un render condizionale nel body). La native ScrollView
+    // appena rimontata riparte sempre a offset 0: senza questo reset la shared
+    // resterebbe a un valore stale, bloccando il drag-to-collapse del bodyPan.
+    useEffect(() => {
+      if (ctx) ctx.scrollOffset.value = 0;
+    }, [ctx]);
 
     const scrollView = (
       <Animated.ScrollView
