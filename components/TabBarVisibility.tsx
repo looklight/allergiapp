@@ -31,10 +31,12 @@ const ANIM_CONFIG = { duration: 280, easing: Easing.out(Easing.cubic) };
 export function TabBarVisibilityProvider({ children }: { children: ReactNode }) {
   const progress = useSharedValue(0);
 
+  // Asimmetrico: sparizione istantanea per non vedere la tab bar passare "sopra"
+  // al sheet che sale, ricomparsa animata in sincronia col sheet che si chiude.
   const value = useMemo<InternalValue>(
     () => ({
       hide: () => {
-        progress.value = withTiming(1, ANIM_CONFIG);
+        progress.value = 1;
       },
       show: () => {
         progress.value = withTiming(0, ANIM_CONFIG);
