@@ -250,6 +250,7 @@
       "noNeedsMsg": "Seleziona almeno un'allergia o dieta per usare questo filtro.",
       "cuisineLabel": "Tipo di cucina",
       "cuisineHint": "Basato sui tag aggiunti dalla community per descrivere il tipo di cucina del ristorante.",
+      "rating4Plus": "Solo 4★ e più",
       "reset": "Resetta filtri",
       "apply": "Applica"
     },
@@ -382,6 +383,7 @@
     "tabs": {
       "searchPlaceholder": "Cerca ristorante o luogo...",
       "activeChipForMe": "Per me",
+      "activeChipRating4Plus": "4★ e più",
       "loadingNearby": "Cerco ristoranti a {{place}}...",
       "bannerNoneAt": "Nessun ristorante a {{place}}",
       "bannerCountAt": {

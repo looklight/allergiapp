@@ -79,6 +79,7 @@ export default function RestaurantsScreen() {
   const [forMyNeeds, setForMyNeeds] = useState(false);
   const [filterAllergens, setFilterAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [filterDiets, setFilterDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
+  const [minRating, setMinRating] = useState<number | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   // Segnala che il prossimo cambio di filterAllergens/filterDiets viene dal profilo
@@ -106,7 +107,7 @@ export default function RestaurantsScreen() {
   }, [isAuthenticated, dietaryNeeds.allergens, dietaryNeeds.diets]);
 
   const filterHasNeeds = filterAllergens.length > 0 || filterDiets.length > 0;
-  const hasActiveSettings = activeFilters.length > 0 || forMyNeeds;
+  const hasActiveSettings = activeFilters.length > 0 || forMyNeeds || minRating !== null;
 
   // --- Selection state (reducer — niente ref, niente timing issue) ---
   const [selection, dispatch] = useReducer(selectionReducer, INITIAL_SELECTION);
@@ -159,6 +160,7 @@ export default function RestaurantsScreen() {
   const { mapRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
     activeFilters,
+    minRating,
   });
 
   // allPins accumula pin da tutti i viewport visitati (max 3000, gestito in useRestaurantGeo).
@@ -244,10 +246,11 @@ export default function RestaurantsScreen() {
     await refreshProfile();
   }, [user, refreshProfile]);
 
-  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets }: FilterApplyResult) => {
+  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets, minRating: newMinRating }: FilterApplyResult) => {
     setActiveFilters(filters);
     setFilterAllergens(allergens);
     setFilterDiets(diets);
+    setMinRating(newMinRating);
 
     const fmnChanged = newFmn !== forMyNeeds;
     const allergensChanged = allergens.length !== filterAllergens.length || allergens.some(a => !filterAllergens.includes(a));
@@ -446,6 +449,7 @@ export default function RestaurantsScreen() {
 
   const handleResetFilters = useCallback(async () => {
     setActiveFilters([]);
+    setMinRating(null);
     if (forMyNeeds) {
       setForMyNeeds(false);
       storage.setForMyNeeds(false);
@@ -458,6 +462,10 @@ export default function RestaurantsScreen() {
     storage.setForMyNeeds(false);
     await geo.clearAndReload(false);
   }, [geo.clearAndReload]);
+
+  const handleRemoveRatingChip = useCallback(() => {
+    setMinRating(null);
+  }, []);
 
   const autocompleteVisible =
     mapSearch.nearbyPlace === null &&
@@ -482,11 +490,17 @@ export default function RestaurantsScreen() {
   // non ancora recensiti per gli allergeni dell'utente (incoerente con la mappa che mostra
   // tutti i pin, anche quelli grigi = non coperti).
   const filteredNearbyResults = useMemo(() => {
-    if (activeFilters.length === 0) return mapSearch.nearbyResults;
-    return mapSearch.nearbyResults.filter(r =>
-      r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
-    );
-  }, [mapSearch.nearbyResults, activeFilters]);
+    let out = mapSearch.nearbyResults;
+    if (activeFilters.length > 0) {
+      out = out.filter(r =>
+        r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
+      );
+    }
+    if (minRating !== null) {
+      out = out.filter(r => (r.average_rating ?? 0) >= minRating);
+    }
+    return out;
+  }, [mapSearch.nearbyResults, activeFilters, minRating]);
 
   const nearbyCount = filteredNearbyResults.length;
 
@@ -577,7 +591,7 @@ export default function RestaurantsScreen() {
           </TouchableOpacity>
         </View>
 
-        {(activeFilters.length > 0 || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
+        {(activeFilters.length > 0 || minRating !== null || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -588,6 +602,12 @@ export default function RestaurantsScreen() {
               <TouchableOpacity key="needs" style={styles.activeChip} onPress={handleRemoveNeedsChip} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={13} color={theme.colors.primary} />
                 <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipForMe')}</Text>
+                <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            )}
+            {minRating !== null && (
+              <TouchableOpacity key="rating" style={styles.activeChip} onPress={handleRemoveRatingChip} activeOpacity={0.7}>
+                <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipRating4Plus')}</Text>
                 <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
               </TouchableOpacity>
             )}
@@ -680,6 +700,7 @@ export default function RestaurantsScreen() {
         forMyNeeds={forMyNeeds}
         filterAllergens={filterAllergens}
         filterDiets={filterDiets}
+        minRating={minRating}
         profileAllergens={dietaryNeeds.allergens as string[]}
         profileDiets={dietaryNeeds.diets as string[]}
         onSyncProfile={handleSyncProfile}

@@ -14,6 +14,7 @@ export type FilterApplyResult = {
   forMyNeeds: boolean;
   allergens: string[];
   diets: string[];
+  minRating: number | null;
 };
 
 type Props = {
@@ -24,6 +25,7 @@ type Props = {
   forMyNeeds: boolean;
   filterAllergens: string[];
   filterDiets: string[];
+  minRating: number | null;
   // Profilo (per DietaryNeedsPicker)
   profileAllergens: string[];
   profileDiets: string[];
@@ -44,6 +46,7 @@ export default function FilterModal({
   forMyNeeds,
   filterAllergens,
   filterDiets,
+  minRating,
   profileAllergens,
   profileDiets,
   onSyncProfile,
@@ -58,6 +61,7 @@ export default function FilterModal({
   const [pendingMyNeeds, setPendingMyNeeds] = useState(forMyNeeds);
   const [pendingAllergens, setPendingAllergens] = useState(filterAllergens);
   const [pendingDiets, setPendingDiets] = useState(filterDiets);
+  const [pendingMinRating, setPendingMinRating] = useState<number | null>(minRating);
 
   useEffect(() => {
     if (visible) {
@@ -65,6 +69,7 @@ export default function FilterModal({
       setPendingMyNeeds(forMyNeeds);
       setPendingAllergens(filterAllergens);
       setPendingDiets(filterDiets);
+      setPendingMinRating(minRating);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -85,17 +90,24 @@ export default function FilterModal({
   };
 
   const handleApply = () => {
-    onApply({ filters: pendingFilters, forMyNeeds: pendingMyNeeds, allergens: pendingAllergens, diets: pendingDiets });
+    onApply({
+      filters: pendingFilters,
+      forMyNeeds: pendingMyNeeds,
+      allergens: pendingAllergens,
+      diets: pendingDiets,
+      minRating: pendingMinRating,
+    });
     onClose();
   };
 
   const handleReset = () => {
     setPendingFilters([]);
+    setPendingMinRating(null);
     onReset();
     onClose();
   };
 
-  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds;
+  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds || pendingMinRating !== null;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -112,9 +124,9 @@ export default function FilterModal({
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
             {/* Per le mie esigenze */}
             <View style={styles.section}>
-              <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.myNeedsToggle} activeOpacity={0.7}>
+              <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.toggleRow} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
-                <Text style={styles.myNeedsText}>{i18n.t('restaurants.filter.myNeeds')}</Text>
+                <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.myNeeds')}</Text>
                 <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
                   <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
                 </View>
@@ -135,6 +147,21 @@ export default function FilterModal({
                   subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
                 />
               )}
+            </View>
+
+            {/* Valutazione minima */}
+            <View style={styles.section}>
+              <TouchableOpacity
+                onPress={() => setPendingMinRating(prev => (prev === 4 ? null : 4))}
+                style={styles.toggleRow}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons name="star" size={18} color={theme.colors.primary} />
+                <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.rating4Plus')}</Text>
+                <View style={[styles.switchTrack, pendingMinRating === 4 && styles.switchTrackActive]}>
+                  <View style={[styles.switchThumb, pendingMinRating === 4 && styles.switchThumbActive]} />
+                </View>
+              </TouchableOpacity>
             </View>
 
             {/*
@@ -237,7 +264,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 12,
   },
-  myNeedsToggle: {
+  toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -247,7 +274,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: theme.colors.border,
   },
-  myNeedsText: {
+  toggleLabel: {
     flex: 1,
     fontSize: 14,
     fontWeight: '600',

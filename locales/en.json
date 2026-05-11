@@ -250,6 +250,7 @@
       "noNeedsMsg": "Select at least one allergy or diet to use this filter.",
       "cuisineLabel": "Cuisine type",
       "cuisineHint": "Based on tags added by the community to describe the restaurant's cuisine type.",
+      "rating4Plus": "4★ and up",
       "reset": "Reset filters",
       "apply": "Apply"
     },
@@ -382,6 +383,7 @@
     "tabs": {
       "searchPlaceholder": "Search restaurant or place...",
       "activeChipForMe": "For me",
+      "activeChipRating4Plus": "4★ and up",
       "loadingNearby": "Looking for restaurants in {{place}}...",
       "bannerNoneAt": "No restaurants in {{place}}",
       "bannerCountAt": {
