@@ -32,7 +32,7 @@ export interface GalleryPhoto {
 const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: string }> = {
   eu_allergen:      { bg: 'rgba(255,140,0,0.25)',  text: theme.colors.warning },
   intolerance:      { bg: 'rgba(255,180,0,0.25)',  text: '#FFB700' },
-  diet:             { bg: 'rgba(76,175,80,0.25)',   text: '#4CAF50' },
+  diet:             { bg: 'rgba(76,175,80,0.25)',   text: theme.colors.primary },
   food_sensitivity: { bg: 'rgba(255,255,255,0.15)', text: 'rgba(255,255,255,0.7)' },
 };
 

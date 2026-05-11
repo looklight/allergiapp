@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 32,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
   },
   markerText: {
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     height: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 0.5 },
     shadowOpacity: 0.15,
     shadowRadius: 1,

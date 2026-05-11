@@ -99,7 +99,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onFavorit
 
 const styles = StyleSheet.create({
   sheetShadow: {
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.18,
     shadowRadius: 12,

@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     maxHeight: 280,
     overflow: 'hidden',
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
