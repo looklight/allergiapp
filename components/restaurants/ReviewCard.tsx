@@ -2,6 +2,14 @@ import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  runOnJS,
+} from 'react-native-reanimated';
 import { theme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
@@ -26,6 +34,37 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
   const router = useRouter();
   const displayName = item.isAnonymous ? getAnonymousLabel(item.userId) : (item.displayName ?? getAnonymousLabel(item.userId));
   const canNavigateToProfile = !!item.userId && !item.isAnonymous;
+
+  const burstScale = useSharedValue(0);
+  const burstOpacity = useSharedValue(0);
+
+  const burstStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: burstScale.value }],
+    opacity: burstOpacity.value,
+  }));
+
+  const setLikeIfNeeded = () => {
+    if (onLike && !item.likedByMe) onLike();
+  };
+
+  const doubleTapLike = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDelay(280)
+    .onEnd(() => {
+      burstScale.value = 0;
+      burstOpacity.value = 0;
+      burstScale.value = withSequence(
+        withTiming(1.15, { duration: 180 }),
+        withTiming(1, { duration: 120 }),
+        withTiming(0, { duration: 220 }),
+      );
+      burstOpacity.value = withSequence(
+        withTiming(1, { duration: 120 }),
+        withTiming(1, { duration: 280 }),
+        withTiming(0, { duration: 180 }),
+      );
+      runOnJS(setLikeIfNeeded)();
+    });
 
   return (
     <View style={styles.contributionRow}>
@@ -59,7 +98,18 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
 
       {/* Testo */}
       {item.text && (
-        <Text style={styles.contributionText}>{item.text}</Text>
+        isOwnReview ? (
+          <Text style={styles.contributionText}>{item.text}</Text>
+        ) : (
+          <GestureDetector gesture={doubleTapLike}>
+            <View style={styles.textGestureArea}>
+              <Text style={styles.contributionText}>{item.text}</Text>
+              <Animated.View pointerEvents="none" style={[styles.likeBurst, burstStyle]}>
+                <MaterialCommunityIcons name="thumb-up" size={56} color={theme.colors.primary} />
+              </Animated.View>
+            </View>
+          </GestureDetector>
+        )
       )}
 
       {/* Esigenze alimentari dell'autore */}
@@ -174,6 +224,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textPrimary,
     lineHeight: 20,
+  },
+  textGestureArea: {
+    position: 'relative',
+  },
+  likeBurst: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dietaryBadges: {
     flexDirection: 'row',
