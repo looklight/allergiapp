@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   distance: {
     fontSize: 11,
     fontWeight: '700',
-    color: theme.colors.info,
+    color: theme.colors.linkBlue,
     marginLeft: -2,
   },
   cuisineBadge: {

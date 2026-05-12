@@ -412,8 +412,8 @@ const styles = StyleSheet.create({
   },
   landscapeAllergenItemSelected: {
     backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.accent,
-    shadowColor: theme.colors.accent,
+    borderColor: theme.colors.selectionHighlight,
+    shadowColor: theme.colors.selectionHighlight,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: theme.colors.orangeLight,
+    backgroundColor: theme.colors.noticeBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   },
   landscapeAllergenIconBgSelected: {
     backgroundColor: theme.colors.amberLight,
-    borderColor: theme.colors.accent,
+    borderColor: theme.colors.selectionHighlight,
   },
   landscapeAllergenIcon: {
     fontSize: 30,
@@ -482,9 +482,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   landscapeDetailCardSelected: {
-    backgroundColor: theme.colors.accentLight,
-    borderColor: theme.colors.accent,
-    shadowColor: theme.colors.accent,
+    backgroundColor: theme.colors.selectionHighlightBg,
+    borderColor: theme.colors.selectionHighlight,
+    shadowColor: theme.colors.selectionHighlight,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   landscapeDetailBadgeSelected: {
-    backgroundColor: theme.colors.accent,
+    backgroundColor: theme.colors.selectionHighlight,
   },
   landscapeDetailBadgeIcon: {
     fontSize: 16,
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   landscapeDietDetailWrapperSelected: {
-    borderColor: theme.colors.accent,
+    borderColor: theme.colors.selectionHighlight,
   },
   landscapeFooter: {
     paddingVertical: 10,

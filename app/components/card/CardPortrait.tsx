@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   allergenRowPressed: {
-    backgroundColor: theme.colors.orangeLight,
+    backgroundColor: theme.colors.noticeBg,
   },
   allergenTextContainer: {
     flex: 1,

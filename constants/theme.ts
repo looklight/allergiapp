@@ -43,7 +43,7 @@ export const theme = {
     warningDark: '#D84315',
 
     // Info (blue — distance, links, neutral highlights)
-    info: '#1976D2',
+    linkBlue: '#1976D2',
 
     // Amber tones (cards, highlights)
     amberLight: '#FFF8E1',
@@ -52,17 +52,19 @@ export const theme = {
     amberText: '#8D6E00',
     amberBorder: '#FFE082',
     amberSubtle: '#FFF8E126',
-    orangeLight: '#FFF3E0',
-    orangeBorder: '#FFE0B2',
+
+    // Notice surfaces (warning message containers in card env)
+    noticeBg: '#FFF3E0',
+    noticeBorder: '#FFE0B2',
 
     // Coverage / match indicators (map pins, badges)
     coverageMedium: '#F9A825',
     intoleranceAccent: '#FFB700',
     primarySubtle: '#E8F5E926',
 
-    // Accent (selection highlight)
-    accent: '#FFD600',
-    accentLight: '#FFFDE7',
+    // Selection highlight (card landscape selected border/shadow)
+    selectionHighlight: '#FFD600',
+    selectionHighlightBg: '#FFFDE7',
 
     // Card description text
     cardDescriptionText: '#5D4037',
