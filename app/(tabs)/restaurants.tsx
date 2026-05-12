@@ -138,6 +138,11 @@ export default function RestaurantsScreen() {
   const fabProgress = useSharedValue(0);
   const [fabHidden, setFabHidden] = useState(false);
 
+  // Banner nearby: stesso pattern asimmetrico del FAB — sparizione istantanea
+  // all'apertura di uno sheet, comparsa animata al rientro in home.
+  const bannerProgress = useSharedValue(1);
+  const [bannerHidden, setBannerHidden] = useState(true);
+
   // Nessuna bottom sheet: il geo hook non ha più bisogno di un'offset dinamica.
   const getSheetFraction = useCallback(() => 0, []);
 
@@ -525,6 +530,21 @@ export default function RestaurantsScreen() {
     transform: [{ translateY: fabProgress.value * 80 }],
   }));
 
+  useEffect(() => {
+    if (showNearbyBanner) {
+      setBannerHidden(false);
+      bannerProgress.value = withTiming(0, FAB_ANIM_CONFIG);
+    } else {
+      setBannerHidden(true);
+      bannerProgress.value = 1;
+    }
+  }, [showNearbyBanner, bannerProgress]);
+
+  const bannerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: 1 - bannerProgress.value,
+    transform: [{ translateY: bannerProgress.value * 80 }],
+  }));
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -660,8 +680,11 @@ export default function RestaurantsScreen() {
         )}
       </View>
 
-      {showNearbyBanner && (
-        <View style={[styles.nearbyBanner, { bottom: 49 + insets.bottom + 12 }]}>
+      {mapSearch.nearbyPlace && (
+        <Animated.View
+          pointerEvents={bannerHidden ? 'none' : 'auto'}
+          style={[styles.nearbyBanner, { bottom: 49 + insets.bottom + 12 }, bannerAnimatedStyle]}
+        >
           <TouchableOpacity
             onPress={() => setNearbyExpanded(true)}
             activeOpacity={0.85}
@@ -670,10 +693,10 @@ export default function RestaurantsScreen() {
             <MaterialCommunityIcons name="map-marker" size={18} color={theme.colors.primary} />
             <Text style={styles.nearbyBannerTitle} numberOfLines={1}>
               {mapSearch.isLoadingNearby
-                ? i18n.t('restaurants.tabs.loadingNearby', { place: mapSearch.nearbyPlace!.name })
+                ? i18n.t('restaurants.tabs.loadingNearby', { place: mapSearch.nearbyPlace.name })
                 : nearbyCount === 0
-                  ? i18n.t('restaurants.tabs.bannerNoneAt', { place: mapSearch.nearbyPlace!.name })
-                  : i18n.t('restaurants.tabs.bannerCountAt', { count: nearbyCount, place: mapSearch.nearbyPlace!.name })}
+                  ? i18n.t('restaurants.tabs.bannerNoneAt', { place: mapSearch.nearbyPlace.name })
+                  : i18n.t('restaurants.tabs.bannerCountAt', { count: nearbyCount, place: mapSearch.nearbyPlace.name })}
             </Text>
             {!mapSearch.isLoadingNearby && nearbyCount > 0 && (
               <MaterialCommunityIcons name="chevron-up" size={20} color={theme.colors.textSecondary} />
@@ -686,7 +709,7 @@ export default function RestaurantsScreen() {
           >
             <MaterialCommunityIcons name="close" size={18} color={theme.colors.textSecondary} />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
 
       {mapSearch.nearbyPlace && nearbyExpanded && !selection.detailId && (
