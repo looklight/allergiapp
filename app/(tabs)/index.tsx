@@ -202,10 +202,6 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          <Text style={styles.cardSubtitle}>
-            {i18n.t('home.chooseLanguage')}
-          </Text>
-
           <Pressable
             onPress={() => setShowLanguagePicker(true)}
             style={styles.languageSelector}
@@ -285,16 +281,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    padding: 20,
+    padding: 18,
     borderRadius: 16,
     backgroundColor: theme.colors.surface,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   cardHeaderLeft: {
     flexDirection: 'row',
@@ -324,13 +320,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  cardSubtitle: {
-    color: theme.colors.textSecondary,
-    marginBottom: 16,
-  },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 14,
   },
   emptyIcon: {
     fontSize: 48,
@@ -340,7 +332,7 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     color: theme.colors.textSecondary,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   chipsContainer: {
     flexDirection: 'row',
@@ -371,9 +363,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
-    padding: 16,
+    padding: 14,
     borderRadius: 12,
-    marginBottom: 16,
   },
   languageFlag: {
     fontSize: 40,
@@ -397,7 +388,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   showCardSection: {
-    padding: 24,
+    padding: 20,
     borderRadius: 16,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
@@ -405,7 +396,7 @@ const styles = StyleSheet.create({
   readyText: {
     color: theme.colors.onPrimary,
     fontSize: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
   },
   showCardButton: {

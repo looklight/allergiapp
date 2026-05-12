@@ -12,13 +12,13 @@ export const LANGUAGE_COUNTRIES: Record<string, string[]> = {
   pt: ['Portugal', 'Portogallo', 'Brazil', 'Brasile', 'Brasilien', 'Brésil', 'Brasil', 'Mozambique', 'Mosambik', 'Mozambico', 'Angola', 'Cape Verde', 'Capo Verde', 'Kap Verde', 'Cap-Vert', 'Cabo Verde', 'Macau', 'Macao', 'East Timor', 'Timor Est', 'Osttimor', 'Timor oriental', 'Timor Oriental', 'Guinea-Bissau', 'São Tomé'],
   nl: ['Netherlands', 'Olanda', 'Holland', 'Niederlande', 'Pays-Bas', 'Países Bajos', 'Belgium', 'Belgio', 'Belgien', 'Belgique', 'Bélgica', 'Suriname', 'Aruba', 'Curaçao', 'Curacao'],
   pl: ['Poland', 'Polonia', 'Polen', 'Pologne'],
-  ru: ['Russia', 'Rusia', 'Russland', 'Russie', 'Belarus', 'Bielorussia', 'Weißrussland', 'Biélorussie', 'Bielorrusia'],
-  sv: ['Sweden', 'Svezia', 'Schweden', 'Suède', 'Suecia'],
+  ru: ['Russia', 'Rusia', 'Russland', 'Russie', 'Belarus', 'Bielorussia', 'Weißrussland', 'Biélorussie', 'Bielorrusia', 'Kazakhstan', 'Kazakistan', 'Kasachstan', 'Kyrgyzstan', 'Kirghizistan', 'Kirgisistan', 'Kirghizstan', 'Moldova', 'Moldavia', 'Moldavie', 'Moldawien', 'Estonia', 'Estland', 'Estonie', 'Latvia', 'Lettonia', 'Lettland', 'Lettonie', 'Letonia', 'Lithuania', 'Lituania', 'Litauen', 'Lituanie'],
+  sv: ['Sweden', 'Svezia', 'Schweden', 'Suède', 'Suecia', 'Finland', 'Finlandia', 'Finnland', 'Finlande'],
   zh: ['China', 'Cina', 'Taiwan', 'Singapore', 'Singapur', 'Singapour', 'Hong Kong'],
   ja: ['Japan', 'Giappone', 'Japón', 'Japon'],
   ko: ['South Korea', 'Korea', 'Corea', 'Südkorea', 'Corée', 'Corea del Sur'],
   th: ['Thailand', 'Thailandia', 'Tailandia', 'Thaïlande'],
-  ar: ['Saudi Arabia', 'Arabia Saudita', 'Egypt', 'Egitto', 'Ägypten', 'Égypte', 'Egipto', 'UAE', 'Emirati', 'Morocco', 'Marocco', 'Marokko', 'Maroc', 'Marruecos', 'Tunisia', 'Tunisie', 'Tunesien', 'Túnez', 'Jordan', 'Giordania', 'Jordanien', 'Jordanie', 'Jordania', 'Lebanon', 'Libano', 'Libanon', 'Liban', 'Líbano', 'Qatar', 'Oman', 'Kuwait', 'Bahrain', 'Algeria', 'Algerien', 'Algérie', 'Argelia', 'Libya', 'Libia', 'Libyen', 'Libye', 'Iraq', 'Irak', 'Syria', 'Siria', 'Syrien', 'Syrie', 'Yemen', 'Jemen', 'Yémen', 'Palestine', 'Palestina', 'Palästina', 'Sudan', 'Soudan', 'Mauritania', 'Mauritanien', 'Mauritanie'],
+  ar: ['Saudi Arabia', 'Arabia Saudita', 'Egypt', 'Egitto', 'Ägypten', 'Égypte', 'Egipto', 'UAE', 'Emirati', 'Morocco', 'Marocco', 'Marokko', 'Maroc', 'Marruecos', 'Tunisia', 'Tunisie', 'Tunesien', 'Túnez', 'Jordan', 'Giordania', 'Jordanien', 'Jordanie', 'Jordania', 'Lebanon', 'Libano', 'Libanon', 'Liban', 'Líbano', 'Qatar', 'Oman', 'Kuwait', 'Bahrain', 'Algeria', 'Algerien', 'Algérie', 'Argelia', 'Libya', 'Libia', 'Libyen', 'Libye', 'Iraq', 'Irak', 'Syria', 'Siria', 'Syrien', 'Syrie', 'Yemen', 'Jemen', 'Yémen', 'Palestine', 'Palestina', 'Palästina', 'Sudan', 'Soudan', 'Mauritania', 'Mauretanien', 'Mauritanie'],
 
   // ── Europa ──
   el: ['Greece', 'Grecia', 'Griechenland', 'Grèce', 'Cyprus', 'Cipro', 'Zypern', 'Chypre', 'Chipre'],
@@ -27,7 +27,7 @@ export const LANGUAGE_COUNTRIES: Record<string, string[]> = {
   hu: ['Hungary', 'Ungheria', 'Ungarn', 'Hongrie', 'Hungría'],
   ro: ['Romania', 'Rumänien', 'Roumanie', 'Rumania', 'Moldova', 'Moldavia', 'Moldavie', 'Moldawien'],
   uk: ['Ukraine', 'Ucraina', 'Ukraina'],
-  da: ['Denmark', 'Danimarca', 'Dänemark', 'Danemark', 'Dinamarca'],
+  da: ['Denmark', 'Danimarca', 'Dänemark', 'Danemark', 'Dinamarca', 'Greenland', 'Groenlandia', 'Grönland', 'Groenland', 'Faroe Islands', 'Isole Faroe', 'Färöer', 'Îles Féroé', 'Islas Feroe'],
   fi: ['Finland', 'Finlandia', 'Finnland', 'Finlande'],
   no: ['Norway', 'Norvegia', 'Norwegen', 'Norvège', 'Noruega'],
   hr: ['Croatia', 'Croazia', 'Kroatien', 'Croatie', 'Croacia'],
@@ -52,7 +52,7 @@ export const LANGUAGE_COUNTRIES: Record<string, string[]> = {
   // ── Asia ──
   he: ['Israel', 'Israele'],
   hi: ['India', 'Indien', 'Inde'],
-  pa: ['India', 'Punjab'],
+  pa: ['India', 'Indien', 'Inde', 'Punjab', 'Pakistan', 'Pakistán'],
   gu: ['India', 'Gujarat'],
   kn: ['India', 'Karnataka'],
   ml: ['India', 'Kerala'],
@@ -64,7 +64,7 @@ export const LANGUAGE_COUNTRIES: Record<string, string[]> = {
   ta: ['India', 'Sri Lanka', 'Tamil Nadu', 'Singapore', 'Singapur', 'Singapour'],
   te: ['India', 'Telangana', 'Andhra Pradesh'],
   mr: ['India', 'Maharashtra'],
-  ur: ['Pakistan'],
+  ur: ['Pakistan', 'Pakistán', 'India', 'Indien', 'Inde'],
   fa: ['Iran', 'Persia', 'Persien', 'Perse', 'Afghanistan', 'Tajikistan'],
   ps: ['Afghanistan'],
   ku: ['Kurdistan', 'Iraq', 'Irak'],
@@ -86,7 +86,7 @@ export const LANGUAGE_COUNTRIES: Record<string, string[]> = {
   dz: ['Bhutan', 'Butan', 'Bhoutan', 'Bután'],
 
   // ── Africa ──
-  sw: ['Kenya', 'Kenia', 'Tanzania', 'Tansania', 'Tanzanie', 'Tansanien', 'Uganda', 'Zanzibar', 'Sansibar'],
+  sw: ['Kenya', 'Kenia', 'Tanzania', 'Tansania', 'Tanzanie', 'Tansanien', 'Uganda', 'Zanzibar', 'Sansibar', 'Rwanda', 'Ruanda', 'Democratic Republic of Congo', 'Repubblica Democratica del Congo', 'Demokratische Republik Kongo', 'République démocratique du Congo', 'República Democrática del Congo', 'DRC', 'RDC'],
   af: ['South Africa', 'Sudafrica', 'Südafrika', 'Afrique du Sud', 'Sudáfrica', 'Namibia'],
   am: ['Ethiopia', 'Etiopia', 'Äthiopien', 'Éthiopie', 'Etiopía'],
   ha: ['Nigeria', 'Niger'],
