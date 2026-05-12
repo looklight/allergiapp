@@ -9,6 +9,7 @@ import { OTHER_FOODS, OtherFoodId } from '../../../constants/otherFoods';
 import { theme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import DietModeSection from './DietModeSection';
+import FoodIcon from '../../../components/FoodIcon';
 import { CardPortraitProps } from '../../../types/card';
 
 const getRestrictionInfo = (id: RestrictionItemId) => {
@@ -221,7 +222,7 @@ export default function CardPortrait({
                 if (!food) return null;
                 return (
                   <View key={id} style={dynamicStyles.allergenRow}>
-                    <Text style={dynamicStyles.allergenIcon}>{food.icon}</Text>
+                    <FoodIcon id={food.id} emoji={food.icon} size={32} style={dynamicStyles.allergenIcon} />
                     <View style={styles.allergenTextContainer}>
                       <Text style={dynamicStyles.allergenText}>{getOtherFoodTranslation(id)}</Text>
                     </View>

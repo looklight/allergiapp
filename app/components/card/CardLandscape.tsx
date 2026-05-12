@@ -8,6 +8,7 @@ import { OTHER_FOODS, OtherFoodId } from '../../../constants/otherFoods';
 import { AllergenId } from '../../../types';
 import { theme } from '../../../constants/theme';
 import DietModeSection from './DietModeSection';
+import FoodIcon from '../../../components/FoodIcon';
 import { CardLandscapeProps } from '../../../types/card';
 
 const getAllergenInfo = (id: AllergenId) => ALLERGENS.find((a) => a.id === id);
@@ -132,7 +133,7 @@ export default function CardLandscape({
                       accessibilityLabel={getOtherFoodTranslation(id)}
                     >
                       <View style={styles.landscapeAllergenIconBg}>
-                        <Text style={styles.landscapeAllergenIcon} accessibilityElementsHidden>{food.icon}</Text>
+                        <FoodIcon id={food.id} emoji={food.icon} size={34} style={styles.landscapeAllergenIcon} />
                       </View>
                       <Text style={[
                         styles.landscapeAllergenName,
@@ -286,7 +287,7 @@ export default function CardLandscape({
                   <View key={id} style={styles.landscapeDetailCard} accessibilityLabel={getOtherFoodTranslation(id)}>
                     <View style={styles.landscapeDetailTop}>
                       <View style={[styles.landscapeDetailBadge, { backgroundColor: colors.landscapeDetailBadgeBg }]}>
-                        <Text style={styles.landscapeDetailBadgeIcon} accessibilityElementsHidden>{food.icon}</Text>
+                        <FoodIcon id={food.id} emoji={food.icon} size={18} style={styles.landscapeDetailBadgeIcon} />
                         <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getOtherFoodTranslation(id)}
                         </Text>

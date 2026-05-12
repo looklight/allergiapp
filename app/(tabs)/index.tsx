@@ -18,6 +18,7 @@ import { Analytics } from '../../services/analytics';
 import BannerCarousel from '../components/BannerCarousel';
 import LanguagePickerModal from '../components/LanguagePickerModal';
 import { useLanguageDownload } from '../../hooks/useLanguageDownload';
+import FoodIcon from '../../components/FoodIcon';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -149,7 +150,7 @@ export default function HomeScreen() {
                     style={styles.chip}
                     textStyle={styles.chipText}
                     icon={() => (
-                      <Text style={styles.chipIcon}>{food.icon}</Text>
+                      <FoodIcon id={food.id} emoji={food.icon} size={18} style={styles.chipIcon} />
                     )}
                   >
                     {food.translations[locale] || food.translations.en}

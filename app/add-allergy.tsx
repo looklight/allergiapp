@@ -17,6 +17,7 @@ import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
+import FoodIcon from '../components/FoodIcon';
 
 export default function AddAllergyScreen() {
   const router = useRouter();
@@ -308,7 +309,7 @@ export default function AddAllergyScreen() {
                   <List.Item
                     title={food.translations[locale] || food.translations.en}
                     left={() => (
-                      <Text style={styles.icon}>{food.icon}</Text>
+                      <FoodIcon id={food.id} emoji={food.icon} size={24} style={styles.icon} />
                     )}
                     right={() => (
                       <Checkbox
