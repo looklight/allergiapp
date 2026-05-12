@@ -54,6 +54,12 @@ export type OtherFoodId =
   | 'spicy'
   | 'cinnamon'
   | 'ginger'
+  // Frutta a guscio (singoli, complemento di 'nuts' EU)
+  | 'almonds'
+  | 'hazelnuts'
+  | 'walnuts'
+  | 'pistachios'
+  | 'cashews'
   | 'poppy_seeds'
   | 'sunflower_seeds'
   | 'flax_seeds'
@@ -286,6 +292,22 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'ginger', icon: '🫚', category: 'legumes_other', translations: {
     it: 'Zenzero', en: 'Ginger', fr: 'Gingembre', de: 'Ingwer', es: 'Jengibre', pt: 'Gengibre', nl: 'Gember', pl: 'Imbir', ru: 'Имбирь', sv: 'Ingefära', zh: '生姜', ja: 'ショウガ', ko: '생강', th: 'ขิง', ar: 'الزنجبيل',
+  }},
+  // — Frutta a guscio singole (complemento dell'allergene EU 'nuts') —
+  { id: 'almonds', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Mandorle', en: 'Almonds', fr: 'Amandes', de: 'Mandeln', es: 'Almendras', pt: 'Amêndoas', nl: 'Amandelen', pl: 'Migdały', ru: 'Миндаль', sv: 'Mandlar', zh: '杏仁', ja: 'アーモンド', ko: '아몬드', th: 'อัลมอนด์', ar: 'اللوز',
+  }},
+  { id: 'hazelnuts', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Nocciole', en: 'Hazelnuts', fr: 'Noisettes', de: 'Haselnüsse', es: 'Avellanas', pt: 'Avelãs', nl: 'Hazelnoten', pl: 'Orzechy laskowe', ru: 'Лесные орехи', sv: 'Hasselnötter', zh: '榛子', ja: 'ヘーゼルナッツ', ko: '헤이즐넛', th: 'เฮเซลนัท', ar: 'البندق',
+  }},
+  { id: 'walnuts', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Noci', en: 'Walnuts', fr: 'Noix', de: 'Walnüsse', es: 'Nueces', pt: 'Nozes', nl: 'Walnoten', pl: 'Orzechy włoskie', ru: 'Грецкие орехи', sv: 'Valnötter', zh: '核桃', ja: 'クルミ', ko: '호두', th: 'วอลนัท', ar: 'الجوز',
+  }},
+  { id: 'pistachios', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Pistacchi', en: 'Pistachios', fr: 'Pistaches', de: 'Pistazien', es: 'Pistachos', pt: 'Pistácios', nl: 'Pistaches', pl: 'Pistacje', ru: 'Фисташки', sv: 'Pistaschnötter', zh: '开心果', ja: 'ピスタチオ', ko: '피스타치오', th: 'พิสตาชิโอ', ar: 'الفستق',
+  }},
+  { id: 'cashews', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Anacardi', en: 'Cashews', fr: 'Noix de cajou', de: 'Cashewnüsse', es: 'Anacardos', pt: 'Castanhas de caju', nl: 'Cashewnoten', pl: 'Nerkowce', ru: 'Кешью', sv: 'Cashewnötter', zh: '腰果', ja: 'カシューナッツ', ko: '캐슈넛', th: 'เม็ดมะม่วงหิมพานต์', ar: 'الكاجو',
   }},
   { id: 'poppy_seeds', icon: '🌸', category: 'legumes_other', translations: {
     it: 'Semi di papavero', en: 'Poppy seeds', fr: 'Graines de pavot', de: 'Mohnsamen', es: 'Semillas de amapola', pt: 'Sementes de papoula', nl: 'Maanzaad', pl: 'Nasiona maku', ru: 'Семена мака', sv: 'Vallmofrön', zh: '罂粟籽', ja: 'ケシの実', ko: '양귀비씨', th: 'เมล็ดฝิ่น', ar: 'بذور الخشخاش',
