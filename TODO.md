@@ -10,6 +10,27 @@
 - **`landing`** — sito web pubblico, servito via Vercel.
 
 
+## Pulizia futura non urgente (post-merge restaurants-v2)
+
+Dopo il merge del 2026-05-12 sono stati rimossi `services/remoteConfig.ts`, `components/AllergenBadges.tsx`, `components/restaurants/RestaurantCard.tsx` (−499 righe). Restano due livelli di pulizia non bloccanti:
+
+### Tier 2 — Rimuovere dipendenze Firebase Remote Config (richiede prebuild)
+- [ ] Rimuovere `@react-native-firebase/remote-config` da `package.json` (`npm install` per aggiornare il lock)
+- [ ] Rimuovere dal plugin `plugins/withModularHeaders.js` i pod orfani: `FirebaseRemoteConfig`, `FirebaseABTesting`, `FirebaseRemoteConfigInterop`, `FirebaseSharedSwift` (verificare che non siano dipendenze transitive di Crashlytics/Sessions prima di rimuovere)
+- [ ] `npx expo prebuild --clean` per rigenerare `ios/` con il nuovo Podfile
+- [ ] Build EAS preview di verifica
+- **Beneficio:** bundle iOS leggermente più leggero. **Costo:** prebuild + build di verifica (~25 min).
+
+### Tier 3 — Cleanup cascade banner promo (BannerCarousel + tipi)
+- [ ] In `app/components/BannerCarousel.tsx`: rimuovere il rendering dei banner `type === 'ad'` (rami non più raggiunti — `extraBanners` non riceve più banner ad)
+- [ ] In `services/analytics.ts`: valutare se `logAdImpression` e il parametro `adUrl` di `logBannerClicked` restano usati altrove
+- [ ] In `types/index.ts` `BannerItem`: rimuovere campi `adUrl`, `adAction`, `adImage`, `adButtonText`, `layout`, `backgroundColor`, `textColor`, `displayDuration`, `customContent` se davvero non più referenziati
+- [ ] Valutare se `BannerType` può diventare solo `'info'` (rimuovendo `'ad'` e `'custom'`)
+- **Beneficio:** componente più chiaro, tipi più stretti. **Costo:** test manuale su device richiesto (tocca codice vivo).
+
+
+---
+
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 
