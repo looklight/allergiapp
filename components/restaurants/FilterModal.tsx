@@ -111,9 +111,8 @@ export default function FilterModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.content}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <Pressable style={styles.content} onPress={() => {}}>
           <View style={styles.header}>
             <Text style={styles.title}>{i18n.t('restaurants.filter.title')}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8} activeOpacity={0.6}>
@@ -204,8 +203,8 @@ export default function FilterModal({
               <Text style={styles.applyText}>{i18n.t('restaurants.filter.apply')}</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
