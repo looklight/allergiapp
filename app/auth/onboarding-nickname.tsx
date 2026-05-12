@@ -94,7 +94,7 @@ export default function OnboardingNicknameScreen() {
               if (v) setNickname('');
             }}
             trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-            thumbColor="#FFFFFF"
+            thumbColor={theme.colors.onPrimary}
           />
         </View>
 

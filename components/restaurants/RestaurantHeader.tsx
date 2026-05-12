@@ -150,7 +150,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             borderRadius: 8,
             paddingBottom: compatExpanded ? 8 : 0,
             backgroundColor: compatExpanded && !isNoReviews
-              ? (isFull ? '#E8F5E926' : '#FFF8E126')
+              ? (isFull ? theme.colors.primarySubtle : theme.colors.amberSubtle)
               : 'transparent',
           },
         ]}>

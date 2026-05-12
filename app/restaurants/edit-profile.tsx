@@ -150,7 +150,7 @@ export default function EditProfileScreen() {
               value={isAnonymous}
               onValueChange={setIsAnonymous}
               trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-              thumbColor="#FFFFFF"
+              thumbColor={theme.colors.onPrimary}
             />
           </View>
           <TextInput

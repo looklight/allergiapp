@@ -302,7 +302,7 @@ function ConfirmStep({
                     <View key={i} style={styles.photoThumb}>
                       <Image source={{ uri }} style={styles.photoThumbImg} />
                       <TouchableOpacity style={styles.photoRemove} onPress={() => onRemovePhoto(i)} hitSlop={4}>
-                        <MaterialCommunityIcons name="close-circle" size={18} color="#fff" />
+                        <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.onPrimary} />
                       </TouchableOpacity>
                     </View>
                   ))}

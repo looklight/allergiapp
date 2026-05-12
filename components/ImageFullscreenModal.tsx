@@ -13,6 +13,7 @@ import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ReactNode } from 'react';
 import ZoomableImage from './ZoomableImage';
+import { theme } from '../constants/theme';
 
 const DISMISS_THRESHOLD = 120;
 
@@ -104,7 +105,7 @@ export default function ImageFullscreenModal({
       <GestureDetector gesture={dismissPan}>
         <Animated.View style={[styles.overlay, overlayStyle, dismissStyle]}>
           <TouchableOpacity style={[styles.closeBtn, { top: insets.top + 12 }]} onPress={onClose} hitSlop={12}>
-            <MaterialCommunityIcons name="close" size={28} color="#FFF" />
+            <MaterialCommunityIcons name="close" size={28} color={theme.colors.onPrimary} />
           </TouchableOpacity>
 
           {showCounter && (

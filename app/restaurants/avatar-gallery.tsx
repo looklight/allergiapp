@@ -240,7 +240,7 @@ export default function AvatarGalleryScreen() {
                   {/* Check badge */}
                   {isSelected && (
                     <View style={styles.checkBadge}>
-                      <MaterialCommunityIcons name="check" size={14} color="#FFF" />
+                      <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
                     </View>
                   )}
                 </View>
@@ -257,7 +257,7 @@ export default function AvatarGalleryScreen() {
                 {!unlocked && <View style={styles.lockedVeil} />}
                 {!unlocked && (
                   <View style={styles.lockBadge}>
-                    <MaterialCommunityIcons name="lock" size={12} color="#FFF" />
+                    <MaterialCommunityIcons name="lock" size={12} color={theme.colors.onPrimary} />
                   </View>
                 )}
               </TouchableOpacity>
@@ -325,7 +325,7 @@ function DetailCard({
         )}
         {!unlocked && (
           <View style={styles.detailLockBadge}>
-            <MaterialCommunityIcons name="lock" size={20} color="#FFF" />
+            <MaterialCommunityIcons name="lock" size={20} color={theme.colors.onPrimary} />
           </View>
         )}
       </View>

@@ -66,5 +66,5 @@ export function isValidCoord(lat: number, lng: number): boolean {
 export function coverageColor(covered: number, total: number): string {
   if (total === 0 || covered === 0) return theme.colors.textDisabled;
   if (covered >= total) return theme.colors.success;
-  return '#F9A825';
+  return theme.colors.coverageMedium;
 }

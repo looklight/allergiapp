@@ -249,7 +249,7 @@ export default function AddReviewScreen() {
               <View key={index} style={styles.photoThumbWrap}>
                 <Image source={{ uri }} style={[styles.photoThumb, { width: photoSize, height: photoSize }]} />
                 <TouchableOpacity style={styles.photoRemoveBtn} onPress={() => removePhoto(index)} hitSlop={6}>
-                  <MaterialCommunityIcons name="close-circle" size={22} color="#FFF" />
+                  <MaterialCommunityIcons name="close-circle" size={22} color={theme.colors.onPrimary} />
                 </TouchableOpacity>
               </View>
             ))}

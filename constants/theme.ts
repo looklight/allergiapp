@@ -44,7 +44,6 @@ export const theme = {
 
     // Info (blue — distance, links, neutral highlights)
     info: '#1976D2',
-    infoLight: '#E3F2FD',
 
     // Amber tones (cards, highlights)
     amberLight: '#FFF8E1',
@@ -52,8 +51,14 @@ export const theme = {
     amberDark: '#E6A700',
     amberText: '#8D6E00',
     amberBorder: '#FFE082',
+    amberSubtle: '#FFF8E126',
     orangeLight: '#FFF3E0',
     orangeBorder: '#FFE0B2',
+
+    // Coverage / match indicators (map pins, badges)
+    coverageMedium: '#F9A825',
+    intoleranceAccent: '#FFB700',
+    primarySubtle: '#E8F5E926',
 
     // Accent (selection highlight)
     accent: '#FFD600',
@@ -72,10 +77,10 @@ export const theme = {
     overlay: 'rgba(0,0,0,0.5)',
     overlayDark: 'rgba(0,0,0,0.8)',
     overlayLight: 'rgba(255,255,255,0.85)',
-    scrim: 'rgba(255,255,255,0.1)',
 
     // UI elements
     switchThumbInactive: '#F4F3F4',
+    neutralBg: '#EEEEEE',
     restrictionRowBg: '#F9F5FF',
     restrictionRowBgPressed: '#F0EAFC',
 
@@ -89,10 +94,6 @@ export const theme = {
     favoriteRed: '#E53935',
     starFilled: '#F5A623',
     starEmpty: '#D0D0D0',
-
-    // Inferred state (compatibility chips)
-    inferredBg: '#F3F4F6',
-    inferredBorder: '#D1D5DB',
   },
 
   // Layout constants

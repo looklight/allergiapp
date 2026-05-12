@@ -47,7 +47,7 @@ function MatchBadge({ restaurant }: { restaurant: Restaurant }) {
   const full = coveredTotal >= filtersTotal;
   const none = coveredTotal === 0;
   const color = full ? theme.colors.success : none ? theme.colors.textDisabled : theme.colors.amberDark;
-  const bg = full ? theme.colors.primaryLight : none ? '#EEEEEE' : theme.colors.amberLight;
+  const bg = full ? theme.colors.primaryLight : none ? theme.colors.neutralBg : theme.colors.amberLight;
 
   return (
     <View style={[styles.matchBadge, { backgroundColor: bg }]}>

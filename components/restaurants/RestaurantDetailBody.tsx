@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   thumbMatchBadge: {
     position: 'absolute', bottom: 5, left: 5,
     flexDirection: 'row', alignItems: 'center', gap: 2,
-    backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 10,
+    backgroundColor: theme.colors.overlayLight, borderRadius: 10,
     paddingHorizontal: 5, paddingVertical: 2,
   },
   thumbMatchText: {
@@ -607,11 +607,11 @@ const styles = StyleSheet.create({
   },
   thumbMoreOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8,
+    backgroundColor: theme.colors.overlay, borderRadius: 8,
     justifyContent: 'center', alignItems: 'center',
   },
   thumbMoreText: {
-    color: '#fff', fontSize: 18, fontWeight: '700',
+    color: theme.colors.onPrimary, fontSize: 18, fontWeight: '700',
   },
   ctaSection: {
     paddingHorizontal: 16,

@@ -110,11 +110,11 @@ const SelectedPin = memo(function SelectedPin({
           },
         ]}>
           {hasRating ? (
-            <RNText style={[styles.markerText, { color: '#FFFFFF' }]}>
+            <RNText style={[styles.markerText, { color: theme.colors.onPrimary }]}>
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <MaterialCommunityIcons name="silverware-fork-knife" size={13} color="#FFFFFF" />
+            <MaterialCommunityIcons name="silverware-fork-knife" size={13} color={theme.colors.onPrimary} />
           )}
         </View>
         <View style={styles.markerArrow}>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -3,
     right: -6,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.onPrimary,
     borderRadius: 7,
     width: 14,
     height: 14,

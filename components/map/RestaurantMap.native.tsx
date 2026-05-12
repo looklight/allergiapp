@@ -229,7 +229,7 @@ export default function RestaurantMap({
         if (best === 3) break; // verde → non può migliorare
       }
       if (best === 3) clusterColor = theme.colors.success;
-      else if (best === 2) clusterColor = '#F9A825';
+      else if (best === 2) clusterColor = theme.colors.coverageMedium;
       else if (best === 1) clusterColor = theme.colors.textDisabled;
     }
 
@@ -350,7 +350,7 @@ export default function RestaurantMap({
       onPress={handleMapPress}
       onLayout={handleLayout}
       clusterColor={theme.colors.primary}
-      clusterTextColor="#FFFFFF"
+      clusterTextColor={theme.colors.onPrimary}
       clusterFontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif-medium'}
       renderCluster={renderCluster}
       superClusterRef={superClusterRef}
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: theme.colors.primary,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.onPrimary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.shadow,
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   clusterText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 13,
     fontWeight: '700',
   },
