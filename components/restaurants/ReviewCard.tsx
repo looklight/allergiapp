@@ -102,11 +102,8 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
           <Text style={styles.contributionText}>{item.text}</Text>
         ) : (
           <GestureDetector gesture={doubleTapLike}>
-            <View style={styles.textGestureArea}>
+            <View>
               <Text style={styles.contributionText}>{item.text}</Text>
-              <Animated.View pointerEvents="none" style={[styles.likeBurst, burstStyle]}>
-                <MaterialCommunityIcons name="thumb-up" size={56} color={theme.colors.primary} />
-              </Animated.View>
             </View>
           </GestureDetector>
         )
@@ -189,6 +186,12 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Burst del doppio-tap: posizionato sull'intera card così l'icona da 56px
+          ha sempre spazio verticale anche con testo di una sola riga. */}
+      <Animated.View pointerEvents="none" style={[styles.likeBurst, burstStyle]}>
+        <MaterialCommunityIcons name="thumb-up" size={56} color={theme.colors.primary} />
+      </Animated.View>
     </View>
   );
 }
@@ -224,9 +227,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textPrimary,
     lineHeight: 20,
-  },
-  textGestureArea: {
-    position: 'relative',
   },
   likeBurst: {
     position: 'absolute',
