@@ -39,6 +39,58 @@ Su Android 12+ il sistema usa la nuova Splash Screen API che mostra l'icona dent
 
 ---
 
+## Android — bug aperti da risolvere
+
+**Vincolo assoluto:** ogni fix deve essere Android-only via `Platform.OS === 'android'` o equivalente. iOS è "perfetta" e non va toccato in nessun caso.
+
+### Footer / tab bar — possibile regressione del fix safe area
+Il fix in `e586ce6` (paddingBottom = max(insets.bottom, 16) + height = 56 + …) potrebbe essere stato troppo aggressivo: in Expo Go (senza edge-to-edge, insets.bottom = 0) il tab bar diventa 72dp di altezza, e gli overlay posizionati con `49 + insets.bottom + 12/16` (nearby banner "N ristoranti a Milano", FAB "+ aggiungi") finiscono parzialmente sotto.
+
+- [ ] Rivalutare la formula: probabilmente meglio `paddingBottom: insets.bottom + small_extra` (es. +6) **senza** override del `height`, lasciando che React Navigation calcoli l'altezza naturale
+- [ ] Una volta sistemata l'altezza, ricalibrare `bottom: 49 + insets.bottom + 12` su `nearbyBanner` (riga ~686) e `bottom: 49 + insets.bottom + 16` su `fabWrapper` (riga ~759) di `app/(tabs)/restaurants.tsx`. Valutare `useBottomTabBarHeight()` da `@react-navigation/bottom-tabs` per agganciarsi dinamicamente all'altezza reale del tab bar
+- [ ] Verificare in Expo Go E in EAS build (i due ambienti hanno insets.bottom diversi)
+
+### Bottom sheet — spazio vuoto sotto
+Il gap appare sotto **entrambi** i bottom sheet:
+- `RestaurantDetailSheet` (scheda singolo ristorante)
+- `NearbyListSheet` (elenco ristoranti in città)
+
+Il fix `d46141b` (`containerHeight += insetBottom`) funziona solo quando insets.bottom > 0 (cioè in EAS edge-to-edge). In Expo Go insets.bottom = 0 quindi il gap resta. Probabile causa Expo Go: `useWindowDimensions().height` riporta meno della finestra visibile, oppure il container del sheet ha un parent con padding/margin che riduce l'area utile.
+
+- [ ] Investigare il rendering del sheet in Expo Go: ispezionare `useWindowDimensions().height`, `Dimensions.get('screen').height`, `Dimensions.get('window').height` su Android (loggarli e confrontare)
+- [ ] Probabile fix: usare `Dimensions.get('screen').height` come riferimento su Android invece di `useWindowDimensions().height`, oppure aggiungere un offset esplicito che gestisca sia Expo Go che EAS
+- [ ] Verificare in **entrambi i sheet** dopo il fix (non solo nel detail)
+
+### Bottom sheet — lag scrolling
+Il body del sheet ("contenuto sotto handle") sembra laggare quando si scrolla su e giù su Android.
+
+- [ ] Possibilmente legato al body pan + scroll gesture simultaneo in `BottomSheet.tsx`: troppe shared values aggiornate per frame su Android. Verificare se `simultaneousWithExternalGesture` causa carico extra
+- [ ] Test prima su EAS dev-client per escludere overhead di Expo Go (è ~5x più lento in dev mode)
+- [ ] Se persiste: profiler React DevTools, valutare `React.memo` sui figli del body
+
+### Mappa — pin selezionati tagliati / centramento poco fluido
+- [ ] **Pin tagliati**: quando un pin ristorante viene selezionato (cambio stato), sembra che venga renderizzato con clipping. Indagare `components/map/RestaurantMap.native.tsx` — possibile `tracksViewChanges` o margine/anchor del marker che cambia in modo asimmetrico
+- [ ] **Centramento ruvido**: la camera animation alla selezione del pin non è fluida. Verificare la call `mapRef.animateCamera` / `animateToRegion` — duration, easing, e se viene chiamata in concorrenza con altri update
+- [ ] **Pin che scompaiono**: selezionando un pin alcuni altri spariscono. Probabilmente lo stesso problema di `tracksViewChanges` che invalida il bitmap del marker quando React aggiorna lo stato
+- [ ] **Non tutti i pin si vedono**: verificare la query/filtro: il viewport bbox passato a `get_nearby_restaurants` potrebbe escludere alcuni pin, oppure clustering lato JS ne nasconde alcuni
+- [ ] Tutti questi sono Android-specific (iOS usa Apple Maps di default, Android usa Google Maps): le soluzioni quasi certamente entrano nel ramo `Platform.OS === 'android'` di `RestaurantMap.native.tsx`
+
+### Modal foto menu — segnala recensione, tap esterno non chiude
+Stesso pattern siblings (Pressable absoluteFill + View content) presente probabilmente in `components/restaurants/PhotoGalleryModal.tsx` o in un Modal nested al suo interno (segnalazione recensione).
+
+- [ ] Identificare il modal esatto. Candidati: il render del `ReportReviewModal` chiamato da `PhotoGalleryModal` (già fixato in `0b7b53f`, verificare che la fix sia rispettata anche da dentro la gallery), oppure un overlay aggiuntivo dentro la gallery
+- [ ] Audit completo dei restanti Modal con pattern siblings: cercare `<Pressable style={StyleSheet.absoluteFill} onPress=` in tutto il progetto
+- [ ] Convertirli al pattern nested già usato in `FilterModal` / `ReportReviewModal` / avatar-gallery
+
+### Lag generale Android
+Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per via di dev mode + niente Hermes optimizations) o se ci sono problemi reali.
+
+- [ ] **Prima di indagare oltre**: testare in un EAS build (dev-client o internal testing) per escludere l'overhead di Expo Go
+- [ ] Se persiste in EAS: profiler RN, controllare re-render eccessivi (FlatList senza keyExtractor stabile, useState in componenti grossi), Reanimated worklets che fanno troppo, immagini non ottimizzate (vedi roadmap migrazione a `expo-image` nella sezione Gestione immagini)
+- [ ] Verificare che Hermes sia attivo nel build (default in SDK 54 ma controllare)
+
+---
+
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 - [ ] **Allineare tabella `translations` prima del prossimo build prod con ristoranti** — i JSON in `scripts/translations/*.json` contengono le 5 nuove voci tree nuts (almonds, hazelnuts, walnuts, pistachios, cashews) e completamenti per ~8 lingue incomplete. Lanciare `node scripts/uploadToSupabase.js` per pushare. Altrimenti utenti con lingue scaricate vedranno fallback inglese su quelle voci. Vedi commit `98a101c`.
