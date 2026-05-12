@@ -37,7 +37,12 @@ const NUM_COLUMNS = Math.max(
   3,
   Math.floor((SCREEN_WIDTH - GRID_PADDING * 2) / TARGET_ITEM_SIZE),
 );
-const ITEM_SIZE = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
+// Floor per evitare overflow da subpixel rounding su Android: con valori
+// frazionari (es. 102.66dp) il ceil per-item su density tipica accumula
+// e supera la larghezza del container, causando wrap a NUM_COLUMNS-1.
+const ITEM_SIZE = Math.floor(
+  (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS,
+);
 
 function restrictionPeopleLabel(restrictionId: string): string {
   const key = `restaurants.avatarGallery.peopleLabel.${restrictionId}`;
