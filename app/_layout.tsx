@@ -13,7 +13,6 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { UnlockedAvatarsProvider } from '../contexts/UnlockedAvatarsContext';
 import { Analytics } from '../services/analytics';
 import { Crashlytics } from '../services/crashlytics';
-import { RemoteConfig } from '../services/remoteConfig';
 import i18n from '../utils/i18n';
 import { useDietarySync } from '../hooks/useDietarySync';
 import ConsentModal from './consent';
@@ -100,9 +99,7 @@ function AppContent() {
 
   useEffect(() => {
     if (isReady) {
-      // Inizializzazione con splash visibile:
-      // 1) Controlla OTA → se disponibile, scarica e ricarica subito
-      // 2) Fetch Remote Config (max 3s) → splash si nasconde con valori già pronti
+      // Inizializzazione con splash visibile: controlla OTA, se disponibile scarica e ricarica subito.
       (async () => {
         if (!__DEV__) {
           try {
@@ -114,12 +111,6 @@ function AppContent() {
             }
           } catch {}
         }
-
-        // Fetch Remote Config con timeout di 3s — garantisce valori corretti al primo render
-        await Promise.race([
-          RemoteConfig.initialize(),
-          new Promise<void>(resolve => setTimeout(resolve, 3000)),
-        ]);
 
         SplashScreen.hideAsync();
       })();
