@@ -33,6 +33,7 @@ Dopo il merge del 2026-05-12 sono stati rimossi `services/remoteConfig.ts`, `com
 
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
+- [ ] **Allineare tabella `translations` prima del prossimo build prod con ristoranti** — i JSON in `scripts/translations/*.json` contengono le 5 nuove voci tree nuts (almonds, hazelnuts, walnuts, pistachios, cashews) e completamenti per ~8 lingue incomplete. Lanciare `node scripts/uploadToSupabase.js` per pushare. Altrimenti utenti con lingue scaricate vedranno fallback inglese su quelle voci. Vedi commit `98a101c`.
 
 
 ---
