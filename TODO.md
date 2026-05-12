@@ -28,6 +28,14 @@ Dopo il merge del 2026-05-12 sono stati rimossi `services/remoteConfig.ts`, `com
 - [ ] Valutare se `BannerType` può diventare solo `'info'` (rimuovendo `'ad'` e `'custom'`)
 - **Beneficio:** componente più chiaro, tipi più stretti. **Costo:** test manuale su device richiesto (tocca codice vivo).
 
+### Splash screen Android — uniformare background a tutto schermo
+Su Android 12+ il sistema usa la nuova Splash Screen API che mostra l'icona dentro un "quadrato/cerchio" centrale (windowSplashScreenIconBackgroundColor) e attorno usa il `windowBackground` del tema → si vede un bordo non uniforme attorno al piatto invece del beige `#F7DCB3` a tutto schermo. iOS non ha il problema.
+
+- [ ] In `app.config.ts`, plugin `expo-splash-screen`: aggiungere una sezione `android` esplicita che setti `backgroundColor: "#F7DCB3"` anche come `windowBackground` del tema, e considerare `imageWidth` ridotto / `resizeMode: "cover"` per riempire la zona system splash con lo stesso colore
+- [ ] In alternativa: prebuild + customizzare manualmente `android/app/src/main/res/values/styles.xml` impostando `windowSplashScreenBackground` uguale a `windowBackground`
+- [ ] Test: rebuild EAS Android + installare su device Android 12+ e Android 11- (le due API system splash si comportano diversamente)
+- **Beneficio:** splash uniforme su Android come iOS. **Costo:** prebuild + nuovo build EAS Android (~15 min). Verifica solo dopo install nativo.
+
 
 ---
 
