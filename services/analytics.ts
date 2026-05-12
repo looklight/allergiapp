@@ -114,7 +114,7 @@ export const Analytics = {
         allergen_count: allergenIds.length,
         previous_count: previousCount,
         new_count: newCount,
-        allergens: allergenIds.join(','),
+        allergens: allergenIds.join(',').slice(0, 100),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging allergies_saved:', error);
@@ -153,7 +153,7 @@ export const Analytics = {
         food_count: foodIds.length,
         previous_count: previousCount,
         new_count: newCount,
-        foods: foodIds.join(','),
+        foods: foodIds.join(',').slice(0, 100),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging other_foods_saved:', error);
@@ -225,7 +225,7 @@ export const Analytics = {
       await logEvent(firebaseAnalytics, 'card_viewed', {
         card_language: cardLanguage,
         allergen_count: allergenCount,
-        allergens: allergenIds.join(','),
+        allergens: allergenIds.join(',').slice(0, 100),
         is_downloaded_language: isDownloadedLanguage,
       });
     } catch (error) {
@@ -356,9 +356,9 @@ export const Analytics = {
     try {
       await logEvent(firebaseAnalytics, 'restrictions_saved', {
         restriction_count: restrictionIds.length,
-        restrictions: restrictionIds.join(','),
+        restrictions: restrictionIds.join(',').slice(0, 100),
         diet_mode_count: dietModes.length,
-        diet_modes: dietModes.join(','),
+        diet_modes: dietModes.join(',').slice(0, 100),
         vegetarian_level: vegetarianLevel,
       });
     } catch (error) {

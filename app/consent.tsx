@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { useAppContext } from '../contexts/AppContext';
 import { useTrackingPermission } from '../hooks/useTrackingPermission';
 import { Analytics } from '../services/analytics';
+import { Crashlytics } from '../services/crashlytics';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 
@@ -56,6 +57,7 @@ export default function ConsentModal({ visible }: ConsentModalProps) {
 
       await setTrackingConsent(trackingConsentResult);
       Analytics.setTrackingConsent(trackingConsentResult);
+      Crashlytics.setCollectionEnabled(trackingConsentResult.status === 'authorized');
       Analytics.logAppOpened();
     } catch (error) {
       console.error('Error during consent flow:', error);
