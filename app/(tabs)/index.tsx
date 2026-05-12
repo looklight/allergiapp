@@ -167,7 +167,7 @@ export default function HomeScreen() {
                     style={styles.restrictionChip}
                     textStyle={styles.chipText}
                     icon={() => (
-                      <Text style={styles.chipIcon}>{'\uD83D\uDCCB'}</Text>
+                      <Text style={styles.chipIcon}>{'\u26A0\uFE0F'}</Text>
                     )}
                   >
                     {i18n.t('otherRestrictions.other')} ({generalCount})

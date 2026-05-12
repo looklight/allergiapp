@@ -190,7 +190,7 @@ export default function AddAllergyScreen() {
                 pressed && styles.otherRowPressed,
               ]}
             >
-              <Text style={styles.otherIcon}>{primaryMode ? primaryMode.icon : '📋'}</Text>
+              <Text style={styles.otherIcon}>{primaryMode ? primaryMode.icon : '⚠️'}</Text>
               <View style={styles.otherTextContainer}>
                 <Text style={styles.otherTitle}>{i18n.t('otherRestrictions.other')}</Text>
                 {hasActiveModes && (

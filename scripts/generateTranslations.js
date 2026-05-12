@@ -141,6 +141,9 @@ const OTHER_FOODS = {
   oats: 'Oats',
   flax_seeds: 'Flax seeds',
   olive_oil: 'Olive oil',
+  // Additivi e fermenti
+  yeast: 'Yeast',
+  artificial_colorings: 'Artificial colorings',
   // Proteine
   pork: 'Pork',
   red_meat: 'Red meat',

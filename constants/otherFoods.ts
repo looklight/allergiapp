@@ -65,6 +65,9 @@ export type OtherFoodId =
   | 'flax_seeds'
   | 'cacao_chocolate'
   | 'olive_oil'
+  // Additivi e fermenti
+  | 'yeast'
+  | 'artificial_colorings'
   // Proteine
   | 'pork'
   | 'red_meat'
@@ -323,6 +326,13 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'olive_oil', icon: '🫒', category: 'legumes_other', translations: {
     it: 'Olio d\'oliva', en: 'Olive oil', fr: 'Huile d\'olive', de: 'Olivenöl', es: 'Aceite de oliva', pt: 'Azeite', nl: 'Olijfolie', pl: 'Oliwa z oliwek', ru: 'Оливковое масло', sv: 'Olivolja', zh: '橄榄油', ja: 'オリーブオイル', ko: '올리브유', th: 'น้ำมันมะกอก', ar: 'زيت الزيتون',
+  }},
+  // — Additivi e fermenti —
+  { id: 'yeast', icon: '🍞', category: 'legumes_other', translations: {
+    it: 'Lievito', en: 'Yeast', fr: 'Levure', de: 'Hefe', es: 'Levadura', pt: 'Levedura', nl: 'Gist', pl: 'Drożdże', ru: 'Дрожжи', sv: 'Jäst', zh: '酵母', ja: '酵母', ko: '효모', th: 'ยีสต์', ar: 'الخميرة',
+  }},
+  { id: 'artificial_colorings', icon: '🎨', category: 'legumes_other', translations: {
+    it: 'Coloranti artificiali', en: 'Artificial colorings', fr: 'Colorants artificiels', de: 'Künstliche Farbstoffe', es: 'Colorantes artificiales', pt: 'Corantes artificiais', nl: 'Kunstmatige kleurstoffen', pl: 'Sztuczne barwniki', ru: 'Искусственные красители', sv: 'Konstgjorda färgämnen', zh: '人工色素', ja: '人工着色料', ko: '인공 색소', th: 'สีผสมอาหารสังเคราะห์', ar: 'ألوان اصطناعية',
   }},
   // — Proteine —
   { id: 'pork', icon: '🥩', category: 'proteins', translations: {
