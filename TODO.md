@@ -146,13 +146,22 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 
 ---
 
-## Architettura — decisioni pendenti
+## Stato Analytics & Firebase — verificato 2026-05-12
 
-**Da fare quando si riattivano le analytics:**
-- [ ] Scegliere backend analytics (Supabase tabella `analytics_events` / PostHog / altro)
-- [ ] Implementare `trackEvent()` in `services/analytics.ts` (interfaccia pubblica già pronta, tutti i call site funzionano)
-- [ ] Creare tabella `app_config` su Supabase per banner promo e popup message (sostituisce Remote Config)
-- [ ] Se si decide di NON riattivare analytics, rimuovere `expo-tracking-transparency` da `app.config.ts` e la logica di consenso ATT
+Firebase Analytics + Crashlytics sono **attivi in produzione** con pattern Expo Go-safe (verifica post-merge):
+
+- Plugin nativi condizionali in `app.config.ts:67-72` — caricati solo se `EAS_BUILD=true`. `googleServicesFile` iOS/Android anch'essi condizionali (`app.config.ts:18,43`).
+- `services/analytics.ts` e `services/crashlytics.ts` usano `require()` dinamico in `try/catch` → in Expo Go `isFirebaseAvailable=false` e tutti i metodi diventano no-op.
+- Gating consenso ATT corretto in `app/_layout.tsx:120-122` (dopo `hasAcceptedLegalTerms`): `Analytics.setTrackingConsent` + `Crashlytics.setCollectionEnabled` + `logAppOpened` + `updateUserProperties`. Propagazione immediata in `app/consent.tsx:58`.
+
+**Conseguenza pratica:** sviluppo in Expo Go senza warning Firebase, build EAS (preview/beta/prod) inviano eventi Analytics (gated ATT) e crash a Crashlytics.
+
+**Da verificare in vivo con un build EAS preview:** eventi visibili in Firebase Console (con consenso ATT accettato), crash forzato visibile in Crashlytics, Expo Go senza warning.
+
+### Eventuale futura sostituzione del backend Analytics
+Non urgente, da fare solo se si decide di abbandonare Firebase:
+- L'interfaccia pubblica `Analytics.*` è già astratta: basta riscrivere l'implementazione di `services/analytics.ts` cambiando target (Supabase `analytics_events` / PostHog / Mixpanel), i call site non vanno toccati.
+- Crashlytics può restare anche senza Analytics — è un servizio separato.
 
 
 ---
