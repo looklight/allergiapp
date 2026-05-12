@@ -7,7 +7,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, withSpring,
   runOnJS, interpolate, Extrapolation, Easing,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -102,6 +102,7 @@ export default function ImageFullscreenModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onShow={handleShow}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={dismissPan}>
         <Animated.View style={[styles.overlay, overlayStyle, dismissStyle]}>
           <TouchableOpacity style={[styles.closeBtn, { top: insets.top + 12 }]} onPress={onClose} hitSlop={12}>
@@ -142,6 +143,7 @@ export default function ImageFullscreenModal({
           {children}
         </Animated.View>
       </GestureDetector>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

@@ -7,7 +7,7 @@ import ReAnimated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming,
   runOnJS, interpolate, Extrapolation, Easing,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import ZoomableImage from '../ZoomableImage';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -114,6 +114,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
 
   return (
     <Modal visible transparent animationType="fade" onShow={handleShow}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={dismissPan}>
         <ReAnimated.View style={[styles.container, dismissStyle]}>
           {/* Close button */}
@@ -243,6 +244,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
           )}
         </ReAnimated.View>
       </GestureDetector>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
