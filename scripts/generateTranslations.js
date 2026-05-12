@@ -131,6 +131,12 @@ const OTHER_FOODS = {
   sunflower_seeds: 'Sunflower seeds',
   cinnamon: 'Cinnamon',
   ginger: 'Ginger',
+  // Frutta a guscio singole (complemento dell'allergene EU 'nuts')
+  almonds: 'Almonds',
+  hazelnuts: 'Hazelnuts',
+  walnuts: 'Walnuts',
+  pistachios: 'Pistachios',
+  cashews: 'Cashews',
   cacao_chocolate: 'Cacao / Chocolate',
   oats: 'Oats',
   flax_seeds: 'Flax seeds',

@@ -133,7 +133,7 @@ export default function HomeScreen() {
                     style={styles.chip}
                     textStyle={styles.chipText}
                     icon={() => (
-                      <Text style={styles.chipIcon}>{allergen.icon}</Text>
+                      <FoodIcon id={allergen.id} emoji={allergen.icon} size={18} style={styles.chipIcon} />
                     )}
                   >
                     {allergen.translations[locale] || allergen.translations.en}

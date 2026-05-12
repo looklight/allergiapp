@@ -190,7 +190,7 @@ export default function CardPortrait({
                       accessibilityLabel={`${getAllergenTranslation(id)}, ${translations.tapToSee}`}
                       accessibilityState={{ expanded: isExpanded }}
                     >
-                      <Text style={dynamicStyles.allergenIcon}>{allergen.icon}</Text>
+                      <FoodIcon id={allergen.id} emoji={allergen.icon} size={32} style={dynamicStyles.allergenIcon} />
                       <View style={styles.allergenTextContainer}>
                         <Text style={dynamicStyles.allergenText}>{getAllergenTranslation(id)}</Text>
                         <Text style={dynamicStyles.tapHint}>{translations.tapToSee} {isExpanded ? '▲' : '▼'}</Text>

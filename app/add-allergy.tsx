@@ -238,7 +238,7 @@ export default function AddAllergyScreen() {
                 <List.Item
                   title={allergen.translations[locale] || allergen.translations.en}
                   left={() => (
-                    <Text style={styles.icon}>{allergen.icon}</Text>
+                    <FoodIcon id={allergen.id} emoji={allergen.icon} size={24} style={styles.icon} />
                   )}
                   right={() => (
                     <Checkbox

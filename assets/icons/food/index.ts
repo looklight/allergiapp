@@ -10,9 +10,29 @@ import type { OtherFoodId } from '../../../constants/otherFoods';
 import type { AllergenId } from '../../../types';
 
 import Fig from './fig.svg';
+import Almonds from './almonds.svg';
+import Walnuts from './walnuts.svg';
+import Hazelnuts from './hazelnuts.svg';
+import Pistachios from './pistachios.svg';
+import Chickpeas from './chickpeas.svg';
+import Cashews from './cashews.svg';
+import Lupin from './lupin.svg';
+import Fennel from './fennel.svg';
+import Cinnamon from './cinnamon.svg';
+import PassionFruit from './passion_fruit.svg';
 
 export type FoodIconId = OtherFoodId | AllergenId;
 
 export const FOOD_SVG_ICONS: Partial<Record<FoodIconId, React.FC<SvgProps>>> = {
   fig: Fig,
+  almonds: Almonds,
+  walnuts: Walnuts,
+  hazelnuts: Hazelnuts,
+  pistachios: Pistachios,
+  chickpeas: Chickpeas,
+  cashews: Cashews,
+  lupin: Lupin,
+  fennel: Fennel,
+  cinnamon: Cinnamon,
+  passion_fruit: PassionFruit,
 };

@@ -265,7 +265,7 @@ export const ALLERGEN_IMAGES: Record<AllergenId, AllergenImages> = {
     },
   },
   lupin: {
-    examples: ['🫘', '🍞', '🥧', '🍝'],
+    examples: ['🍞', '🥧', '🍝'],
     description: {
       it: 'Farina di lupini, pane, pasta, snack',
       en: 'Lupin flour, bread, pasta, snacks',

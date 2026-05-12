@@ -14,12 +14,18 @@ interface FoodIconProps {
   style?: StyleProp<TextStyle & ViewStyle>;
 }
 
+// Le SVG AI-generated tendono ad avere whitespace interno nel viewBox, mentre
+// le emoji di sistema riempiono il box. Senza compensazione, le SVG sembrano
+// più piccole rispetto agli emoji vicini a parità di size.
+const SVG_VISUAL_BOOST = 1.2;
+
 export default function FoodIcon({ id, emoji, size = 18, style }: FoodIconProps) {
   const SvgComponent = FOOD_SVG_ICONS[id as FoodIconId];
   if (SvgComponent) {
+    const svgSize = size * SVG_VISUAL_BOOST;
     return (
       <View style={[style, styles.svgWrap, { width: size, height: size }]}>
-        <SvgComponent width={size} height={size} />
+        <SvgComponent width={svgSize} height={svgSize} />
       </View>
     );
   }

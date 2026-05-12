@@ -110,7 +110,7 @@ export default function CardLandscape({
                         styles.landscapeAllergenIconBg,
                         isSelected && styles.landscapeAllergenIconBgSelected
                       ]}>
-                        <Text style={styles.landscapeAllergenIcon} accessibilityElementsHidden>{allergen.icon}</Text>
+                        <FoodIcon id={allergen.id} emoji={allergen.icon} size={34} style={styles.landscapeAllergenIcon} />
                       </View>
                       <Text style={[
                         styles.landscapeAllergenName,
@@ -255,7 +255,7 @@ export default function CardLandscape({
                         { backgroundColor: colors.landscapeDetailBadgeBg },
                         isSelected && styles.landscapeDetailBadgeSelected
                       ]}>
-                        <Text style={styles.landscapeDetailBadgeIcon} accessibilityElementsHidden>{allergen.icon}</Text>
+                        <FoodIcon id={allergen.id} emoji={allergen.icon} size={18} style={styles.landscapeDetailBadgeIcon} />
                         <Text style={[styles.landscapeDetailBadgeText, { color: colors.landscapeDetailBadgeTextColor, fontSize: 14 + fontBoost }]}>
                           {getAllergenTranslation(id)}
                         </Text>
