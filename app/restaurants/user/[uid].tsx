@@ -85,7 +85,7 @@ export default function PublicProfileScreen() {
       <ProfileCard
         profile={visibleProfile!}
         onBack={() => router.back()}
-        stats={{ likes: likesReceived, reviews: reviews.length, favorites: 0 }}
+        stats={{ likes: likesReceived, reviews: reviews.length }}
       >
         {reviews.length > 0 && (
           <>

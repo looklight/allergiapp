@@ -12,7 +12,7 @@ import Avatar from './Avatar';
 interface ProfileStats {
   likes: number;
   reviews: number;
-  favorites: number;
+  favorites?: number;
 }
 
 interface ProfileCardProps {
@@ -104,11 +104,15 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
               <Text style={styles.statNumber}>{stats?.likes ?? 0}</Text>
               <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
             </View>
-            <View style={styles.statSep} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats?.favorites ?? 0}</Text>
-              <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statFavorites')}</Text>
-            </View>
+            {stats?.favorites != null && (
+              <>
+                <View style={styles.statSep} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>{stats.favorites}</Text>
+                  <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statFavorites')}</Text>
+                </View>
+              </>
+            )}
           </View>
 
         </Surface>
