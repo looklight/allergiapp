@@ -1,6 +1,15 @@
 # AllergiApp - TODO
 
 
+## Branch attivi (NON cancellare)
+
+- **`main`** — branch di sviluppo principale. Contiene card + ristoranti (post-merge 2026-05-12).
+- **`backup/main-card-only`** (`899752c`) — snapshot pre-merge della versione 1.0.6 (solo card, pre-ristoranti). Punto di rollback rapido in caso di problemi su main: `git reset --hard backup/main-card-only && git push --force-with-lease origin main`.
+- **`backup/restaurants-v2`** (`47abcc8`) — branch storico da cui è nato il merge (ex `feature/restaurants-v2`). Tenuto come secondo backup dormiente. Punta allo stesso commit di main.
+- **`admin-prod`** — produzione admin dashboard (https://admin.allergiapp.com), branch dedicato.
+- **`landing`** — sito web pubblico, servito via Vercel.
+
+
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 
