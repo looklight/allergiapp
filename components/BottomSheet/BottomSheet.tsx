@@ -2,7 +2,7 @@ import {
   createContext, forwardRef, useContext, useEffect, useImperativeHandle,
   useMemo, type ReactNode,
 } from 'react';
-import { Keyboard, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { Keyboard, Platform, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import Animated, {
   runOnJS, useAnimatedStyle, useSharedValue, withSpring,
   type SharedValue, type WithSpringConfig,
@@ -34,7 +34,11 @@ type Props = {
   style?: ViewStyle;
 };
 
-const SPRING: WithSpringConfig = { damping: 22, stiffness: 220, mass: 1 };
+// Damping più alto su Android per ridurre l'oscillazione visibile dello snap
+// a topY quando il body contiene testi/immagini (su iOS 22 è già percepito bene).
+const SPRING: WithSpringConfig = Platform.OS === 'android'
+  ? { damping: 28, stiffness: 220, mass: 1 }
+  : { damping: 22, stiffness: 220, mass: 1 };
 const DRAG_ACTIVATION_OFFSET = 8;
 const CLOSE_DISTANCE_THRESHOLD = 40;
 const CLOSE_VELOCITY_THRESHOLD = 800;
@@ -68,8 +72,12 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(function BottomSheet(
   // Il container è alto quanto lo snap massimo: a full-open il suo bottom
   // coincide con il bottom dello schermo, quindi il safe-area padding sul
   // body è visibile correttamente (niente overflow off-screen).
+  // Su Android con edge-to-edge, useWindowDimensions().height può non includere
+  // l'area della nav bar (varia per versione/config). Estendiamo il container di
+  // insetBottom per coprire la gesture nav area ed evitare la striscia scoperta
+  // sotto al sheet quando sale agli snap point.
   const maxSnap = useMemo(() => Math.max(...snapPoints), [snapPoints]);
-  const containerHeight = height * maxSnap;
+  const containerHeight = height * maxSnap + (Platform.OS === 'android' ? insetBottom : 0);
 
   // Posizioni Y dall'alto per ogni snap: frazione 0.92 → top a 8% dello schermo.
   // positions[0] è lo snap più basso (sheet più chiuso), positions[last] il più alto.
