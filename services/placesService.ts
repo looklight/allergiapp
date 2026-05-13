@@ -262,9 +262,14 @@ function extractCityFromComponents(
 // ---------------------------------------------------------------------------
 
 // Gruppi di tipi (max 5 per chiamata API Google)
+// Nota: 'gelato_shop' non è un primary type valido in Google Places API (New),
+// nonostante esista in altre versioni dell'API — rifiutato con 400. Le gelaterie
+// sono comunque catturate da 'ice_cream_shop'. Mantenere `gelato_shop` come
+// VALORE in GOOGLE_TYPE_TO_CUISINE è innocuo (è una mappa di lookup), ma NON
+// includerlo in includedPrimaryTypes della richiesta.
 const PLACE_TYPE_GROUPS = [
   ['restaurant', 'bakery', 'pastry_shop', 'cafe', 'bar'],
-  ['ice_cream_shop', 'dessert_shop', 'gelato_shop'],
+  ['ice_cream_shop', 'dessert_shop'],
 ];
 
 async function fetchAutocomplete(query: string, types: string[]): Promise<PlaceAutocompleteResult[]> {
