@@ -73,12 +73,13 @@ Cause architetturali sospette (in ordine di probabilità):
 - [ ] Alternativa più aggressiva: ridurre `elevation` su Android (es. 16 → 4) — meno qualità shadow ma molto più leggero. Solo `elevation` (non shadow* che è iOS).
 - [ ] Profiler React DevTools / Reanimated debug per misurare frame drop reali
 
-### Mappa — pin selezionati tagliati / centramento poco fluido
-- [ ] **Pin tagliati**: quando un pin ristorante viene selezionato (cambio stato), sembra che venga renderizzato con clipping. Indagare `components/map/RestaurantMap.native.tsx` — possibile `tracksViewChanges` o margine/anchor del marker che cambia in modo asimmetrico
-- [ ] **Centramento ruvido**: la camera animation alla selezione del pin non è fluida. Verificare la call `mapRef.animateCamera` / `animateToRegion` — duration, easing, e se viene chiamata in concorrenza con altri update
-- [ ] **Pin che scompaiono**: selezionando un pin alcuni altri spariscono. Probabilmente lo stesso problema di `tracksViewChanges` che invalida il bitmap del marker quando React aggiorna lo stato
-- [ ] **Non tutti i pin si vedono**: verificare la query/filtro: il viewport bbox passato a `get_nearby_restaurants` potrebbe escludere alcuni pin, oppure clustering lato JS ne nasconde alcuni
-- [ ] Tutti questi sono Android-specific (iOS usa Apple Maps di default, Android usa Google Maps): le soluzioni quasi certamente entrano nel ramo `Platform.OS === 'android'` di `RestaurantMap.native.tsx`
+### Mappa Android — pin issues
+**Stato (2026-05-13)**: 1/4 risolto. Restano centramento, pin che scompaiono, pin mancanti.
+
+- [x] **Pin tagliati** — risolto in `components/map/SelectedMarkerOverlay.tsx`: il `transform: [{ scale: 1.25 }]` causava clipping perché `react-native-maps` su Android rasterizza il marker in un bitmap basato sul layout naturale della View (pre-transform). Gate del transform a `Platform.OS === 'ios'`. iOS bit-per-bit identico. Su Android il pin selezionato resta differenziato da bg colorata + shadow potenziata + zIndex 9999 + `cluster={false}`.
+- [ ] **Centramento poco fluido**: la camera animation alla selezione del pin non è fluida. `RestaurantMap.native.tsx:160-167` ha `setTimeout(50ms) → animateCamera(duration: 400)`. Tweak empirici candidati (es. duration 400→600ms su Android, rimuovere setTimeout) ma vanno verificati su device — non intervenire alla cieca.
+- [ ] **Pin che scompaiono al cambio selezione**: cause sospette multiple — `tracksViewChanges` race su rimount del pin che esce dall'overlay; `isDotZoom` flip durante camera animation che attraversa la soglia (con isteresi ±0.05) → mass re-render di tutti i MapPin con `justChanged=true` → frame di flicker. Da indagare con device profiling. Possibile mitigazione collaterale dal fix "Pin tagliati": meno rendering churn durante la selezione perché il pin selezionato non cambia più size, solo color.
+- [ ] **Non tutti i pin si vedono**: verificare se è il decluttering by-design in `MapPin.tsx:117-119` (pin con `dotCovered === 0` nascosti al far zoom quando `showMatchInfo` è attivo, salvo favoriti) oppure clustering aggressivo / viewport bbox stretto. Capire se l'utente trova confondente il decluttering — se sì, valutare di mostrare i pin grigi anche al far zoom.
 
 ### Modal foto menu — segnala recensione, tap esterno non chiude
 **Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS invariato.**
