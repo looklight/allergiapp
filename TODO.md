@@ -74,11 +74,23 @@ Cause architetturali sospette (in ordine di probabilità):
 - [ ] Profiler React DevTools / Reanimated debug per misurare frame drop reali
 
 ### Mappa Android — pin issues
-**Stato (2026-05-13)**: 1/4 risolto. Restano centramento, pin che scompaiono, pin mancanti.
+**Stato (2026-05-13)**: 3/5 risolti. Restano centramento camera e pin mancanti.
 
 - [x] **Pin tagliati** — risolto in `components/map/SelectedMarkerOverlay.tsx`: il `transform: [{ scale: 1.25 }]` causava clipping perché `react-native-maps` su Android rasterizza il marker in un bitmap basato sul layout naturale della View (pre-transform). Gate del transform a `Platform.OS === 'ios'`. iOS bit-per-bit identico. Su Android il pin selezionato resta differenziato da bg colorata + shadow potenziata + zIndex 9999 + `cluster={false}`.
-- [ ] **Centramento poco fluido**: la camera animation alla selezione del pin non è fluida. `RestaurantMap.native.tsx:160-167` ha `setTimeout(50ms) → animateCamera(duration: 400)`. Tweak empirici candidati (es. duration 400→600ms su Android, rimuovere setTimeout) ma vanno verificati su device — non intervenire alla cieca.
-- [ ] **Pin che scompaiono al cambio selezione**: cause sospette multiple — `tracksViewChanges` race su rimount del pin che esce dall'overlay; `isDotZoom` flip durante camera animation che attraversa la soglia (con isteresi ±0.05) → mass re-render di tutti i MapPin con `justChanged=true` → frame di flicker. Da indagare con device profiling. Possibile mitigazione collaterale dal fix "Pin tagliati": meno rendering churn durante la selezione perché il pin selezionato non cambia più size, solo color.
+- [x] **Pin che scompaiono al cambio selezione** — risolto in `components/map/MapPin.tsx`: aggiunto `androidSettling` state che estende la finestra `tracksViewChanges=true` a ~100ms dopo mount e dopo ogni cambio prop rilevante. La drawing cache nativa Android richiede più tempo di un single frame per ricatturare il bitmap del marker. iOS gestito via early return dell'useEffect, byte-identico.
+- [x] **Colori pin non aggiornati con filtro "per me"** — stessa root cause del precedente (bitmap caching su prop change). Risolto dallo stesso fix `androidSettling`.
+- [ ] **Centramento camera — animazione "sale e scende" + pin atterra troppo in alto**: comportamento Android-specifico, sospettata easing overshoot del native Google Maps SDK. Da indagare con EAS dev-client.
+
+  **Tentativi falliti in Expo Go (2026-05-13)** — documentati per non riprovarli:
+  - `mapPadding` prop (Android-only, gated): aggiunto al `<ClusteredMapView>` quando un bottom sheet è aperto, con `bottomSheetCoverage` passato da `restaurants.tsx`. Effetto: il pin atterra correttamente centrato MA all'apertura/chiusura del sheet il map nativo aggiusta istantaneamente il punto di centro logico → salto visivo del world content. `mapPadding` non è animabile, quindi il toggle on/off è sempre visibile. Scartato per side-effect. Codice ripristinato a `cd26fbf`.
+  - `animateCamera` → `animateToRegion` sul ramo else del useEffect centerOn (Android-only): cambio API senza altre modifiche. Effetto: nessuno. La libreria `react-native-maps` Android usa la stessa chiamata sottostante `map.animateCamera(update, duration, null)` per entrambe le API, cambia solo il tipo di `CameraUpdate` (newLatLng vs newLatLngBounds). Stesso easing nativo. Scartato. Codice ripristinato a `cd26fbf`.
+
+  **Da provare quando avremo EAS dev-client + logging**:
+  - Aggiungere `console.log` in `RestaurantMap.native.tsx:158-167` per capire esattamente quando viene chiamato `animateCamera`, con quali parametri, e se ci sono chiamate multiple concorrenti
+  - Ridurre `duration` da 400ms a 200-250ms su Android: maschera il problema (meno tempo per vedere overshoot) ma non lo risolve. Solo se non c'è scelta.
+  - Rimuovere il `setTimeout(50ms)` su Android: l'animazione parte sincrona col cambio di stato, potrebbe interagire meglio con i re-render del SelectedMarkerOverlay
+  - Investigare se Google Maps Android SDK ha un "smart camera" che attiva zoom-out-then-in per certi pattern di animazione
+
 - [ ] **Non tutti i pin si vedono**: verificare se è il decluttering by-design in `MapPin.tsx:117-119` (pin con `dotCovered === 0` nascosti al far zoom quando `showMatchInfo` è attivo, salvo favoriti) oppure clustering aggressivo / viewport bbox stretto. Capire se l'utente trova confondente il decluttering — se sì, valutare di mostrare i pin grigi anche al far zoom.
 
 ### Modal foto menu — segnala recensione, tap esterno non chiude
