@@ -74,11 +74,13 @@ Cause architetturali sospette (in ordine di probabilità):
 - [ ] Profiler React DevTools / Reanimated debug per misurare frame drop reali
 
 ### Mappa Android — pin issues
-**Stato (2026-05-13)**: 3/5 risolti. Restano centramento camera e pin mancanti.
+**Stato (2026-05-14)**: 5/7 risolti. Restano centramento camera "sale e scende" e pin mancanti.
 
 - [x] **Pin tagliati** — risolto in `components/map/SelectedMarkerOverlay.tsx`: il `transform: [{ scale: 1.25 }]` causava clipping perché `react-native-maps` su Android rasterizza il marker in un bitmap basato sul layout naturale della View (pre-transform). Gate del transform a `Platform.OS === 'ios'`. iOS bit-per-bit identico. Su Android il pin selezionato resta differenziato da bg colorata + shadow potenziata + zIndex 9999 + `cluster={false}`.
 - [x] **Pin che scompaiono al cambio selezione** — risolto in `components/map/MapPin.tsx`: aggiunto `androidSettling` state che estende la finestra `tracksViewChanges=true` a ~100ms dopo mount e dopo ogni cambio prop rilevante. La drawing cache nativa Android richiede più tempo di un single frame per ricatturare il bitmap del marker. iOS gestito via early return dell'useEffect, byte-identico.
 - [x] **Colori pin non aggiornati con filtro "per me"** — stessa root cause del precedente (bitmap caching su prop change). Risolto dallo stesso fix `androidSettling`.
+- [x] **Bussola Android seminascosta dietro UI** — risolto in `RestaurantMap.native.tsx` con `mapPadding={{ top: insets.top + 120, right: 12, bottom: 0, left: 0 }}` solo su Android. Settaggio statico (non toggle, niente salti). iOS non viene toccato, continua col `compassOffset`. Side effect noto: il centro logico della camera shift in basso di ~70px su Android.
+- [x] **Pin centra male se mappa ruotata** (su entrambe le piattaforme, bug pre-esistente latente) — risolto aggiungendo `heading: 0` + `pitch: 0` alla `animateCamera` del ramo pin-selection. La math dell'offset assumeva north-up: con la mappa ruotata, "sud sul globo" non corrispondeva più a "giù sullo schermo" → pin fuori centro o fuori dallo schermo. Reset di heading/pitch al tap pin è comportamento standard di Apple/Google Maps.
 - [ ] **Centramento camera — animazione "sale e scende" + pin atterra troppo in alto**: comportamento Android-specifico, sospettata easing overshoot del native Google Maps SDK. Da indagare con EAS dev-client.
 
   **Tentativi falliti in Expo Go (2026-05-13)** — documentati per non riprovarli:

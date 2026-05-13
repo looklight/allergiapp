@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
 import ClusteredMapView from 'react-native-map-clustering';
 import { Marker } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import MapPin from './MapPin';
 import SelectedMarkerOverlay from './SelectedMarkerOverlay';
@@ -68,6 +69,30 @@ export default function RestaurantMap({
   userDiets,
 }: RestaurantMapProps) {
   const mapRef = useRef<any>(null);
+  const insets = useSafeAreaInsets();
+
+  // mapPadding Android-only: sposta la bussola nativa Google Maps SDK fuori
+  // dalla zona search bar/filtri (default = top-right corner, era seminascosta
+  // dietro la search bar). Setting statico (mai cambia) → niente toggle, niente
+  // salti visibili. iOS usa compassOffset (gestito da app/(tabs)/restaurants.tsx),
+  // non serve toccare nulla qui.
+  //
+  // Trade-off noto: il map nativo considera la mapPadding anche per il "centro
+  // logico" → animateCamera({center}) centra ~half-padding più in basso del
+  // previsto. Per insets.top + 120 lo shift è ~70-80px. Potrebbe compensare
+  // il problema "pin troppo in alto" documentato in TODO sezione Mappa Android,
+  // oppure aggravarlo. Da verificare empiricamente. Rollback = rimuovere queste
+  // righe e il prop mapPadding sotto.
+  //
+  // Valore 120: search bar (48dp) + filter chips quando attive (~30dp) + margine
+  // di sicurezza per varietà device → bussola sempre visibile sotto i filtri.
+  const mapPadding = useMemo(
+    () =>
+      Platform.OS === 'android'
+        ? { top: insets.top + 120, right: 12, bottom: 0, left: 0 }
+        : undefined,
+    [insets.top],
+  );
   // Gate "pronto ad animare" per l'effect centerOn. Flippa una sola volta al
   // primo layout: i resize successivi (tastiera) non ri-triggerano l'effect.
   const [isLaidOut, setIsLaidOut] = useState(false);
@@ -158,11 +183,20 @@ export default function RestaurantMap({
       const latDelta = currentRegion.current?.latitudeDelta ?? 0.02;
       const offset = latDelta * (centerOn.sheetFraction / 2);
       timer = setTimeout(() => {
+        // heading: 0 + pitch: 0 → resetta la rotazione/inclinazione della mappa
+        // al tap su un pin. Senza questo, se l'utente ha ruotato la mappa,
+        // l'offset in latitudine (= sud sul globo) viene applicato in una
+        // direzione SCHERMO che non corrisponde più a "su", quindi il pin
+        // appare fuori centro o addirittura fuori dallo schermo. Resettare
+        // l'orientamento è il comportamento standard di tutti i map app
+        // mainstream (Apple Maps, Google Maps) per il tap su POI/risultati.
         mapRef.current?.animateCamera({
           center: {
             latitude: centerOn.latitude - offset,
             longitude: centerOn.longitude,
           },
+          heading: 0,
+          pitch: 0,
         }, { duration: 400 });
       }, 50);
     }
@@ -345,6 +379,7 @@ export default function RestaurantMap({
       customMapStyle={Platform.OS === 'android' ? ANDROID_MAP_STYLE : undefined}
       showsCompass
       compassOffset={compassOffset}
+      mapPadding={mapPadding}
       onMapReady={handleMapReady}
       onRegionChangeComplete={handleRegionChange}
       onPress={handleMapPress}
