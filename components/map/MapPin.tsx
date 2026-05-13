@@ -14,7 +14,7 @@
  *   supportedAllergens/supportedDiets + userAllergens/userDiets using
  *   getExpandedCoverage (implication-aware, same logic del server).
  */
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
@@ -66,7 +66,30 @@ export default memo(function MapPin({
   const prevHasRest = useRef(hasRest);
   const prevSupportedAllergens = useRef(supportedAllergens);
   const prevSupportedDiets = useRef(supportedDiets);
+
+  // Android-only: estende la finestra tracksViewChanges=true a ~100ms dopo
+  // mount e dopo ogni cambio prop rilevante. react-native-maps su Android
+  // usa la drawing cache nativa per il bitmap del marker; la cattura è
+  // asincrona e dipende dal timing del layout. Single-frame tracksViewChanges
+  // a volte non basta → bitmap stale (pin invisibile al remount post-selezione,
+  // colori non aggiornati al toggle filtro). iOS usa CALayer snapshot affidabile
+  // in un frame, niente da fare.
+  //
+  // Su iOS: useState inizializza a false e useEffect ha early return → nessun
+  // setTimeout schedulato, nessun setState, justChanged inalterato. iOS è
+  // comportamentalmente identico al codice precedente.
+  const [androidSettling, setAndroidSettling] = useState(
+    () => Platform.OS === 'android',
+  );
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    setAndroidSettling(true);
+    const timer = setTimeout(() => setAndroidSettling(false), 100);
+    return () => clearTimeout(timer);
+  }, [asDot, isFavorite, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
+
   const justChanged =
+    androidSettling ||
     asDot !== prevAsDot.current ||
     isFavorite !== prevFavorite.current ||
     showMatchInfo !== prevShowMatch.current ||
