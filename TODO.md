@@ -29,12 +29,13 @@ Dopo il merge del 2026-05-12 sono stati rimossi `services/remoteConfig.ts`, `com
 - **Beneficio:** componente più chiaro, tipi più stretti. **Costo:** test manuale su device richiesto (tocca codice vivo).
 
 ### Splash screen Android — uniformare background a tutto schermo
-Su Android 12+ il sistema usa la nuova Splash Screen API che mostra l'icona dentro un "quadrato/cerchio" centrale (windowSplashScreenIconBackgroundColor) e attorno usa il `windowBackground` del tema → si vede un bordo non uniforme attorno al piatto invece del beige `#F7DCB3` a tutto schermo. iOS non ha il problema.
+**Stato (2026-05-13): fix implementato, da verificare al prossimo build EAS Android.**
 
-- [ ] In `app.config.ts`, plugin `expo-splash-screen`: aggiungere una sezione `android` esplicita che setti `backgroundColor: "#F7DCB3"` anche come `windowBackground` del tema, e considerare `imageWidth` ridotto / `resizeMode: "cover"` per riempire la zona system splash con lo stesso colore
-- [ ] In alternativa: prebuild + customizzare manualmente `android/app/src/main/res/values/styles.xml` impostando `windowSplashScreenBackground` uguale a `windowBackground`
-- [ ] Test: rebuild EAS Android + installare su device Android 12+ e Android 11- (le due API system splash si comportano diversamente)
-- **Beneficio:** splash uniforme su Android come iOS. **Costo:** prebuild + nuovo build EAS Android (~15 min). Verifica solo dopo install nativo.
+Causa root: alla transizione splash→app su Android 12+ il sistema espone `AppTheme.windowBackground` (bianco default) per qualche frame, prima che la View React si monti. Si vede un bordo non uniforme attorno al logo.
+
+- [x] Creato plugin custom `plugins/withAndroidWindowBackground.js` che setta `AppTheme.android:windowBackground = @color/app_window_background (#F7DCB3)` via `withAndroidColors` + `withAndroidStyles`. Solo Android (non tocca iOS in alcun modo). Registrato in `app.config.ts`.
+- [ ] Test: `npx expo prebuild --clean` + build EAS Android + installare su device Android 12+ e Android 11- (le due API system splash si comportano diversamente)
+- Se il flash bianco persiste, fallback: customizzare `windowSplashScreenIconBackgroundColor` o ridurre `imageWidth`.
 
 
 ---
@@ -44,29 +45,33 @@ Su Android 12+ il sistema usa la nuova Splash Screen API che mostra l'icona dent
 **Vincolo assoluto:** ogni fix deve essere Android-only via `Platform.OS === 'android'` o equivalente. iOS è "perfetta" e non va toccato in nessun caso.
 
 ### Footer / tab bar — possibile regressione del fix safe area
-Il fix in `e586ce6` (paddingBottom = max(insets.bottom, 16) + height = 56 + …) potrebbe essere stato troppo aggressivo: in Expo Go (senza edge-to-edge, insets.bottom = 0) il tab bar diventa 72dp di altezza, e gli overlay posizionati con `49 + insets.bottom + 12/16` (nearby banner "N ristoranti a Milano", FAB "+ aggiungi") finiscono parzialmente sotto.
+**Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS invariato.**
 
-- [ ] Rivalutare la formula: probabilmente meglio `paddingBottom: insets.bottom + small_extra` (es. +6) **senza** override del `height`, lasciando che React Navigation calcoli l'altezza naturale
-- [ ] Una volta sistemata l'altezza, ricalibrare `bottom: 49 + insets.bottom + 12` su `nearbyBanner` (riga ~686) e `bottom: 49 + insets.bottom + 16` su `fabWrapper` (riga ~759) di `app/(tabs)/restaurants.tsx`. Valutare `useBottomTabBarHeight()` da `@react-navigation/bottom-tabs` per agganciarsi dinamicamente all'altezza reale del tab bar
-- [ ] Verificare in Expo Go E in EAS build (i due ambienti hanno insets.bottom diversi)
+Causa: la formula hardcoded `49 + insets.bottom + 12/16` per gli overlay non rifletteva l'altezza reale del tab bar (`56 + max(insets.bottom, 16)` = 72dp in Expo Go), quindi banner e FAB finivano sotto.
+
+- [x] In `app/(tabs)/restaurants.tsx`: introdotto `useBottomTabBarHeight()` da `@react-navigation/bottom-tabs` e variabile `overlayBaseBottom = Platform.OS === 'android' ? tabBarHeight : 49 + insets.bottom`. Usato per `nearbyBanner` (bottom + 12) e `fabWrapper` (bottom + 16). Self-correcting su Android, iOS conserva formula originale.
+- [ ] Verifica anche in EAS build (Expo Go ed EAS hanno insets.bottom diversi — su EAS l'overlay si dovrebbe comunque agganciare correttamente perché `useBottomTabBarHeight()` legge l'altezza reale).
 
 ### Bottom sheet — spazio vuoto sotto
-Il gap appare sotto **entrambi** i bottom sheet:
-- `RestaurantDetailSheet` (scheda singolo ristorante)
-- `NearbyListSheet` (elenco ristoranti in città)
+**Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS testato, nessuna differenza visiva.**
 
-Il fix `d46141b` (`containerHeight += insetBottom`) funziona solo quando insets.bottom > 0 (cioè in EAS edge-to-edge). In Expo Go insets.bottom = 0 quindi il gap resta. Probabile causa Expo Go: `useWindowDimensions().height` riporta meno della finestra visibile, oppure il container del sheet ha un parent con padding/margin che riduce l'area utile.
+Causa root (confermata): il container del sheet era ancorato `top: 0` con `height = useWindowDimensions().height * maxSnap + (Android ? insetBottom : 0)`. Il parent (`MaybeScreenContainer` di React Navigation, vedi `node_modules/@react-navigation/bottom-tabs/.../BottomTabView.js:252`) ha `overflow: 'hidden'`. L'estensione `+insetBottom` veniva ritagliata, mentre il `paddingBottom: insetBottom` sul body continuava a spostare il contenuto su → gap visibile.
 
-- [ ] Investigare il rendering del sheet in Expo Go: ispezionare `useWindowDimensions().height`, `Dimensions.get('screen').height`, `Dimensions.get('window').height` su Android (loggarli e confrontare)
-- [ ] Probabile fix: usare `Dimensions.get('screen').height` come riferimento su Android invece di `useWindowDimensions().height`, oppure aggiungere un offset esplicito che gestisca sia Expo Go che EAS
-- [ ] Verificare in **entrambi i sheet** dopo il fix (non solo nel detail)
+- [x] In `components/BottomSheet/BottomSheet.tsx`: refactor a `bottom: 0` anchoring. Container hugga sempre il fondo del parent, zero dipendenza dall'accuratezza di `useWindowDimensions`. Math: `containerHeight = height * maxSnap`, `positions = snapPoints.map(p => height * (maxSnap - p))`, `closedY = containerHeight`, `reportSnap = (closedY - y) / height`. Math diversa ma proiezione visiva identica su iOS (verificato).
+- [x] Sistema lo stesso `BottomSheet` usato da `RestaurantDetailSheet` e `NearbyListSheet` → entrambi risolti.
 
-### Bottom sheet — lag scrolling
-Il body del sheet ("contenuto sotto handle") sembra laggare quando si scrolla su e giù su Android.
+### Bottom sheet — lag scrolling + drag scattoso
+**Stato (2026-05-13): confermato visivamente in Expo Go Android (sia lo scroll del contenuto sia il drag del sheet stesso). iOS Expo Go fluido. In attesa di test EAS dev-client per discriminare overhead Expo Go vs problema reale.**
 
-- [ ] Possibilmente legato al body pan + scroll gesture simultaneo in `BottomSheet.tsx`: troppe shared values aggiornate per frame su Android. Verificare se `simultaneousWithExternalGesture` causa carico extra
-- [ ] Test prima su EAS dev-client per escludere overhead di Expo Go (è ~5x più lento in dev mode)
-- [ ] Se persiste: profiler React DevTools, valutare `React.memo` sui figli del body
+Cause architetturali sospette (in ordine di probabilità):
+1. Overhead Expo Go dev mode su Android (~5x rispetto a EAS production). iOS Expo Go è strutturalmente più ottimizzato → asimmetria naturale.
+2. `elevation` Android sul container (8) + `RestaurantDetailSheet.sheetShadow` (16) o `NearbyListSheet.sheet` (12): renderizzare shadow elevata + rounded corners + overflow:hidden durante transform è uno dei principali bottleneck noti.
+3. `simultaneousWithExternalGesture(scrollGesture)` sul bodyPan può avere overhead per frame anche quando lo scroll non è attivo.
+
+- [ ] **Prima di intervenire**: testare in EAS dev-client / internal testing per verificare se il problema persiste in produzione
+- [ ] Se persiste in EAS: provare `renderToHardwareTextureAndroid={true}` sull'`Animated.View` del container in `BottomSheet.tsx`. Caveat: rasterizza in bitmap, ottimo per drag (transform-only) ma può peggiorare lo scroll del contenuto (texture invalidata ad ogni frame di scroll). Da testare con attenzione.
+- [ ] Alternativa più aggressiva: ridurre `elevation` su Android (es. 16 → 4) — meno qualità shadow ma molto più leggero. Solo `elevation` (non shadow* che è iOS).
+- [ ] Profiler React DevTools / Reanimated debug per misurare frame drop reali
 
 ### Mappa — pin selezionati tagliati / centramento poco fluido
 - [ ] **Pin tagliati**: quando un pin ristorante viene selezionato (cambio stato), sembra che venga renderizzato con clipping. Indagare `components/map/RestaurantMap.native.tsx` — possibile `tracksViewChanges` o margine/anchor del marker che cambia in modo asimmetrico
@@ -76,11 +81,12 @@ Il body del sheet ("contenuto sotto handle") sembra laggare quando si scrolla su
 - [ ] Tutti questi sono Android-specific (iOS usa Apple Maps di default, Android usa Google Maps): le soluzioni quasi certamente entrano nel ramo `Platform.OS === 'android'` di `RestaurantMap.native.tsx`
 
 ### Modal foto menu — segnala recensione, tap esterno non chiude
-Stesso pattern siblings (Pressable absoluteFill + View content) presente probabilmente in `components/restaurants/PhotoGalleryModal.tsx` o in un Modal nested al suo interno (segnalazione recensione).
+**Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS invariato.**
 
-- [ ] Identificare il modal esatto. Candidati: il render del `ReportReviewModal` chiamato da `PhotoGalleryModal` (già fixato in `0b7b53f`, verificare che la fix sia rispettata anche da dentro la gallery), oppure un overlay aggiuntivo dentro la gallery
-- [ ] Audit completo dei restanti Modal con pattern siblings: cercare `<Pressable style={StyleSheet.absoluteFill} onPress=` in tutto il progetto
-- [ ] Convertirli al pattern nested già usato in `FilterModal` / `ReportReviewModal` / avatar-gallery
+Causa root: `ImageFullscreenModal.tsx` (e analogo `PhotoGalleryModal.tsx`) non avevano `onRequestClose` sul `<Modal>` (back button Android no-op) e l'area scura attorno all'immagine non aveva handler di tap. Solo il tap sull'immagine chiudeva via `onSingleTap`. Niente di legato al pattern siblings Pressable+View che era già stato sistemato altrove.
+
+- [x] Aggiunto `onRequestClose={onClose}` sul `<Modal>` in entrambi i file (gestisce back button Android, no-op iOS).
+- [x] `pageContainer` da `<View>` a `<Pressable>` con `onPress={Platform.OS === 'android' ? onClose : undefined}`. Su iOS `onPress` è `undefined` → Pressable degenera a View → comportamento iOS identico.
 
 ### Lag generale Android
 Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per via di dev mode + niente Hermes optimizations) o se ci sono problemi reali.

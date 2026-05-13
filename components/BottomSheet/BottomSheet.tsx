@@ -69,23 +69,34 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(function BottomSheet(
   const { height } = useWindowDimensions();
   const { bottom: insetBottom } = useSafeAreaInsets();
 
-  // Il container è alto quanto lo snap massimo: a full-open il suo bottom
-  // coincide con il bottom dello schermo, quindi il safe-area padding sul
-  // body è visibile correttamente (niente overflow off-screen).
-  // Su Android con edge-to-edge, useWindowDimensions().height può non includere
-  // l'area della nav bar (varia per versione/config). Estendiamo il container di
-  // insetBottom per coprire la gesture nav area ed evitare la striscia scoperta
-  // sotto al sheet quando sale agli snap point.
+  // Container ancorato a `bottom: 0` del parent (vedi styles.container): il
+  // suo bordo inferiore hugga sempre il fondo della screen container,
+  // indipendentemente dall'accuratezza di `useWindowDimensions().height`.
+  // translateY rappresenta quanto il container è "scorso giù" rispetto alla
+  // posizione di full-open: 0 = completamente aperto, containerHeight = chiuso.
+  //
+  // Motivazione del bottom-anchor (vs top-anchor precedente): il parent
+  // (MaybeScreenContainer di React Navigation) ha `overflow: 'hidden'`. Con
+  // top-anchor, l'estensione +insetBottom del container veniva clippata,
+  // mentre il `paddingBottom: insetBottom` sul body continuava a spostare il
+  // contenuto su → gap visibile sotto il modal su Android. Bottom-anchor
+  // elimina la dipendenza dalla precisione di height e dal comportamento
+  // overflow del parent. Visualmente equivalente all'implementazione top-anchor
+  // precedente per iOS (stesse coordinate finali sullo schermo, math diversa).
   const maxSnap = useMemo(() => Math.max(...snapPoints), [snapPoints]);
-  const containerHeight = height * maxSnap + (Platform.OS === 'android' ? insetBottom : 0);
+  const containerHeight = height * maxSnap;
 
-  // Posizioni Y dall'alto per ogni snap: frazione 0.92 → top a 8% dello schermo.
+  // positions[i] = distanza di traslazione giù da full-open per lo snap i.
+  // - Allo snap maxSnap (full-open): translateY = 0
+  // - Allo snap p: translateY = (maxSnap - p) * H  (quanto va "giù" il sheet)
   // positions[0] è lo snap più basso (sheet più chiuso), positions[last] il più alto.
   const positions = useMemo(
-    () => snapPoints.map(p => height * (1 - p)),
-    [snapPoints, height],
+    () => snapPoints.map(p => height * (maxSnap - p)),
+    [snapPoints, height, maxSnap],
   );
-  const closedY = height;
+  // closedY = quanto serve traslare in giù per nascondere il sheet completamente
+  // (= sua intera altezza, perché il bottom è ancorato al fondo parent).
+  const closedY = containerHeight;
   const topY = positions[positions.length - 1];
   const bottomY = positions[0];
   const initialY = positions[initialIndex] ?? bottomY;
@@ -100,7 +111,11 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(function BottomSheet(
   const scrollGesture = useMemo(() => Gesture.Native(), []);
 
   const reportSnap = (y: number) => {
-    onSnapChange?.(1 - y / height);
+    // Mappa translateY → frazione di schermo coperta dal sheet.
+    // y = 0 (full-open)   → fraction = maxSnap (es. 0.92)
+    // y = closedY (chiuso) → fraction = 0
+    // Mantiene la stessa semantica di prima per i callsite (onSnapChange).
+    onSnapChange?.((closedY - y) / height);
   };
 
   const handleClose = () => { onClose?.(); };
@@ -250,7 +265,7 @@ export default BottomSheet;
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0, left: 0, right: 0,
+    bottom: 0, left: 0, right: 0,
     backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

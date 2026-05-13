@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import {
-  Modal, View, FlatList, TouchableOpacity, StyleSheet,
+  Modal, View, FlatList, TouchableOpacity, StyleSheet, Platform, Pressable,
   useWindowDimensions, type ViewStyle, type ViewToken,
 } from 'react-native';
 import Animated, {
@@ -101,7 +101,7 @@ export default function ImageFullscreenModal({
   }, []);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onShow={handleShow}>
+    <Modal visible={visible} transparent animationType="fade" onShow={handleShow} onRequestClose={onClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={dismissPan}>
         <Animated.View style={[styles.overlay, overlayStyle, dismissStyle]}>
@@ -128,14 +128,17 @@ export default function ImageFullscreenModal({
               keyExtractor={(_, i) => String(i)}
               scrollEnabled={!isZoomed}
               renderItem={({ item }) => (
-                <View style={[styles.pageContainer, { width }]}>
+                <Pressable
+                  style={[styles.pageContainer, { width }]}
+                  onPress={Platform.OS === 'android' ? onClose : undefined}
+                >
                   <ZoomableImage
                     uri={item}
                     style={{ width, height: height * 0.8 }}
                     onZoomChange={handleZoomChange}
                     onSingleTap={onClose}
                   />
-                </View>
+                </Pressable>
               )}
             />
           ) : placeholder ?? null}

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable, Platform } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -26,6 +26,7 @@ import SearchAutocomplete from '../../components/SearchAutocomplete';
 import RecentSearches from '../../components/RecentSearches';
 import { storage, type RecentPlace } from '../../utils/storage';
 import { useTabBarVisibility } from '../../components/TabBarVisibility';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 // ─── Selection reducer ─────────────────────────────────────────────────────
 type SelectionState = { selectedId: string | null; detailId: string | null };
@@ -66,6 +67,11 @@ export default function RestaurantsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarVisibility();
+  // Su Android: usa l'altezza reale del tab bar (configurato con paddingBottom + height
+  // override in (tabs)/_layout.tsx). iOS resta sulla formula originale "49 + insets.bottom"
+  // che funziona bene con il tab bar nativo non override-ato.
+  const tabBarHeight = useBottomTabBarHeight();
+  const overlayBaseBottom = Platform.OS === 'android' ? tabBarHeight : 49 + insets.bottom;
   const { isAuthenticated, user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
@@ -683,7 +689,7 @@ export default function RestaurantsScreen() {
       {mapSearch.nearbyPlace && (
         <Animated.View
           pointerEvents={bannerHidden ? 'none' : 'auto'}
-          style={[styles.nearbyBanner, { bottom: 49 + insets.bottom + 12 }, bannerAnimatedStyle]}
+          style={[styles.nearbyBanner, { bottom: overlayBaseBottom + 12 }, bannerAnimatedStyle]}
         >
           <TouchableOpacity
             onPress={() => setNearbyExpanded(true)}
@@ -756,7 +762,7 @@ export default function RestaurantsScreen() {
 
       <Animated.View
         pointerEvents={fabHidden ? 'none' : 'auto'}
-        style={[styles.fabWrapper, { bottom: 49 + insets.bottom + 16 }, fabAnimatedStyle]}
+        style={[styles.fabWrapper, { bottom: overlayBaseBottom + 16 }, fabAnimatedStyle]}
       >
         <TouchableOpacity
           onPress={handleAddPress}

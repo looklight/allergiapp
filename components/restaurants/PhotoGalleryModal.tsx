@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
 import {
-  Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView,
+  Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView, Platform, Pressable,
   useWindowDimensions, type ViewToken,
 } from 'react-native';
 import ReAnimated, {
@@ -113,7 +113,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const current = photos[currentIndex];
 
   return (
-    <Modal visible transparent animationType="fade" onShow={handleShow}>
+    <Modal visible transparent animationType="fade" onShow={handleShow} onRequestClose={onClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={dismissPan}>
         <ReAnimated.View style={[styles.container, dismissStyle]}>
@@ -144,14 +144,17 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
             keyExtractor={(_, i) => String(i)}
             scrollEnabled={!isZoomed}
             renderItem={({ item }) => (
-              <View style={[styles.pageContainer, { width }]}>
+              <Pressable
+                style={[styles.pageContainer, { width }]}
+                onPress={Platform.OS === 'android' ? onClose : undefined}
+              >
                 <ZoomableImage
                   uri={item.url}
                   style={{ width, height: height * 0.7 }}
                   onZoomChange={handleZoomChange}
                   onSingleTap={onClose}
                 />
-              </View>
+              </Pressable>
             )}
           />
 

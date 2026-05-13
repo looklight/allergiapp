@@ -57,6 +57,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         backgroundColor: "#F7DCB3",
       },
     ],
+    // Android-only: AppTheme.windowBackground = beige splash per evitare il
+    // flash del default bianco alla transizione splash→app su Android 12+.
+    // iOS non viene toccato (il plugin esegue solo withAndroidColors/Styles).
+    ["./plugins/withAndroidWindowBackground", { color: "#F7DCB3" }],
     [
       "expo-location",
       {
