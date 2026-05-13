@@ -10,7 +10,7 @@
  * so iOS always has a fresh bitmap after any visual change.
  */
 import { memo, useCallback } from 'react';
-import { StyleSheet, View, Text as RNText } from 'react-native';
+import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 import { theme } from '../../constants/theme';
@@ -98,7 +98,17 @@ const SelectedPin = memo(function SelectedPin({
       onPress={handlePress}
       zIndex={9999}
     >
-      <View style={[styles.markerWrap, { transform: [{ scale: 1.25 }] }]}>
+      {/*
+        Scale solo su iOS: react-native-maps su Android rasterizza il marker
+        in un bitmap basato sul layout naturale della View (pre-transform),
+        quindi lo scale 1.25 farebbe clippare il visual. Su Android il pin
+        selezionato resta differenziato da bg colorata + shadow potenziata +
+        zIndex 9999 + cluster=false.
+      */}
+      <View style={[
+        styles.markerWrap,
+        Platform.OS === 'ios' && { transform: [{ scale: 1.25 }] },
+      ]}>
         <View style={[
           styles.markerContainer,
           {
