@@ -51,7 +51,11 @@ export default function MenuPhotosSection({
         >
           {menuPhotos.map((photo, index) => (
             <TouchableOpacity key={photo.id} onPress={() => onPhotoPress(index)} activeOpacity={0.8}>
-              <Image source={{ uri: photo.thumbnail_url ?? photo.image_url }} style={styles.menuThumb} />
+              <Image
+                source={{ uri: photo.thumbnail_url ?? photo.image_url }}
+                style={styles.menuThumb}
+                fadeDuration={0}
+              />
             </TouchableOpacity>
           ))}
         </ScrollView>

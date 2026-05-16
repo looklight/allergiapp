@@ -308,6 +308,7 @@ export default function RestaurantDetailBody({
                         source={{ uri: item.thumbnailUrl }}
                         style={styles.photoThumb}
                         resizeMode="cover"
+                        fadeDuration={0}
                       />
                       {userNeedsSet.size > 0 && (
                         <View style={styles.thumbMatchBadge}>
