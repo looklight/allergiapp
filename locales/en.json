@@ -5,6 +5,17 @@
     "errorRetry": "Retry",
     "ok": "OK"
   },
+  "username": {
+    "label": "Username",
+    "hint": "Letters, numbers, _ and . (3–30 characters)",
+    "anonymousNote": "(not visible while anonymous)",
+    "checking": "Checking…",
+    "available": "Available",
+    "unavailable": "Not available, choose another",
+    "formatError": "Invalid format",
+    "tooShort": "At least 3 characters",
+    "tooLong": "At most 30 characters"
+  },
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",
@@ -460,7 +471,6 @@
     "editProfile": {
       "title": "Edit profile",
       "accountSection": "Account information",
-      "nicknameLabel": "Nickname",
       "anonymousLabel": "Anonymous profile",
       "anonymousHint": "Your name won't be visible to other users",
       "emailLabel": "Email",
@@ -478,8 +488,6 @@
       "deleteWord": "DELETE",
       "deleteWriteConfirm": "Type {{word}} to confirm",
       "deletePlaceholder": "Type {{word}}",
-      "nameRequiredTitle": "Name required",
-      "nameRequiredMsg": "Please enter a display name.",
       "saveError": "Couldn't save changes. Please try again.",
       "deleteError": "Couldn't delete the account. Please try again."
     },
@@ -664,20 +672,13 @@
   "onboardingNickname": {
     "headerTitle": "Your profile",
     "introTitle": "How would you like to appear in the community?",
-    "introText": "Choose a nickname others will see in your reviews. If you prefer, you can stay anonymous: your name will never be visible to others.",
-    "nicknameLabel": "Nickname",
-    "nicknamePlaceholder": "How would you like to be called?",
+    "introText": "Choose a username others will see in your reviews. If you prefer, you can stay anonymous: your name will never be visible to others.",
     "anonymousLabel": "Stay anonymous",
-    "anonymousHint": "Your name won't be visible to other users",
-    "anonymousNote": "Your reviews will show a generic identifier. Your name will never be visible to others.",
+    "anonymousHint": "An anonymous name will be assigned and your profile won't be visible to other users",
     "saving": "Saving...",
     "continue": "Continue",
     "changeNote": "You can change these settings any time from your profile.",
     "alerts": {
-      "missing": {
-        "title": "Nickname missing",
-        "message": "Enter a nickname or choose to stay anonymous."
-      },
       "saveError": {
         "message": "Couldn't save. Please try again."
       }

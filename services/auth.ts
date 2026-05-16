@@ -5,13 +5,12 @@ import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 export interface AppUser {
   uid: string;
   email: string | null;
-  displayName: string | null;
 }
 
 // Profilo utente dalla tabella profiles
 export interface UserProfile {
   id: string;
-  display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   allergens: string[];
   dietary_preferences: string[];
@@ -28,23 +27,17 @@ function mapUser(user: SupabaseUser | null): AppUser | null {
   return {
     uid: user.id,
     email: user.email ?? null,
-    displayName: user.user_metadata?.display_name ?? user.email ?? null,
   };
 }
 
-async function signUp(email: string, password: string, displayName?: string): Promise<AppUser> {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { display_name: displayName },
-    },
-  });
+async function signUp(email: string, password: string): Promise<AppUser> {
+  const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
   if (!data.user) throw new Error('Registrazione fallita');
 
-  // Crea il profilo (lazy creation garantisce che esista sempre)
-  await ensureProfile(data.user.id, displayName);
+  // Crea il profilo (lazy creation). Il trigger DB assegna automaticamente
+  // username = 'user_xxxxxx' se non viene fornito.
+  await ensureProfile(data.user.id);
 
   return mapUser(data.user)!;
 }
@@ -77,7 +70,7 @@ function onAuthStateChanged(callback: (user: AppUser | null) => void): () => voi
   return () => subscription.unsubscribe();
 }
 
-async function ensureProfile(userId: string, displayName?: string | null): Promise<UserProfile> {
+async function ensureProfile(userId: string): Promise<UserProfile> {
   // Prova a leggere il profilo
   const { data } = await supabase
     .from('profiles')
@@ -86,10 +79,10 @@ async function ensureProfile(userId: string, displayName?: string | null): Promi
     .maybeSingle();
   if (data) return data;
 
-  // Profilo mancante — crealo (lazy creation)
+  // Profilo mancante — crealo. Il trigger DB assegna username automatico.
   const { data: created, error } = await supabase
     .from('profiles')
-    .upsert({ id: userId, display_name: displayName ?? null })
+    .upsert({ id: userId })
     .select()
     .single();
   if (error) throw error;
@@ -127,18 +120,14 @@ async function updateAnonymous(userId: string, isAnonymous: boolean): Promise<vo
   if (error) throw error;
 }
 
-async function updateDisplayName(userId: string, displayName: string): Promise<void> {
-  // Aggiorna sia auth metadata che profilo
-  const { error: authError } = await supabase.auth.updateUser({
-    data: { display_name: displayName },
-  });
-  if (authError) throw authError;
-
-  const { error: profileError } = await supabase
+async function updateUsername(userId: string, username: string): Promise<void> {
+  // Scrive solo su profiles.username. La constraint UNIQUE+CHECK protegge
+  // il formato. Il chiamante deve catturare 23505 per gestire race condition.
+  const { error } = await supabase
     .from('profiles')
-    .update({ display_name: displayName })
+    .update({ username })
     .eq('id', userId);
-  if (profileError) throw profileError;
+  if (error) throw error;
 }
 
 async function deleteAccount(userId: string): Promise<void> {
@@ -183,6 +172,12 @@ async function sendPasswordReset(email: string): Promise<void> {
   if (error) throw error;
 }
 
+async function isUsernameAvailable(username: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('is_username_available', { p_username: username });
+  if (error) throw error;
+  return Boolean(data);
+}
+
 export const AuthService = {
   signUp,
   signIn,
@@ -192,10 +187,11 @@ export const AuthService = {
   ensureProfile,
   getUserProfile,
   updateUserAvatar,
-  updateDisplayName,
+  updateUsername,
   updateAnonymous,
   deleteAccount,
   sendPasswordReset,
   updateDietaryNeeds,
   completeOnboarding,
+  isUsernameAvailable,
 };

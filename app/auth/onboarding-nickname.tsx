@@ -1,47 +1,59 @@
 import { useState } from 'react';
 import { View, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert, Image } from 'react-native';
-import { Text, TextInput } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Text, TextInput, Surface } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
+import { PG_UNIQUE_VIOLATION } from '../../services/restaurant.types';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUsernameValidation } from '../../hooks/useUsernameValidation';
+import UsernameFeedback from '../../components/UsernameFeedback';
+import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import i18n from '../../utils/i18n';
 
 export default function OnboardingNicknameScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, refreshProfile } = useAuth();
-  const [nickname, setNickname] = useState('');
+
+  const [username, setUsername] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const { state: usernameState, canSubmit: usernameOk } = useUsernameValidation(username);
+
+  const canContinue = isAnonymous || usernameOk;
+
   const handleContinue = async () => {
     if (!user) return;
-    if (!isAnonymous && !nickname.trim()) {
-      Alert.alert(
-        i18n.t('onboardingNickname.alerts.missing.title'),
-        i18n.t('onboardingNickname.alerts.missing.message')
-      );
-      return;
-    }
+    if (!canContinue) return;
+
     setSaving(true);
     try {
-      if (nickname.trim()) {
-        await AuthService.updateDisplayName(user.uid, nickname.trim());
+      const trimmed = username.trim();
+      // Salva l'username solo se l'utente non e' anonimo e ha digitato qualcosa.
+      // Se anonimo: il trigger DB ha gia' assegnato user_xxxxxx, lo lasciamo.
+      if (!isAnonymous && trimmed) {
+        await AuthService.updateUsername(user.uid, trimmed);
       }
       if (isAnonymous) {
         await AuthService.updateAnonymous(user.uid, true);
       }
       await refreshProfile();
       router.replace('/auth/onboarding-dietary');
-    } catch {
-      Alert.alert(i18n.t('common.error'), i18n.t('onboardingNickname.alerts.saveError.message'));
+    } catch (err: any) {
+      const isUnique = err?.code === PG_UNIQUE_VIOLATION;
+      Alert.alert(
+        i18n.t('common.error'),
+        isUnique ? i18n.t('username.unavailable') : i18n.t('onboardingNickname.alerts.saveError.message'),
+      );
     } finally {
       setSaving(false);
     }
   };
+
+  const anonymousAssignedName = user?.uid ? getAnonymousLabel(user.uid) : '';
 
   return (
     <View style={styles.container}>
@@ -69,18 +81,24 @@ export default function OnboardingNicknameScreen() {
           <Text style={styles.introText}>{i18n.t('onboardingNickname.introText')}</Text>
         </View>
 
-        <TextInput
-          label={i18n.t('onboardingNickname.nicknameLabel')}
-          value={nickname}
-          onChangeText={setNickname}
-          autoCapitalize="words"
-          autoCorrect={false}
-          mode="outlined"
-          style={[styles.input, isAnonymous && styles.inputDisabled]}
-          disabled={isAnonymous}
-          placeholder={i18n.t('onboardingNickname.nicknamePlaceholder')}
-          placeholderTextColor={theme.colors.textDisabled}
-        />
+        {isAnonymous ? (
+          <Surface style={styles.assignedBox} elevation={0}>
+            <Text style={styles.assignedBoxValue}>{anonymousAssignedName}</Text>
+          </Surface>
+        ) : (
+          <>
+            <TextInput
+              label={i18n.t('username.label')}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+              mode="outlined"
+              style={styles.input}
+            />
+            <UsernameFeedback state={usernameState} />
+          </>
+        )}
 
         <View style={styles.anonymousRow}>
           <View style={styles.anonymousTextGroup}>
@@ -91,24 +109,17 @@ export default function OnboardingNicknameScreen() {
             value={isAnonymous}
             onValueChange={(v) => {
               setIsAnonymous(v);
-              if (v) setNickname('');
+              if (v) setUsername('');
             }}
             trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
             thumbColor={theme.colors.onPrimary}
           />
         </View>
 
-        {isAnonymous && (
-          <View style={styles.anonymousNote}>
-            <MaterialCommunityIcons name="shield-check-outline" size={16} color={theme.colors.primary} />
-            <Text style={styles.anonymousNoteText}>{i18n.t('onboardingNickname.anonymousNote')}</Text>
-          </View>
-        )}
-
         <TouchableOpacity
-          style={[styles.continueButton, saving && styles.continueButtonDisabled]}
+          style={[styles.continueButton, (saving || !canContinue) && styles.continueButtonDisabled]}
           onPress={handleContinue}
-          disabled={saving}
+          disabled={saving || !canContinue}
           activeOpacity={0.8}
         >
           <Text style={styles.continueButtonText}>
@@ -168,10 +179,25 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: theme.colors.surface,
-    marginBottom: 20,
+    marginBottom: 12,
   },
-  inputDisabled: {
-    opacity: 0.4,
+  // height 56 (= TextInput outlined) + marginBottom 28 pareggia
+  // TextInput(56) + marginBottom(12) + UsernameFeedback effettivo(~16) + 8 = 84.
+  assignedBox: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.divider,
+    paddingHorizontal: 16,
+    marginBottom: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 56,
+  },
+  assignedBoxValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   anonymousRow: {
     flexDirection: 'row',
@@ -195,21 +221,6 @@ const styles = StyleSheet.create({
   anonymousHint: {
     fontSize: 13,
     color: theme.colors.textSecondary,
-  },
-  anonymousNote: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    backgroundColor: theme.colors.primaryLight,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 24,
-  },
-  anonymousNoteText: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.primary,
-    lineHeight: 18,
   },
   continueButton: {
     alignItems: 'center',

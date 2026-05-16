@@ -5,6 +5,17 @@
     "errorRetry": "Riprova",
     "ok": "OK"
   },
+  "username": {
+    "label": "Nome utente",
+    "hint": "Lettere, numeri, _ e . (3–30 caratteri)",
+    "anonymousNote": "(non visibile mentre sei anonimo)",
+    "checking": "Verifica…",
+    "available": "Disponibile",
+    "unavailable": "Non disponibile, scegli un altro",
+    "formatError": "Formato non valido",
+    "tooShort": "Almeno 3 caratteri",
+    "tooLong": "Massimo 30 caratteri"
+  },
   "common": {
     "cancel": "Annulla",
     "confirm": "Conferma",
@@ -460,7 +471,6 @@
     "editProfile": {
       "title": "Modifica profilo",
       "accountSection": "Informazioni account",
-      "nicknameLabel": "Nickname",
       "anonymousLabel": "Profilo anonimo",
       "anonymousHint": "Il tuo nome non sarà visibile ad altri utenti",
       "emailLabel": "Email",
@@ -478,8 +488,6 @@
       "deleteWord": "ELIMINA",
       "deleteWriteConfirm": "Scrivi {{word}} per confermare",
       "deletePlaceholder": "Scrivi {{word}}",
-      "nameRequiredTitle": "Nome obbligatorio",
-      "nameRequiredMsg": "Inserisci un nome visualizzato.",
       "saveError": "Impossibile salvare le modifiche. Riprova.",
       "deleteError": "Impossibile eliminare l'account. Riprova."
     },
@@ -664,20 +672,13 @@
   "onboardingNickname": {
     "headerTitle": "Il tuo profilo",
     "introTitle": "Come vuoi apparire nella community?",
-    "introText": "Scegli un nickname con cui gli altri utenti ti vedranno nelle recensioni. Se preferisci, puoi restare anonimo: il tuo nome non sarà mai visibile ad altri.",
-    "nicknameLabel": "Nickname",
-    "nicknamePlaceholder": "Come vuoi essere chiamato?",
+    "introText": "Scegli un nome utente con cui gli altri utenti ti vedranno nelle recensioni. Se preferisci, puoi restare anonimo: il tuo nome non sarà mai visibile ad altri.",
     "anonymousLabel": "Resta anonimo",
-    "anonymousHint": "Il tuo nome non sarà visibile ad altri utenti",
-    "anonymousNote": "Le tue recensioni mostreranno un identificativo generico. Il tuo nome non sarà mai visibile ad altri utenti.",
+    "anonymousHint": "Ti verrà associato un nome anonimo e il tuo profilo non sarà visibile ad altri utenti",
     "saving": "Salvataggio...",
     "continue": "Continua",
     "changeNote": "Potrai modificare queste impostazioni in qualsiasi momento dal tuo profilo.",
     "alerts": {
-      "missing": {
-        "title": "Nickname mancante",
-        "message": "Inserisci un nickname oppure scegli di restare anonimo."
-      },
       "saveError": {
         "message": "Impossibile salvare. Riprova."
       }

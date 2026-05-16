@@ -18,7 +18,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
+import { PG_UNIQUE_VIOLATION } from '../../services/restaurant.types';
+import { useUsernameValidation } from '../../hooks/useUsernameValidation';
 import HeaderBar from '../../components/HeaderBar';
+import UsernameFeedback from '../../components/UsernameFeedback';
 import i18n from '../../utils/i18n';
 
 export default function EditProfileScreen() {
@@ -26,9 +29,9 @@ export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, refreshProfile } = useAuth();
 
-  const currentDisplayName = userProfile?.display_name ?? user?.displayName ?? '';
+  const currentUsername = userProfile?.username ?? '';
 
-  const [displayName, setDisplayName] = useState(currentDisplayName);
+  const [username, setUsername] = useState(currentUsername);
   const [isAnonymous, setIsAnonymous] = useState(userProfile?.is_anonymous ?? false);
   const email = user?.email ?? '';
   const [saving, setSaving] = useState(false);
@@ -38,31 +41,34 @@ export default function EditProfileScreen() {
   const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
   const stepAnim = useRef(new Animated.Value(0)).current;
 
-  const nameChanged = displayName.trim() !== currentDisplayName;
+  const { state: usernameState, canSubmit: usernameOk } = useUsernameValidation(
+    username,
+    { initialValue: currentUsername },
+  );
+
+  const usernameChanged = username.trim() !== currentUsername;
   const anonymousChanged = isAnonymous !== (userProfile?.is_anonymous ?? false);
-  const hasChanges = nameChanged || anonymousChanged;
+  const hasChanges = usernameChanged || anonymousChanged;
+  const canSave = hasChanges && usernameOk;
 
   const handleSave = async () => {
     if (!user) return;
-    const trimmed = displayName.trim();
-    if (!trimmed && !isAnonymous) {
-      Alert.alert(i18n.t('restaurants.editProfile.nameRequiredTitle'), i18n.t('restaurants.editProfile.nameRequiredMsg'));
-      return;
-    }
-    if (!hasChanges) {
-      router.back();
-      return;
-    }
+    if (!canSave) return;
     setSaving(true);
     try {
       const promises: Promise<void>[] = [];
-      if (nameChanged) promises.push(AuthService.updateDisplayName(user.uid, trimmed));
+      if (usernameChanged) promises.push(AuthService.updateUsername(user.uid, username.trim()));
       if (anonymousChanged) promises.push(AuthService.updateAnonymous(user.uid, isAnonymous));
       await Promise.all(promises);
       await refreshProfile();
       router.back();
-    } catch {
-      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.editProfile.saveError'));
+    } catch (err: any) {
+      // Race condition: username preso tra check di disponibilita' e UPDATE
+      const isUnique = err?.code === PG_UNIQUE_VIOLATION;
+      Alert.alert(
+        i18n.t('common.error'),
+        isUnique ? i18n.t('username.unavailable') : i18n.t('restaurants.editProfile.saveError'),
+      );
     } finally {
       setSaving(false);
     }
@@ -131,14 +137,17 @@ export default function EditProfileScreen() {
           <Text style={styles.sectionTitle}>{i18n.t('restaurants.editProfile.accountSection')}</Text>
           <TextInput
             mode="outlined"
-            label={i18n.t('restaurants.editProfile.nicknameLabel')}
-            value={displayName}
-            onChangeText={setDisplayName}
+            label={i18n.t('username.label')}
+            value={username}
+            onChangeText={setUsername}
             maxLength={30}
+            autoCapitalize="none"
+            autoCorrect={false}
             outlineColor={theme.colors.divider}
             activeOutlineColor={theme.colors.primary}
             style={styles.textInput}
           />
+          <UsernameFeedback state={usernameState} isAnonymous={isAnonymous} />
           <View style={styles.anonymousRow}>
             <View style={styles.anonymousTextGroup}>
               <Text style={styles.anonymousLabel}>{i18n.t('restaurants.editProfile.anonymousLabel')}</Text>
@@ -169,7 +178,7 @@ export default function EditProfileScreen() {
           mode="contained"
           onPress={handleSave}
           loading={saving}
-          disabled={saving || !hasChanges}
+          disabled={saving || !canSave}
           style={styles.saveButton}
           labelStyle={styles.saveButtonLabel}
         >

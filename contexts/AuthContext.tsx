@@ -30,8 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadProfile = async (u: AppUser) => {
-    // ensureProfile crea il profilo se mancante (lazy creation)
-    const profile = await AuthService.ensureProfile(u.uid, u.displayName);
+    // ensureProfile crea il profilo se mancante (lazy creation);
+    // il trigger DB assegna username automatico.
+    const profile = await AuthService.ensureProfile(u.uid);
     setUserProfile(profile);
   };
 
