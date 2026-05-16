@@ -68,11 +68,10 @@ export interface Review {
 
 export interface UserProfile {
   id: string;
-  display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   allergens: string[];
   dietary_preferences: string[];
-  profile_color: string | null;
   role: 'user' | 'restaurant_owner' | 'admin';
   created_at: string;
   // Aggregati

@@ -10,8 +10,8 @@ import Link from 'next/link';
 
 function UserAvatar({ user }: { user: UserProfile }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const initial = (user.display_name || user.email || '?').trim().charAt(0).toUpperCase();
-  const bg = user.profile_color || '#9CA3AF';
+  const initial = (user.username || user.email || '?').trim().charAt(0).toUpperCase();
+  const bg = '#9CA3AF';
   const src = resolveAvatarSrc(user.avatar_url);
 
   if (src && !imgFailed) {
@@ -166,7 +166,7 @@ export default function UsersPage() {
                     <Link href={`/users/${u.id}`} className="flex items-center gap-3 group">
                       <UserAvatar user={u} />
                       <span className="text-blue-600 group-hover:underline">
-                        {u.display_name || 'Anonimo'}
+                        {u.username || 'Anonimo'}
                       </span>
                       {!u.email_confirmed_at && (
                         <span
@@ -218,7 +218,7 @@ export default function UsersPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-blue-600 font-medium text-sm truncate">
-                  {u.display_name || 'Anonimo'}
+                  {u.username || 'Anonimo'}
                 </span>
                 {!u.email_confirmed_at && (
                   <span title="Email non verificata" className="text-amber-500 text-xs shrink-0">⚠</span>

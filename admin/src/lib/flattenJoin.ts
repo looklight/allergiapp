@@ -4,11 +4,11 @@
  *
  * Esempio:
  *   flattenJoin(row, {
- *     profiles: { display_name: 'reviewer_name' },
+ *     profiles: { username: 'reviewer_name' },
  *     restaurants: { name: 'restaurant_name', city: 'restaurant_city' },
  *   })
  *
- * Trasforma: { ...row, profiles: { display_name: 'Mario' }, restaurants: { name: 'Pizzeria', city: 'Roma' } }
+ * Trasforma: { ...row, profiles: { username: 'Mario' }, restaurants: { name: 'Pizzeria', city: 'Roma' } }
  * In:        { ...row, reviewer_name: 'Mario', restaurant_name: 'Pizzeria', restaurant_city: 'Roma' }
  */
 export function flattenJoin<T extends Record<string, any>>(
@@ -45,13 +45,13 @@ export function flattenJoinAll<T extends Record<string, any>>(
 export function flattenReportJoins(row: Record<string, any>, includeRestaurant = false): any {
   const result: any = {
     ...row,
-    reporter_name: row.profiles?.display_name ?? null,
+    reporter_name: row.profiles?.username ?? null,
     reporter_is_anonymous: row.profiles?.is_anonymous ?? null,
     menu_photo_thumbnail_url: row.menu_photos?.thumbnail_url ?? null,
     menu_photo_image_url: row.menu_photos?.image_url ?? null,
     review_comment: row.reviews?.comment ?? null,
     review_rating: row.reviews?.rating ?? null,
-    review_reviewer_name: row.reviews?.profiles?.display_name ?? null,
+    review_reviewer_name: row.reviews?.profiles?.username ?? null,
     profiles: undefined,
     menu_photos: undefined,
     reviews: undefined,

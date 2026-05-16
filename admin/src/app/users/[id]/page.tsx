@@ -134,7 +134,7 @@ export default function UserDetailPage() {
   };
 
   const deleteUser = async () => {
-    const name = user?.display_name || user?.email || id;
+    const name = user?.username || user?.email || id;
     if (!confirmDestructive(`Eliminerai definitivamente l'utente "${name}" e tutti i suoi dati.`)) return;
 
     setIsDeleting(true);
