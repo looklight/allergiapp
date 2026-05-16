@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
-import type { Review } from '../../services/restaurantService';
+import type { UserReview } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
 import HeaderBar from '../../components/HeaderBar';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
@@ -18,7 +18,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, isAuthenticated } = useAuth();
 
-  const [reviews, setReviews] = useState<(Review & { restaurant_name?: string })[]>([]);
+  const [reviews, setReviews] = useState<UserReview[]>([]);
   const [likesReceived, setLikesReceived] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
 

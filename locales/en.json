@@ -514,7 +514,14 @@
     },
     "user": {
       "notFound": "Profile not found.",
-      "reviewsLabel": "Reviews"
+      "reviewsLabel": "Reviews",
+      "filterAll": "All",
+      "stats": {
+        "reviews": { "one": "review", "other": "reviews" },
+        "favorites": { "one": "favorite", "other": "favorites" },
+        "cities": { "one": "city", "other": "cities" },
+        "countries": { "one": "country", "other": "countries" }
+      }
     },
     "avatarGallery": {
       "anonymousBanner": "In anonymous mode your avatar is not visible to others.",

@@ -514,7 +514,14 @@
     },
     "user": {
       "notFound": "Profilo non trovato.",
-      "reviewsLabel": "Recensioni"
+      "reviewsLabel": "Recensioni",
+      "filterAll": "Tutti",
+      "stats": {
+        "reviews": { "one": "recensione", "other": "recensioni" },
+        "favorites": { "one": "preferito", "other": "preferiti" },
+        "cities": { "one": "città", "other": "città" },
+        "countries": { "one": "paese", "other": "paesi" }
+      }
     },
     "avatarGallery": {
       "anonymousBanner": "In modalità anonima il tuo avatar non è visibile agli altri.",

@@ -8,9 +8,18 @@ import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import type { Favorite } from '../../services/restaurantService';
 import { useUserItemList } from '../../hooks/useUserItemList';
+import { useLocationFilters } from '../../hooks/useLocationFilters';
 import HeaderBar from '../../components/HeaderBar';
 import EmptyStateCard from '../../components/EmptyStateCard';
+import LocationStatsHeader from '../../components/LocationStatsHeader';
+import CountryFilterChips from '../../components/CountryFilterChips';
 import i18n from '../../utils/i18n';
+
+const fetchFavorites = (userId: string) => RestaurantService.getFavorites(userId);
+const getFavoriteLocation = (f: Favorite) => ({
+  city: f.restaurant?.city,
+  country: f.restaurant?.country,
+});
 
 function FavoriteCard({
   item,
@@ -41,18 +50,30 @@ function FavoriteCard({
   );
 }
 
-const fetchFavorites = (userId: string) => RestaurantService.getFavorites(userId);
-
 export default function FavoritesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { items: favorites, setItems: setFavorites, isLoading, user } = useUserItemList<Favorite>(fetchFavorites);
+  const { stats, countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredFavorites } =
+    useLocationFilters(favorites, getFavoriteLocation);
 
   const handleRemove = useCallback(async (item: Favorite) => {
     if (!user) return;
     setFavorites(prev => prev.filter(f => f.restaurant_id !== item.restaurant_id));
     await RestaurantService.removeFavorite(user.uid, item.restaurant_id);
   }, [user, setFavorites]);
+
+  const listHeader = favorites.length > 0 ? (
+    <View style={styles.headerBlock}>
+      <LocationStatsHeader stats={stats} itemsLabelKey="restaurants.user.stats.favorites" />
+      <CountryFilterChips
+        options={countryOptions}
+        selected={selectedCountry}
+        onSelect={setSelectedCountry}
+        edgeBleed={12}
+      />
+    </View>
+  ) : null;
 
   return (
     <View style={styles.container}>
@@ -73,8 +94,9 @@ export default function FavoritesScreen() {
         />
       ) : (
         <FlatList
-          data={favorites}
+          data={filteredFavorites}
           keyExtractor={item => item.restaurant_id}
+          ListHeaderComponent={listHeader}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
           renderItem={({ item }) => (
             <FavoriteCard
@@ -103,6 +125,10 @@ const styles = StyleSheet.create({
   list: {
     padding: 12,
     gap: 10,
+  },
+  headerBlock: {
+    gap: 10,
+    marginBottom: 4,
   },
   card: {
     padding: 16,

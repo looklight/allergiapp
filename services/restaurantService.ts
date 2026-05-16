@@ -17,6 +17,7 @@ export type {
   CreateReportInput, LeaderboardEntry, ReviewSortOrder, PaginatedReviews,
   RestaurantSearchResult,
 } from './restaurant.types';
+export type { UserReview } from './reviewService';
 export { mapRestaurant, extractLatLng, QUERY_LIMITS, DEFAULTS, PG_UNIQUE_VIOLATION, REVIEWS_PAGE_SIZE } from './restaurant.types';
 
 // ─── Restaurant CRUD ────────────────────────────────────────────────────────

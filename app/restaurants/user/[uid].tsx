@@ -1,19 +1,27 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../constants/theme';
 import { AuthService } from '../../../services/auth';
 import { RestaurantService } from '../../../services/restaurantService';
-import type { Review } from '../../../services/restaurantService';
+import type { UserReview } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
-import StarRating from '../../../components/StarRating';
 import ProfileCard from '../../../components/ProfileCard';
+import UserReviewCard from '../../../components/UserReviewCard';
+import LocationStatsHeader from '../../../components/LocationStatsHeader';
+import CountryFilterChips from '../../../components/CountryFilterChips';
+import { useLocationFilters } from '../../../hooks/useLocationFilters';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
+
+const getReviewLocation = (r: UserReview) => ({
+  city: r.restaurant_city,
+  country: r.restaurant_country,
+});
 
 export default function PublicProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
@@ -22,9 +30,11 @@ export default function PublicProfileScreen() {
   const { isAuthenticated } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [reviews, setContributions] = useState<(Review & { restaurant_name?: string })[]>([]);
-  const [likesReceived, setLikesReceived] = useState(0);
+  const [reviews, setReviews] = useState<UserReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { stats, countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredReviews } =
+    useLocationFilters(reviews, getReviewLocation);
 
   useEffect(() => {
     if (!uid) return;
@@ -35,14 +45,12 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, totalLikes] = await Promise.all([
+        const [prof, contribs] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
-          RestaurantService.getLikesReceivedByUser(uid),
         ]);
         setProfile(prof);
-        setContributions(contribs);
-        setLikesReceived(totalLikes);
+        setReviews(contribs);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
@@ -58,7 +66,6 @@ export default function PublicProfileScreen() {
     ? { ...profile, username: getAnonymousLabel(uid) }
     : profile;
 
-  // Loading & error states use a simple header (no profile color)
   if (isLoading || !profile) {
     return (
       <View style={styles.container}>
@@ -87,47 +94,23 @@ export default function PublicProfileScreen() {
       <ProfileCard
         profile={visibleProfile!}
         onBack={() => router.back()}
-        stats={{ likes: likesReceived, reviews: reviews.length }}
       >
         {reviews.length > 0 && (
           <>
+            <LocationStatsHeader stats={stats} itemsLabelKey="restaurants.user.stats.reviews" />
+            <CountryFilterChips
+              options={countryOptions}
+              selected={selectedCountry}
+              onSelect={setSelectedCountry}
+            />
             <Text style={styles.sectionTitle}>{i18n.t('restaurants.user.reviewsLabel')}</Text>
-            {reviews.map((c) => {
-              const restaurantName = c.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback');
-              const date = new Date(c.created_at).toLocaleDateString(i18n.locale, {
-                month: 'short', year: 'numeric',
-              });
-              return (
-                <Surface key={c.id} style={styles.reviewCard} elevation={1}>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
-                  >
-                    <View style={styles.reviewHeader}>
-                      <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
-                      <Text style={styles.reviewRestaurant} numberOfLines={1}>
-                        {restaurantName}
-                      </Text>
-                      <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textSecondary} />
-                    </View>
-                    {c.rating != null && c.rating > 0 && (
-                      <View style={styles.reviewRating}>
-                        <StarRating rating={c.rating} size={14} />
-                      </View>
-                    )}
-                    {c.comment ? (
-                      <Text style={styles.reviewText} numberOfLines={3}>{c.comment}</Text>
-                    ) : null}
-                    {(c.photos?.length ?? 0) > 0 && (
-                      <Text style={styles.reviewDishes}>
-                        {i18n.t('restaurants.myReviews.photosCount', { count: c.photos.length })}
-                      </Text>
-                    )}
-                    <Text style={styles.reviewDate}>{date}</Text>
-                  </TouchableOpacity>
-                </Surface>
-              );
-            })}
+            {filteredReviews.map((c) => (
+              <UserReviewCard
+                key={c.id}
+                review={c}
+                onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
+              />
+            ))}
           </>
         )}
       </ProfileCard>
@@ -167,40 +150,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: theme.colors.textPrimary,
-  },
-  reviewCard: {
-    borderRadius: 14,
-    backgroundColor: theme.colors.surface,
-    padding: 16,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  reviewRestaurant: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    flex: 1,
-  },
-  reviewRating: {
-    marginTop: 8,
-  },
-  reviewText: {
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    lineHeight: 20,
-    marginTop: 8,
-  },
-  reviewDishes: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginTop: 4,
   },
 });

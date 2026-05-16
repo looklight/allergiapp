@@ -103,13 +103,20 @@ export async function getLikesReceivedByUser(userId: string): Promise<number> {
   }
 }
 
-export async function getReviewsByUser(userId: string): Promise<(Review & { restaurant_name?: string })[]> {
+export type UserReview = Review & {
+  restaurant_name?: string | null;
+  restaurant_city?: string | null;
+  restaurant_country?: string | null;
+  restaurant_country_code?: string | null;
+};
+
+export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
   try {
     const { data, error } = await supabase
       .from('reviews')
       .select(`
         *,
-        restaurant:restaurants!restaurant_id(name)
+        restaurant:restaurants!restaurant_id(name, city, country, country_code)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -118,6 +125,9 @@ export async function getReviewsByUser(userId: string): Promise<(Review & { rest
     return (data ?? []).map((r: any) => ({
       ...r,
       restaurant_name: r.restaurant?.name ?? null,
+      restaurant_city: r.restaurant?.city ?? null,
+      restaurant_country: r.restaurant?.country ?? null,
+      restaurant_country_code: r.restaurant?.country_code ?? null,
     }));
   } catch (error) {
     console.warn('[ReviewService] Errore getReviewsByUser:', error);
