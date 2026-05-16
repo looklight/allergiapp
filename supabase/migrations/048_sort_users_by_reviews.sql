@@ -1,3 +1,9 @@
+-- ⚠️ SUPERSEDED BY 057_admin_rpcs_username.sql (2026-05-16)
+-- Questa migration referenzia ancora profiles.display_name; il DB live ha
+-- ricreato la stessa RPC sullo schema username con la 057. Lasciata qui solo
+-- come traccia storica per Supabase migrations tracking — non rispecchia
+-- piu' lo stato corrente del DB.
+--
 -- Aggiunge parametro sort_by a get_profiles_with_email.
 -- Valori supportati: 'created_desc' (default), 'reviews_desc', 'reviews_asc'.
 

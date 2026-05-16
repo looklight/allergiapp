@@ -1,3 +1,11 @@
+-- ⚠️ SUPERSEDED BY 057_admin_rpcs_username.sql (2026-05-16) per le RPC
+-- get_profiles_with_email e get_profile_with_email (referenziavano display_name
+-- e profile_color). get_restaurants_admin definita qui e' stata invece
+-- ridefinita da 050_review_photo_count_admin.sql (review_photo_count) e
+-- conferma idempotente nella 057.
+-- File lasciato per Supabase migrations tracking; non rispecchia piu' lo
+-- stato corrente del DB su display_name/profile_color.
+--
 -- 1. Aggiunge last_sign_in_at + email_confirmed_at alle RPC utenti e il nuovo
 --    sort 'last_sign_in_desc' per ordinare gli utenti per ultimo accesso.
 -- 2. Introduce get_restaurants_admin: lista ristoranti per l'admin con
