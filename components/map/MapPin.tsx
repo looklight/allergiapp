@@ -247,6 +247,9 @@ const styles = StyleSheet.create({
   dotWrap: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
+    // Android: come markerWrap, padding per includere dotHeartBadge nella bitmap
+    ...Platform.select({ android: { paddingTop: 8, paddingRight: 10 } }),
   },
   dotMarker: {
     width: 10,
@@ -267,23 +270,29 @@ const styles = StyleSheet.create({
   },
   dotHeartBadge: {
     position: 'absolute',
-    top: -3,
-    right: -5,
+    ...Platform.select({
+      android: { top: 7, right: 7, width: 8, height: 8, borderRadius: 4 },
+      ios: { top: -3, right: -5, width: 10, height: 10, borderRadius: 5 },
+    }),
     backgroundColor: theme.colors.onPrimary,
-    borderRadius: 5,
-    width: 10,
-    height: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dotHeartText: {
-    fontSize: 7,
-    lineHeight: 9,
+    ...Platform.select({
+      android: { fontSize: 5, lineHeight: 8, includeFontPadding: false, textAlignVertical: 'center' as const },
+      ios: { fontSize: 7, lineHeight: 9 },
+    }),
+    textAlign: 'center',
     color: theme.colors.favoriteRed,
   },
 
   markerWrap: {
     alignItems: 'center',
+    overflow: 'visible',
+    // Android: estende il bounding rect del custom marker così
+    // il heartBadge sporgente (top/right negativi) entra nella bitmap
+    ...Platform.select({ android: { paddingTop: 10, paddingRight: 14 } }),
   },
   markerContainer: {
     backgroundColor: theme.colors.onPrimary,
@@ -324,12 +333,11 @@ const styles = StyleSheet.create({
   },
   heartBadge: {
     position: 'absolute',
-    top: -3,
-    right: -6,
+    ...Platform.select({
+      android: { top: 9, right: 11, width: 11, height: 11, borderRadius: 5.5 },
+      ios: { top: -3, right: -6, width: 14, height: 14, borderRadius: 7 },
+    }),
     backgroundColor: theme.colors.onPrimary,
-    borderRadius: 7,
-    width: 14,
-    height: 14,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.shadow,
@@ -339,8 +347,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   heartText: {
-    fontSize: 9,
-    lineHeight: 13,
+    ...Platform.select({
+      android: { fontSize: 7, lineHeight: 11, includeFontPadding: false, textAlignVertical: 'center' as const },
+      ios: { fontSize: 9, lineHeight: 13 },
+    }),
+    textAlign: 'center',
     color: theme.colors.favoriteRed,
   },
 });

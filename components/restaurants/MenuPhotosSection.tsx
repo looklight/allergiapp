@@ -146,8 +146,7 @@ const styles = StyleSheet.create({
   },
   menuEmptyHintLink: {
     fontSize: 13,
-    color: theme.colors.primary,
-    fontWeight: '500',
+    color: theme.colors.textSecondary,
     paddingVertical: 4,
   },
 });
