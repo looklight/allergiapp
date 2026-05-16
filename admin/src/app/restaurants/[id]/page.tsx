@@ -30,27 +30,27 @@ export default function RestaurantDetailPage() {
       // Ristorante + nome di chi l'ha aggiunto
       const { data: restData } = await supabase
         .from('restaurants')
-        .select('*, profiles!added_by(display_name)')
+        .select('*, profiles!added_by(username)')
         .eq('id', id)
         .single();
 
       if (restData) {
         setRestaurant(flattenJoin(restData, {
-          profiles: { display_name: 'adder_name' },
+          profiles: { username: 'adder_name' },
         }) as Restaurant);
       }
 
       // Recensioni con nome utente (limitate per performance)
       const { data: reviewsData } = await supabase
         .from('reviews')
-        .select('*, profiles!user_id(display_name)')
+        .select('*, profiles!user_id(username)')
         .eq('restaurant_id', id)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (reviewsData) {
         setReviews(flattenJoinAll(reviewsData, {
-          profiles: { display_name: 'reviewer_name' },
+          profiles: { username: 'reviewer_name' },
         }));
       }
 
@@ -69,7 +69,7 @@ export default function RestaurantDetailPage() {
       // Segnalazioni pending
       const { data: reportsData } = await supabase
         .from('reports')
-        .select('*, profiles!user_id(display_name), reviews!review_id(comment, rating, profiles!user_id(display_name)), menu_photos!menu_photo_id(thumbnail_url, image_url)')
+        .select('*, profiles!user_id(username), reviews!review_id(comment, rating, profiles!user_id(username)), menu_photos!menu_photo_id(thumbnail_url, image_url)')
         .eq('restaurant_id', id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
@@ -81,13 +81,13 @@ export default function RestaurantDetailPage() {
       // Foto menu con nome uploader
       const { data: menuPhotosData } = await supabase
         .from('menu_photos')
-        .select('*, profiles!user_id(display_name)')
+        .select('*, profiles!user_id(username)')
         .eq('restaurant_id', id)
         .order('created_at', { ascending: false });
 
       if (menuPhotosData) {
         setMenuPhotos(flattenJoinAll(menuPhotosData, {
-          profiles: { display_name: 'uploader_name' },
+          profiles: { username: 'uploader_name' },
         }));
       }
 

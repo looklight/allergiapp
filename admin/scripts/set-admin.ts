@@ -38,7 +38,7 @@ async function setAdmin(userId: string) {
     .from('profiles')
     .update({ role: 'admin' })
     .eq('id', userId)
-    .select('id, display_name, role')
+    .select('id, username, role')
     .single();
 
   if (error) {
@@ -46,7 +46,7 @@ async function setAdmin(userId: string) {
     process.exit(1);
   }
 
-  console.log(`Ruolo "admin" assegnato a "${data.display_name ?? 'Anonimo'}" (id: ${data.id})`);
+  console.log(`Ruolo "admin" assegnato a "${data.username ?? 'Anonimo'}" (id: ${data.id})`);
 }
 
 const userId = process.argv[2];

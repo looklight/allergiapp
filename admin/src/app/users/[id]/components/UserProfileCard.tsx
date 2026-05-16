@@ -14,10 +14,10 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
     <div className="bg-white rounded-lg shadow p-6 mt-4 mb-6">
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl text-gray-500">
-          {(user.display_name || '?')[0].toUpperCase()}
+          {(user.username || '?')[0].toUpperCase()}
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{user.display_name || 'Anonimo'}</h1>
+          <h1 className="text-2xl font-bold">{user.username || 'Anonimo'}</h1>
           {user.email && <p className="text-sm text-gray-500">{user.email}</p>}
           <p className="text-sm text-gray-400">
             Registrato il {new Date(user.created_at).toLocaleDateString('it-IT')}

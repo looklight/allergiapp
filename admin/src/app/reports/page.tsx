@@ -21,7 +21,7 @@ export default function ReportsPage() {
   const fetchReports = useCallback(async (pageNum: number) => {
     let query = supabase
       .from('reports')
-      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(display_name), menu_photos!menu_photo_id(thumbnail_url, image_url), reviews!review_id(comment, rating, profiles!user_id(display_name))')
+      .select('*, restaurants!restaurant_id(name, city), profiles!user_id(username), menu_photos!menu_photo_id(thumbnail_url, image_url), reviews!review_id(comment, rating, profiles!user_id(username))')
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE);
 

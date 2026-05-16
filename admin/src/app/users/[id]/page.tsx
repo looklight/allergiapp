@@ -133,7 +133,7 @@ export default function UserDetailPage() {
   };
 
   const deleteUser = async () => {
-    const name = user?.display_name || user?.email || id;
+    const name = user?.username || user?.email || id;
     const input = prompt(`Questa azione e' irreversibile. Digita "${name}" per confermare.`);
     if (input !== name) return;
 

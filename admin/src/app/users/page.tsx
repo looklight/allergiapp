@@ -58,7 +58,7 @@ export default function UsersPage() {
               <tr key={u.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-3">
                   <Link href={`/users/${u.id}`} className="text-blue-600 hover:underline">
-                    {u.display_name || 'Anonimo'}
+                    {u.username || 'Anonimo'}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-gray-500">{u.email ?? '—'}</td>
