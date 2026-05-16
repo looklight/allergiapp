@@ -1,26 +1,12 @@
-import { ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import type { OtherFoodId } from '../constants/otherFoods';
 
-// Banner types (used by components/BannerCarousel)
-export type BannerType = 'info' | 'ad' | 'custom';
-
 export interface BannerItem {
   id: string;
-  type: BannerType;
   icon?: string;
   image?: ImageSourcePropType;
   title?: string;
   subtitle?: string;
-  adUrl?: string;
-  adAction?: 'open_url' | 'share';
-  adImage?: string;
-  adButtonText?: string;
-  layout?: 'default' | 'full_image';
-  backgroundColor?: string;
-  textColor?: string;
-  displayDuration?: number;
-  customContent?: ReactNode;
 }
 
 export type AllergenId =

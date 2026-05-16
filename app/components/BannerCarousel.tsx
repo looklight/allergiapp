@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, TouchableOpacity, Linking, Image, Share } from 'react-native';
+import { View, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { BannerItem } from '../../types';
 import i18n from '../../utils/i18n';
 import { theme } from '../../constants/theme';
 import { Analytics } from '../../services/analytics';
 
-// Immagini logo per i banner
 const bannerImages = {
   passport: require('../../assets/happy_plate_passport.png'),
   language: require('../../assets/happy_plate_language.png'),
@@ -16,91 +15,54 @@ const bannerImages = {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface BannerCarouselProps {
-  /**
-   * Banner aggiuntivi da inserire nel carousel (es. ads, referral)
-   * Verranno inseriti tra i banner informativi
-   */
-  extraBanners?: BannerItem[];
-  /**
-   * Intervallo di auto-scroll di default in millisecondi
-   * @default 3000
-   */
-  defaultScrollInterval?: number;
+  scrollInterval?: number;
 }
 
-export default function BannerCarousel({
-  extraBanners = [],
-  defaultScrollInterval = 3000,
-}: BannerCarouselProps) {
+export default function BannerCarousel({ scrollInterval = 3000 }: BannerCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewedBanners = useRef<Set<string>>(new Set());
 
-  // Banner predefiniti informativi
-  const infoBanners: BannerItem[] = [
+  const banners: BannerItem[] = [
     {
       id: 'info-1',
-      type: 'info',
       image: bannerImages.passport,
       title: i18n.t('home.bannerWelcome'),
       subtitle: i18n.t('home.bannerMotivation'),
     },
     {
       id: 'info-2',
-      type: 'info',
       image: bannerImages.language,
       title: i18n.t('home.bannerHowToUse'),
       subtitle: i18n.t('home.bannerHowToUseDesc'),
     },
     {
       id: 'info-3',
-      type: 'info',
       image: bannerImages.forks,
       title: i18n.t('home.bannerTip'),
       subtitle: '',
     },
   ];
 
-  const allExtraBanners: BannerItem[] = [...extraBanners];
-
-  // Primo banner informativo, poi promo, poi il resto degli informativi
-  const allBanners: BannerItem[] = [
-    infoBanners[0],
-    ...allExtraBanners,
-    ...infoBanners.slice(1),
-  ];
-
-  // Get display duration for current banner
-  const getCurrentDuration = (index: number) => {
-    const banner = allBanners[index];
-    return banner?.displayDuration || defaultScrollInterval;
-  };
-
-  // Schedule next auto-scroll based on current banner's duration
   const scheduleNextScroll = (currentIndex: number) => {
     if (autoScrollTimer.current) {
       clearTimeout(autoScrollTimer.current);
     }
-    const duration = getCurrentDuration(currentIndex);
     autoScrollTimer.current = setTimeout(() => {
-      const nextIndex = (currentIndex + 1) % allBanners.length;
+      const nextIndex = (currentIndex + 1) % banners.length;
       try {
-        flatListRef.current?.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
-      } catch (error) {
-        // Ignora errori se il FlatList non è ancora pronto
+        flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      } catch {
+        // FlatList not ready yet
       }
       setActiveIndex(nextIndex);
       scheduleNextScroll(nextIndex);
-    }, duration);
+    }, scrollInterval);
   };
 
-  // Auto-scroll effect
   useEffect(() => {
-    if (allBanners.length > 1) {
+    if (banners.length > 1) {
       scheduleNextScroll(activeIndex);
     }
     return () => {
@@ -108,33 +70,22 @@ export default function BannerCarousel({
         clearTimeout(autoScrollTimer.current);
       }
     };
-  }, [allBanners.length]);
-
+  }, [banners.length]);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       const index = viewableItems[0].index || 0;
       setActiveIndex(index);
 
-      // Traccia la visualizzazione del banner (solo la prima volta)
-      const banner = allBanners[index];
+      const banner = banners[index];
       if (banner && !viewedBanners.current.has(banner.id)) {
         viewedBanners.current.add(banner.id);
-
-        // Log banner view
-        Analytics.logBannerViewed(banner.id, banner.type, banner.title);
-
-        // Se è un ad, traccia anche l'impression
-        if (banner.type === 'ad') {
-          Analytics.logAdImpression(banner.id, banner.adUrl, banner.title);
-        }
+        Analytics.logBannerViewed(banner.id, banner.title);
       }
     }
   }).current;
 
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50,
-  }).current;
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
   const onScrollBeginDrag = () => {
     if (autoScrollTimer.current) {
@@ -149,118 +100,44 @@ export default function BannerCarousel({
   const onScrollToIndexFailed = (info: any) => {
     setTimeout(() => {
       try {
-        flatListRef.current?.scrollToIndex({
-          index: info.index,
-          animated: true,
-        });
-      } catch (error) {
-        // Ignora
+        flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+      } catch {
+        // ignore
       }
     }, 100);
   };
 
-  const handleAdPress = (item: BannerItem) => {
-    // Traccia il click sul banner/ad
-    Analytics.logBannerClicked(item.id, item.type, item.title, item.adUrl);
+  const renderBannerItem = ({ item }: { item: BannerItem }) => (
+    <View
+      style={styles.bannerItem}
+      accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
+    >
+      {item.image ? (
+        <Image
+          source={item.image}
+          style={styles.bannerImage}
+          resizeMode="contain"
+          accessibilityElementsHidden
+        />
+      ) : (
+        <Text style={styles.bannerIcon} accessibilityElementsHidden>
+          {item.icon}
+        </Text>
+      )}
+      <View style={styles.bannerTextContainer}>
+        <Text style={styles.bannerTitle}>{item.title}</Text>
+        {item.subtitle ? <Text style={styles.bannerSubtitle}>{item.subtitle}</Text> : null}
+      </View>
+    </View>
+  );
 
-    if (item.adAction === 'share' && item.adUrl) {
-      Share.share({ url: item.adUrl, message: item.adUrl });
-    } else if (item.adUrl) {
-      Linking.openURL(item.adUrl);
-    }
-  };
-
-  const renderBannerItem = ({ item }: { item: BannerItem }) => {
-    // Info banner (default)
-    if (item.type === 'info') {
-      return (
-        <View style={styles.bannerItem} accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}>
-          {item.image ? (
-            <Image source={item.image} style={styles.bannerImage} resizeMode="contain" accessibilityElementsHidden />
-          ) : (
-            <Text style={styles.bannerIcon} accessibilityElementsHidden>{item.icon}</Text>
-          )}
-          <View style={styles.bannerTextContainer}>
-            <Text style={styles.bannerTitle}>{item.title}</Text>
-            {item.subtitle ? (
-              <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
-            ) : null}
-          </View>
-        </View>
-      );
-    }
-
-    // Ad/Referral banner
-    if (item.type === 'ad') {
-      // Full image layout - image fills entire banner (ideal for Canva designs)
-      if (item.layout === 'full_image' && item.adImage) {
-        return (
-          <TouchableOpacity
-            style={styles.fullImageBanner}
-            onPress={() => handleAdPress(item)}
-            activeOpacity={0.9}
-            accessibilityRole="link"
-            accessibilityLabel={item.title}
-          >
-            <Image
-              source={{ uri: item.adImage }}
-              style={styles.fullImage}
-              resizeMode="cover"
-              accessibilityElementsHidden
-            />
-          </TouchableOpacity>
-        );
-      }
-
-      // Default layout - icon/image on left, text on right
-      const customBgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {};
-      const customTextStyle = item.textColor ? { color: item.textColor } : {};
-
-      return (
-        <TouchableOpacity
-          style={[styles.adBannerItem, customBgStyle]}
-          onPress={() => handleAdPress(item)}
-          activeOpacity={0.8}
-          accessibilityRole="link"
-          accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
-        >
-          {item.adImage ? (
-            <Image
-              source={{ uri: item.adImage }}
-              style={styles.adImageIcon}
-              resizeMode="contain"
-            />
-          ) : (
-            <Text style={styles.adIcon}>{item.icon || '🎁'}</Text>
-          )}
-          <View style={styles.bannerTextContainer}>
-            <Text style={[styles.adTitle, customTextStyle]}>{item.title}</Text>
-            {item.subtitle && (
-              <Text style={[styles.adSubtitle, customTextStyle, { opacity: 0.8 }]}>{item.subtitle}</Text>
-            )}
-            {item.adButtonText && (
-              <Text style={[styles.adButton, customTextStyle]}>{item.adButtonText}</Text>
-            )}
-          </View>
-        </TouchableOpacity>
-      );
-    }
-
-    // Custom banner
-    if (item.type === 'custom' && item.customContent) {
-      return <View style={styles.bannerItem}>{item.customContent}</View>;
-    }
-
-    return null;
-  };
-
-  if (allBanners.length === 0) return null;
+  if (banners.length === 0) return null;
 
   return (
     <View style={styles.bannerContainer}>
       <FlatList
         ref={flatListRef}
-        data={allBanners}
+        data={banners}
         renderItem={renderBannerItem}
         keyExtractor={(item) => item.id}
         horizontal
@@ -278,15 +155,16 @@ export default function BannerCarousel({
         })}
         bounces={false}
       />
-      {allBanners.length > 1 && (
-        <View style={styles.paginationDots} accessible accessibilityLabel={`${activeIndex + 1}/${allBanners.length}`}>
-          {allBanners.map((_, index) => (
+      {banners.length > 1 && (
+        <View
+          style={styles.paginationDots}
+          accessible
+          accessibilityLabel={`${activeIndex + 1}/${banners.length}`}
+        >
+          {banners.map((_, index) => (
             <View
               key={index}
-              style={[
-                styles.dot,
-                index === activeIndex && styles.dotActive,
-              ]}
+              style={[styles.dot, index === activeIndex && styles.dotActive]}
               accessibilityElementsHidden
             />
           ))}
@@ -312,25 +190,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 16,
   },
-  adBannerItem: {
-    width: SCREEN_WIDTH - 32,
-    height: 140,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    gap: 16,
-    backgroundColor: `${theme.colors.primary}08`, // Light tint for ads
-  },
-  fullImageBanner: {
-    width: SCREEN_WIDTH - 32,
-    height: 140,
-    borderRadius: 0,
-    overflow: 'hidden',
-  },
-  fullImage: {
-    width: '100%',
-    height: '100%',
-  },
   bannerImage: {
     width: 80,
     height: 80,
@@ -339,17 +198,6 @@ const styles = StyleSheet.create({
   bannerIcon: {
     fontSize: 48,
     lineHeight: 58,
-    marginRight: 16,
-  },
-  adIcon: {
-    fontSize: 48,
-    lineHeight: 58,
-    marginRight: 16,
-  },
-  adImageIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
     marginRight: 16,
   },
   bannerTextContainer: {
@@ -365,24 +213,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
     lineHeight: 20,
-  },
-  adTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    marginBottom: 4,
-  },
-  adSubtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  adButton: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    textDecorationLine: 'underline',
   },
   paginationDots: {
     position: 'absolute',

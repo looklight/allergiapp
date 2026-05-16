@@ -268,14 +268,13 @@ export const Analytics = {
   },
 
   /**
-   * Eventi banner/ads
+   * Eventi banner
    */
-  async logBannerViewed(bannerId: string, bannerType: 'info' | 'ad' | 'custom', title?: string) {
+  async logBannerViewed(bannerId: string, title?: string) {
     if (!canSendAnalytics()) return;
     try {
       await logEvent(firebaseAnalytics, 'banner_viewed', {
         banner_id: bannerId,
-        banner_type: bannerType,
         banner_title: title || '',
       });
     } catch (error) {
@@ -283,35 +282,15 @@ export const Analytics = {
     }
   },
 
-  async logBannerClicked(
-    bannerId: string,
-    bannerType: 'info' | 'ad' | 'custom',
-    title?: string,
-    adUrl?: string
-  ) {
+  async logBannerClicked(bannerId: string, title?: string) {
     if (!canSendAnalytics()) return;
     try {
       await logEvent(firebaseAnalytics, 'banner_clicked', {
         banner_id: bannerId,
-        banner_type: bannerType,
         banner_title: title || '',
-        ad_url: adUrl || '',
       });
     } catch (error) {
       console.warn('[Analytics] Error logging banner_clicked:', error);
-    }
-  },
-
-  async logAdImpression(adId: string, adUrl?: string, adTitle?: string) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'ad_impression', {
-        ad_id: adId,
-        ad_url: adUrl || '',
-        ad_title: adTitle || '',
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging ad_impression:', error);
     }
   },
 
