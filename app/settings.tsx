@@ -209,7 +209,7 @@ export default function SettingsScreen() {
           />
         </Pressable>
 
-        {/* Reset App */}
+        {/* Reset preferenze */}
         <Divider style={styles.sectionDivider} />
         <Pressable
           onPress={handleResetApp}
