@@ -6,7 +6,6 @@
   "framework": null,
   "git": {
     "deploymentEnabled": {
-      "landing": false,
       "main": false
     }
   },
