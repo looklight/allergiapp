@@ -121,8 +121,8 @@ export default function EditProfileScreen() {
 
   const deleteWord = i18n.t('restaurants.editProfile.deleteWord');
   const deleteConfirmValid = deleteConfirmText.trim().toUpperCase() === deleteWord.toUpperCase();
-  const writeConfirmTemplate = i18n.t('restaurants.editProfile.deleteWriteConfirm');
-  const [writeConfirmPrefix, writeConfirmSuffix = ''] = writeConfirmTemplate.split('{{word}}');
+  const writeConfirmTemplate = i18n.t('restaurants.editProfile.deleteWriteConfirm', { word: deleteWord });
+  const [writeConfirmPrefix, writeConfirmSuffix = ''] = writeConfirmTemplate.split(deleteWord);
 
   return (
     <View style={styles.container}>

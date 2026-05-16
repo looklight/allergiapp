@@ -56,7 +56,7 @@ export default function WelcomeSlide({ isActive }: OnboardingSlideProps) {
     }
 
     const seq = Animated.sequence([
-      Animated.delay(80),
+      Animated.delay(150),
       Animated.stagger(
         STAGGER_MS,
         chipAnims.map(a =>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
@@ -32,14 +32,14 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
       Animated.timing(cardTranslate, {
         toValue: 0,
         duration: 380,
-        delay: 80,
+        delay: 150,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(cardOpacity, {
         toValue: 1,
         duration: 320,
-        delay: 80,
+        delay: 150,
         useNativeDriver: true,
       }),
     ]);
@@ -56,7 +56,7 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
       )
     );
 
-    const seq = Animated.sequence([cardIn, Animated.delay(150), chipsIn]);
+    const seq = Animated.sequence([cardIn, Animated.delay(80), chipsIn]);
     seq.start();
     return () => seq.stop();
   }, [isActive, cardTranslate, cardOpacity, chipAnims]);
@@ -75,7 +75,7 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
             },
           ]}
         >
-          <Surface style={styles.card} elevation={3}>
+          <View style={styles.card}>
             <View style={styles.restaurantRow}>
               <MaterialCommunityIcons name="silverware-fork-knife" size={14} color={theme.colors.textSecondary} />
               <Text style={styles.restaurantName}>Trattoria da Gino</Text>
@@ -123,7 +123,7 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
                 );
               })}
             </View>
-          </Surface>
+          </View>
         </Animated.View>
       }
     />
@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: theme.colors.surface,
     gap: 8,
+    boxShadow: theme.shadows.md,
   },
   restaurantRow: {
     flexDirection: 'row',

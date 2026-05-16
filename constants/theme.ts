@@ -130,6 +130,12 @@ export const theme = {
     label: 12,
   },
 
+  shadows: {
+    sm: '0px 1px 3px rgba(0, 0, 0, 0.08)',
+    md: '0px 2px 6px rgba(0, 0, 0, 0.15)',
+    lg: '0px 3px 8px rgba(0, 0, 0, 0.18)',
+  },
+
   // Common interaction values
   hitSlop: 8,
   activeOpacity: 0.6,

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as Location from 'expo-location';
 import { RestaurantService, type Restaurant, type RestaurantPin } from '../services/restaurantService';
 import { haversineKm } from '../utils/geo';
@@ -209,6 +210,22 @@ export function useRestaurantGeo(params: FilterParams) {
         if (status !== 'granted') {
           setLocationDenied(true);
           return;
+        }
+        // Android: cold-start del GPS puo richiedere 2-8s. Senza fast-path
+        // la mappa parte su DEFAULT_REGION (Italia centro) e poi salta sulla
+        // posizione reale. Usiamo l'ultima posizione cachata dal sistema
+        // (Fused Location Provider) per centrare subito. iOS non ne ha bisogno:
+        // Core Location restituisce il fix in poche centinaia di ms.
+        if (Platform.OS === 'android') {
+          const last = await Location.getLastKnownPositionAsync({
+            maxAge: 5 * 60_000,
+            requiredAccuracy: 1000,
+          });
+          if (last && mounted) {
+            const coords = { latitude: last.coords.latitude, longitude: last.coords.longitude };
+            setUserLocation(coords);
+            setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
+          }
         }
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         if (!mounted) return;

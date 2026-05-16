@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { theme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import OnboardingSlide from '../OnboardingSlide';
@@ -32,20 +32,20 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
       Animated.timing(cardTranslate, {
         toValue: 0,
         duration: 360,
-        delay: 80,
+        delay: 150,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(cardOpacity, {
         toValue: 1,
         duration: 300,
-        delay: 80,
+        delay: 150,
         useNativeDriver: true,
       }),
       Animated.timing(cardScale, {
         toValue: 1,
         duration: 360,
-        delay: 80,
+        delay: 150,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -91,7 +91,7 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
             },
           ]}
         >
-          <Surface style={styles.card} elevation={4}>
+          <View style={styles.card}>
             <View style={styles.header}>
               <Text style={styles.headerTitle}>⚠️ {i18n.t('onboardingTutorial.card.header')}</Text>
               <Text style={styles.headerSubtitle}>{i18n.t('onboardingTutorial.card.subtitle')}</Text>
@@ -125,7 +125,7 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
                 );
               })}
             </View>
-          </Surface>
+          </View>
         </Animated.View>
       }
     />
@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: theme.colors.surface,
     overflow: 'hidden',
+    boxShadow: theme.shadows.lg,
   },
   header: {
     backgroundColor: theme.colors.error,

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
@@ -45,7 +45,7 @@ export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps)
     }
 
     const cardsIn = Animated.sequence([
-      Animated.delay(80),
+      Animated.delay(150),
       Animated.stagger(
         CARD_STAGGER_MS,
         cardAnims.map(a =>
@@ -112,7 +112,12 @@ export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps)
                   ],
                 }}
               >
-                <Surface style={styles.card} elevation={isHighlighted ? 3 : 1}>
+                <View
+                  style={[
+                    styles.card,
+                    { boxShadow: isHighlighted ? theme.shadows.md : theme.shadows.sm },
+                  ]}
+                >
                   <View style={styles.cardRow}>
                     <View style={[styles.thumb, { backgroundColor: r.thumbColor }]}>
                       <MaterialCommunityIcons name="silverware-fork-knife" size={18} color={theme.colors.onPrimary} />
@@ -168,7 +173,7 @@ export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps)
                       </View>
                     </View>
                   </View>
-                </Surface>
+                </View>
               </Animated.View>
             );
           })}

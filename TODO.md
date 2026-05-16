@@ -204,6 +204,32 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - Il trigger `claim → owner_id` è già nel debito tecnico (nessun automatismo attuale)
 - Valutare se `is_premium` viene dato con il claim o separatamente (es. freemium: claim gratuito, feature premium a pagamento)
 
+### Traduzione recensioni in lingua app
+**Priorità: bassa — da pianificare, decisione ancora aperta**
+
+Mostrare le recensioni scritte in lingue diverse da quella dell'utente, senza tradurre tutto a tappeto (costi + sicurezza alimentare: una traduzione approssimativa su "il cameriere ha capito le mie allergie" può fuorviare).
+
+**Pattern dominante in altre app** (Google Maps, TripAdvisor, Airbnb, Instagram, Booking): originale visibile + bottone "Traduci" sotto → tap = mostra traduzione + "Mostra originale".
+
+**Strategia raccomandata (D→C, costo ~0€):**
+- On-device first: Apple Translation framework (iOS 17.4+) / ML Kit (Android) — gratis, privato, offline
+- Fallback edge function Supabase + MyMemory per lingue non coperte
+- Cache server-side per `hash(testo)+lingua_target` (non per `review_id+lingua`) → 100 utenti italiani sulla stessa review spagnola = 1 sola traduzione
+- Skip se source==target o testo <30 char ("Buonissimo!" non serve tradurre)
+- Disclaimer "Tradotto automaticamente" sotto il testo tradotto
+- NON usare Google Cloud Translate (incompatibile con direzione rimozione Firebase/Google)
+
+**Prerequisiti già coperti:**
+- Campo `reviews.language` salvato all'insert in `add-review.tsx:144` (bug noto: non aggiornato su edit, vedi sezione dedicata in questo TODO — fixabile insieme oppure skippabile se si va on-device con auto-detect)
+
+**Chiavi i18n predisposte da aggiungere quando si implementa:** `restaurants.review.translate`, `showOriginal`, `translatedBy`.
+
+**Effort stimato:** 1-2 giorni per versione base (originale + bottone + cache). Edge case da curare: auto-detect lingua reale del testo (spesso uno scrive in EN pur avendo app in IT), invalidazione cache su edit recensione, rate-limit per utente.
+
+**Trigger per upgrade a paid:** solo quando MyMemory inizia a tornare 429 con regolarità. A quel punto: Microsoft Translator (2M char/mese gratis) o DeepL (500k). NON Google.
+
+Dettagli e contesto storico: `memory/project_review_translation.md`.
+
 ### Admin dashboard
 - [x] Migrata da Firebase a Supabase (mar 2026)
 - [x] Deploy su Vercel — live su https://admin.allergiapp.com (branch `admin-prod`)

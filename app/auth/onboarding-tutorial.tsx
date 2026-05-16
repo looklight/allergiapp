@@ -24,6 +24,7 @@ export default function OnboardingTutorialScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
+  const isProgrammaticScrollRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const isLast = activeIndex === SLIDES.length - 1;
@@ -33,14 +34,25 @@ export default function OnboardingTutorialScreen() {
       router.replace('/(tabs)');
     } else {
       const next = activeIndex + 1;
+      isProgrammaticScrollRef.current = true;
       scrollRef.current?.scrollTo({ x: next * SCREEN_WIDTH, animated: true });
       setActiveIndex(next);
     }
   };
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-    setActiveIndex(index);
+    if (isProgrammaticScrollRef.current) return;
+    const raw = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    const index = Math.max(0, Math.min(SLIDES.length - 1, raw));
+    setActiveIndex(prev => (prev !== index ? index : prev));
+  };
+
+  const handleScrollBeginDrag = () => {
+    isProgrammaticScrollRef.current = false;
+  };
+
+  const handleMomentumScrollEnd = () => {
+    isProgrammaticScrollRef.current = false;
   };
 
   return (
@@ -52,7 +64,10 @@ export default function OnboardingTutorialScreen() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleScroll}
+        onScroll={handleScroll}
+        onScrollBeginDrag={handleScrollBeginDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        scrollEventThrottle={16}
       >
         {SLIDES.map((Slide, index) => (
           <Slide key={index} isActive={activeIndex === index} />
