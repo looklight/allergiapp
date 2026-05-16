@@ -41,8 +41,9 @@
     "selectLanguage": "Scegli la lingua",
     "downloadMoreLanguages": "Scarica altre lingue",
     "bannerWelcome": "Ovunque tu vada",
-    "bannerMotivation": "Viaggia in sicurezza, comunica le tue allergie senza barriere",
-    "bannerTip": "Aggiungi le tue allergie e viaggia con più leggerezza",
+    "bannerMotivation": "Viaggia in sicurezza, comunica le tue allergie o esigenze, senza barriere",
+    "bannerTip": "Ristoranti adatti a te, ovunque",
+    "bannerTipDesc": "Scoprili dalla community, racconta la tua esperienza",
     "bannerHowToUse": "Comunica in modo chiaro",
     "bannerHowToUseDesc": "Presenta la tua card al cameriere quando ordini al ristorante"
   },

@@ -46,7 +46,7 @@ export default function TabLayout() {
             options={{
               title: i18n.t('restaurants.tabs.tabCards'),
               tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="card-account-details" color={color} size={size} />
+                <MaterialCommunityIcons name="card-bulleted-outline" color={color} size={size} />
               ),
             }}
           />

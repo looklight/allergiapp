@@ -101,7 +101,7 @@ export default function ImageFullscreenModal({
   }, []);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onShow={handleShow} onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onShow={handleShow} onRequestClose={onClose} statusBarTranslucent>
       <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={dismissPan}>
         <Animated.View style={[styles.overlay, overlayStyle, dismissStyle]}>

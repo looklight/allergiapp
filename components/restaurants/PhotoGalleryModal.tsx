@@ -113,7 +113,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const current = photos[currentIndex];
 
   return (
-    <Modal visible transparent animationType="fade" onShow={handleShow} onRequestClose={onClose}>
+    <Modal visible transparent animationType="fade" onShow={handleShow} onRequestClose={onClose} statusBarTranslucent>
       <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={dismissPan}>
         <ReAnimated.View style={[styles.container, dismissStyle]}>

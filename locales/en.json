@@ -41,8 +41,9 @@
     "selectLanguage": "Select language",
     "downloadMoreLanguages": "Download more languages",
     "bannerWelcome": "Wherever you go",
-    "bannerMotivation": "Travel safely, communicate your allergies without barriers",
-    "bannerTip": "Add your allergies and travel with greater ease",
+    "bannerMotivation": "Travel safely, share your allergies or needs, without barriers",
+    "bannerTip": "Restaurants that suit you, anywhere",
+    "bannerTipDesc": "Discover them from the community, share your experience",
     "bannerHowToUse": "Communicate clearly",
     "bannerHowToUseDesc": "Show your card to the waiter when ordering at the restaurant"
   },

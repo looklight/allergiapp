@@ -128,41 +128,42 @@ export default function AddAllergyScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <AppHeader
-        title={searchActive ? undefined : i18n.t('addAllergy.title')}
-        titleNode={searchActive ? (
-          <View style={styles.searchBarContainer}>
-            <TextInput
-              ref={searchInputRef}
-              style={styles.searchInput}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder={i18n.t('addAllergy.searchPlaceholder')}
-              placeholderTextColor={theme.colors.textSecondary}
-              autoFocus
-              returnKeyType="search"
-              selectionColor={theme.colors.primary}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
-                <MaterialCommunityIcons name="close" size={20} color={theme.colors.textSecondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : undefined}
-        onLeadingPress={() => {
-          if (searchActive) {
-            setSearchActive(false);
-            setSearchQuery('');
-          } else {
-            router.back();
-          }
-        }}
-        actions={!searchActive ? [{
-          icon: 'magnify',
-          onPress: () => setSearchActive(true),
+        title={i18n.t('addAllergy.title')}
+        actions={[{
+          icon: searchActive ? 'close' : 'magnify',
+          onPress: () => {
+            if (searchActive) {
+              setSearchActive(false);
+              setSearchQuery('');
+            } else {
+              setSearchActive(true);
+            }
+          },
           accessibilityLabel: i18n.t('addAllergy.searchPlaceholder'),
-        }] : undefined}
+        }]}
       />
+
+      {searchActive && (
+        <View style={styles.searchBar}>
+          <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} />
+          <TextInput
+            ref={searchInputRef}
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={i18n.t('addAllergy.searchPlaceholder')}
+            placeholderTextColor={theme.colors.textSecondary}
+            autoFocus
+            returnKeyType="search"
+            selectionColor={theme.colors.primary}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
+              <MaterialCommunityIcons name="close" size={20} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {!searchActive && (
         <Text variant="bodyMedium" style={styles.subtitle}>
@@ -339,21 +340,21 @@ export default function AddAllergyScreen() {
 }
 
 const styles = StyleSheet.create({
-  searchBarContainer: {
-    flex: 1,
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.06)',
-    borderRadius: 8,
-    marginHorizontal: 12,
-    paddingHorizontal: 10,
-    height: 36,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.divider,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
   },
   searchInput: {
     flex: 1,
     color: theme.colors.textPrimary,
     fontSize: 16,
-    paddingVertical: 0,
+    paddingVertical: 4,
   },
   searchSectionLabel: {
     fontSize: 12,

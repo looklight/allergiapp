@@ -234,6 +234,7 @@ export default function EditProfileScreen() {
         visible={deleteModalVisible}
         transparent
         animationType="fade"
+        statusBarTranslucent
         onRequestClose={closeDeleteModal}
       >
         <KeyboardAvoidingView

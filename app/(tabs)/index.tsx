@@ -81,7 +81,7 @@ export default function HomeScreen() {
         <BannerCarousel />
 
         {/* Sezione Allergie */}
-        <Surface style={styles.card} elevation={1}>
+        <Surface style={styles.card} elevation={0}>
           <View style={styles.cardHeader}>
             <View style={styles.cardHeaderLeft}>
               <View style={styles.stepNumberContainer}>
@@ -191,7 +191,7 @@ export default function HomeScreen() {
         </Surface>
 
         {/* Sezione Lingua */}
-        <Surface style={styles.card} elevation={1}>
+        <Surface style={styles.card} elevation={0}>
           <View style={styles.cardHeader}>
             <View style={styles.stepNumberContainer}>
               <Text style={styles.stepNumberText}>2</Text>
@@ -223,7 +223,7 @@ export default function HomeScreen() {
 
         {/* Bottone Mostra Card */}
         {hasSelections && (
-          <Surface style={styles.showCardSection} elevation={2}>
+          <View style={styles.showCardSection}>
             <Text style={styles.readyText}>
               {i18n.t('home.cardReadyIn')} {currentLanguage?.nativeName}!
             </Text>
@@ -233,12 +233,12 @@ export default function HomeScreen() {
               style={styles.showCardButton}
               contentStyle={styles.showCardButtonContent}
               labelStyle={styles.showCardButtonLabel}
-              icon="card-account-details"
+              icon="card-bulleted-outline"
               accessibilityLabel={i18n.t('home.showCardToWaiter')}
             >
               {i18n.t('home.showCardToWaiter')}
             </Button>
-          </Surface>
+          </View>
         )}
       </ScrollView>
 
@@ -271,6 +271,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: theme.colors.surface,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.divider,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -348,9 +350,7 @@ const styles = StyleSheet.create({
   languageSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
     padding: 14,
-    borderRadius: 12,
   },
   languageFlag: {
     fontSize: 40,
@@ -374,19 +374,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   showCardSection: {
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
+    paddingVertical: 8,
     alignItems: 'center',
   },
   readyText: {
-    color: theme.colors.onPrimary,
-    fontSize: 16,
+    color: theme.colors.textSecondary,
+    fontSize: 14,
     marginBottom: 12,
     textAlign: 'center',
   },
   showCardButton: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.primary,
     borderRadius: 12,
   },
   showCardButtonContent: {
@@ -394,7 +392,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   showCardButtonLabel: {
-    color: theme.colors.primary,
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },

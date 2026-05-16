@@ -161,6 +161,7 @@ export default function LanguagePickerModal({
       visible={visible}
       animationType="none"
       transparent={true}
+      statusBarTranslucent
       onRequestClose={close}
     >
       <View style={styles.modalContainer}>

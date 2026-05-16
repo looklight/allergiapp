@@ -301,7 +301,7 @@ export default function DownloadableLanguagesSection({
               {downloadedLangs.map((lang) => {
                 const isDownloading = downloadingLang === lang.code;
                 return (
-                  <Surface key={lang.code} style={[styles.downloadedChip, { width: chipWidth }]} elevation={1}>
+                  <Surface key={lang.code} style={[styles.downloadedChip, { width: chipWidth }]} elevation={0}>
                     <Text style={styles.downloadedChipFlag}>{lang.flag}</Text>
                     <View style={styles.downloadedChipContent}>
                       <Text style={styles.downloadedChipName} numberOfLines={1}>{lang.nativeName}</Text>
@@ -350,7 +350,7 @@ export default function DownloadableLanguagesSection({
           const isExpanded = expandedRegions[region];
 
           return (
-            <Surface key={region} style={styles.regionCard} elevation={1}>
+            <Surface key={region} style={styles.regionCard} elevation={0}>
               <View style={styles.regionCardContent}>
               <Pressable
                 onPress={() => toggleRegion(region)}
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.divider,
   },
   searchInputContainer: {
     flexDirection: 'row',
@@ -495,6 +495,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.divider,
   },
   regionCardContent: {
     overflow: 'hidden',

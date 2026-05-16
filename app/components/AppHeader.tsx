@@ -48,7 +48,7 @@ export default function AppHeader({
   const extraTop = Platform.OS === 'android' ? 8 : 0;
 
   return (
-    <View style={[styles.header, { paddingTop: insets.top + extraTop, height: insets.top + extraTop + 44 }, style]}>
+    <View style={[styles.header, { paddingTop: insets.top + extraTop }, style]}>
       {leadingIcon ? (
         <TouchableOpacity
           onPress={handleLeading}
@@ -57,7 +57,7 @@ export default function AppHeader({
           accessibilityRole="button"
           accessibilityLabel={leadingAccessibilityLabel}
         >
-          <MaterialCommunityIcons name={leadingIcon} size={24} color={theme.colors.textPrimary} />
+          <MaterialCommunityIcons name={leadingIcon} size={24} color={theme.colors.onPrimary} />
         </TouchableOpacity>
       ) : titleAlign === 'center' && hasActions ? (
         <View style={styles.spacer} />
@@ -87,7 +87,7 @@ export default function AppHeader({
               accessibilityLabel={a.accessibilityLabel}
               style={i > 0 ? styles.actionSpacing : undefined}
             >
-              <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.textPrimary} />
+              <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.onPrimary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -100,11 +100,12 @@ export default function AppHeader({
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   titleContainer: {
     flex: 1,
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: theme.colors.textPrimary,
+    color: theme.colors.onPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },

@@ -18,7 +18,7 @@ interface BannerCarouselProps {
   scrollInterval?: number;
 }
 
-export default function BannerCarousel({ scrollInterval = 3000 }: BannerCarouselProps) {
+export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,7 +41,7 @@ export default function BannerCarousel({ scrollInterval = 3000 }: BannerCarousel
       id: 'info-3',
       image: bannerImages.forks,
       title: i18n.t('home.bannerTip'),
-      subtitle: '',
+      subtitle: i18n.t('home.bannerTipDesc'),
     },
   ];
 
@@ -149,8 +149,8 @@ export default function BannerCarousel({ scrollInterval = 3000 }: BannerCarousel
         onScrollEndDrag={onScrollEndDrag}
         onScrollToIndexFailed={onScrollToIndexFailed}
         getItemLayout={(_, index) => ({
-          length: SCREEN_WIDTH - 32,
-          offset: (SCREEN_WIDTH - 32) * index,
+          length: SCREEN_WIDTH,
+          offset: SCREEN_WIDTH * index,
           index,
         })}
         bounces={false}
@@ -178,12 +178,11 @@ const styles = StyleSheet.create({
   bannerContainer: {
     height: 140,
     marginBottom: 16,
-    borderRadius: 16,
+    marginHorizontal: -16,
     overflow: 'hidden',
-    backgroundColor: theme.colors.surface,
   },
   bannerItem: {
-    width: SCREEN_WIDTH - 32,
+    width: SCREEN_WIDTH,
     height: 140,
     flexDirection: 'row',
     alignItems: 'center',

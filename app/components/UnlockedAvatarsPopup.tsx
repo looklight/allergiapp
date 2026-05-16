@@ -55,6 +55,7 @@ export default function UnlockedAvatarsPopup() {
       visible={visible}
       transparent
       animationType="fade"
+      statusBarTranslucent
       onRequestClose={handleDismiss}
     >
       <Pressable style={styles.overlay} onPress={handleDismiss}>

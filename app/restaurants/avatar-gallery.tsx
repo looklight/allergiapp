@@ -276,6 +276,7 @@ export default function AvatarGalleryScreen() {
         visible={!!detailAvatar}
         transparent
         animationType="fade"
+        statusBarTranslucent
         onRequestClose={() => setDetailAvatar(null)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setDetailAvatar(null)}>

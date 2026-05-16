@@ -43,7 +43,7 @@ export default function ReportReviewModal({ visible, onClose, onSubmit }: Props)
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={styles.content} onPress={() => {}}>
           <View style={styles.header}>
