@@ -17,7 +17,7 @@ export async function getLeaderboard(): Promise<{
     for (const row of data ?? []) {
       const entry: LeaderboardEntry = {
         user_id: row.user_id,
-        display_name: row.display_name,
+        username: row.username ?? null,
         avatar_url: row.avatar_url,
         allergens: row.allergens ?? [],
         dietary_preferences: row.dietary_preferences ?? [],

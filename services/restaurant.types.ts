@@ -69,7 +69,7 @@ export interface Review {
   likes_count: number;
   liked_by_me: boolean;
   // Dal profilo utente (join)
-  user_display_name?: string | null;
+  user_username?: string | null;
   user_avatar_url?: string | null;
   user_is_anonymous?: boolean;
 }
@@ -91,7 +91,7 @@ export interface MenuPhoto {
   thumbnail_url: string | null;
   created_at: string;
   // Dal profilo utente (join)
-  user_display_name?: string | null;
+  user_username?: string | null;
 }
 
 export interface Report {
@@ -164,7 +164,7 @@ export interface CreateReportInput {
 
 export interface LeaderboardEntry {
   user_id: string;
-  display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   allergens: string[];
   dietary_preferences: string[];

@@ -51,9 +51,11 @@ export default function PublicProfileScreen() {
     })();
   }, [uid, isAuthenticated]);
 
-  // Mask display name for anonymous users when viewed by others
+  // Mask username for anonymous users when viewed by others.
+  // ProfileCard usa getDisplayName che oggi ritorna username; sovrascrivere
+  // username con il label anonimo basta.
   const visibleProfile = profile?.is_anonymous
-    ? { ...profile, display_name: getAnonymousLabel(uid) }
+    ? { ...profile, username: getAnonymousLabel(uid) }
     : profile;
 
   // Loading & error states use a simple header (no profile color)

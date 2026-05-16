@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 import { getRestrictionById } from '../constants/foodRestrictions';
 import i18n from '../utils/i18n';
+import { getDisplayName } from '../utils/getDisplayName';
 import type { UserProfile } from '../services/auth';
 import Avatar from './Avatar';
 
@@ -29,6 +30,7 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), headerRight, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
+  const displayName = getDisplayName(profile);
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })
@@ -62,7 +64,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
                 <Avatar
                   avatarId={profile.avatar_url}
                   isAnonymous={profile.is_anonymous}
-                  initial={profile.display_name ?? undefined}
+                  initial={displayName ?? undefined}
                   size={110}
                 />
               </TouchableOpacity>
@@ -70,13 +72,13 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
               <Avatar
                 avatarId={profile.avatar_url}
                 isAnonymous={profile.is_anonymous}
-                initial={profile.display_name ?? undefined}
+                initial={displayName ?? undefined}
                 size={110}
               />
             )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{profile.display_name || i18n.t('restaurants.profileCard.defaultName')}</Text>
+                <Text style={styles.displayName}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
                 {profile.is_anonymous && (
                   <MaterialCommunityIcons name="incognito" size={18} color={theme.colors.textSecondary} />
                 )}

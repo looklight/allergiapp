@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useUnlockedAvatars } from '../contexts/UnlockedAvatarsContext';
 import { useReviewsPaginated } from './useReviewsPaginated';
+import { getDisplayName } from '../utils/getDisplayName';
 
 export interface UnifiedReview {
   key: string;
@@ -146,7 +147,7 @@ export function useRestaurantDetail(
       key: `review-${r.id}`,
       reviewId: r.id,
       userId: r.user_id ?? undefined,
-      displayName: r.user_display_name ?? null,
+      displayName: getDisplayName({ username: r.user_username }),
       isAnonymous: r.user_is_anonymous ?? false,
       avatarUrl: r.user_avatar_url ?? null,
       rating: r.rating,

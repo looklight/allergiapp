@@ -11,6 +11,7 @@ import { useImagePicker } from '../../hooks/useImagePicker';
 import HeaderBar from '../../components/HeaderBar';
 import ImageFullscreenModal from '../../components/ImageFullscreenModal';
 import i18n from '../../utils/i18n';
+import { getDisplayName } from '../../utils/getDisplayName';
 import type { MenuPhoto } from '../../services/restaurantService';
 
 const THUMB_SIZE = 72;
@@ -204,7 +205,7 @@ export default function MenuPhotosScreen() {
                     <Text style={styles.uploaderName}>
                       {photo.user_id === user?.uid
                         ? i18n.t('restaurants.menu.uploaderYou')
-                        : (photo.user_display_name ?? i18n.t('restaurants.menu.uploaderCommunity'))}
+                        : (getDisplayName({ username: photo.user_username }) ?? i18n.t('restaurants.menu.uploaderCommunity'))}
                     </Text>
                     <Text style={styles.uploadDate}>
                       {new Date(photo.created_at).toLocaleDateString(i18n.locale, {

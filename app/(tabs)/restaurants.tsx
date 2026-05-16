@@ -18,6 +18,7 @@ import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetail
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
+import { getDisplayName } from '../../utils/getDisplayName';
 import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
 import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
@@ -593,7 +594,7 @@ export default function RestaurantsScreen() {
               <Avatar
                 avatarId={userProfile?.avatar_url}
                 isAnonymous={userProfile?.is_anonymous}
-                initial={isAuthenticated ? userProfile?.display_name ?? undefined : undefined}
+                initial={isAuthenticated && userProfile ? getDisplayName(userProfile) ?? undefined : undefined}
                 size={44}
               />
             </TouchableOpacity>

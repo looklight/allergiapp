@@ -27,13 +27,13 @@ export async function updateMenuUrl(
 export async function getMenuPhotos(restaurantId: string): Promise<MenuPhoto[]> {
   const { data, error } = await supabase
     .from('menu_photos')
-    .select(`*, profile:profiles!user_id(display_name, is_anonymous)`)
+    .select(`*, profile:profiles!user_id(username, is_anonymous)`)
     .eq('restaurant_id', restaurantId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []).map((p: any) => ({
     ...p,
-    user_display_name: p.profile?.is_anonymous ? null : (p.profile?.display_name ?? null),
+    user_username: p.profile?.is_anonymous ? null : (p.profile?.username ?? null),
     profile: undefined,
   }));
 }

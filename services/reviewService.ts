@@ -62,7 +62,7 @@ export async function getReviews(
     updated_at: r.updated_at,
     likes_count: r.likes_count ?? 0,
     liked_by_me: r.liked_by_me ?? false,
-    user_display_name: r.user_display_name ?? null,
+    user_username: r.user_username ?? null,
     user_avatar_url: r.user_avatar_url ?? null,
     user_is_anonymous: r.user_is_anonymous ?? false,
   }));

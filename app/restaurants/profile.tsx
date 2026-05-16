@@ -86,9 +86,9 @@ export default function ProfileScreen() {
       <ProfileCard
         profile={{
           ...userProfile,
-          display_name: userProfile.is_anonymous
+          username: userProfile.is_anonymous
             ? getAnonymousLabel(user?.uid ?? '')
-            : (userProfile.display_name || user?.displayName || ''),
+            : userProfile.username,
         }}
         stats={{ likes: likesReceived, reviews: reviews.length, favorites: favoriteCount }}
         onBack={() => router.back()}

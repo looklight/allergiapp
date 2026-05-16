@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
+import { getDisplayName } from '../utils/getDisplayName';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
 
 type Tab = 'reviews' | 'likes';
@@ -29,14 +30,15 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 function LeaderboardRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
-  const displayName = entry.display_name || i18n.t('leaderboard.anonymous');
+  const name = getDisplayName(entry);
+  const displayName = name || i18n.t('leaderboard.anonymous');
   return (
     <View style={[styles.row, rank <= 3 && styles.topRow]}>
       <RankBadge rank={rank} />
       <View style={styles.avatarSlot}>
         <Avatar
           avatarId={entry.avatar_url}
-          initial={entry.display_name ?? undefined}
+          initial={name ?? undefined}
           size="md"
           backgroundColor={theme.colors.primaryContainer}
         />
