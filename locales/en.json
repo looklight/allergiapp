@@ -472,7 +472,7 @@
       "title": "Edit profile",
       "accountSection": "Account information",
       "anonymousLabel": "Anonymous profile",
-      "anonymousHint": "Your name won't be visible to other users",
+      "anonymousHint": "Your name and profile won't be visible to other users",
       "emailLabel": "Email",
       "emailHint": "The email address cannot be changed.",
       "save": "Save",

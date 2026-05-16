@@ -472,7 +472,7 @@
       "title": "Modifica profilo",
       "accountSection": "Informazioni account",
       "anonymousLabel": "Profilo anonimo",
-      "anonymousHint": "Il tuo nome non sarà visibile ad altri utenti",
+      "anonymousHint": "Il tuo nome e il tuo profilo non saranno visibili ad altri utenti",
       "emailLabel": "Email",
       "emailHint": "L'indirizzo email non è modificabile.",
       "save": "Salva",
