@@ -29,13 +29,12 @@ Dopo il merge del 2026-05-12 sono stati rimossi `services/remoteConfig.ts`, `com
 - **Beneficio:** componente più chiaro, tipi più stretti. **Costo:** test manuale su device richiesto (tocca codice vivo).
 
 ### Splash screen Android — uniformare background a tutto schermo
-**Stato (2026-05-13): fix implementato, da verificare al prossimo build EAS Android.**
+**Stato (2026-05-16): risolto in light mode su EAS Android (build 1.1.0). In dark mode di sistema lo splash mostrava un rettangolo crema su sfondo nero: causa root `AppTheme` ereditava da `Theme.AppCompat.DayNight.NoActionBar` e in night mode il `windowBackground` cadeva sul dark di default. Aggiunto hardening night-mode al plugin — da verificare al prossimo build EAS.**
 
-Causa root: alla transizione splash→app su Android 12+ il sistema espone `AppTheme.windowBackground` (bianco default) per qualche frame, prima che la View React si monti. Si vede un bordo non uniforme attorno al logo.
-
-- [x] Creato plugin custom `plugins/withAndroidWindowBackground.js` che setta `AppTheme.android:windowBackground = @color/app_window_background (#F7DCB3)` via `withAndroidColors` + `withAndroidStyles`. Solo Android (non tocca iOS in alcun modo). Registrato in `app.config.ts`.
-- [ ] Test: `npx expo prebuild --clean` + build EAS Android + installare su device Android 12+ e Android 11- (le due API system splash si comportano diversamente)
-- Se il flash bianco persiste, fallback: customizzare `windowSplashScreenIconBackgroundColor` o ridurre `imageWidth`.
+- [x] Plugin custom `plugins/withAndroidWindowBackground.js` (background `#F7DCB3` via `withAndroidColors` + `withAndroidStyles`) — registrato in `app.config.ts`. Solo Android, iOS intatto.
+- [x] Verifica su device EAS in light mode: splash uniforme.
+- [x] Esteso plugin con `withAndroidColorsNight` per scrivere `app_window_background = #F7DCB3` anche in `values-night/colors.xml`. Coerente con `userInterfaceStyle: "light"` di app.config.ts: la app non ha dark mode, lo splash deve essere identico in qualunque mode di sistema.
+- [ ] Verifica al prossimo build EAS Android (anche su device con dark mode attiva).
 
 
 ---
@@ -45,15 +44,15 @@ Causa root: alla transizione splash→app su Android 12+ il sistema espone `AppT
 **Vincolo assoluto:** ogni fix deve essere Android-only via `Platform.OS === 'android'` o equivalente. iOS è "perfetta" e non va toccato in nessun caso.
 
 ### Footer / tab bar — possibile regressione del fix safe area
-**Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS invariato.**
+**Stato (2026-05-16): risolto e verificato in Expo Go Android + EAS Android (build 1.1.0 internal testing). iOS invariato.**
 
 Causa: la formula hardcoded `49 + insets.bottom + 12/16` per gli overlay non rifletteva l'altezza reale del tab bar (`56 + max(insets.bottom, 16)` = 72dp in Expo Go), quindi banner e FAB finivano sotto.
 
 - [x] In `app/(tabs)/restaurants.tsx`: introdotto `useBottomTabBarHeight()` da `@react-navigation/bottom-tabs` e variabile `overlayBaseBottom = Platform.OS === 'android' ? tabBarHeight : 49 + insets.bottom`. Usato per `nearbyBanner` (bottom + 12) e `fabWrapper` (bottom + 16). Self-correcting su Android, iOS conserva formula originale.
-- [ ] Verifica anche in EAS build (Expo Go ed EAS hanno insets.bottom diversi — su EAS l'overlay si dovrebbe comunque agganciare correttamente perché `useBottomTabBarHeight()` legge l'altezza reale).
+- [x] Verificato in EAS Android: overlay si aggancia correttamente.
 
 ### Bottom sheet — spazio vuoto sotto
-**Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS testato, nessuna differenza visiva.**
+**Stato (2026-05-16): risolto e verificato in Expo Go Android + EAS Android (build 1.1.0). iOS invariato.**
 
 Causa root (confermata): il container del sheet era ancorato `top: 0` con `height = useWindowDimensions().height * maxSnap + (Android ? insetBottom : 0)`. Il parent (`MaybeScreenContainer` di React Navigation, vedi `node_modules/@react-navigation/bottom-tabs/.../BottomTabView.js:252`) ha `overflow: 'hidden'`. L'estensione `+insetBottom` veniva ritagliata, mentre il `paddingBottom: insetBottom` sul body continuava a spostare il contenuto su → gap visibile.
 
@@ -61,20 +60,12 @@ Causa root (confermata): il container del sheet era ancorato `top: 0` con `heigh
 - [x] Sistema lo stesso `BottomSheet` usato da `RestaurantDetailSheet` e `NearbyListSheet` → entrambi risolti.
 
 ### Bottom sheet — lag scrolling + drag scattoso
-**Stato (2026-05-13): confermato visivamente in Expo Go Android (sia lo scroll del contenuto sia il drag del sheet stesso). iOS Expo Go fluido. In attesa di test EAS dev-client per discriminare overhead Expo Go vs problema reale.**
+**Stato (2026-05-16): risolto su EAS Android (build 1.1.0 internal testing). Il problema era effettivamente overhead Expo Go dev mode, come ipotizzato. iOS invariato.**
 
-Cause architetturali sospette (in ordine di probabilità):
-1. Overhead Expo Go dev mode su Android (~5x rispetto a EAS production). iOS Expo Go è strutturalmente più ottimizzato → asimmetria naturale.
-2. `elevation` Android sul container (8) + `RestaurantDetailSheet.sheetShadow` (16) o `NearbyListSheet.sheet` (12): renderizzare shadow elevata + rounded corners + overflow:hidden durante transform è uno dei principali bottleneck noti.
-3. `simultaneousWithExternalGesture(scrollGesture)` sul bodyPan può avere overhead per frame anche quando lo scroll non è attivo.
-
-- [ ] **Prima di intervenire**: testare in EAS dev-client / internal testing per verificare se il problema persiste in produzione
-- [ ] Se persiste in EAS: provare `renderToHardwareTextureAndroid={true}` sull'`Animated.View` del container in `BottomSheet.tsx`. Caveat: rasterizza in bitmap, ottimo per drag (transform-only) ma può peggiorare lo scroll del contenuto (texture invalidata ad ogni frame di scroll). Da testare con attenzione.
-- [ ] Alternativa più aggressiva: ridurre `elevation` su Android (es. 16 → 4) — meno qualità shadow ma molto più leggero. Solo `elevation` (non shadow* che è iOS).
-- [ ] Profiler React DevTools / Reanimated debug per misurare frame drop reali
+- [x] Test EAS Android: scroll e drag fluidi. Nessun intervento aggiuntivo necessario sui sospetti architetturali (elevation/renderToHardwareTextureAndroid/simultaneousWithExternalGesture).
 
 ### Mappa Android — pin issues
-**Stato (2026-05-14)**: 5/7 risolti. Restano centramento camera "sale e scende" e pin mancanti.
+**Stato (2026-05-16)**: 5/7 risolti + authorization Google Maps SDK risolta con nuova chiave dedicata `Maps SDK - Android` (vedi memory `google-cloud-projects` + cleanup in coda al TODO). Mappa ora visibile su EAS Android. Restano centramento camera "sale e scende" e pin mancanti — **non bloccanti per il lancio**, da rivedere quando convenga.
 
 - [x] **Pin tagliati** — risolto in `components/map/SelectedMarkerOverlay.tsx`: il `transform: [{ scale: 1.25 }]` causava clipping perché `react-native-maps` su Android rasterizza il marker in un bitmap basato sul layout naturale della View (pre-transform). Gate del transform a `Platform.OS === 'ios'`. iOS bit-per-bit identico. Su Android il pin selezionato resta differenziato da bg colorata + shadow potenziata + zIndex 9999 + `cluster={false}`.
 - [x] **Pin che scompaiono al cambio selezione** — risolto in `components/map/MapPin.tsx`: aggiunto `androidSettling` state che estende la finestra `tracksViewChanges=true` a ~100ms dopo mount e dopo ogni cambio prop rilevante. La drawing cache nativa Android richiede più tempo di un single frame per ricatturare il bitmap del marker. iOS gestito via early return dell'useEffect, byte-identico.
@@ -111,6 +102,9 @@ Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per
 - [ ] Verificare che Hermes sia attivo nel build (default in SDK 54 ma controllare)
 
 ---
+
+### Cleanup Google Cloud (non urgente)
+- [ ] Rimuovere "Maps SDK for Android" dalla chiave `Places API Key - Android` nel progetto `allergiapp-488223`. Ora ridondante perché esiste la chiave dedicata `Maps SDK - Android` (UID `eb66e008-…`) usata da `GOOGLE_MAPS_API_KEY_ANDROID` su EAS. Verificare prima che il build prod successivo continui a caricare la mappa.
 
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
