@@ -14,7 +14,6 @@ import { UnlockedAvatarsProvider } from '../contexts/UnlockedAvatarsContext';
 import { Analytics } from '../services/analytics';
 import { Crashlytics } from '../services/crashlytics';
 import i18n from '../utils/i18n';
-import { useDietarySync } from '../hooks/useDietarySync';
 import ConsentModal from './consent';
 import AnnouncementPopup from './components/AnnouncementPopup';
 import UnlockedAvatarsPopup from './components/UnlockedAvatarsPopup';
@@ -92,7 +91,6 @@ const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary
 function AppContent() {
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, selectedOtherFoods, activeDietModes, vegetarianLevel, selectedRestrictions, settings } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
-  useDietarySync();
   const router = useRouter();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
