@@ -137,14 +137,14 @@ export default function AddAllergyScreen() {
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder={i18n.t('addAllergy.searchPlaceholder')}
-              placeholderTextColor="rgba(255,255,255,0.6)"
+              placeholderTextColor={theme.colors.textSecondary}
               autoFocus
               returnKeyType="search"
-              selectionColor={theme.colors.onPrimary}
+              selectionColor={theme.colors.primary}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
-                <MaterialCommunityIcons name="close" size={20} color={theme.colors.onPrimary} />
+                <MaterialCommunityIcons name="close" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -343,15 +343,15 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.06)',
     borderRadius: 8,
     marginHorizontal: 12,
     paddingHorizontal: 10,
-    height: 38,
+    height: 36,
   },
   searchInput: {
     flex: 1,
-    color: theme.colors.onPrimary,
+    color: theme.colors.textPrimary,
     fontSize: 16,
     paddingVertical: 0,
   },

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../constants/theme';
 import { AuthService } from '../../../services/auth';
 import { RestaurantService } from '../../../services/restaurantService';
@@ -17,6 +15,7 @@ import { useLocationFilters } from '../../../hooks/useLocationFilters';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
+import AppHeader from '../../components/AppHeader';
 
 const getReviewLocation = (r: UserReview) => ({
   city: r.restaurant_city,
@@ -26,7 +25,6 @@ const getReviewLocation = (r: UserReview) => ({
 export default function PublicProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -70,13 +68,7 @@ export default function PublicProfileScreen() {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={[styles.simpleHeader, { paddingTop: insets.top }]}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{i18n.t('restaurants.profile.title')}</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <AppHeader title={i18n.t('restaurants.profile.title')} />
         <View style={styles.centered}>
           {isLoading ? (
             <ActivityIndicator color={theme.colors.primary} size="large" />
@@ -122,19 +114,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  simpleHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   centered: {
     flex: 1,

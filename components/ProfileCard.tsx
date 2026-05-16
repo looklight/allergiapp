@@ -9,6 +9,7 @@ import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import type { UserProfile } from '../services/auth';
 import Avatar from './Avatar';
+import AppHeader from '../app/components/AppHeader';
 
 interface ProfileStats {
   likes?: number;
@@ -24,11 +25,10 @@ interface ProfileCardProps {
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
   title?: string;
-  headerRight?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), headerRight, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
   const displayName = getDisplayName(profile);
 
@@ -38,14 +38,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
 
   return (
     <View style={styles.container}>
-      {/* Header standard verde */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={onBack} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{title}</Text>
-        {headerRight ?? <View style={{ width: 24 }} />}
-      </View>
+      <AppHeader title={title} onLeadingPress={onBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -171,19 +164,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   scrollView: {
     flex: 1,

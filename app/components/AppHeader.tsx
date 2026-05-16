@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ViewStyle, Platform } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -44,9 +44,11 @@ export default function AppHeader({
     leading === 'back' ? 'arrow-left' : leading === 'close' ? 'close' : null;
 
   const hasActions = actions && actions.length > 0;
+  // Android: insets.top copre solo la status bar (~24dp), molto meno di iOS — aggiungiamo respiro
+  const extraTop = Platform.OS === 'android' ? 8 : 0;
 
   return (
-    <View style={[styles.header, { paddingTop: insets.top }, style]}>
+    <View style={[styles.header, { paddingTop: insets.top + extraTop, height: insets.top + extraTop + 44 }, style]}>
       {leadingIcon ? (
         <TouchableOpacity
           onPress={handleLeading}
@@ -55,7 +57,7 @@ export default function AppHeader({
           accessibilityRole="button"
           accessibilityLabel={leadingAccessibilityLabel}
         >
-          <MaterialCommunityIcons name={leadingIcon} size={24} color={theme.colors.onPrimary} />
+          <MaterialCommunityIcons name={leadingIcon} size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       ) : titleAlign === 'center' && hasActions ? (
         <View style={styles.spacer} />
@@ -64,7 +66,7 @@ export default function AppHeader({
       <View
         style={[
           styles.titleContainer,
-          titleAlign === 'center' && styles.titleCenter,
+          titleAlign === 'center' && !titleNode ? styles.titleCenter : null,
           leadingIcon && titleAlign === 'left' ? styles.titleLeftWithLeading : null,
         ]}
       >
@@ -85,7 +87,7 @@ export default function AppHeader({
               accessibilityLabel={a.accessibilityLabel}
               style={i > 0 ? styles.actionSpacing : undefined}
             >
-              <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.onPrimary} />
+              <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.textPrimary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -98,12 +100,11 @@ export default function AppHeader({
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 16,
   },
   titleContainer: {
     flex: 1,
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: theme.colors.onPrimary,
+    color: theme.colors.textPrimary,
     fontSize: 22,
     fontWeight: 'bold',
   },
