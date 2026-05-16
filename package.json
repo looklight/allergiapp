@@ -15,7 +15,6 @@
     "@react-native-firebase/analytics": "^23.8.6",
     "@react-native-firebase/app": "^23.8.6",
     "@react-native-firebase/crashlytics": "^23.8.6",
-    "@react-native-firebase/remote-config": "^23.8.6",
     "@supabase/supabase-js": "^2.99.0",
     "expo": "~54.0.32",
     "expo-clipboard": "~8.0.8",
