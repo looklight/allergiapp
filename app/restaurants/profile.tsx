@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
-import { AuthService } from '../../services/auth';
 import { RestaurantService } from '../../services/restaurantService';
 import type { Review } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
@@ -37,20 +36,6 @@ export default function ProfileScreen() {
       setFavoriteCount(userFavorites.length);
     })().catch((err) => console.warn('[Profile] Errore caricamento dati:', err));
   }, [user?.uid]);
-
-  const handleLogout = () => {
-    Alert.alert(i18n.t('restaurants.profile.logoutTitle'), i18n.t('restaurants.profile.logoutConfirm'), [
-      { text: i18n.t('common.cancel'), style: 'cancel' },
-      {
-        text: i18n.t('restaurants.profile.logoutAction'),
-        style: 'destructive',
-        onPress: async () => {
-          await AuthService.signOut();
-          router.back();
-        },
-      },
-    ]);
-  };
 
   if (!isAuthenticated || !userProfile) {
     return (
@@ -95,11 +80,6 @@ export default function ProfileScreen() {
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}
         onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
-        headerRight={
-          <TouchableOpacity onPress={handleLogout} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="logout" size={22} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-        }
       >
         {/* Azioni */}
         <TouchableOpacity

@@ -10,6 +10,7 @@ import {
   Platform,
   Animated,
   Switch,
+  TouchableOpacity,
 } from 'react-native';
 import { Text, Surface, TextInput, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -74,6 +75,20 @@ export default function EditProfileScreen() {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert(i18n.t('restaurants.profile.logoutTitle'), i18n.t('restaurants.profile.logoutConfirm'), [
+      { text: i18n.t('common.cancel'), style: 'cancel' },
+      {
+        text: i18n.t('restaurants.profile.logoutAction'),
+        style: 'destructive',
+        onPress: async () => {
+          await AuthService.signOut();
+          router.dismissAll();
+        },
+      },
+    ]);
+  };
+
   const handleDeleteAccount = () => {
     setDeleteConfirmText('');
     setDeleteStep(1);
@@ -130,7 +145,7 @@ export default function EditProfileScreen() {
 
       <HeaderBar title={i18n.t('restaurants.editProfile.title')} />
 
-      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+      <ScrollView style={styles.content} contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}>
 
         {/* Informazioni account */}
         <Surface style={styles.card} elevation={1}>
@@ -185,18 +200,33 @@ export default function EditProfileScreen() {
           {i18n.t('restaurants.editProfile.save')}
         </Button>
 
-        {/* Elimina account */}
+        {/* Esci dall'account */}
         <Button
           mode="text"
-          onPress={handleDeleteAccount}
-          loading={deleting}
-          disabled={deleting}
-          textColor={theme.colors.error}
-          icon="delete-outline"
-          style={styles.deleteButton}
+          onPress={handleLogout}
+          icon="logout"
+          textColor={theme.colors.textPrimary}
+          style={styles.logoutButton}
         >
-          {i18n.t('restaurants.editProfile.deleteAccount')}
+          {i18n.t('restaurants.profile.logoutAction')}
         </Button>
+
+        {/* Spacer flessibile: spinge Elimina account in fondo allo schermo */}
+        <View style={styles.deleteSpacer} />
+
+        {/* Elimina account — gerarchia minima, in fondo */}
+        <TouchableOpacity
+          onPress={handleDeleteAccount}
+          disabled={deleting}
+          style={styles.deleteLink}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('restaurants.editProfile.deleteAccount')}
+        >
+          <Text style={styles.deleteLinkText}>
+            {i18n.t('restaurants.editProfile.deleteAccount')}
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Modal conferma eliminazione — 2 step animati */}
@@ -364,8 +394,22 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontSize: 16,
   },
-  deleteButton: {
-    marginTop: 32,
+  logoutButton: {
+    marginTop: 24,
+  },
+  deleteSpacer: {
+    flex: 1,
+    minHeight: 80,
+  },
+  deleteLink: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  deleteLinkText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textDecorationLine: 'underline',
   },
 
   // Delete modal
