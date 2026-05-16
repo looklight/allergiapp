@@ -56,9 +56,13 @@ export default function MenuPhotosSection({
           ))}
         </ScrollView>
       ) : !menuUrl && (
-        <Text style={styles.menuEmptyHint}>
-          {canUpload ? i18n.t('restaurants.menu.addFirst') : i18n.t('restaurants.menu.empty')}
-        </Text>
+        canUpload ? (
+          <TouchableOpacity onPress={onManage} activeOpacity={0.7}>
+            <Text style={styles.menuEmptyHintLink}>{i18n.t('restaurants.menu.addFirst')}</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.menuEmptyHint}>{i18n.t('restaurants.menu.empty')}</Text>
+        )
       )}
     </View>
   );
@@ -134,6 +138,12 @@ const styles = StyleSheet.create({
   menuEmptyHint: {
     fontSize: 13,
     color: theme.colors.textSecondary,
+    paddingVertical: 4,
+  },
+  menuEmptyHintLink: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
     paddingVertical: 4,
   },
 });
