@@ -14,19 +14,20 @@
 
 Dopo il merge del 2026-05-12 sono stati rimossi `services/remoteConfig.ts`, `components/AllergenBadges.tsx`, `components/restaurants/RestaurantCard.tsx` (−499 righe). Restano due livelli di pulizia non bloccanti:
 
-### Tier 2 — Rimuovere dipendenze Firebase Remote Config (richiede prebuild)
-- [ ] Rimuovere `@react-native-firebase/remote-config` da `package.json` (`npm install` per aggiornare il lock)
-- [ ] Rimuovere dal plugin `plugins/withModularHeaders.js` i pod orfani: `FirebaseRemoteConfig`, `FirebaseABTesting`, `FirebaseRemoteConfigInterop`, `FirebaseSharedSwift` (verificare che non siano dipendenze transitive di Crashlytics/Sessions prima di rimuovere)
-- [ ] `npx expo prebuild --clean` per rigenerare `ios/` con il nuovo Podfile
-- [ ] Build EAS preview di verifica
-- **Beneficio:** bundle iOS leggermente più leggero. **Costo:** prebuild + build di verifica (~25 min).
+### Tier 2 — Rimuovere dipendenze Firebase Remote Config — STAGED 2026-05-16
+- [x] Rimosso `@react-native-firebase/remote-config` da `package.json` + `package-lock.json` (npm install eseguito).
+- [x] Rimossi dal plugin `plugins/withModularHeaders.js` i pod orfani: `FirebaseRemoteConfig`, `FirebaseABTesting`, `FirebaseSharedSwift`.
+- [x] **Lasciato `FirebaseRemoteConfigInterop`** — verificato in `ios/Podfile.lock:184` che è dipendenza transitiva di `FirebaseCrashlytics`. Toglierlo romperebbe Crashlytics.
+- [ ] `npx expo prebuild --clean` — rimandato al prossimo build naturale (no rebuild dedicato)
+- [ ] Build EAS verifica con check Crashlytics — al prossimo build prod/preview
+- **Beneficio reale:** 3 pod in meno nel bundle iOS (~500KB-1MB stimati). **Costo:** edit puri già fatti, prebuild/build amortizzati sul prossimo build naturale.
 
-### Tier 3 — Cleanup cascade banner promo (BannerCarousel + tipi)
-- [ ] In `app/components/BannerCarousel.tsx`: rimuovere il rendering dei banner `type === 'ad'` (rami non più raggiunti — `extraBanners` non riceve più banner ad)
-- [ ] In `services/analytics.ts`: valutare se `logAdImpression` e il parametro `adUrl` di `logBannerClicked` restano usati altrove
-- [ ] In `types/index.ts` `BannerItem`: rimuovere campi `adUrl`, `adAction`, `adImage`, `adButtonText`, `layout`, `backgroundColor`, `textColor`, `displayDuration`, `customContent` se davvero non più referenziati
-- [ ] Valutare se `BannerType` può diventare solo `'info'` (rimuovendo `'ad'` e `'custom'`)
-- **Beneficio:** componente più chiaro, tipi più stretti. **Costo:** test manuale su device richiesto (tocca codice vivo).
+### Tier 3 — Cleanup cascade banner promo (BannerCarousel + tipi) — DONE 2026-05-16
+- [x] `app/components/BannerCarousel.tsx`: rimosso rendering banner `type === 'ad'` + `'custom'`, prop `extraBanners`, handler `handleAdPress`, helper `getCurrentDuration`. Riscritto in versione semplificata (solo info banner).
+- [x] `services/analytics.ts`: rimosso `logAdImpression`, semplificate signature `logBannerViewed` e `logBannerClicked` (drop `bannerType` e `adUrl`).
+- [x] `types/index.ts`: rimossi campi ad-related da `BannerItem`, rimosso `BannerType` (non più necessario), `BannerItem` ora ha solo `id`, `icon?`, `image?`, `title?`, `subtitle?`.
+- [x] Aggiornato anche caller `AnnouncementPopup.tsx` alle nuove signature analytics.
+- [x] `tsc --noEmit` pulito.
 
 ### Splash screen Android — uniformare background a tutto schermo
 **Stato (2026-05-16): risolto in light mode su EAS Android (build 1.1.0). In dark mode di sistema lo splash mostrava un rettangolo crema su sfondo nero: causa root `AppTheme` ereditava da `Theme.AppCompat.DayNight.NoActionBar` e in night mode il `windowBackground` cadeva sul dark di default. Aggiunto hardening night-mode al plugin — da verificare al prossimo build EAS.**
@@ -97,7 +98,7 @@ Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per
 
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
-- [ ] **Allineare tabella `translations` prima del prossimo build prod con ristoranti** — i JSON in `scripts/translations/*.json` contengono le 5 nuove voci tree nuts (almonds, hazelnuts, walnuts, pistachios, cashews) e completamenti per ~8 lingue incomplete. Lanciare `node scripts/uploadToSupabase.js` per pushare. Altrimenti utenti con lingue scaricate vedranno fallback inglese su quelle voci. Vedi commit `98a101c`.
+- [x] **Allineata tabella `translations`** (2026-05-16) — 71/71 lingue caricate via `node scripts/uploadToSupabase.js`. Coperti commit `98a101c` (tree nuts: almonds/hazelnuts/walnuts/pistachios/cashews + completamenti 8 lingue) e `902bae6` (yeast + artificial_colorings).
 
 
 ---
@@ -268,7 +269,7 @@ Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compr
 - [ ] **Job di cleanup orfani**: Edge Function Supabase schedulata settimanalmente che lista i file del bucket e rimuove quelli non referenziati in `reviews.photos` / `menu_photos.image_url` / `menu_photos.thumbnail_url`.
 - [ ] **Retry upload** con backoff esponenziale (2-3 tentativi) per resilienza su reti instabili.
 - [ ] **Path opaco** con hash invece di userId esposto (privacy minore; richiede migrazione dati esistenti → valutare se vale).
-- [ ] **`fadeDuration={0}` sulle thumb Android** — rimuove il fade-in 300ms che fa percepire lag anche su thumb già cachate. Prop su `<Image>` in `RestaurantDetailBody.tsx` e `MenuPhotosSection.tsx`.
+- [x] **`fadeDuration={0}` sulle thumb Android** (2026-05-16) — rimosso fade-in 300ms su `<Image>` thumb in `RestaurantDetailBody.tsx` (foto recensioni carousel) e `MenuPhotosSection.tsx` (foto menu). Prop Android-only, iOS la ignora.
 
 **Monitoraggio:**
 - [ ] Aggiungere check periodico su Supabase Dashboard → Settings → Usage. Soglia di allarme: 60% di egress a metà mese = valutare passaggio a Pro ($25/mese, 250GB egress inclusi).
@@ -281,7 +282,6 @@ Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compr
 - [ ] Aggiungere Jest + React Native Testing Library
 - [ ] Scrivere test per i service critici: `restaurantService`, `auth`, `translationService`
 - [ ] Scrivere test per i custom hook principali (`useRestaurantDetail`, `useRestaurantGeo`)
-- [ ] **Da fare prima del merge restaurants→main** — le due codebase si uniscono senza rete di sicurezza
 
 ### CI/CD — GitHub Actions
 - [ ] Workflow base su PR: `tsc --noEmit` + lint + test
@@ -385,7 +385,6 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 - [ ] Il file nativo (`RestaurantMap.native.tsx`) resta invariato
 
 ### Miglioramenti UX web minori
-- [ ] Nascondere pulsante camera su web in `add-review.tsx` (`Platform.OS !== 'web'`)
 - [ ] Sostituire `Alert` con modal custom per coerenza visiva cross-platform
 - [ ] Verificare responsive layout su schermi desktop
 

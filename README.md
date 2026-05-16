@@ -7,7 +7,7 @@ App gratuita per comunicare allergie alimentari in diverse lingue, pensata per c
 ### Prerequisiti
 - Node.js (v18+)
 - Expo CLI
-- Xcode (per iOS)
+- Xcode (per iOS), Android Studio (per Android)
 
 ### Installazione
 
@@ -16,66 +16,51 @@ npm install
 npx expo start
 ```
 
-### Build iOS locale (senza Apple Developer Program)
+### Build nativa locale
 
-1. `npx expo prebuild --platform ios`
-2. Apri `ios/AllergiApp.xcworkspace` in Xcode
-3. Configura Signing & Capabilities con il tuo Apple ID
-4. Product → Scheme → Edit Scheme → Run → Build Configuration: **Release**
-5. Seleziona il tuo iPhone e premi ▶️
+```bash
+npx expo prebuild --clean
+npx expo run:ios       # iOS
+npx expo run:android   # Android
+```
 
-**Nota:** L'app scade dopo 7 giorni, poi reinstalla con ▶️
-
-### Configurazioni manuali dopo `expo prebuild`
-
-Ogni volta che esegui `npx expo prebuild --clean`:
-
-1. Apri `ios/AllergiApp.xcworkspace` in Xcode
-2. Build Settings → cerca "User Script Sandboxing" → imposta su **No**
-
-Questo è necessario per evitare errori di build con React Native.
+La cartella `ios/` e `android/` sono generate da `prebuild` e non vanno commitate.
 
 ---
 
-## Build per Produzione
+## Build per Produzione (EAS)
 
-### EAS Build (consigliato)
+Vedere la guida rapida in `TODO.md` e nelle memorie del progetto. In sintesi:
 
 ```bash
-npm install -g eas-cli
-eas login
-eas build --platform ios --profile production
-eas submit --platform ios
+npx eas-cli build --platform all --profile production --non-interactive
+npx eas-cli submit --platform ios --latest --non-interactive
+# Android: submit da Google Play Console
 ```
 
-### Build Locale
+OTA update (solo JS/assets):
 
 ```bash
-npx expo prebuild
-cd ios && pod install
-npx expo run:ios --configuration Release
+npx eas-cli update --branch production --message "descrizione"
 ```
 
 ---
 
 ## Struttura Repository
 
-Il progetto usa `git worktree`:
+Repo unico `allergiapp/` che contiene app Expo/React Native + `admin/` (dashboard Next.js) + `supabase/` (rules, migrations).
 
-```
-/AllergiApp/
-├── allergiapp/     ← branch main (app React Native)
-└── landing/        ← branch landing (sito web)
-```
+Il sito pubblico `landing/` vive su un branch separato (`landing`) dello stesso repo, servito via Vercel.
 
 ---
 
 ## Privacy e GDPR
 
-- Dati salvati solo localmente sul dispositivo
-- Analytics anonimi (paese, dispositivo, funzioni usate)
-- Nessun dato personale raccolto
-- Documenti legali: `PRIVACY_POLICY.md`, `PRIVACY_POLICY_EN.md`
+- Auth e dati su Supabase (Auth, Postgres + PostGIS, Storage)
+- Analytics anonimi via Firebase Analytics (gated da consenso ATT su iOS)
+- Crashlytics per crash reporting (gated da consenso ATT)
+- Contenuti legali in-app in `app/legal.tsx` / `constants/legalContent.ts`
+- Privacy manifest iOS in `ios/AllergiApp/PrivacyInfo.xcprivacy`
 
 ---
 
@@ -83,15 +68,22 @@ Il progetto usa `git worktree`:
 
 ```
 app/
-├── index.tsx           # Home
-├── add-allergy.tsx     # Selezione allergie
-├── card.tsx            # Carta multilingua
-├── settings.tsx        # Impostazioni
-├── legal.tsx           # Privacy & Terms
-└── components/         # Componenti riutilizzabili
-constants/              # Allergeni, traduzioni, tema
-utils/                  # Analytics, i18n, storage
-locales/                # Traduzioni UI (it, en, es, de, fr)
+├── index.tsx            # Home
+├── add-allergy.tsx      # Selezione allergie
+├── card.tsx             # Carta multilingua
+├── settings.tsx         # Impostazioni
+├── legal.tsx            # Privacy & Terms
+├── (tabs)/              # Tab bar (restaurants, profile, ...)
+├── restaurants/         # Schermate ristoranti
+└── components/          # Componenti riutilizzabili
+contexts/                # AppContext, AuthContext, ...
+services/                # analytics, supabase, restaurantService, ...
+hooks/                   # useRestaurantDetail, useLanguageDownload, ...
+constants/               # Allergeni, tema, traduzioni card, ...
+utils/                   # Utility pure: storage, i18n
+locales/                 # Traduzioni UI app
+supabase/migrations/     # Schema SQL versionato
+admin/                   # Dashboard Next.js (deploy separato)
 ```
 
 ---
@@ -99,14 +91,15 @@ locales/                # Traduzioni UI (it, en, es, de, fr)
 ## Estendere l'App
 
 ### Aggiungere allergeni
-1. `types/index.ts` - aggiungi ID
-2. `constants/allergens.ts` - aggiungi allergene con traduzioni
+1. `types/index.ts` — aggiungi ID
+2. `constants/allergens.ts` — aggiungi allergene con traduzioni
 
 ### Aggiungere lingue scaricabili
-1. `constants/downloadableLanguages.ts` - aggiungi lingua
+1. `constants/downloadableLanguages.ts` — aggiungi lingua
+2. Allineare la tabella `translations` su Supabase (script `scripts/uploadToSupabase.js`)
 
 ### Aggiungere analytics
-1. `utils/analytics.ts` - aggiungi nuovo evento
+1. `services/analytics.ts` — aggiungi nuovo evento
 
 ---
 
@@ -114,10 +107,10 @@ locales/                # Traduzioni UI (it, en, es, de, fr)
 
 | Problema | Soluzione |
 |----------|-----------|
-| Firebase non funziona in Expo Go | Normale, serve build nativa |
-| Build fallisce con errore sandbox | Disabilita "User Script Sandboxing" in Xcode |
+| Build fallisce con errore sandbox iOS | Disabilita "User Script Sandboxing" in Xcode |
 | App schermo bianco su iPhone | Usa build Release, non Debug |
-| Download lingue fallisce | Controlla connessione internet |
+| Download lingue fallisce | Controlla connessione internet; cache fallback su MyMemory |
+| Env var `EXPO_PUBLIC_*` undefined nel build EAS | Aggiungerla anche in `eas.json` → `build.<profile>.env` |
 
 ---
 
