@@ -162,9 +162,10 @@ function AppContent() {
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
-          animation: 'slide_from_right',
+          animation: 'ios_from_right',
           gestureEnabled: true,
           headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
         }}
       />
       {/* Consent modal overlay - shown on top of the app */}
