@@ -6,7 +6,7 @@ import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 
 export default function EditDietaryScreen() {
@@ -20,7 +20,7 @@ export default function EditDietaryScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={i18n.t('restaurants.editDietary.title')} />
+      <AppHeader title={i18n.t('restaurants.editDietary.title')} />
 
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         <DietaryNeedsPicker

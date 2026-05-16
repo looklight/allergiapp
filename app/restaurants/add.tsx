@@ -13,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import StarRating from '../../components/StarRating';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 import { useImagePicker } from '../../hooks/useImagePicker';
 import type { PlaceSuggestion } from '../../types/restaurants';
@@ -546,7 +546,7 @@ export default function AddRestaurantScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title={i18n.t('restaurants.add.title')} onBack={selectedPlace ? handleBack : undefined} />
+      <AppHeader title={i18n.t('restaurants.add.title')} onLeadingPress={selectedPlace ? handleBack : undefined} />
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingBottom: selectedPlace ? insets.bottom + 96 : insets.bottom + 24 }]}

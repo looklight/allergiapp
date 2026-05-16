@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Pressable, Image, Text as RNText } from 'react-native';
+import { View, StyleSheet, ScrollView, Linking, Pressable, Image, Text as RNText } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { APP_CONFIG } from '../constants/config';
+import AppHeader from './components/AppHeader';
 
 const INSTAGRAM_URL = 'https://www.instagram.com/martadimuro_';
 const YOUTUBE_URL = 'https://www.youtube.com/@martadimuro/';
@@ -42,18 +43,7 @@ export default function AboutScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          hitSlop={8}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{i18n.t('aboutStory.title')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader title={i18n.t('aboutStory.title')} />
 
       {/* Content */}
       <ScrollView
@@ -158,19 +148,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   scrollView: {
     flex: 1,

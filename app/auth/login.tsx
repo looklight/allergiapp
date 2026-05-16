@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, TextInput, Button, Surface } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
+import AppHeader from '../components/AppHeader';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -71,13 +71,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{i18n.t('login.headerTitle')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader title={i18n.t('login.headerTitle')} />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
         keyboardShouldPersistTaps="handled"
@@ -156,19 +150,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   content: {
     padding: 24,

@@ -9,7 +9,7 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { Favorite } from '../../services/restaurantService';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLocationFilters } from '../../hooks/useLocationFilters';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import EmptyStateCard from '../../components/EmptyStateCard';
 import LocationStatsHeader from '../../components/LocationStatsHeader';
 import CountryFilterChips from '../../components/CountryFilterChips';
@@ -78,7 +78,7 @@ export default function FavoritesScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title={i18n.t('restaurants.favorites.title')} />
+      <AppHeader title={i18n.t('restaurants.favorites.title')} />
 
       {isLoading ? (
         <View style={styles.centered}>

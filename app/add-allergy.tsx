@@ -18,6 +18,7 @@ import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import FoodIcon from '../components/FoodIcon';
+import AppHeader from './components/AppHeader';
 
 export default function AddAllergyScreen() {
   const router = useRouter();
@@ -126,22 +127,9 @@ export default function AddAllergyScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={() => {
-            if (searchActive) {
-              setSearchActive(false);
-              setSearchQuery('');
-            } else {
-              router.back();
-            }
-          }}
-          hitSlop={8}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        {searchActive ? (
+      <AppHeader
+        title={searchActive ? undefined : i18n.t('addAllergy.title')}
+        titleNode={searchActive ? (
           <View style={styles.searchBarContainer}>
             <TextInput
               ref={searchInputRef}
@@ -160,19 +148,21 @@ export default function AddAllergyScreen() {
               </TouchableOpacity>
             )}
           </View>
-        ) : (
-          <Text style={styles.headerTitle}>{i18n.t('addAllergy.title')}</Text>
-        )}
-        {!searchActive && (
-          <TouchableOpacity
-            onPress={() => setSearchActive(true)}
-            hitSlop={8}
-            activeOpacity={0.6}
-          >
-            <MaterialCommunityIcons name="magnify" size={24} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
-        )}
-      </View>
+        ) : undefined}
+        onLeadingPress={() => {
+          if (searchActive) {
+            setSearchActive(false);
+            setSearchQuery('');
+          } else {
+            router.back();
+          }
+        }}
+        actions={!searchActive ? [{
+          icon: 'magnify',
+          onPress: () => setSearchActive(true),
+          accessibilityLabel: i18n.t('addAllergy.searchPlaceholder'),
+        }] : undefined}
+      />
 
       {!searchActive && (
         <Text variant="bodyMedium" style={styles.subtitle}>
@@ -349,19 +339,6 @@ export default function AddAllergyScreen() {
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   searchBarContainer: {
     flex: 1,
     flexDirection: 'row',

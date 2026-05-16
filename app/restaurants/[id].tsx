@@ -1,10 +1,9 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import RestaurantDetailBody from '../../components/restaurants/RestaurantDetailBody';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 
 export default function RestaurantDetailScreen() {
@@ -18,18 +17,14 @@ export default function RestaurantDetailScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar
+      <AppHeader
         title={detail.restaurant?.name ?? (detail.isLoading ? ' ' : i18n.t('restaurants.myReviews.restaurantFallback'))}
-        onBack={handleDismiss}
-        right={detail.restaurant ? (
-          <TouchableOpacity onPress={detail.handleToggleFavorite} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons
-              name={detail.isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
-              color={theme.colors.onPrimary}
-            />
-          </TouchableOpacity>
-        ) : undefined}
+        onLeadingPress={handleDismiss}
+        actions={detail.restaurant ? [{
+          icon: detail.isFavorite ? 'heart' : 'heart-outline',
+          onPress: detail.handleToggleFavorite,
+          accessibilityLabel: i18n.t(detail.isFavorite ? 'restaurants.detail.removeFavorite' : 'restaurants.detail.addFavorite'),
+        }] : undefined}
       />
 
       <RestaurantDetailBody

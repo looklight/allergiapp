@@ -285,6 +285,8 @@
       }
     },
     "detail": {
+      "addFavorite": "Aggiungi ai preferiti",
+      "removeFavorite": "Rimuovi dai preferiti",
       "notFound": "Ristorante non trovato.",
       "noReviews": "Nessuna recensione",
       "directions": "Indicazioni (Maps)",

@@ -13,7 +13,7 @@ import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantC
 import ChipGrid from '../../components/ChipGrid';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import StarRating from '../../components/StarRating';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import { useImagePicker } from '../../hooks/useImagePicker';
 import i18n from '../../utils/i18n';
 import type { Review, CuisineVote } from '../../services/restaurantService';
@@ -174,7 +174,7 @@ export default function AddReviewScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={i18n.t(isEditMode ? 'restaurants.review.editTitle' : 'restaurants.review.title')} />
+      <AppHeader title={i18n.t(isEditMode ? 'restaurants.review.editTitle' : 'restaurants.review.title')} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

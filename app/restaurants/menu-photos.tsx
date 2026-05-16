@@ -8,7 +8,7 @@ import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useImagePicker } from '../../hooks/useImagePicker';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import ImageFullscreenModal from '../../components/ImageFullscreenModal';
 import i18n from '../../utils/i18n';
 import { getDisplayName } from '../../utils/getDisplayName';
@@ -141,7 +141,7 @@ export default function MenuPhotosScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={i18n.t('restaurants.menu.screenTitle')} />
+      <AppHeader title={i18n.t('restaurants.menu.screenTitle')} />
 
       {restaurantName && (
         <View style={styles.restaurantRow}>
@@ -254,22 +254,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    flex: 1,
-    color: theme.colors.onPrimary,
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginHorizontal: 8,
   },
   restaurantRow: {
     flexDirection: 'row',

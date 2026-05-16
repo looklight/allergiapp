@@ -11,6 +11,7 @@ import { useUsernameValidation } from '../../hooks/useUsernameValidation';
 import UsernameFeedback from '../../components/UsernameFeedback';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import i18n from '../../utils/i18n';
+import AppHeader from '../components/AppHeader';
 
 export default function OnboardingNicknameScreen() {
   const router = useRouter();
@@ -58,11 +59,7 @@ export default function OnboardingNicknameScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={{ width: 24 }} />
-        <Text style={styles.headerTitle}>{i18n.t('onboardingNickname.headerTitle')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader title={i18n.t('onboardingNickname.headerTitle')} leading="none" />
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
@@ -137,19 +134,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   content: {
     padding: 24,

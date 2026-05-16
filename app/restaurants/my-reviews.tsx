@@ -6,7 +6,7 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLocationFilters } from '../../hooks/useLocationFilters';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import EmptyStateCard from '../../components/EmptyStateCard';
 import UserReviewCard from '../../components/UserReviewCard';
 import LocationStatsHeader from '../../components/LocationStatsHeader';
@@ -41,7 +41,7 @@ export default function MyReviewsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title={i18n.t('restaurants.myReviews.title')} />
+      <AppHeader title={i18n.t('restaurants.myReviews.title')} />
 
       {isLoading ? (
         <View style={styles.centered}>

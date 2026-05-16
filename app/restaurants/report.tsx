@@ -8,7 +8,7 @@ import { theme } from '../../constants/theme';
 import { REPORT_REASONS } from '../../constants/reportReasons';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 
 export default function ReportScreen() {
@@ -67,7 +67,7 @@ export default function ReportScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={i18n.t('restaurants.report.title')} />
+      <AppHeader title={i18n.t('restaurants.report.title')} />
 
       <ScrollView
         ref={scrollRef}

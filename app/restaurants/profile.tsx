@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import i18n from '../../utils/i18n';
 
@@ -41,7 +41,7 @@ export default function ProfileScreen() {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
-        <HeaderBar title={i18n.t('restaurants.profile.title')} />
+        <AppHeader title={i18n.t('restaurants.profile.title')} />
         <View style={styles.centered}>
           <Image
             source={require('../../assets/happy_plate_language.png')}
@@ -130,19 +130,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   centered: {
     flex: 1,

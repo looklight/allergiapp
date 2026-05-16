@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity } from 'react-native';
 import { Text, Button, Chip, Surface } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -17,6 +16,7 @@ import { useAppContext } from '../../contexts/AppContext';
 import { Analytics } from '../../services/analytics';
 import BannerCarousel from '../components/BannerCarousel';
 import LanguagePickerModal from '../components/LanguagePickerModal';
+import AppHeader from '../components/AppHeader';
 import { useLanguageDownload } from '../../hooks/useLanguageDownload';
 import FoodIcon from '../../components/FoodIcon';
 
@@ -65,18 +65,16 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>AllergiApp</Text>
-        <TouchableOpacity
-          onPress={() => router.push('/settings')}
-          hitSlop={8}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t('home.settings')}
-        >
-          <MaterialCommunityIcons name="cog" size={26} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader
+        title="AllergiApp"
+        leading="none"
+        titleAlign="left"
+        actions={[{
+          icon: 'cog',
+          onPress: () => router.push('/settings'),
+          accessibilityLabel: i18n.t('home.settings'),
+        }]}
+      />
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + 49 + insets.bottom }]}>
         {/* Banner Carousel */}
@@ -261,19 +259,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

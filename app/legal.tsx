@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef, ReactElement } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, SegmentedButtons } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { theme } from '../constants/theme';
 import { LEGAL_CONTENT } from '../constants/legalContent';
 import i18n from '../utils/i18n';
 import { AppLanguage } from '../types';
+import AppHeader from './components/AppHeader';
 
 const AVAILABLE_LANGUAGES = [
   { code: 'it' as const, name: 'Italiano', flag: '🇮🇹' },
@@ -16,8 +15,6 @@ const AVAILABLE_LANGUAGES = [
 ];
 
 export default function LegalScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const [selectedDoc, setSelectedDoc] = useState<'privacy' | 'terms'>(
     tab === 'terms' ? 'terms' : 'privacy'
@@ -103,20 +100,7 @@ export default function LegalScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          hitSlop={8}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {selectedDoc === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader title={selectedDoc === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} />
 
       {/* Language Selector */}
       <View style={styles.languageSelector}>
@@ -175,19 +159,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   languageSelector: {
     flexDirection: 'row',

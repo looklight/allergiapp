@@ -7,7 +7,7 @@ import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import type { Restaurant } from '../../services/restaurantService';
 import { useUserItemList } from '../../hooks/useUserItemList';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import EmptyStateCard from '../../components/EmptyStateCard';
 import i18n from '../../utils/i18n';
 
@@ -43,7 +43,7 @@ export default function MyRestaurantsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <HeaderBar title={i18n.t('restaurants.myRestaurants.title')} />
+      <AppHeader title={i18n.t('restaurants.myRestaurants.title')} />
 
       {isLoading ? (
         <View style={styles.centered}>

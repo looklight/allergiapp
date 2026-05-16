@@ -21,7 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import { PG_UNIQUE_VIOLATION } from '../../services/restaurant.types';
 import { useUsernameValidation } from '../../hooks/useUsernameValidation';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import UsernameFeedback from '../../components/UsernameFeedback';
 import i18n from '../../utils/i18n';
 
@@ -143,7 +143,7 @@ export default function EditProfileScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={i18n.t('restaurants.editProfile.title')} />
+      <AppHeader title={i18n.t('restaurants.editProfile.title')} />
 
       <ScrollView style={styles.content} contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}>
 

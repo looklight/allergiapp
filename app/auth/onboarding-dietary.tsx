@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import i18n from '../../utils/i18n';
 import type { FoodRestrictionId, DietId } from '../../types';
+import AppHeader from '../components/AppHeader';
 
 export default function OnboardingDietaryScreen() {
   const router = useRouter();
@@ -69,13 +70,10 @@ export default function OnboardingDietaryScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.replace('/auth/onboarding-nickname')} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{i18n.t('onboardingDietary.headerTitle')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader
+        title={i18n.t('onboardingDietary.headerTitle')}
+        onLeadingPress={() => router.replace('/auth/onboarding-nickname')}
+      />
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 24 }]}
@@ -151,19 +149,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   content: {
     padding: 24,

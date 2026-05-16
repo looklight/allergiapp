@@ -25,7 +25,7 @@ import {
   type UnlockStats,
 } from '../../constants/avatars';
 import { fetchUnlockStats } from '../../services/unlockedAvatarsService';
-import HeaderBar from '../../components/HeaderBar';
+import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -186,7 +186,7 @@ export default function AvatarGalleryScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <HeaderBar title={i18n.t('restaurants.profile.menuAvatars')} />
+      <AppHeader title={i18n.t('restaurants.profile.menuAvatars')} />
 
       {userProfile?.is_anonymous && (
         <View style={styles.anonymousBanner}>

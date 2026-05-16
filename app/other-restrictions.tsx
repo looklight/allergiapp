@@ -12,6 +12,7 @@ import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
+import AppHeader from './components/AppHeader';
 
 const VEGETARIAN_LEVELS: VegetarianLevel[] = ['no_meat', 'no_meat_fish', 'no_animal_products'];
 
@@ -197,17 +198,7 @@ export default function OtherRestrictionsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={handleSave}
-          hitSlop={8}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{i18n.t('otherRestrictions.title')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader title={i18n.t('otherRestrictions.title')} onLeadingPress={handleSave} />
 
       <Text variant="bodyMedium" style={styles.subtitle}>
         {i18n.t('otherRestrictions.subtitle')}
@@ -313,19 +304,6 @@ export default function OtherRestrictionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,

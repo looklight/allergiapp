@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Pressable, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -13,6 +13,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import { useLanguageDownload } from '../hooks/useLanguageDownload';
 import DownloadableLanguagesSection from './components/DownloadableLanguagesSection';
+import AppHeader from './components/AppHeader';
 
 const APP_LANGUAGES = [
   { code: 'it' as const, name: 'Italiano', flag: '🇮🇹' },
@@ -110,19 +111,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          hitSlop={8}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t('settings.back')}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{i18n.t('settings.title')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader title={i18n.t('settings.title')} leadingAccessibilityLabel={i18n.t('settings.back')} />
 
       <ScrollView>
         <View style={styles.appLanguageWrapper}>
@@ -255,19 +244,6 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  customHeader: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,

@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
+import AppHeader from './components/AppHeader';
 
 type Tab = 'reviews' | 'likes';
 
@@ -52,8 +51,6 @@ function LeaderboardRow({ entry, rank }: { entry: LeaderboardEntry; rank: number
 }
 
 export default function LeaderboardScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Tab>('reviews');
   const [topReviewers, setTopReviewers] = useState<LeaderboardEntry[]>([]);
   const [topLiked, setTopLiked] = useState<LeaderboardEntry[]>([]);
@@ -83,20 +80,14 @@ export default function LeaderboardScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8} activeOpacity={0.6}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{i18n.t('leaderboard.title')}</Text>
-        <TouchableOpacity
-          onPress={() => Alert.alert(i18n.t('leaderboard.infoTitle'), i18n.t('leaderboard.infoBody'))}
-          hitSlop={8}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="information-outline" size={24} color={theme.colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader
+        title={i18n.t('leaderboard.title')}
+        actions={[{
+          icon: 'information-outline',
+          onPress: () => Alert.alert(i18n.t('leaderboard.infoTitle'), i18n.t('leaderboard.infoBody')),
+          accessibilityLabel: i18n.t('leaderboard.infoTitle'),
+        }]}
+      />
 
       {/* Tabs */}
       <View style={styles.tabBar}>
@@ -164,19 +155,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   tabBar: {
     flexDirection: 'row',
