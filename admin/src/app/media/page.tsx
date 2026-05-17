@@ -61,7 +61,7 @@ export default function MediaPage() {
   useEffect(() => {
     Promise.all([
       supabase.from('menu_photos').select('restaurants!inner(country)').not('restaurants.country', 'is', null),
-      supabase.from('reviews').select('restaurants!inner(country)').neq('photos', '[]').not('restaurants.country', 'is', null),
+      supabase.from('reviews').select('restaurants!inner(country)').not('photos->0', 'is', null).not('restaurants.country', 'is', null),
     ]).then(([menuRes, reviewRes]) => {
       const counts = new Map<string, number>();
       for (const row of [...(menuRes.data ?? []), ...(reviewRes.data ?? [])] as any[]) {
@@ -82,12 +82,12 @@ export default function MediaPage() {
 
     if (tipo === 'tutti' || tipo === 'recensioni') {
       queries.push((async () => {
-        // photos è jsonb con default '[]' → .not('photos','is',null) è inefficace
-        // perché le review senza foto non sono NULL ma array vuoto.
+        // photos è jsonb con default '[]' → filtra le review che hanno almeno un
+        // elemento. photos->0 ritorna NULL per array vuoto.
         let q = supabase
           .from('reviews')
           .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles(username)')
-          .neq('photos', '[]')
+          .not('photos->0', 'is', null)
           .order('created_at', { ascending: false })
           .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
