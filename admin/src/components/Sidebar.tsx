@@ -9,6 +9,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/restaurants', label: 'Ristoranti' },
   { href: '/users', label: 'Utenti' },
+  { href: '/media', label: 'Media' },
   { href: '/reports', label: 'Segnalazioni' },
   { href: '/announcements', label: 'Annunci' },
 ];
