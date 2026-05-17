@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "AllergiApp",
   slug: "allergiapp",
   version: "1.1.0",
-  orientation: "default",
+  orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
   scheme: "allergiapp",
