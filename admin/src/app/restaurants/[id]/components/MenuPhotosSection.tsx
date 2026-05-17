@@ -28,7 +28,9 @@ export default function MenuPhotosSection({ menuPhotos, isBusy, onDelete }: Prop
                 <p className="text-xs font-medium truncate">
                   {p.user_id ? (
                     <Link href={`/users/${p.user_id}`} className="text-blue-600 hover:underline">{p.uploader_name ?? 'Anonimo'}</Link>
-                  ) : (p.uploader_name ?? 'Utente della community')}
+                  ) : (
+                    <span className="italic text-gray-400">Utente inattivo</span>
+                  )}
                 </p>
                 <p className="text-xs text-gray-400">
                   {new Date(p.created_at).toLocaleDateString('it-IT')}

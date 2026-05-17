@@ -45,7 +45,7 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
                   {r.user_id ? (
                     <Link href={`/users/${r.user_id}`} className="text-blue-600 hover:underline text-sm">{r.reporter_name ?? 'Anonimo'}</Link>
                   ) : (
-                    <span className="text-gray-400">{r.reporter_name ?? 'Anonimo'}</span>
+                    <span className="italic text-gray-400 text-sm">Utente inattivo</span>
                   )}
                 </div>
                 {/* Contenuto segnalato */}
