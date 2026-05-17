@@ -79,7 +79,7 @@ export default function MediaPage() {
           .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles(username)')
           .not('photos', 'is', null)
           .order('created_at', { ascending: false })
-          .limit(PAGE_SIZE);
+          .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
@@ -118,7 +118,7 @@ export default function MediaPage() {
           .from('menu_photos')
           .select('id, restaurant_id, user_id, image_url, thumbnail_url, created_at, restaurants!inner(name, city, country), profiles(username)')
           .order('created_at', { ascending: false })
-          .limit(PAGE_SIZE);
+          .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
@@ -150,7 +150,7 @@ export default function MediaPage() {
     setLoading(true);
     const data = await fetchPage(beforeCursor);
     const pageItems = data.slice(0, PAGE_SIZE);
-    setHasMore(data.length >= PAGE_SIZE);
+    setHasMore(data.length > PAGE_SIZE);
     setItems(prev => append ? [...prev, ...pageItems] : pageItems);
     if (pageItems.length > 0) {
       setCursor(pageItems[pageItems.length - 1].createdAt);
@@ -162,6 +162,14 @@ export default function MediaPage() {
     setCursor(null);
     load(null, false);
   }, [tipo, periodo, paese]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ESC chiude la modal fullscreen
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected]);
 
   const handleDelete = async (item: MediaItem) => {
     if (!confirm('Eliminare questa foto?')) return;
@@ -208,7 +216,7 @@ export default function MediaPage() {
               className="text-left bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition-shadow"
             >
               <div className="relative">
-                <img src={item.thumb} alt="" className="w-full aspect-square object-cover" />
+                <img src={item.thumb} alt="" loading="lazy" className="w-full aspect-square object-cover" />
                 <span className={`absolute top-1 right-1 text-[10px] font-bold rounded px-1.5 py-0.5 text-white ${item.kind === 'review' ? 'bg-blue-600/80' : 'bg-green-600/80'}`}>
                   {item.kind === 'review' ? 'R' : 'M'}
                 </span>
