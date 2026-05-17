@@ -14,11 +14,13 @@ import EmptyStateCard from '../../components/EmptyStateCard';
 import LocationStatsHeader from '../../components/LocationStatsHeader';
 import CountryFilterChips from '../../components/CountryFilterChips';
 import i18n from '../../utils/i18n';
+import { getCountryName } from '../../utils/countryNames';
 
 const fetchFavorites = (userId: string) => RestaurantService.getFavorites(userId);
 const getFavoriteLocation = (f: Favorite) => ({
   city: f.restaurant?.city,
   country: f.restaurant?.country,
+  countryCode: f.restaurant?.country_code,
 });
 
 function FavoriteCard({
@@ -43,7 +45,7 @@ function FavoriteCard({
           </TouchableOpacity>
         </View>
         <Text style={styles.cardCity} numberOfLines={1}>
-          {item.restaurant?.city ?? ''} · {item.restaurant?.country ?? ''}
+          {item.restaurant?.city ?? ''} · {getCountryName(item.restaurant?.country_code, i18n.locale, item.restaurant?.country)}
         </Text>
       </Surface>
     </TouchableOpacity>

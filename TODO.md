@@ -235,6 +235,7 @@ Dettagli e contesto storico: `memory/project_review_translation.md`.
 - [x] Migrata da Firebase a Supabase (mar 2026)
 - [x] Deploy su Vercel — live su https://admin.allergiapp.com (branch `admin-prod`)
 - [ ] Gestione claim ristoranti
+- [ ] Allineare display country alla nuova source-of-truth `country_code` (app mobile fatta 2026-05-17). Admin oggi mostra ancora il campo `country` testuale (es. "Italy"/"Italia" mescolati). Su Next.js Node è disponibile `Intl.DisplayNames` nativo, ma per coerenza si può importare `constants/countryNames.ts` dall'app o riusare la stessa mappa.
 
 ---
 

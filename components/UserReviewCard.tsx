@@ -3,6 +3,7 @@ import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
+import { getCountryName } from '../utils/countryNames';
 import StarRating from './StarRating';
 import type { UserReview } from '../services/restaurantService';
 
@@ -13,7 +14,8 @@ interface Props {
 
 export default function UserReviewCard({ review, onPress }: Props) {
   const restaurantName = review.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback');
-  const location = [review.restaurant_city, review.restaurant_country].filter(Boolean).join(', ');
+  const countryName = getCountryName(review.restaurant_country_code, i18n.locale, review.restaurant_country);
+  const location = [review.restaurant_city, countryName].filter(Boolean).join(', ');
   const date = new Date(review.created_at).toLocaleDateString(i18n.locale, {
     month: 'short', year: 'numeric',
   });

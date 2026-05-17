@@ -29,10 +29,10 @@ export default function CountryFilterChips({ options, selected, onSelect, edgeBl
       />
       {options.map((c) => (
         <Chip
-          key={c.name}
+          key={c.key}
           label={`${c.name} · ${c.count}`}
-          active={selected === c.name}
-          onPress={() => onSelect(selected === c.name ? null : c.name)}
+          active={selected === c.key}
+          onPress={() => onSelect(selected === c.key ? null : c.key)}
         />
       ))}
     </ScrollView>

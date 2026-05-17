@@ -17,6 +17,7 @@ const fetchReviews = (userId: string) => RestaurantService.getReviewsByUser(user
 const getReviewLocation = (r: UserReview) => ({
   city: r.restaurant_city,
   country: r.restaurant_country,
+  countryCode: r.restaurant_country_code,
 });
 
 export default function MyReviewsScreen() {

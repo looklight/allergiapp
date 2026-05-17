@@ -10,6 +10,7 @@ import { useUserItemList } from '../../hooks/useUserItemList';
 import AppHeader from '../components/AppHeader';
 import EmptyStateCard from '../../components/EmptyStateCard';
 import i18n from '../../utils/i18n';
+import { getCountryName } from '../../utils/countryNames';
 
 function MyRestaurantCard({
   item,
@@ -26,7 +27,7 @@ function MyRestaurantCard({
           <Text style={styles.cardName} numberOfLines={1}>{item.name}</Text>
         </View>
         <Text style={styles.cardCity} numberOfLines={1}>
-          {item.city} · {item.country}
+          {item.city} · {getCountryName(item.country_code, i18n.locale, item.country)}
         </Text>
       </Surface>
     </TouchableOpacity>
