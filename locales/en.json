@@ -25,7 +25,8 @@
     "add": "Add",
     "error": "Error",
     "thanks": "Thanks",
-    "save": "Save"
+    "save": "Save",
+    "userInactive": "Inactive user"
   },
   "home": {
     "title": "What do I need to communicate?",

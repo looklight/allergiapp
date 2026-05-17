@@ -205,7 +205,9 @@ export default function MenuPhotosScreen() {
                     <Text style={styles.uploaderName}>
                       {photo.user_id === user?.uid
                         ? i18n.t('restaurants.menu.uploaderYou')
-                        : (getDisplayName({ username: photo.user_username }) ?? i18n.t('restaurants.menu.uploaderCommunity'))}
+                        : photo.user_id == null
+                          ? i18n.t('common.userInactive')
+                          : (getDisplayName({ username: photo.user_username }) ?? i18n.t('restaurants.menu.uploaderCommunity'))}
                     </Text>
                     <Text style={styles.uploadDate}>
                       {new Date(photo.created_at).toLocaleDateString(i18n.locale, {

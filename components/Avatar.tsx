@@ -29,6 +29,8 @@ export interface AvatarProps {
   avatarId?: string | null;
   /** Se true, mostra l'icona incognito a prescindere da avatarId. */
   isAnonymous?: boolean;
+  /** Se true (account cancellato / orfano), mostra l'icona generica di sistema. */
+  isInactive?: boolean;
   /** Iniziale del nickname per il fallback colorato quando non c'è un'immagine. */
   initial?: string;
   /** Preset (xs/sm/md/lg) o numero di pixel. Default: md (60px). */
@@ -43,14 +45,19 @@ export interface AvatarProps {
  * Render unificato per gli avatar utente.
  *
  * Priorità:
- *   1. isAnonymous → icona incognito
- *   2. avatarId con source disponibile → immagine bundlata
- *   3. initial → cerchio colorato con la prima lettera
- *   4. fallback → icona account-circle-outline
+ *   1. isInactive → icona generica (account cancellato)
+ *   2. isAnonymous → icona incognito
+ *   3. avatarId con source disponibile → immagine bundlata
+ *   4. initial → cerchio colorato con la prima lettera
+ *   5. fallback → icona account-circle-outline
+ *
+ * TODO: quando sarà pronto un asset dedicato (es. plate_echo.png), sostituire
+ * il fallback isInactive con l'Image bundlata, come per anonymous.
  */
 export default function Avatar({
   avatarId,
   isAnonymous,
+  isInactive,
   initial,
   size = 'md',
   backgroundColor,
@@ -58,6 +65,18 @@ export default function Avatar({
 }: AvatarProps) {
   const sizePx = typeof size === 'number' ? size : SIZE_MAP[size];
   const dimension = { width: sizePx, height: sizePx };
+
+  if (isInactive) {
+    return (
+      <MaterialCommunityIcons
+        name="account-off-outline"
+        size={sizePx}
+        color={theme.colors.textDisabled}
+        style={style as any}
+        accessibilityLabel={i18n.t('common.userInactive')}
+      />
+    );
+  }
 
   if (isAnonymous) {
     return (
