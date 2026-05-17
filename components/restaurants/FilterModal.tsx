@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert, Pressable } from 'react-native';
+import { View, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert, Pressable, Platform } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -109,102 +109,116 @@ export default function FilterModal({
 
   const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds || pendingMinRating !== null;
 
+  // Overlay split per piattaforma — trade-off del touch system nativo.
+  // iOS: siblings (Pressable absoluteFill dietro) — il nested ruba il responder alla ScrollView interna su aree vuote.
+  // Android: nested Pressable — il pattern siblings non sempre intercetta il tap esterno per chiudere il modal.
+  const body = (
+    <>
+      <View style={styles.header}>
+        <Text style={styles.title}>{i18n.t('restaurants.filter.title')}</Text>
+        <TouchableOpacity onPress={onClose} hitSlop={8} activeOpacity={0.6}>
+          <MaterialCommunityIcons name="close" size={24} color={theme.colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        {/* Per le mie esigenze */}
+        <View style={styles.section}>
+          <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.toggleRow} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
+            <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.myNeeds')}</Text>
+            <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
+              <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.sectionHint}>
+            {i18n.t('restaurants.filter.myNeedsHint')}
+          </Text>
+          {pendingMyNeeds && (
+            <DietaryNeedsPicker
+              allergens={pendingAllergens}
+              diets={pendingDiets}
+              onAllergensChange={setPendingAllergens}
+              onDietsChange={setPendingDiets}
+              profileAllergens={profileAllergens}
+              profileDiets={profileDiets}
+              onSyncProfile={onSyncProfile}
+              lang={lang}
+              subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
+            />
+          )}
+        </View>
+
+        {/* Valutazione minima */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            onPress={() => setPendingMinRating(prev => (prev === 4 ? null : 4))}
+            style={styles.toggleRow}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="star" size={18} color={theme.colors.primary} />
+            <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.rating4Plus')}</Text>
+            <View style={[styles.switchTrack, pendingMinRating === 4 && styles.switchTrackActive]}>
+              <View style={[styles.switchThumb, pendingMinRating === 4 && styles.switchThumbActive]} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/*
+          CATEGORIE DIETETICHE (gluten_free, vegan, vegetarian) — nascoste intenzionalmente.
+          Mostrare questi filtri senza una certificazione ufficiale crea ambiguità con il
+          profilo allergie dell'utente e un falso senso di sicurezza (es. celiaci).
+          Da riabilitare quando sarà disponibile il sistema di "ristoranti certificati"
+          con badge verificato — in quel contesto il filtro avrà una garanzia reale.
+          I dati continuano ad essere raccolti nel DB tramite i voti community.
+        */}
+
+        <View style={[styles.section, { borderBottomWidth: 0 }]}>
+          <Text style={styles.sectionLabel}>{i18n.t('restaurants.filter.cuisineLabel')}</Text>
+          <Text style={styles.sectionHint}>
+            {i18n.t('restaurants.filter.cuisineHint')}
+          </Text>
+          <ChipGrid
+            items={CUISINE_CATEGORIES}
+            activeIds={pendingFilters}
+            onToggle={(id) => setPendingFilters(prev =>
+              prev.includes(id as RestaurantCategoryId)
+                ? prev.filter(x => x !== id)
+                : [...prev, id as RestaurantCategoryId]
+            )}
+            lang={lang}
+          />
+        </View>
+      </ScrollView>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        {hasPendingOrActive ? (
+          <TouchableOpacity onPress={handleReset} style={styles.resetButton} activeOpacity={0.7}>
+            <Text style={styles.resetText}>{i18n.t('restaurants.filter.reset')}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View />
+        )}
+        <TouchableOpacity onPress={handleApply} style={styles.applyButton} activeOpacity={0.7}>
+          <Text style={styles.applyText}>{i18n.t('restaurants.filter.apply')}</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.content} onPress={() => {}}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{i18n.t('restaurants.filter.title')}</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={8} activeOpacity={0.6}>
-              <MaterialCommunityIcons name="close" size={24} color={theme.colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            {/* Per le mie esigenze */}
-            <View style={styles.section}>
-              <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.toggleRow} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
-                <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.myNeeds')}</Text>
-                <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
-                  <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.sectionHint}>
-                {i18n.t('restaurants.filter.myNeedsHint')}
-              </Text>
-              {pendingMyNeeds && (
-                <DietaryNeedsPicker
-                  allergens={pendingAllergens}
-                  diets={pendingDiets}
-                  onAllergensChange={setPendingAllergens}
-                  onDietsChange={setPendingDiets}
-                  profileAllergens={profileAllergens}
-                  profileDiets={profileDiets}
-                  onSyncProfile={onSyncProfile}
-                  lang={lang}
-                  subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
-                />
-              )}
-            </View>
-
-            {/* Valutazione minima */}
-            <View style={styles.section}>
-              <TouchableOpacity
-                onPress={() => setPendingMinRating(prev => (prev === 4 ? null : 4))}
-                style={styles.toggleRow}
-                activeOpacity={0.7}
-              >
-                <MaterialCommunityIcons name="star" size={18} color={theme.colors.primary} />
-                <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.rating4Plus')}</Text>
-                <View style={[styles.switchTrack, pendingMinRating === 4 && styles.switchTrackActive]}>
-                  <View style={[styles.switchThumb, pendingMinRating === 4 && styles.switchThumbActive]} />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/*
-              CATEGORIE DIETETICHE (gluten_free, vegan, vegetarian) — nascoste intenzionalmente.
-              Mostrare questi filtri senza una certificazione ufficiale crea ambiguità con il
-              profilo allergie dell'utente e un falso senso di sicurezza (es. celiaci).
-              Da riabilitare quando sarà disponibile il sistema di "ristoranti certificati"
-              con badge verificato — in quel contesto il filtro avrà una garanzia reale.
-              I dati continuano ad essere raccolti nel DB tramite i voti community.
-            */}
-
-            <View style={[styles.section, { borderBottomWidth: 0 }]}>
-              <Text style={styles.sectionLabel}>{i18n.t('restaurants.filter.cuisineLabel')}</Text>
-              <Text style={styles.sectionHint}>
-                {i18n.t('restaurants.filter.cuisineHint')}
-              </Text>
-              <ChipGrid
-                items={CUISINE_CATEGORIES}
-                activeIds={pendingFilters}
-                onToggle={(id) => setPendingFilters(prev =>
-                  prev.includes(id as RestaurantCategoryId)
-                    ? prev.filter(x => x !== id)
-                    : [...prev, id as RestaurantCategoryId]
-                )}
-                lang={lang}
-              />
-            </View>
-          </ScrollView>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            {hasPendingOrActive ? (
-              <TouchableOpacity onPress={handleReset} style={styles.resetButton} activeOpacity={0.7}>
-                <Text style={styles.resetText}>{i18n.t('restaurants.filter.reset')}</Text>
-              </TouchableOpacity>
-            ) : (
-              <View />
-            )}
-            <TouchableOpacity onPress={handleApply} style={styles.applyButton} activeOpacity={0.7}>
-              <Text style={styles.applyText}>{i18n.t('restaurants.filter.apply')}</Text>
-            </TouchableOpacity>
-          </View>
+      {Platform.OS === 'ios' ? (
+        <View style={styles.overlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <View style={styles.content}>{body}</View>
+        </View>
+      ) : (
+        <Pressable style={styles.overlay} onPress={onClose}>
+          <Pressable style={styles.content} onPress={() => {}}>{body}</Pressable>
         </Pressable>
-      </Pressable>
+      )}
     </Modal>
   );
 }
