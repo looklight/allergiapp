@@ -56,16 +56,18 @@ export default function MediaPage() {
   const [selected, setSelected] = useState<MediaItem | null>(null);
   const { isBusy, withBusy } = useBusyIds();
 
-  // Popola dropdown Paesi
+  // Popola dropdown Paesi — solo paesi con media effettivamente presenti
   useEffect(() => {
-    supabase
-      .from('restaurants')
-      .select('country')
-      .not('country', 'is', null)
-      .then(({ data }) => {
-        const unique = Array.from(new Set((data ?? []).map((r: any) => r.country).filter(Boolean))).sort();
-        setCountries(unique);
-      });
+    Promise.all([
+      supabase.from('menu_photos').select('restaurants!inner(country)').not('restaurants.country', 'is', null),
+      supabase.from('reviews').select('restaurants!inner(country)').not('photos', 'is', null).not('restaurants.country', 'is', null),
+    ]).then(([menuRes, reviewRes]) => {
+      const all = [...(menuRes.data ?? []), ...(reviewRes.data ?? [])]
+        .map((row: any) => row.restaurants?.country)
+        .filter(Boolean);
+      const unique = Array.from(new Set(all)).sort();
+      setCountries(unique);
+    });
   }, []);
 
   const fetchPage = useCallback(async (beforeCursor: string | null): Promise<MediaItem[]> => {
