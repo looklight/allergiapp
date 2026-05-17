@@ -46,7 +46,7 @@ export default function MediaPage() {
   const [tipo, setTipo] = useState<Tipo>('tutti');
   const [periodo, setPeriodo] = useState<Periodo>('7gg');
   const [paese, setPaese] = useState<string>('');
-  const [countries, setCountries] = useState<string[]>([]);
+  const [countries, setCountries] = useState<{ name: string; count: number }[]>([]);
 
   const [items, setItems] = useState<MediaItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -56,17 +56,23 @@ export default function MediaPage() {
   const [selected, setSelected] = useState<MediaItem | null>(null);
   const { isBusy, withBusy } = useBusyIds();
 
-  // Popola dropdown Paesi — solo paesi con media effettivamente presenti
+  // Popola lista Paesi con conteggio — solo paesi con media effettivamente presenti.
+  // Le review con photos=[] (jsonb default) vengono escluse via .neq('photos','[]').
   useEffect(() => {
     Promise.all([
       supabase.from('menu_photos').select('restaurants!inner(country)').not('restaurants.country', 'is', null),
-      supabase.from('reviews').select('restaurants!inner(country)').not('photos', 'is', null).not('restaurants.country', 'is', null),
+      supabase.from('reviews').select('restaurants!inner(country)').neq('photos', '[]').not('restaurants.country', 'is', null),
     ]).then(([menuRes, reviewRes]) => {
-      const all = [...(menuRes.data ?? []), ...(reviewRes.data ?? [])]
-        .map((row: any) => row.restaurants?.country)
-        .filter(Boolean);
-      const unique = Array.from(new Set(all)).sort();
-      setCountries(unique);
+      const counts = new Map<string, number>();
+      for (const row of [...(menuRes.data ?? []), ...(reviewRes.data ?? [])] as any[]) {
+        const c = row.restaurants?.country;
+        if (!c) continue;
+        counts.set(c, (counts.get(c) ?? 0) + 1);
+      }
+      const sorted = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => ({ name, count }));
+      setCountries(sorted);
     });
   }, []);
 
@@ -76,10 +82,12 @@ export default function MediaPage() {
 
     if (tipo === 'tutti' || tipo === 'recensioni') {
       queries.push((async () => {
+        // photos è jsonb con default '[]' → .not('photos','is',null) è inefficace
+        // perché le review senza foto non sono NULL ma array vuoto.
         let q = supabase
           .from('reviews')
           .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles(username)')
-          .not('photos', 'is', null)
+          .neq('photos', '[]')
           .order('created_at', { ascending: false })
           .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
@@ -189,22 +197,57 @@ export default function MediaPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">Media</h1>
 
-      <div className="flex flex-wrap gap-3 mb-5">
-        <select value={tipo} onChange={e => setTipo(e.target.value as Tipo)} className="px-3 py-2 border rounded text-sm bg-white">
-          <option value="tutti">Tutti i media</option>
-          <option value="recensioni">Solo recensioni</option>
-          <option value="menu">Solo menu</option>
-        </select>
-        <select value={periodo} onChange={e => setPeriodo(e.target.value as Periodo)} className="px-3 py-2 border rounded text-sm bg-white">
-          <option value="oggi">Oggi</option>
-          <option value="7gg">Ultimi 7 giorni</option>
-          <option value="30gg">Ultimi 30 giorni</option>
-          <option value="tutto">Tutto</option>
-        </select>
-        <select value={paese} onChange={e => setPaese(e.target.value)} className="px-3 py-2 border rounded text-sm bg-white">
-          <option value="">Tutti i paesi</option>
-          {countries.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+      {/* Filtro tipo */}
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {(['tutti', 'recensioni', 'menu'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTipo(t)}
+            className={`px-3 py-1 rounded text-sm ${
+              tipo === t ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {t === 'tutti' ? 'Tutti i media' : t === 'recensioni' ? 'Recensioni' : 'Menu'}
+          </button>
+        ))}
+      </div>
+
+      {/* Filtro periodo */}
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {(['oggi', '7gg', '30gg', 'tutto'] as const).map((p) => (
+          <button
+            key={p}
+            onClick={() => setPeriodo(p)}
+            className={`px-3 py-1 rounded text-sm ${
+              periodo === p ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {p === 'oggi' ? 'Oggi' : p === '7gg' ? 'Ultimi 7 giorni' : p === '30gg' ? 'Ultimi 30 giorni' : 'Tutto'}
+          </button>
+        ))}
+      </div>
+
+      {/* Filtro paese */}
+      <div className="flex gap-2 mb-5 flex-wrap">
+        <button
+          onClick={() => setPaese('')}
+          className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+            paese === '' ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          Tutti i paesi
+        </button>
+        {countries.map((c) => (
+          <button
+            key={c.name}
+            onClick={() => setPaese(c.name)}
+            className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+              paese === c.name ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {c.name} <span className="text-xs opacity-60">{c.count}</span>
+          </button>
+        ))}
       </div>
 
       {items.length === 0 && !loading ? (
