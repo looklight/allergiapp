@@ -93,12 +93,14 @@ export default function MediaPage() {
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
-        const { data } = await q;
+        const { data, error } = await q;
+        console.log('[media] reviews query →', { error, rows: data?.length ?? 0, firstRow: data?.[0] });
         const out: MediaItem[] = [];
         for (const row of (data ?? []) as any[]) {
           const photos = (row.photos ?? []) as Array<{ url: string; thumbnailUrl?: string }>;
+          console.log('[media] review row', row.id, 'photos:', photos);
           photos.forEach((p, i) => {
-            if (!p?.url) return;
+            if (!p?.url) { console.log('[media]   skip photo idx', i, 'missing url:', p); return; }
             out.push({
               kind: 'review',
               id: `r_${row.id}_${i}`,
@@ -132,7 +134,8 @@ export default function MediaPage() {
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
-        const { data } = await q;
+        const { data, error } = await q;
+        console.log('[media] menu_photos query →', { error, rows: data?.length ?? 0 });
         return ((data ?? []) as any[]).map((row): MediaItem => ({
           kind: 'menu',
           id: `m_${row.id}`,
@@ -153,6 +156,7 @@ export default function MediaPage() {
     const results = await Promise.all(queries);
     const merged = results.flat();
     merged.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    console.log('[media] merged result →', { total: merged.length, reviews: merged.filter(m => m.kind === 'review').length, menu: merged.filter(m => m.kind === 'menu').length });
     return merged;
   }, [tipo, periodo, paese]);
 
