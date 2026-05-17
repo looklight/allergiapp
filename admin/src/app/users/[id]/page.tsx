@@ -49,7 +49,7 @@ export default function UserDetailPage() {
           .limit(50),
         supabase
           .from('reviews')
-          .select('id, restaurant_id, rating, comment, photos, created_at, restaurants!inner(name)')
+          .select('id, restaurant_id, rating, comment, photos, likes_count, created_at, restaurants!inner(name, country)')
           .eq('user_id', id)
           .order('created_at', { ascending: false })
           .limit(50),
@@ -63,7 +63,7 @@ export default function UserDetailPage() {
 
       setRestaurants((restRes.data ?? []) as Restaurant[]);
       setReviews(flattenJoinAll(reviewsRes.data ?? [], {
-        restaurants: { name: 'restaurant_name' },
+        restaurants: { name: 'restaurant_name', country: 'restaurant_country' },
       }));
       setMenuPhotos((menuPhotosRes.data ?? []).map((p: any) => ({
         ...p,
@@ -106,6 +106,10 @@ export default function UserDetailPage() {
     }
     return items;
   }, [reviews, menuPhotos]);
+
+  // -- Raggruppamento per Paese (mantiene ordine per count desc) --
+  const reviewsByCountry = useMemo(() => groupByCountry(reviews, (r) => r.restaurant_country), [reviews]);
+  const restaurantsByCountry = useMemo(() => groupByCountry(restaurants, (r) => r.country), [restaurants]);
 
   // -- Azioni --
   const deleteReviewPhoto = async (reviewId: string, photoIndex: number) => {
@@ -187,38 +191,47 @@ export default function UserDetailPage() {
                 <th className="px-4 py-2 font-medium">Rating</th>
                 <th className="px-4 py-2 font-medium">Commento</th>
                 <th className="px-4 py-2 font-medium">Foto</th>
+                <th className="px-4 py-2 font-medium">Likes</th>
                 <th className="px-4 py-2 font-medium">Data</th>
               </tr>
             </thead>
-            <tbody>
-              {reviews.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="px-4 py-2">
-                    <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline">
-                      {r.restaurant_name || '—'}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2">
-                    {r.rating > 0 ? <span className="text-yellow-600">{'★'.repeat(r.rating)}</span> : '—'}
-                  </td>
-                  <td className="px-4 py-2 text-gray-600 max-w-xs truncate">{r.comment || '—'}</td>
-                  <td className="px-4 py-2">
-                    {r.photos?.length > 0 ? (
-                      <div className="flex gap-1">
-                        {(r.photos as { url: string; thumbnailUrl?: string }[]).map((photo, i) => (
-                          <a key={i} href={photo.url} target="_blank" rel="noreferrer">
-                            <img src={photo.thumbnailUrl ?? photo.url} alt="" className="w-10 h-10 rounded object-cover hover:opacity-80 transition-opacity" />
-                          </a>
-                        ))}
-                      </div>
-                    ) : '—'}
-                  </td>
-                  <td className="px-4 py-2 text-gray-500">
-                    {new Date(r.created_at).toLocaleDateString('it-IT')}
+            {reviewsByCountry.map(([country, items]) => (
+              <tbody key={country}>
+                <tr className="bg-gray-50 border-t">
+                  <td colSpan={6} className="px-4 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    {country} ({items.length})
                   </td>
                 </tr>
-              ))}
-            </tbody>
+                {items.map((r) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="px-4 py-2">
+                      <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline">
+                        {r.restaurant_name || '—'}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-2">
+                      {r.rating > 0 ? <span className="text-yellow-600">{'★'.repeat(r.rating)}</span> : '—'}
+                    </td>
+                    <td className="px-4 py-2 text-gray-600 max-w-xs truncate">{r.comment || '—'}</td>
+                    <td className="px-4 py-2">
+                      {r.photos?.length > 0 ? (
+                        <div className="flex gap-1">
+                          {(r.photos as { url: string; thumbnailUrl?: string }[]).map((photo, i) => (
+                            <a key={i} href={photo.url} target="_blank" rel="noreferrer">
+                              <img src={photo.thumbnailUrl ?? photo.url} alt="" className="w-10 h-10 rounded object-cover hover:opacity-80 transition-opacity" />
+                            </a>
+                          ))}
+                        </div>
+                      ) : '—'}
+                    </td>
+                    <td className="px-4 py-2 text-gray-500">{r.likes_count ?? 0}</td>
+                    <td className="px-4 py-2 text-gray-500">
+                      {new Date(r.created_at).toLocaleDateString('it-IT')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
         )}
       </div>
@@ -237,24 +250,42 @@ export default function UserDetailPage() {
                 <th className="px-4 py-2 font-medium">Data</th>
               </tr>
             </thead>
-            <tbody>
-              {restaurants.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="px-4 py-2">
-                    <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
-                      {r.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-gray-500">{r.city}</td>
-                  <td className="px-4 py-2 text-gray-500">
-                    {new Date(r.created_at).toLocaleDateString('it-IT')}
+            {restaurantsByCountry.map(([country, items]) => (
+              <tbody key={country}>
+                <tr className="bg-gray-50 border-t">
+                  <td colSpan={3} className="px-4 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    {country} ({items.length})
                   </td>
                 </tr>
-              ))}
-            </tbody>
+                {items.map((r) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="px-4 py-2">
+                      <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
+                        {r.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-2 text-gray-500">{r.city}</td>
+                    <td className="px-4 py-2 text-gray-500">
+                      {new Date(r.created_at).toLocaleDateString('it-IT')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
         )}
       </div>
     </div>
   );
+}
+
+function groupByCountry<T>(items: T[], getCountry: (item: T) => string | null | undefined): Array<[string, T[]]> {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    const country = getCountry(item) || 'Sconosciuto';
+    const bucket = groups.get(country) ?? [];
+    bucket.push(item);
+    groups.set(country, bucket);
+  }
+  return Array.from(groups.entries()).sort((a, b) => b[1].length - a[1].length);
 }

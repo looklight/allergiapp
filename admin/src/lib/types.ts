@@ -59,11 +59,13 @@ export interface Review {
   photos: { url: string; thumbnailUrl?: string }[];
   allergens_snapshot: string[];
   dietary_snapshot: string[];
+  likes_count?: number;
   created_at: string;
   updated_at: string;
   // Join
   reviewer_name?: string | null;
   restaurant_name?: string | null;
+  restaurant_country?: string | null;
 }
 
 export interface UserProfile {
