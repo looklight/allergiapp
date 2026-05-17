@@ -236,6 +236,7 @@ Dettagli e contesto storico: `memory/project_review_translation.md`.
 - [x] Deploy su Vercel — live su https://admin.allergiapp.com (branch `admin-prod`)
 - [ ] Gestione claim ristoranti
 - [ ] Allineare display country alla nuova source-of-truth `country_code` (app mobile fatta 2026-05-17). Admin oggi mostra ancora il campo `country` testuale (es. "Italy"/"Italia" mescolati). Su Next.js Node è disponibile `Intl.DisplayNames` nativo, ma per coerenza si può importare `constants/countryNames.ts` dall'app o riusare la stessa mappa.
+- [ ] **Pagina Media — RPC `get_media_countries()`** per popolare il filtro Paese. Oggi `admin/src/app/media/page.tsx` fa 2 query che scaricano una riga per ogni foto/recensione solo per estrarre le country distinte: pragmatico ma spreca banda. Quando i media superano ~50k, sostituire con `SELECT DISTINCT r.country FROM restaurants r WHERE EXISTS (menu_photos) OR EXISTS (reviews con photos)` lato DB.
 
 ---
 
