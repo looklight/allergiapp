@@ -273,14 +273,16 @@ export default function MediaPage() {
                   {[selected.city, selected.country].filter(Boolean).join(', ') || '—'}
                 </div>
               </div>
-              {selected.userId && (
-                <div>
-                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Autore</div>
+              <div>
+                <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Autore</div>
+                {selected.userId ? (
                   <Link href={`/users/${selected.userId}`} className="text-blue-600 hover:underline">
                     {selected.username || 'Anonimo'}
                   </Link>
-                </div>
-              )}
+                ) : (
+                  <span className="italic text-gray-400">Utente inattivo</span>
+                )}
+              </div>
               <div>
                 <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Data</div>
                 <div className="text-sm">{new Date(selected.createdAt).toLocaleString('it-IT')}</div>

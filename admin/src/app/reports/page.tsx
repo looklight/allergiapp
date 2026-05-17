@@ -291,7 +291,7 @@ export default function ReportsPage() {
                           <Link href={`/users/${r.user_id}`} className="text-blue-600 underline truncate min-w-0">
                             {r.reporter_name ?? 'Anonimo'}
                           </Link>
-                        ) : <span className="italic truncate">Non rintracciabile</span>}
+                        ) : <span className="italic truncate text-gray-400">Utente inattivo</span>}
                         {r.reporter_is_anonymous && (
                           <span className="shrink-0 px-1 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">anonimo</span>
                         )}
@@ -452,7 +452,7 @@ export default function ReportsPage() {
                     <Link href={`/users/${r.user_id}`} className="text-blue-600 underline">
                       {r.reporter_name ?? 'Anonimo'}
                     </Link>
-                  ) : <span className="italic">Non rintracciabile</span>}
+                  ) : <span className="italic text-gray-400">Utente inattivo</span>}
                   {r.reporter_is_anonymous && (
                     <span className="px-1 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">anonimo</span>
                   )}

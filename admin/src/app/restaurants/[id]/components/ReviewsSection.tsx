@@ -23,7 +23,7 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
                   {r.user_id ? (
                     <Link href={`/users/${r.user_id}`} className="font-medium text-blue-600 hover:underline">{r.reviewer_name ?? 'Anonimo'}</Link>
                   ) : (
-                    <span className="font-medium">Anonimo</span>
+                    <span className="font-medium italic text-gray-400">Utente inattivo</span>
                   )}
                   {r.rating > 0 && (
                     <span className="ml-2 text-yellow-600">{'★'.repeat(r.rating)}</span>
