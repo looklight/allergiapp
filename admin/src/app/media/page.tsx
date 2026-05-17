@@ -94,7 +94,14 @@ export default function MediaPage() {
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
         const { data, error } = await q;
-        console.log('[media] reviews query →', { error, rows: data?.length ?? 0, firstRow: data?.[0] });
+        console.log('[media] reviews query →', {
+          errorMessage: error?.message,
+          errorDetails: error?.details,
+          errorHint: error?.hint,
+          errorCode: error?.code,
+          rows: data?.length ?? 0,
+          firstRow: data?.[0],
+        });
         const out: MediaItem[] = [];
         for (const row of (data ?? []) as any[]) {
           const photos = (row.photos ?? []) as Array<{ url: string; thumbnailUrl?: string }>;
