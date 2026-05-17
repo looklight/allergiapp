@@ -9,12 +9,8 @@ import { useBusyIds } from '@/hooks/useBusyIds';
 type Periodo = 'oggi' | '7gg' | '30gg' | 'tutto';
 type Tipo = 'tutti' | 'recensioni' | 'menu';
 
-interface MediaItem {
-  kind: 'review' | 'menu';
+interface MediaItemBase {
   id: string;
-  reviewId?: string;
-  photoIndex?: number;
-  photoId?: string;
   url: string;
   thumb: string;
   restaurantId: string;
@@ -24,8 +20,46 @@ interface MediaItem {
   userId: string | null;
   username: string | null;
   createdAt: string;
-  rating?: number;
-  comment?: string | null;
+}
+
+type MediaItem =
+  | (MediaItemBase & {
+      kind: 'review';
+      reviewId: string;
+      photoIndex: number;
+      rating: number | null;
+      comment: string | null;
+    })
+  | (MediaItemBase & { kind: 'menu'; photoId: string });
+
+type RestaurantJoin = { name: string; city: string | null; country: string | null } | null;
+type ProfileJoin = { username: string | null } | null;
+
+interface ReviewRow {
+  id: string;
+  restaurant_id: string;
+  user_id: string | null;
+  rating: number | null;
+  comment: string | null;
+  photos: Array<{ url: string; thumbnailUrl?: string }> | null;
+  created_at: string;
+  restaurants: RestaurantJoin;
+  profiles: ProfileJoin;
+}
+
+interface MenuPhotoRow {
+  id: string;
+  restaurant_id: string;
+  user_id: string | null;
+  image_url: string;
+  thumbnail_url: string | null;
+  created_at: string;
+  restaurants: RestaurantJoin;
+  profiles: ProfileJoin;
+}
+
+interface CountryJoinRow {
+  restaurants: { country: string | null } | null;
 }
 
 const PAGE_SIZE = 50;
@@ -39,13 +73,13 @@ function periodoToISO(p: Periodo): string | null {
 }
 
 function busyKey(item: MediaItem): string {
-  return item.kind === 'review' ? `rv_${item.reviewId}_${item.photoIndex}` : item.photoId!;
+  return item.kind === 'review' ? `rv_${item.reviewId}_${item.photoIndex}` : item.photoId;
 }
 
 export default function MediaPage() {
   const [tipo, setTipo] = useState<Tipo>('tutti');
   const [periodo, setPeriodo] = useState<Periodo>('7gg');
-  const [paese, setPaese] = useState<string>('');
+  const [paese, setPaese] = useState<string>('all');
   const [countries, setCountries] = useState<{ name: string; count: number }[]>([]);
 
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -57,14 +91,20 @@ export default function MediaPage() {
   const { isBusy, withBusy } = useBusyIds();
 
   // Popola lista Paesi con conteggio — solo paesi con media effettivamente presenti.
-  // Le review con photos=[] (jsonb default) vengono escluse via .neq('photos','[]').
+  // photos->0 IS NOT NULL esclude le review con array vuoto (jsonb default '[]').
   useEffect(() => {
     Promise.all([
       supabase.from('menu_photos').select('restaurants!inner(country)').not('restaurants.country', 'is', null),
       supabase.from('reviews').select('restaurants!inner(country)').not('photos->0', 'is', null).not('restaurants.country', 'is', null),
     ]).then(([menuRes, reviewRes]) => {
+      if (menuRes.error) console.error('[media] countries menu query failed:', menuRes.error);
+      if (reviewRes.error) console.error('[media] countries reviews query failed:', reviewRes.error);
+      const rows = [
+        ...((menuRes.data ?? []) as unknown as CountryJoinRow[]),
+        ...((reviewRes.data ?? []) as unknown as CountryJoinRow[]),
+      ];
       const counts = new Map<string, number>();
-      for (const row of [...(menuRes.data ?? []), ...(reviewRes.data ?? [])] as any[]) {
+      for (const row of rows) {
         const c = row.restaurants?.country;
         if (!c) continue;
         counts.set(c, (counts.get(c) ?? 0) + 1);
@@ -82,10 +122,8 @@ export default function MediaPage() {
 
     if (tipo === 'tutti' || tipo === 'recensioni') {
       queries.push((async () => {
-        // photos è jsonb con default '[]' → filtra le review che hanno almeno un
-        // elemento. photos->0 ritorna NULL per array vuoto.
-        // profiles!user_id disambigua: ci sono più FK reviews→profiles
-        // (es. tramite review_likes). photos->0 IS NOT NULL filtra array vuoti.
+        // photos->0 IS NOT NULL filtra review con array vuoto (jsonb default '[]').
+        // profiles!user_id disambigua: ci sono più FK reviews→profiles.
         let q = supabase
           .from('reviews')
           .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles!user_id(username)')
@@ -94,12 +132,12 @@ export default function MediaPage() {
           .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
-        if (paese) q = q.eq('restaurants.country', paese);
+        if (paese !== 'all') q = q.eq('restaurants.country', paese);
         const { data, error } = await q;
         if (error) console.error('[media] reviews query failed:', error);
         const out: MediaItem[] = [];
-        for (const row of (data ?? []) as any[]) {
-          const photos = (row.photos ?? []) as Array<{ url: string; thumbnailUrl?: string }>;
+        for (const row of (data ?? []) as unknown as ReviewRow[]) {
+          const photos = row.photos ?? [];
           photos.forEach((p, i) => {
             if (!p?.url) return;
             out.push({
@@ -134,10 +172,10 @@ export default function MediaPage() {
           .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
-        if (paese) q = q.eq('restaurants.country', paese);
+        if (paese !== 'all') q = q.eq('restaurants.country', paese);
         const { data, error } = await q;
         if (error) console.error('[media] menu_photos query failed:', error);
-        return ((data ?? []) as any[]).map((row): MediaItem => ({
+        return ((data ?? []) as unknown as MenuPhotoRow[]).map((row): MediaItem => ({
           kind: 'menu',
           id: `m_${row.id}`,
           photoId: row.id,
@@ -189,8 +227,8 @@ export default function MediaPage() {
     if (!confirm('Eliminare questa foto?')) return;
     await withBusy(busyKey(item), async () => {
       const { error } = item.kind === 'review'
-        ? await deleteReviewPhotoWithCleanup(supabase, item.reviewId!, item.photoIndex!)
-        : await deleteMenuPhotoWithCleanup(supabase, item.photoId!);
+        ? await deleteReviewPhotoWithCleanup(supabase, item.reviewId, item.photoIndex)
+        : await deleteMenuPhotoWithCleanup(supabase, item.photoId);
       if (error) { alert(`Errore: ${error}`); return; }
       setItems(prev => prev.filter(p => p.id !== item.id));
       setSelected(null);
@@ -234,9 +272,9 @@ export default function MediaPage() {
       {/* Filtro paese */}
       <div className="flex gap-2 mb-5 flex-wrap">
         <button
-          onClick={() => setPaese('')}
+          onClick={() => setPaese('all')}
           className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-            paese === '' ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            paese === 'all' ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
           }`}
         >
           Tutti i paesi
