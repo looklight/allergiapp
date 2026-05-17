@@ -58,3 +58,4 @@ supabase/.temp/
 admin/.next/
 admin/node_modules/
 admin/service-account-key.json
+admin/.vercel/
