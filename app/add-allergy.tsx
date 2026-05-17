@@ -232,14 +232,15 @@ export default function AddAllergyScreen() {
                     <FoodIcon id={allergen.id} emoji={allergen.icon} size={24} style={styles.icon} />
                   )}
                   right={() => (
-                    <Checkbox
-                      status={
-                        selectedAllergens.includes(allergen.id)
-                          ? 'checked'
-                          : 'unchecked'
-                      }
-                      onPress={() => toggleAllergen(allergen.id)}
-                    />
+                    <View pointerEvents="none">
+                      <Checkbox
+                        status={
+                          selectedAllergens.includes(allergen.id)
+                            ? 'checked'
+                            : 'unchecked'
+                        }
+                      />
+                    </View>
                   )}
                   onPress={() => toggleAllergen(allergen.id)}
                   style={styles.listItem}
@@ -303,14 +304,15 @@ export default function AddAllergyScreen() {
                       <FoodIcon id={food.id} emoji={food.icon} size={24} style={styles.icon} />
                     )}
                     right={() => (
-                      <Checkbox
-                        status={
-                          selectedOtherFoods.includes(food.id)
-                            ? 'checked'
-                            : 'unchecked'
-                        }
-                        onPress={() => toggleOtherFood(food.id)}
-                      />
+                      <View pointerEvents="none">
+                        <Checkbox
+                          status={
+                            selectedOtherFoods.includes(food.id)
+                              ? 'checked'
+                              : 'unchecked'
+                          }
+                        />
+                      </View>
                     )}
                     onPress={() => toggleOtherFood(food.id)}
                     style={styles.listItem}
