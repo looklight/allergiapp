@@ -5,23 +5,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
-  // Preflight CORS
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    // 1. Verifica che il chiamante sia autenticato
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!authHeader) return json(401, { error: "Missing authorization" });
 
-    // 2. Client con anon key per verificare l'identita del chiamante
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -31,39 +27,29 @@ Deno.serve(async (req) => {
     });
 
     const { data: { user: caller }, error: userError } = await userClient.auth.getUser();
-    if (userError || !caller) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (userError || !caller) return json(401, { error: "Invalid token" });
 
-    // 3. Client con service_role per eliminare l'utente
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // 3b. Se target_user_id presente, verifica che il chiamante sia admin
     let body: { target_user_id?: string } = {};
     try { body = await req.json(); } catch { /* no body = self-delete */ }
 
     let targetUserId = caller.id;
     if (body.target_user_id && body.target_user_id !== caller.id) {
-      const { data: callerProfile } = await adminClient
+      const { data: callerProfile, error: profErr } = await adminClient
         .from("profiles")
         .select("role")
         .eq("id", caller.id)
-        .single();
-      if (callerProfile?.role !== "admin") {
-        return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        .maybeSingle();
+      if (profErr) {
+        console.error("[delete-account] caller profile lookup failed:", profErr);
+        return json(500, { error: `Profile lookup failed: ${profErr.message}` });
       }
+      if (callerProfile?.role !== "admin") return json(403, { error: "Forbidden" });
       targetUserId = body.target_user_id;
     }
-
-    const user = { id: targetUserId };
 
     // NOTA: i file dello Storage (reviews/menus) NON vengono eliminati.
     // Restano accessibili tramite gli URL persistiti su `reviews.photos` e
@@ -72,35 +58,19 @@ Deno.serve(async (req) => {
     // "Utente inattivo". I T&C dichiarano esplicitamente questo comportamento
     // (legalContent.ts → sezione "Conservazione").
 
-    // Elimina il profilo (cascade elimina favorites; SET NULL su reviews, reports)
-    const { error: profileError } = await adminClient
-      .from("profiles")
-      .delete()
-      .eq("id", user.id);
-    if (profileError) {
-      return new Response(JSON.stringify({ error: "Failed to delete profile" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 6. Elimina l'utente da auth.users
-    const { error: authError } = await adminClient.auth.admin.deleteUser(user.id);
+    // Delete auth user → cascade su profiles (FK ON DELETE CASCADE) →
+    // cascade su favorites, review_likes, cuisine_votes; SET NULL su
+    // reviews.user_id, menu_photos.user_id, reports.user_id, restaurants.added_by/owner_id.
+    const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId);
     if (authError) {
-      return new Response(JSON.stringify({ error: "Failed to delete auth user" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("[delete-account] auth delete failed:", authError);
+      return json(500, { error: `Failed to delete auth user: ${authError.message}` });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json(200, { success: true });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("[delete-account] unhandled error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return json(500, { error: `Internal error: ${message}` });
   }
 });
