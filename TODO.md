@@ -21,6 +21,7 @@
 - [ ] Modifica profilo + galleria avatar
 - [ ] Logout
 - [ ] Elimina account
+- [ ] **Flow end-to-end "Utente inattivo"** — creare account test, scrivere review con foto + caricare menu photo, cancellare l'account, poi da un secondo account verificare che entrambi i contenuti restino visibili con label "Utente inattivo" + icona `account-off-outline`. Verifica analoga sulla admin dashboard. Chiude la verifica del fix Edge Function `delete-account` (deployato 2026-05-17, PR #1/#2/#3).
 
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
