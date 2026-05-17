@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,38 +10,6 @@ const json = (status: number, body: unknown) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-
-// Purge ricorsivo di un prefix dello storage, con paginazione.
-// Supabase storage mostra "cartelle" come entry con id=null; i file hanno id.
-async function purgePrefix(bucket: ReturnType<SupabaseClient["storage"]["from"]>, prefix: string) {
-  const pageSize = 100;
-  while (true) {
-    const { data, error } = await bucket.list(prefix, { limit: pageSize });
-    if (error) {
-      console.warn(`[delete-account] list error on ${prefix}:`, error.message);
-      return;
-    }
-    if (!data || data.length === 0) return;
-
-    const files: string[] = [];
-    const folders: string[] = [];
-    for (const entry of data) {
-      if (entry.id) files.push(`${prefix}/${entry.name}`);
-      else folders.push(`${prefix}/${entry.name}`);
-    }
-
-    for (const sub of folders) await purgePrefix(bucket, sub);
-
-    if (files.length > 0) {
-      const { error: rmErr } = await bucket.remove(files);
-      if (rmErr) console.warn(`[delete-account] remove error on ${prefix}:`, rmErr.message);
-    }
-
-    // Se la pagina non è piena e non abbiamo cancellato nulla in questo giro,
-    // non c'è più altro da fare.
-    if (data.length < pageSize && files.length === 0) return;
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -83,15 +51,16 @@ Deno.serve(async (req) => {
       targetUserId = body.target_user_id;
     }
 
-    // 1. Storage cleanup (best-effort, paginato). Struttura: {userId}/{type}/{restaurantId}/{file}.webp
-    const bucket = adminClient.storage.from("images");
-    const topFolders = ["reviews", "menus"];
-    for (const folder of topFolders) {
-      await purgePrefix(bucket, `${targetUserId}/${folder}`);
-    }
+    // NOTA: i file dello Storage (reviews/menus) NON vengono eliminati.
+    // Restano accessibili tramite gli URL persistiti su `reviews.photos` e
+    // `menu_photos.image_url`, che sopravvivono alla cancellazione dell'account
+    // (FK `ON DELETE SET NULL`). L'UI mostra questi contenuti come
+    // "Utente inattivo". I T&C dichiarano esplicitamente questo comportamento
+    // (legalContent.ts → sezione "Conservazione").
 
-    // 2. Delete auth user → cascades: profiles → favorites, review_likes, cuisine_votes;
-    //    SET NULL su reviews.user_id e reports.user_id.
+    // Delete auth user → cascade su profiles (FK ON DELETE CASCADE) →
+    // cascade su favorites, review_likes, cuisine_votes; SET NULL su
+    // reviews.user_id, menu_photos.user_id, reports.user_id, restaurants.added_by/owner_id.
     const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId);
     if (authError) {
       console.error("[delete-account] auth delete failed:", authError);
