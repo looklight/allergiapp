@@ -41,6 +41,9 @@
       }
     },
     "beta": {
+      "ios": {
+        "ascAppId": "6758859853"
+      },
       "android": {
         "serviceAccountKeyPath": "./google-play-service-account.json",
         "track": "internal"
