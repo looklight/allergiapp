@@ -65,31 +65,14 @@ Deno.serve(async (req) => {
 
     const user = { id: targetUserId };
 
-    // 4. Elimina tutti i file dell'utente dallo Storage (best-effort, prima del cascade)
-    //    Struttura: {userId}/{type}/{restaurantId}/{file}.jpg — serve ricorsione a 2 livelli
-    const bucket = adminClient.storage.from("images");
-    const topFolders = ["reviews", "dishes", "menus"];
-    for (const folder of topFolders) {
-      const prefix = `${user.id}/${folder}`;
-      const { data: subFolders } = await bucket.list(prefix, { limit: 500 });
-      if (!subFolders) continue;
-      for (const sub of subFolders) {
-        if (sub.id) {
-          // È un file direttamente in questa cartella
-          await bucket.remove([`${prefix}/${sub.name}`]);
-        } else {
-          // È una sottocartella (restaurantId) — lista i file al suo interno
-          const subPath = `${prefix}/${sub.name}`;
-          const { data: files } = await bucket.list(subPath, { limit: 500 });
-          if (files && files.length > 0) {
-            const paths = files.map((f) => `${subPath}/${f.name}`);
-            await bucket.remove(paths);
-          }
-        }
-      }
-    }
+    // NOTA: i file dello Storage (reviews/menus) NON vengono eliminati.
+    // Restano accessibili tramite gli URL persistiti su `reviews.photos` e
+    // `menu_photos.image_url`, che sopravvivono alla cancellazione dell'account
+    // (FK `ON DELETE SET NULL`). L'UI mostra questi contenuti come
+    // "Utente inattivo". I T&C dichiarano esplicitamente questo comportamento
+    // (legalContent.ts → sezione "Conservazione").
 
-    // 5. Elimina il profilo (cascade elimina favorites; SET NULL su reviews, reports)
+    // Elimina il profilo (cascade elimina favorites; SET NULL su reviews, reports)
     const { error: profileError } = await adminClient
       .from("profiles")
       .delete()
