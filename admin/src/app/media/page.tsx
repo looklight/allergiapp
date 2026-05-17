@@ -84,9 +84,11 @@ export default function MediaPage() {
       queries.push((async () => {
         // photos è jsonb con default '[]' → filtra le review che hanno almeno un
         // elemento. photos->0 ritorna NULL per array vuoto.
+        // profiles!user_id disambigua: ci sono più FK reviews→profiles
+        // (es. tramite review_likes). photos->0 IS NOT NULL filtra array vuoti.
         let q = supabase
           .from('reviews')
-          .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles(username)')
+          .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles!user_id(username)')
           .not('photos->0', 'is', null)
           .order('created_at', { ascending: false })
           .limit(PAGE_SIZE + 1);
@@ -94,20 +96,12 @@ export default function MediaPage() {
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
         const { data, error } = await q;
-        console.log('[media] reviews query →', {
-          errorMessage: error?.message,
-          errorDetails: error?.details,
-          errorHint: error?.hint,
-          errorCode: error?.code,
-          rows: data?.length ?? 0,
-          firstRow: data?.[0],
-        });
+        if (error) console.error('[media] reviews query failed:', error);
         const out: MediaItem[] = [];
         for (const row of (data ?? []) as any[]) {
           const photos = (row.photos ?? []) as Array<{ url: string; thumbnailUrl?: string }>;
-          console.log('[media] review row', row.id, 'photos:', photos);
           photos.forEach((p, i) => {
-            if (!p?.url) { console.log('[media]   skip photo idx', i, 'missing url:', p); return; }
+            if (!p?.url) return;
             out.push({
               kind: 'review',
               id: `r_${row.id}_${i}`,
@@ -142,7 +136,7 @@ export default function MediaPage() {
         if (periodoIso) q = q.gte('created_at', periodoIso);
         if (paese) q = q.eq('restaurants.country', paese);
         const { data, error } = await q;
-        console.log('[media] menu_photos query →', { error, rows: data?.length ?? 0 });
+        if (error) console.error('[media] menu_photos query failed:', error);
         return ((data ?? []) as any[]).map((row): MediaItem => ({
           kind: 'menu',
           id: `m_${row.id}`,
@@ -163,7 +157,6 @@ export default function MediaPage() {
     const results = await Promise.all(queries);
     const merged = results.flat();
     merged.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    console.log('[media] merged result →', { total: merged.length, reviews: merged.filter(m => m.kind === 'review').length, menu: merged.filter(m => m.kind === 'menu').length });
     return merged;
   }, [tipo, periodo, paese]);
 
