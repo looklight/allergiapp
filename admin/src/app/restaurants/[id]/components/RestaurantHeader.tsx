@@ -129,7 +129,7 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
           <p className="text-gray-400 text-sm">
             {restaurant.city}, {restaurant.country} &middot; Aggiunto da {restaurant.added_by ? (
               <Link href={`/users/${restaurant.added_by}`} className="text-blue-600 hover:underline">{restaurant.adder_name ?? '—'}</Link>
-            ) : '—'}
+            ) : <span className="italic text-gray-400">Utente inattivo</span>}
           </p>
           {/* Categorie — visualizzazione e editing */}
           <div className="mt-3">
