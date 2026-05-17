@@ -26,6 +26,7 @@ import PhotoGalleryModal from './PhotoGalleryModal';
 import LoginGateCta from './LoginGateCta';
 import ReportReviewModal, { type ReviewReportReason } from './ReportReviewModal';
 import { useRestaurantDetail, type ReviewSortOrder } from '../../hooks/useRestaurantDetail';
+import { getAuthorLabel } from '../../utils/getDisplayName';
 import { RestaurantService } from '../../services/restaurantService';
 import { getExpandedCoverage, forwardMap } from '../../constants/restrictionImplications';
 import type { AppLanguage } from '../../types';
@@ -105,8 +106,14 @@ export default function RestaurantDetailBody({
         url: p.url,
         thumbnailUrl: p.thumbnailUrl,
         reviewId: r.reviewId,
-        displayName: r.displayName ?? '',
+        displayName: getAuthorLabel({
+          userId: r.userId,
+          username: r.displayName,
+          isAnonymous: r.isAnonymous,
+        }),
         avatarUrl: r.avatarUrl,
+        isAnonymous: r.isAnonymous,
+        isInactive: r.isInactive,
         rating: r.rating,
         text: r.text,
         allergensSnapshot: r.allergensSnapshot,

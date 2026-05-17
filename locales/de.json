@@ -5,6 +5,9 @@
     "errorRetry": "Erneut versuchen",
     "ok": "OK"
   },
+  "common": {
+    "userInactive": "Inaktiver Benutzer"
+  },
   "home": {
     "title": "Was muss ich mitteilen?",
     "noAllergies": "Du hast noch nichts hinzugefügt",

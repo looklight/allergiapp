@@ -5,6 +5,9 @@
     "errorRetry": "Réessayer",
     "ok": "OK"
   },
+  "common": {
+    "userInactive": "Utilisateur inactif"
+  },
   "home": {
     "title": "Que dois-je communiquer ?",
     "noAllergies": "Vous n'avez encore rien ajouté",

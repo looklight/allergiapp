@@ -5,6 +5,9 @@
     "errorRetry": "Reintentar",
     "ok": "OK"
   },
+  "common": {
+    "userInactive": "Usuario inactivo"
+  },
   "home": {
     "title": "¿Qué debo comunicar?",
     "noAllergies": "Todavía no has agregado nada",

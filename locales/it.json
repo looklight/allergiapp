@@ -25,7 +25,8 @@
     "add": "Aggiungi",
     "error": "Errore",
     "thanks": "Grazie",
-    "save": "Salva"
+    "save": "Salva",
+    "userInactive": "Utente inattivo"
   },
   "home": {
     "title": "Cosa devo comunicare?",

@@ -23,6 +23,8 @@ export interface GalleryPhoto {
   reviewId?: string;
   displayName: string;
   avatarUrl?: string | null;
+  isAnonymous?: boolean;
+  isInactive?: boolean;
   rating?: number;
   text?: string;
   allergensSnapshot?: string[];
@@ -165,7 +167,9 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
               <View style={styles.infoRow}>
                 <Avatar
                   avatarId={current.avatarUrl}
-                  initial={current.displayName}
+                  isAnonymous={current.isAnonymous}
+                  isInactive={current.isInactive}
+                  initial={current.isAnonymous || current.isInactive ? undefined : current.displayName}
                   size="xs"
                   backgroundColor={theme.colors.primary}
                 />

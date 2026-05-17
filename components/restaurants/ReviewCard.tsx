@@ -15,7 +15,7 @@ import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
 import Avatar from '../Avatar';
 import i18n from '../../utils/i18n';
-import { getAnonymousLabel } from '../../utils/anonymousLabel';
+import { getAuthorLabel } from '../../utils/getDisplayName';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
 
 interface ReviewCardProps {
@@ -32,8 +32,12 @@ const REVIEW_PHOTO_SIZE = 80;
 
 export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview }: ReviewCardProps) {
   const router = useRouter();
-  const displayName = item.isAnonymous ? getAnonymousLabel(item.userId) : (item.displayName ?? getAnonymousLabel(item.userId));
-  const canNavigateToProfile = !!item.userId && !item.isAnonymous;
+  const displayName = getAuthorLabel({
+    userId: item.userId,
+    username: item.displayName,
+    isAnonymous: item.isAnonymous,
+  });
+  const canNavigateToProfile = !!item.userId && !item.isAnonymous && !item.isInactive;
 
   const burstScale = useSharedValue(0);
   const burstOpacity = useSharedValue(0);
@@ -79,7 +83,8 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
           <Avatar
             avatarId={item.avatarUrl}
             isAnonymous={item.isAnonymous}
-            initial={item.isAnonymous ? undefined : item.displayName ?? undefined}
+            isInactive={item.isInactive}
+            initial={item.isAnonymous || item.isInactive ? undefined : item.displayName ?? undefined}
             size="sm"
           />
           <View style={styles.contributionMeta}>

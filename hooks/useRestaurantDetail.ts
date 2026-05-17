@@ -21,6 +21,8 @@ export interface UnifiedReview {
   userId?: string;
   displayName: string | null;
   isAnonymous?: boolean;
+  /** True quando l'account dell'autore è stato cancellato (user_id IS NULL). */
+  isInactive?: boolean;
   avatarUrl?: string | null;
   rating?: number;
   text?: string;
@@ -149,6 +151,7 @@ export function useRestaurantDetail(
       userId: r.user_id ?? undefined,
       displayName: getDisplayName({ username: r.user_username }),
       isAnonymous: r.user_is_anonymous ?? false,
+      isInactive: r.user_id == null,
       avatarUrl: r.user_avatar_url ?? null,
       rating: r.rating,
       text: r.comment ?? undefined,
