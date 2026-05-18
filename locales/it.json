@@ -26,7 +26,8 @@
     "error": "Errore",
     "thanks": "Grazie",
     "save": "Salva",
-    "userInactive": "Utente inattivo"
+    "userInactive": "Utente inattivo",
+    "or": "oppure"
   },
   "home": {
     "title": "Cosa devo comunicare?",

@@ -26,7 +26,8 @@
     "error": "Error",
     "thanks": "Thanks",
     "save": "Save",
-    "userInactive": "Inactive user"
+    "userInactive": "Inactive user",
+    "or": "or"
   },
   "home": {
     "title": "What do I need to communicate?",

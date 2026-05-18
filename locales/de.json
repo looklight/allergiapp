@@ -6,7 +6,8 @@
     "ok": "OK"
   },
   "common": {
-    "userInactive": "Inaktiver Benutzer"
+    "userInactive": "Inaktiver Benutzer",
+    "or": "oder"
   },
   "home": {
     "title": "Was muss ich mitteilen?",

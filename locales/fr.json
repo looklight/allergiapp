@@ -6,7 +6,8 @@
     "ok": "OK"
   },
   "common": {
-    "userInactive": "Utilisateur inactif"
+    "userInactive": "Utilisateur inactif",
+    "or": "ou"
   },
   "home": {
     "title": "Que dois-je communiquer ?",
