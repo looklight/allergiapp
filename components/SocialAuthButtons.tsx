@@ -2,25 +2,44 @@ import { useEffect, useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
-import * as AppleAuthentication from 'expo-apple-authentication';
+import Constants from 'expo-constants';
 import { theme } from '../constants/theme';
-import {
-  SocialAuthService,
-  SocialAuthCancelledError,
-} from '../services/socialAuth';
 import i18n from '../utils/i18n';
+
+// I moduli @react-native-google-signin e expo-apple-authentication richiedono
+// native binary, non presenti in Expo Go. Carico tutto via require condizionale
+// per evitare il crash `TurboModuleRegistry.getEnforcing('RNGoogleSignin')`.
+// In Expo Go il componente renderizza null (UI senza social, ma app navigabile).
+const isExpoGo = Constants.appOwnership === 'expo';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let GoogleSigninButton: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let AppleAuthentication: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let SocialAuthService: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let SocialAuthCancelledError: any = null;
+
+if (!isExpoGo) {
+  GoogleSigninButton =
+    require('@react-native-google-signin/google-signin').GoogleSigninButton;
+  AppleAuthentication = require('expo-apple-authentication');
+  const socialAuth = require('../services/socialAuth');
+  SocialAuthService = socialAuth.SocialAuthService;
+  SocialAuthCancelledError = socialAuth.SocialAuthCancelledError;
+}
 
 type Provider = 'google' | 'apple';
 
-export default function SocialAuthButtons() {
+function SocialAuthButtonsImpl() {
   const router = useRouter();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [loading, setLoading] = useState<Provider | null>(null);
 
   useEffect(() => {
     let active = true;
-    SocialAuthService.isAppleAuthAvailable().then((available) => {
+    SocialAuthService.isAppleAuthAvailable().then((available: boolean) => {
       if (active) setAppleAvailable(available);
     });
     return () => {
@@ -40,9 +59,10 @@ export default function SocialAuthButtons() {
       // useEffect globale in app/_layout.tsx (needsOnboarding === true).
       // L'utente esistente torna allo screen precedente.
       router.back();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof SocialAuthCancelledError) return;
-      console.warn(`[SocialAuthButtons] ${provider} error:`, err?.message);
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`[SocialAuthButtons] ${provider} error:`, message);
       Alert.alert(i18n.t('common.error'), i18n.t('login.alerts.errors.generic'));
     } finally {
       setLoading(null);
@@ -78,6 +98,11 @@ export default function SocialAuthButtons() {
       </View>
     </View>
   );
+}
+
+export default function SocialAuthButtons() {
+  if (isExpoGo) return null;
+  return <SocialAuthButtonsImpl />;
 }
 
 const styles = StyleSheet.create({
