@@ -27,6 +27,21 @@
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 - [x] **Allineata tabella `translations`** (2026-05-16) — 71/71 lingue caricate via `node scripts/uploadToSupabase.js`. Coperti commit `98a101c` (tree nuts: almonds/hazelnuts/walnuts/pistachios/cashews + completamenti 8 lingue) e `902bae6` (yeast + artificial_colorings).
 
+### Social Auth (Google + Apple) — branch `feature/social-auth`
+Setup esterno completato (Google Cloud, Apple Developer, Supabase Dashboard). Codice committato in 4 commit logici. Vedi memoria `project_social_auth.md` per credenziali e architettura.
+
+- [ ] **Test E2E su dev build iOS** — `npx expo run:ios` o `eas build --profile development --platform ios`, poi su iPhone reale (Apple Sign In ballerino nel simulatore). Verificare: (1) Google sign-in crea sessione e arriva a onboarding-nickname per nuovo utente, (2) Apple sign-in idem, (3) utente esistente torna allo screen precedente con `router.back()`.
+- [ ] **Test E2E su dev build Android** — solo Google (Apple non disponibile su Android). Verificare flow nativo Google Sign In + redirect onboarding.
+- [ ] **Verifica concern nonce** — abbiamo lasciato "Skip nonce checks" OFF su Supabase ma il codice non genera nonce esplicito. Se il primo test fallisce con errore "Invalid nonce" o simile, due fix possibili: (a) toggle "Skip nonce checks" ON su Supabase (pattern consigliato per mobile native), (b) implementare nonce generation + SHA-256 hash + pass a `signInWithIdToken`. Decisione da prendere DOPO il test.
+- [ ] **Merge `feature/social-auth` in main** — solo dopo che il test E2E è verde. Branch è solo locale, non pushato al remote.
+- [ ] **Rotate Google Web Client Secret** — il secret `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` è stato esposto in chat durante il setup (2026-05-18). Rischio reale basso ma best practice: Google Cloud → OAuth Client `AllergiApp Web (Supabase)` → "+ ADD SECRET" → "Disable" sul vecchio → aggiornare valore in Supabase Dashboard.
+
+### Social Auth — polish non bloccante
+- [ ] **Pre-fill nickname da Apple `fullName`** — Apple restituisce nome+cognome SOLO al primo sign-in. Attualmente lo ignoriamo. Catturarlo in `socialAuth.ts` e passarlo a `onboarding-nickname` come suggerimento iniziale del campo username. Lavoro: ~15 min.
+- [ ] **Errori specifici per provider** — `SocialAuthButtons` mostra alert generico per tutti gli errori. Più granularità (network/configurazione/cancel/altro) sarebbe UX migliore. Lavoro: ~20 min.
+- [ ] **`GoogleSignin.configure` al boot** — attualmente lazy (al primo signIn). Best practice è chiamarlo una volta in `_layout.tsx` o `socialAuth.ts` come side-effect. Lavoro: ~5 min.
+- [ ] **JWT Apple scade 14 nov 2026** (180 giorni dal setup, max imposto da Apple). Rigenerazione con lo stesso script Node usato in setup (`crypto.sign` con ES256). Se nessuno usa Apple Sign In da web/browser puoi anche ignorare la scadenza (il flow nativo iOS non usa questo JWT).
+
 ---
 
 ## Aperti — bug & cleanup
