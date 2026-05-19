@@ -158,6 +158,7 @@
     "dietaryHint": "W\u00e4hle deine Bed\u00fcrfnisse. Sie werden automatisch mit deinen Beitr\u00e4gen verkn\u00fcpft.",
     "allergensIntolerances": "Allergene und Intoleranzen",
     "others": "Sonstige",
+    "othersHint": "Diese Allergien sind weniger verbreitet und lassen sich oft schon durch das Vorzeigen der Karte im Restaurant gut handhaben. Du kannst sie trotzdem ausw\u00e4hlen \u2013 sie erscheinen in deinem Profil und in deinen Bewertungen.",
     "saveDietary": "Ern\u00e4hrungsbed\u00fcrfnisse speichern",
     "saveDietaryError": "Ern\u00e4hrungsbed\u00fcrfnisse konnten nicht gespeichert werden. Versuche es erneut."
   },

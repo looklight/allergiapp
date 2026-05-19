@@ -158,6 +158,7 @@
     "dietaryHint": "S\u00e9lectionnez vos besoins. Ils seront automatiquement associ\u00e9s \u00e0 vos contributions.",
     "allergensIntolerances": "Allerg\u00e8nes et intol\u00e9rances",
     "others": "Autres",
+    "othersHint": "Ces allergies sont moins courantes et plus faciles à gérer en montrant simplement votre carte au restaurant. Vous pouvez les sélectionner quand même — elles apparaîtront sur votre profil et dans vos avis.",
     "saveDietary": "Enregistrer les besoins alimentaires",
     "saveDietaryError": "Impossible d'enregistrer les besoins alimentaires. R\u00e9essayez."
   },

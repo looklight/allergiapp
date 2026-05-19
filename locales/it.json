@@ -182,6 +182,7 @@
     "dietaryHint": "Seleziona le tue esigenze. Verranno associate automaticamente ai tuoi contributi.",
     "allergensIntolerances": "Allergeni e intolleranze",
     "others": "Altre",
+    "othersHint": "Queste allergie sono meno comuni e più facili da gestire anche solo mostrando la card nei ristoranti. Puoi comunque selezionarle e saranno visibili nel tuo profilo e nelle tue segnalazioni.",
     "saveDietary": "Salva esigenze alimentari",
     "saveDietaryError": "Impossibile salvare le esigenze alimentari. Riprova."
   },
@@ -685,8 +686,8 @@
   },
   "onboardingNickname": {
     "headerTitle": "Il tuo profilo",
-    "introTitle": "Come vuoi apparire nella community?",
-    "introText": "Scegli un nome utente con cui gli altri utenti ti vedranno nelle recensioni. Se preferisci, puoi restare anonimo: il tuo nome non sarà mai visibile ad altri.",
+    "introTitle": "Scegli il tuo nome utente",
+    "introText": "È come gli altri ti vedranno nelle recensioni e nel tuo profilo",
     "anonymousLabel": "Resta anonimo",
     "anonymousHint": "Ti verrà associato un nome anonimo e il tuo profilo non sarà visibile ad altri utenti",
     "saving": "Salvataggio...",
@@ -701,7 +702,7 @@
   "onboardingDietary": {
     "headerTitle": "Le tue esigenze",
     "introTitle": "Una community che si aiuta a vicenda",
-    "introText": "Indica le tue esigenze: filtreremo i ristoranti per te e renderemo le tue recensioni utili a chi ha le stesse allergie.",
+    "introText": "Indica le tue esigenze: trovi i ristoranti che le comprendono davvero e aiuti chi è come te.",
     "skipLink": "Non ho allergie o esigenze particolari",
     "noNeedsNote": "AllergiApp funziona grazie alle recensioni degli utenti. Indicare le proprie esigenze aiuta altri con le stesse allergie o diete a trovare i ristoranti giusti. Puoi aggiungerle in qualsiasi momento dal tuo profilo.",
     "saveButton": "Salva e continua",

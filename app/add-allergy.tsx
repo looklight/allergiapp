@@ -35,10 +35,25 @@ export default function AddAllergyScreen() {
     : null;
   const [selectedAllergens, setSelectedAllergens] = useState<AllergenId[]>(savedAllergens);
   const [selectedOtherFoods, setSelectedOtherFoods] = useState<OtherFoodId[]>(savedOtherFoods);
-  const [otherFoodsExpanded, setOtherFoodsExpanded] = useState(true);
+  const [otherFoodsExpanded, setOtherFoodsExpanded] = useState(savedOtherFoods.length > 0);
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollPosY = useRef(0);
+
+  const toggleOtherFoodsExpanded = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOtherFoodsExpanded(prev => {
+      const next = !prev;
+      if (next) {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({ y: scrollPosY.current + 180, animated: true });
+        }, 50);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
@@ -171,7 +186,13 @@ export default function AddAllergyScreen() {
         </Text>
       )}
 
-      <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.list}
+        keyboardShouldPersistTaps="handled"
+        onScroll={e => { scrollPosY.current = e.nativeEvent.contentOffset.y; }}
+        scrollEventThrottle={16}
+      >
         {!isSearching && (
           <>
             <Pressable
@@ -258,10 +279,7 @@ export default function AddAllergyScreen() {
           <>
             <Divider />
             <Pressable
-              onPress={() => {
-                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                setOtherFoodsExpanded((prev) => !prev);
-              }}
+              onPress={toggleOtherFoodsExpanded}
               style={({ pressed }) => [
                 styles.otherFoodsHeader,
                 pressed && styles.otherFoodsHeaderPressed,
@@ -288,6 +306,9 @@ export default function AddAllergyScreen() {
           <>
             {isSearching && (
               <Text style={styles.searchSectionLabel}>{i18n.t('addAllergy.otherFoods')}</Text>
+            )}
+            {!isSearching && (
+              <Text style={styles.otherFoodsHint}>{i18n.t('profile.othersHint')}</Text>
             )}
             {(isSearching ? filteredOtherFoods : OTHER_FOODS).map((food, index, arr) => {
               const showCategoryHeader = !isSearching && (index === 0 || food.category !== arr[index - 1].category);
@@ -486,6 +507,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,
+  },
+  otherFoodsHint: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    lineHeight: 18,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+    backgroundColor: theme.colors.background,
   },
   footer: {
     padding: 16,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -21,6 +21,8 @@ export default function OnboardingDietaryScreen() {
   const [saving, setSaving] = useState(false);
   const [confirmedNoNeeds, setConfirmedNoNeeds] = useState(false);
   const [healthConsent, setHealthConsent] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollPosY = useRef(0);
 
   const hasSelection = allergens.length > 0 || diets.length > 0;
   const canSave = (hasSelection && healthConsent) || confirmedNoNeeds;
@@ -64,6 +66,9 @@ export default function OnboardingDietaryScreen() {
 
   const handleSkip = () => {
     setConfirmedNoNeeds(true);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 50);
   };
 
   return (
@@ -76,8 +81,11 @@ export default function OnboardingDietaryScreen() {
       />
 
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingBottom: 24 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={e => { scrollPosY.current = e.nativeEvent.contentOffset.y; }}
+        scrollEventThrottle={16}
       >
         <View style={styles.introSection}>
           <MaterialCommunityIcons name="shield-check-outline" size={40} color={theme.colors.primary} />
@@ -92,6 +100,8 @@ export default function OnboardingDietaryScreen() {
           onToggleDiet={toggleDiet}
           lang={i18n.locale}
           keyPrefix="onboarding"
+          scrollViewRef={scrollViewRef}
+          scrollPosRef={scrollPosY}
         />
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>

@@ -182,6 +182,7 @@
     "dietaryHint": "Select your needs. They will be automatically linked to your contributions.",
     "allergensIntolerances": "Allergens & intolerances",
     "others": "Other",
+    "othersHint": "These allergies are less common and easier to manage just by showing your allergy card at restaurants. You can still select them — they'll be visible on your profile and in your reviews.",
     "saveDietary": "Save dietary needs",
     "saveDietaryError": "Unable to save dietary needs. Please try again."
   },
@@ -685,8 +686,8 @@
   },
   "onboardingNickname": {
     "headerTitle": "Your profile",
-    "introTitle": "How would you like to appear in the community?",
-    "introText": "Choose a username others will see in your reviews. If you prefer, you can stay anonymous: your name will never be visible to others.",
+    "introTitle": "Choose your username",
+    "introText": "It's how others will see you in reviews and on your profile",
     "anonymousLabel": "Stay anonymous",
     "anonymousHint": "An anonymous name will be assigned and your profile won't be visible to other users",
     "saving": "Saving...",
@@ -701,7 +702,7 @@
   "onboardingDietary": {
     "headerTitle": "Your needs",
     "introTitle": "A community helping each other",
-    "introText": "Tell us about your needs: we'll filter restaurants for you and make your reviews useful to people with the same allergies.",
+    "introText": "Share your dietary needs: you'll find restaurants that truly understand them and help others like you.",
     "skipLink": "I have no allergies or special needs",
     "noNeedsNote": "AllergiApp works thanks to user reviews. Sharing your needs helps others with the same allergies or diets find the right restaurants. You can add them any time from your profile.",
     "saveButton": "Save and continue",
