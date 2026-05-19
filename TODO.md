@@ -124,6 +124,21 @@ Ricordare agli utenti di lasciare una recensione dopo una visita a un ristorante
 - Collegabile al sistema gerarchia utenti: recensioni scritte dopo il reminder potrebbero valere di più per i badge
 - Valutare A/B test sul copy del messaggio
 
+### Prompt recensione store (In-App Review nativo)
+**Priorità: bassa — da pianificare dopo aver consolidato un seed di utenti soddisfatti**
+
+Mostrare il popup nativo "Lascia una recensione" che molte app usano (StoreKit `SKStoreReviewController` su iOS, Google Play In-App Review API su Android). L'overlay è renderizzato dall'OS sopra la app, l'utente recensisce senza uscire — sembra integrato perché lo è a livello di sistema.
+
+**Libreria:** `expo-store-review` (wrapper Expo ufficiale, ~100-200 KB su Android via `play-core`, zero overhead su iOS).
+
+**Trigger consigliato:** subito dopo che l'utente lascia una recensione 4-5 stelle a un ristorante. È il momento con più alta probabilità di rating positivo (utente già in mood "feedback positivo"). Evitare trigger generici tipo "ha aperto la card N volte" — non sai se l'esperienza in ristorante è andata bene.
+
+**Limiti da rispettare:**
+- iOS: max 3 prompt/anno per utente, il sistema può ignorare la chiamata silenziosamente. Sprecarli su utenti tiepidi abbassa il rating medio.
+- Fallback "Lascia recensione" da settings via `StoreReview.storeUrl()` + `Linking.openURL` per chi vuole farlo spontaneamente.
+
+**Costo:** richiede native rebuild (non OTA-able) + bump `buildNumber`/`versionCode`. Plug-and-play, nessuna config nel `plugins/` custom.
+
 ### Gerarchia utenti e riconoscimento community
 **Priorità: bassa — da pianificare dopo il lancio**
 
