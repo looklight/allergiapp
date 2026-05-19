@@ -100,7 +100,7 @@ export default function AppHeader({
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
