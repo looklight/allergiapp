@@ -113,37 +113,37 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_straw',
     source: require('../assets/avatars/plate_straw.png'),
     name: 'Pirate',
-    unlock: { type: 'unique_likers_received', count: 3 },
+    unlock: { type: 'unique_likers_received', count: 4 },
   },
   {
     id: 'plate_wizard',
     source: require('../assets/avatars/plate_wizard.png'),
     name: 'Patronus',
-    unlock: { type: 'unique_likers_received', count: 6 },
+    unlock: { type: 'unique_likers_received', count: 8 },
   },
   {
     id: 'plate_wolfe',
     source: require('../assets/avatars/plate_wolfe.png'),
     name: 'Wolfe',
-    unlock: { type: 'unique_likers_received', count: 9 },
+    unlock: { type: 'unique_likers_received', count: 12 },
   },
   {
     id: 'plate_bl_mask',
     source: require('../assets/avatars/plate_bl_mask.png'),
     name: 'Soul',
-    unlock: { type: 'unique_likers_received', count: 12 },
+    unlock: { type: 'unique_likers_received', count: 16 },
   },
   {
     id: 'plate_bat',
     source: require('../assets/avatars/plate_bat.png'),
     name: 'Knight',
-    unlock: { type: 'unique_likers_received', count: 15 },
+    unlock: { type: 'unique_likers_received', count: 20 },
   },
   {
     id: 'plate_veget',
     source: require('../assets/avatars/plate_veget.png'),
     name: 'Prince',
-    unlock: { type: 'unique_likers_received', count: 18 },
+    unlock: { type: 'unique_likers_received', count: 24 },
   },
 
   // ── Missioni segrete (nessuna condizione pubblica) ────
