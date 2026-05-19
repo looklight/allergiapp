@@ -259,10 +259,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pillAddText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    lineHeight: 22,
+    fontSize: 22,
+    fontWeight: '400',
+    color: theme.colors.textSecondary,
+    lineHeight: 24,
   },
   overlay: {
     flex: 1,
