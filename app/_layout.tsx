@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image, ScrollView } from 'react-native';
 import { Stack, usePathname, useRouter } from 'expo-router';
-import * as Updates from 'expo-updates';
 import { PaperProvider, Text, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -24,12 +23,28 @@ const splashLogo = require('../assets/splash-icon.png');
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // --- Global error handler: cattura errori JS e promise rejection non gestite ---
+// L'handler originale (RN default) viene salvato sul globalThis al primo
+// load, così gli hot-reload non accatastano wrapper su wrapper (causava
+// stack overflow ricorsivo che nascondeva l'errore vero).
+// Usa console.warn per non re-triggerare la LogBox red-box.
 if (__DEV__) {
-  const originalHandler = ErrorUtils.getGlobalHandler();
+  const g = globalThis as unknown as { __appOriginalErrorHandler?: (e: unknown, f?: boolean) => void };
+  if (!g.__appOriginalErrorHandler) {
+    g.__appOriginalErrorHandler = ErrorUtils.getGlobalHandler();
+  }
+  const originalHandler = g.__appOriginalErrorHandler;
+  let isHandling = false;
   ErrorUtils.setGlobalHandler((error, isFatal) => {
-    console.error(
-      `\n[GlobalError] ${isFatal ? 'FATAL' : 'NON-FATAL'}:\n${error?.message}\n${error?.stack?.split('\n').slice(0, 8).join('\n')}`
-    );
+    if (!isHandling) {
+      isHandling = true;
+      try {
+        console.warn(
+          `\n[GlobalError] ${isFatal ? 'FATAL' : 'NON-FATAL'}:\n${error?.message}\n${error?.stack?.split('\n').slice(0, 8).join('\n')}`
+        );
+      } finally {
+        isHandling = false;
+      }
+    }
     originalHandler?.(error, isFatal);
   });
 }
@@ -97,21 +112,10 @@ function AppContent() {
 
   useEffect(() => {
     if (isReady) {
-      // Inizializzazione con splash visibile: controlla OTA, se disponibile scarica e ricarica subito.
-      (async () => {
-        if (!__DEV__) {
-          try {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-              await Updates.fetchUpdateAsync();
-              await Updates.reloadAsync();
-              return;
-            }
-          } catch {}
-        }
-
-        SplashScreen.hideAsync();
-      })();
+      // Gli OTA vengono check/scaricati/applicati dal side nativo di
+      // expo-updates al cold-start (config in app.config.ts: updates.url).
+      // Niente reload mid-init per evitare race coi provider in mount.
+      SplashScreen.hideAsync();
 
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
