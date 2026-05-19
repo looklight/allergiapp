@@ -7,6 +7,7 @@ import { theme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
+import SocialAuthButtons from '../../components/SocialAuthButtons';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -73,6 +74,8 @@ export default function SignupScreen() {
         />
 
         <Text style={styles.subtitle}>{i18n.t('signup.subtitle')}</Text>
+
+        <SocialAuthButtons />
 
         <Surface style={styles.form} elevation={1}>
           <TextInput

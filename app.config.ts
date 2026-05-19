@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
-    buildNumber: "7",
+    buildNumber: "8",
     ...(isEasBuild && { googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist" }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
-    versionCode: 17,
+    versionCode: 18,
     permissions: [
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
@@ -81,6 +81,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           "AllergiApp uses this permission to collect anonymous analytics data (such as which allergens are searched most frequently and which languages are most commonly translated) to improve app features and user experience. This data is not linked to your personal identity.",
       },
     ],
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme:
+          "com.googleusercontent.apps.232304005477-kvrlncr7oihtc2137b1u9i1hcvv2dcet",
+      },
+    ],
+    "expo-apple-authentication",
   ],
   updates: {
     url: "https://u.expo.dev/6b6299aa-f37d-4e8d-9c33-c438a02060f8",
