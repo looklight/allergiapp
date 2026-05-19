@@ -8,8 +8,10 @@ import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
+import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
 import AppHeader from '../components/AppHeader';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
+import { useLikesNotification } from '../../hooks/useLikesNotification';
 import i18n from '../../utils/i18n';
 
 export default function ProfileScreen() {
@@ -18,20 +20,18 @@ export default function ProfileScreen() {
   const { user, userProfile, isAuthenticated } = useAuth();
 
   const [reviewCount, setReviewCount] = useState(0);
-  const [likesReceived, setLikesReceived] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
+  const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
 
   useEffect(() => {
     if (!user?.uid) return;
 
     (async () => {
-      const [totalReviews, totalLikes, userFavorites] = await Promise.all([
+      const [totalReviews, userFavorites] = await Promise.all([
         RestaurantService.getReviewCountByUser(user.uid),
-        RestaurantService.getLikesReceivedByUser(user.uid),
         RestaurantService.getFavorites(user.uid),
       ]);
       setReviewCount(totalReviews);
-      setLikesReceived(totalLikes);
       setFavoriteCount(userFavorites.length);
     })().catch((err) => console.warn('[Profile] Errore caricamento dati:', err));
   }, [user?.uid]);
@@ -74,7 +74,14 @@ export default function ProfileScreen() {
             ? getAnonymousLabel(user?.uid ?? '')
             : userProfile.username,
         }}
-        stats={{ likes: likesReceived, reviews: reviewCount, favorites: favoriteCount }}
+        stats={{ likes: currentLikes, reviews: reviewCount, favorites: favoriteCount }}
+        likesSlot={
+          <AnimatedLikesCounter
+            currentLikes={currentLikes}
+            previousLikes={lastSeenLikes}
+            onAnimationEnd={markAsSeen}
+          />
+        }
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}

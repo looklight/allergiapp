@@ -20,6 +20,7 @@ export interface UserProfile {
   onboarding_complete: boolean;
   seen_unlocked_avatars: string[];
   unlocked_avatars: string[];
+  last_seen_likes_count: number;
 }
 
 function mapUser(user: SupabaseUser | null): AppUser | null {

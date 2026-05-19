@@ -20,6 +20,9 @@ interface ProfileStats {
 interface ProfileCardProps {
   profile: UserProfile;
   stats?: ProfileStats;
+  /** Override del numero "like" — se passato, sostituisce il <Text> statico
+   *  (usato per renderizzare AnimatedLikesCounter sul profilo proprio). */
+  likesSlot?: React.ReactNode;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -28,7 +31,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
   const displayName = getDisplayName(profile);
 
@@ -135,7 +138,7 @@ export default function ProfileCard({ profile, stats, onBack, onEdit, onEditDiet
                 {stats?.reviews != null && stats?.likes != null && <View style={styles.statSep} />}
                 {stats?.likes != null && (
                   <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{stats.likes}</Text>
+                    {likesSlot ?? <Text style={styles.statNumber}>{stats.likes}</Text>}
                     <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
                   </View>
                 )}

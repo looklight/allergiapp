@@ -28,6 +28,7 @@ import RecentSearches from '../../components/RecentSearches';
 import { storage, type RecentPlace } from '../../utils/storage';
 import { useTabBarVisibility } from '../../components/TabBarVisibility';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useLikesNotification } from '../../hooks/useLikesNotification';
 
 // ─── Selection reducer ─────────────────────────────────────────────────────
 type SelectionState = { selectedId: string | null; detailId: string | null };
@@ -75,6 +76,7 @@ export default function RestaurantsScreen() {
   const overlayBaseBottom = Platform.OS === 'android' ? tabBarHeight : 49 + insets.bottom;
   const { isAuthenticated, user, userProfile, dietaryNeeds, refreshProfile } = useAuth();
   const lang = i18n.locale as AppLanguage;
+  const { unseen: unseenLikes } = useLikesNotification();
 
   // --- Filter state ---
   const [searchQuery, setSearchQuery] = useState('');
@@ -597,6 +599,7 @@ export default function RestaurantsScreen() {
                 initial={isAuthenticated && userProfile ? getDisplayName(userProfile) ?? undefined : undefined}
                 size={44}
               />
+              {unseenLikes > 0 && <View style={styles.unseenLikesBadge} pointerEvents="none" />}
             </TouchableOpacity>
             <TextInput
               style={styles.searchInput}
@@ -842,9 +845,19 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     marginRight: 8,
-    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  unseenLikesBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: theme.colors.error,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
   },
   searchInput: {
     flex: 1,
