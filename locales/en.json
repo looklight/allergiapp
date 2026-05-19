@@ -51,6 +51,12 @@
     "bannerHowToUse": "Communicate clearly",
     "bannerHowToUseDesc": "Show your card to the waiter when ordering at the restaurant"
   },
+  "cardBadges": {
+    "myAllergies": "My allergies",
+    "addCard": "Add card",
+    "newCardTitle": "New card",
+    "nameLabel": "Card name"
+  },
   "addAllergy": {
     "title": "What do I need to communicate?",
     "subtitle": "Select foods to avoid",

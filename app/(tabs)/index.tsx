@@ -15,6 +15,7 @@ import i18n from '../../utils/i18n';
 import { useAppContext } from '../../contexts/AppContext';
 import { Analytics } from '../../services/analytics';
 import BannerCarousel from '../components/BannerCarousel';
+import CardBadgesSection from '../components/CardBadgesSection';
 import LanguagePickerModal from '../components/LanguagePickerModal';
 import AppHeader from '../components/AppHeader';
 import { useLanguageDownload } from '../../hooks/useLanguageDownload';
@@ -79,6 +80,9 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + 49 + insets.bottom }]}>
         {/* Banner Carousel */}
         <BannerCarousel />
+
+        {/* Card Badges */}
+        <CardBadgesSection />
 
         {/* Sezione Allergie */}
         <Surface style={styles.card} elevation={0}>

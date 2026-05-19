@@ -51,6 +51,12 @@
     "bannerHowToUse": "Comunica in modo chiaro",
     "bannerHowToUseDesc": "Presenta la tua card al cameriere quando ordini al ristorante"
   },
+  "cardBadges": {
+    "myAllergies": "Le mie allergie",
+    "addCard": "Aggiungi card",
+    "newCardTitle": "Nuova card",
+    "nameLabel": "Nome card"
+  },
   "addAllergy": {
     "title": "Cosa devo comunicare?",
     "subtitle": "Seleziona gli alimenti da evitare",

@@ -30,6 +30,12 @@
     "bannerHowToUse": "Communiquez clairement",
     "bannerHowToUseDesc": "Présentez votre carte au serveur lorsque vous commandez au restaurant"
   },
+  "cardBadges": {
+    "myAllergies": "Mes allergies",
+    "addCard": "Ajouter une carte",
+    "newCardTitle": "Nouvelle carte",
+    "nameLabel": "Nom de la carte"
+  },
   "addAllergy": {
     "title": "Que dois-je communiquer ?",
     "subtitle": "Sélectionnez les aliments à éviter",
