@@ -177,7 +177,7 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
 const styles = StyleSheet.create({
   bannerContainer: {
     height: 140,
-    marginBottom: 16,
+    marginBottom: 14,
     marginHorizontal: -16,
     overflow: 'hidden',
   },
