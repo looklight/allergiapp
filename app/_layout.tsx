@@ -89,7 +89,7 @@ const splashStyles = StyleSheet.create({
 const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary', '/auth/onboarding-tutorial', '/legal'];
 
 function AppContent() {
-  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, selectedAllergens, selectedOtherFoods, activeDietModes, vegetarianLevel, selectedRestrictions, settings } = useAppContext();
+  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, profileAllergens, profileOtherFoods, profileActiveDietModes, profileVegetarianLevel, profileRestrictions, settings } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -119,13 +119,13 @@ function AppContent() {
         Crashlytics.setCollectionEnabled(trackingConsent.status === 'authorized');
         Analytics.logAppOpened();
         Analytics.updateUserProperties({
-          allergenCount: selectedAllergens.length + selectedOtherFoods.length,
-          allergenIds: selectedAllergens,
-          otherFoodIds: selectedOtherFoods,
-          dietModes: activeDietModes,
+          allergenCount: profileAllergens.length + profileOtherFoods.length,
+          allergenIds: profileAllergens,
+          otherFoodIds: profileOtherFoods,
+          dietModes: profileActiveDietModes,
           cardLanguage: settings.cardLanguage,
-          vegetarianLevel: activeDietModes.includes('vegetarian') ? vegetarianLevel : undefined,
-          restrictionCount: selectedRestrictions.length,
+          vegetarianLevel: profileActiveDietModes.includes('vegetarian') ? profileVegetarianLevel : undefined,
+          restrictionCount: profileRestrictions.length,
         });
       }
     }

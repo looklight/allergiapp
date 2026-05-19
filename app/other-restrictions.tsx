@@ -86,6 +86,7 @@ export default function OtherRestrictionsScreen() {
     selectedAllergens,
     selectedOtherFoods,
     settings,
+    activeCardId,
   } = useAppContext();
   const [selectedRestrictions, setSelectedRestrictions] = useState<RestrictionItemId[]>(savedRestrictions);
   const [localDietModes, setLocalDietModes] = useState<DietModeId[]>(savedDietModes);
@@ -179,16 +180,19 @@ export default function OtherRestrictionsScreen() {
     await saveDietModes(localDietModes);
     await saveVegetarianLevel(localVegetarianLevel);
 
-    // Update user properties
-    Analytics.updateUserProperties({
-      allergenCount: selectedAllergens.length + selectedOtherFoods.length,
-      allergenIds: selectedAllergens,
-      otherFoodIds: selectedOtherFoods,
-      dietModes: localDietModes,
-      cardLanguage: settings.cardLanguage,
-      vegetarianLevel: localDietModes.includes('vegetarian') ? localVegetarianLevel : undefined,
-      restrictionCount: selectedRestrictions.length,
-    });
+    // Update user properties — only for the personal profile. Card edits are
+    // local "presentation" data, not user attributes.
+    if (!activeCardId) {
+      Analytics.updateUserProperties({
+        allergenCount: selectedAllergens.length + selectedOtherFoods.length,
+        allergenIds: selectedAllergens,
+        otherFoodIds: selectedOtherFoods,
+        dietModes: localDietModes,
+        cardLanguage: settings.cardLanguage,
+        vegetarianLevel: localDietModes.includes('vegetarian') ? localVegetarianLevel : undefined,
+        restrictionCount: selectedRestrictions.length,
+      });
+    }
 
     router.back();
   };

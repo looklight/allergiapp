@@ -12,7 +12,8 @@ export type CardCreateInput = Omit<UserCard, 'id' | 'createdAt'>;
 export type CardUpdateInput = Partial<Omit<UserCard, 'id' | 'createdAt'>>;
 
 interface AppContextValue {
-  // State
+  // State — these are "smart": they reflect the active card if one is selected,
+  // otherwise they reflect the personal profile. Setters route to the same target.
   selectedAllergens: AllergenId[];
   selectedOtherFoods: OtherFoodId[];
   selectedRestrictions: RestrictionItemId[];
@@ -23,6 +24,13 @@ interface AppContextValue {
   legalConsent: LegalConsent;
   trackingConsent: TrackingConsent;
   isReady: boolean;
+
+  // Raw profile state (NEVER routed to a card) — used by map "For my needs" and analytics
+  profileAllergens: AllergenId[];
+  profileOtherFoods: OtherFoodId[];
+  profileRestrictions: RestrictionItemId[];
+  profileActiveDietModes: DietModeId[];
+  profileVegetarianLevel: VegetarianLevel;
 
   // User cards (extra cards, separate from profile)
   userCards: UserCard[];
@@ -63,11 +71,11 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [selectedAllergens, setSelectedAllergensState] = useState<AllergenId[]>([]);
-  const [selectedOtherFoods, setSelectedOtherFoodsState] = useState<OtherFoodId[]>([]);
-  const [selectedRestrictions, setSelectedRestrictionsState] = useState<RestrictionItemId[]>([]);
-  const [activeDietModes, setActiveDietModesState] = useState<DietModeId[]>([]);
-  const [vegetarianLevel, setVegetarianLevelState] = useState<VegetarianLevel>(DEFAULT_VEGETARIAN_LEVEL);
+  const [profileAllergens, setProfileAllergensState] = useState<AllergenId[]>([]);
+  const [profileOtherFoods, setProfileOtherFoodsState] = useState<OtherFoodId[]>([]);
+  const [profileRestrictions, setProfileRestrictionsState] = useState<RestrictionItemId[]>([]);
+  const [profileActiveDietModes, setProfileActiveDietModesState] = useState<DietModeId[]>([]);
+  const [profileVegetarianLevel, setProfileVegetarianLevelState] = useState<VegetarianLevel>(DEFAULT_VEGETARIAN_LEVEL);
   const [settings, setSettingsState] = useState<UserSettings>({ cardLanguage: 'en', appLanguage: 'en' });
   const [downloadedLanguages, setDownloadedLanguagesState] = useState<Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>>({});
   const [legalConsent, setLegalConsentState] = useState<LegalConsent>({ acceptedAt: null, version: '' });
@@ -79,11 +87,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const init = async () => {
       const data = await storage.loadAll();
-      setSelectedAllergensState(data.selectedAllergens);
-      setSelectedOtherFoodsState(data.selectedOtherFoods);
-      setSelectedRestrictionsState(data.selectedRestrictions);
-      setActiveDietModesState(data.activeDietModes);
-      setVegetarianLevelState(data.vegetarianLevel);
+      setProfileAllergensState(data.selectedAllergens);
+      setProfileOtherFoodsState(data.selectedOtherFoods);
+      setProfileRestrictionsState(data.selectedRestrictions);
+      setProfileActiveDietModesState(data.activeDietModes);
+      setProfileVegetarianLevelState(data.vegetarianLevel);
       setSettingsState(data.settings);
       setDownloadedLanguagesState(data.downloadedLanguages);
       setLegalConsentState(data.legalConsent);
@@ -96,36 +104,74 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     init();
   }, []);
 
+  // activeCard derived early so smart setters can depend on it
+  const activeCard = useMemo<UserCard | null>(
+    () => userCards.find(c => c.id === activeCardId) ?? null,
+    [userCards, activeCardId],
+  );
+
+  // Smart reads: route to active card if any, else profile
+  const selectedAllergens = activeCard ? activeCard.allergens : profileAllergens;
+  const selectedOtherFoods = activeCard ? activeCard.otherFoods : profileOtherFoods;
+  const selectedRestrictions = activeCard ? activeCard.restrictions : profileRestrictions;
+  const activeDietModes = activeCard ? activeCard.dietModes : profileActiveDietModes;
+  const vegetarianLevel = activeCard ? activeCard.vegetarianLevel : profileVegetarianLevel;
+
   const pregnancyMode = activeDietModes.includes('pregnancy');
 
   // Derived state: check if user has accepted current version of legal terms
   const hasAcceptedLegalTerms = legalConsent.acceptedAt !== null && legalConsent.version === CURRENT_LEGAL_VERSION;
   const needsLegalConsent = !hasAcceptedLegalTerms;
 
+  // Smart write helper: route to active card (in-memory + storage) or profile
+  const writeToActiveTarget = useCallback(async (patch: CardUpdateInput) => {
+    if (activeCardId && activeCard) {
+      const next = userCards.map(c => c.id === activeCardId ? { ...c, ...patch } : c);
+      setUserCardsState(next);
+      await storage.setUserCards(next);
+      return;
+    }
+    if (patch.allergens !== undefined) {
+      setProfileAllergensState(patch.allergens);
+      await storage.setSelectedAllergens(patch.allergens);
+    }
+    if (patch.otherFoods !== undefined) {
+      setProfileOtherFoodsState(patch.otherFoods);
+      await storage.setSelectedOtherFoods(patch.otherFoods);
+    }
+    if (patch.restrictions !== undefined) {
+      setProfileRestrictionsState(patch.restrictions);
+      await storage.setSelectedRestrictions(patch.restrictions);
+    }
+    if (patch.dietModes !== undefined) {
+      setProfileActiveDietModesState(patch.dietModes);
+      await storage.setActiveDietModes(patch.dietModes);
+    }
+    if (patch.vegetarianLevel !== undefined) {
+      setProfileVegetarianLevelState(patch.vegetarianLevel);
+      await storage.setVegetarianLevel(patch.vegetarianLevel);
+    }
+  }, [activeCardId, activeCard, userCards]);
+
   const setSelectedAllergens = useCallback(async (allergens: AllergenId[]) => {
-    setSelectedAllergensState(allergens);
-    await storage.setSelectedAllergens(allergens);
-  }, []);
+    await writeToActiveTarget({ allergens });
+  }, [writeToActiveTarget]);
 
   const setSelectedOtherFoods = useCallback(async (foods: OtherFoodId[]) => {
-    setSelectedOtherFoodsState(foods);
-    await storage.setSelectedOtherFoods(foods);
-  }, []);
+    await writeToActiveTarget({ otherFoods: foods });
+  }, [writeToActiveTarget]);
 
   const setSelectedRestrictions = useCallback(async (restrictions: RestrictionItemId[]) => {
-    setSelectedRestrictionsState(restrictions);
-    await storage.setSelectedRestrictions(restrictions);
-  }, []);
+    await writeToActiveTarget({ restrictions });
+  }, [writeToActiveTarget]);
 
   const setActiveDietModes = useCallback(async (modes: DietModeId[]) => {
-    setActiveDietModesState(modes);
-    await storage.setActiveDietModes(modes);
-  }, []);
+    await writeToActiveTarget({ dietModes: modes });
+  }, [writeToActiveTarget]);
 
   const setVegetarianLevel = useCallback(async (level: VegetarianLevel) => {
-    setVegetarianLevelState(level);
-    await storage.setVegetarianLevel(level);
-  }, []);
+    await writeToActiveTarget({ vegetarianLevel: level });
+  }, [writeToActiveTarget]);
 
   const isDietModeActive = useCallback((id: DietModeId) => {
     return activeDietModes.includes(id);
@@ -182,11 +228,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const clearAll = useCallback(async () => {
     const deviceLanguage = getDeviceLanguage();
     const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage };
-    setSelectedAllergensState([]);
-    setSelectedOtherFoodsState([]);
-    setSelectedRestrictionsState([]);
-    setActiveDietModesState([]);
-    setVegetarianLevelState(DEFAULT_VEGETARIAN_LEVEL);
+    setProfileAllergensState([]);
+    setProfileOtherFoodsState([]);
+    setProfileRestrictionsState([]);
+    setProfileActiveDietModesState([]);
+    setProfileVegetarianLevelState(DEFAULT_VEGETARIAN_LEVEL);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
     setUserCardsState([]);
@@ -235,11 +281,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [downloadedLanguages],
   );
 
-  const activeCard = useMemo<UserCard | null>(
-    () => userCards.find(c => c.id === activeCardId) ?? null,
-    [userCards, activeCardId],
-  );
-
   const canCreateMoreCards = userCards.length < MAX_USER_CARDS;
 
   const value = useMemo<AppContextValue>(() => ({
@@ -254,6 +295,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     legalConsent,
     trackingConsent,
     isReady,
+    profileAllergens,
+    profileOtherFoods,
+    profileRestrictions,
+    profileActiveDietModes,
+    profileVegetarianLevel,
     userCards,
     activeCardId,
     activeCard,
@@ -282,7 +328,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     selectedAllergens, selectedOtherFoods, selectedRestrictions,
     activeDietModes, vegetarianLevel, pregnancyMode,
     settings, downloadedLanguages, legalConsent, trackingConsent,
-    isReady, userCards, activeCardId, activeCard, canCreateMoreCards,
+    isReady,
+    profileAllergens, profileOtherFoods, profileRestrictions,
+    profileActiveDietModes, profileVegetarianLevel,
+    userCards, activeCardId, activeCard, canCreateMoreCards,
     hasAcceptedLegalTerms, needsLegalConsent, downloadedLanguageCodes,
     setSelectedAllergens, setSelectedOtherFoods, setSelectedRestrictions,
     setActiveDietModes, setVegetarianLevel, isDietModeActive,

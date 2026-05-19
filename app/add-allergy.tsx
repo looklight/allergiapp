@@ -23,7 +23,7 @@ import AppHeader from './components/AppHeader';
 export default function AddAllergyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedOtherFoods: savedOtherFoods, setSelectedOtherFoods: saveOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, settings } = useAppContext();
+  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedOtherFoods: savedOtherFoods, setSelectedOtherFoods: saveOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, settings, activeCardId } = useAppContext();
   const activeModeConfigs = DIET_MODES.filter(m => activeDietModes.includes(m.id)).sort((a, b) => a.toggleOrder - b.toggleOrder);
   const hasActiveModes = activeModeConfigs.length > 0;
   // Count only manually-selected restrictions (not auto-selected by active diet modes)
@@ -127,14 +127,17 @@ export default function AddAllergyScreen() {
     await saveAllergens(selectedAllergens);
     await saveOtherFoods(selectedOtherFoods);
 
-    // Update user properties for segmentation
-    Analytics.updateUserProperties({
-      allergenCount: selectedAllergens.length + selectedOtherFoods.length,
-      allergenIds: selectedAllergens,
-      otherFoodIds: selectedOtherFoods,
-      dietModes: activeDietModes,
-      cardLanguage: settings.cardLanguage,
-    });
+    // Update user properties for segmentation — only for the personal profile.
+    // Edits on a user card are local "presentation" data, not user attributes.
+    if (!activeCardId) {
+      Analytics.updateUserProperties({
+        allergenCount: selectedAllergens.length + selectedOtherFoods.length,
+        allergenIds: selectedAllergens,
+        otherFoodIds: selectedOtherFoods,
+        dietModes: activeDietModes,
+        cardLanguage: settings.cardLanguage,
+      });
+    }
 
     router.back();
   };
