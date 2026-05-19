@@ -127,7 +127,6 @@ export default function CardBadgesSection() {
       >
         <Pressable style={styles.overlay} onPress={closeCreateDialog}>
           <Pressable style={styles.modalContainer} onPress={() => {}}>
-            <View style={styles.accentBar} />
             <Pressable style={styles.closeButton} onPress={closeCreateDialog} hitSlop={8}>
               <Text style={styles.closeIcon}>✕</Text>
             </Pressable>
@@ -183,7 +182,6 @@ export default function CardBadgesSection() {
       >
         <Pressable style={styles.overlay} onPress={closeDeleteDialog}>
           <Pressable style={styles.modalContainer} onPress={() => {}}>
-            <View style={[styles.accentBar, { backgroundColor: theme.colors.error }]} />
             <Pressable style={styles.closeButton} onPress={closeDeleteDialog} hitSlop={8}>
               <Text style={styles.closeIcon}>✕</Text>
             </Pressable>
@@ -277,10 +275,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
-  },
-  accentBar: {
-    height: 4,
-    backgroundColor: theme.colors.primary,
   },
   closeButton: {
     position: 'absolute',
