@@ -119,7 +119,7 @@
     "appLanguage": "App Language",
     "cardLanguage": "Card Language",
     "clearData": "Reset preferences",
-    "clearDataConfirm": "Allergies, restrictions and downloaded languages will be removed from this device. Do you want to proceed?",
+    "clearDataConfirm": "All your cards and downloaded languages will be removed from this device. Do you want to proceed?",
     "clearDataSuccess": "Preferences reset successfully!",
     "cancel": "Cancel",
     "confirm": "Confirm",

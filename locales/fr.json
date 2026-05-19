@@ -95,7 +95,7 @@
     "appLanguage": "Langue de l'App",
     "cardLanguage": "Langue de la Carte",
     "clearData": "Réinitialiser les préférences",
-    "clearDataConfirm": "Les allergies, restrictions et langues téléchargées seront supprimées de cet appareil. Voulez-vous continuer ?",
+    "clearDataConfirm": "Toutes vos cartes et les langues téléchargées seront supprimées de cet appareil. Voulez-vous continuer ?",
     "clearDataSuccess": "Préférences réinitialisées avec succès !",
     "cancel": "Annuler",
     "confirm": "Confirmer",

@@ -95,7 +95,7 @@
     "appLanguage": "App-Sprache",
     "cardLanguage": "Kartensprache",
     "clearData": "Einstellungen zurücksetzen",
-    "clearDataConfirm": "Allergien, Einschränkungen und heruntergeladene Sprachen werden von diesem Gerät entfernt. Möchtest du fortfahren?",
+    "clearDataConfirm": "Alle deine Karten und heruntergeladenen Sprachen werden von diesem Gerät entfernt. Möchtest du fortfahren?",
     "clearDataSuccess": "Einstellungen erfolgreich zurückgesetzt!",
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
