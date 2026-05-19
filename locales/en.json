@@ -55,7 +55,10 @@
     "myAllergies": "My allergies",
     "addCard": "Add card",
     "newCardTitle": "New card",
-    "nameLabel": "Card name"
+    "nameLabel": "Card name",
+    "longPressHint": "Long press to delete",
+    "deleteTitle": "Delete card",
+    "deleteMessage": "Are you sure you want to delete the card \"{{name}}\"?"
   },
   "addAllergy": {
     "title": "What do I need to communicate?",

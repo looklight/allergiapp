@@ -55,7 +55,10 @@
     "myAllergies": "Le mie allergie",
     "addCard": "Aggiungi card",
     "newCardTitle": "Nuova card",
-    "nameLabel": "Nome card"
+    "nameLabel": "Nome card",
+    "longPressHint": "Tieni premuto per eliminare",
+    "deleteTitle": "Elimina card",
+    "deleteMessage": "Vuoi davvero eliminare la card \"{{name}}\"?"
   },
   "addAllergy": {
     "title": "Cosa devo comunicare?",

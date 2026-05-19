@@ -34,7 +34,10 @@
     "myAllergies": "Mis alergias",
     "addCard": "Añadir tarjeta",
     "newCardTitle": "Nueva tarjeta",
-    "nameLabel": "Nombre de la tarjeta"
+    "nameLabel": "Nombre de la tarjeta",
+    "longPressHint": "Mantén pulsado para eliminar",
+    "deleteTitle": "Eliminar tarjeta",
+    "deleteMessage": "¿Seguro que quieres eliminar la tarjeta \"{{name}}\"?"
   },
   "addAllergy": {
     "title": "¿Qué debo comunicar?",

@@ -9,10 +9,12 @@ import i18n from '../../utils/i18n';
 const MAX_NAME_LENGTH = 24;
 
 export default function CardBadgesSection() {
-  const { userCards, activeCardId, setActiveCard, createCard, canCreateMoreCards } = useAppContext();
+  const { userCards, activeCardId, setActiveCard, createCard, deleteCard, canCreateMoreCards } = useAppContext();
   const [dialogVisible, setDialogVisible] = useState(false);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const openCreateDialog = () => {
     setName('');
@@ -43,6 +45,23 @@ export default function CardBadgesSection() {
     }
   };
 
+  const closeDeleteDialog = () => {
+    if (deleting) return;
+    setDeleteTargetId(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleting(true);
+    await deleteCard(deleteTargetId);
+    setDeleting(false);
+    setDeleteTargetId(null);
+  };
+
+  const deleteTargetCard = deleteTargetId
+    ? userCards.find((c) => c.id === deleteTargetId) ?? null
+    : null;
+
   return (
     <>
       <ScrollView
@@ -68,9 +87,12 @@ export default function CardBadgesSection() {
             <Pressable
               key={card.id}
               onPress={() => setActiveCard(card.id)}
+              onLongPress={() => setDeleteTargetId(card.id)}
+              delayLongPress={400}
               style={[styles.pill, isActive && styles.pillActive]}
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
+              accessibilityHint={i18n.t('cardBadges.longPressHint')}
             >
               <Text
                 numberOfLines={1}
@@ -113,6 +135,28 @@ export default function CardBadgesSection() {
             </Button>
             <Button onPress={handleCreate} disabled={!name.trim() || saving} loading={saving}>
               {i18n.t('common.add')}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        <Dialog visible={deleteTargetCard !== null} onDismiss={closeDeleteDialog}>
+          <Dialog.Title>{i18n.t('cardBadges.deleteTitle')}</Dialog.Title>
+          <Dialog.Content>
+            <Text>
+              {i18n.t('cardBadges.deleteMessage', { name: deleteTargetCard?.name ?? '' })}
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={closeDeleteDialog} disabled={deleting}>
+              {i18n.t('common.cancel')}
+            </Button>
+            <Button
+              onPress={handleConfirmDelete}
+              disabled={deleting}
+              loading={deleting}
+              textColor={theme.colors.error}
+            >
+              {i18n.t('common.delete')}
             </Button>
           </Dialog.Actions>
         </Dialog>
