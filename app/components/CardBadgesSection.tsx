@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, Modal, View, TextInput, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, Pressable, Modal, View, TextInput, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { theme } from '../../constants/theme';
 import { useAppContext } from '../../contexts/AppContext';
@@ -125,52 +125,57 @@ export default function CardBadgesSection() {
         statusBarTranslucent
         onRequestClose={closeCreateDialog}
       >
-        <Pressable style={styles.overlay} onPress={closeCreateDialog}>
-          <Pressable style={styles.modalContainer} onPress={() => {}}>
-            <Pressable style={styles.closeButton} onPress={closeCreateDialog} hitSlop={8}>
-              <Text style={styles.closeIcon}>✕</Text>
-            </Pressable>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{i18n.t('cardBadges.newCardTitle')}</Text>
-              <Text style={styles.modalDescription}>
-                {i18n.t('cardBadges.newCardDescription')}
-              </Text>
-              <TextInput
-                style={styles.nameInput}
-                value={name}
-                onChangeText={setName}
-                placeholder={i18n.t('cardBadges.nameLabel')}
-                placeholderTextColor={theme.colors.textSecondary}
-                maxLength={MAX_NAME_LENGTH}
-                autoFocus
-                selectionColor={theme.colors.primary}
-                returnKeyType="done"
-                onSubmitEditing={handleCreate}
-              />
-              <View style={styles.modalButtons}>
-                <Button
-                  mode="text"
-                  onPress={closeCreateDialog}
-                  disabled={saving}
-                  style={styles.secondaryButton}
-                  labelStyle={styles.secondaryButtonLabel}
-                >
-                  {i18n.t('common.cancel')}
-                </Button>
-                <Button
-                  mode="contained"
-                  onPress={handleCreate}
-                  disabled={!name.trim() || saving}
-                  loading={saving}
-                  style={styles.primaryButton}
-                  labelStyle={styles.primaryButtonLabel}
-                >
-                  {i18n.t('common.add')}
-                </Button>
+        <KeyboardAvoidingView
+          style={styles.modalFlex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <Pressable style={styles.overlay} onPress={closeCreateDialog}>
+            <Pressable style={styles.modalContainer} onPress={() => {}}>
+              <Pressable style={styles.closeButton} onPress={closeCreateDialog} hitSlop={8}>
+                <Text style={styles.closeIcon}>✕</Text>
+              </Pressable>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>{i18n.t('cardBadges.newCardTitle')}</Text>
+                <Text style={styles.modalDescription}>
+                  {i18n.t('cardBadges.newCardDescription')}
+                </Text>
+                <TextInput
+                  style={styles.nameInput}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder={i18n.t('cardBadges.nameLabel')}
+                  placeholderTextColor={theme.colors.textSecondary}
+                  maxLength={MAX_NAME_LENGTH}
+                  autoFocus
+                  selectionColor={theme.colors.primary}
+                  returnKeyType="done"
+                  onSubmitEditing={handleCreate}
+                />
+                <View style={styles.modalButtons}>
+                  <Button
+                    mode="text"
+                    onPress={closeCreateDialog}
+                    disabled={saving}
+                    style={styles.secondaryButton}
+                    labelStyle={styles.secondaryButtonLabel}
+                  >
+                    {i18n.t('common.cancel')}
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={handleCreate}
+                    disabled={!name.trim() || saving}
+                    loading={saving}
+                    style={styles.primaryButton}
+                    labelStyle={styles.primaryButtonLabel}
+                  >
+                    {i18n.t('common.add')}
+                  </Button>
+                </View>
               </View>
-            </View>
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal
@@ -264,6 +269,9 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     color: theme.colors.textSecondary,
     lineHeight: 20,
+  },
+  modalFlex: {
+    flex: 1,
   },
   overlay: {
     flex: 1,
