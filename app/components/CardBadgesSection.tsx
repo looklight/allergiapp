@@ -222,11 +222,12 @@ export default function CardBadgesSection() {
 const styles = StyleSheet.create({
   scroll: {
     marginBottom: 14,
+    marginHorizontal: -16,
   },
   scrollContent: {
     gap: 8,
     alignItems: 'center',
-    paddingRight: 4,
+    paddingHorizontal: 16,
   },
   pill: {
     paddingHorizontal: 14,
