@@ -34,6 +34,7 @@
     "myAllergies": "Mis alergias",
     "addCard": "Añadir tarjeta",
     "newCardTitle": "Nueva tarjeta",
+    "newCardDescription": "Crea una tarjeta adicional con alergias diferentes, útil para familiares o situaciones específicas.",
     "nameLabel": "Nombre de la tarjeta",
     "longPressHint": "Mantén pulsado para eliminar",
     "deleteTitle": "Eliminar tarjeta",
