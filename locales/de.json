@@ -31,7 +31,7 @@
     "bannerHowToUseDesc": "Zeige deine Karte dem Kellner wenn du im Restaurant bestellst"
   },
   "cardBadges": {
-    "myAllergies": "Meine Allergien",
+    "myCard": "Meine Karte",
     "addCard": "Karte hinzufügen",
     "newCardTitle": "Neue Karte",
     "newCardDescription": "Für Familie oder Kontexte mit anderen Allergien.",

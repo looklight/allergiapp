@@ -52,7 +52,7 @@
     "bannerHowToUseDesc": "Show your card to the waiter when ordering at the restaurant"
   },
   "cardBadges": {
-    "myAllergies": "My allergies",
+    "myCard": "My card",
     "addCard": "Add card",
     "newCardTitle": "New card",
     "newCardDescription": "For family or contexts with different allergies.",

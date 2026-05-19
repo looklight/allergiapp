@@ -79,7 +79,7 @@ export default function CardBadgesSection() {
           accessibilityState={{ selected: activeCardId === null }}
         >
           <Text style={[styles.pillText, activeCardId === null && styles.pillTextActive]}>
-            {i18n.t('cardBadges.myAllergies')}
+            {i18n.t('cardBadges.myCard')}
           </Text>
         </Pressable>
 
