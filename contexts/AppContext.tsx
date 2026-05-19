@@ -123,12 +123,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const hasAcceptedLegalTerms = legalConsent.acceptedAt !== null && legalConsent.version === CURRENT_LEGAL_VERSION;
   const needsLegalConsent = !hasAcceptedLegalTerms;
 
-  // Smart write helper: route to active card (in-memory + storage) or profile
+  // Smart write helper: route to active card (in-memory + storage) or profile.
+  // Uses functional state updates so consecutive saves within one handler
+  // (e.g. saveAllergens + saveOtherFoods) never race on a stale userCards closure.
   const writeToActiveTarget = useCallback(async (patch: CardUpdateInput) => {
-    if (activeCardId && activeCard) {
-      const next = userCards.map(c => c.id === activeCardId ? { ...c, ...patch } : c);
-      setUserCardsState(next);
-      await storage.setUserCards(next);
+    if (activeCardId) {
+      let nextCards: UserCard[] = [];
+      let didPatch = false;
+      setUserCardsState(prev => {
+        if (!prev.some(c => c.id === activeCardId)) {
+          nextCards = prev;
+          return prev;
+        }
+        didPatch = true;
+        nextCards = prev.map(c => c.id === activeCardId ? { ...c, ...patch } : c);
+        return nextCards;
+      });
+      if (didPatch) {
+        await storage.setUserCards(nextCards);
+      }
       return;
     }
     if (patch.allergens !== undefined) {
@@ -151,7 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setProfileVegetarianLevelState(patch.vegetarianLevel);
       await storage.setVegetarianLevel(patch.vegetarianLevel);
     }
-  }, [activeCardId, activeCard, userCards]);
+  }, [activeCardId]);
 
   const setSelectedAllergens = useCallback(async (allergens: AllergenId[]) => {
     await writeToActiveTarget({ allergens });
@@ -243,33 +256,48 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const createCard = useCallback(async (input: CardCreateInput): Promise<UserCard | null> => {
-    if (userCards.length >= MAX_USER_CARDS) return null;
-    const newCard: UserCard = {
-      ...input,
-      id: Crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    const next = [...userCards, newCard];
-    setUserCardsState(next);
-    await storage.setUserCards(next);
-    return newCard;
-  }, [userCards]);
+    let created: UserCard | null = null;
+    let nextCards: UserCard[] = [];
+    setUserCardsState(prev => {
+      if (prev.length >= MAX_USER_CARDS) {
+        nextCards = prev;
+        return prev;
+      }
+      created = {
+        ...input,
+        id: Crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+      nextCards = [...prev, created];
+      return nextCards;
+    });
+    if (created) {
+      await storage.setUserCards(nextCards);
+    }
+    return created;
+  }, []);
 
   const updateCard = useCallback(async (id: string, input: CardUpdateInput) => {
-    const next = userCards.map(c => c.id === id ? { ...c, ...input } : c);
-    setUserCardsState(next);
-    await storage.setUserCards(next);
-  }, [userCards]);
+    let nextCards: UserCard[] = [];
+    setUserCardsState(prev => {
+      nextCards = prev.map(c => c.id === id ? { ...c, ...input } : c);
+      return nextCards;
+    });
+    await storage.setUserCards(nextCards);
+  }, []);
 
   const deleteCard = useCallback(async (id: string) => {
-    const next = userCards.filter(c => c.id !== id);
-    setUserCardsState(next);
-    await storage.setUserCards(next);
+    let nextCards: UserCard[] = [];
+    setUserCardsState(prev => {
+      nextCards = prev.filter(c => c.id !== id);
+      return nextCards;
+    });
+    await storage.setUserCards(nextCards);
     if (activeCardId === id) {
       setActiveCardIdState(null);
       await storage.setActiveCardId(null);
     }
-  }, [userCards, activeCardId]);
+  }, [activeCardId]);
 
   const setActiveCard = useCallback(async (id: string | null) => {
     setActiveCardIdState(id);
