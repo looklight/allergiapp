@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import * as Crypto from 'expo-crypto';
 import { storage, AppData, CURRENT_LEGAL_VERSION } from '../utils/storage';
 import { setAppLanguage, getDeviceLanguage } from '../utils/i18n';
@@ -84,6 +84,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeCardId, setActiveCardIdState] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  // Refs as synchronous mirrors of the state we read inside async writers.
+  // We update both ref and state in lock-step so consecutive writes within
+  // the same tick (or before React flushes a render) see the latest values
+  // without relying on the timing of functional state updaters.
+  const userCardsRef = useRef<UserCard[]>([]);
+  const activeCardIdRef = useRef<string | null>(null);
+
+  const setUserCards = useCallback((next: UserCard[]) => {
+    userCardsRef.current = next;
+    setUserCardsState(next);
+  }, []);
+
+  const setActiveCardIdSync = useCallback((next: string | null) => {
+    activeCardIdRef.current = next;
+    setActiveCardIdState(next);
+  }, []);
+
   useEffect(() => {
     const init = async () => {
       const data = await storage.loadAll();
@@ -96,13 +113,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setDownloadedLanguagesState(data.downloadedLanguages);
       setLegalConsentState(data.legalConsent);
       setTrackingConsentState(data.trackingConsent);
-      setUserCardsState(data.userCards);
-      setActiveCardIdState(data.activeCardId);
+      setUserCards(data.userCards);
+      setActiveCardIdSync(data.activeCardId);
       setAppLanguage(data.settings.appLanguage);
       setIsReady(true);
     };
     init();
-  }, []);
+  }, [setUserCards, setActiveCardIdSync]);
 
   // activeCard derived early so smart setters can depend on it
   const activeCard = useMemo<UserCard | null>(
@@ -124,24 +141,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const needsLegalConsent = !hasAcceptedLegalTerms;
 
   // Smart write helper: route to active card (in-memory + storage) or profile.
-  // Uses functional state updates so consecutive saves within one handler
-  // (e.g. saveAllergens + saveOtherFoods) never race on a stale userCards closure.
+  // Reads from refs (synchronous mirrors of state) so consecutive saves within
+  // one handler (e.g. saveAllergens + saveOtherFoods) always see the latest
+  // values, regardless of React's render scheduling.
   const writeToActiveTarget = useCallback(async (patch: CardUpdateInput) => {
-    if (activeCardId) {
-      let nextCards: UserCard[] = [];
-      let didPatch = false;
-      setUserCardsState(prev => {
-        if (!prev.some(c => c.id === activeCardId)) {
-          nextCards = prev;
-          return prev;
-        }
-        didPatch = true;
-        nextCards = prev.map(c => c.id === activeCardId ? { ...c, ...patch } : c);
-        return nextCards;
-      });
-      if (didPatch) {
-        await storage.setUserCards(nextCards);
-      }
+    const targetId = activeCardIdRef.current;
+    if (targetId) {
+      const current = userCardsRef.current;
+      if (!current.some(c => c.id === targetId)) return;
+      const next = current.map(c => c.id === targetId ? { ...c, ...patch } : c);
+      setUserCards(next);
+      await storage.setUserCards(next);
       return;
     }
     if (patch.allergens !== undefined) {
@@ -164,7 +174,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setProfileVegetarianLevelState(patch.vegetarianLevel);
       await storage.setVegetarianLevel(patch.vegetarianLevel);
     }
-  }, [activeCardId]);
+  }, [setUserCards]);
 
   const setSelectedAllergens = useCallback(async (allergens: AllergenId[]) => {
     await writeToActiveTarget({ allergens });
@@ -248,61 +258,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProfileVegetarianLevelState(DEFAULT_VEGETARIAN_LEVEL);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
-    setUserCardsState([]);
-    setActiveCardIdState(null);
+    setUserCards([]);
+    setActiveCardIdSync(null);
     // Note: we keep legal consent when clearing data (user already accepted terms)
     setAppLanguage(deviceLanguage);
     await storage.clearAll();
-  }, []);
+  }, [setUserCards, setActiveCardIdSync]);
 
   const createCard = useCallback(async (input: CardCreateInput): Promise<UserCard | null> => {
-    let created: UserCard | null = null;
-    let nextCards: UserCard[] = [];
-    setUserCardsState(prev => {
-      if (prev.length >= MAX_USER_CARDS) {
-        nextCards = prev;
-        return prev;
-      }
-      created = {
-        ...input,
-        id: Crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-      nextCards = [...prev, created];
-      return nextCards;
-    });
-    if (created) {
-      await storage.setUserCards(nextCards);
-    }
+    const current = userCardsRef.current;
+    if (current.length >= MAX_USER_CARDS) return null;
+    const created: UserCard = {
+      ...input,
+      id: Crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    const next = [...current, created];
+    setUserCards(next);
+    await storage.setUserCards(next);
     return created;
-  }, []);
+  }, [setUserCards]);
 
   const updateCard = useCallback(async (id: string, input: CardUpdateInput) => {
-    let nextCards: UserCard[] = [];
-    setUserCardsState(prev => {
-      nextCards = prev.map(c => c.id === id ? { ...c, ...input } : c);
-      return nextCards;
-    });
-    await storage.setUserCards(nextCards);
-  }, []);
+    const current = userCardsRef.current;
+    if (!current.some(c => c.id === id)) return;
+    const next = current.map(c => c.id === id ? { ...c, ...input } : c);
+    setUserCards(next);
+    await storage.setUserCards(next);
+  }, [setUserCards]);
 
   const deleteCard = useCallback(async (id: string) => {
-    let nextCards: UserCard[] = [];
-    setUserCardsState(prev => {
-      nextCards = prev.filter(c => c.id !== id);
-      return nextCards;
-    });
-    await storage.setUserCards(nextCards);
-    if (activeCardId === id) {
-      setActiveCardIdState(null);
+    const current = userCardsRef.current;
+    const next = current.filter(c => c.id !== id);
+    setUserCards(next);
+    await storage.setUserCards(next);
+    if (activeCardIdRef.current === id) {
+      setActiveCardIdSync(null);
       await storage.setActiveCardId(null);
     }
-  }, [activeCardId]);
+  }, [setUserCards, setActiveCardIdSync]);
 
   const setActiveCard = useCallback(async (id: string | null) => {
-    setActiveCardIdState(id);
+    setActiveCardIdSync(id);
     await storage.setActiveCardId(id);
-  }, []);
+  }, [setActiveCardIdSync]);
 
   const downloadedLanguageCodes = useMemo(
     () => Object.keys(downloadedLanguages) as DownloadableLanguageCode[],
