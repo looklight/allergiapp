@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import * as Crypto from 'expo-crypto';
 import { storage, AppData, CURRENT_LEGAL_VERSION } from '../utils/storage';
 import { setAppLanguage, getDeviceLanguage } from '../utils/i18n';
 import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
+import { UserCard, MAX_USER_CARDS } from '../types/card';
 import { RestrictionItemId } from '../constants/otherRestrictions';
 import { OtherFoodId } from '../constants/otherFoods';
 import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
+
+export type CardCreateInput = Omit<UserCard, 'id' | 'createdAt'>;
+export type CardUpdateInput = Partial<Omit<UserCard, 'id' | 'createdAt'>>;
 
 interface AppContextValue {
   // State
@@ -18,6 +23,12 @@ interface AppContextValue {
   legalConsent: LegalConsent;
   trackingConsent: TrackingConsent;
   isReady: boolean;
+
+  // User cards (extra cards, separate from profile)
+  userCards: UserCard[];
+  activeCardId: string | null;
+  activeCard: UserCard | null;
+  canCreateMoreCards: boolean;
 
   // Derived
   pregnancyMode: boolean;
@@ -41,6 +52,12 @@ interface AppContextValue {
   acceptLegalTerms: () => Promise<void>;
   setTrackingConsent: (consent: TrackingConsent) => Promise<void>;
   clearAll: () => Promise<void>;
+
+  // Card actions
+  createCard: (input: CardCreateInput) => Promise<UserCard | null>;
+  updateCard: (id: string, input: CardUpdateInput) => Promise<void>;
+  deleteCard: (id: string) => Promise<void>;
+  setActiveCard: (id: string | null) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -55,6 +72,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [downloadedLanguages, setDownloadedLanguagesState] = useState<Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>>({});
   const [legalConsent, setLegalConsentState] = useState<LegalConsent>({ acceptedAt: null, version: '' });
   const [trackingConsent, setTrackingConsentState] = useState<TrackingConsent>({ status: 'not-determined', askedAt: null });
+  const [userCards, setUserCardsState] = useState<UserCard[]>([]);
+  const [activeCardId, setActiveCardIdState] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -69,6 +88,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setDownloadedLanguagesState(data.downloadedLanguages);
       setLegalConsentState(data.legalConsent);
       setTrackingConsentState(data.trackingConsent);
+      setUserCardsState(data.userCards);
+      setActiveCardIdState(data.activeCardId);
       setAppLanguage(data.settings.appLanguage);
       setIsReady(true);
     };
@@ -168,15 +189,58 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setVegetarianLevelState(DEFAULT_VEGETARIAN_LEVEL);
     setSettingsState(defaultSettings);
     setDownloadedLanguagesState({});
+    setUserCardsState([]);
+    setActiveCardIdState(null);
     // Note: we keep legal consent when clearing data (user already accepted terms)
     setAppLanguage(deviceLanguage);
     await storage.clearAll();
+  }, []);
+
+  const createCard = useCallback(async (input: CardCreateInput): Promise<UserCard | null> => {
+    if (userCards.length >= MAX_USER_CARDS) return null;
+    const newCard: UserCard = {
+      ...input,
+      id: Crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    const next = [...userCards, newCard];
+    setUserCardsState(next);
+    await storage.setUserCards(next);
+    return newCard;
+  }, [userCards]);
+
+  const updateCard = useCallback(async (id: string, input: CardUpdateInput) => {
+    const next = userCards.map(c => c.id === id ? { ...c, ...input } : c);
+    setUserCardsState(next);
+    await storage.setUserCards(next);
+  }, [userCards]);
+
+  const deleteCard = useCallback(async (id: string) => {
+    const next = userCards.filter(c => c.id !== id);
+    setUserCardsState(next);
+    await storage.setUserCards(next);
+    if (activeCardId === id) {
+      setActiveCardIdState(null);
+      await storage.setActiveCardId(null);
+    }
+  }, [userCards, activeCardId]);
+
+  const setActiveCard = useCallback(async (id: string | null) => {
+    setActiveCardIdState(id);
+    await storage.setActiveCardId(id);
   }, []);
 
   const downloadedLanguageCodes = useMemo(
     () => Object.keys(downloadedLanguages) as DownloadableLanguageCode[],
     [downloadedLanguages],
   );
+
+  const activeCard = useMemo<UserCard | null>(
+    () => userCards.find(c => c.id === activeCardId) ?? null,
+    [userCards, activeCardId],
+  );
+
+  const canCreateMoreCards = userCards.length < MAX_USER_CARDS;
 
   const value = useMemo<AppContextValue>(() => ({
     selectedAllergens,
@@ -190,6 +254,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     legalConsent,
     trackingConsent,
     isReady,
+    userCards,
+    activeCardId,
+    activeCard,
+    canCreateMoreCards,
     hasAcceptedLegalTerms,
     needsLegalConsent,
     downloadedLanguageCodes,
@@ -206,15 +274,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     acceptLegalTerms,
     setTrackingConsent: setTrackingConsentAction,
     clearAll,
+    createCard,
+    updateCard,
+    deleteCard,
+    setActiveCard,
   }), [
     selectedAllergens, selectedOtherFoods, selectedRestrictions,
     activeDietModes, vegetarianLevel, pregnancyMode,
     settings, downloadedLanguages, legalConsent, trackingConsent,
-    isReady, hasAcceptedLegalTerms, needsLegalConsent, downloadedLanguageCodes,
+    isReady, userCards, activeCardId, activeCard, canCreateMoreCards,
+    hasAcceptedLegalTerms, needsLegalConsent, downloadedLanguageCodes,
     setSelectedAllergens, setSelectedOtherFoods, setSelectedRestrictions,
     setActiveDietModes, setVegetarianLevel, isDietModeActive,
     setCardLanguage, setAppLang, saveDownloadedLanguage,
     deleteDownloadedLanguage, acceptLegalTerms, setTrackingConsentAction, clearAll,
+    createCard, updateCard, deleteCard, setActiveCard,
   ]);
 
   return (

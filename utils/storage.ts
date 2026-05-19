@@ -3,6 +3,7 @@ import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLan
 import { RestrictionItemId } from '../constants/otherRestrictions';
 import { OtherFoodId } from '../constants/otherFoods';
 import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
+import { UserCard } from '../types/card';
 import { getDeviceLanguage } from './i18n';
 
 const STORAGE_KEYS = {
@@ -18,6 +19,8 @@ const STORAGE_KEYS = {
   FOR_MY_NEEDS: 'allergiapp_for_my_needs',
   DISMISSED_POPUPS: 'allergiapp_dismissed_popups',
   RECENT_PLACES: 'allergiapp_recent_places',
+  USER_CARDS: 'allergiapp_user_cards',
+  ACTIVE_CARD_ID: 'allergiapp_active_card_id',
 };
 
 export type RecentPlace = {
@@ -49,6 +52,8 @@ export interface AppData {
   downloadedLanguages: Partial<Record<DownloadableLanguageCode, DownloadedLanguageData>>;
   legalConsent: LegalConsent;
   trackingConsent: TrackingConsent;
+  userCards: UserCard[];
+  activeCardId: string | null;
 }
 
 const DEFAULT_LEGAL_CONSENT: LegalConsent = {
@@ -74,6 +79,8 @@ export const storage = {
       STORAGE_KEYS.DOWNLOADED_LANGUAGES,
       STORAGE_KEYS.LEGAL_CONSENT,
       STORAGE_KEYS.TRACKING_CONSENT,
+      STORAGE_KEYS.USER_CARDS,
+      STORAGE_KEYS.ACTIVE_CARD_ID,
     ];
 
     let results: readonly [string, string | null][];
@@ -90,10 +97,12 @@ export const storage = {
         downloadedLanguages: {},
         legalConsent: DEFAULT_LEGAL_CONSENT,
         trackingConsent: DEFAULT_TRACKING_CONSENT,
+        userCards: [],
+        activeCardId: null,
       };
     }
 
-    const [allergensRaw, otherFoodsRaw, restrictionsRaw, dietModesRaw, vegLevelRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw] = results.map(([, v]) => v);
+    const [allergensRaw, otherFoodsRaw, restrictionsRaw, dietModesRaw, vegLevelRaw, settingsRaw, downloadedRaw, legalRaw, trackingRaw, userCardsRaw, activeCardIdRaw] = results.map(([, v]) => v);
 
     const safeParse = <T>(raw: string | null | undefined, fallback: T): T => {
       if (!raw) return fallback;
@@ -105,6 +114,8 @@ export const storage = {
     const validModeIds: DietModeId[] = ['pregnancy', 'vegetarian', 'nickel', 'histamine', 'diabetes'];
     const cleanModes = rawModes.filter(id => validModeIds.includes(id as DietModeId)) as DietModeId[];
 
+    const userCards: UserCard[] = safeParse(userCardsRaw, []);
+
     return {
       selectedAllergens: safeParse(allergensRaw, []),
       selectedOtherFoods: safeParse(otherFoodsRaw, []),
@@ -115,6 +126,8 @@ export const storage = {
       downloadedLanguages: safeParse(downloadedRaw, {}),
       legalConsent: safeParse(legalRaw, DEFAULT_LEGAL_CONSENT),
       trackingConsent: safeParse(trackingRaw, DEFAULT_TRACKING_CONSENT),
+      userCards,
+      activeCardId: activeCardIdRaw && userCards.some(c => c.id === activeCardIdRaw) ? activeCardIdRaw : null,
     };
   },
 
@@ -235,9 +248,49 @@ export const storage = {
         STORAGE_KEYS.SETTINGS,
         STORAGE_KEYS.DOWNLOADED_LANGUAGES,
         STORAGE_KEYS.FOR_MY_NEEDS,
+        STORAGE_KEYS.USER_CARDS,
+        STORAGE_KEYS.ACTIVE_CARD_ID,
       ]);
     } catch {
       // Storage clear failed silently
+    }
+  },
+
+  // Metodi per le card utente
+  async getUserCards(): Promise<UserCard[]> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.USER_CARDS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setUserCards(cards: UserCard[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_CARDS, JSON.stringify(cards));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  async getActiveCardId(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.ACTIVE_CARD_ID);
+    } catch {
+      return null;
+    }
+  },
+
+  async setActiveCardId(cardId: string | null): Promise<void> {
+    try {
+      if (cardId === null) {
+        await AsyncStorage.removeItem(STORAGE_KEYS.ACTIVE_CARD_ID);
+      } else {
+        await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CARD_ID, cardId);
+      }
+    } catch {
+      // Storage write failed silently
     }
   },
 

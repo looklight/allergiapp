@@ -1,7 +1,20 @@
 import { AllergenId, Language, DownloadableLanguageCode, DownloadedLanguageData } from '.';
 import { RestrictionItemId } from '../constants/otherRestrictions';
 import { OtherFoodId } from '../constants/otherFoods';
-import { DietModeId } from '../constants/dietModes';
+import { DietModeId, VegetarianLevel } from '../constants/dietModes';
+
+export const MAX_USER_CARDS = 5;
+
+export interface UserCard {
+  id: string;
+  name: string;
+  allergens: AllergenId[];
+  otherFoods: OtherFoodId[];
+  restrictions: RestrictionItemId[];
+  dietModes: DietModeId[];
+  vegetarianLevel: VegetarianLevel;
+  createdAt: string;
+}
 
 export type CardDisplayMode = 'card' | 'app' | 'english';
 
