@@ -8,7 +8,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "build:avatars": "node scripts/build-avatars.mjs"
+    "build:avatars": "node scripts/build-avatars.mjs",
+    "env:sync": "eas env:pull --environment development",
+    "ota:beta": "eas update --branch beta --environment preview",
+    "ota:production": "eas update --branch production --environment production"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
