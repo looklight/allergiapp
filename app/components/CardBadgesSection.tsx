@@ -250,14 +250,19 @@ const styles = StyleSheet.create({
     color: theme.colors.onPrimary,
   },
   pillAdd: {
-    paddingHorizontal: 16,
-    minWidth: 44,
+    width: 36,
+    height: 36,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    borderRadius: 18,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   pillAddText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: theme.colors.primary,
+    lineHeight: 22,
   },
   overlay: {
     flex: 1,
