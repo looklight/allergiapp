@@ -7,7 +7,9 @@
   },
   "common": {
     "userInactive": "Inaktiver Benutzer",
-    "or": "oder"
+    "or": "oder",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "continueWithApple": "Mit Apple fortfahren"
   },
   "home": {
     "title": "Was muss ich mitteilen?",

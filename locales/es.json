@@ -7,7 +7,9 @@
   },
   "common": {
     "userInactive": "Usuario inactivo",
-    "or": "o"
+    "or": "o",
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithApple": "Continuar con Apple"
   },
   "home": {
     "title": "¿Qué debo comunicar?",

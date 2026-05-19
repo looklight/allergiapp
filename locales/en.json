@@ -27,7 +27,9 @@
     "thanks": "Thanks",
     "save": "Save",
     "userInactive": "Inactive user",
-    "or": "or"
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple"
   },
   "home": {
     "title": "What do I need to communicate?",

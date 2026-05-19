@@ -27,7 +27,9 @@
     "thanks": "Grazie",
     "save": "Salva",
     "userInactive": "Utente inattivo",
-    "or": "oppure"
+    "or": "oppure",
+    "continueWithGoogle": "Continua con Google",
+    "continueWithApple": "Continua con Apple"
   },
   "home": {
     "title": "Cosa devo comunicare?",
