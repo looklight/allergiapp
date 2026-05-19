@@ -310,9 +310,6 @@ export default function AddAllergyScreen() {
             {isSearching && (
               <Text style={styles.searchSectionLabel}>{i18n.t('addAllergy.otherFoods')}</Text>
             )}
-            {!isSearching && (
-              <Text style={styles.otherFoodsHint}>{i18n.t('profile.othersHint')}</Text>
-            )}
             {(isSearching ? filteredOtherFoods : OTHER_FOODS).map((food, index, arr) => {
               const showCategoryHeader = !isSearching && (index === 0 || food.category !== arr[index - 1].category);
               return (
@@ -510,15 +507,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,
-  },
-  otherFoodsHint: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-    backgroundColor: theme.colors.background,
   },
   footer: {
     padding: 16,
