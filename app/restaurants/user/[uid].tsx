@@ -30,6 +30,8 @@ export default function PublicProfileScreen() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [likesReceived, setLikesReceived] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const { stats, countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredReviews } =
@@ -44,12 +46,16 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs] = await Promise.all([
+        const [prof, contribs, totalReviews, totalLikes] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
+          RestaurantService.getReviewCountByUser(uid),
+          RestaurantService.getLikesReceivedByUser(uid),
         ]);
         setProfile(prof);
         setReviews(contribs);
+        setReviewCount(totalReviews);
+        setLikesReceived(totalLikes);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
@@ -86,6 +92,7 @@ export default function PublicProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileCard
         profile={visibleProfile!}
+        stats={{ reviews: reviewCount, likes: likesReceived }}
         onBack={() => router.back()}
       >
         {reviews.length > 0 && (

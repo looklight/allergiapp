@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
-import type { UserReview } from '../../services/restaurantService';
 import ProfileCard from '../../components/ProfileCard';
 import AppHeader from '../components/AppHeader';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
@@ -18,7 +17,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, userProfile, isAuthenticated } = useAuth();
 
-  const [reviews, setReviews] = useState<UserReview[]>([]);
+  const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
@@ -26,12 +25,12 @@ export default function ProfileScreen() {
     if (!user?.uid) return;
 
     (async () => {
-      const [userReviews, totalLikes, userFavorites] = await Promise.all([
-        RestaurantService.getReviewsByUser(user.uid),
+      const [totalReviews, totalLikes, userFavorites] = await Promise.all([
+        RestaurantService.getReviewCountByUser(user.uid),
         RestaurantService.getLikesReceivedByUser(user.uid),
         RestaurantService.getFavorites(user.uid),
       ]);
-      setReviews(userReviews);
+      setReviewCount(totalReviews);
       setLikesReceived(totalLikes);
       setFavoriteCount(userFavorites.length);
     })().catch((err) => console.warn('[Profile] Errore caricamento dati:', err));
@@ -75,7 +74,7 @@ export default function ProfileScreen() {
             ? getAnonymousLabel(user?.uid ?? '')
             : userProfile.username,
         }}
-        stats={{ likes: likesReceived, reviews: reviews.length, favorites: favoriteCount }}
+        stats={{ likes: likesReceived, reviews: reviewCount, favorites: favoriteCount }}
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}
