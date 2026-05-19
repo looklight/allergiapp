@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 0,
     paddingBottom: 16,
   },
   card: {
