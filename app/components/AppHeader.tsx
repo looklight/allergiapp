@@ -57,7 +57,7 @@ export default function AppHeader({
           accessibilityRole="button"
           accessibilityLabel={leadingAccessibilityLabel}
         >
-          <MaterialCommunityIcons name={leadingIcon} size={24} color={theme.colors.onPrimary} />
+          <MaterialCommunityIcons name={leadingIcon} size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       ) : titleAlign === 'center' && hasActions ? (
         <View style={styles.spacer} />
@@ -87,7 +87,7 @@ export default function AppHeader({
               accessibilityLabel={a.accessibilityLabel}
               style={i > 0 ? styles.actionSpacing : undefined}
             >
-              <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.onPrimary} />
+              <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.textPrimary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -100,12 +100,12 @@ export default function AppHeader({
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   titleContainer: {
     flex: 1,
@@ -117,9 +117,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: theme.colors.onPrimary,
-    fontSize: 22,
-    fontWeight: 'bold',
+    color: theme.colors.textPrimary,
+    fontSize: 20,
+    fontWeight: '600',
   },
   titleCentered: {
     textAlign: 'center',
