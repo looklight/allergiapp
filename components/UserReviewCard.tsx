@@ -24,7 +24,7 @@ export default function UserReviewCard({ review, onPress }: Props) {
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Surface style={styles.card} elevation={1}>
+      <Surface style={styles.card} elevation={0}>
         <View style={styles.header}>
           <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
           <Text style={styles.name} numberOfLines={1}>{restaurantName}</Text>
@@ -65,6 +65,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   header: {
     flexDirection: 'row',

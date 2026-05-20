@@ -48,7 +48,7 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
       >
         {/* Profilo: avatar + nome in riga, stile Airbnb */}
-        <Surface style={styles.profileCard} elevation={1}>
+        <Surface style={styles.profileCard} elevation={0}>
           <View style={styles.profileRow}>
             {onAvatarPress ? (
               <TouchableOpacity
@@ -203,6 +203,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: theme.colors.surface,
     padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   profileRow: {
     flexDirection: 'row',
