@@ -10,6 +10,7 @@ import type { UserProfile, Restaurant, Review, MenuPhoto } from '@/lib/types';
 import { useBusyIds } from '@/hooks/useBusyIds';
 import UserProfileCard from './components/UserProfileCard';
 import MediaGallery, { type MediaItem } from './components/MediaGallery';
+import DietaryBadges from '@/components/DietaryBadges';
 import Link from 'next/link';
 
 type EnrichedMenuPhoto = MenuPhoto & { restaurant_name: string | null };
@@ -49,7 +50,7 @@ export default function UserDetailPage() {
           .limit(50),
         supabase
           .from('reviews')
-          .select('id, restaurant_id, rating, comment, photos, likes_count, created_at, restaurants!inner(name, country)')
+          .select('id, restaurant_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, likes_count, created_at, restaurants!inner(name, country)')
           .eq('user_id', id)
           .order('created_at', { ascending: false })
           .limit(50),
@@ -212,7 +213,10 @@ export default function UserDetailPage() {
                     <td className="px-4 py-2">
                       {r.rating > 0 ? <span className="text-yellow-600">{'★'.repeat(r.rating)}</span> : '—'}
                     </td>
-                    <td className="px-4 py-2 text-gray-600 max-w-xs truncate">{r.comment || '—'}</td>
+                    <td className="px-4 py-2 text-gray-600 max-w-xs">
+                      <div className="truncate">{r.comment || '—'}</div>
+                      <DietaryBadges allergens={r.allergens_snapshot} diets={r.dietary_snapshot} className="mt-1" />
+                    </td>
                     <td className="px-4 py-2">
                       {r.photos?.length > 0 ? (
                         <div className="flex gap-1">

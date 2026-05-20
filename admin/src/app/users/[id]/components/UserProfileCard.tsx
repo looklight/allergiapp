@@ -1,5 +1,5 @@
 import type { UserProfile } from '@/lib/types';
-import { labelAllergen, labelDiet } from '@/lib/dietaryLabels';
+import DietaryBadges from '@/components/DietaryBadges';
 
 interface Props {
   user: UserProfile;
@@ -19,7 +19,7 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
         </div>
         <div>
           <h1 className="text-2xl font-bold">{user.username || 'Anonimo'}</h1>
-          <DietaryBadges allergens={user.allergens ?? []} diets={user.dietary_preferences ?? []} />
+          <DietaryBadges allergens={user.allergens} diets={user.dietary_preferences} className="mt-1.5" />
           {user.email && <p className="text-sm text-gray-500 mt-1">{user.email}</p>}
           <p className="text-sm text-gray-400">
             Registrato il {new Date(user.created_at).toLocaleDateString('it-IT')}
@@ -60,27 +60,3 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
   );
 }
 
-function DietaryBadges({ allergens, diets }: { allergens: string[]; diets: string[] }) {
-  if (allergens.length === 0 && diets.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap gap-1 mt-1.5">
-      {allergens.map((id) => (
-        <span
-          key={`a-${id}`}
-          className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-rose-100 text-rose-800"
-        >
-          {labelAllergen(id)}
-        </span>
-      ))}
-      {diets.map((id) => (
-        <span
-          key={`d-${id}`}
-          className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800"
-        >
-          {labelDiet(id)}
-        </span>
-      ))}
-    </div>
-  );
-}

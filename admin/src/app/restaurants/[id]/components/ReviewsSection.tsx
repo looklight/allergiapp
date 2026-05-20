@@ -1,4 +1,5 @@
 import type { Review } from '@/lib/types';
+import DietaryBadges from '@/components/DietaryBadges';
 import Link from 'next/link';
 
 interface Props {
@@ -42,6 +43,7 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
                   </button>
                 </div>
               </div>
+              <DietaryBadges allergens={r.allergens_snapshot} diets={r.dietary_snapshot} className="mt-1.5" />
               {r.comment && <p className="text-gray-600 mt-1">{r.comment}</p>}
               {r.photos?.length > 0 && (
                 <div className="flex gap-2 mt-2">
