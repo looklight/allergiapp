@@ -42,6 +42,8 @@ interface DietaryChipsSelectorProps {
   scrollViewRef?: React.RefObject<ScrollView | null>;
   /** Ref alla posizione corrente di scroll (aggiornata via onScroll nel parent) */
   scrollPosRef?: React.RefObject<number>;
+  /** Slot opzionale renderizzato in fondo alla sezione "Altre" quando espansa */
+  othersFooterSlot?: React.ReactNode;
 }
 
 const OTHERS_SCROLL_DELTA = 180;
@@ -56,6 +58,7 @@ export default function DietaryChipsSelector({
   keyPrefix = 'dietary',
   scrollViewRef,
   scrollPosRef,
+  othersFooterSlot,
 }: DietaryChipsSelectorProps) {
   const othersSelectedCount = allergens.filter(id => OTHERS_IDS.has(id)).length;
   const [othersExpanded, setOthersExpanded] = useState(othersSelectedCount > 0);
@@ -152,6 +155,7 @@ export default function DietaryChipsSelector({
               </View>
             );
           })}
+          {othersFooterSlot}
         </>
       )}
     </View>

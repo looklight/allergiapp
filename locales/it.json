@@ -429,7 +429,8 @@
       "statReviews": "Recensioni",
       "statLikes": "Like ricevuti",
       "statFavorites": "Preferiti",
-      "dietaryProfile": "Profilo alimentare"
+      "dietaryProfile": "Profilo alimentare",
+      "dietaryEmpty": "Nessuna esigenza"
     },
     "dietaryPicker": {
       "title": "Le tue esigenze alimentari",

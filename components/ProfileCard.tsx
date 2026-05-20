@@ -90,39 +90,63 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
             )}
           </View>
 
-          {/* Profilo alimentare (integrato sopra le stats) */}
-          {((profile.allergens?.length ?? 0) > 0 || (profile.dietary_preferences?.length ?? 0) > 0) && (
-            <>
-              <View style={styles.divider} />
-              <View style={styles.dietaryHeaderRow}>
-                <Text style={styles.allergensLabel}>{i18n.t('restaurants.profileCard.dietaryProfile')}</Text>
-                {onEditDietary && (
-                  <TouchableOpacity
-                    onPress={onEditDietary}
-                    hitSlop={8}
-                    activeOpacity={0.6}
-                    style={styles.dietaryEditButton}
-                  >
-                    <MaterialCommunityIcons name="pencil-outline" size={14} color={theme.colors.textSecondary} />
-                    <Text style={styles.dietaryEditButtonText}>{i18n.t('common.edit')}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={styles.allergensRow}>
-                {[...(profile.dietary_preferences ?? []), ...(profile.allergens ?? [])].map((id) => {
-                  const r = getRestrictionById(id);
-                  if (!r) return null;
-                  const lang = i18n.locale?.split('-')[0] as keyof typeof r.translations;
-                  const name = r.translations[lang] ?? r.translations.it ?? r.translations.en;
-                  return (
-                    <View key={id} style={styles.allergenBadge}>
-                      <Text style={styles.allergenBadgeText}>{name}</Text>
+          {/* Profilo alimentare (integrato sopra le stats).
+              Mostrato sempre sul profilo proprio (onEditDietary presente) così
+              che l'utente possa aggiungere esigenze anche dopo aver scelto "nessuna". */}
+          {(() => {
+            const hasNeeds =
+              (profile.allergens?.length ?? 0) > 0 ||
+              (profile.dietary_preferences?.length ?? 0) > 0;
+            if (!hasNeeds && !onEditDietary) return null;
+            return (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.dietaryHeaderRow}>
+                  <Text style={styles.allergensLabel}>{i18n.t('restaurants.profileCard.dietaryProfile')}</Text>
+                  {onEditDietary && (
+                    <TouchableOpacity
+                      onPress={onEditDietary}
+                      hitSlop={8}
+                      activeOpacity={0.6}
+                      style={styles.dietaryEditButton}
+                    >
+                      <MaterialCommunityIcons
+                        name={hasNeeds ? 'pencil-outline' : 'plus'}
+                        size={14}
+                        color={theme.colors.textSecondary}
+                      />
+                      <Text style={styles.dietaryEditButtonText}>
+                        {hasNeeds ? i18n.t('common.edit') : i18n.t('common.add')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                {hasNeeds ? (
+                  <View style={styles.allergensRow}>
+                    {[...(profile.dietary_preferences ?? []), ...(profile.allergens ?? [])].map((id) => {
+                      const r = getRestrictionById(id);
+                      if (!r) return null;
+                      const lang = i18n.locale?.split('-')[0] as keyof typeof r.translations;
+                      const name = r.translations[lang] ?? r.translations.it ?? r.translations.en;
+                      return (
+                        <View key={id} style={styles.allergenBadge}>
+                          <Text style={styles.allergenBadgeText}>{name}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <View style={styles.allergensRow}>
+                    <View style={styles.allergenBadgeEmpty}>
+                      <Text style={styles.allergenBadgeEmptyText}>
+                        {i18n.t('restaurants.profileCard.dietaryEmpty')}
+                      </Text>
                     </View>
-                  );
-                })}
-              </View>
-            </>
-          )}
+                  </View>
+                )}
+              </>
+            );
+          })()}
 
           {/* Stats — render solo le metriche fornite */}
           {(stats?.reviews != null || stats?.likes != null || stats?.favorites != null) && (
@@ -257,6 +281,19 @@ const styles = StyleSheet.create({
   allergenBadgeText: {
     fontSize: 13,
     color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  allergenBadgeEmpty: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.border,
+  },
+  allergenBadgeEmptyText: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
     fontWeight: '500',
   },
   dietaryEditButton: {

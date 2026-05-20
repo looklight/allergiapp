@@ -102,11 +102,12 @@ export default function OnboardingDietaryScreen() {
           keyPrefix="onboarding"
           scrollViewRef={scrollViewRef}
           scrollPosRef={scrollPosY}
+          othersFooterSlot={
+            <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
+              <Text style={styles.skipText}>{i18n.t('onboardingDietary.skipLink')}</Text>
+            </TouchableOpacity>
+          }
         />
-
-        <TouchableOpacity onPress={handleSkip} style={styles.skipRow}>
-          <Text style={styles.skipText}>{i18n.t('onboardingDietary.skipLink')}</Text>
-        </TouchableOpacity>
 
         {confirmedNoNeeds && (
           <View style={styles.noNeedsNote}>
@@ -127,29 +128,27 @@ export default function OnboardingDietaryScreen() {
         >
           {i18n.t('onboardingDietary.saveButton')}
         </Button>
-        {hasSelection && (
-          <TouchableOpacity
-            onPress={() => setHealthConsent(v => !v)}
-            style={styles.consentRow}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons
-              name={healthConsent ? 'checkbox-marked' : 'checkbox-blank-outline'}
-              size={22}
-              color={healthConsent ? theme.colors.primary : theme.colors.textSecondary}
-            />
-            <Text style={styles.consentText}>
-              {i18n.t('onboardingDietary.consentPart1')}
-              <Text
-                style={styles.consentLink}
-                onPress={() => router.push('/legal?tab=privacy')}
-              >
-                {i18n.t('onboardingDietary.consentLink')}
-              </Text>
-              {i18n.t('onboardingDietary.consentPart2')}
+        <TouchableOpacity
+          onPress={() => setHealthConsent(v => !v)}
+          style={styles.consentRow}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons
+            name={healthConsent ? 'checkbox-marked' : 'checkbox-blank-outline'}
+            size={22}
+            color={healthConsent ? theme.colors.primary : theme.colors.textSecondary}
+          />
+          <Text style={styles.consentText}>
+            {i18n.t('onboardingDietary.consentPart1')}
+            <Text
+              style={styles.consentLink}
+              onPress={() => router.push('/legal?tab=privacy')}
+            >
+              {i18n.t('onboardingDietary.consentLink')}
             </Text>
-          </TouchableOpacity>
-        )}
+            {i18n.t('onboardingDietary.consentPart2')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

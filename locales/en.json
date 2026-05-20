@@ -429,7 +429,8 @@
       "statReviews": "Reviews",
       "statLikes": "Likes received",
       "statFavorites": "Favorites",
-      "dietaryProfile": "Dietary profile"
+      "dietaryProfile": "Dietary profile",
+      "dietaryEmpty": "No dietary needs"
     },
     "dietaryPicker": {
       "title": "Your dietary needs",
