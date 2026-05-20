@@ -168,6 +168,11 @@ export default function UsersPage() {
                       <span className="text-blue-600 group-hover:underline">
                         {u.username || 'Anonimo'}
                       </span>
+                      {u.is_anonymous && (
+                        <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-medium">
+                          anonimo
+                        </span>
+                      )}
                       {!u.email_confirmed_at && (
                         <span
                           title="Email non verificata"
@@ -220,6 +225,9 @@ export default function UsersPage() {
                 <span className="text-blue-600 font-medium text-sm truncate">
                   {u.username || 'Anonimo'}
                 </span>
+                {u.is_anonymous && (
+                  <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 shrink-0">anonimo</span>
+                )}
                 {!u.email_confirmed_at && (
                   <span title="Email non verificata" className="text-amber-500 text-xs shrink-0">⚠</span>
                 )}

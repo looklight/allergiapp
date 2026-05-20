@@ -72,6 +72,7 @@ export interface UserProfile {
   id: string;
   username: string | null;
   avatar_url: string | null;
+  is_anonymous: boolean;
   allergens: string[];
   dietary_preferences: string[];
   role: 'user' | 'restaurant_owner' | 'admin';

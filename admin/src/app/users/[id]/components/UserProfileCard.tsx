@@ -18,7 +18,14 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
           {(user.username || '?')[0].toUpperCase()}
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{user.username || 'Anonimo'}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{user.username || 'Anonimo'}</h1>
+            {user.is_anonymous && (
+              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[11px] font-medium">
+                anonimo
+              </span>
+            )}
+          </div>
           <DietaryBadges allergens={user.allergens} diets={user.dietary_preferences} className="mt-1.5" />
           {user.email && <p className="text-sm text-gray-500 mt-1">{user.email}</p>}
           <p className="text-sm text-gray-400">
