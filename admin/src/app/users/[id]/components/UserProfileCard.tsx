@@ -1,5 +1,6 @@
 import type { UserProfile } from '@/lib/types';
 import DietaryBadges from '@/components/DietaryBadges';
+import UserAvatar from '@/components/UserAvatar';
 
 interface Props {
   user: UserProfile;
@@ -14,9 +15,7 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
   return (
     <div className="bg-white rounded-lg shadow p-6 mt-4 mb-6">
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl text-gray-500">
-          {(user.username || '?')[0].toUpperCase()}
-        </div>
+        <UserAvatar user={user} size={64} />
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">{user.username || 'Anonimo'}</h1>

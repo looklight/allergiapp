@@ -3,37 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { safeCount } from '@/lib/safeQuery';
-import { resolveAvatarSrc } from '@/lib/avatar';
 import type { UserProfile } from '@/lib/types';
 import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
+import UserAvatar from '@/components/UserAvatar';
 import Link from 'next/link';
-
-function UserAvatar({ user }: { user: UserProfile }) {
-  const [imgFailed, setImgFailed] = useState(false);
-  const initial = (user.username || user.email || '?').trim().charAt(0).toUpperCase();
-  const bg = '#9CA3AF';
-  const src = resolveAvatarSrc(user.avatar_url);
-
-  if (src && !imgFailed) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={src}
-        alt=""
-        onError={() => setImgFailed(true)}
-        className="w-9 h-9 rounded-full object-cover bg-gray-100"
-      />
-    );
-  }
-  return (
-    <div
-      className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-medium"
-      style={{ backgroundColor: bg }}
-    >
-      {initial}
-    </div>
-  );
-}
 
 type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc' | 'last_sign_in_desc';
 
