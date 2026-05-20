@@ -241,6 +241,18 @@ export default function RestaurantDetailBody({
     );
   }
 
+  // ─── Anonymous: only the gate, no restaurant info ───────────────────────
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.anonGateWrap}>
+        <LoginGateCta
+          title={i18n.t('restaurants.detail.loginGateReviewsTitle')}
+          subtitle={i18n.t('restaurants.detail.loginGateReviewsSubtitle')}
+        />
+      </View>
+    );
+  }
+
   // ─── Main content ───────────────────────────────────────────────────────
   return (
     <>
@@ -294,9 +306,8 @@ export default function RestaurantDetailBody({
           hideNameAndRating={hideNameAndRating}
         />
 
-        {isAuthenticated ? (
-          <View style={styles.photoAndMenuSection}>
-            {reviewPhotos.length > 0 && (
+        <View style={styles.photoAndMenuSection}>
+          {reviewPhotos.length > 0 && (
               <FlatList
                 data={reviewPhotos.slice(0, MAX_CAROUSEL_PHOTOS)}
                 keyExtractor={(item, idx) => `${item.url}-${idx}`}
@@ -356,128 +367,115 @@ export default function RestaurantDetailBody({
               isUpdatingMenuUrl={isUpdatingMenuUrl}
               onManage={() => router.push(`/restaurants/menu-photos?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant.name)}`)}
             />
-          </View>
-        ) : null}
+        </View>
 
-        {isAuthenticated && (
-          <>
-            <View style={styles.separator} />
-            {userReview ? (
-              <View style={styles.ctaSection}>
-                <View style={styles.ctaTopRow}>
-                  <View style={styles.ctaInlineRow}>
-                    <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourReviewLabel')}</Text>
-                    {userReview.rating != null && userReview.rating > 0 && (
-                      <StarRating rating={userReview.rating} size={20} />
-                    )}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => navigateToContribute(undefined, userReview.id)}
-                    hitSlop={8}
-                    activeOpacity={0.6}
-                  >
-                    <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
-                  </TouchableOpacity>
-                </View>
-                {userReview.comment && (
-                  <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
+        <View style={styles.separator} />
+        {userReview ? (
+          <View style={styles.ctaSection}>
+            <View style={styles.ctaTopRow}>
+              <View style={styles.ctaInlineRow}>
+                <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourReviewLabel')}</Text>
+                {userReview.rating != null && userReview.rating > 0 && (
+                  <StarRating rating={userReview.rating} size={20} />
                 )}
               </View>
-            ) : (
-              <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
-                <View style={[styles.ctaSection, styles.ctaSectionWithChevron]}>
-                  <View style={styles.ctaSectionInner}>
-                    <View style={styles.ctaInlineRow}>
-                      <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourOpinion')}</Text>
-                      <StarRating rating={0} size={32} onRate={(r) => navigateToContribute(r)} />
-                    </View>
-                    <Text style={styles.ctaHint}>{i18n.t('restaurants.detail.yourReviewHint')}</Text>
-                  </View>
-                  <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.primary} />
-                </View>
+              <TouchableOpacity
+                onPress={() => navigateToContribute(undefined, userReview.id)}
+                hitSlop={8}
+                activeOpacity={0.6}
+              >
+                <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
               </TouchableOpacity>
+            </View>
+            {userReview.comment && (
+              <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
             )}
-          </>
+          </View>
+        ) : (
+          <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
+            <View style={[styles.ctaSection, styles.ctaSectionWithChevron]}>
+              <View style={styles.ctaSectionInner}>
+                <View style={styles.ctaInlineRow}>
+                  <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourOpinion')}</Text>
+                  <StarRating rating={0} size={32} onRate={(r) => navigateToContribute(r)} />
+                </View>
+                <Text style={styles.ctaHint}>{i18n.t('restaurants.detail.yourReviewHint')}</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.primary} />
+            </View>
+          </TouchableOpacity>
         )}
 
         <View style={styles.separator} onLayout={(e) => { reviewsOffsetY.current = e.nativeEvent.layout.y; }} />
 
-        {isAuthenticated ? (
-          <ReviewsSection
-            reviews={allReviews}
-            totalCount={reviewsTotalCount}
-            hasMore={hasMoreReviews}
-            onLoadMore={loadMoreReviews}
-            isLoadingMore={isLoadingMoreReviews}
-            reviewPhotos={reviewPhotos}
-            reviewSortOrder={reviewSortOrder}
-            setReviewSortOrder={setReviewSortOrder}
-            hasUserNeeds={hasUserNeeds}
-            userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
-            onToggleReviewLike={handleToggleReviewLike}
-            onImagePress={(url) => {
-              const i = reviewPhotos.findIndex(p => p.url === url);
-              if (i >= 0) setGalleryIndex(i);
-              else setFullscreenImage(url);
-            }}
-            onReportReview={handleReportReview}
-            reportedReviewIds={reportedReviewIds}
-            currentUserId={user?.uid}
-          />
-        ) : (
-          <LoginGateCta
-            title={i18n.t('restaurants.detail.loginGateReviewsTitle')}
-            subtitle={i18n.t('restaurants.detail.loginGateReviewsSubtitle')}
-          />
-        )}
+        <ReviewsSection
+          reviews={allReviews}
+          totalCount={reviewsTotalCount}
+          hasMore={hasMoreReviews}
+          onLoadMore={loadMoreReviews}
+          isLoadingMore={isLoadingMoreReviews}
+          reviewPhotos={reviewPhotos}
+          reviewSortOrder={reviewSortOrder}
+          setReviewSortOrder={setReviewSortOrder}
+          hasUserNeeds={hasUserNeeds}
+          userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
+          onToggleReviewLike={handleToggleReviewLike}
+          onImagePress={(url) => {
+            const i = reviewPhotos.findIndex(p => p.url === url);
+            if (i >= 0) setGalleryIndex(i);
+            else setFullscreenImage(url);
+          }}
+          onReportReview={handleReportReview}
+          reportedReviewIds={reportedReviewIds}
+          currentUserId={user?.uid}
+        />
 
         <ReportsSection reports={reports} />
 
         <View style={styles.separator} />
 
         <View style={styles.footerSection}>
-          <TouchableOpacity
-            style={styles.footerRow}
-            activeOpacity={0.6}
-            onPress={() => {
-              if (!isAuthenticated) { router.push('/auth/login'); return; }
-              if (userReport) { Alert.alert(i18n.t('restaurants.detail.reportRestAlreadyTitle'), i18n.t('restaurants.detail.reportRestAlreadyMsg')); return; }
-              router.push(`/restaurants/report?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
-            }}
-          >
-            <MaterialCommunityIcons
-              name="flag-outline"
-              size={18}
-              color={userReport ? theme.colors.textDisabled : theme.colors.warning}
-            />
-            <Text style={[styles.footerRowText, userReport && { color: theme.colors.textDisabled }]}>
-              {userReport ? i18n.t('restaurants.detail.reportRestDone') : i18n.t('restaurants.detail.reportRest')}
-            </Text>
-            {!userReport && (
-              <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
-            )}
-          </TouchableOpacity>
-
-          {canRemove && (
-            <>
-              <Divider />
               <TouchableOpacity
                 style={styles.footerRow}
                 activeOpacity={0.6}
-                disabled={isRemoving}
-                onPress={handleRemoveRestaurant}
+                onPress={() => {
+                  if (userReport) { Alert.alert(i18n.t('restaurants.detail.reportRestAlreadyTitle'), i18n.t('restaurants.detail.reportRestAlreadyMsg')); return; }
+                  router.push(`/restaurants/report?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
+                }}
               >
-                {isRemoving ? (
-                  <ActivityIndicator size="small" color={theme.colors.error} />
-                ) : (
-                  <>
-                    <MaterialCommunityIcons name="delete-outline" size={18} color={theme.colors.error} />
-                    <Text style={[styles.footerRowText, { color: theme.colors.error }]}>{i18n.t('restaurants.detail.deleteRestaurant')}</Text>
-                  </>
+                <MaterialCommunityIcons
+                  name="flag-outline"
+                  size={18}
+                  color={userReport ? theme.colors.textDisabled : theme.colors.warning}
+                />
+                <Text style={[styles.footerRowText, userReport && { color: theme.colors.textDisabled }]}>
+                  {userReport ? i18n.t('restaurants.detail.reportRestDone') : i18n.t('restaurants.detail.reportRest')}
+                </Text>
+                {!userReport && (
+                  <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textDisabled} />
                 )}
               </TouchableOpacity>
-            </>
-          )}
+
+              {canRemove && (
+                <>
+                  <Divider />
+                  <TouchableOpacity
+                    style={styles.footerRow}
+                    activeOpacity={0.6}
+                    disabled={isRemoving}
+                    onPress={handleRemoveRestaurant}
+                  >
+                    {isRemoving ? (
+                      <ActivityIndicator size="small" color={theme.colors.error} />
+                    ) : (
+                      <>
+                        <MaterialCommunityIcons name="delete-outline" size={18} color={theme.colors.error} />
+                        <Text style={[styles.footerRowText, { color: theme.colors.error }]}>{i18n.t('restaurants.detail.deleteRestaurant')}</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </>
+              )}
         </View>
       </BottomSheetScrollView>
 
@@ -519,6 +517,10 @@ export default function RestaurantDetailBody({
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
+  },
+  anonGateWrap: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
   },
   centered: {
     flex: 1,

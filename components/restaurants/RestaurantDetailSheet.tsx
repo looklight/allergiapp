@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
 import { theme } from '../../constants/theme';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
+import { useAuth } from '../../contexts/AuthContext';
 import BottomSheet, { type BottomSheetRef } from '../BottomSheet';
 import RestaurantDetailBody from './RestaurantDetailBody';
 
@@ -21,6 +22,7 @@ type Props = {
 export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseStart, onFavoriteToggled }: Props) {
   const sheetRef = useRef<BottomSheetRef>(null);
   const detail = useRestaurantDetail(restaurantId, onFavoriteToggled);
+  const { isAuthenticated } = useAuth();
   const [isCompactHeader, setIsCompactHeader] = useState(false);
   // Scroll is enabled only when the sheet is fully open (snap 0.92).
   // At half height (0.55) the body is a static preview: the user drags
@@ -55,7 +57,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
     return () => sub.remove();
   }, [handleDismiss]);
 
-  const header = (
+  const header = isAuthenticated ? (
     <View style={[styles.sheetHeader, isCompactHeader && styles.sheetHeaderCompact]}>
       <View style={styles.sheetNameRow}>
         <Text
@@ -72,6 +74,14 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
           />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDismiss} hitSlop={10} activeOpacity={0.6} style={[styles.sheetActionBtn, { marginLeft: 2 }]}>
+          <MaterialCommunityIcons name="close" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  ) : (
+    <View style={styles.sheetHeader}>
+      <View style={styles.sheetAnonHeaderRow}>
+        <TouchableOpacity onPress={handleDismiss} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
           <MaterialCommunityIcons name="close" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
@@ -122,6 +132,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
+  },
+  sheetAnonHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   sheetName: {
     flex: 1,

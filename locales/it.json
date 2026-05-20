@@ -314,6 +314,12 @@
       "loginGatePhotosSubtitle": "Foto della community e foto del menu",
       "loginGateReviewsTitle": "Questo ristorante fa per te?",
       "loginGateReviewsSubtitle": "Accedi per vedere recensioni, foto e la compatibilità con le tue esigenze alimentari",
+      "loginGateReviewsSubtitleWithCount": {
+        "one": "Accedi per leggere {{count}} recensione e capire se è sicuro per le tue esigenze alimentari",
+        "other": "Accedi per leggere le {{count}} recensioni e capire se è sicuro per le tue esigenze alimentari"
+      },
+      "loginGateSignInButton": "Accedi",
+      "loginGateCreateAccount": "Crea un account",
       "addedByUser": "Aggiunto da un utente",
       "deleteTitle": "Elimina ristorante",
       "deleteConfirm": "Vuoi eliminare \"{{name}}\"? Questa azione non può essere annullata.",

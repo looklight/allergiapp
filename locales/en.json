@@ -314,6 +314,12 @@
       "loginGatePhotosSubtitle": "Community photos and menu photos",
       "loginGateReviewsTitle": "Is this restaurant right for you?",
       "loginGateReviewsSubtitle": "Sign in to see reviews, photos and compatibility with your dietary needs",
+      "loginGateReviewsSubtitleWithCount": {
+        "one": "Sign in to read {{count}} review and check if it's safe for your dietary needs",
+        "other": "Sign in to read {{count}} reviews and check if it's safe for your dietary needs"
+      },
+      "loginGateSignInButton": "Sign in",
+      "loginGateCreateAccount": "Create an account",
       "addedByUser": "Added by a user",
       "deleteTitle": "Delete restaurant",
       "deleteConfirm": "Do you want to delete \"{{name}}\"? This action cannot be undone.",
