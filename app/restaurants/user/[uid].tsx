@@ -9,7 +9,6 @@ import type { UserReview } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
 import ProfileCard from '../../../components/ProfileCard';
 import UserReviewCard from '../../../components/UserReviewCard';
-import LocationStatsHeader from '../../../components/LocationStatsHeader';
 import CountryFilterChips from '../../../components/CountryFilterChips';
 import { useLocationFilters } from '../../../hooks/useLocationFilters';
 import i18n from '../../../utils/i18n';
@@ -34,7 +33,7 @@ export default function PublicProfileScreen() {
   const [likesReceived, setLikesReceived] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { stats, countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredReviews } =
+  const { countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredReviews } =
     useLocationFilters(reviews, getReviewLocation);
 
   useEffect(() => {
@@ -97,7 +96,6 @@ export default function PublicProfileScreen() {
       >
         {reviews.length > 0 && (
           <>
-            <LocationStatsHeader stats={stats} itemsLabelKey="restaurants.user.stats.reviews" />
             <CountryFilterChips
               options={countryOptions}
               selected={selectedCountry}
