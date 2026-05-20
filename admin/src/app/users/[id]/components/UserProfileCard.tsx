@@ -1,4 +1,5 @@
 import type { UserProfile } from '@/lib/types';
+import { labelAllergen, labelDiet } from '@/lib/dietaryLabels';
 
 interface Props {
   user: UserProfile;
@@ -38,6 +39,8 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
         </button>
       )}
 
+      <DietaryNeeds allergens={user.allergens ?? []} diets={user.dietary_preferences ?? []} />
+
       <div className={`grid gap-4 mt-6 ${mediaCount > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <div className="text-center">
           <p className="text-2xl font-bold">{restaurantCount}</p>
@@ -54,6 +57,48 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function DietaryNeeds({ allergens, diets }: { allergens: string[]; diets: string[] }) {
+  if (allergens.length === 0 && diets.length === 0) return null;
+
+  return (
+    <div className="mt-6 pt-6 border-t space-y-3">
+      <h2 className="text-sm font-semibold text-gray-700">Esigenze alimentari</h2>
+
+      {allergens.length > 0 && (
+        <div>
+          <p className="text-xs text-gray-500 mb-1.5">Allergeni</p>
+          <div className="flex flex-wrap gap-1.5">
+            {allergens.map((id) => (
+              <span
+                key={id}
+                className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-rose-100 text-rose-800"
+              >
+                {labelAllergen(id)}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {diets.length > 0 && (
+        <div>
+          <p className="text-xs text-gray-500 mb-1.5">Dieta / intolleranze</p>
+          <div className="flex flex-wrap gap-1.5">
+            {diets.map((id) => (
+              <span
+                key={id}
+                className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800"
+              >
+                {labelDiet(id)}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
