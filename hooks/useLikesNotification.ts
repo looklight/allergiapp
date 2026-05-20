@@ -14,7 +14,7 @@
  * scendere last_seen — resta come highwatermark.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { RestaurantService } from '../services/restaurantService';
@@ -26,6 +26,14 @@ export function useLikesNotification() {
   // la fetch non risolve, cosi' non ci sono mai delta fasulli (currentLikes=0 a
   // freddo causerebbe shouldAnimate=false con onAnimationEnd intempestivo).
   const [fetchedLikes, setFetchedLikes] = useState<number | null>(null);
+
+  // Reset al logout: senza utente non ci sono like da contare, altrimenti il
+  // valore stale farebbe restare acceso il pallino o trapelare nel prossimo
+  // utente sullo stesso device prima del primo refresh.
+  useEffect(() => {
+    if (!user?.uid) setFetchedLikes(null);
+  }, [user?.uid]);
+
   const lastSeenLikes = userProfile?.last_seen_likes_count ?? 0;
   const currentLikes = fetchedLikes ?? lastSeenLikes;
 
@@ -46,7 +54,7 @@ export function useLikesNotification() {
     }, [refresh]),
   );
 
-  const unseen = Math.max(currentLikes - lastSeenLikes, 0);
+  const unseen = user?.uid ? Math.max(currentLikes - lastSeenLikes, 0) : 0;
 
   const markAsSeen = useCallback(async () => {
     if (!user?.uid) return;
