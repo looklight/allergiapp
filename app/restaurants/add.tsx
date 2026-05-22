@@ -180,8 +180,6 @@ function ConfirmStep({
   onRatingChange,
   comment,
   onCommentChange,
-  skipReview,
-  onToggleSkip,
   selectedAllergens,
   onAllergensChange,
   selectedDiets,
@@ -204,8 +202,6 @@ function ConfirmStep({
   onRatingChange: (r: 0 | 1 | 2 | 3 | 4 | 5) => void;
   comment: string;
   onCommentChange: (text: string) => void;
-  skipReview: boolean;
-  onToggleSkip: () => void;
   selectedAllergens: string[];
   onAllergensChange: (a: string[]) => void;
   selectedDiets: string[];
@@ -271,73 +267,52 @@ function ConfirmStep({
 
       {/* Valutazione iniziale */}
       <Surface style={styles.section} elevation={0}>
-        {!skipReview ? (
+        <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.howRate')}</Text>
+        <Text style={styles.stepHint}>
+          {i18n.t('restaurants.add.ratingHelpsUsers')}
+        </Text>
+        <View style={styles.ratingRow}>
+          <StarRating rating={rating} size={36} onRate={onRatingChange} />
+          {rating > 0 && (
+            <TouchableOpacity onPress={() => onRatingChange(0)} hitSlop={8}>
+              <MaterialCommunityIcons name="close-circle-outline" size={20} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {rating > 0 && (
           <>
-            <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.howRate')}</Text>
-            <Text style={styles.stepHint}>
-              {i18n.t('restaurants.add.ratingHelpsUsers')}
-            </Text>
-            <View style={styles.ratingRow}>
-              <StarRating rating={rating} size={36} onRate={onRatingChange} />
-              {rating > 0 && (
-                <TouchableOpacity onPress={() => onRatingChange(0)} hitSlop={8}>
-                  <MaterialCommunityIcons name="close-circle-outline" size={20} color={theme.colors.textSecondary} />
+            <TextInput
+              value={comment}
+              onChangeText={onCommentChange}
+              placeholder={i18n.t('restaurants.add.commentPlaceholder')}
+              placeholderTextColor={theme.colors.textDisabled}
+              multiline
+              mode="outlined"
+              style={styles.commentInput}
+              outlineStyle={styles.commentInputOutline}
+            />
+            <View style={styles.photosRow}>
+              {photos.map((uri, i) => (
+                <View key={i} style={styles.photoThumb}>
+                  <Image source={{ uri }} style={styles.photoThumbImg} />
+                  <TouchableOpacity style={styles.photoRemove} onPress={() => onRemovePhoto(i)} hitSlop={4}>
+                    <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.onPrimary} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {remaining > 0 && (
+                <TouchableOpacity style={styles.photoAdd} onPress={onAddPhoto} activeOpacity={0.7}>
+                  <MaterialCommunityIcons name="camera-plus-outline" size={20} color={theme.colors.textSecondary} />
+                  <Text style={styles.photoAddText}>{i18n.t('restaurants.add.photoLabel')}</Text>
                 </TouchableOpacity>
               )}
             </View>
-            {rating > 0 && (
-              <>
-                <TextInput
-                  value={comment}
-                  onChangeText={onCommentChange}
-                  placeholder={i18n.t('restaurants.add.commentPlaceholder')}
-                  placeholderTextColor={theme.colors.textDisabled}
-                  multiline
-                  mode="outlined"
-                  style={styles.commentInput}
-                  outlineStyle={styles.commentInputOutline}
-                />
-                <View style={styles.photosRow}>
-                  {photos.map((uri, i) => (
-                    <View key={i} style={styles.photoThumb}>
-                      <Image source={{ uri }} style={styles.photoThumbImg} />
-                      <TouchableOpacity style={styles.photoRemove} onPress={() => onRemovePhoto(i)} hitSlop={4}>
-                        <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.onPrimary} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                  {remaining > 0 && (
-                    <TouchableOpacity style={styles.photoAdd} onPress={onAddPhoto} activeOpacity={0.7}>
-                      <MaterialCommunityIcons name="camera-plus-outline" size={20} color={theme.colors.textSecondary} />
-                      <Text style={styles.photoAddText}>{i18n.t('restaurants.add.photoLabel')}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </>
-            )}
-
-            {rating === 0 && (
-              <TouchableOpacity onPress={onToggleSkip} style={styles.skipLink} hitSlop={8}>
-                <Text style={styles.skipLinkText}>{i18n.t('restaurants.add.notYetVisited')}</Text>
-              </TouchableOpacity>
-            )}
           </>
-        ) : (
-          <View style={styles.skipBox}>
-            <TouchableOpacity onPress={onToggleSkip} style={styles.skipBoxHeader} activeOpacity={0.7}>
-              <MaterialCommunityIcons name="heart-outline" size={18} color={theme.colors.primary} />
-              <Text style={styles.skipBoxTitle}>{i18n.t('restaurants.add.helpCommunityTitle')}</Text>
-              <Text style={styles.skipUndoText}>{i18n.t('restaurants.add.haveVisited')}</Text>
-            </TouchableOpacity>
-            <Text style={styles.skipBoxText}>
-              {i18n.t('restaurants.add.skipBoxText')}
-            </Text>
-          </View>
         )}
       </Surface>
 
       {/* Piano alimentare: mostrato solo se si sta lasciando una valutazione */}
-      {!skipReview && rating > 0 && (
+      {rating > 0 && (
         <>
           <DietaryNeedsPicker
             allergens={selectedAllergens}
@@ -399,7 +374,6 @@ export default function AddRestaurantScreen() {
   // Stato recensione iniziale
   const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [comment, setComment] = useState('');
-  const [skipReview, setSkipReview] = useState(false);
   const { photos, remaining, showPickerAlert, removePhoto, resetPhotos } = useImagePicker({
     maxPhotos: 3,
     allowsMultipleSelection: true,
@@ -420,7 +394,6 @@ export default function AddRestaurantScreen() {
     setCuisineTypes([]);
     setRating(0);
     setComment('');
-    setSkipReview(false);
     setSelectedAllergens([...dietaryNeeds.allergens]);
     setSelectedDiets([...(dietaryNeeds.diets ?? [])]);
     setExplicitlyNoNeeds(false);
@@ -448,7 +421,7 @@ export default function AddRestaurantScreen() {
   const handleSubmit = async () => {
     if (!selectedPlace || !user) return;
 
-    if (!skipReview && rating === 0) {
+    if (rating === 0) {
       Alert.alert(
         i18n.t('restaurants.add.ratingRequiredTitle'),
         i18n.t('restaurants.add.ratingRequiredMsg')
@@ -499,7 +472,7 @@ export default function AddRestaurantScreen() {
 
     const result = await RestaurantService.addRestaurant(input, user.uid);
 
-    if (result && !skipReview && rating > 0) {
+    if (result && rating > 0) {
       await RestaurantService.addReview({
         restaurantId: result.id,
         input: {
@@ -532,7 +505,7 @@ export default function AddRestaurantScreen() {
     }
   };
 
-  const canSubmit = skipReview || (rating > 0 && (hasNeeds || explicitlyNoNeeds));
+  const canSubmit = rating > 0 && (hasNeeds || explicitlyNoNeeds);
   const scrollViewRef = useRef<ScrollView>(null);
   const prevRatingRef = useRef<number>(0);
 
@@ -563,8 +536,6 @@ export default function AddRestaurantScreen() {
             onRatingChange={setRating}
             comment={comment}
             onCommentChange={setComment}
-            skipReview={skipReview}
-            onToggleSkip={() => setSkipReview(prev => !prev)}
             selectedAllergens={selectedAllergens}
             onAllergensChange={handleAllergensChange}
             selectedDiets={selectedDiets}
@@ -879,38 +850,6 @@ const styles = StyleSheet.create({
   commentInputOutline: {
     borderRadius: 10,
     borderColor: theme.colors.border,
-  },
-  skipLink: {
-    alignSelf: 'flex-start',
-  },
-  skipLinkText: {
-    fontSize: 12,
-    color: theme.colors.textDisabled,
-    textDecorationLine: 'underline',
-  },
-  skipBox: {
-    gap: 8,
-  },
-  skipBoxHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  skipBoxTitle: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  skipBoxText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 19,
-  },
-  skipUndoText: {
-    fontSize: 13,
-    color: theme.colors.primary,
-    fontWeight: '600',
   },
   noNeedsBtn: {
     flexDirection: 'row',
