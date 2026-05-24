@@ -106,6 +106,29 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - Il trigger `claim → owner_id` è già nel debito tecnico (nessun automatismo attuale)
 - Valutare se `is_premium` viene dato con il claim o separatamente (es. freemium: claim gratuito, feature premium a pagamento)
 
+### Condivisione ristorante (native share + deep link)
+**Priorità: bassa — da pianificare, due fasi**
+
+Pulsante "Condividi" nella scheda ristorante che apre lo share sheet nativo iOS/Android. L'utente sceglie l'app (WhatsApp, iMessage, Mail, ecc.) e invia un messaggio precompilato con nome + indirizzo + link a `allergiapp.com/r/<id>`.
+
+**Fase 1 — share semplice (zero rischio, OTA-compatibile, ~1-2h):**
+- `Share.share({ message, url })` da `react-native` nel componente scheda ristorante
+- Pagina pubblica sulla landing (`landing` branch su Vercel) tipo `allergiapp.com/r/[id]` che mostra nome/foto/indirizzo + CTA "Apri in AllergiApp / Scarica"
+- Meta tag OG base per anteprima link in iMessage/WhatsApp
+- Limite: chi ha già l'app fa comunque due tap (link → browser → CTA → app)
+
+**Fase 2 — Universal Links (rebuild nativo, no OTA):**
+- Aggiungere `associated-domains` in `app.config.ts` (entitlement iOS)
+- Servire `apple-app-site-association` (iOS) e `assetlinks.json` (Android) dalla landing
+- Configurare deep linking expo-router per route `/restaurants/[id]`
+- Risultato: il link apre direttamente la scheda nell'app se installata, fallback browser altrimenti
+- Rischio: se la config è sbagliata i link non aprono l'app, ma l'app non crasha. Va testato in TestFlight prima di prod.
+
+**Note:**
+- Tracciare evento `restaurant_shared` in analytics (utile per capire quali ristoranti girano di più)
+- Valutare se includere allergeni filtrati / dieta nel link (es. `?diet=vegan`) per pre-filtrare la scheda all'apertura
+- Privacy: il link è pubblico, non esporre info utente che condivide
+
 ### Notifiche per incentivare le recensioni
 **Priorità: bassa — da valutare dopo il lancio**
 
