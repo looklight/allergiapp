@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthService, type AppUser, type UserProfile } from '../services/auth';
+import { Crashlytics } from '../services/crashlytics';
 import type { DietaryNeeds } from '../types';
 
 interface AuthContextValue {
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = AuthService.onAuthStateChanged(async (u) => {
       setUser(u);
+      Crashlytics.setUserId(u?.uid ?? null);
       try {
         if (u) {
           await loadProfile(u);
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.warn('[AuthContext] Failed to load profile:', error);
+        Crashlytics.recordError(error as Error, 'AuthProfileLoadError');
         setUserProfile(null);
       } finally {
         setIsLoading(false);

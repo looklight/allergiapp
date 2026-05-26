@@ -6,6 +6,7 @@ type CrashlyticsInstance = {
   recordError: (error: Error, jsErrorName?: string) => void;
   setUserId: (userId: string) => Promise<void>;
   setAttribute: (name: string, value: string) => Promise<void>;
+  setAttributes: (attributes: Record<string, string>) => Promise<void>;
 };
 
 let crashlyticsInstance: CrashlyticsInstance | null = null;
@@ -20,6 +21,12 @@ try {
   if (__DEV__) console.log('[Crashlytics] Firebase Crashlytics non disponibile (probabilmente Expo Go)');
 }
 
+// In dev evitiamo di sporcare la dashboard. Tutti i metodi sono no-op
+// quando il modulo nativo non e' presente (Expo Go) o siamo in __DEV__.
+function canReport(): boolean {
+  return isCrashlyticsAvailable && !!crashlyticsInstance && !__DEV__;
+}
+
 export const Crashlytics = {
   /**
    * Enable or disable crash reporting based on user consent.
@@ -27,28 +34,65 @@ export const Crashlytics = {
    */
   setCollectionEnabled(enabled: boolean) {
     if (!isCrashlyticsAvailable || !crashlyticsInstance) return;
-    // Always disabled in dev to avoid polluting crash reports
     const shouldEnable = !__DEV__ && enabled;
     crashlyticsInstance.setCrashlyticsCollectionEnabled(shouldEnable).catch(() => {});
   },
 
   /**
-   * Record a non-fatal error manually.
+   * Associa i prossimi crash a un utente. Passare null al logout per dissociare.
    */
-  recordError(error: Error) {
-    if (!isCrashlyticsAvailable || !crashlyticsInstance || __DEV__) return;
+  setUserId(userId: string | null) {
+    if (!canReport()) return;
     try {
-      crashlyticsInstance.recordError(error);
+      crashlyticsInstance!.setUserId(userId ?? '').catch(() => {});
     } catch {}
   },
 
   /**
-   * Add a log message to the crash report context.
+   * Imposta un singolo attributo (max 64 char per chiave e valore lato Firebase).
+   */
+  setAttribute(name: string, value: string) {
+    if (!canReport()) return;
+    try {
+      crashlyticsInstance!.setAttribute(name, value).catch(() => {});
+    } catch {}
+  },
+
+  /**
+   * Batch di attributi. Stringhe vuote/null vengono ignorate per non
+   * sovrascrivere attributi precedenti con valori mancanti.
+   */
+  setAttributes(attributes: Record<string, string | number | boolean | null | undefined>) {
+    if (!canReport()) return;
+    const sanitized: Record<string, string> = {};
+    for (const [key, raw] of Object.entries(attributes)) {
+      if (raw === null || raw === undefined) continue;
+      sanitized[key] = String(raw);
+    }
+    if (Object.keys(sanitized).length === 0) return;
+    try {
+      crashlyticsInstance!.setAttributes(sanitized).catch(() => {});
+    } catch {}
+  },
+
+  /**
+   * Record a non-fatal error manually.
+   * jsErrorName: nome semantico per il grouping in dashboard (es. 'SupabaseRpcError').
+   */
+  recordError(error: Error, jsErrorName?: string) {
+    if (!canReport()) return;
+    try {
+      crashlyticsInstance!.recordError(error, jsErrorName);
+    } catch {}
+  },
+
+  /**
+   * Add a log message to the crash report context (breadcrumb).
    */
   log(message: string) {
-    if (!isCrashlyticsAvailable || !crashlyticsInstance || __DEV__) return;
+    if (!canReport()) return;
     try {
-      crashlyticsInstance.log(message);
+      crashlyticsInstance!.log(message);
     } catch {}
   },
 };

@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import Constants from 'expo-constants';
 import { theme } from '../constants/theme';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -26,8 +27,9 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // L'handler originale (RN default) viene salvato sul globalThis al primo
 // load, così gli hot-reload non accatastano wrapper su wrapper (causava
 // stack overflow ricorsivo che nascondeva l'errore vero).
-// Usa console.warn per non re-triggerare la LogBox red-box.
-if (__DEV__) {
+// In dev usa console.warn (no LogBox red-box). In prod inoltra a Crashlytics
+// come non-fatal e poi delega al default handler (che gestisce il crash).
+{
   const g = globalThis as unknown as { __appOriginalErrorHandler?: (e: unknown, f?: boolean) => void };
   if (!g.__appOriginalErrorHandler) {
     g.__appOriginalErrorHandler = ErrorUtils.getGlobalHandler();
@@ -38,9 +40,13 @@ if (__DEV__) {
     if (!isHandling) {
       isHandling = true;
       try {
-        console.warn(
-          `\n[GlobalError] ${isFatal ? 'FATAL' : 'NON-FATAL'}:\n${error?.message}\n${error?.stack?.split('\n').slice(0, 8).join('\n')}`
-        );
+        if (__DEV__) {
+          console.warn(
+            `\n[GlobalError] ${isFatal ? 'FATAL' : 'NON-FATAL'}:\n${error?.message}\n${error?.stack?.split('\n').slice(0, 8).join('\n')}`
+          );
+        } else if (error instanceof Error) {
+          Crashlytics.recordError(error, isFatal ? 'GlobalJSFatal' : 'GlobalJSNonFatal');
+        }
       } finally {
         isHandling = false;
       }
@@ -51,6 +57,12 @@ if (__DEV__) {
 
 // --- ErrorBoundary custom per expo-router ---
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => void }) {
+  // Reporta a Crashlytics il primo render (no-op in __DEV__/Expo Go).
+  // Dipendiamo dall'identita' dell'oggetto error: se cambia, e' un nuovo errore.
+  useEffect(() => {
+    Crashlytics.recordError(error, 'ReactRenderError');
+  }, [error]);
+
   return (
     <View style={errorStyles.container}>
       <Text style={errorStyles.icon}>!</Text>
@@ -121,6 +133,14 @@ function AppContent() {
       if (hasAcceptedLegalTerms) {
         Analytics.setTrackingConsent(trackingConsent);
         Crashlytics.setCollectionEnabled(trackingConsent.status === 'authorized');
+        Crashlytics.setAttributes({
+          app_version: Constants.expoConfig?.version,
+          card_language: settings.cardLanguage,
+          app_language: settings.appLanguage,
+          allergen_count: profileAllergens.length + profileOtherFoods.length,
+          restriction_count: profileRestrictions.length,
+          diet_modes: profileActiveDietModes.join(',') || 'none',
+        });
         Analytics.logAppOpened();
         Analytics.updateUserProperties({
           allergenCount: profileAllergens.length + profileOtherFoods.length,
@@ -149,6 +169,8 @@ function AppContent() {
       prevPathname.current = pathname;
       const screenName = pathname === '/' ? 'Home' : pathname.replace(/^\//, '');
       Analytics.logScreenView(screenName);
+      Crashlytics.log(`screen: ${screenName}`);
+      Crashlytics.setAttribute('last_screen', screenName);
     }
   }, [pathname, isReady, hasAcceptedLegalTerms]);
 
