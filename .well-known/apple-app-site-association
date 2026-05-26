@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["F327489U5B.com.allergiapp"],
+        "components": [
+          {
+            "/": "/r/*",
+            "comment": "Pagina pubblica ristorante condivisibile"
+          }
+        ]
+      }
+    ]
+  }
+}
