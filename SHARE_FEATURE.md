@@ -198,6 +198,30 @@ _Nessun tema aperto. Design phase chiusa._
 4. Submit alle App Store
 5. Test su device fisico: tap share → share sheet → invio link a se stesso → tap link → deve aprire app sulla scheda corretta
 
+## Follow-up — Da fare quando possibile
+
+### SHA-256 Android per Universal Links verificati
+**Stato**: V1 sarà rilasciata con `landing/.well-known/assetlinks.json` contenente `__ANDROID_SHA256_PLACEHOLDER__`. Conseguenza: Android non verifica i link → click apre Chrome invece dell'app direttamente. Workaround presente (tap "Apri in AllergiApp" sulla pagina web → custom scheme `allergiapp://r/{slug}` → app si apre). Esperienza utente leggermente peggiore, niente di rotto.
+
+**Cosa serve**: SHA-256 della **app signing key** di Google Play (NON la upload key di EAS). Formato `AA:BB:CC:...` con 32 coppie esadecimali separate da `:`.
+
+**Dove cercare** (in ordine di probabilità):
+1. **Google Play Console** → Setup → App integrity → App signing → "Certificato della chiave di firma dell'app" → SHA-256. La UI è scomoda da raggiungere, ma è la fonte autoritativa.
+2. **Firebase Console** → Project settings → Le tue app → app Android con package `com.allergiapp.mobile` → SHA certificate fingerprints (se aggiunto in passato)
+3. Eventualmente recuperabile via `gcloud` / Google Play Developer API con service account
+
+**Cosa fare quando trovato**:
+1. Editare `landing/.well-known/assetlinks.json` sostituendo `__ANDROID_SHA256_PLACEHOLDER__` con il valore reale
+2. Commit + push branch landing → preview deploy automatico
+3. Verifica: aprire `https://allergiapp.com/.well-known/assetlinks.json` → JSON con SHA-256 visibile, Content-Type `application/json`
+4. Forzare riverifica Android (per device già esistenti): da terminale con device collegato → `adb shell pm verify-app-links --re-verify com.allergiapp.mobile`
+5. Salvare il valore in `reference_google_cloud.md` per evitare di ricercarlo di nuovo
+
+**Niente nuova build app richiesta** — è solo un file server-side.
+
+### Discrepanza package name Firebase (separato)
+Firebase Console ha un'entry Android con package `com.allergiapp` (senza `.mobile`), mentre la build Android usa `com.allergiapp.mobile`. Da chiarire se questa entry è legacy/duplicata o se Firebase analytics/crashlytics in prod sta puntando al package sbagliato. Non urgente, da indagare separatamente.
+
 ## Riferimenti
 
 - Branch app: `feature/restaurant-share` _(da creare quando partirà l'implementazione)_
