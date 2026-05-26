@@ -8,7 +8,7 @@ Serve solo a non perdere il filo.
 
 ## Stato attuale
 
-Fase 1 (DB foundation) completata. Pronti per Fase 2 (landing serverless function).
+Fase 1 (DB foundation) e Fase 2 (landing serverless function) completate e testate su preview Vercel. Pronti per Fase 3 (app side: share button + deep link).
 
 ## Decisioni prese
 
@@ -166,6 +166,20 @@ _Nessun tema aperto. Design phase chiusa._
 - ✅ Verifica regressioni: app 1.0.6 e admin continuano a funzionare normalmente
 
 **Nota per Fase 2**: `user_avatar_url` nella RPC pubblica ritorna chiavi tipo `"plate_wizard"` invece di URL HTTP (sono identificatori di avatar custom risolti client-side). La landing function dovrà replicare la stessa risoluzione.
+
+### 2026-05-26 — Fase 2: Landing serverless function
+- ✅ Branch `feature/restaurant-share-page` su `landing` con 2 commit (pagina + Universal Links)
+- ✅ Serverless function `landing/api/r/[slug].js` deployata su Vercel preview
+- ✅ Env vars `SUPABASE_URL` + `SUPABASE_ANON_KEY` configurate su Vercel landing project (production/preview/development) via REST API
+- ✅ Pagina pubblica testata su preview, rendering corretto: nome, indirizzo, rating, cuisine_votes, prezzo, menu, reviews con snapshots, smart banner Android, meta OG, deep link con fallback
+- ✅ File `.well-known/apple-app-site-association` (Team ID F327489U5B + bundle) e `assetlinks.json` (con placeholder SHA-256 — da popolare)
+
+**Note Fase 2 (debito tecnico noto)**:
+- **Avatar non renderizzati**: l'app risolve chiavi tipo `plate_wizard` a immagini locali. La landing mostra solo il nome — deliberato per V1
+- **Mappa preview statica non implementata**: era in design Tema 4. Solo bottone "Vai su Google Maps" presente. Da aggiungere in M2 polish (Mapbox/Google Static Maps API)
+- **`labels.js` hardcoded**: traduzioni IT/EN copiate da constants TypeScript dell'app. Migrazione futura: RPC che pesca da Supabase `translations`
+- **JSON-LD `Restaurant` schema mancante**: SEO opportunity per stelline gialle Google. M2 polish
+- **SHA-256 Android per assetlinks.json**: ancora placeholder, da popolare via `npx eas credentials --platform android`
 
 ## Riferimenti
 
