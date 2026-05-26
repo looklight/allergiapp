@@ -5,6 +5,7 @@ import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import RestaurantDetailBody from '../../components/restaurants/RestaurantDetailBody';
 import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
+import { shareRestaurant } from '../../services/shareRestaurant';
 
 export default function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,11 +21,21 @@ export default function RestaurantDetailScreen() {
       <AppHeader
         title={detail.restaurant?.name ?? (detail.isLoading ? ' ' : i18n.t('restaurants.myReviews.restaurantFallback'))}
         onLeadingPress={handleDismiss}
-        actions={detail.restaurant ? [{
-          icon: detail.isFavorite ? 'heart' : 'heart-outline',
-          onPress: detail.handleToggleFavorite,
-          accessibilityLabel: i18n.t(detail.isFavorite ? 'restaurants.detail.removeFavorite' : 'restaurants.detail.addFavorite'),
-        }] : undefined}
+        actions={detail.restaurant ? [
+          {
+            icon: 'share-variant',
+            onPress: () => {
+              const r = detail.restaurant!;
+              shareRestaurant({ id: r.id, slug: r.slug, name: r.name, city: r.city });
+            },
+            accessibilityLabel: i18n.t('share.shareRestaurant'),
+          },
+          {
+            icon: detail.isFavorite ? 'heart' : 'heart-outline',
+            onPress: detail.handleToggleFavorite,
+            accessibilityLabel: i18n.t(detail.isFavorite ? 'restaurants.detail.removeFavorite' : 'restaurants.detail.addFavorite'),
+          },
+        ] : undefined}
       />
 
       <RestaurantDetailBody

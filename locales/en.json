@@ -538,10 +538,22 @@
       "reviewsLabel": "Reviews",
       "filterAll": "All",
       "stats": {
-        "reviews": { "one": "review", "other": "reviews" },
-        "favorites": { "one": "favorite", "other": "favorites" },
-        "cities": { "one": "city", "other": "cities" },
-        "countries": { "one": "country", "other": "countries" }
+        "reviews": {
+          "one": "review",
+          "other": "reviews"
+        },
+        "favorites": {
+          "one": "favorite",
+          "other": "favorites"
+        },
+        "cities": {
+          "one": "city",
+          "other": "cities"
+        },
+        "countries": {
+          "one": "country",
+          "other": "countries"
+        }
       }
     },
     "avatarGallery": {
@@ -739,5 +751,11 @@
     },
     "viewGallery": "See gallery",
     "later": "Later"
+  },
+  "share": {
+    "shareRestaurant": "Share restaurant",
+    "suffix": "seen on AllergiApp",
+    "dialogTitle": "Share this restaurant",
+    "error": "Could not share. Please try again."
   }
 }
