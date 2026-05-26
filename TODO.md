@@ -125,7 +125,7 @@ Pulsante "Condividi" nella scheda ristorante che apre lo share sheet nativo iOS/
 - Rischio: se la config è sbagliata i link non aprono l'app, ma l'app non crasha. Va testato in TestFlight prima di prod.
 
 **Note:**
-- Tracciare evento `restaurant_shared` in analytics (utile per capire quali ristoranti girano di più)
+- [x] Tracciamento `restaurant_shared` su Supabase `analytics_events` (vedi snapshot Analytics sotto).
 - Valutare se includere allergeni filtrati / dieta nel link (es. `?diet=vegan`) per pre-filtrare la scheda all'apertura
 - Privacy: il link è pubblico, non esporre info utente che condivide
 
@@ -413,22 +413,35 @@ Usati in 8 punti: login, signup, add ristorante, profile guest, FAB ristoranti, 
 
 ---
 
-## Stato Analytics & Firebase — snapshot 2026-05-12
+## Stato Analytics & Crashlytics — snapshot 2026-05-26
 
-Firebase Analytics + Crashlytics sono **attivi in produzione** con pattern Expo Go-safe (verifica post-merge):
+Tre pipeline attive, tutte Expo Go-safe (require dinamico + consent gating):
 
-- Plugin nativi condizionali in `app.config.ts:67-72` — caricati solo se `EAS_BUILD=true`. `googleServicesFile` iOS/Android anch'essi condizionali (`app.config.ts:18,43`).
-- `services/analytics.ts` e `services/crashlytics.ts` usano `require()` dinamico in `try/catch` → in Expo Go `isFirebaseAvailable=false` e tutti i metodi diventano no-op.
-- Gating consenso ATT corretto in `app/_layout.tsx:120-122` (dopo `hasAcceptedLegalTerms`): `Analytics.setTrackingConsent` + `Crashlytics.setCollectionEnabled` + `logAppOpened` + `updateUserProperties`. Propagazione immediata in `app/consent.tsx:58`.
+**1. Firebase Analytics (legacy)** — `services/analytics.ts`
+Copre eventi vecchi: allergeni, other foods, restrizioni/diete, lingue, card view/toggle, banner, app lifecycle, screen view, user properties. Le feature aggiunte da fine 2025 in poi **non vanno qui** (strategia "no nuovi eventi su Firebase", memory `project_firebase_removal`).
 
-**Conseguenza pratica:** sviluppo in Expo Go senza warning Firebase, build EAS (preview/beta/prod) inviano eventi Analytics (gated ATT) e crash a Crashlytics.
+**2. Firebase Crashlytics** — `services/crashlytics.ts` (esteso 2026-05-26)
+- Wrapper espone `recordError(err, jsErrorName?)`, `setUserId`, `setAttribute(s)`, `log`, `setCollectionEnabled`. `canReport()` centralizza i guard `__DEV__` + Expo Go.
+- `app/_layout.tsx`: `setGlobalHandler` attivo anche in prod (inoltra errori JS non gestiti a `recordError` come `GlobalJSFatal`/`GlobalJSNonFatal`), `ErrorBoundary` reporta come `ReactRenderError`, init popola attributi statici (`app_version`, `card_language`, `app_language`, `allergen_count`, `restriction_count`, `diet_modes`), `logScreenView` aggiunge breadcrumb + `last_screen` attribute.
+- `contexts/AuthContext.tsx`: `setUserId(uid)` su login, `setUserId(null)` su logout, `recordError` sul fallimento profilo.
 
-**Da verificare in vivo con un build EAS preview:** eventi visibili in Firebase Console (con consenso ATT accettato), crash forzato visibile in Crashlytics, Expo Go senza warning.
+**3. Supabase `analytics_events`** — `services/supabaseAnalytics.ts` (nuovo 2026-05-26)
+Wrapper consent-gated, fire-and-forget. In `__DEV__` logga a console invece di chiamare la RPC. Catalogo eventi (`EventName` union):
+- `onboarding_completed` — `app/auth/onboarding-dietary.tsx`
+- `restaurant_viewed` — `app/restaurants/[id].tsx` (su mount)
+- `review_created` — `app/restaurants/add-review.tsx` (solo nuove, non edit)
+- `sign_in` — `services/auth.ts` (email) + `services/socialAuth.ts` (google/apple) con `is_signup` corretto
+- `restaurant_search` — `app/(tabs)/restaurants.tsx` (`handleSelectFromAutocomplete` + `handleSelectPlace`, solo con query non vuota)
+- `restaurant_shared` — `services/shareRestaurant.ts` (migrato da RPC raw)
 
-### Eventuale futura sostituzione del backend Analytics
-Non urgente, da fare solo se si decide di abbandonare Firebase:
-- L'interfaccia pubblica `Analytics.*` è già astratta: basta riscrivere l'implementazione di `services/analytics.ts` cambiando target (Supabase `analytics_events` / PostHog / Mixpanel), i call site non vanno toccati.
-- Crashlytics può restare anche senza Analytics — è un servizio separato.
+Tutti consent-gated via `SupabaseAnalytics.setTrackingConsent(...)` propagato in `_layout.tsx` accanto a `Analytics.setTrackingConsent`.
+
+**Da verificare in build EAS preview:** crash forzato → Crashlytics dashboard con `user_id` + `last_screen`; eventi nuovi → tabella `analytics_events` in Supabase.
+
+### Cosa manca
+- Widget admin per visualizzare i nuovi eventi (3 sezioni: counters 7/30g, top ricerche, ultimi 20 eventi). Branch `admin-prod`.
+- Retention/purge (`pg_cron` su `analytics_events` > 1 anno) → solo se cresci sopra ~5K DAU.
+- Migrazione del legacy Firebase Analytics su Supabase: **non pianificato**, i dati storici Firebase restano dove sono.
 
 ---
 
