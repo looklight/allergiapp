@@ -8,6 +8,8 @@ import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import { useAuth } from '../../contexts/AuthContext';
 import BottomSheet, { type BottomSheetRef } from '../BottomSheet';
 import RestaurantDetailBody from './RestaurantDetailBody';
+import { shareRestaurant } from '../../services/shareRestaurant';
+import i18n from '../../utils/i18n';
 
 const HEADER_LINE_HEIGHT = 26;
 const SNAP_POINTS = [0.55, 0.92];
@@ -66,6 +68,18 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         >
           {detail.restaurant?.name ?? ''}
         </Text>
+        <TouchableOpacity
+          onPress={() => {
+            const r = detail.restaurant;
+            if (r) shareRestaurant({ id: r.id, slug: r.slug, name: r.name, city: r.city });
+          }}
+          hitSlop={10}
+          activeOpacity={0.6}
+          style={styles.sheetActionBtn}
+          accessibilityLabel={i18n.t('share.shareRestaurant')}
+        >
+          <MaterialCommunityIcons name="share-variant" size={22} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={detail.handleToggleFavorite} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
           <MaterialCommunityIcons
             name={detail.isFavorite ? 'heart' : 'heart-outline'}
