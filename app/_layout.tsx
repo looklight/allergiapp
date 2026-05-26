@@ -12,6 +12,7 @@ import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { UnlockedAvatarsProvider } from '../contexts/UnlockedAvatarsContext';
 import { Analytics } from '../services/analytics';
+import { SupabaseAnalytics } from '../services/supabaseAnalytics';
 import { Crashlytics } from '../services/crashlytics';
 import i18n from '../utils/i18n';
 import ConsentModal from './consent';
@@ -132,6 +133,7 @@ function AppContent() {
       // Initialize analytics tracking based on stored consent
       if (hasAcceptedLegalTerms) {
         Analytics.setTrackingConsent(trackingConsent);
+        SupabaseAnalytics.setTrackingConsent(trackingConsent);
         Crashlytics.setCollectionEnabled(trackingConsent.status === 'authorized');
         Crashlytics.setAttributes({
           app_version: Constants.expoConfig?.version,

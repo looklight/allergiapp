@@ -2,7 +2,7 @@
 // Tracciato come evento Supabase 'restaurant_shared' (no Firebase per nuovi eventi).
 
 import { Share, Alert } from 'react-native';
-import { supabase } from './supabase';
+import { SupabaseAnalytics } from './supabaseAnalytics';
 import i18n from '../utils/i18n';
 
 const SHARE_BASE_URL = 'https://allergiapp.com/r';
@@ -34,15 +34,9 @@ export async function shareRestaurant(restaurant: ShareRestaurantInput): Promise
     // L'utente puo' annullare il share — non e' un errore.
     if (result.action === Share.dismissedAction) return;
 
-    // Tracking best-effort: non blocchiamo l'utente se fallisce.
-    supabase.rpc('track_event', {
-      p_event_name: 'restaurant_shared',
-      p_properties: {
-        restaurant_id: restaurant.id,
-        slug: restaurant.slug,
-      },
-    }).then(() => undefined, (err) => {
-      if (__DEV__) console.warn('[share] tracking failed', err);
+    SupabaseAnalytics.track('restaurant_shared', {
+      restaurant_id: restaurant.id,
+      slug: restaurant.slug,
     });
   } catch (err) {
     if (__DEV__) console.warn('[share] share error', err);

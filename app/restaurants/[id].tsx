@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { theme } from '../../constants/theme';
@@ -7,11 +8,18 @@ import RestaurantDetailBody from '../../components/restaurants/RestaurantDetailB
 import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 import { shareRestaurant } from '../../services/shareRestaurant';
+import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 
 export default function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const detail = useRestaurantDetail(id);
+
+  // Track una sola volta per ingresso schermata. Tracciamo l'id grezzo;
+  // l'utente loggato e' gia' catturato da auth.uid() lato RPC.
+  useEffect(() => {
+    if (id) SupabaseAnalytics.track('restaurant_viewed', { restaurant_id: id });
+  }, [id]);
 
   const handleDismiss = () => router.back();
 

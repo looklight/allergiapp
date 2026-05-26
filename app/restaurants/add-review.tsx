@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
+import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantCategories';
@@ -155,6 +156,14 @@ export default function AddReviewScreen() {
       refreshUnlockedAvatars();
 
       if (review) {
+        if (!isEditMode) {
+          SupabaseAnalytics.track('review_created', {
+            restaurant_id: restaurantId,
+            rating,
+            has_comment: comment.trim().length > 0,
+            photo_count: photos.length,
+          });
+        }
         Alert.alert(
           i18n.t('restaurants.review.thanksTitle'),
           isEditMode ? i18n.t('restaurants.review.updatedMsg') : i18n.t('restaurants.review.publishedMsg'),

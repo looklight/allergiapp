@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import DietaryChipsSelector from '../../components/restaurants/DietaryChipsSelector';
 import { AuthService } from '../../services/auth';
+import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import { useAuth } from '../../contexts/AuthContext';
 import i18n from '../../utils/i18n';
 import type { FoodRestrictionId, DietId } from '../../types';
@@ -55,6 +56,12 @@ export default function OnboardingDietaryScreen() {
         healthConsent ? new Date().toISOString() : undefined,
       );
       await AuthService.completeOnboarding(user.uid);
+      SupabaseAnalytics.track('onboarding_completed', {
+        has_needs: hasSelection,
+        allergen_count: allergens.length,
+        diet_count: diets.length,
+        health_consent: healthConsent,
+      });
       await refreshProfile();
       router.replace('/auth/onboarding-tutorial');
     } catch {

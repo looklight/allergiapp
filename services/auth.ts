@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { SupabaseAnalytics } from './supabaseAnalytics';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 // Tipo utente compatibile con l'interfaccia usata nell'app
@@ -40,6 +41,7 @@ async function signUp(email: string, password: string): Promise<AppUser> {
   // username = 'user_xxxxxx' se non viene fornito.
   await ensureProfile(data.user.id);
 
+  SupabaseAnalytics.track('sign_in', { provider: 'email', is_signup: true });
   return mapUser(data.user)!;
 }
 
@@ -49,6 +51,7 @@ async function signIn(email: string, password: string): Promise<AppUser> {
     password,
   });
   if (error) throw error;
+  SupabaseAnalytics.track('sign_in', { provider: 'email', is_signup: false });
   return mapUser(data.user)!;
 }
 

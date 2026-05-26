@@ -5,6 +5,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from './supabase';
+import { SupabaseAnalytics } from './supabaseAnalytics';
 import { AuthService, type AppUser } from './auth';
 
 // I 3 Google OAuth Client IDs sono pubblici per design (vivono nei binari mobile).
@@ -61,6 +62,7 @@ async function signInWithGoogle(): Promise<AppUser> {
   // DB assegna automaticamente username `user_xxxxxx` se assente.
   await AuthService.ensureProfile(data.user.id);
 
+  SupabaseAnalytics.track('sign_in', { provider: 'google', is_signup: isFirstSignIn(data.user) });
   return { uid: data.user.id, email: data.user.email ?? null };
 }
 
@@ -98,7 +100,15 @@ async function signInWithApple(): Promise<AppUser> {
 
   await AuthService.ensureProfile(data.user.id);
 
+  SupabaseAnalytics.track('sign_in', { provider: 'apple', is_signup: isFirstSignIn(data.user) });
   return { uid: data.user.id, email: data.user.email ?? null };
+}
+
+// Considera "signup" il primo sign-in: Supabase imposta last_sign_in_at uguale
+// a created_at al primo accesso, e lo aggiorna nei successivi.
+function isFirstSignIn(user: { created_at?: string; last_sign_in_at?: string | null }): boolean {
+  if (!user.created_at || !user.last_sign_in_at) return false;
+  return user.created_at === user.last_sign_in_at;
 }
 
 async function isAppleAuthAvailable(): Promise<boolean> {

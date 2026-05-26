@@ -10,6 +10,7 @@ import { theme } from '../../constants/theme';
 import Avatar from '../../components/Avatar';
 import { type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
+import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import { useAuth } from '../../contexts/AuthContext';
 import RestaurantMap from '../../components/map/RestaurantMap';
 import FilterModal, { type FilterApplyResult } from '../../components/restaurants/FilterModal';
@@ -347,9 +348,17 @@ export default function RestaurantsScreen() {
 
   /** Tap su un ristorante dall'autocomplete di ricerca: pulisce la search. */
   const handleSelectFromAutocomplete = useCallback((id: string, lat: number, lng: number) => {
+    if (searchQuery.trim().length > 0) {
+      SupabaseAnalytics.track('restaurant_search', {
+        query: searchQuery.trim().slice(0, 60),
+        source: 'map',
+        selected_kind: 'restaurant',
+        result_count: mapSearch.results.length,
+      });
+    }
     dismissAutocomplete();
     openRestaurantDetail(id, lat, lng);
-  }, [dismissAutocomplete, openRestaurantDetail]);
+  }, [dismissAutocomplete, openRestaurantDetail, searchQuery, mapSearch.results.length]);
 
   /** Tap su un ristorante dal NearbyListSheet: collassa lo sheet mantenendo la banner sul luogo. */
   const handleSelectFromNearbySheet = useCallback((id: string) => {
@@ -408,12 +417,20 @@ export default function RestaurantsScreen() {
 
   const handleSelectPlace = useCallback((lat: number, lng: number, placeType?: string, name?: string) => {
     Keyboard.dismiss();
+    if (searchQuery.trim().length > 0) {
+      SupabaseAnalytics.track('restaurant_search', {
+        query: searchQuery.trim().slice(0, 60),
+        source: 'map',
+        selected_kind: 'place',
+        result_count: mapSearch.results.length,
+      });
+    }
     if (name) {
       activateNearbyPlace(name, lat, lng, placeType);
     } else {
       geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta: zoomForPlaceType(placeType) });
     }
-  }, [geo.setCenterOn, activateNearbyPlace]);
+  }, [geo.setCenterOn, activateNearbyPlace, searchQuery, mapSearch.results.length]);
 
   /** Seleziona il primo risultato di tipo 'place' se presente. Ritorna true se ha selezionato. */
   const selectFirstPlaceIfAny = useCallback((): boolean => {
