@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, BackHandler, Platform } from 'react-native';
+
+const SHARE_ICON = Platform.OS === 'ios' ? 'export-variant' : 'share-variant';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
@@ -68,6 +70,13 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         >
           {detail.restaurant?.name ?? ''}
         </Text>
+        <TouchableOpacity onPress={detail.handleToggleFavorite} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
+          <MaterialCommunityIcons
+            name={detail.isFavorite ? 'heart' : 'heart-outline'}
+            size={22}
+            color={detail.isFavorite ? theme.colors.error : theme.colors.textSecondary}
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             const r = detail.restaurant;
@@ -78,14 +87,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
           style={styles.sheetActionBtn}
           accessibilityLabel={i18n.t('share.shareRestaurant')}
         >
-          <MaterialCommunityIcons name="share-variant" size={22} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={detail.handleToggleFavorite} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
-          <MaterialCommunityIcons
-            name={detail.isFavorite ? 'heart' : 'heart-outline'}
-            size={22}
-            color={detail.isFavorite ? theme.colors.error : theme.colors.textSecondary}
-          />
+          <MaterialCommunityIcons name={SHARE_ICON} size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDismiss} hitSlop={10} activeOpacity={0.6} style={[styles.sheetActionBtn, { marginLeft: 2 }]}>
           <MaterialCommunityIcons name="close" size={22} color={theme.colors.textSecondary} />
