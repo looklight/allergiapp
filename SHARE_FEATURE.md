@@ -8,7 +8,7 @@ Serve solo a non perdere il filo.
 
 ## Stato attuale
 
-Fase 1 (DB foundation), Fase 2 (landing serverless function) e Fase 3 (app side) completate dal lato codice. Prossimi step utente: applicare migration 061 su Supabase + rebuild EAS + test su device fisico.
+Fase 1 (DB foundation), Fase 2 (landing serverless function) e Fase 3 (app side) completate, mergeate in `main`/`landing`, in produzione. Landing live su apex `allergiapp.com`. DB migrations 059-061 applicate. Mancano solo: bump versioni app + EAS build + submit + test device.
 
 ## Decisioni prese
 
@@ -180,6 +180,12 @@ _Nessun tema aperto. Design phase chiusa._
 - **`labels.js` hardcoded**: traduzioni IT/EN copiate da constants TypeScript dell'app. Migrazione futura: RPC che pesca da Supabase `translations`
 - **JSON-LD `Restaurant` schema mancante**: SEO opportunity per stelline gialle Google. M2 polish
 - **SHA-256 Android per assetlinks.json**: ancora placeholder, da popolare via `npx eas credentials --platform android`
+
+### 2026-05-26 — Polish post-merge
+- ✅ **Bottom sheet della mappa (`RestaurantDetailSheet`)**: aggiunto bottone share anche qui. Era una superficie mancante: la scheda full-screen `app/restaurants/[id].tsx` l'avevo coperta, ma la maggior parte degli utenti vede la scheda via bottom sheet quando tappa un marker sulla mappa.
+- ✅ **Icona share platform-specific**: iOS usa `export-variant` (Apple HIG `square.and.arrow.up`, box+freccia), Android usa `share-variant` (Material 3-nodi, come Google Maps Android). Convenzioni native rispettate.
+- ✅ **Ordine heart → share**: pattern standard delle schede ristorante/luogo (Google Maps, Yelp, TripAdvisor, Booking, Airbnb). "Prima salva per te, poi manda agli altri".
+- ✅ **Vercel domain swap**: apex `allergiapp.com` ora è dominio primario (era `www.`). `www.allergiapp.com` redirige 308 ad apex. Necessario perché Universal Links iOS / App Links Android NON seguono redirect — AASA/assetlinks.json devono essere serviti direttamente sul dominio dichiarato in `associatedDomains`. URL share rimangono `allergiapp.com/r/...` (clean, brand moderno).
 
 ### 2026-05-26 — Fase 3: App side (codice completato)
 - ✅ Branch `feature/restaurant-share-app` (from `feature/restaurant-share-db`)
