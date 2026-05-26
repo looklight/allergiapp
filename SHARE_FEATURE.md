@@ -201,7 +201,7 @@ _Nessun tema aperto. Design phase chiusa._
 ## Follow-up — Da fare quando possibile
 
 ### SHA-256 Android per Universal Links verificati
-**Stato**: V1 sarà rilasciata con `landing/.well-known/assetlinks.json` contenente `__ANDROID_SHA256_PLACEHOLDER__`. Conseguenza: Android non verifica i link → click apre Chrome invece dell'app direttamente. Workaround presente (tap "Apri in AllergiApp" sulla pagina web → custom scheme `allergiapp://r/{slug}` → app si apre). Esperienza utente leggermente peggiore, niente di rotto.
+**Stato (aggiornato 2026-05-26)**: `landing/.well-known/assetlinks.json` ora contiene il SHA-256 del certificato **Internal App Sharing** Play Console (`6C:0F:D5:8A:...`). Copre App Links per utenti che installano via URL Internal App Sharing. **Manca ancora** il SHA-256 della **Play App Signing key** (la chiave con cui Google firma gli APK distribuiti via Play Store) — serve per coprire tester closed testing + utenti produzione. Quando assente, fallback funzionante (tap "Apri in AllergiApp" sulla pagina web → custom scheme `allergiapp://r/{slug}`).
 
 **Cosa serve**: SHA-256 della **app signing key** di Google Play (NON la upload key di EAS). Formato `AA:BB:CC:...` con 32 coppie esadecimali separate da `:`.
 
@@ -210,10 +210,10 @@ _Nessun tema aperto. Design phase chiusa._
 2. **Firebase Console** → Project settings → Le tue app → app Android con package `com.allergiapp.mobile` → SHA certificate fingerprints (se aggiunto in passato)
 3. Eventualmente recuperabile via `gcloud` / Google Play Developer API con service account
 
-**Cosa fare quando trovato**:
-1. Editare `landing/.well-known/assetlinks.json` sostituendo `__ANDROID_SHA256_PLACEHOLDER__` con il valore reale
+**Cosa fare quando trovato il SHA-256 produzione (Play App Signing)**:
+1. Editare `landing/.well-known/assetlinks.json`: AGGIUNGERE il nuovo valore come SECONDO elemento dell'array `sha256_cert_fingerprints` (NON sostituire quello Internal — entrambi sono validi insieme, coprono scenari diversi)
 2. Commit + push branch landing → preview deploy automatico
-3. Verifica: aprire `https://allergiapp.com/.well-known/assetlinks.json` → JSON con SHA-256 visibile, Content-Type `application/json`
+3. Verifica: aprire `https://allergiapp.com/.well-known/assetlinks.json` → vedere entrambi i SHA-256, Content-Type `application/json`
 4. Forzare riverifica Android (per device già esistenti): da terminale con device collegato → `adb shell pm verify-app-links --re-verify com.allergiapp.mobile`
 5. Salvare il valore in `reference_google_cloud.md` per evitare di ricercarlo di nuovo
 
