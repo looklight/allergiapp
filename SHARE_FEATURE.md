@@ -8,7 +8,7 @@ Serve solo a non perdere il filo.
 
 ## Stato attuale
 
-Fase 1 (DB foundation) e Fase 2 (landing serverless function) completate e testate su preview Vercel. Pronti per Fase 3 (app side: share button + deep link).
+Fase 1 (DB foundation), Fase 2 (landing serverless function) e Fase 3 (app side) completate dal lato codice. Prossimi step utente: applicare migration 061 su Supabase + rebuild EAS + test su device fisico.
 
 ## Decisioni prese
 
@@ -180,6 +180,23 @@ _Nessun tema aperto. Design phase chiusa._
 - **`labels.js` hardcoded**: traduzioni IT/EN copiate da constants TypeScript dell'app. Migrazione futura: RPC che pesca da Supabase `translations`
 - **JSON-LD `Restaurant` schema mancante**: SEO opportunity per stelline gialle Google. M2 polish
 - **SHA-256 Android per assetlinks.json**: ancora placeholder, da popolare via `npx eas credentials --platform android`
+
+### 2026-05-26 — Fase 3: App side (codice completato)
+- ✅ Branch `feature/restaurant-share-app` (from `feature/restaurant-share-db`)
+- ✅ `app.config.ts`: `associatedDomains: ['applinks:allergiapp.com']` su iOS + `intentFilters` Android con `autoVerify: true` per pattern https://allergiapp.com/r/*
+- ✅ Route `app/r/[slug].tsx`: deep link entry — chiama RPC `get_restaurant_by_slug`, redirige a `/restaurants/[id]` esistente, fallback home + alert se slug non trovato
+- ✅ `services/shareRestaurant.ts`: helper compone URL + messaggio, chiama `Share.share()` nativo, tracking best-effort `track_event('restaurant_shared')` su Supabase
+- ✅ `services/restaurant.types.ts`: campo `slug?: string` aggiunto al type Restaurant (opzionale per non rompere RPC esistenti che non lo proiettano)
+- ✅ `app/restaurants/[id].tsx`: azione share aggiunta nell'AppHeader, accanto al cuoricino preferiti
+- ✅ `locales/{it,en}.json`: chiavi `share.*` (shareRestaurant, suffix, dialogTitle, error)
+- ✅ Migration `061_analytics_events.sql`: tabella `analytics_events` (RLS bloccata) + RPC `track_event(name, properties)` SECURITY DEFINER
+
+**Step utente per chiudere M1**:
+1. Applicare `061_analytics_events.sql` su Supabase (Studio SQL Editor)
+2. Recuperare SHA-256 Android: `npx eas credentials --platform android` → aggiornare `landing/.well-known/assetlinks.json`
+3. Rebuild EAS: `npx eas-cli build --platform all --profile production` (richiede nuova build, no OTA per modifiche `app.config.ts`)
+4. Submit alle App Store
+5. Test su device fisico: tap share → share sheet → invio link a se stesso → tap link → deve aprire app sulla scheda corretta
 
 ## Riferimenti
 
