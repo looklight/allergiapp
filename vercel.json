@@ -14,6 +14,21 @@
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/download", "destination": "/download.html" },
-    { "source": "/restaurants", "destination": "/restaurants.html" }
+    { "source": "/restaurants", "destination": "/restaurants.html" },
+    { "source": "/r/:slug", "destination": "/api/r/:slug" }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" }
+      ]
+    },
+    {
+      "source": "/.well-known/assetlinks.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" }
+      ]
+    }
   ]
 }
