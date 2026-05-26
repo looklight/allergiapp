@@ -15,6 +15,15 @@ export type RestaurantPin = {
 
 export interface Restaurant {
   id: string;
+  /**
+   * Identificatore stabile per URL pubblici (es. /r/da-mario-roma).
+   * Generato lato DB al CREATE, immutabile, NOT NULL.
+   *
+   * Marcato opzionale qui perche' alcune RPC esistenti (es. get_nearby_restaurants)
+   * non lo proiettano ancora — verra' aggiunto progressivamente quando serve.
+   * La scheda dettaglio (getRestaurant via SELECT *) lo include sempre.
+   */
+  slug?: string;
   name: string;
   address: string | null;
   city: string | null;

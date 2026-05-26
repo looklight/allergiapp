@@ -15,6 +15,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
     buildNumber: "11",
+    // Universal Links: i link allergiapp.com/r/* aprono direttamente l'app (se installata).
+    // Il pattern stretto (/r/*) e' gestito server-side nel file
+    // landing/.well-known/apple-app-site-association: cosi' possiamo allargare i
+    // pattern in futuro senza nuova build dell'app.
+    associatedDomains: ["applinks:allergiapp.com"],
     ...(isEasBuild && { googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist" }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -40,6 +45,24 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? "",
       },
     },
+    // App Links: pattern https://allergiapp.com/r/* apre direttamente l'app.
+    // autoVerify=true richiede che landing/.well-known/assetlinks.json contenga
+    // il SHA-256 del keystore production (recuperabile via `npx eas credentials`).
+    // Senza SHA-256 valido: Android mostra il chooser invece di aprire diretto, ma niente si rompe.
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "https",
+            host: "allergiapp.com",
+            pathPrefix: "/r/",
+          },
+        ],
+        category: ["BROWSABLE", "DEFAULT"],
+      },
+    ],
     ...(isEasBuild && { googleServicesFile: process.env.GOOGLE_SERVICES_JSON_ANDROID ?? "./google-services.json" }),
   },
   web: {
