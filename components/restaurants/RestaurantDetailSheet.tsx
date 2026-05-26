@@ -89,7 +89,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         >
           <MaterialCommunityIcons name={SHARE_ICON} size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleDismiss} hitSlop={10} activeOpacity={0.6} style={[styles.sheetActionBtn, { marginLeft: 2 }]}>
+        <TouchableOpacity onPress={handleDismiss} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
           <MaterialCommunityIcons name="close" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   sheetNameRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: 10,
   },
   sheetAnonHeaderRow: {
     flexDirection: 'row',
