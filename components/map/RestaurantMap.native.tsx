@@ -30,6 +30,7 @@ import {
   ZOOM_PIN_THRESHOLD,
   DEFAULT_REGION,
   FIT_EDGE_PADDING,
+  MIN_FIT_DELTA,
   type Region,
   type RestaurantMapProps,
 } from './mapConstants';
@@ -158,6 +159,24 @@ export default function RestaurantMap({
       .filter(r => r.location && isValidCoord(r.location.latitude, r.location.longitude))
       .map(r => ({ latitude: r.location!.latitude, longitude: r.location!.longitude }));
     if (coords.length === 0) return;
+
+    // Punto singolo o cluster molto stretto: fitToCoordinates zoomerebbe al
+    // massimo e si perderebbe il contesto. Sotto MIN_FIT_DELTA di span,
+    // inquadriamo una regione con quel delta centrata sui punti.
+    const lats = coords.map(c => c.latitude);
+    const lngs = coords.map(c => c.longitude);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    if (Math.max(maxLat - minLat, maxLng - minLng) < MIN_FIT_DELTA) {
+      mapRef.current?.animateToRegion({
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        latitudeDelta: MIN_FIT_DELTA,
+        longitudeDelta: MIN_FIT_DELTA,
+      }, 600);
+      return;
+    }
+
     mapRef.current?.fitToCoordinates(coords, {
       edgePadding: FIT_EDGE_PADDING,
       animated: true,
