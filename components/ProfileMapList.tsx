@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, Animated, Easing } from 'react-native';
+import { View, StyleSheet, ScrollView, Animated, Easing, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { theme } from '../constants/theme';
+import i18n from '../utils/i18n';
 import ProfileCard from './ProfileCard';
 import Avatar from './Avatar';
 import CountryFilterChips from './CountryFilterChips';
@@ -96,6 +97,12 @@ export default function ProfileMapList<T>({
     highlightTimer.current = setTimeout(() => setHighlightedId(null), 1400);
   }, []);
 
+  // Tap sul mini-avatar che compare sulla mappa quando l'header è agganciato:
+  // riporta la lista in cima (l'avatar grande del profilo torna visibile).
+  const handleBackToTop = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+
   useEffect(() => () => { if (highlightTimer.current) clearTimeout(highlightTimer.current); }, []);
 
   const handleCloseDetail = () => {
@@ -117,7 +124,7 @@ export default function ProfileMapList<T>({
         onAvatarPress={onAvatarPress}
         scrollRef={scrollRef}
         beforeStickyHeader={topActions}
-        stickyHeader={showHeader ? (pinned) => (
+        stickyHeader={showHeader ? (pinned, isPinned) => (
           <View
             style={styles.stickyHeader}
             onLayout={(e) => { stickyHeightRef.current = e.nativeEvent.layout.height; }}
@@ -136,17 +143,26 @@ export default function ProfileMapList<T>({
                   height={260}
                 />
                 {/* Mini-avatar che compare in alto a sinistra sulla mappa quando
-                    l'header si aggancia in cima (l'avatar grande è scrollato via). */}
+                    l'header si aggancia in cima (l'avatar grande è scrollato via).
+                    Premuto riporta la lista in cima. È premibile solo da agganciato
+                    (isPinned): quando è trasparente non deve rubare i tap ai pin. */}
                 <Animated.View
-                  pointerEvents="none"
+                  pointerEvents={isPinned ? 'auto' : 'none'}
                   style={[styles.mapAvatar, { opacity: pinned }]}
                 >
-                  <Avatar
-                    avatarId={profile.avatar_url}
-                    isAnonymous={profile.is_anonymous}
-                    initial={profile.username ?? undefined}
-                    size={36}
-                  />
+                  <TouchableOpacity
+                    onPress={handleBackToTop}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={i18n.t('restaurants.user.backToTop')}
+                  >
+                    <Avatar
+                      avatarId={profile.avatar_url}
+                      isAnonymous={profile.is_anonymous}
+                      initial={profile.username ?? undefined}
+                      size={36}
+                    />
+                  </TouchableOpacity>
                 </Animated.View>
               </View>
             )}
