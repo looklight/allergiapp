@@ -29,7 +29,8 @@
     "userInactive": "Inactive user",
     "or": "or",
     "continueWithGoogle": "Continue with Google",
-    "continueWithApple": "Continue with Apple"
+    "continueWithApple": "Continue with Apple",
+    "loading": "Loading"
   },
   "home": {
     "title": "What do I need to communicate?",

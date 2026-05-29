@@ -15,6 +15,8 @@ import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
 import AppHeader from '../components/AppHeader';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLikesNotification } from '../../hooks/useLikesNotification';
+import { useProfileCounts } from '../../hooks/useProfileCounts';
+import CountText from '../../components/CountText';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import i18n from '../../utils/i18n';
 
@@ -39,6 +41,15 @@ export default function ProfileScreen() {
   const favorites = useMemo(
     () => favoritesList.items.filter((r) => r.is_favorite),
     [favoritesList.items],
+  );
+
+  // Conteggi cache-first: alla riapertura mostrano subito l'ultimo valore noto
+  // (niente flash 0→N mentre le liste complete si ricaricano); skeleton solo al
+  // primissimo avvio quando non c'è ancora cache. Vedi useProfileCounts.
+  const counts = useProfileCounts(
+    user?.uid,
+    { reviews: reviewsList.items.length, favorites: favorites.length },
+    { reviews: reviewsList.isLoading, favorites: favoritesList.isLoading },
   );
 
   const rows = useMemo<ProfileRow[]>(
@@ -98,7 +109,8 @@ export default function ProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileMapList<ProfileRow>
         profile={visibleProfile}
-        stats={{ likes: currentLikes, reviews: reviewsList.items.length }}
+        stats={{ likes: currentLikes }}
+        reviewsSlot={<CountText value={counts.reviews} style={styles.inlineStatNumber} />}
         likesSlot={
           <AnimatedLikesCounter
             currentLikes={currentLikes}
@@ -158,13 +170,13 @@ export default function ProfileScreen() {
           <View style={styles.kindToggle}>
             <KindButton
               label={i18n.t('restaurants.user.reviewsLabel')}
-              count={reviewsList.items.length}
+              count={counts.reviews}
               active={kind === 'reviews'}
               onPress={() => setKind('reviews')}
             />
             <KindButton
               label={i18n.t('restaurants.myRestaurants.filterFavorites')}
-              count={favorites.length}
+              count={counts.favorites}
               active={kind === 'favorites'}
               onPress={() => setKind('favorites')}
             />
@@ -189,19 +201,19 @@ function KindButton({
   onPress,
 }: {
   label: string;
-  count: number;
+  count: number | null;
   active: boolean;
   onPress: () => void;
 }) {
+  const textStyle = [styles.kindButtonText, active && styles.kindButtonTextActive];
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      style={[styles.kindButton, active && styles.kindButtonActive]}
+      style={[styles.kindButton, styles.kindButtonInner, active && styles.kindButtonActive]}
     >
-      <Text style={[styles.kindButtonText, active && styles.kindButtonTextActive]}>
-        {label} {count}
-      </Text>
+      <Text style={textStyle}>{label}</Text>
+      <CountText value={count} style={textStyle} />
     </TouchableOpacity>
   );
 }
@@ -248,6 +260,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 0,
   },
+  // Allineato a ProfileCard.inlineStatNumber: il conteggio recensioni nell'header
+  // è reso via reviewsSlot (CountText) per supportare lo skeleton cache-first.
+  inlineStatNumber: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
   actions: {
     gap: 10,
   },
@@ -291,6 +310,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.surface,
+  },
+  kindButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   kindButtonActive: {
     borderColor: theme.colors.primary,

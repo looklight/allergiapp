@@ -21,7 +21,10 @@ const STORAGE_KEYS = {
   RECENT_PLACES: 'allergiapp_recent_places',
   USER_CARDS: 'allergiapp_user_cards',
   ACTIVE_CARD_ID: 'allergiapp_active_card_id',
+  PROFILE_COUNTS: 'allergiapp_profile_counts',
 };
+
+export type ProfileCounts = { reviews: number; favorites: number };
 
 export type RecentPlace = {
   name: string;
@@ -250,6 +253,7 @@ export const storage = {
         STORAGE_KEYS.FOR_MY_NEEDS,
         STORAGE_KEYS.USER_CARDS,
         STORAGE_KEYS.ACTIVE_CARD_ID,
+        STORAGE_KEYS.PROFILE_COUNTS,
       ]);
     } catch {
       // Storage clear failed silently
@@ -454,6 +458,32 @@ export const storage = {
       await AsyncStorage.removeItem(STORAGE_KEYS.RECENT_PLACES);
     } catch {
       // Storage clear failed silently
+    }
+  },
+
+  // Conteggi profilo (recensioni/preferiti) per cache-first: mostriamo subito
+  // l'ultimo valore noto alla riapertura del profilo, evitando il flash 0→N
+  // mentre le liste complete si ricaricano. Mappa per userId: più utenti sullo
+  // stesso device non si sovrascrivono il conteggio a vicenda.
+  async getProfileCounts(userId: string): Promise<ProfileCounts | null> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_COUNTS);
+      if (!raw) return null;
+      const map = JSON.parse(raw) as Record<string, ProfileCounts>;
+      return map[userId] ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setProfileCounts(userId: string, counts: ProfileCounts): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_COUNTS);
+      const map = raw ? (JSON.parse(raw) as Record<string, ProfileCounts>) : {};
+      map[userId] = counts;
+      await AsyncStorage.setItem(STORAGE_KEYS.PROFILE_COUNTS, JSON.stringify(map));
+    } catch {
+      // Storage write failed silently
     }
   },
 };

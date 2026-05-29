@@ -16,6 +16,7 @@ interface ProfileMapListProps<T> {
   profile: UserProfile;
   stats?: { likes?: number; reviews?: number };
   likesSlot?: React.ReactNode;
+  reviewsSlot?: React.ReactNode;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -57,6 +58,7 @@ export default function ProfileMapList<T>({
   profile,
   stats,
   likesSlot,
+  reviewsSlot,
   onBack,
   onEdit,
   onEditDietary,
@@ -118,6 +120,7 @@ export default function ProfileMapList<T>({
         profile={profile}
         stats={stats}
         likesSlot={likesSlot}
+        reviewsSlot={reviewsSlot}
         onBack={onBack}
         onEdit={onEdit}
         onEditDietary={onEditDietary}

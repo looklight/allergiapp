@@ -22,6 +22,9 @@ interface ProfileCardProps {
   /** Override del numero "like" — se passato, sostituisce il <Text> statico
    *  (usato per renderizzare AnimatedLikesCounter sul profilo proprio). */
   likesSlot?: React.ReactNode;
+  /** Override del numero "recensioni" — se passato, sostituisce il <Text> statico
+   *  (usato per il conteggio cache-first con skeleton sul profilo proprio). */
+  reviewsSlot?: React.ReactNode;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -44,7 +47,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
   const displayName = getDisplayName(profile);
 
@@ -153,11 +156,11 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
               {memberSince ? (
                 <Text style={styles.memberSince}>{i18n.t('restaurants.profileCard.memberSince', { date: memberSince })}</Text>
               ) : null}
-              {(stats?.reviews != null || stats?.likes != null) && (
+              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot) && (
                 <View style={styles.inlineStatsRow}>
-                  {stats?.reviews != null && (
+                  {(stats?.reviews != null || reviewsSlot) && (
                     <View style={styles.inlineStat}>
-                      <Text style={styles.inlineStatNumber}>{stats.reviews}</Text>
+                      {reviewsSlot ?? <Text style={styles.inlineStatNumber}>{stats?.reviews}</Text>}
                       <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statReviews')}</Text>
                     </View>
                   )}
