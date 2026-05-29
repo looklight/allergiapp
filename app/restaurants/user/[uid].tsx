@@ -93,7 +93,9 @@ export default function PublicProfileScreen() {
         getMapPin={(r) => ({
           id: r.restaurant_id,
           name: r.restaurant_name ?? '',
-          location: null,
+          location: r.restaurant_lat != null && r.restaurant_lng != null
+            ? { latitude: r.restaurant_lat, longitude: r.restaurant_lng }
+            : null,
           is_favorite: false,
         })}
         getPinId={(r) => r.restaurant_id}

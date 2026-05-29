@@ -121,7 +121,14 @@ export default function ProfileScreen() {
         }
         getMapPin={(row) =>
           row.kind === 'review'
-            ? { id: row.data.restaurant_id, name: row.data.restaurant_name ?? '', location: null, is_favorite: false }
+            ? {
+                id: row.data.restaurant_id,
+                name: row.data.restaurant_name ?? '',
+                location: row.data.restaurant_lat != null && row.data.restaurant_lng != null
+                  ? { latitude: row.data.restaurant_lat, longitude: row.data.restaurant_lng }
+                  : null,
+                is_favorite: false,
+              }
             : { id: row.data.id, name: row.data.name, location: row.data.location, is_favorite: true }
         }
         getPinId={(row) => (row.kind === 'review' ? row.data.restaurant_id : row.data.id)}

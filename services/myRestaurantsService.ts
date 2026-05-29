@@ -1,5 +1,6 @@
 import { getFavorites } from './favoriteService';
 import { getReviewsByUser } from './reviewService';
+import { fetchRestaurantPositions } from './restaurantPositions';
 
 // ─── "I miei ristoranti" (diario privato) ────────────────────────────────────
 // Feature isolata: unione preferiti + recensiti dell'utente, deduplicata.
@@ -30,9 +31,10 @@ export type MyRestaurantItem = {
  * I due fetch gestiscono già i propri errori (ritornano []), quindi qui niente try/catch.
  */
 export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem[]> {
-  const [favorites, reviews] = await Promise.all([
+  const [favorites, reviews, positions] = await Promise.all([
     getFavorites(userId),
     getReviewsByUser(userId),
+    fetchRestaurantPositions(),
   ]);
 
   const byId = new Map<string, MyRestaurantItem>();
@@ -46,7 +48,8 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
       city: r.city,
       country: r.country,
       country_code: r.country_code,
-      location: r.location ?? null,
+      // Coordinate reali via RPC: il join diretto su restaurants non espone location parsabile.
+      location: positions.get(r.id) ?? r.location ?? null,
       is_favorite: true,
       my_rating: null,
       my_review_id: null,
@@ -75,7 +78,9 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
         city: rev.restaurant_city ?? null,
         country: rev.restaurant_country ?? null,
         country_code: rev.restaurant_country_code ?? null,
-        location: null,
+        location: rev.restaurant_lat != null && rev.restaurant_lng != null
+          ? { latitude: rev.restaurant_lat, longitude: rev.restaurant_lng }
+          : null,
         is_favorite: false,
         ...review,
       });

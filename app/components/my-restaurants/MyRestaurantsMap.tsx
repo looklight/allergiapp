@@ -5,26 +5,6 @@ import RestaurantMap from '../../../components/map/RestaurantMap';
 import { theme } from '../../../constants/theme';
 import type { Restaurant } from '../../../services/restaurant.types';
 
-// ─── ⚠️ TEMPORANEO: coordinate di test ───────────────────────────────────────
-// Solo per valutare la UI della mappa finché non abbiamo lat/lng reali per tutti
-// gli elementi (i recensiti non hanno location; alcuni preferiti nemmeno).
-// Genera pin sparsi attorno a un punto base con una spirale fillotattica
-// deterministica (stessi pin a ogni render). RIMUOVERE quando arrivano le
-// coordinate vere: basta cancellare TEST_COORDS + testCoord e passare item.location.
-const TEST_COORDS = true;
-const TEST_BASE = { latitude: 41.9028, longitude: 12.4964 }; // Roma
-const GOLDEN_ANGLE = 2.399963; // rad
-
-function testCoord(index: number) {
-  const radius = 0.03 * Math.sqrt(index + 1);
-  const angle = index * GOLDEN_ANGLE;
-  return {
-    latitude: TEST_BASE.latitude + radius * Math.cos(angle),
-    longitude: TEST_BASE.longitude + radius * Math.sin(angle),
-  };
-}
-// ─────────────────────────────────────────────────────────────────────────────
-
 /** Forma minima che serve alla mappa (compatibile con MyRestaurantItem e con le review mappate). */
 export type MapPinItem = {
   id: string;
@@ -55,10 +35,9 @@ export default function MyRestaurantsMap({
 
   const restaurants = useMemo<Restaurant[]>(
     () =>
-      items.map((item, i) => {
-        const location = item.location ?? (TEST_COORDS ? testCoord(i) : null);
-        return { ...item, location } as unknown as Restaurant;
-      }),
+      items
+        .filter(item => item.location != null)
+        .map(item => item as unknown as Restaurant),
     [items],
   );
 
