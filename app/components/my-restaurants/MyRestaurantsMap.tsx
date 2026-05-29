@@ -26,10 +26,16 @@ export default function MyRestaurantsMap({
   items,
   onSelect,
   height,
+  selectedId,
+  onDeselect,
 }: {
   items: MapPinItem[];
   onSelect: (id: string) => void;
   height?: number;
+  /** Pin da evidenziare (es. ristorante della riga aperta dalla lista). */
+  selectedId?: string | null;
+  /** Chiamato al tap sulla mappa: deseleziona il pin evidenziato. */
+  onDeselect?: () => void;
 }) {
   const insets = useSafeAreaInsets();
 
@@ -56,6 +62,8 @@ export default function MyRestaurantsMap({
         restaurants={restaurants}
         favoriteIds={favoriteIds}
         onRestaurantPress={onSelect}
+        selectedId={selectedId}
+        onDeselect={onDeselect}
       />
     </View>
   );

@@ -78,6 +78,9 @@ export default function ProfileMapList<T>({
 }: ProfileMapListProps<T>) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  // Pin evidenziato sulla mappa: impostato aprendo una riga, azzerato al tap
+  // sulla mappa. Persiste a scheda chiusa così il ristorante resta selezionato.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const scrollRef = useRef<ScrollView | null>(null);
   const cardYRef = useRef<Record<string, number>>({});
@@ -143,6 +146,8 @@ export default function ProfileMapList<T>({
                 <MyRestaurantsMap
                   items={filteredItems.map(getMapPin)}
                   onSelect={handlePinPress}
+                  selectedId={selectedId}
+                  onDeselect={() => setSelectedId(null)}
                   height={260}
                 />
                 {/* Mini-avatar che compare in alto a sinistra sulla mappa quando
@@ -184,7 +189,7 @@ export default function ProfileMapList<T>({
                   highlighted={highlightedId === pinId}
                   onMeasure={(id, y) => { cardYRef.current[id] = y; }}
                 >
-                  {renderRow(item, () => setDetailId(pinId))}
+                  {renderRow(item, () => { setDetailId(pinId); setSelectedId(pinId); })}
                 </MeasuredRow>
               );
             })}
