@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { View, StyleSheet, ActivityIndicator, ScrollView, Animated, Easing } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { theme } from '../../../constants/theme';
@@ -10,6 +10,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import ProfileCard from '../../../components/ProfileCard';
 import UserReviewCard from '../../../components/UserReviewCard';
 import CountryFilterChips from '../../../components/CountryFilterChips';
+import MyRestaurantsMap from '../../components/my-restaurants/MyRestaurantsMap';
+import RestaurantDetailSheet from '../../../components/restaurants/RestaurantDetailSheet';
 import { useLocationFilters } from '../../../hooks/useLocationFilters';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
@@ -32,9 +34,30 @@ export default function PublicProfileScreen() {
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  const scrollRef = useRef<ScrollView | null>(null);
+  const cardYRef = useRef<Record<string, number>>({});
+  const stickyHeightRef = useRef(0);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredReviews } =
     useLocationFilters(reviews, getReviewLocation);
+
+  // Tap su un pin: scrolla alla recensione corrispondente (sotto l'header sticky)
+  // e la evidenzia con un breve flash.
+  const handlePinPress = useCallback((restaurantId: string) => {
+    const y = cardYRef.current[restaurantId];
+    if (y != null) {
+      scrollRef.current?.scrollTo({ y: Math.max(0, y - stickyHeightRef.current - 12), animated: true });
+    }
+    setHighlightedId(restaurantId);
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    highlightTimer.current = setTimeout(() => setHighlightedId(null), 1400);
+  }, []);
+
+  useEffect(() => () => { if (highlightTimer.current) clearTimeout(highlightTimer.current); }, []);
 
   useEffect(() => {
     if (!uid) return;
@@ -93,26 +116,96 @@ export default function PublicProfileScreen() {
         profile={visibleProfile!}
         stats={{ reviews: reviewCount, likes: likesReceived }}
         onBack={() => router.back()}
-      >
-        {reviews.length > 0 && (
-          <>
+        scrollRef={scrollRef}
+        stickyHeader={reviews.length > 0 ? (
+          <View
+            style={styles.stickyHeader}
+            onLayout={(e) => { stickyHeightRef.current = e.nativeEvent.layout.height; }}
+          >
             <CountryFilterChips
               options={countryOptions}
               selected={selectedCountry}
               onSelect={setSelectedCountry}
             />
+            {filteredReviews.length > 0 && (
+              <MyRestaurantsMap
+                items={filteredReviews.map((r) => ({
+                  id: r.restaurant_id,
+                  name: r.restaurant_name ?? '',
+                  location: null,
+                  is_favorite: false,
+                }))}
+                onSelect={handlePinPress}
+                height={260}
+              />
+            )}
+          </View>
+        ) : undefined}
+      >
+        {reviews.length > 0 && (
+          <>
             <Text style={styles.sectionTitle}>{i18n.t('restaurants.user.reviewsLabel')}</Text>
             {filteredReviews.map((c) => (
-              <UserReviewCard
+              <ReviewListItem
                 key={c.id}
                 review={c}
-                onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
+                highlighted={highlightedId === c.restaurant_id}
+                onMeasure={(id, y) => { cardYRef.current[id] = y; }}
+                onPress={() => setDetailId(c.restaurant_id)}
               />
             ))}
           </>
         )}
       </ProfileCard>
+
+      {detailId && (
+        <RestaurantDetailSheet
+          restaurantId={detailId}
+          onClose={() => setDetailId(null)}
+        />
+      )}
     </>
+  );
+}
+
+/** Card recensione con misura della propria posizione (per lo scroll dai pin)
+ *  e flash di evidenziazione quando viene selezionata dalla mappa. */
+function ReviewListItem({
+  review,
+  highlighted,
+  onMeasure,
+  onPress,
+}: {
+  review: UserReview;
+  highlighted: boolean;
+  onMeasure: (restaurantId: string, y: number) => void;
+  onPress: () => void;
+}) {
+  const flash = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!highlighted) return;
+    flash.setValue(1);
+    Animated.timing(flash, {
+      toValue: 0,
+      duration: 1300,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [highlighted, flash]);
+
+  return (
+    <View onLayout={(e) => onMeasure(review.restaurant_id, e.nativeEvent.layout.y)}>
+      <UserReviewCard review={review} onPress={onPress} />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          styles.flash,
+          { opacity: flash.interpolate({ inputRange: [0, 1], outputRange: [0, 0.2] }) },
+        ]}
+      />
+    </View>
   );
 }
 
@@ -120,6 +213,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  flash: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 14,
   },
   centered: {
     flex: 1,
@@ -130,6 +227,14 @@ const styles = StyleSheet.create({
   errorText: {
     color: theme.colors.textSecondary,
     fontSize: 16,
+  },
+  stickyHeader: {
+    backgroundColor: theme.colors.background,
+    gap: 6,
+    paddingTop: 6,
+    paddingBottom: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.divider,
   },
   sectionTitle: {
     fontSize: 16,
