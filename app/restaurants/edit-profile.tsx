@@ -23,6 +23,7 @@ import { PG_UNIQUE_VIOLATION } from '../../services/restaurant.types';
 import { useUsernameValidation } from '../../hooks/useUsernameValidation';
 import AppHeader from '../components/AppHeader';
 import UsernameFeedback from '../../components/UsernameFeedback';
+import Avatar from '../../components/Avatar';
 import i18n from '../../utils/i18n';
 
 export default function EditProfileScreen() {
@@ -146,6 +147,35 @@ export default function EditProfileScreen() {
       <AppHeader title={i18n.t('restaurants.editProfile.title')} />
 
       <ScrollView style={styles.content} contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}>
+
+        {/* Avatar grande + modifica → galleria avatar (l'altro entry point è il tap
+            sull'avatar nel profilo). */}
+        <View style={styles.avatarSection}>
+          <TouchableOpacity
+            onPress={() => router.push('/restaurants/avatar-gallery')}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={i18n.t('restaurants.profile.menuAvatars')}
+          >
+            <Avatar
+              avatarId={userProfile?.avatar_url}
+              isAnonymous={userProfile?.is_anonymous}
+              initial={currentUsername || undefined}
+              size={150}
+            />
+            <View style={styles.avatarEditBadge}>
+              <MaterialCommunityIcons name="pencil" size={16} color={theme.colors.onPrimary} />
+            </View>
+          </TouchableOpacity>
+          <Button
+            mode="text"
+            compact
+            onPress={() => router.push('/restaurants/avatar-gallery')}
+            textColor={theme.colors.primary}
+          >
+            {i18n.t('common.edit')}
+          </Button>
+        </View>
 
         {/* Informazioni account */}
         <Surface style={styles.card} elevation={1}>
@@ -388,10 +418,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.colors.textSecondary,
   },
+  avatarSection: {
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.background,
+  },
   saveButton: {
     borderRadius: 10,
     marginTop: 16,
   },
+
   saveButtonLabel: {
     fontSize: 16,
   },
