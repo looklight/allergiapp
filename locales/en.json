@@ -464,7 +464,9 @@
       "menuFavorites": "My favorites",
       "menuReviews": "My reviews",
       "menuMyRestaurants": "My restaurants",
-      "menuLeaderboard": "Leaderboard"
+      "menuLeaderboard": "Leaderboard",
+      "emptyReviews": "You haven’t written any reviews yet.",
+      "emptyFavorites": "You don’t have any favorite restaurants yet."
     },
     "report": {
       "title": "Report a problem",

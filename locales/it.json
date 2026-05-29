@@ -464,7 +464,9 @@
       "menuFavorites": "I miei preferiti",
       "menuReviews": "Le mie recensioni",
       "menuMyRestaurants": "I miei ristoranti",
-      "menuLeaderboard": "Classifiche"
+      "menuLeaderboard": "Classifiche",
+      "emptyReviews": "Non hai ancora scritto recensioni.",
+      "emptyFavorites": "Non hai ancora ristoranti preferiti."
     },
     "report": {
       "title": "Segnala un problema",
