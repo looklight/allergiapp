@@ -38,10 +38,13 @@ interface ProfileCardProps {
     | ((pinned: Animated.AnimatedInterpolation<number>, isPinned: boolean) => React.ReactNode);
   /** Ref alla ScrollView interna — consente al chiamante di scrollare a un offset (es. a una card). */
   scrollRef?: React.RefObject<ScrollView | null>;
+  /** Contenuto reso tra la sezione profilo e la sticky header: scorre via in alto
+   *  (non si aggancia). Usato per i pulsanti d'azione del profilo proprio. */
+  beforeStickyHeader?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
   const displayName = getDisplayName(profile);
 
@@ -111,7 +114,7 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
           { paddingBottom: insets.bottom + 24 },
           fillMinHeight != null && { minHeight: fillMinHeight },
         ]}
-        stickyHeaderIndices={stickyHeader ? [1] : undefined}
+        stickyHeaderIndices={stickyHeader ? [beforeStickyHeader != null ? 2 : 1] : undefined}
       >
         {/* Profilo: avatar + nome in riga, stile Airbnb.
             Niente card contenitore: il contenuto usa tutta la larghezza
@@ -229,6 +232,8 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
           })()}
 
         </View>
+
+        {beforeStickyHeader != null && <View>{beforeStickyHeader}</View>}
 
         {renderedStickyHeader != null && (
           <View
