@@ -1,7 +1,7 @@
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -32,12 +32,17 @@ const REVIEW_PHOTO_SIZE = 80;
 
 export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview }: ReviewCardProps) {
   const router = useRouter();
+  // uid della route corrente: valorizzato solo dentro /restaurants/user/[uid].
+  // Serve a non riaprire il profilo che stai già guardando (duplicato no-op);
+  // la navigazione verso altri profili resta libera (discovery).
+  const { uid: currentProfileUid } = useLocalSearchParams<{ uid?: string }>();
   const displayName = getAuthorLabel({
     userId: item.userId,
     username: item.displayName,
     isAnonymous: item.isAnonymous,
   });
-  const canNavigateToProfile = !!item.userId && !item.isAnonymous && !item.isInactive;
+  const canNavigateToProfile =
+    !!item.userId && !item.isAnonymous && !item.isInactive && item.userId !== currentProfileUid;
 
   const burstScale = useSharedValue(0);
   const burstOpacity = useSharedValue(0);
