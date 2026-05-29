@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
+import { View, Text, Animated, StyleSheet, type StyleProp, type TextStyle } from 'react-native';
 import { theme } from '../constants/theme';
 
 const COUNT_DURATION_MS = 1200;
@@ -26,9 +26,11 @@ type Props = {
   currentLikes: number;
   previousLikes: number;
   onAnimationEnd?: () => void;
+  /** Override dello stile del numero (es. per renderlo inline e piu' compatto). */
+  numberStyle?: StyleProp<TextStyle>;
 };
 
-export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAnimationEnd }: Props) {
+export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAnimationEnd, numberStyle }: Props) {
   const delta = currentLikes - previousLikes;
   const shouldAnimate = delta > 0;
 
@@ -78,7 +80,7 @@ export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAn
 
   return (
     <View>
-      <Text style={styles.number}>{displayValue}</Text>
+      <Text style={[styles.number, numberStyle]}>{displayValue}</Text>
       {shouldAnimate && (
         <Animated.Text
           style={[

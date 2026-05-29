@@ -463,6 +463,7 @@
       "menuAvatars": "I miei Avatar",
       "menuFavorites": "I miei preferiti",
       "menuReviews": "Le mie recensioni",
+      "menuMyRestaurants": "I miei ristoranti",
       "menuLeaderboard": "Classifiche"
     },
     "report": {
@@ -520,8 +521,19 @@
     },
     "myRestaurants": {
       "title": "I miei ristoranti",
-      "emptyTitle": "Non hai ancora aggiunto ristoranti",
-      "emptySubtitle": "Aggiungi il tuo primo ristorante e aiuta la community!"
+      "emptyTitle": "Il tuo diario è vuoto",
+      "emptySubtitle": "Salva i ristoranti che ami e lascia le tue recensioni: li ritrovi tutti qui.",
+      "emptyButton": "Esplora ristoranti",
+      "filterAll": "Tutti",
+      "filterFavorites": "Preferiti",
+      "filterReviewed": "Recensiti",
+      "filterCountry": "Paese",
+      "viewList": "Lista",
+      "viewMap": "Mappa",
+      "stats": {
+        "one": "ristorante",
+        "other": "ristoranti"
+      }
     },
     "myReviews": {
       "title": "Le mie recensioni",

@@ -20,19 +20,14 @@ export default function ProfileScreen() {
   const { user, userProfile, isAuthenticated } = useAuth();
 
   const [reviewCount, setReviewCount] = useState(0);
-  const [favoriteCount, setFavoriteCount] = useState(0);
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
 
   useEffect(() => {
     if (!user?.uid) return;
 
     (async () => {
-      const [totalReviews, userFavorites] = await Promise.all([
-        RestaurantService.getReviewCountByUser(user.uid),
-        RestaurantService.getFavorites(user.uid),
-      ]);
+      const totalReviews = await RestaurantService.getReviewCountByUser(user.uid);
       setReviewCount(totalReviews);
-      setFavoriteCount(userFavorites.length);
     })().catch((err) => console.warn('[Profile] Errore caricamento dati:', err));
   }, [user?.uid]);
 
@@ -74,12 +69,13 @@ export default function ProfileScreen() {
             ? getAnonymousLabel(user?.uid ?? '')
             : userProfile.username,
         }}
-        stats={{ likes: currentLikes, reviews: reviewCount, favorites: favoriteCount }}
+        stats={{ likes: currentLikes, reviews: reviewCount }}
         likesSlot={
           <AnimatedLikesCounter
             currentLikes={currentLikes}
             previousLikes={lastSeenLikes}
             onAnimationEnd={markAsSeen}
+            numberStyle={styles.inlineLikesNumber}
           />
         }
         onBack={() => router.back()}
@@ -100,21 +96,11 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => router.push('/restaurants/favorites')}
+          onPress={() => router.push('/restaurants/my-restaurants')}
           activeOpacity={0.6}
         >
-          <MaterialCommunityIcons name="heart-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuFavorites')}</Text>
-          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/restaurants/my-reviews')}
-          activeOpacity={0.6}
-        >
-          <MaterialCommunityIcons name="comment-text-outline" size={22} color={theme.colors.primary} />
-          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuReviews')}</Text>
+          <MaterialCommunityIcons name="bookmark-multiple-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.menuItemText}>{i18n.t('restaurants.profile.menuMyRestaurants')}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
@@ -168,6 +154,11 @@ const styles = StyleSheet.create({
   },
   loginButtonLabel: {
     fontSize: 16,
+  },
+  inlineLikesNumber: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 0,
   },
   menuItem: {
     flexDirection: 'row',

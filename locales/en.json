@@ -463,6 +463,7 @@
       "menuAvatars": "My Avatars",
       "menuFavorites": "My favorites",
       "menuReviews": "My reviews",
+      "menuMyRestaurants": "My restaurants",
       "menuLeaderboard": "Leaderboard"
     },
     "report": {
@@ -520,8 +521,19 @@
     },
     "myRestaurants": {
       "title": "My restaurants",
-      "emptyTitle": "You haven't added any restaurants yet",
-      "emptySubtitle": "Add your first restaurant and help the community!"
+      "emptyTitle": "Your diary is empty",
+      "emptySubtitle": "Save the restaurants you love and leave your reviews: you'll find them all here.",
+      "emptyButton": "Explore restaurants",
+      "filterAll": "All",
+      "filterFavorites": "Favorites",
+      "filterReviewed": "Reviewed",
+      "filterCountry": "Country",
+      "viewList": "List",
+      "viewMap": "Map",
+      "stats": {
+        "one": "restaurant",
+        "other": "restaurants"
+      }
     },
     "myReviews": {
       "title": "My reviews",
