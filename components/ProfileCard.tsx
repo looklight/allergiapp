@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useRef, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,8 +27,10 @@ interface ProfileCardProps {
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
   title?: string;
-  /** Elemento reso subito sotto la sezione profilo e reso "sticky" in alto allo scroll. */
-  stickyHeader?: React.ReactNode;
+  /** Elemento reso subito sotto la sezione profilo e reso "sticky" in alto allo scroll.
+   *  Può essere una render-prop che riceve `pinned`: un valore animato 0→1 che vale 1
+   *  quando l'header è agganciato in cima (usato es. per far comparire un mini-avatar). */
+  stickyHeader?: React.ReactNode | ((pinned: Animated.AnimatedInterpolation<number>) => React.ReactNode);
   /** Ref alla ScrollView interna — consente al chiamante di scrollare a un offset (es. a una card). */
   scrollRef?: React.RefObject<ScrollView | null>;
   children?: React.ReactNode;
@@ -46,6 +48,26 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
   const [stickyY, setStickyY] = useState(0);
   const fillMinHeight = stickyHeader && viewportH > 0 ? stickyY + viewportH : null;
 
+  // Scroll tracking per gli elementi che reagiscono all'aggancio (es. mini-avatar
+  // sulla mappa). `pinned` sale da 0 a 1 negli ultimi 40px prima che l'header si
+  // agganci in cima, così l'avatar fa fade-in invece di apparire di colpo.
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const onScroll = useMemo(
+    () => Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }),
+    [scrollY],
+  );
+  const pinned = useMemo<Animated.AnimatedInterpolation<number>>(
+    () =>
+      scrollY.interpolate({
+        inputRange: stickyY > 0 ? [Math.max(0, stickyY - 40), stickyY] : [0, 1],
+        outputRange: stickyY > 0 ? [0, 1] : [0, 0],
+        extrapolate: 'clamp',
+      }),
+    [scrollY, stickyY],
+  );
+  const renderedStickyHeader =
+    typeof stickyHeader === 'function' ? stickyHeader(pinned) : stickyHeader;
+
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })
     : '';
@@ -62,10 +84,12 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
         }
       />
 
-      <ScrollView
-        ref={scrollRef}
+      <Animated.ScrollView
+        ref={scrollRef as React.RefObject<any>}
         style={styles.scrollView}
         onLayout={(e) => setViewportH(e.nativeEvent.layout.height)}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingBottom: insets.bottom + 24 },
@@ -190,17 +214,17 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
 
         </View>
 
-        {stickyHeader != null && (
+        {renderedStickyHeader != null && (
           <View
             style={styles.stickyWrap}
             onLayout={(e) => setStickyY(e.nativeEvent.layout.y)}
           >
-            {stickyHeader}
+            {renderedStickyHeader}
           </View>
         )}
 
         {children}
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }

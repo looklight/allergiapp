@@ -8,6 +8,7 @@ import { RestaurantService } from '../../../services/restaurantService';
 import type { UserReview } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
 import ProfileCard from '../../../components/ProfileCard';
+import Avatar from '../../../components/Avatar';
 import UserReviewCard from '../../../components/UserReviewCard';
 import CountryFilterChips from '../../../components/CountryFilterChips';
 import MyRestaurantsMap from '../../components/my-restaurants/MyRestaurantsMap';
@@ -117,7 +118,7 @@ export default function PublicProfileScreen() {
         stats={{ reviews: reviewCount, likes: likesReceived }}
         onBack={() => router.back()}
         scrollRef={scrollRef}
-        stickyHeader={reviews.length > 0 ? (
+        stickyHeader={reviews.length > 0 ? (pinned) => (
           <View
             style={styles.stickyHeader}
             onLayout={(e) => { stickyHeightRef.current = e.nativeEvent.layout.height; }}
@@ -128,16 +129,31 @@ export default function PublicProfileScreen() {
               onSelect={setSelectedCountry}
             />
             {filteredReviews.length > 0 && (
-              <MyRestaurantsMap
-                items={filteredReviews.map((r) => ({
-                  id: r.restaurant_id,
-                  name: r.restaurant_name ?? '',
-                  location: null,
-                  is_favorite: false,
-                }))}
-                onSelect={handlePinPress}
-                height={260}
-              />
+              <View>
+                <MyRestaurantsMap
+                  items={filteredReviews.map((r) => ({
+                    id: r.restaurant_id,
+                    name: r.restaurant_name ?? '',
+                    location: null,
+                    is_favorite: false,
+                  }))}
+                  onSelect={handlePinPress}
+                  height={260}
+                />
+                {/* Mini-avatar che compare in alto a sinistra sulla mappa quando
+                    l'header si aggancia in cima (l'avatar grande è scrollato via). */}
+                <Animated.View
+                  pointerEvents="none"
+                  style={[styles.mapAvatar, { opacity: pinned }]}
+                >
+                  <Avatar
+                    avatarId={visibleProfile!.avatar_url}
+                    isAnonymous={visibleProfile!.is_anonymous}
+                    initial={visibleProfile!.username ?? undefined}
+                    size={36}
+                  />
+                </Animated.View>
+              </View>
             )}
           </View>
         ) : undefined}
@@ -227,6 +243,19 @@ const styles = StyleSheet.create({
   errorText: {
     color: theme.colors.textSecondary,
     fontSize: 16,
+  },
+  mapAvatar: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    padding: 2,
+    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 3,
   },
   stickyHeader: {
     backgroundColor: theme.colors.background,
