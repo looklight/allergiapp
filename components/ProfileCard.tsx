@@ -28,9 +28,14 @@ interface ProfileCardProps {
   onAvatarPress?: () => void;
   title?: string;
   /** Elemento reso subito sotto la sezione profilo e reso "sticky" in alto allo scroll.
-   *  Può essere una render-prop che riceve `pinned`: un valore animato 0→1 che vale 1
-   *  quando l'header è agganciato in cima (usato es. per far comparire un mini-avatar). */
-  stickyHeader?: React.ReactNode | ((pinned: Animated.AnimatedInterpolation<number>) => React.ReactNode);
+   *  Può essere una render-prop che riceve:
+   *   - `pinned`: valore animato 0→1, vale 1 quando l'header è agganciato in cima
+   *     (per il fade-in di un mini-avatar);
+   *   - `isPinned`: lo stesso stato lato JS, per gestire i tap (es. abilitare un
+   *     tocco "torna su" solo quando l'header è effettivamente agganciato). */
+  stickyHeader?:
+    | React.ReactNode
+    | ((pinned: Animated.AnimatedInterpolation<number>, isPinned: boolean) => React.ReactNode);
   /** Ref alla ScrollView interna — consente al chiamante di scrollare a un offset (es. a una card). */
   scrollRef?: React.RefObject<ScrollView | null>;
   children?: React.ReactNode;
@@ -52,9 +57,20 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
   // sulla mappa). `pinned` sale da 0 a 1 negli ultimi 40px prima che l'header si
   // agganci in cima, così l'avatar fa fade-in invece di apparire di colpo.
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [isPinned, setIsPinned] = useState(false);
   const onScroll = useMemo(
-    () => Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }),
-    [scrollY],
+    () =>
+      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+        useNativeDriver: true,
+        // Listener JS-side: serve solo per sapere se l'header è agganciato e gestire
+        // i tap (l'animazione di opacità resta sul thread nativo). setState con lo
+        // stesso valore è un no-op per React, quindi niente re-render superflui.
+        listener: (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+          const y = e.nativeEvent.contentOffset.y;
+          setIsPinned(stickyY > 0 && y >= stickyY);
+        },
+      }),
+    [scrollY, stickyY],
   );
   const pinned = useMemo<Animated.AnimatedInterpolation<number>>(
     () =>
@@ -66,7 +82,7 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
     [scrollY, stickyY],
   );
   const renderedStickyHeader =
-    typeof stickyHeader === 'function' ? stickyHeader(pinned) : stickyHeader;
+    typeof stickyHeader === 'function' ? stickyHeader(pinned, isPinned) : stickyHeader;
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })

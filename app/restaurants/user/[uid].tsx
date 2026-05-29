@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, ActivityIndicator, ScrollView, Animated, Easing } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, ScrollView, Animated, Easing, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { theme } from '../../../constants/theme';
@@ -118,7 +118,7 @@ export default function PublicProfileScreen() {
         stats={{ reviews: reviewCount, likes: likesReceived }}
         onBack={() => router.back()}
         scrollRef={scrollRef}
-        stickyHeader={reviews.length > 0 ? (pinned) => (
+        stickyHeader={reviews.length > 0 ? (pinned, isPinned) => (
           <View
             style={styles.stickyHeader}
             onLayout={(e) => { stickyHeightRef.current = e.nativeEvent.layout.height; }}
@@ -141,17 +141,27 @@ export default function PublicProfileScreen() {
                   height={260}
                 />
                 {/* Mini-avatar che compare in alto a sinistra sulla mappa quando
-                    l'header si aggancia in cima (l'avatar grande è scrollato via). */}
+                    l'header si aggancia in cima (l'avatar grande è scrollato via).
+                    Tap → torna in cima al profilo. Il touch è abilitato solo quando
+                    è agganciato, così da invisibile non intercetta i tap sulla mappa. */}
                 <Animated.View
-                  pointerEvents="none"
+                  pointerEvents={isPinned ? 'auto' : 'none'}
                   style={[styles.mapAvatar, { opacity: pinned }]}
                 >
-                  <Avatar
-                    avatarId={visibleProfile!.avatar_url}
-                    isAnonymous={visibleProfile!.is_anonymous}
-                    initial={visibleProfile!.username ?? undefined}
-                    size={36}
-                  />
+                  <TouchableOpacity
+                    onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+                    activeOpacity={0.7}
+                    hitSlop={6}
+                    accessibilityRole="button"
+                    accessibilityLabel={i18n.t('restaurants.user.backToTop')}
+                  >
+                    <Avatar
+                      avatarId={visibleProfile!.avatar_url}
+                      isAnonymous={visibleProfile!.is_anonymous}
+                      initial={visibleProfile!.username ?? undefined}
+                      size={36}
+                    />
+                  </TouchableOpacity>
                 </Animated.View>
               </View>
             )}
@@ -259,6 +269,11 @@ const styles = StyleSheet.create({
   },
   stickyHeader: {
     backgroundColor: theme.colors.background,
+    // Sfondo a tutta larghezza (bleed oltre il padding 16 di ProfileCard) così,
+    // quando le card scorrono dietro, le loro ombre non spuntano ai lati.
+    // Il padding interno riporta i contenuti (chip/mappa) alla stessa posizione.
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
     gap: 6,
     paddingTop: 6,
     paddingBottom: 8,

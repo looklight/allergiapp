@@ -549,6 +549,7 @@
       "notFound": "Profile not found.",
       "reviewsLabel": "Reviews",
       "filterAll": "All",
+      "backToTop": "Back to top of profile",
       "stats": {
         "reviews": {
           "one": "review",
