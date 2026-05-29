@@ -32,6 +32,11 @@ export type RestaurantMapProps = {
   favoriteIds?: Set<string>;
   favoriteRestaurants?: Map<string, Restaurant>;
   compassOffset?: { x: number; y: number };
+  /** Mappa a tutto schermo della home: abilita su Android il mapPadding che
+   *  tiene conto della search bar (top) e del detail sheet (~55% bottom).
+   *  NON va usato per mappe embedded ad altezza fissa (es. mini-mappa profilo):
+   *  lì quel padding supererebbe l'altezza della mappa e scentrerebbe i pin. */
+  fullScreenChrome?: boolean;
   /** Filtri allergenici attivi dell'utente — per calcolo coverage lato client sui pin */
   userAllergens?: string[];
   /** Filtri dietetici attivi dell'utente — per calcolo coverage lato client sui pin */

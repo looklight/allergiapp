@@ -590,6 +590,7 @@ export default function RestaurantsScreen() {
           favoriteIds={favoriteIds}
           favoriteRestaurants={favoriteRestaurants}
           compassOffset={{ x: -12, y: insets.top + 8 }}
+          fullScreenChrome
           userAllergens={filterAllergens}
           userDiets={filterDiets}
         />

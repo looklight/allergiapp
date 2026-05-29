@@ -66,6 +66,7 @@ export default function RestaurantMap({
   favoriteIds,
   favoriteRestaurants,
   compassOffset,
+  fullScreenChrome,
   userAllergens,
   userDiets,
 }: RestaurantMapProps) {
@@ -91,9 +92,12 @@ export default function RestaurantMap({
   // se aggiornassimo a sheet aperto rischiamo che il primo tap usi ancora
   // bottom: 0. Trade-off: a sheet chiuso fitToMarkers/locate-me lavorano con
   // viewport compressa → marker visivamente "alti". Accettabile.
+  // Solo per la mappa a tutto schermo della home (fullScreenChrome). Sulle mappe
+  // embedded ad altezza fissa (mini-mappa profilo) questo padding supererebbe
+  // l'altezza della mappa e scentrerebbe i pin su Android — lì resta undefined.
   const mapPadding = useMemo(
     () =>
-      Platform.OS === 'android'
+      Platform.OS === 'android' && fullScreenChrome
         ? {
             top: insets.top + 120,
             right: 12,
@@ -102,7 +106,7 @@ export default function RestaurantMap({
             left: 0,
           }
         : undefined,
-    [insets.top, windowHeight],
+    [insets.top, windowHeight, fullScreenChrome],
   );
   // Gate "pronto ad animare" per l'effect centerOn. Flippa una sola volta al
   // primo layout: i resize successivi (tastiera) non ri-triggerano l'effect.
