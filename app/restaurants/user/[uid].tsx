@@ -7,10 +7,8 @@ import { AuthService } from '../../../services/auth';
 import { RestaurantService } from '../../../services/restaurantService';
 import type { UserReview } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
-import ProfileCard from '../../../components/ProfileCard';
+import ProfileMapList from '../../../components/ProfileMapList';
 import UserReviewCard from '../../../components/UserReviewCard';
-import CountryFilterChips from '../../../components/CountryFilterChips';
-import { useLocationFilters } from '../../../hooks/useLocationFilters';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
@@ -32,9 +30,6 @@ export default function PublicProfileScreen() {
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
-  const { countryOptions, selectedCountry, setSelectedCountry, filteredItems: filteredReviews } =
-    useLocationFilters(reviews, getReviewLocation);
 
   useEffect(() => {
     if (!uid) return;
@@ -89,29 +84,25 @@ export default function PublicProfileScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <ProfileCard
+      <ProfileMapList<UserReview>
         profile={visibleProfile!}
         stats={{ reviews: reviewCount, likes: likesReceived }}
         onBack={() => router.back()}
-      >
-        {reviews.length > 0 && (
-          <>
-            <CountryFilterChips
-              options={countryOptions}
-              selected={selectedCountry}
-              onSelect={setSelectedCountry}
-            />
-            <Text style={styles.sectionTitle}>{i18n.t('restaurants.user.reviewsLabel')}</Text>
-            {filteredReviews.map((c) => (
-              <UserReviewCard
-                key={c.id}
-                review={c}
-                onPress={() => router.push(`/restaurants/${c.restaurant_id}`)}
-              />
-            ))}
-          </>
-        )}
-      </ProfileCard>
+        items={reviews}
+        getLocation={getReviewLocation}
+        getMapPin={(r) => ({
+          id: r.restaurant_id,
+          name: r.restaurant_name ?? '',
+          location: r.restaurant_lat != null && r.restaurant_lng != null
+            ? { latitude: r.restaurant_lat, longitude: r.restaurant_lng }
+            : null,
+          is_favorite: false,
+        })}
+        getPinId={(r) => r.restaurant_id}
+        getRowKey={(r) => r.id}
+        renderRow={(r, onPress) => <UserReviewCard review={r} onPress={onPress} />}
+        sectionTitle={i18n.t('restaurants.user.reviewsLabel')}
+      />
     </>
   );
 }
@@ -130,10 +121,5 @@ const styles = StyleSheet.create({
   errorText: {
     color: theme.colors.textSecondary,
     fontSize: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
   },
 });

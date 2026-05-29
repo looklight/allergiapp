@@ -54,6 +54,12 @@ export const DEFAULT_REGION: Region = {
 
 export const FIT_EDGE_PADDING = { top: 80, right: 50, bottom: 50, left: 50 };
 
+/** Delta minimo (gradi, ~5.5 km) usato quando i punti da inquadrare coincidono
+ *  o sono molto vicini: fitToCoordinates zoomerebbe al massimo e si perderebbe
+ *  il contesto geografico (non si capisce dove si trova). Sotto questo span
+ *  inquadriamo una regione con questo delta centrata sui punti. */
+export const MIN_FIT_DELTA = 0.05;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

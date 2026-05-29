@@ -29,7 +29,8 @@
     "userInactive": "Inactive user",
     "or": "or",
     "continueWithGoogle": "Continue with Google",
-    "continueWithApple": "Continue with Apple"
+    "continueWithApple": "Continue with Apple",
+    "loading": "Loading"
   },
   "home": {
     "title": "What do I need to communicate?",
@@ -463,7 +464,10 @@
       "menuAvatars": "My Avatars",
       "menuFavorites": "My favorites",
       "menuReviews": "My reviews",
-      "menuLeaderboard": "Leaderboard"
+      "menuMyRestaurants": "My restaurants",
+      "menuLeaderboard": "Leaderboard",
+      "emptyReviews": "You haven’t written any reviews yet.",
+      "emptyFavorites": "You don’t have any favorite restaurants yet."
     },
     "report": {
       "title": "Report a problem",
@@ -520,8 +524,19 @@
     },
     "myRestaurants": {
       "title": "My restaurants",
-      "emptyTitle": "You haven't added any restaurants yet",
-      "emptySubtitle": "Add your first restaurant and help the community!"
+      "emptyTitle": "Your diary is empty",
+      "emptySubtitle": "Save the restaurants you love and leave your reviews: you'll find them all here.",
+      "emptyButton": "Explore restaurants",
+      "filterAll": "All",
+      "filterFavorites": "Favorites",
+      "filterReviewed": "Reviewed",
+      "filterCountry": "Country",
+      "viewList": "List",
+      "viewMap": "Map",
+      "stats": {
+        "one": "restaurant",
+        "other": "restaurants"
+      }
     },
     "myReviews": {
       "title": "My reviews",
@@ -537,6 +552,7 @@
       "notFound": "Profile not found.",
       "reviewsLabel": "Reviews",
       "filterAll": "All",
+      "backToTop": "Back to top of profile",
       "stats": {
         "reviews": {
           "one": "review",

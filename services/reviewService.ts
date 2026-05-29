@@ -1,9 +1,9 @@
 import * as Crypto from 'expo-crypto';
 import { supabase } from './supabase';
+import { fetchRestaurantPositions } from './restaurantPositions';
 import { StorageService, type UploadResult } from './storageService';
 import { isRemoteUrl } from '../utils/url';
 import {
-  QUERY_LIMITS,
   REVIEWS_PAGE_SIZE,
   type Review,
   type ReviewPhoto,
@@ -122,27 +122,39 @@ export type UserReview = Review & {
   restaurant_city?: string | null;
   restaurant_country?: string | null;
   restaurant_country_code?: string | null;
+  /** Coordinate del ristorante per la mappa profilo (estratte dal GeoJSON del join). */
+  restaurant_lat?: number | null;
+  restaurant_lng?: number | null;
 };
 
 export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
   try {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        restaurant:restaurants!restaurant_id(name, city, country, country_code)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(QUERY_LIMITS.USER_REVIEWS);
+    // Coordinate reali via RPC (lat/lng espliciti): il join diretto su restaurants
+    // non espone la location parsabile. Caricate in parallelo e agganciate per id.
+    const [{ data, error }, positions] = await Promise.all([
+      supabase
+        .from('reviews')
+        .select(`
+          *,
+          restaurant:restaurants!restaurant_id(name, city, country, country_code)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false }),
+      fetchRestaurantPositions(),
+    ]);
     if (error) throw error;
-    return (data ?? []).map((r: any) => ({
-      ...r,
-      restaurant_name: r.restaurant?.name ?? null,
-      restaurant_city: r.restaurant?.city ?? null,
-      restaurant_country: r.restaurant?.country ?? null,
-      restaurant_country_code: r.restaurant?.country_code ?? null,
-    }));
+    return (data ?? []).map((r: any) => {
+      const pos = positions.get(r.restaurant_id);
+      return {
+        ...r,
+        restaurant_name: r.restaurant?.name ?? null,
+        restaurant_city: r.restaurant?.city ?? null,
+        restaurant_country: r.restaurant?.country ?? null,
+        restaurant_country_code: r.restaurant?.country_code ?? null,
+        restaurant_lat: pos?.latitude ?? null,
+        restaurant_lng: pos?.longitude ?? null,
+      };
+    });
   } catch (error) {
     console.warn('[ReviewService] Errore getReviewsByUser:', error);
     return [];

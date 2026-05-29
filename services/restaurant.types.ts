@@ -184,7 +184,6 @@ export interface LeaderboardEntry {
 
 export const QUERY_LIMITS: Record<string, number> = {
   NEARBY_DEFAULT: 100,
-  USER_REVIEWS: 20,
 };
 
 export const DEFAULTS: Record<string, number> = {

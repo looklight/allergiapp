@@ -73,10 +73,18 @@ export function useLocationFilters<T>(items: T[], getLocation: (item: T) => Loca
       .sort((a, b) => b.count - a.count);
   }, [items, getLocation, locale]);
 
-  const filteredItems = useMemo(
-    () => (selectedCountry ? items.filter((it) => locationKey(getLocation(it)) === selectedCountry) : items),
-    [items, selectedCountry, getLocation],
+  // Se la selezione corrente non è più tra le opzioni disponibili (es. cambio di
+  // dataset: da recensioni a preferiti con paesi diversi), ricade su "tutti" invece
+  // di filtrare a vuoto. Lo stato grezzo resta, ma il valore effettivo è clampato.
+  const validSelected = useMemo(
+    () => (selectedCountry && countryOptions.some((o) => o.key === selectedCountry) ? selectedCountry : null),
+    [selectedCountry, countryOptions],
   );
 
-  return { stats, countryOptions, selectedCountry, setSelectedCountry, filteredItems };
+  const filteredItems = useMemo(
+    () => (validSelected ? items.filter((it) => locationKey(getLocation(it)) === validSelected) : items),
+    [items, validSelected, getLocation],
+  );
+
+  return { stats, countryOptions, selectedCountry: validSelected, setSelectedCountry, filteredItems };
 }

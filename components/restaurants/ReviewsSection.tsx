@@ -42,6 +42,8 @@ export default function ReviewsSection({
   reportedReviewIds,
   currentUserId,
 }: Props) {
+  const [disclaimerVisible, setDisclaimerVisible] = useState(true);
+
   if (reviews.length === 0) {
     return (
       <View style={styles.emptySection}>
@@ -51,8 +53,6 @@ export default function ReviewsSection({
       </View>
     );
   }
-
-  const [disclaimerVisible, setDisclaimerVisible] = useState(false);
 
   const sortOptions: { key: ReviewSortOrder; labelKey: string; icon: string }[] = [
     { key: 'recent', labelKey: 'restaurants.reviews.sort.recent', icon: 'clock-outline' },
@@ -121,9 +121,13 @@ export default function ReviewsSection({
         )}
       </View>
       {disclaimerVisible && (
-        <View style={styles.disclaimerBox}>
+        <TouchableOpacity
+          style={styles.disclaimerBox}
+          onPress={() => setDisclaimerVisible(false)}
+          activeOpacity={0.7}
+        >
           <Text style={styles.disclaimer}>{i18n.t('restaurants.reviews.disclaimer')}</Text>
-        </View>
+        </TouchableOpacity>
       )}
       {reviews.map((item, idx) => (
         <View key={item.key}>

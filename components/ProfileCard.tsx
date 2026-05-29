@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import React, { useState, useRef, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
@@ -14,7 +14,6 @@ import AppHeader from '../app/components/AppHeader';
 interface ProfileStats {
   likes?: number;
   reviews?: number;
-  favorites?: number;
 }
 
 interface ProfileCardProps {
@@ -23,17 +22,73 @@ interface ProfileCardProps {
   /** Override del numero "like" — se passato, sostituisce il <Text> statico
    *  (usato per renderizzare AnimatedLikesCounter sul profilo proprio). */
   likesSlot?: React.ReactNode;
+  /** Override del numero "recensioni" — se passato, sostituisce il <Text> statico
+   *  (usato per il conteggio cache-first con skeleton sul profilo proprio). */
+  reviewsSlot?: React.ReactNode;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
   title?: string;
+  /** Elemento reso subito sotto la sezione profilo e reso "sticky" in alto allo scroll.
+   *  Può essere una render-prop che riceve:
+   *   - `pinned`: valore animato 0→1, vale 1 quando l'header è agganciato in cima
+   *     (per il fade-in di un mini-avatar);
+   *   - `isPinned`: lo stesso stato lato JS, per gestire i tap (es. abilitare un
+   *     tocco "torna su" solo quando l'header è effettivamente agganciato). */
+  stickyHeader?:
+    | React.ReactNode
+    | ((pinned: Animated.AnimatedInterpolation<number>, isPinned: boolean) => React.ReactNode);
+  /** Ref alla ScrollView interna — consente al chiamante di scrollare a un offset (es. a una card). */
+  scrollRef?: React.RefObject<ScrollView | null>;
+  /** Contenuto reso tra la sezione profilo e la sticky header: scorre via in alto
+   *  (non si aggancia). Usato per i pulsanti d'azione del profilo proprio. */
+  beforeStickyHeader?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const insets = useSafeAreaInsets();
   const displayName = getDisplayName(profile);
+
+  // Per tenere lo sticky header agganciato anche quando il contenuto sotto è poco
+  // (es. filtro che lascia 1 sola card): garantiamo che il contenuto sia alto almeno
+  // (posizione dell'header sticky) + (altezza viewport). Così resta una schermata di
+  // spazio sotto l'header e lo scroll non rimbalza su.
+  const [viewportH, setViewportH] = useState(0);
+  const [stickyY, setStickyY] = useState(0);
+  const fillMinHeight = stickyHeader && viewportH > 0 ? stickyY + viewportH : null;
+
+  // Scroll tracking per gli elementi che reagiscono all'aggancio (es. mini-avatar
+  // sulla mappa). `pinned` sale da 0 a 1 negli ultimi 40px prima che l'header si
+  // agganci in cima, così l'avatar fa fade-in invece di apparire di colpo.
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [isPinned, setIsPinned] = useState(false);
+  const onScroll = useMemo(
+    () =>
+      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+        useNativeDriver: true,
+        // Listener JS-side: serve solo per sapere se l'header è agganciato e gestire
+        // i tap (l'animazione di opacità resta sul thread nativo). setState con lo
+        // stesso valore è un no-op per React, quindi niente re-render superflui.
+        listener: (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+          const y = e.nativeEvent.contentOffset.y;
+          setIsPinned(stickyY > 0 && y >= stickyY);
+        },
+      }),
+    [scrollY, stickyY],
+  );
+  const pinned = useMemo<Animated.AnimatedInterpolation<number>>(
+    () =>
+      scrollY.interpolate({
+        inputRange: stickyY > 0 ? [Math.max(0, stickyY - 40), stickyY] : [0, 1],
+        outputRange: stickyY > 0 ? [0, 1] : [0, 0],
+        extrapolate: 'clamp',
+      }),
+    [scrollY, stickyY],
+  );
+  const renderedStickyHeader =
+    typeof stickyHeader === 'function' ? stickyHeader(pinned, isPinned) : stickyHeader;
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(i18n.locale, { month: 'long', year: 'numeric' })
@@ -41,14 +96,33 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
 
   return (
     <View style={styles.container}>
-      <AppHeader title={title} onLeadingPress={onBack} />
+      <AppHeader
+        title={title}
+        onLeadingPress={onBack}
+        actions={
+          onEdit
+            ? [{ icon: 'pencil-outline', onPress: onEdit, accessibilityLabel: i18n.t('common.edit') }]
+            : undefined
+        }
+      />
 
-      <ScrollView
+      <Animated.ScrollView
+        ref={scrollRef as React.RefObject<any>}
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+        onLayout={(e) => setViewportH(e.nativeEvent.layout.height)}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + 24 },
+          fillMinHeight != null && { minHeight: fillMinHeight },
+        ]}
+        stickyHeaderIndices={stickyHeader ? [beforeStickyHeader != null ? 2 : 1] : undefined}
       >
-        {/* Profilo: avatar + nome in riga, stile Airbnb */}
-        <Surface style={styles.profileCard} elevation={0}>
+        {/* Profilo: avatar + nome in riga, stile Airbnb.
+            Niente card contenitore: il contenuto usa tutta la larghezza
+            cosi' la colonna testo accanto all'avatar ha piu' spazio. */}
+        <View style={styles.profileSection}>
           <View style={styles.profileRow}>
             {onAvatarPress ? (
               <TouchableOpacity
@@ -82,12 +156,23 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
               {memberSince ? (
                 <Text style={styles.memberSince}>{i18n.t('restaurants.profileCard.memberSince', { date: memberSince })}</Text>
               ) : null}
+              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot) && (
+                <View style={styles.inlineStatsRow}>
+                  {(stats?.reviews != null || reviewsSlot) && (
+                    <View style={styles.inlineStat}>
+                      {reviewsSlot ?? <Text style={styles.inlineStatNumber}>{stats?.reviews}</Text>}
+                      <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statReviews')}</Text>
+                    </View>
+                  )}
+                  {stats?.likes != null && (
+                    <View style={styles.inlineStat}>
+                      {likesSlot ?? <Text style={styles.inlineStatNumber}>{stats.likes}</Text>}
+                      <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
-            {onEdit && (
-              <TouchableOpacity onPress={onEdit} hitSlop={8} activeOpacity={0.6}>
-                <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.textSecondary} />
-              </TouchableOpacity>
-            )}
           </View>
 
           {/* Profilo alimentare (integrato sopra le stats).
@@ -144,45 +229,26 @@ export default function ProfileCard({ profile, stats, likesSlot, onBack, onEdit,
                     </View>
                   </View>
                 )}
+                <View style={styles.dividerBottom} />
               </>
             );
           })()}
 
-          {/* Stats — render solo le metriche fornite */}
-          {(stats?.reviews != null || stats?.likes != null || stats?.favorites != null) && (
-            <>
-              <View style={styles.divider} />
-              <View style={styles.statsRow}>
-                {stats?.reviews != null && (
-                  <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{stats.reviews}</Text>
-                    <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statReviews')}</Text>
-                  </View>
-                )}
-                {stats?.reviews != null && stats?.likes != null && <View style={styles.statSep} />}
-                {stats?.likes != null && (
-                  <View style={styles.statItem}>
-                    {likesSlot ?? <Text style={styles.statNumber}>{stats.likes}</Text>}
-                    <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
-                  </View>
-                )}
-                {stats?.favorites != null && (
-                  <>
-                    <View style={styles.statSep} />
-                    <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{stats.favorites}</Text>
-                      <Text style={styles.statLabel}>{i18n.t('restaurants.profileCard.statFavorites')}</Text>
-                    </View>
-                  </>
-                )}
-              </View>
-            </>
-          )}
+        </View>
 
-        </Surface>
+        {beforeStickyHeader != null && <View>{beforeStickyHeader}</View>}
+
+        {renderedStickyHeader != null && (
+          <View
+            style={styles.stickyWrap}
+            onLayout={(e) => setStickyY(e.nativeEvent.layout.y)}
+          >
+            {renderedStickyHeader}
+          </View>
+        )}
 
         {children}
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
@@ -196,18 +262,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 4,
     gap: 12,
   },
-  profileCard: {
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+  // Avvicina l'header sticky (filtri/mappa) al divisore che lo precede, annullando
+  // gran parte del gap della lista solo in questo punto (non tra le card).
+  stickyWrap: {
+    marginTop: -8,
+  },
+  profileSection: {
+    paddingVertical: 0,
   },
   profileRow: {
     flexDirection: 'row',
@@ -232,34 +297,42 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
+  // Divisore di apertura del profilo alimentare: stretto sopra (lato identità),
+  // più respiro sotto (lato profilo alimentare).
   divider: {
     height: 1,
     backgroundColor: theme.colors.divider,
-    marginVertical: 16,
+    marginTop: 4,
+    marginBottom: 12,
   },
-  statsRow: {
+  // Divisore in chiusura del profilo alimentare: respiro sopra (lato contenuto),
+  // niente margine sotto — lo spazio verso ciò che segue è già dato dal gap della lista.
+  dividerBottom: {
+    height: 1,
+    backgroundColor: theme.colors.divider,
+    marginTop: 12,
+    marginBottom: 0,
+  },
+  inlineStatsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 8,
+  },
+  inlineStat: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    gap: 4,
   },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  inlineStatNumber: {
+    fontSize: 15,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
-    marginBottom: 2,
   },
-  statLabel: {
-    fontSize: 12,
+  inlineStatLabel: {
+    fontSize: 13,
     color: theme.colors.textSecondary,
-  },
-  statSep: {
-    width: 1,
-    height: 28,
-    backgroundColor: theme.colors.divider,
   },
   allergensLabel: {
     fontSize: 13,
