@@ -203,6 +203,11 @@
     "readLess": "Mostra meno"
   },
   "restaurants": {
+    "locationDenied": {
+      "title": "Posizione non attiva",
+      "message": "Per mostrarti i locali vicino a te, attiva la posizione nelle Impostazioni.",
+      "openSettings": "Apri Impostazioni"
+    },
     "review": {
       "title": "La tua recensione",
       "editTitle": "Modifica recensione",
@@ -624,6 +629,11 @@
     "quoteAuthor": "Marta Di Muro",
     "learnMore": "Scopri di più",
     "followMe": "I miei social"
+  },
+  "onboardingLocation": {
+    "title": "Scopri i locali vicino a te",
+    "description": "Attiva la posizione per trovare ristoranti adatti alle tue esigenze qui intorno. Potrai sempre esplorare la mappa e cercare le città anche senza.",
+    "button": "Attiva posizione"
   },
   "onboardingTutorial": {
     "welcome": {

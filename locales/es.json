@@ -190,6 +190,11 @@
     "learnMore": "Descubre más",
     "followMe": "Mis redes"
   },
+  "onboardingLocation": {
+    "title": "Descubre locales cerca de ti",
+    "description": "Activa la ubicación para encontrar restaurantes que se adapten a tus necesidades cerca de ti. Siempre podrás explorar el mapa y buscar ciudades sin ella.",
+    "button": "Activar ubicación"
+  },
   "onboardingTutorial": {
     "welcome": {
       "title": "Qué bueno tenerte aquí.",

@@ -14,6 +14,7 @@ import type { TrackingConsent } from '../types';
 // Catalogo eventi tipizzato. Aggiungere qui prima di chiamare track().
 export type EventName =
   | 'onboarding_completed'
+  | 'location_permission_prompted'
   | 'restaurant_viewed'
   | 'restaurant_search'
   | 'review_created'

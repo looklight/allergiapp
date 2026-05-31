@@ -3,10 +3,21 @@ import { Platform } from 'react-native';
 import * as Location from 'expo-location';
 import { RestaurantService, type Restaurant, type RestaurantPin } from '../services/restaurantService';
 import { haversineKm } from '../utils/geo';
+import { DEFAULT_REGION } from '../components/map/mapConstants';
 
 export type LatLng = { latitude: number; longitude: number };
 export type MapRegion = LatLng & { latitudeDelta: number; longitudeDelta: number };
 export type CenterOn = LatLng & { sheetFraction: number; latDelta?: number };
+
+/** Esito di una richiesta "centra su di me". La decisione su come reagire è
+ *  guidata dallo stato del permesso di sistema (persistente), non da flag di
+ *  sessione, così è coerente su iOS/Android e sopravvive ai riavvii. */
+export type LocateOutcome =
+  | { kind: 'located'; coords: LatLng }
+  /** Diniego terminale (il dialog nativo non riapparirà): guidare a Impostazioni. */
+  | { kind: 'denied_settings' }
+  /** Scelta appena fatta nel dialog nativo, o GPS non disponibile: nessun avviso. */
+  | { kind: 'dismissed' };
 
 type FilterParams = {
   forMyNeeds: boolean;
@@ -200,19 +211,25 @@ export function useRestaurantGeo(params: FilterParams) {
     }
   }, [userLocation, syncState]);
 
-  // Al mount, centra la mappa sulla posizione dell'utente
+  // Al mount, centra la mappa sull'utente SOLO se il permesso è già concesso.
+  // Non chiediamo qui il permesso a freddo: la richiesta avviene a fine onboarding
+  // (schermata dedicata) o su intento esplicito (pulsante "centra su di me"). Così
+  // evitiamo il prompt a sorpresa per chi aggiorna l'app e non bruciamo il colpo
+  // unico del dialog nativo iOS.
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        const { status } = await Location.getForegroundPermissionsAsync();
         if (!mounted) return;
         if (status !== 'granted') {
-          setLocationDenied(true);
+          // 'denied' = già negato (mostra l'hint sul pulsante locate);
+          // 'undetermined' = mai chiesto → resta neutro, niente prompt qui.
+          if (status === 'denied') setLocationDenied(true);
           return;
         }
         // Android: cold-start del GPS puo richiedere 2-8s. Senza fast-path
-        // la mappa parte su DEFAULT_REGION (Italia centro) e poi salta sulla
+        // la mappa parte su DEFAULT_REGION (Europa, Italia al centro) e poi salta sulla
         // posizione reale. Usiamo l'ultima posizione cachata dal sistema
         // (Fused Location Provider) per centrare subito. iOS non ne ha bisogno:
         // Core Location restituisce il fix in poche centinaia di ms.
@@ -300,6 +317,20 @@ export function useRestaurantGeo(params: FilterParams) {
     }
   }, [userLocation, loadGeo, loadPinsForViewport]);
 
+  // Vista di default (Europa, Italia al centro): carica subito i pin del viewport
+  // iniziale a prescindere dalla posizione. Garantisce una mappa popolata anche per
+  // chi non condivide la geolocalizzazione, senza dipendere dal primo fire di
+  // onRegionChangeComplete della libreria mappa. I pin si accumulano nella cache,
+  // quindi non c'è conflitto con il caricamento attorno all'utente se poi arriva.
+  useEffect(() => {
+    loadPinsForViewport({
+      latitude: DEFAULT_REGION.latitude,
+      longitude: DEFAULT_REGION.longitude,
+      latitudeDelta: DEFAULT_REGION.latitudeDelta,
+      longitudeDelta: DEFAULT_REGION.longitudeDelta,
+    });
+  }, [loadPinsForViewport]);
+
   // Fallback: se dopo 3s non c'e GPS, ferma il loading e mostra lista vuota
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -331,14 +362,27 @@ export function useRestaurantGeo(params: FilterParams) {
     }, 300);
   }, [isCovered, fetchArea, loadPinsForViewport]);
 
-  const handleLocateMe = useCallback(async (): Promise<LatLng | null> => {
+  const handleLocateMe = useCallback(async (): Promise<LocateOutcome> => {
     setIsLocating(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setLocationDenied(true);
-        setIsLocating(false);
-        return null;
+      const perm = await Location.getForegroundPermissionsAsync();
+      if (perm.status !== 'granted') {
+        if (perm.canAskAgain) {
+          // Il dialog nativo può ancora essere mostrato (iOS: mai chiesto; Android:
+          // non "non chiedere più"). Qualunque sia la scelta dell'utente nel dialog,
+          // NON mostriamo l'hint Impostazioni: ha appena deciso lui nel prompt OS.
+          const req = await Location.requestForegroundPermissionsAsync();
+          if (req.status !== 'granted') {
+            setLocationDenied(true);
+            setIsLocating(false);
+            return { kind: 'dismissed' };
+          }
+        } else {
+          // Diniego terminale: il prompt nativo non riapparirà → unica via Impostazioni.
+          setLocationDenied(true);
+          setIsLocating(false);
+          return { kind: 'denied_settings' };
+        }
       }
       setLocationDenied(false);
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -347,10 +391,10 @@ export function useRestaurantGeo(params: FilterParams) {
       setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
       await loadGeo(coords.latitude, coords.longitude);
       setIsLocating(false);
-      return coords;
+      return { kind: 'located', coords };
     } catch {
       setIsLocating(false);
-      return null;
+      return { kind: 'dismissed' };
     }
   }, [loadGeo, getSheetFraction]);
 

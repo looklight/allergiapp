@@ -203,6 +203,11 @@
     "readLess": "Show less"
   },
   "restaurants": {
+    "locationDenied": {
+      "title": "Location is off",
+      "message": "To show places near you, turn on location in Settings.",
+      "openSettings": "Open Settings"
+    },
     "review": {
       "title": "Your review",
       "editTitle": "Edit review",
@@ -624,6 +629,11 @@
     "quoteAuthor": "Marta Di Muro",
     "learnMore": "Learn more",
     "followMe": "My socials"
+  },
+  "onboardingLocation": {
+    "title": "Discover places near you",
+    "description": "Turn on location to find restaurants that match your needs nearby. You can always explore the map and search cities without it.",
+    "button": "Enable location"
   },
   "onboardingTutorial": {
     "welcome": {

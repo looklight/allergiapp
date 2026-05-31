@@ -50,11 +50,16 @@ export type RestaurantMapProps = {
 /** latitudeDelta above which markers render as dots instead of pins */
 export const ZOOM_PIN_THRESHOLD = 0.2;
 
+/** Vista di default (nessuna posizione condivisa): Italia al centro, ma scala
+ *  europea per mostrare la copertura internazionale dei locali (~62% dei dati è
+ *  in Europa, distribuiti su più città → cluster multipli "vivi"). Il
+ *  `latitudeDelta` è da calibrare a runtime (react-native-maps riadatta la
+ *  region all'aspect ratio dello schermo). */
 export const DEFAULT_REGION: Region = {
-  latitude: 41.9,
+  latitude: 42.0,
   longitude: 12.5,
-  latitudeDelta: 8,
-  longitudeDelta: 8,
+  latitudeDelta: 22,
+  longitudeDelta: 22,
 };
 
 export const FIT_EDGE_PADDING = { top: 80, right: 50, bottom: 50, left: 50 };

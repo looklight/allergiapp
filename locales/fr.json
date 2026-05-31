@@ -190,6 +190,11 @@
     "learnMore": "En savoir plus",
     "followMe": "Mes réseaux"
   },
+  "onboardingLocation": {
+    "title": "Découvrez les lieux près de vous",
+    "description": "Activez la localisation pour trouver des restaurants adaptés à vos besoins à proximité. Vous pourrez toujours explorer la carte et rechercher des villes sans elle.",
+    "button": "Activer la localisation"
+  },
   "onboardingTutorial": {
     "welcome": {
       "title": "Ravi de t'accueillir.",

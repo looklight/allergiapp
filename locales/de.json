@@ -190,6 +190,11 @@
     "learnMore": "Mehr erfahren",
     "followMe": "Meine Socials"
   },
+  "onboardingLocation": {
+    "title": "Entdecke Orte in deiner Nähe",
+    "description": "Aktiviere den Standort, um Restaurants in deiner Nähe zu finden, die zu deinen Bedürfnissen passen. Du kannst die Karte auch ohne Standort erkunden und Städte suchen.",
+    "button": "Standort aktivieren"
+  },
   "onboardingTutorial": {
     "welcome": {
       "title": "Schön, dass du da bist.",

@@ -50,6 +50,14 @@ Setup esterno completato. Feature mergiata in main (commit `6b0d9f3`). Distribui
 
 **Vincolo assoluto Android:** ogni fix deve essere Android-only via `Platform.OS === 'android'` o equivalente. iOS è "perfetta" e non va toccato in nessun caso.
 
+### Geolocalizzazione & vista mappa — follow-up (2026-05-31)
+Implementato e committato su main. Restano da chiudere lato test/UX:
+
+- [ ] **Test a runtime del flusso completo** — onboarding (Inizia *e* Salta) → schermata `onboarding-location` → prompt nativo → tab Ristoranti. Verificare: pin sulla vista Europa anche senza posizione; auto-center se permesso già concesso; pulsante "centra su di me" con hint Impostazioni solo su diniego terminale (niente nag al primo "no"); nessun prompt a freddo per utenti esistenti che aggiornano l'app.
+- [ ] **Calibrare `DEFAULT_REGION.latitudeDelta`** (ora `22`, in `components/map/mapConstants.ts`) guardando la mappa reale: deve mostrare l'Italia centrata a scala europea con più cluster-città distinti, senza collassare in un blob unico. react-native-maps riadatta all'aspect ratio, quindi è da tarare a occhio sul device.
+- [ ] **Verificare timing popup** — il popup avatar e l'`AnnouncementPopup` non devono apparire durante l'onboarding né flashare in transizione (fix con gate-path + delay 500ms in `utils/globalPopups.ts`).
+- [ ] **Edge case popup-stacking** (deferito di proposito) — se contemporaneamente c'è un annuncio attivo *e* un utente nuovo (popup avatar `free`, regalo di benvenuto intenzionale), entrambi i Modal possono apparire sull'atterraggio. Coordinarli richiederebbe una coda di popup condivisa. Lasciato come edge accettabile finché non si dimostra fastidioso.
+
 ### Lag generale Android
 Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per via di dev mode + niente Hermes optimizations) o se ci sono problemi reali.
 

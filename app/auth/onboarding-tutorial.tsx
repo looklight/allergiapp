@@ -31,7 +31,7 @@ export default function OnboardingTutorialScreen() {
 
   const handleNext = () => {
     if (isLast) {
-      router.replace('/(tabs)');
+      router.replace('/auth/onboarding-location');
     } else {
       const next = activeIndex + 1;
       isProgrammaticScrollRef.current = true;
@@ -94,7 +94,7 @@ export default function OnboardingTutorialScreen() {
         </Button>
 
         <TouchableOpacity
-          onPress={() => router.replace('/(tabs)')}
+          onPress={() => router.replace('/auth/onboarding-location')}
           style={[styles.skipRow, isLast && { opacity: 0 }]}
           disabled={isLast}
         >

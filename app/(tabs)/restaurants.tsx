@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable, Platform, Linking } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -402,8 +402,23 @@ export default function RestaurantsScreen() {
 
   /** GPS → reverse-geocode → autocompila la search bar e mostra banner con i ristoranti della città rilevata. */
   const handleLocateMeAndShowCity = useCallback(async () => {
-    const coords = await geo.handleLocateMe();
-    if (!coords) return;
+    const outcome = await geo.handleLocateMe();
+    if (outcome.kind === 'denied_settings') {
+      // Solo diniego terminale: il dialog nativo non riapparirà, guidiamo alle
+      // Impostazioni (come Google Maps & co.). Sul primo "no" nel dialog l'esito è
+      // 'dismissed' → nessun avviso, l'utente ha appena scelto.
+      Alert.alert(
+        i18n.t('restaurants.locationDenied.title'),
+        i18n.t('restaurants.locationDenied.message'),
+        [
+          { text: i18n.t('common.cancel'), style: 'cancel' },
+          { text: i18n.t('restaurants.locationDenied.openSettings'), onPress: () => Linking.openSettings() },
+        ],
+      );
+      return;
+    }
+    if (outcome.kind !== 'located') return;
+    const { coords } = outcome;
     try {
       const places = await Location.reverseGeocodeAsync(coords);
       const place = places[0];
