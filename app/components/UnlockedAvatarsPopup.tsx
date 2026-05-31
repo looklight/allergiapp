@@ -13,6 +13,7 @@
  * Dimensioni del popup costanti in tutti i casi (niente scroll, niente carousel).
  */
 
+import { useEffect, useState } from 'react';
 import { Modal, Pressable, View, StyleSheet, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -20,21 +21,30 @@ import { usePathname, useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import { getAvatarById } from '../../constants/avatars';
+import { isPopupSuppressedPath, POPUP_REVEAL_DELAY_MS } from '../../utils/globalPopups';
 import i18n from '../../utils/i18n';
 
 const VISIBLE_TILES = 4;
-
-/** Path durante i quali il popup non deve apparire (registrazione/onboarding). */
-function isSuppressedPath(pathname: string): boolean {
-  return pathname.startsWith('/auth/') || pathname.startsWith('/legal');
-}
 
 export default function UnlockedAvatarsPopup() {
   const router = useRouter();
   const pathname = usePathname();
   const { newlyUnlockedIds, newlyUnlockedCount, acknowledgeUnlocks } = useUnlockedAvatars();
 
-  const visible = newlyUnlockedCount > 0 && !isSuppressedPath(pathname ?? '');
+  // Ritardiamo la comparsa di un attimo dopo che il popup diventa idoneo: lascia
+  // completare la transizione di rotta (es. da onboarding-location a Ristoranti via
+  // router.replace), così il Modal — che vive sopra lo Stack — non appare sulla coda
+  // della schermata che sta scorrendo via. Se l'idoneità decade, si nasconde subito.
+  const eligible = newlyUnlockedCount > 0 && !isPopupSuppressedPath(pathname);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!eligible) {
+      setVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setVisible(true), POPUP_REVEAL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [eligible]);
 
   const handleViewGallery = async () => {
     await acknowledgeUnlocks();

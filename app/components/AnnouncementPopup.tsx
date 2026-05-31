@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { View, Modal, StyleSheet, Image, Linking, Share, Dimensions, Pressable } from 'react-native';
 import { Text, Button } from 'react-native-paper';
+import { usePathname } from 'expo-router';
 import { theme } from '../../constants/theme';
+import { isPopupSuppressedPath, POPUP_REVEAL_DELAY_MS } from '../../utils/globalPopups';
 import { fetchActiveAnnouncement, trackAnnouncementView, trackAnnouncementClick, resolveText, Announcement } from '../../services/announcements';
 import { storage } from '../../utils/storage';
 import { Analytics } from '../../services/analytics';
@@ -13,6 +15,7 @@ const IMAGE_WIDTH = POPUP_WIDTH - 48; // content padding 24 su ogni lato
 const MAX_IMAGE_HEIGHT = 220;
 
 export default function AnnouncementPopup() {
+  const pathname = usePathname();
   const [popup, setPopup] = useState<Announcement | null>(null);
   const [visible, setVisible] = useState(false);
   const [imageHeight, setImageHeight] = useState(160);
@@ -21,6 +24,20 @@ export default function AnnouncementPopup() {
     const timer = setTimeout(checkPopup, 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Non interrompere i flussi auth/onboarding e non flashare durante la transizione
+  // di rotta: gate sul path + comparsa ritardata, coerente con UnlockedAvatarsPopup.
+  // `visible` = annuncio pronto a mostrarsi; `shown` = quando appare davvero.
+  const eligible = visible && !isPopupSuppressedPath(pathname);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!eligible) {
+      setShown(false);
+      return;
+    }
+    const timer = setTimeout(() => setShown(true), POPUP_REVEAL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [eligible]);
 
   const checkPopup = async () => {
     const announcement = await fetchActiveAnnouncement();
@@ -80,7 +97,7 @@ export default function AnnouncementPopup() {
 
   return (
     <Modal
-      visible={visible}
+      visible={shown}
       transparent
       animationType="fade"
       statusBarTranslucent
