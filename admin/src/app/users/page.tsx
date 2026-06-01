@@ -8,9 +8,9 @@ import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import UserAvatar from '@/components/UserAvatar';
 import Link from 'next/link';
 
-type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc' | 'last_sign_in_desc';
+type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc' | 'last_seen_desc';
 
-function formatLastSignIn(iso: string | null | undefined): string {
+function formatLastSeen(iso: string | null | undefined): string {
   if (!iso) return 'Mai';
   const then = new Date(iso).getTime();
   const diffMs = Date.now() - then;
@@ -67,7 +67,7 @@ export default function UsersPage() {
           ['created_desc', 'Più recenti'],
           ['reviews_desc', 'Più recensioni'],
           ['reviews_asc', 'Meno recensioni'],
-          ['last_sign_in_desc', 'Accesso recente'],
+          ['last_seen_desc', 'Accesso recente'],
         ] as const).map(([value, label]) => (
           <button
             key={value}
@@ -109,12 +109,12 @@ export default function UsersPage() {
                 <th className="px-4 py-3 font-medium">
                   <button
                     type="button"
-                    onClick={() => setSortBy('last_sign_in_desc')}
+                    onClick={() => setSortBy('last_seen_desc')}
                     className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
                   >
                     Ultimo accesso
                     <span className="text-gray-400 text-xs w-3 text-center">
-                      {sortBy === 'last_sign_in_desc' ? '▼' : ''}
+                      {sortBy === 'last_seen_desc' ? '▼' : ''}
                     </span>
                   </button>
                 </th>
@@ -172,7 +172,7 @@ export default function UsersPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-gray-500">
-                    {formatLastSignIn(u.last_sign_in_at)}
+                    {formatLastSeen(u.last_seen_at)}
                   </td>
                   <td className="px-4 py-3 text-gray-500">
                     {new Date(u.created_at).toLocaleDateString('it-IT')}
@@ -214,7 +214,7 @@ export default function UsersPage() {
               <p className="text-xs text-gray-400 mt-0.5">
                 {(u.reviews_count ?? 0)} {(u.reviews_count ?? 0) === 1 ? 'recensione' : 'recensioni'}
                 {' · '}
-                Accesso {formatLastSignIn(u.last_sign_in_at).toLowerCase()}
+                Accesso {formatLastSeen(u.last_seen_at).toLowerCase()}
               </p>
             </div>
           </Link>

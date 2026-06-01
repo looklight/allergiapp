@@ -81,6 +81,7 @@ export interface UserProfile {
   restaurants_count?: number;
   reviews_count?: number;
   email?: string;
+  last_seen_at?: string | null;
   last_sign_in_at?: string | null;
   email_confirmed_at?: string | null;
 }
