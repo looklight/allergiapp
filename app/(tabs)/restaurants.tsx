@@ -898,8 +898,6 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     backgroundColor: theme.colors.error,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
   },
   searchInput: {
     flex: 1,
