@@ -246,7 +246,7 @@ export default function MediaPage() {
             key={t}
             onClick={() => setTipo(t)}
             className={`px-3 py-1 rounded text-sm ${
-              tipo === t ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+              tipo === t ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {t === 'tutti' ? 'Tutti i media' : t === 'recensioni' ? 'Recensioni' : 'Menu'}
@@ -261,7 +261,7 @@ export default function MediaPage() {
             key={p}
             onClick={() => setPeriodo(p)}
             className={`px-3 py-1 rounded text-sm ${
-              periodo === p ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+              periodo === p ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {p === 'oggi' ? 'Oggi' : p === '7gg' ? 'Ultimi 7 giorni' : p === '30gg' ? 'Ultimi 30 giorni' : 'Tutto'}
@@ -274,7 +274,7 @@ export default function MediaPage() {
         <button
           onClick={() => setPaese('all')}
           className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-            paese === 'all' ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            paese === 'all' ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
           }`}
         >
           Tutti i paesi
@@ -284,7 +284,7 @@ export default function MediaPage() {
             key={c.name}
             onClick={() => setPaese(c.name)}
             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-              paese === c.name ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+              paese === c.name ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {c.name} <span className="text-xs opacity-60">{c.count}</span>
@@ -293,24 +293,24 @@ export default function MediaPage() {
       </div>
 
       {items.length === 0 && !loading ? (
-        <p className="text-gray-400 text-sm">Nessun media corrisponde ai filtri.</p>
+        <p className="text-faint text-sm">Nessun media corrisponde ai filtri.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {items.map(item => (
             <button
               key={item.id}
               onClick={() => setSelected(item)}
-              className="text-left bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              className="text-left bg-card rounded shadow-sm overflow-hidden hover:shadow-md transition-shadow"
             >
               <div className="relative">
                 <img src={item.thumb} alt="" loading="lazy" className="w-full aspect-square object-cover" />
-                <span className={`absolute top-1 right-1 text-[10px] font-bold rounded px-1.5 py-0.5 text-white ${item.kind === 'review' ? 'bg-blue-600/80' : 'bg-green-600/80'}`}>
+                <span className={`absolute top-1 right-1 text-[10px] font-bold rounded px-1.5 py-0.5 text-white ${item.kind === 'review' ? 'bg-primary/80' : 'bg-success/80'}`}>
                   {item.kind === 'review' ? 'R' : 'M'}
                 </span>
               </div>
               <div className="p-2">
-                <div className="text-xs font-medium text-gray-900 truncate">{item.restaurantName}</div>
-                <div className="text-[11px] text-gray-500 truncate">
+                <div className="text-xs font-medium text-foreground truncate">{item.restaurantName}</div>
+                <div className="text-[11px] text-muted-foreground truncate">
                   {[item.city, item.country].filter(Boolean).join(', ') || '—'}
                 </div>
               </div>
@@ -319,12 +319,12 @@ export default function MediaPage() {
         </div>
       )}
 
-      {loading && <p className="text-gray-500 mt-4">Caricamento...</p>}
+      {loading && <p className="text-muted-foreground mt-4">Caricamento...</p>}
 
       {hasMore && !loading && (
         <button
           onClick={() => load(cursor, true)}
-          className="mt-4 px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50"
+          className="mt-4 px-4 py-2 bg-card border rounded text-sm hover:bg-background"
         >
           Carica altri
         </button>
@@ -336,65 +336,65 @@ export default function MediaPage() {
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-4xl w-full max-h-full overflow-auto flex flex-col md:flex-row"
+            className="bg-card rounded-lg max-w-4xl w-full max-h-full overflow-auto flex flex-col md:flex-row"
             onClick={e => e.stopPropagation()}
           >
-            <div className="md:w-2/3 bg-gray-100 flex items-center justify-center">
+            <div className="md:w-2/3 bg-muted flex items-center justify-center">
               <img src={selected.url} alt="" className="object-contain max-h-[80vh] w-full" />
             </div>
             <div className="md:w-1/3 p-5 flex flex-col gap-3">
               <div>
-                <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Tipo</div>
-                <span className={`inline-block text-xs font-medium rounded px-2 py-0.5 text-white ${selected.kind === 'review' ? 'bg-blue-600' : 'bg-green-600'}`}>
+                <div className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Tipo</div>
+                <span className={`inline-block text-xs font-medium rounded px-2 py-0.5 text-white ${selected.kind === 'review' ? 'bg-primary' : 'bg-success'}`}>
                   {selected.kind === 'review' ? 'Recensione' : 'Menu'}
                 </span>
               </div>
               <div>
-                <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Ristorante</div>
-                <Link href={`/restaurants/${selected.restaurantId}`} className="text-blue-600 hover:underline font-medium">
+                <div className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Ristorante</div>
+                <Link href={`/restaurants/${selected.restaurantId}`} className="text-primary hover:underline font-medium">
                   {selected.restaurantName}
                 </Link>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   {[selected.city, selected.country].filter(Boolean).join(', ') || '—'}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Autore</div>
+                <div className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Autore</div>
                 {selected.userId ? (
-                  <Link href={`/users/${selected.userId}`} className="text-blue-600 hover:underline">
+                  <Link href={`/users/${selected.userId}`} className="text-primary hover:underline">
                     {selected.username || 'Anonimo'}
                   </Link>
                 ) : (
-                  <span className="italic text-gray-400">Utente inattivo</span>
+                  <span className="italic text-faint">Utente inattivo</span>
                 )}
               </div>
               <div>
-                <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Data</div>
+                <div className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Data</div>
                 <div className="text-sm">{new Date(selected.createdAt).toLocaleString('it-IT')}</div>
               </div>
               {selected.kind === 'review' && selected.rating != null && selected.rating > 0 && (
                 <div>
-                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Rating</div>
-                  <div className="text-yellow-600">{'★'.repeat(selected.rating)}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Rating</div>
+                  <div className="text-star">{'★'.repeat(selected.rating)}</div>
                 </div>
               )}
               {selected.kind === 'review' && selected.comment && (
                 <div>
-                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Commento</div>
-                  <div className="text-sm text-gray-700 whitespace-pre-wrap">{selected.comment}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Commento</div>
+                  <div className="text-sm text-foreground-secondary whitespace-pre-wrap">{selected.comment}</div>
                 </div>
               )}
               <div className="mt-auto pt-4 border-t flex gap-2">
                 <button
                   onClick={() => setSelected(null)}
-                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+                  className="flex-1 px-4 py-2 bg-muted hover:bg-muted-hover rounded text-sm"
                 >
                   Chiudi
                 </button>
                 <button
                   onClick={() => handleDelete(selected)}
                   disabled={isBusy(busyKey(selected))}
-                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded text-sm"
+                  className="flex-1 px-4 py-2 bg-danger hover:bg-danger-strong disabled:opacity-50 text-white rounded text-sm"
                 >
                   Elimina
                 </button>

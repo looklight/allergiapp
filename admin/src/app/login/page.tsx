@@ -57,13 +57,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="bg-card p-8 rounded-lg shadow-md w-full max-w-sm">
         <h1 className="text-xl font-bold mb-1">AllergiApp Admin</h1>
-        <p className="text-sm text-gray-500 mb-6">Accedi per moderare i contenuti</p>
+        <p className="text-sm text-muted-foreground mb-6">Accedi per moderare i contenuti</p>
 
         <form onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label className="block text-sm font-medium text-foreground-secondary mb-1">Email</label>
           <input
             type="email"
             value={email}
@@ -72,7 +72,7 @@ export default function LoginPage() {
             required
           />
 
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <label className="block text-sm font-medium text-foreground-secondary mb-1">Password</label>
           <input
             type="password"
             value={password}
@@ -81,12 +81,12 @@ export default function LoginPage() {
             required
           />
 
-          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+          {error && <p className="text-danger text-sm mb-4">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-900 text-white py-2 rounded text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+            className="w-full bg-selected text-selected-foreground py-2 rounded text-sm font-medium hover:bg-selected-hover disabled:opacity-50"
           >
             {loading ? 'Accesso...' : 'Accedi'}
           </button>

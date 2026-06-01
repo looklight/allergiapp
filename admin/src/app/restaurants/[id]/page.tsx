@@ -198,12 +198,12 @@ export default function RestaurantDetailPage() {
     router.push('/restaurants');
   };
 
-  if (loading) return <p className="text-gray-500">Caricamento...</p>;
-  if (!restaurant) return <p className="text-red-600">Ristorante non trovato.</p>;
+  if (loading) return <p className="text-muted-foreground">Caricamento...</p>;
+  if (!restaurant) return <p className="text-danger">Ristorante non trovato.</p>;
 
   return (
     <div>
-      <Link href="/restaurants" className="text-sm text-gray-500 hover:underline mb-4 inline-block">
+      <Link href="/restaurants" className="text-sm text-muted-foreground hover:underline mb-4 inline-block">
         &larr; Torna alla lista
       </Link>
 

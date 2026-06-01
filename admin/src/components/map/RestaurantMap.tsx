@@ -18,6 +18,19 @@ interface RestaurantMapProps {
   restaurants: MapRestaurant[];
 }
 
+/** Risolve un design token CSS (es. --primary) nel suo colore reale (rgb),
+ *  così i marker Leaflet — fuori dal sistema Tailwind — seguono tema e palette. */
+function tokenColor(varName: string, fallback: string): string {
+  if (typeof document === 'undefined') return fallback;
+  const probe = document.createElement('span');
+  probe.style.color = `var(${varName})`;
+  probe.style.display = 'none';
+  document.body.appendChild(probe);
+  const resolved = getComputedStyle(probe).color;
+  probe.remove();
+  return resolved || fallback;
+}
+
 export default function RestaurantMap({ restaurants }: RestaurantMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,17 +62,21 @@ export default function RestaurantMap({ restaurants }: RestaurantMapProps) {
 
     const bounds: L.LatLngExpression[] = [];
 
+    // Colori dai design token (seguono tema/palette).
+    const fillColor = tokenColor('--primary', '#2563eb');
+    const ringColor = tokenColor('--card', '#ffffff');
+    const locColor = tokenColor('--muted-foreground', '#6b7280');
+    const linkColor = tokenColor('--primary', '#2563eb');
+
     for (const r of restaurants) {
       const latlng: L.LatLngExpression = [r.latitude, r.longitude];
       bounds.push(latlng);
 
-      const color = '#2563eb';
-
       const marker = L.circleMarker(latlng, {
         radius: 6,
-        fillColor: color,
+        fillColor,
         fillOpacity: 0.8,
-        color: '#fff',
+        color: ringColor,
         weight: 1.5,
       }).addTo(map);
 
@@ -67,7 +84,7 @@ export default function RestaurantMap({ restaurants }: RestaurantMapProps) {
       const detailUrl = `/restaurants/${r.id}`;
 
       marker.bindTooltip(
-        `<strong>${r.name}</strong>${location ? `<br/><span style="color:#6b7280">${location}</span>` : ''}<br/><a href="${detailUrl}" target="_blank" rel="noreferrer" style="color:#2563eb;font-size:12px" onclick="event.stopPropagation()">Apri scheda &rarr;</a>`,
+        `<strong>${r.name}</strong>${location ? `<br/><span style="color:${locColor}">${location}</span>` : ''}<br/><a href="${detailUrl}" target="_blank" rel="noreferrer" style="color:${linkColor};font-size:12px" onclick="event.stopPropagation()">Apri scheda &rarr;</a>`,
         { direction: 'top', offset: [0, -8], opacity: 1, className: 'restaurant-tooltip' }
       );
 

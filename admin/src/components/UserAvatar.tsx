@@ -29,7 +29,7 @@ export default function UserAvatar({ user, size = 36 }: Props) {
         alt=""
         onError={() => setImgFailed(true)}
         style={dimension}
-        className="rounded-full object-cover bg-gray-100 shrink-0"
+        className="rounded-full object-cover bg-muted shrink-0"
       />
     );
   }

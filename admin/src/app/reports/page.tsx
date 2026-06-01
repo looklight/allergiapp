@@ -135,29 +135,29 @@ export default function ReportsPage() {
           onClick={() => setReviewModal(null)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6"
+            className="bg-card rounded-xl shadow-xl max-w-lg w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-800">Recensione segnalata</h2>
-              <button onClick={() => setReviewModal(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+              <h2 className="font-semibold text-foreground">Recensione segnalata</h2>
+              <button onClick={() => setReviewModal(null)} className="text-faint hover:text-foreground-secondary text-xl leading-none">&times;</button>
             </div>
             <div className="flex items-center gap-2 mb-3">
               {reviewModal.review_reviewer_name && (
-                <span className="text-sm font-medium text-gray-700">{reviewModal.review_reviewer_name}</span>
+                <span className="text-sm font-medium text-foreground-secondary">{reviewModal.review_reviewer_name}</span>
               )}
               {reviewModal.review_rating != null && reviewModal.review_rating > 0 && (
-                <span className="text-yellow-500">{'★'.repeat(reviewModal.review_rating)}{'☆'.repeat(5 - reviewModal.review_rating)}</span>
+                <span className="text-star">{'★'.repeat(reviewModal.review_rating)}{'☆'.repeat(5 - reviewModal.review_rating)}</span>
               )}
             </div>
-            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-              {reviewModal.review_comment ?? <span className="italic text-gray-400">Nessun testo</span>}
+            <p className="text-foreground-secondary text-sm leading-relaxed whitespace-pre-wrap">
+              {reviewModal.review_comment ?? <span className="italic text-faint">Nessun testo</span>}
             </p>
             {reviewModal.restaurant_id && (
               <div className="mt-4 pt-4 border-t">
                 <Link
                   href={`/restaurants/${reviewModal.restaurant_id}`}
-                  className="text-blue-600 hover:underline text-sm"
+                  className="text-primary hover:underline text-sm"
                   onClick={() => setReviewModal(null)}
                 >
                   Vai al ristorante &rarr;
@@ -171,7 +171,7 @@ export default function ReportsPage() {
         <h1 className="text-2xl font-bold">Segnalazioni</h1>
         <button
           onClick={() => setShowHelp(!showHelp)}
-          className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 text-xs font-bold flex items-center justify-center transition-colors"
+          className="w-6 h-6 rounded-full bg-muted text-foreground-secondary hover:bg-muted-hover text-xs font-bold flex items-center justify-center transition-colors"
           title="Come funzionano le segnalazioni"
         >
           i
@@ -179,7 +179,7 @@ export default function ReportsPage() {
       </div>
 
       {showHelp && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm text-gray-700">
+        <div className="bg-info-soft border border-info-border rounded-lg p-4 mb-6 text-sm text-foreground-secondary">
           <p className="font-semibold mb-2">Come gestire le segnalazioni</p>
           <p className="mb-2">Gli utenti segnalano contenuti problematici: ristoranti chiusi o duplicati, foto non pertinenti, recensioni inappropriate. Ogni segnalazione finisce qui in stato <strong>In attesa</strong>.</p>
           <ul className="list-disc list-inside space-y-1">
@@ -196,7 +196,7 @@ export default function ReportsPage() {
             key={t}
             onClick={() => setTypeFilter(t)}
             className={`px-3 py-1 rounded text-sm ${
-              typeFilter === t ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+              typeFilter === t ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {t === 'all' ? 'Tutti i tipi' : t === 'restaurant' ? 'Ristorante' : t === 'photo' ? 'Foto menu' : 'Recensione'}
@@ -211,7 +211,7 @@ export default function ReportsPage() {
             key={s}
             onClick={() => setStatusFilter(s)}
             className={`px-3 py-1 rounded text-sm ${
-              statusFilter === s ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+              statusFilter === s ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {s === 'all' ? 'Tutti' : s === 'pending' ? 'In attesa' : s === 'resolved' ? 'Eliminate' : 'Ignorate'}
@@ -223,7 +223,7 @@ export default function ReportsPage() {
           <button
             onClick={cleanupReports}
             disabled={cleaningUp}
-            className="px-3 py-1 rounded text-sm text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50 transition-colors"
+            className="px-3 py-1 rounded text-sm text-danger border border-danger-border hover:bg-danger-soft disabled:opacity-50 transition-colors"
           >
             {cleaningUp ? 'Eliminazione...' : 'Pulisci storico'}
           </button>
@@ -235,7 +235,7 @@ export default function ReportsPage() {
         <button
           onClick={() => setReasonFilter('all')}
           className={`px-3 py-1 rounded text-sm ${
-            reasonFilter === 'all' ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            reasonFilter === 'all' ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
           }`}
         >
           Tutti i motivi
@@ -245,7 +245,7 @@ export default function ReportsPage() {
             key={reason}
             onClick={() => setReasonFilter(reason)}
             className={`px-3 py-1 rounded text-sm ${
-              reasonFilter === reason ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+              reasonFilter === reason ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {REPORT_REASON_LABELS[reason]}
@@ -254,15 +254,15 @@ export default function ReportsPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Caricamento...</p>
+        <p className="text-muted-foreground">Caricamento...</p>
       ) : reports.length === 0 ? (
-        <p className="text-gray-400">Nessuna segnalazione trovata.</p>
+        <p className="text-faint">Nessuna segnalazione trovata.</p>
       ) : (
         <>
           {/* Desktop: tabella */}
-          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+          <div className="hidden md:block bg-card rounded-lg shadow overflow-hidden">
             <table className="w-full text-xs table-fixed">
-              <thead className="bg-gray-50 text-left">
+              <thead className="bg-background text-left">
                 <tr>
                   <th className="px-3 py-3 font-medium w-[24%]">Ristorante</th>
                   <th className="px-3 py-3 font-medium w-[12%]">Tipo</th>
@@ -273,37 +273,37 @@ export default function ReportsPage() {
               </thead>
               <tbody>
                 {reports.map((r) => (
-                  <tr key={r.id} className="border-t hover:bg-gray-50">
+                  <tr key={r.id} className="border-t hover:bg-background">
                     <td className="px-3 py-3 align-top overflow-hidden">
                       <div className="truncate">
                         {r.restaurant_id ? (
-                          <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline font-medium">
+                          <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline font-medium">
                             {r.restaurant_name ?? '—'}
                           </Link>
-                        ) : <span className="text-gray-400">—</span>}
+                        ) : <span className="text-faint">—</span>}
                       </div>
                       {r.restaurant_city && (
-                        <div className="truncate text-gray-400 mt-0.5">{r.restaurant_city}</div>
+                        <div className="truncate text-faint mt-0.5">{r.restaurant_city}</div>
                       )}
-                      <div className="overflow-hidden flex items-center gap-1 text-gray-400 mt-0.5">
+                      <div className="overflow-hidden flex items-center gap-1 text-faint mt-0.5">
                         <span className="shrink-0">Da:</span>
                         {r.user_id ? (
-                          <Link href={`/users/${r.user_id}`} className="text-blue-600 underline truncate min-w-0">
+                          <Link href={`/users/${r.user_id}`} className="text-primary underline truncate min-w-0">
                             {r.reporter_name ?? 'Anonimo'}
                           </Link>
-                        ) : <span className="italic truncate text-gray-400">Utente inattivo</span>}
+                        ) : <span className="italic truncate text-faint">Utente inattivo</span>}
                         {r.reporter_is_anonymous && (
-                          <span className="shrink-0 px-1 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">anonimo</span>
+                          <span className="shrink-0 px-1 py-0.5 bg-muted text-muted-foreground rounded text-[10px]">anonimo</span>
                         )}
                       </div>
                     </td>
                     <td className="px-3 py-3 align-top overflow-hidden">
                       {r.review_id ? (
-                        <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded">Recensione</span>
+                        <span className="inline-block px-2 py-0.5 bg-tag-review text-tag-review-foreground rounded">Recensione</span>
                       ) : r.menu_photo_id ? (
-                        <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded">Foto menu</span>
+                        <span className="inline-block px-2 py-0.5 bg-tag-photo text-tag-photo-foreground rounded">Foto menu</span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 rounded">Ristorante</span>
+                        <span className="inline-block px-2 py-0.5 bg-tag-restaurant text-tag-restaurant-foreground rounded">Ristorante</span>
                       )}
                     </td>
                     <td className="px-3 py-3 align-top overflow-hidden">
@@ -321,29 +321,29 @@ export default function ReportsPage() {
                       ) : r.review_id ? (
                         <button
                           onClick={() => setReviewModal(r)}
-                          className="text-left w-full hover:bg-gray-50 rounded -mx-1 px-1 py-0.5 transition-colors"
+                          className="text-left w-full hover:bg-background rounded -mx-1 px-1 py-0.5 transition-colors"
                           title="Clicca per leggere la recensione completa"
                         >
                           <div className="flex items-center gap-1 mb-0.5">
                             {r.review_reviewer_name && (
-                              <span className="text-gray-500 truncate">{r.review_reviewer_name}</span>
+                              <span className="text-muted-foreground truncate">{r.review_reviewer_name}</span>
                             )}
                             {r.review_rating != null && r.review_rating > 0 && (
-                              <span className="text-yellow-500 shrink-0">{'★'.repeat(r.review_rating)}</span>
+                              <span className="text-star shrink-0">{'★'.repeat(r.review_rating)}</span>
                             )}
                           </div>
                           {r.review_comment && (
-                            <p className="text-gray-600 truncate">{r.review_comment}</p>
+                            <p className="text-foreground-secondary truncate">{r.review_comment}</p>
                           )}
                         </button>
-                      ) : <span className="text-gray-400">—</span>}
+                      ) : <span className="text-faint">—</span>}
                     </td>
                     <td className="px-3 py-3 align-top overflow-hidden">
-                      <div className="truncate font-medium text-gray-700">
+                      <div className="truncate font-medium text-foreground-secondary">
                         {REPORT_REASON_LABELS[r.reason as ReportReason] ?? r.reason}
                       </div>
                       {r.details && (
-                        <div className="truncate text-gray-400 mt-0.5" title={r.details}>{r.details}</div>
+                        <div className="truncate text-faint mt-0.5" title={r.details}>{r.details}</div>
                       )}
                     </td>
                     <td className="px-3 py-3 align-top overflow-hidden">
@@ -356,14 +356,14 @@ export default function ReportsPage() {
                               else if (r.restaurant_id) deleteRestaurant(r);
                             }}
                             disabled={isBusy(r.id)}
-                            className="px-2.5 py-1 rounded bg-red-50 text-red-700 font-medium hover:bg-red-100 disabled:opacity-50 transition-colors"
+                            className="px-2.5 py-1 rounded bg-danger-soft text-danger-strong font-medium hover:bg-danger-soft-hover disabled:opacity-50 transition-colors"
                           >
                             {isBusy(r.id) ? '...' : 'Elimina'}
                           </button>
                           <button
                             onClick={() => dismissReport(r.id)}
                             disabled={isBusy(r.id)}
-                            className="px-2.5 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                            className="px-2.5 py-1 rounded bg-muted text-foreground-secondary font-medium hover:bg-muted-hover disabled:opacity-50 transition-colors"
                           >
                             Ignora
                           </button>
@@ -381,18 +381,18 @@ export default function ReportsPage() {
           {/* Mobile: card */}
           <div className="md:hidden space-y-3">
             {reports.map((r) => (
-              <article key={r.id} className="bg-white rounded-lg shadow p-4">
+              <article key={r.id} className="bg-card rounded-lg shadow p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0 flex-1">
                     {r.restaurant_id ? (
-                      <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline font-medium text-sm block truncate">
+                      <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline font-medium text-sm block truncate">
                         {r.restaurant_name ?? '—'}
                       </Link>
                     ) : (
-                      <span className="text-gray-500 text-sm">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                     {r.restaurant_city && (
-                      <span className="text-gray-400 text-xs">{r.restaurant_city}</span>
+                      <span className="text-faint text-xs">{r.restaurant_city}</span>
                     )}
                   </div>
                   <StatusBadge status={r.status} />
@@ -400,13 +400,13 @@ export default function ReportsPage() {
 
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   {r.review_id ? (
-                    <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Recensione</span>
+                    <span className="inline-block px-2 py-0.5 bg-tag-review text-tag-review-foreground rounded text-xs">Recensione</span>
                   ) : r.menu_photo_id ? (
-                    <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Foto menu</span>
+                    <span className="inline-block px-2 py-0.5 bg-tag-photo text-tag-photo-foreground rounded text-xs">Foto menu</span>
                   ) : (
-                    <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">Ristorante</span>
+                    <span className="inline-block px-2 py-0.5 bg-tag-restaurant text-tag-restaurant-foreground rounded text-xs">Ristorante</span>
                   )}
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-foreground-secondary">
                     {REPORT_REASON_LABELS[r.reason as ReportReason] ?? r.reason}
                   </span>
                 </div>
@@ -427,34 +427,34 @@ export default function ReportsPage() {
                 {r.review_id && (r.review_reviewer_name || r.review_comment) && (
                   <button
                     onClick={() => setReviewModal(r)}
-                    className="w-full text-left mb-2 text-xs bg-gray-50 rounded p-2 hover:bg-gray-100 transition-colors"
+                    className="w-full text-left mb-2 text-xs bg-background rounded p-2 hover:bg-muted transition-colors"
                     title="Clicca per leggere la recensione completa"
                   >
                     {r.review_reviewer_name && (
-                      <span className="text-gray-500">{r.review_reviewer_name}</span>
+                      <span className="text-muted-foreground">{r.review_reviewer_name}</span>
                     )}
                     {r.review_rating != null && r.review_rating > 0 && (
-                      <span className="ml-1 text-yellow-600">{'★'.repeat(r.review_rating)}</span>
+                      <span className="ml-1 text-star">{'★'.repeat(r.review_rating)}</span>
                     )}
                     {r.review_comment && (
-                      <p className="text-gray-700 mt-1 line-clamp-2">{r.review_comment}</p>
+                      <p className="text-foreground-secondary mt-1 line-clamp-2">{r.review_comment}</p>
                     )}
                   </button>
                 )}
 
                 {r.details && (
-                  <p className="text-sm text-gray-700 mb-2 break-words">{r.details}</p>
+                  <p className="text-sm text-foreground-secondary mb-2 break-words">{r.details}</p>
                 )}
 
-                <p className="text-xs text-gray-500 mb-3 flex items-center gap-1 flex-wrap">
+                <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1 flex-wrap">
                   <span>Da:</span>
                   {r.user_id ? (
-                    <Link href={`/users/${r.user_id}`} className="text-blue-600 underline">
+                    <Link href={`/users/${r.user_id}`} className="text-primary underline">
                       {r.reporter_name ?? 'Anonimo'}
                     </Link>
-                  ) : <span className="italic text-gray-400">Utente inattivo</span>}
+                  ) : <span className="italic text-faint">Utente inattivo</span>}
                   {r.reporter_is_anonymous && (
-                    <span className="px-1 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">anonimo</span>
+                    <span className="px-1 py-0.5 bg-muted text-muted-foreground rounded text-[10px]">anonimo</span>
                   )}
                 </p>
 
@@ -467,14 +467,14 @@ export default function ReportsPage() {
                         else if (r.restaurant_id) deleteRestaurant(r);
                       }}
                       disabled={isBusy(r.id)}
-                      className="px-3 py-2 rounded bg-red-50 text-red-700 text-sm font-medium disabled:opacity-50"
+                      className="px-3 py-2 rounded bg-danger-soft text-danger-strong text-sm font-medium disabled:opacity-50"
                     >
                       {isBusy(r.id) ? '...' : r.menu_photo_id ? 'Elimina foto' : r.review_id ? 'Elimina recensione' : 'Elimina ristorante'}
                     </button>
                     <button
                       onClick={() => dismissReport(r.id)}
                       disabled={isBusy(r.id)}
-                      className="px-3 py-2 rounded bg-gray-100 text-gray-700 text-sm font-medium disabled:opacity-50"
+                      className="px-3 py-2 rounded bg-muted text-foreground-secondary text-sm font-medium disabled:opacity-50"
                     >
                       Ignora
                     </button>
@@ -486,12 +486,12 @@ export default function ReportsPage() {
         </>
       )}
 
-      {loading && reports.length > 0 && <p className="text-gray-500 mt-4">Caricamento...</p>}
+      {loading && reports.length > 0 && <p className="text-muted-foreground mt-4">Caricamento...</p>}
 
       {hasMore && !loading && (
         <button
           onClick={loadMore}
-          className="mt-4 px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50"
+          className="mt-4 px-4 py-2 bg-card border rounded text-sm hover:bg-background"
         >
           Carica altre
         </button>

@@ -111,7 +111,7 @@ export default function EventAnalyticsSection() {
   });
 
   if (loading) {
-    return <p className="text-sm text-gray-400 mt-8">Caricamento eventi...</p>;
+    return <p className="text-sm text-faint mt-8">Caricamento eventi...</p>;
   }
 
   return (
@@ -120,20 +120,20 @@ export default function EventAnalyticsSection() {
 
       {/* Counters per evento (7g / 30g) */}
       {eventNames.length === 0 ? (
-        <p className="text-sm text-gray-400 mb-6">Nessun evento registrato.</p>
+        <p className="text-sm text-faint mb-6">Nessun evento registrato.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
           {eventNames.map((name) => {
             const v7 = counts7d.find((c) => c.event_name === name)?.event_count ?? 0;
             const v30 = counts30d.find((c) => c.event_name === name)?.event_count ?? 0;
             return (
-              <div key={name} className="bg-white rounded-lg shadow p-4">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">{eventLabel(name)}</p>
+              <div key={name} className="bg-card rounded-lg shadow p-4">
+                <p className="text-xs text-faint uppercase tracking-wide">{eventLabel(name)}</p>
                 <div className="flex items-baseline gap-3 mt-1">
-                  <span className="text-2xl font-bold text-gray-800">{v7}</span>
-                  <span className="text-xs text-gray-400">/ {v30} (30g)</span>
+                  <span className="text-2xl font-bold text-foreground">{v7}</span>
+                  <span className="text-xs text-faint">/ {v30} (30g)</span>
                 </div>
-                <p className="text-[10px] text-gray-400 mt-0.5">ultimi 7 giorni</p>
+                <p className="text-[10px] text-faint mt-0.5">ultimi 7 giorni</p>
               </div>
             );
           })}
@@ -142,15 +142,15 @@ export default function EventAnalyticsSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Top ricerche */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-card rounded-lg shadow p-4">
           <h3 className="font-semibold mb-3">Top ricerche (30g)</h3>
           {topQueries.length === 0 ? (
-            <p className="text-sm text-gray-400">Nessuna ricerca registrata.</p>
+            <p className="text-sm text-faint">Nessuna ricerca registrata.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-400 uppercase">
+                  <tr className="text-left text-xs text-faint uppercase">
                     <th className="py-1 font-normal">Query</th>
                     <th className="py-1 font-normal text-right">Totale</th>
                     <th className="py-1 font-normal text-right">Luoghi</th>
@@ -162,8 +162,8 @@ export default function EventAnalyticsSection() {
                     <tr key={q.query} className="border-b last:border-0">
                       <td className="py-2 truncate max-w-[200px]" title={q.query}>{q.query}</td>
                       <td className="py-2 text-right font-medium">{q.query_count}</td>
-                      <td className="py-2 text-right text-gray-500">{q.place_count}</td>
-                      <td className="py-2 text-right text-gray-500">{q.restaurant_count}</td>
+                      <td className="py-2 text-right text-muted-foreground">{q.place_count}</td>
+                      <td className="py-2 text-right text-muted-foreground">{q.restaurant_count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -173,10 +173,10 @@ export default function EventAnalyticsSection() {
         </div>
 
         {/* Live feed ultimi eventi */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-card rounded-lg shadow p-4">
           <h3 className="font-semibold mb-3">Ultimi eventi</h3>
           {recentEvents.length === 0 ? (
-            <p className="text-sm text-gray-400">Nessun evento registrato.</p>
+            <p className="text-sm text-faint">Nessun evento registrato.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -187,14 +187,14 @@ export default function EventAnalyticsSection() {
                       : 'anon';
                     return (
                       <tr key={e.id} className="border-b last:border-0">
-                        <td className="py-2 text-xs text-gray-400 whitespace-nowrap pr-2">{timeAgo(e.created_at)}</td>
+                        <td className="py-2 text-xs text-faint whitespace-nowrap pr-2">{timeAgo(e.created_at)}</td>
                         <td className="py-2 whitespace-nowrap pr-2">{eventLabel(e.event_name)}</td>
-                        <td className="py-2 text-gray-500 pr-2">
+                        <td className="py-2 text-muted-foreground pr-2">
                           {e.user_id && !e.is_anonymous && e.username ? (
-                            <Link href={`/users/${e.user_id}`} className="text-blue-600 hover:underline">{userLabel}</Link>
+                            <Link href={`/users/${e.user_id}`} className="text-primary hover:underline">{userLabel}</Link>
                           ) : userLabel}
                         </td>
-                        <td className="py-2 text-gray-500 text-xs truncate max-w-[180px]" title={JSON.stringify(e.properties)}>
+                        <td className="py-2 text-muted-foreground text-xs truncate max-w-[180px]" title={JSON.stringify(e.properties)}>
                           {summarizeProperties(e.event_name, e.properties)}
                         </td>
                       </tr>

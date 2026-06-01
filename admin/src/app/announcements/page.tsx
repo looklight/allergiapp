@@ -80,7 +80,7 @@ function PopupPreview({
 
   return (
     <div className="sticky top-6">
-      <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Anteprima popup</p>
+      <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Anteprima popup</p>
 
       {/* Switcher lingua preview */}
       <div className="flex gap-1 mb-3 flex-wrap">
@@ -90,8 +90,8 @@ function PopupPreview({
             onClick={() => onPreviewLangChange(lang.code)}
             className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
               previewLang === lang.code
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                ? 'bg-selected text-selected-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted-hover'
             }`}
           >
             {lang.label}
@@ -392,19 +392,19 @@ export default function AnnouncementsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-2">Annunci in-app</h1>
-      <p className="text-sm text-gray-500 mb-6">Crea popup che vengono mostrati agli utenti all&apos;apertura dell&apos;app. Solo un annuncio può essere attivo alla volta.</p>
+      <p className="text-sm text-muted-foreground mb-6">Crea popup che vengono mostrati agli utenti all&apos;apertura dell&apos;app. Solo un annuncio può essere attivo alla volta.</p>
 
       <div className="flex gap-6 mb-6 items-start">
 
         {/* Form */}
-        <div className="bg-white rounded-lg shadow p-5 flex-1 min-w-0">
-          <h2 className="font-semibold mb-4 text-sm text-gray-700">
+        <div className="bg-card rounded-lg shadow p-5 flex-1 min-w-0">
+          <h2 className="font-semibold mb-4 text-sm text-foreground-secondary">
             {editingId ? 'Modifica annuncio' : 'Nuovo annuncio'}
           </h2>
 
           {/* Selettori lingua */}
           <div className="mb-4">
-            <p className="text-xs text-gray-500 mb-2">Lingue</p>
+            <p className="text-xs text-muted-foreground mb-2">Lingue</p>
             <div className="flex gap-2 flex-wrap">
               {SUPPORTED_LANGS.map(lang => (
                 <button
@@ -414,8 +414,8 @@ export default function AnnouncementsPage() {
                   title={lang.name}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                     activeLangs.has(lang.code)
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      ? 'bg-selected text-selected-foreground'
+                      : 'bg-muted text-faint hover:bg-muted-hover'
                   }`}
                 >
                   {lang.label}
@@ -426,18 +426,18 @@ export default function AnnouncementsPage() {
 
           {/* Immagine */}
           <div className="flex items-start gap-2 mb-4">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16 flex-shrink-0 pt-2">Immagine</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0 pt-2">Immagine</span>
             <div>
               {hasImage ? (
                 <div className="flex items-start gap-3">
                   <img src={imagePreview ?? currentImageUrl ?? ''} alt="" className="w-32 h-20 object-cover rounded border" />
                   <div className="flex flex-col gap-2">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-white border rounded text-xs hover:bg-gray-50">Sostituisci</button>
-                    <button type="button" onClick={handleRemoveImage} className="px-3 py-1.5 text-red-600 border border-red-200 rounded text-xs hover:bg-red-50">Rimuovi</button>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-card border rounded text-xs hover:bg-background">Sostituisci</button>
+                    <button type="button" onClick={handleRemoveImage} className="px-3 py-1.5 text-danger border border-danger-border rounded text-xs hover:bg-danger-soft">Rimuovi</button>
                   </div>
                 </div>
               ) : (
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-white border rounded text-sm text-gray-500 hover:bg-gray-50">Scegli immagine...</button>
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-card border rounded text-sm text-muted-foreground hover:bg-background">Scegli immagine...</button>
               )}
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             </div>
@@ -452,12 +452,12 @@ export default function AnnouncementsPage() {
                 onClick={() => setPreviewLang(lang.code)}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16 flex-shrink-0">{lang.name}</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">{lang.name}</span>
                   <input
                     value={form.title[lang.code] ?? ''}
                     onChange={e => setForm(f => ({ ...f, title: { ...f.title, [lang.code]: e.target.value } }))}
                     onFocus={() => setPreviewLang(lang.code)}
-                    className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="Titolo"
                   />
                 </div>
@@ -468,30 +468,30 @@ export default function AnnouncementsPage() {
                     onChange={e => setForm(f => ({ ...f, body: { ...f.body, [lang.code]: e.target.value } }))}
                     onFocus={() => setPreviewLang(lang.code)}
                     rows={2}
-                    className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                    className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                     placeholder="Messaggio"
                   />
                 </div>
                 {form.button_action && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16 flex-shrink-0">Pulsante</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Pulsante</span>
                     <input
                       value={form.button_label[lang.code] ?? ''}
                       onChange={e => setForm(f => ({ ...f, button_label: { ...f.button_label, [lang.code]: e.target.value } }))}
                       onFocus={() => setPreviewLang(lang.code)}
-                      className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       placeholder={form.button_action === 'share' ? 'es. Condividi' : 'es. Scopri di più'}
                     />
                   </div>
                 )}
                 {form.button_action === 'share' && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16 flex-shrink-0">Testo</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Testo</span>
                     <input
                       value={form.share_text[lang.code] ?? ''}
                       onChange={e => setForm(f => ({ ...f, share_text: { ...f.share_text, [lang.code]: e.target.value } }))}
                       onFocus={() => setPreviewLang(lang.code)}
-                      className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       placeholder="es. Prova AllergiApp!"
                     />
                   </div>
@@ -503,11 +503,11 @@ export default function AnnouncementsPage() {
           {/* Azione pulsante — globale */}
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Azione pulsante</label>
+              <label className="text-xs text-muted-foreground mb-1 block">Azione pulsante</label>
               <select
                 value={form.button_action}
                 onChange={e => setForm(f => ({ ...f, button_action: e.target.value as '' | 'share' | 'url' }))}
-                className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Nessuna</option>
                 <option value="share">Condividi (nativo)</option>
@@ -516,16 +516,16 @@ export default function AnnouncementsPage() {
             </div>
             {(form.button_action === 'url' || form.button_action === 'share') && (
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">
+                <label className="text-xs text-muted-foreground mb-1 block">
                   {form.button_action === 'share' ? 'Link da condividere (opzionale)' : 'URL'}
                 </label>
-                <input value={form.button_url} onChange={e => setForm(f => ({ ...f, button_url: e.target.value }))} className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-300" placeholder="https://..." />
+                <input value={form.button_url} onChange={e => setForm(f => ({ ...f, button_url: e.target.value }))} className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-ring" placeholder="https://..." />
               </div>
             )}
           </div>
 
           <div className="flex items-center gap-4 mt-4">
-            <button onClick={save} disabled={saving || !canSave} className="px-4 py-2 bg-gray-900 text-white rounded text-sm hover:bg-gray-800 disabled:opacity-40">
+            <button onClick={save} disabled={saving || !canSave} className="px-4 py-2 bg-selected text-selected-foreground rounded text-sm hover:bg-selected-hover disabled:opacity-40">
               {saving ? 'Salvataggio...' : editingId ? 'Salva modifiche' : 'Crea annuncio'}
             </button>
             {!editingId && (
@@ -536,11 +536,11 @@ export default function AnnouncementsPage() {
                   onChange={e => setPublishNow(e.target.checked)}
                   className="w-4 h-4 rounded"
                 />
-                <span className="text-sm text-gray-600">Pubblica subito</span>
+                <span className="text-sm text-foreground-secondary">Pubblica subito</span>
               </label>
             )}
             {editingId && (
-              <button onClick={cancelEdit} className="px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50">Annulla</button>
+              <button onClick={cancelEdit} className="px-4 py-2 bg-card border rounded text-sm hover:bg-background">Annulla</button>
             )}
           </div>
         </div>
@@ -561,13 +561,13 @@ export default function AnnouncementsPage() {
 
       {/* Lista annunci */}
       {loading ? (
-        <p className="text-gray-500 text-sm">Caricamento...</p>
+        <p className="text-muted-foreground text-sm">Caricamento...</p>
       ) : announcements.length === 0 ? (
-        <p className="text-gray-400 text-sm">Nessun annuncio creato.</p>
+        <p className="text-faint text-sm">Nessun annuncio creato.</p>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-3 font-medium">Annuncio</th>
                 <th className="px-4 py-3 font-medium">Lingue</th>
@@ -580,34 +580,34 @@ export default function AnnouncementsPage() {
             </thead>
             <tbody>
               {announcements.map(a => (
-                <tr key={a.id} className={`border-t hover:bg-gray-50 ${editingId === a.id ? 'bg-blue-50' : ''}`}>
+                <tr key={a.id} className={`border-t hover:bg-background ${editingId === a.id ? 'bg-info-soft' : ''}`}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {a.image_url && <img src={a.image_url} alt="" className="w-10 h-10 object-cover rounded flex-shrink-0" />}
                       <div>
                         <div className="font-medium">{a.title.it ?? Object.values(a.title)[0]}</div>
-                        <div className="text-gray-400 text-xs truncate max-w-xs">{a.body.it ?? Object.values(a.body)[0]}</div>
+                        <div className="text-faint text-xs truncate max-w-xs">{a.body.it ?? Object.values(a.body)[0]}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1 flex-wrap">
                       {(Object.keys(a.title) as LangCode[]).map(l => (
-                        <span key={l} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-medium uppercase">{l}</span>
+                        <span key={l} className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded text-[10px] font-medium uppercase">{l}</span>
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {a.button_label ? <>{resolveText(a.button_label, 'it')}<span className="text-xs text-gray-400 ml-1">({a.button_action})</span></> : <span className="text-gray-300">—</span>}
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {a.button_label ? <>{resolveText(a.button_label, 'it')}<span className="text-xs text-faint ml-1">({a.button_action})</span></> : <span className="text-faint">—</span>}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-xs text-gray-600 space-y-0.5">
+                    <div className="text-xs text-foreground-secondary space-y-0.5">
                       <div>{a.view_count} visualizzazioni</div>
                       {a.button_click_count > 0 && (
-                        <div className="text-green-700 font-medium">
+                        <div className="text-success-soft-foreground font-medium">
                           {a.button_click_count} click
                           {a.view_count > 0 && (
-                            <span className="text-gray-400 font-normal ml-1">
+                            <span className="text-faint font-normal ml-1">
                               ({Math.round((a.button_click_count / a.view_count) * 100)}%)
                             </span>
                           )}
@@ -616,15 +616,15 @@ export default function AnnouncementsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <button onClick={() => toggleActive(a)} className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${a.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+                    <button onClick={() => toggleActive(a)} className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${a.is_active ? 'bg-success-soft text-success-soft-foreground hover:bg-success-soft-hover' : 'bg-muted text-muted-foreground hover:bg-muted-hover'}`}>
                       {a.is_active ? 'Attivo' : 'Inattivo'}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">{new Date(a.created_at).toLocaleDateString('it-IT')}</td>
+                  <td className="px-4 py-3 text-faint text-xs">{new Date(a.created_at).toLocaleDateString('it-IT')}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-3">
-                      <button onClick={() => startEdit(a)} className="text-blue-600 hover:underline text-xs">Modifica</button>
-                      <button onClick={() => remove(a)} className="text-red-600 hover:underline text-xs">Elimina</button>
+                      <button onClick={() => startEdit(a)} className="text-primary hover:underline text-xs">Modifica</button>
+                      <button onClick={() => remove(a)} className="text-danger hover:underline text-xs">Elimina</button>
                     </div>
                   </td>
                 </tr>

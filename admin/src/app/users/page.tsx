@@ -48,7 +48,7 @@ export default function UsersPage() {
     <div>
       <div className="flex items-baseline gap-2 mb-6">
         <h1 className="text-2xl font-bold">Utenti</h1>
-        {totalCount !== null && <span className="text-gray-400 text-sm">({totalCount})</span>}
+        {totalCount !== null && <span className="text-faint text-sm">({totalCount})</span>}
       </div>
 
       <div className="mb-4">
@@ -57,7 +57,7 @@ export default function UsersPage() {
           placeholder="Cerca per nome o email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+          className="w-full max-w-md px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -74,8 +74,8 @@ export default function UsersPage() {
             onClick={() => setSortBy(value)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border ${
               sortBy === value
-                ? 'bg-gray-900 text-white border-gray-900'
-                : 'bg-white text-gray-600 border-gray-200'
+                ? 'bg-selected text-selected-foreground border-selected'
+                : 'bg-card text-foreground-secondary border-border'
             }`}
           >
             {label}
@@ -84,10 +84,10 @@ export default function UsersPage() {
       </div>
 
       {/* Desktop: tabella */}
-      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+      <div className="hidden md:block bg-card rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-3 font-medium">Utente</th>
                 <th className="px-4 py-3 font-medium">Email</th>
@@ -98,10 +98,10 @@ export default function UsersPage() {
                     onClick={() =>
                       setSortBy(sortBy === 'reviews_desc' ? 'reviews_asc' : 'reviews_desc')
                     }
-                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
                   >
                     Recensioni
-                    <span className="text-gray-400 text-xs w-3 text-center">
+                    <span className="text-faint text-xs w-3 text-center">
                       {sortBy === 'reviews_desc' ? '▼' : sortBy === 'reviews_asc' ? '▲' : ''}
                     </span>
                   </button>
@@ -110,10 +110,10 @@ export default function UsersPage() {
                   <button
                     type="button"
                     onClick={() => setSortBy('last_seen_desc')}
-                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
                   >
                     Ultimo accesso
-                    <span className="text-gray-400 text-xs w-3 text-center">
+                    <span className="text-faint text-xs w-3 text-center">
                       {sortBy === 'last_seen_desc' ? '▼' : ''}
                     </span>
                   </button>
@@ -122,10 +122,10 @@ export default function UsersPage() {
                   <button
                     type="button"
                     onClick={() => setSortBy('created_desc')}
-                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
                   >
                     Registrazione
-                    <span className="text-gray-400 text-xs w-3 text-center">
+                    <span className="text-faint text-xs w-3 text-center">
                       {sortBy === 'created_desc' ? '▼' : ''}
                     </span>
                   </button>
@@ -134,47 +134,47 @@ export default function UsersPage() {
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-t hover:bg-gray-50">
+                <tr key={u.id} className="border-t hover:bg-background">
                   <td className="px-4 py-3">
                     <Link href={`/users/${u.id}`} className="flex items-center gap-3 group">
                       <UserAvatar user={u} />
-                      <span className="text-blue-600 group-hover:underline">
+                      <span className="text-primary group-hover:underline">
                         {u.username || 'Anonimo'}
                       </span>
                       {u.is_anonymous && (
-                        <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-medium">
+                        <span className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded text-[10px] font-medium">
                           anonimo
                         </span>
                       )}
                       {!u.email_confirmed_at && (
                         <span
                           title="Email non verificata"
-                          className="text-amber-500 text-xs"
+                          className="text-warning text-xs"
                         >
                           ⚠
                         </span>
                       )}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">{u.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted-foreground">{u.email ?? '—'}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {u.role === 'admin' ? (
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">Admin</span>
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-badge-admin text-badge-admin-foreground">Admin</span>
                     ) : (
-                      <span className="text-gray-400">Utente</span>
+                      <span className="text-faint">Utente</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">
                     {(u.reviews_count ?? 0) > 0 ? (
-                      <span className="font-medium text-gray-700">{u.reviews_count}</span>
+                      <span className="font-medium text-foreground-secondary">{u.reviews_count}</span>
                     ) : (
-                      <span className="text-gray-300">0</span>
+                      <span className="text-faint">0</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {formatLastSeen(u.last_seen_at)}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {new Date(u.created_at).toLocaleDateString('it-IT')}
                   </td>
                 </tr>
@@ -190,28 +190,28 @@ export default function UsersPage() {
           <Link
             key={u.id}
             href={`/users/${u.id}`}
-            className="flex items-center gap-3 bg-white rounded-lg shadow p-3"
+            className="flex items-center gap-3 bg-card rounded-lg shadow p-3"
           >
             <UserAvatar user={u} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-blue-600 font-medium text-sm truncate">
+                <span className="text-primary font-medium text-sm truncate">
                   {u.username || 'Anonimo'}
                 </span>
                 {u.is_anonymous && (
-                  <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 shrink-0">anonimo</span>
+                  <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground shrink-0">anonimo</span>
                 )}
                 {!u.email_confirmed_at && (
-                  <span title="Email non verificata" className="text-amber-500 text-xs shrink-0">⚠</span>
+                  <span title="Email non verificata" className="text-warning text-xs shrink-0">⚠</span>
                 )}
                 {u.role === 'admin' && (
-                  <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800 shrink-0">Admin</span>
+                  <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-badge-admin text-badge-admin-foreground shrink-0">Admin</span>
                 )}
               </div>
               {u.email && (
-                <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                <p className="text-xs text-muted-foreground truncate">{u.email}</p>
               )}
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-faint mt-0.5">
                 {(u.reviews_count ?? 0)} {(u.reviews_count ?? 0) === 1 ? 'recensione' : 'recensioni'}
                 {' · '}
                 Accesso {formatLastSeen(u.last_seen_at).toLowerCase()}
@@ -221,12 +221,12 @@ export default function UsersPage() {
         ))}
       </div>
 
-      {loading && <p className="text-gray-500 mt-4">Caricamento...</p>}
+      {loading && <p className="text-muted-foreground mt-4">Caricamento...</p>}
 
       {hasMore && !loading && (
         <button
           onClick={loadMore}
-          className="mt-4 px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50"
+          className="mt-4 px-4 py-2 bg-card border rounded text-sm hover:bg-background"
         >
           Carica altri
         </button>

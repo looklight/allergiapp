@@ -53,7 +53,7 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-gray-500">Caricamento...</p>;
+    return <p className="text-muted-foreground">Caricamento...</p>;
   }
 
   return (
@@ -62,18 +62,18 @@ export default function DashboardPage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-green-600" />
-        <StatCard label="Utenti" value={stats.totalUsers} color="text-blue-600" />
+        <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-success" />
+        <StatCard label="Utenti" value={stats.totalUsers} color="text-primary" />
         <StatCard label="Recensioni" value={stats.totalReviews} color="text-purple-600" />
-        <StatCard label="Segnalazioni in attesa" value={stats.pendingReports} color="text-red-600" />
+        <StatCard label="Segnalazioni in attesa" value={stats.pendingReports} color="text-danger" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Top segnalati */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-card rounded-lg shadow p-4">
           <h2 className="font-semibold mb-3">Più segnalati</h2>
           {topReported.length === 0 ? (
-            <p className="text-sm text-gray-400">Nessuna segnalazione</p>
+            <p className="text-sm text-faint">Nessuna segnalazione</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -81,13 +81,13 @@ export default function DashboardPage() {
                   {topReported.map((r) => (
                     <tr key={r.id} className="border-b last:border-0">
                       <td className="py-2">
-                        <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
+                        <Link href={`/restaurants/${r.id}`} className="text-primary hover:underline">
                           {r.name}
                         </Link>
                       </td>
-                      <td className="py-2 text-gray-500">{r.city}</td>
+                      <td className="py-2 text-muted-foreground">{r.city}</td>
                       <td className="py-2 text-right whitespace-nowrap">
-                        <span className="text-red-600 font-medium">{r.report_count}</span> segnalazioni
+                        <span className="text-danger font-medium">{r.report_count}</span> segnalazioni
                       </td>
                     </tr>
                   ))}
@@ -98,7 +98,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Attivita recente */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-card rounded-lg shadow p-4">
           <h2 className="font-semibold mb-3">Aggiunti di recente</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -106,12 +106,12 @@ export default function DashboardPage() {
                 {recent.map((r) => (
                   <tr key={r.id} className="border-b last:border-0">
                     <td className="py-2">
-                      <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
+                      <Link href={`/restaurants/${r.id}`} className="text-primary hover:underline">
                         {r.name}
                       </Link>
                     </td>
-                    <td className="py-2 text-gray-500">{r.city}</td>
-                    <td className="py-2 text-right text-gray-400 text-xs whitespace-nowrap">
+                    <td className="py-2 text-muted-foreground">{r.city}</td>
+                    <td className="py-2 text-right text-faint text-xs whitespace-nowrap">
                       {new Date(r.created_at).toLocaleDateString('it-IT')}
                     </td>
                   </tr>

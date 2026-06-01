@@ -19,6 +19,27 @@ export default function Sidebar() {
   const [pendingCount, setPendingCount] = useState(0);
   const [hasActiveAnnouncement, setHasActiveAnnouncement] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+    // Finché l'utente non sceglie manualmente, segue le preferenze di sistema.
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (localStorage.getItem('theme')) return; // override manuale presente
+      document.documentElement.classList.toggle('dark', e.matches);
+      setIsDark(e.matches);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('theme', next ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     supabase
@@ -39,9 +60,9 @@ export default function Sidebar() {
 
   const navBody = (
     <>
-      <div className="p-4 border-b border-gray-700">
+      <div className="p-4 border-b border-sidebar-border">
         <h1 className="text-lg font-bold">AllergiApp</h1>
-        <p className="text-xs text-gray-400">Admin</p>
+        <p className="text-xs text-sidebar-muted">Admin</p>
       </div>
       <nav className="flex-1 p-2">
         {navItems.map((item) => (
@@ -50,8 +71,8 @@ export default function Sidebar() {
             href={item.href}
             className={`flex items-center justify-between px-3 py-2.5 rounded text-sm mb-1 ${
               pathname.startsWith(item.href)
-                ? 'bg-gray-700 text-white'
-                : 'text-gray-300 hover:bg-gray-800'
+                ? 'bg-sidebar-accent text-sidebar-foreground'
+                : 'text-sidebar-muted hover:bg-sidebar-accent-hover'
             }`}
           >
             {item.label}
@@ -66,12 +87,32 @@ export default function Sidebar() {
           </Link>
         ))}
       </nav>
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4 border-t border-sidebar-border flex items-center justify-between">
         <button
           onClick={() => supabase.auth.signOut()}
-          className="text-sm text-gray-400 hover:text-white py-1"
+          className="text-sm text-sidebar-muted hover:text-sidebar-foreground py-1"
         >
           Esci
+        </button>
+        <button
+          onClick={toggleTheme}
+          className="text-sidebar-muted hover:text-sidebar-foreground p-1"
+          aria-label={isDark ? 'Passa al tema chiaro' : 'Passa al tema scuro'}
+          title={isDark ? 'Tema chiaro' : 'Tema scuro'}
+        >
+          {isDark ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
         </button>
       </div>
     </>
@@ -80,10 +121,10 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile top bar */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-30 bg-gray-900 text-white flex items-center justify-between px-4 h-14">
+      <header className="md:hidden fixed top-0 inset-x-0 z-30 bg-sidebar text-sidebar-foreground flex items-center justify-between px-4 h-14">
         <div className="flex items-baseline gap-2">
           <h1 className="text-base font-bold">AllergiApp</h1>
-          <span className="text-xs text-gray-400">Admin</span>
+          <span className="text-xs text-sidebar-muted">Admin</span>
         </div>
         <button
           onClick={() => setOpen(true)}
@@ -110,11 +151,11 @@ export default function Sidebar() {
             className="absolute inset-0 bg-black/50"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute top-0 left-0 w-64 max-w-[80%] h-full bg-gray-900 text-white flex flex-col">
+          <aside className="absolute top-0 left-0 w-64 max-w-[80%] h-full bg-sidebar text-sidebar-foreground flex flex-col">
             <div className="flex justify-end p-2">
               <button
                 onClick={() => setOpen(false)}
-                className="p-2 text-gray-400 hover:text-white"
+                className="p-2 text-sidebar-muted hover:text-sidebar-foreground"
                 aria-label="Chiudi menu"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -129,7 +170,7 @@ export default function Sidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-48 bg-gray-900 text-white h-screen sticky top-0 flex-col">
+      <aside className="hidden md:flex w-48 bg-sidebar text-sidebar-foreground h-screen sticky top-0 flex-col">
         {navBody}
       </aside>
     </>

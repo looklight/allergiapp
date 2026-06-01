@@ -16,7 +16,7 @@ export default function DietaryBadges({ allergens, diets, className = '' }: Prop
       {a.map((id) => (
         <span
           key={`a-${id}`}
-          className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-rose-100 text-rose-800"
+          className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-allergen-soft text-allergen-soft-foreground"
         >
           {labelAllergen(id)}
         </span>
@@ -24,7 +24,7 @@ export default function DietaryBadges({ allergens, diets, className = '' }: Prop
       {d.map((id) => (
         <span
           key={`d-${id}`}
-          className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800"
+          className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-diet-soft text-diet-soft-foreground"
         >
           {labelDiet(id)}
         </span>

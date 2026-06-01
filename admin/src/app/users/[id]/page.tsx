@@ -156,12 +156,12 @@ export default function UserDetailPage() {
     router.push('/users');
   };
 
-  if (loading) return <p className="text-gray-500">Caricamento...</p>;
-  if (!user) return <p className="text-red-500">Utente non trovato</p>;
+  if (loading) return <p className="text-muted-foreground">Caricamento...</p>;
+  if (!user) return <p className="text-danger">Utente non trovato</p>;
 
   return (
     <div>
-      <Link href="/users" className="text-blue-600 hover:underline text-sm">&larr; Torna alla lista</Link>
+      <Link href="/users" className="text-primary hover:underline text-sm">&larr; Torna alla lista</Link>
 
       <UserProfileCard
         user={user}
@@ -180,13 +180,13 @@ export default function UserDetailPage() {
       />
 
       {/* Recensioni */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-card rounded-lg shadow p-4 mb-6">
         <h2 className="font-semibold mb-3">Recensioni ({reviews.length})</h2>
         {reviews.length === 0 ? (
-          <p className="text-sm text-gray-400">Nessuna recensione</p>
+          <p className="text-sm text-faint">Nessuna recensione</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-2 font-medium">Ristorante</th>
                 <th className="px-4 py-2 font-medium">Rating</th>
@@ -198,22 +198,22 @@ export default function UserDetailPage() {
             </thead>
             {reviewsByCountry.map(([country, items]) => (
               <tbody key={country}>
-                <tr className="bg-gray-50 border-t">
-                  <td colSpan={6} className="px-4 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <tr className="bg-background border-t">
+                  <td colSpan={6} className="px-4 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {country} ({items.length})
                   </td>
                 </tr>
                 {items.map((r) => (
                   <tr key={r.id} className="border-t">
                     <td className="px-4 py-2">
-                      <Link href={`/restaurants/${r.restaurant_id}`} className="text-blue-600 hover:underline">
+                      <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline">
                         {r.restaurant_name || '—'}
                       </Link>
                     </td>
                     <td className="px-4 py-2">
-                      {r.rating > 0 ? <span className="text-yellow-600">{'★'.repeat(r.rating)}</span> : '—'}
+                      {r.rating > 0 ? <span className="text-star">{'★'.repeat(r.rating)}</span> : '—'}
                     </td>
-                    <td className="px-4 py-2 text-gray-600 max-w-xs">
+                    <td className="px-4 py-2 text-foreground-secondary max-w-xs">
                       <div className="truncate">{r.comment || '—'}</div>
                       <DietaryBadges allergens={r.allergens_snapshot} diets={r.dietary_snapshot} className="mt-1" />
                     </td>
@@ -228,8 +228,8 @@ export default function UserDetailPage() {
                         </div>
                       ) : '—'}
                     </td>
-                    <td className="px-4 py-2 text-gray-500">{r.likes_count ?? 0}</td>
-                    <td className="px-4 py-2 text-gray-500">
+                    <td className="px-4 py-2 text-muted-foreground">{r.likes_count ?? 0}</td>
+                    <td className="px-4 py-2 text-muted-foreground">
                       {new Date(r.created_at).toLocaleDateString('it-IT')}
                     </td>
                   </tr>
@@ -241,13 +241,13 @@ export default function UserDetailPage() {
       </div>
 
       {/* Ristoranti aggiunti */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <h2 className="font-semibold mb-3">Ristoranti aggiunti ({restaurants.length})</h2>
         {restaurants.length === 0 ? (
-          <p className="text-sm text-gray-400">Nessun ristorante aggiunto</p>
+          <p className="text-sm text-faint">Nessun ristorante aggiunto</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-2 font-medium">Nome</th>
                 <th className="px-4 py-2 font-medium">Citta</th>
@@ -256,20 +256,20 @@ export default function UserDetailPage() {
             </thead>
             {restaurantsByCountry.map(([country, items]) => (
               <tbody key={country}>
-                <tr className="bg-gray-50 border-t">
-                  <td colSpan={3} className="px-4 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <tr className="bg-background border-t">
+                  <td colSpan={3} className="px-4 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {country} ({items.length})
                   </td>
                 </tr>
                 {items.map((r) => (
                   <tr key={r.id} className="border-t">
                     <td className="px-4 py-2">
-                      <Link href={`/restaurants/${r.id}`} className="text-blue-600 hover:underline">
+                      <Link href={`/restaurants/${r.id}`} className="text-primary hover:underline">
                         {r.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-2 text-gray-500">{r.city}</td>
-                    <td className="px-4 py-2 text-gray-500">
+                    <td className="px-4 py-2 text-muted-foreground">{r.city}</td>
+                    <td className="px-4 py-2 text-muted-foreground">
                       {new Date(r.created_at).toLocaleDateString('it-IT')}
                     </td>
                   </tr>

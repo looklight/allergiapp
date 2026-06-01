@@ -15,12 +15,12 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
   if (reports.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
+    <div className="bg-card rounded-lg shadow p-6 mb-6">
       <div className="flex items-center gap-2 mb-3">
         <h2 className="font-semibold">Segnalazioni ({reports.length})</h2>
         <div className="group relative">
-          <button className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 text-xs font-bold flex items-center justify-center">i</button>
-          <div className="hidden group-hover:block absolute left-0 top-7 z-10 w-80 bg-white border rounded-lg shadow-lg p-3 text-xs text-gray-600">
+          <button className="w-5 h-5 rounded-full bg-muted text-foreground-secondary hover:bg-muted-hover text-xs font-bold flex items-center justify-center">i</button>
+          <div className="hidden group-hover:block absolute left-0 top-7 z-10 w-80 bg-card border rounded-lg shadow-lg p-3 text-xs text-foreground-secondary">
             <strong>Elimina</strong> — rimuove foto, recensione o ristorante segnalato e chiude le segnalazioni associate.<br/>
             <strong>Ignora</strong> — segnalazione non fondata o già gestita, chiusa senza azione.
           </div>
@@ -33,29 +33,29 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   {r.review_id ? (
-                    <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Recensione</span>
+                    <span className="inline-block px-2 py-0.5 bg-tag-review text-tag-review-foreground rounded text-xs">Recensione</span>
                   ) : r.menu_photo_id ? (
-                    <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Foto menu</span>
+                    <span className="inline-block px-2 py-0.5 bg-tag-photo text-tag-photo-foreground rounded text-xs">Foto menu</span>
                   ) : (
-                    <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">Ristorante</span>
+                    <span className="inline-block px-2 py-0.5 bg-tag-restaurant text-tag-restaurant-foreground rounded text-xs">Ristorante</span>
                   )}
                   <span className="font-medium">
                     {REPORT_REASON_LABELS[r.reason as ReportReason] ?? r.reason}
                   </span>
                   {r.user_id ? (
-                    <Link href={`/users/${r.user_id}`} className="text-blue-600 hover:underline text-sm">{r.reporter_name ?? 'Anonimo'}</Link>
+                    <Link href={`/users/${r.user_id}`} className="text-primary hover:underline text-sm">{r.reporter_name ?? 'Anonimo'}</Link>
                   ) : (
-                    <span className="italic text-gray-400 text-sm">Utente inattivo</span>
+                    <span className="italic text-faint text-sm">Utente inattivo</span>
                   )}
                 </div>
                 {/* Contenuto segnalato */}
                 {r.review_id && (r.review_comment || r.review_rating) && (
-                  <div className="bg-purple-50 rounded p-2 mt-1 mb-1">
-                    {r.review_reviewer_name && <span className="text-xs text-gray-500">{r.review_reviewer_name}</span>}
+                  <div className="bg-tag-review-soft rounded p-2 mt-1 mb-1">
+                    {r.review_reviewer_name && <span className="text-xs text-muted-foreground">{r.review_reviewer_name}</span>}
                     {r.review_rating != null && r.review_rating > 0 && (
-                      <span className="ml-1 text-yellow-600 text-xs">{'★'.repeat(r.review_rating)}</span>
+                      <span className="ml-1 text-star text-xs">{'★'.repeat(r.review_rating)}</span>
                     )}
-                    {r.review_comment && <p className="text-xs text-gray-600 mt-0.5">{r.review_comment}</p>}
+                    {r.review_comment && <p className="text-xs text-foreground-secondary mt-0.5">{r.review_comment}</p>}
                   </div>
                 )}
                 {r.menu_photo_id && r.menu_photo_thumbnail_url && (
@@ -66,7 +66,7 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
                     </a>
                   </div>
                 )}
-                {r.details && <p className="text-gray-600 mt-1">{r.details}</p>}
+                {r.details && <p className="text-foreground-secondary mt-1">{r.details}</p>}
               </div>
               <div className="flex gap-2 ml-4 shrink-0">
                 <button
@@ -76,14 +76,14 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
                     else onDeleteRestaurant(r);
                   }}
                   disabled={isBusy(r.id)}
-                  className="text-red-600 hover:underline text-xs disabled:opacity-50"
+                  className="text-danger hover:underline text-xs disabled:opacity-50"
                 >
                   {isBusy(r.id) ? '...' : r.menu_photo_id ? 'Elimina foto' : r.review_id ? 'Elimina recensione' : 'Elimina ristorante'}
                 </button>
                 <button
                   onClick={() => onDismiss(r.id)}
                   disabled={isBusy(r.id)}
-                  className="text-gray-600 hover:underline text-xs disabled:opacity-50"
+                  className="text-foreground-secondary hover:underline text-xs disabled:opacity-50"
                 >
                   Ignora
                 </button>

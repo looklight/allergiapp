@@ -143,7 +143,7 @@ export default function RestaurantsPage() {
         <button
           onClick={() => { setShowMap(!showMap); if (!showMap) loadMapData(); }}
           className={`px-3 py-1.5 rounded text-sm transition-colors ${
-            showMap ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            showMap ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
           }`}
         >
           {showMap ? 'Chiudi mappa' : 'Vedi su mappa'}
@@ -151,11 +151,11 @@ export default function RestaurantsPage() {
       </div>
 
       {showMap && (
-        <div className="fixed inset-0 z-50 bg-white flex flex-col">
+        <div className="fixed inset-0 z-50 bg-card flex flex-col">
           <div className="flex items-center gap-3 px-4 py-3 border-b">
             <button
               onClick={() => setShowMap(false)}
-              className="px-3 py-1.5 bg-gray-900 text-white rounded text-sm hover:bg-gray-800"
+              className="px-3 py-1.5 bg-selected text-selected-foreground rounded text-sm hover:bg-selected-hover"
             >
               Chiudi mappa
             </button>
@@ -175,8 +175,8 @@ export default function RestaurantsPage() {
           onClick={() => setCountryFilter('all')}
           className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
             countryFilter === 'all'
-              ? 'bg-gray-900 text-white'
-              : 'bg-white border text-gray-600 hover:bg-gray-100'
+              ? 'bg-selected text-selected-foreground'
+              : 'bg-card border text-foreground-secondary hover:bg-muted'
           }`}
         >
           Tutti i paesi
@@ -187,8 +187,8 @@ export default function RestaurantsPage() {
             onClick={() => setCountryFilter(c.code)}
             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
               countryFilter === c.code
-                ? 'bg-gray-900 text-white'
-                : 'bg-white border text-gray-600 hover:bg-gray-100'
+                ? 'bg-selected text-selected-foreground'
+                : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {c.name} <span className="text-xs opacity-60">{c.count}</span>
@@ -202,7 +202,7 @@ export default function RestaurantsPage() {
         placeholder="Cerca per nome o citta..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full max-w-md px-4 py-2 mb-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="w-full max-w-md px-4 py-2 mb-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       />
 
       {/* Stats cards */}
@@ -217,20 +217,20 @@ export default function RestaurantsPage() {
       )}
 
       {/* Tabella */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-card rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+          <thead className="bg-background text-left">
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
               <th className="px-4 py-3 font-medium">
                 <button
                   type="button"
                   onClick={() => setSortBy('city_asc')}
-                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
                 >
                   Citta
-                  <span className="text-gray-400 text-xs w-3 text-center">
+                  <span className="text-faint text-xs w-3 text-center">
                     {sortBy === 'city_asc' ? '▲' : ''}
                   </span>
                 </button>
@@ -241,10 +241,10 @@ export default function RestaurantsPage() {
                 <button
                   type="button"
                   onClick={() => setSortBy('reviews_desc')}
-                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
                 >
                   Recensioni
-                  <span className="text-gray-400 text-xs w-3 text-center">
+                  <span className="text-faint text-xs w-3 text-center">
                     {sortBy === 'reviews_desc' ? '▼' : ''}
                   </span>
                 </button>
@@ -255,10 +255,10 @@ export default function RestaurantsPage() {
                 <button
                   type="button"
                   onClick={() => setSortBy('created_desc')}
-                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-gray-100"
+                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
                 >
                   Data
-                  <span className="text-gray-400 text-xs w-3 text-center">
+                  <span className="text-faint text-xs w-3 text-center">
                     {sortBy === 'created_desc' ? '▼' : ''}
                   </span>
                 </button>
@@ -268,41 +268,41 @@ export default function RestaurantsPage() {
           </thead>
           <tbody>
             {restaurants.map((r) => (
-              <tr key={r.id} className="border-t hover:bg-gray-50">
+              <tr key={r.id} className="border-t hover:bg-background">
                 <td className="px-4 py-3 max-w-[220px]">
                   <Link
                     href={`/restaurants/${r.id}`}
-                    className="text-blue-600 hover:underline block truncate"
+                    className="text-primary hover:underline block truncate"
                     title={r.name}
                   >
                     {r.name}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-gray-500">{r.city ?? '—'}</td>
-                {countryFilter === 'all' && <td className="px-4 py-3 text-gray-500">{r.country ?? '—'}</td>}
-                <td className="px-4 py-3 text-gray-500">
+                <td className="px-4 py-3 text-muted-foreground">{r.city ?? '—'}</td>
+                {countryFilter === 'all' && <td className="px-4 py-3 text-muted-foreground">{r.country ?? '—'}</td>}
+                <td className="px-4 py-3 text-muted-foreground">
                   {r.cuisine_types?.join(', ') || '—'}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
                   {(r.review_count ?? 0) > 0 ? (
-                    <span className="font-medium text-gray-700">{r.review_count}</span>
+                    <span className="font-medium text-foreground-secondary">{r.review_count}</span>
                   ) : (
-                    <span className="text-gray-300">0</span>
+                    <span className="text-faint">0</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums text-gray-500">
-                  {(r.review_photo_count ?? 0) > 0 ? r.review_photo_count : <span className="text-gray-300">—</span>}
+                <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                  {(r.review_photo_count ?? 0) > 0 ? r.review_photo_count : <span className="text-faint">—</span>}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums text-gray-500">
-                  {(r.menu_photo_count ?? 0) > 0 ? r.menu_photo_count : <span className="text-gray-300">—</span>}
+                <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                  {(r.menu_photo_count ?? 0) > 0 ? r.menu_photo_count : <span className="text-faint">—</span>}
                 </td>
-                <td className="px-4 py-3 text-gray-400 text-xs">
+                <td className="px-4 py-3 text-faint text-xs">
                   {new Date(r.created_at).toLocaleDateString('it-IT')}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => deleteRestaurant(r)}
-                    className="text-red-600 hover:text-red-800 p-1 -m-1"
+                    className="text-danger hover:text-danger-strong p-1 -m-1"
                     title="Elimina ristorante"
                     aria-label="Elimina ristorante"
                   >
@@ -321,12 +321,12 @@ export default function RestaurantsPage() {
         </div>
       </div>
 
-      {loading && <p className="text-gray-500 mt-4">Caricamento...</p>}
+      {loading && <p className="text-muted-foreground mt-4">Caricamento...</p>}
 
       {hasMore && !loading && (
         <button
           onClick={loadMore}
-          className="mt-4 px-4 py-2 bg-white border rounded text-sm hover:bg-gray-50"
+          className="mt-4 px-4 py-2 bg-card border rounded text-sm hover:bg-background"
         >
           Carica altri
         </button>

@@ -17,7 +17,7 @@ export default function MediaGallery({ items, isBusy, onDeleteReviewPhoto, onDel
   if (items.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-6">
+    <div className="bg-card rounded-lg shadow p-4 mb-6">
       <h2 className="font-semibold mb-3">Media ({items.length})</h2>
       <div className="flex flex-wrap gap-2">
         {(showAll ? items : items.slice(0, 12)).map((m) => {
@@ -34,7 +34,7 @@ export default function MediaGallery({ items, isBusy, onDeleteReviewPhoto, onDel
                   className="w-18 h-18 rounded object-cover hover:opacity-90 transition-opacity"
                 />
               </a>
-              <div className={`absolute bottom-0 left-0 right-0 rounded-b text-center text-[8px] leading-tight py-px text-white ${m.kind === 'review' ? 'bg-blue-600/70' : 'bg-green-600/70'}`}>
+              <div className={`absolute bottom-0 left-0 right-0 rounded-b text-center text-[8px] leading-tight py-px text-white ${m.kind === 'review' ? 'bg-primary/70' : 'bg-success/70'}`}>
                 {m.kind === 'review' ? 'Rev' : 'Menu'}
               </div>
               <button
@@ -44,7 +44,7 @@ export default function MediaGallery({ items, isBusy, onDeleteReviewPhoto, onDel
                     : onDeleteMenuPhoto(m.photoId)
                 }
                 disabled={busy}
-                className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:opacity-50"
+                className="absolute -top-1 -right-1 bg-danger text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger-strong disabled:opacity-50"
                 title="Elimina foto"
               >
                 &times;
@@ -56,7 +56,7 @@ export default function MediaGallery({ items, isBusy, onDeleteReviewPhoto, onDel
       {!showAll && items.length > 12 && (
         <button
           onClick={() => setShowAll(true)}
-          className="mt-3 text-sm text-blue-600 hover:underline"
+          className="mt-3 text-sm text-primary hover:underline"
         >
           Mostra tutti ({items.length})
         </button>

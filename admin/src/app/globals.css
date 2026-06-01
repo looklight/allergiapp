@@ -1,5 +1,245 @@
 @import "tailwindcss";
 
+/* Dark mode si attiva con la classe .dark su <html> (Fase 2). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens (Fase 1 — centralizzazione).
+ * I valori light referenziano la palette nativa di Tailwind v4 per garantire
+ * che l'output resti (quasi) identico rispetto alle utility hardcoded attuali.
+ * La dark mode (Fase 2) ridefinirà gli stessi token dentro `.dark { ... }`.
+ */
+:root {
+  /* superfici / chrome */
+  --background: var(--color-gray-50);        /* sfondo pagina */
+  --card: var(--color-white);                /* card e pannelli */
+  --muted: var(--color-gray-100);            /* fill tenui / chip */
+  --muted-hover: var(--color-gray-200);      /* hover dei fill tenui */
+
+  /* testo (scala a 4 livelli) */
+  --foreground: var(--color-gray-900);       /* titoli / testo primario */
+  --foreground-secondary: var(--color-gray-700);
+  --muted-foreground: var(--color-gray-500); /* testo secondario / caption */
+  --faint: var(--color-gray-400);            /* testo faint / placeholder */
+
+  /* linee */
+  --border: var(--color-gray-200);
+  --input: var(--color-gray-300);
+  --ring: var(--color-gray-300);
+
+  /* brand / azioni */
+  --primary: var(--color-blue-600);
+  --primary-hover: var(--color-blue-700);
+  --primary-soft: var(--color-blue-100);          /* CTA tenue (es. Apri in Maps) */
+  --primary-soft-foreground: var(--color-blue-700);
+  --primary-soft-hover: var(--color-blue-200);
+
+  /* selezione: pill filtro attivo ad alto contrasto */
+  --selected: var(--color-gray-900);
+  --selected-foreground: var(--color-white);
+  --selected-hover: var(--color-gray-800);
+
+  /* callout informativo */
+  --info-soft: var(--color-blue-50);
+  --info-border: var(--color-blue-200);
+
+  /* sidebar (già scura anche in light) */
+  --sidebar: var(--color-gray-900);
+  --sidebar-foreground: var(--color-white);
+  --sidebar-muted: var(--color-gray-400);
+  --sidebar-border: var(--color-gray-700);
+  --sidebar-accent: var(--color-gray-700);       /* item attivo */
+  --sidebar-accent-hover: var(--color-gray-800); /* hover */
+
+  /* semantici — restano saturi e ben distinguibili (regola palette) */
+  --success: var(--color-green-600);
+  --success-soft: var(--color-green-100);
+  --success-soft-hover: var(--color-green-200);
+  --success-soft-foreground: var(--color-green-800);
+  --danger: var(--color-red-600);
+  --danger-strong: var(--color-red-700);
+  --danger-soft: var(--color-red-50);
+  --danger-soft-hover: var(--color-red-100);
+  --danger-border: var(--color-red-200);
+  --warning: var(--color-amber-500);             /* icona caution (es. email non verificata) */
+  --warning-soft: var(--color-yellow-100);       /* badge "in attesa" */
+  --warning-soft-foreground: var(--color-yellow-800);
+  --star: var(--color-amber-500);
+
+  /* badge ruolo admin */
+  --badge-admin: var(--color-purple-100);
+  --badge-admin-foreground: var(--color-purple-800);
+
+  /* badge categoria contenuto (segnalazioni) */
+  --tag-review: var(--color-purple-100);
+  --tag-review-foreground: var(--color-purple-700);
+  --tag-review-soft: var(--color-purple-50);   /* highlight recensione citata */
+  --tag-photo: var(--color-blue-100);
+  --tag-photo-foreground: var(--color-blue-700);
+  --tag-restaurant: var(--color-orange-100);
+  --tag-restaurant-foreground: var(--color-orange-700);
+
+  /* badge soft esistenti (allergeni / diete) */
+  --allergen-soft: var(--color-rose-100);
+  --allergen-soft-foreground: var(--color-rose-800);
+  --diet-soft: var(--color-emerald-100);
+  --diet-soft-foreground: var(--color-emerald-800);
+}
+
+/*
+ * Dark mode — tono neutro near-black (palette neutral di Tailwind v4).
+ * I semantici saturi (primary/success/danger/warning/star) salgono di ~1 step
+ * per staccare sul fondo scuro; i badge soft passano a tinta scura + testo chiaro;
+ * `selected` si inverte (pill chiaro su fondo scuro).
+ */
+.dark {
+  color-scheme: dark;
+
+  /* superfici / chrome */
+  --background: var(--color-neutral-950);    /* #0a0a0a */
+  --card: var(--color-neutral-900);          /* #171717 */
+  --muted: var(--color-neutral-800);
+  --muted-hover: var(--color-neutral-700);
+
+  /* testo */
+  --foreground: var(--color-neutral-200);
+  --foreground-secondary: var(--color-neutral-300);
+  --muted-foreground: var(--color-neutral-400);
+  --faint: var(--color-neutral-500);
+
+  /* linee */
+  --border: var(--color-neutral-800);
+  --input: var(--color-neutral-700);
+  --ring: var(--color-neutral-600);
+
+  /* brand / azioni */
+  --primary: var(--color-blue-500);
+  --primary-hover: var(--color-blue-400);
+  --primary-soft: var(--color-blue-950);
+  --primary-soft-foreground: var(--color-blue-300);
+  --primary-soft-hover: var(--color-blue-900);
+
+  /* selezione: pill invertito (chiaro su scuro) */
+  --selected: var(--color-neutral-200);
+  --selected-foreground: var(--color-neutral-950);
+  --selected-hover: var(--color-neutral-300);
+
+  /* callout informativo */
+  --info-soft: var(--color-blue-950);
+  --info-border: var(--color-blue-900);
+
+  /* sidebar (un gradino sopra il fondo per elevazione) */
+  --sidebar: var(--color-neutral-900);
+  --sidebar-foreground: var(--color-neutral-50);
+  --sidebar-muted: var(--color-neutral-400);
+  --sidebar-border: var(--color-neutral-800);
+  --sidebar-accent: var(--color-neutral-700);       /* item attivo */
+  --sidebar-accent-hover: var(--color-neutral-800); /* hover */
+
+  /* semantici saturi (brillanti per il fondo scuro) */
+  --success: var(--color-green-500);
+  --success-soft: var(--color-green-950);
+  --success-soft-hover: var(--color-green-900);
+  --success-soft-foreground: var(--color-green-300);
+  --danger: var(--color-red-500);
+  --danger-strong: var(--color-red-400);
+  --danger-soft: var(--color-red-950);
+  --danger-soft-hover: var(--color-red-900);
+  --danger-border: var(--color-red-900);
+  --warning: var(--color-amber-400);
+  --warning-soft: var(--color-yellow-950);
+  --warning-soft-foreground: var(--color-yellow-300);
+  --star: var(--color-amber-400);
+
+  /* badge categoria contenuto */
+  --tag-review: var(--color-purple-950);
+  --tag-review-foreground: var(--color-purple-300);
+  --tag-review-soft: var(--color-purple-950);
+  --tag-photo: var(--color-blue-950);
+  --tag-photo-foreground: var(--color-blue-300);
+  --tag-restaurant: var(--color-orange-950);
+  --tag-restaurant-foreground: var(--color-orange-300);
+
+  /* badge ruolo admin */
+  --badge-admin: var(--color-purple-950);
+  --badge-admin-foreground: var(--color-purple-300);
+
+  /* badge soft allergeni / diete */
+  --allergen-soft: var(--color-rose-950);
+  --allergen-soft-foreground: var(--color-rose-300);
+  --diet-soft: var(--color-emerald-950);
+  --diet-soft-foreground: var(--color-emerald-300);
+}
+
+/* Espone i token come colori Tailwind (bg-background, text-muted-foreground, …).
+ * `inline` mantiene il riferimento var() nelle utility, così il cambio tema a
+ * runtime (.dark) funziona senza rigenerare il CSS. */
+@theme inline {
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-hover: var(--muted-hover);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-primary-soft-hover: var(--primary-soft-hover);
+
+  --color-selected: var(--selected);
+  --color-selected-foreground: var(--selected-foreground);
+  --color-selected-hover: var(--selected-hover);
+
+  --color-info-soft: var(--info-soft);
+  --color-info-border: var(--info-border);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-hover: var(--sidebar-accent-hover);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-hover: var(--success-soft-hover);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-danger: var(--danger);
+  --color-danger-strong: var(--danger-strong);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-hover: var(--danger-soft-hover);
+  --color-danger-border: var(--danger-border);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-star: var(--star);
+
+  --color-tag-review: var(--tag-review);
+  --color-tag-review-foreground: var(--tag-review-foreground);
+  --color-tag-review-soft: var(--tag-review-soft);
+  --color-tag-photo: var(--tag-photo);
+  --color-tag-photo-foreground: var(--tag-photo-foreground);
+  --color-tag-restaurant: var(--tag-restaurant);
+  --color-tag-restaurant-foreground: var(--tag-restaurant-foreground);
+
+  --color-badge-admin: var(--badge-admin);
+  --color-badge-admin-foreground: var(--badge-admin-foreground);
+
+  --color-allergen-soft: var(--allergen-soft);
+  --color-allergen-soft-foreground: var(--allergen-soft-foreground);
+  --color-diet-soft: var(--diet-soft);
+  --color-diet-soft-foreground: var(--diet-soft-foreground);
+}
+
 html, body {
   overscroll-behavior: none;
 }
@@ -8,4 +248,9 @@ html, body {
   font-size: 13px;
   line-height: 1.4;
   padding: 6px 10px;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
 }
+.restaurant-tooltip.leaflet-tooltip-top::before { border-top-color: var(--card); }
