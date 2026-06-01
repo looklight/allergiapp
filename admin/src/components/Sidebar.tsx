@@ -60,10 +60,10 @@ export default function Sidebar() {
 
   const navBody = (
     <>
-      <div className="p-4 border-b border-sidebar-border">
+      <Link href="/dashboard" className="block p-4 border-b border-sidebar-border hover:bg-sidebar-accent-hover transition-colors">
         <h1 className="text-lg font-bold">AllergiApp</h1>
         <p className="text-xs text-sidebar-muted">Admin</p>
-      </div>
+      </Link>
       <nav className="flex-1 p-2">
         {navItems.map((item) => (
           <Link
@@ -122,10 +122,10 @@ export default function Sidebar() {
     <>
       {/* Mobile top bar */}
       <header className="md:hidden fixed top-0 inset-x-0 z-30 bg-sidebar text-sidebar-foreground flex items-center justify-between px-4 h-14">
-        <div className="flex items-baseline gap-2">
+        <Link href="/dashboard" className="flex items-baseline gap-2">
           <h1 className="text-base font-bold">AllergiApp</h1>
           <span className="text-xs text-sidebar-muted">Admin</span>
-        </div>
+        </Link>
         <button
           onClick={() => setOpen(true)}
           className="relative p-2 -mr-2"

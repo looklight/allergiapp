@@ -167,7 +167,6 @@ export default function UserDetailPage() {
         user={user}
         restaurantCount={restaurants.length}
         reviewCount={reviews.length}
-        mediaCount={allMedia.length}
         isDeleting={isDeleting}
         onDelete={deleteUser}
       />

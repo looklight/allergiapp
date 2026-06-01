@@ -62,10 +62,10 @@ export default function DashboardPage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-success" />
-        <StatCard label="Utenti" value={stats.totalUsers} color="text-primary" />
+        <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-success" href="/restaurants" />
+        <StatCard label="Utenti" value={stats.totalUsers} color="text-primary" href="/users" />
         <StatCard label="Recensioni" value={stats.totalReviews} color="text-purple-600" />
-        <StatCard label="Segnalazioni in attesa" value={stats.pendingReports} color="text-danger" />
+        <StatCard label="Segnalazioni in attesa" value={stats.pendingReports} color="text-danger" href="/reports" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
