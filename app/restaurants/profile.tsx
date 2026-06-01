@@ -117,6 +117,7 @@ export default function ProfileScreen() {
             previousLikes={lastSeenLikes}
             onAnimationEnd={markAsSeen}
             numberStyle={styles.inlineLikesNumber}
+            label={i18n.t('restaurants.profileCard.statLikes')}
           />
         }
         onBack={() => router.back()}

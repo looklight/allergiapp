@@ -1,8 +1,12 @@
 /**
- * Numero "like" del profilo, con:
+ * Stat "like ricevuti" del profilo (numero + label), con:
  *  - count-up animato da previousLikes a currentLikes (~1.2s)
- *  - badge "+N" laterale che sale e svanisce a destra del numero (~2.2s, sta
- *    in vista circa 1s dopo che il count-up si e' fermato)
+ *  - badge "+N" che sale e svanisce in coda alla riga, A DESTRA della label
+ *    (~2.2s, sta in vista circa 1s dopo che il count-up si e' fermato)
+ *
+ * Il componente rende l'intera riga [numero][label][+N] cosi' che il badge possa
+ * stare in flusso dopo la label senza sovrapporsi (prima era absolute ancorato al
+ * solo numero e finiva sopra "Like ricevuti"). Per questo riceve anche `label`.
  *
  * Se delta <= 0 (nessun nuovo like, o sono diminuiti) renderizza il numero
  * statico senza animare e SENZA chiamare onAnimationEnd: non c'e' "ho visto i
@@ -28,9 +32,13 @@ type Props = {
   onAnimationEnd?: () => void;
   /** Override dello stile del numero (es. per renderlo inline e piu' compatto). */
   numberStyle?: StyleProp<TextStyle>;
+  /** Testo della label ("Like ricevuti"). Il badge "+N" appare alla sua destra. */
+  label?: string;
+  /** Override dello stile della label per allinearla alle altre stat dell'header. */
+  labelStyle?: StyleProp<TextStyle>;
 };
 
-export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAnimationEnd, numberStyle }: Props) {
+export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAnimationEnd, numberStyle, label, labelStyle }: Props) {
   const delta = currentLikes - previousLikes;
   const shouldAnimate = delta > 0;
 
@@ -79,8 +87,9 @@ export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAn
   }, [currentLikes, previousLikes]);
 
   return (
-    <View>
+    <View style={styles.row}>
       <Text style={[styles.number, numberStyle]}>{displayValue}</Text>
+      {label != null && <Text style={[styles.label, labelStyle]}>{label}</Text>}
       {shouldAnimate && (
         <Animated.Text
           style={[
@@ -109,19 +118,28 @@ export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAn
 }
 
 const styles = StyleSheet.create({
+  // Riga [numero][label][+N]: allineata come gli altri inlineStat del ProfileCard
+  // (gap 4) cosi' il badge "+N" sta in flusso subito dopo "Like ricevuti".
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   number: {
     fontSize: 20,
     fontWeight: 'bold',
     color: theme.colors.textPrimary,
-    marginBottom: 2,
     textAlign: 'center',
   },
+  // Default allineato a ProfileCard.inlineStatLabel; sovrascrivibile via labelStyle.
+  label: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+  },
   floatBadge: {
-    // Posizionato a destra del numero (offset negativo lo fa sporgere fuori dal
-    // box auto-width del numero, dentro lo statItem del ProfileCard).
-    position: 'absolute',
-    top: 2,
-    right: -26,
+    // In flusso a destra della label: niente più overlap con "Like ricevuti".
+    // translateY (transform) anima la salita senza spostare il layout.
+    marginLeft: 2,
     fontSize: 14,
     fontWeight: '700',
     color: theme.colors.primary,

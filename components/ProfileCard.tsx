@@ -166,8 +166,15 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
                   )}
                   {stats?.likes != null && (
                     <View style={styles.inlineStat}>
-                      {likesSlot ?? <Text style={styles.inlineStatNumber}>{stats.likes}</Text>}
-                      <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
+                      {/* Quando c'è il likesSlot (AnimatedLikesCounter sul profilo
+                          proprio) è lui a rendere numero + label, così il badge "+N"
+                          può comparire in coda alla riga, a destra di "Like ricevuti". */}
+                      {likesSlot ?? (
+                        <>
+                          <Text style={styles.inlineStatNumber}>{stats.likes}</Text>
+                          <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
+                        </>
+                      )}
                     </View>
                   )}
                 </View>
