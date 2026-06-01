@@ -127,7 +127,7 @@
     "italian": "Italiano",
     "english": "Inglese",
     "downloadLanguages": "Scarica Altre Lingue",
-    "downloadLanguagesDesc": "Scarica lingue aggiuntive per le card allergie e per utilizzare la app offline",
+    "downloadLanguagesDesc": "Traduci le tue card ovunque andrai: alcune lingue sono già incluse, le altre puoi scaricarle per usarle offline.",
     "download": "Scarica",
     "downloaded": "Scaricata!",
     "delete": "Elimina",
@@ -428,7 +428,7 @@
       },
       "tabCards": "Le mie Card",
       "tabRestaurants": "Ristoranti",
-      "offlineBanner": "Sei offline — i ristoranti richiedono una connessione"
+      "offlineBanner": "Nessuna connessione"
     },
     "profileCard": {
       "title": "Profilo",

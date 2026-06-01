@@ -127,7 +127,7 @@
     "italian": "Italian",
     "english": "English",
     "downloadLanguages": "Download More Languages",
-    "downloadLanguagesDesc": "Download additional languages for allergy cards and to use the app offline",
+    "downloadLanguagesDesc": "Translate your cards wherever you go: some languages are already included, others can be downloaded to use offline.",
     "download": "Download",
     "downloaded": "Downloaded!",
     "delete": "Delete",
@@ -428,7 +428,7 @@
       },
       "tabCards": "My Cards",
       "tabRestaurants": "Restaurants",
-      "offlineBanner": "You're offline — restaurants need a connection"
+      "offlineBanner": "No connection"
     },
     "profileCard": {
       "title": "Profile",
