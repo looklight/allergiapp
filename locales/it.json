@@ -427,7 +427,8 @@
         "other": "{{count}} ristoranti a {{place}}"
       },
       "tabCards": "Le mie Card",
-      "tabRestaurants": "Ristoranti"
+      "tabRestaurants": "Ristoranti",
+      "offlineBanner": "Sei offline — i ristoranti richiedono una connessione"
     },
     "profileCard": {
       "title": "Profilo",

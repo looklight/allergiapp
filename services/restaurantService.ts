@@ -20,6 +20,20 @@ export type {
 export type { UserReview } from './reviewService';
 export { mapRestaurant, extractLatLng, QUERY_LIMITS, DEFAULTS, PG_UNIQUE_VIOLATION, REVIEWS_PAGE_SIZE } from './restaurant.types';
 
+/** True se l'errore è una connettività assente (fetch fallita), non un errore
+ *  applicativo (query/permessi). Su React Native il fetch fallito è
+ *  "Network request failed"; sul web "Failed to fetch". Serve a distinguere
+ *  "sei offline" da "nessun risultato", così solo il primo caso accende il banner. */
+function isNetworkError(err: any): boolean {
+  const msg = (err?.message ?? String(err ?? '')).toLowerCase();
+  return (
+    msg.includes('network request failed') || // React Native
+    msg.includes('failed to fetch') ||         // web/Chrome
+    msg.includes('load failed') ||             // iOS 17+ / WebKit
+    err?.name === 'TypeError'                   // fetch reject generico
+  );
+}
+
 // ─── Restaurant CRUD ────────────────────────────────────────────────────────
 
 async function getRestaurant(restaurantId: string): Promise<Restaurant | null> {
@@ -171,6 +185,9 @@ async function getPinsInBounds(
     }));
   } catch (error) {
     console.warn('[RestaurantService] Errore getPinsInBounds:', error);
+    // Rete assente: propaga così il chiamante (heartbeat) può segnalare l'offline.
+    // Gli altri errori restano silenziosi col fallback [] per non rompere la mappa.
+    if (isNetworkError(error)) throw error;
     return [];
   }
 }

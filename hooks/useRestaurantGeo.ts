@@ -45,6 +45,11 @@ export function useRestaurantGeo(params: FilterParams) {
   const [isLocating, setIsLocating] = useState(false);
   const [isGeoMode, setIsGeoMode] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
+  /** True quando l'ultimo caricamento ristoranti è fallito per rete assente.
+   *  Derivato dai fallimenti di fetch (non da NetInfo): copre anche i casi in cui
+   *  il dispositivo è "online" ma Supabase è irraggiungibile (captive portal, VPN,
+   *  server down). Il fetch dei pin è il heartbeat: gira sempre, anche senza GPS. */
+  const [isOffline, setIsOffline] = useState(false);
 
   // ---- Cache accumulativa ----
   const restaurantCache = useRef<Map<string, Restaurant>>(new Map());
@@ -274,6 +279,7 @@ export function useRestaurantGeo(params: FilterParams) {
     RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng)
       .then(pins => {
         if (pinFetchEpoch.current !== epoch) return; // risposta stale, ignora
+        setIsOffline(false); // risposta ricevuta → rete ok
         const sizeBefore = pinCache.current.size;
         for (const p of pins) pinCache.current.set(p.id, p);
         let trimmed = false;
@@ -286,7 +292,12 @@ export function useRestaurantGeo(params: FilterParams) {
           setViewportPins(Array.from(pinCache.current.values()));
         }
       })
-      .catch(() => { /* rete non disponibile — mantieni i pin precedenti */ });
+      .catch(() => {
+        // Rete non disponibile — mantieni i pin precedenti e segnala offline.
+        // Solo se è l'ultima richiesta: durante pan veloce un fetch vecchio fallito
+        // non deve riaccendere il flag dopo che uno più recente è andato a buon fine.
+        if (pinFetchEpoch.current === epoch) setIsOffline(true);
+      });
   }, []);
 
   /** Carica pin per un'area ampia intorno alla posizione corrente.
@@ -434,6 +445,7 @@ export function useRestaurantGeo(params: FilterParams) {
     isLocating,
     isGeoMode,
     locationDenied,
+    isOffline,
     loadGeo,
     clearAndReload,
     handleRegionChange,

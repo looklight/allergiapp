@@ -672,6 +672,15 @@ export default function RestaurantsScreen() {
           </TouchableOpacity>
         </View>
 
+        {geo.isOffline && (
+          <View style={styles.offlineBanner} pointerEvents="none">
+            <MaterialCommunityIcons name="cloud-off-outline" size={15} color={theme.colors.textSecondary} />
+            <Text style={styles.offlineBannerText} numberOfLines={2}>
+              {i18n.t('restaurants.tabs.offlineBanner')}
+            </Text>
+          </View>
+        )}
+
         {(activeFilters.length > 0 || minRating !== null || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
           <ScrollView
             horizontal
@@ -900,6 +909,29 @@ const styles = StyleSheet.create({
   },
 
   // --- Active filter chips ---
+  offlineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    marginTop: 8,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    gap: 6,
+    elevation: 2,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  offlineBannerText: {
+    flexShrink: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
+  },
   chipScrollContainer: {
     marginTop: 6,
     marginHorizontal: -12,
