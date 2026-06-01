@@ -30,6 +30,9 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, me
           <p className="text-sm text-gray-400">
             Registrato il {new Date(user.created_at).toLocaleDateString('it-IT')}
           </p>
+          <p className="text-xs text-gray-400 font-mono mt-0.5 select-all break-all">
+            ID: {user.id}
+          </p>
           {user.role === 'admin' && (
             <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">Admin</span>
           )}
