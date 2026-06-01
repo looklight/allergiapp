@@ -262,14 +262,22 @@ function extractCityFromComponents(
 // ---------------------------------------------------------------------------
 
 // Gruppi di tipi (max 5 per chiamata API Google)
-// Nota: 'gelato_shop' non è un primary type valido in Google Places API (New),
-// nonostante esista in altre versioni dell'API — rifiutato con 400. Le gelaterie
-// sono comunque catturate da 'ice_cream_shop'. Mantenere `gelato_shop` come
-// VALORE in GOOGLE_TYPE_TO_CUISINE è innocuo (è una mappa di lookup), ma NON
-// includerlo in includedPrimaryTypes della richiesta.
+// Nota: 'gelato_shop' e 'waffle_shop' NON sono primary type validi in Google
+// Places API (New), nonostante esistano in altre versioni dell'API — rifiutati
+// con 400. Le gelaterie sono comunque catturate da 'ice_cream_shop'. Mantenerli
+// come VALORE in GOOGLE_TYPE_TO_CUISINE è innocuo (è una mappa di lookup), ma NON
+// includerli in includedPrimaryTypes della richiesta.
+//
+// 'tea_house' e 'wine_bar' vanno elencati ESPLICITAMENTE: a differenza degli
+// altri tipi bevande/dolci (pub, cocktail_bar, donut_shop, confectionery…) che
+// l'autocomplete intercetta già tramite i tipi larghi 'restaurant'/'cafe'/'bar',
+// questi due hanno un primaryType che non viene espanso da nessun tipo del primo
+// gruppo. Senza elencarli, locali come le sale da tè ("Casa de Chá") o i wine bar
+// sono invisibili nella ricerca pur essendo mappati a una cucina. Verificato via
+// API 2026-06-01.
 const PLACE_TYPE_GROUPS = [
   ['restaurant', 'bakery', 'pastry_shop', 'cafe', 'bar'],
-  ['ice_cream_shop', 'dessert_shop'],
+  ['ice_cream_shop', 'dessert_shop', 'tea_house', 'wine_bar'],
 ];
 
 async function fetchAutocomplete(query: string, types: string[]): Promise<PlaceAutocompleteResult[]> {
