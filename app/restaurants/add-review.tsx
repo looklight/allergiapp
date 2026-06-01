@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Image, ActivityIndicator, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Image, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
@@ -185,15 +185,13 @@ export default function AddReviewScreen() {
 
       <AppHeader title={i18n.t(isEditMode ? 'restaurants.review.editTitle' : 'restaurants.review.title')} />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
-      >
       <ScrollView
         ref={scrollRef}
+        style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 130 }]}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
         onScroll={e => { scrollOffsetY.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
@@ -439,7 +437,6 @@ export default function AddReviewScreen() {
         </TouchableOpacity>
         <Text style={styles.submitCaption}>{i18n.t('restaurants.review.helpsCommunity')}</Text>
       </View>
-      </KeyboardAvoidingView>
     </View>
   );
 }
