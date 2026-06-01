@@ -394,7 +394,7 @@ export default function AnnouncementsPage() {
       <h1 className="text-2xl font-bold mb-2">Annunci in-app</h1>
       <p className="text-sm text-muted-foreground mb-6">Crea popup che vengono mostrati agli utenti all&apos;apertura dell&apos;app. Solo un annuncio può essere attivo alla volta.</p>
 
-      <div className="flex gap-6 mb-6 items-start">
+      <div className="flex flex-col md:flex-row gap-6 mb-6 items-start">
 
         {/* Form */}
         <div className="bg-card rounded-lg shadow p-5 flex-1 min-w-0">
@@ -546,7 +546,7 @@ export default function AnnouncementsPage() {
         </div>
 
         {/* Preview */}
-        <div className="w-72 flex-shrink-0">
+        <div className="w-full md:w-72 md:flex-shrink-0">
           <PopupPreview
             title={form.title}
             body={form.body}
@@ -566,7 +566,8 @@ export default function AnnouncementsPage() {
         <p className="text-faint text-sm">Nessun annuncio creato.</p>
       ) : (
         <div className="bg-card rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[760px]">
             <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-3 font-medium">Annuncio</th>
@@ -631,6 +632,7 @@ export default function AnnouncementsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

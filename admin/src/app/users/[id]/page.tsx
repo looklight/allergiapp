@@ -184,7 +184,8 @@ export default function UserDetailPage() {
         {reviews.length === 0 ? (
           <p className="text-sm text-faint">Nessuna recensione</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-2 font-medium">Ristorante</th>
@@ -236,6 +237,7 @@ export default function UserDetailPage() {
               </tbody>
             ))}
           </table>
+          </div>
         )}
       </div>
 
@@ -245,7 +247,8 @@ export default function UserDetailPage() {
         {restaurants.length === 0 ? (
           <p className="text-sm text-faint">Nessun ristorante aggiunto</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-2 font-medium">Nome</th>
@@ -276,6 +279,7 @@ export default function UserDetailPage() {
               </tbody>
             ))}
           </table>
+          </div>
         )}
       </div>
     </div>
