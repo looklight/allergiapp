@@ -182,6 +182,14 @@ async function isUsernameAvailable(username: string): Promise<boolean> {
   return Boolean(data);
 }
 
+// Segna l'utente autenticato come "visto ora" (presence operativa per la
+// dashboard admin). now() lo mette il DB lato server. Fire-and-forget: e' un
+// dato accessorio, non deve mai degradare l'UX ne' bloccare nulla.
+async function touchLastSeen(): Promise<void> {
+  const { error } = await supabase.rpc('touch_last_seen');
+  if (error && __DEV__) console.warn('[Auth] touchLastSeen failed:', error);
+}
+
 export const AuthService = {
   signUp,
   signIn,
@@ -198,4 +206,5 @@ export const AuthService = {
   updateDietaryNeeds,
   completeOnboarding,
   isUsernameAvailable,
+  touchLastSeen,
 };

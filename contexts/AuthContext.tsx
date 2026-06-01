@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthService, type AppUser, type UserProfile } from '../services/auth';
 import { Crashlytics } from '../services/crashlytics';
+import { useLastSeen } from '../hooks/useLastSeen';
 import type { DietaryNeeds } from '../types';
 
 interface AuthContextValue {
@@ -61,6 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return unsubscribe;
   }, []);
+
+  // Presence "Ultimo accesso" per la dashboard admin: aggiorna last_seen_at
+  // all'avvio con sessione e al ritorno in foreground (throttlato).
+  useLastSeen(user?.uid ?? null);
 
   const dietaryNeeds: DietaryNeeds = userProfile
     ? {
