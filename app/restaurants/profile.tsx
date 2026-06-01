@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -34,6 +34,16 @@ export default function ProfileScreen() {
 
   const [kind, setKind] = useState<Kind>('reviews');
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
+
+  // Caso "like DIMINUITI" (unlike / recensioni cancellate): l'AnimatedLikesCounter
+  // anima e chiama markAsSeen solo quando i like AUMENTANO, quindi qui — alla visita
+  // del profilo — riallineiamo last_seen al valore attuale più basso. Senza questo il
+  // vecchio massimo resterebbe bloccato e i nuovi like sotto quel picco non
+  // riaccenderebbero mai il pallino. (Il caso "uguale" non serve: last_seen è già
+  // corretto; il caso "aumentati" lo gestisce l'animazione.)
+  useEffect(() => {
+    if (currentLikes < lastSeenLikes) markAsSeen();
+  }, [currentLikes, lastSeenLikes, markAsSeen]);
 
   const reviewsList = useUserItemList<UserReview>(RestaurantService.getReviewsByUser);
   const favoritesList = useUserItemList<MyRestaurantItem>(getMyRestaurants);

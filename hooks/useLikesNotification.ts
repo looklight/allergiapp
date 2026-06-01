@@ -9,9 +9,13 @@
  * "+N" + count-up). `useFocusEffect` rinfresca currentLikes quando lo schermo
  * che usa il hook torna in focus, cosi' il pallino si auto-aggiorna al rientro.
  *
- * markAsSeen e' un no-op se currentLikes <= lastSeenLikes: niente UPDATE quando
- * non ci sono nuovi like, e in caso di unlike (currentLikes minore) NON facciamo
- * scendere last_seen — resta come highwatermark.
+ * markAsSeen sincronizza last_seen al totale ATTUALE in ENTRAMBE le direzioni:
+ *  - su (nuovi like): chiamato a fine animazione "+N".
+ *  - giu' (like tolti / recensioni cancellate): riallineato alla visita del
+ *    profilo. Senza questo il vecchio massimo resterebbe "incollato" come
+ *    highwatermark e nuovi like sotto quel picco non riaccenderebbero MAI il
+ *    pallino (bug osservato: account con last_seen storico > like attuali).
+ * E' un no-op solo se il totale non e' cambiato (niente UPDATE inutile).
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -58,10 +62,10 @@ export function useLikesNotification() {
 
   const markAsSeen = useCallback(async () => {
     if (!user?.uid) return;
-    // Persist solo quando saliamo: se currentLikes <= lastSeenLikes non c'e'
-    // nulla di nuovo da mostrare, e il caso "minore" (unlike) NON deve far
-    // scendere last_seen — il valore alto resta come highwatermark.
-    if (currentLikes <= lastSeenLikes) return;
+    // Riallinea last_seen al totale attuale (su o giu'). Skip solo se non e'
+    // cambiato nulla: evita UPDATE inutili e niente loop quando, dopo il mark,
+    // currentLikes torna a coincidere con lastSeenLikes via refreshProfile.
+    if (currentLikes === lastSeenLikes) return;
     try {
       await markLikesAsSeen(user.uid, currentLikes);
       await refreshProfile();
