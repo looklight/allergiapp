@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Animated, Easing, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import ProfileCard from './ProfileCard';
@@ -21,6 +22,10 @@ interface ProfileMapListProps<T> {
   onEdit?: () => void;
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
+  /** Se presente, mostra un pulsante "+" sulla mappa (specchiato al mini-avatar)
+   *  che apre la schermata di aggiunta ristorante. Passato solo dal profilo
+   *  personale: sui profili altrui non viene fornito e il pulsante non compare. */
+  onAddRestaurant?: () => void;
 
   /** Elenco completo (non filtrato): il filtro paese è applicato internamente. */
   items: T[];
@@ -63,6 +68,7 @@ export default function ProfileMapList<T>({
   onEdit,
   onEditDietary,
   onAvatarPress,
+  onAddRestaurant,
   items,
   getLocation,
   getMapPin,
@@ -172,6 +178,27 @@ export default function ProfileMapList<T>({
                     />
                   </TouchableOpacity>
                 </Animated.View>
+                {/* Pulsante "+" specchiato a destra: compare con la stessa
+                    animazione del mini-avatar quando l'header si aggancia.
+                    Reso solo se il consumer passa onAddRestaurant (profilo
+                    personale); premibile solo da agganciato per non rubare i
+                    tap ai pin quando è trasparente. */}
+                {onAddRestaurant && (
+                  <Animated.View
+                    pointerEvents={isPinned ? 'auto' : 'none'}
+                    style={[styles.mapAddButton, { opacity: pinned }]}
+                  >
+                    <TouchableOpacity
+                      onPress={onAddRestaurant}
+                      activeOpacity={0.7}
+                      style={styles.mapAddButtonTouch}
+                      accessibilityRole="button"
+                      accessibilityLabel={i18n.t('restaurants.user.addRestaurant')}
+                    >
+                      <MaterialCommunityIcons name="plus" size={28} color={theme.colors.primary} />
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
               </View>
             )}
           </View>
@@ -265,6 +292,27 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
     elevation: 3,
+  },
+  mapAddButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 3,
+  },
+  // Riempie l'intero cerchio (40px) così tutta l'area visibile è premibile,
+  // non solo l'icona interna.
+  mapAddButtonTouch: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stickyHeader: {
     backgroundColor: theme.colors.background,

@@ -134,6 +134,7 @@ export default function ProfileScreen() {
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}
         onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
+        onAddRestaurant={() => router.push('/restaurants/add')}
         items={rows}
         headerVisible={hasContent}
         onDetailClose={reloadAll}
