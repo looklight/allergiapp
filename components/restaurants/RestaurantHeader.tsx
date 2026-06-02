@@ -266,7 +266,10 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
 const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingTop: 16,
+    // Padding inferiore tarato così che lo stacco banner→nota/foto/menu (8+4=12 → ora
+    // 12+4=16) sia uguale a quello pill→banner (16), che usiamo come riferimento.
+    paddingBottom: 12,
     backgroundColor: theme.colors.surface,
   },
   sectionTopRow: {

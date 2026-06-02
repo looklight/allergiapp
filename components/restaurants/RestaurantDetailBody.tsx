@@ -331,7 +331,7 @@ export default function RestaurantDetailBody({
                 contentContainerStyle={{ paddingHorizontal: 16, gap: THUMB_GAP }}
                 getItemLayout={getThumbLayout}
                 initialNumToRender={5}
-                style={{ paddingTop: 4, paddingBottom: 4 }}
+                style={{ paddingTop: 4, paddingBottom: 12 }}
                 renderItem={({ item, index }) => {
                   const isLast = index === MAX_CAROUSEL_PHOTOS - 1 && reviewPhotos.length > MAX_CAROUSEL_PHOTOS;
                   const moreCount = reviewPhotos.length - MAX_CAROUSEL_PHOTOS;

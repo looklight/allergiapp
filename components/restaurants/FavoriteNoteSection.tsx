@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -41,32 +41,53 @@ export default function FavoriteNoteSection({ restaurantId, isFavorite, onBeginE
     onBeginEdit?.();
   };
 
+  // Salvataggio esplicito: chiude la tastiera ed esce dalla modifica. Il flush
+  // viene comunque eseguito anche su blur/unmount (rete di sicurezza), qui è
+  // idempotente (salta se nulla è cambiato).
+  const handleSave = () => {
+    flush();
+    setEditing(false);
+    Keyboard.dismiss();
+  };
+
   // ─── Editor inline ────────────────────────────────────────────────────────
   if (editing) {
     return (
-      <View style={styles.box}>
-        <TextInput
-          style={styles.input}
-          value={note}
-          onChangeText={onChangeNote}
-          onBlur={() => { flush(); setEditing(false); }}
-          placeholder={i18n.t('restaurants.detail.notes.placeholder')}
-          placeholderTextColor={theme.colors.textSecondary}
-          multiline
-          maxLength={NOTE_MAX_LENGTH}
-          textAlignVertical="top"
-          scrollEnabled={false}
-          autoFocus
-        />
-        <View style={styles.footerRow}>
-          {status === 'saving' && (
-            <Text style={styles.statusText}>{i18n.t('restaurants.detail.notes.saving')}</Text>
-          )}
-          <View style={styles.spacer} />
-          {note.length > 0 && (
-            <Text style={styles.counter}>{note.length}/{NOTE_MAX_LENGTH}</Text>
-          )}
+      <View>
+        <View style={styles.box}>
+          <TextInput
+            style={styles.input}
+            value={note}
+            onChangeText={onChangeNote}
+            onBlur={() => { flush(); setEditing(false); }}
+            placeholder={i18n.t('restaurants.detail.notes.placeholder')}
+            placeholderTextColor={theme.colors.textSecondary}
+            multiline
+            maxLength={NOTE_MAX_LENGTH}
+            textAlignVertical="top"
+            scrollEnabled={false}
+            autoFocus
+          />
+          <View style={styles.footerRow}>
+            {status === 'saving' && (
+              <Text style={styles.statusText}>{i18n.t('restaurants.detail.notes.saving')}</Text>
+            )}
+            <View style={styles.spacer} />
+            {note.length > 0 && (
+              <Text style={styles.counter}>{note.length}/{NOTE_MAX_LENGTH}</Text>
+            )}
+          </View>
         </View>
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSave}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('restaurants.detail.notes.save')}
+        >
+          <MaterialCommunityIcons name="check" size={18} color={theme.colors.onPrimary} />
+          <Text style={styles.saveButtonText}>{i18n.t('restaurants.detail.notes.save')}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -98,7 +119,10 @@ const styles = StyleSheet.create({
   // Contenitore leggero condiviso da tutti gli stati (effetto Google Maps).
   box: {
     marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.md,
+    // Stesso stacco dal banner che hanno le foto (paddingTop della loro FlatList),
+    // così banner→nota e banner→foto sono coerenti.
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radius.lg,
@@ -140,6 +164,23 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 12,
     color: theme.colors.textSecondary,
+  },
+  // Pulsante "Salva nota" sotto al box, visibile solo in modifica. Il gap dal box
+  // è dato dal marginBottom del box stesso.
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.primary,
+  },
+  saveButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.onPrimary,
   },
   errorText: {
     fontSize: 12,

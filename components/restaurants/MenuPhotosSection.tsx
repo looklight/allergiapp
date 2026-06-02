@@ -79,7 +79,10 @@ export default function MenuPhotosSection({
 
 const styles = StyleSheet.create({
   menuSection: {
-    paddingVertical: 16,
+    // paddingTop ridotto a 4 (come le foto recensioni) così lo stacco dal banner
+    // è coerente quando il menu è il primo blocco sotto di esso.
+    paddingTop: 4,
+    paddingBottom: 16,
     paddingHorizontal: 16,
     backgroundColor: theme.colors.surface,
   },

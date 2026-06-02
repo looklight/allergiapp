@@ -20,7 +20,7 @@ export default function MyRestaurantCard({
           <MaterialCommunityIcons
             name={item.is_favorite ? 'heart' : 'silverware-fork-knife'}
             size={16}
-            color={theme.colors.primary}
+            color={item.is_favorite ? theme.colors.error : theme.colors.primary}
           />
           <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
           {item.my_rating != null && (

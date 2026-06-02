@@ -308,6 +308,7 @@
       "notes": {
         "placeholder": "Aggiungi una nota personale",
         "saving": "Salvataggio…",
+        "save": "Salva nota",
         "error": "Nota non salvata, riprova"
       },
       "notFound": "Ristorante non trovato.",
