@@ -2,6 +2,7 @@ import { getFavorites } from './favoriteService';
 import { getReviewsByUser } from './reviewService';
 import { fetchRestaurantPositions } from './restaurantPositions';
 import { batchLoadStats } from './restaurantService';
+import { getFavoriteNotesMap } from './favoriteNoteService';
 
 // ─── "I miei ristoranti" (diario privato) ────────────────────────────────────
 // Feature isolata: unione preferiti + recensiti dell'utente, deduplicata.
@@ -25,10 +26,10 @@ export type MyRestaurantItem = {
   /** Numero totale di recensioni del locale. */
   review_count: number;
   my_review_id: string | null;
-  /** Estratto recensione mostrato nella card (solo se recensito). */
-  my_review_comment: string | null;
   my_review_date: string | null;
   my_review_photos: number;
+  /** Nota personale privata (solo preferiti). Mostrata nella card al posto della recensione. */
+  note: string | null;
 };
 
 /**
@@ -36,10 +37,11 @@ export type MyRestaurantItem = {
  * I due fetch gestiscono già i propri errori (ritornano []), quindi qui niente try/catch.
  */
 export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem[]> {
-  const [favorites, reviews, positions] = await Promise.all([
+  const [favorites, reviews, positions, notesMap] = await Promise.all([
     getFavorites(userId),
     getReviewsByUser(userId),
     fetchRestaurantPositions(),
+    getFavoriteNotesMap(userId),
   ]);
 
   const byId = new Map<string, MyRestaurantItem>();
@@ -60,9 +62,9 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
       average_rating: null,
       review_count: 0,
       my_review_id: null,
-      my_review_comment: null,
       my_review_date: null,
       my_review_photos: 0,
+      note: notesMap.get(r.id) ?? null,
     });
   }
 
@@ -71,7 +73,6 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
     const review = {
       my_rating: rev.rating,
       my_review_id: rev.id,
-      my_review_comment: rev.comment ?? null,
       my_review_date: rev.created_at,
       my_review_photos: rev.photos?.length ?? 0,
     };
@@ -91,6 +92,7 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
         is_favorite: false,
         average_rating: null,
         review_count: 0,
+        note: null, // i recensiti-non-preferiti non possono avere note (FK su favorites)
         ...review,
       });
     }

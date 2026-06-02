@@ -305,6 +305,11 @@
     "detail": {
       "addFavorite": "Aggiungi ai preferiti",
       "removeFavorite": "Rimuovi dai preferiti",
+      "notes": {
+        "placeholder": "Aggiungi una nota personale",
+        "saving": "Salvataggio…",
+        "error": "Nota non salvata, riprova"
+      },
       "notFound": "Ristorante non trovato.",
       "noReviews": "Nessuna recensione",
       "directions": "Apri in Google Maps",

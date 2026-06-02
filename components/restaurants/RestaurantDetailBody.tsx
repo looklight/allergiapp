@@ -19,6 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../StarRating';
 import ImageFullscreenModal from '../ImageFullscreenModal';
 import RestaurantHeader from './RestaurantHeader';
+import FavoriteNoteSection from './FavoriteNoteSection';
 import MenuPhotosSection from './MenuPhotosSection';
 import ReviewsSection from './ReviewsSection';
 import ReportsSection from './ReportsSection';
@@ -56,6 +57,8 @@ type Props = {
   sheetFullyOpen?: boolean;
   /** Callback JS thread con l'offset Y (usato per compact header dentro il sheet). */
   onScrollOffset?: (y: number) => void;
+  /** Richiesto dalla sezione nota all'inizio della modifica: nel sheet porta a snap pieno. */
+  onBeginEditNote?: () => void;
 };
 
 export default function RestaurantDetailBody({
@@ -66,6 +69,7 @@ export default function RestaurantDetailBody({
   scrollEnabled = true,
   sheetFullyOpen,
   onScrollOffset,
+  onBeginEditNote,
 }: Props) {
   const router = useRouter();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
@@ -308,6 +312,14 @@ export default function RestaurantDetailBody({
           onScrollToReviews={scrollToReviews}
           hideNameAndRating={hideNameAndRating}
         />
+
+        {isAuthenticated && (
+          <FavoriteNoteSection
+            restaurantId={restaurantId}
+            isFavorite={isFavorite}
+            onBeginEdit={onBeginEditNote}
+          />
+        )}
 
         <View style={styles.photoAndMenuSection}>
           {reviewPhotos.length > 0 && (

@@ -30,17 +30,16 @@ export default function MyRestaurantCard({
             </View>
           )}
         </View>
-        {item.average_rating != null && (
-          <View style={styles.avgRow}>
-            <MaterialCommunityIcons name="star" size={13} color={theme.colors.starFilled} />
-            <Text style={styles.avgText}>
-              {item.average_rating.toLocaleString(i18n.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-            </Text>
-            <Text style={styles.avgCount}>({item.review_count})</Text>
-          </View>
-        )}
-
-        <View style={styles.cityRow}>
+        <View style={styles.metaRow}>
+          {item.average_rating != null && (
+            <View style={styles.avgRow}>
+              <MaterialCommunityIcons name="star" size={13} color={theme.colors.starFilled} />
+              <Text style={styles.avgText}>
+                {item.average_rating.toLocaleString(i18n.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+              </Text>
+              <Text style={styles.avgCount}>({item.review_count})</Text>
+            </View>
+          )}
           <Text style={styles.city} numberOfLines={1}>
             {item.city ?? ''} · {getCountryName(item.country_code, i18n.locale, item.country)}
           </Text>
@@ -51,8 +50,8 @@ export default function MyRestaurantCard({
           ) : null}
         </View>
 
-        {item.my_review_comment ? (
-          <Text style={styles.comment} numberOfLines={3}>{item.my_review_comment}</Text>
+        {item.note ? (
+          <Text style={styles.comment} numberOfLines={2}>{item.note}</Text>
         ) : null}
 
         {item.my_review_photos > 0 ? (
@@ -107,7 +106,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    marginBottom: 2,
   },
   avgText: {
     fontSize: 13,
@@ -118,10 +116,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
   },
-  cityRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 8,
   },
   city: {

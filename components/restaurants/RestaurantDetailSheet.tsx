@@ -135,6 +135,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         scrollEnabled={bodyScrollEnabled}
         sheetFullyOpen={isFullyOpen}
         onScrollOffset={handleScrollOffset}
+        onBeginEditNote={() => sheetRef.current?.snapToIndex(1)}
       />
     </BottomSheet>
   );
