@@ -32,6 +32,8 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
   // At half height (0.55) the body is a static preview: the user drags
   // the handle to open fully, exactly like Google Maps / Apple Maps.
   const [bodyScrollEnabled, setBodyScrollEnabled] = useState(false);
+  // Tutta altezza: oltre allo scroll, pilota l'auto-apertura del disclaimer recensioni.
+  const [isFullyOpen, setIsFullyOpen] = useState(false);
 
   const handleDismiss = useCallback(() => {
     sheetRef.current?.close();
@@ -40,6 +42,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
   const handleSnapChange = useCallback((fraction: number) => {
     const fullyOpen = fraction >= 0.9;
     setBodyScrollEnabled(fullyOpen);
+    setIsFullyOpen(fullyOpen);
     if (!fullyOpen) setIsCompactHeader(false);
     // Notifica l'inizio dell'animazione di chiusura: il BottomSheet riporta fraction=0
     // appena parte lo spring verso closedY (sia via close() che via drag-past-threshold).
@@ -121,6 +124,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         onDismiss={handleDismiss}
         hideNameAndRating
         scrollEnabled={bodyScrollEnabled}
+        sheetFullyOpen={isFullyOpen}
         onScrollOffset={handleScrollOffset}
       />
     </BottomSheet>

@@ -371,6 +371,7 @@
       "emptyHint": "Be the first to share your experience",
       "titleWithCount": "Reviews ({{count}})",
       "disclaimer": "Reviews are not verified and reflect users' personal experiences. Contribute by writing one, liking, or reporting inappropriate content.",
+      "hide": "Hide",
       "loadMore": "Load more reviews",
       "sort": {
         "recent": "Recent",

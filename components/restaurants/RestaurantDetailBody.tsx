@@ -52,6 +52,8 @@ type Props = {
   hideNameAndRating?: boolean;
   /** Controls whether the ScrollView can scroll (false when sheet is not fully open) */
   scrollEnabled?: boolean;
+  /** True quando il sheet è a tutta altezza: usato per aprire il disclaimer recensioni. */
+  sheetFullyOpen?: boolean;
   /** Callback JS thread con l'offset Y (usato per compact header dentro il sheet). */
   onScrollOffset?: (y: number) => void;
 };
@@ -62,6 +64,7 @@ export default function RestaurantDetailBody({
   onDismiss,
   hideNameAndRating,
   scrollEnabled = true,
+  sheetFullyOpen,
   onScrollOffset,
 }: Props) {
   const router = useRouter();
@@ -428,6 +431,7 @@ export default function RestaurantDetailBody({
           onReportReview={handleReportReview}
           reportedReviewIds={reportedReviewIds}
           currentUserId={user?.uid}
+          sheetFullyOpen={sheetFullyOpen}
         />
 
         <ReportsSection reports={reports} />

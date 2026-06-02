@@ -59,6 +59,8 @@ interface AppContextValue {
   deleteDownloadedLanguage: (langCode: DownloadableLanguageCode) => Promise<void>;
   acceptLegalTerms: () => Promise<void>;
   setTrackingConsent: (consent: TrackingConsent) => Promise<void>;
+  /** Salva la scelta "Nascondi" sul disclaimer recensioni (persistente). */
+  dismissReviewsDisclaimer: () => Promise<void>;
   clearAll: () => Promise<void>;
 
   // Card actions
@@ -248,6 +250,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await storage.setTrackingConsent(consent);
   }, []);
 
+  const dismissReviewsDisclaimer = useCallback(async () => {
+    setSettingsState(prev => ({ ...prev, reviewsDisclaimerDismissed: true }));
+    await storage.setSettings({ reviewsDisclaimerDismissed: true });
+  }, []);
+
   const clearAll = useCallback(async () => {
     const deviceLanguage = getDeviceLanguage();
     const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage };
@@ -346,6 +353,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     deleteDownloadedLanguage,
     acceptLegalTerms,
     setTrackingConsent: setTrackingConsentAction,
+    dismissReviewsDisclaimer,
     clearAll,
     createCard,
     updateCard,
@@ -363,7 +371,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSelectedAllergens, setSelectedOtherFoods, setSelectedRestrictions,
     setActiveDietModes, setVegetarianLevel, isDietModeActive,
     setCardLanguage, setAppLang, saveDownloadedLanguage,
-    deleteDownloadedLanguage, acceptLegalTerms, setTrackingConsentAction, clearAll,
+    deleteDownloadedLanguage, acceptLegalTerms, setTrackingConsentAction, dismissReviewsDisclaimer, clearAll,
     createCard, updateCard, deleteCard, setActiveCard,
   ]);
 

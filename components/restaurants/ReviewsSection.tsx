@@ -1,10 +1,11 @@
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { theme } from '../../constants/theme';
 import ReviewCard from './ReviewCard';
 import i18n from '../../utils/i18n';
+import { useAppContext } from '../../contexts/AppContext';
 import type { UnifiedReview, ReviewSortOrder } from '../../hooks/useRestaurantDetail';
 
 type Props = {
@@ -23,6 +24,9 @@ type Props = {
   onReportReview: (reviewId: string) => void;
   reportedReviewIds: Set<string>;
   currentUserId?: string;
+  /** True quando il bottom sheet è a tutta altezza: apre automaticamente il
+   *  disclaimer (che parte chiuso a mezza altezza per dare spazio alle recensioni). */
+  sheetFullyOpen?: boolean;
 };
 
 export default function ReviewsSection({
@@ -41,8 +45,24 @@ export default function ReviewsSection({
   onReportReview,
   reportedReviewIds,
   currentUserId,
+  sheetFullyOpen,
 }: Props) {
-  const [disclaimerVisible, setDisclaimerVisible] = useState(true);
+  const { settings, dismissReviewsDisclaimer } = useAppContext();
+  const dismissed = settings.reviewsDisclaimerDismissed ?? false;
+
+  // Parte chiuso (anteprima a mezza altezza più compatta) e si auto-apre quando
+  // il sheet è a tutta altezza — ma solo se l'utente non l'ha mai nascosto.
+  // L'icona "i" lo risbircia on-demand; "Nascondi" salva la scelta (persistente)
+  // e impedisce le auto-aperture future.
+  const [disclaimerVisible, setDisclaimerVisible] = useState(false);
+  useEffect(() => {
+    if (sheetFullyOpen && !dismissed) setDisclaimerVisible(true);
+  }, [sheetFullyOpen, dismissed]);
+
+  const handleHideDisclaimer = () => {
+    setDisclaimerVisible(false);
+    dismissReviewsDisclaimer();
+  };
 
   if (reviews.length === 0) {
     return (
@@ -123,10 +143,14 @@ export default function ReviewsSection({
       {disclaimerVisible && (
         <TouchableOpacity
           style={styles.disclaimerBox}
-          onPress={() => setDisclaimerVisible(false)}
+          onPress={handleHideDisclaimer}
           activeOpacity={0.7}
+          accessibilityRole="button"
         >
-          <Text style={styles.disclaimer}>{i18n.t('restaurants.reviews.disclaimer')}</Text>
+          <Text style={styles.disclaimer}>
+            {i18n.t('restaurants.reviews.disclaimer')}{' '}
+            <Text style={styles.disclaimerHideText}>{i18n.t('restaurants.reviews.hide')}</Text>
+          </Text>
         </TouchableOpacity>
       )}
       {reviews.map((item, idx) => (
@@ -218,14 +242,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   disclaimerBox: {
-    backgroundColor: theme.colors.background,
-    borderRadius: 8,
-    padding: 10,
+    paddingVertical: 8,
     marginBottom: 12,
   },
   disclaimer: {
     fontSize: 11,
     color: theme.colors.textDisabled,
+  },
+  disclaimerHideText: {
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   emptySectionTitle: {
     fontSize: 15,

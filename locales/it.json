@@ -371,6 +371,7 @@
       "emptyHint": "Sii il primo a condividere la tua esperienza",
       "titleWithCount": "Recensioni ({{count}})",
       "disclaimer": "Le recensioni non sono verificate e riflettono le esperienze personali degli utenti. Contribuisci scrivendone una, mettendo un like o segnalando contenuti inappropriati.",
+      "hide": "Nascondi",
       "loadMore": "Carica altre recensioni",
       "sort": {
         "recent": "Recenti",

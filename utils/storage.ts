@@ -43,6 +43,7 @@ export const CURRENT_LEGAL_VERSION = '1.0';
 const DEFAULT_SETTINGS: UserSettings = {
   cardLanguage: 'en',
   appLanguage: getDeviceLanguage(),
+  reviewsDisclaimerDismissed: false,
 };
 
 export interface AppData {
