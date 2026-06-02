@@ -386,26 +386,26 @@ export default function RestaurantDetailBody({
 
         <View style={styles.separator} />
         {userReview ? (
-          <View style={styles.ctaSection}>
-            <View style={styles.ctaTopRow}>
-              <View style={styles.ctaInlineRow}>
-                <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourReviewLabel')}</Text>
-                {userReview.rating != null && userReview.rating > 0 && (
-                  <StarRating rating={userReview.rating} size={20} />
-                )}
-              </View>
-              <TouchableOpacity
-                onPress={() => navigateToContribute(undefined, userReview.id)}
-                hitSlop={8}
-                activeOpacity={0.6}
-              >
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigateToContribute(undefined, userReview.id)}
+            accessibilityRole="button"
+            accessibilityLabel={i18n.t('common.edit')}
+          >
+            <View style={[styles.ctaSection, styles.ctaSectionCompact]}>
+              <View style={styles.ctaTopRow}>
+                <View style={styles.ctaInlineRow}>
+                  <Text style={styles.ctaTitle}>{i18n.t('restaurants.detail.yourReviewLabel')}</Text>
+                  {userReview.rating != null && userReview.rating > 0 && (
+                    <StarRating rating={userReview.rating} size={20} />
+                  )}
+                </View>
+                {/* Matita: solo segnale visivo "modificabile"; il tap è gestito
+                    dall'intera sezione (TouchableOpacity esterno). */}
                 <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.primary} />
-              </TouchableOpacity>
+              </View>
             </View>
-            {userReview.comment && (
-              <Text style={styles.userContribText} numberOfLines={3}>{userReview.comment}</Text>
-            )}
-          </View>
+          </TouchableOpacity>
         ) : (
           <TouchableOpacity activeOpacity={0.7} onPress={() => navigateToContribute()}>
             <View style={[styles.ctaSection, styles.ctaSectionWithChevron]}>
@@ -646,6 +646,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  // Variante compatta del box "La tua recensione" (solo stelle + matita, niente
+  // testo): padding verticale ridotto perché la riga è una sola.
+  ctaSectionCompact: {
+    paddingVertical: 12,
+  },
   ctaTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -675,12 +680,6 @@ const styles = StyleSheet.create({
   ctaHint: {
     fontSize: 13,
     color: theme.colors.textSecondary,
-  },
-  userContribText: {
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    lineHeight: 20,
-    textAlign: 'center',
   },
   footerSection: { backgroundColor: theme.colors.surface },
   footerRow: {
