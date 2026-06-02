@@ -1,0 +1,26 @@
+-- NOTA DOCUMENTALE (non eseguibile) — spatial_ref_sys / alert Supabase 25 mag 2026
+-- =============================================================================
+-- Alert Security Advisor "rls_disabled_in_public": l'unica tabella public senza
+-- RLS è `spatial_ref_sys`, tabella di sistema dell'estensione PostGIS (definizioni
+-- EPSG dei sistemi di coordinate). NON contiene dati utente.
+--
+-- ESITO INDAGINE (2026-06-02): NON è correggibile dal SQL Editor.
+-- Il ruolo `postgres` (usato dall'editor) non è owner della tabella — owner è
+-- `supabase_admin`. Tutti i tentativi falliscono:
+--   * ALTER TABLE ... ENABLE ROW LEVEL SECURITY   → "must be owner of table"
+--   * REVOKE ... FROM anon, authenticated         → "Success" ma NO-OP (i grant
+--                                                    li ha fatti supabase_admin,
+--                                                    postgres non può revocarli)
+--   * SET ROLE supabase_admin                      → "permission denied to set role"
+--
+-- RISCHIO REALE: basso. Dati pubblici non sensibili (standard EPSG, identici su
+-- ogni DB PostGIS). Esposizione teorica = un utente autenticato malevolo potrebbe
+-- INSERT/UPDATE/DELETE righe via Data API e rompere le query geo (DoS recuperabile,
+-- la tabella è ripopolabile). Richiede attore malevolo; app a ~zero utenti.
+--
+-- STATO: ticket aperto al support Supabase il 2026-06-02 (loro sono owner e possono
+-- abilitare RLS / revocare le write). In attesa di risposta. Quando rispondono,
+-- aggiornare questo file con l'esito (fix applicato da loro, oppure conferma che è
+-- un falso positivo PostGIS da ignorare).
+--
+-- Nessuno statement SQL applicabile da qui: questo file resta come traccia.
