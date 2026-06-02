@@ -8,6 +8,8 @@ import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { supabase } from '../../services/supabase';
+import { RestaurantService } from '../../services/restaurantService';
+import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
 import i18n from '../../utils/i18n';
 
 export default function RestaurantBySlugScreen() {
@@ -41,7 +43,21 @@ export default function RestaurantBySlugScreen() {
         return;
       }
 
-      router.replace(`/restaurants/${data}`);
+      // Atterra sulla mappa con il bottom sheet aperto (stile Google Maps),
+      // non sul full-screen. L'RPC ritorna solo l'id: facciamo un fetch in piu'
+      // per le coordinate (qualche istante di attesa in cambio della semplicita',
+      // niente modifiche all'RPC). Senza coordinate la mappa apre comunque la
+      // scheda, solo senza ricentrare.
+      const id = data as string;
+      const restaurant = await RestaurantService.getRestaurant(id).catch(() => null);
+      if (cancelled) return;
+
+      pendingRestaurantFocus.set({
+        id,
+        lat: restaurant?.location?.latitude,
+        lng: restaurant?.location?.longitude,
+      });
+      router.replace('/(tabs)/restaurants');
     })();
 
     return () => {
