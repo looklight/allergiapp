@@ -1,6 +1,7 @@
 import { getFavorites } from './favoriteService';
 import { getReviewsByUser } from './reviewService';
 import { fetchRestaurantPositions } from './restaurantPositions';
+import { batchLoadStats } from './restaurantService';
 
 // ─── "I miei ristoranti" (diario privato) ────────────────────────────────────
 // Feature isolata: unione preferiti + recensiti dell'utente, deduplicata.
@@ -19,6 +20,10 @@ export type MyRestaurantItem = {
   location: { latitude: number; longitude: number } | null;
   is_favorite: boolean;
   my_rating: number | null;
+  /** Media di tutte le recensioni del locale (community), distinta da my_rating. */
+  average_rating: number | null;
+  /** Numero totale di recensioni del locale. */
+  review_count: number;
   my_review_id: string | null;
   /** Estratto recensione mostrato nella card (solo se recensito). */
   my_review_comment: string | null;
@@ -52,6 +57,8 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
       location: positions.get(r.id) ?? r.location ?? null,
       is_favorite: true,
       my_rating: null,
+      average_rating: null,
+      review_count: 0,
       my_review_id: null,
       my_review_comment: null,
       my_review_date: null,
@@ -82,8 +89,21 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
           ? { latitude: rev.restaurant_lat, longitude: rev.restaurant_lng }
           : null,
         is_favorite: false,
+        average_rating: null,
+        review_count: 0,
         ...review,
       });
+    }
+  }
+
+  // Media community + conteggio recensioni in un'unica passata batch (no RPC/migration).
+  const ids = Array.from(byId.keys());
+  if (ids.length > 0) {
+    const statsMap = await batchLoadStats(ids);
+    for (const [id, item] of byId) {
+      const s = statsMap.get(id);
+      item.review_count = s?.review_count ?? 0;
+      item.average_rating = s && s.review_count > 0 ? s.total_rating / s.review_count : null;
     }
   }
 

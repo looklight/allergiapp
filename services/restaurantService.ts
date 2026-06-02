@@ -113,7 +113,7 @@ async function getRestaurantsForMyNeeds(
   }
 }
 
-async function batchLoadStats(ids: string[]): Promise<Map<string, { review_count: number; total_rating: number; favorite_count: number }>> {
+export async function batchLoadStats(ids: string[]): Promise<Map<string, { review_count: number; total_rating: number; favorite_count: number }>> {
   const [reviewStats, favCounts] = await Promise.all([
     supabase.from('reviews').select('restaurant_id, rating').in('restaurant_id', ids),
     supabase.from('favorites').select('restaurant_id').in('restaurant_id', ids),
