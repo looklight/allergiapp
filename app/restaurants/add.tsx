@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { RestaurantService, CreateRestaurantInput } from '../../services/restaurantService';
 import { PlacesService, PlaceAutocompleteResult } from '../../services/placesService';
+import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
 import { AuthService } from '../../services/auth';
 import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import { useAuth } from '../../contexts/AuthContext';
@@ -418,6 +419,19 @@ export default function AddRestaurantScreen() {
     await refreshProfile();
   }, [user, refreshProfile]);
 
+  // Atterra sulla mappa con la scheda del ristorante aperta e centrata: deposita
+  // il focus (id + coordinate) e torna al tab mappa con dismissAll (robusto sia
+  // dal FAB mappa sia dal "+" del profilo). La mappa consuma il focus al refocus.
+  // Usato dopo creazione e "vai al duplicato": selectedPlace e' qui non-null.
+  const goToRestaurantOnMap = useCallback((id: string) => {
+    pendingRestaurantFocus.set({
+      id,
+      lat: selectedPlace?.location.latitude,
+      lng: selectedPlace?.location.longitude,
+    });
+    router.dismissAll();
+  }, [router, selectedPlace]);
+
   const handleSubmit = async () => {
     if (!selectedPlace || !user) return;
 
@@ -443,7 +457,7 @@ export default function AddRestaurantScreen() {
         i18n.t('restaurants.add.duplicateTitle'),
         i18n.t('restaurants.add.duplicateMsg', { name: duplicate.name }),
         [
-          { text: i18n.t('restaurants.add.duplicateGoTo'), onPress: () => router.replace(`/restaurants/${duplicate.id}`) },
+          { text: i18n.t('restaurants.add.duplicateGoTo'), onPress: () => goToRestaurantOnMap(duplicate.id) },
           { text: i18n.t('restaurants.add.duplicateAddAnyway'), style: 'destructive', onPress: () => { doSubmit(); } },
           { text: i18n.t('common.cancel'), style: 'cancel' },
         ],
@@ -495,7 +509,7 @@ export default function AddRestaurantScreen() {
       Alert.alert(
         i18n.t('restaurants.add.successTitle'),
         i18n.t('restaurants.add.successMsg', { name: result.name }),
-        [{ text: 'OK', onPress: () => router.replace(`/restaurants/${result.id}`) }]
+        [{ text: 'OK', onPress: () => goToRestaurantOnMap(result.id) }]
       );
     } else {
       Alert.alert(

@@ -65,8 +65,8 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
                   Linking.openURL(url).catch(() => Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.mapsError')));
                 }}
               >
-                <MaterialCommunityIcons name="google-maps" size={26} color={theme.colors.brandGoogleMaps} />
-                <Text style={styles.mapsBtnText}>{i18n.t('restaurants.header.mapsDetails')}</Text>
+                <MaterialCommunityIcons name="google-maps" size={15} color={theme.colors.brandGoogleMaps} />
+                <Text style={styles.mapsBtnText}>{i18n.t('restaurants.detail.directions')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -352,19 +352,21 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 17,
   },
+  // Allineato al chip del bottom sheet (RestaurantDetailBody.mapsChip) per
+  // coerenza tra le due viste.
   mapsBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
   mapsBtnText: {
-    fontSize: 13,
+    fontSize: 12,
     color: theme.colors.textPrimary,
     fontWeight: '500',
   },

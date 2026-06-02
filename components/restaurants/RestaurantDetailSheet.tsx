@@ -11,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import BottomSheet, { type BottomSheetRef } from '../BottomSheet';
 import RestaurantDetailBody from './RestaurantDetailBody';
 import { shareRestaurant } from '../../services/shareRestaurant';
+import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import i18n from '../../utils/i18n';
 
 const HEADER_LINE_HEIGHT = 26;
@@ -53,6 +54,14 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
     const compact = y > 10;
     setIsCompactHeader(prev => prev === compact ? prev : compact);
   }, []);
+
+  // Track all'apertura della scheda. Lo sheet si monta quando il consumer setta
+  // detailId (render condizionale su mappa e profilo), quindi mount = apertura.
+  // La mappa e' il canale principale di visualizzazione e prima non era tracciato;
+  // la versione full-screen (app/restaurants/[id].tsx) traccia gia' la propria.
+  useEffect(() => {
+    if (restaurantId) SupabaseAnalytics.track('restaurant_viewed', { restaurant_id: restaurantId });
+  }, [restaurantId]);
 
   // Android back button closes the sheet
   useEffect(() => {

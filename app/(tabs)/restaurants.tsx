@@ -27,6 +27,7 @@ import { useMapSearch, MIN_PLACE_QUERY_LENGTH } from '../../hooks/useMapSearch';
 import SearchAutocomplete from '../../components/SearchAutocomplete';
 import RecentSearches from '../../components/RecentSearches';
 import { storage, type RecentPlace } from '../../utils/storage';
+import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
 import { useTabBarVisibility } from '../../components/TabBarVisibility';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNotificationDot } from '../../hooks/useNotificationDot';
@@ -345,6 +346,20 @@ export default function RestaurantsScreen() {
     dispatch({ type: 'SELECT', id });
     geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: DETAIL_SHEET_COVERAGE, latDelta: 0.01 });
   }, [geo.setCenterOn]);
+
+  // Consuma il focus in attesa (depositato da un altro flusso che torna qui via
+  // dismissAll, es. dopo "Aggiungi ristorante"): apre la scheda centrando la
+  // mappa. È one-shot — consume() azzera, quindi niente riaperture a refocus.
+  useFocusEffect(useCallback(() => {
+    const focus = pendingRestaurantFocus.consume();
+    if (!focus) return;
+    if (focus.lat != null && focus.lng != null && Number.isFinite(focus.lat) && Number.isFinite(focus.lng)) {
+      openRestaurantDetail(focus.id, focus.lat, focus.lng);
+    } else {
+      // Senza coordinate apri comunque la scheda (la mappa non si ricentra).
+      dispatch({ type: 'SELECT', id: focus.id });
+    }
+  }, [openRestaurantDetail]));
 
   /** Tap su un ristorante dall'autocomplete di ricerca: pulisce la search. */
   const handleSelectFromAutocomplete = useCallback((id: string, lat: number, lng: number) => {
