@@ -2,38 +2,14 @@
 
 ---
 
-## Pre-release blockers
-
-### Privacy & GDPR
-- [ ] **Scrivere Privacy Policy** — i dati allergenici sono dati sanitari (GDPR Art. 9), serve documento formale prima del lancio. Punti chiave da coprire: finalità del trattamento (personalizzazione + statistiche anonime aggregate), nessuna associazione dato↔identità, diritto di cancellazione (già implementato), base giuridica del consenso esplicito.
-- [ ] **Linkare Privacy Policy** nell'onboarding dietary (placeholder già presente nel codice, cercare `TODO: sostituire con link reale`)
-- [ ] **Consenso esplicito dati sanitari** — valutare se aggiungere checkbox separato per il trattamento dati allergenici (requisito GDPR Art. 9 per consenso esplicito, distinto dai T&C generali)
-- [ ] **Termini di Servizio** — documento separato dalla privacy policy
-
-### Test manuali
-- [ ] Aggiungere recensione con piatti e foto
-- [ ] Modifica/cancella recensione
-- [ ] Preferiti (toggle + lista da profilo)
-- [ ] Foto menu
-- [ ] Segnalazione ristorante
-- [ ] Profilo utente (contatori dinamici, preferiti, recensioni)
-- [ ] Profilo pubblico
-- [ ] Modifica profilo + galleria avatar
-- [ ] Logout
-- [ ] Elimina account
-- [ ] **Flow end-to-end "Utente inattivo"** — creare account test, scrivere review con foto + caricare menu photo, cancellare l'account, poi da un secondo account verificare che entrambi i contenuti restino visibili con label "Utente inattivo" + icona `account-off-outline`. Verifica analoga sulla admin dashboard. Chiude la verifica del fix Edge Function `delete-account` (deployato 2026-05-17, PR #1/#2/#3).
+## Priorità a breve (app live)
 
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
-- [x] **Allineata tabella `translations`** (2026-05-16) — 71/71 lingue caricate via `node scripts/uploadToSupabase.js`. Coperti commit `98a101c` (tree nuts: almonds/hazelnuts/walnuts/pistachios/cashews + completamenti 8 lingue) e `902bae6` (yeast + artificial_colorings).
 
-### Social Auth (Google + Apple) — MERGED in main 2026-05-19
-Setup esterno completato. Feature mergiata in main (commit `6b0d9f3`). Distribuita su TestFlight 1.1.0 (8) + OTA redesign brand-consistent. Vedi memoria `project_social_auth.md` per credenziali e architettura.
+### Social Auth (Google + Apple) — MERGED in main
+Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8). Vedi memoria `project_social_auth.md`. Resta da chiudere:
 
-- [x] **Test E2E iOS** (2026-05-19) — Google + Apple sign-in funzionanti su TestFlight 1.1.0 (8). Onboarding post-OAuth verificato. Profili Supabase creati correttamente.
-- [x] **Verifica concern nonce** (2026-05-19) — confermato issue, risolto con workaround "Skip nonce checks" ON su Supabase Auth Providers (pattern raccomandato per mobile native). Sicurezza residua adeguata (HTTPS + token expiration + audience/issuer validation).
-- [x] **Merge `feature/social-auth` in main** (2026-05-19, commit `6b0d9f3`).
-- [x] **Redesign bottoni brand-consistent** (2026-05-19) — distribuito via OTA al canale beta. Pattern Spotify/Airbnb (Google 4-colori SVG inline, Apple nero+mela bianca, dimensioni speculari).
 - [ ] **Test E2E su Android Internal Testing** — AAB pronto (`94fc37e6-d8f2-4ad6-89f8-9d1de89e355d`, versionCode 17 → potrebbe essere già usato, valutare se serve rebuild a 18). Apple non disponibile su Android, testare solo Google.
 - [ ] **Rotate Google Web Client Secret** — il secret è stato esposto in chat durante il setup (2026-05-18). Rischio reale basso ma best practice: Google Cloud → OAuth Client `AllergiApp Web (Supabase)` → "+ ADD SECRET" → "Disable" sul vecchio → aggiornare valore in Supabase Dashboard.
 
@@ -69,19 +45,13 @@ Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per
 - [ ] Rimuovere "Maps SDK for Android" dalla chiave `Places API Key - Android` nel progetto `allergiapp-488223`. Ora ridondante perché esiste la chiave dedicata `Maps SDK - Android` (UID `eb66e008-…`) usata da `GOOGLE_MAPS_API_KEY_ANDROID` su EAS. Verificare prima che il build prod successivo continui a caricare la mappa.
 
 ### Tier 2 — Rimuovere dipendenze Firebase Remote Config — STAGED 2026-05-16
-- [x] Rimosso `@react-native-firebase/remote-config` da `package.json` + `package-lock.json` (npm install eseguito).
-- [x] Rimossi dal plugin `plugins/withModularHeaders.js` i pod orfani: `FirebaseRemoteConfig`, `FirebaseABTesting`, `FirebaseSharedSwift`.
-- [x] **Lasciato `FirebaseRemoteConfigInterop`** — verificato in `ios/Podfile.lock:184` che è dipendenza transitiva di `FirebaseCrashlytics`. Toglierlo romperebbe Crashlytics.
+Edit puri già fatti (dipendenza rimossa da `package.json` + pod orfani rimossi dal plugin). Resta solo applicarlo al prossimo build naturale:
 - [ ] `npx expo prebuild --clean` — rimandato al prossimo build naturale (no rebuild dedicato)
 - [ ] Build EAS verifica con check Crashlytics — al prossimo build prod/preview
-- **Beneficio reale:** 3 pod in meno nel bundle iOS (~500KB-1MB stimati). **Costo:** edit puri già fatti, prebuild/build amortizzati sul prossimo build naturale.
+- **Beneficio reale:** 3 pod in meno nel bundle iOS (~500KB-1MB stimati).
 
 ### Splash screen Android — uniformare background a tutto schermo
-**Stato (2026-05-16): risolto in light mode su EAS Android (build 1.1.0). In dark mode di sistema lo splash mostrava un rettangolo crema su sfondo nero: causa root `AppTheme` ereditava da `Theme.AppCompat.DayNight.NoActionBar` e in night mode il `windowBackground` cadeva sul dark di default. Aggiunto hardening night-mode al plugin — da verificare al prossimo build EAS.**
-
-- [x] Plugin custom `plugins/withAndroidWindowBackground.js` (background `#F7DCB3` via `withAndroidColors` + `withAndroidStyles`) — registrato in `app.config.ts`. Solo Android, iOS intatto.
-- [x] Verifica su device EAS in light mode: splash uniforme.
-- [x] Esteso plugin con `withAndroidColorsNight` per scrivere `app_window_background = #F7DCB3` anche in `values-night/colors.xml`. Coerente con `userInterfaceStyle: "light"` di app.config.ts: la app non ha dark mode, lo splash deve essere identico in qualunque mode di sistema.
+Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mode al plugin (`withAndroidColorsNight` scrive `app_window_background = #F7DCB3` anche in `values-night/colors.xml`, coerente con `userInterfaceStyle: "light"`). Resta:
 - [ ] Verifica al prossimo build EAS Android (anche su device con dark mode attiva).
 
 ---
@@ -115,15 +85,7 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - Valutare se `is_premium` viene dato con il claim o separatamente (es. freemium: claim gratuito, feature premium a pagamento)
 
 ### Condivisione ristorante (native share + deep link)
-**Priorità: bassa — da pianificare, due fasi**
-
-Pulsante "Condividi" nella scheda ristorante che apre lo share sheet nativo iOS/Android. L'utente sceglie l'app (WhatsApp, iMessage, Mail, ecc.) e invia un messaggio precompilato con nome + indirizzo + link a `allergiapp.com/r/<id>`.
-
-**Fase 1 — share semplice (zero rischio, OTA-compatibile, ~1-2h):**
-- `Share.share({ message, url })` da `react-native` nel componente scheda ristorante
-- Pagina pubblica sulla landing (`landing` branch su Vercel) tipo `allergiapp.com/r/[id]` che mostra nome/foto/indirizzo + CTA "Apri in AllergiApp / Scarica"
-- Meta tag OG base per anteprima link in iMessage/WhatsApp
-- Limite: chi ha già l'app fa comunque due tap (link → browser → CTA → app)
+**Priorità: bassa — da pianificare. Fase 1 (share semplice + tracking `restaurant_shared`) già fatta. Resta la Fase 2.**
 
 **Fase 2 — Universal Links (rebuild nativo, no OTA):**
 - Aggiungere `associated-domains` in `app.config.ts` (entitlement iOS)
@@ -133,7 +95,6 @@ Pulsante "Condividi" nella scheda ristorante che apre lo share sheet nativo iOS/
 - Rischio: se la config è sbagliata i link non aprono l'app, ma l'app non crasha. Va testato in TestFlight prima di prod.
 
 **Note:**
-- [x] Tracciamento `restaurant_shared` su Supabase `analytics_events` (vedi snapshot Analytics sotto).
 - Valutare se includere allergeni filtrati / dieta nel link (es. `?diet=vegan`) per pre-filtrare la scheda all'apertura
 - Privacy: il link è pubblico, non esporre info utente che condivide
 
@@ -199,7 +160,7 @@ Mostrare le recensioni scritte in lingue diverse da quella dell'utente, senza tr
 - NON usare Google Cloud Translate (incompatibile con direzione rimozione Firebase/Google)
 
 **Prerequisiti già coperti:**
-- Campo `reviews.language` salvato all'insert in `add-review.tsx:144` (bug noto: non aggiornato su edit, vedi sezione dedicata in questo TODO — fixabile insieme oppure skippabile se si va on-device con auto-detect)
+- Campo `reviews.language` salvato all'insert in `add-review.tsx:144` (vedi nota residua su edit nella sezione Tech debt)
 
 **Chiavi i18n predisposte da aggiungere quando si implementa:** `restaurants.review.translate`, `showOriginal`, `translatedBy`.
 
@@ -210,15 +171,11 @@ Mostrare le recensioni scritte in lingue diverse da quella dell'utente, senza tr
 Dettagli e contesto storico: `memory/project_review_translation.md`.
 
 ### Filtrare POI nativi della mappa (nascondere business, tenere landmark)
-**Priorità: bassa**
+**Priorità: bassa. Android già fatto, resta iOS.**
 
-I pin nativi di Apple Maps / Google Maps (negozi, ristoranti, bar) danno fastidio e "sporcano" la mappa, ma vanno mantenuti i luoghi di interesse (Colosseo, musei, parchi).
+Android (Google Maps) risolto: `customMapStyle={ANDROID_MAP_STYLE}` in `RestaurantMap.native.tsx` nasconde `poi.business` mantenendo gli altri POI.
 
-**Android (Google Maps):**
-- Soluzione immediata: prop `customMapStyle` su `MapView` con JSON che nasconde `poi.business` e mantiene `poi.attraction`, `poi.park`, `poi.government`
-- Zero codice nativo, solo JSON in `components/RestaurantMap.native.tsx`
-
-**iOS (Apple MapKit):**
+**iOS (Apple MapKit) — ancora aperto:**
 - `react-native-maps` non espone `MKPointOfInterestFilter` (controllo granulare per categoria)
 - `showsPointsOfInterest` è solo true/false → perderebbe anche il Colosseo
 - Opzioni:
@@ -226,17 +183,10 @@ I pin nativi di Apple Maps / Google Maps (negozi, ristoranti, bar) danno fastidi
   2. Passare a `PROVIDER_GOOGLE` anche su iOS (uniforma stile, ma richiede Google Maps iOS SDK + API key iOS, build più pesante, perde look Apple)
   3. Accettare all-or-nothing con `showsPointsOfInterest={false}`
 
-**Approccio consigliato:** partire da (1) Android con `customMapStyle` come quick win, poi valutare patch nativa iOS se il fastidio giustifica la complessità.
+**Approccio consigliato:** valutare patch nativa iOS (1) se il fastidio giustifica la complessità.
 
 ### Galleria avatar ("Pokedex")
-Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
-- [x] Pagina dedicata con griglia avatar
-- [x] Sistema rarità (rimosso apr 2026 — over-engineering per 11 avatar)
-- [x] Condizioni sblocco (free/reviews/restaurants/likes_received/countries_reviewed/likes_to_dietary_reviews)
-- [x] Barra progresso per avatar bloccati
-- [x] Rimosso picker avatar da edit-profile
-- [x] Sistema notifica popup nuovi sblocchi (UnlockedAvatarsContext + popup globale)
-- [x] Cleanup avatar legacy + default plate_main_logo a livello DB (migration 049)
+Pagina `app/restaurants/avatar-gallery.tsx` con sistema unlock già funzionante. Resta:
 - [ ] Creare le immagini per gli avatar bloccati (attualmente placeholder)
 - [ ] Valutare nuovi avatar e condizioni di sblocco
 
@@ -247,8 +197,6 @@ Pagina `app/restaurants/avatar-gallery.tsx` creata con sistema unlock.
 - [ ] **Aggregazioni server-side via RPC Postgres** — oggi `fetchUnlockStats` fa 5 query parallele e somma/distinct lato client. Per utenti con >100 recensioni significa scaricare molte righe per fare `SUM`/`COUNT DISTINCT`. Una RPC `get_user_unlock_stats(uid) RETURNS jsonb` farebbe tutto server-side: ~10ms e ~1KB di traffico invece di ~50KB. **Da fare quando avrai utenti con >100 recensioni**, prima è premature optimization.
 
 ### Admin dashboard
-- [x] Migrata da Firebase a Supabase (mar 2026)
-- [x] Deploy su Vercel — live su https://admin.allergiapp.com (branch `admin-prod`)
 - [ ] Gestione claim ristoranti
 - [ ] Allineare display country alla nuova source-of-truth `country_code` (app mobile fatta 2026-05-17). Admin oggi mostra ancora il campo `country` testuale (es. "Italy"/"Italia" mescolati). Su Next.js Node è disponibile `Intl.DisplayNames` nativo, ma per coerenza si può importare `constants/countryNames.ts` dall'app o riusare la stessa mappa.
 - [ ] **Pagina Media — RPC `get_media_countries()`** per popolare il filtro Paese. Oggi `admin/src/app/media/page.tsx` fa 2 query che scaricano una riga per ogni foto/recensione solo per estrarre le country distinte: pragmatico ma spreca banda. Quando i media superano ~50k, sostituire con `SELECT DISTINCT r.country FROM restaurants r WHERE EXISTS (menu_photos) OR EXISTS (reviews con photos)` lato DB.
@@ -272,26 +220,15 @@ Analisi completa fatta su `feature/restaurants-v2`. L'app non è pronta per migl
 - [ ] **`reviewPhotos` useMemo deps** — array di 100+ foto ricalcolato ad ogni sort change / like toggle / loadMore. Restringere le dipendenze. `ReviewsSection.tsx`. Effort minimo.
 - [ ] **Pre-compute `allergen_match_count`** — sort `relevance` esegue `INTERSECT` array per ogni review paginata (30 INTERSECT/pagina). Aggiungere colonna calcolata o fare insieme alla materialized view. Effort medio, da fare in coppia col punto 1.
 
-### `reviews.language` non aggiornato su edit — fix differito
-**Priorità: bassa — da rivalutare quando si implementerà la traduzione recensioni**
+### `reviews.language` non aggiornato su edit (DB) — fix residuo
+**Priorità: bassa — client già sistemato, resta solo il DB**
 
-Verificato 2026-04-26 durante refactor i18n ristoranti. Il campo `reviews.language` viene popolato correttamente all'**insert** ma NON viene aggiornato sull'**edit** di una recensione, in due punti:
+Client già fixato: `app/restaurants/add-review.tsx:148` passa `language: i18n.locale` anche su edit e `services/reviewService.ts` accetta `language?` → `p_language`. **Manca solo il DB**: la RPC `upsert_review` (`supabase/migrations/027_drop_review_dishes.sql`, righe 27-29) nella branch `UPDATE` non include `language` nella `SET`, quindi il valore passato dal client viene ignorato sull'edit.
 
-1. **Client** (`app/restaurants/add-review.tsx:130-137`): `RestaurantService.updateReview` viene chiamato senza passare `language`. Anche la signature di `updateReview` in `services/reviewService.ts:195-202` non accetta il parametro.
-2. **Database** (RPC `upsert_review` in `supabase/migrations/027_drop_review_dishes.sql`): la `SET` clause dell'`UPDATE` quando `p_review_id IS NOT NULL` non include la colonna `language`.
+**Conseguenza**: se un utente crea una recensione in IT, cambia lingua app a EN e poi riscrive il commento in inglese, la riga DB resta `language = 'it'` con commento in EN. Inconsistenza dato/realtà. Danno minimo finché nessuno consuma il campo (la traduzione recensioni è rimandata).
 
-**Conseguenza**: se un utente crea una recensione in IT, cambia lingua app a EN e poi riscrive il commento in inglese, la riga DB resta `language = 'it'` con commento in EN. Inconsistenza dato/realtà.
-
-**Perché differito**: la traduzione recensioni è rimandata (vedi `memory/project_review_translation.md`). Senza consumatore del campo, dato sporco = dato che nessuno legge. Volume del danno minimo (utente raramente edita + cambia lingua). Recuperabile in futuro con un backfill o auto-detect dal testo.
-
-**Fix minimo quando servirà** (~1h):
-1. Migration `051_review_language_update.sql`: aggiungere `language = COALESCE(p_language, language)` alla SET clause + CHECK constraint ISO 639-1 (`CHECK (language IS NULL OR language ~ '^[a-z]{2}(-[A-Z]{2})?$')`)
-2. `services/reviewService.ts updateReview`: aggiungere parametro `language?: string` e passare come `p_language`
-3. `app/restaurants/add-review.tsx`: passare `language: i18n.locale` anche su edit
-
-**Opzionali da differire ulteriormente**:
-- Backfill di righe NULL (review pre-migration 011)
-- Indice su `language` (utile solo se si fanno aggregazioni su milioni di righe)
+**Fix minimo quando servirà** (~15 min):
+1. Nuova migration: aggiungere `language = COALESCE(p_language, language)` alla `SET` clause della branch UPDATE + CHECK constraint ISO 639-1 (`CHECK (language IS NULL OR language ~ '^[a-z]{2}(-[A-Z]{2})?$')`)
 
 **Possibile alternativa**: se la strategia di traduzione sarà on-device (Apple Translation / ML Kit), questi framework rilevano la lingua da soli dal testo. In quel caso `reviews.language` diventa hint non autoritativo e il fix potrebbe non servire affatto.
 
@@ -325,8 +262,7 @@ Soluzione a lungo termine: spostare `admin/` in un repo separato con il proprio 
 - Scopi distinti, non da unificare. `pregnancy` esiste solo in card, `vegan` solo in DietId.
 
 ### Google Places API — dati gratuiti non ancora sfruttati
-- [x] **Mappare `primaryType` sulle cucine dell'app** — `GOOGLE_TYPE_TO_CUISINE` implementato in `services/placesService.ts`, `primaryType` incluso nella `FieldMask`.
-- [ ] **Decidere quali altri campi Basic Data includere** — campi gratuiti/già pagati non ancora richiesti: `types` (array di categorie), `photos` (riferimenti foto), `plusCode`, `viewport`. Da valutare se e quali portare nella `FieldMask` e nel DB.
+- [ ] **Decidere quali altri campi Basic Data includere** — campi gratuiti/già pagati non ancora richiesti: `types` (array di categorie), `photos` (riferimenti foto), `plusCode`, `viewport`. Da valutare se e quali portare nella `FieldMask` e nel DB. (`primaryType` → cucine già implementato.)
 
 ---
 
@@ -357,12 +293,11 @@ Soluzione a lungo termine: spostare `admin/` in un repo separato con il proprio 
 Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compressione client, cleanup cascade, RLS policies, thumb differenziati per tipo (review 250px @ q.0.65, menu 400px @ q.0.7 con aspect ratio preservato), prefetch in `useRestaurantDetail`. Restano margini per UX avanzata e resilienza.
 
 **Azioni aperte:**
-- [ ] **Migrare a `expo-image`** — effort basso (~2-3h, ~23 file), beneficio UX alto (scomparsa flash bianco, scroll fluido, ritorno istantaneo su ristoranti già visti, meno batteria/dati). API quasi drop-in (`resizeMode` → `contentFit`, `defaultSource` → `placeholder` con blurhash).
+- [ ] **Migrare a `expo-image`** — **puramente migliorativo, bassa priorità**. Verifica 2026-06-02: la pipeline attuale è a posto (WEBP + compressione + thumb/full separati + `Image.prefetch` in `useRestaurantDetail` + `fadeDuration={0}` su Android). I benefici principali (flash bianco, scroll) sono **già mitigati** da prefetch + fadeDuration. Resterebbe solo il margine della cache su disco persistente (ritorno istantaneo su ristoranti già visti, meno dati) + blurhash placeholder cosmetico. Effort ~2-3h, ~23 file, API quasi drop-in (`resizeMode` → `contentFit`, `defaultSource` → `placeholder`). **Rivalutare solo se emergono problemi reali di caching/consumo dati.**
 - [ ] **Ridurre full menu** da 1000px a 800px (preset `menu.width`) — risparmio egress ~30%, valutare se la qualità su pinch-zoom resta accettabile.
 - [ ] **Job di cleanup orfani**: Edge Function Supabase schedulata settimanalmente che lista i file del bucket e rimuove quelli non referenziati in `reviews.photos` / `menu_photos.image_url` / `menu_photos.thumbnail_url`.
 - [ ] **Retry upload** con backoff esponenziale (2-3 tentativi) per resilienza su reti instabili.
 - [ ] **Path opaco** con hash invece di userId esposto (privacy minore; richiede migrazione dati esistenti → valutare se vale).
-- [x] **`fadeDuration={0}` sulle thumb Android** (2026-05-16) — rimosso fade-in 300ms su `<Image>` thumb in `RestaurantDetailBody.tsx` (foto recensioni carousel) e `MenuPhotosSection.tsx` (foto menu). Prop Android-only, iOS la ignora.
 
 **Monitoraggio:**
 - [ ] Aggiungere check periodico su Supabase Dashboard → Settings → Usage. Soglia di allarme: 60% di egress a metà mese = valutare passaggio a Pro ($25/mese, 250GB egress inclusi).
@@ -389,9 +324,6 @@ Il branch ristoranti funziona al 100% su iOS e Android. Su web funziona all'80-8
 
 Audit fatto 2026-04-25 dopo refactor avatar.
 
-#### Già risolto
-- [x] `profile_pic.jpg` ridotta da 1.5 MB → 7.2 KB (200×200, qualità 80) — backup in `/tmp/profile_pic_original.jpg`
-
 #### App icons sorgenti (1.16 MB nel repo)
 - [ ] Comprimere lossless `assets/icon.png` (1024×1024, attualmente 644 KB → atteso ~150 KB con `pngquant` o `oxipng`)
 - [ ] Comprimere lossless `assets/adaptive-icon.png` (1024×1024, attualmente 516 KB → atteso ~150 KB)
@@ -415,9 +347,6 @@ Usati in 8 punti: login, signup, add ristorante, profile guest, FAB ristoranti, 
 
 #### Compressione automatica avatar nel build script (opzionale)
 - [ ] Aggiungere step `pngquant` in `scripts/build-avatars.mjs` dopo lo step `sips`. Bundle avatar ~700 KB → ~400 KB. Richiede `brew install pngquant`.
-
-#### Pulizia dipendenze Firebase
-- [ ] Falso allarme verificato 2026-04-25: `firebase` e `@firebase` (142 MB in node_modules) sono dipendenze transitive (probabilmente da Supabase), non incidono sul bundle. **Nessuna azione richiesta.** Lasciato qui per memoria storica.
 
 ---
 
@@ -447,60 +376,9 @@ Tutti consent-gated via `SupabaseAnalytics.setTrackingConsent(...)` propagato in
 **Da verificare in build EAS preview:** crash forzato → Crashlytics dashboard con `user_id` + `last_screen`; eventi nuovi → tabella `analytics_events` in Supabase.
 
 ### Cosa manca
-- Widget admin per visualizzare i nuovi eventi (3 sezioni: counters 7/30g, top ricerche, ultimi 20 eventi). Branch `admin-prod`.
-- Retention/purge (`pg_cron` su `analytics_events` > 1 anno) → solo se cresci sopra ~5K DAU.
+- [ ] Widget admin per visualizzare i nuovi eventi (3 sezioni: counters 7/30g, top ricerche, ultimi 20 eventi). Branch `admin-prod`.
+- [ ] Retention/purge (`pg_cron` su `analytics_events` > 1 anno) → solo se cresci sopra ~5K DAU.
 - Migrazione del legacy Firebase Analytics su Supabase: **non pianificato**, i dati storici Firebase restano dove sono.
-
----
-
-## Completati recenti
-
-### Tier 3 — Cleanup cascade banner promo (BannerCarousel + tipi) — DONE 2026-05-16
-- [x] `app/components/BannerCarousel.tsx`: rimosso rendering banner `type === 'ad'` + `'custom'`, prop `extraBanners`, handler `handleAdPress`, helper `getCurrentDuration`. Riscritto in versione semplificata (solo info banner).
-- [x] `services/analytics.ts`: rimosso `logAdImpression`, semplificate signature `logBannerViewed` e `logBannerClicked` (drop `bannerType` e `adUrl`).
-- [x] `types/index.ts`: rimossi campi ad-related da `BannerItem`, rimosso `BannerType` (non più necessario), `BannerItem` ora ha solo `id`, `icon?`, `image?`, `title?`, `subtitle?`.
-- [x] Aggiornato anche caller `AnnouncementPopup.tsx` alle nuove signature analytics.
-- [x] `tsc --noEmit` pulito.
-
-### Footer / tab bar — possibile regressione del fix safe area
-**Stato (2026-05-16): risolto e verificato in Expo Go Android + EAS Android (build 1.1.0 internal testing). iOS invariato.**
-
-Causa: la formula hardcoded `49 + insets.bottom + 12/16` per gli overlay non rifletteva l'altezza reale del tab bar (`56 + max(insets.bottom, 16)` = 72dp in Expo Go), quindi banner e FAB finivano sotto.
-
-- [x] In `app/(tabs)/restaurants.tsx`: introdotto `useBottomTabBarHeight()` da `@react-navigation/bottom-tabs` e variabile `overlayBaseBottom = Platform.OS === 'android' ? tabBarHeight : 49 + insets.bottom`. Usato per `nearbyBanner` (bottom + 12) e `fabWrapper` (bottom + 16). Self-correcting su Android, iOS conserva formula originale.
-- [x] Verificato in EAS Android: overlay si aggancia correttamente.
-
-### Bottom sheet — spazio vuoto sotto
-**Stato (2026-05-16): risolto e verificato in Expo Go Android + EAS Android (build 1.1.0). iOS invariato.**
-
-Causa root (confermata): il container del sheet era ancorato `top: 0` con `height = useWindowDimensions().height * maxSnap + (Android ? insetBottom : 0)`. Il parent (`MaybeScreenContainer` di React Navigation, vedi `node_modules/@react-navigation/bottom-tabs/.../BottomTabView.js:252`) ha `overflow: 'hidden'`. L'estensione `+insetBottom` veniva ritagliata, mentre il `paddingBottom: insetBottom` sul body continuava a spostare il contenuto su → gap visibile.
-
-- [x] In `components/BottomSheet/BottomSheet.tsx`: refactor a `bottom: 0` anchoring. Container hugga sempre il fondo del parent, zero dipendenza dall'accuratezza di `useWindowDimensions`. Math: `containerHeight = height * maxSnap`, `positions = snapPoints.map(p => height * (maxSnap - p))`, `closedY = containerHeight`, `reportSnap = (closedY - y) / height`. Math diversa ma proiezione visiva identica su iOS (verificato).
-- [x] Sistema lo stesso `BottomSheet` usato da `RestaurantDetailSheet` e `NearbyListSheet` → entrambi risolti.
-
-### Bottom sheet — lag scrolling + drag scattoso
-**Stato (2026-05-16): risolto su EAS Android (build 1.1.0 internal testing). Il problema era effettivamente overhead Expo Go dev mode, come ipotizzato. iOS invariato.**
-
-- [x] Test EAS Android: scroll e drag fluidi. Nessun intervento aggiuntivo necessario sui sospetti architetturali (elevation/renderToHardwareTextureAndroid/simultaneousWithExternalGesture).
-
-### Mappa Android — pin issues
-**Stato (2026-05-16)**: tutti risolti + authorization Google Maps SDK risolta con nuova chiave dedicata `Maps SDK - Android` (vedi memory `google-cloud-projects` + cleanup in coda al TODO). Mappa ora visibile su EAS Android.
-
-- [x] **Pin tagliati** — risolto in `components/map/SelectedMarkerOverlay.tsx`: il `transform: [{ scale: 1.25 }]` causava clipping perché `react-native-maps` su Android rasterizza il marker in un bitmap basato sul layout naturale della View (pre-transform). Gate del transform a `Platform.OS === 'ios'`. iOS bit-per-bit identico. Su Android il pin selezionato resta differenziato da bg colorata + shadow potenziata + zIndex 9999 + `cluster={false}`.
-- [x] **Pin che scompaiono al cambio selezione** — risolto in `components/map/MapPin.tsx`: aggiunto `androidSettling` state che estende la finestra `tracksViewChanges=true` a ~100ms dopo mount e dopo ogni cambio prop rilevante. La drawing cache nativa Android richiede più tempo di un single frame per ricatturare il bitmap del marker. iOS gestito via early return dell'useEffect, byte-identico.
-- [x] **Colori pin non aggiornati con filtro "per me"** — stessa root cause del precedente (bitmap caching su prop change). Risolto dallo stesso fix `androidSettling`.
-- [x] **Bussola Android seminascosta dietro UI** — risolto in `RestaurantMap.native.tsx` con `mapPadding={{ top: insets.top + 120, right: 12, bottom: 0, left: 0 }}` solo su Android. Settaggio statico (non toggle, niente salti). iOS non viene toccato, continua col `compassOffset`. Side effect noto: il centro logico della camera shift in basso di ~70px su Android.
-- [x] **Pin centra male se mappa ruotata** (su entrambe le piattaforme, bug pre-esistente latente) — risolto aggiungendo `heading: 0` + `pitch: 0` alla `animateCamera` del ramo pin-selection. La math dell'offset assumeva north-up: con la mappa ruotata, "sud sul globo" non corrispondeva più a "giù sullo schermo" → pin fuori centro o fuori dallo schermo. Reset di heading/pitch al tap pin è comportamento standard di Apple/Google Maps.
-- [x] **Centramento camera — animazione "sale e scende" + pin atterra troppo in alto** (2026-05-16): root cause vera = Google Maps Android SDK centra di default la camera sul marker tappato (`OnMarkerClickListener` nativo, non disabilitabile da react-native-maps JS). La nostra `animateCamera` con `heading:0/pitch:0` girava sopra il centraggio nativo → doppia animazione = "sale e scende". Primo tentativo (cf3ad42) ha rimosso solo il nostro centraggio: ha tolto il "sale e scende" ma il pin finiva sotto al sheet perché il SDK centra geometricamente al centro schermo. Fix finale: lasciamo che il SDK centri (animazione fluida, una sola) e shiftiamo il suo "centro logico" sopra il sheet via `mapPadding.bottom = windowHeight * 0.55` always-on su Android. iOS continua a usare il branch `Platform.OS !== 'android'` con `animateCamera` esplicito (compassOffset al posto di mapPadding). Trade-off accettato: a sheet chiuso `locate me` / `search place` posizionano il punto nella metà superiore dello schermo invece che al centro geometrico. Se in futuro l'UX richiede precisione assoluta sul centraggio, passare a `patch-package` su `react-native-maps` per ritornare `true` dall'`onMarkerClick` Android e disabilitare il centraggio nativo (richiede rebuild EAS).
-- [x] **Non tutti i pin si vedono** — risolto come effetto collaterale del fix `androidSettling` su bitmap caching. Stessa root cause dei pin che scomparivano al cambio selezione e dei colori non aggiornati col filtro "per me": la drawing cache nativa Android non ricatturava il bitmap del marker entro un singolo frame. Verificato in EAS Android 1.1.0.
-
-### Modal foto menu — segnala recensione, tap esterno non chiude
-**Stato (2026-05-13): risolto e verificato in Expo Go Android. iOS invariato.**
-
-Causa root: `ImageFullscreenModal.tsx` (e analogo `PhotoGalleryModal.tsx`) non avevano `onRequestClose` sul `<Modal>` (back button Android no-op) e l'area scura attorno all'immagine non aveva handler di tap. Solo il tap sull'immagine chiudeva via `onSingleTap`. Niente di legato al pattern siblings Pressable+View che era già stato sistemato altrove.
-
-- [x] Aggiunto `onRequestClose={onClose}` sul `<Modal>` in entrambi i file (gestisce back button Android, no-op iOS).
-- [x] `pageContainer` da `<View>` a `<Pressable>` con `onPress={Platform.OS === 'android' ? onClose : undefined}`. Su iOS `onPress` è `undefined` → Pressable degenera a View → comportamento iOS identico.
 
 ---
 
