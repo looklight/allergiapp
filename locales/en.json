@@ -386,7 +386,7 @@
     "menu": {
       "title": "Menu",
       "manage": "Manage",
-      "addFirst": "Add the first menu photos",
+      "add": "Add",
       "empty": "No menu photos yet",
       "loadError": "Couldn't load menu photos.",
       "addTitle": "Add photo",

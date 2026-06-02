@@ -21,28 +21,25 @@ interface MenuPhotosSectionProps {
 
 export default function MenuPhotosSection({
   menuPhotos,
-  currentUserId,
   canUpload,
-  menuUrl,
   onPhotoPress,
   onManage,
 }: MenuPhotosSectionProps) {
   const hasPhotos = menuPhotos.length > 0;
 
-  return (
-    <View style={styles.menuSection}>
-
-      <View style={styles.titleRow}>
-        <Text style={styles.sectionTitle}>{i18n.t('restaurants.menu.title')}{hasPhotos ? ` (${menuPhotos.length})` : ''}</Text>
-        {canUpload && (
-          <TouchableOpacity onPress={onManage} activeOpacity={0.7} style={styles.manageBtn}>
-            <Text style={styles.manageBtnText}>{i18n.t('restaurants.menu.manage')}</Text>
-            <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.primary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {hasPhotos ? (
+  // Con foto: titolo + conteggio + "Gestisci" e la striscia di thumbnail.
+  if (hasPhotos) {
+    return (
+      <View style={styles.menuSection}>
+        <View style={styles.titleRow}>
+          <Text style={styles.sectionTitle}>{i18n.t('restaurants.menu.title')} ({menuPhotos.length})</Text>
+          {canUpload && (
+            <TouchableOpacity onPress={onManage} activeOpacity={0.7} style={styles.manageBtn}>
+              <Text style={styles.manageBtnText}>{i18n.t('restaurants.menu.manage')}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={14} color={theme.colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -59,15 +56,23 @@ export default function MenuPhotosSection({
             </TouchableOpacity>
           ))}
         </ScrollView>
-      ) : !menuUrl && (
-        canUpload ? (
-          <TouchableOpacity onPress={onManage} activeOpacity={0.7}>
-            <Text style={styles.menuEmptyHintLink}>{i18n.t('restaurants.menu.addFirst')}</Text>
+      </View>
+    );
+  }
+
+  // Senza foto: niente titolo, una sola riga compatta (frase + "+ Aggiungi" se
+  // l'utente puo caricare) per occupare meno spazio verticale nel bottom sheet.
+  return (
+    <View style={styles.menuSection}>
+      <View style={styles.emptyRow}>
+        <Text style={styles.menuEmptyHint}>{i18n.t('restaurants.menu.empty')}</Text>
+        {canUpload && (
+          <TouchableOpacity onPress={onManage} activeOpacity={0.7} style={styles.manageBtn}>
+            <MaterialCommunityIcons name="plus" size={16} color={theme.colors.primary} />
+            <Text style={styles.manageBtnText}>{i18n.t('restaurants.menu.add')}</Text>
           </TouchableOpacity>
-        ) : (
-          <Text style={styles.menuEmptyHint}>{i18n.t('restaurants.menu.empty')}</Text>
-        )
-      )}
+        )}
+      </View>
     </View>
   );
 }
@@ -83,6 +88,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  emptyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   manageBtn: {
     flexDirection: 'row',
@@ -140,11 +150,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   menuEmptyHint: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    paddingVertical: 4,
-  },
-  menuEmptyHintLink: {
     fontSize: 13,
     color: theme.colors.textSecondary,
     paddingVertical: 4,
