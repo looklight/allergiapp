@@ -41,9 +41,15 @@ export function useProfileCounts(
   }, [userId]);
 
   // Ripersisti quando entrambe le liste hanno finito: snapshot coerente.
+  // Aggiorna ANCHE lo stato in memoria (non solo lo storage): senza questo
+  // `cached` restava fermo al valore idratato al mount, e a ogni revalidate
+  // (es. reload alla chiusura della scheda) i conteggi ripiegavano su un valore
+  // stale/null mentre `live` era ancora valido → lampeggio delle pill.
   useEffect(() => {
     if (!userId || loading.reviews || loading.favorites) return;
-    storage.setProfileCounts(userId, { reviews: live.reviews, favorites: live.favorites });
+    const snapshot = { reviews: live.reviews, favorites: live.favorites };
+    storage.setProfileCounts(userId, snapshot);
+    setCached(snapshot);
   }, [userId, loading.reviews, loading.favorites, live.reviews, live.favorites]);
 
   return {
