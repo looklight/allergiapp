@@ -114,7 +114,15 @@ export default function RestaurantMap({
   const mapReady = useRef(false);
   const [hasAnimatedToUser, setHasAnimatedToUser] = useState(false);
   const currentRegion = useRef<Region | null>(null);
-  const [isDotZoom, setIsDotZoom] = useState(false);
+  // Stato iniziale derivato dallo zoom della regione di partenza (non un `false`
+  // arbitrario): il primo frame e' sempre DEFAULT_REGION (vista Europa, delta 22),
+  // dove la rappresentazione corretta sono i pallini. Senza questa derivazione i
+  // marker nascevano come pin (grigi, finche' i dettagli non caricano) e passavano
+  // a pallini solo al primo onRegionChangeComplete (che con initialRegion non scatta
+  // al mount, ma solo al primo gesto utente). La logica reattiva sotto resta intatta.
+  const [isDotZoom, setIsDotZoom] = useState(
+    DEFAULT_REGION.latitudeDelta > ZOOM_PIN_THRESHOLD,
+  );
 
   // ---- Stable refs for prop callbacks ----
   const onRegionChangeCompleteRef = useRef(onRegionChangeComplete);
