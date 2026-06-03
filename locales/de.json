@@ -137,7 +137,7 @@
   },
   "consent": {
     "title": "Willkommen bei AllergiApp",
-    "disclaimerShort": "AllergiApp hilft dir, deine Allergien mitzuteilen, ersetzt aber keinen ärztlichen Rat. Deine Allergiedaten werden lokal auf deinem Gerät gespeichert, es können anonyme Daten zur Verbesserung des Dienstes erhoben werden, aber es werden keine personenbezogenen Daten erfasst oder weitergegeben.",
+    "disclaimerShort": "AllergiApp hilft dir, deine Allergien mitzuteilen, ersetzt aber keinen ärztlichen Rat. Deine Allergiedaten werden lokal auf deinem Gerät gespeichert, und es können anonyme Daten zur Verbesserung des Dienstes erhoben werden. Du kannst die App auch ohne Registrierung nutzen.",
     "privacyTitle": "Datenschutz",
     "termsTitle": "Bedingungen",
     "acceptButton": "Weiter",

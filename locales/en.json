@@ -161,7 +161,7 @@
   },
   "consent": {
     "title": "Welcome to AllergiApp",
-    "disclaimerShort": "Allergiapp helps you communicate your allergies, but does not replace medical advice. Your allergy data is stored locally on your device, anonymous data may be collected to improve the service but no personally identifiable data is collected or shared.",
+    "disclaimerShort": "AllergiApp helps you communicate your allergies, but does not replace medical advice. Your allergy data is stored locally on your device, and anonymous data may be collected to improve the service. You can use the app without signing up.",
     "privacyTitle": "Privacy",
     "termsTitle": "Terms",
     "acceptButton": "Continue",
