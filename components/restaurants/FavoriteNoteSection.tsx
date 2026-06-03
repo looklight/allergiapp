@@ -165,8 +165,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
   },
-  // Pulsante "Salva nota" sotto al box, visibile solo in modifica. Il gap dal box
-  // è dato dal marginBottom del box stesso.
+  // Pulsante "Salva nota" sotto al box, visibile solo in modifica. Il gap sopra
+  // è dato dal marginBottom del box; il marginBottom qui dà il gap sotto (verso
+  // le foto), così lo stacco eguaglia quello dello stato compresso (md + 4px
+  // di paddingTop della FlatList foto = 16px) e resta coerente col bottom sheet.
   saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,6 +178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.primary,
+    marginBottom: theme.spacing.md,
   },
   saveButtonText: {
     fontSize: 14,
