@@ -6,7 +6,7 @@ import {
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from './supabase';
 import { SupabaseAnalytics } from './supabaseAnalytics';
-import { AuthService, type AppUser } from './auth';
+import { type AppUser } from './auth';
 
 // I 3 Google OAuth Client IDs sono pubblici per design (vivono nei binari mobile).
 // Vedi memoria progetto `project_social_auth.md` per il setup completo.
@@ -58,10 +58,9 @@ async function signInWithGoogle(): Promise<AppUser> {
   if (error) throw error;
   if (!data.user) throw new Error('Sign in con Google fallito');
 
-  // Lazy creation del profilo (stessa logica di AuthService.signUp). Il trigger
-  // DB assegna automaticamente username `user_xxxxxx` se assente.
-  await AuthService.ensureProfile(data.user.id);
-
+  // La lazy creation del profilo e' gestita da un solo owner: AuthContext.loadProfile
+  // (reagisce a onAuthStateChanged). NON ricrearlo qui per evitare la race che
+  // causava un falso "Something went wrong" al primo accesso.
   SupabaseAnalytics.track('sign_in', { provider: 'google', is_signup: isFirstSignIn(data.user) });
   return { uid: data.user.id, email: data.user.email ?? null };
 }
@@ -98,8 +97,8 @@ async function signInWithApple(): Promise<AppUser> {
   if (error) throw error;
   if (!data.user) throw new Error('Sign in con Apple fallito');
 
-  await AuthService.ensureProfile(data.user.id);
-
+  // Lazy creation del profilo: vedi nota in signInWithGoogle. Owner unico =
+  // AuthContext.loadProfile, niente ensureProfile qui.
   SupabaseAnalytics.track('sign_in', { provider: 'apple', is_signup: isFirstSignIn(data.user) });
   return { uid: data.user.id, email: data.user.email ?? null };
 }

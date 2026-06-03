@@ -37,10 +37,10 @@ async function signUp(email: string, password: string): Promise<AppUser> {
   if (error) throw error;
   if (!data.user) throw new Error('Registrazione fallita');
 
-  // Crea il profilo (lazy creation). Il trigger DB assegna automaticamente
-  // username = 'user_xxxxxx' se non viene fornito.
-  await ensureProfile(data.user.id);
-
+  // La lazy creation del profilo e' gestita da un solo owner: AuthContext.loadProfile,
+  // che reagisce al cambio di sessione (onAuthStateChanged) e chiama ensureProfile.
+  // NON ricrearlo qui: una seconda ensureProfile concorrente racing con quella
+  // del context provocava un falso "Something went wrong" al primo signup.
   SupabaseAnalytics.track('sign_in', { provider: 'email', is_signup: true });
   return mapUser(data.user)!;
 }
