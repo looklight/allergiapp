@@ -89,6 +89,20 @@ function isNearbyEligible(placeType?: string): boolean {
   return !placeType || !NEARBY_INELIGIBLE_PLACE_TYPES.has(placeType);
 }
 
+// Entità che OSM classifica come province/state/country ma che funzionalmente
+// sono città (città-prefettura giapponesi, città-stato). Senza questo override
+// finirebbero tra i tipi "troppo ampi" e non mostrerebbero il banner "nei
+// dintorni", pur avendo un centro urbano denso attorno al punto rappresentativo.
+// Chiave `osm_type:osm_id`: stabile e indipendente dalla lingua (il nome cambia
+// con accept-language, l'id no). Il valore è il placeType da usare al loro posto,
+// così tutta la logica a valle (eligibilità, raggio, zoom) li tratta da città.
+// Nota: il bbox non basta a distinguerli — quello di Tokyo include le isole
+// Ogasawara (~1000 km a sud) e risulterebbe enorme quanto una regione.
+const PLACE_TYPE_OVERRIDES: Record<string, string> = {
+  'relation:1543125': 'city', // Tokyo (東京都, prefettura)
+  'relation:536780': 'city',  // Singapore (nazione città-stato)
+};
+
 // Raggio usato per la sezione "Ristoranti a [Città]" dopo il tap su un luogo.
 // Scelto in base al placeType: country/state troppo ampi → ridotto a scala città.
 function nearbyRadiusKm(placeType?: string): number {
@@ -225,11 +239,13 @@ export function useMapSearch({
         const subtitle = display.startsWith(name)
           ? display.slice(name.length).replace(/^[,\s]+/, '')
           : display;
+        const osmKey = `${item.osm_type}:${item.osm_id}`;
+        const placeType = PLACE_TYPE_OVERRIDES[osmKey] ?? (item.addresstype || item.type || undefined);
         return {
           type: 'place' as const,
           name,
           subtitle: subtitle || undefined,
-          placeType: item.addresstype || item.type || undefined,
+          placeType,
           latitude: parseFloat(item.lat),
           longitude: parseFloat(item.lon),
         };
