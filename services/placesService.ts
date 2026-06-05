@@ -156,6 +156,8 @@ const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
   // Indiana
   indian_restaurant:          'indian',
   modern_indian_restaurant:   'indian',
+  south_indian_restaurant:    'indian',
+  north_indian_restaurant:    'indian',
   pakistani_restaurant:       'indian',
   punjabi_restaurant:         'indian',
   sri_lankan_restaurant:      'indian',
@@ -188,6 +190,7 @@ const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
   cuban_restaurant:           'latin_american',
   colombian_restaurant:       'latin_american',
   argentinian_restaurant:     'latin_american',
+  chilean_restaurant:         'latin_american',
 
   // Bakery
   bakery:                     'bakery',
