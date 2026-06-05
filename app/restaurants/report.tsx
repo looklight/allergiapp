@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
 import { REPORT_REASONS } from '../../constants/reportReasons';
+import { venueIconName } from '../../constants/restaurantCategories';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
 import AppHeader from '../components/AppHeader';
@@ -17,10 +18,12 @@ export default function ReportScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const descriptionY = useRef(0);
   const isDescriptionFocused = useRef(false);
-  const { restaurantId, restaurantName } = useLocalSearchParams<{
+  const { restaurantId, restaurantName, offersLodging } = useLocalSearchParams<{
     restaurantId: string;
     restaurantName?: string;
+    offersLodging?: string;
   }>();
+  const venueIcon = venueIconName(offersLodging === '1');
   const { user } = useAuth();
 
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
@@ -91,7 +94,7 @@ export default function ReportScreen() {
         {restaurantName && (
           <>
             <View style={styles.restaurantInfo}>
-              <MaterialCommunityIcons name="store" size={20} color={theme.colors.primary} />
+              <MaterialCommunityIcons name={venueIcon} size={20} color={theme.colors.primary} />
               <Text style={styles.restaurantName} numberOfLines={1}>{restaurantName}</Text>
             </View>
             <View style={styles.separator} />

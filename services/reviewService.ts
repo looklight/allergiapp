@@ -122,6 +122,8 @@ export type UserReview = Review & {
   restaurant_city?: string | null;
   restaurant_country?: string | null;
   restaurant_country_code?: string | null;
+  /** Faccetta lodging del luogo recensito: distingue l'icona hotel vs ristorante. */
+  restaurant_offers_lodging?: boolean | null;
   /** Coordinate del ristorante per la mappa profilo (estratte dal GeoJSON del join). */
   restaurant_lat?: number | null;
   restaurant_lng?: number | null;
@@ -136,7 +138,7 @@ export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
         .from('reviews')
         .select(`
           *,
-          restaurant:restaurants!restaurant_id(name, city, country, country_code)
+          restaurant:restaurants!restaurant_id(name, city, country, country_code, offers_lodging)
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false }),
@@ -151,6 +153,7 @@ export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
         restaurant_city: r.restaurant?.city ?? null,
         restaurant_country: r.restaurant?.country ?? null,
         restaurant_country_code: r.restaurant?.country_code ?? null,
+        restaurant_offers_lodging: r.restaurant?.offers_lodging ?? null,
         restaurant_lat: pos?.latitude ?? null,
         restaurant_lng: pos?.longitude ?? null,
       };

@@ -572,3 +572,15 @@ export function getLodgingLabel(id: string, lang: string = 'it'): string {
   if (!cat) return id;
   return cat.translations[lang as keyof typeof cat.translations] ?? cat.translations.it;
 }
+
+/**
+ * Icona MaterialCommunityIcons per il "tipo luogo", dalla faccetta lodging.
+ * SORGENTE DI VERITÀ: restaurants.offers_lodging. Regola unica (centralizzata qui
+ * così la decisione vive in un posto solo): struttura → letto, ristorante →
+ * forchetta-coltello. Nota: un hotel-con-ristorante (offers_lodging=true) mostra
+ * SEMPRE il letto, coerente con le recensioni unificate (non distinguiamo
+ * soggiorno vs pasto).
+ */
+export function venueIconName(offersLodging?: boolean | null): 'bed' | 'silverware-fork-knife' {
+  return offersLodging ? 'bed' : 'silverware-fork-knife';
+}

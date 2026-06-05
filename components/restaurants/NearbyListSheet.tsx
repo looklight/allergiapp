@@ -3,7 +3,7 @@ import { View, StyleSheet, ActivityIndicator, BackHandler, Platform, TouchableOp
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import { getCuisineLabel } from '../../constants/restaurantCategories';
+import { getCuisineLabel, venueIconName } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 import { haversineKm } from '../../utils/geo';
 import BottomSheet, { BottomSheetFlatList, type BottomSheetRef } from '../BottomSheet';
@@ -273,7 +273,7 @@ export default function NearbyListSheet({
                   onPress={() => onSelectRestaurant(item.id)}
                   activeOpacity={0.6}
                 >
-                  <MaterialCommunityIcons name="silverware-fork-knife" size={18} color={theme.colors.primary} style={styles.rowIcon} />
+                  <MaterialCommunityIcons name={venueIconName(item.offers_lodging)} size={18} color={theme.colors.primary} style={styles.rowIcon} />
                   <View style={styles.rowText}>
                     <Text style={styles.rowName} numberOfLines={1}>{item.name}</Text>
                     <View style={styles.rowMeta}>

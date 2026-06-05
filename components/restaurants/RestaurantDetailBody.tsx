@@ -380,7 +380,7 @@ export default function RestaurantDetailBody({
               onPhotoPress={setMenuGalleryIndex}
               onUpdateMenuUrl={handleUpdateMenuUrl}
               isUpdatingMenuUrl={isUpdatingMenuUrl}
-              onManage={() => router.push(`/restaurants/menu-photos?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant.name)}`)}
+              onManage={() => router.push(`/restaurants/menu-photos?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant.name)}&offersLodging=${restaurant.offers_lodging ? 1 : 0}`)}
             />
         </View>
 
@@ -456,7 +456,7 @@ export default function RestaurantDetailBody({
                 activeOpacity={0.6}
                 onPress={() => {
                   if (userReport) { Alert.alert(i18n.t('restaurants.detail.reportRestAlreadyTitle'), i18n.t('restaurants.detail.reportRestAlreadyMsg')); return; }
-                  router.push(`/restaurants/report?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}`);
+                  router.push(`/restaurants/report?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}&offersLodging=${restaurant?.offers_lodging ? 1 : 0}`);
                 }}
               >
                 <MaterialCommunityIcons

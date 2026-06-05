@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../constants/theme';
+import { venueIconName } from '../../constants/restaurantCategories';
 import { RestaurantService } from '../../services/restaurantService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useImagePicker } from '../../hooks/useImagePicker';
@@ -20,10 +21,12 @@ export default function MenuPhotosScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { restaurantId, restaurantName } = useLocalSearchParams<{
+  const { restaurantId, restaurantName, offersLodging } = useLocalSearchParams<{
     restaurantId: string;
     restaurantName?: string;
+    offersLodging?: string;
   }>();
+  const venueIcon = venueIconName(offersLodging === '1');
 
   const [photos, setPhotos] = useState<MenuPhoto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,7 +148,7 @@ export default function MenuPhotosScreen() {
 
       {restaurantName && (
         <View style={styles.restaurantRow}>
-          <MaterialCommunityIcons name="store" size={16} color={theme.colors.textSecondary} />
+          <MaterialCommunityIcons name={venueIcon} size={16} color={theme.colors.textSecondary} />
           <Text style={styles.restaurantName} numberOfLines={1}>{restaurantName}</Text>
         </View>
       )}

@@ -6,6 +6,7 @@ import i18n from '../utils/i18n';
 import { getCountryName } from '../utils/countryNames';
 import StarRating from './StarRating';
 import type { UserReview } from '../services/restaurantService';
+import { venueIconName } from '../constants/restaurantCategories';
 
 interface Props {
   review: UserReview;
@@ -21,12 +22,13 @@ export default function UserReviewCard({ review, onPress }: Props) {
   });
   const hasRating = review.rating != null && review.rating > 0;
   const photosCount = review.photos?.length ?? 0;
+  const venueIcon = venueIconName(review.restaurant_offers_lodging);
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Surface style={styles.card} elevation={0}>
         <View style={styles.header}>
-          <MaterialCommunityIcons name="store" size={16} color={theme.colors.primary} />
+          <MaterialCommunityIcons name={venueIcon} size={16} color={theme.colors.primary} />
           <Text style={styles.name} numberOfLines={1}>{restaurantName}</Text>
           <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textSecondary} />
         </View>

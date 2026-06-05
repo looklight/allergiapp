@@ -10,7 +10,7 @@ import { AuthService } from '../../services/auth';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
-import { CUISINE_CATEGORIES, getCuisineLabel } from '../../constants/restaurantCategories';
+import { CUISINE_CATEGORIES, getCuisineLabel, venueIconName } from '../../constants/restaurantCategories';
 import ChipGrid from '../../components/ChipGrid';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import StarRating from '../../components/StarRating';
@@ -26,7 +26,7 @@ const MAX_COMMENT_LENGTH = 1500;
 export default function AddReviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, reviewId } = useLocalSearchParams<{
+  const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, reviewId, offersLodging } = useLocalSearchParams<{
     restaurantId: string;
     restaurantName?: string;
     restaurantAddress?: string;
@@ -34,7 +34,9 @@ export default function AddReviewScreen() {
     restaurantRatingCount?: string;
     prefillRating?: string;
     reviewId?: string;
+    offersLodging?: string;
   }>();
+  const venueIcon = venueIconName(offersLodging === '1');
   const ratingNum = parseFloat(restaurantRating ?? '0');
   const ratingCountNum = parseInt(restaurantRatingCount ?? '0', 10);
   const { user, dietaryNeeds, refreshProfile } = useAuth();
@@ -207,7 +209,7 @@ export default function AddReviewScreen() {
         {/* Info ristorante */}
         {!isLoadingExisting && restaurantName && (
           <View style={styles.restaurantInfo}>
-            <MaterialCommunityIcons name="store" size={20} color={theme.colors.primary} />
+            <MaterialCommunityIcons name={venueIcon} size={20} color={theme.colors.primary} />
             <View style={styles.restaurantInfoText}>
               <Text style={styles.restaurantName} numberOfLines={1}>{restaurantName}</Text>
               {restaurantAddress && (
