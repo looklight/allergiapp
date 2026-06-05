@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
@@ -14,6 +15,8 @@ const ROWS: readonly Row[] = [
 ];
 
 export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const cardTranslate = useRef(new Animated.Value(50)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
   const cardScale = useRef(new Animated.Value(0.94)).current;
@@ -132,7 +135,7 @@ export default function AllergenCardSlide({ isActive }: OnboardingSlideProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   bold: {
     fontWeight: '700',
     color: theme.colors.textSecondary,

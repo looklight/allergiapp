@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export default function OnboardingSlide({ title, description, visual }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.slide}>
       <View style={styles.visualContainer}>{visual}</View>
@@ -24,7 +27,7 @@ export default function OnboardingSlide({ title, description, visual }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   slide: {
     width: SCREEN_WIDTH,
     flex: 1,

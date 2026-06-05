@@ -2,13 +2,16 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import StarRating from '../../StarRating';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
 
 export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const chips = useMemo(
     () => [
       i18n.t('onboardingTutorial.share.chipGluten'),
@@ -130,7 +133,7 @@ export default function ShareExperiencesSlide({ isActive }: OnboardingSlideProps
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   cardWrap: {
     width: '100%',
     maxWidth: 320,

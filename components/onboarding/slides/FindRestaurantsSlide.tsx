@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import StarRating from '../../StarRating';
 import OnboardingSlide from '../OnboardingSlide';
@@ -30,6 +31,8 @@ const RESTAURANTS: readonly MockRestaurant[] = [
 const CARD_STAGGER_MS = 90;
 
 export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const cardAnims = useRef(RESTAURANTS.map(() => new Animated.Value(0))).current;
   const badgeScale = useRef(new Animated.Value(1)).current;
   const haloScale = useRef(new Animated.Value(0.6)).current;
@@ -183,7 +186,7 @@ export default function FindRestaurantsSlide({ isActive }: OnboardingSlideProps)
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   stack: {
     width: '100%',
     maxWidth: 320,

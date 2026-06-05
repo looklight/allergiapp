@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
@@ -45,6 +46,8 @@ const buildMembers = (): readonly Member[] => [
 const STAGGER_MS = 160;
 
 export default function WelcomeSlide({ isActive }: OnboardingSlideProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const members = useMemo(() => buildMembers(), []);
   const totalChips = useMemo(() => members.reduce((sum, m) => sum + m.chips.length, 0), [members]);
   const chipAnims = useRef(Array.from({ length: totalChips }, () => new Animated.Value(0))).current;
@@ -123,7 +126,7 @@ export default function WelcomeSlide({ isActive }: OnboardingSlideProps) {
 
 const AVATAR_SIZE = 68;
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
