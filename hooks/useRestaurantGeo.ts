@@ -23,6 +23,8 @@ type FilterParams = {
   forMyNeeds: boolean;
   filterAllergens: string[];
   filterDiets: string[];
+  /** True = modalità alloggi (RPC filtrano offers_lodging invece di serves_food) */
+  showLodging: boolean;
   /** Frazione corrente dello sheet (usata per calcolare l'offset camera) */
   getSheetFraction: () => number;
 };
@@ -35,7 +37,7 @@ const OVERLAP_MARGIN = 0.7; // 30% overlap: fetch solo se centro fuori dal 70% d
 const MAX_FETCHED_AREAS = 50; // Limita la crescita di fetchedAreas
 
 export function useRestaurantGeo(params: FilterParams) {
-  const { forMyNeeds, filterAllergens, filterDiets, getSheetFraction } = params;
+  const { forMyNeeds, filterAllergens, filterDiets, showLodging, getSheetFraction } = params;
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [viewportPins, setViewportPins] = useState<RestaurantPin[]>([]);
@@ -76,6 +78,11 @@ export function useRestaurantGeo(params: FilterParams) {
   filterAllergensRef.current = filterAllergens;
   const filterDietsRef = useRef(filterDiets);
   filterDietsRef.current = filterDiets;
+  const showLodgingRef = useRef(showLodging);
+  showLodgingRef.current = showLodging;
+  /** Ultima region completa (con delta) — per ricaricare i pin del viewport
+   *  esatto quando cambia la modalità alloggi. */
+  const lastRegionRef = useRef<MapRegion | null>(null);
 
   /** Sincronizza lo state React con il contenuto della cache */
   const syncState = useCallback(() => {
@@ -141,8 +148,11 @@ export function useRestaurantGeo(params: FilterParams) {
         ? await RestaurantService.getRestaurantsForMyNeeds(
             center.latitude, center.longitude,
             filterAllergensRef.current, filterDietsRef.current, radiusKm,
+            showLodgingRef.current,
           )
-        : await RestaurantService.getNearbyRestaurants(center.latitude, center.longitude, radiusKm);
+        : await RestaurantService.getNearbyRestaurants(
+            center.latitude, center.longitude, radiusKm, undefined, showLodgingRef.current,
+          );
 
       if (reloadEpoch.current !== epoch) return;
       mergeIntoCache(results);
@@ -178,10 +188,13 @@ export function useRestaurantGeo(params: FilterParams) {
    *  forMyNeedsOverride: usa questo valore invece di forMyNeedsRef.current.
    *  Necessario perché setForMyNeeds è asincrono — la ref non è ancora
    *  aggiornata quando clearAndReload è chiamato nello stesso handler. */
-  const clearAndReload = useCallback(async (forMyNeedsOverride?: boolean) => {
+  const clearAndReload = useCallback(async (forMyNeedsOverride?: boolean, showLodgingOverride?: boolean) => {
     const epoch = ++reloadEpoch.current;
     pendingFetch.current = null;
     fetchedAreas.current = [];
+    // Sincronizza subito la ref lodging così eventuali fetch concorrenti (pin) usano
+    // il valore nuovo prima che il re-render aggiorni la ref dal param.
+    if (showLodgingOverride !== undefined) showLodgingRef.current = showLodgingOverride;
     // NON svuotare pinCache — i pin viewport sono dati geometrici,
     // non dipendono da forMyNeeds. Svuotandoli i pallini spariscono.
     // Usa il centro mappa corrente (se disponibile) invece della posizione GPS:
@@ -195,13 +208,15 @@ export function useRestaurantGeo(params: FilterParams) {
     setIsLoading(true);
     try {
       const useForMyNeeds = forMyNeedsOverride !== undefined ? forMyNeedsOverride : forMyNeedsRef.current;
+      const useShowLodging = showLodgingOverride !== undefined ? showLodgingOverride : showLodgingRef.current;
       const results = useForMyNeeds
         ? await RestaurantService.getRestaurantsForMyNeeds(
             fetchCenter.latitude, fetchCenter.longitude,
             filterAllergensRef.current, filterDietsRef.current, 50,
+            useShowLodging,
           )
         : await RestaurantService.getNearbyRestaurants(
-            fetchCenter.latitude, fetchCenter.longitude, 50,
+            fetchCenter.latitude, fetchCenter.longitude, 50, undefined, useShowLodging,
           );
       if (reloadEpoch.current !== epoch) return;
       restaurantCache.current.clear();
@@ -267,6 +282,7 @@ export function useRestaurantGeo(params: FilterParams) {
     // Epoch locale: se arriva una risposta più vecchia di un fetch successivo, viene scartata.
     // Fondamentale durante pan veloce dove più richieste sono in volo contemporaneamente.
     const epoch = ++pinFetchEpoch.current;
+    lastRegionRef.current = region;
 
     const latDelta = region.latitudeDelta;
     const lngDelta = region.longitudeDelta;
@@ -276,7 +292,7 @@ export function useRestaurantGeo(params: FilterParams) {
     const minLng = Math.max(-180, region.longitude - lngDelta / 2 - margin);
     const maxLng = Math.min(180, region.longitude + lngDelta / 2 + margin);
 
-    RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng)
+    RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng, undefined, showLodgingRef.current)
       .then(pins => {
         if (pinFetchEpoch.current !== epoch) return; // risposta stale, ignora
         setIsOffline(false); // risposta ricevuta → rete ok
@@ -311,6 +327,21 @@ export function useRestaurantGeo(params: FilterParams) {
       latitudeDelta: 1.0,
       longitudeDelta: 1.0,
     });
+  }, [userLocation, loadPinsForViewport]);
+
+  /** Cambio modalità alloggi: i pin sono un SET diverso (offers_lodging vs
+   *  serves_food), quindi svuota la cache pin e ricarica il viewport corrente con
+   *  la nuova modalità. A differenza di forMyNeeds — dove i pin restano perché il
+   *  set non cambia — qui vanno proprio ricaricati. */
+  const reloadLodgingPins = useCallback((nextShowLodging: boolean) => {
+    showLodgingRef.current = nextShowLodging;
+    pinFetchEpoch.current++; // invalida risposte in volo della modalità precedente
+    pinCache.current.clear();
+    setViewportPins([]);
+    const region = lastRegionRef.current
+      ?? (userLocation ? { ...userLocation, latitudeDelta: 1.0, longitudeDelta: 1.0 } : null)
+      ?? { ...DEFAULT_REGION };
+    loadPinsForViewport(region);
   }, [userLocation, loadPinsForViewport]);
 
   // Carica ristoranti + pin al primo GPS fix
@@ -438,6 +469,7 @@ export function useRestaurantGeo(params: FilterParams) {
     /** Pin leggeri caricati per viewport (scalabile) */
     allPins: viewportPins,
     refreshAllPins: refreshPinsAroundUser,
+    reloadLodgingPins,
     isLoading,
     userLocation,
     centerOn,

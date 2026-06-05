@@ -15,6 +15,10 @@ export interface PlaceSuggestion {
   countryCode: string;
   location: GeoPoint;
   cuisineTypes?: string[];
+  // Faccetta lodging dedotta dal primaryType Google (vedi GOOGLE_TYPE_TO_LODGING).
+  // lodgingType undefined + isLodging false = luogo trattato come ristorante.
+  lodgingType?: string;
+  isLodging?: boolean;
 }
 
 // Motivi segnalazione

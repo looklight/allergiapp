@@ -248,6 +248,9 @@
       "verify": "Verify",
       "cuisineTitle": "Cuisine type",
       "cuisineHint": "Select one or more cuisine types (optional)",
+      "lodgingGeneric": "Accommodation",
+      "hasPublicRestaurant": "Has a restaurant open to the public?",
+      "hasPublicRestaurantHint": "Turn this on only if anyone can dine here, not just guests. It will then also appear among restaurants.",
       "howRate": "How would you rate it?",
       "ratingHelpsUsers": "Your rating helps users with similar needs find this restaurant",
       "commentPlaceholder": "Tell us about your experience (optional)",
@@ -279,6 +282,8 @@
       "cuisineLabel": "Cuisine type",
       "cuisineHint": "Based on tags added by the community to describe the restaurant's cuisine type.",
       "rating4Plus": "4★ and up",
+      "showLodging": "Show hotels & stays",
+      "showLodgingHint": "Shows accommodations (hotels, B&Bs…) instead of restaurants. Hotels with a restaurant open to the public still appear among restaurants too.",
       "reset": "Reset filters",
       "apply": "Apply"
     },
@@ -426,6 +431,7 @@
     "tabs": {
       "searchPlaceholder": "Search restaurant or place...",
       "activeChipForMe": "For me",
+      "activeChipLodging": "Hotels & stays",
       "activeChipRating4Plus": "4★ and up",
       "loadingNearby": "Looking for restaurants in {{place}}...",
       "bannerNoneAt": "No restaurants in {{place}}",

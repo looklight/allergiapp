@@ -9,7 +9,7 @@ import { RestaurantService, CreateRestaurantInput } from '../../services/restaur
 import { PlacesService, PlaceAutocompleteResult } from '../../services/placesService';
 import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
 import { AuthService } from '../../services/auth';
-import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
+import { CUISINE_CATEGORIES, getLodgingLabel } from '../../constants/restaurantCategories';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import StarRating from '../../components/StarRating';
@@ -195,6 +195,10 @@ function ConfirmStep({
   remaining,
   onAddPhoto,
   onRemovePhoto,
+  isLodging,
+  lodgingType,
+  hasPublicRestaurant,
+  onTogglePublicRestaurant,
 }: {
   place: PlaceSuggestion;
   cuisineTypes: string[];
@@ -217,6 +221,10 @@ function ConfirmStep({
   remaining: number;
   onAddPhoto: () => void;
   onRemovePhoto: (index: number) => void;
+  isLodging: boolean;
+  lodgingType?: string;
+  hasPublicRestaurant: boolean;
+  onTogglePublicRestaurant: (v: boolean) => void;
 }) {
   return (
     <View style={styles.stepContainer}>
@@ -242,7 +250,32 @@ function ConfirmStep({
         </View>
       </Surface>
 
-      {/* Tipo di cucina */}
+      {/* Tipo struttura + toggle ristorante pubblico (solo lodging) */}
+      {isLodging && (
+        <Surface style={styles.section} elevation={0}>
+          <View style={styles.lodgingTypeRow}>
+            <MaterialCommunityIcons name="bed-outline" size={18} color={theme.colors.primary} />
+            <Text style={styles.lodgingTypeText}>
+              {lodgingType ? getLodgingLabel(lodgingType, i18n.locale) : i18n.t('restaurants.add.lodgingGeneric')}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.lodgingToggleRow}
+            activeOpacity={0.7}
+            onPress={() => onTogglePublicRestaurant(!hasPublicRestaurant)}
+          >
+            <MaterialCommunityIcons name="silverware-fork-knife" size={18} color={theme.colors.primary} />
+            <Text style={styles.lodgingToggleLabel}>{i18n.t('restaurants.add.hasPublicRestaurant')}</Text>
+            <View style={[styles.switchTrack, hasPublicRestaurant && styles.switchTrackActive]}>
+              <View style={[styles.switchThumb, hasPublicRestaurant && styles.switchThumbActive]} />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.stepHint}>{i18n.t('restaurants.add.hasPublicRestaurantHint')}</Text>
+        </Surface>
+      )}
+
+      {/* Tipo di cucina — per gli hotel solo se hanno ristorante pubblico */}
+      {(!isLodging || hasPublicRestaurant) && (
       <Surface style={styles.section} elevation={0}>
         <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.cuisineTitle')}</Text>
         <Text style={styles.stepHint}>{i18n.t('restaurants.add.cuisineHint')}</Text>
@@ -265,6 +298,7 @@ function ConfirmStep({
           })}
         </View>
       </Surface>
+      )}
 
       {/* Valutazione iniziale */}
       <Surface style={styles.section} elevation={0}>
@@ -383,6 +417,8 @@ export default function AddRestaurantScreen() {
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [selectedDiets, setSelectedDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
   const [explicitlyNoNeeds, setExplicitlyNoNeeds] = useState(false);
+  // Lodging: toggle "ha un ristorante aperto al pubblico?" (solo se isLodging)
+  const [hasPublicRestaurant, setHasPublicRestaurant] = useState(false);
 
   const toggleCuisine = (id: string) => {
     setCuisineTypes(prev =>
@@ -398,6 +434,7 @@ export default function AddRestaurantScreen() {
     setSelectedAllergens([...dietaryNeeds.allergens]);
     setSelectedDiets([...(dietaryNeeds.diets ?? [])]);
     setExplicitlyNoNeeds(false);
+    setHasPublicRestaurant(false);
     resetPhotos();
   };
 
@@ -472,6 +509,11 @@ export default function AddRestaurantScreen() {
     if (!selectedPlace || !user) return;
     setIsSubmitting(true);
 
+    // Lodging: la cucina vale solo per un ristorante o un hotel con ristorante
+    // pubblico; un hotel solo-colazione non porta cucina e non è "serves_food".
+    const isLodging = !!selectedPlace.isLodging;
+    const useCuisine = !isLodging || hasPublicRestaurant;
+
     const input: CreateRestaurantInput = {
       name: selectedPlace.name,
       address: selectedPlace.address,
@@ -481,7 +523,12 @@ export default function AddRestaurantScreen() {
       latitude: selectedPlace.location.latitude,
       longitude: selectedPlace.location.longitude,
       google_place_id: selectedPlace.googlePlaceId,
-      cuisine_types: cuisineTypes.length > 0 ? cuisineTypes : undefined,
+      cuisine_types: useCuisine && cuisineTypes.length > 0 ? cuisineTypes : undefined,
+      ...(isLodging && {
+        offers_lodging: true,
+        serves_food: hasPublicRestaurant,
+        lodging_type: selectedPlace.lodgingType,
+      }),
     };
 
     const result = await RestaurantService.addRestaurant(input, user.uid);
@@ -564,6 +611,10 @@ export default function AddRestaurantScreen() {
             remaining={remaining}
             onAddPhoto={showPickerAlert}
             onRemovePhoto={removePhoto}
+            isLodging={!!selectedPlace.isLodging}
+            lodgingType={selectedPlace.lodgingType}
+            hasPublicRestaurant={hasPublicRestaurant}
+            onTogglePublicRestaurant={setHasPublicRestaurant}
           />
         )}
       </ScrollView>
@@ -850,6 +901,48 @@ const styles = StyleSheet.create({
   },
   cuisineChipTextSelected: {
     color: theme.colors.onPrimary,
+  },
+  // Lodging: riga tipo struttura (sola lettura) + toggle ristorante pubblico
+  lodgingTypeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  lodgingTypeText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  lodgingToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  lodgingToggleLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  switchTrack: {
+    width: 40,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: theme.colors.border,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  switchTrackActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  switchThumb: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: theme.colors.surface,
+  },
+  switchThumbActive: {
+    alignSelf: 'flex-end',
   },
   // Rating
   ratingRow: {

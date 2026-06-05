@@ -220,6 +220,32 @@ const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
   gelato_shop:                'ice_cream',
 };
 
+// Mappa primaryType di Google → tipo struttura dell'app (faccetta lodging).
+// Speculare a GOOGLE_TYPE_TO_CUISINE. Gli ID a destra sono il vocabolario
+// canonico dei tipi struttura (le label tradotte arrivano con
+// ACCOMMODATION_CATEGORIES, step dettaglio). Le CHIAVI sono anche il set che
+// definisce "è un lodging?": un primaryType qui dentro → flusso struttura,
+// altrimenti → flusso ristorante (default). Espandere se Google introduce
+// sottotipi non coperti (es. nuovi *_inn).
+const GOOGLE_TYPE_TO_LODGING: Record<string, string> = {
+  lodging:              'hotel',   // generico → fallback Hotel
+  hotel:                'hotel',
+  resort_hotel:         'hotel',
+  motel:                'hotel',
+  extended_stay_hotel:  'hotel',
+  inn:                  'hotel',
+  japanese_inn:         'hotel',
+  budget_japanese_inn:  'hotel',
+  bed_and_breakfast:    'bnb',
+  guest_house:          'guest_house',
+  private_guest_room:   'guest_house',
+  hostel:               'hostel',
+  farmstay:             'agriturismo',
+  cottage:              'apartment',
+  cabin:                'apartment',
+  camping_cabin:        'apartment',
+};
+
 // ---------------------------------------------------------------------------
 // Estrazione città/country dagli address components (da Altrove)
 // Gestione speciale JP/KR/CN e rimozione suffissi romanizzati
@@ -275,9 +301,20 @@ function extractCityFromComponents(
 // gruppo. Senza elencarli, locali come le sale da tè ("Casa de Chá") o i wine bar
 // sono invisibili nella ricerca pur essendo mappati a una cucina. Verificato via
 // API 2026-06-01.
+//
+// LODGING ('lodging'): tipo broad delle strutture ricettive, aggiunto al secondo
+// gruppo (che aveva 4 tipi su 5) per NON introdurre una terza chiamata API per
+// ogni ricerca — la feature hotel è un "di più", non deve appesantire il flusso
+// ristoranti di tutti. L'assunzione è che 'lodging' broad-catturi hotel/B&B/
+// ostelli ecc. come 'restaurant' cattura le cucine specifiche. DA VERIFICARE
+// contro l'API New (stesso rischio 400 di gelato_shop/waffle_shop): se 'lodging'
+// non fosse un includedPrimaryType valido o non espandesse i sottotipi, passare
+// a un terzo gruppo con tipi specifici (hotel, bed_and_breakfast, guest_house,
+// resort_hotel, hostel). Il primaryType di dettaglio (hotel/bed_and_breakfast/…)
+// resta mappato da GOOGLE_TYPE_TO_LODGING in ogni caso.
 const PLACE_TYPE_GROUPS = [
   ['restaurant', 'bakery', 'pastry_shop', 'cafe', 'bar'],
-  ['ice_cream_shop', 'dessert_shop', 'tea_house', 'wine_bar'],
+  ['ice_cream_shop', 'dessert_shop', 'tea_house', 'wine_bar', 'lodging'],
 ];
 
 async function fetchAutocomplete(query: string, types: string[]): Promise<PlaceAutocompleteResult[]> {
@@ -361,6 +398,12 @@ async function fetchPlaceDetails(placeId: string): Promise<PlaceSuggestion | nul
     ? GOOGLE_TYPE_TO_CUISINE[place.primaryType]
     : undefined;
 
+  // Faccetta lodging: se il primaryType è un tipo struttura, è un hotel/B&B/…
+  // (mutuamente esclusivo con la cucina: Google dà un solo primaryType).
+  const mappedLodging = place.primaryType
+    ? GOOGLE_TYPE_TO_LODGING[place.primaryType]
+    : undefined;
+
   return {
     googlePlaceId: placeId,
     name: place.displayName?.text ?? '',
@@ -373,6 +416,8 @@ async function fetchPlaceDetails(placeId: string): Promise<PlaceSuggestion | nul
       longitude: place.location.longitude,
     },
     cuisineTypes: mappedCuisine ? [mappedCuisine] : [],
+    lodgingType: mappedLodging,
+    isLodging: !!mappedLodging,
   };
 }
 

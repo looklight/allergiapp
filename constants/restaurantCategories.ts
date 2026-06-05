@@ -1,4 +1,4 @@
-import type { RestaurantCategory } from '../types';
+import type { RestaurantCategory, LodgingCategory, LodgingTypeId } from '../types';
 
 // Filtri dietetici — sempre visibili nella lista ristoranti
 export const RESTAURANT_CATEGORIES: RestaurantCategory[] = [
@@ -507,4 +507,68 @@ export function getCuisineLabel(id: string, lang: string = 'it'): string {
 /** Restituisce array di label tradotte per un array di id */
 export function getCuisineLabels(ids: string[], lang: string = 'it'): string[] {
   return ids.map(id => getCuisineLabel(id, lang));
+}
+
+// ─── Tipi struttura ricettiva (faccetta lodging) ─────────────────────────────
+// Asse separato dalle categorie ristorante. Le label sono PRIMA PASSATA: hotel/
+// B&B/guest house sono forme internazionali (loanword come Bakery/Sushi); per
+// hostel/agriturismo/apartment le lingue CJK/TH/AR vanno riviste da madrelingua.
+export const ACCOMMODATION_CATEGORIES: LodgingCategory[] = [
+  {
+    id: 'hotel',
+    translations: {
+      it: 'Hotel', en: 'Hotel', fr: 'Hôtel', de: 'Hotel', es: 'Hotel',
+      pt: 'Hotel', nl: 'Hotel', pl: 'Hotel', ru: 'Отель', sv: 'Hotell',
+      zh: '酒店', ja: 'ホテル', ko: '호텔', th: 'โรงแรม', ar: 'فندق',
+    },
+  },
+  {
+    id: 'bnb',
+    translations: {
+      it: 'B&B', en: 'B&B', fr: 'B&B', de: 'B&B', es: 'B&B',
+      pt: 'B&B', nl: 'B&B', pl: 'B&B', ru: 'B&B', sv: 'B&B',
+      zh: 'B&B', ja: 'B&B', ko: 'B&B', th: 'B&B', ar: 'B&B',
+    },
+  },
+  {
+    id: 'guest_house',
+    translations: {
+      it: 'Guest house', en: 'Guest house', fr: 'Guest house', de: 'Guest house', es: 'Guest house',
+      pt: 'Guest house', nl: 'Guest house', pl: 'Guest house', ru: 'Guest house', sv: 'Guest house',
+      zh: 'Guest house', ja: 'Guest house', ko: 'Guest house', th: 'Guest house', ar: 'Guest house',
+    },
+  },
+  {
+    id: 'hostel',
+    translations: {
+      it: 'Ostello', en: 'Hostel', fr: 'Auberge de jeunesse', de: 'Hostel', es: 'Hostal',
+      pt: 'Hostel', nl: 'Hostel', pl: 'Hostel', ru: 'Хостел', sv: 'Vandrarhem',
+      zh: '青年旅舍', ja: 'ホステル', ko: '호스텔', th: 'โฮสเทล', ar: 'نُزُل',
+    },
+  },
+  {
+    id: 'agriturismo',
+    translations: {
+      it: 'Agriturismo', en: 'Farm stay', fr: 'Agritourisme', de: 'Bauernhof', es: 'Agroturismo',
+      pt: 'Agroturismo', nl: 'Boerderij', pl: 'Agroturystyka', ru: 'Агротуризм', sv: 'Bondgård',
+      zh: '农家乐', ja: '農家民宿', ko: '농촌 민박', th: 'ฟาร์มสเตย์', ar: 'إقامة ريفية',
+    },
+  },
+  {
+    id: 'apartment',
+    translations: {
+      it: 'Casa vacanze', en: 'Apartment', fr: 'Appartement', de: 'Ferienwohnung', es: 'Apartamento',
+      pt: 'Apartamento', nl: 'Appartement', pl: 'Apartament', ru: 'Апартаменты', sv: 'Lägenhet',
+      zh: '公寓', ja: 'アパートメント', ko: '아파트', th: 'อพาร์ตเมนต์', ar: 'شقة',
+    },
+  },
+];
+
+const LODGING_MAP = new Map(ACCOMMODATION_CATEGORIES.map(c => [c.id, c]));
+
+/** Label tradotta del tipo struttura per un id (es. 'hotel' → 'Hotel') */
+export function getLodgingLabel(id: string, lang: string = 'it'): string {
+  const cat = LODGING_MAP.get(id as LodgingTypeId);
+  if (!cat) return id;
+  return cat.translations[lang as keyof typeof cat.translations] ?? cat.translations.it;
 }

@@ -41,6 +41,8 @@ type Params = {
   forMyNeeds?: boolean;
   filterAllergens?: string[];
   filterDiets?: string[];
+  /** True = modalità alloggi: il fetch "nell'area" mostra strutture invece di ristoranti. */
+  showLodging?: boolean;
 };
 
 // Debounce differenziato: Supabase/cache locali costano poco e rispondono veloci,
@@ -108,6 +110,7 @@ export function useMapSearch({
   forMyNeeds = false,
   filterAllergens = [],
   filterDiets = [],
+  showLodging = false,
 }: Params) {
   const [placeResults, setPlaceResults] = useState<SearchResult[]>([]);
   const [restaurantResults, setRestaurantResults] = useState<SearchResult[]>([]);
@@ -137,6 +140,8 @@ export function useMapSearch({
   allergensRef.current = filterAllergens;
   const dietsRef = useRef(filterDiets);
   dietsRef.current = filterDiets;
+  const showLodgingRef = useRef(showLodging);
+  showLodgingRef.current = showLodging;
 
   /** Cerca nei ristoranti già in cache (sincrono, istantaneo) */
   const searchLocalCache = useCallback((query: string): SearchResult[] => {
@@ -379,10 +384,11 @@ export function useMapSearch({
    *  i filtri correnti combaciano con quelli appena usati da selectPlace. */
   const lastFetchKeyRef = useRef<string>('');
 
-  const computeFilterKey = (fmn: boolean, allergens: string[], diets: string[]) =>
-    fmn
+  const computeFilterKey = (fmn: boolean, allergens: string[], diets: string[], lodging: boolean) =>
+    `${lodging ? 'lodging' : 'food'}|` +
+    (fmn
       ? `fmn:${[...allergens].sort().join(',')}|${[...diets].sort().join(',')}`
-      : 'no-fmn';
+      : 'no-fmn');
 
   /** Esegue la query nearby per un place con i filtri correnti.
    *  Aggiorna lastFetchKeyRef prima dell'await per evitare che il useEffect reattivo
@@ -391,17 +397,18 @@ export function useMapSearch({
     const fmn = forMyNeedsRef.current;
     const allergens = allergensRef.current;
     const diets = dietsRef.current;
+    const lodging = showLodgingRef.current;
     const seq = ++nearbySeqRef.current;
-    lastFetchKeyRef.current = computeFilterKey(fmn, allergens, diets);
+    lastFetchKeyRef.current = computeFilterKey(fmn, allergens, diets, lodging);
     setIsLoadingNearby(true);
 
     const radius = nearbyRadiusKm(place.placeType);
     const nearby = fmn
       ? await RestaurantService.getRestaurantsForMyNeeds(
           place.latitude, place.longitude,
-          allergens, diets, radius,
+          allergens, diets, radius, lodging,
         )
-      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 50);
+      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 50, lodging);
 
     if (nearbySeqRef.current !== seq) return;
     setNearbyResults(nearby);
@@ -423,10 +430,10 @@ export function useMapSearch({
    *  (apply filtri, rimuovi chip "Per me", reset, sync profilo da altra schermata). */
   useEffect(() => {
     if (!nearbyPlace) return;
-    const key = computeFilterKey(forMyNeeds, filterAllergens, filterDiets);
+    const key = computeFilterKey(forMyNeeds, filterAllergens, filterDiets, showLodging);
     if (key === lastFetchKeyRef.current) return;
     fetchNearby(nearbyPlace).catch(() => {});
-  }, [forMyNeeds, filterAllergens, filterDiets, nearbyPlace, fetchNearby]);
+  }, [forMyNeeds, filterAllergens, filterDiets, showLodging, nearbyPlace, fetchNearby]);
 
   const clearNearbyPlace = useCallback(() => {
     nearbySeqRef.current++;

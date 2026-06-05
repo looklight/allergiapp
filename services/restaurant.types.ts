@@ -11,6 +11,9 @@ export type RestaurantPin = {
   supported_diets: string[];
   /** Tipi di cucina votati per il ristorante */
   cuisine_types: string[];
+  /** Faccette lodging (per icona pin distinta / futura UI) */
+  offers_lodging?: boolean;
+  lodging_type?: string | null;
 };
 
 export interface Restaurant {
@@ -33,6 +36,11 @@ export interface Restaurant {
   phone: string | null;
   website: string | null;
   cuisine_types: string[];
+  // Faccette lodging (colonne reali, vedi migration 067). Opzionali per resilienza
+  // verso RPC/cache che non le proiettano. mapRestaurant le porta via spread `...row`.
+  lodging_type?: string | null;
+  offers_lodging?: boolean;
+  serves_food?: boolean;
   price_range: number | null;
   photo_urls: string[];
   added_by: string | null;
@@ -145,6 +153,11 @@ export interface CreateRestaurantInput {
   cuisine_types?: string[];
   price_range?: number;
   google_place_id?: string;
+  // Faccette lodging. Se omessi, il DB applica i default (serves_food=true,
+  // offers_lodging=false): un ristorante normale non li passa.
+  offers_lodging?: boolean;
+  serves_food?: boolean;
+  lodging_type?: string;
 }
 
 export interface CreateReviewInput {

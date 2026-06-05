@@ -87,6 +87,8 @@ export default function RestaurantsScreen() {
   const [filterAllergens, setFilterAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [filterDiets, setFilterDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
   const [minRating, setMinRating] = useState<number | null>(null);
+  // Modalità alloggi (filtro "Mostra hotel"): server-side, di default OFF (app = ristoranti).
+  const [showLodging, setShowLodging] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   // Segnala che il prossimo cambio di filterAllergens/filterDiets viene dal profilo
@@ -158,7 +160,7 @@ export default function RestaurantsScreen() {
   const getSheetFraction = useCallback(() => 0, []);
 
   // --- Hooks ---
-  const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, getSheetFraction });
+  const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, showLodging, getSheetFraction });
 
   // Re-interroga quando il profilo cambia con forMyNeeds attivo.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,6 +177,7 @@ export default function RestaurantsScreen() {
     forMyNeeds,
     filterAllergens,
     filterDiets,
+    showLodging,
   });
 
   const { mapRestaurants } = useRestaurantList({
@@ -266,23 +269,28 @@ export default function RestaurantsScreen() {
     await refreshProfile();
   }, [user, refreshProfile]);
 
-  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets, minRating: newMinRating }: FilterApplyResult) => {
+  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets, minRating: newMinRating, showLodging: newShowLodging }: FilterApplyResult) => {
     setActiveFilters(filters);
     setFilterAllergens(allergens);
     setFilterDiets(diets);
     setMinRating(newMinRating);
 
     const fmnChanged = newFmn !== forMyNeeds;
+    const lodgingChanged = newShowLodging !== showLodging;
     const allergensChanged = allergens.length !== filterAllergens.length || allergens.some(a => !filterAllergens.includes(a));
     const dietsChanged = diets.length !== filterDiets.length || diets.some(d => !filterDiets.includes(d));
 
     setForMyNeeds(newFmn);
     storage.setForMyNeeds(newFmn);
+    setShowLodging(newShowLodging);
 
-    if (newFmn && (fmnChanged || allergensChanged || dietsChanged)) {
-      await geo.clearAndReload(newFmn);
-    } else if (!newFmn && fmnChanged) {
-      await geo.clearAndReload(false);
+    // Ricarica la lista geo se cambia un asse server-side (alloggi, forMyNeeds, esigenze).
+    if (lodgingChanged || (newFmn && (fmnChanged || allergensChanged || dietsChanged)) || (!newFmn && fmnChanged)) {
+      await geo.clearAndReload(newFmn, newShowLodging);
+    }
+    // I pin alloggi sono un SET diverso: svuota e ricarica solo al cambio modalità.
+    if (lodgingChanged) {
+      geo.reloadLodgingPins(newShowLodging);
     }
     // Nota: il re-fetch della lista "Ristoranti nell'area" è gestito dentro useMapSearch
     // via useEffect reattivo su forMyNeeds/filterAllergens/filterDiets.
@@ -299,7 +307,7 @@ export default function RestaurantsScreen() {
         handleSyncProfile(allergens, diets).catch(() => {});
       }
     }
-  }, [forMyNeeds, filterAllergens, filterDiets, dietaryNeeds, geo.clearAndReload, handleSyncProfile]);
+  }, [forMyNeeds, showLodging, filterAllergens, filterDiets, dietaryNeeds, geo.clearAndReload, geo.reloadLodgingPins, handleSyncProfile]);
 
   /** Query in attesa di auto-selezione da invio tastiera (v. handleSearchSubmit sotto). */
   const pendingEnterQueryRef = useRef<string | null>(null);
@@ -515,12 +523,18 @@ export default function RestaurantsScreen() {
   const handleResetFilters = useCallback(async () => {
     setActiveFilters([]);
     setMinRating(null);
-    if (forMyNeeds) {
+    const fmnWasOn = forMyNeeds;
+    const lodgingWasOn = showLodging;
+    if (fmnWasOn) {
       setForMyNeeds(false);
       storage.setForMyNeeds(false);
-      await geo.clearAndReload(false);
     }
-  }, [forMyNeeds, geo.clearAndReload]);
+    if (lodgingWasOn) setShowLodging(false);
+    if (fmnWasOn || lodgingWasOn) {
+      await geo.clearAndReload(false, false);
+    }
+    if (lodgingWasOn) geo.reloadLodgingPins(false);
+  }, [forMyNeeds, showLodging, geo.clearAndReload, geo.reloadLodgingPins]);
 
   const handleRemoveNeedsChip = useCallback(async () => {
     setForMyNeeds(false);
@@ -531,6 +545,12 @@ export default function RestaurantsScreen() {
   const handleRemoveRatingChip = useCallback(() => {
     setMinRating(null);
   }, []);
+
+  const handleRemoveLodgingChip = useCallback(async () => {
+    setShowLodging(false);
+    await geo.clearAndReload(undefined, false);
+    geo.reloadLodgingPins(false);
+  }, [geo.clearAndReload, geo.reloadLodgingPins]);
 
   const autocompleteVisible =
     mapSearch.nearbyPlace === null &&
@@ -696,13 +716,20 @@ export default function RestaurantsScreen() {
           </View>
         )}
 
-        {(activeFilters.length > 0 || minRating !== null || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
+        {(activeFilters.length > 0 || minRating !== null || showLodging || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chipScroll}
             style={styles.chipScrollContainer}
           >
+            {showLodging && (
+              <TouchableOpacity key="lodging" style={styles.activeChip} onPress={handleRemoveLodgingChip} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="bed" size={13} color={theme.colors.primary} />
+                <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipLodging')}</Text>
+                <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            )}
             {forMyNeeds && (
               <TouchableOpacity key="needs" style={styles.activeChip} onPress={handleRemoveNeedsChip} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={13} color={theme.colors.primary} />
@@ -811,6 +838,7 @@ export default function RestaurantsScreen() {
         filterAllergens={filterAllergens}
         filterDiets={filterDiets}
         minRating={minRating}
+        showLodging={showLodging}
         profileAllergens={dietaryNeeds.allergens as string[]}
         profileDiets={dietaryNeeds.diets as string[]}
         onSyncProfile={handleSyncProfile}

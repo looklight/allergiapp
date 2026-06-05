@@ -74,6 +74,7 @@ async function getNearbyRestaurants(
   lng: number,
   radiusKm = DEFAULTS.NEARBY_RADIUS_KM,
   maxResults = QUERY_LIMITS.NEARBY_DEFAULT,
+  lodgingMode = false,
 ): Promise<Restaurant[]> {
   try {
     const { data, error } = await supabase.rpc('get_nearby_restaurants', {
@@ -81,6 +82,7 @@ async function getNearbyRestaurants(
       lng,
       radius_km: radiusKm,
       max_results: maxResults,
+      lodging_mode: lodgingMode,
     });
     if (error) throw error;
     return (data ?? []).map(mapRestaurant);
@@ -96,6 +98,7 @@ async function getRestaurantsForMyNeeds(
   allergens: string[],
   dietary: string[],
   radiusKm = DEFAULTS.ALLERGEN_RADIUS_KM,
+  lodgingMode = false,
 ): Promise<Restaurant[]> {
   try {
     const { data, error } = await supabase.rpc('get_restaurants_for_my_needs', {
@@ -104,6 +107,7 @@ async function getRestaurantsForMyNeeds(
       filter_allergens: allergens,
       filter_dietary: dietary,
       radius_km: radiusKm,
+      lodging_mode: lodgingMode,
     });
     if (error) throw error;
     return (data ?? []).map(mapRestaurant);
@@ -169,10 +173,12 @@ async function getAllPositions(): Promise<RestaurantPin[]> {
 /** Pin leggeri limitati al bounding box visibile — sostituisce getAllPositions per scalabilità */
 async function getPinsInBounds(
   minLat: number, minLng: number, maxLat: number, maxLng: number, limit = 1000,
+  lodgingMode = false,
 ): Promise<RestaurantPin[]> {
   try {
     const { data, error } = await supabase.rpc('get_pins_in_bounds', {
       min_lat: minLat, min_lng: minLng, max_lat: maxLat, max_lng: maxLng, lim: limit,
+      lodging_mode: lodgingMode,
     });
     if (error) throw error;
     return (data ?? []).map((row: any) => ({
@@ -182,6 +188,8 @@ async function getPinsInBounds(
       supported_allergens: (row.supported_allergens ?? []) as string[],
       supported_diets: (row.supported_diets ?? []) as string[],
       cuisine_types: (row.cuisine_types ?? []) as string[],
+      offers_lodging: (row.offers_lodging ?? false) as boolean,
+      lodging_type: (row.lodging_type ?? null) as string | null,
     }));
   } catch (error) {
     console.warn('[RestaurantService] Errore getPinsInBounds:', error);
@@ -233,6 +241,11 @@ async function addRestaurant(
         price_range: input.price_range ?? null,
         google_place_id: input.google_place_id ?? null,
         added_by: userId,
+        // Faccette lodging: coalescing sui default DB così l'insert dei
+        // ristoranti normali resta invariato (serves_food=true, offers_lodging=false).
+        serves_food: input.serves_food ?? true,
+        offers_lodging: input.offers_lodging ?? false,
+        lodging_type: input.lodging_type ?? null,
       })
       .select()
       .single();

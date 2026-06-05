@@ -15,6 +15,7 @@ export type FilterApplyResult = {
   allergens: string[];
   diets: string[];
   minRating: number | null;
+  showLodging: boolean;
 };
 
 type Props = {
@@ -26,6 +27,7 @@ type Props = {
   filterAllergens: string[];
   filterDiets: string[];
   minRating: number | null;
+  showLodging: boolean;
   // Profilo (per DietaryNeedsPicker)
   profileAllergens: string[];
   profileDiets: string[];
@@ -47,6 +49,7 @@ export default function FilterModal({
   filterAllergens,
   filterDiets,
   minRating,
+  showLodging,
   profileAllergens,
   profileDiets,
   onSyncProfile,
@@ -62,6 +65,7 @@ export default function FilterModal({
   const [pendingAllergens, setPendingAllergens] = useState(filterAllergens);
   const [pendingDiets, setPendingDiets] = useState(filterDiets);
   const [pendingMinRating, setPendingMinRating] = useState<number | null>(minRating);
+  const [pendingShowLodging, setPendingShowLodging] = useState(showLodging);
 
   useEffect(() => {
     if (visible) {
@@ -70,6 +74,7 @@ export default function FilterModal({
       setPendingAllergens(filterAllergens);
       setPendingDiets(filterDiets);
       setPendingMinRating(minRating);
+      setPendingShowLodging(showLodging);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -96,6 +101,7 @@ export default function FilterModal({
       allergens: pendingAllergens,
       diets: pendingDiets,
       minRating: pendingMinRating,
+      showLodging: pendingShowLodging,
     });
     onClose();
   };
@@ -103,11 +109,12 @@ export default function FilterModal({
   const handleReset = () => {
     setPendingFilters([]);
     setPendingMinRating(null);
+    setPendingShowLodging(false);
     onReset();
     onClose();
   };
 
-  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds || pendingMinRating !== null;
+  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds || pendingMinRating !== null || pendingShowLodging;
 
   // Overlay split per piattaforma — trade-off del touch system nativo.
   // iOS: siblings (Pressable absoluteFill dietro) — il nested ruba il responder alla ScrollView interna su aree vuote.
@@ -189,6 +196,23 @@ export default function FilterModal({
             lang={lang}
           />
         </View>
+
+        {/* Mostra alloggi — in fondo e defilato: la funzione hotel è un "di più",
+            il default dell'app resta 100% ristoranti. */}
+        <View style={styles.lodgingSection}>
+          <TouchableOpacity
+            onPress={() => setPendingShowLodging(prev => !prev)}
+            style={styles.toggleRow}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="bed" size={18} color={theme.colors.primary} />
+            <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.showLodging')}</Text>
+            <View style={[styles.switchTrack, pendingShowLodging && styles.switchTrackActive]}>
+              <View style={[styles.switchThumb, pendingShowLodging && styles.switchThumbActive]} />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.sectionHint}>{i18n.t('restaurants.filter.showLodgingHint')}</Text>
+        </View>
       </ScrollView>
 
       {/* Footer */}
@@ -261,6 +285,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  // Sezione "Mostra alloggi": in fondo, separata da un bordo superiore (la sezione
+  // cucina sopra ha borderBottomWidth:0).
+  lodgingSection: {
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
   sectionLabel: {
     fontSize: 13,

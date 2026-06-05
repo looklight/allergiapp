@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import { getCuisineLabel } from '../../constants/restaurantCategories';
+import { getCuisineLabel, getLodgingLabel } from '../../constants/restaurantCategories';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
 import i18n from '../../utils/i18n';
@@ -108,28 +108,38 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
         </View>
       )}
 
-      {cuisineVotes.length > 0 && (
+      {(restaurant.lodging_type || cuisineVotes.length > 0) && (
         <View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setShowCuisineHint(prev => !prev)}
-          >
-            <View style={styles.tagsWrap}>
-              {cuisineVotes.map(v => {
-                const label = getCuisineLabel(v.cuisine_id, lang);
-                if (!label) return null;
-                return (
-                  <View key={v.cuisine_id} style={styles.categoryBadge}>
+          <View style={styles.tagsWrap}>
+            {/* Pill tipo struttura: prima, SENZA contatore voti — è un dato da
+                Google, non votato dalla community (a differenza della cucina). */}
+            {restaurant.lodging_type && (
+              <View style={styles.lodgingBadge}>
+                <MaterialCommunityIcons name="bed" size={13} color={theme.colors.textSecondary} />
+                <Text style={styles.lodgingBadgeText}>{getLodgingLabel(restaurant.lodging_type, lang)}</Text>
+              </View>
+            )}
+            {/* Pill cucina (votate): toccabili per mostrare l'hint sul voto. */}
+            {cuisineVotes.map(v => {
+              const label = getCuisineLabel(v.cuisine_id, lang);
+              if (!label) return null;
+              return (
+                <TouchableOpacity
+                  key={v.cuisine_id}
+                  activeOpacity={0.7}
+                  onPress={() => setShowCuisineHint(prev => !prev)}
+                >
+                  <View style={styles.categoryBadge}>
                     <Text style={styles.categoryBadgeText}>{label}</Text>
                     <View style={styles.categoryBadgeCount}>
                       <Text style={styles.categoryBadgeCountText}>{v.vote_count}</Text>
                     </View>
                   </View>
-                );
-              })}
-            </View>
-          </TouchableOpacity>
-          {showCuisineHint && (
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          {showCuisineHint && cuisineVotes.length > 0 && (
             <View style={styles.cuisineHint}>
               <MaterialCommunityIcons name="information-outline" size={14} color={theme.colors.textSecondary} />
               <Text style={styles.cuisineHintText}>
@@ -341,6 +351,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: theme.colors.textSecondary,
+  },
+  // Pill tipo struttura: come categoryBadge ma con icona e senza contatore
+  // (non votata), sfondo neutro per distinguerla dalle pill cucina.
+  lodgingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  lodgingBadgeText: {
+    fontSize: 12,
+    color: theme.colors.textPrimary,
+    fontWeight: '600',
   },
   cuisineHint: {
     flexDirection: 'row',

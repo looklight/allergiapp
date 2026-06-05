@@ -70,6 +70,22 @@ export interface RestaurantCategory {
   translations: Record<Language, string>;
 }
 
+// Tipo struttura ricettiva (faccetta lodging) — asse separato da
+// RestaurantCategoryId (dietetico/cucina). Vocabolario allineato ai valori di
+// GOOGLE_TYPE_TO_LODGING in placesService.
+export type LodgingTypeId =
+  | 'hotel'
+  | 'bnb'
+  | 'guest_house'
+  | 'hostel'
+  | 'agriturismo'
+  | 'apartment';
+
+export interface LodgingCategory {
+  id: LodgingTypeId;
+  translations: Record<Language, string>;
+}
+
 export type Language =
   | 'it'  // Italiano
   | 'en'  // English

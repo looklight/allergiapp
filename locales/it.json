@@ -248,6 +248,9 @@
       "verify": "Verifica",
       "cuisineTitle": "Tipo di cucina",
       "cuisineHint": "Seleziona uno o più tipi di cucina (opzionale)",
+      "lodgingGeneric": "Struttura ricettiva",
+      "hasPublicRestaurant": "Ha un ristorante aperto al pubblico?",
+      "hasPublicRestaurantHint": "Attivalo solo se chiunque può mangiarci, non solo gli ospiti. In questo caso comparirà anche tra i ristoranti.",
       "howRate": "Come lo valuteresti?",
       "ratingHelpsUsers": "La tua valutazione aiuta gli utenti con esigenze simili a trovare questo ristorante",
       "commentPlaceholder": "Racconta la tua esperienza (opzionale)",
@@ -279,6 +282,8 @@
       "cuisineLabel": "Tipo di cucina",
       "cuisineHint": "Basato sui tag aggiunti dalla community per descrivere il tipo di cucina del ristorante.",
       "rating4Plus": "Solo 4★ e più",
+      "showLodging": "Mostra hotel e alloggi",
+      "showLodgingHint": "Mostra strutture ricettive (hotel, B&B…) invece dei ristoranti. Gli hotel con ristorante aperto al pubblico restano anche tra i ristoranti.",
       "reset": "Resetta filtri",
       "apply": "Applica"
     },
@@ -426,6 +431,7 @@
     "tabs": {
       "searchPlaceholder": "Cerca ristorante o luogo...",
       "activeChipForMe": "Per me",
+      "activeChipLodging": "Hotel e alloggi",
       "activeChipRating4Plus": "4★ e più",
       "loadingNearby": "Cerco ristoranti a {{place}}...",
       "bannerNoneAt": "Nessun ristorante a {{place}}",
