@@ -1,103 +1,117 @@
-import { MD3LightTheme } from 'react-native-paper';
+import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 
-export const theme = {
-  ...MD3LightTheme,
-  colors: {
-    ...MD3LightTheme.colors,
+// ---------------------------------------------------------------------------
+// Color palettes — light & dark share the SAME keys so `theme.colors.X` works
+// identically in both. The dark palette is currently a stub (clone of light):
+// it becomes reachable only once the runtime theme switch is wired and the dark
+// values are designed. Until then the app resolves to `lightTheme` everywhere,
+// so behaviour is unchanged.
+// ---------------------------------------------------------------------------
 
-    // Primary palette
-    primary: '#4CAF50',
-    primaryContainer: '#C8E6C9',
-    primaryLight: '#E8F5E9',
+const lightColors = {
+  // Primary palette
+  primary: '#4CAF50',
+  primaryContainer: '#C8E6C9',
+  primaryLight: '#E8F5E9',
 
-    // Secondary palette
-    secondary: '#FF5722',
-    secondaryContainer: '#FFCCBC',
+  // Secondary palette
+  secondary: '#FF5722',
+  secondaryContainer: '#FFCCBC',
 
-    // Surfaces & backgrounds
-    surface: '#FFFFFF',
-    background: '#F5F5F5',
-    backgroundAlt: '#FAFAFA',
+  // Surfaces & backgrounds
+  surface: '#FFFFFF',
+  background: '#F5F5F5',
+  backgroundAlt: '#FAFAFA',
 
-    // Text
-    textPrimary: '#333333',
-    textSecondary: '#666666',
-    textDisabled: '#999999',
-    textHint: '#6E6E6E',
-    textMuted: '#616161',
-    onPrimary: '#FFFFFF',
+  // Text
+  textPrimary: '#333333',
+  textSecondary: '#666666',
+  textDisabled: '#999999',
+  textHint: '#6E6E6E',
+  textMuted: '#616161',
+  onPrimary: '#FFFFFF',
 
-    // Error / danger
-    error: '#D32F2F',
-    errorDark: '#C62828',
-    errorDarker: '#B71C1C',
-    errorContainer: '#FFCDD2',
-    errorLight: '#FFEBEE',
+  // Error / danger
+  error: '#D32F2F',
+  errorDark: '#C62828',
+  errorDarker: '#B71C1C',
+  errorContainer: '#FFCDD2',
+  errorLight: '#FFEBEE',
 
-    // Success
-    success: '#2E7D32',
-    successDark: '#1B5E20',
+  // Success
+  success: '#2E7D32',
+  successDark: '#1B5E20',
 
-    // Warning / caution
-    warning: '#E65100',
-    warningDark: '#D84315',
+  // Warning / caution
+  warning: '#E65100',
+  warningDark: '#D84315',
 
-    // Info (blue — distance, links, neutral highlights)
-    linkBlue: '#1976D2',
+  // Info (blue — distance, links, neutral highlights)
+  linkBlue: '#1976D2',
 
-    // Amber tones (cards, highlights)
-    amberLight: '#FFF8E1',
-    amber: '#FFC107',
-    amberDark: '#E6A700',
-    amberText: '#8D6E00',
-    amberBorder: '#FFE082',
-    amberSubtle: '#FFF8E126',
+  // Amber tones (cards, highlights)
+  amberLight: '#FFF8E1',
+  amber: '#FFC107',
+  amberDark: '#E6A700',
+  amberText: '#8D6E00',
+  amberBorder: '#FFE082',
+  amberSubtle: '#FFF8E126',
 
-    // Notice surfaces (warning message containers in card env)
-    noticeBg: '#FFF3E0',
-    noticeBorder: '#FFE0B2',
+  // Notice surfaces (warning message containers in card env)
+  noticeBg: '#FFF3E0',
+  noticeBorder: '#FFE0B2',
 
-    // Coverage / match indicators (map pins, badges)
-    coverageMedium: '#F9A825',
-    intoleranceAccent: '#FFB700',
-    primarySubtle: '#E8F5E926',
+  // Coverage / match indicators (map pins, badges)
+  coverageMedium: '#F9A825',
+  intoleranceAccent: '#FFB700',
+  primarySubtle: '#E8F5E926',
 
-    // Selection highlight (card landscape selected border/shadow)
-    selectionHighlight: '#FFD600',
-    selectionHighlightBg: '#FFFDE7',
+  // Selection highlight (card landscape selected border/shadow)
+  selectionHighlight: '#FFD600',
+  selectionHighlightBg: '#FFFDE7',
 
-    // Card description text
-    cardDescriptionText: '#5D4037',
+  // Card description text
+  cardDescriptionText: '#5D4037',
 
-    // Borders & dividers
-    divider: '#E5E5E5',
-    border: '#E0E0E0',
-    separator: '#CCCCCC',
-    shadow: '#000000',
+  // Borders & dividers
+  divider: '#E5E5E5',
+  border: '#E0E0E0',
+  separator: '#CCCCCC',
+  shadow: '#000000',
 
-    // Overlays
-    overlay: 'rgba(0,0,0,0.5)',
-    overlayDark: 'rgba(0,0,0,0.8)',
-    overlayLight: 'rgba(255,255,255,0.85)',
+  // Overlays
+  overlay: 'rgba(0,0,0,0.5)',
+  overlayDark: 'rgba(0,0,0,0.8)',
+  overlayLight: 'rgba(255,255,255,0.85)',
 
-    // UI elements
-    switchThumbInactive: '#F4F3F4',
-    neutralBg: '#EEEEEE',
-    restrictionRowBg: '#F9F5FF',
-    restrictionRowBgPressed: '#F0EAFC',
+  // UI elements
+  switchThumbInactive: '#F4F3F4',
+  neutralBg: '#EEEEEE',
+  restrictionRowBg: '#F9F5FF',
+  restrictionRowBgPressed: '#F0EAFC',
 
-    // Brand colors
-    brandInstagram: '#E1306C',
-    brandYoutube: '#FF0000',
-    brandWebsite: '#FFDD00',
-    brandGoogleMaps: '#EA4335',
+  // Brand colors
+  brandInstagram: '#E1306C',
+  brandYoutube: '#FF0000',
+  brandWebsite: '#FFDD00',
+  brandGoogleMaps: '#EA4335',
 
-    // UI components
-    favoriteRed: '#E53935',
-    starFilled: '#F5A623',
-    starEmpty: '#D0D0D0',
-  },
+  // UI components
+  favoriteRed: '#E53935',
+  starFilled: '#F5A623',
+  starEmpty: '#D0D0D0',
+};
 
+// Stub: dark palette mirrors light for now. Real dark values land in Fase 2.
+const darkColors: typeof lightColors = {
+  ...lightColors,
+};
+
+// ---------------------------------------------------------------------------
+// Shared (non-color) design tokens — identical across themes.
+// ---------------------------------------------------------------------------
+
+const sharedTokens = {
   // Layout constants
   spacing: {
     xs: 4,
@@ -150,3 +164,31 @@ export const theme = {
     xxl: 48,
   },
 };
+
+// ---------------------------------------------------------------------------
+// Themes.
+// ---------------------------------------------------------------------------
+
+export const lightTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    ...lightColors,
+  },
+  ...sharedTokens,
+};
+
+export const darkTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    ...darkColors,
+  },
+  ...sharedTokens,
+};
+
+export type AppTheme = typeof lightTheme;
+
+// Backward-compatible alias used by files not yet migrated to `useTheme()`.
+// Always points to the light theme (the historical default).
+export const theme = lightTheme;

@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import Constants from 'expo-constants';
 import { theme } from '../constants/theme';
+import { ThemeProvider, useTheme, useThemePreference } from '../contexts/ThemeContext';
 import { AppProvider, useAppContext } from '../contexts/AppContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { UnlockedAvatarsProvider } from '../contexts/UnlockedAvatarsContext';
@@ -117,6 +118,8 @@ const splashStyles = StyleSheet.create({
 const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary', '/auth/onboarding-tutorial', '/legal'];
 
 function AppContent() {
+  const activeTheme = useTheme();
+  const { isDark } = useThemePreference();
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, profileAllergens, profileOtherFoods, profileActiveDietModes, profileVegetarianLevel, profileRestrictions, settings } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -187,13 +190,13 @@ function AppContent() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           animation: 'ios_from_right',
           gestureEnabled: true,
           headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
+          contentStyle: { backgroundColor: activeTheme.colors.background },
         }}
       />
       {/* Consent modal overlay - shown on top of the app */}
@@ -206,19 +209,28 @@ function AppContent() {
   );
 }
 
+// Feeds Paper its theme from the ThemeContext, so Paper components (Button,
+// TextInput, Dialog…) switch light/dark together with our own styled views.
+function ThemedPaperProvider({ children }: { children: React.ReactNode }) {
+  const activeTheme = useTheme();
+  return <PaperProvider theme={activeTheme}>{children}</PaperProvider>;
+}
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <PaperProvider theme={theme}>
-          <AppProvider>
-            <AuthProvider>
-              <UnlockedAvatarsProvider>
-                <AppContent />
-              </UnlockedAvatarsProvider>
-            </AuthProvider>
-          </AppProvider>
-        </PaperProvider>
+        <ThemeProvider>
+          <ThemedPaperProvider>
+            <AppProvider>
+              <AuthProvider>
+                <UnlockedAvatarsProvider>
+                  <AppContent />
+                </UnlockedAvatarsProvider>
+              </AuthProvider>
+            </AppProvider>
+          </ThemedPaperProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

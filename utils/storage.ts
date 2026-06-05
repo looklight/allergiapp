@@ -22,7 +22,11 @@ const STORAGE_KEYS = {
   USER_CARDS: 'allergiapp_user_cards',
   ACTIVE_CARD_ID: 'allergiapp_active_card_id',
   PROFILE_COUNTS: 'allergiapp_profile_counts',
+  THEME_MODE: 'allergiapp_theme_mode',
 };
+
+export type ThemeMode = 'system' | 'light' | 'dark';
+const DEFAULT_THEME_MODE: ThemeMode = 'system';
 
 export type ProfileCounts = { reviews: number; favorites: number };
 
@@ -228,6 +232,25 @@ export const storage = {
       const current = await this.getSettings();
       const updated = { ...current, ...settings };
       await AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  async getThemeMode(): Promise<ThemeMode> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.THEME_MODE);
+      return data === 'light' || data === 'dark' || data === 'system'
+        ? data
+        : DEFAULT_THEME_MODE;
+    } catch {
+      return DEFAULT_THEME_MODE;
+    }
+  },
+
+  async setThemeMode(mode: ThemeMode): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.THEME_MODE, mode);
     } catch {
       // Storage write failed silently
     }
