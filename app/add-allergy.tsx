@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Pressable, LayoutAnimation, Platform, UIManager, TextInput } from 'react-native';
 import { Text, Checkbox, List, Button, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -13,7 +13,8 @@ import { ALLERGENS } from '../constants/allergens';
 import { OTHER_FOODS, OTHER_FOOD_CATEGORIES, OtherFoodId, OtherFoodCategory } from '../constants/otherFoods';
 import { DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language } from '../types';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
@@ -21,6 +22,8 @@ import FoodIcon from '../components/FoodIcon';
 import AppHeader from './components/AppHeader';
 
 export default function AddAllergyScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedOtherFoods: savedOtherFoods, setSelectedOtherFoods: saveOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, settings, activeCardId } = useAppContext();
@@ -362,7 +365,7 @@ export default function AddAllergyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',

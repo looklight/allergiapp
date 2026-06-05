@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Linking, Pressable, Image, Text as RNText } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
@@ -6,7 +6,8 @@ import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { APP_CONFIG } from '../constants/config';
 import AppHeader from './components/AppHeader';
@@ -17,10 +18,14 @@ const TIKTOK_URL = 'https://www.tiktok.com/@martadimuro';
 const WEBSITE_URL = 'https://www.martadimuro.com';
 
 function AuthorPhoto() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return <Image source={require('../assets/profile_pic.jpg')} style={styles.authorImage} />;
 }
 
 export default function AboutScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [showGradient, setShowGradient] = useState(true);
@@ -144,7 +149,7 @@ export default function AboutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

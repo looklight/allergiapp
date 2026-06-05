@@ -2,11 +2,12 @@ import { Platform } from 'react-native';
 import { Tabs, Stack } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
 import i18n from '../../utils/i18n';
 import { AnimatedTabBar, TabBarVisibilityProvider } from '../../components/TabBarVisibility';
 
 export default function TabLayout() {
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   // Su Android con edge-to-edge la gesture nav riporta insets.bottom molto
   // piccolo (~8dp), e React Navigation lo usa direttamente come paddingBottom

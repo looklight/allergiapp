@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
@@ -15,6 +16,8 @@ type Tab = 'reviews' | 'likes';
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] as const;
 
 function RankBadge({ rank }: { rank: number }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (rank <= 3) {
     return (
       <View style={[styles.medalBadge, { backgroundColor: MEDAL_COLORS[rank - 1] }]}>
@@ -30,6 +33,8 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 function LeaderboardRow({ entry, rank, onPress }: { entry: LeaderboardEntry; rank: number; onPress: () => void }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const name = getDisplayName(entry);
   const displayName = name || i18n.t('leaderboard.anonymous');
   return (
@@ -64,6 +69,8 @@ function LeaderboardRow({ entry, rank, onPress }: { entry: LeaderboardEntry; ran
 }
 
 export default function LeaderboardScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('reviews');
   const [topReviewers, setTopReviewers] = useState<LeaderboardEntry[]>([]);
@@ -169,7 +176,7 @@ export default function LeaderboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

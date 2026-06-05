@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Animated } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,7 +8,8 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { RESTRICTION_ITEMS, RestrictionItemId, RestrictionCategoryId } from '../constants/otherRestrictions';
 import { DIET_MODES, DietModeId, DietMode, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 import { Language } from '../types';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
@@ -32,6 +33,8 @@ function DietModeToggle({
   onToggle: (enabled: boolean) => void;
   isFirst: boolean;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const bgColor = animValue.interpolate({
     inputRange: [0, 1],
     outputRange: [theme.colors.surface, mode.toggleColors.activeBg],
@@ -74,6 +77,8 @@ function DietModeToggle({
 }
 
 export default function OtherRestrictionsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
@@ -307,7 +312,7 @@ export default function OtherRestrictionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,

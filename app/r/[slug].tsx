@@ -3,16 +3,19 @@
 // allergiapp://r/{slug} (custom scheme).
 // Risolve lo slug all'id reale via RPC, poi redirige alla scheda dettaglio esistente.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { supabase } from '../../services/supabase';
 import { RestaurantService } from '../../services/restaurantService';
 import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
 import i18n from '../../utils/i18n';
 
 export default function RestaurantBySlugScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const [didFail, setDidFail] = useState(false);
@@ -73,7 +76,7 @@ export default function RestaurantBySlugScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',

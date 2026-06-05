@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, Modal, StyleSheet, Image, Platform } from 'react-native';
 import { Text, Button, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,7 +7,8 @@ import { useAppContext } from '../contexts/AppContext';
 import { useTrackingPermission } from '../hooks/useTrackingPermission';
 import { Analytics } from '../services/analytics';
 import { Crashlytics } from '../services/crashlytics';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 
 interface ConsentModalProps {
@@ -15,6 +16,8 @@ interface ConsentModalProps {
 }
 
 export default function ConsentModal({ visible }: ConsentModalProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const pathname = usePathname();
@@ -133,7 +136,7 @@ export default function ConsentModal({ visible }: ConsentModalProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: theme.colors.overlay,

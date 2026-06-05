@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, ReactElement } from 'react';
+import React, { useState, useEffect, useRef, useMemo, ReactElement } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, SegmentedButtons } from 'react-native-paper';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import { LEGAL_CONTENT } from '../constants/legalContent';
 import i18n from '../utils/i18n';
 import { AppLanguage } from '../types';
@@ -15,6 +16,8 @@ const AVAILABLE_LANGUAGES = [
 ];
 
 export default function LegalScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const [selectedDoc, setSelectedDoc] = useState<'privacy' | 'terms'>(
     tab === 'terms' ? 'terms' : 'privacy'
@@ -155,7 +158,7 @@ export default function LegalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
