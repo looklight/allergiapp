@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 import { useFavoriteNote } from '../../hooks/useFavoriteNote';
 
@@ -31,6 +32,8 @@ type Props = {
  * Visibile solo se il posto e' preferito.
  */
 export default function FavoriteNoteSection({ restaurantId, isFavorite, onBeginEdit }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { note, status, onChangeNote, flush } = useFavoriteNote(restaurantId, isFavorite);
   const [editing, setEditing] = useState(false);
 
@@ -115,7 +118,7 @@ export default function FavoriteNoteSection({ restaurantId, isFavorite, onBeginE
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   // Contenitore leggero condiviso da tutti gli stati (effetto Google Maps).
   box: {
     marginHorizontal: theme.spacing.lg,

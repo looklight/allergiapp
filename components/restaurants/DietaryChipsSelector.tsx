@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, Pressable, LayoutAnimation, Platform, UIManager, type ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,7 +10,8 @@ import {
 import { OTHER_FOOD_CATEGORIES, type OtherFoodCategory } from '../../constants/otherFoods';
 import ChipGrid from '../ChipGrid';
 import i18n from '../../utils/i18n';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -60,6 +61,8 @@ export default function DietaryChipsSelector({
   scrollPosRef,
   othersFooterSlot,
 }: DietaryChipsSelectorProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const othersSelectedCount = allergens.filter(id => OTHERS_IDS.has(id)).length;
   const [othersExpanded, setOthersExpanded] = useState(othersSelectedCount > 0);
 
@@ -162,7 +165,7 @@ export default function DietaryChipsSelector({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',

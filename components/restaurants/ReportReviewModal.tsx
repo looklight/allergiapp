@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 
 export type ReviewReportReason = 'inappropriate' | 'spam' | 'false_info';
@@ -25,6 +26,8 @@ type Props = {
 };
 
 export default function ReportReviewModal({ visible, onClose, onSubmit }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [selected, setSelected] = useState<ReviewReportReason | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -106,7 +109,7 @@ export default function ReportReviewModal({ visible, onClose, onSubmit }: Props)
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

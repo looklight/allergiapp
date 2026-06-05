@@ -10,7 +10,9 @@ import Animated, {
   withSequence,
   runOnJS,
 } from 'react-native-reanimated';
-import { theme } from '../../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
 import Avatar from '../Avatar';
@@ -31,6 +33,8 @@ interface ReviewCardProps {
 const REVIEW_PHOTO_SIZE = 80;
 
 export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview }: ReviewCardProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   // uid della route corrente: valorizzato solo dentro /restaurants/user/[uid].
   // Serve a non riaprire il profilo che stai già guardando (duplicato no-op);
@@ -206,7 +210,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   contributionRow: {
     gap: 6,
   },

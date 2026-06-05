@@ -14,7 +14,8 @@ import { Text, Divider } from 'react-native-paper';
 import { BottomSheetScrollView } from '../BottomSheet';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../StarRating';
 import ImageFullscreenModal from '../ImageFullscreenModal';
@@ -71,6 +72,8 @@ export default function RestaurantDetailBody({
   onScrollOffset,
   onBeginEditNote,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
   const lang = i18n.locale as AppLanguage;
@@ -530,7 +533,7 @@ export default function RestaurantDetailBody({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   scrollView: {
     flex: 1,
   },

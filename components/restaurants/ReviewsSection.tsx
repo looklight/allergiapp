@@ -1,8 +1,9 @@
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
-import { theme } from '../../constants/theme';
+import { useState, useEffect, useMemo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import ReviewCard from './ReviewCard';
 import i18n from '../../utils/i18n';
 import { useAppContext } from '../../contexts/AppContext';
@@ -47,6 +48,8 @@ export default function ReviewsSection({
   currentUserId,
   sheetFullyOpen,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { settings, dismissReviewsDisclaimer } = useAppContext();
   const dismissed = settings.reviewsDisclaimerDismissed ?? false;
 
@@ -188,7 +191,7 @@ export default function ReviewsSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingVertical: 16,

@@ -1,7 +1,9 @@
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 import type { MenuPhoto } from '../../services/restaurantService';
 
@@ -25,6 +27,8 @@ export default function MenuPhotosSection({
   onPhotoPress,
   onManage,
 }: MenuPhotosSectionProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const hasPhotos = menuPhotos.length > 0;
 
   // Con foto: titolo + conteggio + "Gestisci" e la striscia di thumbnail.
@@ -77,7 +81,7 @@ export default function MenuPhotosSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   menuSection: {
     // paddingTop ridotto a 4 (come le foto recensioni) così lo stacco dal banner
     // è coerente quando il menu è il primo blocco sotto di esso.

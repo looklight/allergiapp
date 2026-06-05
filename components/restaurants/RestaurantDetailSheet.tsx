@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { View, StyleSheet, BackHandler, Platform } from 'react-native';
 
 const SHARE_ICON = Platform.OS === 'ios' ? 'export-variant' : 'share-variant';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import { useAuth } from '../../contexts/AuthContext';
 import BottomSheet, { type BottomSheetRef } from '../BottomSheet';
@@ -25,6 +26,8 @@ type Props = {
 };
 
 export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseStart, onFavoriteToggled }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const sheetRef = useRef<BottomSheetRef>(null);
   const detail = useRestaurantDetail(restaurantId, onFavoriteToggled);
   const { isAuthenticated } = useAuth();
@@ -141,7 +144,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   sheetShadow: {
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: -2 },

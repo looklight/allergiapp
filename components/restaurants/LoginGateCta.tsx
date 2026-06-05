@@ -2,7 +2,9 @@ import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 
 interface LoginGateCtaProps {
@@ -11,6 +13,8 @@ interface LoginGateCtaProps {
 }
 
 export default function LoginGateCta({ title, subtitle }: LoginGateCtaProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
 
   return (
@@ -49,7 +53,7 @@ export default function LoginGateCta({ title, subtitle }: LoginGateCtaProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     paddingVertical: 40,

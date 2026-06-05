@@ -1,7 +1,9 @@
 import { View, StyleSheet } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { REPORT_REASON_MAP } from '../../constants/reportReasons';
 import type { Report } from '../../services/restaurant.types';
 import i18n from '../../utils/i18n';
@@ -11,6 +13,8 @@ type Props = {
 };
 
 export default function ReportsSection({ reports }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (reports.length === 0) return null;
 
   return (
@@ -53,7 +57,7 @@ export default function ReportsSection({ reports }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   separator: {
     height: 8,
     backgroundColor: theme.colors.background,

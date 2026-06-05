@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { getCuisineLabel, getLodgingLabel } from '../../constants/restaurantCategories';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
@@ -35,6 +36,8 @@ interface RestaurantHeaderProps {
 }
 
 export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, isAuthenticated, onScrollToReviews, hideMapsButton, hideNameAndRating }: RestaurantHeaderProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [compatExpanded, setCompatExpanded] = useState(false);
   const [showCuisineHint, setShowCuisineHint] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
@@ -273,7 +276,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingTop: 16,

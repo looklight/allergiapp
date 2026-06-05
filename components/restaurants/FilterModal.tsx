@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert, Pressable, Platform } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { CUISINE_CATEGORIES } from '../../constants/restaurantCategories';
 import ChipGrid from '../ChipGrid';
 import DietaryNeedsPicker from '../DietaryNeedsPicker';
@@ -59,6 +60,8 @@ export default function FilterModal({
   onReset,
   lang,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   // Tutto il pending state vive qui — nessuna modifica al parent fino ad "Applica".
   const [pendingFilters, setPendingFilters] = useState<RestaurantCategoryId[]>(activeFilters);
   const [pendingMyNeeds, setPendingMyNeeds] = useState(forMyNeeds);
@@ -241,7 +244,7 @@ export default function FilterModal({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

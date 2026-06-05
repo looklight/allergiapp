@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useMemo } from 'react';
 import {
   Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView, Platform, Pressable,
   useWindowDimensions, type ViewToken,
@@ -12,7 +12,8 @@ import ZoomableImage from '../ZoomableImage';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import StarRating from '../StarRating';
 import { getRestrictionById, type FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import Avatar from '../Avatar';
@@ -31,12 +32,12 @@ export interface GalleryPhoto {
   dietarySnapshot?: string[];
 }
 
-const CATEGORY_COLORS: Record<FoodRestrictionCategory, { bg: string; text: string }> = {
+const makeCategoryColors = (theme: AppTheme): Record<FoodRestrictionCategory, { bg: string; text: string }> => ({
   eu_allergen:      { bg: 'rgba(255,140,0,0.25)',  text: theme.colors.warning },
   intolerance:      { bg: 'rgba(255,180,0,0.25)',  text: theme.colors.intoleranceAccent },
   diet:             { bg: 'rgba(76,175,80,0.25)',   text: theme.colors.primary },
   food_sensitivity: { bg: 'rgba(255,255,255,0.15)', text: 'rgba(255,255,255,0.7)' },
-};
+});
 
 const DISMISS_THRESHOLD = 120;
 
@@ -52,6 +53,9 @@ interface PhotoGalleryModalProps {
 }
 
 export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds, onReportReview, reportedReviewIds }: PhotoGalleryModalProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const CATEGORY_COLORS = useMemo(() => makeCategoryColors(theme), [theme]);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -256,7 +260,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.95)',

@@ -2,7 +2,8 @@ import { useCallback, useMemo, useRef, useState, useEffect, type ComponentProps 
 import { View, StyleSheet, ActivityIndicator, BackHandler, Platform, TouchableOpacity, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { getCuisineLabel, venueIconName } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 import { haversineKm } from '../../utils/geo';
@@ -37,6 +38,8 @@ type Props = {
 
 /** Badge compatto per la compatibilità con le esigenze dell'utente. */
 function MatchBadge({ restaurant }: { restaurant: Restaurant }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
   const inferredTotal = (restaurant.inferred_allergen_count ?? 0) + (restaurant.inferred_dietary_count ?? 0);
   const directTotal = coveredTotal - inferredTotal;
@@ -73,6 +76,8 @@ export default function NearbyListSheet({
   onCloseStart,
   onAddPress,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const sheetRef = useRef<BottomSheetRef>(null);
   const [bodyScrollEnabled, setBodyScrollEnabled] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>(showMatchInfo ? 'compatibility' : userLocation ? 'distance' : 'rating');
@@ -316,7 +321,7 @@ export default function NearbyListSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   sheet: {
     elevation: 12,
   },
