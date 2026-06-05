@@ -2,7 +2,7 @@ import { useEffect, useRef, useMemo } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useTheme } from '../../../contexts/ThemeContext';
-import type { AppTheme } from '../../../constants/theme';
+import { lightTheme, type AppTheme } from '../../../constants/theme';
 import i18n from '../../../utils/i18n';
 import OnboardingSlide from '../OnboardingSlide';
 import type { OnboardingSlideProps } from '../types';
@@ -145,14 +145,16 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     maxWidth: 260,
     alignSelf: 'center',
   },
+  // Mock dell'anteprima card: usa il tema CHIARO statico — la card vera è sempre
+  // chiara, quindi l'anteprima onboarding deve somigliarle anche in dark mode.
   card: {
     borderRadius: 14,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: lightTheme.colors.surface,
     overflow: 'hidden',
-    boxShadow: theme.shadows.lg,
+    boxShadow: lightTheme.shadows.lg,
   },
   header: {
-    backgroundColor: theme.colors.error,
+    backgroundColor: lightTheme.colors.error,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -160,12 +162,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: theme.colors.onPrimary,
+    color: lightTheme.colors.onPrimary,
     letterSpacing: 2,
   },
   headerSubtitle: {
     fontSize: 12,
-    color: theme.colors.onPrimary,
+    color: lightTheme.colors.onPrimary,
     letterSpacing: 1,
     marginTop: 2,
   },
@@ -180,7 +182,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   rowDivider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.divider,
+    borderBottomColor: lightTheme.colors.divider,
   },
   rowIcon: {
     fontSize: 22,
@@ -188,6 +190,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   rowLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: theme.colors.error,
+    color: lightTheme.colors.error,
   },
 });
