@@ -40,13 +40,11 @@ export default function SettingsScreen() {
   } = useAppContext();
   const appLang = settings.appLanguage;
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const themeChoices = [
     { mode: 'system' as const, label: i18n.t('settings.themeSystem'), icon: 'cellphone' as const },
     { mode: 'light' as const, label: i18n.t('settings.themeLight'), icon: 'white-balance-sunny' as const },
     { mode: 'dark' as const, label: i18n.t('settings.themeDark'), icon: 'weather-night' as const },
   ];
-  const currentThemeChoice = themeChoices.find((o) => o.mode === themeMode) ?? themeChoices[0];
   const { downloadingLang, downloadProgress, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
 
   // Blocca orientamento in portrait
@@ -183,67 +181,31 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        {/* Aspetto - tema (stesso pattern del selettore lingua) */}
-        <View style={styles.appearanceWrapper}>
-          <Pressable
-            onPress={() => setShowThemeMenu(!showThemeMenu)}
-            style={styles.langPickerRow}
-            accessibilityRole="button"
-            accessibilityLabel={`${i18n.t('settings.appearance')}: ${currentThemeChoice.label}`}
-            accessibilityState={{ expanded: showThemeMenu }}
-          >
-            <MaterialCommunityIcons name="theme-light-dark" size={22} color={theme.colors.primary} />
-            <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.appearance')}</Text>
-            <View style={styles.langPickerAnchor}>
-              <MaterialCommunityIcons name={currentThemeChoice.icon} size={18} color={theme.colors.textSecondary} />
-              <Text style={styles.langPickerLabel}>{currentThemeChoice.label}</Text>
-              <MaterialCommunityIcons
-                name={showThemeMenu ? 'chevron-up' : 'chevron-down'}
-                size={18}
-                color={theme.colors.textSecondary}
-              />
-            </View>
-          </Pressable>
-          {showThemeMenu && (
-            <View style={styles.langPickerOptions}>
-              {themeChoices.map((opt) => {
-                const selected = themeMode === opt.mode;
-                return (
-                  <Pressable
-                    key={opt.mode}
-                    onPress={() => {
-                      setThemeMode(opt.mode);
-                      setShowThemeMenu(false);
-                    }}
-                    style={({ pressed }) => [
-                      styles.langPickerOption,
-                      selected && styles.langPickerOptionSelected,
-                      pressed && styles.langPickerOptionPressed,
-                    ]}
-                    accessibilityRole="radio"
-                    accessibilityLabel={opt.label}
-                    accessibilityState={{ checked: selected }}
-                  >
-                    <MaterialCommunityIcons
-                      name={opt.icon}
-                      size={22}
-                      color={selected ? theme.colors.primary : theme.colors.textSecondary}
-                      style={styles.themeOptionIcon}
-                    />
-                    <Text style={[
-                      styles.langPickerOptionName,
-                      selected && styles.langPickerOptionNameSelected,
-                    ]}>
-                      {opt.label}
-                    </Text>
-                    {selected && (
-                      <MaterialCommunityIcons name="check" size={20} color={theme.colors.primary} />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
+        {/* Aspetto - segmented control a 3 posizioni, inline */}
+        <View style={styles.appearanceRow}>
+          <MaterialCommunityIcons name="theme-light-dark" size={22} color={theme.colors.primary} />
+          <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.appearance')}</Text>
+          <View style={styles.themeSegment}>
+            {themeChoices.map((opt) => {
+              const selected = themeMode === opt.mode;
+              return (
+                <Pressable
+                  key={opt.mode}
+                  onPress={() => setThemeMode(opt.mode)}
+                  style={[styles.themeSegmentBtn, selected && styles.themeSegmentBtnActive]}
+                  accessibilityRole="radio"
+                  accessibilityLabel={opt.label}
+                  accessibilityState={{ checked: selected }}
+                >
+                  <MaterialCommunityIcons
+                    name={opt.icon}
+                    size={18}
+                    color={selected ? theme.colors.onPrimary : theme.colors.textSecondary}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
 
         <DownloadableLanguagesSection
@@ -398,11 +360,30 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 14,
     gap: 10,
   },
-  appearanceWrapper: {
-    paddingTop: 4,
+  appearanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 8,
+    minHeight: 56,
   },
-  themeOptionIcon: {
-    marginRight: 12,
+  themeSegment: {
+    flexDirection: 'row',
+    marginLeft: 'auto',
+    backgroundColor: theme.colors.neutralBg,
+    borderRadius: 10,
+    padding: 2,
+    gap: 2,
+  },
+  themeSegmentBtn: {
+    width: 42,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  themeSegmentBtnActive: {
+    backgroundColor: theme.colors.primary,
   },
   sectionHeaderTitle: {
     fontSize: 16,
