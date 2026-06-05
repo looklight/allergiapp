@@ -10,7 +10,6 @@ import i18n from '../utils/i18n';
 import { DownloadProgress } from '../services/translationService';
 import { useTheme, useThemePreference } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
-import type { ThemeMode } from '../utils/storage';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import { useLanguageDownload } from '../hooks/useLanguageDownload';
@@ -41,6 +40,13 @@ export default function SettingsScreen() {
   } = useAppContext();
   const appLang = settings.appLanguage;
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const themeChoices = [
+    { mode: 'system' as const, label: i18n.t('settings.themeSystem'), icon: 'cellphone' as const },
+    { mode: 'light' as const, label: i18n.t('settings.themeLight'), icon: 'white-balance-sunny' as const },
+    { mode: 'dark' as const, label: i18n.t('settings.themeDark'), icon: 'weather-night' as const },
+  ];
+  const currentThemeChoice = themeChoices.find((o) => o.mode === themeMode) ?? themeChoices[0];
   const { downloadingLang, downloadProgress, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
 
   // Blocca orientamento in portrait
@@ -177,44 +183,67 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        {/* Aspetto - tema chiaro/scuro/sistema */}
+        {/* Aspetto - tema (stesso pattern del selettore lingua) */}
         <View style={styles.appearanceWrapper}>
-          <View style={styles.sectionHeaderRow}>
+          <Pressable
+            onPress={() => setShowThemeMenu(!showThemeMenu)}
+            style={styles.langPickerRow}
+            accessibilityRole="button"
+            accessibilityLabel={`${i18n.t('settings.appearance')}: ${currentThemeChoice.label}`}
+            accessibilityState={{ expanded: showThemeMenu }}
+          >
             <MaterialCommunityIcons name="theme-light-dark" size={22} color={theme.colors.primary} />
             <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.appearance')}</Text>
-          </View>
-          <View style={styles.themeOptions}>
-            {([
-              { mode: 'system', label: i18n.t('settings.themeSystem'), icon: 'cellphone' },
-              { mode: 'light', label: i18n.t('settings.themeLight'), icon: 'white-balance-sunny' },
-              { mode: 'dark', label: i18n.t('settings.themeDark'), icon: 'weather-night' },
-            ] as const).map((opt) => {
-              const selected = themeMode === opt.mode;
-              return (
-                <Pressable
-                  key={opt.mode}
-                  onPress={() => setThemeMode(opt.mode as ThemeMode)}
-                  style={({ pressed }) => [
-                    styles.themeOption,
-                    selected && styles.themeOptionSelected,
-                    pressed && styles.langPickerOptionPressed,
-                  ]}
-                  accessibilityRole="radio"
-                  accessibilityLabel={opt.label}
-                  accessibilityState={{ checked: selected }}
-                >
-                  <MaterialCommunityIcons
-                    name={opt.icon}
-                    size={22}
-                    color={selected ? theme.colors.primary : theme.colors.textSecondary}
-                  />
-                  <Text style={[styles.themeOptionLabel, selected && styles.themeOptionLabelSelected]}>
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+            <View style={styles.langPickerAnchor}>
+              <MaterialCommunityIcons name={currentThemeChoice.icon} size={18} color={theme.colors.textSecondary} />
+              <Text style={styles.langPickerLabel}>{currentThemeChoice.label}</Text>
+              <MaterialCommunityIcons
+                name={showThemeMenu ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={theme.colors.textSecondary}
+              />
+            </View>
+          </Pressable>
+          {showThemeMenu && (
+            <View style={styles.langPickerOptions}>
+              {themeChoices.map((opt) => {
+                const selected = themeMode === opt.mode;
+                return (
+                  <Pressable
+                    key={opt.mode}
+                    onPress={() => {
+                      setThemeMode(opt.mode);
+                      setShowThemeMenu(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.langPickerOption,
+                      selected && styles.langPickerOptionSelected,
+                      pressed && styles.langPickerOptionPressed,
+                    ]}
+                    accessibilityRole="radio"
+                    accessibilityLabel={opt.label}
+                    accessibilityState={{ checked: selected }}
+                  >
+                    <MaterialCommunityIcons
+                      name={opt.icon}
+                      size={22}
+                      color={selected ? theme.colors.primary : theme.colors.textSecondary}
+                      style={styles.themeOptionIcon}
+                    />
+                    <Text style={[
+                      styles.langPickerOptionName,
+                      selected && styles.langPickerOptionNameSelected,
+                    ]}>
+                      {opt.label}
+                    </Text>
+                    {selected && (
+                      <MaterialCommunityIcons name="check" size={20} color={theme.colors.primary} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
         </View>
 
         <DownloadableLanguagesSection
@@ -372,34 +401,8 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   appearanceWrapper: {
     paddingTop: 4,
   },
-  themeOptions: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 2,
-    gap: 8,
-  },
-  themeOption: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.divider,
-    backgroundColor: theme.colors.surface,
-  },
-  themeOptionSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primaryLight,
-  },
-  themeOptionLabel: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-  },
-  themeOptionLabelSelected: {
-    color: theme.colors.primary,
-    fontWeight: '600',
+  themeOptionIcon: {
+    marginRight: 12,
   },
   sectionHeaderTitle: {
     fontSize: 16,
