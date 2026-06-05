@@ -75,6 +75,20 @@ function isGeographicPlace(osmClass?: string, osmType?: string): boolean {
   return false;
 }
 
+// Tipi geografici troppo ampi perché un raggio attorno al centroide produca un
+// conteggio sensato: per questi la ricerca centra solo la mappa (navigazione),
+// senza aprire il banner "ristoranti nei dintorni" — un "0 ristoranti in Italia"
+// sarebbe falso (ci sono ristoranti, solo non entro 50 km dal baricentro del paese).
+// Soglia allineata ai tier di nearbyRadiusKm: da `city` in giù il raggio (≤15 km)
+// è significativo, da provincia in su no.
+const NEARBY_INELIGIBLE_PLACE_TYPES = new Set([
+  'country', 'state', 'region', 'county', 'province',
+]);
+
+function isNearbyEligible(placeType?: string): boolean {
+  return !placeType || !NEARBY_INELIGIBLE_PLACE_TYPES.has(placeType);
+}
+
 // Raggio usato per la sezione "Ristoranti a [Città]" dopo il tap su un luogo.
 // Scelto in base al placeType: country/state troppo ampi → ridotto a scala città.
 function nearbyRadiusKm(placeType?: string): number {
@@ -418,6 +432,15 @@ export function useMapSearch({
   /** Selezione di un luogo: carica ristoranti entro un raggio coerente col placeType.
    *  Se forMyNeeds è attivo, usa l'RPC che restituisce anche il match coverage (covered/inferred). */
   const selectPlace = useCallback(async (place: NearbyPlace) => {
+    // Luoghi troppo ampi (nazione, regione, provincia): la mappa è già stata
+    // centrata dal chiamante; qui ci limitiamo a NON aprire il banner "nei
+    // dintorni", perché un conteggio a raggio fisso attorno al centroide sarebbe
+    // fuorviante. L'utente esplora muovendo la mappa, stile Google Maps.
+    if (!isNearbyEligible(place.placeType)) {
+      setNearbyPlace(null);
+      setNearbyResults([]);
+      return;
+    }
     setNearbyPlace(place);
     setNearbyResults([]);
     await fetchNearby(place);
