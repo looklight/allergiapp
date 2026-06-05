@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import RestaurantMap from '../../../components/map/RestaurantMap';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import type { Restaurant } from '../../../services/restaurant.types';
 
 /** Forma minima che serve alla mappa (compatibile con MyRestaurantItem e con le review mappate). */
@@ -37,6 +38,8 @@ export default function MyRestaurantsMap({
   /** Chiamato al tap sulla mappa: deseleziona il pin evidenziato. */
   onDeselect?: () => void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
 
   const restaurants = useMemo<Restaurant[]>(
@@ -69,7 +72,7 @@ export default function MyRestaurantsMap({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   base: {
     borderRadius: 16,
     overflow: 'hidden',

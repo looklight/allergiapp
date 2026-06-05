@@ -6,7 +6,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import Avatar from '../../components/Avatar';
 import { type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
@@ -68,6 +69,8 @@ const DETAIL_SHEET_COVERAGE = 0.55;
 const FAB_ANIM_CONFIG = { duration: 280, easing: Easing.out(Easing.cubic) };
 
 export default function RestaurantsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarVisibility();
@@ -870,7 +873,7 @@ export default function RestaurantsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

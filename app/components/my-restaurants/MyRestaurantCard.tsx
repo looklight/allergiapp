@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import type { MyRestaurantItem } from '../../../services/myRestaurantsService';
 import i18n from '../../../utils/i18n';
 import { getCountryName } from '../../../utils/countryNames';
@@ -13,6 +15,8 @@ export default function MyRestaurantCard({
   item: MyRestaurantItem;
   onPress: () => void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Surface style={styles.card} elevation={0}>
@@ -69,7 +73,7 @@ export default function MyRestaurantCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 14,

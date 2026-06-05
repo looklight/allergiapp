@@ -3,7 +3,8 @@ import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
@@ -29,6 +30,8 @@ type ProfileRow =
   | { kind: 'favorite'; data: MyRestaurantItem };
 
 export default function ProfileScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const { user, userProfile, isAuthenticated } = useAuth();
 
@@ -217,6 +220,8 @@ function KindButton({
   active: boolean;
   onPress: () => void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const textStyle = [styles.kindButtonText, active && styles.kindButtonTextActive];
   return (
     <TouchableOpacity
@@ -230,7 +235,7 @@ function KindButton({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

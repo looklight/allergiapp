@@ -9,7 +9,8 @@ import { OTHER_FOODS } from '../../constants/otherFoods';
 import { AllergenId, AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES, OtherFoodId } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { getVisibleModes, getDietModeById } from '../../constants/dietModes';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { getLocalizedLanguageName } from '../../constants/languageNames';
 import i18n from '../../utils/i18n';
 import { useAppContext } from '../../contexts/AppContext';
@@ -22,6 +23,8 @@ import { useLanguageDownload } from '../../hooks/useLanguageDownload';
 import FoodIcon from '../../components/FoodIcon';
 
 export default function HomeScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { selectedAllergens, selectedOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, settings, downloadedLanguageCodes, setCardLanguage, saveDownloadedLanguage } = useAppContext();
@@ -262,7 +265,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

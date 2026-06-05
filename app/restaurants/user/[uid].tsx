@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import { theme } from '../../../constants/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
+import type { AppTheme } from '../../../constants/theme';
 import { AuthService } from '../../../services/auth';
 import { RestaurantService } from '../../../services/restaurantService';
 import type { UserReview } from '../../../services/restaurantService';
@@ -21,6 +22,8 @@ const getReviewLocation = (r: UserReview) => ({
 });
 
 export default function PublicProfileScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -107,7 +110,7 @@ export default function PublicProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
