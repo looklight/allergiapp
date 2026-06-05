@@ -156,20 +156,14 @@ export default function FilterModal({
           )}
         </View>
 
-        {/* Valutazione minima */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            onPress={() => setPendingMinRating(prev => (prev === 4 ? null : 4))}
-            style={styles.toggleRow}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons name="star" size={18} color={theme.colors.primary} />
-            <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.rating4Plus')}</Text>
-            <View style={[styles.switchTrack, pendingMinRating === 4 && styles.switchTrackActive]}>
-              <View style={[styles.switchThumb, pendingMinRating === 4 && styles.switchThumbActive]} />
-            </View>
-          </TouchableOpacity>
-        </View>
+        {/*
+          VALUTAZIONE MINIMA ("4★ e più") — nascosta intenzionalmente.
+          In questa fase il rating non è un buon discriminante: la base di
+          recensioni è ancora piccola e filtrare per 4★+ escluderebbe troppi
+          ristoranti validi ma poco recensiti. Il plumbing di `minRating` resta
+          cablato (default null) così riattivare il toggle è una sola modifica
+          di UI quando avremo volume di recensioni sufficiente.
+        */}
 
         {/*
           CATEGORIE DIETETICHE (gluten_free, vegan, vegetarian) — nascoste intenzionalmente.
