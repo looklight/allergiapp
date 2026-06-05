@@ -554,7 +554,7 @@ export default function AddRestaurantScreen() {
 
     if (result) {
       Alert.alert(
-        i18n.t('restaurants.add.successTitle'),
+        i18n.t(isLodging ? 'restaurants.add.successTitleLodging' : 'restaurants.add.successTitle'),
         i18n.t('restaurants.add.successMsg', { name: result.name }),
         [{ text: 'OK', onPress: () => goToRestaurantOnMap(result.id) }]
       );
@@ -580,7 +580,7 @@ export default function AddRestaurantScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <AppHeader title={i18n.t('restaurants.add.title')} onLeadingPress={selectedPlace ? handleBack : undefined} />
+      <AppHeader title={i18n.t(selectedPlace?.isLodging ? 'restaurants.add.titleLodging' : 'restaurants.add.title')} onLeadingPress={selectedPlace ? handleBack : undefined} />
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingBottom: selectedPlace ? insets.bottom + 96 : insets.bottom + 24 }]}
@@ -642,7 +642,7 @@ export default function AddRestaurantScreen() {
           >
             {isSubmitting
               ? <ActivityIndicator color={theme.colors.onPrimary} size="small" />
-              : <Text style={styles.submitText}>{i18n.t('restaurants.add.submit')}</Text>
+              : <Text style={styles.submitText}>{i18n.t(selectedPlace?.isLodging ? 'restaurants.add.submitLodging' : 'restaurants.add.submit')}</Text>
             }
           </TouchableOpacity>
         </View>
