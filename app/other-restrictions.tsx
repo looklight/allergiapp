@@ -9,7 +9,7 @@ import { RESTRICTION_ITEMS, RestrictionItemId, RestrictionCategoryId } from '../
 import { DIET_MODES, DietModeId, DietMode, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
 import { Language } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
-import type { AppTheme } from '../constants/theme';
+import { lightTheme, type AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
@@ -43,6 +43,16 @@ function DietModeToggle({
     inputRange: [0, 1],
     outputRange: [theme.colors.border, mode.toggleColors.activeBorder],
   });
+  // Lo sfondo attivo è un pastello fisso chiaro: il testo deve restare scuro,
+  // altrimenti in dark mode il testo chiaro del tema sparisce sul pastello.
+  const titleColor = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [theme.colors.textPrimary, lightTheme.colors.textPrimary],
+  });
+  const hintColor = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [theme.colors.textSecondary, lightTheme.colors.textSecondary],
+  });
   const hintOpacity = animValue.interpolate({
     inputRange: [0, 1],
     outputRange: [0.5, 1],
@@ -60,8 +70,8 @@ function DietModeToggle({
       <View style={styles.dietModeToggleLeft}>
         <Text style={styles.dietModeIcon}>{mode.icon}</Text>
         <View style={styles.dietModeTextContainer}>
-          <Text style={styles.dietModeTitle}>{i18n.t(i18nKey)}</Text>
-          <Animated.Text style={[styles.dietModeHint, { opacity: hintOpacity }]}>
+          <Animated.Text style={[styles.dietModeTitle, { color: titleColor }]}>{i18n.t(i18nKey)}</Animated.Text>
+          <Animated.Text style={[styles.dietModeHint, { opacity: hintOpacity, color: hintColor }]}>
             {i18n.t(hintKey)}
           </Animated.Text>
         </View>

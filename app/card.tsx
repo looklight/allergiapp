@@ -14,8 +14,7 @@ import { OTHER_FOODS, OtherFoodId } from '../constants/otherFoods';
 import { getVisibleModes, getFullCardMode, getDietModeById, getDietCardKey, DietCardKey, DIET_LEVEL_FOOD_ITEMS, DIET_FOOD_EMOJI, DIET_MODES, DietModeId } from '../constants/dietModes';
 import { AllergenId, Language, LANGUAGES, DownloadableLanguageCode } from '../types';
 import { getLocalizedLanguageName } from '../constants/languageNames';
-import { useTheme } from '../contexts/ThemeContext';
-import type { AppTheme } from '../constants/theme';
+import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
@@ -40,8 +39,6 @@ const COMPLEX_SCRIPT_LANGS = new Set([
 ]);
 
 export default function CardScreen() {
-  const theme = useTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
@@ -452,7 +449,7 @@ export default function CardScreen() {
   );
 }
 
-const makeStyles = (theme: AppTheme) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
