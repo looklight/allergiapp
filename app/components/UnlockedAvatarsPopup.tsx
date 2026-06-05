@@ -13,12 +13,13 @@
  * Dimensioni del popup costanti in tutti i casi (niente scroll, niente carousel).
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Modal, Pressable, View, StyleSheet, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { useUnlockedAvatars } from '../../contexts/UnlockedAvatarsContext';
 import { getAvatarById } from '../../constants/avatars';
 import { isPopupSuppressedPath, POPUP_REVEAL_DELAY_MS } from '../../utils/globalPopups';
@@ -27,6 +28,8 @@ import i18n from '../../utils/i18n';
 const VISIBLE_TILES = 4;
 
 export default function UnlockedAvatarsPopup() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const pathname = usePathname();
   const { newlyUnlockedIds, newlyUnlockedCount, acknowledgeUnlocks } = useUnlockedAvatars();
@@ -134,7 +137,7 @@ export default function UnlockedAvatarsPopup() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: theme.colors.overlay,

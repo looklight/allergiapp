@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { Text, Button, Dialog, Portal } from 'react-native-paper';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { useAppContext } from '../../contexts/AppContext';
 import { DEFAULT_VEGETARIAN_LEVEL } from '../../constants/dietModes';
 import { UserCard } from '../../types/card';
@@ -10,6 +11,8 @@ import i18n from '../../utils/i18n';
 const MAX_NAME_LENGTH = 24;
 
 export default function CardBadgesSection() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { userCards, activeCardId, setActiveCard, createCard, deleteCard, canCreateMoreCards } = useAppContext();
   const [createVisible, setCreateVisible] = useState(false);
   const [name, setName] = useState('');
@@ -191,7 +194,7 @@ export default function CardBadgesSection() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   scroll: {
     marginBottom: 14,
     marginHorizontal: -16,

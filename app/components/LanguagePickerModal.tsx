@@ -8,7 +8,8 @@ import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { getLocalizedLanguageName } from '../../constants/languageNames';
 import { languageMatchesQuery } from '../../utils/languageSearch';
 import { DownloadProgress } from '../../services/translationService';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 
 interface LanguagePickerModalProps {
@@ -36,6 +37,8 @@ export default function LanguagePickerModal({
   downloadProgress,
   onNavigateToSettings,
 }: LanguagePickerModalProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const pickerAnim = useRef(new Animated.Value(0)).current;
@@ -308,7 +311,7 @@ export default function LanguagePickerModal({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',

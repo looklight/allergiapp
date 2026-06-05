@@ -1,10 +1,11 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, ViewStyle, Platform } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -35,6 +36,8 @@ export default function AppHeader({
   titleAlign = 'center',
   style,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -98,7 +101,7 @@ export default function AppHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   header: {
     backgroundColor: 'transparent',
     flexDirection: 'row',

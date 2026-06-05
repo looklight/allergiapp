@@ -6,7 +6,8 @@ import { DownloadableLanguageCode, LanguageRegion } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { languageMatchesQuery } from '../../utils/languageSearch';
 import { DownloadProgress } from '../../services/translationService';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 import { useAppContext } from '../../contexts/AppContext';
 
@@ -61,6 +62,8 @@ export default function DownloadableLanguagesSection({
   onDownload,
   onDelete,
 }: DownloadableLanguagesSectionProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { settings } = useAppContext();
   const appLanguage = settings.appLanguage;
   const { width: screenWidth } = useWindowDimensions();
@@ -393,7 +396,7 @@ export default function DownloadableLanguagesSection({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   sectionDivider: {
     marginVertical: 12,
     marginHorizontal: 16,

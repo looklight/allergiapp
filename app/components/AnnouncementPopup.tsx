@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, Modal, StyleSheet, Image, Linking, Share, Dimensions, Pressable } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { usePathname } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { isPopupSuppressedPath, POPUP_REVEAL_DELAY_MS } from '../../utils/globalPopups';
 import { fetchActiveAnnouncement, trackAnnouncementView, trackAnnouncementClick, resolveText, Announcement } from '../../services/announcements';
 import { storage } from '../../utils/storage';
@@ -15,6 +16,8 @@ const IMAGE_WIDTH = POPUP_WIDTH - 48; // content padding 24 su ogni lato
 const MAX_IMAGE_HEIGHT = 220;
 
 export default function AnnouncementPopup() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const pathname = usePathname();
   const [popup, setPopup] = useState<Announcement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -152,7 +155,7 @@ export default function AnnouncementPopup() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: theme.colors.overlay,

@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { View, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { BannerItem } from '../../types';
 import i18n from '../../utils/i18n';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { Analytics } from '../../services/analytics';
 
 const bannerImages = {
@@ -19,6 +20,8 @@ interface BannerCarouselProps {
 }
 
 export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarouselProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -174,7 +177,7 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   bannerContainer: {
     height: 140,
     marginBottom: 14,
