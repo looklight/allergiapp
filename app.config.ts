@@ -9,7 +9,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: "1.1.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
-  userInterfaceStyle: "light",
+  userInterfaceStyle: "automatic",
   scheme: "allergiapp",
   ios: {
     supportsTablet: true,
