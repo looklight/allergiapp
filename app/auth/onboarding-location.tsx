@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import i18n from '../../utils/i18n';
 
@@ -17,6 +18,8 @@ import i18n from '../../utils/i18n';
  * comunque senza posizione, quindi un diniego non blocca nulla.
  */
 export default function OnboardingLocationScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [requesting, setRequesting] = useState(false);
@@ -70,7 +73,7 @@ export default function OnboardingLocationScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

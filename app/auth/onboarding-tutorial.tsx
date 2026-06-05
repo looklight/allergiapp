@@ -1,9 +1,10 @@
-import { ComponentType, useRef, useState } from 'react';
+import { ComponentType, useRef, useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 import type { OnboardingSlideProps } from '../../components/onboarding/types';
 import WelcomeSlide from '../../components/onboarding/slides/WelcomeSlide';
@@ -21,6 +22,8 @@ const SLIDES: ComponentType<OnboardingSlideProps>[] = [
 ];
 
 export default function OnboardingTutorialScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
@@ -105,7 +108,7 @@ export default function OnboardingTutorialScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

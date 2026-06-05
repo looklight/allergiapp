@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import DietaryChipsSelector from '../../components/restaurants/DietaryChipsSelector';
 import { AuthService } from '../../services/auth';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
@@ -14,6 +15,8 @@ import type { FoodRestrictionId, DietId } from '../../types';
 import AppHeader from '../components/AppHeader';
 
 export default function OnboardingDietaryScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, refreshProfile } = useAuth();
@@ -161,7 +164,7 @@ export default function OnboardingDietaryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

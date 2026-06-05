@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, TextInput, Surface } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
 import { PG_UNIQUE_VIOLATION } from '../../services/restaurant.types';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,6 +15,8 @@ import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
 
 export default function OnboardingNicknameScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, refreshProfile } = useAuth();
@@ -130,7 +133,7 @@ export default function OnboardingNicknameScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

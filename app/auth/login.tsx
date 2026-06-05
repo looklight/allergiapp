@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text, TextInput, Button, Surface } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
 import SocialAuthButtons from '../../components/SocialAuthButtons';
 
 export default function LoginScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
@@ -149,7 +152,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
