@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   medalText: {
-    color: '#FFFFFF',
+    color: theme.colors.surface,
     fontSize: 16,
     fontWeight: 'bold',
   },

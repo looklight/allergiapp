@@ -95,7 +95,7 @@ const errorStyles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8, color: theme.colors.error },
   message: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 16 },
   stackContainer: { maxHeight: 200, width: '100%', marginBottom: 16 },
-  stack: { fontSize: 11, fontFamily: 'monospace', color: '#666', lineHeight: 16 },
+  stack: { fontSize: 11, fontFamily: 'monospace', color: theme.colors.textSecondary, lineHeight: 16 },
   button: { minWidth: 120 },
 });
 
