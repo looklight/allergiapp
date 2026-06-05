@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,7 +14,8 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/auth';
 import {
@@ -113,6 +114,8 @@ function formatConditionLabel(avatar: AvatarOption): string {
 }
 
 export default function AvatarGalleryScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, userProfile, refreshProfile } = useAuth();
@@ -305,6 +308,8 @@ function DetailCard({
   stats: UnlockStats;
   everUnlocked: readonly string[];
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const unlocked = isAvatarEffectivelyUnlocked(avatar, stats, everUnlocked);
   const progress = getEffectiveUnlockProgress(avatar, stats, everUnlocked);
   const progressLabel = formatProgressLabel(avatar, stats);
@@ -384,7 +389,7 @@ function DetailCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

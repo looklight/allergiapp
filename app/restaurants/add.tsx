@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Linking, Image } from 'react-native';
 import { Text, TextInput, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { RestaurantService, CreateRestaurantInput } from '../../services/restaurantService';
 import { PlacesService, PlaceAutocompleteResult } from '../../services/placesService';
 import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
@@ -24,6 +25,8 @@ import type { AppLanguage } from '../../types';
 // Step 1: Ricerca ristorante tramite Google Places
 // ---------------------------------------------------------------------------
 function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => void }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PlaceAutocompleteResult[]>([]);
@@ -226,6 +229,8 @@ function ConfirmStep({
   hasPublicRestaurant: boolean;
   onTogglePublicRestaurant: (v: boolean) => void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.stepContainer}>
       {/* Riepilogo posto selezionato */}
@@ -391,6 +396,8 @@ function ConfirmStep({
 // Screen principale
 // ---------------------------------------------------------------------------
 export default function AddRestaurantScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, dietaryNeeds, refreshProfile } = useAuth();
@@ -651,7 +658,7 @@ export default function AddRestaurantScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

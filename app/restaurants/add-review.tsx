@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Image, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { RestaurantService } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
@@ -24,6 +25,8 @@ const MAX_PHOTOS = 3;
 const MAX_COMMENT_LENGTH = 1500;
 
 export default function AddReviewScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, reviewId, offersLodging } = useLocalSearchParams<{
@@ -443,7 +446,7 @@ export default function AddReviewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,

@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Keyboard, Platform } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { REPORT_REASONS } from '../../constants/reportReasons';
 import { venueIconName } from '../../constants/restaurantCategories';
 import { RestaurantService } from '../../services/restaurantService';
@@ -13,6 +14,8 @@ import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 
 export default function ReportScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
@@ -171,7 +174,7 @@ export default function ReportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,

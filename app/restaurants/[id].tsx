@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { Platform } from 'react-native';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import RestaurantDetailBody from '../../components/restaurants/RestaurantDetailBody';
@@ -11,6 +12,8 @@ import { shareRestaurant } from '../../services/shareRestaurant';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 
 export default function RestaurantDetailScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const detail = useRestaurantDetail(id);
@@ -57,7 +60,7 @@ export default function RestaurantDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
