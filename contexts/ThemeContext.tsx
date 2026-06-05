@@ -10,11 +10,10 @@ import { useColorScheme } from 'react-native';
 import { lightTheme, darkTheme, type AppTheme } from '../constants/theme';
 import { storage, type ThemeMode } from '../utils/storage';
 
-// Master switch. The dark palette is still a stub (designed in Fase 2), so while
-// this is false the app always renders the light theme regardless of the chosen
-// mode — guaranteeing zero visual change. Flip to true in Fase 3 once the dark
-// palette is ready and the settings toggle is exposed.
-const DARK_MODE_ENABLED = false;
+// Master switch. The dark palette (Fase 2) and the settings toggle (Fase 3) are
+// in place, so dark mode is active: with mode 'system' the app follows the OS,
+// otherwise it honours the user's choice.
+const DARK_MODE_ENABLED = true;
 
 interface ThemeContextValue {
   /** Resolved theme object (light/dark) to feed components and PaperProvider. */
