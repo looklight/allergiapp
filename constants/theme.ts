@@ -102,9 +102,89 @@ const lightColors = {
   starEmpty: '#D0D0D0',
 };
 
-// Stub: dark palette mirrors light for now. Real dark values land in Fase 2.
+// Dark palette — ispirata al dark mode di Google Maps: carbone bluastro (non nero
+// puro), superfici leggermente più chiare del fondo, testo bianco-sporco, link blu
+// "Google" #8AB4F8. I semantici (success/amber/star/error) restano saturi per
+// spiccare a colpo d'occhio. Le chiavi sono le stesse di lightColors.
+// Ereditati da lightColors (intrinseci, validi in entrambi i temi): amber, amberDark,
+// amberSubtle, coverageMedium, intoleranceAccent, selectionHighlight, starFilled,
+// onPrimary, shadow, overlay/overlayDark, brand*.
 const darkColors: typeof lightColors = {
   ...lightColors,
+
+  // Primary palette (verde brand, schiarito per il fondo scuro)
+  primary: '#66BB6A',
+  primaryContainer: '#2E4630',
+  primaryLight: '#22301F',
+  primarySubtle: '#66BB6A26',
+
+  // Secondary
+  secondary: '#FF7043',
+  secondaryContainer: '#5A2418',
+
+  // Surfaces & backgrounds (charcoal bluastro stile Google Maps)
+  surface: '#26282B',
+  background: '#1B1C1F',
+  backgroundAlt: '#212327',
+
+  // Text (bianco-sporco / grigi Google)
+  textPrimary: '#E8EAED',
+  textSecondary: '#9AA0A6',
+  textDisabled: '#5F6368',
+  textHint: '#9AA0A6',
+  textMuted: '#BDC1C6',
+
+  // Error / danger (rosso saturo, schiarito per leggibilità su scuro)
+  error: '#EF5350',
+  errorDark: '#E53935',
+  errorDarker: '#C62828',
+  errorContainer: '#4A1D1D',
+  errorLight: '#33201F',
+
+  // Success (verde saturo che spicca)
+  success: '#66BB6A',
+  successDark: '#43A047',
+
+  // Warning / caution (ambra-arancio saturo)
+  warning: '#FFA726',
+  warningDark: '#FB8C00',
+
+  // Info (blu link "Google" su dark)
+  linkBlue: '#8AB4F8',
+
+  // Amber tones — la famiglia notice era chiaro-su-chiaro: invertita.
+  amberLight: '#33291A',
+  amberText: '#FFD54F',
+  amberBorder: '#5A4A1F',
+
+  // Notice surfaces (warning container)
+  noticeBg: '#332819',
+  noticeBorder: '#574627',
+
+  // Selection highlight (giallo saturo + fondo scuro caldo)
+  selectionHighlightBg: '#332F18',
+
+  // Card description text (la card resta chiara: valore di sicurezza)
+  cardDescriptionText: '#BDC1C6',
+
+  // Borders & dividers
+  divider: '#3C4043',
+  border: '#3C4043',
+  separator: '#5F6368',
+
+  // Overlays — overlayLight era una "pillola" chiara: su dark diventa scura
+  // (così il testo chiaro vi resta leggibile).
+  overlayLight: 'rgba(32,33,36,0.88)',
+
+  // UI elements
+  switchThumbInactive: '#9AA0A6',
+  neutralBg: '#3C4043',
+  restrictionRowBg: '#2A2630',
+  restrictionRowBgPressed: '#332B3D',
+
+  // UI components
+  favoriteRed: '#FF5252',
+  starEmpty: '#5F6368',
 };
 
 // ---------------------------------------------------------------------------
