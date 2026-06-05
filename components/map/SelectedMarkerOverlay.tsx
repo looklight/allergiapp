@@ -13,7 +13,8 @@ import { memo, useCallback } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
 import type { Restaurant } from '../../services/restaurantService';
 
@@ -73,6 +74,8 @@ const SelectedPin = memo(function SelectedPin({
   showMatchInfo,
   onPress,
 }: SelectedPinProps) {
+  const theme = useTheme();
+  const styles = getStyles(theme);
   // tracksViewChanges sempre true: è un SINGOLO pin, il costo è irrisorio.
   // Il pattern one-frame (come MapPin) non funziona qui perché iOS non fa
   // in tempo a ricatturare il bitmap prima che tracksViewChanges torni false,
@@ -85,7 +88,7 @@ const SelectedPin = memo(function SelectedPin({
   const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
 
   const markerColor = showMatchInfo
-    ? coverageColor(coveredTotal, filtersTotal)
+    ? coverageColor(coveredTotal, filtersTotal, theme)
     : theme.colors.primary;
 
   return (
@@ -138,7 +141,7 @@ const SelectedPin = memo(function SelectedPin({
   );
 });
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   markerWrap: {
     alignItems: 'center',
   },
@@ -192,3 +195,14 @@ const styles = StyleSheet.create({
     color: theme.colors.favoriteRed,
   },
 });
+
+// Stili una volta per tema, condivisi tra i remount del pin selezionato.
+const stylesByTheme = new WeakMap<AppTheme, ReturnType<typeof makeStyles>>();
+function getStyles(theme: AppTheme) {
+  let s = stylesByTheme.get(theme);
+  if (!s) {
+    s = makeStyles(theme);
+    stylesByTheme.set(theme, s);
+  }
+  return s;
+}

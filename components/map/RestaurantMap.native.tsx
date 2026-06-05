@@ -22,7 +22,8 @@ import { Platform, StyleSheet, View, Text as RNText, useWindowDimensions } from 
 import ClusteredMapView from 'react-native-map-clustering';
 import { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme, useThemePreference } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import MapPin from './MapPin';
 import SelectedMarkerOverlay from './SelectedMarkerOverlay';
 import {
@@ -70,6 +71,9 @@ export default function RestaurantMap({
   userAllergens,
   userDiets,
 }: RestaurantMapProps) {
+  const theme = useTheme();
+  const { isDark } = useThemePreference();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const mapRef = useRef<any>(null);
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
@@ -321,7 +325,7 @@ export default function RestaurantMap({
         </View>
       </Marker>
     );
-  }, []);
+  }, [theme, styles]);
 
   const handleLayout = useCallback(() => {
     setIsLaidOut(true);
@@ -418,7 +422,8 @@ export default function RestaurantMap({
       initialRegion={DEFAULT_REGION}
       showsUserLocation={!!hasUserLocation}
       showsMyLocationButton={false}
-      customMapStyle={Platform.OS === 'android' ? ANDROID_MAP_STYLE : undefined}
+      customMapStyle={Platform.OS === 'android' ? (isDark ? ANDROID_MAP_STYLE_DARK : ANDROID_MAP_STYLE) : undefined}
+      userInterfaceStyle={isDark ? 'dark' : 'light'}
       showsCompass
       compassOffset={compassOffset}
       mapPadding={mapPadding}
@@ -459,7 +464,26 @@ const ANDROID_MAP_STYLE = [
   { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
 ];
 
-const styles = StyleSheet.create({
+// Stile scuro Google Maps (Android) coerente con la palette app: charcoal,
+// grigi Google, acqua più scura. iOS usa userInterfaceStyle (Apple Maps nativo).
+const ANDROID_MAP_STYLE_DARK = [
+  { elementType: 'geometry', stylers: [{ color: '#212327' }] },
+  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#9aa0a6' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#212327' }] },
+  { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#9aa0a6' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#26322a' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#3c4043' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1b1c1f' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#bdc1c6' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#4a4d52' }] },
+  { featureType: 'transit', elementType: 'labels.text.fill', stylers: [{ color: '#9aa0a6' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17191c' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#5f6368' }] },
+];
+
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   map: { ...StyleSheet.absoluteFillObject },
 
   clusterContainer: {

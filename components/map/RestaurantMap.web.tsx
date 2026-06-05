@@ -1,11 +1,15 @@
+import { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 import type { RestaurantMapProps } from './mapConstants';
 
 export default function RestaurantMap(_props: RestaurantMapProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons name="map-outline" size={52} color={theme.colors.textSecondary} />
@@ -15,7 +19,7 @@ export default function RestaurantMap(_props: RestaurantMapProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',

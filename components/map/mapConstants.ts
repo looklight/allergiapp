@@ -1,4 +1,4 @@
-import { theme } from '../../constants/theme';
+import type { AppTheme } from '../../constants/theme';
 import type { Restaurant, RestaurantPin } from '../../services/restaurantService';
 
 // ---------------------------------------------------------------------------
@@ -78,8 +78,9 @@ export function isValidCoord(lat: number, lng: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng);
 }
 
-/** Coverage color for the match badge on pins/dots */
-export function coverageColor(covered: number, total: number): string {
+/** Coverage color for the match badge on pins/dots. Pure: il tema viene passato
+ *  dal componente chiamante (mapConstants non può usare hook). */
+export function coverageColor(covered: number, total: number, theme: AppTheme): string {
   if (total === 0 || covered === 0) return theme.colors.textDisabled;
   if (covered >= total) return theme.colors.success;
   return theme.colors.coverageMedium;

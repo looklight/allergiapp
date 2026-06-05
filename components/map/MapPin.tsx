@@ -18,7 +18,8 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
 import { getExpandedCoverage } from '../../constants/restrictionImplications';
 import type { Restaurant } from '../../services/restaurantService';
@@ -56,6 +57,10 @@ export default memo(function MapPin({
   userAllergens,
   userDiets,
 }: MapPinProps) {
+  const theme = useTheme();
+  // Cache di stili per-tema (non useMemo per-istanza): MapPin ha molte istanze,
+  // così lo StyleSheet si crea una volta sola per tema invece che per pin.
+  const styles = getStyles(theme);
   // --- tracksViewChanges: true for ONE frame after visual change, then false ---
   // asDot è incluso qui (invece di usare key change nel parent) per evitare il
   // flash del pin rosso Apple Maps che si vede durante l'unmount/remount.
@@ -142,7 +147,7 @@ export default memo(function MapPin({
     }
 
     const dotColor = showMatchInfo
-      ? coverageColor(dotCovered, dotTotal)
+      ? coverageColor(dotCovered, dotTotal, theme)
       : theme.colors.primary;
 
     // Verde/giallo emergono sopra i pallini grigi/primary (non valutati).
@@ -207,7 +212,7 @@ export default memo(function MapPin({
   const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
 
   const markerColor = showMatchInfo
-    ? coverageColor(coveredTotal, filtersTotal)
+    ? coverageColor(coveredTotal, filtersTotal, theme)
     : theme.colors.primary;
 
   return (
@@ -243,7 +248,7 @@ export default memo(function MapPin({
 // Styles
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   dotWrap: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -355,3 +360,15 @@ const styles = StyleSheet.create({
     color: theme.colors.favoriteRed,
   },
 });
+
+// Stili calcolati una volta per tema (light/dark) e condivisi da tutte le istanze
+// di MapPin — evita N StyleSheet.create con centinaia di pin in mappa.
+const stylesByTheme = new WeakMap<AppTheme, ReturnType<typeof makeStyles>>();
+function getStyles(theme: AppTheme) {
+  let s = stylesByTheme.get(theme);
+  if (!s) {
+    s = makeStyles(theme);
+    stylesByTheme.set(theme, s);
+  }
+  return s;
+}
