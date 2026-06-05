@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { theme } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
@@ -28,11 +29,17 @@ function RankBadge({ rank }: { rank: number }) {
   );
 }
 
-function LeaderboardRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
+function LeaderboardRow({ entry, rank, onPress }: { entry: LeaderboardEntry; rank: number; onPress: () => void }) {
   const name = getDisplayName(entry);
   const displayName = name || i18n.t('leaderboard.anonymous');
   return (
-    <View style={[styles.row, rank <= 3 && styles.topRow]}>
+    <TouchableOpacity
+      style={[styles.row, rank <= 3 && styles.topRow]}
+      onPress={onPress}
+      activeOpacity={0.6}
+      accessibilityRole="button"
+      accessibilityLabel={displayName ?? undefined}
+    >
       <RankBadge rank={rank} />
       <View style={styles.avatarSlot}>
         <Avatar
@@ -46,11 +53,18 @@ function LeaderboardRow({ entry, rank }: { entry: LeaderboardEntry; rank: number
         <Text style={styles.rowName} numberOfLines={1}>{displayName}</Text>
       </View>
       <Text style={styles.rowCount}>{entry.count}</Text>
-    </View>
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={20}
+        color={theme.colors.textDisabled}
+        style={styles.rowChevron}
+      />
+    </TouchableOpacity>
   );
 }
 
 export default function LeaderboardScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('reviews');
   const [topReviewers, setTopReviewers] = useState<LeaderboardEntry[]>([]);
   const [topLiked, setTopLiked] = useState<LeaderboardEntry[]>([]);
@@ -139,7 +153,11 @@ export default function LeaderboardScreen() {
             <Text style={styles.sectionSubtitle}>{sectionSubtitle}</Text>
           }
           renderItem={({ item, index }) => (
-            <LeaderboardRow entry={item} rank={index + 1} />
+            <LeaderboardRow
+              entry={item}
+              rank={index + 1}
+              onPress={() => router.push(`/restaurants/user/${item.user_id}`)}
+            />
           )}
           contentContainerStyle={styles.list}
           refreshControl={
@@ -252,6 +270,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.primary,
     marginLeft: 12,
+  },
+  rowChevron: {
+    marginLeft: 4,
+    marginRight: -4,
   },
   centered: {
     flex: 1,
