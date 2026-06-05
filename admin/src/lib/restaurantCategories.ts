@@ -29,3 +29,14 @@ export const CUISINE_CATEGORIES: AdminCategory[] = [
   { id: 'cafe', label: 'Caffè e bar' },
   { id: 'ice_cream', label: 'Gelateria' },
 ];
+
+// Tipi struttura ricettiva (faccetta lodging). Allineato a ACCOMMODATION_CATEGORIES
+// in allergiapp/constants/restaurantCategories.ts (qui solo id + label IT).
+export const ACCOMMODATION_CATEGORIES: AdminCategory[] = [
+  { id: 'hotel', label: 'Hotel' },
+  { id: 'bnb', label: 'B&B' },
+  { id: 'guest_house', label: 'Guest house' },
+  { id: 'hostel', label: 'Ostello' },
+  { id: 'agriturismo', label: 'Agriturismo' },
+  { id: 'apartment', label: 'Casa vacanze' },
+];

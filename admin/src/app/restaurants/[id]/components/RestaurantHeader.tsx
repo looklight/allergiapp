@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import type { Restaurant } from '@/lib/types';
-import { CUISINE_CATEGORIES } from '@/lib/restaurantCategories';
+import { CUISINE_CATEGORIES, ACCOMMODATION_CATEGORIES } from '@/lib/restaurantCategories';
 import Link from 'next/link';
 
 interface Props {
@@ -22,6 +22,13 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
   const [adminVotes, setAdminVotes] = useState<string[]>([]);
   const [pendingCategories, setPendingCategories] = useState<string[]>([]);
   const [isSavingCategories, setIsSavingCategories] = useState(false);
+
+  // Faccette lodging (colonne dirette su restaurants — correzione dati errati).
+  const [editingFacets, setEditingFacets] = useState(false);
+  const [pendingServesFood, setPendingServesFood] = useState(true);
+  const [pendingOffersLodging, setPendingOffersLodging] = useState(false);
+  const [pendingLodgingType, setPendingLodgingType] = useState<string>('');
+  const [isSavingFacets, setIsSavingFacets] = useState(false);
 
   const startEditingCategories = async () => {
     if (!session) {
@@ -102,6 +109,44 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
     setAdminVotes(pendingCategories);
     onRestaurantUpdate({ ...restaurant, cuisine_types: refreshed?.cuisine_types ?? [] });
     setEditingCategories(false);
+  };
+
+  const startEditingFacets = () => {
+    setPendingServesFood(restaurant.serves_food ?? true);
+    setPendingOffersLodging(restaurant.offers_lodging ?? false);
+    setPendingLodgingType(restaurant.lodging_type ?? '');
+    setEditingFacets(true);
+  };
+
+  const saveFacets = async () => {
+    // Vincolo DB (CHECK): un luogo deve essere almeno ristorante o struttura.
+    if (!pendingServesFood && !pendingOffersLodging) {
+      alert('Un luogo deve essere almeno un ristorante o una struttura ricettiva.');
+      return;
+    }
+    setIsSavingFacets(true);
+    // lodging_type ha senso solo se è una struttura (rispetta il CHECK DB).
+    const lodging_type = pendingOffersLodging ? (pendingLodgingType || null) : null;
+    const { error } = await supabase
+      .from('restaurants')
+      .update({
+        serves_food: pendingServesFood,
+        offers_lodging: pendingOffersLodging,
+        lodging_type,
+      })
+      .eq('id', restaurant.id);
+    setIsSavingFacets(false);
+    if (error) {
+      alert(`Errore salvataggio tipo luogo: ${error.message}`);
+      return;
+    }
+    onRestaurantUpdate({
+      ...restaurant,
+      serves_food: pendingServesFood,
+      offers_lodging: pendingOffersLodging,
+      lodging_type,
+    });
+    setEditingFacets(false);
   };
 
   return (
@@ -197,6 +242,76 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
             )}
           </div>
         </div>
+      </div>
+
+      {/* Tipo luogo (faccetta lodging) — visualizzazione e correzione */}
+      <div className="mt-4">
+        {!editingFacets ? (
+          <div className="flex flex-wrap gap-1.5 items-center text-sm">
+            <span className="text-muted-foreground">Tipo luogo:</span>
+            {restaurant.offers_lodging && (
+              <span className="px-2 py-0.5 bg-muted text-foreground-secondary rounded text-xs">
+                {ACCOMMODATION_CATEGORIES.find(c => c.id === restaurant.lodging_type)?.label ?? 'Struttura'}
+              </span>
+            )}
+            <span className="px-2 py-0.5 bg-muted text-foreground-secondary rounded text-xs">
+              {restaurant.serves_food === false ? 'Senza ristorante pubblico' : 'Ristorante'}
+            </span>
+            <button
+              onClick={startEditingFacets}
+              className="ml-1 text-xs text-primary hover:underline"
+            >
+              Modifica
+            </button>
+          </div>
+        ) : (
+          <div className="border rounded p-3 bg-background max-w-md">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Tipo luogo</p>
+            <label className="flex items-center gap-2 mb-2 text-sm">
+              <input
+                type="checkbox"
+                checked={pendingOffersLodging}
+                onChange={e => setPendingOffersLodging(e.target.checked)}
+              />
+              È una struttura ricettiva (hotel, B&amp;B…)
+            </label>
+            {pendingOffersLodging && (
+              <select
+                value={pendingLodgingType}
+                onChange={e => setPendingLodgingType(e.target.value)}
+                className="mb-2 w-full px-2 py-1.5 border border-input rounded text-sm bg-card"
+              >
+                <option value="">— Tipo struttura —</option>
+                {ACCOMMODATION_CATEGORIES.map(c => (
+                  <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
+              </select>
+            )}
+            <label className="flex items-center gap-2 mb-3 text-sm">
+              <input
+                type="checkbox"
+                checked={pendingServesFood}
+                onChange={e => setPendingServesFood(e.target.checked)}
+              />
+              Ha un ristorante aperto al pubblico (compare tra i ristoranti)
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={saveFacets}
+                disabled={isSavingFacets}
+                className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary-hover disabled:opacity-50"
+              >
+                {isSavingFacets ? 'Salvataggio...' : 'Salva'}
+              </button>
+              <button
+                onClick={() => setEditingFacets(false)}
+                className="px-3 py-1 border rounded text-sm text-foreground-secondary hover:bg-muted"
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-4 mt-4 text-sm">

@@ -31,6 +31,10 @@ export interface Restaurant {
   phone: string | null;
   website: string | null;
   cuisine_types: string[];
+  // Faccette lodging (vedi migration 067). Correggibili da admin per dati errati.
+  serves_food?: boolean;
+  offers_lodging?: boolean;
+  lodging_type?: string | null;
   price_range: number | null;
   photo_urls: string[];
   added_by: string | null;
