@@ -1,6 +1,8 @@
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { theme } from '../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import type { CountryOption } from '../hooks/useLocationFilters';
 
@@ -13,6 +15,8 @@ interface Props {
 }
 
 export default function CountryFilterChips({ options, selected, onSelect, edgeBleed = 16 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (options.length < 2) return null;
 
   return (
@@ -40,6 +44,8 @@ export default function CountryFilterChips({ options, selected, onSelect, edgeBl
 }
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -53,7 +59,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   row: {
     gap: 8,
     paddingVertical: 4,

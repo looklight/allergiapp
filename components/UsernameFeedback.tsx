@@ -1,7 +1,9 @@
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import type { UsernameValidationState } from '../hooks/useUsernameValidation';
 
@@ -17,9 +19,11 @@ interface Props {
  * Se isAnonymous, mostra una nota aggiuntiva "(non visibile mentre sei anonimo)".
  */
 export default function UsernameFeedback({ state, isAnonymous }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.container}>
-      {renderRow(state)}
+      <FeedbackRow state={state} />
       {isAnonymous && (
         <Text style={styles.anonymousNote}>{i18n.t('username.anonymousNote')}</Text>
       )}
@@ -27,7 +31,9 @@ export default function UsernameFeedback({ state, isAnonymous }: Props) {
   );
 }
 
-function renderRow(state: UsernameValidationState) {
+function FeedbackRow({ state }: { state: UsernameValidationState }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   switch (state.kind) {
     case 'idle':
       return <Text style={styles.hint}>{i18n.t('username.hint')}</Text>;
@@ -52,6 +58,8 @@ function renderRow(state: UsernameValidationState) {
 }
 
 function Row({ icon, color, text }: { icon: any; color: string; text: string }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.row}>
       <MaterialCommunityIcons name={icon} size={16} color={color} />
@@ -60,7 +68,7 @@ function Row({ icon, color, text }: { icon: any; color: string; text: string }) 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     marginTop: -8,
     marginBottom: 8,

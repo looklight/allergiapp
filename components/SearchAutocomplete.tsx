@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import type { SearchResult } from '../hooks/useMapSearch';
 
@@ -14,6 +15,8 @@ type Props = {
 };
 
 function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelectPlace }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (results.length === 0 && !isSearching) return null;
 
   const restaurants = results.filter(r => r.type === 'restaurant');
@@ -85,7 +88,7 @@ function SearchAutocomplete({ results, isSearching, onSelectRestaurant, onSelect
 
 export default memo(SearchAutocomplete);
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     backgroundColor: theme.colors.surface,
     borderRadius: 12,

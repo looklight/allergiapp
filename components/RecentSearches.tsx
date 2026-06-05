@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import type { RecentPlace } from '../utils/storage';
 
@@ -13,6 +14,8 @@ type Props = {
 };
 
 function RecentSearches({ places, onSelect, onClear }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (places.length === 0) return null;
 
   return (
@@ -42,7 +45,7 @@ function RecentSearches({ places, onSelect, onClear }: Props) {
 
 export default memo(RecentSearches);
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     backgroundColor: theme.colors.surface,
     borderRadius: 12,

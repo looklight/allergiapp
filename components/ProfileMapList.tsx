@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Animated, Easing, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import ProfileCard from './ProfileCard';
 import Avatar from './Avatar';
@@ -82,6 +83,8 @@ export default function ProfileMapList<T>({
   headerVisible,
   emptyState,
 }: ProfileMapListProps<T>) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   // Pin evidenziato sulla mappa: impostato aprendo una riga, azzerato al tap
@@ -247,6 +250,8 @@ function MeasuredRow({
   onMeasure: (pinId: string, y: number) => void;
   children: React.ReactNode;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const flash = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -275,7 +280,7 @@ function MeasuredRow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   flash: {
     backgroundColor: theme.colors.primary,
     borderRadius: 14,

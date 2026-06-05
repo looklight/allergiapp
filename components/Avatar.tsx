@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Image,
@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import { getAvatarById } from '../constants/avatars';
 import i18n from '../utils/i18n';
 
@@ -63,6 +64,8 @@ export default function Avatar({
   backgroundColor,
   style,
 }: AvatarProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const sizePx = typeof size === 'number' ? size : SIZE_MAP[size];
   const dimension = { width: sizePx, height: sizePx };
 
@@ -132,7 +135,7 @@ export default function Avatar({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   image: {
     resizeMode: 'contain',
   },

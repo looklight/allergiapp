@@ -7,7 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Animated, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 type Props = {
   width: DimensionValue;
@@ -19,6 +19,7 @@ type Props = {
 };
 
 export default function Skeleton({ width, height = 14, radius = 4, style, accessibilityLabel }: Props) {
+  const theme = useTheme();
   const pulse = useRef(new Animated.Value(0.45)).current;
 
   useEffect(() => {

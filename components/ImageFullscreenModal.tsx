@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useMemo } from 'react';
 import {
   Modal, View, FlatList, TouchableOpacity, StyleSheet, Platform, Pressable,
   useWindowDimensions, type ViewStyle, type ViewToken,
@@ -13,7 +13,8 @@ import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ReactNode } from 'react';
 import ZoomableImage from './ZoomableImage';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 
 const DISMISS_THRESHOLD = 120;
 
@@ -38,6 +39,8 @@ export default function ImageFullscreenModal({
   placeholder,
   overlayStyle,
 }: ImageFullscreenModalProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -151,7 +154,7 @@ export default function ImageFullscreenModal({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.95)',

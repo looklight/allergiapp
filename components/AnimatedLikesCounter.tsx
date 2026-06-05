@@ -17,9 +17,10 @@
  * per il float "+N".
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { View, Text, Animated, StyleSheet, type StyleProp, type TextStyle } from 'react-native';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 
 const COUNT_DURATION_MS = 1200;
 // Durata del "+N": prolunga oltre la fine del count-up cosi' l'utente lo nota
@@ -39,6 +40,8 @@ type Props = {
 };
 
 export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAnimationEnd, numberStyle, label, labelStyle }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const delta = currentLikes - previousLikes;
   const shouldAnimate = delta > 0;
 
@@ -117,7 +120,7 @@ export default function AnimatedLikesCounter({ currentLikes, previousLikes, onAn
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   // Riga [numero][label][+N]: allineata come gli altri inlineStat del ProfileCard
   // (gap 4) cosi' il badge "+N" sta in flusso subito dopo "Like ricevuti".
   row: {

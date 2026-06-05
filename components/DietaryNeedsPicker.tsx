@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import { getRestrictionById } from '../constants/foodRestrictions';
 import DietaryChipsSelector from './restaurants/DietaryChipsSelector';
 import i18n from '../utils/i18n';
@@ -36,6 +37,8 @@ export default function DietaryNeedsPicker({
   initialExpanded = false,
   subtitle,
 }: DietaryNeedsPickerProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [expanded, setExpanded] = useState(initialExpanded);
   const [syncing, setSyncing] = useState(false);
   const [justSynced, setJustSynced] = useState(false);
@@ -176,7 +179,7 @@ export default function DietaryNeedsPicker({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     backgroundColor: theme.colors.primaryLight,
     borderRadius: 14,

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import Svg, { Path } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 
 // I moduli @react-native-google-signin e expo-apple-authentication richiedono
@@ -55,6 +56,8 @@ function GoogleGIcon({ size = 20 }: { size?: number }) {
 }
 
 function SocialAuthButtonsImpl() {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [loading, setLoading] = useState<Provider | null>(null);
@@ -135,7 +138,7 @@ export default function SocialAuthButtons() {
   return <SocialAuthButtonsImpl />;
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     gap: 10,
     marginBottom: 20,

@@ -9,7 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { AppTheme } from '../../constants/theme';
 
 export type BottomSheetRef = {
   snapToIndex: (index: number) => void;
@@ -66,6 +67,8 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(function BottomSheet(
   },
   ref,
 ) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const { height } = useWindowDimensions();
   const { bottom: insetBottom } = useSafeAreaInsets();
 
@@ -262,7 +265,7 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(function BottomSheet(
 
 export default BottomSheet;
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,

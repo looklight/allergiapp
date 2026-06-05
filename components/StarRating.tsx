@@ -1,10 +1,9 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
-
-const STAR_COLOR = theme.colors.starFilled;
-const STAR_EMPTY_COLOR = theme.colors.starEmpty;
+import { useMemo } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 
 interface StarRatingProps {
   rating: number;
@@ -14,6 +13,8 @@ interface StarRatingProps {
 }
 
 export default function StarRating({ rating, size = 20, onRate, showValue }: StarRatingProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const stars = [1, 2, 3, 4, 5];
 
   const getStarIcon = (position: number): 'star' | 'star-half-full' | 'star-outline' => {
@@ -23,8 +24,8 @@ export default function StarRating({ rating, size = 20, onRate, showValue }: Sta
   };
 
   const getStarColor = (position: number) => {
-    if (rating >= position - 0.5) return STAR_COLOR;
-    return STAR_EMPTY_COLOR;
+    if (rating >= position - 0.5) return theme.colors.starFilled;
+    return theme.colors.starEmpty;
   };
 
   return (
@@ -59,7 +60,7 @@ export default function StarRating({ rating, size = 20, onRate, showValue }: Sta
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',

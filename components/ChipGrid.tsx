@@ -1,6 +1,8 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { theme } from '../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 
 interface ChipGridItem {
   id: string;
@@ -18,6 +20,8 @@ interface ChipGridProps {
 }
 
 export default function ChipGrid({ items, activeIds, onToggle, lang, keyPrefix, hideIcons }: ChipGridProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.grid}>
       {items.map(item => {
@@ -40,7 +44,7 @@ export default function ChipGrid({ items, activeIds, onToggle, lang, keyPrefix, 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

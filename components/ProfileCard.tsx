@@ -3,7 +3,8 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import { getRestrictionById } from '../constants/foodRestrictions';
 import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
@@ -48,6 +49,8 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const displayName = getDisplayName(profile);
 
@@ -260,7 +263,7 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

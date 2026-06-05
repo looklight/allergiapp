@@ -1,7 +1,9 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { useMemo } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { getCountryName } from '../utils/countryNames';
 import StarRating from './StarRating';
@@ -14,6 +16,8 @@ interface Props {
 }
 
 export default function UserReviewCard({ review, onPress }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const restaurantName = review.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback');
   const countryName = getCountryName(review.restaurant_country_code, i18n.locale, review.restaurant_country);
   const location = [review.restaurant_city, countryName].filter(Boolean).join(', ');
@@ -62,7 +66,7 @@ export default function UserReviewCard({ review, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: AppTheme) => StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 14,
