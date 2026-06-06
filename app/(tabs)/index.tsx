@@ -12,7 +12,7 @@ import { AllergenId, AllLanguageCode, AppLanguage, DownloadableLanguageCode, LAN
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { getVisibleModes, getDietModeById } from '../../constants/dietModes';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { AppTheme } from '../../constants/theme';
+import { cardShadow, type AppTheme } from '../../constants/theme';
 import { getLocalizedLanguageName } from '../../constants/languageNames';
 import i18n from '../../utils/i18n';
 import { useAppContext } from '../../contexts/AppContext';
@@ -313,12 +313,8 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginBottom: 14,
     borderWidth: 1,
     borderColor: theme.colors.divider,
-    // Ombra molto leggera per staccare i box dal fondo bianco
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    // Ombra leggera solo in light: in dark la definizione la da il bordo
+    ...cardShadow(theme),
   },
   cardHeader: {
     flexDirection: 'row',

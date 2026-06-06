@@ -1,4 +1,5 @@
 import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
+import type { ViewStyle } from 'react-native';
 
 // ---------------------------------------------------------------------------
 // Color palettes — light & dark share the SAME keys so `theme.colors.X` works
@@ -283,3 +284,21 @@ export type AppTheme = typeof lightTheme;
 // Backward-compatible alias used by files not yet migrated to `useTheme()`.
 // Always points to the light theme (the historical default).
 export const theme = lightTheme;
+
+// Ombra "card" centralizzata: presente in light, ASSENTE in dark — al buio le
+// ombre non si vedono e non servono (la definizione la da il bordo). Unico
+// punto in cui vivono i parametri ombra, niente piu '#000' sparsi per i file.
+export function cardShadow(
+  theme: AppTheme,
+  opts: { opacity?: number; radius?: number; height?: number } = {}
+): ViewStyle {
+  if (theme.dark) return {};
+  const { opacity = 0.05, radius = 3, height = 1 } = opts;
+  return {
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    shadowOffset: { width: 0, height },
+    elevation: 1,
+  };
+}
