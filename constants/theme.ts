@@ -22,6 +22,10 @@ const lightColors = {
   surface: '#FFFFFF',
   background: '#F5F5F5',
   backgroundAlt: '#FAFAFA',
+  // Riquadro grigio "a piccole dosi" appoggiato su superficie bianca
+  // (banner, campi input, segmented control). Resta grigio anche quando
+  // la base passa a bianco: e l'accento, non lo sfondo dominante.
+  surfaceMuted: '#F5F5F5',
 
   // Text
   textPrimary: '#333333',
@@ -126,6 +130,8 @@ const darkColors: typeof lightColors = {
   surface: '#26282B',
   background: '#1B1C1F',
   backgroundAlt: '#212327',
+  // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
+  surfaceMuted: '#1B1C1F',
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',

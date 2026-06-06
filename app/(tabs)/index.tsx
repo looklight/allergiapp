@@ -4,6 +4,7 @@ import { Text, Button, Chip, Surface } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ALLERGENS } from '../../constants/allergens';
 import { OTHER_FOODS } from '../../constants/otherFoods';
 import { AllergenId, AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES, OtherFoodId } from '../../types';
@@ -223,7 +224,15 @@ export default function HomeScreen() {
                 {currentLanguage?.localizedName}
               </Text>
             </View>
-            <Text style={styles.changeText}>{i18n.t('home.change')} ▼</Text>
+            <View style={styles.changeContainer}>
+              <Text style={styles.changeText}>{i18n.t('home.change')}</Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={18}
+                color={theme.colors.primary}
+                style={styles.changeChevron}
+              />
+            </View>
           </Pressable>
 
         </Surface>
@@ -268,10 +277,11 @@ export default function HomeScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   content: {
     paddingHorizontal: 16,
+    paddingTop: 12,
   },
   card: {
     padding: 18,
@@ -280,6 +290,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginBottom: 14,
     borderWidth: 1,
     borderColor: theme.colors.divider,
+    // Ombra molto leggera per staccare i box dal fondo bianco
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -357,7 +373,8 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   languageSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    paddingVertical: 0,
+    paddingHorizontal: 14,
   },
   languageFlag: {
     fontSize: 40,
@@ -376,12 +393,20 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
   },
+  changeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   changeText: {
     color: theme.colors.primary,
     fontWeight: '600',
   },
+  changeChevron: {
+    marginLeft: 2,
+  },
   showCardSection: {
-    paddingVertical: 8,
+    paddingTop: 10,
+    paddingBottom: 8,
     alignItems: 'center',
   },
   readyText: {

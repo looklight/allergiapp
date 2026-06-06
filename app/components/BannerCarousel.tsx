@@ -115,21 +115,25 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
       style={styles.bannerItem}
       accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
     >
-      {item.image ? (
-        <Image
-          source={item.image}
-          style={styles.bannerImage}
-          resizeMode="contain"
-          accessibilityElementsHidden
-        />
-      ) : (
-        <Text style={styles.bannerIcon} accessibilityElementsHidden>
-          {item.icon}
-        </Text>
-      )}
-      <View style={styles.bannerTextContainer}>
-        <Text style={styles.bannerTitle}>{item.title}</Text>
-        {item.subtitle ? <Text style={styles.bannerSubtitle}>{item.subtitle}</Text> : null}
+      <View style={styles.bannerCard}>
+        {item.image ? (
+          <Image
+            source={item.image}
+            style={styles.bannerImage}
+            resizeMode="contain"
+            accessibilityElementsHidden
+          />
+        ) : (
+          <Text style={styles.bannerIcon} accessibilityElementsHidden>
+            {item.icon}
+          </Text>
+        )}
+        <View style={styles.bannerTextContainer}>
+          <Text style={styles.bannerTitle}>{item.title}</Text>
+          {item.subtitle ? (
+            <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -140,6 +144,7 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
     <View style={styles.bannerContainer}>
       <FlatList
         ref={flatListRef}
+        style={styles.flatList}
         data={banners}
         renderItem={renderBannerItem}
         keyExtractor={(item) => item.id}
@@ -179,17 +184,25 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   bannerContainer: {
-    height: 140,
-    marginBottom: 14,
+    marginBottom: 24,
     marginHorizontal: -16,
     overflow: 'hidden',
   },
+  flatList: {
+    flexGrow: 0,
+  },
   bannerItem: {
     width: SCREEN_WIDTH,
-    height: 140,
+  },
+  bannerCard: {
+    marginHorizontal: 16,
+    minHeight: 120,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    backgroundColor: theme.colors.surfaceMuted,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
     gap: 16,
   },
   bannerImage: {
@@ -217,19 +230,16 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     lineHeight: 20,
   },
   paginationDots: {
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 12,
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: theme.colors.border,
+    backgroundColor: theme.colors.separator,
     marginHorizontal: 3,
   },
   dotActive: {
