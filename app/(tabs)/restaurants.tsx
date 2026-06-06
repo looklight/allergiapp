@@ -876,7 +876,7 @@ export default function RestaurantsScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     overflow: 'visible',
   },
   mapContainer: {
