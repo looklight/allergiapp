@@ -26,6 +26,8 @@ const lightColors = {
   // (banner, campi input, segmented control, badge, separatori, placeholder).
   // E' l'unico grigio d'accento: la base dell'app e bianca (surface).
   surfaceMuted: '#F5F5F5',
+  // Sfondo bottom sheet ristoranti: bianco in light (a staccarlo e l'ombra).
+  sheetBg: '#FFFFFF',
   // Sfondo banner home: gradiente sage desaturato. Dedicato e isolato (solo
   // BannerCarousel), cosi e modificabile senza toccare altri colori.
   bannerGradient: ['#F7FBF8', '#E1EEE5'] as [string, string],
@@ -129,15 +131,16 @@ const darkColors: typeof lightColors = {
   secondary: '#FF7043',
   secondaryContainer: '#5A2418',
 
-  // Surfaces & backgrounds (charcoal bluastro stile Google Maps).
-  // Modello Material dark: base la piu scura, elementi sopra piu chiari.
-  surface: '#1B1C1F',
+  // Surfaces & backgrounds (charcoal bluastro stile Google Maps)
+  surface: '#26282B',
   backgroundAlt: '#212327',
-  // Accento "sollevato": piu CHIARO della base (pill, input, badge spiccano).
-  surfaceMuted: '#26282B',
-  // Sfondo banner home: in dark niente gradiente. Pannello piatto piu chiaro
-  // della base (sollevato), cosi non si confonde col fondo. Dedicato e isolato.
-  bannerGradient: ['#26282B', '#26282B'] as [string, string],
+  // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
+  surfaceMuted: '#1B1C1F',
+  // Sheet ristoranti: piu SCURO dello schermo (#1B1C1F vs surface #26282B), si
+  // stacca dal fondo quando l'ombra non si vede. In light e bianco. Dedicato.
+  sheetBg: '#1B1C1F',
+  // Sfondo banner home: in dark niente gradiente, pannello piatto recessed.
+  bannerGradient: ['#1B1C1F', '#1B1C1F'] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',

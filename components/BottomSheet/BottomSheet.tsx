@@ -269,7 +269,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.sheetBg,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     shadowColor: theme.colors.shadow,
@@ -280,7 +280,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     zIndex: 15,
   },
   headerWrap: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.sheetBg,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     zIndex: 1,
