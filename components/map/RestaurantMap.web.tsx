@@ -25,7 +25,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     gap: 12,
   },
   title: { fontSize: 18, fontWeight: '600', color: theme.colors.textPrimary },

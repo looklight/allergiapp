@@ -266,7 +266,7 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   scrollView: {
     flex: 1,
@@ -391,7 +391,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 14,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

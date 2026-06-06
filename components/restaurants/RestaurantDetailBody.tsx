@@ -603,7 +603,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   separator: {
     height: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   section: {
     paddingHorizontal: 16,
@@ -623,7 +623,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   thumbMatchBadge: {
     position: 'absolute', bottom: 5, left: 5,

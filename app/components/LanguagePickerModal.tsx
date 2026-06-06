@@ -373,7 +373,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginVertical: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 10,
   },
   searchInput: {
@@ -389,7 +389,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     padding: 16,
   },
   languageItemPressed: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   languageItemSelected: {
     backgroundColor: theme.colors.primaryLight,

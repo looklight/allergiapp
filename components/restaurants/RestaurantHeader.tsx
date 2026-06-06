@@ -45,7 +45,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   const inferredCount = matchInfo ? Object.keys(matchInfo.inferredSources ?? {}).length : 0;
   const directCount = matchInfo ? matchInfo.coveredCount - inferredCount : 0;
   const isFull = !isNoReviews && matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
-  const badgeBg = isNoReviews ? theme.colors.background : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
+  const badgeBg = isNoReviews ? theme.colors.surfaceMuted : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
   const badgeColor = isNoReviews ? theme.colors.textSecondary : (isFull ? theme.colors.success : theme.colors.amberDark);
   useEffect(() => {
     setCompatExpanded(false);
@@ -342,7 +342,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontWeight: '500',
   },
   categoryBadgeCount: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -364,7 +364,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
@@ -444,7 +444,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderColor: theme.colors.amberBorder,
   },
   compatChipUncovered: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

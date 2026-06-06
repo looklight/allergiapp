@@ -20,11 +20,10 @@ const lightColors = {
 
   // Surfaces & backgrounds
   surface: '#FFFFFF',
-  background: '#F5F5F5',
   backgroundAlt: '#FAFAFA',
   // Riquadro grigio "a piccole dosi" appoggiato su superficie bianca
-  // (banner, campi input, segmented control). Resta grigio anche quando
-  // la base passa a bianco: e l'accento, non lo sfondo dominante.
+  // (banner, campi input, segmented control, badge, separatori, placeholder).
+  // E' l'unico grigio d'accento: la base dell'app e bianca (surface).
   surfaceMuted: '#F5F5F5',
 
   // Text
@@ -128,7 +127,6 @@ const darkColors: typeof lightColors = {
 
   // Surfaces & backgrounds (charcoal bluastro stile Google Maps)
   surface: '#26282B',
-  background: '#1B1C1F',
   backgroundAlt: '#212327',
   // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
   surfaceMuted: '#1B1C1F',

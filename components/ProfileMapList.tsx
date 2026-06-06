@@ -320,7 +320,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
   },
   stickyHeader: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     gap: 6,
     paddingTop: 6,
     paddingBottom: 8,

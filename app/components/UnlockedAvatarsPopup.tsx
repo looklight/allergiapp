@@ -190,7 +190,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     resizeMode: 'contain',
   },
   overflowTile: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 28,
   },
   overflowText: {
