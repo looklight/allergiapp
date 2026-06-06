@@ -90,7 +90,7 @@ const errorStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   icon: { fontSize: 48, marginBottom: 16, color: theme.colors.error, fontWeight: 'bold' },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8, color: theme.colors.error },
@@ -196,7 +196,7 @@ function AppContent() {
           animation: 'ios_from_right',
           gestureEnabled: true,
           headerShown: false,
-          contentStyle: { backgroundColor: activeTheme.colors.background },
+          contentStyle: { backgroundColor: activeTheme.colors.surface },
         }}
       />
       {/* Consent modal overlay - shown on top of the app */}

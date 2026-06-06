@@ -346,7 +346,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   photoMeta: {
     flex: 1,

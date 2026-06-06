@@ -12,6 +12,8 @@ export type MapPinItem = {
   name: string;
   location: { latitude: number; longitude: number } | null;
   is_favorite?: boolean;
+  /** Faccetta lodging: decide l'icona del pin (letto vs forchetta). */
+  offers_lodging?: boolean;
 };
 
 /**

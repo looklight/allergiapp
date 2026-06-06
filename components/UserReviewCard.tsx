@@ -3,7 +3,7 @@ import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import type { AppTheme } from '../constants/theme';
+import { cardShadow, type AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { getCountryName } from '../utils/countryNames';
 import StarRating from './StarRating';
@@ -71,11 +71,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     backgroundColor: theme.colors.surface,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: theme.colors.divider,
+    ...cardShadow(theme, { radius: 8, height: 2 }),
   },
   header: {
     flexDirection: 'row',

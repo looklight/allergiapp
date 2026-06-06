@@ -45,7 +45,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
   const inferredCount = matchInfo ? Object.keys(matchInfo.inferredSources ?? {}).length : 0;
   const directCount = matchInfo ? matchInfo.coveredCount - inferredCount : 0;
   const isFull = !isNoReviews && matchInfo && matchInfo.coveredCount >= matchInfo.totalFilters;
-  const badgeBg = isNoReviews ? theme.colors.background : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
+  const badgeBg = isNoReviews ? theme.colors.detailMuted : (isFull ? theme.colors.primaryLight : theme.colors.amberLight);
   const badgeColor = isNoReviews ? theme.colors.textSecondary : (isFull ? theme.colors.success : theme.colors.amberDark);
   useEffect(() => {
     setCompatExpanded(false);
@@ -283,7 +283,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     // Padding inferiore tarato così che lo stacco banner→nota/foto/menu (8+4=12 → ora
     // 12+4=16) sia uguale a quello pill→banner (16), che usiamo come riferimento.
     paddingBottom: 12,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   sectionTopRow: {
     flexDirection: 'row',
@@ -342,7 +342,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontWeight: '500',
   },
   categoryBadgeCount: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -364,7 +364,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
@@ -444,7 +444,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderColor: theme.colors.amberBorder,
   },
   compatChipUncovered: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

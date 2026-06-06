@@ -354,7 +354,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: 'center',

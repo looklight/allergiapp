@@ -167,7 +167,7 @@ export default function OnboardingDietaryScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   content: {
     padding: 24,
@@ -211,7 +211,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   bottomBar: {
     paddingHorizontal: 24,
     paddingTop: 12,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: theme.colors.border,
   },

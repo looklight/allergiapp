@@ -50,7 +50,7 @@ export default function EditDietaryScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   content: {
     flex: 1,

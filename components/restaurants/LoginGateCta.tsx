@@ -57,7 +57,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     paddingVertical: 40,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
     alignItems: 'center',
     gap: 12,
   },

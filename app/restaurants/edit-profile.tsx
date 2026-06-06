@@ -368,7 +368,7 @@ export default function EditProfileScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   content: {
     flex: 1,
@@ -437,7 +437,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: theme.colors.background,
+    borderColor: theme.colors.surface,
   },
   saveButton: {
     borderRadius: 10,

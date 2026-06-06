@@ -425,7 +425,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     lineHeight: 18,
   },
   searchSurface: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 12,
     marginBottom: 8,
     borderWidth: 1,

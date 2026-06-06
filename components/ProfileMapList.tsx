@@ -8,6 +8,7 @@ import i18n from '../utils/i18n';
 import ProfileCard from './ProfileCard';
 import Avatar from './Avatar';
 import CountryFilterChips from './CountryFilterChips';
+import TypeFilterToggles, { type TypeToggleItem } from './TypeFilterToggles';
 import MyRestaurantsMap, { type MapPinItem } from '../app/components/my-restaurants/MyRestaurantsMap';
 import RestaurantDetailSheet from './restaurants/RestaurantDetailSheet';
 import { useLocationFilters, type LocationParts } from '../hooks/useLocationFilters';
@@ -52,6 +53,18 @@ interface ProfileMapListProps<T> {
   headerVisible?: boolean;
   /** Reso al posto della lista quando il filtro corrente non ha elementi. */
   emptyState?: React.ReactNode;
+
+  /** Filtro per tipo luogo (Ristoranti/Hotel). Reso come due toggle icona-sola
+   *  allineati a destra SOTTO la mappa (nel corpo, scorre via). Applicato a monte
+   *  del filtro paese, così mappa e lista restano coerenti. Omesso = niente riga. */
+  typeFilter?: TypeFilterConfig<T>;
+}
+
+interface TypeFilterConfig<T> {
+  /** Chiave tipo di un item (es. 'restaurant' | 'lodging'). */
+  getKey: (item: T) => string;
+  /** Tipi toggable, in ordine di resa (icona + label a11y). */
+  types: TypeToggleItem[];
 }
 
 /**
@@ -82,6 +95,7 @@ export default function ProfileMapList<T>({
   topActions,
   headerVisible,
   emptyState,
+  typeFilter,
 }: ProfileMapListProps<T>) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -91,13 +105,46 @@ export default function ProfileMapList<T>({
   // sulla mappa. Persiste a scheda chiusa così il ristorante resta selezionato.
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  // ─── Filtro tipo (Ristoranti/Hotel) ───────────────────────────────────────
+  // Due toggle indipendenti: stato come insieme di tipi NASCOSTI (default vuoto
+  // = tutto mostrato). I toggle compaiono solo se nell'insieme corrente ci sono
+  // almeno 2 tipi distinti (altrimenti non c'è nulla da filtrare).
+  const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+  const presentTypes = useMemo<TypeToggleItem[]>(() => {
+    if (!typeFilter) return [];
+    const present = new Set<string>();
+    for (const it of items) present.add(typeFilter.getKey(it));
+    return typeFilter.types.filter((t) => present.has(t.key));
+  }, [items, typeFilter]);
+  // Toggle di un tipo, con guardia: non si può nascondere l'ultimo tipo visibile
+  // (evita la lista vuota "per costruzione").
+  const toggleType = useCallback((key: string) => {
+    setHiddenTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        const stillVisible = presentTypes.some((t) => t.key !== key && !next.has(t.key));
+        if (!stillVisible) return prev;
+        next.add(key);
+      }
+      return next;
+    });
+  }, [presentTypes]);
+  // Applicato a monte: alimenta useLocationFilters, quindi mappa + chip paese +
+  // lista vedono tutti lo stesso insieme già ristretto per tipo.
+  const typedItems = useMemo(
+    () => (typeFilter && hiddenTypes.size > 0 ? items.filter((it) => !hiddenTypes.has(typeFilter.getKey(it))) : items),
+    [items, typeFilter, hiddenTypes],
+  );
+
   const scrollRef = useRef<ScrollView | null>(null);
   const cardYRef = useRef<Record<string, number>>({});
   const stickyHeightRef = useRef(0);
   const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { countryOptions, selectedCountry, setSelectedCountry, filteredItems } =
-    useLocationFilters(items, getLocation);
+    useLocationFilters(typedItems, getLocation);
 
   // Tap su un pin: scrolla alla riga corrispondente (sotto l'header sticky)
   // e la evidenzia con un breve flash.
@@ -207,9 +254,23 @@ export default function ProfileMapList<T>({
           </View>
         ) : undefined}
       >
+        {/* Header lista (stile sezione recensioni): titolo a sinistra, toggle tipo
+            a destra sulla stessa riga. Sotto la mappa, scorre via con la lista.
+            Reso SOLO quando c'è un mix di tipi da filtrare (>= 2 toggle): senza
+            toggle il titolo sarebbe solo spazio sprecato (lo è già la statistica
+            in cima e, sul privato, il toggle sticky Recensioni/Preferiti). */}
+        {showHeader && presentTypes.length >= 2 && (
+          <View style={styles.listHeader}>
+            {sectionTitle != null ? (
+              <Text style={styles.sectionTitle}>{sectionTitle}</Text>
+            ) : (
+              <View />
+            )}
+            <TypeFilterToggles toggles={presentTypes} hidden={hiddenTypes} onToggle={toggleType} />
+          </View>
+        )}
         {filteredItems.length > 0 ? (
           <>
-            {sectionTitle ? <Text style={styles.sectionTitle}>{sectionTitle}</Text> : null}
             {filteredItems.map((item) => {
               const pinId = getPinId(item);
               return (
@@ -320,12 +381,19 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
   },
   stickyHeader: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     gap: 6,
     paddingTop: 6,
     paddingBottom: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.divider,
+  },
+  // Riga header lista: titolo a sinistra, toggle tipo a destra (stile sezione
+  // recensioni). Il respiro sotto è dato dal gap del contenitore ScrollView.
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   sectionTitle: {
     fontSize: 16,

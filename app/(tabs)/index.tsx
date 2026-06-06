@@ -1,16 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSequence, withDelay, withTiming, ReduceMotion } from 'react-native-reanimated';
 import { Text, Button, Chip, Surface } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ALLERGENS } from '../../constants/allergens';
 import { OTHER_FOODS } from '../../constants/otherFoods';
 import { AllergenId, AllLanguageCode, AppLanguage, DownloadableLanguageCode, LANGUAGES, OtherFoodId } from '../../types';
 import { DOWNLOADABLE_LANGUAGES } from '../../constants/downloadableLanguages';
 import { getVisibleModes, getDietModeById } from '../../constants/dietModes';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { AppTheme } from '../../constants/theme';
+import { cardShadow, type AppTheme } from '../../constants/theme';
 import { getLocalizedLanguageName } from '../../constants/languageNames';
 import i18n from '../../utils/i18n';
 import { useAppContext } from '../../contexts/AppContext';
@@ -65,6 +67,26 @@ export default function HomeScreen() {
       localizedName: getLocalizedLanguageName(lang.code, appLang) || lang.name,
     };
   }, [cardLanguage, appLang]);
+
+  // Pulse decorativo sul bottone "Mostra card" al cambio lingua: segnala che la card è aggiornata e pronta.
+  const cardPulse = useSharedValue(1);
+  const isFirstLanguageRender = useRef(true);
+  useEffect(() => {
+    if (isFirstLanguageRender.current) {
+      isFirstLanguageRender.current = false;
+      return;
+    }
+    cardPulse.value = withDelay(
+      250,
+      withSequence(
+        withTiming(1.03, { duration: 120, reduceMotion: ReduceMotion.System }),
+        withTiming(1, { duration: 160, reduceMotion: ReduceMotion.System })
+      )
+    );
+  }, [cardLanguage]);
+  const cardPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardPulse.value }],
+  }));
 
   return (
     <View style={styles.container}>
@@ -223,7 +245,15 @@ export default function HomeScreen() {
                 {currentLanguage?.localizedName}
               </Text>
             </View>
-            <Text style={styles.changeText}>{i18n.t('home.change')} ▼</Text>
+            <View style={styles.changeContainer}>
+              <Text style={styles.changeText}>{i18n.t('home.change')}</Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={18}
+                color={theme.colors.primary}
+                style={styles.changeChevron}
+              />
+            </View>
           </Pressable>
 
         </Surface>
@@ -234,17 +264,19 @@ export default function HomeScreen() {
             <Text style={styles.readyText}>
               {i18n.t('home.cardReadyIn')} {currentLanguage?.nativeName}!
             </Text>
-            <Button
-              mode="contained"
-              onPress={() => router.push('/card')}
-              style={styles.showCardButton}
-              contentStyle={styles.showCardButtonContent}
-              labelStyle={styles.showCardButtonLabel}
-              icon="card-bulleted-outline"
-              accessibilityLabel={i18n.t('home.showCardToWaiter')}
-            >
-              {i18n.t('home.showCardToWaiter')}
-            </Button>
+            <Animated.View style={cardPulseStyle}>
+              <Button
+                mode="contained"
+                onPress={() => router.push('/card')}
+                style={styles.showCardButton}
+                contentStyle={styles.showCardButtonContent}
+                labelStyle={styles.showCardButtonLabel}
+                icon="card-bulleted-outline"
+                accessibilityLabel={i18n.t('home.showCardToWaiter')}
+              >
+                {i18n.t('home.showCardToWaiter')}
+              </Button>
+            </Animated.View>
           </View>
         )}
       </ScrollView>
@@ -268,10 +300,11 @@ export default function HomeScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   content: {
     paddingHorizontal: 16,
+    paddingTop: 12,
   },
   card: {
     padding: 18,
@@ -280,6 +313,8 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginBottom: 14,
     borderWidth: 1,
     borderColor: theme.colors.divider,
+    // Ombra leggera solo in light: in dark la definizione la da il bordo
+    ...cardShadow(theme),
   },
   cardHeader: {
     flexDirection: 'row',
@@ -357,7 +392,8 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   languageSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    paddingVertical: 0,
+    paddingHorizontal: 14,
   },
   languageFlag: {
     fontSize: 40,
@@ -376,12 +412,20 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
   },
+  changeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   changeText: {
     color: theme.colors.primary,
     fontWeight: '600',
   },
+  changeChevron: {
+    marginLeft: 2,
+  },
   showCardSection: {
-    paddingVertical: 8,
+    paddingTop: 10,
+    paddingBottom: 8,
     alignItems: 'center',
   },
   readyText: {

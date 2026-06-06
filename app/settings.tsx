@@ -282,7 +282,7 @@ export default function SettingsScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   appLanguageWrapper: {
     paddingTop: 12,
@@ -297,12 +297,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   langPickerAnchor: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: theme.colors.background,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.divider,
+    backgroundColor: theme.colors.neutralBg,
+    borderRadius: 10,
     gap: 6,
     marginLeft: 'auto',
   },
@@ -318,7 +316,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   langPickerOptions: {
     marginHorizontal: 16,
     marginTop: 4,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.colors.divider,
@@ -336,7 +334,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     backgroundColor: theme.colors.primaryLight,
   },
   langPickerOptionPressed: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     opacity: 0.7,
   },
   langPickerOptionFlag: {

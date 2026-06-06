@@ -195,7 +195,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   titleRow: {
     flexDirection: 'row',
@@ -221,7 +221,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: 16,
@@ -240,7 +240,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   emptySection: {
     paddingHorizontal: 16,
     paddingVertical: 28,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
     alignItems: 'center',
     gap: 8,
   },
@@ -274,7 +274,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 14,
     marginTop: 8,
     borderRadius: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

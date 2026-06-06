@@ -539,7 +539,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   anonGateWrap: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   centered: {
     flex: 1,
@@ -567,7 +567,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 4,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
     gap: 10,
   },
   bodyRatingGroup: {
@@ -603,12 +603,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   separator: {
     height: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
   },
   section: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   sectionTitle: {
     fontSize: 16,
@@ -617,13 +617,13 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginBottom: 12,
   },
   photoAndMenuSection: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   photoThumb: {
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
   },
   thumbMatchBadge: {
     position: 'absolute', bottom: 5, left: 5,
@@ -645,7 +645,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   ctaSection: {
     paddingHorizontal: 16,
     paddingVertical: 20,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
     alignItems: 'center',
     gap: 10,
   },
@@ -684,7 +684,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 13,
     color: theme.colors.textSecondary,
   },
-  footerSection: { backgroundColor: theme.colors.surface },
+  footerSection: { backgroundColor: theme.colors.detailSurface },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',

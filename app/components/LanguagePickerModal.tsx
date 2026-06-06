@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { View, StyleSheet, Pressable, TouchableOpacity, Modal, FlatList, Animated, PanResponder, TextInput, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Pressable, TouchableOpacity, Modal, FlatList, Animated, PanResponder, TextInput, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,12 @@ import { DownloadProgress } from '../../services/translationService';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
+
+// Altezza del bottom sheet come frazione dello schermo: unica fonte di verità,
+// usata sia per lo stile (height) sia per lo scostamento di chiusura dell'animazione.
+const SHEET_HEIGHT_RATIO = 0.7;
+// Margine extra oltre l'altezza del sheet per garantirne l'uscita completa in chiusura.
+const SHEET_HIDE_BUFFER = 40;
 
 interface LanguagePickerModalProps {
   visible: boolean;
@@ -40,6 +46,12 @@ export default function LanguagePickerModal({
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  // Scostamento per nascondere il sheet: pari alla sua altezza reale (70% schermo)
+  // + buffer, così in chiusura esce del tutto senza lasciare un lembo che "salta".
+  const sheetHeight = windowHeight * SHEET_HEIGHT_RATIO + insets.bottom + SHEET_HIDE_BUFFER;
+  const sheetHeightRef = useRef(sheetHeight);
+  sheetHeightRef.current = sheetHeight;
   const [searchQuery, setSearchQuery] = useState('');
   const pickerAnim = useRef(new Animated.Value(0)).current;
   const dragY = useRef(new Animated.Value(0)).current;
@@ -81,7 +93,7 @@ export default function LanguagePickerModal({
       onPanResponderRelease: (_, gs) => {
         if (gs.dy > 100 || gs.vy > 0.5) {
           Animated.timing(dragY, {
-            toValue: 500,
+            toValue: sheetHeightRef.current,
             duration: 200,
             useNativeDriver: true,
           }).start(() => {
@@ -194,7 +206,7 @@ export default function LanguagePickerModal({
                 translateY: Animated.add(
                   pickerAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [500, 0],
+                    outputRange: [sheetHeight, 0],
                   }),
                   dragY
                 ),
@@ -324,7 +336,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: '70%',
+    height: `${SHEET_HEIGHT_RATIO * 100}%`,
   },
   modalHandle: {
     width: 36,
@@ -361,7 +373,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginVertical: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 10,
   },
   searchInput: {
@@ -377,7 +389,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     padding: 16,
   },
   languageItemPressed: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   languageItemSelected: {
     backgroundColor: theme.colors.primaryLight,

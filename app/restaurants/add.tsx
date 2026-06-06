@@ -661,7 +661,7 @@ export default function AddRestaurantScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   content: {
     padding: 12,
@@ -838,7 +838,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 10,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   mapsBtnText: {
     fontSize: 11,
@@ -1002,7 +1002,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: theme.colors.border,
     paddingHorizontal: 16,

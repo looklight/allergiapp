@@ -129,7 +129,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
   },
   emptyRow: {
     flexDirection: 'row',

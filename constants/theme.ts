@@ -1,4 +1,5 @@
 import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
+import type { ViewStyle } from 'react-native';
 
 // ---------------------------------------------------------------------------
 // Color palettes — light & dark share the SAME keys so `theme.colors.X` works
@@ -20,8 +21,22 @@ const lightColors = {
 
   // Surfaces & backgrounds
   surface: '#FFFFFF',
-  background: '#F5F5F5',
   backgroundAlt: '#FAFAFA',
+  // Riquadro grigio "a piccole dosi" appoggiato su superficie bianca
+  // (banner, campi input, segmented control, badge, separatori, placeholder).
+  // E' l'unico grigio d'accento: la base dell'app e bianca (surface).
+  surfaceMuted: '#F5F5F5',
+  // Superficie "detail ristorante" (sheet + full-screen): bianca in light,
+  // scura in dark per staccarsi dallo schermo come Google Maps (tono al posto
+  // dell'ombra). Frame del sheet + sezioni del detail. Dedicata e isolata.
+  detailSurface: '#FFFFFF',
+  // Tono "muted" DENTRO il detail (gap tra sezioni, chip, placeholder, badge):
+  // grigio in light; in dark piu CHIARO del detail (#26282B) cosi sezioni ed
+  // elementi restano staccati e non si perde la "forma" grouped-list al buio.
+  detailMuted: '#F5F5F5',
+  // Sfondo banner home: gradiente sage desaturato. Dedicato e isolato (solo
+  // BannerCarousel), cosi e modificabile senza toccare altri colori.
+  bannerGradient: ['#F7FBF8', '#E1EEE5'] as [string, string],
 
   // Text
   textPrimary: '#333333',
@@ -109,6 +124,15 @@ const lightColors = {
 // Ereditati da lightColors (intrinseci, validi in entrambi i temi): amber, amberDark,
 // amberSubtle, coverageMedium, intoleranceAccent, selectionHighlight, starFilled,
 // onPrimary, shadow, overlay/overlayDark, brand*.
+// Scala dei grigi del dark — UNICO posto dei toni superficie scuri. I token
+// sotto vi puntano: cambi qui e si propaga a tutto il dark.
+const darkSurfaces = {
+  deep: '#1B1C1F', // piu scuro: detail/sheet recessed, surfaceMuted
+  base: '#26282B', // standard: schermo, card, accenti nel detail, banner
+  alt: '#212327',  // variante (backgroundAlt)
+  line: '#3C4043', // bordi, divider, neutralBg
+};
+
 const darkColors: typeof lightColors = {
   ...lightColors,
 
@@ -122,10 +146,14 @@ const darkColors: typeof lightColors = {
   secondary: '#FF7043',
   secondaryContainer: '#5A2418',
 
-  // Surfaces & backgrounds (charcoal bluastro stile Google Maps)
-  surface: '#26282B',
-  background: '#1B1C1F',
-  backgroundAlt: '#212327',
+  // Surfaces & backgrounds — vedi darkSurfaces (charcoal stile Google Maps)
+  surface: darkSurfaces.base,
+  backgroundAlt: darkSurfaces.alt,
+  surfaceMuted: darkSurfaces.deep,   // accento recessed su schermo
+  detailSurface: darkSurfaces.deep,  // detail/sheet recessed (= surfaceMuted)
+  detailMuted: darkSurfaces.base,    // accenti nel detail, piu chiari (= surface)
+  // Banner home: = surface, si fonde col fondo schermo
+  bannerGradient: [darkSurfaces.base, darkSurfaces.base] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
@@ -168,8 +196,8 @@ const darkColors: typeof lightColors = {
   cardDescriptionText: '#BDC1C6',
 
   // Borders & dividers
-  divider: '#3C4043',
-  border: '#3C4043',
+  divider: darkSurfaces.line,
+  border: darkSurfaces.line,
   separator: '#5F6368',
 
   // Overlays — overlayLight era una "pillola" chiara: su dark diventa scura
@@ -178,7 +206,7 @@ const darkColors: typeof lightColors = {
 
   // UI elements
   switchThumbInactive: '#9AA0A6',
-  neutralBg: '#3C4043',
+  neutralBg: darkSurfaces.line,
   restrictionRowBg: '#2A2630',
   restrictionRowBgPressed: '#332B3D',
 
@@ -272,3 +300,21 @@ export type AppTheme = typeof lightTheme;
 // Backward-compatible alias used by files not yet migrated to `useTheme()`.
 // Always points to the light theme (the historical default).
 export const theme = lightTheme;
+
+// Ombra "card" centralizzata: presente in light, ASSENTE in dark — al buio le
+// ombre non si vedono e non servono (la definizione la da il bordo). Unico
+// punto in cui vivono i parametri ombra, niente piu '#000' sparsi per i file.
+export function cardShadow(
+  theme: AppTheme,
+  opts: { opacity?: number; radius?: number; height?: number } = {}
+): ViewStyle {
+  if (theme.dark) return {};
+  const { opacity = 0.05, radius = 3, height = 1 } = opts;
+  return {
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    shadowOffset: { width: 0, height },
+    elevation: 1,
+  };
+}

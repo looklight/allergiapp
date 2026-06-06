@@ -63,6 +63,6 @@ export default function RestaurantDetailScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
 });

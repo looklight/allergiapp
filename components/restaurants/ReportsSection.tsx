@@ -60,12 +60,12 @@ export default function ReportsSection({ reports }: Props) {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   separator: {
     height: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
   },
   section: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   sectionTitle: {
     fontSize: 16,
@@ -85,7 +85,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   reportTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatar: {
     width: 34, height: 34, borderRadius: 17,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.detailMuted,
     justifyContent: 'center', alignItems: 'center',
   },
   meta: { flex: 1 },
