@@ -129,15 +129,15 @@ const darkColors: typeof lightColors = {
   secondary: '#FF7043',
   secondaryContainer: '#5A2418',
 
-  // Surfaces & backgrounds (charcoal bluastro stile Google Maps)
-  surface: '#26282B',
+  // Surfaces & backgrounds (charcoal bluastro stile Google Maps).
+  // Modello Material dark: base la piu scura, elementi sopra piu chiari.
+  surface: '#1B1C1F',
   backgroundAlt: '#212327',
-  // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
-  surfaceMuted: '#1B1C1F',
-  // Sfondo banner home: in dark NIENTE gradiente (sembrerebbe banding e
-  // stonerebbe col charcoal Google-Maps). Due stop uguali = riquadro piatto
-  // recessed, coerente con la dark mode. Dedicato e isolato.
-  bannerGradient: ['#1B1C1F', '#1B1C1F'] as [string, string],
+  // Accento "sollevato": piu CHIARO della base (pill, input, badge spiccano).
+  surfaceMuted: '#26282B',
+  // Sfondo banner home: in dark niente gradiente. Pannello piatto piu chiaro
+  // della base (sollevato), cosi non si confonde col fondo. Dedicato e isolato.
+  bannerGradient: ['#26282B', '#26282B'] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
