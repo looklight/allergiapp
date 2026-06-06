@@ -283,7 +283,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     // Padding inferiore tarato così che lo stacco banner→nota/foto/menu (8+4=12 → ora
     // 12+4=16) sia uguale a quello pill→banner (16), che usiamo come riferimento.
     paddingBottom: 12,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   sectionTopRow: {
     flexDirection: 'row',

@@ -195,7 +195,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   titleRow: {
     flexDirection: 'row',
@@ -240,7 +240,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   emptySection: {
     paddingHorizontal: 16,
     paddingVertical: 28,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
     alignItems: 'center',
     gap: 8,
   },

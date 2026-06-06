@@ -88,7 +88,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   titleRow: {
     flexDirection: 'row',

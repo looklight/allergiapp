@@ -65,7 +65,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.detailSurface,
   },
   sectionTitle: {
     fontSize: 16,
