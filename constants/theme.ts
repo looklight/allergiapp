@@ -133,8 +133,10 @@ const darkColors: typeof lightColors = {
   backgroundAlt: '#212327',
   // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
   surfaceMuted: '#1B1C1F',
-  // Sfondo banner home: gradiente scuro desaturato, dedicato e isolato
-  bannerGradient: ['#282D2A', '#20231F'] as [string, string],
+  // Sfondo banner home: in dark NIENTE gradiente (sembrerebbe banding e
+  // stonerebbe col charcoal Google-Maps). Due stop uguali = riquadro piatto
+  // recessed, coerente con la dark mode. Dedicato e isolato.
+  bannerGradient: ['#1B1C1F', '#1B1C1F'] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
