@@ -161,7 +161,7 @@ export default function LegalScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   languageSelector: {
     flexDirection: 'row',
@@ -178,7 +178,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderWidth: 1,
     borderColor: theme.colors.border,
     gap: 8,
@@ -206,7 +206,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderBottomColor: theme.colors.border,
   },
   segmentedButtons: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
   },
   scrollView: {
     flex: 1,

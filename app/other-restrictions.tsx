@@ -376,7 +376,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 4,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 12,
   },
   levelRow: {

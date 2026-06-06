@@ -391,7 +391,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 6,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   emptySearch: {
     alignItems: 'center',
@@ -428,7 +428,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 6,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   icon: {
     fontSize: 24,
@@ -490,7 +490,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   otherFoodsHeaderPressed: {
     backgroundColor: theme.colors.restrictionRowBgPressed,
