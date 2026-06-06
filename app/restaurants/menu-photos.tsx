@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
@@ -13,7 +13,6 @@ import { useImagePicker } from '../../hooks/useImagePicker';
 import AppHeader from '../components/AppHeader';
 import ImageFullscreenModal from '../../components/ImageFullscreenModal';
 import i18n from '../../utils/i18n';
-import { getDisplayName } from '../../utils/getDisplayName';
 import type { MenuPhoto } from '../../services/restaurantService';
 
 const THUMB_SIZE = 72;
@@ -21,7 +20,6 @@ const THUMB_SIZE = 72;
 export default function MenuPhotosScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { restaurantId, restaurantName, offersLodging } = useLocalSearchParams<{
@@ -208,13 +206,11 @@ export default function MenuPhotosScreen() {
                     />
                   </TouchableOpacity>
                   <View style={styles.photoMeta}>
-                    <Text style={styles.uploaderName}>
-                      {photo.user_id === user?.uid
-                        ? i18n.t('restaurants.menu.uploaderYou')
-                        : photo.user_id == null
-                          ? i18n.t('common.userInactive')
-                          : (getDisplayName({ username: photo.user_username }) ?? i18n.t('restaurants.menu.uploaderCommunity'))}
-                    </Text>
+                    {photo.user_id === user?.uid && (
+                      <Text style={styles.uploaderName}>
+                        {i18n.t('restaurants.menu.uploaderYou')}
+                      </Text>
+                    )}
                     <Text style={styles.uploadDate}>
                       {new Date(photo.created_at).toLocaleDateString(i18n.locale, {
                         month: 'long', year: 'numeric',
