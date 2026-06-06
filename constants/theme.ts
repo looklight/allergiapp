@@ -124,6 +124,15 @@ const lightColors = {
 // Ereditati da lightColors (intrinseci, validi in entrambi i temi): amber, amberDark,
 // amberSubtle, coverageMedium, intoleranceAccent, selectionHighlight, starFilled,
 // onPrimary, shadow, overlay/overlayDark, brand*.
+// Scala dei grigi del dark — UNICO posto dei toni superficie scuri. I token
+// sotto vi puntano: cambi qui e si propaga a tutto il dark.
+const darkSurfaces = {
+  deep: '#1B1C1F', // piu scuro: detail/sheet recessed, surfaceMuted
+  base: '#26282B', // standard: schermo, card, accenti nel detail, banner
+  alt: '#212327',  // variante (backgroundAlt)
+  line: '#3C4043', // bordi, divider, neutralBg
+};
+
 const darkColors: typeof lightColors = {
   ...lightColors,
 
@@ -137,19 +146,14 @@ const darkColors: typeof lightColors = {
   secondary: '#FF7043',
   secondaryContainer: '#5A2418',
 
-  // Surfaces & backgrounds (charcoal bluastro stile Google Maps)
-  surface: '#26282B',
-  backgroundAlt: '#212327',
-  // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
-  surfaceMuted: '#1B1C1F',
-  // Superficie "detail ristorante": piu SCURA dello schermo (#1B1C1F vs #26282B),
-  // stacca sheet/detail dal fondo senza ombra (stile Google Maps).
-  detailSurface: '#1B1C1F',
-  // Muted dentro il detail: piu chiaro del detail (#26282B) per staccare gap,
-  // chip, placeholder e badge dalle sezioni #1B1C1F.
-  detailMuted: '#26282B',
-  // Sfondo banner home: in dark niente gradiente, pannello piatto recessed.
-  bannerGradient: ['#1B1C1F', '#1B1C1F'] as [string, string],
+  // Surfaces & backgrounds — vedi darkSurfaces (charcoal stile Google Maps)
+  surface: darkSurfaces.base,
+  backgroundAlt: darkSurfaces.alt,
+  surfaceMuted: darkSurfaces.deep,   // accento recessed su schermo
+  detailSurface: darkSurfaces.deep,  // detail/sheet recessed (= surfaceMuted)
+  detailMuted: darkSurfaces.base,    // accenti nel detail, piu chiari (= surface)
+  // Banner home: = surface, si fonde col fondo schermo
+  bannerGradient: [darkSurfaces.base, darkSurfaces.base] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
@@ -192,8 +196,8 @@ const darkColors: typeof lightColors = {
   cardDescriptionText: '#BDC1C6',
 
   // Borders & dividers
-  divider: '#3C4043',
-  border: '#3C4043',
+  divider: darkSurfaces.line,
+  border: darkSurfaces.line,
   separator: '#5F6368',
 
   // Overlays — overlayLight era una "pillola" chiara: su dark diventa scura
@@ -202,7 +206,7 @@ const darkColors: typeof lightColors = {
 
   // UI elements
   switchThumbInactive: '#9AA0A6',
-  neutralBg: '#3C4043',
+  neutralBg: darkSurfaces.line,
   restrictionRowBg: '#2A2630',
   restrictionRowBgPressed: '#332B3D',
 
