@@ -30,6 +30,10 @@ const lightColors = {
   // scura in dark per staccarsi dallo schermo come Google Maps (tono al posto
   // dell'ombra). Frame del sheet + sezioni del detail. Dedicata e isolata.
   detailSurface: '#FFFFFF',
+  // Tono "muted" DENTRO il detail (gap tra sezioni, chip, placeholder, badge):
+  // grigio in light; in dark piu CHIARO del detail (#26282B) cosi sezioni ed
+  // elementi restano staccati e non si perde la "forma" grouped-list al buio.
+  detailMuted: '#F5F5F5',
   // Sfondo banner home: gradiente sage desaturato. Dedicato e isolato (solo
   // BannerCarousel), cosi e modificabile senza toccare altri colori.
   bannerGradient: ['#F7FBF8', '#E1EEE5'] as [string, string],
@@ -141,6 +145,9 @@ const darkColors: typeof lightColors = {
   // Superficie "detail ristorante": piu SCURA dello schermo (#1B1C1F vs #26282B),
   // stacca sheet/detail dal fondo senza ombra (stile Google Maps).
   detailSurface: '#1B1C1F',
+  // Muted dentro il detail: piu chiaro del detail (#26282B) per staccare gap,
+  // chip, placeholder e badge dalle sezioni #1B1C1F.
+  detailMuted: '#26282B',
   // Sfondo banner home: in dark niente gradiente, pannello piatto recessed.
   bannerGradient: ['#1B1C1F', '#1B1C1F'] as [string, string],
 

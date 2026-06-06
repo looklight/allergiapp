@@ -132,7 +132,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: theme.colors.surfaceMuted,
+    backgroundColor: theme.colors.detailMuted,
     borderRadius: 10,
     marginBottom: 12,
   },
@@ -154,7 +154,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     width: 110,
     height: 150,
     borderRadius: 10,
-    backgroundColor: theme.colors.surfaceMuted,
+    backgroundColor: theme.colors.detailMuted,
   },
   menuEmptyHint: {
     fontSize: 13,
