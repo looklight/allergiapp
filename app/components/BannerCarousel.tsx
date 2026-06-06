@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { View, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
 import { Text } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BannerItem } from '../../types';
 import i18n from '../../utils/i18n';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -115,7 +116,12 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
       style={styles.bannerItem}
       accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
     >
-      <View style={styles.bannerCard}>
+      <LinearGradient
+        colors={theme.colors.bannerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.bannerCard}
+      >
         {item.image ? (
           <Image
             source={item.image}
@@ -134,7 +140,7 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
             <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
           ) : null}
         </View>
-      </View>
+      </LinearGradient>
     </View>
   );
 
@@ -200,7 +206,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderRadius: 16,
-    backgroundColor: theme.colors.surfaceMuted,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,

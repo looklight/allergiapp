@@ -25,6 +25,9 @@ const lightColors = {
   // (banner, campi input, segmented control, badge, separatori, placeholder).
   // E' l'unico grigio d'accento: la base dell'app e bianca (surface).
   surfaceMuted: '#F5F5F5',
+  // Sfondo banner home: gradiente sage desaturato. Dedicato e isolato (solo
+  // BannerCarousel), cosi e modificabile senza toccare altri colori.
+  bannerGradient: ['#F7FBF8', '#E1EEE5'] as [string, string],
 
   // Text
   textPrimary: '#333333',
@@ -130,6 +133,8 @@ const darkColors: typeof lightColors = {
   backgroundAlt: '#212327',
   // Riquadro "recessed" piu scuro della superficie, fa da accento su dark
   surfaceMuted: '#1B1C1F',
+  // Sfondo banner home: gradiente scuro desaturato, dedicato e isolato
+  bannerGradient: ['#282D2A', '#20231F'] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
