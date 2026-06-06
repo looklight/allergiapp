@@ -22,6 +22,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
 import { getExpandedCoverage } from '../../constants/restrictionImplications';
+import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
 
 export type MapPinProps = {
@@ -230,7 +231,7 @@ export default memo(function MapPin({
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <MaterialCommunityIcons name="silverware-fork-knife" size={13} color={markerColor} />
+            <MaterialCommunityIcons name={venueIconName(restaurant.offers_lodging)} size={13} color={markerColor} />
           )}
         </View>
         <View style={styles.markerArrow}>

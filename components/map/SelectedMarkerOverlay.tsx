@@ -16,6 +16,7 @@ import { Marker } from 'react-native-maps';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
+import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
 
 type Props = {
@@ -127,7 +128,7 @@ const SelectedPin = memo(function SelectedPin({
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <MaterialCommunityIcons name="silverware-fork-knife" size={13} color={theme.colors.onPrimary} />
+            <MaterialCommunityIcons name={venueIconName(restaurant.offers_lodging)} size={13} color={theme.colors.onPrimary} />
           )}
         </View>
         <View style={styles.markerArrow}>

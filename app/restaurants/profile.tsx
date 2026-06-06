@@ -19,6 +19,7 @@ import { useLikesNotification } from '../../hooks/useLikesNotification';
 import { useProfileCounts } from '../../hooks/useProfileCounts';
 import CountText from '../../components/CountText';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
+import { venueIconName } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 
 type Kind = 'reviews' | 'favorites';
@@ -140,7 +141,22 @@ export default function ProfileScreen() {
         onAddRestaurant={() => router.push('/restaurants/add')}
         items={rows}
         headerVisible={hasContent}
+        sectionTitle={
+          kind === 'reviews'
+            ? i18n.t('restaurants.user.reviewsLabel')
+            : i18n.t('restaurants.myRestaurants.filterFavorites')
+        }
         onDetailClose={reloadAll}
+        typeFilter={{
+          getKey: (row) =>
+            (row.kind === 'review' ? row.data.restaurant_offers_lodging : row.data.offers_lodging)
+              ? 'lodging'
+              : 'restaurant',
+          types: [
+            { key: 'restaurant', icon: venueIconName(false), label: i18n.t('restaurants.user.filterRestaurants') },
+            { key: 'lodging', icon: venueIconName(true), label: i18n.t('restaurants.user.filterLodging') },
+          ],
+        }}
         getLocation={(row) =>
           row.kind === 'review'
             ? { city: row.data.restaurant_city, country: row.data.restaurant_country, countryCode: row.data.restaurant_country_code }
@@ -155,8 +171,9 @@ export default function ProfileScreen() {
                   ? { latitude: row.data.restaurant_lat, longitude: row.data.restaurant_lng }
                   : null,
                 is_favorite: false,
+                offers_lodging: row.data.restaurant_offers_lodging ?? false,
               }
-            : { id: row.data.id, name: row.data.name, location: row.data.location, is_favorite: true }
+            : { id: row.data.id, name: row.data.name, location: row.data.location, is_favorite: true, offers_lodging: row.data.offers_lodging }
         }
         getPinId={(row) => (row.kind === 'review' ? row.data.restaurant_id : row.data.id)}
         getRowKey={(row) => (row.kind === 'review' ? `r-${row.data.id}` : `f-${row.data.id}`)}

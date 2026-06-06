@@ -30,6 +30,9 @@ export type MyRestaurantItem = {
   my_review_photos: number;
   /** Nota personale privata (solo preferiti). Mostrata nella card al posto della recensione. */
   note: string | null;
+  /** Faccetta lodging: true = struttura ricettiva (hotel/B&B), false = ristorante.
+   *  Usata dal filtro tipo nei profili (Ristoranti/Hotel). */
+  offers_lodging: boolean;
 };
 
 /**
@@ -65,6 +68,7 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
       my_review_date: null,
       my_review_photos: 0,
       note: notesMap.get(r.id) ?? null,
+      offers_lodging: r.offers_lodging ?? false,
     });
   }
 
@@ -93,6 +97,7 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
         average_rating: null,
         review_count: 0,
         note: null, // i recensiti-non-preferiti non possono avere note (FK su favorites)
+        offers_lodging: rev.restaurant_offers_lodging ?? false,
         ...review,
       });
     }

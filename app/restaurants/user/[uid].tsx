@@ -13,6 +13,7 @@ import UserReviewCard from '../../../components/UserReviewCard';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
+import { venueIconName } from '../../../constants/restaurantCategories';
 import AppHeader from '../../components/AppHeader';
 
 const getReviewLocation = (r: UserReview) => ({
@@ -100,11 +101,19 @@ export default function PublicProfileScreen() {
             ? { latitude: r.restaurant_lat, longitude: r.restaurant_lng }
             : null,
           is_favorite: false,
+          offers_lodging: r.restaurant_offers_lodging ?? false,
         })}
         getPinId={(r) => r.restaurant_id}
         getRowKey={(r) => r.id}
         renderRow={(r, onPress) => <UserReviewCard review={r} onPress={onPress} />}
         sectionTitle={i18n.t('restaurants.user.reviewsLabel')}
+        typeFilter={{
+          getKey: (r) => (r.restaurant_offers_lodging ? 'lodging' : 'restaurant'),
+          types: [
+            { key: 'restaurant', icon: venueIconName(false), label: i18n.t('restaurants.user.filterRestaurants') },
+            { key: 'lodging', icon: venueIconName(true), label: i18n.t('restaurants.user.filterLodging') },
+          ],
+        }}
       />
     </>
   );
