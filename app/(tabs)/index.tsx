@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSequence, withDelay, withTiming, ReduceMotion } from 'react-native-reanimated';
 import { Text, Button, Chip, Surface } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -66,6 +67,26 @@ export default function HomeScreen() {
       localizedName: getLocalizedLanguageName(lang.code, appLang) || lang.name,
     };
   }, [cardLanguage, appLang]);
+
+  // Pulse decorativo sul bottone "Mostra card" al cambio lingua: segnala che la card è aggiornata e pronta.
+  const cardPulse = useSharedValue(1);
+  const isFirstLanguageRender = useRef(true);
+  useEffect(() => {
+    if (isFirstLanguageRender.current) {
+      isFirstLanguageRender.current = false;
+      return;
+    }
+    cardPulse.value = withDelay(
+      250,
+      withSequence(
+        withTiming(1.03, { duration: 120, reduceMotion: ReduceMotion.System }),
+        withTiming(1, { duration: 160, reduceMotion: ReduceMotion.System })
+      )
+    );
+  }, [cardLanguage]);
+  const cardPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardPulse.value }],
+  }));
 
   return (
     <View style={styles.container}>
@@ -243,17 +264,19 @@ export default function HomeScreen() {
             <Text style={styles.readyText}>
               {i18n.t('home.cardReadyIn')} {currentLanguage?.nativeName}!
             </Text>
-            <Button
-              mode="contained"
-              onPress={() => router.push('/card')}
-              style={styles.showCardButton}
-              contentStyle={styles.showCardButtonContent}
-              labelStyle={styles.showCardButtonLabel}
-              icon="card-bulleted-outline"
-              accessibilityLabel={i18n.t('home.showCardToWaiter')}
-            >
-              {i18n.t('home.showCardToWaiter')}
-            </Button>
+            <Animated.View style={cardPulseStyle}>
+              <Button
+                mode="contained"
+                onPress={() => router.push('/card')}
+                style={styles.showCardButton}
+                contentStyle={styles.showCardButtonContent}
+                labelStyle={styles.showCardButtonLabel}
+                icon="card-bulleted-outline"
+                accessibilityLabel={i18n.t('home.showCardToWaiter')}
+              >
+                {i18n.t('home.showCardToWaiter')}
+              </Button>
+            </Animated.View>
           </View>
         )}
       </ScrollView>
