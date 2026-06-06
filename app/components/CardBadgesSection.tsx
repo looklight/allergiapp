@@ -209,13 +209,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 8,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surfaceMuted,
-    borderWidth: 1,
-    borderColor: theme.colors.divider,
     maxWidth: 200,
   },
   pillActive: {
     backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
   },
   pillText: {
     fontSize: 14,

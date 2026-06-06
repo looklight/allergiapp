@@ -325,8 +325,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 16,
     backgroundColor: theme.colors.surfaceMuted,
-    borderWidth: 1,
-    borderColor: theme.colors.divider,
   },
   kindButtonInner: {
     flexDirection: 'row',
@@ -334,8 +332,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 5,
   },
   kindButtonActive: {
-    borderColor: theme.colors.primary,
-    backgroundColor: `${theme.colors.primary}14`,
+    backgroundColor: theme.colors.primary,
   },
   kindButtonText: {
     fontSize: 13,
@@ -343,7 +340,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   kindButtonTextActive: {
-    color: theme.colors.primary,
+    color: theme.colors.onPrimary,
   },
   emptyText: {
     fontSize: 14,

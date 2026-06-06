@@ -69,12 +69,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 16,
     backgroundColor: theme.colors.surfaceMuted,
-    borderWidth: 1,
-    borderColor: theme.colors.divider,
   },
   chipActive: {
     backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
   },
   text: {
     fontSize: 13,
