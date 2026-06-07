@@ -158,9 +158,11 @@ export default function ProfileScreen() {
   };
 
   // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
-  const currentCollectionName = isCustom
-    ? customCollections.find((c) => c.id === selected)?.name ?? ''
-    : '';
+  const currentCollection = isCustom ? customCollections.find((c) => c.id === selected) : undefined;
+  const currentCollectionName = currentCollection?.name ?? '';
+  // Simbolo della lista aperta per il badge sui pin: emoji (string) | null
+  // (bookmark). Allinea la mini-mappa del profilo alla mappa home.
+  const currentCollectionEmoji = currentCollection?.emoji ?? null;
 
   const handleEditorSubmit = async (name: string, emoji: string | null) => {
     if (!user?.uid) return;
@@ -282,19 +284,25 @@ export default function ProfileScreen() {
             ? { city: row.data.restaurant_city, country: row.data.restaurant_country, countryCode: row.data.restaurant_country_code }
             : { city: row.data.city, country: row.data.country, countryCode: row.data.country_code }
         }
-        getMapPin={(row) =>
-          row.kind === 'review'
-            ? {
-                id: row.data.restaurant_id,
-                name: row.data.restaurant_name ?? '',
-                location: row.data.restaurant_lat != null && row.data.restaurant_lng != null
-                  ? { latitude: row.data.restaurant_lat, longitude: row.data.restaurant_lng }
-                  : null,
-                is_favorite: false,
-                offers_lodging: row.data.restaurant_offers_lodging ?? false,
-              }
-            : { id: row.data.id, name: row.data.name, location: row.data.location, is_favorite: true, offers_lodging: row.data.offers_lodging }
-        }
+        getMapPin={(row) => {
+          if (row.kind === 'review') {
+            return {
+              id: row.data.restaurant_id,
+              name: row.data.restaurant_name ?? '',
+              location: row.data.restaurant_lat != null && row.data.restaurant_lng != null
+                ? { latitude: row.data.restaurant_lat, longitude: row.data.restaurant_lng }
+                : null,
+              is_favorite: false,
+              offers_lodging: row.data.restaurant_offers_lodging ?? false,
+            };
+          }
+          // Riga salvata: Preferiti → cuore; lista custom → emoji/bookmark della
+          // lista (coerente con la mappa home, dove la lista marchia i suoi pin).
+          const base = { id: row.data.id, name: row.data.name, location: row.data.location, offers_lodging: row.data.offers_lodging };
+          return selected === 'favorites'
+            ? { ...base, is_favorite: true }
+            : { ...base, symbol: currentCollectionEmoji };
+        }}
         getPinId={(row) => (row.kind === 'review' ? row.data.restaurant_id : row.data.id)}
         getRowKey={(row) => (row.kind === 'review' ? `r-${row.data.id}` : `f-${row.data.id}`)}
         renderRow={(row, onPress) =>
@@ -378,6 +386,7 @@ export default function ProfileScreen() {
 
       <ListEditorSheet
         visible={editor !== null}
+        userId={user?.uid ?? ''}
         editing={editor?.editing ?? null}
         onClose={() => setEditor(null)}
         onSubmit={handleEditorSubmit}

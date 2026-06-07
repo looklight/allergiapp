@@ -12,6 +12,10 @@ export type MapPinItem = {
   name: string;
   location: { latitude: number; longitude: number } | null;
   is_favorite?: boolean;
+  /** Simbolo del badge per le liste custom: emoji (string) | bookmark (null).
+   *  `undefined` = nessun badge lista (es. Preferiti usa is_favorite, le
+   *  recensioni nessun badge). Allinea la mini-mappa profilo alla mappa home. */
+  symbol?: string | null;
   /** Faccetta lodging: decide l'icona del pin (letto vs forchetta). */
   offers_lodging?: boolean;
 };
@@ -57,6 +61,14 @@ export default function MyRestaurantsMap({
     [items],
   );
 
+  // Simboli lista custom (emoji | null=bookmark) → badge sul pin, come la mappa
+  // home. Solo gli item con `symbol` definito entrano: Preferiti/recensioni no.
+  const customSymbols = useMemo(() => {
+    const m = new Map<string, string | null>();
+    for (const item of items) if (item.symbol !== undefined) m.set(item.id, item.symbol);
+    return m;
+  }, [items]);
+
   const containerStyle = height != null
     ? [styles.base, { height }]
     : [styles.base, styles.fill, { marginBottom: insets.bottom + 12 }];
@@ -66,6 +78,7 @@ export default function MyRestaurantsMap({
       <RestaurantMap
         restaurants={restaurants}
         favoriteIds={favoriteIds}
+        customSymbols={customSymbols}
         onRestaurantPress={onSelect}
         selectedId={selectedId}
         onDeselect={onDeselect}

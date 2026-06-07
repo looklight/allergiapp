@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { CollectionService } from '../services/collectionService';
+import { storage } from '../utils/storage';
 import type { Restaurant } from '../services/restaurant.types';
 
 /**
@@ -19,7 +20,10 @@ export function useSavedCollectionsMap(userId: string | undefined) {
       setSavedRestaurants(new Map());
       return;
     }
-    const { symbols, restaurants } = await CollectionService.getSavedCustomForMap(userId);
+    // Liste nascoste dalla mappa (preferenza locale per-utente): la mappa si
+    // ricarica al focus, quindi tornando dal modal la scelta si riflette subito.
+    const hidden = new Set(await storage.getMapHiddenCollections(userId));
+    const { symbols, restaurants } = await CollectionService.getSavedCustomForMap(userId, hidden);
     setSavedSymbols(symbols);
     setSavedRestaurants(restaurants);
   }, [userId]);

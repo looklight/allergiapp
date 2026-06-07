@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,6 +18,10 @@ type Props = {
   onSubmit: (name: string, emoji: string | null) => void;
   /** Se presente, mostra "Elimina lista" (solo in modifica). */
   onDelete?: () => void;
+  /** Sezione opzionale resa tra l'azione e l'elimina (slot "fase 2"): oggi il
+   *  toggle "Mostra sulla mappa". Render-prop così riceve l'emoji *live* scelta
+   *  nel form (serve all'anteprima del pin nel toggle). */
+  extraSection?: (emoji: string | null) => ReactNode;
 };
 
 /**
@@ -33,6 +37,7 @@ export default function CreateListForm({
   submitLabel,
   onSubmit,
   onDelete,
+  extraSection,
 }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -53,18 +58,25 @@ export default function CreateListForm({
 
   return (
     <View style={styles.form}>
-      <EmojiPicker value={emoji} onChange={setEmoji} />
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder={i18n.t('restaurants.collections.namePlaceholder')}
-        placeholderTextColor={theme.colors.textSecondary}
-        maxLength={NAME_MAX_LENGTH}
-        selectionColor={theme.colors.primary}
-        returnKeyType="done"
-        onSubmitEditing={submit}
-      />
+      <EmojiPicker value={emoji} onChange={setEmoji} active={active}>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder={i18n.t('restaurants.collections.namePlaceholder')}
+          placeholderTextColor={theme.colors.textSecondary}
+          maxLength={NAME_MAX_LENGTH}
+          selectionColor={theme.colors.primary}
+          returnKeyType="done"
+          onSubmitEditing={submit}
+        />
+      </EmojiPicker>
+
+      {/* Slot di configurazione, sopra l'azione primaria (es. toggle "Mostra
+          sulla mappa"; domani la sezione "Condividi / visibilita'"). Riceve
+          l'emoji live così l'anteprima del pin riflette la scelta corrente. */}
+      {extraSection?.(emoji)}
+
       <TouchableOpacity
         style={[styles.submit, !trimmed && styles.submitDisabled]}
         onPress={submit}
@@ -73,8 +85,6 @@ export default function CreateListForm({
       >
         <Text style={styles.submitText}>{submitLabel}</Text>
       </TouchableOpacity>
-
-      {/* Spazio per la futura sezione "Condividi / visibilita'" (fase 2). */}
 
       {onDelete && (
         <TouchableOpacity style={styles.deleteRow} onPress={onDelete} activeOpacity={0.6}>
@@ -93,6 +103,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: theme.spacing.lg,
   },
   input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.radius.lg,
