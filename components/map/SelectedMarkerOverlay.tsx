@@ -16,6 +16,7 @@ import { Marker } from 'react-native-maps';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
+import { resolveBadge, badgeGlyph } from './mapBadge';
 import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
 
@@ -23,6 +24,7 @@ type Props = {
   selectedId: string | null | undefined;
   restaurantById: Map<string, Restaurant>;
   favoriteIds: Set<string>;
+  customSymbols?: Map<string, string | null>;
   showMatchInfo?: boolean;
   onPress?: (id: string) => void;
 };
@@ -31,6 +33,7 @@ export default memo(function SelectedMarkerOverlay({
   selectedId,
   restaurantById,
   favoriteIds,
+  customSymbols,
   showMatchInfo,
   onPress,
 }: Props) {
@@ -49,6 +52,7 @@ export default memo(function SelectedMarkerOverlay({
       longitude={longitude}
       restaurant={restaurant}
       isFavorite={favoriteIds.has(selectedId)}
+      customSymbol={customSymbols?.get(selectedId)}
       showMatchInfo={showMatchInfo}
       onPress={onPress}
     />
@@ -62,6 +66,7 @@ type SelectedPinProps = {
   longitude: number;
   restaurant: Restaurant;
   isFavorite: boolean;
+  customSymbol?: string | null;
   showMatchInfo?: boolean;
   onPress?: (id: string) => void;
 };
@@ -72,6 +77,7 @@ const SelectedPin = memo(function SelectedPin({
   longitude,
   restaurant,
   isFavorite,
+  customSymbol,
   showMatchInfo,
   onPress,
 }: SelectedPinProps) {
@@ -91,6 +97,8 @@ const SelectedPin = memo(function SelectedPin({
   const markerColor = showMatchInfo
     ? coverageColor(coveredTotal, filtersTotal, theme)
     : theme.colors.primary;
+
+  const badge = resolveBadge(isFavorite, customSymbol);
 
   return (
     <Marker
@@ -134,8 +142,8 @@ const SelectedPin = memo(function SelectedPin({
         <View style={styles.markerArrow}>
           <View style={[styles.markerArrowInner, { borderTopColor: markerColor }]} />
         </View>
-        <View style={[styles.heartBadge, { opacity: isFavorite ? 1 : 0 }]} pointerEvents="none">
-          <RNText style={styles.heartText}>{'\u2665'}</RNText>
+        <View style={[styles.heartBadge, { opacity: badge ? 1 : 0 }]} pointerEvents="none">
+          {badge && badgeGlyph(badge, styles.heartText, 9, theme)}
         </View>
       </View>
     </Marker>

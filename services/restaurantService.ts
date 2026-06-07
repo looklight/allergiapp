@@ -400,7 +400,7 @@ async function checkExistingByPlaceIds(
 // ─── Import dai servizi separati ────────────────────────────────────────────
 
 import { getReviews, getUserReview, getReviewsByUser, getReviewCountByUser, getLikesReceivedByUser, addReview, updateReview, deleteReview, toggleReviewLike, getUserHasAnyReview } from './reviewService';
-import { getFavorites, isFavorite, toggleFavorite, removeFavorite } from './favoriteService';
+import { getFavorites, isFavorite, toggleFavorite, setFavorite, removeFavorite } from './favoriteService';
 import { updateMenuUrl, getMenuPhotos, addMenuPhoto, deleteMenuPhoto } from './menuService';
 import { getReports, getUserReport, addReport, reportMenuPhoto, reportReview } from './reportService';
 import { getCuisineVotes } from './cuisineVoteService';
@@ -436,6 +436,7 @@ export const RestaurantService = {
   getFavorites,
   isFavorite,
   toggleFavorite,
+  setFavorite,
   removeFavorite,
   // Menu (da menuService)
   getUserHasAnyReview,

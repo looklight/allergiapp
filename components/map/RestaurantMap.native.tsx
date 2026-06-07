@@ -66,6 +66,8 @@ export default function RestaurantMap({
   onRestaurantPress,
   favoriteIds,
   favoriteRestaurants,
+  customSymbols,
+  savedRestaurants,
   compassOffset,
   fullScreenChrome,
   userAllergens,
@@ -160,11 +162,17 @@ export default function RestaurantMap({
         map.set(id, r);
       }
     }
+    const savedMap = savedRestaurants ?? new Map<string, Restaurant>();
+    for (const [id, r] of savedMap) {
+      if (r.location && isValidCoord(r.location.latitude, r.location.longitude)) {
+        map.set(id, r);
+      }
+    }
     if (selectedRestaurant?.location && isValidCoord(selectedRestaurant.location.latitude, selectedRestaurant.location.longitude)) {
       map.set(selectedRestaurant.id, selectedRestaurant);
     }
     return map;
-  }, [restaurants, favoriteRestaurants, selectedRestaurant]);
+  }, [restaurants, favoriteRestaurants, savedRestaurants, selectedRestaurant]);
 
   const restaurantByIdRef = useRef(restaurantById);
   restaurantByIdRef.current = restaurantById;
@@ -361,6 +369,7 @@ export default function RestaurantMap({
           restaurant={restaurant}
           asDot={isDotZoom}
           isFavorite={favIds.has(p.id)}
+          customSymbol={customSymbols?.get(p.id)}
           showMatchInfo={showMatchInfo}
           onPress={handleMarkerPress}
           supportedAllergens={p.supported_allergens}
@@ -384,6 +393,7 @@ export default function RestaurantMap({
           restaurant={r}
           asDot={isDotZoom}
           isFavorite={favIds.has(r.id)}
+          customSymbol={customSymbols?.get(r.id)}
           showMatchInfo={showMatchInfo}
           onPress={handleMarkerPress}
         />,
@@ -404,6 +414,29 @@ export default function RestaurantMap({
           restaurant={r}
           asDot={isDotZoom}
           isFavorite
+          customSymbol={customSymbols?.get(id)}
+          showMatchInfo={showMatchInfo}
+          onPress={handleMarkerPress}
+        />,
+      );
+    }
+
+    // Saved restaurants (liste custom) non ancora visti: sempre visibili come i
+    // preferiti, col badge della lista (emoji/bookmark).
+    const savedMap = savedRestaurants ?? new Map<string, Restaurant>();
+    for (const [id, r] of savedMap) {
+      if (id === skip || !r.location || seen.has(id) || !isValidCoord(r.location.latitude, r.location.longitude)) continue;
+      seen.add(id);
+      elements.push(
+        <MapPin
+          key={id}
+          id={id}
+          latitude={r.location.latitude}
+          longitude={r.location.longitude}
+          restaurant={r}
+          asDot={isDotZoom}
+          isFavorite={favIds.has(id)}
+          customSymbol={customSymbols?.get(id)}
           showMatchInfo={showMatchInfo}
           onPress={handleMarkerPress}
         />,
@@ -411,7 +444,7 @@ export default function RestaurantMap({
     }
 
     return elements;
-  }, [restaurants, allPins, favoriteRestaurants, favIds, isDotZoom, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
+  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   const showMarkers = hasAnimatedToUser || !centerOn || !centerOn.latDelta;
 
@@ -448,6 +481,7 @@ export default function RestaurantMap({
           selectedId={selectedId}
           restaurantById={restaurantById}
           favoriteIds={favIds}
+          customSymbols={customSymbols}
           showMatchInfo={showMatchInfo}
           onPress={onRestaurantPress}
         />

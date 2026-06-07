@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -8,8 +8,10 @@ import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
-import { getMyRestaurants, type MyRestaurantItem } from '../../services/myRestaurantsService';
+import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
+import { CollectionService } from '../../services/collectionService';
 import ProfileMapList from '../../components/ProfileMapList';
+import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
 import UserReviewCard from '../../components/UserReviewCard';
 import MyRestaurantCard from '../components/my-restaurants/MyRestaurantCard';
 import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
@@ -17,15 +19,25 @@ import AppHeader from '../components/AppHeader';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLikesNotification } from '../../hooks/useLikesNotification';
 import { useProfileCounts } from '../../hooks/useProfileCounts';
+import { useCachedCollections } from '../../hooks/useCachedCollections';
+import { storage, type CollectionMeta } from '../../utils/storage';
 import CountText from '../../components/CountText';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import { venueIconName } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 
-type Kind = 'reviews' | 'favorites';
+// Per ora la pill "Recensioni" resta visibile anche a 0 per incentivare gli
+// utenti a scrivere la prima recensione. Quando la base recensioni sarà matura,
+// mettere a false: la pill si nasconderà a 0 esattamente come "Preferiti"
+// (la logica di selezione di default gestisce già il fallback).
+const SHOW_REVIEWS_PILL_AT_ZERO = true;
 
-// Riga unificata della lista: una recensione (card recensione) o un preferito
-// (card ristorante). Il toggle in alto sceglie quale insieme mostrare.
+// Selezione corrente della barra liste: 'reviews', 'favorites' (lista di
+// default) oppure l'id di una lista custom.
+type Selection = 'reviews' | 'favorites' | string;
+
+// Riga unificata della lista: una recensione (card recensione) o un ristorante
+// salvato (card ristorante). La pill in alto sceglie quale insieme mostrare.
 type ProfileRow =
   | { kind: 'review'; data: UserReview }
   | { kind: 'favorite'; data: MyRestaurantItem };
@@ -36,8 +48,12 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, userProfile, isAuthenticated } = useAuth();
 
-  const [kind, setKind] = useState<Kind>('reviews');
+  const [selected, setSelected] = useState<Selection>('reviews');
+  // Editor lista (crea/modifica/elimina) in bottom sheet. null = chiuso.
+  const [editor, setEditor] = useState<null | { editing: EditingList | null }>(null);
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
+
+  const isCustom = selected !== 'reviews' && selected !== 'favorites';
 
   // Caso "like DIMINUITI" (unlike / recensioni cancellate): l'AnimatedLikesCounter
   // anima e chiama markAsSeen solo quando i like AUMENTANO, quindi qui — alla visita
@@ -66,21 +82,120 @@ export default function ProfileScreen() {
     { reviews: reviewsList.isLoading, favorites: favoritesList.isLoading },
   );
 
-  const rows = useMemo<ProfileRow[]>(
-    () =>
-      kind === 'reviews'
-        ? reviewsList.items.map((data) => ({ kind: 'review' as const, data }))
-        : favorites.map((data) => ({ kind: 'favorite' as const, data })),
-    [kind, reviewsList.items, favorites],
+  // Liste custom con i loro ristoranti, caricate una volta al mount come i
+  // preferiti (eager): selezione istantanea, niente fetch on-demand/spinner.
+  const listsData = useUserItemList<CollectionWithItems>(getCollectionsWithItems);
+  // Pill cache-first (come Recensioni/Preferiti via useProfileCounts): a freddo
+  // le pill liste compaiono subito con l'ultimo conteggio noto, poi revalidano.
+  const liveMeta = useMemo<CollectionMeta[]>(
+    () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count })),
+    [listsData.items],
+  );
+  const customCollections = useCachedCollections(user?.uid, liveMeta, listsData.isLoading);
+  const customItems = useMemo(
+    () => (isCustom ? (listsData.items.find((c) => c.id === selected)?.items ?? []) : []),
+    [isCustom, selected, listsData.items],
   );
 
-  const hasContent = reviewsList.items.length > 0 || favorites.length > 0;
+  const rows = useMemo<ProfileRow[]>(() => {
+    if (selected === 'reviews') return reviewsList.items.map((data) => ({ kind: 'review' as const, data }));
+    if (selected === 'favorites') return favorites.map((data) => ({ kind: 'favorite' as const, data }));
+    return customItems.map((data) => ({ kind: 'favorite' as const, data }));
+  }, [selected, reviewsList.items, favorites, customItems]);
 
-  // Alla chiusura dello sheet l'utente può aver tolto un preferito o aggiunto
-  // una recensione: ricarica entrambe le liste.
+  // Visibilità delle pill auto (Recensioni/Preferiti). Preferiti = lista
+  // is_default: a 0 confermato è solo rumore → pill nascosta. Durante il loading
+  // (counts null) la mostriamo per evitare flash→pop. Recensioni segue il flag.
+  const showReviewsPill = SHOW_REVIEWS_PILL_AT_ZERO || counts.reviews !== 0;
+  const showFavoritesPill = counts.favorites !== 0;
+
+  // Pill effettivamente presenti, in ordine di resa: la selezione deve sempre
+  // puntare a una di queste. Se quella attiva sparisce (preferiti → 0, o in
+  // futuro recensioni → 0 a flag spento) si ripiega sulla prima disponibile.
+  const visiblePillKeys = useMemo<Selection[]>(() => {
+    const keys: Selection[] = [];
+    if (showReviewsPill) keys.push('reviews');
+    if (showFavoritesPill) keys.push('favorites');
+    for (const c of customCollections) keys.push(c.id);
+    return keys;
+  }, [showReviewsPill, showFavoritesPill, customCollections]);
+
+  useEffect(() => {
+    if (visiblePillKeys.length === 0) return; // nessuna pill selezionabile: lascia la selezione com'è
+    if (!visiblePillKeys.includes(selected)) setSelected(visiblePillKeys[0]);
+  }, [visiblePillKeys, selected]);
+
+  // Caricamento aggregato: serve a non mostrare il testo "stato vuoto" del
+  // filtro corrente prima che i dati risolvano, e a ripristinare la pill salvata
+  // solo a liste complete (vedi sotto).
+  const isLoadingLists = reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading;
+
+  // Ricorda l'ultima pill scelta (Recensioni/Preferiti/lista) per utente.
+  // Ripristino UNA volta, a caricamento finito: solo allora `visiblePillKeys` è
+  // completo, quindi una scelta non più valida (lista cancellata, pill sparita)
+  // viene semplicemente ignorata (resta il default, già coerente). hydratedFor
+  // traccia l'utente già ripristinato così il persist non sovrascrive prima.
+  const hydratedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!user?.uid || hydratedFor.current === user.uid || isLoadingLists) return;
+    hydratedFor.current = user.uid;
+    storage.getSelectedProfilePill(user.uid).then((saved) => {
+      if (saved && visiblePillKeys.includes(saved)) setSelected(saved);
+    });
+  }, [user?.uid, isLoadingLists, visiblePillKeys]);
+
+  useEffect(() => {
+    if (!user?.uid || hydratedFor.current !== user.uid) return;
+    storage.setSelectedProfilePill(user.uid, selected);
+  }, [user?.uid, selected]);
+
+  // Alla chiusura dello sheet l'utente può aver cambiato salvataggi o aggiunto
+  // una recensione: ricarica liste, conteggi e l'eventuale lista custom aperta.
   const reloadAll = () => {
     reviewsList.reload();
     favoritesList.reload();
+    listsData.reload();
+  };
+
+  // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
+  const currentCollectionName = isCustom
+    ? customCollections.find((c) => c.id === selected)?.name ?? ''
+    : '';
+
+  const handleEditorSubmit = async (name: string, emoji: string | null) => {
+    if (!user?.uid) return;
+    const editing = editor?.editing ?? null;
+    setEditor(null);
+    if (editing) {
+      await CollectionService.updateCollection(editing.id, { name, emoji });
+      listsData.reload();
+    } else {
+      const created = await CollectionService.createCollection(user.uid, name, emoji);
+      await listsData.reload();
+      if (created) setSelected(created.id);
+    }
+  };
+
+  const handleEditorDelete = () => {
+    const editing = editor?.editing;
+    if (!editing) return;
+    Alert.alert(
+      i18n.t('restaurants.collections.deleteTitle'),
+      i18n.t('restaurants.collections.deleteConfirm', { name: editing.name }),
+      [
+        { text: i18n.t('common.cancel'), style: 'cancel' },
+        {
+          text: i18n.t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await CollectionService.deleteCollection(editing.id);
+            if (selected === editing.id) setSelected('reviews');
+            setEditor(null);
+            listsData.reload();
+          },
+        },
+      ],
+    );
   };
 
   if (!isAuthenticated || !userProfile) {
@@ -140,11 +255,16 @@ export default function ProfileScreen() {
         onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
         onAddRestaurant={() => router.push('/restaurants/add')}
         items={rows}
-        headerVisible={hasContent}
+        // Barra sempre visibile: anche a profilo vuoto restano la pill
+        // Recensioni (a 0) e il "+", che è il punto d'accesso per creare la
+        // prima lista. Niente più empty state separato che compare in ritardo.
+        headerVisible
         sectionTitle={
-          kind === 'reviews'
+          selected === 'reviews'
             ? i18n.t('restaurants.user.reviewsLabel')
-            : i18n.t('restaurants.myRestaurants.filterFavorites')
+            : selected === 'favorites'
+              ? i18n.t('restaurants.myRestaurants.filterFavorites')
+              : currentCollectionName
         }
         onDetailClose={reloadAll}
         typeFilter={{
@@ -199,43 +319,88 @@ export default function ProfileScreen() {
           </>
         }
         filterSlot={
-          <View style={styles.kindToggle}>
-            <KindButton
-              label={i18n.t('restaurants.user.reviewsLabel')}
-              count={counts.reviews}
-              active={kind === 'reviews'}
-              onPress={() => setKind('reviews')}
-            />
-            <KindButton
-              label={i18n.t('restaurants.myRestaurants.filterFavorites')}
-              count={counts.favorites}
-              active={kind === 'favorites'}
-              onPress={() => setKind('favorites')}
-            />
-          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.kindToggle}
+            keyboardShouldPersistTaps="handled"
+          >
+            {showReviewsPill && (
+              <ListPill
+                label={i18n.t('restaurants.user.reviewsLabel')}
+                count={counts.reviews}
+                active={selected === 'reviews'}
+                onPress={() => setSelected('reviews')}
+              />
+            )}
+            {showFavoritesPill && (
+              <ListPill
+                label={i18n.t('restaurants.myRestaurants.filterFavorites')}
+                count={counts.favorites}
+                active={selected === 'favorites'}
+                onPress={() => setSelected('favorites')}
+              />
+            )}
+            {customCollections.map((c) => (
+              <ListPill
+                key={c.id}
+                label={c.name}
+                emoji={c.emoji}
+                count={c.item_count}
+                active={selected === c.id}
+                onPress={() => setSelected(c.id)}
+                onLongPress={() => setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji } })}
+              />
+            ))}
+            <TouchableOpacity
+              style={styles.addPill}
+              onPress={() => setEditor({ editing: null })}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={i18n.t('restaurants.collections.newList')}
+            >
+              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </ScrollView>
         }
         emptyState={
-          <Text style={styles.emptyText}>
-            {kind === 'reviews'
-              ? i18n.t('restaurants.profile.emptyReviews')
-              : i18n.t('restaurants.profile.emptyFavorites')}
-          </Text>
+          isLoadingLists ? null : (
+            <Text style={styles.emptyText}>
+              {selected === 'reviews'
+                ? i18n.t('restaurants.profile.emptyReviews')
+                : selected === 'favorites'
+                  ? i18n.t('restaurants.profile.emptyFavorites')
+                  : i18n.t('restaurants.collections.emptyList')}
+            </Text>
+          )
         }
+      />
+
+      <ListEditorSheet
+        visible={editor !== null}
+        editing={editor?.editing ?? null}
+        onClose={() => setEditor(null)}
+        onSubmit={handleEditorSubmit}
+        onDelete={handleEditorDelete}
       />
     </>
   );
 }
 
-function KindButton({
+function ListPill({
   label,
+  emoji,
   count,
   active,
   onPress,
+  onLongPress,
 }: {
   label: string;
+  emoji?: string | null;
   count: number | null;
   active: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
 }) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -243,10 +408,12 @@ function KindButton({
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={onLongPress}
       activeOpacity={0.7}
       style={[styles.kindButton, styles.kindButtonInner, active && styles.kindButtonActive]}
     >
-      <Text style={textStyle}>{label}</Text>
+      {emoji ? <Text style={styles.kindButtonEmoji}>{emoji}</Text> : null}
+      <Text style={textStyle} numberOfLines={1}>{label}</Text>
       <CountText value={count} style={textStyle} />
     </TouchableOpacity>
   );
@@ -335,18 +502,34 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   kindToggle: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    paddingRight: 4,
   },
   kindButton: {
+    maxWidth: 170,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 16,
+    backgroundColor: theme.colors.surfaceMuted,
+  },
+  addPill: {
+    // Circolare e alto come le pill: stretch sull'altezza della riga +
+    // aspectRatio 1 → cerchio della stessa altezza, senza sporgere.
+    alignSelf: 'stretch',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
     backgroundColor: theme.colors.surfaceMuted,
   },
   kindButtonInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+  },
+  kindButtonEmoji: {
+    fontSize: 13,
   },
   kindButtonActive: {
     backgroundColor: theme.colors.primary,

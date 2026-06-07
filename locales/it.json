@@ -318,10 +318,7 @@
       "addFavorite": "Aggiungi ai preferiti",
       "removeFavorite": "Rimuovi dai preferiti",
       "notes": {
-        "placeholder": "Aggiungi una nota personale",
-        "saving": "Salvataggio…",
-        "save": "Salva nota",
-        "error": "Nota non salvata, riprova"
+        "placeholder": "Aggiungi una nota personale"
       },
       "notFound": "Locale non trovato.",
       "noReviews": "Nessuna recensione",
@@ -563,6 +560,22 @@
         "one": "ristorante",
         "other": "ristoranti"
       }
+    },
+    "collections": {
+      "saveTo": "Salva in…",
+      "remove": "Rimuovi",
+      "noteLabel": "Nota",
+      "newList": "Crea nuova lista",
+      "namePlaceholder": "Nome della lista",
+      "create": "Crea",
+      "emptyList": "Questa lista è vuota.",
+      "createTitle": "Nuova lista",
+      "renameTitle": "Modifica lista",
+      "deleteList": "Elimina lista",
+      "deleteTitle": "Eliminare la lista?",
+      "deleteConfirm": "«{{name}}» verrà eliminata. I ristoranti salvati non saranno cancellati.",
+      "removeNoteTitle": "Eliminare anche la nota?",
+      "removeNoteMessage": "Stai togliendo questo posto dall'ultima lista: la tua nota personale verrà eliminata."
     },
     "myReviews": {
       "title": "Le mie recensioni",

@@ -22,6 +22,8 @@ const STORAGE_KEYS = {
   USER_CARDS: 'allergiapp_user_cards',
   ACTIVE_CARD_ID: 'allergiapp_active_card_id',
   PROFILE_COUNTS: 'allergiapp_profile_counts',
+  PROFILE_SELECTED_PILL: 'allergiapp_profile_selected_pill',
+  COLLECTIONS_META: 'allergiapp_collections_meta',
   THEME_MODE: 'allergiapp_theme_mode',
 };
 
@@ -29,6 +31,9 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 const DEFAULT_THEME_MODE: ThemeMode = 'system';
 
 export type ProfileCounts = { reviews: number; favorites: number };
+
+/** Metadati pill lista (per la cache-first delle pill liste nel profilo). */
+export type CollectionMeta = { id: string; name: string; emoji: string | null; item_count: number };
 
 export type RecentPlace = {
   name: string;
@@ -506,6 +511,55 @@ export const storage = {
       const map = raw ? (JSON.parse(raw) as Record<string, ProfileCounts>) : {};
       map[userId] = counts;
       await AsyncStorage.setItem(STORAGE_KEYS.PROFILE_COUNTS, JSON.stringify(map));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Cache-first delle pill liste (stesso scopo di ProfileCounts ma per le liste
+  // custom): a freddo mostra subito le pill con l'ultimo conteggio noto.
+  async getCachedCollections(userId: string): Promise<CollectionMeta[] | null> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.COLLECTIONS_META);
+      if (!raw) return null;
+      const map = JSON.parse(raw) as Record<string, CollectionMeta[]>;
+      return map[userId] ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setCachedCollections(userId: string, meta: CollectionMeta[]): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.COLLECTIONS_META);
+      const map = raw ? (JSON.parse(raw) as Record<string, CollectionMeta[]>) : {};
+      map[userId] = meta;
+      await AsyncStorage.setItem(STORAGE_KEYS.COLLECTIONS_META, JSON.stringify(map));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Pill selezionata nel profilo ('reviews' | 'favorites' | id lista custom):
+  // ricorda l'ultima scelta per utente. La validita' (lista cancellata, pill
+  // sparita) e' gestita lato schermata contro le pill effettivamente visibili.
+  async getSelectedProfilePill(userId: string): Promise<string | null> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_SELECTED_PILL);
+      if (!raw) return null;
+      const map = JSON.parse(raw) as Record<string, string>;
+      return map[userId] ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setSelectedProfilePill(userId: string, selection: string): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_SELECTED_PILL);
+      const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+      map[userId] = selection;
+      await AsyncStorage.setItem(STORAGE_KEYS.PROFILE_SELECTED_PILL, JSON.stringify(map));
     } catch {
       // Storage write failed silently
     }

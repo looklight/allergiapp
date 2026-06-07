@@ -1,8 +1,11 @@
+import { supabase } from './supabase';
+import { mapRestaurant } from './restaurant.types';
 import { getFavorites } from './favoriteService';
 import { getReviewsByUser } from './reviewService';
 import { fetchRestaurantPositions } from './restaurantPositions';
 import { batchLoadStats } from './restaurantService';
 import { getFavoriteNotesMap } from './favoriteNoteService';
+import type { CollectionWithCount } from './collectionService';
 
 // ─── "I miei ristoranti" (diario privato) ────────────────────────────────────
 // Feature isolata: unione preferiti + recensiti dell'utente, deduplicata.
@@ -96,7 +99,9 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
         is_favorite: false,
         average_rating: null,
         review_count: 0,
-        note: null, // i recensiti-non-preferiti non possono avere note (FK su favorites)
+        // Nota "per posto salvato" (post-069): vale anche per i recensiti, se il
+        // posto e' salvato in almeno una lista (la notesMap e' gia' caricata).
+        note: notesMap.get(id) ?? null,
         offers_lodging: rev.restaurant_offers_lodging ?? false,
         ...review,
       });
@@ -115,4 +120,65 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
   }
 
   return Array.from(byId.values());
+}
+
+export type CollectionWithItems = CollectionWithCount & { items: MyRestaurantItem[] };
+
+/**
+ * TUTTE le liste custom dell'utente con i loro ristoranti, in un'unica passata
+ * batch (una query collezioni+item+ristoranti + posizioni/note/stats condivise).
+ * Caricata una volta al mount come i preferiti (useUserItemList): selezionare
+ * una lista e' istantaneo, niente fetch on-demand, niente spinner. La nota e'
+ * "per posto salvato", quindi vale anche qui.
+ */
+export async function getCollectionsWithItems(userId: string): Promise<CollectionWithItems[]> {
+  const { data, error } = await supabase
+    .from('collections')
+    .select('id, user_id, name, is_default, emoji, visibility, slug, position, created_at, collection_items(restaurant_id, created_at, restaurant:restaurants(*))')
+    .eq('user_id', userId)
+    .eq('is_default', false)
+    .order('position', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) {
+    console.warn('[myRestaurantsService] Errore getCollectionsWithItems:', error);
+    return [];
+  }
+
+  // Arricchimento condiviso (posizioni, note, stats) calcolato UNA volta per
+  // l'unione di tutti i ristoranti di tutte le liste.
+  const allIds = new Set<string>();
+  for (const c of data ?? []) {
+    for (const it of (c as any).collection_items ?? []) {
+      if (it.restaurant) allIds.add(it.restaurant.id);
+    }
+  }
+  const [positions, notesMap] = await Promise.all([fetchRestaurantPositions(), getFavoriteNotesMap(userId)]);
+  const statsMap = allIds.size > 0 ? await batchLoadStats([...allIds]) : new Map();
+
+  return (data ?? []).map((c: any) => {
+    const items: MyRestaurantItem[] = (c.collection_items ?? [])
+      .filter((it: any) => it.restaurant)
+      .map((it: any) => {
+        const r = mapRestaurant(it.restaurant);
+        const s = statsMap.get(r.id);
+        return {
+          id: r.id,
+          name: r.name,
+          city: r.city,
+          country: r.country,
+          country_code: r.country_code,
+          location: positions.get(r.id) ?? r.location ?? null,
+          is_favorite: false,
+          my_rating: null,
+          average_rating: s && s.review_count > 0 ? s.total_rating / s.review_count : null,
+          review_count: s?.review_count ?? 0,
+          my_review_id: null,
+          my_review_date: null,
+          my_review_photos: 0,
+          note: notesMap.get(r.id) ?? null,
+          offers_lodging: r.offers_lodging ?? false,
+        };
+      });
+    return { ...c, emoji: c.emoji ?? null, item_count: items.length, items };
+  });
 }
