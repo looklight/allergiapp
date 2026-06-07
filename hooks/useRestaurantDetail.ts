@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useUnlockedAvatars } from '../contexts/UnlockedAvatarsContext';
 import { useReviewsPaginated } from './useReviewsPaginated';
+import { useRestaurantCollections } from './useRestaurantCollections';
 import { getDisplayName } from '../utils/getDisplayName';
 
 export interface UnifiedReview {
@@ -57,6 +58,12 @@ export function useRestaurantDetail(
   const [reports, setReports] = useState<Report[]>([]);
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
   const loadIdRef = useRef(0);
+
+  // ─── Liste custom + appartenenza (per il bottom sheet "Salva in…" e le pill) ─
+  const collections = useRestaurantCollections(restaurantId);
+  const [saveSheetVisible, setSaveSheetVisible] = useState(false);
+  const openSaveSheet = useCallback(() => setSaveSheetVisible(true), []);
+  const closeSaveSheet = useCallback(() => setSaveSheetVisible(false), []);
 
   // ─── Reviews (delegated to dedicated hook) ─────────────────────────────────
   const {
@@ -165,41 +172,29 @@ export function useRestaurantDetail(
   [rawReviews]);
 
   // ─── Actions ───────────────────────────────────────────────────────────────
-  const handleToggleFavorite = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      router.push('/auth/login');
-      return;
-    }
-    if (!restaurant) return;
-    const expected = !isFavorite;
-    const delta = expected ? 1 : -1;
-    setIsFavorite(expected);
+  // Imposta esplicitamente lo stato Preferiti (lista di default). Chiamato dal
+  // bottom sheet "Salva in…" alla Conferma. Ottimistico su favorite_count e con
+  // notifica alla mappa (onFavoriteToggled → syncFavoriteId del pin).
+  const setFavorite = useCallback(async (value: boolean) => {
+    if (!user || !restaurant || value === isFavorite) return;
+    const delta = value ? 1 : -1;
+    setIsFavorite(value);
     setRestaurant(prev => prev ? {
       ...prev,
       favorite_count: (prev.favorite_count ?? 0) + delta,
     } : prev);
     onFavoriteToggled?.(restaurant.id, delta);
-
     try {
-      const actual = await RestaurantService.toggleFavorite(user.uid, restaurant.id);
-      if (actual !== expected) {
-        const correction = (actual ? 1 : -1) - delta;
-        setIsFavorite(actual);
-        setRestaurant(prev => prev ? {
-          ...prev,
-          favorite_count: (prev.favorite_count ?? 0) + correction,
-        } : prev);
-        onFavoriteToggled?.(restaurant.id, correction);
-      }
+      await RestaurantService.setFavorite(user.uid, restaurant.id, value);
     } catch {
-      setIsFavorite(!expected);
+      setIsFavorite(!value);
       setRestaurant(prev => prev ? {
         ...prev,
         favorite_count: (prev.favorite_count ?? 0) - delta,
       } : prev);
       onFavoriteToggled?.(restaurant.id, -delta);
     }
-  }, [isAuthenticated, user, restaurant, isFavorite, router, onFavoriteToggled]);
+  }, [user, restaurant, isFavorite, onFavoriteToggled]);
 
   const navigateToContribute = useCallback((prefilledRating?: 1 | 2 | 3 | 4 | 5, editReviewId?: string) => {
     if (!isAuthenticated) {
@@ -356,6 +351,13 @@ export function useRestaurantDetail(
     userReview,
     userReport,
     isFavorite,
+    isSaved: isFavorite || collections.membership.size > 0,
+    collections: collections.collections,
+    collectionMembership: collections.membership,
+    reloadCollections: collections.reload,
+    saveSheetVisible,
+    openSaveSheet,
+    closeSaveSheet,
     isLoading,
     error,
     isUploadingMenu,
@@ -364,7 +366,7 @@ export function useRestaurantDetail(
     hasUserNeeds,
     userHasReviews,
     isUpdatingMenuUrl,
-    handleToggleFavorite,
+    setFavorite,
     handleToggleReviewLike,
     navigateToContribute,
     handleAddMenuPhoto,

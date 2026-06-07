@@ -3,6 +3,7 @@ import { getReviewsByUser } from './reviewService';
 import { fetchRestaurantPositions } from './restaurantPositions';
 import { batchLoadStats } from './restaurantService';
 import { getFavoriteNotesMap } from './favoriteNoteService';
+import { getCollectionRestaurants } from './collectionService';
 
 // ─── "I miei ristoranti" (diario privato) ────────────────────────────────────
 // Feature isolata: unione preferiti + recensiti dell'utente, deduplicata.
@@ -115,4 +116,48 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
   }
 
   return Array.from(byId.values());
+}
+
+/**
+ * Ristoranti di una lista (collection) nel formato MyRestaurantItem, per le card
+ * del profilo. Riusa gli stessi endpoint di getMyRestaurants (posizioni, note,
+ * stats community), niente RPC dedicata. La nota e' "per posto salvato", quindi
+ * vale anche qui se presente.
+ */
+export async function getCollectionItems(userId: string, collectionId: string): Promise<MyRestaurantItem[]> {
+  const [restaurants, positions, notesMap] = await Promise.all([
+    getCollectionRestaurants(collectionId),
+    fetchRestaurantPositions(),
+    getFavoriteNotesMap(userId),
+  ]);
+
+  const items: MyRestaurantItem[] = restaurants.map((r) => ({
+    id: r.id,
+    name: r.name,
+    city: r.city,
+    country: r.country,
+    country_code: r.country_code,
+    location: positions.get(r.id) ?? r.location ?? null,
+    is_favorite: false,
+    my_rating: null,
+    average_rating: null,
+    review_count: 0,
+    my_review_id: null,
+    my_review_date: null,
+    my_review_photos: 0,
+    note: notesMap.get(r.id) ?? null,
+    offers_lodging: r.offers_lodging ?? false,
+  }));
+
+  const ids = items.map((i) => i.id);
+  if (ids.length > 0) {
+    const statsMap = await batchLoadStats(ids);
+    for (const item of items) {
+      const s = statsMap.get(item.id);
+      item.review_count = s?.review_count ?? 0;
+      item.average_rating = s && s.review_count > 0 ? s.total_rating / s.review_count : null;
+    }
+  }
+
+  return items;
 }
