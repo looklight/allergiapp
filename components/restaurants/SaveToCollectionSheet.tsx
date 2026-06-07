@@ -7,7 +7,6 @@ import {
   Modal,
   ScrollView,
   TextInput,
-  Animated,
   Alert,
   Keyboard,
   useWindowDimensions,
@@ -20,7 +19,14 @@ import type { AppTheme } from '../../constants/theme';
 import { CollectionService, type CollectionWithCount } from '../../services/collectionService';
 import { FavoriteNoteService } from '../../services/favoriteNoteService';
 import { useAuth } from '../../contexts/AuthContext';
-import { useKeyboardOffset } from '../../hooks/useKeyboardOffset';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedKeyboard,
+  withTiming,
+  interpolate,
+  runOnJS,
+} from 'react-native-reanimated';
 import CreateListForm from './CreateListForm';
 import i18n from '../../utils/i18n';
 
@@ -80,20 +86,30 @@ export default function SaveToCollectionSheet({
   const [editing, setEditing] = useState<CollectionWithCount | null>(null);
   const [contentHeight, setContentHeight] = useState(height * 0.5);
 
-  const anim = useRef(new Animated.Value(0)).current;
-  const keyboardOffset = useKeyboardOffset();
-  const panelX = useRef(new Animated.Value(0)).current;
+  const progress = useSharedValue(0);
+  const panelX = useSharedValue(0);
+  const keyboard = useAnimatedKeyboard();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const finishClose = useCallback(() => onCloseRef.current(), []);
+
+  // Animazioni su UI thread (Reanimated). Il lift tastiera segue la tastiera
+  // fotogramma per fotogramma via useAnimatedKeyboard (cross-platform, niente
+  // tween da approssimare).
+  const overlayStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  const contentStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [hideOffset, 0]) - keyboard.height.value }],
+  }));
+  const panelsStyle = useAnimatedStyle(() => ({ transform: [{ translateX: panelX.value }] }));
 
   // Inizializza la bozza a ogni apertura.
   useEffect(() => {
     if (!visible) return;
-    anim.setValue(0);
-    panelX.setValue(0);
+    progress.value = 0;
+    panelX.value = 0;
     setMode('list');
     setEditing(null);
-    Animated.timing(anim, { toValue: 1, duration: 280, useNativeDriver: true }).start();
+    progress.value = withTiming(1, { duration: 280 });
 
     setLocalCollections(collections);
     setFavSelected(isFavorite);
@@ -120,10 +136,10 @@ export default function SaveToCollectionSheet({
   }, [visible]);
 
   const close = useCallback(() => {
-    Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-      onCloseRef.current();
+    progress.value = withTiming(0, { duration: 200 }, (finished) => {
+      if (finished) runOnJS(finishClose)();
     });
-  }, [anim]);
+  }, [progress, finishClose]);
 
   // Altezza adattiva dalle righe della lista (min..max). L'editor condivide.
   const onRowsSize = useCallback((_: number, h: number) => {
@@ -134,11 +150,11 @@ export default function SaveToCollectionSheet({
   const openEditor = (list: CollectionWithCount | null) => {
     setEditing(list);
     setMode('editor');
-    Animated.timing(panelX, { toValue: -width, duration: 280, useNativeDriver: true }).start();
+    panelX.value = withTiming(-width, { duration: 280 });
   };
   const closeEditor = useCallback(() => {
     Keyboard.dismiss();
-    Animated.timing(panelX, { toValue: 0, duration: 280, useNativeDriver: true }).start();
+    panelX.value = withTiming(0, { duration: 280 });
     setMode('list');
     setEditing(null);
   }, [panelX]);
@@ -231,7 +247,7 @@ export default function SaveToCollectionSheet({
   return (
     <Modal visible={visible} animationType="none" transparent statusBarTranslucent onRequestClose={close}>
       <View style={styles.container}>
-        <Animated.View style={[styles.overlay, { opacity: anim }]}>
+        <Animated.View style={[styles.overlay, overlayStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
         </Animated.View>
 
@@ -239,10 +255,10 @@ export default function SaveToCollectionSheet({
           style={[
             styles.content,
             { height: contentHeight, paddingBottom: insets.bottom + theme.spacing.sm },
-            { transform: [{ translateY: Animated.add(anim.interpolate({ inputRange: [0, 1], outputRange: [hideOffset, 0] }), keyboardOffset) }] },
+            contentStyle,
           ]}
         >
-          <Animated.View style={[styles.panels, { width: width * 2, transform: [{ translateX: panelX }] }]}>
+          <Animated.View style={[styles.panels, { width: width * 2 }, panelsStyle]}>
             {/* ─── PANNELLO ELENCO ─── */}
             <View style={[styles.panel, { width }]}>
               <View style={styles.header}>

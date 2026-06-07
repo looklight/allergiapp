@@ -1,11 +1,11 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Pressable, Modal, ScrollView, Animated, Keyboard, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Pressable, Modal, ScrollView, Keyboard, useWindowDimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { useSharedValue, useAnimatedStyle, useAnimatedKeyboard, withTiming, interpolate, runOnJS } from 'react-native-reanimated';
 import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
-import { useKeyboardOffset } from '../hooks/useKeyboardOffset';
 import CreateListForm from './restaurants/CreateListForm';
 import i18n from '../utils/i18n';
 
@@ -32,28 +32,34 @@ export default function ListEditorSheet({ visible, editing, onClose, onSubmit, o
   const { height } = useWindowDimensions();
   const hideOffset = height;
 
-  const anim = useRef(new Animated.Value(0)).current;
-  const keyboardOffset = useKeyboardOffset();
+  const progress = useSharedValue(0);
+  const keyboard = useAnimatedKeyboard();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const finishClose = useCallback(() => onCloseRef.current(), []);
+
+  const overlayStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  const contentStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [hideOffset, 0]) - keyboard.height.value }],
+  }));
 
   useEffect(() => {
     if (!visible) return;
-    anim.setValue(0);
-    Animated.timing(anim, { toValue: 1, duration: 280, useNativeDriver: true }).start();
-  }, [visible, anim]);
+    progress.value = 0;
+    progress.value = withTiming(1, { duration: 280 });
+  }, [visible, progress]);
 
   const close = useCallback(() => {
     Keyboard.dismiss();
-    Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-      onCloseRef.current();
+    progress.value = withTiming(0, { duration: 200 }, (finished) => {
+      if (finished) runOnJS(finishClose)();
     });
-  }, [anim]);
+  }, [progress, finishClose]);
 
   return (
     <Modal visible={visible} animationType="none" transparent statusBarTranslucent onRequestClose={close}>
       <View style={styles.container}>
-        <Animated.View style={[styles.overlay, { opacity: anim }]}>
+        <Animated.View style={[styles.overlay, overlayStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
         </Animated.View>
 
@@ -61,7 +67,7 @@ export default function ListEditorSheet({ visible, editing, onClose, onSubmit, o
           style={[
             styles.content,
             { paddingBottom: insets.bottom + theme.spacing.md },
-            { transform: [{ translateY: Animated.add(anim.interpolate({ inputRange: [0, 1], outputRange: [hideOffset, 0] }), keyboardOffset) }] },
+            contentStyle,
           ]}
         >
           <View style={styles.header}>
