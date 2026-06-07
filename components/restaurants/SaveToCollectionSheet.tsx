@@ -382,7 +382,7 @@ export default function SaveToCollectionSheet({
                   submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
                   onSubmit={handleFormSubmit}
                   onDelete={editing ? handleDelete : undefined}
-                  extraSection={editing && userId ? <MapVisibilityToggle userId={userId} collectionId={editing.id} /> : undefined}
+                  extraSection={userId ? (emoji) => <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} /> : undefined}
                 />
               </ScrollView>
             </View>

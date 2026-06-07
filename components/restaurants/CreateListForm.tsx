@@ -19,8 +19,9 @@ type Props = {
   /** Se presente, mostra "Elimina lista" (solo in modifica). */
   onDelete?: () => void;
   /** Sezione opzionale resa tra l'azione e l'elimina (slot "fase 2"): oggi il
-   *  toggle "Mostra sulla mappa" in modifica. */
-  extraSection?: ReactNode;
+   *  toggle "Mostra sulla mappa". Render-prop così riceve l'emoji *live* scelta
+   *  nel form (serve all'anteprima del pin nel toggle). */
+  extraSection?: (emoji: string | null) => ReactNode;
 };
 
 /**
@@ -72,8 +73,9 @@ export default function CreateListForm({
       </EmojiPicker>
 
       {/* Slot di configurazione, sopra l'azione primaria (es. toggle "Mostra
-          sulla mappa" in modifica; domani la sezione "Condividi / visibilita'"). */}
-      {extraSection}
+          sulla mappa"; domani la sezione "Condividi / visibilita'"). Riceve
+          l'emoji live così l'anteprima del pin riflette la scelta corrente. */}
+      {extraSection?.(emoji)}
 
       <TouchableOpacity
         style={[styles.submit, !trimmed && styles.submitDisabled]}

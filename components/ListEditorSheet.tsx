@@ -89,7 +89,7 @@ export default function ListEditorSheet({ visible, userId, editing, onClose, onS
               submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
               onSubmit={onSubmit}
               onDelete={editing ? onDelete : undefined}
-              extraSection={editing && userId ? <MapVisibilityToggle userId={userId} collectionId={editing.id} /> : undefined}
+              extraSection={userId ? (emoji) => <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} /> : undefined}
             />
           </ScrollView>
         </Animated.View>
