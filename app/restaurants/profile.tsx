@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -20,7 +20,7 @@ import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLikesNotification } from '../../hooks/useLikesNotification';
 import { useProfileCounts } from '../../hooks/useProfileCounts';
 import { useCachedCollections } from '../../hooks/useCachedCollections';
-import { type CollectionMeta } from '../../utils/storage';
+import { storage, type CollectionMeta } from '../../utils/storage';
 import CountText from '../../components/CountText';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import { venueIconName } from '../../constants/restaurantCategories';
@@ -132,6 +132,25 @@ export default function ProfileScreen() {
   // così durante il loading non lampeggia il CTA prima dei contenuti.
   const isLoadingLists = reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading;
   const isEmptyProfile = !isLoadingLists && !hasContent;
+
+  // Ricorda l'ultima pill scelta (Recensioni/Preferiti/lista) per utente.
+  // Ripristino UNA volta, a caricamento finito: solo allora `visiblePillKeys` è
+  // completo, quindi una scelta non più valida (lista cancellata, pill sparita)
+  // viene semplicemente ignorata (resta il default, già coerente). hydratedFor
+  // traccia l'utente già ripristinato così il persist non sovrascrive prima.
+  const hydratedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!user?.uid || hydratedFor.current === user.uid || isLoadingLists) return;
+    hydratedFor.current = user.uid;
+    storage.getSelectedProfilePill(user.uid).then((saved) => {
+      if (saved && visiblePillKeys.includes(saved)) setSelected(saved);
+    });
+  }, [user?.uid, isLoadingLists, visiblePillKeys]);
+
+  useEffect(() => {
+    if (!user?.uid || hydratedFor.current !== user.uid) return;
+    storage.setSelectedProfilePill(user.uid, selected);
+  }, [user?.uid, selected]);
 
   // Alla chiusura dello sheet l'utente può aver cambiato salvataggi o aggiunto
   // una recensione: ricarica liste, conteggi e l'eventuale lista custom aperta.

@@ -22,6 +22,7 @@ const STORAGE_KEYS = {
   USER_CARDS: 'allergiapp_user_cards',
   ACTIVE_CARD_ID: 'allergiapp_active_card_id',
   PROFILE_COUNTS: 'allergiapp_profile_counts',
+  PROFILE_SELECTED_PILL: 'allergiapp_profile_selected_pill',
   COLLECTIONS_META: 'allergiapp_collections_meta',
   THEME_MODE: 'allergiapp_theme_mode',
 };
@@ -534,6 +535,31 @@ export const storage = {
       const map = raw ? (JSON.parse(raw) as Record<string, CollectionMeta[]>) : {};
       map[userId] = meta;
       await AsyncStorage.setItem(STORAGE_KEYS.COLLECTIONS_META, JSON.stringify(map));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Pill selezionata nel profilo ('reviews' | 'favorites' | id lista custom):
+  // ricorda l'ultima scelta per utente. La validita' (lista cancellata, pill
+  // sparita) e' gestita lato schermata contro le pill effettivamente visibili.
+  async getSelectedProfilePill(userId: string): Promise<string | null> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_SELECTED_PILL);
+      if (!raw) return null;
+      const map = JSON.parse(raw) as Record<string, string>;
+      return map[userId] ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setSelectedProfilePill(userId: string, selection: string): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_SELECTED_PILL);
+      const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+      map[userId] = selection;
+      await AsyncStorage.setItem(STORAGE_KEYS.PROFILE_SELECTED_PILL, JSON.stringify(map));
     } catch {
       // Storage write failed silently
     }
