@@ -8,10 +8,8 @@ import {
   ScrollView,
   TextInput,
   Animated,
-  Easing,
   Alert,
   Keyboard,
-  Platform,
   useWindowDimensions,
 } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -22,6 +20,7 @@ import type { AppTheme } from '../../constants/theme';
 import { CollectionService, type CollectionWithCount } from '../../services/collectionService';
 import { FavoriteNoteService } from '../../services/favoriteNoteService';
 import { useAuth } from '../../contexts/AuthContext';
+import { useKeyboardOffset } from '../../hooks/useKeyboardOffset';
 import CreateListForm from './CreateListForm';
 import i18n from '../../utils/i18n';
 
@@ -82,41 +81,15 @@ export default function SaveToCollectionSheet({
   const [contentHeight, setContentHeight] = useState(height * 0.5);
 
   const anim = useRef(new Animated.Value(0)).current;
-  const keyboardOffset = useRef(new Animated.Value(0)).current;
+  const keyboardOffset = useKeyboardOffset();
   const panelX = useRef(new Animated.Value(0)).current;
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-
-  // Lift sincronizzato alla tastiera (native driver = fluido).
-  useEffect(() => {
-    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const onShow = (e: any) => {
-      Animated.timing(keyboardOffset, {
-        toValue: -Math.max(0, (e.endCoordinates?.height ?? 0) - insets.bottom),
-        duration: e.duration || 220,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    };
-    const onHide = (e: any) => {
-      Animated.timing(keyboardOffset, {
-        toValue: 0,
-        duration: e.duration || 180,
-        easing: Easing.in(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    };
-    const s1 = Keyboard.addListener(showEvt, onShow);
-    const s2 = Keyboard.addListener(hideEvt, onHide);
-    return () => { s1.remove(); s2.remove(); };
-  }, [keyboardOffset, insets.bottom]);
 
   // Inizializza la bozza a ogni apertura.
   useEffect(() => {
     if (!visible) return;
     anim.setValue(0);
-    keyboardOffset.setValue(0);
     panelX.setValue(0);
     setMode('list');
     setEditing(null);
