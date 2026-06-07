@@ -103,8 +103,6 @@ export default function ProfileScreen() {
     return customItems.map((data) => ({ kind: 'favorite' as const, data }));
   }, [selected, reviewsList.items, favorites, customItems]);
 
-  const hasContent = reviewsList.items.length > 0 || favorites.length > 0 || customCollections.length > 0;
-
   // Visibilità delle pill auto (Recensioni/Preferiti). Preferiti = lista
   // is_default: a 0 confermato è solo rumore → pill nascosta. Durante il loading
   // (counts null) la mostriamo per evitare flash→pop. Recensioni segue il flag.
@@ -127,11 +125,10 @@ export default function ProfileScreen() {
     if (!visiblePillKeys.includes(selected)) setSelected(visiblePillKeys[0]);
   }, [visiblePillKeys, selected]);
 
-  // Profilo del tutto vuoto (niente recensioni/preferiti/liste): mostriamo un
-  // empty state con invito a creare la prima lista. Solo a caricamento finito,
-  // così durante il loading non lampeggia il CTA prima dei contenuti.
+  // Caricamento aggregato: serve a non mostrare il testo "stato vuoto" del
+  // filtro corrente prima che i dati risolvano, e a ripristinare la pill salvata
+  // solo a liste complete (vedi sotto).
   const isLoadingLists = reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading;
-  const isEmptyProfile = !isLoadingLists && !hasContent;
 
   // Ricorda l'ultima pill scelta (Recensioni/Preferiti/lista) per utente.
   // Ripristino UNA volta, a caricamento finito: solo allora `visiblePillKeys` è
@@ -258,7 +255,10 @@ export default function ProfileScreen() {
         onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
         onAddRestaurant={() => router.push('/restaurants/add')}
         items={rows}
-        headerVisible={hasContent}
+        // Barra sempre visibile: anche a profilo vuoto restano la pill
+        // Recensioni (a 0) e il "+", che è il punto d'accesso per creare la
+        // prima lista. Niente più empty state separato che compare in ritardo.
+        headerVisible
         sectionTitle={
           selected === 'reviews'
             ? i18n.t('restaurants.user.reviewsLabel')
@@ -364,9 +364,7 @@ export default function ProfileScreen() {
           </ScrollView>
         }
         emptyState={
-          isLoadingLists ? null : isEmptyProfile ? (
-            <ProfileEmptyState onCreateList={() => setEditor({ editing: null })} />
-          ) : (
+          isLoadingLists ? null : (
             <Text style={styles.emptyText}>
               {selected === 'reviews'
                 ? i18n.t('restaurants.profile.emptyReviews')
@@ -418,34 +416,6 @@ function ListPill({
       <Text style={textStyle} numberOfLines={1}>{label}</Text>
       <CountText value={count} style={textStyle} />
     </TouchableOpacity>
-  );
-}
-
-// Stato vuoto del profilo (nessuna recensione/preferito/lista): messaggio
-// sintetico + CTA per creare la prima lista, così la feature liste è
-// raggiungibile da subito (la barra pill, a profilo vuoto, è nascosta).
-function ProfileEmptyState({ onCreateList }: { onCreateList: () => void }) {
-  const theme = useTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  return (
-    <View style={styles.emptyProfile}>
-      <MaterialCommunityIcons
-        name="playlist-plus"
-        size={44}
-        color={theme.colors.textSecondary}
-      />
-      <Text style={styles.emptyProfileText}>{i18n.t('restaurants.profile.emptyAll')}</Text>
-      <TouchableOpacity
-        style={styles.emptyProfileButton}
-        onPress={onCreateList}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel={i18n.t('restaurants.collections.newList')}
-      >
-        <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
-        <Text style={styles.emptyProfileButtonText}>{i18n.t('restaurants.collections.newList')}</Text>
-      </TouchableOpacity>
-    </View>
   );
 }
 
@@ -577,30 +547,5 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
     paddingVertical: 24,
-  },
-  emptyProfile: {
-    alignItems: 'center',
-    gap: 14,
-    paddingVertical: 40,
-    paddingHorizontal: 32,
-  },
-  emptyProfileText: {
-    fontSize: 15,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-  },
-  emptyProfileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 999,
-    backgroundColor: theme.colors.primary,
-  },
-  emptyProfileButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.onPrimary,
   },
 });
