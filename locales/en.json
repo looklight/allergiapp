@@ -491,8 +491,7 @@
       "menuMyRestaurants": "My restaurants",
       "menuLeaderboard": "Leaderboard",
       "emptyReviews": "You haven’t written any reviews yet.",
-      "emptyFavorites": "You don’t have any favorite restaurants yet.",
-      "emptyAll": "Save the restaurants you love and organize them into lists."
+      "emptyFavorites": "You don’t have any favorite restaurants yet."
     },
     "report": {
       "title": "Report a problem",

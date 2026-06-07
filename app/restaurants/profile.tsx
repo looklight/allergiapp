@@ -121,7 +121,7 @@ export default function ProfileScreen() {
   }, [showReviewsPill, showFavoritesPill, customCollections]);
 
   useEffect(() => {
-    if (visiblePillKeys.length === 0) return; // profilo vuoto: barra nascosta
+    if (visiblePillKeys.length === 0) return; // nessuna pill selezionabile: lascia la selezione com'è
     if (!visiblePillKeys.includes(selected)) setSelected(visiblePillKeys[0]);
   }, [visiblePillKeys, selected]);
 

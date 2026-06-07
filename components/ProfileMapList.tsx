@@ -285,7 +285,7 @@ export default function ProfileMapList<T>({
               );
             })}
           </>
-        ) : (emptyState ?? null)}
+        ) : (showHeader ? emptyState : null)}
       </ProfileCard>
 
       {detailId && (
