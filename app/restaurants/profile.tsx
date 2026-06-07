@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,10 +8,10 @@ import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
-import { getMyRestaurants, getCollectionItems, type MyRestaurantItem } from '../../services/myRestaurantsService';
-import { CollectionService, type CollectionWithCount } from '../../services/collectionService';
+import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
+import { CollectionService } from '../../services/collectionService';
 import ProfileMapList from '../../components/ProfileMapList';
-import TextPromptModal from '../../components/TextPromptModal';
+import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
 import UserReviewCard from '../../components/UserReviewCard';
 import MyRestaurantCard from '../components/my-restaurants/MyRestaurantCard';
 import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
@@ -19,6 +19,8 @@ import AppHeader from '../components/AppHeader';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLikesNotification } from '../../hooks/useLikesNotification';
 import { useProfileCounts } from '../../hooks/useProfileCounts';
+import { useCachedCollections } from '../../hooks/useCachedCollections';
+import { type CollectionMeta } from '../../utils/storage';
 import CountText from '../../components/CountText';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import { venueIconName } from '../../constants/restaurantCategories';
@@ -41,10 +43,8 @@ export default function ProfileScreen() {
   const { user, userProfile, isAuthenticated } = useAuth();
 
   const [selected, setSelected] = useState<Selection>('reviews');
-  const [customCollections, setCustomCollections] = useState<CollectionWithCount[]>([]);
-  const [customItems, setCustomItems] = useState<MyRestaurantItem[]>([]);
-  // Prompt creazione/rinomina: null | 'create' | { id, name, emoji } (rinomina).
-  const [prompt, setPrompt] = useState<null | 'create' | { id: string; name: string; emoji: string | null }>(null);
+  // Editor lista (crea/modifica/elimina) in bottom sheet. null = chiuso.
+  const [editor, setEditor] = useState<null | { editing: EditingList | null }>(null);
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
 
   const isCustom = selected !== 'reviews' && selected !== 'favorites';
@@ -76,23 +76,20 @@ export default function ProfileScreen() {
     { reviews: reviewsList.isLoading, favorites: favoritesList.isLoading },
   );
 
-  // Liste custom (escludendo la default, gia' rappresentata da "Preferiti").
-  const loadCollections = useCallback(async () => {
-    if (!user?.uid) { setCustomCollections([]); return; }
-    const cols = await CollectionService.getCollections(user.uid);
-    setCustomCollections(cols.filter((c) => !c.is_default));
-  }, [user?.uid]);
-
-  useEffect(() => { loadCollections(); }, [loadCollections]);
-
-  // Ristoranti della lista custom selezionata.
-  const loadCustomItems = useCallback(async () => {
-    if (!user?.uid || !isCustom) { setCustomItems([]); return; }
-    const items = await getCollectionItems(user.uid, selected);
-    setCustomItems(items);
-  }, [user?.uid, isCustom, selected]);
-
-  useEffect(() => { loadCustomItems(); }, [loadCustomItems]);
+  // Liste custom con i loro ristoranti, caricate una volta al mount come i
+  // preferiti (eager): selezione istantanea, niente fetch on-demand/spinner.
+  const listsData = useUserItemList<CollectionWithItems>(getCollectionsWithItems);
+  // Pill cache-first (come Recensioni/Preferiti via useProfileCounts): a freddo
+  // le pill liste compaiono subito con l'ultimo conteggio noto, poi revalidano.
+  const liveMeta = useMemo<CollectionMeta[]>(
+    () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count })),
+    [listsData.items],
+  );
+  const customCollections = useCachedCollections(user?.uid, liveMeta, listsData.isLoading);
+  const customItems = useMemo(
+    () => (isCustom ? (listsData.items.find((c) => c.id === selected)?.items ?? []) : []),
+    [isCustom, selected, listsData.items],
+  );
 
   const rows = useMemo<ProfileRow[]>(() => {
     if (selected === 'reviews') return reviewsList.items.map((data) => ({ kind: 'review' as const, data }));
@@ -107,8 +104,7 @@ export default function ProfileScreen() {
   const reloadAll = () => {
     reviewsList.reload();
     favoritesList.reload();
-    loadCollections();
-    loadCustomItems();
+    listsData.reload();
   };
 
   // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
@@ -116,50 +112,40 @@ export default function ProfileScreen() {
     ? customCollections.find((c) => c.id === selected)?.name ?? ''
     : '';
 
-  const handleCreate = async (name: string, emoji: string | null) => {
-    setPrompt(null);
+  const handleEditorSubmit = async (name: string, emoji: string | null) => {
     if (!user?.uid) return;
-    const created = await CollectionService.createCollection(user.uid, name, emoji);
-    await loadCollections();
-    if (created) setSelected(created.id);
+    const editing = editor?.editing ?? null;
+    setEditor(null);
+    if (editing) {
+      await CollectionService.updateCollection(editing.id, { name, emoji });
+      listsData.reload();
+    } else {
+      const created = await CollectionService.createCollection(user.uid, name, emoji);
+      await listsData.reload();
+      if (created) setSelected(created.id);
+    }
   };
 
-  const handleRename = async (name: string, emoji: string | null) => {
-    if (typeof prompt !== 'object' || prompt === null) return;
-    const { id } = prompt;
-    setPrompt(null);
-    await CollectionService.updateCollection(id, { name, emoji });
-    loadCollections();
-  };
-
-  // Long-press su una lista custom: rinomina o elimina.
-  const manageCollection = (id: string, name: string, emoji: string | null) => {
-    Alert.alert(name, undefined, [
-      { text: i18n.t('common.cancel'), style: 'cancel' },
-      { text: i18n.t('common.rename'), onPress: () => setPrompt({ id, name, emoji }) },
-      {
-        text: i18n.t('common.delete'),
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert(
-            i18n.t('restaurants.collections.deleteTitle'),
-            i18n.t('restaurants.collections.deleteConfirm', { name }),
-            [
-              { text: i18n.t('common.cancel'), style: 'cancel' },
-              {
-                text: i18n.t('common.delete'),
-                style: 'destructive',
-                onPress: async () => {
-                  await CollectionService.deleteCollection(id);
-                  if (selected === id) setSelected('reviews');
-                  loadCollections();
-                },
-              },
-            ],
-          );
+  const handleEditorDelete = () => {
+    const editing = editor?.editing;
+    if (!editing) return;
+    Alert.alert(
+      i18n.t('restaurants.collections.deleteTitle'),
+      i18n.t('restaurants.collections.deleteConfirm', { name: editing.name }),
+      [
+        { text: i18n.t('common.cancel'), style: 'cancel' },
+        {
+          text: i18n.t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await CollectionService.deleteCollection(editing.id);
+            if (selected === editing.id) setSelected('reviews');
+            setEditor(null);
+            listsData.reload();
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   if (!isAuthenticated || !userProfile) {
@@ -306,17 +292,17 @@ export default function ProfileScreen() {
                 count={c.item_count}
                 active={selected === c.id}
                 onPress={() => setSelected(c.id)}
-                onLongPress={() => manageCollection(c.id, c.name, c.emoji)}
+                onLongPress={() => setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji } })}
               />
             ))}
             <TouchableOpacity
               style={styles.addPill}
-              onPress={() => setPrompt('create')}
+              onPress={() => setEditor({ editing: null })}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel={i18n.t('restaurants.collections.newList')}
             >
-              <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.primary} />
             </TouchableOpacity>
           </ScrollView>
         }
@@ -331,18 +317,12 @@ export default function ProfileScreen() {
         }
       />
 
-      <TextPromptModal
-        visible={prompt !== null}
-        title={prompt === 'create'
-          ? i18n.t('restaurants.collections.createTitle')
-          : i18n.t('restaurants.collections.renameTitle')}
-        placeholder={i18n.t('restaurants.collections.namePlaceholder')}
-        initialValue={typeof prompt === 'object' && prompt !== null ? prompt.name : ''}
-        showEmoji
-        initialEmoji={typeof prompt === 'object' && prompt !== null ? prompt.emoji : null}
-        confirmLabel={prompt === 'create' ? i18n.t('restaurants.collections.create') : undefined}
-        onCancel={() => setPrompt(null)}
-        onConfirm={prompt === 'create' ? handleCreate : handleRename}
+      <ListEditorSheet
+        visible={editor !== null}
+        editing={editor?.editing ?? null}
+        onClose={() => setEditor(null)}
+        onSubmit={handleEditorSubmit}
+        onDelete={handleEditorDelete}
       />
     </>
   );
@@ -475,11 +455,13 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   addPill: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    // Circolare e alto come le pill: stretch sull'altezza della riga +
+    // aspectRatio 1 → cerchio della stessa altezza, senza sporgere.
+    alignSelf: 'stretch',
+    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 999,
     backgroundColor: theme.colors.surfaceMuted,
   },
   kindButtonInner: {

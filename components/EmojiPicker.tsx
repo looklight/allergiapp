@@ -41,6 +41,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: theme.spacing.sm,
   },
   cell: {

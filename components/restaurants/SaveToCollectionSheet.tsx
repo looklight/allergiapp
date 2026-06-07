@@ -8,7 +8,7 @@ import {
   ScrollView,
   TextInput,
   Animated,
-  PanResponder,
+  Easing,
   Alert,
   Keyboard,
   Platform,
@@ -22,33 +22,33 @@ import type { AppTheme } from '../../constants/theme';
 import { CollectionService, type CollectionWithCount } from '../../services/collectionService';
 import { FavoriteNoteService } from '../../services/favoriteNoteService';
 import { useAuth } from '../../contexts/AuthContext';
-import TextPromptModal from '../TextPromptModal';
+import CreateListForm from './CreateListForm';
 import i18n from '../../utils/i18n';
 
 const NOTE_MAX_LENGTH = 200;
-const SHEET_MIN_RATIO = 0.5;
-const SHEET_MAX_RATIO = 0.85;
-// Sentinella per "ultima lista usata = Preferiti" (la default non ha un id noto qui).
+const MIN_RATIO = 0.4;
+const MAX_RATIO = 0.85;
+// Stima dell'altezza "non-lista" (header + nota + conferma + paddings): serve a
+// dimensionare il modal in modo adattivo a partire dall'altezza delle righe.
+const CHROME = 230;
 const FAV_SENTINEL = 'favorites';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   restaurantId: string;
-  /** Preferiti (lista di default), gestita da useRestaurantDetail. */
   isFavorite: boolean;
   onSetFavorite: (value: boolean) => void;
-  /** Liste custom + appartenenza del ristorante. */
   collections: CollectionWithCount[];
   membership: Set<string>;
   reloadCollections: () => void;
 };
 
 /**
- * Bottom sheet "Salva in…" a bozza+conferma (stile Google Maps): l'utente spunta
- * le liste, scrive l'eventuale nota, e nulla viene scritto finche' non preme
- * Conferma. La creazione di una nuova lista avviene subito (variante A), il luogo
- * ci entra solo alla Conferma.
+ * Bottom sheet "Salva in…" a bozza+conferma, stile Google Maps. Altezza
+ * adattiva (min..max) misurata dal contenuto della lista; l'editor laterale
+ * (crea/modifica/elimina) condivide la stessa altezza, cosi' lo slide non fa
+ * salti. Nota pinnata in basso sempre visibile. Niente modal-su-modal.
  */
 export default function SaveToCollectionSheet({
   visible,
@@ -63,8 +63,10 @@ export default function SaveToCollectionSheet({
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const hideOffset = windowHeight;
+  const { width, height } = useWindowDimensions();
+  const hideOffset = height;
+  const minH = height * MIN_RATIO;
+  const maxH = height * MAX_RATIO;
   const { user } = useAuth();
   const userId = user?.uid;
 
@@ -74,31 +76,34 @@ export default function SaveToCollectionSheet({
   const [localCollections, setLocalCollections] = useState<CollectionWithCount[]>([]);
   const [note, setNote] = useState('');
   const initialNoteRef = useRef('');
-  const [promptVisible, setPromptVisible] = useState(false);
+
+  const [mode, setMode] = useState<'list' | 'editor'>('list');
+  const [editing, setEditing] = useState<CollectionWithCount | null>(null);
+  const [contentHeight, setContentHeight] = useState(height * 0.5);
 
   const anim = useRef(new Animated.Value(0)).current;
-  const dragY = useRef(new Animated.Value(0)).current;
   const keyboardOffset = useRef(new Animated.Value(0)).current;
+  const panelX = useRef(new Animated.Value(0)).current;
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  // Lift sincronizzato alla tastiera (native driver = fluido). Su iOS usiamo gli
-  // eventi "will" con la durata di sistema; su Android i "did".
+  // Lift sincronizzato alla tastiera (native driver = fluido).
   useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     const onShow = (e: any) => {
-      const h = e.endCoordinates?.height ?? 0;
       Animated.timing(keyboardOffset, {
-        toValue: -Math.max(0, h - insets.bottom),
-        duration: e.duration || 250,
+        toValue: -Math.max(0, (e.endCoordinates?.height ?? 0) - insets.bottom),
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }).start();
     };
     const onHide = (e: any) => {
       Animated.timing(keyboardOffset, {
         toValue: 0,
-        duration: e.duration || 200,
+        duration: e.duration || 180,
+        easing: Easing.in(Easing.ease),
         useNativeDriver: true,
       }).start();
     };
@@ -111,8 +116,10 @@ export default function SaveToCollectionSheet({
   useEffect(() => {
     if (!visible) return;
     anim.setValue(0);
-    dragY.setValue(0);
     keyboardOffset.setValue(0);
+    panelX.setValue(0);
+    setMode('list');
+    setEditing(null);
     Animated.timing(anim, { toValue: 1, duration: 280, useNativeDriver: true }).start();
 
     setLocalCollections(collections);
@@ -121,13 +128,10 @@ export default function SaveToCollectionSheet({
 
     let cancelled = false;
     (async () => {
-      // Nota corrente (se il posto e' salvato).
       const existing = userId ? await FavoriteNoteService.getFavoriteNote(userId, restaurantId) : null;
       if (cancelled) return;
       initialNoteRef.current = existing ?? '';
       setNote(existing ?? '');
-
-      // Pre-selezione di default se il posto non e' ancora salvato da nessuna parte.
       if (!isFavorite && membership.size === 0) {
         const last = await CollectionService.getLastUsedCollectionId();
         if (cancelled) return;
@@ -144,57 +148,71 @@ export default function SaveToCollectionSheet({
 
   const close = useCallback(() => {
     Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-      dragY.setValue(0);
       onCloseRef.current();
     });
-  }, [anim, dragY]);
+  }, [anim]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gs) => gs.dy > 10 && Math.abs(gs.dy) > Math.abs(gs.dx),
-      onPanResponderMove: (_, gs) => { if (gs.dy > 0) dragY.setValue(gs.dy); },
-      onPanResponderRelease: (_, gs) => {
-        if (gs.dy > 100 || gs.vy > 0.5) {
-          Animated.timing(dragY, { toValue: hideOffset, duration: 200, useNativeDriver: true }).start(() => {
-            anim.setValue(0);
-            dragY.setValue(0);
-            onCloseRef.current();
-          });
-        } else {
-          Animated.spring(dragY, { toValue: 0, useNativeDriver: true, bounciness: 8 }).start();
-        }
-      },
-    }),
-  ).current;
+  // Altezza adattiva dalle righe della lista (min..max). L'editor condivide.
+  const onRowsSize = useCallback((_: number, h: number) => {
+    const next = Math.min(maxH, Math.max(minH, h + CHROME + insets.bottom));
+    setContentHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
+  }, [minH, maxH, insets.bottom]);
+
+  const openEditor = (list: CollectionWithCount | null) => {
+    setEditing(list);
+    setMode('editor');
+    Animated.timing(panelX, { toValue: -width, duration: 280, useNativeDriver: true }).start();
+  };
+  const closeEditor = useCallback(() => {
+    Keyboard.dismiss();
+    Animated.timing(panelX, { toValue: 0, duration: 280, useNativeDriver: true }).start();
+    setMode('list');
+    setEditing(null);
+  }, [panelX]);
+
+  const handleFormSubmit = async (name: string, emoji: string | null) => {
+    if (!userId) return;
+    if (editing) {
+      await CollectionService.updateCollection(editing.id, { name, emoji });
+      setLocalCollections((prev) => prev.map((c) => (c.id === editing.id ? { ...c, name, emoji } : c)));
+      closeEditor();
+    } else {
+      const created = await CollectionService.createCollection(userId, name, emoji);
+      if (!created) return;
+      setLocalCollections((prev) => [...prev, { ...created, item_count: 0 }]);
+      setSelectedCustom((prev) => new Set(prev).add(created.id));
+      closeEditor();
+    }
+  };
+
+  const handleDelete = () => {
+    if (!editing) return;
+    const target = editing;
+    Alert.alert(
+      i18n.t('restaurants.collections.deleteTitle'),
+      i18n.t('restaurants.collections.deleteConfirm', { name: target.name }),
+      [
+        { text: i18n.t('common.cancel'), style: 'cancel' },
+        {
+          text: i18n.t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await CollectionService.deleteCollection(target.id);
+            setLocalCollections((prev) => prev.filter((c) => c.id !== target.id));
+            setSelectedCustom((prev) => { const n = new Set(prev); n.delete(target.id); return n; });
+            closeEditor();
+          },
+        },
+      ],
+    );
+  };
 
   const savedCount = (favSelected ? 1 : 0) + selectedCustom.size;
 
-  const toggleCustom = (id: string) => {
-    setSelectedCustom((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
-
-  // Crea lista subito (A) e selezionala nella bozza; il luogo entra alla Conferma.
-  const handleCreate = async (name: string, emoji: string | null) => {
-    setPromptVisible(false);
-    if (!userId) return;
-    const created = await CollectionService.createCollection(userId, name, emoji);
-    if (!created) return;
-    setLocalCollections((prev) => [...prev, { ...created, item_count: 0 }]);
-    setSelectedCustom((prev) => new Set(prev).add(created.id));
-  };
-
   const commit = useCallback(async () => {
     const finalSaved = favSelected || selectedCustom.size > 0;
-
-    // Preferiti (lista di default).
     if (favSelected !== isFavorite) onSetFavorite(favSelected);
 
-    // Liste custom: diff bozza vs appartenenza attuale.
     await Promise.all(localCollections.map((c) => {
       const wasIn = membership.has(c.id);
       const nowIn = selectedCustom.has(c.id);
@@ -203,7 +221,6 @@ export default function SaveToCollectionSheet({
       return Promise.resolve();
     }));
 
-    // Nota: vale solo se salvato in ≥1 lista; altrimenti la rimuoviamo.
     if (userId) {
       if (finalSaved) {
         if (note.trim() !== initialNoteRef.current.trim()) {
@@ -214,7 +231,6 @@ export default function SaveToCollectionSheet({
       }
     }
 
-    // Ricorda l'ultima lista usata per la pre-selezione futura.
     const lastUsed = selectedCustom.size > 0 ? [...selectedCustom][selectedCustom.size - 1]
       : favSelected ? FAV_SENTINEL : null;
     if (lastUsed) CollectionService.setLastUsedCollectionId(lastUsed);
@@ -225,7 +241,6 @@ export default function SaveToCollectionSheet({
 
   const handleConfirm = () => {
     const finalSaved = favSelected || selectedCustom.size > 0;
-    // Togliendo il posto da tutte le liste con una nota presente: conferma.
     if (!finalSaved && initialNoteRef.current.trim()) {
       Alert.alert(
         i18n.t('restaurants.collections.removeNoteTitle'),
@@ -243,132 +258,147 @@ export default function SaveToCollectionSheet({
   return (
     <Modal visible={visible} animationType="none" transparent statusBarTranslucent onRequestClose={close}>
       <View style={styles.container}>
-        <Animated.View
-          style={[styles.overlay, {
-            opacity: Animated.multiply(
-              anim,
-              dragY.interpolate({ inputRange: [0, 300], outputRange: [1, 0], extrapolate: 'clamp' }),
-            ),
-          }]}
-        >
+        <Animated.View style={[styles.overlay, { opacity: anim }]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
         </Animated.View>
 
         <Animated.View
           style={[
             styles.content,
-            { minHeight: windowHeight * SHEET_MIN_RATIO, maxHeight: windowHeight * SHEET_MAX_RATIO, paddingBottom: insets.bottom + theme.spacing.sm },
-            { transform: [{ translateY: Animated.add(Animated.add(anim.interpolate({ inputRange: [0, 1], outputRange: [hideOffset, 0] }), dragY), keyboardOffset) }] },
+            { height: contentHeight, paddingBottom: insets.bottom + theme.spacing.sm },
+            { transform: [{ translateY: Animated.add(anim.interpolate({ inputRange: [0, 1], outputRange: [hideOffset, 0] }), keyboardOffset) }] },
           ]}
         >
-          <View {...panResponder.panHandlers}>
-            <View style={styles.handle} />
-            <View style={styles.header}>
-              <Text style={styles.title}>{i18n.t('restaurants.collections.saveTo')}</Text>
-              <Pressable onPress={close} hitSlop={8} style={styles.closeButton} accessibilityRole="button" accessibilityLabel={i18n.t('common.close')}>
-                <MaterialCommunityIcons name="close" size={20} color={theme.colors.textSecondary} />
-              </Pressable>
-            </View>
-          </View>
+          <Animated.View style={[styles.panels, { width: width * 2, transform: [{ translateX: panelX }] }]}>
+            {/* ─── PANNELLO ELENCO ─── */}
+            <View style={[styles.panel, { width }]}>
+              <View style={styles.header}>
+                <Text style={styles.title}>{i18n.t('restaurants.collections.saveTo')}</Text>
+                <Pressable onPress={close} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={i18n.t('common.close')}>
+                  <MaterialCommunityIcons name="close" size={20} color={theme.colors.textSecondary} />
+                </Pressable>
+              </View>
 
-          <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled" bounces={false}>
-            {/* Preferiti (lista di default) */}
-            <CollectionRow
-              symbol={<MaterialCommunityIcons name={favSelected ? 'heart' : 'heart-outline'} size={22} color={favSelected ? theme.colors.error : theme.colors.textSecondary} />}
-              label={i18n.t('restaurants.myRestaurants.filterFavorites')}
-              checked={favSelected}
-              onPress={() => setFavSelected((v) => !v)}
-              theme={theme}
-            />
-
-            {/* Liste custom */}
-            {localCollections.map((c) => (
-              <CollectionRow
-                key={c.id}
-                symbol={c.emoji
-                  ? <Text style={styles.rowEmoji}>{c.emoji}</Text>
-                  : <MaterialCommunityIcons name="format-list-bulleted" size={22} color={theme.colors.textSecondary} />}
-                label={c.name}
-                count={c.item_count}
-                checked={selectedCustom.has(c.id)}
-                onPress={() => toggleCustom(c.id)}
-                theme={theme}
-              />
-            ))}
-
-            {/* Crea nuova lista */}
-            <TouchableOpacity style={styles.createRow} onPress={() => setPromptVisible(true)} activeOpacity={0.6}>
-              <MaterialCommunityIcons name="playlist-plus" size={22} color={theme.colors.primary} />
-              <Text style={styles.createLabel}>{i18n.t('restaurants.collections.newList')}</Text>
-            </TouchableOpacity>
-
-            {/* Nota (solo se salvato in ≥1 lista) */}
-            <View style={styles.noteSection}>
-              {savedCount > 0 ? (
-                <TextInput
-                  style={styles.noteInput}
-                  value={note}
-                  onChangeText={setNote}
-                  placeholder={i18n.t('restaurants.detail.notes.placeholder')}
-                  placeholderTextColor={theme.colors.textSecondary}
-                  multiline
-                  maxLength={NOTE_MAX_LENGTH}
-                  textAlignVertical="top"
+              <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled" bounces={false} onContentSizeChange={onRowsSize}>
+                <Row
+                  checked={favSelected}
+                  onToggle={() => setFavSelected((v) => !v)}
+                  symbol={<MaterialCommunityIcons name={favSelected ? 'heart' : 'heart-outline'} size={22} color={favSelected ? theme.colors.error : theme.colors.textSecondary} />}
+                  label={i18n.t('restaurants.myRestaurants.filterFavorites')}
+                  theme={theme}
                 />
-              ) : (
-                <Text style={styles.noteHint}>{i18n.t('restaurants.collections.noteHint')}</Text>
-              )}
-            </View>
-          </ScrollView>
+                {localCollections.map((c) => (
+                  <Row
+                    key={c.id}
+                    checked={selectedCustom.has(c.id)}
+                    onToggle={() => setSelectedCustom((prev) => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })}
+                    symbol={c.emoji ? <Text style={styles.rowEmoji}>{c.emoji}</Text> : <MaterialCommunityIcons name="format-list-bulleted" size={22} color={theme.colors.textSecondary} />}
+                    label={c.name}
+                    count={c.item_count}
+                    onEdit={() => openEditor(c)}
+                    theme={theme}
+                  />
+                ))}
+                <TouchableOpacity style={styles.createRow} onPress={() => openEditor(null)} activeOpacity={0.6}>
+                  <MaterialCommunityIcons name="playlist-plus" size={22} color={theme.colors.primary} />
+                  <Text style={styles.createLabel}>{i18n.t('restaurants.collections.newList')}</Text>
+                </TouchableOpacity>
+              </ScrollView>
 
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm} activeOpacity={0.8}>
-            <Text style={styles.confirmText}>{i18n.t('common.confirm')}</Text>
-          </TouchableOpacity>
+              {/* Nota: sezione etichettata, separata dalla lista, sempre visibile. */}
+              <View style={styles.noteSection}>
+                <View style={styles.noteHeader}>
+                  <MaterialCommunityIcons name="note-edit-outline" size={15} color={theme.colors.textSecondary} />
+                  <Text style={styles.noteLabel}>{i18n.t('restaurants.collections.noteLabel')}</Text>
+                </View>
+                <View style={styles.noteBox}>
+                  <TextInput
+                    style={styles.noteInput}
+                    value={note}
+                    onChangeText={setNote}
+                    placeholder={i18n.t('restaurants.detail.notes.placeholder')}
+                    placeholderTextColor={theme.colors.textSecondary}
+                    multiline
+                    maxLength={NOTE_MAX_LENGTH}
+                    textAlignVertical="top"
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm} activeOpacity={0.8}>
+                <Text style={styles.confirmText}>
+                  {savedCount === 0 ? i18n.t('restaurants.collections.remove') : i18n.t('common.confirm')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* ─── PANNELLO EDITOR ─── */}
+            <View style={[styles.panel, { width }]}>
+              <View style={styles.header}>
+                <Pressable onPress={closeEditor} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={i18n.t('common.cancel')}>
+                  <MaterialCommunityIcons name="chevron-left" size={24} color={theme.colors.textPrimary} />
+                </Pressable>
+                <Text style={styles.title}>
+                  {editing ? i18n.t('restaurants.collections.renameTitle') : i18n.t('restaurants.collections.createTitle')}
+                </Text>
+                <View style={styles.headerBtn} />
+              </View>
+              <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
+                <CreateListForm
+                  active={mode === 'editor'}
+                  initialName={editing?.name ?? ''}
+                  initialEmoji={editing?.emoji ?? null}
+                  submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
+                  onSubmit={handleFormSubmit}
+                  onDelete={editing ? handleDelete : undefined}
+                />
+              </ScrollView>
+            </View>
+          </Animated.View>
         </Animated.View>
       </View>
-
-      <TextPromptModal
-        visible={promptVisible}
-        title={i18n.t('restaurants.collections.createTitle')}
-        placeholder={i18n.t('restaurants.collections.namePlaceholder')}
-        confirmLabel={i18n.t('restaurants.collections.create')}
-        showEmoji
-        onCancel={() => setPromptVisible(false)}
-        onConfirm={handleCreate}
-      />
     </Modal>
   );
 }
 
-function CollectionRow({
+function Row({
+  checked,
+  onToggle,
   symbol,
   label,
   count,
-  checked,
-  onPress,
+  onEdit,
   theme,
 }: {
+  checked: boolean;
+  onToggle: () => void;
   symbol: React.ReactNode;
   label: string;
   count?: number;
-  checked: boolean;
-  onPress: () => void;
+  onEdit?: () => void;
   theme: AppTheme;
 }) {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.6}>
-      <View style={styles.rowSymbol}>{symbol}</View>
-      <View style={styles.rowLabelWrap}>
-        <Text style={styles.rowLabel} numberOfLines={1}>{label}</Text>
-        {count != null && <Text style={styles.rowCount}>{count}</Text>}
-      </View>
-      <MaterialCommunityIcons
-        name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'}
-        size={22}
-        color={checked ? theme.colors.primary : theme.colors.textDisabled}
-      />
-    </TouchableOpacity>
+    <View style={styles.row}>
+      <TouchableOpacity style={styles.rowMain} onPress={onToggle} activeOpacity={0.6}>
+        <MaterialCommunityIcons
+          name={checked ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'}
+          size={22}
+          color={checked ? theme.colors.primary : theme.colors.textDisabled}
+        />
+        <View style={styles.rowSymbol}>{symbol}</View>
+        <View style={styles.rowLabelWrap}>
+          <Text style={styles.rowLabel} numberOfLines={1}>{label}</Text>
+          {count != null && <Text style={styles.rowCount}>({count})</Text>}
+        </View>
+      </TouchableOpacity>
+      {onEdit && (
+        <TouchableOpacity onPress={onEdit} hitSlop={10} style={styles.editBtn} accessibilityRole="button" accessibilityLabel={i18n.t('common.edit')}>
+          <MaterialCommunityIcons name="pencil-outline" size={20} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
@@ -377,75 +407,62 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.overlay },
   content: {
     backgroundColor: theme.colors.detailSurface,
-    borderTopLeftRadius: theme.radius.xl,
-    borderTopRightRadius: theme.radius.xl,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: theme.colors.border,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-  },
+  panels: { flex: 1, flexDirection: 'row' },
+  panel: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
   },
-  title: { fontSize: 17, fontWeight: '700', color: theme.colors.textPrimary },
-  closeButton: { padding: 2 },
-  // flex:1 fa riempire l'altezza minima del modal alla lista: il box nota che
-  // compare/scompare resta dentro quest'area e non cambia l'altezza del modal.
+  headerBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  title: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '700', color: theme.colors.textPrimary },
   scroll: { flex: 1 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-  },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: theme.spacing.lg },
+  rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, paddingVertical: theme.spacing.md },
   rowSymbol: { width: 24, alignItems: 'center' },
   rowEmoji: { fontSize: 20 },
-  rowLabelWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
+  rowLabelWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs },
   rowLabel: { flexShrink: 1, fontSize: 15, color: theme.colors.textPrimary },
   rowCount: { fontSize: 13, color: theme.colors.textSecondary },
+  editBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   createRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.colors.divider,
   },
   createLabel: { fontSize: 15, fontWeight: '600', color: theme.colors.primary },
   noteSection: {
-    // Altezza stabile: input e hint occupano lo stesso spazio, cosi' il
-    // comparire/scomparire della nota non sposta nulla.
-    minHeight: 96,
-    justifyContent: 'center',
+    paddingTop: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: theme.colors.divider,
+    gap: theme.spacing.sm,
   },
-  noteInput: {
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    lineHeight: 20,
-    minHeight: 44,
-    padding: theme.spacing.sm,
+  noteHeader: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs },
+  noteLabel: { fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary },
+  noteBox: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.detailMuted,
   },
-  noteHint: { fontSize: 13, color: theme.colors.textSecondary },
+  noteInput: { fontSize: 14, color: theme.colors.textPrimary, lineHeight: 20, minHeight: 40, padding: 0 },
   confirmButton: {
     marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.xl,
     paddingVertical: theme.spacing.md,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.primary,

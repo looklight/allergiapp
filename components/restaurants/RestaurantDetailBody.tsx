@@ -83,7 +83,7 @@ export default function RestaurantDetailBody({
     reviewSortOrder, setReviewSortOrder, hasUserNeeds,
     setFavorite, handleToggleReviewLike, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
-    collections, collectionMembership, reloadCollections,
+    collections, collectionMembership, reloadCollections, savedNote,
     saveSheetVisible, openSaveSheet, closeSaveSheet,
   } = detail;
 
@@ -324,6 +324,13 @@ export default function RestaurantDetailBody({
             onOpen={openSaveSheet}
           />
         )}
+
+        {isAuthenticated && savedNote ? (
+          <TouchableOpacity style={styles.savedNoteRow} onPress={openSaveSheet} activeOpacity={0.6}>
+            <MaterialCommunityIcons name="note-text-outline" size={15} color={theme.colors.textSecondary} />
+            <Text style={styles.savedNoteText} numberOfLines={2}>{savedNote}</Text>
+          </TouchableOpacity>
+        ) : null}
 
         <View style={styles.photoAndMenuSection}>
           {reviewPhotos.length > 0 && (
@@ -705,4 +712,19 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingHorizontal: 16,
   },
   footerRowText: { fontSize: 14, color: theme.colors.textSecondary, flex: 1 },
+  // Anteprima nota sotto le pill "Salvato in": sobria ma leggibile, tap → modal.
+  savedNoteRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingTop: 2,
+    paddingBottom: 4,
+  },
+  savedNoteText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 19,
+    color: theme.colors.textPrimary,
+  },
 });

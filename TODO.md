@@ -220,6 +220,31 @@ Analisi completa fatta su `feature/restaurants-v2`. L'app non è pronta per migl
 - [ ] **`reviewPhotos` useMemo deps** — array di 100+ foto ricalcolato ad ogni sort change / like toggle / loadMore. Restringere le dipendenze. `ReviewsSection.tsx`. Effort minimo.
 - [ ] **Pre-compute `allergen_match_count`** — sort `relevance` esegue `INTERSECT` array per ogni review paginata (30 INTERSECT/pagina). Aggiungere colonna calcolata o fare insieme alla materialized view. Effort medio, da fare in coppia col punto 1.
 
+### Liste/collezioni — caricamento dati: RPC server-side (DA VALUTARE)
+**Priorità: media — non urgente alla scala attuale, ma da decidere prima dello sharing. Discusso 2026-06-07.**
+
+Oggi il profilo carica le liste custom **eager, lato client** (`myRestaurantsService.getCollectionsWithItems`): 1 query embed (collezioni+item+ristoranti) + `fetchRestaurantPositions` (TUTTE le posizioni globali, RPC senza cache) + `batchLoadStats` (`reviews.in(ids)` + `favorites.in(ids)` → **scarica le righe e conta lato client**). Funziona bene e mantiene la UX **fluida** (selezione istantanea, mappa sempre presente, niente spinner).
+
+**Fino a quando regge (stima):**
+- `.in(ids)` ok finché un utente salva **< ~150–200 ristoranti** totali (oltre, URL troppo lungo → stats sbagliate, *hard fail*).
+- conteggio scaricando righe → **lento** quando i ristoranti salvati accumulano molte recensioni (cresce con la community, non col singolo utente).
+- `fetchRestaurantPositions` globale → **spreco** quando i ristoranti totali dell'app arrivano a migliaia.
+- **A ~15k utenti** con ~100 salvati/utente: il per-utente regge, ma il conteggio-scaricando-righe + posizioni globali rendono ogni apertura profilo pesante (migliaia di righe) → lento/costoso.
+
+**Fix proposto (fondamenta, sharing-ready):** spostare il lavoro nel DB con 2 RPC.
+- `get_my_collections_with_items()` (usa `auth.uid()`): tutte le mie liste con item, **stats aggregate in SQL** (COUNT/AVG), **posizioni inline** (PostGIS), nota inclusa (owner). Tiene l'eager → **stessa fluidità di ora**, ma una query efficiente.
+- `get_collection_items(collection_id)`: singola lista, stessa aggregazione, **nota solo se owner** → è anche la **primitiva della condivisione** (RLS `visibility='public'` già pronta in migration 069) e l'eventuale path lazy per utenti estremi.
+
+**Guadagni:** apertura profilo da migliaia di righe a ~100 già aggregate; client più snello (spariscono `batchLoadStats` + fetch posizioni globali); fondamenta sharing pronte.
+
+**Trade-off (onesti, NON zero):**
+- una migration con 2 funzioni SQL da mantenere (infra permanente, storia immutabile);
+- la logica di shaping liste passa da TS a SQL → si modifica via SQL su Supabase (comunque istantaneo, **le OTA restano intatte per tutto il resto**), ma è meno comodo del TS e cambi alla forma dei dati richiedono toccare RPC **+** client insieme;
+- superficie di **sicurezza RLS** da fare giusta (nota che NON deve trapelare su liste condivise);
+- non elimina l'eager (per un utente con migliaia di posti il payload resta grande, ma efficiente).
+
+**Decisione:** rimandata (l'utente non vuole over-engineering ora). **Momento giusto: quando si costruisce la condivisione liste** — un solo investimento che dà scala + sharing insieme. Vedi anche memoria `project_collections_feature.md`.
+
 ### `reviews.language` non aggiornato su edit (DB) — fix residuo
 **Priorità: bassa — client già sistemato, resta solo il DB**
 

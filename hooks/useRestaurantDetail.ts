@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUnlockedAvatars } from '../contexts/UnlockedAvatarsContext';
 import { useReviewsPaginated } from './useReviewsPaginated';
 import { useRestaurantCollections } from './useRestaurantCollections';
+import { FavoriteNoteService } from '../services/favoriteNoteService';
 import { getDisplayName } from '../utils/getDisplayName';
 
 export interface UnifiedReview {
@@ -65,6 +66,15 @@ export function useRestaurantDetail(
   const openSaveSheet = useCallback(() => setSaveSheetVisible(true), []);
   const closeSaveSheet = useCallback(() => setSaveSheetVisible(false), []);
 
+  // Anteprima read-only della nota sulla scheda (modifica resta nel modal).
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+  const reloadNote = useCallback(async () => {
+    if (!user?.uid || !restaurantId) { setSavedNote(null); return; }
+    setSavedNote(await FavoriteNoteService.getFavoriteNote(user.uid, restaurantId));
+  }, [user?.uid, restaurantId]);
+  // Dopo il salvataggio dal modal: riallinea sia liste/pill sia anteprima nota.
+  const reloadSaved = useCallback(() => { collections.reload(); reloadNote(); }, [collections, reloadNote]);
+
   // ─── Reviews (delegated to dedicated hook) ─────────────────────────────────
   const {
     reviews: rawReviews,
@@ -104,10 +114,11 @@ export function useRestaurantDetail(
             RestaurantService.isFavorite(user.uid, restaurantId),
             RestaurantService.getUserReport(restaurantId, user.uid),
             RestaurantService.getUserHasAnyReview(user.uid),
+            FavoriteNoteService.getFavoriteNote(user.uid, restaurantId),
           ])
-        : Promise.resolve([null, false, null, false] as const);
+        : Promise.resolve([null, false, null, false, null] as const);
 
-      const [[rest, , mp, rp, cv], [ur, fav, urp, hasReviews]] = await Promise.all([basePromise, userPromise]);
+      const [[rest, , mp, rp, cv], [ur, fav, urp, hasReviews, noteVal]] = await Promise.all([basePromise, userPromise]);
 
       if (loadId !== loadIdRef.current) return;
 
@@ -119,6 +130,7 @@ export function useRestaurantDetail(
       setIsFavorite(fav ?? false);
       setUserReport(urp);
       setUserHasReviews(hasReviews);
+      setSavedNote((noteVal as string | null) ?? null);
     } catch (e) {
       if (loadId !== loadIdRef.current) return;
       setError(e instanceof Error ? e.message : 'Errore di caricamento');
@@ -354,7 +366,8 @@ export function useRestaurantDetail(
     isSaved: isFavorite || collections.membership.size > 0,
     collections: collections.collections,
     collectionMembership: collections.membership,
-    reloadCollections: collections.reload,
+    reloadCollections: reloadSaved,
+    savedNote,
     saveSheetVisible,
     openSaveSheet,
     closeSaveSheet,

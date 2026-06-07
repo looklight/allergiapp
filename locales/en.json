@@ -564,6 +564,8 @@
     },
     "collections": {
       "saveTo": "Save to…",
+      "remove": "Remove",
+      "noteLabel": "Note",
       "noteHint": "Save to a list to add a note.",
       "newList": "Create new list",
       "namePlaceholder": "List name",
@@ -572,7 +574,8 @@
       "emptyLists": "You haven't created any lists yet.",
       "emptyList": "This list is empty.",
       "createTitle": "New list",
-      "renameTitle": "Rename list",
+      "renameTitle": "Edit list",
+      "deleteList": "Delete list",
       "deleteTitle": "Delete this list?",
       "deleteConfirm": "“{{name}}” will be deleted. Saved restaurants won't be removed.",
       "removeNoteTitle": "Delete the note too?",

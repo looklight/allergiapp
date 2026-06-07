@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
-import { mapRestaurant, PG_UNIQUE_VIOLATION } from './restaurant.types';
-import type { Restaurant } from './restaurant.types';
+import { PG_UNIQUE_VIOLATION } from './restaurant.types';
 
 // ─── Liste (collezioni) di ristoranti ─────────────────────────────────────────
 // Modello unificato (vedi migration 069): ogni lista e' una riga in `collections`.
@@ -216,24 +215,6 @@ export async function getCollectionIdsForRestaurant(
   }
 }
 
-/** I ristoranti di una lista (per la schermata di dettaglio lista). */
-export async function getCollectionRestaurants(collectionId: string): Promise<Restaurant[]> {
-  try {
-    const { data, error } = await supabase
-      .from('collection_items')
-      .select('restaurant:restaurants(*)')
-      .eq('collection_id', collectionId)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return (data ?? [])
-      .map((row: any) => (row.restaurant ? mapRestaurant(row.restaurant) : null))
-      .filter((r: Restaurant | null): r is Restaurant => r != null);
-  } catch (error) {
-    console.warn('[CollectionService] Errore getCollectionRestaurants:', error);
-    return [];
-  }
-}
-
 export const CollectionService = {
   getLastUsedCollectionId,
   setLastUsedCollectionId,
@@ -245,5 +226,4 @@ export const CollectionService = {
   addToCollection,
   removeFromCollection,
   getCollectionIdsForRestaurant,
-  getCollectionRestaurants,
 };
