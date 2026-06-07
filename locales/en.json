@@ -20,6 +20,7 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
+    "rename": "Rename",
     "edit": "Edit",
     "close": "Close",
     "add": "Add",
@@ -318,10 +319,7 @@
       "addFavorite": "Add to favorites",
       "removeFavorite": "Remove from favorites",
       "notes": {
-        "placeholder": "Add a personal note",
-        "saving": "Saving…",
-        "save": "Save note",
-        "error": "Note not saved, try again"
+        "placeholder": "Add a personal note"
       },
       "notFound": "Place not found.",
       "noReviews": "No reviews",
@@ -563,6 +561,22 @@
         "one": "restaurant",
         "other": "restaurants"
       }
+    },
+    "collections": {
+      "saveTo": "Save to…",
+      "noteHint": "Save to a list to add a note.",
+      "newList": "Create new list",
+      "namePlaceholder": "List name",
+      "create": "Create",
+      "listsLabel": "Lists",
+      "emptyLists": "You haven't created any lists yet.",
+      "emptyList": "This list is empty.",
+      "createTitle": "New list",
+      "renameTitle": "Rename list",
+      "deleteTitle": "Delete this list?",
+      "deleteConfirm": "“{{name}}” will be deleted. Saved restaurants won't be removed.",
+      "removeNoteTitle": "Delete the note too?",
+      "removeNoteMessage": "You're removing this place from your last list, so your personal note will be deleted."
     },
     "myReviews": {
       "title": "My reviews",

@@ -85,11 +85,11 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         >
           {detail.restaurant?.name ?? ''}
         </Text>
-        <TouchableOpacity onPress={detail.handleToggleFavorite} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn}>
+        <TouchableOpacity onPress={detail.openSaveSheet} hitSlop={10} activeOpacity={0.6} style={styles.sheetActionBtn} accessibilityLabel={i18n.t('restaurants.collections.saveTo')}>
           <MaterialCommunityIcons
-            name={detail.isFavorite ? 'heart' : 'heart-outline'}
+            name={detail.isSaved ? 'bookmark' : 'bookmark-outline'}
             size={22}
-            color={detail.isFavorite ? theme.colors.error : theme.colors.textSecondary}
+            color={detail.isSaved ? theme.colors.primary : theme.colors.textSecondary}
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -138,7 +138,6 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
         scrollEnabled={bodyScrollEnabled}
         sheetFullyOpen={isFullyOpen}
         onScrollOffset={handleScrollOffset}
-        onBeginEditNote={() => sheetRef.current?.snapToIndex(1)}
       />
     </BottomSheet>
   );

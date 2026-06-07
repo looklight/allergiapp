@@ -35,9 +35,9 @@ export default function RestaurantDetailScreen() {
         onLeadingPress={handleDismiss}
         actions={detail.restaurant ? [
           {
-            icon: detail.isFavorite ? 'heart' : 'heart-outline',
-            onPress: detail.handleToggleFavorite,
-            accessibilityLabel: i18n.t(detail.isFavorite ? 'restaurants.detail.removeFavorite' : 'restaurants.detail.addFavorite'),
+            icon: detail.isSaved ? 'bookmark' : 'bookmark-outline',
+            onPress: detail.openSaveSheet,
+            accessibilityLabel: i18n.t('restaurants.collections.saveTo'),
           },
           {
             // Icona platform-specific: iOS = box+freccia (Apple HIG), Android = Material share (3 nodi).

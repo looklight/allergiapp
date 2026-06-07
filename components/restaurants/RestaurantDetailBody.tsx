@@ -20,7 +20,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import StarRating from '../StarRating';
 import ImageFullscreenModal from '../ImageFullscreenModal';
 import RestaurantHeader from './RestaurantHeader';
-import FavoriteNoteSection from './FavoriteNoteSection';
+import CollectionPills from './CollectionPills';
+import SaveToCollectionSheet from './SaveToCollectionSheet';
 import MenuPhotosSection from './MenuPhotosSection';
 import ReviewsSection from './ReviewsSection';
 import ReportsSection from './ReportsSection';
@@ -58,8 +59,6 @@ type Props = {
   sheetFullyOpen?: boolean;
   /** Callback JS thread con l'offset Y (usato per compact header dentro il sheet). */
   onScrollOffset?: (y: number) => void;
-  /** Richiesto dalla sezione nota all'inizio della modifica: nel sheet porta a snap pieno. */
-  onBeginEditNote?: () => void;
 };
 
 export default function RestaurantDetailBody({
@@ -70,7 +69,6 @@ export default function RestaurantDetailBody({
   scrollEnabled = true,
   sheetFullyOpen,
   onScrollOffset,
-  onBeginEditNote,
 }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -83,8 +81,10 @@ export default function RestaurantDetailBody({
     menuPhotos, reports, cuisineVotes, userReview, userReport, isFavorite,
     isLoading, error, isUploadingMenu, userHasReviews, isUpdatingMenuUrl,
     reviewSortOrder, setReviewSortOrder, hasUserNeeds,
-    handleToggleFavorite, handleToggleReviewLike, navigateToContribute,
+    setFavorite, handleToggleReviewLike, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
+    collections, collectionMembership, reloadCollections,
+    saveSheetVisible, openSaveSheet, closeSaveSheet,
   } = detail;
 
   const scrollViewRef = useRef<Animated.ScrollView>(null);
@@ -317,10 +317,11 @@ export default function RestaurantDetailBody({
         />
 
         {isAuthenticated && (
-          <FavoriteNoteSection
-            restaurantId={restaurantId}
+          <CollectionPills
             isFavorite={isFavorite}
-            onBeginEdit={onBeginEditNote}
+            collections={collections}
+            membership={collectionMembership}
+            onOpen={openSaveSheet}
           />
         )}
 
@@ -528,6 +529,17 @@ export default function RestaurantDetailBody({
         visible={reportingReviewId !== null}
         onClose={() => setReportingReviewId(null)}
         onSubmit={submitReviewReport}
+      />
+
+      <SaveToCollectionSheet
+        visible={saveSheetVisible}
+        onClose={closeSaveSheet}
+        restaurantId={restaurantId}
+        isFavorite={isFavorite}
+        onSetFavorite={setFavorite}
+        collections={collections}
+        membership={collectionMembership}
+        reloadCollections={reloadCollections}
       />
     </>
   );
