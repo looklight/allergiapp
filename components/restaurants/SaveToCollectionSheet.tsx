@@ -9,6 +9,9 @@ import {
   TextInput,
   Alert,
   Keyboard,
+  LayoutAnimation,
+  UIManager,
+  Platform,
   useWindowDimensions,
 } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -22,7 +25,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  useAnimatedKeyboard,
   withTiming,
   interpolate,
   runOnJS,
@@ -37,6 +39,18 @@ const MAX_RATIO = 0.85;
 // dimensionare il modal in modo adattivo a partire dall'altezza delle righe.
 const CHROME = 230;
 const FAV_SENTINEL = 'favorites';
+
+// Android (old arch) richiede l'opt-in esplicito per LayoutAnimation.
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+// Animazione di layout NATIVA agganciata alla curva della tastiera: la lista si
+// comprime in un colpo solo (CoreAnimation/native), niente reflow per-frame in JS.
+const keyboardLayout = (duration?: number) => ({
+  duration: duration && duration > 0 ? duration : 250,
+  update: { type: (LayoutAnimation.Types as any).keyboard ?? LayoutAnimation.Types.easeInEaseOut },
+});
 
 type Props = {
   visible: boolean;
@@ -85,22 +99,45 @@ export default function SaveToCollectionSheet({
   const [mode, setMode] = useState<'list' | 'editor'>('list');
   const [editing, setEditing] = useState<CollectionWithCount | null>(null);
   const [contentHeight, setContentHeight] = useState(height * 0.5);
+  const [kbInset, setKbInset] = useState(0);
 
   const progress = useSharedValue(0);
   const panelX = useSharedValue(0);
-  const keyboard = useAnimatedKeyboard();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const finishClose = useCallback(() => onCloseRef.current(), []);
 
-  // Animazioni su UI thread (Reanimated). Il lift tastiera segue la tastiera
-  // fotogramma per fotogramma via useAnimatedKeyboard (cross-platform, niente
-  // tween da approssimare).
+  // Apertura/chiusura del foglio e slide tra i pannelli: solo transform
+  // (compositati, fluidi). La tastiera NON è gestita qui ma via LayoutAnimation
+  // nativa (vedi effetto sotto) per evitare reflow per-frame.
   const overlayStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
   const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(progress.value, [0, 1], [hideOffset, 0]) - keyboard.height.value }],
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [hideOffset, 0]) }],
   }));
   const panelsStyle = useAnimatedStyle(() => ({ transform: [{ translateX: panelX.value }] }));
+
+  // Quando appare la tastiera comprimi il foglio con un'unica animazione di
+  // layout nativa agganciata alla durata reale dell'evento: la lista (flex:1)
+  // si restringe, testata in alto, nota/conferma agganciate sopra la tastiera.
+  // SOLO iOS: su Android la finestra del Modal è già ridimensionata dal sistema
+  // (softInput=resize), quindi useWindowDimensions().height si riduce da solo e
+  // un inset manuale raddoppierebbe l'offset (foglio "sparato" troppo in alto).
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const onShow = (e: { duration?: number; endCoordinates?: { height: number } }) => {
+      LayoutAnimation.configureNext(keyboardLayout(e.duration));
+      setKbInset(e.endCoordinates?.height ?? 0);
+    };
+    const onHide = (e: { duration?: number }) => {
+      LayoutAnimation.configureNext(keyboardLayout(e?.duration));
+      setKbInset(0);
+    };
+    const s = Keyboard.addListener('keyboardWillShow', onShow);
+    const h = Keyboard.addListener('keyboardWillHide', onHide);
+    return () => { s.remove(); h.remove(); };
+  }, []);
+
+  const sheetHeight = Math.min(contentHeight, height - insets.top - kbInset);
 
   // Inizializza la bozza a ogni apertura.
   useEffect(() => {
@@ -254,7 +291,11 @@ export default function SaveToCollectionSheet({
         <Animated.View
           style={[
             styles.content,
-            { height: contentHeight, paddingBottom: insets.bottom + theme.spacing.sm },
+            {
+              height: sheetHeight,
+              marginBottom: kbInset,
+              paddingBottom: (kbInset > 0 ? 0 : insets.bottom) + theme.spacing.sm,
+            },
             contentStyle,
           ]}
         >
