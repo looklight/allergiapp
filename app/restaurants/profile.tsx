@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -8,8 +8,10 @@ import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
-import { getMyRestaurants, type MyRestaurantItem } from '../../services/myRestaurantsService';
+import { getMyRestaurants, getCollectionItems, type MyRestaurantItem } from '../../services/myRestaurantsService';
+import { CollectionService, type CollectionWithCount } from '../../services/collectionService';
 import ProfileMapList from '../../components/ProfileMapList';
+import TextPromptModal from '../../components/TextPromptModal';
 import UserReviewCard from '../../components/UserReviewCard';
 import MyRestaurantCard from '../components/my-restaurants/MyRestaurantCard';
 import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
@@ -22,10 +24,12 @@ import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import { venueIconName } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
 
-type Kind = 'reviews' | 'favorites';
+// Selezione corrente della barra liste: 'reviews', 'favorites' (lista di
+// default) oppure l'id di una lista custom.
+type Selection = 'reviews' | 'favorites' | string;
 
-// Riga unificata della lista: una recensione (card recensione) o un preferito
-// (card ristorante). Il toggle in alto sceglie quale insieme mostrare.
+// Riga unificata della lista: una recensione (card recensione) o un ristorante
+// salvato (card ristorante). La pill in alto sceglie quale insieme mostrare.
 type ProfileRow =
   | { kind: 'review'; data: UserReview }
   | { kind: 'favorite'; data: MyRestaurantItem };
@@ -36,8 +40,14 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, userProfile, isAuthenticated } = useAuth();
 
-  const [kind, setKind] = useState<Kind>('reviews');
+  const [selected, setSelected] = useState<Selection>('reviews');
+  const [customCollections, setCustomCollections] = useState<CollectionWithCount[]>([]);
+  const [customItems, setCustomItems] = useState<MyRestaurantItem[]>([]);
+  // Prompt creazione/rinomina: null | 'create' | { id, name, emoji } (rinomina).
+  const [prompt, setPrompt] = useState<null | 'create' | { id: string; name: string; emoji: string | null }>(null);
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
+
+  const isCustom = selected !== 'reviews' && selected !== 'favorites';
 
   // Caso "like DIMINUITI" (unlike / recensioni cancellate): l'AnimatedLikesCounter
   // anima e chiama markAsSeen solo quando i like AUMENTANO, quindi qui — alla visita
@@ -66,21 +76,90 @@ export default function ProfileScreen() {
     { reviews: reviewsList.isLoading, favorites: favoritesList.isLoading },
   );
 
-  const rows = useMemo<ProfileRow[]>(
-    () =>
-      kind === 'reviews'
-        ? reviewsList.items.map((data) => ({ kind: 'review' as const, data }))
-        : favorites.map((data) => ({ kind: 'favorite' as const, data })),
-    [kind, reviewsList.items, favorites],
-  );
+  // Liste custom (escludendo la default, gia' rappresentata da "Preferiti").
+  const loadCollections = useCallback(async () => {
+    if (!user?.uid) { setCustomCollections([]); return; }
+    const cols = await CollectionService.getCollections(user.uid);
+    setCustomCollections(cols.filter((c) => !c.is_default));
+  }, [user?.uid]);
 
-  const hasContent = reviewsList.items.length > 0 || favorites.length > 0;
+  useEffect(() => { loadCollections(); }, [loadCollections]);
 
-  // Alla chiusura dello sheet l'utente può aver tolto un preferito o aggiunto
-  // una recensione: ricarica entrambe le liste.
+  // Ristoranti della lista custom selezionata.
+  const loadCustomItems = useCallback(async () => {
+    if (!user?.uid || !isCustom) { setCustomItems([]); return; }
+    const items = await getCollectionItems(user.uid, selected);
+    setCustomItems(items);
+  }, [user?.uid, isCustom, selected]);
+
+  useEffect(() => { loadCustomItems(); }, [loadCustomItems]);
+
+  const rows = useMemo<ProfileRow[]>(() => {
+    if (selected === 'reviews') return reviewsList.items.map((data) => ({ kind: 'review' as const, data }));
+    if (selected === 'favorites') return favorites.map((data) => ({ kind: 'favorite' as const, data }));
+    return customItems.map((data) => ({ kind: 'favorite' as const, data }));
+  }, [selected, reviewsList.items, favorites, customItems]);
+
+  const hasContent = reviewsList.items.length > 0 || favorites.length > 0 || customCollections.length > 0;
+
+  // Alla chiusura dello sheet l'utente può aver cambiato salvataggi o aggiunto
+  // una recensione: ricarica liste, conteggi e l'eventuale lista custom aperta.
   const reloadAll = () => {
     reviewsList.reload();
     favoritesList.reload();
+    loadCollections();
+    loadCustomItems();
+  };
+
+  // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
+  const currentCollectionName = isCustom
+    ? customCollections.find((c) => c.id === selected)?.name ?? ''
+    : '';
+
+  const handleCreate = async (name: string, emoji: string | null) => {
+    setPrompt(null);
+    if (!user?.uid) return;
+    const created = await CollectionService.createCollection(user.uid, name, emoji);
+    await loadCollections();
+    if (created) setSelected(created.id);
+  };
+
+  const handleRename = async (name: string, emoji: string | null) => {
+    if (typeof prompt !== 'object' || prompt === null) return;
+    const { id } = prompt;
+    setPrompt(null);
+    await CollectionService.updateCollection(id, { name, emoji });
+    loadCollections();
+  };
+
+  // Long-press su una lista custom: rinomina o elimina.
+  const manageCollection = (id: string, name: string, emoji: string | null) => {
+    Alert.alert(name, undefined, [
+      { text: i18n.t('common.cancel'), style: 'cancel' },
+      { text: i18n.t('common.rename'), onPress: () => setPrompt({ id, name, emoji }) },
+      {
+        text: i18n.t('common.delete'),
+        style: 'destructive',
+        onPress: () => {
+          Alert.alert(
+            i18n.t('restaurants.collections.deleteTitle'),
+            i18n.t('restaurants.collections.deleteConfirm', { name }),
+            [
+              { text: i18n.t('common.cancel'), style: 'cancel' },
+              {
+                text: i18n.t('common.delete'),
+                style: 'destructive',
+                onPress: async () => {
+                  await CollectionService.deleteCollection(id);
+                  if (selected === id) setSelected('reviews');
+                  loadCollections();
+                },
+              },
+            ],
+          );
+        },
+      },
+    ]);
   };
 
   if (!isAuthenticated || !userProfile) {
@@ -142,9 +221,11 @@ export default function ProfileScreen() {
         items={rows}
         headerVisible={hasContent}
         sectionTitle={
-          kind === 'reviews'
+          selected === 'reviews'
             ? i18n.t('restaurants.user.reviewsLabel')
-            : i18n.t('restaurants.myRestaurants.filterFavorites')
+            : selected === 'favorites'
+              ? i18n.t('restaurants.myRestaurants.filterFavorites')
+              : currentCollectionName
         }
         onDetailClose={reloadAll}
         typeFilter={{
@@ -199,43 +280,88 @@ export default function ProfileScreen() {
           </>
         }
         filterSlot={
-          <View style={styles.kindToggle}>
-            <KindButton
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.kindToggle}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ListPill
               label={i18n.t('restaurants.user.reviewsLabel')}
               count={counts.reviews}
-              active={kind === 'reviews'}
-              onPress={() => setKind('reviews')}
+              active={selected === 'reviews'}
+              onPress={() => setSelected('reviews')}
             />
-            <KindButton
+            <ListPill
               label={i18n.t('restaurants.myRestaurants.filterFavorites')}
               count={counts.favorites}
-              active={kind === 'favorites'}
-              onPress={() => setKind('favorites')}
+              active={selected === 'favorites'}
+              onPress={() => setSelected('favorites')}
             />
-          </View>
+            {customCollections.map((c) => (
+              <ListPill
+                key={c.id}
+                label={c.name}
+                emoji={c.emoji}
+                count={c.item_count}
+                active={selected === c.id}
+                onPress={() => setSelected(c.id)}
+                onLongPress={() => manageCollection(c.id, c.name, c.emoji)}
+              />
+            ))}
+            <TouchableOpacity
+              style={styles.addPill}
+              onPress={() => setPrompt('create')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={i18n.t('restaurants.collections.newList')}
+            >
+              <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </ScrollView>
         }
         emptyState={
           <Text style={styles.emptyText}>
-            {kind === 'reviews'
+            {selected === 'reviews'
               ? i18n.t('restaurants.profile.emptyReviews')
-              : i18n.t('restaurants.profile.emptyFavorites')}
+              : selected === 'favorites'
+                ? i18n.t('restaurants.profile.emptyFavorites')
+                : i18n.t('restaurants.collections.emptyList')}
           </Text>
         }
+      />
+
+      <TextPromptModal
+        visible={prompt !== null}
+        title={prompt === 'create'
+          ? i18n.t('restaurants.collections.createTitle')
+          : i18n.t('restaurants.collections.renameTitle')}
+        placeholder={i18n.t('restaurants.collections.namePlaceholder')}
+        initialValue={typeof prompt === 'object' && prompt !== null ? prompt.name : ''}
+        showEmoji
+        initialEmoji={typeof prompt === 'object' && prompt !== null ? prompt.emoji : null}
+        confirmLabel={prompt === 'create' ? i18n.t('restaurants.collections.create') : undefined}
+        onCancel={() => setPrompt(null)}
+        onConfirm={prompt === 'create' ? handleCreate : handleRename}
       />
     </>
   );
 }
 
-function KindButton({
+function ListPill({
   label,
+  emoji,
   count,
   active,
   onPress,
+  onLongPress,
 }: {
   label: string;
+  emoji?: string | null;
   count: number | null;
   active: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
 }) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -243,10 +369,12 @@ function KindButton({
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={onLongPress}
       activeOpacity={0.7}
       style={[styles.kindButton, styles.kindButtonInner, active && styles.kindButtonActive]}
     >
-      <Text style={textStyle}>{label}</Text>
+      {emoji ? <Text style={styles.kindButtonEmoji}>{emoji}</Text> : null}
+      <Text style={textStyle} numberOfLines={1}>{label}</Text>
       <CountText value={count} style={textStyle} />
     </TouchableOpacity>
   );
@@ -335,18 +463,32 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   kindToggle: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    paddingRight: 4,
   },
   kindButton: {
+    maxWidth: 170,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 16,
+    backgroundColor: theme.colors.surfaceMuted,
+  },
+  addPill: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: theme.colors.surfaceMuted,
   },
   kindButtonInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+  },
+  kindButtonEmoji: {
+    fontSize: 13,
   },
   kindButtonActive: {
     backgroundColor: theme.colors.primary,
