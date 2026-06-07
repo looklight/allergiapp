@@ -323,7 +323,7 @@ export default function SaveToCollectionSheet({
                     key={c.id}
                     checked={selectedCustom.has(c.id)}
                     onToggle={() => setSelectedCustom((prev) => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })}
-                    symbol={c.emoji ? <Text style={styles.rowEmoji}>{c.emoji}</Text> : <MaterialCommunityIcons name="bookmark" size={22} color={theme.colors.primary} />}
+                    symbol={c.emoji ? <Text style={styles.rowEmoji}>{c.emoji}</Text> : <MaterialCommunityIcons name="bookmark" size={22} color={theme.colors.bookmark} />}
                     label={c.name}
                     count={c.item_count}
                     onEdit={() => openEditor(c)}

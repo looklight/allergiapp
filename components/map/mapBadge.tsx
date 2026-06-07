@@ -29,6 +29,6 @@ export function badgeGlyph(
   theme: AppTheme,
 ) {
   if (badge.kind === 'emoji') return <RNText style={glyphStyle}>{badge.value}</RNText>;
-  if (badge.kind === 'bookmark') return <MaterialCommunityIcons name="bookmark" size={bookmarkSize} color={theme.colors.primary} />;
+  if (badge.kind === 'bookmark') return <MaterialCommunityIcons name="bookmark" size={bookmarkSize} color={theme.colors.bookmark} />;
   return <RNText style={glyphStyle}>{'♥'}</RNText>;
 }

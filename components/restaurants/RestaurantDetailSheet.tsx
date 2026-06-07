@@ -89,7 +89,7 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
           <MaterialCommunityIcons
             name={detail.isSaved ? 'bookmark' : 'bookmark-outline'}
             size={22}
-            color={detail.isSaved ? theme.colors.primary : theme.colors.textSecondary}
+            color={detail.isSaved ? theme.colors.bookmark : theme.colors.textSecondary}
           />
         </TouchableOpacity>
         <TouchableOpacity

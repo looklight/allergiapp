@@ -115,6 +115,10 @@ const lightColors = {
   favoriteRed: '#E53935',
   starFilled: '#F5A623',
   starEmpty: '#D0D0D0',
+
+  // Simbolo "bookmark" delle liste custom senza emoji (badge pin, righe sheet,
+  // cella default emoji picker). Arancio per distinguersi dal verde primary.
+  bookmark: '#FB8C00',
 };
 
 // Dark palette — ispirata al dark mode di Google Maps: carbone bluastro (non nero
@@ -122,7 +126,7 @@ const lightColors = {
 // "Google" #8AB4F8. I semantici (success/amber/star/error) restano saturi per
 // spiccare a colpo d'occhio. Le chiavi sono le stesse di lightColors.
 // Ereditati da lightColors (intrinseci, validi in entrambi i temi): amber, amberDark,
-// amberSubtle, coverageMedium, intoleranceAccent, selectionHighlight, starFilled,
+// amberSubtle, coverageMedium, intoleranceAccent, selectionHighlight, starFilled, bookmark,
 // onPrimary, shadow, overlay/overlayDark, brand*.
 // Scala dei grigi del dark — UNICO posto dei toni superficie scuri. I token
 // sotto vi puntano: cambi qui e si propaga a tutto il dark.

@@ -67,7 +67,7 @@ export default function EmojiPicker({ value, onChange, active, children }: Props
           accessibilityLabel={i18n.t('restaurants.collections.chooseSymbol')}
         >
           {value == null ? (
-            <MaterialCommunityIcons name="bookmark" size={22} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="bookmark" size={22} color={theme.colors.bookmark} />
           ) : (
             <Text style={styles.triggerEmoji}>{value}</Text>
           )}
@@ -91,7 +91,7 @@ export default function EmojiPicker({ value, onChange, active, children }: Props
             accessibilityRole="button"
             accessibilityState={{ selected: value == null }}
           >
-            <MaterialCommunityIcons name="bookmark" size={22} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="bookmark" size={22} color={theme.colors.bookmark} />
           </TouchableOpacity>
           {LIST_EMOJIS.map((e) => (
             <TouchableOpacity
