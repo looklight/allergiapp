@@ -570,6 +570,7 @@
       "create": "Create",
       "emptyList": "This list is empty.",
       "createTitle": "New list",
+      "chooseSymbol": "Choose list symbol",
       "renameTitle": "Edit list",
       "deleteList": "Delete list",
       "deleteTitle": "Delete this list?",

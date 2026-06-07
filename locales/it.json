@@ -570,6 +570,7 @@
       "create": "Crea",
       "emptyList": "Questa lista è vuota.",
       "createTitle": "Nuova lista",
+      "chooseSymbol": "Scegli simbolo lista",
       "renameTitle": "Modifica lista",
       "deleteList": "Elimina lista",
       "deleteTitle": "Eliminare la lista?",

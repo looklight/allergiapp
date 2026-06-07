@@ -53,18 +53,19 @@ export default function CreateListForm({
 
   return (
     <View style={styles.form}>
-      <EmojiPicker value={emoji} onChange={setEmoji} />
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder={i18n.t('restaurants.collections.namePlaceholder')}
-        placeholderTextColor={theme.colors.textSecondary}
-        maxLength={NAME_MAX_LENGTH}
-        selectionColor={theme.colors.primary}
-        returnKeyType="done"
-        onSubmitEditing={submit}
-      />
+      <EmojiPicker value={emoji} onChange={setEmoji} active={active}>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder={i18n.t('restaurants.collections.namePlaceholder')}
+          placeholderTextColor={theme.colors.textSecondary}
+          maxLength={NAME_MAX_LENGTH}
+          selectionColor={theme.colors.primary}
+          returnKeyType="done"
+          onSubmitEditing={submit}
+        />
+      </EmojiPicker>
       <TouchableOpacity
         style={[styles.submit, !trimmed && styles.submitDisabled]}
         onPress={submit}
@@ -93,6 +94,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: theme.spacing.lg,
   },
   input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.radius.lg,
