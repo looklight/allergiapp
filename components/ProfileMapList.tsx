@@ -146,6 +146,16 @@ export default function ProfileMapList<T>({
   const { countryOptions, selectedCountry, setSelectedCountry, filteredItems } =
     useLocationFilters(typedItems, getLocation);
 
+  // Cambio set (es. switch pill Recensioni→lista): azzera la selezione, così un
+  // pin selezionato in una vista non resta "grande" su un'altra. Chiave per id:
+  // il filtro paese non cambia `items` (è interno) e un reload con gli stessi id
+  // non resetta → la selezione sopravvive a quelli, come previsto a sheet chiuso.
+  // getPinId è stabile per comportamento (cambia solo reference, è passato inline):
+  // memoizziamo sul solo `items` per ricalcolare la chiave solo a set cambiato.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const itemsKey = useMemo(() => items.map(getPinId).join('|'), [items]);
+  useEffect(() => { setSelectedId(null); setHighlightedId(null); }, [itemsKey]);
+
   // Tap su un pin: scrolla alla riga corrispondente (sotto l'header sticky)
   // e la evidenzia con un breve flash.
   const handlePinPress = useCallback((restaurantId: string) => {
