@@ -571,6 +571,8 @@
       "emptyList": "This list is empty.",
       "createTitle": "New list",
       "chooseSymbol": "Choose list symbol",
+      "showOnMap": "Show on map",
+      "showOnMapHint": "Hide this list's pins from the main map for a cleaner view.",
       "renameTitle": "Edit list",
       "deleteList": "Delete list",
       "deleteTitle": "Delete this list?",

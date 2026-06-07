@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,6 +18,9 @@ type Props = {
   onSubmit: (name: string, emoji: string | null) => void;
   /** Se presente, mostra "Elimina lista" (solo in modifica). */
   onDelete?: () => void;
+  /** Sezione opzionale resa tra l'azione e l'elimina (slot "fase 2"): oggi il
+   *  toggle "Mostra sulla mappa" in modifica. */
+  extraSection?: ReactNode;
 };
 
 /**
@@ -33,6 +36,7 @@ export default function CreateListForm({
   submitLabel,
   onSubmit,
   onDelete,
+  extraSection,
 }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -66,6 +70,11 @@ export default function CreateListForm({
           onSubmitEditing={submit}
         />
       </EmojiPicker>
+
+      {/* Slot di configurazione, sopra l'azione primaria (es. toggle "Mostra
+          sulla mappa" in modifica; domani la sezione "Condividi / visibilita'"). */}
+      {extraSection}
+
       <TouchableOpacity
         style={[styles.submit, !trimmed && styles.submitDisabled]}
         onPress={submit}
@@ -74,8 +83,6 @@ export default function CreateListForm({
       >
         <Text style={styles.submitText}>{submitLabel}</Text>
       </TouchableOpacity>
-
-      {/* Spazio per la futura sezione "Condividi / visibilita'" (fase 2). */}
 
       {onDelete && (
         <TouchableOpacity style={styles.deleteRow} onPress={onDelete} activeOpacity={0.6}>

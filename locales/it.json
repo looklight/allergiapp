@@ -571,6 +571,8 @@
       "emptyList": "Questa lista è vuota.",
       "createTitle": "Nuova lista",
       "chooseSymbol": "Scegli simbolo lista",
+      "showOnMap": "Mostra sulla mappa",
+      "showOnMapHint": "Nascondi i pin di questa lista dalla mappa principale per più pulizia.",
       "renameTitle": "Modifica lista",
       "deleteList": "Elimina lista",
       "deleteTitle": "Eliminare la lista?",

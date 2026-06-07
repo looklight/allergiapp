@@ -228,13 +228,14 @@ export async function getCollectionIdsForRestaurant(
  */
 export async function getSavedCustomForMap(
   userId: string,
+  hiddenCollectionIds?: Set<string>,
 ): Promise<{ symbols: Map<string, string | null>; restaurants: Map<string, Restaurant> }> {
   const symbols = new Map<string, string | null>();
   const restaurants = new Map<string, Restaurant>();
   try {
     const { data, error } = await supabase
       .from('collection_items')
-      .select('restaurant_id, restaurant:restaurants(*), collections!inner(user_id, is_default, emoji, position)')
+      .select('restaurant_id, restaurant:restaurants(*), collections!inner(id, user_id, is_default, emoji, position)')
       .eq('collections.user_id', userId)
       .eq('collections.is_default', false);
     if (error) throw error;
@@ -244,6 +245,10 @@ export async function getSavedCustomForMap(
     // sul bookmark; a parita' di tipo vince la `position` piu' bassa.
     const best = new Map<string, { emoji: string | null; pos: number }>();
     for (const row of (data ?? []) as any[]) {
+      // Salta le righe delle liste che l'utente ha nascosto dalla mappa: il
+      // filtro è per-(riga lista), quindi un locale presente anche in una lista
+      // visibile resta correttamente mostrato (badge da quella).
+      if (hiddenCollectionIds?.has(row.collections?.id)) continue;
       const rid: string = row.restaurant_id;
       const emoji: string | null = row.collections?.emoji ?? null;
       const pos: number = row.collections?.position ?? 0;

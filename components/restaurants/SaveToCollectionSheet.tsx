@@ -30,6 +30,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import CreateListForm from './CreateListForm';
+import MapVisibilityToggle from './MapVisibilityToggle';
 import i18n from '../../utils/i18n';
 
 const NOTE_MAX_LENGTH = 200;
@@ -381,6 +382,7 @@ export default function SaveToCollectionSheet({
                   submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
                   onSubmit={handleFormSubmit}
                   onDelete={editing ? handleDelete : undefined}
+                  extraSection={editing && userId ? <MapVisibilityToggle userId={userId} collectionId={editing.id} /> : undefined}
                 />
               </ScrollView>
             </View>

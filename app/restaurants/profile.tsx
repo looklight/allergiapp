@@ -386,6 +386,7 @@ export default function ProfileScreen() {
 
       <ListEditorSheet
         visible={editor !== null}
+        userId={user?.uid ?? ''}
         editing={editor?.editing ?? null}
         onClose={() => setEditor(null)}
         onSubmit={handleEditorSubmit}

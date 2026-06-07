@@ -24,6 +24,7 @@ const STORAGE_KEYS = {
   PROFILE_COUNTS: 'allergiapp_profile_counts',
   PROFILE_SELECTED_PILL: 'allergiapp_profile_selected_pill',
   COLLECTIONS_META: 'allergiapp_collections_meta',
+  MAP_HIDDEN_COLLECTIONS: 'allergiapp_map_hidden_collections',
   THEME_MODE: 'allergiapp_theme_mode',
 };
 
@@ -560,6 +561,36 @@ export const storage = {
       const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
       map[userId] = selection;
       await AsyncStorage.setItem(STORAGE_KEYS.PROFILE_SELECTED_PILL, JSON.stringify(map));
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Liste custom che l'utente ha scelto di NON mostrare sulla mappa principale
+  // (preferenza di vista per ridurre il clutter). Locale e per-utente by design:
+  // è una scelta del singolo che guarda, non una proprietà della lista — così
+  // regge anche le future liste condivise (proprietario vs iscritto decidono
+  // indipendentemente). Vedi memory project_list_map_visibility.
+  async getMapHiddenCollections(userId: string): Promise<string[]> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.MAP_HIDDEN_COLLECTIONS);
+      if (!raw) return [];
+      const map = JSON.parse(raw) as Record<string, string[]>;
+      return map[userId] ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setMapCollectionHidden(userId: string, collectionId: string, hidden: boolean): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.MAP_HIDDEN_COLLECTIONS);
+      const map = raw ? (JSON.parse(raw) as Record<string, string[]>) : {};
+      const current = new Set(map[userId] ?? []);
+      if (hidden) current.add(collectionId);
+      else current.delete(collectionId);
+      map[userId] = [...current];
+      await AsyncStorage.setItem(STORAGE_KEYS.MAP_HIDDEN_COLLECTIONS, JSON.stringify(map));
     } catch {
       // Storage write failed silently
     }

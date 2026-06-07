@@ -7,12 +7,15 @@ import Animated, { useSharedValue, useAnimatedStyle, useAnimatedKeyboard, withTi
 import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
 import CreateListForm from './restaurants/CreateListForm';
+import MapVisibilityToggle from './restaurants/MapVisibilityToggle';
 import i18n from '../utils/i18n';
 
 export type EditingList = { id: string; name: string; emoji: string | null };
 
 type Props = {
   visible: boolean;
+  /** Utente corrente: serve al toggle "Mostra sulla mappa" (preferenza locale per-utente). */
+  userId: string;
   /** null = creazione; valorizzato = modifica. */
   editing: EditingList | null;
   onClose: () => void;
@@ -25,7 +28,7 @@ type Props = {
  * CreateListForm (stesso form del pannello laterale dello sheet "Salva in…"),
  * cosi' la gestione liste e' coerente e bottom-up ovunque.
  */
-export default function ListEditorSheet({ visible, editing, onClose, onSubmit, onDelete }: Props) {
+export default function ListEditorSheet({ visible, userId, editing, onClose, onSubmit, onDelete }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -86,6 +89,7 @@ export default function ListEditorSheet({ visible, editing, onClose, onSubmit, o
               submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
               onSubmit={onSubmit}
               onDelete={editing ? onDelete : undefined}
+              extraSection={editing && userId ? <MapVisibilityToggle userId={userId} collectionId={editing.id} /> : undefined}
             />
           </ScrollView>
         </Animated.View>
