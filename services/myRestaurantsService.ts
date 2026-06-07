@@ -99,7 +99,9 @@ export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem
         is_favorite: false,
         average_rating: null,
         review_count: 0,
-        note: null, // i recensiti-non-preferiti non possono avere note (FK su favorites)
+        // Nota "per posto salvato" (post-069): vale anche per i recensiti, se il
+        // posto e' salvato in almeno una lista (la notesMap e' gia' caricata).
+        note: notesMap.get(id) ?? null,
         offers_lodging: rev.restaurant_offers_lodging ?? false,
         ...review,
       });
