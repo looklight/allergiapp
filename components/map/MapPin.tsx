@@ -21,6 +21,7 @@ import { Marker } from 'react-native-maps';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
+import { resolveBadge, badgeGlyph } from './mapBadge';
 import { getExpandedCoverage } from '../../constants/restrictionImplications';
 import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
@@ -32,6 +33,8 @@ export type MapPinProps = {
   restaurant?: Restaurant;
   asDot: boolean;
   isFavorite: boolean;
+  /** Simbolo della lista custom: emoji (string) | null (bookmark) | undefined (non in lista custom). */
+  customSymbol?: string | null;
   showMatchInfo?: boolean;
   onPress?: (id: string) => void;
   /** Allergens aggregated from all reviews of this restaurant */
@@ -51,6 +54,7 @@ export default memo(function MapPin({
   restaurant,
   asDot,
   isFavorite,
+  customSymbol,
   showMatchInfo,
   onPress,
   supportedAllergens,
@@ -68,6 +72,7 @@ export default memo(function MapPin({
   const hasRest = !!restaurant;
   const prevAsDot = useRef(asDot);
   const prevFavorite = useRef(isFavorite);
+  const prevCustomSymbol = useRef(customSymbol);
   const prevShowMatch = useRef(showMatchInfo);
   const prevHasRest = useRef(hasRest);
   const prevSupportedAllergens = useRef(supportedAllergens);
@@ -92,12 +97,13 @@ export default memo(function MapPin({
     setAndroidSettling(true);
     const timer = setTimeout(() => setAndroidSettling(false), 100);
     return () => clearTimeout(timer);
-  }, [asDot, isFavorite, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
+  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
 
   const justChanged =
     androidSettling ||
     asDot !== prevAsDot.current ||
     isFavorite !== prevFavorite.current ||
+    customSymbol !== prevCustomSymbol.current ||
     showMatchInfo !== prevShowMatch.current ||
     hasRest !== prevHasRest.current ||
     supportedAllergens !== prevSupportedAllergens.current ||
@@ -106,15 +112,21 @@ export default memo(function MapPin({
   useEffect(() => {
     prevAsDot.current = asDot;
     prevFavorite.current = isFavorite;
+    prevCustomSymbol.current = customSymbol;
     prevShowMatch.current = showMatchInfo;
     prevHasRest.current = hasRest;
     prevSupportedAllergens.current = supportedAllergens;
     prevSupportedDiets.current = supportedDiets;
-  }, [asDot, isFavorite, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
+  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
 
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 
   if (!isValidCoord(latitude, longitude)) return null;
+
+  // Badge salvato (emoji > cuore > bookmark). `isSaved` generalizza il vecchio
+  // `isFavorite` per visibilità/zIndex: vale per qualsiasi lista, non solo Preferiti.
+  const badge = resolveBadge(isFavorite, customSymbol);
+  const isSaved = badge !== null;
 
   // ---- Dot (far zoom) ----
   if (asDot) {
@@ -142,8 +154,8 @@ export default memo(function MapPin({
 
     // Hide grey dots at far zoom to declutter the map: if filters are active
     // and this restaurant matches none of them, skip rendering.
-    // Favorites stay visible regardless so the user never "loses" a saved place.
-    if (showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isFavorite) {
+    // Saved places (qualsiasi lista) restano visibili cos\u00ec l'utente non li "perde".
+    if (showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isSaved) {
       return null;
     }
 
@@ -152,7 +164,7 @@ export default memo(function MapPin({
       : theme.colors.primary;
 
     // Verde/giallo emergono sopra i pallini grigi/primary (non valutati).
-    const dotZ = isFavorite ? 3
+    const dotZ = isSaved ? 3
       : dotCovered > 0 && dotTotal > 0
         ? (dotCovered >= dotTotal ? 3 : 2)
         : 0;
@@ -168,11 +180,11 @@ export default memo(function MapPin({
         <View style={styles.dotWrap}>
           <View style={[
             styles.dotMarker,
-            isFavorite && styles.dotFavorite,
+            isSaved && styles.dotFavorite,
             { backgroundColor: dotColor },
           ]} />
-          <View style={[styles.dotHeartBadge, { opacity: isFavorite ? 1 : 0 }]}>
-            <RNText style={styles.dotHeartText}>{'\u2665'}</RNText>
+          <View style={[styles.dotHeartBadge, { opacity: isSaved ? 1 : 0 }]}>
+            {badge && badgeGlyph(badge, styles.dotHeartText, 6, theme)}
           </View>
         </View>
       </Marker>
@@ -189,7 +201,7 @@ export default memo(function MapPin({
         coordinate={{ latitude, longitude }}
         tracksViewChanges={justChanged}
         onPress={handlePress}
-        {...(Platform.OS === 'android' && { zIndex: isFavorite ? 2 : 1 })}
+        {...(Platform.OS === 'android' && { zIndex: isSaved ? 2 : 1 })}
       >
         <View style={styles.markerWrap}>
           <View style={[styles.markerContainer, { borderColor: theme.colors.textDisabled }]}>
@@ -198,8 +210,8 @@ export default memo(function MapPin({
           <View style={styles.markerArrow}>
             <View style={[styles.markerArrowInner, { borderTopColor: theme.colors.textDisabled }]} />
           </View>
-          <View style={[styles.heartBadge, { opacity: isFavorite ? 1 : 0 }]} pointerEvents="none">
-            <RNText style={styles.heartText}>{'\u2665'}</RNText>
+          <View style={[styles.heartBadge, { opacity: isSaved ? 1 : 0 }]} pointerEvents="none">
+            {badge && badgeGlyph(badge, styles.heartText, 9, theme)}
           </View>
         </View>
       </Marker>
@@ -222,7 +234,7 @@ export default memo(function MapPin({
       coordinate={{ latitude, longitude }}
       tracksViewChanges={justChanged}
       onPress={handlePress}
-      {...(Platform.OS === 'android' && { zIndex: isFavorite ? 2 : 1 })}
+      {...(Platform.OS === 'android' && { zIndex: isSaved ? 2 : 1 })}
     >
       <View style={styles.markerWrap}>
         <View style={[styles.markerContainer, { borderColor: markerColor }]}>
@@ -237,8 +249,8 @@ export default memo(function MapPin({
         <View style={styles.markerArrow}>
           <View style={[styles.markerArrowInner, { borderTopColor: markerColor }]} />
         </View>
-        <View style={[styles.heartBadge, { opacity: isFavorite ? 1 : 0 }]} pointerEvents="none">
-          <RNText style={styles.heartText}>{'\u2665'}</RNText>
+        <View style={[styles.heartBadge, { opacity: isSaved ? 1 : 0 }]} pointerEvents="none">
+          {badge && badgeGlyph(badge, styles.heartText, 9, theme)}
         </View>
       </View>
     </Marker>

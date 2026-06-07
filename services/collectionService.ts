@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
-import { PG_UNIQUE_VIOLATION } from './restaurant.types';
+import { PG_UNIQUE_VIOLATION, mapRestaurant, type Restaurant } from './restaurant.types';
 
 // ─── Liste (collezioni) di ristoranti ─────────────────────────────────────────
 // Modello unificato (vedi migration 069): ogni lista e' una riga in `collections`.
@@ -215,6 +215,58 @@ export async function getCollectionIdsForRestaurant(
   }
 }
 
+/**
+ * Per la mappa: ristoranti salvati nelle liste **custom** (esclusa la default,
+ * gestita dal cuore/favoriteService) con il simbolo risolto da mostrare come
+ * badge sul pin. Una sola query, niente N+1.
+ *
+ * `symbols`: restaurantId → emoji (string) | null (bookmark = simbolo neutro).
+ *   Precedenza quando un ristorante e' in piu' liste: vince l'emoji (prima per
+ *   `position`); se nessuna lista ha emoji → null (bookmark).
+ * `restaurants`: oggetti Restaurant per renderli sempre visibili sulla mappa
+ *   (come i preferiti), anche fuori dal viewport corrente.
+ */
+export async function getSavedCustomForMap(
+  userId: string,
+): Promise<{ symbols: Map<string, string | null>; restaurants: Map<string, Restaurant> }> {
+  const symbols = new Map<string, string | null>();
+  const restaurants = new Map<string, Restaurant>();
+  try {
+    const { data, error } = await supabase
+      .from('collection_items')
+      .select('restaurant_id, restaurant:restaurants(*), collections!inner(user_id, is_default, emoji, position)')
+      .eq('collections.user_id', userId)
+      .eq('collections.is_default', false);
+    if (error) throw error;
+
+    // Risoluzione deterministica della priorita' lato client (PostgREST non
+    // ordina le righe padre per una colonna di un embed to-one): vince l'emoji
+    // sul bookmark; a parita' di tipo vince la `position` piu' bassa.
+    const best = new Map<string, { emoji: string | null; pos: number }>();
+    for (const row of (data ?? []) as any[]) {
+      const rid: string = row.restaurant_id;
+      const emoji: string | null = row.collections?.emoji ?? null;
+      const pos: number = row.collections?.position ?? 0;
+      const cur = best.get(rid);
+      if (!cur) {
+        best.set(rid, { emoji, pos });
+      } else {
+        const curIsEmoji = cur.emoji != null;
+        const newIsEmoji = emoji != null;
+        if (newIsEmoji && !curIsEmoji) best.set(rid, { emoji, pos });
+        else if (newIsEmoji === curIsEmoji && pos < cur.pos) best.set(rid, { emoji, pos });
+      }
+      if (row.restaurant && !restaurants.has(rid)) {
+        restaurants.set(rid, mapRestaurant(row.restaurant));
+      }
+    }
+    for (const [rid, { emoji }] of best) symbols.set(rid, emoji);
+  } catch (error) {
+    console.warn('[CollectionService] Errore getSavedCustomForMap:', error);
+  }
+  return { symbols, restaurants };
+}
+
 export const CollectionService = {
   getLastUsedCollectionId,
   setLastUsedCollectionId,
@@ -226,4 +278,5 @@ export const CollectionService = {
   addToCollection,
   removeFromCollection,
   getCollectionIdsForRestaurant,
+  getSavedCustomForMap,
 };

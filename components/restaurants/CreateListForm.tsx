@@ -4,7 +4,7 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
-import EmojiPicker, { LIST_EMOJIS } from '../EmojiPicker';
+import EmojiPicker from '../EmojiPicker';
 import i18n from '../../utils/i18n';
 
 const NAME_MAX_LENGTH = 50;
@@ -37,14 +37,15 @@ export default function CreateListForm({
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [name, setName] = useState(initialName);
-  const [emoji, setEmoji] = useState<string | null>(initialEmoji ?? LIST_EMOJIS[0]);
+  // null = bookmark (default neutro): le nuove liste nascono col bookmark.
+  const [emoji, setEmoji] = useState<string | null>(initialEmoji);
 
   // Quando diventa attivo riallinea ai valori. NIENTE autofocus: la tastiera
   // (e quindi il lift del modal) parte solo quando l'utente tocca il campo.
   useEffect(() => {
     if (!active) return;
     setName(initialName);
-    setEmoji(initialEmoji ?? LIST_EMOJIS[0]);
+    setEmoji(initialEmoji);
   }, [active, initialName, initialEmoji]);
 
   const trimmed = name.trim();

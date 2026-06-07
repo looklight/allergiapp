@@ -31,6 +31,13 @@ export type RestaurantMapProps = {
   onRestaurantPress?: (id: string) => void;
   favoriteIds?: Set<string>;
   favoriteRestaurants?: Map<string, Restaurant>;
+  /** Badge per le liste custom: restaurantId → emoji (string) | null (bookmark).
+   *  Assenza dalla mappa = non salvato in nessuna lista custom. La precedenza
+   *  emoji > cuore > bookmark è applicata dal pin. */
+  customSymbols?: Map<string, string | null>;
+  /** Ristoranti salvati nelle liste custom, sempre visibili sulla mappa (come i
+   *  preferiti) anche fuori dal viewport corrente. */
+  savedRestaurants?: Map<string, Restaurant>;
   compassOffset?: { x: number; y: number };
   /** Mappa a tutto schermo della home: abilita su Android il mapPadding che
    *  tiene conto della search bar (top) e del detail sheet (~55% bottom).

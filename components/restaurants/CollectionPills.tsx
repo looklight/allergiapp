@@ -48,9 +48,9 @@ export default function CollectionPills({ isFavorite, collections, membership, o
       {savedCustom.map((c) => (
         <Pill
           key={c.id}
-          symbol={c.emoji
-            ? <Text style={styles.pillEmoji}>{c.emoji}</Text>
-            : <MaterialCommunityIcons name="format-list-bulleted" size={14} color={theme.colors.textSecondary} />}
+          // Bookmark (emoji null) = simbolo neutro/default: nella pill mostriamo
+          // solo il nome. L'emoji invece la mostriamo.
+          symbol={c.emoji ? <Text style={styles.pillEmoji}>{c.emoji}</Text> : null}
           label={c.name}
           onPress={onOpen}
           theme={theme}
@@ -66,7 +66,7 @@ function Pill({
   onPress,
   theme,
 }: {
-  symbol: React.ReactNode;
+  symbol?: React.ReactNode;
   label: string;
   onPress: () => void;
   theme: AppTheme;
@@ -74,7 +74,7 @@ function Pill({
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <TouchableOpacity style={styles.pill} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.pillSymbol}>{symbol}</View>
+      {symbol != null && <View style={styles.pillSymbol}>{symbol}</View>}
       <Text style={styles.pillLabel} numberOfLines={1}>{label}</Text>
     </TouchableOpacity>
   );

@@ -24,6 +24,7 @@ import { getDisplayName } from '../../utils/getDisplayName';
 import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
 import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
+import { useSavedCollectionsMap } from '../../hooks/useSavedCollectionsMap';
 import { useMapSearch, MIN_PLACE_QUERY_LENGTH } from '../../hooks/useMapSearch';
 import SearchAutocomplete from '../../components/SearchAutocomplete';
 import RecentSearches from '../../components/RecentSearches';
@@ -207,11 +208,14 @@ export default function RestaurantsScreen() {
   const { favoriteIds, favoriteRestaurants, loadFavorites, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
   );
+  // Badge mappa delle liste custom (emoji/bookmark), separato dal cuore/preferiti.
+  const { savedSymbols, savedRestaurants, loadSaved } = useSavedCollectionsMap(user?.uid);
 
   useFocusEffect(useCallback(() => {
     loadFavorites();
+    loadSaved();
     geo.refreshAllPins();
-  }, [loadFavorites, geo.refreshAllPins]));
+  }, [loadFavorites, loadSaved, geo.refreshAllPins]));
 
   // Ref per lookup ristoranti senza destabilizzare il callback.
   const allRestaurantsRef = useRef(geo.restaurants);
@@ -250,7 +254,10 @@ export default function RestaurantsScreen() {
   // tramite syncFavoriteId nel callback onFavoriteToggled.
   const handleCloseDetail = useCallback(() => {
     dispatch({ type: 'CLOSE_DETAIL' });
-  }, []);
+    // Riallinea i badge delle liste custom dopo eventuali salvataggi nello sheet
+    // "Salva in…" (il cuore/preferiti è già live via syncFavoriteId).
+    loadSaved();
+  }, [loadSaved]);
 
   // --- Handlers ---
   const toggleFilter = useCallback((id: RestaurantCategoryId) => {
@@ -642,6 +649,8 @@ export default function RestaurantsScreen() {
           onRestaurantPress={handleOpenDetail}
           favoriteIds={favoriteIds}
           favoriteRestaurants={favoriteRestaurants}
+          customSymbols={savedSymbols}
+          savedRestaurants={savedRestaurants}
           compassOffset={{ x: -12, y: insets.top + 8 }}
           fullScreenChrome
           userAllergens={filterAllergens}
