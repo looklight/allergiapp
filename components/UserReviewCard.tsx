@@ -1,7 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cardShadow, type AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
@@ -15,7 +15,7 @@ interface Props {
   onPress: () => void;
 }
 
-export default function UserReviewCard({ review, onPress }: Props) {
+function UserReviewCard({ review, onPress }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const restaurantName = review.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback');
@@ -65,6 +65,12 @@ export default function UserReviewCard({ review, onPress }: Props) {
     </TouchableOpacity>
   );
 }
+
+// Memo: salta i re-render quando il dato `review` non cambia (es. mentre altri
+// loader del profilo risolvono in background). `onPress` è ignorato di proposito:
+// per una data card apre sempre lo stesso dettaglio. I cambi di tema passano
+// comunque via context (useTheme), quindi la dark mode resta reattiva.
+export default memo(UserReviewCard, (prev, next) => prev.review === next.review);
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   card: {

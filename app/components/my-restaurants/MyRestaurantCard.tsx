@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import type { MyRestaurantItem } from '../../../services/myRestaurantsService';
 import i18n from '../../../utils/i18n';
 import { getCountryName } from '../../../utils/countryNames';
 
-export default function MyRestaurantCard({
+function MyRestaurantCard({
   item,
   onPress,
 }: {
@@ -72,6 +72,11 @@ export default function MyRestaurantCard({
     </TouchableOpacity>
   );
 }
+
+// Memo: salta i re-render quando il dato `item` non cambia (es. mentre altri
+// loader del profilo risolvono in background). `onPress` ignorato di proposito
+// (apre sempre lo stesso dettaglio); i cambi di tema passano via context.
+export default memo(MyRestaurantCard, (prev, next) => prev.item === next.item);
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   card: {
