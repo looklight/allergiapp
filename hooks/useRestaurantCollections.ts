@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { CollectionService, type CollectionWithCount } from '../services/collectionService';
 
@@ -40,7 +41,10 @@ export function useRestaurantCollections(restaurantId: string | undefined) {
     }
   }, [userId, restaurantId]);
 
-  useEffect(() => { reload(); }, [reload]);
+  // Ricarica al focus della schermata (non solo al montaggio): rientrando sul
+  // dettaglio le liste si riallineano se l'utente ne ha create/eliminate/rinominate
+  // altrove, cosi' lo sheet "Salva in…" non mostra mai uno snapshot stale.
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
 
   return { collections, membership, isLoading, reload };
 }
