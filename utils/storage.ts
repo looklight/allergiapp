@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
+import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DefaultTab, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 import { RestrictionItemId } from '../constants/otherRestrictions';
 import { OtherFoodId } from '../constants/otherFoods';
 import { DietModeId, VegetarianLevel, DEFAULT_VEGETARIAN_LEVEL } from '../constants/dietModes';
@@ -54,6 +54,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   cardLanguage: 'en',
   appLanguage: getDeviceLanguage(),
   reviewsDisclaimerDismissed: false,
+  defaultTab: 'card',
 };
 
 export interface AppData {
@@ -268,6 +269,10 @@ export const storage = {
 
   async setAppLanguage(language: AppLanguage): Promise<void> {
     await this.setSettings({ appLanguage: language });
+  },
+
+  async setDefaultTab(tab: DefaultTab): Promise<void> {
+    await this.setSettings({ defaultTab: tab });
   },
 
   async clearAll(): Promise<void> {

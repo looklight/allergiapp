@@ -40,6 +40,7 @@ export default function SettingsScreen() {
     settings,
     downloadedLanguageCodes,
     setAppLang: contextSetAppLang,
+    setDefaultTab,
     saveDownloadedLanguage,
     deleteDownloadedLanguage: contextDeleteLanguage,
     clearAll,
@@ -51,6 +52,14 @@ export default function SettingsScreen() {
     { mode: 'light' as const, label: i18n.t('settings.themeLight'), icon: 'white-balance-sunny' as const },
     { mode: 'dark' as const, label: i18n.t('settings.themeDark'), icon: 'weather-night' as const },
   ];
+  const defaultTab = settings.defaultTab ?? 'card';
+  const startScreenChoices = [
+    { tab: 'card' as const, label: i18n.t('restaurants.tabs.tabCards'), icon: 'card-bulleted-outline' as const },
+    { tab: 'restaurants' as const, label: i18n.t('restaurants.tabs.tabRestaurants'), icon: 'silverware-fork-knife' as const },
+  ];
+  const startScreenHint = defaultTab === 'restaurants'
+    ? i18n.t('settings.startScreenHintRestaurants')
+    : i18n.t('settings.startScreenHintCard');
   const { downloadingLang, downloadProgress, handleDownloadLanguage: downloadLanguage } = useLanguageDownload();
 
   // Blocca orientamento in portrait
@@ -213,6 +222,34 @@ export default function SettingsScreen() {
             })}
           </View>
         </View>
+
+        {/* Apertura app - quale tab aprire al lancio dell'app */}
+        <View style={styles.appearanceRow}>
+          <MaterialCommunityIcons name="home-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.startScreen')}</Text>
+          <View style={styles.themeSegment}>
+            {startScreenChoices.map((opt) => {
+              const selected = defaultTab === opt.tab;
+              return (
+                <Pressable
+                  key={opt.tab}
+                  onPress={() => setDefaultTab(opt.tab)}
+                  style={[styles.themeSegmentBtn, selected && styles.themeSegmentBtnActive]}
+                  accessibilityRole="radio"
+                  accessibilityLabel={opt.label}
+                  accessibilityState={{ checked: selected }}
+                >
+                  <MaterialCommunityIcons
+                    name={opt.icon}
+                    size={18}
+                    color={selected ? theme.colors.onPrimary : theme.colors.textSecondary}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+        <Text style={styles.startScreenHint}>{startScreenHint}</Text>
 
         {/* Why Free - Perché è gratuita come header */}
         <Divider style={styles.sectionDivider} />
@@ -391,6 +428,16 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   themeSegmentBtnActive: {
     backgroundColor: theme.colors.primary,
+  },
+  // Sottotitolo descrittivo della sezione: allineato al margine sinistro
+  // (sotto l'icona) come la descrizione di "Scarica altre lingue", e tucked
+  // sotto la riga del controllo che ha minHeight 56.
+  startScreenHint: {
+    paddingHorizontal: 16,
+    marginTop: -8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: theme.colors.textSecondary,
   },
   sectionHeaderTitle: {
     fontSize: 16,

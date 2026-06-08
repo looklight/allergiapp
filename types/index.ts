@@ -140,11 +140,16 @@ export interface Allergen {
 
 export type AppLanguage = 'it' | 'en' | 'es' | 'de' | 'fr';
 
+/** Tab aperta al cold-start dell'app. Default 'card'. */
+export type DefaultTab = 'card' | 'restaurants';
+
 export interface UserSettings {
   cardLanguage: AllLanguageCode;
   appLanguage: AppLanguage;
   /** L'utente ha scelto "Nascondi" sul disclaimer recensioni: non auto-aprirlo più. */
   reviewsDisclaimerDismissed?: boolean;
+  /** Sezione mostrata all'apertura dell'app da chiusa. Default 'card'. */
+  defaultTab?: DefaultTab;
 }
 
 export interface LegalConsent {

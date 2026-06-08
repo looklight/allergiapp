@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import * as Crypto from 'expo-crypto';
 import { storage, AppData, CURRENT_LEGAL_VERSION } from '../utils/storage';
 import { setAppLanguage, getDeviceLanguage } from '../utils/i18n';
-import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
+import { AllergenId, AllLanguageCode, AppLanguage, UserSettings, DefaultTab, DownloadableLanguageCode, DownloadedLanguageData, LegalConsent, TrackingConsent } from '../types';
 import { UserCard, MAX_USER_CARDS } from '../types/card';
 import { RestrictionItemId } from '../constants/otherRestrictions';
 import { OtherFoodId } from '../constants/otherFoods';
@@ -55,6 +55,7 @@ interface AppContextValue {
   isDietModeActive: (id: DietModeId) => boolean;
   setCardLanguage: (language: AllLanguageCode) => Promise<void>;
   setAppLang: (language: AppLanguage) => Promise<void>;
+  setDefaultTab: (tab: DefaultTab) => Promise<void>;
   saveDownloadedLanguage: (langCode: DownloadableLanguageCode, data: DownloadedLanguageData) => Promise<void>;
   deleteDownloadedLanguage: (langCode: DownloadableLanguageCode) => Promise<void>;
   acceptLegalTerms: () => Promise<void>;
@@ -213,6 +214,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await storage.setAppLanguage(language);
   }, []);
 
+  const setDefaultTab = useCallback(async (tab: DefaultTab) => {
+    setSettingsState(prev => ({ ...prev, defaultTab: tab }));
+    await storage.setDefaultTab(tab);
+  }, []);
+
   const saveDownloadedLanguage = useCallback(async (langCode: DownloadableLanguageCode, data: DownloadedLanguageData) => {
     setDownloadedLanguagesState(prev => ({ ...prev, [langCode]: data }));
     await storage.saveDownloadedLanguage(langCode, data);
@@ -257,7 +263,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const clearAll = useCallback(async () => {
     const deviceLanguage = getDeviceLanguage();
-    const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage };
+    const defaultSettings = { cardLanguage: 'en' as AllLanguageCode, appLanguage: deviceLanguage, defaultTab: 'card' as DefaultTab };
     setProfileAllergensState([]);
     setProfileOtherFoodsState([]);
     setProfileRestrictionsState([]);
@@ -349,6 +355,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     isDietModeActive,
     setCardLanguage,
     setAppLang,
+    setDefaultTab,
     saveDownloadedLanguage,
     deleteDownloadedLanguage,
     acceptLegalTerms,
@@ -370,7 +377,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     hasAcceptedLegalTerms, needsLegalConsent, downloadedLanguageCodes,
     setSelectedAllergens, setSelectedOtherFoods, setSelectedRestrictions,
     setActiveDietModes, setVegetarianLevel, isDietModeActive,
-    setCardLanguage, setAppLang, saveDownloadedLanguage,
+    setCardLanguage, setAppLang, setDefaultTab, saveDownloadedLanguage,
     deleteDownloadedLanguage, acceptLegalTerms, setTrackingConsentAction, dismissReviewsDisclaimer, clearAll,
     createCard, updateCard, deleteCard, setActiveCard,
   ]);

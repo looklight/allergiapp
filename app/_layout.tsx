@@ -125,9 +125,22 @@ function AppContent() {
   const router = useRouter();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
+  const didInitialTabRedirect = useRef(false);
 
   useEffect(() => {
     if (isReady) {
+      // Default-tab: se l'utente ha scelto "Ristoranti" come schermata
+      // iniziale, facciamo il replace PRIMA di nascondere lo splash nativo,
+      // così la tab corretta è già attiva quando lo splash sparisce (no flash).
+      // Una sola volta al cold-start (ref guard); non interferisce con
+      // l'onboarding (chi è in onboarding ha defaultTab di default = 'card').
+      if (!didInitialTabRedirect.current) {
+        didInitialTabRedirect.current = true;
+        if (settings.defaultTab === 'restaurants' && pathname === '/') {
+          router.replace('/restaurants');
+        }
+      }
+
       // Gli OTA vengono check/scaricati/applicati dal side nativo di
       // expo-updates al cold-start (config in app.config.ts: updates.url).
       // Niente reload mid-init per evitare race coi provider in mount.
