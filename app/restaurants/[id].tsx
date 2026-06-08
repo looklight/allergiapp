@@ -3,7 +3,6 @@ import { View, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
-import { Platform } from 'react-native';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
 import RestaurantDetailBody from '../../components/restaurants/RestaurantDetailBody';
 import AppHeader from '../components/AppHeader';
@@ -41,7 +40,7 @@ export default function RestaurantDetailScreen() {
           },
           {
             // Icona platform-specific: iOS = box+freccia (Apple HIG), Android = Material share (3 nodi).
-            icon: Platform.OS === 'ios' ? 'export-variant' : 'share-variant',
+            icon: 'share-variant',
             onPress: () => {
               const r = detail.restaurant!;
               shareRestaurant({ id: r.id, slug: r.slug, name: r.name, city: r.city });

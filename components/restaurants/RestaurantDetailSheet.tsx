@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { View, StyleSheet, BackHandler, Platform } from 'react-native';
 
-const SHARE_ICON = Platform.OS === 'ios' ? 'export-variant' : 'share-variant';
+// Icona condividi unificata su iOS/Android: 'share-variant' (tre nodi) è
+// otticamente bilanciata e si allinea con bookmark/close. L'Apple 'export-variant'
+// (box+freccia) appariva alzato per le sue metriche → effetto disallineamento.
+const SHARE_ICON = 'share-variant';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
