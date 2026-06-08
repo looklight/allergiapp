@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import { StyleSheet, ScrollView, Pressable, TextInput, View, Image } from 'react-native';
 import { Text, Button, Dialog, Portal } from 'react-native-paper';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
@@ -112,9 +112,17 @@ export default function CardBadgesSection() {
           style={[styles.dialog, styles.createDialogOffset]}
         >
           <Dialog.Content style={styles.dialogContent}>
-            <Text style={styles.dialogTitle}>
-              {i18n.t('cardBadges.newCardTitle')}
-            </Text>
+            <View style={styles.dialogTitleRow}>
+              <Image
+                source={require('../../assets/icons/logo/plate-mascot.png')}
+                style={styles.dialogTitleIcon}
+                resizeMode="contain"
+                accessibilityElementsHidden
+              />
+              <Text style={styles.dialogTitleText}>
+                {i18n.t('cardBadges.newCardTitle')}
+              </Text>
+            </View>
             <Text style={styles.dialogDescription}>
               {i18n.t('cardBadges.newCardDescription')}
             </Text>
@@ -255,6 +263,23 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textPrimary,
     textAlign: 'center',
     marginBottom: 16,
+  },
+  // Titolo "Nuova card" con la mascotte-logo davanti (riga centrata).
+  dialogTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  dialogTitleIcon: {
+    width: 36,
+    height: 36,
+  },
+  dialogTitleText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: theme.colors.textPrimary,
   },
   dialogDescription: {
     fontSize: 14,
