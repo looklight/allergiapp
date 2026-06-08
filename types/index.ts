@@ -7,6 +7,10 @@ export interface BannerItem {
   image?: ImageSourcePropType;
   title?: string;
   subtitle?: string;
+  /** Gradiente dedicato per far risaltare la slide (fallback: bannerGradient). */
+  gradient?: readonly [string, string];
+  /** Pulsante opzionale (es. link al sito): apre `url` nel browser. */
+  cta?: { label: string; url: string };
 }
 
 export type AllergenId =

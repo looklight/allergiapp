@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, FlatList, Dimensions, Image, TouchableOpacity, Linking } from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
 import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BannerItem } from '../../types';
 import i18n from '../../utils/i18n';
@@ -20,20 +22,28 @@ interface BannerCarouselProps {
   scrollInterval?: number;
 }
 
-export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarouselProps) {
+export default function BannerCarousel({ scrollInterval = 8000 }: BannerCarouselProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Altezza uniforme per tutte le slide = la più alta misurata a runtime. Via
+  // minHeight (non taglia mai) così regge sottotitoli lunghi e qualsiasi lingua;
+  // la slide con CTA (più alta) detta la misura, le altre crescono a pari.
+  const [cardHeight, setCardHeight] = useState(120);
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewedBanners = useRef<Set<string>>(new Set());
 
   const banners: BannerItem[] = [
     {
-      id: 'info-1',
-      image: bannerImages.passport,
-      title: i18n.t('home.bannerWelcome'),
-      subtitle: i18n.t('home.bannerMotivation'),
+      // Slide in evidenza: titolo + sottotitolo + CTA inline compatta (link, non
+      // pillola), così resta poco più alta delle slide normali — "best of both".
+      id: 'info-3',
+      image: bannerImages.forks,
+      title: i18n.t('home.bannerTip'),
+      subtitle: i18n.t('home.bannerTipDesc'),
+      gradient: theme.colors.bannerGradientFeatured,
+      cta: { label: i18n.t('home.bannerTipCta'), url: 'https://allergiapp.com/restaurants' },
     },
     {
       id: 'info-2',
@@ -42,10 +52,10 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
       subtitle: i18n.t('home.bannerHowToUseDesc'),
     },
     {
-      id: 'info-3',
-      image: bannerImages.forks,
-      title: i18n.t('home.bannerTip'),
-      subtitle: i18n.t('home.bannerTipDesc'),
+      id: 'info-1',
+      image: bannerImages.passport,
+      title: i18n.t('home.bannerWelcome'),
+      subtitle: i18n.t('home.bannerMotivation'),
     },
   ];
 
@@ -111,16 +121,30 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
     }, 100);
   };
 
-  const renderBannerItem = ({ item }: { item: BannerItem }) => (
-    <View
-      style={styles.bannerItem}
-      accessibilityLabel={`${item.title}${item.subtitle ? `. ${item.subtitle}` : ''}`}
-    >
+  // Cresce in modo monotòno fino alla slide più alta, poi si stabilizza
+  // (quando l'altezza imposta = max, nessuna slide la supera → niente setState).
+  const onCardLayout = (e: LayoutChangeEvent) => {
+    const h = Math.ceil(e.nativeEvent.layout.height);
+    setCardHeight((prev) => (h > prev ? h : prev));
+  };
+
+  const handleCtaPress = (item: BannerItem) => {
+    if (!item.cta) return;
+    Analytics.logBannerClicked(item.id, item.title);
+    Linking.openURL(item.cta.url).catch(() => {
+      // URL non apribile (nessun browser / link malformato): ignora silenziosamente.
+    });
+  };
+
+  const renderBannerItem = ({ item }: { item: BannerItem }) => {
+    const a11yLabel = `${item.title ?? ''}${item.subtitle ? `. ${item.subtitle}` : ''}${item.cta ? `. ${item.cta.label}` : ''}`;
+    const card = (
       <LinearGradient
-        colors={theme.colors.bannerGradient}
+        colors={item.gradient ?? theme.colors.bannerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.bannerCard}
+        style={[styles.bannerCard, { minHeight: cardHeight }]}
+        onLayout={onCardLayout}
       >
         {item.image ? (
           <Image
@@ -140,9 +164,37 @@ export default function BannerCarousel({ scrollInterval = 5000 }: BannerCarousel
             <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
           ) : null}
         </View>
+        {/* Chip-indicatore: l'intera slide è tappabile (vedi sotto), quindi qui
+            basta un segnale piccolo. Posizionato in assoluto in basso a destra
+            così NON aggiunge altezza al banner. */}
+        {item.cta ? (
+          <View style={styles.ctaChip} pointerEvents="none">
+            <Text style={styles.ctaLabel}>{item.cta.label}</Text>
+            <MaterialCommunityIcons name="open-in-new" size={12} color={theme.colors.onPrimary} />
+          </View>
+        ) : null}
       </LinearGradient>
-    </View>
-  );
+    );
+
+    // Slide con CTA = intero banner cliccabile (apre il link); le altre restano
+    // statiche. Niente touchable annidato: la chip è solo visiva (pointerEvents none).
+    return (
+      <View style={styles.bannerItem}>
+        {item.cta ? (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => handleCtaPress(item)}
+            accessibilityRole="link"
+            accessibilityLabel={a11yLabel}
+          >
+            {card}
+          </TouchableOpacity>
+        ) : (
+          <View accessibilityLabel={a11yLabel}>{card}</View>
+        )}
+      </View>
+    );
+  };
 
   if (banners.length === 0) return null;
 
@@ -202,7 +254,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   bannerCard: {
     marginHorizontal: 16,
-    minHeight: 120,
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderRadius: 16,
@@ -233,6 +284,23 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
     lineHeight: 20,
+  },
+  ctaChip: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.secondary,
+  },
+  ctaLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.onPrimary,
   },
   paginationDots: {
     flexDirection: 'row',

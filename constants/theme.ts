@@ -37,6 +37,9 @@ const lightColors = {
   // Sfondo banner home: gradiente sage desaturato. Dedicato e isolato (solo
   // BannerCarousel), cosi e modificabile senza toccare altri colori.
   bannerGradient: ['#F7FBF8', '#E1EEE5'] as [string, string],
+  // Variante "in evidenza" per la slide con CTA: ambra calda chiara (arancio
+  // leggero), risalta dal sage delle altre slide ma resta tenue e col testo leggibile.
+  bannerGradientFeatured: ['#FFF6E9', '#FFD9A0'] as [string, string],
 
   // Text
   textPrimary: '#333333',
@@ -158,6 +161,9 @@ const darkColors: typeof lightColors = {
   detailMuted: darkSurfaces.base,    // accenti nel detail, piu chiari (= surface)
   // Banner home: = surface, si fonde col fondo schermo
   bannerGradient: [darkSurfaces.base, darkSurfaces.base] as [string, string],
+  // Slide in evidenza: wash ambra scuro caldo (l'ambra chiara del light sarebbe
+  // troppo accesa su dark), comunque distinto dal banner normale.
+  bannerGradientFeatured: ['#3A2E1B', '#2A2114'] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
