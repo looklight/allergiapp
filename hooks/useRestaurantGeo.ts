@@ -58,6 +58,12 @@ export function useRestaurantGeo(params: FilterParams) {
   const fetchedAreas = useRef<FetchedArea[]>([]);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasLoadedGeo = useRef(false);
+  /** Modalità (forMyNeeds) con cui la cache ristoranti è stata caricata l'ultima
+   *  volta. null = nessun load ancora. Serve a rilevare quando il prop forMyNeeds
+   *  cambia DOPO il primo fetch (es. preferenza ripristinata dopo un cold-start
+   *  diretto su Ristoranti, quando il primo fetch era già partito in modalità
+   *  nearby senza coverage → pin compatibili grigi). */
+  const loadedForMyNeeds = useRef<boolean | null>(null);
   const isFetching = useRef(false);
   /** Area pendente: se un fetch era in corso durante la richiesta, esegui dopo */
   const pendingFetch = useRef<{ center: LatLng; radiusKm: number } | null>(null);
@@ -143,6 +149,9 @@ export function useRestaurantGeo(params: FilterParams) {
     // (es. toggle forMyNeeds), i risultati stale vengono scartati e non
     // sovrascrivono i dati già ricaricati con il nuovo filtro.
     const epoch = reloadEpoch.current;
+    // Registra la modalità del fetch PRIMA dell'await (sincrono): così l'effetto
+    // di riallineamento sotto vede la modalità corretta e non scatena reload doppi.
+    loadedForMyNeeds.current = forMyNeedsRef.current;
     try {
       const results = forMyNeedsRef.current
         ? await RestaurantService.getRestaurantsForMyNeeds(
@@ -209,6 +218,8 @@ export function useRestaurantGeo(params: FilterParams) {
     try {
       const useForMyNeeds = forMyNeedsOverride !== undefined ? forMyNeedsOverride : forMyNeedsRef.current;
       const useShowLodging = showLodgingOverride !== undefined ? showLodgingOverride : showLodgingRef.current;
+      // Sincrono prima dell'await (v. nota in fetchArea).
+      loadedForMyNeeds.current = useForMyNeeds;
       const results = useForMyNeeds
         ? await RestaurantService.getRestaurantsForMyNeeds(
             fetchCenter.latitude, fetchCenter.longitude,
@@ -230,6 +241,20 @@ export function useRestaurantGeo(params: FilterParams) {
       }
     }
   }, [userLocation, syncState]);
+
+  // Riallineamento modalità: se forMyNeeds cambia DOPO che la cache è già stata
+  // caricata con una modalità diversa, ricarica con quella corretta. Copre la
+  // race del cold-start aprendo direttamente sulla tab Ristoranti: il primo
+  // fetch può partire in modalità nearby (senza coverage) prima che la preferenza
+  // forMyNeeds / le esigenze del profilo siano ripristinate → i pin compatibili
+  // resterebbero grigi invece che verdi. I toggle espliciti (FilterModal, chip)
+  // settano già loadedForMyNeeds prima del loro await, quindi qui NON rientrano
+  // (nessun fetch ridondante): scatta solo per transizioni non gestite altrove.
+  useEffect(() => {
+    if (loadedForMyNeeds.current === null) return;          // nessun load ancora
+    if (loadedForMyNeeds.current === forMyNeeds) return;    // già allineato
+    clearAndReload(forMyNeeds);
+  }, [forMyNeeds, clearAndReload]);
 
   // Al mount, centra la mappa sull'utente SOLO se il permesso è già concesso.
   // Non chiediamo qui il permesso a freddo: la richiesta avviene a fine onboarding
