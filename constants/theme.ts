@@ -161,9 +161,9 @@ const darkColors: typeof lightColors = {
   detailMuted: darkSurfaces.base,    // accenti nel detail, piu chiari (= surface)
   // Banner home: = surface, si fonde col fondo schermo
   bannerGradient: [darkSurfaces.base, darkSurfaces.base] as [string, string],
-  // Slide in evidenza: wash ambra scuro caldo (l'ambra chiara del light sarebbe
-  // troppo accesa su dark), comunque distinto dal banner normale.
-  bannerGradientFeatured: ['#3A2E1B', '#2A2114'] as [string, string],
+  // In dark NIENTE gradienti: il featured usa lo stesso fondo piatto degli altri
+  // banner (= surface). La distinzione resta affidata a immagine + chip arancione.
+  bannerGradientFeatured: [darkSurfaces.base, darkSurfaces.base] as [string, string],
 
   // Text (bianco-sporco / grigi Google)
   textPrimary: '#E8EAED',
