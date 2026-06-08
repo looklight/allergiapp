@@ -24,6 +24,12 @@ const APP_LANGUAGES = [
   { code: 'fr' as const, name: 'Français', flag: '🇫🇷' },
 ];
 
+// Larghezza fissa condivisa dei controlli a destra (lingua + aspetto): garantisce
+// uniformità visiva ed evita che il pill lingua "balli" cambiando lingua.
+// Dimensionata sul vincolo reale = il nome lingua più lungo (sta comodo, niente
+// ellissi); il segmented control "aspetto" ci si adatta con bottoni flex.
+const CONTROL_WIDTH = 150;
+
 export default function SettingsScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -137,7 +143,7 @@ export default function SettingsScreen() {
               <Text style={styles.langPickerFlag}>
                 {APP_LANGUAGES.find((l) => l.code === appLang)?.flag}
               </Text>
-              <Text style={styles.langPickerLabel}>
+              <Text style={styles.langPickerLabel} numberOfLines={1}>
                 {APP_LANGUAGES.find((l) => l.code === appLang)?.name}
               </Text>
               <MaterialCommunityIcons
@@ -208,14 +214,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <DownloadableLanguagesSection
-          downloadedLanguageCodes={downloadedLanguageCodes}
-          downloadingLang={downloadingLang}
-          downloadProgress={downloadProgress}
-          onDownload={handleDownloadLanguage}
-          onDelete={handleDeleteLanguage}
-        />
-
         {/* Why Free - Perché è gratuita come header */}
         <Divider style={styles.sectionDivider} />
         <Pressable
@@ -233,6 +231,14 @@ export default function SettingsScreen() {
             style={{ marginLeft: 'auto' }}
           />
         </Pressable>
+
+        <DownloadableLanguagesSection
+          downloadedLanguageCodes={downloadedLanguageCodes}
+          downloadingLang={downloadingLang}
+          downloadProgress={downloadProgress}
+          onDownload={handleDownloadLanguage}
+          onDelete={handleDeleteLanguage}
+        />
 
         {/* Reset preferenze */}
         <Divider style={styles.sectionDivider} />
@@ -303,12 +309,14 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: 10,
     gap: 6,
     marginLeft: 'auto',
+    width: CONTROL_WIDTH,
   },
   langPickerFlag: {
     fontSize: 18,
     lineHeight: 24,
   },
   langPickerLabel: {
+    flex: 1,
     fontSize: 15,
     fontWeight: '600',
     color: theme.colors.textPrimary,
@@ -372,9 +380,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: 10,
     padding: 2,
     gap: 2,
+    width: CONTROL_WIDTH,
   },
   themeSegmentBtn: {
-    width: 42,
+    flex: 1,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',

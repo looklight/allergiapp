@@ -33,6 +33,10 @@ export default function BannerCarousel({ scrollInterval = 8000 }: BannerCarousel
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewedBanners = useRef<Set<string>>(new Set());
+  // Indice corrente "vero", sempre aggiornato (swipe manuale via onViewableItemsChanged
+  // + auto-scroll). L'auto-scroll legge QUESTO allo scatto del timer, non lo stato
+  // React (che nella closure può essere stale dopo uno swipe → saltava i banner).
+  const activeIndexRef = useRef(0);
 
   const banners: BannerItem[] = [
     {
@@ -59,25 +63,28 @@ export default function BannerCarousel({ scrollInterval = 8000 }: BannerCarousel
     },
   ];
 
-  const scheduleNextScroll = (currentIndex: number) => {
+  const scheduleNextScroll = () => {
     if (autoScrollTimer.current) {
       clearTimeout(autoScrollTimer.current);
     }
     autoScrollTimer.current = setTimeout(() => {
-      const nextIndex = (currentIndex + 1) % banners.length;
+      // Legge l'indice corrente ALLO SCATTO (non catturato prima): riflette sempre
+      // la posizione reale, anche dopo uno swipe manuale → niente banner saltati.
+      const nextIndex = (activeIndexRef.current + 1) % banners.length;
       try {
         flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       } catch {
         // FlatList not ready yet
       }
+      activeIndexRef.current = nextIndex;
       setActiveIndex(nextIndex);
-      scheduleNextScroll(nextIndex);
+      scheduleNextScroll();
     }, scrollInterval);
   };
 
   useEffect(() => {
     if (banners.length > 1) {
-      scheduleNextScroll(activeIndex);
+      scheduleNextScroll();
     }
     return () => {
       if (autoScrollTimer.current) {
@@ -89,6 +96,7 @@ export default function BannerCarousel({ scrollInterval = 8000 }: BannerCarousel
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       const index = viewableItems[0].index || 0;
+      activeIndexRef.current = index;
       setActiveIndex(index);
 
       const banner = banners[index];
@@ -108,7 +116,7 @@ export default function BannerCarousel({ scrollInterval = 8000 }: BannerCarousel
   };
 
   const onScrollEndDrag = () => {
-    scheduleNextScroll(activeIndex);
+    scheduleNextScroll();
   };
 
   const onScrollToIndexFailed = (info: any) => {
