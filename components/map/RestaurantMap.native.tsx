@@ -2,7 +2,9 @@
  * RestaurantMap (native) — Orchestrator.
  *
  * Responsibilities:
- * - ClusteredMapView setup, camera control, region tracking
+ * - MapView setup, camera control, region tracking
+ * - Clustering client-side via supercluster (useMapClusters) nel regime "dot"
+ *   (zoom largo); pin individuali col rating nel regime "pin" (zoom stretto)
  * - Building markerElements from allPins + restaurants + favoriteRestaurants
  * - Delegating rendering to MapPin (pure, no context) and SelectedMarkerOverlay
  *
@@ -14,18 +16,21 @@
  *    Key changes caused a flash of the default Apple Maps red pin on iOS.
  * 3. showMatchInfo does NOT change keys (would cause mass remount → crash).
  *    Colors update via tracksViewChanges for one frame.
- * 4. restaurantById is a stable Map ref used by both markerElements and
- *    SelectedMarkerOverlay.
+ * 4. restaurantById is a stable memoized Map used by markerElements,
+ *    clusteredElements and (as prop) SelectedMarkerOverlay.
+ * 5. Clustering = Strada B: supercluster alimentato dai pin generici (allPins
+ *    meno salvati/preferiti, che restano sempre individuali e sopra le bolle).
+ *    Solo nel regime dot (isDotZoom); a zoom stretto il path è invariato.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText, useWindowDimensions } from 'react-native';
-import ClusteredMapView from 'react-native-map-clustering';
-import { Marker } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useThemePreference } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import MapPin from './MapPin';
 import SelectedMarkerOverlay from './SelectedMarkerOverlay';
+import { useMapClusters, type MapCluster } from './useMapClusters';
 import {
   isValidCoord,
   ZOOM_PIN_THRESHOLD,
@@ -35,19 +40,85 @@ import {
   type Region,
   type RestaurantMapProps,
 } from './mapConstants';
-import type { Restaurant } from '../../services/restaurantService';
+import type { Restaurant, RestaurantPin } from '../../services/restaurantService';
 
 // ---------------------------------------------------------------------------
-// Cluster color helper (pure)
+// Cluster bubble (pure)
 // ---------------------------------------------------------------------------
 
-/** Punteggio di copertura: 3=verde, 2=giallo, 1=grigio, 0=sconosciuto */
-function leafScore(r: import('../../services/restaurantService').Restaurant): number {
-  const covered = (r.covered_allergen_count ?? 0) + (r.covered_dietary_count ?? 0);
-  const total = (r.total_allergen_filters ?? 0) + (r.total_dietary_filters ?? 0);
-  if (total === 0 || covered === 0) return 1;
-  return covered >= total ? 3 : 2;
+/** Colore della bolla dal punteggio miglior-match (0..3), coerente con i
+ *  pallini/pin (cfr. coverageColor in mapConstants). 0 = nessun filtro → primary. */
+function clusterColor(score: number, theme: AppTheme): string {
+  if (score >= 3) return theme.colors.success;
+  if (score === 2) return theme.colors.coverageMedium;
+  if (score === 1) return theme.colors.textDisabled;
+  return theme.colors.primary;
 }
+
+/** Diametro bolla: cresce a scatti col numero di pin (best practice — la
+ *  dimensione segnala la densità senza diventare invadente). */
+function clusterSize(count: number): number {
+  if (count >= 100) return 48;
+  if (count >= 25) return 42;
+  if (count >= 10) return 38;
+  return 34;
+}
+
+// Clustering SOLO su Android. Motivo (provato a runtime giu 2026): iOS
+// react-native-maps crasha nativamente sul churn dei marker durante lo zoom
+// (mount/unmount continui mentre i cluster si riformano) — lo stesso "mass
+// remount → crash" che l'architettura a chiavi stabili evitava. iOS però NON ha
+// bisogno del clustering: regge centinaia di marker fluido e stabile. Android
+// invece è lento con tanti marker (serve il clustering) e tollera il churn.
+const CLUSTERING_ENABLED = Platform.OS === 'android';
+
+type MapStyles = ReturnType<typeof makeStyles>;
+
+/** Bolla-cluster: cerchio col conteggio. tracksViewChanges=false (statica),
+ *  anchor centrato. Memo: una sola bolla cambia se cambiano i suoi dati. */
+const ClusterBubble = memo(function ClusterBubble({
+  cluster,
+  theme,
+  styles,
+  onPress,
+}: {
+  cluster: MapCluster;
+  theme: AppTheme;
+  styles: MapStyles;
+  onPress: (cluster: MapCluster) => void;
+}) {
+  const size = clusterSize(cluster.count);
+  // Android: il marker custom va ridisegnato (tracksViewChanges=true) per ~150ms
+  // dopo mount/cambio dati, altrimenti la bitmap non viene catturata e la bolla
+  // resta INVISIBILE (stessa ragione dell'androidSettling di MapPin). iOS cattura
+  // il CALayer in un frame → false va bene e resta statico.
+  const [settling, setSettling] = useState(Platform.OS === 'android');
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    setSettling(true);
+    const t = setTimeout(() => setSettling(false), 150);
+    return () => clearTimeout(t);
+  }, [cluster.count, cluster.score, size]);
+  return (
+    <Marker
+      coordinate={{ latitude: cluster.latitude, longitude: cluster.longitude }}
+      onPress={() => onPress(cluster)}
+      tracksViewChanges={settling}
+      {...(Platform.OS === 'android' && { zIndex: 1 })}
+    >
+      <View style={styles.clusterWrap}>
+        <View
+          style={[
+            styles.clusterContainer,
+            { width: size, height: size, borderRadius: size / 2, backgroundColor: clusterColor(cluster.score, theme) },
+          ]}
+        >
+          <RNText style={styles.clusterText}>{cluster.count}</RNText>
+        </View>
+      </View>
+    </Marker>
+  );
+});
 
 // ---------------------------------------------------------------------------
 // RestaurantMap
@@ -120,6 +191,10 @@ export default function RestaurantMap({
   const mapReady = useRef(false);
   const [hasAnimatedToUser, setHasAnimatedToUser] = useState(false);
   const currentRegion = useRef<Region | null>(null);
+  // Debounce del ricalcolo cluster: durante lo zoom NON ricalcoliamo a ogni evento
+  // (causa churn dei marker → ricattura bitmap → ANR su Android), ma solo quando
+  // il gesto si ferma. I marker restano stabili durante il movimento.
+  const clusterRegionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Stato iniziale derivato dallo zoom della regione di partenza (non un `false`
   // arbitrario): il primo frame e' sempre DEFAULT_REGION (vista Europa, delta 22),
   // dove la rappresentazione corretta sono i pallini. Senza questa derivazione i
@@ -129,6 +204,10 @@ export default function RestaurantMap({
   const [isDotZoom, setIsDotZoom] = useState(
     DEFAULT_REGION.latitudeDelta > ZOOM_PIN_THRESHOLD,
   );
+  // Region in stato (non solo ref) per ricalcolare i cluster al region-change.
+  // Aggiornata in handleRegionChange (= onRegionChangeComplete, fine gesto):
+  // niente storm di re-render durante il pan, un solo update a gesto concluso.
+  const [clusterRegion, setClusterRegion] = useState<Region>(DEFAULT_REGION);
 
   // ---- Stable refs for prop callbacks ----
   const onRegionChangeCompleteRef = useRef(onRegionChangeComplete);
@@ -141,10 +220,6 @@ export default function RestaurantMap({
   restaurantsRef.current = restaurants;
   const onRestaurantPressRef = useRef(onRestaurantPress);
   onRestaurantPressRef.current = onRestaurantPress;
-  const showMatchInfoRef = useRef(showMatchInfo);
-  showMatchInfoRef.current = showMatchInfo;
-  // Esposto alla libreria per getLeaves nei cluster
-  const superClusterRef = useRef<any>({});
 
   // ---- restaurantById — stable lookup for markerElements and overlay ----
   // Includes selectedRestaurant so the overlay can render even if the
@@ -174,8 +249,6 @@ export default function RestaurantMap({
     return map;
   }, [restaurants, favoriteRestaurants, savedRestaurants, selectedRestaurant]);
 
-  const restaurantByIdRef = useRef(restaurantById);
-  restaurantByIdRef.current = restaurantById;
 
   // ---- Camera: fit to markers on first load ----
   const fitToMarkers = useCallback(() => {
@@ -275,6 +348,12 @@ export default function RestaurantMap({
 
   const handleRegionChange = useCallback((region: Region) => {
     currentRegion.current = region;
+    // Solo Android usa il clustering, e con debounce: ricalcoliamo i cluster solo
+    // quando lo zoom si ferma (250ms), non durante il gesto → niente churn marker.
+    if (CLUSTERING_ENABLED) {
+      if (clusterRegionTimer.current) clearTimeout(clusterRegionTimer.current);
+      clusterRegionTimer.current = setTimeout(() => setClusterRegion(region), 250);
+    }
     onRegionChangeCompleteRef.current?.(region);
     // Isteresi ±0.05 attorno a ZOOM_PIN_THRESHOLD: evita oscillazione rapida quando
     // lo zoom si trova vicino alla soglia (es. durante pinch-zoom lento), che causerebbe
@@ -284,6 +363,11 @@ export default function RestaurantMap({
       if (prev && region.latitudeDelta < ZOOM_PIN_THRESHOLD - 0.05) return false;
       return prev;
     });
+  }, []);
+
+  // Cleanup del timer di debounce cluster all'unmount.
+  useEffect(() => () => {
+    if (clusterRegionTimer.current) clearTimeout(clusterRegionTimer.current);
   }, []);
 
   const handleMapPress = useCallback(() => {
@@ -296,44 +380,22 @@ export default function RestaurantMap({
     onRestaurantPressRef.current?.(id);
   }, []);
 
-  // Cluster colorato: verde se almeno un ristorante è completamente coperto,
-  // giallo se parzialmente, grigio se nessuno coperto, primary se nessun dato.
-  const renderCluster = useCallback((cluster: any) => {
-    const { id, geometry, onPress, properties } = cluster;
-    const count = properties.point_count;
-
-    let clusterColor = theme.colors.primary;
-    if (showMatchInfoRef.current) {
-      // Limite 50: sufficiente per determinare il colore del cluster (break su score=3),
-      // evita loop O(n) su cluster grandi durante pan veloce con showMatchInfo attivo.
-      const leaves: any[] = superClusterRef.current?.getLeaves?.(properties.cluster_id, 50) ?? [];
-      let best = 0;
-      for (const leaf of leaves) {
-        const rid = leaf.properties?.identifier;
-        const r = rid ? restaurantByIdRef.current.get(rid) : undefined;
-        if (!r) continue;
-        const score = leafScore(r);
-        if (score > best) best = score;
-        if (best === 3) break; // verde → non può migliorare
-      }
-      if (best === 3) clusterColor = theme.colors.success;
-      else if (best === 2) clusterColor = theme.colors.coverageMedium;
-      else if (best === 1) clusterColor = theme.colors.textDisabled;
-    }
-
-    return (
-      <Marker
-        key={`cluster-${id}`}
-        coordinate={{ latitude: geometry.coordinates[1], longitude: geometry.coordinates[0] }}
-        onPress={onPress}
-        tracksViewChanges={false}
-      >
-        <View style={[styles.clusterContainer, { backgroundColor: clusterColor }]}>
-          <RNText style={styles.clusterText}>{count}</RNText>
-        </View>
-      </Marker>
+  // Tap su una bolla → zoom-in verso il cluster, che si apre nei suoi componenti.
+  // Mezza delta corrente (clampata a MIN_FIT_DELTA) è l'approccio standard, senza
+  // dover mappare il clusterId all'expansion zoom.
+  const handleClusterPress = useCallback((cluster: MapCluster) => {
+    const cur = currentRegion.current;
+    const delta = cur ? Math.max(cur.latitudeDelta / 2.5, MIN_FIT_DELTA) : 1;
+    mapRef.current?.animateToRegion(
+      {
+        latitude: cluster.latitude,
+        longitude: cluster.longitude,
+        latitudeDelta: delta,
+        longitudeDelta: delta,
+      },
+      350,
     );
-  }, [theme, styles]);
+  }, []);
 
   const handleLayout = useCallback(() => {
     setIsLaidOut(true);
@@ -345,6 +407,9 @@ export default function RestaurantMap({
   const favIds = useMemo(() => favoriteIds ?? new Set<string>(), [favoriteIds]);
 
   const markerElements = useMemo(() => {
+    // A zoom largo (regime dot) renderizziamo i cluster (clusteredElements), non i
+    // pin individuali: short-circuit per non costruire centinaia di elementi inutili.
+    if (CLUSTERING_ENABLED && isDotZoom) return [] as React.ReactElement[];
     const elements: React.ReactElement[] = [];
     const seen = new Set<string>();
     const pins = allPins ?? [];
@@ -446,10 +511,116 @@ export default function RestaurantMap({
     return elements;
   }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
+  // --- Cluster elements (regime dot / zoom largo) -----------------------------
+  // Salvati/preferiti SEMPRE individuali e sopra le bolle (esclusi dal cluster):
+  // sono pochi, nessun costo perf, e così resta il comportamento "sempre visibili".
+  const alwaysIndividualIds = useMemo(() => {
+    const s = new Set<string>(favIds);
+    if (customSymbols) for (const id of customSymbols.keys()) s.add(id);
+    return s;
+  }, [favIds, customSymbols]);
+
+  // Pin GENERICI dati al clustering (allPins meno salvati/preferiti). Il
+  // selezionato NON è escluso qui (indice stabile sulla selezione) ma viene
+  // saltato a render: lo disegna SelectedMarkerOverlay.
+  const genericPins = useMemo(
+    () => (allPins ?? []).filter(p => !alwaysIndividualIds.has(p.id)),
+    [allPins, alwaysIndividualIds],
+  );
+
+  // Lookup pin→dati grezzi per passare supported_* ai MapPin singoli.
+  const pinById = useMemo(() => {
+    const m = new Map<string, RestaurantPin>();
+    for (const p of (allPins ?? [])) m.set(p.id, p);
+    return m;
+  }, [allPins]);
+
+  const clusterResults = useMapClusters(
+    genericPins,
+    userAllergens ?? [],
+    userDiets ?? [],
+    !!showMatchInfo,
+    clusterRegion,
+    CLUSTERING_ENABLED && isDotZoom,
+  );
+
+  const clusteredElements = useMemo(() => {
+    if (!CLUSTERING_ENABLED) return [] as React.ReactElement[];
+    const els: React.ReactElement[] = [];
+    // Bolle + pin generici singoli
+    for (const r of clusterResults) {
+      if (r.kind === 'cluster') {
+        els.push(
+          <ClusterBubble key={r.data.key} cluster={r.data} theme={theme} styles={styles} onPress={handleClusterPress} />,
+        );
+        continue;
+      }
+      if (r.pinId === selectedId) continue; // gestito da SelectedMarkerOverlay
+      const pin = pinById.get(r.pinId);
+      els.push(
+        <MapPin
+          key={r.pinId}
+          id={r.pinId}
+          latitude={r.latitude}
+          longitude={r.longitude}
+          restaurant={restaurantById.get(r.pinId)}
+          asDot
+          isFavorite={false}
+          showMatchInfo={showMatchInfo}
+          onPress={handleMarkerPress}
+          supportedAllergens={pin?.supported_allergens}
+          supportedDiets={pin?.supported_diets}
+          userAllergens={userAllergens}
+          userDiets={userDiets}
+        />,
+      );
+    }
+    // Salvati/preferiti sempre individuali (mai clusterizzati), sopra le bolle.
+    const seen = new Set<string>();
+    const pushSaved = (
+      id: string, lat: number, lng: number,
+      restaurant?: Restaurant, supA?: string[], supD?: string[],
+    ) => {
+      if (id === selectedId || seen.has(id) || !isValidCoord(lat, lng)) return;
+      seen.add(id);
+      els.push(
+        <MapPin
+          key={id}
+          id={id}
+          latitude={lat}
+          longitude={lng}
+          restaurant={restaurant}
+          asDot
+          isFavorite={favIds.has(id)}
+          customSymbol={customSymbols?.get(id)}
+          showMatchInfo={showMatchInfo}
+          onPress={handleMarkerPress}
+          supportedAllergens={supA}
+          supportedDiets={supD}
+          userAllergens={userAllergens}
+          userDiets={userDiets}
+        />,
+      );
+    };
+    for (const p of (allPins ?? [])) {
+      if (!alwaysIndividualIds.has(p.id)) continue;
+      pushSaved(p.id, p.latitude, p.longitude, restaurantById.get(p.id), p.supported_allergens, p.supported_diets);
+    }
+    const favMap = favoriteRestaurants ?? new Map<string, Restaurant>();
+    for (const [id, r] of favMap) {
+      if (r.location) pushSaved(id, r.location.latitude, r.location.longitude, r);
+    }
+    const savedMap = savedRestaurants ?? new Map<string, Restaurant>();
+    for (const [id, r] of savedMap) {
+      if (r.location) pushSaved(id, r.location.latitude, r.location.longitude, r);
+    }
+    return els;
+  }, [clusterResults, theme, styles, handleClusterPress, selectedId, pinById, restaurantById, showMatchInfo, handleMarkerPress, userAllergens, userDiets, favIds, customSymbols, allPins, alwaysIndividualIds, favoriteRestaurants, savedRestaurants]);
+
   const showMarkers = hasAnimatedToUser || !centerOn || !centerOn.latDelta;
 
   return (
-    <ClusteredMapView
+    <MapView
       ref={mapRef}
       style={styles.map}
       initialRegion={DEFAULT_REGION}
@@ -464,18 +635,10 @@ export default function RestaurantMap({
       onRegionChangeComplete={handleRegionChange}
       onPress={handleMapPress}
       onLayout={handleLayout}
-      clusterColor={theme.colors.primary}
-      clusterTextColor={theme.colors.onPrimary}
-      clusterFontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif-medium'}
-      renderCluster={renderCluster}
-      superClusterRef={superClusterRef}
-      radius={40}
-      minPoints={4}
-      maxZoom={11}
-      extent={256}
-      animationEnabled={false}
     >
-      {showMarkers ? markerElements : null}
+      {/* Zoom largo (regime dot): bolle-cluster + salvati individuali.
+          Zoom stretto: pin individuali col rating (path invariato). */}
+      {showMarkers ? (CLUSTERING_ENABLED && isDotZoom ? clusteredElements : markerElements) : null}
       {showMarkers && (
         <SelectedMarkerOverlay
           selectedId={selectedId}
@@ -486,7 +649,7 @@ export default function RestaurantMap({
           onPress={onRestaurantPress}
         />
       )}
-    </ClusteredMapView>
+    </MapView>
   );
 }
 
@@ -520,6 +683,13 @@ const ANDROID_MAP_STYLE_DARK = [
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   map: { ...StyleSheet.absoluteFillObject },
 
+  // Android: padding simmetrico così la bitmap del marker include ombra+bordo
+  // senza ritagliarli (cerchio "monco"); simmetrico = la bolla resta centrata.
+  clusterWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({ android: { padding: 6 } }),
+  },
   clusterContainer: {
     width: 36,
     height: 36,
