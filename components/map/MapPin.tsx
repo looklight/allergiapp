@@ -152,12 +152,13 @@ export default memo(function MapPin({
       }
     }
 
-    // Hide grey dots at far zoom to declutter the map: if filters are active
-    // and this restaurant matches none of them, skip rendering.
-    // Saved places (qualsiasi lista) restano visibili cos\u00ec l'utente non li "perde".
-    if (showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isSaved) {
-      return null;
-    }
+    // I locali a zero match restano sulla mappa come pallino grigio "recesso",
+    // non nascosti. Una mappa vuota all'avvio (utente con esigenze prive di dati
+    // nel viewport) erode la fiducia; un pallino grigio attenuato comunica invece
+    // onestamente "il locale c'\u00e8, nessuna info per le tue esigenze". I match
+    // colorati restano dominanti per dimensione + zIndex; i salvati non sono mai
+    // attenuati (restano a piena visibilit\u00e0 con il badge della lista).
+    const isMuted = showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isSaved;
 
     const dotColor = showMatchInfo
       ? coverageColor(dotCovered, dotTotal, theme)
@@ -177,10 +178,11 @@ export default memo(function MapPin({
         onPress={handlePress}
         {...(Platform.OS === 'android' && { zIndex: dotZ })}
       >
-        <View style={styles.dotWrap}>
+        <View style={[styles.dotWrap, isSaved ? styles.dotWrapSaved : styles.dotWrapUnsaved]}>
           <View style={[
             styles.dotMarker,
             isSaved && styles.dotFavorite,
+            isMuted && styles.dotMuted,
             { backgroundColor: dotColor },
           ]} />
           <View style={[styles.dotHeartBadge, { opacity: isSaved ? 1 : 0 }]}>
@@ -266,7 +268,22 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'visible',
-    // Android: come markerWrap, padding per includere dotHeartBadge nella bitmap
+  },
+  // Android: padding SIMMETRICO per i pallini senza badge. Il marker custom è
+  // ancorato al centro della propria bitmap; con padding simmetrico il pallino
+  // resta esattamente al centro → posizione precisa sulla mappa anche a forte
+  // zoom out (un'asimmetria di pochi px diventa km a scala continentale, ed è ciò
+  // che faceva "finire in mare" i pin costieri su Android). Lo spazio evita anche
+  // il clipping dell'ombra. iOS: nessun padding (Platform.select android-only) →
+  // rendering invariato, nessuna regressione.
+  dotWrapUnsaved: {
+    ...Platform.select({ android: { padding: 5 } }),
+  },
+  // Android: i pallini salvati hanno il badge sporgente in alto a destra; il
+  // padding asimmetrico serve a includerlo nella bitmap. Identico al comportamento
+  // storico (cambiarlo è il "Pezzo B", da affrontare con anchor esplicito). iOS
+  // invariato.
+  dotWrapSaved: {
     ...Platform.select({ android: { paddingTop: 8, paddingRight: 10 } }),
   },
   dotMarker: {
@@ -285,6 +302,19 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
+  },
+  // Pallino "recesso" per i locali a zero match: più piccolo, semitrasparente e
+  // senza ombra, così resta leggibile come "esiste un locale" ma cede la scena
+  // ai match verde/ambra. Il bordo onPrimary di dotMarker (ridotto) garantisce
+  // la separazione dallo sfondo mappa in entrambi i temi.
+  dotMuted: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    borderWidth: 1,
+    opacity: 0.7,
+    shadowOpacity: 0,
+    elevation: 1,
   },
   dotHeartBadge: {
     position: 'absolute',
