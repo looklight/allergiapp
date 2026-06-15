@@ -29,7 +29,7 @@ export default function AddReviewScreen() {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, reviewId, offersLodging } = useLocalSearchParams<{
+  const { restaurantId, restaurantName, restaurantAddress, restaurantRating, restaurantRatingCount, prefillRating, reviewId, offersLodging, servesFood } = useLocalSearchParams<{
     restaurantId: string;
     restaurantName?: string;
     restaurantAddress?: string;
@@ -38,8 +38,13 @@ export default function AddReviewScreen() {
     prefillRating?: string;
     reviewId?: string;
     offersLodging?: string;
+    servesFood?: string;
   }>();
-  const venueIcon = venueIconName(offersLodging === '1');
+  const isLodging = offersLodging === '1';
+  // Toggle "ha ristorante aperto al pubblico": appare solo per le strutture,
+  // pre-impostato sullo stato attuale (lucchetto morbido). Scrive solo se cambia.
+  const initialServesFood = servesFood !== '0';
+  const venueIcon = venueIconName(isLodging);
   const ratingNum = parseFloat(restaurantRating ?? '0');
   const ratingCountNum = parseInt(restaurantRatingCount ?? '0', 10);
   const { user, dietaryNeeds, refreshProfile } = useAuth();
@@ -67,6 +72,7 @@ export default function AddReviewScreen() {
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [cuisinePickerOpen, setCuisinePickerOpen] = useState(false);
+  const [publicRestaurant, setPublicRestaurant] = useState(initialServesFood);
   const scrollRef = useRef<ScrollView>(null);
   const scrollOffsetY = useRef(0);
   const viewportHeight = useRef(0);
@@ -156,6 +162,12 @@ export default function AddReviewScreen() {
 
       // Salva voti cucina (pre-selezionati = baseline, nessun rischio di perdita)
       await RestaurantService.voteCuisines(restaurantId, user.uid, selectedCuisines);
+
+      // Lodging: aggiorna "ha ristorante aperto al pubblico" solo se l'utente l'ha
+      // cambiato (best-effort, non deve far fallire la recensione gia' salvata).
+      if (isLodging && publicRestaurant !== initialServesFood) {
+        await RestaurantService.setLodgingServesFood(restaurantId, publicRestaurant).catch(() => {});
+      }
 
       // Triggera re-check sblocchi avatar (es. raggiunta soglia recensioni / paesi).
       refreshUnlockedAvatars();
@@ -273,6 +285,25 @@ export default function AddReviewScreen() {
             )}
           </View>
         </View>
+
+        {/* Lodging: "ha ristorante aperto al pubblico?" — solo per le strutture.
+            Stesso toggle della creazione, pre-impostato sullo stato attuale. */}
+        {isLodging && (
+          <>
+            <TouchableOpacity
+              style={styles.lodgingToggleRow}
+              activeOpacity={0.7}
+              onPress={() => setPublicRestaurant(prev => !prev)}
+            >
+              <MaterialCommunityIcons name="silverware-fork-knife" size={18} color={theme.colors.primary} />
+              <Text style={styles.lodgingToggleLabel}>{i18n.t('restaurants.add.hasPublicRestaurant')}</Text>
+              <View style={[styles.switchTrack, publicRestaurant && styles.switchTrackActive]}>
+                <View style={[styles.switchThumb, publicRestaurant && styles.switchThumbActive]} />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.lodgingToggleHint}>{i18n.t('restaurants.add.hasPublicRestaurantHint')}</Text>
+          </>
+        )}
 
         {/* Tag tipo di cucina — community */}
         <Text style={styles.cuisineTitle}>{i18n.t('restaurants.review.cuisineTitle')}</Text>
@@ -581,6 +612,43 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 8,
   },
   // Cuisine tags
+  lodgingToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 20,
+  },
+  lodgingToggleLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  lodgingToggleHint: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
+  },
+  switchTrack: {
+    width: 40,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: theme.colors.border,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  switchTrackActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  switchThumb: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: theme.colors.surface,
+  },
+  switchThumbActive: {
+    alignSelf: 'flex-end',
+  },
   cuisineTitle: {
     fontSize: 14,
     fontWeight: '600',

@@ -327,6 +327,18 @@ async function removeOwnRestaurant(restaurantId: string, userId: string): Promis
   }
 }
 
+// ─── Lodging: aggiorna "ha ristorante aperto al pubblico" (serves_food) ──────
+// Passa dalla RPC set_lodging_serves_food (SECURITY DEFINER): un recensore
+// qualsiasi non potrebbe scrivere su restaurants via RLS owner-only. La RPC
+// aggiorna solo righe offers_lodging=true.
+async function setLodgingServesFood(restaurantId: string, servesFood: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_lodging_serves_food', {
+    p_restaurant_id: restaurantId,
+    p_serves_food: servesFood,
+  });
+  if (error) throw error;
+}
+
 // ─── Fuzzy search per nome (autocomplete) ───────────────────────────────────
 
 async function searchRestaurantsByName(
@@ -421,6 +433,7 @@ export const RestaurantService = {
   checkNearbyDuplicates,
   getRestaurantsByUser,
   removeOwnRestaurant,
+  setLodgingServesFood,
   searchRestaurantsByName,
   // Reviews (da reviewService)
   getReviews,

@@ -213,7 +213,7 @@ export function useRestaurantDetail(
       router.push('/auth/login');
       return;
     }
-    let url = `/restaurants/add-review?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}&restaurantAddress=${encodeURIComponent(restaurant?.address ?? '')}&restaurantRating=${restaurant?.average_rating ?? 0}&restaurantRatingCount=${restaurant?.review_count ?? 0}&offersLodging=${restaurant?.offers_lodging ? 1 : 0}`;
+    let url = `/restaurants/add-review?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant?.name ?? '')}&restaurantAddress=${encodeURIComponent(restaurant?.address ?? '')}&restaurantRating=${restaurant?.average_rating ?? 0}&restaurantRatingCount=${restaurant?.review_count ?? 0}&offersLodging=${restaurant?.offers_lodging ? 1 : 0}&servesFood=${restaurant?.serves_food === false ? 0 : 1}`;
     if (prefilledRating) url += `&prefillRating=${prefilledRating}`;
     if (editReviewId) url += `&reviewId=${editReviewId}`;
     router.push(url);
