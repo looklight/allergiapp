@@ -6,6 +6,15 @@
     "ok": "OK"
   },
   "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "add": "Añadir",
+    "error": "Error",
+    "thanks": "Gracias",
+    "save": "Guardar",
     "userInactive": "Usuario inactivo",
     "or": "o",
     "continueWithGoogle": "Continuar con Google",

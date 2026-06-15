@@ -6,6 +6,15 @@
     "ok": "OK"
   },
   "common": {
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "add": "Hinzufügen",
+    "error": "Fehler",
+    "thanks": "Danke",
+    "save": "Speichern",
     "userInactive": "Inaktiver Benutzer",
     "or": "oder",
     "continueWithGoogle": "Mit Google fortfahren",
@@ -31,7 +40,7 @@
     "bannerTipDesc": "Entdecke sie über die Community und teile deine Erfahrung",
     "bannerTipCta": "Mehr erfahren",
     "bannerHowToUse": "Kommuniziere klar",
-    "bannerHowToUseDesc": "Zeige deine Karte dem Kellner wenn du im Restaurant bestellst"
+    "bannerHowToUseDesc": "Zeige deine Karte dem Kellner, wenn du im Restaurant bestellst"
   },
   "cardBadges": {
     "myCard": "Meine Karte",
