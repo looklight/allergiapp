@@ -58,15 +58,22 @@ export function useLanguageDownload(): UseLanguageDownloadReturn {
 
     try {
       // 1. Prova Supabase (traduzioni pre-generate, istantaneo)
-      const supabaseData = await fetchTranslationFromSupabase(langCode);
+      const result = await fetchTranslationFromSupabase(langCode);
 
-      if (supabaseData) {
-        await onSuccess(langCode, supabaseData);
+      if (result.status === 'ok') {
+        await onSuccess(langCode, result.data);
         success = true;
         return;
       }
 
-      // 2. Fallback: MyMemory API (traduzione on-demand)
+      // Server non raggiungibile: nessuna connessione → messaggio immediato,
+      // senza tentare il fallback MyMemory (che girerebbe a vuoto fino al timeout)
+      if (result.status === 'offline') {
+        Alert.alert('', i18n.t('settings.noInternet'));
+        return;
+      }
+
+      // 2. Fallback: MyMemory API (traduzione on-demand) per lingue non pre-generate
       const isAvailable = await checkTranslationServiceAvailable();
       if (!isAvailable) {
         Alert.alert('', i18n.t('settings.noInternet'));
