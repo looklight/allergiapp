@@ -56,7 +56,10 @@
     "title": "Que dois-je communiquer ?",
     "subtitle": "Sélectionnez les aliments à éviter",
     "save": "Enregistrer",
-    "otherFoods": "Autres aliments"
+    "otherFoods": "Autres aliments",
+    "allergens": "Allergènes",
+    "searchPlaceholder": "Rechercher un aliment...",
+    "noResults": "Aucun aliment trouvé"
   },
   "otherRestrictions": {
     "title": "Autres besoins",

@@ -56,7 +56,10 @@
     "title": "Was muss ich mitteilen?",
     "subtitle": "Wähle die zu vermeidenden Lebensmittel",
     "save": "Speichern",
-    "otherFoods": "Andere Lebensmittel"
+    "otherFoods": "Andere Lebensmittel",
+    "allergens": "Allergene",
+    "searchPlaceholder": "Lebensmittel suchen...",
+    "noResults": "Kein Lebensmittel gefunden"
   },
   "otherRestrictions": {
     "title": "Weitere Bedürfnisse",

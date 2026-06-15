@@ -5,9 +5,10 @@ import en from '../locales/en.json';
 import es from '../locales/es.json';
 import de from '../locales/de.json';
 import fr from '../locales/fr.json';
+import pt from '../locales/pt.json';
 import { AppLanguage } from '../types';
 
-const SUPPORTED_LANGUAGES: AppLanguage[] = ['it', 'en', 'es', 'de', 'fr'];
+const SUPPORTED_LANGUAGES: AppLanguage[] = ['it', 'en', 'es', 'de', 'fr', 'pt'];
 
 export function getDeviceLanguage(): AppLanguage {
   try {
@@ -30,6 +31,7 @@ const i18n = new I18n({
   es,
   de,
   fr,
+  pt,
 });
 
 i18n.locale = getDeviceLanguage();

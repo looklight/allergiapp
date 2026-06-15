@@ -22,6 +22,7 @@ const APP_LANGUAGES = [
   { code: 'es' as const, name: 'Español', flag: '🇪🇸' },
   { code: 'de' as const, name: 'Deutsch', flag: '🇩🇪' },
   { code: 'fr' as const, name: 'Français', flag: '🇫🇷' },
+  { code: 'pt' as const, name: 'Português', flag: '🇵🇹' },
 ];
 
 // Larghezza fissa condivisa dei controlli a destra (lingua + aspetto): garantisce

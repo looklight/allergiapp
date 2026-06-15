@@ -138,7 +138,7 @@ export interface Allergen {
   translations: Record<Language, string>;
 }
 
-export type AppLanguage = 'it' | 'en' | 'es' | 'de' | 'fr';
+export type AppLanguage = 'it' | 'en' | 'es' | 'de' | 'fr' | 'pt';
 
 /** Tab aperta al cold-start dell'app. Default 'card'. */
 export type DefaultTab = 'card' | 'restaurants';
