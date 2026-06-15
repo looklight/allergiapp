@@ -27,7 +27,9 @@
     "downloadMoreLanguages": "Télécharger plus de langues",
     "bannerWelcome": "Où que vous alliez",
     "bannerMotivation": "Voyagez en toute sécurité, communiquez vos allergies sans barrières",
-    "bannerTip": "Ajoutez vos allergies et voyagez en toute légèreté",
+    "bannerTip": "Restaurants pour vous",
+    "bannerTipDesc": "Découvrez-les grâce à la communauté et partagez votre expérience",
+    "bannerTipCta": "En savoir plus",
     "bannerHowToUse": "Communiquez clairement",
     "bannerHowToUseDesc": "Présentez votre carte au serveur lorsque vous commandez au restaurant"
   },

@@ -172,13 +172,12 @@ export default function BannerCarousel({ scrollInterval = 8000 }: BannerCarousel
             <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
           ) : null}
         </View>
-        {/* Chip-indicatore: l'intera slide è tappabile (vedi sotto), quindi qui
-            basta un segnale piccolo. Posizionato in assoluto in basso a destra
-            così NON aggiunge altezza al banner. */}
+        {/* Pulsantino-segnale (solo visivo): l'intera slide è già tappabile.
+            In assoluto in basso a destra → NON aggiunge altezza al banner. */}
         {item.cta ? (
           <View style={styles.ctaChip} pointerEvents="none">
             <Text style={styles.ctaLabel}>{item.cta.label}</Text>
-            <MaterialCommunityIcons name="open-in-new" size={12} color={theme.colors.onPrimary} />
+            <MaterialCommunityIcons name="open-in-new" size={11} color={theme.colors.onPrimary} />
           </View>
         ) : null}
       </LinearGradient>
@@ -296,17 +295,17 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   ctaChip: {
     position: 'absolute',
     right: 12,
-    bottom: 12,
+    bottom: 9,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 9,
+    gap: 3,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.secondary,
   },
   ctaLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: theme.colors.onPrimary,
   },
