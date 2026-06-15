@@ -105,12 +105,14 @@ const splashStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+    // Deve combaciare con lo splash nativo (expo-splash-screen in app.config.ts:
+    // backgroundColor #F7DCB3, image splash-icon.png imageWidth 200 contain).
+    // Se differisce, l'utente percepisce "due splash" alla transizione nativo→JS.
+    backgroundColor: '#F7DCB3',
   },
   logo: {
-    width: 150,
-    height: 150,
-    borderRadius: 24,
+    width: 200,
+    height: 200,
   },
 });
 
