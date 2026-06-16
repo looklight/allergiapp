@@ -426,12 +426,18 @@ export default function RestaurantMap({
     const elements: React.ReactElement[] = [];
     const seen = new Set<string>();
     const pins = allPins ?? [];
-    // Il pin selezionato è gestito esclusivamente da SelectedMarkerOverlay,
-    // ma SOLO se l'overlay può effettivamente renderizzarlo (restaurantById
-    // contiene l'id). Se i dati del ristorante non sono ancora caricati
-    // (pin presente solo in allPins, non in restaurants/favorites), lasciamo
-    // il pin normale visibile per evitare che sparisca durante il tap.
-    const skip = (selectedId && restaurantById.has(selectedId)) ? selectedId : '';
+    // Gestione del pin selezionato — split per piattaforma (deliberato):
+    // • iOS: lo lasciamo SEMPRE nel layer (skip=''), l'overlay evidenziato si
+    //   sovrappone sopra. Così il layer non cambia mai alla selezione → niente
+    //   togli/rimetti di marker, che sotto l'interop Fabric causava crash
+    //   (SIGABRT in AIRMap insertReactSubview) o pin spariti (con la patch).
+    // • Android: NON ha quel churn-crash; in più non rispetta lo zIndex tra due
+    //   marker sulla stessa coordinata (il pin normale coprirebbe quello colorato
+    //   e mangerebbe il vertice). Quindi lo rimuoviamo dal layer e lo disegna
+    //   solo SelectedMarkerOverlay, come prima.
+    const skip = Platform.OS === 'ios'
+      ? ''
+      : (selectedId && restaurantById.has(selectedId)) ? selectedId : '';
 
     // allPins first (lightweight, covers the whole viewport)
     for (const p of pins) {
@@ -522,6 +528,7 @@ export default function RestaurantMap({
     }
 
     return elements;
+    // selectedId serve solo al ramo Android dello skip (su iOS skip è costante '').
   }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   // --- Cluster elements (regime dot / zoom largo) -----------------------------
@@ -568,6 +575,10 @@ export default function RestaurantMap({
         );
         continue;
       }
+      // NB: come lo `skip` in markerElements, ma qui si rimuove SEMPRE (anche iOS).
+      // Ora è inerte (clustering OFF iOS / disabilitato Android). Se un domani il
+      // clustering viene riattivato su iOS, rispecchiare lo split per piattaforma
+      // per non reintrodurre il churn-crash dei marker (vedi nota sullo skip sopra).
       if (r.pinId === selectedId) continue; // gestito da SelectedMarkerOverlay
       const pin = pinById.get(r.pinId);
       els.push(
