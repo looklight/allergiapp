@@ -23,7 +23,12 @@ export function useReviewsPaginated(
   const [reviews, setReviews] = useState<Review[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [offset, setOffset] = useState(0);
-  const [sortOrder, setSortOrder] = useState<ReviewSortOrder>('recent');
+  // Default: compatibilità ('relevance', "Per me") se l'utente ha esigenze
+  // alimentari, altrimenti recenti. Le needs arrivano dal context auth, già
+  // pronto all'apertura del ristorante. Una scelta manuale poi la sovrascrive.
+  const [sortOrder, setSortOrder] = useState<ReviewSortOrder>(() =>
+    userAllergens.length > 0 || userDiets.length > 0 ? 'relevance' : 'recent',
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Stale-request protection — every fetch increments this;
