@@ -29,7 +29,9 @@ const STORAGE_KEYS = {
 };
 
 export type ThemeMode = 'system' | 'light' | 'dark';
-const DEFAULT_THEME_MODE: ThemeMode = 'system';
+// Default light al primo avvio: l'onboarding rende di più in chiaro e la card è
+// comunque sempre light. L'utente può passare a Sistema/Scuro dalle impostazioni.
+const DEFAULT_THEME_MODE: ThemeMode = 'light';
 
 export type ProfileCounts = { reviews: number; favorites: number };
 
