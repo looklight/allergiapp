@@ -34,8 +34,20 @@ Implementato e committato su main. Restano da chiudere lato test/UX:
 - [ ] **Verificare timing popup** — il popup avatar e l'`AnnouncementPopup` non devono apparire durante l'onboarding né flashare in transizione (fix con gate-path + delay 500ms in `utils/globalPopups.ts`).
 - [ ] **Edge case popup-stacking** (deferito di proposito) — se contemporaneamente c'è un annuncio attivo *e* un utente nuovo (popup avatar `free`, regalo di benvenuto intenzionale), entrambi i Modal possono apparire sull'atterraggio. Coordinarli richiederebbe una coda di popup condivisa. Lasciato come edge accettabile finché non si dimostra fastidioso.
 
+### Mappa Android — perf & rendering (sessione 2026-06-16, su main)
+Il "lag generale Android" era in gran parte la mappa. Cause trovate e risolte:
+- [x] **Tempesta di fetch pin** → dedup in `useRestaurantGeo` (commit `80f2067`) — app più fluida.
+- [x] **Clustering client rotto** (bolle "a spicchio" / churn / pin spariti su react-native-maps 1.20.1 + New Arch) → **disabilitato** (`CLUSTERING_ENABLED = false`, `d76db66`); pin individuali come iOS, più fluido (il churn *peggiorava* la perf).
+- [x] **Pin profilo non disegnati** su Android — il percorso cluster ignorava la prop `restaurants` (`clusteringActive`, `b0c33b7`).
+- [x] **Crash toggle profilo iOS** → patch react-native-maps via patch-package (`03af8b8`).
+- [~] **Drift pallini "in mare"** → mitigato con anchor esplicito + no elevation (`3bb7ea0`); residuo = limite libreria, lo chiude l'upgrade.
+
+**PIANIFICATI (decisi questa sessione):**
+- [ ] **Aggregazione pin server-side** — `get_pins_in_bounds` fa `LIMIT 1000` SENZA `ORDER BY` → oltre 1000 ristoranti in un viewport ne scarta a caso (iOS+Android). È il vero requisito "visibili a qualunque numero". Soluzione: RPC che a zoom largo ritorna conteggi aggregati per cella griglia (PostGIS `ST_SnapToGrid`, payload costante a qualunque N); client consuma aggregato a zoom largo / singoli a zoom stretto. Bonus: celle stabili → niente churn → riattivabile un clustering pulito.
+- [ ] **Upgrade `react-native-maps` 1.20.1 → 1.27.x (Fabric nativo)** al prossimo bump SDK Expo (SDK 54 pinna la 1.20.1) — cura definitiva di drift + resa bolle + crash churn; all'upgrade **togliere la patch-package** (`patches/react-native-maps+1.20.1.patch`).
+
 ### Lag generale Android
-Tutto sembra meno fluido che su iOS. Da capire se è Expo Go (~5x più lento per via di dev mode + niente Hermes optimizations) o se ci sono problemi reali.
+Gran parte era la mappa (vedi sopra, risolto). Resta da verificare la fluidità generale (non-mappa) in un EAS build, dato che Expo Go è ~5x più lento (dev mode + niente Hermes optimizations).
 
 - [ ] **Prima di indagare oltre**: testare in un EAS build (dev-client o internal testing) per escludere l'overhead di Expo Go
 - [ ] Se persiste in EAS: profiler RN, controllare re-render eccessivi (FlatList senza keyExtractor stabile, useState in componenti grossi), Reanimated worklets che fanno troppo, immagini non ottimizzate (vedi roadmap migrazione a `expo-image` nella sezione Gestione immagini)
