@@ -12,9 +12,9 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "patch-package",
     "build:avatars": "node scripts/build-avatars.mjs",
-    "env:sync": "eas env:pull --environment development",
-    "ota:beta": "eas update --branch beta --environment preview",
-    "ota:production": "eas update --branch production --environment production"
+    "env:sync": "npx eas-cli env:pull --environment development",
+    "ota:beta": "npx eas-cli update --branch beta --environment preview",
+    "ota:production": "npx eas-cli update --branch production --environment production"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -61,7 +61,6 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
-    "eas-cli": "^18.0.3",
     "google-translate-api-x": "^10.7.2",
     "patch-package": "^8.0.1",
     "postinstall-postinstall": "^2.1.0",
