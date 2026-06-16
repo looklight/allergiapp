@@ -35,6 +35,9 @@ export default function DietModeSection({
   const isPortrait = variant === 'portrait';
   const { sectionColors, restrictionItems } = data;
   const hasRestrictionItems = restrictionItems && restrictionItems.length > 0;
+  // Hook dichiarato in cima: deve essere chiamato in ogni render, prima
+  // dei return condizionali (usato solo nel ramo "label-only" piu' sotto)
+  const [foodExpanded, setFoodExpanded] = useState(false);
 
   // For pregnancy mode with restriction items, use the restriction-style section
   if (hasRestrictionItems) {
@@ -104,7 +107,6 @@ export default function DietModeSection({
   }
 
   // Label-only mode (vegetarian, vegan)
-  const [foodExpanded, setFoodExpanded] = useState(false);
   const hasFoodItems = data.foodItems && (data.foodItems.forbidden.length > 0 || data.foodItems.allowed.length > 0);
 
   if (isPortrait) {
