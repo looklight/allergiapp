@@ -406,10 +406,18 @@ export default function RestaurantMap({
   // showMatchInfo does NOT change keys → colors update via tracksViewChanges.
   const favIds = useMemo(() => favoriteIds ?? new Set<string>(), [favoriteIds]);
 
+  // Il clustering (solo Android) ha senso unicamente quando c'è un set `allPins`
+  // da diradare — è il regime della mappa home. Le mini-mappe dei profili passano
+  // i pin via `restaurants` (niente `allPins`): lì non c'è nulla da clusterizzare,
+  // e il percorso cluster NON disegna `restaurants` → mappa profilo vuota su Android.
+  // Con questa guardia, senza allPins si usa sempre `markerElements` (che disegna
+  // `restaurants`), coerente con iOS dove il clustering è già spento.
+  const clusteringActive = CLUSTERING_ENABLED && (allPins?.length ?? 0) > 0;
+
   const markerElements = useMemo(() => {
     // A zoom largo (regime dot) renderizziamo i cluster (clusteredElements), non i
     // pin individuali: short-circuit per non costruire centinaia di elementi inutili.
-    if (CLUSTERING_ENABLED && isDotZoom) return [] as React.ReactElement[];
+    if (clusteringActive && isDotZoom) return [] as React.ReactElement[];
     const elements: React.ReactElement[] = [];
     const seen = new Set<string>();
     const pins = allPins ?? [];
@@ -509,7 +517,7 @@ export default function RestaurantMap({
     }
 
     return elements;
-  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
+  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   // --- Cluster elements (regime dot / zoom largo) -----------------------------
   // Salvati/preferiti SEMPRE individuali e sopra le bolle (esclusi dal cluster):
@@ -541,11 +549,11 @@ export default function RestaurantMap({
     userDiets ?? [],
     !!showMatchInfo,
     clusterRegion,
-    CLUSTERING_ENABLED && isDotZoom,
+    clusteringActive && isDotZoom,
   );
 
   const clusteredElements = useMemo(() => {
-    if (!CLUSTERING_ENABLED) return [] as React.ReactElement[];
+    if (!clusteringActive) return [] as React.ReactElement[];
     const els: React.ReactElement[] = [];
     // Bolle + pin generici singoli
     for (const r of clusterResults) {
@@ -615,7 +623,14 @@ export default function RestaurantMap({
       if (r.location) pushSaved(id, r.location.latitude, r.location.longitude, r);
     }
     return els;
-  }, [clusterResults, theme, styles, handleClusterPress, selectedId, pinById, restaurantById, showMatchInfo, handleMarkerPress, userAllergens, userDiets, favIds, customSymbols, allPins, alwaysIndividualIds, favoriteRestaurants, savedRestaurants]);
+  }, [clusterResults, theme, styles, handleClusterPress, selectedId, pinById, restaurantById, showMatchInfo, handleMarkerPress, userAllergens, userDiets, favIds, customSymbols, allPins, clusteringActive, alwaysIndividualIds, favoriteRestaurants, savedRestaurants]);
+
+  // [MAPDIAG] diagnostica perf/cluster — solo dev, rimovibile (grep [MAPDIAG]).
+  useEffect(() => {
+    if (!__DEV__) return;
+    const path = (clusteringActive && isDotZoom) ? 'CLUSTER' : 'MARKER';
+    console.log(`[MAPDIAG] render: platform=${Platform.OS} clusteringActive=${clusteringActive} isDotZoom=${isDotZoom} path=${path} | allPins=${(allPins ?? []).length} genericPins=${genericPins.length} | markerEls=${markerElements.length} clusterEls=${clusteredElements.length}`);
+  }, [isDotZoom, allPins, clusteringActive, genericPins.length, markerElements.length, clusteredElements.length]);
 
   const showMarkers = hasAnimatedToUser || !centerOn || !centerOn.latDelta;
 
@@ -638,7 +653,7 @@ export default function RestaurantMap({
     >
       {/* Zoom largo (regime dot): bolle-cluster + salvati individuali.
           Zoom stretto: pin individuali col rating (path invariato). */}
-      {showMarkers ? (CLUSTERING_ENABLED && isDotZoom ? clusteredElements : markerElements) : null}
+      {showMarkers ? (clusteringActive && isDotZoom ? clusteredElements : markerElements) : null}
       {showMarkers && (
         <SelectedMarkerOverlay
           selectedId={selectedId}
