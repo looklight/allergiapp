@@ -176,7 +176,10 @@ export default memo(function MapPin({
         coordinate={{ latitude, longitude }}
         tracksViewChanges={justChanged}
         onPress={handlePress}
-        {...(Platform.OS === 'android' && { zIndex: dotZ })}
+        // Android: anchor esplicito al CENTRO. Senza, react-native-maps ancora il
+        // marker custom in basso-centro (default tipo punta-di-pin) → la coordinata
+        // cade sotto il pallino → a zoom largo l'offset in px = km → "pin in mare".
+        {...(Platform.OS === 'android' && { zIndex: dotZ, anchor: { x: 0.5, y: 0.5 } })}
       >
         <View style={[styles.dotWrap, isSaved ? styles.dotWrapSaved : styles.dotWrapUnsaved]}>
           <View style={[
@@ -296,7 +299,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     shadowOffset: { width: 0, height: 0.5 },
     shadowOpacity: 0.2,
     shadowRadius: 1,
-    elevation: 2,
+    // Android: niente elevation. L'ombra da elevation rende la bitmap asimmetrica
+    // (sporge in basso) → residuo di offset anche con anchor centro. Il bordo bianco
+    // basta a staccare il pallino. iOS usa shadow* (catturati nel CALayer), invariato.
+    elevation: 0,
   },
   dotFavorite: {
     width: 12,
