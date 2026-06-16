@@ -493,8 +493,8 @@
       "menuReviews": "My reviews",
       "menuMyRestaurants": "My restaurants",
       "menuLeaderboard": "Leaderboard",
-      "emptyReviews": "You haven’t written any reviews yet.",
-      "emptyFavorites": "You don’t have any favorite restaurants yet."
+      "emptyReviews": "Your reviews will show up here. Visit a restaurant and share how it went.",
+      "emptyFavorites": "Your favorites will show up here. Tap the heart on a place to save it."
     },
     "report": {
       "title": "Report a problem",
@@ -572,7 +572,7 @@
       "newList": "Create new list",
       "namePlaceholder": "List name",
       "create": "Create",
-      "emptyList": "This list is empty.",
+      "emptyList": "This list is empty. Open a restaurant and tap {icon} to save it here.",
       "createTitle": "New list",
       "chooseSymbol": "Choose list symbol",
       "showOnMap": "Show on map",

@@ -493,8 +493,8 @@
       "menuReviews": "Le mie recensioni",
       "menuMyRestaurants": "I miei ristoranti",
       "menuLeaderboard": "Classifiche",
-      "emptyReviews": "Non hai ancora scritto recensioni.",
-      "emptyFavorites": "Non hai ancora ristoranti preferiti."
+      "emptyReviews": "Le tue recensioni appariranno qui. Visita un ristorante e racconta com'è andata.",
+      "emptyFavorites": "I tuoi preferiti appariranno qui. Tocca il cuore su un locale per salvarlo."
     },
     "report": {
       "title": "Segnala un problema",
@@ -572,7 +572,7 @@
       "newList": "Crea nuova lista",
       "namePlaceholder": "Nome della lista",
       "create": "Crea",
-      "emptyList": "Questa lista è vuota.",
+      "emptyList": "Lista ancora vuota. Apri un ristorante e tocca {icon} per salvarlo qui.",
       "createTitle": "Nuova lista",
       "chooseSymbol": "Scegli simbolo lista",
       "showOnMap": "Mostra sulla mappa",

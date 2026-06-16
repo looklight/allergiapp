@@ -163,6 +163,9 @@ export default function ProfileScreen() {
   // Simbolo della lista aperta per il badge sui pin: emoji (string) | null
   // (bookmark). Allinea la mini-mappa del profilo alla mappa home.
   const currentCollectionEmoji = currentCollection?.emoji ?? null;
+  // Stato vuoto della lista custom: il token {icon} diventa il segnalibro inline,
+  // coerente con il bookmark nell'header della scheda ristorante.
+  const [emptyListBefore, emptyListAfter] = i18n.t('restaurants.collections.emptyList').split('{icon}');
 
   const handleEditorSubmit = async (name: string, emoji: string | null) => {
     if (!user?.uid) return;
@@ -374,11 +377,17 @@ export default function ProfileScreen() {
         emptyState={
           isLoadingLists ? null : (
             <Text style={styles.emptyText}>
-              {selected === 'reviews'
-                ? i18n.t('restaurants.profile.emptyReviews')
-                : selected === 'favorites'
-                  ? i18n.t('restaurants.profile.emptyFavorites')
-                  : i18n.t('restaurants.collections.emptyList')}
+              {selected === 'reviews' ? (
+                i18n.t('restaurants.profile.emptyReviews')
+              ) : selected === 'favorites' ? (
+                i18n.t('restaurants.profile.emptyFavorites')
+              ) : (
+                <>
+                  {emptyListBefore}
+                  <MaterialCommunityIcons name="bookmark-outline" size={15} color={theme.colors.textSecondary} />
+                  {emptyListAfter}
+                </>
+              )}
             </Text>
           )
         }
