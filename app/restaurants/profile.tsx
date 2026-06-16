@@ -22,6 +22,7 @@ import { useProfileCounts } from '../../hooks/useProfileCounts';
 import { useCachedCollections } from '../../hooks/useCachedCollections';
 import { storage, type CollectionMeta } from '../../utils/storage';
 import CountText from '../../components/CountText';
+import ShineSweep from '../../components/ShineSweep';
 import { getAnonymousLabel } from '../../utils/anonymousLabel';
 import { venueIconName } from '../../constants/restaurantCategories';
 import i18n from '../../utils/i18n';
@@ -316,15 +317,17 @@ export default function ProfileScreen() {
         topActions={
           <>
             <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.menuItem, styles.menuItemLeaderboard]}
-                onPress={() => router.push('/leaderboard')}
-                activeOpacity={0.6}
-              >
-                <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.amberDark} />
-                <Text style={[styles.menuItemText, styles.menuItemLeaderboardText]}>{i18n.t('restaurants.profile.menuLeaderboard')}</Text>
-                <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.amberDark} />
-              </TouchableOpacity>
+              <ShineSweep borderRadius={12}>
+                <TouchableOpacity
+                  style={[styles.menuItem, styles.menuItemLeaderboard]}
+                  onPress={() => router.push('/leaderboard')}
+                  activeOpacity={0.6}
+                >
+                  <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.amberDark} />
+                  <Text style={[styles.menuItemText, styles.menuItemLeaderboardText]}>{i18n.t('restaurants.profile.menuLeaderboard')}</Text>
+                  <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.amberDark} />
+                </TouchableOpacity>
+              </ShineSweep>
             </View>
             <View style={styles.actionsDivider} />
           </>
