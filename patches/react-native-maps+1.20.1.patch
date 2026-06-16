@@ -1,0 +1,34 @@
+diff --git a/node_modules/react-native-maps/ios/AirMaps/AIRMap.m b/node_modules/react-native-maps/ios/AirMaps/AIRMap.m
+index 07a4638..3aca919 100644
+--- a/node_modules/react-native-maps/ios/AirMaps/AIRMap.m
++++ b/node_modules/react-native-maps/ios/AirMaps/AIRMap.m
+@@ -104,6 +104,12 @@ -(void)addSubview:(UIView *)view {
+ #pragma clang diagnostic push
+ #pragma clang diagnostic ignored "-Wobjc-missing-super-calls"
+ - (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex {
++    // PATCH (allergiapp): sotto la New Architecture (legacy view-manager interop)
++    // questo metodo puo' essere chiamato con subview == nil (una view gia' rimossa/
++    // riciclata) quando i marker vengono tolti e re-inseriti (es. toggle filtro nel
++    // profilo). insertObject:nil piu' avanti lancerebbe "object cannot be nil" ->
++    // SIGABRT. Niente da inserire: usciamo. Vedi anche il clamp dell'indice sotto.
++    if (subview == nil) return;
+     // Our desired API is to pass up markers/overlays as children to the mapview component.
+     // This is where we intercept them and do the appropriate underlying mapview action.
+     if ([subview isKindOfClass:[AIRMapMarker class]]) {
+@@ -135,7 +141,15 @@ - (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex
+             [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+         }
+     }
+-    [_reactSubviews insertObject:(UIView *)subview atIndex:(NSUInteger) atIndex];
++    // PATCH (allergiapp): clamp dell'indice alla dimensione reale dell'array.
++    // Sotto la New Architecture (legacy view-manager interop) atIndex puo' arrivare
++    // oltre _reactSubviews.count quando i marker vengono tolti e re-inseriti (es.
++    // toggle filtro nel profilo) -> NSArray insertObject:atIndex: lancia
++    // NSRangeException -> SIGABRT. Clampare evita il crash; l'annotation sulla mappa
++    // e' gia' gestita sopra per coordinate, quindi e' solo bookkeeping. Rimuovere
++    // all'upgrade di react-native-maps (1.27+ Fabric nativo non passa da qui).
++    NSUInteger safeIndex = MIN((NSUInteger)atIndex, _reactSubviews.count);
++    [_reactSubviews insertObject:(UIView *)subview atIndex:safeIndex];
+ }
+ #pragma clang diagnostic pop
+ 
