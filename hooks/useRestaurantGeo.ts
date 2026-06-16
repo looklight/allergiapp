@@ -74,6 +74,10 @@ export function useRestaurantGeo(params: FilterParams) {
   const pinDebounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Epoch per loadPinsForViewport — scarta risposte stale durante pan veloce */
   const pinFetchEpoch = useRef(0);
+  /** Ultima region per cui abbiamo EFFETTIVAMENTE lanciato un fetch pin. Serve a
+   *  deduplicare gli onRegionChangeComplete ripetuti di Android (che emette molti
+   *  eventi per region quasi identiche → altrimenti una RPC per ognuno). */
+  const lastPinFetchRef = useRef<MapRegion | null>(null);
   /** Centro mappa corrente — aggiornato ad ogni region change */
   const lastMapCenterRef = useRef<LatLng | null>(null);
 
@@ -303,11 +307,34 @@ export function useRestaurantGeo(params: FilterParams) {
 
   /** Carica pin leggeri per il viewport corrente.
    *  Chiamato dal handleRegionChange (debounced separatamente). */
-  const loadPinsForViewport = useCallback((region: MapRegion) => {
+  const loadPinsForViewport = useCallback((region: MapRegion, force = false) => {
+    // Dedup viewport: react-native-maps su Android emette onRegionChangeComplete
+    // ripetutamente per region quasi identiche → senza guardia parte una RPC
+    // (~500-1000ms) ad ogni evento, anche per la STESSA area, friggendo il thread.
+    // Saltiamo se centro e zoom non sono cambiati in modo significativo dall'ultimo
+    // fetch effettivo. `force` bypassa (es. cambio modalità alloggi, che cambia il SET).
+    if (!force) {
+      const prev = lastPinFetchRef.current;
+      if (prev) {
+        const moved = Math.max(
+          Math.abs(region.latitude - prev.latitude) / Math.max(region.latitudeDelta, 1e-6),
+          Math.abs(region.longitude - prev.longitude) / Math.max(region.longitudeDelta, 1e-6),
+        );
+        const zoomRatio = region.latitudeDelta / Math.max(prev.latitudeDelta, 1e-6);
+        if (moved < 0.25 && zoomRatio > 0.8 && zoomRatio < 1.25) {
+          if (__DEV__) console.log(`[MAPDIAG] pin fetch DEDUP — viewport ~invariato (moved=${moved.toFixed(2)}, zoomRatio=${zoomRatio.toFixed(2)}), skip RPC`);
+          return;
+        }
+      }
+    }
+    lastPinFetchRef.current = region;
+
     // Epoch locale: se arriva una risposta più vecchia di un fetch successivo, viene scartata.
     // Fondamentale durante pan veloce dove più richieste sono in volo contemporaneamente.
     const epoch = ++pinFetchEpoch.current;
     lastRegionRef.current = region;
+
+    const t0 = __DEV__ ? Date.now() : 0; // [MAPDIAG] timing fetch pin
 
     const latDelta = region.latitudeDelta;
     const lngDelta = region.longitudeDelta;
@@ -319,7 +346,11 @@ export function useRestaurantGeo(params: FilterParams) {
 
     RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng, undefined, showLodgingRef.current)
       .then(pins => {
-        if (pinFetchEpoch.current !== epoch) return; // risposta stale, ignora
+        if (pinFetchEpoch.current !== epoch) {
+          if (__DEV__) console.log(`[MAPDIAG] pin fetch SCARTATA (stale) — ${pins.length} pin in ${Date.now() - t0}ms, Δlat=${latDelta.toFixed(3)}`);
+          return; // risposta stale, ignora
+        }
+        if (__DEV__) console.log(`[MAPDIAG] pin fetch OK — ${pins.length} pin in ${Date.now() - t0}ms, cache prima=${pinCache.current.size}, Δlat=${latDelta.toFixed(3)}`);
         setIsOffline(false); // risposta ricevuta → rete ok
         const sizeBefore = pinCache.current.size;
         for (const p of pins) pinCache.current.set(p.id, p);
@@ -333,7 +364,8 @@ export function useRestaurantGeo(params: FilterParams) {
           setViewportPins(Array.from(pinCache.current.values()));
         }
       })
-      .catch(() => {
+      .catch((e) => {
+        if (__DEV__) console.log(`[MAPDIAG] pin fetch FALLITA in ${Date.now() - t0}ms:`, e?.message ?? e);
         // Rete non disponibile — mantieni i pin precedenti e segnala offline.
         // Solo se è l'ultima richiesta: durante pan veloce un fetch vecchio fallito
         // non deve riaccendere il flag dopo che uno più recente è andato a buon fine.
@@ -363,10 +395,11 @@ export function useRestaurantGeo(params: FilterParams) {
     pinFetchEpoch.current++; // invalida risposte in volo della modalità precedente
     pinCache.current.clear();
     setViewportPins([]);
+    lastPinFetchRef.current = null; // il SET di pin cambia → forza un nuovo fetch
     const region = lastRegionRef.current
       ?? (userLocation ? { ...userLocation, latitudeDelta: 1.0, longitudeDelta: 1.0 } : null)
       ?? { ...DEFAULT_REGION };
-    loadPinsForViewport(region);
+    loadPinsForViewport(region, true);
   }, [userLocation, loadPinsForViewport]);
 
   // Carica ristoranti + pin al primo GPS fix
