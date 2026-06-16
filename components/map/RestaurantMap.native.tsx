@@ -64,13 +64,18 @@ function clusterSize(count: number): number {
   return 34;
 }
 
-// Clustering SOLO su Android. Motivo (provato a runtime giu 2026): iOS
-// react-native-maps crasha nativamente sul churn dei marker durante lo zoom
-// (mount/unmount continui mentre i cluster si riformano) — lo stesso "mass
-// remount → crash" che l'architettura a chiavi stabili evitava. iOS però NON ha
-// bisogno del clustering: regge centinaia di marker fluido e stabile. Android
-// invece è lento con tanti marker (serve il clustering) e tollera il churn.
-const CLUSTERING_ENABLED = Platform.OS === 'android';
+// Clustering SOLO su Android (storicamente): iOS crasha sul churn dei marker e
+// non ne ha bisogno (regge centinaia di marker fluido); Android era lento con
+// tanti marker.
+//
+// DISABILITATO (interim, giu 2026): il clustering client su Android rendeva male
+// — bolle "a spicchio" (cattura bitmap del marker custom inaffidabile su
+// react-native-maps 1.20.1 / New Arch) + churn/flicker dei marker a ogni
+// ricalcolo (pin/pallini che spariscono). Spento per dare una UX CORRETTA ora:
+// pin individuali come su iOS. La scalabilità >1000 NON va risolta col clustering
+// client (vedi tetto LIMIT 1000 in get_pins_in_bounds) ma con aggregazione
+// server-side, lavoro pianificato a parte. Riattivare = `Platform.OS === 'android'`.
+const CLUSTERING_ENABLED = false;
 
 type MapStyles = ReturnType<typeof makeStyles>;
 
