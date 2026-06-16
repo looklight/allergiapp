@@ -1,20 +1,23 @@
 // Firebase Crashlytics - Modular API
 // Dynamically required — may not be available in Expo Go
-type CrashlyticsInstance = {
-  setCrashlyticsCollectionEnabled: (enabled: boolean) => Promise<void>;
-  log: (message: string) => void;
-  recordError: (error: Error, jsErrorName?: string) => void;
-  setUserId: (userId: string) => Promise<void>;
-  setAttribute: (name: string, value: string) => Promise<void>;
-  setAttributes: (attributes: Record<string, string>) => Promise<void>;
+type CrashlyticsRef = object;
+type CrashlyticsModular = {
+  setCrashlyticsCollectionEnabled: (c: CrashlyticsRef, enabled: boolean) => Promise<void>;
+  log: (c: CrashlyticsRef, message: string) => void;
+  recordError: (c: CrashlyticsRef, error: Error, jsErrorName?: string) => void;
+  setUserId: (c: CrashlyticsRef, userId: string) => Promise<void>;
+  setAttribute: (c: CrashlyticsRef, name: string, value: string) => Promise<void>;
+  setAttributes: (c: CrashlyticsRef, attributes: Record<string, string>) => Promise<void>;
 };
 
-let crashlyticsInstance: CrashlyticsInstance | null = null;
+let crashlyticsInstance: CrashlyticsRef | null = null;
+let cx: CrashlyticsModular = null!;
 let isCrashlyticsAvailable = false;
 
 try {
   const crashlyticsModule = require('@react-native-firebase/crashlytics');
-  crashlyticsInstance = crashlyticsModule.default();
+  crashlyticsInstance = crashlyticsModule.getCrashlytics();
+  cx = crashlyticsModule;
   isCrashlyticsAvailable = true;
   if (__DEV__) console.log('[Crashlytics] Firebase Crashlytics disponibile');
 } catch (error) {
@@ -35,7 +38,7 @@ export const Crashlytics = {
   setCollectionEnabled(enabled: boolean) {
     if (!isCrashlyticsAvailable || !crashlyticsInstance) return;
     const shouldEnable = !__DEV__ && enabled;
-    crashlyticsInstance.setCrashlyticsCollectionEnabled(shouldEnable).catch(() => {});
+    cx.setCrashlyticsCollectionEnabled(crashlyticsInstance, shouldEnable).catch(() => {});
   },
 
   /**
@@ -44,7 +47,7 @@ export const Crashlytics = {
   setUserId(userId: string | null) {
     if (!canReport()) return;
     try {
-      crashlyticsInstance!.setUserId(userId ?? '').catch(() => {});
+      cx.setUserId(crashlyticsInstance!, userId ?? '').catch(() => {});
     } catch {}
   },
 
@@ -54,7 +57,7 @@ export const Crashlytics = {
   setAttribute(name: string, value: string) {
     if (!canReport()) return;
     try {
-      crashlyticsInstance!.setAttribute(name, value).catch(() => {});
+      cx.setAttribute(crashlyticsInstance!, name, value).catch(() => {});
     } catch {}
   },
 
@@ -71,7 +74,7 @@ export const Crashlytics = {
     }
     if (Object.keys(sanitized).length === 0) return;
     try {
-      crashlyticsInstance!.setAttributes(sanitized).catch(() => {});
+      cx.setAttributes(crashlyticsInstance!, sanitized).catch(() => {});
     } catch {}
   },
 
@@ -82,7 +85,7 @@ export const Crashlytics = {
   recordError(error: Error, jsErrorName?: string) {
     if (!canReport()) return;
     try {
-      crashlyticsInstance!.recordError(error, jsErrorName);
+      cx.recordError(crashlyticsInstance!, error, jsErrorName);
     } catch {}
   },
 
@@ -92,7 +95,7 @@ export const Crashlytics = {
   log(message: string) {
     if (!canReport()) return;
     try {
-      crashlyticsInstance!.log(message);
+      cx.log(crashlyticsInstance!, message);
     } catch {}
   },
 };

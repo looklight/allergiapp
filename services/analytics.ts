@@ -7,14 +7,12 @@ type FirebaseAnalyticsInstance = object;
 type LogEventFn = (analytics: FirebaseAnalyticsInstance, name: string, params?: Record<string, unknown>) => Promise<void>;
 type SetCollectionFn = (analytics: FirebaseAnalyticsInstance, enabled: boolean) => Promise<void>;
 type SetPropertyFn = (analytics: FirebaseAnalyticsInstance, name: string, value: string) => Promise<void>;
-type LogScreenViewFn = (analytics: FirebaseAnalyticsInstance, params: { screen_name: string; screen_class: string }) => Promise<void>;
 
 // Initialized via dynamic require — only used after canSendAnalytics() guard
 let firebaseAnalytics: FirebaseAnalyticsInstance = null!;
 let logEvent: LogEventFn = null!;
 let setAnalyticsCollectionEnabled: SetCollectionFn = null!;
 let setUserProperty: SetPropertyFn = null!;
-let firebaseLogScreenView: LogScreenViewFn = null!;
 let isFirebaseAvailable = false;
 
 try {
@@ -25,7 +23,6 @@ try {
   logEvent = analyticsModule.logEvent;
   setAnalyticsCollectionEnabled = analyticsModule.setAnalyticsCollectionEnabled;
   setUserProperty = analyticsModule.setUserProperty;
-  firebaseLogScreenView = analyticsModule.logScreenView;
   isFirebaseAvailable = true;
   if (__DEV__) console.log('[Analytics] Firebase Analytics disponibile (modular API)');
 } catch (error) {
@@ -76,7 +73,11 @@ export const Analytics = {
   async logScreenView(screenName: string) {
     if (!canSendAnalytics()) return;
     try {
-      await firebaseLogScreenView(firebaseAnalytics, { screen_name: screenName, screen_class: screenName });
+      // logScreenView è deprecato (namespaced e modular): si usa logEvent('screen_view')
+      await logEvent(firebaseAnalytics, 'screen_view', {
+        screen_name: screenName,
+        screen_class: screenName,
+      });
     } catch (error) {
       console.warn('[Analytics] Error logging screen_view:', error);
     }
