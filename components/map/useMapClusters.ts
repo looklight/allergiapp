@@ -109,22 +109,14 @@ export function useMapClusters(
   }, [pins, userNeeds, showMatchInfo]);
 
   return useMemo(() => {
-    if (!enabled || !region) {
-      if (__DEV__) console.log(`[MAPDIAG] cluster: SKIP (enabled=${enabled}, region=${!!region}) — niente bolle, pinsIn=${pins.length}`);
-      return [];
-    }
+    if (!enabled || !region) return [];
     const bbox: [number, number, number, number] = [
       region.longitude - region.longitudeDelta / 2,
       region.latitude - region.latitudeDelta / 2,
       region.longitude + region.longitudeDelta / 2,
       region.latitude + region.latitudeDelta / 2,
     ];
-    const zoom = regionToZoom(region);
-    const raw = index.getClusters(bbox, zoom);
-    if (__DEV__) {
-      const nClusters = raw.filter((f) => 'cluster' in f.properties && f.properties.cluster).length;
-      console.log(`[MAPDIAG] cluster: pinsIn=${pins.length} zoom=${zoom} radius=${CLUSTER_RADIUS} minPoints=${CLUSTER_MIN_POINTS} → ${nClusters} bolle + ${raw.length - nClusters} punti singoli`);
-    }
+    const raw = index.getClusters(bbox, regionToZoom(region));
     return raw.map<MapClusterResult>((f) => {
       const [lng, lat] = f.geometry.coordinates;
       if ('cluster' in f.properties && f.properties.cluster) {

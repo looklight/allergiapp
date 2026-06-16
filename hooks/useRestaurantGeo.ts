@@ -321,10 +321,7 @@ export function useRestaurantGeo(params: FilterParams) {
           Math.abs(region.longitude - prev.longitude) / Math.max(region.longitudeDelta, 1e-6),
         );
         const zoomRatio = region.latitudeDelta / Math.max(prev.latitudeDelta, 1e-6);
-        if (moved < 0.25 && zoomRatio > 0.8 && zoomRatio < 1.25) {
-          if (__DEV__) console.log(`[MAPDIAG] pin fetch DEDUP — viewport ~invariato (moved=${moved.toFixed(2)}, zoomRatio=${zoomRatio.toFixed(2)}), skip RPC`);
-          return;
-        }
+        if (moved < 0.25 && zoomRatio > 0.8 && zoomRatio < 1.25) return;
       }
     }
     lastPinFetchRef.current = region;
@@ -333,8 +330,6 @@ export function useRestaurantGeo(params: FilterParams) {
     // Fondamentale durante pan veloce dove più richieste sono in volo contemporaneamente.
     const epoch = ++pinFetchEpoch.current;
     lastRegionRef.current = region;
-
-    const t0 = __DEV__ ? Date.now() : 0; // [MAPDIAG] timing fetch pin
 
     const latDelta = region.latitudeDelta;
     const lngDelta = region.longitudeDelta;
@@ -346,11 +341,7 @@ export function useRestaurantGeo(params: FilterParams) {
 
     RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng, undefined, showLodgingRef.current)
       .then(pins => {
-        if (pinFetchEpoch.current !== epoch) {
-          if (__DEV__) console.log(`[MAPDIAG] pin fetch SCARTATA (stale) — ${pins.length} pin in ${Date.now() - t0}ms, Δlat=${latDelta.toFixed(3)}`);
-          return; // risposta stale, ignora
-        }
-        if (__DEV__) console.log(`[MAPDIAG] pin fetch OK — ${pins.length} pin in ${Date.now() - t0}ms, cache prima=${pinCache.current.size}, Δlat=${latDelta.toFixed(3)}`);
+        if (pinFetchEpoch.current !== epoch) return; // risposta stale, ignora
         setIsOffline(false); // risposta ricevuta → rete ok
         const sizeBefore = pinCache.current.size;
         for (const p of pins) pinCache.current.set(p.id, p);
@@ -364,8 +355,7 @@ export function useRestaurantGeo(params: FilterParams) {
           setViewportPins(Array.from(pinCache.current.values()));
         }
       })
-      .catch((e) => {
-        if (__DEV__) console.log(`[MAPDIAG] pin fetch FALLITA in ${Date.now() - t0}ms:`, e?.message ?? e);
+      .catch(() => {
         // Rete non disponibile — mantieni i pin precedenti e segnala offline.
         // Solo se è l'ultima richiesta: durante pan veloce un fetch vecchio fallito
         // non deve riaccendere il flag dopo che uno più recente è andato a buon fine.

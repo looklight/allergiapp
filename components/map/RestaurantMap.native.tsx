@@ -630,13 +630,6 @@ export default function RestaurantMap({
     return els;
   }, [clusterResults, theme, styles, handleClusterPress, selectedId, pinById, restaurantById, showMatchInfo, handleMarkerPress, userAllergens, userDiets, favIds, customSymbols, allPins, clusteringActive, alwaysIndividualIds, favoriteRestaurants, savedRestaurants]);
 
-  // [MAPDIAG] diagnostica perf/cluster — solo dev, rimovibile (grep [MAPDIAG]).
-  useEffect(() => {
-    if (!__DEV__) return;
-    const path = (clusteringActive && isDotZoom) ? 'CLUSTER' : 'MARKER';
-    console.log(`[MAPDIAG] render: platform=${Platform.OS} clusteringActive=${clusteringActive} isDotZoom=${isDotZoom} path=${path} | allPins=${(allPins ?? []).length} genericPins=${genericPins.length} | markerEls=${markerElements.length} clusterEls=${clusteredElements.length}`);
-  }, [isDotZoom, allPins, clusteringActive, genericPins.length, markerElements.length, clusteredElements.length]);
-
   const showMarkers = hasAnimatedToUser || !centerOn || !centerOn.latDelta;
 
   return (
