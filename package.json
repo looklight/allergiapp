@@ -10,6 +10,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "postinstall": "patch-package",
     "build:avatars": "node scripts/build-avatars.mjs",
     "env:sync": "npx eas-cli env:pull --environment development",
@@ -61,6 +62,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "eslint": "^9.39.4",
+    "eslint-config-expo": "^56.0.4",
     "google-translate-api-x": "^10.7.2",
     "patch-package": "^8.0.1",
     "postinstall-postinstall": "^2.1.0",
