@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Linking, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Linking, Image, LayoutAnimation } from 'react-native';
 import { Text, TextInput, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
@@ -33,7 +33,17 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [existingMap, setExistingMap] = useState<Map<string, { id: string; name: string }>>(new Map());
+  const [isFocused, setIsFocused] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Al focus collassiamo il banner intro: il box di ricerca sale in cima e i
+  // risultati riempiono lo spazio sopra la tastiera. Riappare a input vuoto + blur.
+  const showIntro = !isFocused && query.trim().length === 0;
+
+  const handleFocusChange = (focused: boolean) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsFocused(focused);
+  };
 
   useEffect(() => {
     return () => {
@@ -76,20 +86,22 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
 
   return (
     <View style={styles.stepContainer}>
-      <Surface style={styles.introBanner} elevation={0}>
-        <Image
-          source={require('../../assets/happy_plate_forks.png')}
-          style={styles.introImage}
-          resizeMode="contain"
-        />
-        <View style={styles.introTitleRow}>
-          <MaterialCommunityIcons name="map-marker-plus-outline" size={20} color={theme.colors.primary} />
-          <Text style={styles.introTitle}>{i18n.t('restaurants.add.intro')}</Text>
-        </View>
-        <Text style={styles.introHint}>
-          {i18n.t('restaurants.add.introHint')}
-        </Text>
-      </Surface>
+      {showIntro && (
+        <Surface style={styles.introBanner} elevation={0}>
+          <Image
+            source={require('../../assets/happy_plate_forks.png')}
+            style={styles.introImage}
+            resizeMode="contain"
+          />
+          <View style={styles.introTitleRow}>
+            <MaterialCommunityIcons name="map-marker-plus-outline" size={20} color={theme.colors.primary} />
+            <Text style={styles.introTitle}>{i18n.t('restaurants.add.intro')}</Text>
+          </View>
+          <Text style={styles.introHint}>
+            {i18n.t('restaurants.add.introHint')}
+          </Text>
+        </Surface>
+      )}
 
       <Surface style={styles.section} elevation={0}>
         <Text style={styles.sectionTitle}>{i18n.t('restaurants.add.searchTitle')}</Text>
@@ -102,6 +114,8 @@ function PlaceSearchStep({ onSelect }: { onSelect: (place: PlaceSuggestion) => v
         <TextInput
           value={query}
           onChangeText={handleQueryChange}
+          onFocus={() => handleFocusChange(true)}
+          onBlur={() => handleFocusChange(false)}
           placeholder={i18n.t('restaurants.add.searchPlaceholder')}
           placeholderTextColor={theme.colors.textDisabled}
           mode="outlined"
