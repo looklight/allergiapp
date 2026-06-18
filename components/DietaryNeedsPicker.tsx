@@ -214,16 +214,14 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   chip: {
     backgroundColor: theme.colors.surface,
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   chipDiet: {},
   chipText: {
     fontSize: 13,
     fontWeight: '500',
-    color: theme.colors.textPrimary,
+    color: theme.colors.primary,
   },
   bottomLink: {
     flexDirection: 'row',
