@@ -44,13 +44,13 @@ export default function UserDetailPage() {
       const [restRes, reviewsRes, menuPhotosRes] = await Promise.all([
         supabase
           .from('restaurants')
-          .select('id, name, city, country, created_at')
+          .select('id, name, city, country, country_code, created_at')
           .eq('added_by', id)
           .order('created_at', { ascending: false })
           .limit(50),
         supabase
           .from('reviews')
-          .select('id, restaurant_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, likes_count, created_at, restaurants!inner(name, country, city)')
+          .select('id, restaurant_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, likes_count, created_at, restaurants!inner(name, country, country_code, city)')
           .eq('user_id', id)
           .order('created_at', { ascending: false })
           .limit(50),
@@ -64,7 +64,7 @@ export default function UserDetailPage() {
 
       setRestaurants((restRes.data ?? []) as Restaurant[]);
       setReviews(flattenJoinAll(reviewsRes.data ?? [], {
-        restaurants: { name: 'restaurant_name', country: 'restaurant_country', city: 'restaurant_city' },
+        restaurants: { name: 'restaurant_name', country: 'restaurant_country', country_code: 'restaurant_country_code', city: 'restaurant_city' },
       }));
       setMenuPhotos((menuPhotosRes.data ?? []).map((p: any) => ({
         ...p,
@@ -109,8 +109,8 @@ export default function UserDetailPage() {
   }, [reviews, menuPhotos]);
 
   // -- Raggruppamento per Paese (mantiene ordine per count desc) --
-  const reviewsByCountry = useMemo(() => groupByCountry(reviews, (r) => r.restaurant_country), [reviews]);
-  const restaurantsByCountry = useMemo(() => groupByCountry(restaurants, (r) => r.country), [restaurants]);
+  const reviewsByCountry = useMemo(() => groupByCountry(reviews, (r) => r.restaurant_country_code, (r) => r.restaurant_country), [reviews]);
+  const restaurantsByCountry = useMemo(() => groupByCountry(restaurants, (r) => r.country_code, (r) => r.country), [restaurants]);
 
   // -- Azioni --
   const deleteReviewPhoto = async (reviewId: string, photoIndex: number) => {
@@ -288,13 +288,26 @@ export default function UserDetailPage() {
   );
 }
 
-function groupByCountry<T>(items: T[], getCountry: (item: T) => string | null | undefined): Array<[string, T[]]> {
-  const groups = new Map<string, T[]>();
+// Raggruppa per country_code (sorgente di verità stabile, indipendente dalla
+// lingua); l'etichetta mostrata è la prima grafia `country` incontrata per quel
+// codice — così "Italia"/"Italy" finiscono in un unico gruppo. Fallback null-safe
+// sul testo, poi su "Sconosciuto", per ristoranti senza codice.
+function groupByCountry<T>(
+  items: T[],
+  getCode: (item: T) => string | null | undefined,
+  getName: (item: T) => string | null | undefined,
+): Array<[string, T[]]> {
+  const groups = new Map<string, { name: string; items: T[] }>();
   for (const item of items) {
-    const country = getCountry(item) || 'Sconosciuto';
-    const bucket = groups.get(country) ?? [];
-    bucket.push(item);
-    groups.set(country, bucket);
+    const key = getCode(item) || getName(item) || 'Sconosciuto';
+    const existing = groups.get(key);
+    if (existing) {
+      existing.items.push(item);
+    } else {
+      groups.set(key, { name: getName(item) || key, items: [item] });
+    }
   }
-  return Array.from(groups.entries()).sort((a, b) => b[1].length - a[1].length);
+  return Array.from(groups.values())
+    .sort((a, b) => b.items.length - a.items.length)
+    .map((g) => [g.name, g.items] as [string, T[]]);
 }

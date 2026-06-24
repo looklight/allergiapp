@@ -70,6 +70,7 @@ export interface Review {
   reviewer_name?: string | null;
   restaurant_name?: string | null;
   restaurant_country?: string | null;
+  restaurant_country_code?: string | null;
   restaurant_city?: string | null;
 }
 
