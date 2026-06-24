@@ -25,27 +25,29 @@
         lateObserver.observe(el);
     });
 
-    const firstCard = document.querySelector('.mock-restaurant-card');
+    const mockCards = document.querySelectorAll('.mock-restaurant-card');
+    const firstCard = mockCards[0];
+    const secondCard = mockCards[1];
     const autoOpenObserver = new IntersectionObserver(function(entries) {
         if (entries[0].isIntersecting) {
             firstCard.classList.add('expanded');
+            // Dopo l'apertura della prima, suggerisci di aprire la seconda con un tap hint
+            if (secondCard) {
+                setTimeout(function() {
+                    if (!secondCard.classList.contains('expanded')) {
+                        secondCard.classList.add('show-tap-hint');
+                    }
+                }, 1100);
+            }
             autoOpenObserver.disconnect();
         }
     }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
     autoOpenObserver.observe(firstCard);
 
-    document.querySelectorAll('.mock-restaurant-card').forEach(function(card) {
+    mockCards.forEach(function(card) {
         card.addEventListener('click', function() {
             card.classList.toggle('expanded');
+            card.classList.remove('show-tap-hint');
         });
     });
-
-    const hiwSteps = document.querySelector('.rest-hiw-steps');
-    const hiwDots = document.querySelectorAll('.rest-hiw-dot');
-    if (hiwSteps && hiwDots.length) {
-        hiwSteps.addEventListener('scroll', function() {
-            const index = Math.round(hiwSteps.scrollLeft / hiwSteps.offsetWidth);
-            hiwDots.forEach(function(d, i) { d.classList.toggle('active', i === index); });
-        }, { passive: true });
-    }
 }

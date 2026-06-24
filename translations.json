@@ -189,14 +189,15 @@
       "inBreve": "In breve",
       "hiwLabel": "Come funziona",
       "hiw1Title": "Cerchi un ristorante",
-      "hiw1Text": "Imposti le tue esigenze alimentari e cerchi nei dintorni o in qualsiasi città del mondo.",
-      "hiw2Title": "Su AllergiApp trovi",
+      "hiw1Text": "Imposti le tue esigenze alimentari e cerchi nei dintorni o nelle principali città di tutto il mondo.",
+      "hiw2Title": "Su AllergiApp lo trovi",
       "hiw2Text": "Una mappa con ristoranti già recensiti da persone con le tue stesse esigenze, ovunque nel mondo.",
-      "hiw3Title": "Lascia una recensione",
-      "hiw3Text": "Se condividi anche la tua esperienza, aiuterai tutta la community.",
+      "hiw3Title": "Aiuta con le tue recensioni",
+      "hiw3Text": "Se condividi anche la tua esperienza, <a href=\"download\" class=\"rest-hiw-highlight\">aiuti tutta la community</a> a trovare nuovi ristoranti adatti alle proprie esigenze.",
       "narr1": "Immagina: sei a Milano con un'allergia al glutine. Come sai se quel ristorante è davvero sicuro per te?",
       "narr2": "Filtri per le tue esigenze e vedi subito quanti ristoranti vicino a te le coprono già.",
-      "narr3": "Lascia una recensione!"
+      "narr3": "Lascia una recensione!",
+      "narrSub": "Segnala e racconta i ristoranti dove sei stato bene e al sicuro: ogni recensione aiuta la community a scegliere con serenità."
     },
     "faq": {
       "title": "Domande Frequenti",
@@ -528,7 +529,8 @@
       "hiw3Text": "Share your experience and help the whole community find safe places to eat.",
       "narr1": "Imagine you're in Milan with a gluten allergy. How do you know if that restaurant is really safe for you?",
       "narr2": "Filter by your needs and instantly see which nearby restaurants already cover them.",
-      "narr3": "Leave a review!"
+      "narr3": "Leave a review!",
+      "narrSub": "Report and share the places where you felt good and safe: every review helps the community choose with peace of mind."
     },
     "faq": {
       "title": "Frequently Asked Questions",
