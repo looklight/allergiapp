@@ -8,9 +8,8 @@
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 
 ### Social Auth (Google + Apple) — MERGED in main
-Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8). Vedi memoria `project_social_auth.md`. Resta da chiudere:
+Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8). "Entra con Google" verificato su Android (giu 2026). Vedi memoria `project_social_auth.md`. Resta da chiudere:
 
-- [ ] **Test E2E su Android Internal Testing** — AAB pronto (`94fc37e6-d8f2-4ad6-89f8-9d1de89e355d`, versionCode 17 → potrebbe essere già usato, valutare se serve rebuild a 18). Apple non disponibile su Android, testare solo Google.
 - [ ] **Rotate Google Web Client Secret** — il secret è stato esposto in chat durante il setup (2026-05-18). Rischio reale basso ma best practice: Google Cloud → OAuth Client `AllergiApp Web (Supabase)` → "+ ADD SECRET" → "Disable" sul vecchio → aggiornare valore in Supabase Dashboard.
 
 ### Social Auth — polish non bloccante
@@ -35,16 +34,30 @@ Implementato e committato su main. Restano da chiudere lato test/UX:
 - [ ] **Edge case popup-stacking** (deferito di proposito) — se contemporaneamente c'è un annuncio attivo *e* un utente nuovo (popup avatar `free`, regalo di benvenuto intenzionale), entrambi i Modal possono apparire sull'atterraggio. Coordinarli richiederebbe una coda di popup condivisa. Lasciato come edge accettabile finché non si dimostra fastidioso.
 
 ### Mappa Android — perf & rendering (sessione 2026-06-16, su main)
-Il "lag generale Android" era in gran parte la mappa. Cause trovate e risolte:
-- [x] **Tempesta di fetch pin** → dedup in `useRestaurantGeo` (commit `80f2067`) — app più fluida.
-- [x] **Clustering client rotto** (bolle "a spicchio" / churn / pin spariti su react-native-maps 1.20.1 + New Arch) → **disabilitato** (`CLUSTERING_ENABLED = false`, `d76db66`); pin individuali come iOS, più fluido (il churn *peggiorava* la perf).
-- [x] **Pin profilo non disegnati** su Android — il percorso cluster ignorava la prop `restaurants` (`clusteringActive`, `b0c33b7`).
-- [x] **Crash toggle profilo iOS** → patch react-native-maps via patch-package (`03af8b8`).
-- [~] **Drift pallini "in mare"** → mitigato con anchor esplicito + no elevation (`3bb7ea0`); residuo = limite libreria, lo chiude l'upgrade.
+Il "lag generale Android" era in gran parte la mappa. Cause risolte (contesto per l'upgrade rn-maps sotto, NON task aperti):
+- **Tempesta di fetch pin** → dedup in `useRestaurantGeo` (`80f2067`).
+- **Clustering client disabilitato** (`CLUSTERING_ENABLED = false`, `d76db66`): su rn-maps 1.20.1 + New Arch rendeva male (bolle "a spicchio" / churn / pin spariti) e *peggiorava* la perf; pin individuali come iOS.
+- **Crash toggle profilo iOS** → patch react-native-maps via patch-package (`03af8b8`) — da togliere all'upgrade.
+- **Drift pallini "in mare"** → mitigato con anchor esplicito + no elevation (`3bb7ea0`); residuo = limite libreria, lo chiude l'upgrade.
 
-**PIANIFICATI (decisi questa sessione):**
-- [ ] **Aggregazione pin server-side** — `get_pins_in_bounds` fa `LIMIT 1000` SENZA `ORDER BY` → oltre 1000 ristoranti in un viewport ne scarta a caso (iOS+Android). È il vero requisito "visibili a qualunque numero". Soluzione: RPC che a zoom largo ritorna conteggi aggregati per cella griglia (PostGIS `ST_SnapToGrid`, payload costante a qualunque N); client consuma aggregato a zoom largo / singoli a zoom stretto. Bonus: celle stabili → niente churn → riattivabile un clustering pulito.
+**SCALABILITÀ PIN — gerarchia dei limiti (rivista 2026-06-22).**
+Due limiti diversi, NON confonderli. Il primo che morde NON è quello dei 1000.
+
+1. **(PRIMO trigger, ~50-100 per città) — pin grigi a zoom città.** I pin pieni *colorati* (con voto + match) vengono dal fetch dettagliato, capato a **50** in modalità "Per me" (`get_restaurants_for_my_needs`, default `max_results`) e **100** nearby (`NEARBY_DEFAULT`). Cercando una città (`latDelta 0.08`, zoom pin) tutti i locali appaiono come marker (vengono da `allPins`, sotto i 1000), ma solo ~50/100 ricevono il colore; gli altri restano **segnaposto grigi** (toccabili, si riempiono al pan via cache). I ~50/100 scelti **NON sono i più vicini a caso**: "Per me" `ORDER BY copertura DESC` (i più compatibili per primi → i grigi residui sono i MENO compatibili, improbabile perdere un verde), nearby `ORDER BY distance ASC` (i più vicini). È cosmetico, non perdita dati. **Si vede su Milano/Roma/Londra piena, ben prima dei 1000.**
+   - **Prima mossa (pulita, consigliata): alzare il limite "Per me" da 50 a ~150** (il server cappa a 200, `LEAST(max_results, 200)`). Una riga (param RPC dal client), **una sola fonte di verità (server)**, nessun rischio semantico. Unico costo: query un po' più pesante. Copre fino a ~200/città.
+   - **Solo oltre ~200/città → "Opzione B"** (colorare i segnaposto client-side con `getExpandedCoverage` su `supported_allergens`, già nel payload `allPins`). Scala oltre i 200 MA introduce 3 criticità che oggi NON esistono (i grigi non possono sbagliare): (1) **staleness colore iOS** al cambio filtro (`tracksViewChanges` non include `user*` → fix tocca il recapture = rischio mass-recapture/churn); (2) **claim verde su `supported_*` cachato/stale** — in app allergie è un'affermazione forte; (3) **flip di colore** all'arrivo del dettaglio se il calcolo client (`restrictionImplications`) e quello server (CTE `implications`) divergono — **equivalenza mai verificata su dati veri, da verificare PRIMA**. NON è "15 min di miglioria", è un compromesso. Vedi memoria `project_pin_coverage_source_of_truth`.
+
+2. **(SECONDO trigger, lontano — >1000 in un viewport) — layer pallini.** `get_pins_in_bounds` fa `LIMIT 1000` SENZA `ORDER BY` → oltre 1000 in un *bounding box* (solo zoom continentale) ne scarta a caso, **cieco a OGNI filtro** (cucina = filtrata client *dopo* il taglio; "Per me" sui pallini non filtra né ordina). Latente, non attivo (453 totali). Gerarchia delle mosse, come il punto 1:
+   - **Prima, pulita: alzare `LIMIT` 1000→3000** (già dentro il cap della cache client). Mantiene l'invariante "pin filter-independent" → niente churn, filtro resta istantaneo/offline. Costo solo payload.
+   - **Filtro/ordinamento nel SQL dei pallini → NO.** Rompe l'invariante: `pinCache` diventa filter-dependent (oggi `clearAndReload` NON lo svuota di proposito) → svuotamento a ogni cambio filtro = churn di ritorno, filtro online-only. Non è migliorativo puro.
+   - **Oltre i 3000: aggregazione a griglia** (PostGIS `ST_SnapToGrid`, payload costante a qualunque N; client consuma aggregato a zoom largo / singoli a zoom stretto; celle stabili → niente churn → riattivabile un clustering pulito). **Disegnare ora, implementare quando il DB cresce — non prima.**
+
 - [ ] **Upgrade `react-native-maps` 1.20.1 → 1.27.x (Fabric nativo)** al prossimo bump SDK Expo (SDK 54 pinna la 1.20.1) — cura definitiva di drift + resa bolle + crash churn; all'upgrade **togliere la patch-package** (`patches/react-native-maps+1.20.1.patch`).
+
+- [ ] **Animazione pin — "pop" sul pin selezionato (polish, cheap, iOS-first).** Trasformare lo `scale: 1.25` statico di `SelectedMarkerOverlay` in una molla animata (1.0→1.25 spring, ~200ms) al tap. Costo trascurabile: è **1 solo marker isolato** (`tracksViewChanges` già sempre true), non tocca la massa dei pin né l'invariante. **Android resta statico** (rn-maps rasterizza il marker pre-transform → lo scale clippa: vincolo già noto, per quello lo scale è iOS-only). È il ~90% del "feel moderno" che si vede nelle altre app (il pop sul tap).
+  - **NON la transizione di massa pallino↔pin sullo zoom**: animarla = `tracksViewChanges` true su centinaia di marker = mass-recapture/churn (l'invariante che l'architettura evita). Le altre app sono fluide perché disegnano i marker sul layer nativo (GPU), non come View RN→bitmap. → sbloccata **solo** dall'upgrade rn-maps nativo sopra, non prima. Mitigazione gratis intanto: avvicinare il DNA visivo di pallino e pin così lo swap legge come continuo.
+
+**DEBITO ARCHITETTURALE — sorgente unica del colore copertura.** L'unico vero peccato di design del sistema pin: il colore di compatibilità nasce da DUE sorgenti (client `getExpandedCoverage` su `supported_allergens` per i pallini; server `covered_*` per i pin pieni). Da questa doppiezza derivano race cold-start, flash-grigio, pin grigi oltre 50, incoerenza cluster, dilemma Opzione B. Da rifare con UNA sola sorgente. **Non si paga da solo: finestra giusta = insieme all'upgrade rn-maps**, quando comunque si tocca `MapPin`. Il resto della complessità (cache/dedup/hack platform) è cicatrice da bug reali, non va semplificata a freddo.
 
 ### Lag generale Android
 Gran parte era la mappa (vedi sopra, risolto). Resta da verificare la fluidità generale (non-mappa) in un EAS build, dato che Expo Go è ~5x più lento (dev mode + niente Hermes optimizations).
