@@ -50,7 +50,7 @@ export default function UserDetailPage() {
           .limit(50),
         supabase
           .from('reviews')
-          .select('id, restaurant_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, likes_count, created_at, restaurants!inner(name, country)')
+          .select('id, restaurant_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, likes_count, created_at, restaurants!inner(name, country, city)')
           .eq('user_id', id)
           .order('created_at', { ascending: false })
           .limit(50),
@@ -64,7 +64,7 @@ export default function UserDetailPage() {
 
       setRestaurants((restRes.data ?? []) as Restaurant[]);
       setReviews(flattenJoinAll(reviewsRes.data ?? [], {
-        restaurants: { name: 'restaurant_name', country: 'restaurant_country' },
+        restaurants: { name: 'restaurant_name', country: 'restaurant_country', city: 'restaurant_city' },
       }));
       setMenuPhotos((menuPhotosRes.data ?? []).map((p: any) => ({
         ...p,
@@ -189,6 +189,7 @@ export default function UserDetailPage() {
             <thead className="bg-background text-left">
               <tr>
                 <th className="px-4 py-2 font-medium">Ristorante</th>
+                <th className="px-4 py-2 font-medium">Luogo</th>
                 <th className="px-4 py-2 font-medium">Rating</th>
                 <th className="px-4 py-2 font-medium">Commento</th>
                 <th className="px-4 py-2 font-medium">Foto</th>
@@ -199,7 +200,7 @@ export default function UserDetailPage() {
             {reviewsByCountry.map(([country, items]) => (
               <tbody key={country}>
                 <tr className="bg-background border-t">
-                  <td colSpan={6} className="px-4 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <td colSpan={7} className="px-4 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {country} ({items.length})
                   </td>
                 </tr>
@@ -210,6 +211,7 @@ export default function UserDetailPage() {
                         {r.restaurant_name || '—'}
                       </Link>
                     </td>
+                    <td className="px-4 py-2 text-muted-foreground">{r.restaurant_city || '—'}</td>
                     <td className="px-4 py-2">
                       {r.rating > 0 ? <span className="text-star">{'★'.repeat(r.rating)}</span> : '—'}
                     </td>
