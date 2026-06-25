@@ -431,7 +431,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   compatChipCovered: {
     backgroundColor: theme.colors.primaryLight,
