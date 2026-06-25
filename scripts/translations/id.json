@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Peringatan: kecap bisa mengandung gluten",
-    "fava_beans": "Defisiensi G6PD: bahkan jumlah kecil dapat menyebabkan krisis hemolitik"
+    "fava_beans": "Defisiensi G6PD: bahkan jumlah kecil dapat menyebabkan krisis hemolitik",
+    "peanuts": "⚠️ Peringatan: minyak gorengnya mungkin minyak kacang"
   },
   "cardTexts": {
     "header": "PERHATIAN",

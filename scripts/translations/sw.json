@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Onyo: sosi ya soya inaweza kuwa na gluteni",
-    "fava_beans": "Upungufu wa G6PD: hata kiasi kidogo kinaweza kusababisha mgogoro wa hemolytic"
+    "fava_beans": "Upungufu wa G6PD: hata kiasi kidogo kinaweza kusababisha mgogoro wa hemolytic",
+    "peanuts": "⚠️ Onyo: mafuta ya kukaanga yanaweza kuwa mafuta ya karanga"
   },
   "cardTexts": {
     "header": "TAHADHARI",

@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Rabhadh: d'fhéadfadh anlann soighe glútan a bheith ann",
-    "fava_beans": "Easnamh G6PD: fiú méideanna beaga is féidir géarchéim haemailíteach a chur faoi deara"
+    "fava_beans": "Easnamh G6PD: fiú méideanna beaga is féidir géarchéim haemailíteach a chur faoi deara",
+    "peanuts": "⚠️ Rabhadh: d'fhéadfadh ola peanut a bheith san ola friochta"
   },
   "cardTexts": {
     "header": "AIRE",

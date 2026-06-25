@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Fampitandremana: mety misy gluten ny saosy soja",
-    "fava_beans": "Ny tsy fahampian'ny G6PD: na dia kely aza dia mety hiteraka krizy hemolytika"
+    "fava_beans": "Ny tsy fahampian'ny G6PD: na dia kely aza dia mety hiteraka krizy hemolytika",
+    "peanuts": "⚠️ Fampitandremana: ny menaka endasina dia mety ho menaka voanjo"
   },
   "cardTexts": {
     "header": "TSARA",

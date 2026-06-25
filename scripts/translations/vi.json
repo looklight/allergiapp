@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Cảnh báo: nước tương có thể chứa gluten",
-    "fava_beans": "Thiếu G6PD: ngay cả lượng nhỏ cũng có thể gây cơn tan máu"
+    "fava_beans": "Thiếu G6PD: ngay cả lượng nhỏ cũng có thể gây cơn tan máu",
+    "peanuts": "⚠️ Cảnh báo: dầu chiên có thể là dầu lạc"
   },
   "cardTexts": {
     "header": "CHÚ Ý",

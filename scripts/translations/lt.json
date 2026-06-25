@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Dėmesio: sojų padažas gali turėti gliuteno",
-    "fava_beans": "G6PD trūkumas: net maži kiekiai gali sukelti hemolizinę krizę"
+    "fava_beans": "G6PD trūkumas: net maži kiekiai gali sukelti hemolizinę krizę",
+    "peanuts": "⚠️ Įspėjimas: kepimo aliejus gali būti žemės riešutų aliejus"
   },
   "cardTexts": {
     "header": "DĖMESIO",

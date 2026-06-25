@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Upozornenie: sójová omáčka môže obsahovať lepok",
-    "fava_beans": "Deficit G6PD: aj malé množstvá môžu spôsobiť hemolytickú krízu"
+    "fava_beans": "Deficit G6PD: aj malé množstvá môžu spôsobiť hemolytickú krízu",
+    "peanuts": "⚠️ Upozornenie: Olej na vyprážanie môže byť arašidový olej"
   },
   "cardTexts": {
     "header": "POZOR",

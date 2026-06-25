@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Waarskuwing: sojasous kan gluten bevat",
-    "fava_beans": "G6PD-tekort: selfs klein hoeveelhede kan hemolitiese krisis veroorsaak"
+    "fava_beans": "G6PD-tekort: selfs klein hoeveelhede kan hemolitiese krisis veroorsaak",
+    "peanuts": "⚠️ Waarskuwing: die braaiolie kan grondboontjieolie wees"
   },
   "cardTexts": {
     "header": "AANDAG",

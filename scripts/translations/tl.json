@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Babala: ang toyo ay maaaring maglaman ng gluten",
-    "fava_beans": "Kakulangan sa G6PD: kahit maliit na dami ay maaaring magdulot ng hemolytic crisis"
+    "fava_beans": "Kakulangan sa G6PD: kahit maliit na dami ay maaaring magdulot ng hemolytic crisis",
+    "peanuts": "⚠️ Babala: ang pritong mantika ay maaaring peanut oil"
   },
   "cardTexts": {
     "header": "PANSIN",

@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Amaran: kicap mungkin mengandungi gluten",
-    "fava_beans": "Kekurangan G6PD: walaupun jumlah kecil boleh menyebabkan krisis hemolitik"
+    "fava_beans": "Kekurangan G6PD: walaupun jumlah kecil boleh menyebabkan krisis hemolitik",
+    "peanuts": "⚠️ Amaran: minyak goreng mungkin minyak kacang"
   },
   "cardTexts": {
     "header": "PERHATIAN",

@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Kontuz: soja-saltsak glutena izan dezake",
-    "fava_beans": "G6PD gabezia: kopuru txikiek ere krisi hemolitikoa eragin dezakete"
+    "fava_beans": "G6PD gabezia: kopuru txikiek ere krisi hemolitikoa eragin dezakete",
+    "peanuts": "⚠️ Abisua: frijitzeko olioa kakahuete olioa izan daiteke"
   },
   "cardTexts": {
     "header": "KONTUZ",

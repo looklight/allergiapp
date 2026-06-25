@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Hoiatus: sojakaste võib sisaldada gluteeni",
-    "fava_beans": "G6PD puudulikkus: isegi väikesed kogused võivad põhjustada hemolüütilise kriisi"
+    "fava_beans": "G6PD puudulikkus: isegi väikesed kogused võivad põhjustada hemolüütilise kriisi",
+    "peanuts": "⚠️ Hoiatus: praadimisõli võib olla maapähkliõli"
   },
   "cardTexts": {
     "header": "TÄHELEPANU",

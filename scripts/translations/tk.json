@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Duýduryş: soýa sousunda glýuten bolup biler",
-    "fava_beans": "G6PD ýetmezçiligi: az mukdarda hem gemolitiki krizise sebäp bolup biler"
+    "fava_beans": "G6PD ýetmezçiligi: az mukdarda hem gemolitiki krizise sebäp bolup biler",
+    "peanuts": "⚠️ Duýduryş: gowrulan ýag nohut ýagy bolup biler"
   },
   "cardTexts": {
     "header": "Üns beriň",

@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Atenție: sosul de soia poate conține gluten",
-    "fava_beans": "Deficit de G6PD: chiar și cantități mici pot provoca criză hemolitică"
+    "fava_beans": "Deficit de G6PD: chiar și cantități mici pot provoca criză hemolitică",
+    "peanuts": "⚠️ Atenție: uleiul de prăjit poate fi ulei de arahide"
   },
   "cardTexts": {
     "header": "ATENȚIE",

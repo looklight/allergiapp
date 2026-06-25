@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Advarsel: sojasauce kan indeholde gluten",
-    "fava_beans": "G6PD-mangel: selv små mængder kan forårsage hæmolytisk krise"
+    "fava_beans": "G6PD-mangel: selv små mængder kan forårsage hæmolytisk krise",
+    "peanuts": "⚠️ Advarsel: fritureolien kan være jordnøddeolie"
   },
   "cardTexts": {
     "header": "OBS",

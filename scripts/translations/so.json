@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Digniin: suugo soy ah waxaa ku jiri kara gluten",
-    "fava_beans": "Yaraanta G6PD: xitaa xaddi yar ayaa sababi kara qalalaasaha hemolytic"
+    "fava_beans": "Yaraanta G6PD: xitaa xaddi yar ayaa sababi kara qalalaasaha hemolytic",
+    "peanuts": "⚠️ Digniin: saliidda shiilan waxay noqon kartaa saliid lawska"
   },
   "cardTexts": {
     "header": "FIIRO GAAR AH",

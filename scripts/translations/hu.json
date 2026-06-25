@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Figyelmeztetés: a szójaszósz glutént tartalmazhat",
-    "fava_beans": "G6PD-hiány: kis mennyiségek is hemolitikus krízist okozhatnak"
+    "fava_beans": "G6PD-hiány: kis mennyiségek is hemolitikus krízist okozhatnak",
+    "peanuts": "⚠️ Figyelmeztetés: a sütőolaj mogyoróolaj lehet"
   },
   "cardTexts": {
     "header": "FIGYELEM",

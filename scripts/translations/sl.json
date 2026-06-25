@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Opozorilo: sojina omaka lahko vsebuje gluten",
-    "fava_beans": "Pomanjkanje G6PD: tudi majhne količine lahko povzročijo hemolitično krizo"
+    "fava_beans": "Pomanjkanje G6PD: tudi majhne količine lahko povzročijo hemolitično krizo",
+    "peanuts": "⚠️ Opozorilo: olje za cvrtje je lahko arašidovo olje"
   },
   "cardTexts": {
     "header": "POZOR",

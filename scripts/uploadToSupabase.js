@@ -16,13 +16,17 @@ const fs = require('fs');
 
 const TRANSLATIONS_DIR = path.join(__dirname, 'translations');
 
-// Carica .env dal progetto root
-const envPath = path.join(__dirname, '..', '.env');
-const envContent = fs.readFileSync(envPath, 'utf-8');
+// Carica le env dal progetto root: .env + .env.local (l'URL pubblico vive in
+// .env.local via `npm run env:sync`, la service key in .env).
 const env = {};
-for (const line of envContent.split('\n')) {
-  const match = line.match(/^([A-Z_]+)=(.+)$/);
-  if (match) env[match[1]] = match[2].trim();
+for (const fileName of ['.env', '.env.local']) {
+  const envPath = path.join(__dirname, '..', fileName);
+  if (!fs.existsSync(envPath)) continue;
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([A-Z_]+)=(.+)$/);
+    if (match && !env[match[1]]) env[match[1]] = match[2].trim();
+  }
 }
 
 const SUPABASE_URL = env.EXPO_PUBLIC_SUPABASE_URL;

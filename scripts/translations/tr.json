@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Uyarı: soya sosu gluten içerebilir",
-    "fava_beans": "G6PD eksikliği: küçük miktarlar bile hemolitik krize neden olabilir"
+    "fava_beans": "G6PD eksikliği: küçük miktarlar bile hemolitik krize neden olabilir",
+    "peanuts": "⚠️ Uyarı: Kızartma yağı fıstık yağı olabilir"
   },
   "cardTexts": {
     "header": "DİKKAT",

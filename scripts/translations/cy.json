@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Rhybudd: gall saws soi gynnwys glwten",
-    "fava_beans": "Diffyg G6PD: gall hyd yn oed symiau bach achosi argyfwng hemolytig"
+    "fava_beans": "Diffyg G6PD: gall hyd yn oed symiau bach achosi argyfwng hemolytig",
+    "peanuts": "⚠️ Rhybudd: gall yr olew ffrio fod yn olew cnau daear"
   },
   "cardTexts": {
     "header": "SYLW",

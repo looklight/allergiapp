@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Varoitus: soijakastike voi sisältää gluteenia",
-    "fava_beans": "G6PD-puutos: pienetkin määrät voivat aiheuttaa hemolyyttisen kriisin"
+    "fava_beans": "G6PD-puutos: pienetkin määrät voivat aiheuttaa hemolyyttisen kriisin",
+    "peanuts": "⚠️ Varoitus: paistoöljy voi olla maapähkinäöljyä"
   },
   "cardTexts": {
     "header": "HUOMIO",

@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Averto: sojsaŭco povas enhavi glutenon",
-    "fava_beans": "G6PD-manko: eĉ malgrandaj kvantoj povas kaŭzi hemolitikan krizon"
+    "fava_beans": "G6PD-manko: eĉ malgrandaj kvantoj povas kaŭzi hemolitikan krizon",
+    "peanuts": "⚠️ Averto: la frita oleo povas esti arakida oleo"
   },
   "cardTexts": {
     "header": "ATENTU",

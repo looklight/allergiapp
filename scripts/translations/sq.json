@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Kujdes: salca e sojës mund të përmbajë gluten",
-    "fava_beans": "Mungesë e G6PD: edhe sasi të vogla mund të shkaktojnë krizë hemolitike"
+    "fava_beans": "Mungesë e G6PD: edhe sasi të vogla mund të shkaktojnë krizë hemolitike",
+    "peanuts": "⚠️ Kujdes: vaji i skuqjes mund të jetë vaj kikiriku"
   },
   "cardTexts": {
     "header": "KUJDES",

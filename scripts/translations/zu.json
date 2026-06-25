@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Isexwayiso: isoso yesoya ingase ibe ne-gluten",
-    "fava_beans": "Ukushoda kwe-G6PD: ngisho amanani amancane angabangela inkinga ye-hemolytic"
+    "fava_beans": "Ukushoda kwe-G6PD: ngisho amanani amancane angabangela inkinga ye-hemolytic",
+    "peanuts": "⚠️ Isexwayiso: amafutha okuthosa angase abe amafutha e-peanut"
   },
   "cardTexts": {
     "header": "QAPHELA",

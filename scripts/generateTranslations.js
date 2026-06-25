@@ -57,6 +57,7 @@ const ALLERGEN_DESCRIPTIONS = {
 
 const ALLERGEN_WARNINGS = {
   gluten: 'Warning: soy sauce may contain gluten',
+  peanuts: 'Warning: the frying oil may be peanut oil',
   fava_beans: 'G6PD deficiency: even small amounts can cause hemolytic crisis',
 };
 
@@ -269,8 +270,9 @@ async function generateTranslation(langCode) {
   const warningsRaw = await translateObject(ALLERGEN_WARNINGS, langCode, 'Avvertenze');
   // Prepend warning emoji
   const warnings = {};
+  const warningsWithEmoji = ['gluten', 'peanuts'];
   for (const [key, val] of Object.entries(warningsRaw)) {
-    warnings[key] = key === 'gluten' ? `⚠️ ${val}` : val;
+    warnings[key] = warningsWithEmoji.includes(key) ? `⚠️ ${val}` : val;
   }
 
   const cardTexts = await translateObject(CARD_TEXTS, langCode, 'Testi card');

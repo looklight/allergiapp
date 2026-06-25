@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Brīdinājums: sojas mērce var saturēt lipekli",
-    "fava_beans": "G6PD deficīts: pat nelieli daudzumi var izraisīt hemolītisku krīzi"
+    "fava_beans": "G6PD deficīts: pat nelieli daudzumi var izraisīt hemolītisku krīzi",
+    "peanuts": "⚠️ Brīdinājums: cepamā eļļa var būt zemesriekstu eļļa"
   },
   "cardTexts": {
     "header": "UZMANĪBU",

@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Atención: a salsa de soia pode conter glute",
-    "fava_beans": "Déficit de G6PD: mesmo pequenas cantidades poden causar unha crise hemolítica"
+    "fava_beans": "Déficit de G6PD: mesmo pequenas cantidades poden causar unha crise hemolítica",
+    "peanuts": "⚠️ Aviso: o aceite de fritir pode ser aceite de cacahuete"
   },
   "cardTexts": {
     "header": "ATENCIÓN",

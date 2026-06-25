@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Avètisman: sòs soya ka gen gluten",
-    "fava_beans": "Defisi G6PD: menm ti kantite ka lakòz kriz emolitik"
+    "fava_beans": "Defisi G6PD: menm ti kantite ka lakòz kriz emolitik",
+    "peanuts": "⚠️ Avètisman: lwil fri a ka lwil pistach"
   },
   "cardTexts": {
     "header": "ATANSYON",

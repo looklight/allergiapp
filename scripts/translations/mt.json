@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Twissija: iz-zalza tas-soja tista' tinkludi glutina",
-    "fava_beans": "Defiċjenza ta' G6PD: anke kwantitajiet żgħar jistgħu jikkawżaw kriżi emolitika"
+    "fava_beans": "Defiċjenza ta' G6PD: anke kwantitajiet żgħar jistgħu jikkawżaw kriżi emolitika",
+    "peanuts": "⚠️ Twissija: iż-żejt tal-qali jista 'jkun żejt tal-karawett"
   },
   "cardTexts": {
     "header": "ATTENZJONI",

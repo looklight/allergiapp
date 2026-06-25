@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "⚠️ Xəbərdarlıq: soya sousunda qlüten ola bilər",
-    "fava_beans": "G6PD çatışmazlığı: hətta kiçik miqdarlar hemolitik böhrana səbəb ola bilər"
+    "fava_beans": "G6PD çatışmazlığı: hətta kiçik miqdarlar hemolitik böhrana səbəb ola bilər",
+    "peanuts": "⚠️ Xəbərdarlıq: qızartma yağı fıstıq yağı ola bilər"
   },
   "cardTexts": {
     "header": "DİQQƏT",

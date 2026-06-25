@@ -35,7 +35,8 @@
   },
   "warnings": {
     "gluten": "Advarsel: soyasaus kan inneholde gluten",
-    "fava_beans": "G6PD-mangel: selv små mengder kan forårsake hemolytisk krise"
+    "fava_beans": "G6PD-mangel: selv små mengder kan forårsake hemolytisk krise",
+    "peanuts": "⚠️ Advarsel: frityroljen kan være peanøttolje"
   },
   "cardTexts": {
     "header": "OBS",
