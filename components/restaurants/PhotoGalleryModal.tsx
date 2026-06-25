@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, useMemo } from 'react';
 import {
-  Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView, Platform, Pressable,
+  Modal, View, FlatList, TouchableOpacity, StyleSheet, ScrollView, Platform, Pressable, Alert,
   useWindowDimensions, type ViewToken,
 } from 'react-native';
 import ReAnimated, {
@@ -17,6 +17,7 @@ import type { AppTheme } from '../../constants/theme';
 import StarRating from '../StarRating';
 import { getRestrictionById, type FoodRestrictionCategory } from '../../constants/foodRestrictions';
 import Avatar from '../Avatar';
+import ReportReviewPanel, { type ReviewReportReason } from './ReportReviewPanel';
 import i18n from '../../utils/i18n';
 
 export interface GalleryPhoto {
@@ -46,13 +47,17 @@ interface PhotoGalleryModalProps {
   initialIndex: number;
   onClose: () => void;
   userNeeds?: string[];
-  /** Callback per segnalare la recensione della foto corrente. */
-  onReportReview?: (reviewId: string) => void;
+  /**
+   * Invia la segnalazione della recensione della foto corrente. Il panel di
+   * segnalazione è renderizzato internamente alla galleria (non come secondo
+   * <Modal>), quindi qui basta la submission vera e propria.
+   */
+  onSubmitReport?: (reviewId: string, reason: ReviewReportReason) => Promise<void>;
   /** Set di reviewId già segnalati (per mostrare la flag piena). */
   reportedReviewIds?: Set<string>;
 }
 
-export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds, onReportReview, reportedReviewIds }: PhotoGalleryModalProps) {
+export default function PhotoGalleryModal({ photos, initialIndex, onClose, userNeeds, onSubmitReport, reportedReviewIds }: PhotoGalleryModalProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const CATEGORY_COLORS = useMemo(() => makeCategoryColors(theme), [theme]);
@@ -63,6 +68,7 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
   const [isZoomed, setIsZoomed] = useState(false);
   const [textExpanded, setTextExpanded] = useState(false);
   const [textTruncated, setTextTruncated] = useState(false);
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
 
   // ─── Swipe-to-dismiss (Reanimated) ──────────────────────────────
   const translateY = useSharedValue(0);
@@ -183,9 +189,16 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
                     <StarRating rating={current.rating} size={12} />
                   )}
                 </View>
-                {onReportReview && current.reviewId && (
+                {onSubmitReport && current.reviewId && (
                   <TouchableOpacity
-                    onPress={() => onReportReview(current.reviewId!)}
+                    onPress={() => {
+                      if (!current.reviewId) return;
+                      if (reportedReviewIds?.has(current.reviewId)) {
+                        Alert.alert(i18n.t('restaurants.detail.reportAlreadySent'), i18n.t('restaurants.detail.reportAlreadyMsg'));
+                        return;
+                      }
+                      setReportingReviewId(current.reviewId);
+                    }}
                     hitSlop={10}
                     activeOpacity={0.6}
                   >
@@ -255,6 +268,19 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
           )}
         </ReAnimated.View>
       </GestureDetector>
+
+      {/* Panel di segnalazione come overlay interno (fuori dal GestureDetector
+          della galleria, così lo swipe-to-dismiss non interferisce). Niente
+          secondo <Modal> nativo → niente stacking su iOS. */}
+      {reportingReviewId && onSubmitReport && (
+        <ReportReviewPanel
+          onClose={() => setReportingReviewId(null)}
+          onSubmit={async (reason) => {
+            await onSubmitReport(reportingReviewId, reason);
+            setReportingReviewId(null);
+          }}
+        />
+      )}
       </GestureHandlerRootView>
     </Modal>
   );

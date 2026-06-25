@@ -211,17 +211,23 @@ export default function RestaurantDetailBody({
     setReportingReviewId(reviewId);
   };
 
-  const submitReviewReport = async (reason: ReviewReportReason) => {
-    const reviewId = reportingReviewId;
-    if (!restaurant || !reviewId) return;
+  // Submission condivisa dai due percorsi (lista recensioni e galleria foto).
+  const reportReviewById = async (reviewId: string, reason: ReviewReportReason) => {
+    if (!restaurant) return;
     const result = await RestaurantService.reportReview(restaurant.id, reviewId, reason);
-    setReportingReviewId(null);
     if (result) {
       setReportedReviewIds(prev => new Set(prev).add(reviewId));
       Alert.alert(i18n.t('common.thanks'), i18n.t('restaurants.detail.reportSent'));
     } else {
       Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.reportError'));
     }
+  };
+
+  const submitReviewReport = async (reason: ReviewReportReason) => {
+    const reviewId = reportingReviewId;
+    if (!reviewId) return;
+    await reportReviewById(reviewId, reason);
+    setReportingReviewId(null);
   };
 
   // Auto-cleanup: rimuovi favorito orfano se il ristorante non esiste più
@@ -527,7 +533,7 @@ export default function RestaurantDetailBody({
           initialIndex={galleryIndex}
           onClose={() => setGalleryIndex(null)}
           userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
-          onReportReview={isAuthenticated ? handleReportReview : undefined}
+          onSubmitReport={isAuthenticated ? reportReviewById : undefined}
           reportedReviewIds={reportedReviewIds}
         />
       )}
