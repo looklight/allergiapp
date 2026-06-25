@@ -112,7 +112,10 @@ export default function PhotoGalleryModal({ photos, initialIndex, onClose, userN
     if (viewableItems.length > 0 && viewableItems[0].index != null) {
       setCurrentIndex(viewableItems[0].index);
       setTextExpanded(false);
-      setTextTruncated(false);
+      // Non azzeriamo textTruncated: onTextLayout del testo di misura aggiorna
+      // il valore quando il testo cambia davvero. Per foto-sorelle della stessa
+      // recensione (stesso testo) onTextLayout non riscatta, e il valore già
+      // corretto va conservato — azzerarlo qui faceva sparire "leggi tutto".
     }
   }, []);
 
@@ -341,7 +344,11 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     lineHeight: 18,
   },
   measureText: {
+    // left/right: 0 vincola la misura alla stessa larghezza del testo visibile
+    // (altrimenti, da absolute senza larghezza, conterebbe meno righe del reale).
     position: 'absolute',
+    left: 0,
+    right: 0,
     opacity: 0,
     pointerEvents: 'none',
   },
