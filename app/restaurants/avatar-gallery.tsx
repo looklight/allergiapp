@@ -57,6 +57,7 @@ function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
   switch (avatar.unlock.type) {
     case 'free':
     case 'secret':
+    case 'reviews_matching':
       return '';
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: avatar.unlock.count });
@@ -93,18 +94,22 @@ function getQuestHint(avatar: AvatarOption): string | null {
 
 /**
  * Etichetta della condizione (es. "Scrivi 5 recensioni").
- * Per i `secret` già sbloccati con `revealedKey`, svela il testo della missione
- * invece del generico "Missione segreta".
+ * Se l'avatar è segreto (`secret` flag o tipo 'secret'): da bloccato resta
+ * "Missione segreta"; da sbloccato con `revealedKey` svela il testo della quest.
  */
 function formatConditionLabel(avatar: AvatarOption, unlocked: boolean): string {
+  const isSecret = avatar.secret || avatar.unlock.type === 'secret';
+  if (isSecret) {
+    if (unlocked && avatar.revealedKey) return i18n.t(avatar.revealedKey);
+    return i18n.t('restaurants.avatarGallery.conditions.secret');
+  }
   switch (avatar.unlock.type) {
     case 'free':
       return i18n.t('restaurants.avatarGallery.conditions.free');
     case 'secret':
-      if (unlocked && avatar.unlock.revealedKey) {
-        return i18n.t(avatar.unlock.revealedKey);
-      }
       return i18n.t('restaurants.avatarGallery.conditions.secret');
+    case 'reviews_matching':
+      return avatar.revealedKey ? i18n.t(avatar.revealedKey) : '';
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.conditions.reviews', { count: avatar.unlock.count });
     case 'restaurants':
@@ -134,6 +139,7 @@ export default function AvatarGalleryScreen() {
     uniqueLikersReceived: 0,
     countriesReviewed: 0,
     likesToRestrictionReviews: {},
+    reviewedPlaces: [],
   });
   const [selectedId, setSelectedId] = useState(userProfile?.avatar_url ?? null);
   const [detailAvatar, setDetailAvatar] = useState<AvatarOption | null>(null);
@@ -145,7 +151,7 @@ export default function AvatarGalleryScreen() {
     fetchUnlockStats(user.uid).then(setStats);
   }, [user?.uid]);
 
-  const everUnlocked = userProfile?.unlocked_avatars ?? [];
+  const everUnlocked = useMemo(() => userProfile?.unlocked_avatars ?? [], [userProfile?.unlocked_avatars]);
 
   const handleSelect = useCallback(
     async (avatar: AvatarOption) => {
@@ -182,15 +188,6 @@ export default function AvatarGalleryScreen() {
     },
     [user?.uid, saving, stats, everUnlocked, selectedId, userProfile?.avatar_url, userProfile?.is_anonymous, refreshProfile, router],
   );
-
-  const renderProgressLabel = (avatar: AvatarOption) => {
-    const { unlock } = avatar;
-    if (unlock.type === 'free' || unlock.type === 'secret') return null;
-    if (unlock.type === 'reviews') {
-      return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: unlock.count });
-    }
-    return i18n.t('restaurants.avatarGallery.progress.restaurants', { current: stats.restaurants, total: unlock.count });
-  };
 
   return (
     <View style={styles.container}>
@@ -336,7 +333,10 @@ function DetailCard({
   const unlocked = isAvatarEffectivelyUnlocked(avatar, stats, everUnlocked);
   const progress = getEffectiveUnlockProgress(avatar, stats, everUnlocked);
   const progressLabel = formatProgressLabel(avatar, stats);
-  const hint = getQuestHint(avatar);
+  // Segreto: niente progresso né hint mentre è bloccato, altrimenti si svelerebbe
+  // la condizione nascosta. La valutazione resta in isAvatarEffectivelyUnlocked.
+  const isSecret = avatar.secret || avatar.unlock.type === 'secret';
+  const hint = isSecret ? null : getQuestHint(avatar);
   const [hintExpanded, setHintExpanded] = useState(false);
 
   return (
@@ -387,8 +387,8 @@ function DetailCard({
         </TouchableOpacity>
       )}
 
-      {/* Barra progresso */}
-      {!unlocked && progressLabel !== '' && (
+      {/* Barra progresso — mai per i segreti bloccati (anti-leak) */}
+      {!unlocked && !isSecret && progressLabel !== '' && (
         <View style={styles.progressSection}>
           <View style={styles.progressBar}>
             <View

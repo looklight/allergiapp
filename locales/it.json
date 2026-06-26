@@ -632,6 +632,9 @@
       "hintLabel": "Suggerimento",
       "showInfo": "Vedi come l'hai sbloccato",
       "unlocked": "Sbloccato!",
+      "secretRevealed": {
+        "plate_mario": "Hai recensito 2 ristoranti italiani fuori dall'Italia"
+      },
       "questHint": {
         "likes": "Aggiungi foto, descrivi i piatti e racconta come è stata la tua esperienza. Le recensioni complete vengono apprezzate di più dalla community."
       },

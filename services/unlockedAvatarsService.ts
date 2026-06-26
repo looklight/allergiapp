@@ -13,7 +13,7 @@
  */
 
 import { supabase } from './supabase';
-import { AVATARS, isAvatarUnlocked, type AvatarOption, type UnlockStats } from '../constants/avatars';
+import { AVATARS, isAvatarUnlocked, type AvatarOption, type UnlockStats, type ReviewedPlace } from '../constants/avatars';
 import { getSnapshotColumnFor } from '../constants/foodRestrictions';
 
 /**
@@ -38,11 +38,12 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       // Per `unique_likers_received`: usa RPC server-side per evitare doppio
       // JOIN lato client e fragilità della sintassi PostgREST.
       supabase.rpc('get_unique_likers_count', { p_user_id: userId }),
-      // Per "Poliglotta": numero di paesi distinti in cui l'utente ha recensito.
-      // JOIN inline su restaurants tramite la relazione restaurant_id.
+      // Per "Poliglotta" (countries_reviewed) E le condizioni `reviews_matching`:
+      // JOIN inline su restaurants. Una sola query serve entrambe — porto
+      // id (dedup per ristorante), country_code e cuisine_types.
       supabase
         .from('reviews')
-        .select('restaurant:restaurants!restaurant_id(country_code)')
+        .select('restaurant:restaurants!restaurant_id(id, country_code, cuisine_types)')
         .eq('user_id', userId),
       // Per le condizioni `likes_to_restriction_reviews`: like dati dall'utente
       // a recensioni filtrate per restrizione del recensore. Selezioniamo
@@ -58,9 +59,21 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       0,
     );
     const countriesSet = new Set<string>();
+    const reviewedPlaces: ReviewedPlace[] = [];
+    const seenRestaurants = new Set<string>();
     for (const row of countriesRes.data ?? []) {
-      const code = (row as any)?.restaurant?.country_code;
+      const r = (row as any)?.restaurant;
+      const code = r?.country_code;
       if (code) countriesSet.add(code);
+      // Posti deduplicati per ristorante, per le condizioni reviews_matching.
+      if (r?.id && !seenRestaurants.has(r.id)) {
+        seenRestaurants.add(r.id);
+        reviewedPlaces.push({
+          restaurantId: r.id,
+          cuisines: r.cuisine_types ?? [],
+          country: code ?? null,
+        });
+      }
     }
     // Restrizioni da tracciare: quelle effettivamente usate dal catalogo AVATARS.
     // Aggiungere un nuovo `likes_to_restriction_reviews` al catalogo basta a popolarne
@@ -93,10 +106,11 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       uniqueLikersReceived: (uniqueLikersRes.data as number | null) ?? 0,
       countriesReviewed: countriesSet.size,
       likesToRestrictionReviews,
+      reviewedPlaces,
     };
   } catch (error) {
     console.warn('[UnlockedAvatarsService] fetchUnlockStats error:', error);
-    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToRestrictionReviews: {} };
+    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToRestrictionReviews: {}, reviewedPlaces: [] };
   }
 }
 

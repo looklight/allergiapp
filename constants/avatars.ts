@@ -2,13 +2,28 @@ import { ImageSourcePropType } from 'react-native';
 
 export type UnlockCondition =
   | { type: 'free' }
-  | { type: 'secret'; revealedKey?: string }
+  | { type: 'secret' }
   | { type: 'reviews'; count: number }
   | { type: 'restaurants'; count: number }
   | { type: 'likes_received'; count: number }
   | { type: 'unique_likers_received'; count: number }
   | { type: 'countries_reviewed'; count: number }
-  | { type: 'likes_to_restriction_reviews'; count: number; restriction: string };
+  | { type: 'likes_to_restriction_reviews'; count: number; restriction: string }
+  /**
+   * Recensisci `count` ristoranti che soddisfano i filtri (cucina/paese).
+   * Generico: copre l'intera famiglia di segreti "recensisci in paese X / cucina Y".
+   * Aggiungerne uno nuovo = una riga nel catalogo, zero infra.
+   *  - cuisineAny: il ristorante ha almeno una di queste cucine (OR)
+   *  - countryIn / countryNotIn: country_code ∈ / ∉ (paesi noti soltanto)
+   */
+  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[] };
+
+/** Un ristorante recensito dall'utente, ridotto ai campi per `reviews_matching`. */
+export interface ReviewedPlace {
+  restaurantId: string;
+  cuisines: string[];
+  country: string | null;
+}
 
 /**
  * Stats utente usate per valutare le condizioni di sblocco.
@@ -31,6 +46,8 @@ export interface UnlockStats {
    * `getSnapshotColumnFor` di constants/foodRestrictions.ts.
    */
   likesToRestrictionReviews: Record<string, number>;
+  /** Posti recensiti (cucina+paese), per valutare le condizioni `reviews_matching`. */
+  reviewedPlaces: ReviewedPlace[];
 }
 
 export interface AvatarOption {
@@ -38,6 +55,15 @@ export interface AvatarOption {
   source: ImageSourcePropType | null;
   name: string;
   unlock: UnlockCondition;
+  /**
+   * Presentazione: se true la galleria nasconde la condizione finché bloccato
+   * (mostra "Missione segreta", niente barra di progresso) e la svela solo a
+   * sblocco avvenuto. La VALUTAZIONE resta quella di `unlock`: separare i due
+   * assi permette segreti con condizione reale ma nascosta.
+   */
+  secret?: boolean;
+  /** Chiave i18n del testo svelato a sblocco avvenuto (per i `secret`). */
+  revealedKey?: string;
 }
 
 /**
@@ -108,19 +134,19 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_purple_belt',
     source: require('../assets/avatars/plate_purple_belt.png'),
     name: 'Purple Belt',
-    unlock: { type: 'secret' },
+    unlock: { type: 'likes_to_restriction_reviews', count: 10, restriction: 'vegan' },
   },
   {
     id: 'plate_orange_belt',
     source: require('../assets/avatars/plate_orange_belt.png'),
     name: 'Orange Belt',
-    unlock: { type: 'secret' },
+    unlock: { type: 'likes_to_restriction_reviews', count: 10, restriction: 'gluten' },
   },
   {
     id: 'plate_teal_belt',
     source: require('../assets/avatars/plate_teal_belt.png'),
     name: 'Teal Belt',
-    unlock: { type: 'secret' },
+    unlock: { type: 'likes_to_restriction_reviews', count: 10, restriction: 'vegetarian' },
   },
 
   // ── Like ricevuti (ladder progressivo) ────────────────
@@ -164,16 +190,21 @@ export const AVATARS: AvatarOption[] = [
     unlock: { type: 'unique_likers_received', count: 24 },
   },
 
-  // ── Missioni segrete (nessuna condizione pubblica) ────
-  // Quando definisci la missione reale, aggiungi `revealedKey` con la chiave i18n
-  // del testo da svelare a sblocco avvenuto (es. revealedKey:
-  // 'restaurants.avatarGallery.secretRevealed.plate_mario'). Da bloccato resta
-  // "Missione segreta"; da sbloccato il box mostra il testo della quest.
+  // ── Missioni segrete ──────────────────────────────────
+  // Due modi:
+  //  1. Non ancora progettato → `unlock: { type: 'secret' }` (non si sblocca mai).
+  //  2. Condizione reale ma NASCOSTA → metti la condizione vera in `unlock`
+  //     (es. reviews_matching) + `secret: true` + `revealedKey` con la chiave i18n
+  //     del testo da svelare. Da bloccato mostra "Missione segreta" e nasconde il
+  //     progresso; da sbloccato il box rivela la quest.
   {
     id: 'plate_mario',
     source: require('../assets/avatars/plate_mario.png'),
     name: 'Plumber',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci 2 ristoranti italiani fuori dall'Italia (Mario, italiano nel mondo).
+    unlock: { type: 'reviews_matching', count: 2, cuisineAny: ['italian'], countryNotIn: ['IT'] },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_mario',
   },
   {
     id: 'plate_lela',
@@ -230,6 +261,23 @@ export function getAvatarById(id: string): AvatarOption | undefined {
 }
 
 /**
+ * Conta i ristoranti recensiti che soddisfano i filtri di una `reviews_matching`.
+ * I posti arrivano già deduplicati per ristorante da `fetchUnlockStats`.
+ * Per `countryNotIn` contano solo i posti con paese noto (country != null).
+ */
+function countMatchingReviews(
+  places: readonly ReviewedPlace[] | undefined,
+  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[] },
+): number {
+  return (places ?? []).filter(
+    (p) =>
+      (!cond.cuisineAny || cond.cuisineAny.some((c) => p.cuisines.includes(c))) &&
+      (!cond.countryIn || (p.country != null && cond.countryIn.includes(p.country))) &&
+      (!cond.countryNotIn || (p.country != null && !cond.countryNotIn.includes(p.country))),
+  ).length;
+}
+
+/**
  * TEMP: se true sblocca tutti gli avatar a prescindere dalle condizioni.
  * Usato per test del catalogo. Rimettere a false prima del rilascio.
  */
@@ -240,7 +288,7 @@ const UNLOCK_ALL_FOR_TESTING = false;
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
 ): boolean {
   if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
@@ -260,6 +308,8 @@ export function isAvatarUnlocked(
       return (stats.countriesReviewed ?? 0) >= avatar.unlock.count;
     case 'likes_to_restriction_reviews':
       return (stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) >= avatar.unlock.count;
+    case 'reviews_matching':
+      return countMatchingReviews(stats.reviewedPlaces, avatar.unlock) >= avatar.unlock.count;
     default:
       return false;
   }
@@ -273,7 +323,7 @@ export function isAvatarUnlocked(
  */
 export function isAvatarEffectivelyUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
   everUnlockedIds: readonly string[],
 ): boolean {
   if (everUnlockedIds.includes(avatar.id)) return true;
@@ -285,7 +335,7 @@ export function isAvatarEffectivelyUnlocked(
  */
 export function getUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
 ): number {
   switch (avatar.unlock.type) {
     case 'free':
@@ -304,6 +354,8 @@ export function getUnlockProgress(
       return Math.min((stats.countriesReviewed ?? 0) / avatar.unlock.count, 1);
     case 'likes_to_restriction_reviews':
       return Math.min((stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) / avatar.unlock.count, 1);
+    case 'reviews_matching':
+      return Math.min(countMatchingReviews(stats.reviewedPlaces, avatar.unlock) / avatar.unlock.count, 1);
     default:
       return 0;
   }
@@ -315,7 +367,7 @@ export function getUnlockProgress(
  */
 export function getEffectiveUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number> },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
   everUnlockedIds: readonly string[],
 ): number {
   if (everUnlockedIds.includes(avatar.id)) return 1;

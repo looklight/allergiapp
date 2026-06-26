@@ -632,6 +632,9 @@
       "hintLabel": "Hint",
       "showInfo": "See how you unlocked it",
       "unlocked": "Unlocked!",
+      "secretRevealed": {
+        "plate_mario": "You reviewed 2 Italian restaurants outside Italy"
+      },
       "questHint": {
         "likes": "Add photos, describe the dishes, and tell about your experience. Complete reviews are appreciated more by the community."
       },
