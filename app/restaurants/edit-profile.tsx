@@ -164,7 +164,7 @@ export default function EditProfileScreen() {
               avatarId={userProfile?.avatar_url}
               isAnonymous={userProfile?.is_anonymous}
               initial={currentUsername || undefined}
-              size={150}
+              size={170}
             />
             <View style={styles.avatarEditBadge}>
               <MaterialCommunityIcons name="pencil" size={16} color={theme.colors.onPrimary} />

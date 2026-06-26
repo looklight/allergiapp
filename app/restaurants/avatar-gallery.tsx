@@ -91,12 +91,19 @@ function getQuestHint(avatar: AvatarOption): string | null {
   }
 }
 
-/** Etichetta della condizione (es. "Scrivi 5 recensioni"). */
-function formatConditionLabel(avatar: AvatarOption): string {
+/**
+ * Etichetta della condizione (es. "Scrivi 5 recensioni").
+ * Per i `secret` già sbloccati con `revealedKey`, svela il testo della missione
+ * invece del generico "Missione segreta".
+ */
+function formatConditionLabel(avatar: AvatarOption, unlocked: boolean): string {
   switch (avatar.unlock.type) {
     case 'free':
       return i18n.t('restaurants.avatarGallery.conditions.free');
     case 'secret':
+      if (unlocked && avatar.unlock.revealedKey) {
+        return i18n.t(avatar.unlock.revealedKey);
+      }
       return i18n.t('restaurants.avatarGallery.conditions.secret');
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.conditions.reviews', { count: avatar.unlock.count });
@@ -268,6 +275,22 @@ export default function AvatarGalleryScreen() {
                     <MaterialCommunityIcons name="lock" size={12} color={theme.colors.onPrimary} />
                   </View>
                 )}
+
+                {/* Sbloccato: "i" nello stesso slot del lucchetto → riapre il box
+                    con la task svolta (utile soprattutto per svelare i secret).
+                    Esclusi i `free`: non hanno nulla da spiegare. */}
+                {unlocked && avatar.unlock.type !== 'free' && (
+                  <TouchableOpacity
+                    style={styles.infoBadge}
+                    onPress={() => setDetailAvatar(avatar)}
+                    hitSlop={8}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={i18n.t('restaurants.avatarGallery.showInfo')}
+                  >
+                    <MaterialCommunityIcons name="information-outline" size={14} color={theme.colors.textDisabled} />
+                  </TouchableOpacity>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -343,7 +366,7 @@ function DetailCard({
 
       {/* Info */}
       <Text style={styles.detailName}>{avatar.name}</Text>
-      <Text style={styles.detailDescription}>{formatConditionLabel(avatar)}</Text>
+      <Text style={styles.detailDescription}>{formatConditionLabel(avatar, unlocked)}</Text>
       {hint && (
         <TouchableOpacity
           onPress={() => setHintExpanded((v) => !v)}
@@ -473,6 +496,16 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  infoBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    width: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   checkBadge: {
     position: 'absolute',

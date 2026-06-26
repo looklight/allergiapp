@@ -2,7 +2,7 @@ import { ImageSourcePropType } from 'react-native';
 
 export type UnlockCondition =
   | { type: 'free' }
-  | { type: 'secret' }
+  | { type: 'secret'; revealedKey?: string }
   | { type: 'reviews'; count: number }
   | { type: 'restaurants'; count: number }
   | { type: 'likes_received'; count: number }
@@ -104,6 +104,24 @@ export const AVATARS: AvatarOption[] = [
     name: 'Pink Belt',
     unlock: { type: 'likes_to_restriction_reviews', count: 5, restriction: 'vegetarian' },
   },
+  {
+    id: 'plate_purple_belt',
+    source: require('../assets/avatars/plate_purple_belt.png'),
+    name: 'Purple Belt',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_orange_belt',
+    source: require('../assets/avatars/plate_orange_belt.png'),
+    name: 'Orange Belt',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_teal_belt',
+    source: require('../assets/avatars/plate_teal_belt.png'),
+    name: 'Teal Belt',
+    unlock: { type: 'secret' },
+  },
 
   // ── Like ricevuti (ladder progressivo) ────────────────
   // Ogni piatto rappresenta un personaggio pop (cappello di paglia → One Piece,
@@ -147,6 +165,10 @@ export const AVATARS: AvatarOption[] = [
   },
 
   // ── Missioni segrete (nessuna condizione pubblica) ────
+  // Quando definisci la missione reale, aggiungi `revealedKey` con la chiave i18n
+  // del testo da svelare a sblocco avvenuto (es. revealedKey:
+  // 'restaurants.avatarGallery.secretRevealed.plate_mario'). Da bloccato resta
+  // "Missione segreta"; da sbloccato il box mostra il testo della quest.
   {
     id: 'plate_mario',
     source: require('../assets/avatars/plate_mario.png'),
@@ -174,13 +196,31 @@ export const AVATARS: AvatarOption[] = [
   {
     id: 'plate_squid',
     source: require('../assets/avatars/plate_squid.png'),
-    name: 'Ink',
+    name: 'Squid',
     unlock: { type: 'secret' },
   },
   {
     id: 'plate_raven',
     source: require('../assets/avatars/plate_raven.png'),
     name: 'Raven',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_zard',
+    source: require('../assets/avatars/plate_zard.png'),
+    name: 'Zard',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_sponge',
+    source: require('../assets/avatars/plate_sponge.png'),
+    name: 'Sponge',
+    unlock: { type: 'secret' },
+  },
+  {
+    id: 'plate_astro',
+    source: require('../assets/avatars/plate_astro.png'),
+    name: 'Astro',
     unlock: { type: 'secret' },
   },
 ];

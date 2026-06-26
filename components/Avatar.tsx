@@ -15,6 +15,7 @@ import { getAvatarById } from '../constants/avatars';
 import i18n from '../utils/i18n';
 
 const INCOGNITO_AVATAR = require('../assets/avatars/plate_incognito.png');
+const INACTIVE_AVATAR = require('../assets/avatars/plate_inactive.png');
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -46,14 +47,11 @@ export interface AvatarProps {
  * Render unificato per gli avatar utente.
  *
  * Priorità:
- *   1. isInactive → icona generica (account cancellato)
+ *   1. isInactive → avatar dedicato account cancellato (plate_inactive)
  *   2. isAnonymous → icona incognito
  *   3. avatarId con source disponibile → immagine bundlata
  *   4. initial → cerchio colorato con la prima lettera
  *   5. fallback → icona account-circle-outline
- *
- * TODO: quando sarà pronto un asset dedicato (es. plate_echo.png), sostituire
- * il fallback isInactive con l'Image bundlata, come per anonymous.
  */
 export default function Avatar({
   avatarId,
@@ -71,11 +69,10 @@ export default function Avatar({
 
   if (isInactive) {
     return (
-      <MaterialCommunityIcons
-        name="account-off-outline"
-        size={sizePx}
-        color={theme.colors.textDisabled}
-        style={style as any}
+      <Image
+        source={INACTIVE_AVATAR}
+        style={[dimension, styles.image, style as StyleProp<ImageStyle>]}
+        resizeMode="contain"
         accessibilityLabel={i18n.t('common.userInactive')}
       />
     );
