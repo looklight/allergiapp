@@ -15,14 +15,29 @@ export type UnlockCondition =
    * Aggiungerne uno nuovo = una riga nel catalogo, zero infra.
    *  - cuisineAny: il ristorante ha almeno una di queste cucine (OR)
    *  - countryIn / countryNotIn: country_code ∈ / ∉ (paesi noti soltanto)
+   *  - distinctCities: se true conta CITTÀ distinte tra i match (città note),
+   *    non i ristoranti — es. "10 giapponesi in 10 città diverse"
    */
-  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[] };
+  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean }
+  /**
+   * Scrivi `count` recensioni con voto nel range (maxStars/minStars inclusi).
+   * Asse "voto della recensione", distinto da reviews_matching (cucina/paese).
+   * Es. recensione ≤3 stelle: { count: 1, maxStars: 3 }.
+   */
+  | { type: 'reviews_rating'; count: number; maxStars?: number; minStars?: number }
+  /**
+   * Recensisci almeno `perCuisine` (default 1) ristoranti per OGNI cucina elencata.
+   * AND tra cucine (≠ reviews_matching, che è OR su cuisineAny).
+   * Es. una thai + una mexican + una indian: { cuisines: ['thai','mexican','indian'] }.
+   */
+  | { type: 'reviews_each_cuisine'; cuisines: string[]; perCuisine?: number };
 
 /** Un ristorante recensito dall'utente, ridotto ai campi per `reviews_matching`. */
 export interface ReviewedPlace {
   restaurantId: string;
   cuisines: string[];
   country: string | null;
+  city: string | null;
 }
 
 /**
@@ -48,6 +63,8 @@ export interface UnlockStats {
   likesToRestrictionReviews: Record<string, number>;
   /** Posti recensiti (cucina+paese), per valutare le condizioni `reviews_matching`. */
   reviewedPlaces: ReviewedPlace[];
+  /** Voti (1–5) delle recensioni scritte dall'utente, per le `reviews_rating`. */
+  reviewRatings: number[];
 }
 
 export interface AvatarOption {
@@ -210,49 +227,76 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_lela',
     source: require('../assets/avatars/plate_lela.png'),
     name: 'Purple',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci 5 bakery in 5 città diverse (Leela, pilota esploratrice).
+    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['bakery'], distinctCities: true },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_lela',
   },
   {
     id: 'plate_anakin',
     source: require('../assets/avatars/plate_anakin.png'),
     name: 'Apprentice',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci 10 cucine diverse del mondo (Jedi maestro di ogni sapore).
+    unlock: {
+      type: 'reviews_each_cuisine',
+      cuisines: ['italian', 'french', 'spanish', 'japanese', 'chinese', 'korean', 'thai', 'indian', 'mexican', 'middle_eastern'],
+    },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_anakin',
   },
   {
     id: 'plate_kurom',
     source: require('../assets/avatars/plate_kurom.png'),
     name: 'Skull',
-    unlock: { type: 'secret' },
+    // Segreto: scrivi una recensione con 3 stelle o meno (teschio = giudizio severo).
+    unlock: { type: 'reviews_rating', count: 1, maxStars: 3 },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_kurom',
   },
   {
     id: 'plate_squid',
     source: require('../assets/avatars/plate_squid.png'),
     name: 'Squid',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci 5 ristoranti di cucina coreana (Squid Game).
+    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['korean'] },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_squid',
   },
   {
     id: 'plate_raven',
     source: require('../assets/avatars/plate_raven.png'),
     name: 'Raven',
-    unlock: { type: 'secret' },
+    // Segreto: 10 ristoranti giapponesi in 10 città diverse (Itachi, ninja girovago).
+    unlock: { type: 'reviews_matching', count: 10, cuisineAny: ['japanese'], distinctCities: true },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_raven',
   },
   {
     id: 'plate_zard',
     source: require('../assets/avatars/plate_zard.png'),
     name: 'Zard',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci almeno 1 thai, 1 mexican e 1 indian (drago di fuoco = piccante).
+    unlock: { type: 'reviews_each_cuisine', cuisines: ['thai', 'mexican', 'indian'] },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_zard',
   },
   {
     id: 'plate_sponge',
     source: require('../assets/avatars/plate_sponge.png'),
     name: 'Sponge',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci 12 ristoranti di pesce e frutti di mare (SpongeBob = oceano).
+    unlock: { type: 'reviews_matching', count: 12, cuisineAny: ['seafood'] },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_sponge',
   },
   {
     id: 'plate_astro',
     source: require('../assets/avatars/plate_astro.png'),
     name: 'Astro',
-    unlock: { type: 'secret' },
+    // Segreto: recensisci 5 ristoranti hamburger e panini negli USA (astronauta americano).
+    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['hamburger'], countryIn: ['US'] },
+    secret: true,
+    revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_astro',
   },
 ];
 
@@ -267,14 +311,45 @@ export function getAvatarById(id: string): AvatarOption | undefined {
  */
 function countMatchingReviews(
   places: readonly ReviewedPlace[] | undefined,
-  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[] },
+  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean },
 ): number {
-  return (places ?? []).filter(
+  const matched = (places ?? []).filter(
     (p) =>
       (!cond.cuisineAny || cond.cuisineAny.some((c) => p.cuisines.includes(c))) &&
       (!cond.countryIn || (p.country != null && cond.countryIn.includes(p.country))) &&
       (!cond.countryNotIn || (p.country != null && !cond.countryNotIn.includes(p.country))),
+  );
+  if (cond.distinctCities) {
+    // Conta città distinte (solo note); copre "N ristoranti in N città diverse".
+    return new Set(matched.map((p) => p.city).filter((c): c is string => c != null)).size;
+  }
+  return matched.length;
+}
+
+/** Conta le recensioni dell'utente col voto nel range (maxStars/minStars inclusi). */
+function countRatingReviews(
+  ratings: readonly number[] | undefined,
+  cond: { maxStars?: number; minStars?: number },
+): number {
+  return (ratings ?? []).filter(
+    (r) => (cond.maxStars == null || r <= cond.maxStars) && (cond.minStars == null || r >= cond.minStars),
   ).length;
+}
+
+/**
+ * Per le `reviews_each_cuisine`: somma "cappata" dei match per ogni cucina
+ * richiesta (ogni cucina conta al massimo `perCuisine`). Raggiunge il totale
+ * `cuisines.length * perCuisine` solo se OGNI cucina ha almeno `perCuisine` match.
+ */
+function cappedEachCuisine(
+  places: readonly ReviewedPlace[] | undefined,
+  cuisines: string[],
+  perCuisine: number,
+): number {
+  return cuisines.reduce((sum, c) => {
+    const n = (places ?? []).filter((p) => p.cuisines.includes(c)).length;
+    return sum + Math.min(n, perCuisine);
+  }, 0);
 }
 
 /**
@@ -288,7 +363,7 @@ const UNLOCK_ALL_FOR_TESTING = false;
  */
 export function isAvatarUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[]; reviewRatings?: number[] },
 ): boolean {
   if (UNLOCK_ALL_FOR_TESTING) return true;
   switch (avatar.unlock.type) {
@@ -310,6 +385,12 @@ export function isAvatarUnlocked(
       return (stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) >= avatar.unlock.count;
     case 'reviews_matching':
       return countMatchingReviews(stats.reviewedPlaces, avatar.unlock) >= avatar.unlock.count;
+    case 'reviews_rating':
+      return countRatingReviews(stats.reviewRatings, avatar.unlock) >= avatar.unlock.count;
+    case 'reviews_each_cuisine': {
+      const per = avatar.unlock.perCuisine ?? 1;
+      return cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per) >= avatar.unlock.cuisines.length * per;
+    }
     default:
       return false;
   }
@@ -323,7 +404,7 @@ export function isAvatarUnlocked(
  */
 export function isAvatarEffectivelyUnlocked(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[]; reviewRatings?: number[] },
   everUnlockedIds: readonly string[],
 ): boolean {
   if (everUnlockedIds.includes(avatar.id)) return true;
@@ -335,7 +416,7 @@ export function isAvatarEffectivelyUnlocked(
  */
 export function getUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[]; reviewRatings?: number[] },
 ): number {
   switch (avatar.unlock.type) {
     case 'free':
@@ -356,6 +437,13 @@ export function getUnlockProgress(
       return Math.min((stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) / avatar.unlock.count, 1);
     case 'reviews_matching':
       return Math.min(countMatchingReviews(stats.reviewedPlaces, avatar.unlock) / avatar.unlock.count, 1);
+    case 'reviews_rating':
+      return Math.min(countRatingReviews(stats.reviewRatings, avatar.unlock) / avatar.unlock.count, 1);
+    case 'reviews_each_cuisine': {
+      const per = avatar.unlock.perCuisine ?? 1;
+      const total = avatar.unlock.cuisines.length * per;
+      return total > 0 ? Math.min(cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per) / total, 1) : 1;
+    }
     default:
       return 0;
   }
@@ -367,7 +455,7 @@ export function getUnlockProgress(
  */
 export function getEffectiveUnlockProgress(
   avatar: AvatarOption,
-  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[] },
+  stats: { reviews: number; restaurants: number; likes?: number; uniqueLikersReceived?: number; countriesReviewed?: number; likesToRestrictionReviews?: Record<string, number>; reviewedPlaces?: ReviewedPlace[]; reviewRatings?: number[] },
   everUnlockedIds: readonly string[],
 ): number {
   if (everUnlockedIds.includes(avatar.id)) return 1;

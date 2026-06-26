@@ -58,6 +58,8 @@ function formatProgressLabel(avatar: AvatarOption, stats: UnlockStats): string {
     case 'free':
     case 'secret':
     case 'reviews_matching':
+    case 'reviews_rating':
+    case 'reviews_each_cuisine':
       return '';
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.progress.reviews', { current: stats.reviews, total: avatar.unlock.count });
@@ -109,6 +111,8 @@ function formatConditionLabel(avatar: AvatarOption, unlocked: boolean): string {
     case 'secret':
       return i18n.t('restaurants.avatarGallery.conditions.secret');
     case 'reviews_matching':
+    case 'reviews_rating':
+    case 'reviews_each_cuisine':
       return avatar.revealedKey ? i18n.t(avatar.revealedKey) : '';
     case 'reviews':
       return i18n.t('restaurants.avatarGallery.conditions.reviews', { count: avatar.unlock.count });
@@ -140,6 +144,7 @@ export default function AvatarGalleryScreen() {
     countriesReviewed: 0,
     likesToRestrictionReviews: {},
     reviewedPlaces: [],
+    reviewRatings: [],
   });
   const [selectedId, setSelectedId] = useState(userProfile?.avatar_url ?? null);
   const [detailAvatar, setDetailAvatar] = useState<AvatarOption | null>(null);

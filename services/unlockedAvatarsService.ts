@@ -31,9 +31,10 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
         .from('restaurants')
         .select('*', { count: 'exact', head: true })
         .eq('added_by', userId),
+      // likes_count (per likes_received) + rating (per reviews_rating): stessa query.
       supabase
         .from('reviews')
-        .select('likes_count')
+        .select('likes_count, rating')
         .eq('user_id', userId),
       // Per `unique_likers_received`: usa RPC server-side per evitare doppio
       // JOIN lato client e fragilità della sintassi PostgREST.
@@ -43,7 +44,7 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       // id (dedup per ristorante), country_code e cuisine_types.
       supabase
         .from('reviews')
-        .select('restaurant:restaurants!restaurant_id(id, country_code, cuisine_types)')
+        .select('restaurant:restaurants!restaurant_id(id, country_code, cuisine_types, city)')
         .eq('user_id', userId),
       // Per le condizioni `likes_to_restriction_reviews`: like dati dall'utente
       // a recensioni filtrate per restrizione del recensore. Selezioniamo
@@ -58,6 +59,9 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       (sum, r: any) => sum + (r.likes_count ?? 0),
       0,
     );
+    const reviewRatings: number[] = (likesRes.data ?? [])
+      .map((r: any) => r.rating)
+      .filter((n: any): n is number => typeof n === 'number');
     const countriesSet = new Set<string>();
     const reviewedPlaces: ReviewedPlace[] = [];
     const seenRestaurants = new Set<string>();
@@ -72,6 +76,7 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
           restaurantId: r.id,
           cuisines: r.cuisine_types ?? [],
           country: code ?? null,
+          city: r.city ?? null,
         });
       }
     }
@@ -107,10 +112,11 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       countriesReviewed: countriesSet.size,
       likesToRestrictionReviews,
       reviewedPlaces,
+      reviewRatings,
     };
   } catch (error) {
     console.warn('[UnlockedAvatarsService] fetchUnlockStats error:', error);
-    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToRestrictionReviews: {}, reviewedPlaces: [] };
+    return { reviews: 0, restaurants: 0, likes: 0, uniqueLikersReceived: 0, countriesReviewed: 0, likesToRestrictionReviews: {}, reviewedPlaces: [], reviewRatings: [] };
   }
 }
 
