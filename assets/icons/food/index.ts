@@ -16,6 +16,7 @@ import Hazelnuts from './hazelnuts.svg';
 import Pistachios from './pistachios.svg';
 import Chickpeas from './chickpeas.svg';
 import Cashews from './cashews.svg';
+import PineNuts from './pine_nuts.svg';
 import Lupin from './lupin.svg';
 import Fennel from './fennel.svg';
 import Cinnamon from './cinnamon.svg';
@@ -31,6 +32,7 @@ export const FOOD_SVG_ICONS: Partial<Record<FoodIconId, React.FC<SvgProps>>> = {
   pistachios: Pistachios,
   chickpeas: Chickpeas,
   cashews: Cashews,
+  pine_nuts: PineNuts,
   lupin: Lupin,
   fennel: Fennel,
   cinnamon: Cinnamon,

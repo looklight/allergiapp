@@ -72,6 +72,7 @@ const NEW_OTHER_FOODS = {
   walnuts: 'Walnuts',
   pistachios: 'Pistachios',
   cashews: 'Cashews',
+  pine_nuts: 'Pine nuts',
   cacao_chocolate: 'Cacao / Chocolate',
   oats: 'Oats',
   olive_oil: 'Olive oil',

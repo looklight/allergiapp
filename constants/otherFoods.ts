@@ -60,6 +60,7 @@ export type OtherFoodId =
   | 'walnuts'
   | 'pistachios'
   | 'cashews'
+  | 'pine_nuts'
   | 'poppy_seeds'
   | 'sunflower_seeds'
   | 'flax_seeds'
@@ -311,6 +312,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'cashews', icon: '🌰', category: 'legumes_other', translations: {
     it: 'Anacardi', en: 'Cashews', fr: 'Noix de cajou', de: 'Cashewnüsse', es: 'Anacardos', pt: 'Castanhas de caju', nl: 'Cashewnoten', pl: 'Nerkowce', ru: 'Кешью', sv: 'Cashewnötter', zh: '腰果', ja: 'カシューナッツ', ko: '캐슈넛', th: 'เม็ดมะม่วงหิมพานต์', ar: 'الكاجو',
+  }},
+  { id: 'pine_nuts', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Pinoli', en: 'Pine nuts', fr: 'Pignons de pin', de: 'Pinienkerne', es: 'Piñones', pt: 'Pinhões', nl: 'Pijnboompitten', pl: 'Orzeszki piniowe', ru: 'Кедровые орехи', sv: 'Pinjenötter', zh: '松子', ja: '松の実', ko: '잣', th: 'เมล็ดสน', ar: 'حبوب الصنوبر',
   }},
   { id: 'poppy_seeds', icon: '🌸', category: 'legumes_other', translations: {
     it: 'Semi di papavero', en: 'Poppy seeds', fr: 'Graines de pavot', de: 'Mohnsamen', es: 'Semillas de amapola', pt: 'Sementes de papoula', nl: 'Maanzaad', pl: 'Nasiona maku', ru: 'Семена мака', sv: 'Vallmofrön', zh: '罂粟籽', ja: 'ケシの実', ko: '양귀비씨', th: 'เมล็ดฝิ่น', ar: 'بذور الخشخاش',
