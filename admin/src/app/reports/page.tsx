@@ -10,9 +10,11 @@ import { flattenReportJoins } from '@/lib/flattenJoin';
 import StatusBadge from '@/components/StatusBadge';
 import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import { useBusyIds } from '@/hooks/useBusyIds';
+import { useLightbox } from '@/contexts/LightboxContext';
 import Link from 'next/link';
 
 export default function ReportsPage() {
+  const { open: openLightbox } = useLightbox();
   const [showHelp, setShowHelp] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('pending');
   const [reasonFilter, setReasonFilter] = useState<ReportReason | 'all'>('all');
@@ -308,16 +310,20 @@ export default function ReportsPage() {
                     </td>
                     <td className="px-3 py-3 align-top overflow-hidden">
                       {r.menu_photo_thumbnail_url ? (
-                        <a href={r.menu_photo_image_url ?? r.menu_photo_thumbnail_url} target="_blank" rel="noreferrer">
+                        <button
+                          type="button"
+                          onClick={() => openLightbox([r.menu_photo_image_url ?? r.menu_photo_thumbnail_url])}
+                          className="block"
+                        >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={r.menu_photo_thumbnail_url}
                             alt="Foto segnalata"
                             width={48}
                             height={48}
-                            className="rounded object-cover"
+                            className="rounded object-cover cursor-pointer"
                           />
-                        </a>
+                        </button>
                       ) : r.review_id ? (
                         <button
                           onClick={() => setReviewModal(r)}
@@ -412,16 +418,20 @@ export default function ReportsPage() {
                 </div>
 
                 {r.menu_photo_thumbnail_url && (
-                  <a href={r.menu_photo_image_url ?? r.menu_photo_thumbnail_url} target="_blank" rel="noreferrer" className="inline-block mb-2">
+                  <button
+                    type="button"
+                    onClick={() => openLightbox([r.menu_photo_image_url ?? r.menu_photo_thumbnail_url])}
+                    className="inline-block mb-2"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={r.menu_photo_thumbnail_url}
                       alt="Foto segnalata"
                       width={64}
                       height={64}
-                      className="rounded object-cover"
+                      className="rounded object-cover cursor-pointer"
                     />
-                  </a>
+                  </button>
                 )}
 
                 {r.review_id && (r.review_reviewer_name || r.review_comment) && (

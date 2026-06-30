@@ -12,6 +12,7 @@ import UserProfileCard from './components/UserProfileCard';
 import MediaGallery, { type MediaItem } from './components/MediaGallery';
 import DietaryBadges from '@/components/DietaryBadges';
 import Link from 'next/link';
+import { useLightbox } from '@/contexts/LightboxContext';
 
 type EnrichedMenuPhoto = MenuPhoto & { restaurant_name: string | null };
 
@@ -25,6 +26,7 @@ export default function UserDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const { isBusy, withBusy } = useBusyIds();
+  const { open: openLightbox } = useLightbox();
 
   useEffect(() => {
     if (!id) return;
@@ -223,9 +225,9 @@ export default function UserDetailPage() {
                       {r.photos?.length > 0 ? (
                         <div className="flex gap-1">
                           {(r.photos as { url: string; thumbnailUrl?: string }[]).map((photo, i) => (
-                            <a key={i} href={photo.url} target="_blank" rel="noreferrer">
-                              <img src={photo.thumbnailUrl ?? photo.url} alt="" className="w-10 h-10 rounded object-cover hover:opacity-80 transition-opacity" />
-                            </a>
+                            <button key={i} type="button" onClick={() => openLightbox(r.photos, i)} className="block">
+                              <img src={photo.thumbnailUrl ?? photo.url} alt="" className="w-10 h-10 rounded object-cover hover:opacity-80 transition-opacity cursor-pointer" />
+                            </button>
                           ))}
                         </div>
                       ) : '—'}

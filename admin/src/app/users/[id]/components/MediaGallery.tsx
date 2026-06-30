@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLightbox } from '@/contexts/LightboxContext';
 
 export type MediaItem =
   | { kind: 'review'; reviewId: string; photoIndex: number; url: string; thumb: string; restaurantName: string; date: string }
@@ -13,27 +14,31 @@ interface Props {
 
 export default function MediaGallery({ items, isBusy, onDeleteReviewPhoto, onDeleteMenuPhoto }: Props) {
   const [showAll, setShowAll] = useState(false);
+  const { open: openLightbox } = useLightbox();
 
   if (items.length === 0) return null;
+
+  const visible = showAll ? items : items.slice(0, 12);
+  const visibleUrls = visible.map((m) => m.url);
 
   return (
     <div className="bg-card rounded-lg shadow p-4 mb-6">
       <h2 className="font-semibold mb-3">Media ({items.length})</h2>
       <div className="flex flex-wrap gap-2">
-        {(showAll ? items : items.slice(0, 12)).map((m) => {
+        {visible.map((m, i) => {
           const key = m.kind === 'review' ? `r_${m.reviewId}_${m.photoIndex}` : `m_${m.photoId}`;
           const busy = m.kind === 'review'
             ? isBusy(`rv_${m.reviewId}_${m.photoIndex}`)
             : isBusy(m.photoId);
           return (
             <div key={key} className="relative group" title={`${m.kind === 'review' ? 'Recensione' : 'Menu'} — ${m.restaurantName}`}>
-              <a href={m.url} target="_blank" rel="noreferrer">
+              <button type="button" onClick={() => openLightbox(visibleUrls, i)} className="block">
                 <img
                   src={m.thumb}
                   alt=""
-                  className="w-18 h-18 rounded object-cover hover:opacity-90 transition-opacity"
+                  className="w-18 h-18 rounded object-cover hover:opacity-90 transition-opacity cursor-pointer"
                 />
-              </a>
+              </button>
               <div className={`absolute bottom-0 left-0 right-0 rounded-b text-center text-[8px] leading-tight py-px text-white ${m.kind === 'review' ? 'bg-primary/70' : 'bg-success/70'}`}>
                 {m.kind === 'review' ? 'Rev' : 'Menu'}
               </div>

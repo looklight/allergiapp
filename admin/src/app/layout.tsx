@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { AuthContext, useAuthState } from '@/lib/auth';
 import AuthGuard from '@/components/AuthGuard';
 import Sidebar from '@/components/Sidebar';
+import { LightboxProvider } from '@/contexts/LightboxContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const authState = useAuthState();
@@ -30,10 +31,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             children
           ) : (
             <AuthGuard>
-              <div className="flex min-h-screen">
-                <Sidebar />
-                <main className="flex-1 bg-background p-4 pt-20 md:p-6 md:pt-6 min-w-0">{children}</main>
-              </div>
+              <LightboxProvider>
+                <div className="flex min-h-screen">
+                  <Sidebar />
+                  <main className="flex-1 bg-background p-4 pt-20 md:p-6 md:pt-6 min-w-0">{children}</main>
+                </div>
+              </LightboxProvider>
             </AuthGuard>
           )}
         </AuthContext.Provider>

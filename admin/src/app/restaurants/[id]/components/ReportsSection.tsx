@@ -1,6 +1,7 @@
 import type { Report } from '@/lib/types';
 import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/types';
 import Link from 'next/link';
+import { useLightbox } from '@/contexts/LightboxContext';
 
 interface Props {
   reports: Report[];
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePhoto, onDeleteReview, onDeleteRestaurant }: Props) {
+  const { open: openLightbox } = useLightbox();
   if (reports.length === 0) return null;
 
   return (
@@ -60,10 +62,14 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
                 )}
                 {r.menu_photo_id && r.menu_photo_thumbnail_url && (
                   <div className="mt-1 mb-1">
-                    <a href={r.menu_photo_image_url ?? r.menu_photo_thumbnail_url} target="_blank" rel="noreferrer">
+                    <button
+                      type="button"
+                      onClick={() => openLightbox([r.menu_photo_image_url ?? r.menu_photo_thumbnail_url])}
+                      className="block"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.menu_photo_thumbnail_url} alt="Foto segnalata" width={64} height={64} className="rounded object-cover" />
-                    </a>
+                      <img src={r.menu_photo_thumbnail_url} alt="Foto segnalata" width={64} height={64} className="rounded object-cover cursor-pointer" />
+                    </button>
                   </div>
                 )}
                 {r.details && <p className="text-foreground-secondary mt-1">{r.details}</p>}

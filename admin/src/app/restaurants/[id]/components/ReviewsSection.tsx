@@ -1,6 +1,7 @@
 import type { Review } from '@/lib/types';
 import DietaryBadges from '@/components/DietaryBadges';
 import Link from 'next/link';
+import { useLightbox } from '@/contexts/LightboxContext';
 
 interface Props {
   reviews: Review[];
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDeletePhoto }: Props) {
+  const { open: openLightbox } = useLightbox();
   return (
     <div className="bg-card rounded-lg shadow p-6">
       <h2 className="font-semibold mb-3">Recensioni ({reviews.length})</h2>
@@ -49,13 +51,13 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
                 <div className="flex gap-2 mt-2">
                   {(r.photos as { url: string; thumbnailUrl?: string }[]).map((photo, i) => (
                     <div key={i} className="relative group">
-                      <a href={photo.url} target="_blank" rel="noreferrer">
+                      <button type="button" onClick={() => openLightbox(r.photos, i)} className="block">
                         <img
                           src={photo.thumbnailUrl ?? photo.url}
                           alt="Foto recensione"
-                          className="w-16 h-16 rounded object-cover hover:opacity-80 transition-opacity"
+                          className="w-16 h-16 rounded object-cover hover:opacity-80 transition-opacity cursor-pointer"
                         />
-                      </a>
+                      </button>
                       <button
                         onClick={() => onDeletePhoto(r.id, i)}
                         className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger text-white rounded-full text-xs hidden group-hover:flex items-center justify-center hover:bg-danger-strong"
