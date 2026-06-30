@@ -57,7 +57,7 @@ export default function ReviewsPage() {
     let query = supabase
       .from('reviews')
       .select(
-        'id, restaurant_id, user_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, created_at, ' +
+        'id, restaurant_id, user_id, rating, comment, photos, allergens_snapshot, dietary_snapshot, likes_count, created_at, ' +
         'profiles!user_id(username, is_anonymous), restaurants!restaurant_id(name, city, country)',
       );
 
@@ -140,7 +140,7 @@ export default function ReviewsPage() {
           <div className="grid grid-cols-3 gap-3 lg:col-span-1">
             <StatCard label="Totale" value={stats.total} />
             <StatCard label="Rating medio" value={stats.average.toFixed(1)} color="text-star" />
-            <StatCard label="Ultimi 7 giorni" value={stats.last7days} color="text-primary" />
+            <StatCard label="Ultimi 7gg" value={stats.last7days} color="text-primary" />
           </div>
 
           {/* Distribuzione voti — cliccabile per filtrare */}
@@ -228,8 +228,14 @@ export default function ReviewsPage() {
                           {r.reviewer_is_anonymous ? 'Anonimo' : (r.reviewer_name ?? 'Anonimo')}
                         </Link>
                         {typeof r.reviewer_review_count === 'number' && (
-                          <span className="text-faint text-xs block">
-                            {r.reviewer_review_count} {r.reviewer_review_count === 1 ? 'recensione' : 'recensioni'}
+                          <span
+                            className="text-faint text-xs flex items-center gap-1"
+                            title="Recensioni totali dell'utente"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
+                              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            </svg>
+                            {r.reviewer_review_count}
                           </span>
                         )}
                       </>
@@ -240,7 +246,7 @@ export default function ReviewsPage() {
                   <td className="px-4 py-3 max-w-[180px]">
                     <Link
                       href={`/restaurants/${r.restaurant_id}`}
-                      className="text-primary hover:underline block truncate"
+                      className="text-primary hover:underline block line-clamp-2"
                       title={r.restaurant_name ?? undefined}
                     >
                       {r.restaurant_name ?? '—'}
@@ -249,8 +255,16 @@ export default function ReviewsPage() {
                       <span className="text-faint text-xs block truncate">{r.restaurant_city}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-star">{'★'.repeat(r.rating)}</td>
-                  <td className="px-4 py-3 max-w-[480px]">
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="text-star">{'★'.repeat(r.rating)}</div>
+                    <span className="text-faint text-xs flex items-center gap-1 mt-0.5" title="Like ricevuti">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
+                        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 1 0-7.8 7.8l1.1 1.1L12 21.2l7.7-7.7 1.1-1.1a5.5 5.5 0 0 0 0-7.8z" />
+                      </svg>
+                      {r.likes_count ?? 0}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 min-w-[280px] max-w-[480px]">
                     {r.comment ? (
                       <p className="text-foreground-secondary whitespace-pre-line break-words">{r.comment}</p>
                     ) : (
