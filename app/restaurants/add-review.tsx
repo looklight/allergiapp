@@ -18,6 +18,7 @@ import StarRating from '../../components/StarRating';
 import AppHeader from '../components/AppHeader';
 import { useImagePicker } from '../../hooks/useImagePicker';
 import i18n from '../../utils/i18n';
+import { confirmReviewWithoutText } from '../../utils/reviewPrompts';
 import type { Review, CuisineVote } from '../../services/restaurantService';
 import type { DietId, AppLanguage } from '../../types';
 
@@ -127,6 +128,10 @@ export default function AddReviewScreen() {
       Alert.alert(i18n.t('restaurants.review.ratingRequiredTitle'), i18n.t('restaurants.review.ratingRequiredMsg'));
       return;
     }
+
+    // Nudge (non bloccante) se si pubblica senza testo né foto.
+    const proceed = await confirmReviewWithoutText(comment.trim().length > 0, photos.length > 0);
+    if (!proceed) return;
 
     setIsSubmitting(true);
     try {

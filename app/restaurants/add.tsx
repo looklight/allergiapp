@@ -17,6 +17,7 @@ import StarRating from '../../components/StarRating';
 import DietaryNeedsPicker from '../../components/DietaryNeedsPicker';
 import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
+import { confirmReviewWithoutText } from '../../utils/reviewPrompts';
 import { useImagePicker } from '../../hooks/useImagePicker';
 import type { PlaceSuggestion } from '../../types/restaurants';
 import type { AppLanguage } from '../../types';
@@ -500,6 +501,10 @@ export default function AddRestaurantScreen() {
       );
       return;
     }
+
+    // Nudge (non bloccante) se si pubblica senza testo né foto.
+    const proceed = await confirmReviewWithoutText(comment.trim().length > 0, photos.length > 0);
+    if (!proceed) return;
 
     setIsSubmitting(true);
 
