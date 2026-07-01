@@ -60,7 +60,10 @@ export default function ConsentModal({ visible }: ConsentModalProps) {
 
       await setTrackingConsent(trackingConsentResult);
       Analytics.setTrackingConsent(trackingConsentResult);
-      Crashlytics.setCollectionEnabled(trackingConsentResult.status === 'authorized');
+      // Crash reporting: attivo appena accettati i termini legali, indipendente
+      // dall'ATT (che governa solo analytics/tracking pubblicitario). I report di
+      // crash non contengono identificatori pubblicitari → non richiedono ATT.
+      Crashlytics.setCollectionEnabled(true);
       Analytics.logAppOpened();
     } catch (error) {
       console.error('Error during consent flow:', error);

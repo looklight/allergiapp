@@ -152,7 +152,10 @@ function AppContent() {
       if (hasAcceptedLegalTerms) {
         Analytics.setTrackingConsent(trackingConsent);
         SupabaseAnalytics.setTrackingConsent(trackingConsent);
-        Crashlytics.setCollectionEnabled(trackingConsent.status === 'authorized');
+        // Crash reporting: attivo per accettazione termini legali (già true in
+        // questo ramo), indipendente dall'ATT — che resta a governare solo
+        // analytics/tracking pubblicitario. Vedi consent.tsx per la stessa scelta.
+        Crashlytics.setCollectionEnabled(true);
         Crashlytics.setAttributes({
           app_version: Constants.expoConfig?.version,
           card_language: settings.cardLanguage,
