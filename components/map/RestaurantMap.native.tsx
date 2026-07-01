@@ -304,12 +304,29 @@ export default function RestaurantMap({
 
     if (centerOn.latDelta) {
       const offset = centerOn.latDelta * (centerOn.sheetFraction / 2);
-      mapRef.current?.animateToRegion({
+      const targetRegion: Region = {
         latitude: centerOn.latitude - offset,
         longitude: centerOn.longitude,
         latitudeDelta: centerOn.latDelta,
         longitudeDelta: centerOn.latDelta,
-      }, 600);
+      };
+      mapRef.current?.animateToRegion(targetRegion, 600);
+      // Su New Architecture animateToRegion NON emette onRegionChangeComplete in
+      // modo affidabile: senza questo, dopo un centraggio programmatico (deep link,
+      // ricerca, locate-me) lo stato derivato dalla regione resta stale → i pin del
+      // nuovo viewport non vengono caricati e il regime dot/pin non si aggiorna,
+      // finché l'utente non tocca la mappa. Sincronizziamo noi a fine animazione:
+      // il cambio di isDotZoom forza anche il re-render dei marker (bitmap fresco).
+      timer = setTimeout(() => {
+        currentRegion.current = targetRegion;
+        setIsDotZoom(prev => {
+          if (!prev && targetRegion.latitudeDelta > ZOOM_PIN_THRESHOLD + 0.05) return true;
+          if (prev && targetRegion.latitudeDelta < ZOOM_PIN_THRESHOLD - 0.05) return false;
+          return prev;
+        });
+        if (CLUSTERING_ENABLED) setClusterRegion(targetRegion);
+        onRegionChangeCompleteRef.current?.(targetRegion);
+      }, 650);
     } else if (Platform.OS !== 'android') {
       // Branch iOS-only. Su Android il centraggio del pin al tap è gestito
       // dal Google Maps SDK nativo (OnMarkerClickListener), guidato dal nostro
