@@ -25,6 +25,13 @@ Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8)
 
 **Vincolo assoluto Android:** ogni fix deve essere Android-only via `Platform.OS === 'android'` o equivalente. iOS è "perfetta" e non va toccato in nessun caso.
 
+### Deep link ristorante (share) — cleanup post-conferma (2026-07-01)
+Refactor risolutivo fatto e pushato (commit `867d8fb`, OTA beta): il deep link `/r/{slug}` ora apre il ristorante come la selezione da ricerca (focus a mappa pronta via `onReady`). Vedi memoria `project_deeplink_restaurant_flow`. **Le voci sotto vanno chiuse SOLO dopo conferma a runtime che il refactor funziona sul device** — togliere i rinforzi alla cieca rischia di riportare il bug.
+
+- [ ] **Valutare rimozione del sync stato-regione (fix #4)** — il timer 650ms nell'effetto `centerOn` di `RestaurantMap.native.tsx` (setIsDotZoom + `onRegionChangeComplete` manuale, commit `be9110d`) potrebbe essere ridondante ora che il focus avviene su mappa viva (dove l'evento nativo scatta, come nella ricerca). Rimuovere e verificare che i pin compaiano comunque su deep link + salto autocomplete/locate-me. Se servono ancora → tenerlo e documentare che l'evento nativo NON è affidabile.
+- [ ] **Valutare `getRestaurantFocusBySlug` con query dedicata alle sole coordinate** — ora riusa `getRestaurant`, che carica anche le stats (2 RPC in più) solo per lat/lng. È dietro la mappa già visibile (invisibile all'utente), ma una query snella sarebbe più pulita. Micro-ottimizzazione, non necessaria.
+- [ ] **(opz.) Uniformare i ref-durante-render in `RestaurantMap.native.tsx`** — `onReadyRef` segue il pattern esistente flaggato da `react-hooks/refs` (già presente 5x nel file). Se si fa una passata, rifattorizzarli tutti insieme, non solo il nuovo.
+
 ### Geolocalizzazione & vista mappa — follow-up (2026-05-31)
 Implementato e committato su main. Restano da chiudere lato test/UX:
 
