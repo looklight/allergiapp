@@ -260,13 +260,52 @@ export function mapRestaurant(row: RestaurantRow): Restaurant {
   };
 }
 
-/** Converte una riga da SELECT diretto (location GeoJSON) al formato lat/lng atteso da mapRestaurant */
+/**
+ * Decodifica una colonna PostGIS `geography(Point)` così come arriva da un SELECT
+ * diretto via PostgREST: una stringa EWKB esadecimale, es.
+ * "0101000020E6100000<lon:float64LE><lat:float64LE>".
+ * Parser difensivo: gestisce solo il caso Point little-endian che il DB produce
+ * (verificato: byte endianness 0x01, type 0x0000_0001 con flag SRID 0x2000_0000);
+ * su qualunque formato inatteso ritorna null (degrada senza coordinate-spazzatura).
+ */
+function decodeEwkbPoint(hex: string): { lat: number; lng: number } | null {
+  if (typeof hex !== 'string' || !/^[0-9a-fA-F]+$/.test(hex)) return null;
+  // Solo little-endian (0x01). Big-endian (0x00) non è prodotto dal nostro DB.
+  if (hex.slice(0, 2).toLowerCase() !== '01') return null;
+  // type (uint32 LE) con eventuale flag SRID (0x20000000): il tipo base dev'essere Point (1).
+  const typeWord = parseInt(hex.slice(2, 10).match(/../g)!.reverse().join(''), 16);
+  const hasSrid = (typeWord & 0x20000000) !== 0;
+  if ((typeWord & 0xff) !== 1) return null; // non è un Point
+  // header = endian(1B) + type(4B) [+ SRID(4B)] → 5 o 9 byte = 10 o 18 char hex.
+  const offset = hasSrid ? 18 : 10;
+  const body = hex.slice(offset);
+  if (body.length < 32) return null; // servono due float64 (8B = 16 char) ciascuno
+  const toDouble = (h: string): number => {
+    const bytes = h.match(/../g)!.map(b => parseInt(b, 16));
+    return new DataView(new Uint8Array(bytes).buffer).getFloat64(0, true /* little-endian */);
+  };
+  const lng = toDouble(body.slice(0, 16));
+  const lat = toDouble(body.slice(16, 32));
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+}
+
+/**
+ * Converte una riga da SELECT diretto al formato lat/lng atteso da mapRestaurant.
+ * `location` può arrivare come oggetto GeoJSON ({coordinates:[lng,lat]}) oppure,
+ * dal SELECT * su PostgREST, come stringa EWKB esadecimale: gestiamo entrambi.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extractLatLng(row: any): RestaurantRow {
   const loc = row.location;
-  return {
-    ...row,
-    latitude: loc?.coordinates?.[1] ?? null,
-    longitude: loc?.coordinates?.[0] ?? null,
-  };
+  let latitude: number | null = loc?.coordinates?.[1] ?? null;
+  let longitude: number | null = loc?.coordinates?.[0] ?? null;
+  if ((latitude == null || longitude == null) && typeof loc === 'string') {
+    const point = decodeEwkbPoint(loc);
+    if (point) {
+      latitude = point.lat;
+      longitude = point.lng;
+    }
+  }
+  return { ...row, latitude, longitude };
 }
