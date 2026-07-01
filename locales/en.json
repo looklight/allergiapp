@@ -463,7 +463,7 @@
       "dietaryEmpty": "No dietary needs"
     },
     "dietaryPicker": {
-      "title": "Your dietary needs",
+      "title": "My dietary needs",
       "descriptionWithNeeds": "This data helps other users with the same needs find compatible restaurants.",
       "descriptionEmpty": "Have allergies or follow a diet? Add them to help others with similar needs.",
       "addNeeds": "Add needs",

@@ -141,21 +141,27 @@ export default function FilterModal({
               <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
             </View>
           </TouchableOpacity>
-          <Text style={styles.sectionHint}>
-            {i18n.t('restaurants.filter.myNeedsHint')}
-          </Text>
+          {/* Hint mostrato solo a filtro spento: quando è attivo, la scheda
+              "le tue esigenze alimentari" sotto ha già il proprio sottotitolo. */}
+          {!pendingMyNeeds && (
+            <Text style={styles.sectionHint}>
+              {i18n.t('restaurants.filter.myNeedsHint')}
+            </Text>
+          )}
           {pendingMyNeeds && (
-            <DietaryNeedsPicker
-              allergens={pendingAllergens}
-              diets={pendingDiets}
-              onAllergensChange={setPendingAllergens}
-              onDietsChange={setPendingDiets}
-              profileAllergens={profileAllergens}
-              profileDiets={profileDiets}
-              onSyncProfile={onSyncProfile}
-              lang={lang}
-              subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
-            />
+            <View style={styles.needsPicker}>
+              <DietaryNeedsPicker
+                allergens={pendingAllergens}
+                diets={pendingDiets}
+                onAllergensChange={setPendingAllergens}
+                onDietsChange={setPendingDiets}
+                profileAllergens={profileAllergens}
+                profileDiets={profileDiets}
+                onSyncProfile={onSyncProfile}
+                lang={lang}
+                subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
+              />
+            </View>
           )}
         </View>
 
@@ -304,6 +310,11 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     lineHeight: 17,
     marginTop: 6,
     marginBottom: 12,
+  },
+  // Respiro tra il toggle e il box esigenze quando il filtro è attivo
+  // (a filtro attivo l'hint sopra è nascosto, quindi il box resterebbe attaccato).
+  needsPicker: {
+    marginTop: 12,
   },
   toggleRow: {
     flexDirection: 'row',
