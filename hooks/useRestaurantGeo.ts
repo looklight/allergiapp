@@ -43,7 +43,16 @@ export function useRestaurantGeo(params: FilterParams) {
   const [viewportPins, setViewportPins] = useState<RestaurantPin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
-  const [centerOn, setCenterOn] = useState<CenterOn | null>(null);
+  const [centerOn, setCenterOnState] = useState<CenterOn | null>(null);
+  // Una volta che un centraggio esplicito è stato richiesto (deep link, tap su un
+  // ristorante, ricerca…), l'auto-centraggio sulla posizione utente al mount NON
+  // deve sovrascriverlo: il GPS risolve in modo asincrono e arriverebbe dopo,
+  // rubando la vista. Il ref viene alzato da ogni chiamata esplicita a setCenterOn.
+  const centerRequestedRef = useRef(false);
+  const setCenterOn = useCallback((next: CenterOn | null) => {
+    centerRequestedRef.current = true;
+    setCenterOnState(next);
+  }, []);
   const [isLocating, setIsLocating] = useState(false);
   const [isGeoMode, setIsGeoMode] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
@@ -290,14 +299,19 @@ export function useRestaurantGeo(params: FilterParams) {
           if (last && mounted) {
             const coords = { latitude: last.coords.latitude, longitude: last.coords.longitude };
             setUserLocation(coords);
-            setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
+            // Non sovrascrivere un centraggio esplicito già richiesto (es. deep link).
+            if (!centerRequestedRef.current) {
+              setCenterOnState({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
+            }
           }
         }
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         if (!mounted) return;
         const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
         setUserLocation(coords);
-        setCenterOn({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
+        if (!centerRequestedRef.current) {
+          setCenterOnState({ ...coords, sheetFraction: getSheetFraction(), latDelta: 0.02 });
+        }
       } catch {
         // GPS non disponibile
       }
