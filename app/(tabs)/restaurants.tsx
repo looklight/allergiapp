@@ -363,7 +363,12 @@ export default function RestaurantsScreen() {
   const openRestaurantDetail = useCallback((id: string, lat: number, lng: number) => {
     dispatch({ type: 'SELECT', id });
     geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: DETAIL_SHEET_COVERAGE, latDelta: 0.01 });
-  }, [geo.setCenterOn]);
+    // Carica subito i pin attorno alla destinazione: quando saltiamo qui da un
+    // salto programmatico (deep link, ricerca su un ristorante lontano) la mappa
+    // non emette onRegionChangeComplete in modo affidabile (rn-maps su New Arch),
+    // quindi senza questo i pin comparirebbero solo dopo un pan manuale.
+    geo.loadPinsForViewport({ latitude: lat, longitude: lng, latitudeDelta: 0.05, longitudeDelta: 0.05 });
+  }, [geo.setCenterOn, geo.loadPinsForViewport]);
 
   // Consuma il focus in attesa (depositato da un altro flusso che torna qui via
   // dismissAll, es. dopo "Aggiungi ristorante"): apre la scheda centrando la

@@ -541,6 +541,7 @@ export function useRestaurantGeo(params: FilterParams) {
     locationDenied,
     isOffline,
     loadGeo,
+    loadPinsForViewport,
     clearAndReload,
     handleRegionChange,
     handleLocateMe,
