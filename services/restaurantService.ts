@@ -69,6 +69,22 @@ async function getRestaurant(restaurantId: string): Promise<Restaurant | null> {
   });
 }
 
+/**
+ * Risolve lo slug di un deep link (/r/{slug}) in id + coordinate, per aprire il
+ * ristorante sulla mappa. get_restaurant_by_slug ritorna solo l'id; le coordinate
+ * arrivano da getRestaurant (la colonna `location` viene decodificata da EWKB).
+ * Ritorna null se lo slug non esiste.
+ */
+async function getRestaurantFocusBySlug(
+  slug: string,
+): Promise<{ id: string; lat?: number; lng?: number } | null> {
+  const { data, error } = await supabase.rpc('get_restaurant_by_slug', { p_slug: slug });
+  if (error || !data) return null;
+  const id = data as string;
+  const restaurant = await getRestaurant(id).catch(() => null);
+  return { id, lat: restaurant?.location?.latitude, lng: restaurant?.location?.longitude };
+}
+
 async function getNearbyRestaurants(
   lat: number,
   lng: number,
@@ -425,6 +441,7 @@ export const RestaurantService = {
   getAllPositions,
   getPinsInBounds,
   getRestaurant,
+  getRestaurantFocusBySlug,
   getRestaurantByGooglePlaceId,
   checkExistingByPlaceIds,
   getNearbyRestaurants,

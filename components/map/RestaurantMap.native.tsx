@@ -135,6 +135,7 @@ export default function RestaurantMap({
   centerOn,
   hasUserLocation,
   onRegionChangeComplete,
+  onReady,
   selectedId,
   selectedRestaurant,
   onDeselect,
@@ -225,6 +226,24 @@ export default function RestaurantMap({
   restaurantsRef.current = restaurants;
   const onRestaurantPressRef = useRef(onRestaurantPress);
   onRestaurantPressRef.current = onRestaurantPress;
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+
+  // ---- Segnale "mappa pronta" ----
+  // onMapReady (SDK nativo inizializzato) e onLayout (primo layout) possono
+  // arrivare in ordine qualsiasi; onReady scatta una sola volta quando entrambi
+  // sono avvenuti. È il momento in cui un centraggio programmatico si comporta
+  // come sulla mappa idle (la selezione da ricerca funziona proprio perché lì la
+  // mappa è già in questo stato).
+  const laidOutRef = useRef(false);
+  const readyFiredRef = useRef(false);
+  const fireReadyIfPossible = useCallback(() => {
+    if (readyFiredRef.current) return;
+    if (mapReady.current && laidOutRef.current) {
+      readyFiredRef.current = true;
+      onReadyRef.current?.();
+    }
+  }, []);
 
   // ---- restaurantById — stable lookup for markerElements and overlay ----
   // Includes selectedRestaurant so the overlay can render even if the
@@ -366,7 +385,8 @@ export default function RestaurantMap({
   const handleMapReady = useCallback(() => {
     mapReady.current = true;
     if (!centerOnRef.current && restaurantsRef.current.length > 0) fitToMarkers();
-  }, [fitToMarkers]);
+    fireReadyIfPossible();
+  }, [fitToMarkers, fireReadyIfPossible]);
 
   const handleRegionChange = useCallback((region: Region) => {
     currentRegion.current = region;
@@ -420,8 +440,10 @@ export default function RestaurantMap({
   }, []);
 
   const handleLayout = useCallback(() => {
+    laidOutRef.current = true;
     setIsLaidOut(true);
-  }, []);
+    fireReadyIfPossible();
+  }, [fireReadyIfPossible]);
 
   // ---- Marker elements ----
   // isDotZoom changes the key suffix → React remounts all markers → fresh bitmap.

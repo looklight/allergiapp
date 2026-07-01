@@ -9,7 +9,7 @@ import * as Location from 'expo-location';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import Avatar from '../../components/Avatar';
-import { type Restaurant } from '../../services/restaurantService';
+import { RestaurantService, type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import { useAuth } from '../../contexts/AuthContext';
@@ -370,19 +370,53 @@ export default function RestaurantsScreen() {
     geo.loadPinsForViewport({ latitude: lat, longitude: lng, latitudeDelta: 0.05, longitudeDelta: 0.05 });
   }, [geo.setCenterOn, geo.loadPinsForViewport]);
 
-  // Consuma il focus in attesa (depositato da un altro flusso che torna qui via
-  // dismissAll, es. dopo "Aggiungi ristorante"): apre la scheda centrando la
-  // mappa. È one-shot — consume() azzera, quindi niente riaperture a refocus.
-  useFocusEffect(useCallback(() => {
-    const focus = pendingRestaurantFocus.consume();
-    if (!focus) return;
-    if (focus.lat != null && focus.lng != null && Number.isFinite(focus.lat) && Number.isFinite(focus.lng)) {
-      openRestaurantDetail(focus.id, focus.lat, focus.lng);
+  /** Apre il ristorante indicato dal focus, con eventuale centraggio. */
+  const applyFocus = useCallback((id: string, lat?: number, lng?: number) => {
+    if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) {
+      openRestaurantDetail(id, lat, lng);
     } else {
       // Senza coordinate apri comunque la scheda (la mappa non si ricentra).
-      dispatch({ type: 'SELECT', id: focus.id });
+      dispatch({ type: 'SELECT', id });
     }
-  }, [openRestaurantDetail]));
+  }, [openRestaurantDetail]);
+
+  // Consuma il focus in attesa SOLO a mappa pronta, così l'apertura avviene su una
+  // mappa viva e idle — le stesse condizioni della selezione da ricerca (che
+  // funziona) e non durante il mount (dove il centraggio programmatico e il
+  // caricamento pin fallivano). Sorgenti: "Aggiungi ristorante" (id+coord già
+  // risolti) e deep link /r/{slug} (solo slug → risolto qui dietro la mappa
+  // già visibile). One-shot: consume() azzera.
+  const consumePendingFocus = useCallback(() => {
+    const focus = pendingRestaurantFocus.consume();
+    if (!focus) return;
+    if (focus.id) {
+      applyFocus(focus.id, focus.lat, focus.lng);
+      return;
+    }
+    if (focus.slug) {
+      RestaurantService.getRestaurantFocusBySlug(focus.slug)
+        .then(res => {
+          if (res) applyFocus(res.id, res.lat, res.lng);
+          else Alert.alert(i18n.t('common.error'), i18n.t('restaurants.detail.notFound'));
+        })
+        .catch(() => { /* rete assente: silenzioso, l'utente resta sulla mappa */ });
+    }
+  }, [applyFocus]);
+
+  const isMapReadyRef = useRef(false);
+  const handleMapReady = useCallback(() => {
+    isMapReadyRef.current = true;
+    // Cold-start deep link: il focus è già in attesa quando la mappa diventa
+    // pronta → consuma ora. (Warm-start: già consumato dal useFocusEffect sotto.)
+    consumePendingFocus();
+  }, [consumePendingFocus]);
+
+  // Warm-start: mappa già montata e pronta quando arriva il deep link (il tab si
+  // rifocalizza dopo il router.replace) → consuma al focus. A mappa non ancora
+  // pronta non fa nulla: ci penserà handleMapReady.
+  useFocusEffect(useCallback(() => {
+    if (isMapReadyRef.current) consumePendingFocus();
+  }, [consumePendingFocus]));
 
   /** Tap su un ristorante dall'autocomplete di ricerca: pulisce la search. */
   const handleSelectFromAutocomplete = useCallback((id: string, lat: number, lng: number) => {
@@ -647,6 +681,7 @@ export default function RestaurantsScreen() {
           centerOn={geo.centerOn}
           hasUserLocation={!!geo.userLocation}
           onRegionChangeComplete={handleRegionChange}
+          onReady={handleMapReady}
           selectedId={selection.selectedId}
           selectedRestaurant={selectedRestaurant}
           onDeselect={handleDeselect}

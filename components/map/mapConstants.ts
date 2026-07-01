@@ -22,6 +22,10 @@ export type RestaurantMapProps = {
   centerOn?: { latitude: number; longitude: number; sheetFraction: number; latDelta?: number } | null;
   hasUserLocation?: boolean;
   onRegionChangeComplete?: (region: Region) => void;
+  /** Scatta UNA volta quando la mappa è viva (onMapReady + primo layout):
+   *  momento in cui è sicuro applicare un centraggio programmatico e aspettarsi
+   *  che il caricamento pin/regione si comporti come sulla mappa idle. */
+  onReady?: () => void;
   selectedId?: string | null;
   /** Full Restaurant object for the selected pin — ensures the overlay can
    *  render even if the restaurant is outside the current viewport/filter. */

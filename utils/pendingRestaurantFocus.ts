@@ -1,13 +1,20 @@
 // Segnale effimero cross-screen per "apri questo ristorante sulla mappa".
-// Usato quando un altro flusso (es. dopo "Aggiungi ristorante") torna al tab
-// mappa con router.dismissAll(): non potendo passare param attraverso il
-// dismiss, deposita qui l'id (+coordinate) e la mappa lo consuma al refocus.
+// Due sorgenti:
+//  • flusso "Aggiungi ristorante": torna al tab mappa con router.dismissAll() e
+//    deposita id (+coordinate) già risolti.
+//  • deep link /r/{slug}: deposita solo lo slug; la mappa lo risolve quando è
+//    pronta (stesse condizioni della selezione da ricerca).
 //
+// La mappa lo consuma quando è "viva" (montata + primo layout), così il focus
+// avviene su una mappa idle come nella ricerca — non durante il mount.
 // È un singleton volutamente semplice: il valore è one-shot (consume lo azzera),
 // quindi non c'è rischio di riaperture accidentali a refocus successivi.
 
 export type PendingRestaurantFocus = {
-  id: string;
+  /** Id già risolto (flusso "Aggiungi ristorante"). */
+  id?: string;
+  /** Slug da risolvere (deep link); la mappa fa il fetch id+coordinate. */
+  slug?: string;
   /** Coordinate per centrare la mappa; assenti = apri la scheda senza ricentrare. */
   lat?: number;
   lng?: number;

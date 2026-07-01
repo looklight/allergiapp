@@ -1,77 +1,38 @@
 // Deep link route: arriva qui quando l'utente apre un link
 // https://allergiapp.com/r/{slug} (Universal Link / App Link) o
 // allergiapp://r/{slug} (custom scheme).
-// Risolve lo slug all'id reale via RPC, poi redirige alla scheda dettaglio esistente.
+//
+// È un puro redirect: deposita lo slug nel focus in attesa e va SUBITO alla
+// mappa, senza risolvere nulla e senza spinner. La risoluzione (slug → id +
+// coordinate) e l'apertura della scheda avvengono sulla mappa quando è pronta,
+// così il deep link si comporta come la selezione da ricerca (nessuna schermata
+// intermedia, ci si sposta sul ristorante che resta selezionato).
 
-import { useEffect, useState, useMemo } from 'react';
-import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
-import { supabase } from '../../services/supabase';
-import { RestaurantService } from '../../services/restaurantService';
 import { pendingRestaurantFocus } from '../../utils/pendingRestaurantFocus';
-import i18n from '../../utils/i18n';
 
 export default function RestaurantBySlugScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const [didFail, setDidFail] = useState(false);
 
   useEffect(() => {
-    if (!slug || typeof slug !== 'string') {
-      router.replace('/');
-      return;
+    if (slug && typeof slug === 'string') {
+      pendingRestaurantFocus.set({ slug });
     }
-
-    let cancelled = false;
-
-    (async () => {
-      const { data, error } = await supabase.rpc('get_restaurant_by_slug', {
-        p_slug: slug,
-      });
-
-      if (cancelled) return;
-
-      if (error || !data) {
-        setDidFail(true);
-        Alert.alert(
-          i18n.t('common.error'),
-          i18n.t('restaurants.detail.notFound'),
-          [{ text: 'OK', onPress: () => router.replace('/') }],
-          { cancelable: false },
-        );
-        return;
-      }
-
-      // Atterra sulla mappa con il bottom sheet aperto (stile Google Maps),
-      // non sul full-screen. L'RPC ritorna solo l'id: facciamo un fetch in piu'
-      // per le coordinate (qualche istante di attesa in cambio della semplicita',
-      // niente modifiche all'RPC). Senza coordinate la mappa apre comunque la
-      // scheda, solo senza ricentrare.
-      const id = data as string;
-      const restaurant = await RestaurantService.getRestaurant(id).catch(() => null);
-      if (cancelled) return;
-
-      pendingRestaurantFocus.set({
-        id,
-        lat: restaurant?.location?.latitude,
-        lng: restaurant?.location?.longitude,
-      });
-      router.replace('/(tabs)/restaurants');
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    router.replace('/(tabs)/restaurants');
   }, [slug, router]);
 
+  // Frame neutro (colore mappa) per il singolo istante prima del replace: niente
+  // spinner né transizione percepita come "nuova pagina".
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      {!didFail && <ActivityIndicator size="large" color={theme.colors.primary} />}
+      <Stack.Screen options={{ headerShown: false, animation: 'none' }} />
     </View>
   );
 }
@@ -79,8 +40,6 @@ export default function RestaurantBySlugScreen() {
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: theme.colors.surface,
   },
 });
