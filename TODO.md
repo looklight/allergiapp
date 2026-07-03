@@ -86,6 +86,12 @@ Edit puri già fatti (dipendenza rimossa da `package.json` + pod orfani rimossi 
 Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mode al plugin (`withAndroidColorsNight` scrive `app_window_background = #F7DCB3` anche in `values-night/colors.xml`, coerente con `userInterfaceStyle: "light"`). Resta:
 - [ ] Verifica al prossimo build EAS Android (anche su device con dark mode attiva).
 
+### Manutenzione al prossimo build (sessione review 2026-07-03)
+Nessuna urgenza: zero rischio a lasciare così, da agganciare al prossimo build nativo.
+- [ ] `npx expo install --fix` — allineare i pacchetti Expo alle patch attese dall'SDK (expo 54.0.32→~54.0.35, expo-updates, expo-router, ecc.). Verificare anche il mismatch `eslint-config-expo` (installato 56.0.4, expected ~10.0.0).
+- [ ] `babel-plugin-transform-remove-console` (solo produzione) — rimuove i ~109 `console.*` dal bundle release senza toccare il codice. Richiede build/OTA per avere effetto.
+- [ ] `npm audit fix` (senza `--force`) — 33 vulnerabilità tutte in toolchain di build (protobufjs/grpc via Firebase tooling, tar, shell-quote), non nel bundle app. Nessuna esposizione utenti.
+
 ---
 
 ## Feature roadmap
