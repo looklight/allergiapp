@@ -14,11 +14,8 @@ import i18n from '../utils/i18n';
 // In Expo Go il componente renderizza null (UI senza social, ma app navigabile).
 const isExpoGo = Constants.appOwnership === 'expo';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let AppleAuthentication: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let SocialAuthService: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let SocialAuthCancelledError: any = null;
 
 if (!isExpoGo) {

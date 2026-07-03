@@ -42,8 +42,8 @@ declare module 'supercluster' {
     getClusters(
       bbox: [number, number, number, number],
       zoom: number,
-    ): Array<PointFeature<P> | ClusterFeature<C>>;
-    getChildren(clusterId: number): Array<PointFeature<P> | ClusterFeature<C>>;
+    ): (PointFeature<P> | ClusterFeature<C>)[];
+    getChildren(clusterId: number): (PointFeature<P> | ClusterFeature<C>)[];
     getLeaves(clusterId: number, limit?: number, offset?: number): PointFeature<P>[];
     getClusterExpansionZoom(clusterId: number): number;
   }

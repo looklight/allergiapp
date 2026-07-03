@@ -312,7 +312,6 @@ export default function RestaurantMap({
   useEffect(() => {
     if (restaurantsRef.current.length === 0 || centerOnRef.current || !mapReady.current) return;
     fitToMarkers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantKey, fitToMarkers]);
 
   // ---- Camera: centerOn (pin selection, search, locate me) ----

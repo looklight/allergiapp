@@ -1,8 +1,7 @@
-import {
+import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, cancelAnimation,
   runOnJS, Easing,
 } from 'react-native-reanimated';
-import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Image } from 'react-native';
 

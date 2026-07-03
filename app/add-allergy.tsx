@@ -2,10 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Pressable, LayoutAnimation, Platform, UIManager, TextInput } from 'react-native';
 import { Text, Checkbox, List, Button, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -20,6 +16,10 @@ import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import FoodIcon from '../components/FoodIcon';
 import AppHeader from './components/AppHeader';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function AddAllergyScreen() {
   const theme = useTheme();

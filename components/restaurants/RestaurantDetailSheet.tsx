@@ -1,13 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { View, StyleSheet, BackHandler, Platform } from 'react-native';
-
-// Icona condividi unificata su iOS/Android: 'share-variant' (tre nodi) è
-// otticamente bilanciata e si allinea con bookmark/close. L'Apple 'export-variant'
-// (box+freccia) appariva alzato per le sue metriche → effetto disallineamento.
-const SHARE_ICON = 'share-variant';
+import { View, StyleSheet, BackHandler, Platform , TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { useRestaurantDetail } from '../../hooks/useRestaurantDetail';
@@ -17,6 +11,11 @@ import RestaurantDetailBody from './RestaurantDetailBody';
 import { shareRestaurant } from '../../services/shareRestaurant';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import i18n from '../../utils/i18n';
+
+// Icona condividi unificata su iOS/Android: 'share-variant' (tre nodi) è
+// otticamente bilanciata e si allinea con bookmark/close. L'Apple 'export-variant'
+// (box+freccia) appariva alzato per le sue metriche → effetto disallineamento.
+const SHARE_ICON = 'share-variant';
 
 const HEADER_LINE_HEIGHT = 26;
 const SNAP_POINTS = [0.55, 0.92];

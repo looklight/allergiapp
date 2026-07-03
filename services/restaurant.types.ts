@@ -295,7 +295,7 @@ function decodeEwkbPoint(hex: string): { lat: number; lng: number } | null {
  * `location` può arrivare come oggetto GeoJSON ({coordinates:[lng,lat]}) oppure,
  * dal SELECT * su PostgREST, come stringa EWKB esadecimale: gestiamo entrambi.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function extractLatLng(row: any): RestaurantRow {
   const loc = row.location;
   let latitude: number | null = loc?.coordinates?.[1] ?? null;

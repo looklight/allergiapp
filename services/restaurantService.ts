@@ -6,7 +6,12 @@ import {
   type Restaurant, type RestaurantPin, type RestaurantRow, type CreateRestaurantInput,
   type RestaurantSearchResult,
 } from './restaurant.types';
-import { voteCuisines } from './cuisineVoteService';
+import { getCuisineVotes, voteCuisines } from './cuisineVoteService';
+import { getReviews, getUserReview, getReviewsByUser, getReviewCountByUser, getLikesReceivedByUser, addReview, updateReview, deleteReview, toggleReviewLike, getUserHasAnyReview } from './reviewService';
+import { getFavorites, isFavorite, toggleFavorite, setFavorite, removeFavorite } from './favoriteService';
+import { updateMenuUrl, getMenuPhotos, addMenuPhoto, deleteMenuPhoto } from './menuService';
+import { getReports, getUserReport, addReport, reportMenuPhoto, reportReview } from './reportService';
+import { getLeaderboard } from './leaderboardService';
 
 // ─── Re-export tipi e servizi per retrocompatibilità ────────────────────────
 // I consumer possono continuare a importare tutto da 'restaurantService'.
@@ -157,7 +162,6 @@ export async function batchLoadStats(ids: string[]): Promise<Map<string, { revie
   return statsMap;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyStats(rows: any[], statsMap: Map<string, { review_count: number; total_rating: number; favorite_count: number }>): Restaurant[] {
   return rows.map(row => {
     const s = statsMap.get(row.id);
@@ -424,15 +428,6 @@ async function checkExistingByPlaceIds(
   }
   return result;
 }
-
-// ─── Import dai servizi separati ────────────────────────────────────────────
-
-import { getReviews, getUserReview, getReviewsByUser, getReviewCountByUser, getLikesReceivedByUser, addReview, updateReview, deleteReview, toggleReviewLike, getUserHasAnyReview } from './reviewService';
-import { getFavorites, isFavorite, toggleFavorite, setFavorite, removeFavorite } from './favoriteService';
-import { updateMenuUrl, getMenuPhotos, addMenuPhoto, deleteMenuPhoto } from './menuService';
-import { getReports, getUserReport, addReport, reportMenuPhoto, reportReview } from './reportService';
-import { getCuisineVotes } from './cuisineVoteService';
-import { getLeaderboard } from './leaderboardService';
 
 // ─── Export unificato ───────────────────────────────────────────────────────
 

@@ -167,7 +167,6 @@ export default function RestaurantsScreen() {
   const geo = useRestaurantGeo({ forMyNeeds, filterAllergens, filterDiets, showLodging, getSheetFraction });
 
   // Re-interroga quando il profilo cambia con forMyNeeds attivo.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!profileJustChanged.current) return;
     profileJustChanged.current = false;
