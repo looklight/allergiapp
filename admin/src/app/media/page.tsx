@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { deleteReviewPhotoWithCleanup, deleteMenuPhotoWithCleanup } from '@/lib/storageCleanup';
 import { useBusyIds } from '@/hooks/useBusyIds';
+import { getCountryName } from '@/lib/countryName';
 
 type Periodo = 'oggi' | '7gg' | '30gg' | 'tutto';
 type Tipo = 'tutti' | 'recensioni' | 'menu';
@@ -32,7 +33,7 @@ type MediaItem =
     })
   | (MediaItemBase & { kind: 'menu'; photoId: string });
 
-type RestaurantJoin = { name: string; city: string | null; country: string | null } | null;
+type RestaurantJoin = { name: string; city: string | null; country: string | null; country_code: string | null } | null;
 type ProfileJoin = { username: string | null } | null;
 
 interface ReviewRow {
@@ -59,7 +60,7 @@ interface MenuPhotoRow {
 }
 
 interface CountryJoinRow {
-  restaurants: { country: string | null } | null;
+  restaurants: { country_code: string | null } | null;
 }
 
 const PAGE_SIZE = 50;
@@ -79,8 +80,8 @@ function busyKey(item: MediaItem): string {
 export default function MediaPage() {
   const [tipo, setTipo] = useState<Tipo>('tutti');
   const [periodo, setPeriodo] = useState<Periodo>('7gg');
-  const [paese, setPaese] = useState<string>('all');
-  const [countries, setCountries] = useState<{ name: string; count: number }[]>([]);
+  const [paese, setPaese] = useState<string>('all'); // country_code ISO o 'all'
+  const [countries, setCountries] = useState<{ code: string; name: string; count: number }[]>([]);
 
   const [items, setItems] = useState<MediaItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -94,8 +95,8 @@ export default function MediaPage() {
   // photos->0 IS NOT NULL esclude le review con array vuoto (jsonb default '[]').
   useEffect(() => {
     Promise.all([
-      supabase.from('menu_photos').select('restaurants!inner(country)').not('restaurants.country', 'is', null),
-      supabase.from('reviews').select('restaurants!inner(country)').not('photos->0', 'is', null).not('restaurants.country', 'is', null),
+      supabase.from('menu_photos').select('restaurants!inner(country_code)').not('restaurants.country_code', 'is', null),
+      supabase.from('reviews').select('restaurants!inner(country_code)').not('photos->0', 'is', null).not('restaurants.country_code', 'is', null),
     ]).then(([menuRes, reviewRes]) => {
       if (menuRes.error) console.error('[media] countries menu query failed:', menuRes.error);
       if (reviewRes.error) console.error('[media] countries reviews query failed:', reviewRes.error);
@@ -105,13 +106,13 @@ export default function MediaPage() {
       ];
       const counts = new Map<string, number>();
       for (const row of rows) {
-        const c = row.restaurants?.country;
+        const c = row.restaurants?.country_code;
         if (!c) continue;
         counts.set(c, (counts.get(c) ?? 0) + 1);
       }
       const sorted = [...counts.entries()]
         .sort((a, b) => b[1] - a[1])
-        .map(([name, count]) => ({ name, count }));
+        .map(([code, count]) => ({ code, name: getCountryName(code) || code, count }));
       setCountries(sorted);
     });
   }, []);
@@ -126,13 +127,13 @@ export default function MediaPage() {
         // profiles!user_id disambigua: ci sono più FK reviews→profiles.
         let q = supabase
           .from('reviews')
-          .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country), profiles!user_id(username)')
+          .select('id, restaurant_id, user_id, rating, comment, photos, created_at, restaurants!inner(name, city, country, country_code), profiles!user_id(username)')
           .not('photos->0', 'is', null)
           .order('created_at', { ascending: false })
           .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
-        if (paese !== 'all') q = q.eq('restaurants.country', paese);
+        if (paese !== 'all') q = q.eq('restaurants.country_code', paese);
         const { data, error } = await q;
         if (error) console.error('[media] reviews query failed:', error);
         const out: MediaItem[] = [];
@@ -150,7 +151,7 @@ export default function MediaPage() {
               restaurantId: row.restaurant_id,
               restaurantName: row.restaurants?.name ?? '—',
               city: row.restaurants?.city ?? null,
-              country: row.restaurants?.country ?? null,
+              country: getCountryName(row.restaurants?.country_code, row.restaurants?.country) || null,
               userId: row.user_id,
               username: row.profiles?.username ?? null,
               createdAt: row.created_at,
@@ -167,12 +168,12 @@ export default function MediaPage() {
       queries.push((async () => {
         let q = supabase
           .from('menu_photos')
-          .select('id, restaurant_id, user_id, image_url, thumbnail_url, created_at, restaurants!inner(name, city, country), profiles(username)')
+          .select('id, restaurant_id, user_id, image_url, thumbnail_url, created_at, restaurants!inner(name, city, country, country_code), profiles(username)')
           .order('created_at', { ascending: false })
           .limit(PAGE_SIZE + 1);
         if (beforeCursor) q = q.lt('created_at', beforeCursor);
         if (periodoIso) q = q.gte('created_at', periodoIso);
-        if (paese !== 'all') q = q.eq('restaurants.country', paese);
+        if (paese !== 'all') q = q.eq('restaurants.country_code', paese);
         const { data, error } = await q;
         if (error) console.error('[media] menu_photos query failed:', error);
         return ((data ?? []) as unknown as MenuPhotoRow[]).map((row): MediaItem => ({
@@ -184,7 +185,7 @@ export default function MediaPage() {
           restaurantId: row.restaurant_id,
           restaurantName: row.restaurants?.name ?? '—',
           city: row.restaurants?.city ?? null,
-          country: row.restaurants?.country ?? null,
+          country: getCountryName(row.restaurants?.country_code, row.restaurants?.country) || null,
           userId: row.user_id,
           username: row.profiles?.username ?? null,
           createdAt: row.created_at,
@@ -281,10 +282,10 @@ export default function MediaPage() {
         </button>
         {countries.map((c) => (
           <button
-            key={c.name}
-            onClick={() => setPaese(c.name)}
+            key={c.code}
+            onClick={() => setPaese(c.code)}
             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-              paese === c.name ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
+              paese === c.code ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
             }`}
           >
             {c.name} <span className="text-xs opacity-60">{c.count}</span>
