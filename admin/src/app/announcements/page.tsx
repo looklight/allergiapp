@@ -147,24 +147,14 @@ function PopupPreview({
                     {resolvedBody}
                   </p>
                 )}
+                {/* Specchia l'app (OTA 2026-07-06): con bottone azione niente "OK",
+                    CTA singola; senza azione resta il solo "OK" primario. */}
                 <div className="w-full flex flex-col gap-1.5">
-                  {resolvedButtonLabel && (
-                    <button
-                      className="w-full py-2 rounded-xl text-white font-semibold"
-                      style={{ fontSize: 12, background: PRIMARY }}
-                    >
-                      {resolvedButtonLabel}
-                    </button>
-                  )}
                   <button
-                    className="w-full py-1.5 rounded-xl font-medium"
-                    style={{
-                      fontSize: 11,
-                      color: resolvedButtonLabel ? '#666666' : '#fff',
-                      background: resolvedButtonLabel ? 'transparent' : PRIMARY,
-                    }}
+                    className="w-full py-2 rounded-xl text-white font-semibold"
+                    style={{ fontSize: 12, background: PRIMARY }}
                   >
-                    OK
+                    {resolvedButtonLabel || 'OK'}
                   </button>
                 </div>
               </div>
