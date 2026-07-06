@@ -128,8 +128,10 @@ export default function AnnouncementPopup() {
           <View style={[styles.content, popup.image_url && styles.contentWithImage]}>
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.message}>{body}</Text>
+            {/* CTA singola: con un bottone azione niente "OK" — sotto una CTA si legge
+                come consenso e ruba tap. Per chiudere restano X, tap esterno e back. */}
             <View style={styles.buttons}>
-              {buttonLabel && (
+              {buttonLabel ? (
                 <Button
                   mode="contained"
                   onPress={handleButton}
@@ -138,15 +140,16 @@ export default function AnnouncementPopup() {
                 >
                   {buttonLabel}
                 </Button>
+              ) : (
+                <Button
+                  mode="contained"
+                  onPress={handleDismiss}
+                  style={styles.primaryButton}
+                  labelStyle={styles.primaryButtonLabel}
+                >
+                  OK
+                </Button>
               )}
-              <Button
-                mode={buttonLabel ? 'text' : 'contained'}
-                onPress={handleDismiss}
-                style={buttonLabel ? styles.dismissButton : styles.primaryButton}
-                labelStyle={buttonLabel ? styles.dismissButtonLabel : styles.primaryButtonLabel}
-              >
-                OK
-              </Button>
             </View>
           </View>
         </Pressable>
@@ -223,12 +226,5 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   primaryButtonLabel: {
     fontSize: 15,
     fontWeight: '600',
-  },
-  dismissButton: {
-    borderRadius: 12,
-  },
-  dismissButtonLabel: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
   },
 });
