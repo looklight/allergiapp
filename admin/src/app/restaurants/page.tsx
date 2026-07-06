@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
 import { deleteRestaurantWithCleanup } from '@/lib/storageCleanup';
 import { confirmDestructive } from '@/lib/confirm';
+import { getCountryName } from '@/lib/countryName';
 import type { Restaurant } from '@/lib/types';
 import type { MapRestaurant } from '@/components/map/RestaurantMap';
 import StatCard from '@/components/StatCard';
@@ -61,7 +62,7 @@ export default function RestaurantsPage() {
             if (existing) {
               existing.count++;
             } else {
-              map.set(code, { name: r.country as string, count: 1 });
+              map.set(code, { name: getCountryName(code, r.country as string), count: 1 });
             }
           }
           const sorted = [...map.entries()]
@@ -116,7 +117,7 @@ export default function RestaurantsPage() {
           longitude: r.longitude,
           name: d?.name ?? '—',
           city: d?.city ?? null,
-          country: d?.country ?? null,
+          country: getCountryName(d?.country_code, d?.country) || null,
           country_code: d?.country_code ?? null,
           average_rating: 0,
         };
@@ -279,7 +280,7 @@ export default function RestaurantsPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{r.city ?? '—'}</td>
-                {countryFilter === 'all' && <td className="px-4 py-3 text-muted-foreground">{r.country ?? '—'}</td>}
+                {countryFilter === 'all' && <td className="px-4 py-3 text-muted-foreground">{getCountryName(r.country_code, r.country) || '—'}</td>}
                 <td className="px-4 py-3 text-muted-foreground">
                   {r.cuisine_types?.join(', ') || '—'}
                 </td>

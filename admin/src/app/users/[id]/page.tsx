@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { deleteReviewPhotoWithCleanup, deleteMenuPhotoWithCleanup } from '@/lib/storageCleanup';
 import { confirmDestructive } from '@/lib/confirm';
 import { flattenJoinAll } from '@/lib/flattenJoin';
+import { getCountryName } from '@/lib/countryName';
 import type { UserProfile, Restaurant, Review, MenuPhoto } from '@/lib/types';
 import { useBusyIds } from '@/hooks/useBusyIds';
 import UserProfileCard from './components/UserProfileCard';
@@ -111,8 +112,8 @@ export default function UserDetailPage() {
   }, [reviews, menuPhotos]);
 
   // -- Raggruppamento per Paese (mantiene ordine per count desc) --
-  const reviewsByCountry = useMemo(() => groupByCountry(reviews, (r) => r.restaurant_country_code, (r) => r.restaurant_country), [reviews]);
-  const restaurantsByCountry = useMemo(() => groupByCountry(restaurants, (r) => r.country_code, (r) => r.country), [restaurants]);
+  const reviewsByCountry = useMemo(() => groupByCountry(reviews, (r) => r.restaurant_country_code, (r) => getCountryName(r.restaurant_country_code, r.restaurant_country)), [reviews]);
+  const restaurantsByCountry = useMemo(() => groupByCountry(restaurants, (r) => r.country_code, (r) => getCountryName(r.country_code, r.country)), [restaurants]);
 
   // -- Azioni --
   const deleteReviewPhoto = async (reviewId: string, photoIndex: number) => {
@@ -291,9 +292,9 @@ export default function UserDetailPage() {
 }
 
 // Raggruppa per country_code (sorgente di verità stabile, indipendente dalla
-// lingua); l'etichetta mostrata è la prima grafia `country` incontrata per quel
-// codice — così "Italia"/"Italy" finiscono in un unico gruppo. Fallback null-safe
-// sul testo, poi su "Sconosciuto", per ristoranti senza codice.
+// lingua); l'etichetta arriva da getName (getCountryName sul code, con il testo
+// legacy come fallback). Fallback null-safe su "Sconosciuto" per ristoranti
+// senza codice né testo.
 function groupByCountry<T>(
   items: T[],
   getCode: (item: T) => string | null | undefined,

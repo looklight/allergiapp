@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import type { Restaurant } from '@/lib/types';
 import { CUISINE_CATEGORIES, ACCOMMODATION_CATEGORIES } from '@/lib/restaurantCategories';
+import { getCountryName } from '@/lib/countryName';
 import Link from 'next/link';
 
 interface Props {
@@ -172,7 +173,7 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
             </a>
           </p>
           <p className="text-faint text-sm">
-            {restaurant.city}, {restaurant.country} &middot; Aggiunto da {restaurant.added_by ? (
+            {restaurant.city}, {getCountryName(restaurant.country_code, restaurant.country)} &middot; Aggiunto da {restaurant.added_by ? (
               <Link href={`/users/${restaurant.added_by}`} className="text-primary hover:underline">{restaurant.adder_name ?? '—'}</Link>
             ) : <span className="italic text-faint">Utente inattivo</span>}
           </p>
