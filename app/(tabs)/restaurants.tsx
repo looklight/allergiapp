@@ -303,20 +303,9 @@ export default function RestaurantsScreen() {
     }
     // Nota: il re-fetch della lista "Ristoranti nell'area" è gestito dentro useMapSearch
     // via useEffect reattivo su forMyNeeds/filterAllergens/filterDiets.
-
-    // Auto-sync profilo se le esigenze differiscono da quelle salvate
-    if (newFmn && (allergensChanged || dietsChanged)) {
-      const profileAllergensMatch =
-        allergens.length === (dietaryNeeds.allergens as string[]).length &&
-        allergens.every(a => (dietaryNeeds.allergens as string[]).includes(a));
-      const profileDietsMatch =
-        diets.length === (dietaryNeeds.diets ?? []).length &&
-        diets.every(d => (dietaryNeeds.diets as string[] ?? []).includes(d));
-      if (!profileAllergensMatch || !profileDietsMatch) {
-        handleSyncProfile(allergens, diets).catch(() => {});
-      }
-    }
-  }, [forMyNeeds, showLodging, filterAllergens, filterDiets, dietaryNeeds, geo.clearAndReload, geo.reloadLodgingPins, handleSyncProfile]);
+    // Le esigenze del filtro restano locali alla ricerca: il profilo si aggiorna
+    // solo tramite il bottone "Salva" esplicito del DietaryNeedsPicker (onSyncProfile).
+  }, [forMyNeeds, showLodging, filterAllergens, filterDiets, geo.clearAndReload, geo.reloadLodgingPins]);
 
   /** Query in attesa di auto-selezione da invio tastiera (v. handleSearchSubmit sotto). */
   const pendingEnterQueryRef = useRef<string | null>(null);
