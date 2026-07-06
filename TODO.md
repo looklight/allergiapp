@@ -90,6 +90,7 @@ Nessuna urgenza: zero rischio a lasciare così, da agganciare al prossimo build 
 - [ ] `npx expo install --fix` — allineare i pacchetti Expo alle patch attese dall'SDK (expo 54.0.32→~54.0.35, expo-updates, expo-router, ecc.). Verificare anche il mismatch `eslint-config-expo` (installato 56.0.4, expected ~10.0.0).
 - [ ] `babel-plugin-transform-remove-console` (solo produzione) — rimuove i ~109 `console.*` dal bundle release senza toccare il codice. Richiede build/OTA per avere effetto.
 - [ ] `npm audit fix` (senza `--force`) — 33 vulnerabilità tutte in toolchain di build (protobufjs/grpc via Firebase tooling, tar, shell-quote), non nel bundle app. Nessuna esposizione utenti.
+- [ ] **Prompt recensione store** (`expo-store-review`) — dettagli e vincolo runtime nella sezione dedicata sotto "Feature roadmap".
 
 ---
 
@@ -153,20 +154,20 @@ Ricordare agli utenti di lasciare una recensione dopo una visita a un ristorante
 - Collegabile al sistema gerarchia utenti: recensioni scritte dopo il reminder potrebbero valere di più per i badge
 - Valutare A/B test sul copy del messaggio
 
-### Prompt recensione store (In-App Review nativo)
-**Priorità: bassa — da pianificare dopo aver consolidato un seed di utenti soddisfatti**
+### Prompt recensione store (In-App Review nativo) — PIANIFICATO 2026-07-06
+**Agganciato alla prossima build di manutenzione (v. sezione "Manutenzione al prossimo build")**
 
-Mostrare il popup nativo "Lascia una recensione" che molte app usano (StoreKit `SKStoreReviewController` su iOS, Google Play In-App Review API su Android). L'overlay è renderizzato dall'OS sopra la app, l'utente recensisce senza uscire — sembra integrato perché lo è a livello di sistema.
+Popup nativo "Lascia una recensione" (StoreKit `SKStoreReviewController` su iOS, Google Play In-App Review su Android), wrapper `expo-store-review`. L'overlay è dell'OS: tu *richiedi*, il sistema decide se mostrarlo (iOS ~3 prompt/anno per utente, nessun callback). App live su entrambi gli store dal 2026-07: i primi rating pesano molto sulla visibilità, il trigger selettivo protegge dai voti tiepidi.
 
-**Libreria:** `expo-store-review` (wrapper Expo ufficiale, ~100-200 KB su Android via `play-core`, zero overhead su iOS).
+**Fase 1 — codice su main (INSIEME al bump versione, vedi vincolo):**
+- [ ] `npx expo install expo-store-review`
+- [ ] `utils/storeReviewPrompt.ts` — `maybeRequestStoreReview()`: throttle in AsyncStorage (min 90 giorni tra richieste), guard `isAvailableAsync()`
+- [ ] Innesto in `app/restaurants/add-review.tsx`: dopo submit riuscito con rating ≥ 4, fire-and-forget con piccolo delay
+- [ ] Voce "Valuta l'app" in settings via `StoreReview.storeUrl()` + `Linking.openURL` (deep-link, non consuma il budget prompt)
 
-**Trigger consigliato:** subito dopo che l'utente lascia una recensione 4-5 stelle a un ristorante. È il momento con più alta probabilità di rating positivo (utente già in mood "feedback positivo"). Evitare trigger generici tipo "ha aperto la card N volte" — non sai se l'esperienza in ristorante è andata bene.
+**Fase 2 — build:** insieme alle voci di manutenzione, bump versione (→ nuovo runtime), beta TestFlight/Play internal, poi prod. Tuning soglie (rating minimo, giorni throttle) OTA-abile *dentro* il nuovo runtime.
 
-**Limiti da rispettare:**
-- iOS: max 3 prompt/anno per utente, il sistema può ignorare la chiamata silenziosamente. Sprecarli su utenti tiepidi abbassa il rating medio.
-- Fallback "Lascia recensione" da settings via `StoreReview.storeUrl()` + `Linking.openURL` per chi vuole farlo spontaneamente.
-
-**Costo:** richiede native rebuild (non OTA-able) + bump `buildNumber`/`versionCode`. Plug-and-play, nessuna config nel `plugins/` custom.
+**VINCOLO runtime (policy `appVersion`):** il codice che importa `expo-store-review` NON deve finire in un'OTA per runtime 1.1.0 — le build live non hanno il modulo nativo, l'import crasha. Protezione: la Fase 1 atterra su main solo contestualmente al bump di versione; nessuna OTA production tra merge Fase 1 e bump.
 
 ### Gerarchia utenti e riconoscimento community
 **Priorità: bassa — da pianificare dopo il lancio**
