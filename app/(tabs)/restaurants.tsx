@@ -126,6 +126,17 @@ export default function RestaurantsScreen() {
     [filterAllergens, filterDiets],
   );
 
+  // Esigenze del filtro divergenti dal profilo (ricerca per qualcun altro):
+  // la chip attiva dice "Esigenze personalizzate" invece di "Per me".
+  const filterNeedsDiffer = useMemo(() => {
+    const pa = new Set<string>(dietaryNeeds.allergens ?? []);
+    const pd = new Set<string>(dietaryNeeds.diets ?? []);
+    return filterAllergens.length !== pa.size
+      || filterDiets.length !== pd.size
+      || filterAllergens.some(a => !pa.has(a))
+      || filterDiets.some(d => !pd.has(d));
+  }, [filterAllergens, filterDiets, dietaryNeeds]);
+
   const filterHasNeeds = filterAllergens.length > 0 || filterDiets.length > 0;
   const hasActiveSettings = activeFilters.length > 0 || forMyNeeds || minRating !== null;
 
@@ -787,7 +798,7 @@ export default function RestaurantsScreen() {
             {forMyNeeds && (
               <TouchableOpacity key="needs" style={styles.activeChip} onPress={handleRemoveNeedsChip} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="shield-check" size={13} color={theme.colors.primary} />
-                <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipForMe')}</Text>
+                <Text style={styles.activeChipText}>{i18n.t(filterNeedsDiffer ? 'restaurants.tabs.activeChipCustomNeeds' : 'restaurants.tabs.activeChipForMe')}</Text>
                 <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
               </TouchableOpacity>
             )}

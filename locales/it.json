@@ -446,6 +446,7 @@
     "tabs": {
       "searchPlaceholder": "Cerca ristorante o luogo...",
       "activeChipForMe": "Per me",
+      "activeChipCustomNeeds": "Esigenze personalizzate",
       "activeChipLodging": "Hotel e alloggi",
       "activeChipRating4Plus": "4★ e più",
       "loadingNearby": "Cerco ristoranti a {{place}}...",
