@@ -1,6 +1,6 @@
 import * as Crypto from 'expo-crypto';
 import { supabase } from './supabase';
-import { fetchRestaurantPositions } from './restaurantPositions';
+import { fetchRestaurantPositionsByIds } from './restaurantPositions';
 import { StorageService, type UploadResult } from './storageService';
 import { isRemoteUrl } from '../utils/url';
 import {
@@ -132,19 +132,17 @@ export type UserReview = Review & {
 export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
   try {
     // Coordinate reali via RPC (lat/lng espliciti): il join diretto su restaurants
-    // non espone la location parsabile. Caricate in parallelo e agganciate per id.
-    const [{ data, error }, positions] = await Promise.all([
-      supabase
-        .from('reviews')
-        .select(`
-          *,
-          restaurant:restaurants!restaurant_id(name, city, country, country_code, offers_lodging)
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false }),
-      fetchRestaurantPositions(),
-    ]);
+    // non espone la location parsabile. By-ids, quindi dopo le recensioni.
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        restaurant:restaurants!restaurant_id(name, city, country, country_code, offers_lodging)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
     if (error) throw error;
+    const positions = await fetchRestaurantPositionsByIds((data ?? []).map((r: any) => r.restaurant_id));
     return (data ?? []).map((r: any) => {
       const pos = positions.get(r.restaurant_id);
       return {

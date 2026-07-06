@@ -8,43 +8,46 @@ import { supabase } from './supabase';
  * WKB non parsabile lato client. Usato per arricchire recensioni/preferiti
  * (che fanno join diretto su `restaurants`) prima di disegnarli sulla mappa profilo.
  *
- * NOTA scalabilità: carica le posizioni di TUTTI i ristoranti. Adeguato all'attuale
- * volume; se il dataset cresce, sostituire con un'RPC che accetta una lista di id.
+ * Si chiede SOLO gli id che servono (RPC by-ids, migration 072): la vecchia
+ * get_all_restaurant_positions caricava tutti i ristoranti, ma PostgREST tronca
+ * ogni risposta a 1000 righe (vale anche per le RPC) — superati i 1000 ristoranti
+ * tornava un sottoinsieme arbitrario e i pin esclusi sparivano dalla mappa profilo.
  */
-type PositionMap = Map<string, { latitude: number; longitude: number }>;
+type Position = { latitude: number; longitude: number };
+type PositionMap = Map<string, Position>;
 
-// Cache in-memory: le posizioni dei ristoranti sono di fatto immutabili, quindi
-// non ha senso ricaricarle TUTTE a ogni apertura profilo (oggi era chiamata 2x
-// in parallelo al mount, da getMyRestaurants e getCollectionsWithItems). La
-// cache (a) deduplica le chiamate concorrenti condividendo la stessa promise e
-// (b) evita refetch entro la TTL. Un risultato vuoto (errore o nessun dato) NON
-// viene cachato, così il prossimo accesso riprova invece di servire vuoto.
-const POSITIONS_TTL_MS = 5 * 60 * 1000;
-let positionsCache: { at: number; promise: Promise<PositionMap> } | null = null;
+// Le posizioni sono di fatto immutabili: una volta lette restano valide per
+// tutta la sessione. Cache accumulativa per id — si interroga il DB solo per
+// gli id non ancora noti (i reload del profilo a regime costano zero query).
+const knownPositions: PositionMap = new Map();
 
-export function fetchRestaurantPositions(): Promise<PositionMap> {
-  if (positionsCache && Date.now() - positionsCache.at < POSITIONS_TTL_MS) {
-    return positionsCache.promise;
-  }
-  const promise = loadRestaurantPositions();
-  positionsCache = { at: Date.now(), promise };
-  promise.then((map) => {
-    if (map.size === 0 && positionsCache?.promise === promise) positionsCache = null;
-  });
-  return promise;
-}
+// Margine ampio sotto il tetto PostgREST di 1000 righe per risposta.
+const CHUNK_SIZE = 500;
 
-async function loadRestaurantPositions(): Promise<PositionMap> {
-  const map: PositionMap = new Map();
-  const { data, error } = await supabase.rpc('get_all_restaurant_positions');
-  if (error) {
-    console.warn('[restaurantPositions] Errore get_all_restaurant_positions:', error);
-    return map;
-  }
-  for (const row of (data ?? []) as any[]) {
-    if (row.latitude != null && row.longitude != null) {
-      map.set(row.id as string, { latitude: row.latitude, longitude: row.longitude });
+export async function fetchRestaurantPositionsByIds(ids: Iterable<string>): Promise<PositionMap> {
+  const wanted = [...new Set(ids)];
+  const missing = wanted.filter((id) => !knownPositions.has(id));
+
+  for (let i = 0; i < missing.length; i += CHUNK_SIZE) {
+    const chunk = missing.slice(i, i + CHUNK_SIZE);
+    const { data, error } = await supabase.rpc('get_restaurant_positions_by_ids', { p_ids: chunk });
+    if (error) {
+      // Gli id non risolti restano semplicemente senza pin; niente cache del fallimento,
+      // il prossimo accesso riprova.
+      console.warn('[restaurantPositions] Errore get_restaurant_positions_by_ids:', error);
+      break;
     }
+    for (const row of (data ?? []) as any[]) {
+      if (row.latitude != null && row.longitude != null) {
+        knownPositions.set(row.id as string, { latitude: row.latitude, longitude: row.longitude });
+      }
+    }
+  }
+
+  const map: PositionMap = new Map();
+  for (const id of wanted) {
+    const pos = knownPositions.get(id);
+    if (pos) map.set(id, pos);
   }
   return map;
 }

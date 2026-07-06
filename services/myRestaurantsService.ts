@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import { mapRestaurant } from './restaurant.types';
 import { getFavorites } from './favoriteService';
 import { getReviewsByUser } from './reviewService';
-import { fetchRestaurantPositions } from './restaurantPositions';
+import { fetchRestaurantPositionsByIds } from './restaurantPositions';
 import { batchLoadStats } from './restaurantService';
 import { getFavoriteNotesMap } from './favoriteNoteService';
 import type { CollectionWithCount } from './collectionService';
@@ -43,12 +43,15 @@ export type MyRestaurantItem = {
  * I due fetch gestiscono già i propri errori (ritornano []), quindi qui niente try/catch.
  */
 export async function getMyRestaurants(userId: string): Promise<MyRestaurantItem[]> {
-  const [favorites, reviews, positions, notesMap] = await Promise.all([
+  const [favorites, reviews, notesMap] = await Promise.all([
     getFavorites(userId),
     getReviewsByUser(userId),
-    fetchRestaurantPositions(),
     getFavoriteNotesMap(userId),
   ]);
+  // By-ids: solo i preferiti — le recensioni hanno gia' lat/lng da getReviewsByUser.
+  const positions = await fetchRestaurantPositionsByIds(
+    favorites.map((f) => f.restaurant?.id).filter((id): id is string => id != null),
+  );
 
   const byId = new Map<string, MyRestaurantItem>();
 
@@ -152,7 +155,7 @@ export async function getCollectionsWithItems(userId: string): Promise<Collectio
       if (it.restaurant) allIds.add(it.restaurant.id);
     }
   }
-  const [positions, notesMap] = await Promise.all([fetchRestaurantPositions(), getFavoriteNotesMap(userId)]);
+  const [positions, notesMap] = await Promise.all([fetchRestaurantPositionsByIds(allIds), getFavoriteNotesMap(userId)]);
   const statsMap = allIds.size > 0 ? await batchLoadStats([...allIds]) : new Map();
 
   return (data ?? []).map((c: any) => {
