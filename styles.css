@@ -896,6 +896,24 @@ body {
     margin-bottom: 32px;
 }
 
+/* Entry point recensione per chi ha già l'app — volutamente discreto,
+   la CTA dominante della sezione resta il download. */
+.review-cta {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.review-cta a {
+    color: white;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.review-cta a:hover {
+    opacity: 0.85;
+}
+
 .store-button {
     display: flex;
     align-items: center;
