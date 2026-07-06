@@ -310,6 +310,7 @@
         "one": "{{count}} trovato",
         "other": "{{count}} trovati"
       },
+      "foundPlus": "{{count}}+ trovati",
       "emptyFiltered": "Nessun ristorante a {{place}} corrisponde ai filtri selezionati. Prova a modificarli.",
       "emptyNearby": "Nessun ristorante trovato nelle vicinanze di {{place}}.",
       "add": "Aggiungi un ristorante",
@@ -451,6 +452,7 @@
         "one": "{{count}} ristorante a {{place}}",
         "other": "{{count}} ristoranti a {{place}}"
       },
+      "bannerCountAtPlus": "{{count}}+ ristoranti a {{place}}",
       "tabCards": "Le mie Card",
       "tabRestaurants": "Ristoranti",
       "offlineBanner": "Nessuna connessione"

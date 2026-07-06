@@ -170,7 +170,7 @@ export function useRestaurantGeo(params: FilterParams) {
         ? await RestaurantService.getRestaurantsForMyNeeds(
             center.latitude, center.longitude,
             filterAllergensRef.current, filterDietsRef.current, radiusKm,
-            showLodgingRef.current,
+            undefined, showLodgingRef.current,
           )
         : await RestaurantService.getNearbyRestaurants(
             center.latitude, center.longitude, radiusKm, undefined, showLodgingRef.current,
@@ -237,7 +237,7 @@ export function useRestaurantGeo(params: FilterParams) {
         ? await RestaurantService.getRestaurantsForMyNeeds(
             fetchCenter.latitude, fetchCenter.longitude,
             filterAllergensRef.current, filterDietsRef.current, 50,
-            useShowLodging,
+            undefined, useShowLodging,
           )
         : await RestaurantService.getNearbyRestaurants(
             fetchCenter.latitude, fetchCenter.longitude, 50, undefined, useShowLodging,

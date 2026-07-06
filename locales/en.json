@@ -310,6 +310,7 @@
         "one": "{{count}} found",
         "other": "{{count}} found"
       },
+      "foundPlus": "{{count}}+ found",
       "emptyFiltered": "No restaurants in {{place}} match the selected filters. Try changing them.",
       "emptyNearby": "No restaurants found near {{place}}.",
       "add": "Add a restaurant",
@@ -451,6 +452,7 @@
         "one": "{{count}} restaurant in {{place}}",
         "other": "{{count}} restaurants in {{place}}"
       },
+      "bannerCountAtPlus": "{{count}}+ restaurants in {{place}}",
       "tabCards": "My Cards",
       "tabRestaurants": "Restaurants",
       "offlineBanner": "No connection"

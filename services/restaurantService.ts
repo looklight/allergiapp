@@ -119,6 +119,7 @@ async function getRestaurantsForMyNeeds(
   allergens: string[],
   dietary: string[],
   radiusKm = DEFAULTS.ALLERGEN_RADIUS_KM,
+  maxResults = QUERY_LIMITS.NEARBY_DEFAULT,
   lodgingMode = false,
 ): Promise<Restaurant[]> {
   try {
@@ -128,6 +129,7 @@ async function getRestaurantsForMyNeeds(
       filter_allergens: allergens,
       filter_dietary: dietary,
       radius_km: radiusKm,
+      max_results: maxResults,
       lodging_mode: lodgingMode,
     });
     if (error) throw error;

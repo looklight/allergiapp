@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { RestaurantService, type Restaurant } from '../services/restaurantService';
+import { RestaurantService, QUERY_LIMITS, type Restaurant } from '../services/restaurantService';
 import {
   getCachedPlaces,
   setCachedPlaces,
@@ -433,12 +433,14 @@ export function useMapSearch({
     setIsLoadingNearby(true);
 
     const radius = nearbyRadiusKm(place.placeType);
+    // NEARBY_MAX (tetto RPC): dataset completo nel raggio, così conteggio banner e
+    // ordinamenti dello sheet sono calcolati su tutti i ristoranti, non su un troncamento.
     const nearby = fmn
       ? await RestaurantService.getRestaurantsForMyNeeds(
           place.latitude, place.longitude,
-          allergens, diets, radius, lodging,
+          allergens, diets, radius, QUERY_LIMITS.NEARBY_MAX, lodging,
         )
-      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, 50, lodging);
+      : await RestaurantService.getNearbyRestaurants(place.latitude, place.longitude, radius, QUERY_LIMITS.NEARBY_MAX, lodging);
 
     if (nearbySeqRef.current !== seq) return;
     setNearbyResults(nearby);

@@ -13,6 +13,12 @@ import type { Restaurant } from '../../services/restaurantService';
 
 const SNAP_POINTS = [0.55, 0.92];
 
+// Tetto di visualizzazione della lista: il fetch porta fino a QUERY_LIMITS.NEARBY_MAX
+// risultati (per ordinare/contare sul dataset completo), ma l'elenco mostra solo i
+// migliori 50 secondo l'ordinamento attivo — oltre diventa pesante da scorrere.
+// Banner e header segnalano il taglio con "50+".
+export const NEARBY_LIST_DISPLAY_MAX = 50;
+
 type SortKey = 'distance' | 'rating' | 'popularity' | 'compatibility';
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -29,6 +35,8 @@ type Props = {
   isLoading: boolean;
   showMatchInfo: boolean;
   hasActiveFilters: boolean;
+  /** True se il fetch ha saturato il tetto RPC: il totale reale è ignoto, mostra sempre il "+". */
+  countTruncated?: boolean;
   userLocation: { latitude: number; longitude: number } | null;
   onSelectRestaurant: (id: string) => void;
   onClose: () => void;
@@ -70,6 +78,7 @@ export default function NearbyListSheet({
   isLoading,
   showMatchInfo,
   hasActiveFilters,
+  countTruncated,
   userLocation,
   onSelectRestaurant,
   onClose,
@@ -121,6 +130,15 @@ export default function NearbyListSheet({
     }
   }, [results, sortBy, userLocation]);
 
+  // Il taglio avviene DOPO il sort: cambiando ordinamento cambiano quali 50 si vedono
+  // (i più popolari veri, i più vicini veri, ...), calcolati sul dataset completo.
+  const displayedResults = useMemo(
+    () => sortedResults.slice(0, NEARBY_LIST_DISPLAY_MAX),
+    [sortedResults],
+  );
+  const showPlus = Boolean(countTruncated) || results.length > NEARBY_LIST_DISPLAY_MAX;
+  const shownCount = Math.min(results.length, NEARBY_LIST_DISPLAY_MAX);
+
   const availableSortOptions = useMemo(
     () => SORT_OPTIONS.filter(o =>
       (o.key !== 'distance' || userLocation !== null) &&
@@ -150,7 +168,9 @@ export default function NearbyListSheet({
           <Text style={styles.headerSubtitle}>
             {results.length === 0
               ? hasActiveFilters ? i18n.t('restaurants.list.noResultsFiltered') : i18n.t('restaurants.list.noResultsArea')
-              : i18n.t('restaurants.list.found', { count: results.length })}
+              : showPlus
+                ? i18n.t('restaurants.list.foundPlus', { count: shownCount })
+                : i18n.t('restaurants.list.found', { count: results.length })}
           </Text>
         )}
       </View>
@@ -249,7 +269,7 @@ export default function NearbyListSheet({
         </View>
       ) : (
         <BottomSheetFlatList
-          data={sortedResults}
+          data={displayedResults}
           keyExtractor={r => r.id}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

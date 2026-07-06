@@ -9,13 +9,13 @@ import * as Location from 'expo-location';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import Avatar from '../../components/Avatar';
-import { RestaurantService, type Restaurant } from '../../services/restaurantService';
+import { RestaurantService, QUERY_LIMITS, type Restaurant } from '../../services/restaurantService';
 import { AuthService } from '../../services/auth';
 import { SupabaseAnalytics } from '../../services/supabaseAnalytics';
 import { useAuth } from '../../contexts/AuthContext';
 import RestaurantMap from '../../components/map/RestaurantMap';
 import FilterModal, { type FilterApplyResult } from '../../components/restaurants/FilterModal';
-import NearbyListSheet from '../../components/restaurants/NearbyListSheet';
+import NearbyListSheet, { NEARBY_LIST_DISPLAY_MAX } from '../../components/restaurants/NearbyListSheet';
 import RestaurantDetailSheet from '../../components/restaurants/RestaurantDetailSheet';
 import type { RestaurantCategoryId, AppLanguage } from '../../types';
 import { getCuisineLabel } from '../../constants/restaurantCategories';
@@ -637,6 +637,13 @@ export default function RestaurantsScreen() {
 
   const nearbyCount = filteredNearbyResults.length;
 
+  // Fetch saturo al tetto RPC: il totale reale nel raggio è ignoto, quindi qualsiasi
+  // conteggio (anche post-filtri client) è un limite inferiore → "+" sempre.
+  const nearbyCountTruncated = mapSearch.nearbyResults.length >= QUERY_LIMITS.NEARBY_MAX;
+  // Il banner non promette mai più righe di quante lo sheet ne mostri (top 50 per sort).
+  const nearbyShowsPlus = nearbyCountTruncated || nearbyCount > NEARBY_LIST_DISPLAY_MAX;
+  const nearbyBannerCount = Math.min(nearbyCount, NEARBY_LIST_DISPLAY_MAX);
+
   const showNearbyBanner =
     mapSearch.nearbyPlace !== null && !nearbyExpanded && !selection.detailId;
 
@@ -841,7 +848,9 @@ export default function RestaurantsScreen() {
                 ? i18n.t('restaurants.tabs.loadingNearby', { place: mapSearch.nearbyPlace.name })
                 : nearbyCount === 0
                   ? i18n.t('restaurants.tabs.bannerNoneAt', { place: mapSearch.nearbyPlace.name })
-                  : i18n.t('restaurants.tabs.bannerCountAt', { count: nearbyCount, place: mapSearch.nearbyPlace.name })}
+                  : nearbyShowsPlus
+                    ? i18n.t('restaurants.tabs.bannerCountAtPlus', { count: nearbyBannerCount, place: mapSearch.nearbyPlace.name })
+                    : i18n.t('restaurants.tabs.bannerCountAt', { count: nearbyCount, place: mapSearch.nearbyPlace.name })}
             </Text>
             {!mapSearch.isLoadingNearby && nearbyCount > 0 && (
               <MaterialCommunityIcons name="chevron-up" size={20} color={theme.colors.textSecondary} />
@@ -862,6 +871,7 @@ export default function RestaurantsScreen() {
           place={mapSearch.nearbyPlace}
           results={filteredNearbyResults}
           isLoading={mapSearch.isLoadingNearby}
+          countTruncated={nearbyCountTruncated}
           showMatchInfo={forMyNeeds}
           hasActiveFilters={hasActiveSettings}
           userLocation={geo.userLocation}

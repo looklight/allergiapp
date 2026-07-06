@@ -197,6 +197,10 @@ export interface LeaderboardEntry {
 
 export const QUERY_LIMITS: Record<string, number> = {
   NEARBY_DEFAULT: 100,
+  // Tetto hard-coded delle RPC nearby (LEAST(max_results, 200) lato DB).
+  // Usato dal fetch "Ristoranti nell'area" per avere il dataset completo nel raggio:
+  // conteggi e ordinamenti client-side sono esatti finché un'area non satura questo tetto.
+  NEARBY_MAX: 200,
 };
 
 export const DEFAULTS: Record<string, number> = {

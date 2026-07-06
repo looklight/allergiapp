@@ -40,6 +40,11 @@ Implementato e committato su main. Restano da chiudere lato test/UX:
 - [ ] **Verificare timing popup** — il popup avatar e l'`AnnouncementPopup` non devono apparire durante l'onboarding né flashare in transizione (fix con gate-path + delay 500ms in `utils/globalPopups.ts`).
 - [ ] **Edge case popup-stacking** (deferito di proposito) — se contemporaneamente c'è un annuncio attivo *e* un utente nuovo (popup avatar `free`, regalo di benvenuto intenzionale), entrambi i Modal possono apparire sull'atterraggio. Coordinarli richiederebbe una coda di popup condivisa. Lasciato come edge accettabile finché non si dimostra fastidioso.
 
+### Nearby "Ristoranti nell'area" — sort server-side quando i 200 diventano stretti (2026-07-06)
+Il fetch nearby porta fino a 200 risultati (tetto hard `LEAST(max_results, 200)` nelle RPC); lo sheet mostra i top 50 per l'ordinamento scelto e banner/header degradano a "50+". Finché nessuna città satura i 200 nel raggio, conteggi e classifiche sono esatti (Milano oggi: 84).
+
+- [ ] **Trigger**: quando una città si avvicina a ~200 ristoranti nel raggio (15 km per `city`) → aggiungere parametro sort e conteggio totale alle RPC `get_nearby_restaurants` / `get_restaurants_for_my_needs`, re-fetch al cambio ordinamento nello sheet. Rientra nel lavoro `MAP_SCALING.md`.
+
 ### Mappa Android — perf & rendering (sessione 2026-06-16, su main)
 Il "lag generale Android" era in gran parte la mappa. Cause risolte (contesto per l'upgrade rn-maps sotto, NON task aperti):
 - **Tempesta di fetch pin** → dedup in `useRestaurantGeo` (`80f2067`).
