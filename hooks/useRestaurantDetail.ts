@@ -41,9 +41,30 @@ export type { ReviewSortOrder } from '../services/restaurant.types';
 export function useRestaurantDetail(
   restaurantId: string | undefined,
   onFavoriteToggled?: (restaurantId: string, delta: number) => void,
+  /** Esigenze del contesto di ricerca (filtri mappa): se presenti, compatibilità e
+   *  sort recensioni si calcolano su queste invece che sul profilo. Deve essere
+   *  referenzialmente stabile (memoizzato dal chiamante). */
+  needsOverride?: { allergens: string[]; diets: string[] },
 ) {
   const router = useRouter();
   const { user, isAuthenticated, dietaryNeeds } = useAuth();
+
+  const effectiveNeeds = useMemo(() => ({
+    allergens: needsOverride?.allergens ?? dietaryNeeds.allergens ?? [],
+    diets: needsOverride?.diets ?? dietaryNeeds.diets ?? [],
+  }), [needsOverride, dietaryNeeds]);
+
+  // True solo quando le esigenze del filtro divergono davvero dal profilo:
+  // pilota la nota "in base ai filtri" nel box compatibilità.
+  const needsOverridden = useMemo(() => {
+    if (!needsOverride) return false;
+    const pa = new Set<string>(dietaryNeeds.allergens ?? []);
+    const pd = new Set<string>(dietaryNeeds.diets ?? []);
+    return needsOverride.allergens.length !== pa.size
+      || needsOverride.diets.length !== pd.size
+      || needsOverride.allergens.some(a => !pa.has(a))
+      || needsOverride.diets.some(d => !pd.has(d));
+  }, [needsOverride, dietaryNeeds]);
   const { refresh: refreshUnlockedAvatars } = useUnlockedAvatars();
 
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -89,8 +110,8 @@ export function useRestaurantDetail(
   } = useReviewsPaginated(
     restaurantId,
     user?.uid,
-    dietaryNeeds.allergens ?? [],
-    dietaryNeeds.diets ?? [],
+    effectiveNeeds.allergens,
+    effectiveNeeds.diets,
   );
 
   // ─── Initial load ──────────────────────────────────────────────────────────
@@ -157,9 +178,9 @@ export function useRestaurantDetail(
 
   // ─── Derived state ─────────────────────────────────────────────────────────
   const userNeedsSet = useMemo(() => {
-    const all: string[] = [...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])];
+    const all: string[] = [...effectiveNeeds.allergens, ...effectiveNeeds.diets];
     return new Set(all);
-  }, [dietaryNeeds]);
+  }, [effectiveNeeds]);
 
   const hasUserNeeds = userNeedsSet.size > 0;
 
@@ -377,6 +398,8 @@ export function useRestaurantDetail(
     reviewSortOrder,
     setReviewSortOrder,
     hasUserNeeds,
+    effectiveNeeds,
+    needsOverridden,
     userHasReviews,
     isUpdatingMenuUrl,
     setFavorite,

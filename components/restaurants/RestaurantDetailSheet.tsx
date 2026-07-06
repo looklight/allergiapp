@@ -25,13 +25,16 @@ type Props = {
   onClose: () => void;
   onCloseStart?: () => void;
   onFavoriteToggled?: (restaurantId: string, delta: number) => void;
+  /** Esigenze del contesto di ricerca (filtri mappa): compatibilità e sort recensioni
+   *  le usano al posto del profilo. Memoizzare nel chiamante. Se assente → profilo. */
+  needsOverride?: { allergens: string[]; diets: string[] };
 };
 
-export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseStart, onFavoriteToggled }: Props) {
+export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseStart, onFavoriteToggled, needsOverride }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const sheetRef = useRef<BottomSheetRef>(null);
-  const detail = useRestaurantDetail(restaurantId, onFavoriteToggled);
+  const detail = useRestaurantDetail(restaurantId, onFavoriteToggled, needsOverride);
   const { isAuthenticated } = useAuth();
   const [isCompactHeader, setIsCompactHeader] = useState(false);
   // Scroll is enabled only when the sheet is fully open (snap 0.92).

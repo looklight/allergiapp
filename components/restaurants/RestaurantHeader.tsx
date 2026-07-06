@@ -28,6 +28,9 @@ interface RestaurantHeaderProps {
   cuisineVotes: CuisineVote[];
   matchInfo?: MatchInfo;
   hasUserNeeds?: boolean;
+  /** True quando la compatibilità è calcolata sulle esigenze dei filtri mappa
+   *  (divergenti dal profilo): mostra la nota di contesto nel box. */
+  needsFromFilter?: boolean;
   isAuthenticated?: boolean;
   onScrollToReviews?: () => void;
   hideMapsButton?: boolean;
@@ -35,7 +38,7 @@ interface RestaurantHeaderProps {
   hideNameAndRating?: boolean;
 }
 
-export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, isAuthenticated, onScrollToReviews, hideMapsButton, hideNameAndRating }: RestaurantHeaderProps) {
+export default function RestaurantHeader({ restaurant, lang, cuisineVotes, matchInfo, hasUserNeeds, needsFromFilter, isAuthenticated, onScrollToReviews, hideMapsButton, hideNameAndRating }: RestaurantHeaderProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [compatExpanded, setCompatExpanded] = useState(false);
@@ -179,7 +182,7 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
             />
             <Text style={[styles.compatText, { color: badgeColor }]}>
               {isNoReviews
-                ? i18n.t('restaurants.header.compatNoInfo')
+                ? i18n.t(needsFromFilter ? 'restaurants.header.compatNoInfoFilter' : 'restaurants.header.compatNoInfo')
                 : inferredCount > 0
                   ? <>{directCount > 0 ? directCount : ''}<Text style={{ color: theme.colors.amberDark, fontWeight: '700' }}>+{inferredCount}</Text> /{matchInfo!.totalFilters} {i18n.t('restaurants.header.compatBased', { count: matchInfo!.reviewCount })}</>
                   : `${matchInfo!.coveredCount}/${matchInfo!.totalFilters} ${i18n.t('restaurants.header.compatBased', { count: matchInfo!.reviewCount })}`}
@@ -190,6 +193,13 @@ export default function RestaurantHeader({ restaurant, lang, cuisineVotes, match
               color={badgeColor}
             />
           </TouchableOpacity>
+
+          {needsFromFilter && (
+            <View style={styles.compatFilterNote}>
+              <MaterialCommunityIcons name="filter-variant" size={13} color={theme.colors.textSecondary} />
+              <Text style={styles.compatFilterNoteText}>{i18n.t('restaurants.header.compatFilterNote')}</Text>
+            </View>
+          )}
 
           {compatExpanded && (() => {
             const getChipLabel = (code: string) => {
@@ -456,6 +466,19 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 4,
     gap: 8,
+  },
+  compatFilterNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+  compatFilterNoteText: {
+    flex: 1,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    fontStyle: 'italic',
   },
   compatSourceNote: {
     fontSize: 11,

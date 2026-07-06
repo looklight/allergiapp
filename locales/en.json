@@ -378,6 +378,8 @@
       "cuisineHint": "Tags suggested by the community. The number shows how many users confirmed each cuisine type.",
       "compatLogin": "Sign in to see how this matches your needs",
       "compatNoInfo": "No information for your needs",
+      "compatNoInfoFilter": "No information for the filter needs",
+      "compatFilterNote": "Based on the needs set in filters, not your profile",
       "compatBased": {
         "one": "compatible · based on {{count}} review",
         "other": "compatible · based on {{count}} reviews"

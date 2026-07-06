@@ -119,6 +119,13 @@ export default function RestaurantsScreen() {
     });
   }, [isAuthenticated, dietaryNeeds.allergens, dietaryNeeds.diets]);
 
+  // Scheda dettaglio aperta dalla mappa: compatibilità coerente con i pin (esigenze
+  // del filtro, non del profilo). Memoizzato: l'hook detail lo usa come dipendenza.
+  const detailNeedsOverride = useMemo(
+    () => ({ allergens: filterAllergens, diets: filterDiets }),
+    [filterAllergens, filterDiets],
+  );
+
   const filterHasNeeds = filterAllergens.length > 0 || filterDiets.length > 0;
   const hasActiveSettings = activeFilters.length > 0 || forMyNeeds || minRating !== null;
 
@@ -877,6 +884,7 @@ export default function RestaurantsScreen() {
           onClose={handleCloseDetail}
           onCloseStart={tabBar.show}
           onFavoriteToggled={(id, delta) => syncFavoriteId(id, delta > 0)}
+          needsOverride={detailNeedsOverride}
         />
       )}
 

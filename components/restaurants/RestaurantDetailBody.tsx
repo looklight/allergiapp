@@ -73,14 +73,14 @@ export default function RestaurantDetailBody({
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
-  const { user, isAuthenticated, dietaryNeeds } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const lang = i18n.locale as AppLanguage;
 
   const {
     restaurant, allReviews, reviewsTotalCount, hasMoreReviews, loadMoreReviews, isLoadingMoreReviews,
     menuPhotos, reports, cuisineVotes, userReview, userReport, isFavorite,
     isLoading, error, isUploadingMenu, userHasReviews, isUpdatingMenuUrl,
-    reviewSortOrder, setReviewSortOrder, hasUserNeeds,
+    reviewSortOrder, setReviewSortOrder, hasUserNeeds, effectiveNeeds, needsOverridden,
     setFavorite, handleToggleReviewLike, navigateToContribute,
     handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
     collections, collectionMembership, reloadCollections, savedNote,
@@ -103,8 +103,8 @@ export default function RestaurantDetailBody({
 
   // ─── Derived data ───────────────────────────────────────────────────────
   const userNeedsSet = useMemo(
-    () => new Set<string>([...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]),
-    [dietaryNeeds],
+    () => new Set<string>([...effectiveNeeds.allergens, ...effectiveNeeds.diets]),
+    [effectiveNeeds],
   );
 
   const reviewPhotos = useMemo(
@@ -137,7 +137,7 @@ export default function RestaurantDetailBody({
 
   const matchInfo = useMemo(() => {
     if (!hasUserNeeds) return { reviewCount: 0, coveredCount: 0, totalFilters: 0, covered: [] as string[], uncovered: [] as string[], inferredSources: {} as Record<string, string> };
-    const userAll: string[] = [...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])];
+    const userAll: string[] = [...effectiveNeeds.allergens, ...effectiveNeeds.diets];
     const userSet = new Set(userAll);
     const directCovered = new Set<string>();
     const inferredSources: Record<string, string> = {}; // need -> source (es. eggs -> vegan)
@@ -165,7 +165,7 @@ export default function RestaurantDetailBody({
     const covered = userAll.filter(a => allCovered.has(a));
     const uncovered = userAll.filter(a => !allCovered.has(a));
     return { reviewCount, coveredCount: allCovered.size, totalFilters: userAll.length, covered, uncovered, inferredSources };
-  }, [allReviews, dietaryNeeds, hasUserNeeds]);
+  }, [allReviews, effectiveNeeds, hasUserNeeds]);
 
   const canRemove = restaurant
     && user?.uid === restaurant.added_by
@@ -317,6 +317,7 @@ export default function RestaurantDetailBody({
           cuisineVotes={cuisineVotes}
           matchInfo={matchInfo}
           hasUserNeeds={hasUserNeeds}
+          needsFromFilter={needsOverridden}
           isAuthenticated={isAuthenticated}
           onScrollToReviews={scrollToReviews}
           hideNameAndRating={hideNameAndRating}
@@ -450,7 +451,7 @@ export default function RestaurantDetailBody({
           reviewSortOrder={reviewSortOrder}
           setReviewSortOrder={setReviewSortOrder}
           hasUserNeeds={hasUserNeeds}
-          userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
+          userNeeds={[...effectiveNeeds.allergens, ...effectiveNeeds.diets]}
           onToggleReviewLike={handleToggleReviewLike}
           onImagePress={(url) => {
             const i = reviewPhotos.findIndex(p => p.url === url);
@@ -532,7 +533,7 @@ export default function RestaurantDetailBody({
           photos={reviewPhotos}
           initialIndex={galleryIndex}
           onClose={() => setGalleryIndex(null)}
-          userNeeds={[...(dietaryNeeds.allergens ?? []), ...(dietaryNeeds.diets ?? [])]}
+          userNeeds={[...effectiveNeeds.allergens, ...effectiveNeeds.diets]}
           onSubmitReport={isAuthenticated ? reportReviewById : undefined}
           reportedReviewIds={reportedReviewIds}
         />

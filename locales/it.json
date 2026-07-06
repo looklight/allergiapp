@@ -378,6 +378,8 @@
       "cuisineHint": "Tag suggeriti dalla community. Il numero indica quanti utenti hanno confermato ogni tipo di cucina.",
       "compatLogin": "Accedi per vedere la compatibilità con le tue esigenze",
       "compatNoInfo": "Nessuna informazione sulle tue esigenze",
+      "compatNoInfoFilter": "Nessuna informazione sulle esigenze dei filtri",
+      "compatFilterNote": "In base alle esigenze impostate nei filtri, non al tuo profilo",
       "compatBased": {
         "one": "compatibile · secondo {{count}} recensione",
         "other": "compatibile · secondo {{count}} recensioni"
