@@ -642,15 +642,15 @@
       "showInfo": "Vedi come l'hai sbloccato",
       "unlocked": "Sbloccato!",
       "secretRevealed": {
-        "plate_mario": "Hai recensito 2 ristoranti italiani fuori dall'Italia",
+        "plate_mario": "Hai recensito con foto 2 ristoranti italiani fuori dall'Italia",
         "plate_squid": "Hai recensito 5 ristoranti di cucina coreana",
         "plate_astro": "Hai recensito 5 ristoranti di hamburger e panini negli Stati Uniti",
         "plate_kurom": "Hai scritto una recensione da 3 stelle o meno",
-        "plate_zard": "Hai recensito un ristorante thai, uno messicano e uno indiano",
+        "plate_zard": "Hai recensito con foto un ristorante thai, uno messicano e uno indiano",
         "plate_sponge": "Hai recensito 12 ristoranti di pesce e frutti di mare",
         "plate_raven": "Hai recensito 10 ristoranti giapponesi in 10 città diverse",
-        "plate_lela": "Hai recensito 5 bakery in 5 città diverse",
-        "plate_anakin": "Hai recensito 10 cucine diverse del mondo"
+        "plate_lela": "Hai recensito con foto 5 bakery in 5 città diverse",
+        "plate_anakin": "Hai recensito con foto 10 cucine diverse del mondo"
       },
       "questHint": {
         "likes": "Aggiungi foto, descrivi i piatti e racconta come è stata la tua esperienza. Le recensioni complete vengono apprezzate di più dalla community."

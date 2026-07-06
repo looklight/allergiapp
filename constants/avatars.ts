@@ -17,8 +17,10 @@ export type UnlockCondition =
    *  - countryIn / countryNotIn: country_code ∈ / ∉ (paesi noti soltanto)
    *  - distinctCities: se true conta CITTÀ distinte tra i match (città note),
    *    non i ristoranti — es. "10 giapponesi in 10 città diverse"
+   *  - requiresPhoto: se true conta solo i posti la cui recensione ha almeno
+   *    una foto (per-recensione, non "una foto totale")
    */
-  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean }
+  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean; requiresPhoto?: boolean }
   /**
    * Scrivi `count` recensioni con voto nel range (maxStars/minStars inclusi).
    * Asse "voto della recensione", distinto da reviews_matching (cucina/paese).
@@ -30,7 +32,7 @@ export type UnlockCondition =
    * AND tra cucine (≠ reviews_matching, che è OR su cuisineAny).
    * Es. una thai + una mexican + una indian: { cuisines: ['thai','mexican','indian'] }.
    */
-  | { type: 'reviews_each_cuisine'; cuisines: string[]; perCuisine?: number };
+  | { type: 'reviews_each_cuisine'; cuisines: string[]; perCuisine?: number; requiresPhoto?: boolean };
 
 /** Un ristorante recensito dall'utente, ridotto ai campi per `reviews_matching`. */
 export interface ReviewedPlace {
@@ -38,6 +40,8 @@ export interface ReviewedPlace {
   cuisines: string[];
   country: string | null;
   city: string | null;
+  /** La recensione dell'utente per questo posto ha almeno una foto. */
+  hasPhoto: boolean;
 }
 
 /**
@@ -218,8 +222,8 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_mario',
     source: require('../assets/avatars/plate_mario.png'),
     name: 'Plumber',
-    // Segreto: recensisci 2 ristoranti italiani fuori dall'Italia (Mario, italiano nel mondo).
-    unlock: { type: 'reviews_matching', count: 2, cuisineAny: ['italian'], countryNotIn: ['IT'] },
+    // Segreto: recensisci con foto 2 ristoranti italiani fuori dall'Italia (Mario, italiano nel mondo).
+    unlock: { type: 'reviews_matching', count: 2, cuisineAny: ['italian'], countryNotIn: ['IT'], requiresPhoto: true },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_mario',
   },
@@ -227,8 +231,8 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_lela',
     source: require('../assets/avatars/plate_lela.png'),
     name: 'Purple',
-    // Segreto: recensisci 5 bakery in 5 città diverse (Leela, pilota esploratrice).
-    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['bakery'], distinctCities: true },
+    // Segreto: recensisci con foto 5 bakery in 5 città diverse (Leela, pilota esploratrice).
+    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['bakery'], distinctCities: true, requiresPhoto: true },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_lela',
   },
@@ -236,10 +240,11 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_anakin',
     source: require('../assets/avatars/plate_anakin.png'),
     name: 'Apprentice',
-    // Segreto: recensisci 10 cucine diverse del mondo (Jedi maestro di ogni sapore).
+    // Segreto: recensisci con foto 10 cucine diverse del mondo (Jedi maestro di ogni sapore).
     unlock: {
       type: 'reviews_each_cuisine',
       cuisines: ['italian', 'french', 'spanish', 'japanese', 'chinese', 'korean', 'thai', 'indian', 'mexican', 'middle_eastern'],
+      requiresPhoto: true,
     },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_anakin',
@@ -275,8 +280,8 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_zard',
     source: require('../assets/avatars/plate_zard.png'),
     name: 'Zard',
-    // Segreto: recensisci almeno 1 thai, 1 mexican e 1 indian (drago di fuoco = piccante).
-    unlock: { type: 'reviews_each_cuisine', cuisines: ['thai', 'mexican', 'indian'] },
+    // Segreto: recensisci con foto almeno 1 thai, 1 mexican e 1 indian (drago di fuoco = piccante).
+    unlock: { type: 'reviews_each_cuisine', cuisines: ['thai', 'mexican', 'indian'], requiresPhoto: true },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_zard',
   },
@@ -311,10 +316,11 @@ export function getAvatarById(id: string): AvatarOption | undefined {
  */
 function countMatchingReviews(
   places: readonly ReviewedPlace[] | undefined,
-  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean },
+  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean; requiresPhoto?: boolean },
 ): number {
   const matched = (places ?? []).filter(
     (p) =>
+      (!cond.requiresPhoto || p.hasPhoto) &&
       (!cond.cuisineAny || cond.cuisineAny.some((c) => p.cuisines.includes(c))) &&
       (!cond.countryIn || (p.country != null && cond.countryIn.includes(p.country))) &&
       (!cond.countryNotIn || (p.country != null && !cond.countryNotIn.includes(p.country))),
@@ -345,9 +351,10 @@ function cappedEachCuisine(
   places: readonly ReviewedPlace[] | undefined,
   cuisines: string[],
   perCuisine: number,
+  requiresPhoto?: boolean,
 ): number {
   return cuisines.reduce((sum, c) => {
-    const n = (places ?? []).filter((p) => p.cuisines.includes(c)).length;
+    const n = (places ?? []).filter((p) => p.cuisines.includes(c) && (!requiresPhoto || p.hasPhoto)).length;
     return sum + Math.min(n, perCuisine);
   }, 0);
 }
@@ -389,7 +396,7 @@ export function isAvatarUnlocked(
       return countRatingReviews(stats.reviewRatings, avatar.unlock) >= avatar.unlock.count;
     case 'reviews_each_cuisine': {
       const per = avatar.unlock.perCuisine ?? 1;
-      return cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per) >= avatar.unlock.cuisines.length * per;
+      return cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per, avatar.unlock.requiresPhoto) >= avatar.unlock.cuisines.length * per;
     }
     default:
       return false;
@@ -442,7 +449,7 @@ export function getUnlockProgress(
     case 'reviews_each_cuisine': {
       const per = avatar.unlock.perCuisine ?? 1;
       const total = avatar.unlock.cuisines.length * per;
-      return total > 0 ? Math.min(cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per) / total, 1) : 1;
+      return total > 0 ? Math.min(cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per, avatar.unlock.requiresPhoto) / total, 1) : 1;
     }
     default:
       return 0;

@@ -642,15 +642,15 @@
       "showInfo": "See how you unlocked it",
       "unlocked": "Unlocked!",
       "secretRevealed": {
-        "plate_mario": "You reviewed 2 Italian restaurants outside Italy",
+        "plate_mario": "You reviewed 2 Italian restaurants outside Italy with photos",
         "plate_squid": "You reviewed 5 Korean restaurants",
         "plate_astro": "You reviewed 5 burger & sandwich restaurants in the United States",
         "plate_kurom": "You wrote a review of 3 stars or fewer",
-        "plate_zard": "You reviewed a Thai, a Mexican and an Indian restaurant",
+        "plate_zard": "You reviewed a Thai, a Mexican and an Indian restaurant with photos",
         "plate_sponge": "You reviewed 12 seafood restaurants",
         "plate_raven": "You reviewed 10 Japanese restaurants in 10 different cities",
-        "plate_lela": "You reviewed 5 bakeries in 5 different cities",
-        "plate_anakin": "You reviewed 10 different world cuisines"
+        "plate_lela": "You reviewed 5 bakeries in 5 different cities with photos",
+        "plate_anakin": "You reviewed 10 different world cuisines with photos"
       },
       "questHint": {
         "likes": "Add photos, describe the dishes, and tell about your experience. Complete reviews are appreciated more by the community."

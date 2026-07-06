@@ -41,10 +41,11 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       supabase.rpc('get_unique_likers_count', { p_user_id: userId }),
       // Per "Poliglotta" (countries_reviewed) E le condizioni `reviews_matching`:
       // JOIN inline su restaurants. Una sola query serve entrambe — porto
-      // id (dedup per ristorante), country_code e cuisine_types.
+      // id (dedup per ristorante), country_code e cuisine_types. `photos` è la
+      // colonna della recensione stessa: serve alle condizioni `requiresPhoto`.
       supabase
         .from('reviews')
-        .select('restaurant:restaurants!restaurant_id(id, country_code, cuisine_types, city)')
+        .select('photos, restaurant:restaurants!restaurant_id(id, country_code, cuisine_types, city)')
         .eq('user_id', userId),
       // Per le condizioni `likes_to_restriction_reviews`: like dati dall'utente
       // a recensioni filtrate per restrizione del recensore. Selezioniamo
@@ -69,6 +70,7 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       const r = (row as any)?.restaurant;
       const code = r?.country_code;
       if (code) countriesSet.add(code);
+      const hasPhoto = ((row as any)?.photos?.length ?? 0) > 0;
       // Posti deduplicati per ristorante, per le condizioni reviews_matching.
       if (r?.id && !seenRestaurants.has(r.id)) {
         seenRestaurants.add(r.id);
@@ -77,7 +79,12 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
           cuisines: r.cuisine_types ?? [],
           country: code ?? null,
           city: r.city ?? null,
+          hasPhoto,
         });
+      } else if (r?.id && hasPhoto) {
+        // Più recensioni sullo stesso ristorante: basta che una abbia foto.
+        const place = reviewedPlaces.find((p) => p.restaurantId === r.id);
+        if (place) place.hasPhoto = true;
       }
     }
     // Restrizioni da tracciare: quelle effettivamente usate dal catalogo AVATARS.
