@@ -498,6 +498,8 @@ export default function RestaurantMap({
           supportedDiets={p.supported_diets}
           userAllergens={userAllergens}
           userDiets={userDiets}
+          pinRating={p.average_rating}
+          pinOffersLodging={p.offers_lodging}
         />,
       );
     }

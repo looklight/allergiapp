@@ -11,11 +11,12 @@
  * - Unsaved dots are static PNG icons (`image` prop, assets/map/dots — see
  *   scripts/generate-map-dots.js): no view bitmap capture at all. Saved dots
  *   (list badge) remain custom views.
- * - When `restaurant` is null at close zoom, a placeholder pin (same 32px
- *   container) is rendered so iOS can recapture the bitmap when data arrives.
- * - At dot zoom without restaurant data, coverage is computed from
- *   supportedAllergens/supportedDiets + userAllergens/userDiets using
- *   getExpandedCoverage (implication-aware, same logic del server).
+ * - Without `restaurant` (detailed fetch cap), BOTH dots and close-zoom pins
+ *   render complete from the pin payload: coverage computed client-side from
+ *   supportedAllergens/supportedDiets + userAllergens/userDiets via
+ *   getExpandedCoverage (implication-aware, same logic del server), rating from
+ *   pinRating (mig 073). When detail arrives, hasRest flips → one-frame
+ *   recapture (color may correct itself if client/server coverage diverge).
  */
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
@@ -69,7 +70,33 @@ export type MapPinProps = {
   userAllergens?: string[];
   /** Active dietary filters of the current user */
   userDiets?: string[];
+  /** Voto medio dal payload pin (mig 073) — fallback quando manca `restaurant` */
+  pinRating?: number;
+  /** offers_lodging dal payload pin — icona corretta sui pin senza dettaglio */
+  pinOffersLodging?: boolean;
 };
+
+/** Match client-side esigenze↔coperture del locale, implication-aware: stessa
+ *  semantica della proiezione server (CTE implications). Usato da dot e pin
+ *  quando il dettaglio non è (ancora) in cache. */
+function clientCoverage(
+  supportedAllergens: string[] | undefined,
+  supportedDiets: string[] | undefined,
+  userAllergens: string[] | undefined,
+  userDiets: string[] | undefined,
+): { covered: number; total: number } {
+  const total = (userAllergens?.length ?? 0) + (userDiets?.length ?? 0);
+  let covered = 0;
+  if (total > 0 && (supportedAllergens?.length || supportedDiets?.length)) {
+    const expanded = getExpandedCoverage([
+      ...(supportedAllergens ?? []),
+      ...(supportedDiets ?? []),
+    ]);
+    for (const a of (userAllergens ?? [])) if (expanded.has(a)) covered++;
+    for (const d of (userDiets ?? [])) if (expanded.has(d)) covered++;
+  }
+  return { covered, total };
+}
 
 export default memo(function MapPin({
   id,
@@ -85,6 +112,8 @@ export default memo(function MapPin({
   supportedDiets,
   userAllergens,
   userDiets,
+  pinRating,
+  pinOffersLodging,
 }: MapPinProps) {
   const theme = useTheme();
   const { isDark } = useThemePreference();
@@ -110,6 +139,14 @@ export default memo(function MapPin({
   const prevHasRest = useRef(hasRest);
   const prevSupportedAllergens = useRef(supportedAllergens);
   const prevSupportedDiets = useRef(supportedDiets);
+  // Cambio esigenze (filtro/profilo): il colore client-side di dot e pin dipende
+  // da user*; senza ricattura il bitmap resterebbe stale al cambio filtri.
+  // Confronto per CONTENUTO (join), non per riferimento: il parent può ricreare
+  // gli array a ogni render. Costo: ricattura di massa one-frame al cambio
+  // esigenze — accettabile ora che i dot (la maggioranza dei marker) sono icone
+  // statiche senza cattura; da tenere d'occhio su device (churn iOS).
+  const userKey = `${userAllergens?.join('|') ?? ''}§${userDiets?.join('|') ?? ''}`;
+  const prevUserKey = useRef(userKey);
 
   // Android-only: estende la finestra tracksViewChanges=true a ~100ms dopo
   // mount e dopo ogni cambio prop rilevante. react-native-maps su Android
@@ -138,7 +175,7 @@ export default memo(function MapPin({
     setAndroidSettling(true);
     const timer = setTimeout(() => setAndroidSettling(false), 100);
     return () => clearTimeout(timer);
-  }, [isImageDot, asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
+  }, [isImageDot, asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets, userKey]);
 
   const justChanged =
     androidSettling ||
@@ -148,7 +185,8 @@ export default memo(function MapPin({
     showMatchInfo !== prevShowMatch.current ||
     hasRest !== prevHasRest.current ||
     supportedAllergens !== prevSupportedAllergens.current ||
-    supportedDiets !== prevSupportedDiets.current;
+    supportedDiets !== prevSupportedDiets.current ||
+    userKey !== prevUserKey.current;
 
   useEffect(() => {
     prevAsDot.current = asDot;
@@ -158,7 +196,8 @@ export default memo(function MapPin({
     prevHasRest.current = hasRest;
     prevSupportedAllergens.current = supportedAllergens;
     prevSupportedDiets.current = supportedDiets;
-  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
+    prevUserKey.current = userKey;
+  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets, userKey]);
 
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 
@@ -176,15 +215,7 @@ export default memo(function MapPin({
         dotCovered = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
         dotTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
       } else {
-        dotTotal = (userAllergens?.length ?? 0) + (userDiets?.length ?? 0);
-        if (dotTotal > 0 && (supportedAllergens?.length || supportedDiets?.length)) {
-          const expanded = getExpandedCoverage([
-            ...(supportedAllergens ?? []),
-            ...(supportedDiets ?? []),
-          ]);
-          for (const a of (userAllergens ?? [])) if (expanded.has(a)) dotCovered++;
-          for (const d of (userDiets ?? [])) if (expanded.has(d)) dotCovered++;
-        }
+        ({ covered: dotCovered, total: dotTotal } = clientCoverage(supportedAllergens, supportedDiets, userAllergens, userDiets));
       }
     }
 
@@ -255,38 +286,25 @@ export default memo(function MapPin({
     );
   }
 
-  // ---- Placeholder pin (close zoom, data loading) ----
-  // Same 32px container as full pin so iOS bitmap recapture works
-  // when data arrives (hasRest flips → tracksViewChanges=true for one frame).
-  if (!restaurant) {
-    return (
-      <Marker
-        identifier={id}
-        coordinate={{ latitude, longitude }}
-        tracksViewChanges={justChanged}
-        onPress={handlePress}
-        {...(Platform.OS === 'android' && { zIndex: isSaved ? 2 : 1 })}
-      >
-        <View style={styles.markerWrap}>
-          <View style={[styles.markerContainer, { borderColor: theme.colors.textDisabled }]}>
-            <View style={[styles.markerDot, { backgroundColor: theme.colors.textDisabled }]} />
-          </View>
-          <View style={styles.markerArrow}>
-            <View style={[styles.markerArrowInner, { borderTopColor: theme.colors.textDisabled }]} />
-          </View>
-          <View style={[styles.heartBadge, { opacity: isSaved ? 1 : 0 }]} pointerEvents="none">
-            {badge && badgeGlyph(badge, styles.heartText, 9, theme)}
-          </View>
-        </View>
-      </Marker>
-    );
+  // ---- Full pin (close zoom) ----
+  // Valori dal fetch dettagliato quando presente; altrimenti fallback dal
+  // payload pin: colore = match client-side, voto = pinRating (mig 073). Così
+  // ogni pin del viewport nasce completo, senza dipendere dal cap 200 del
+  // fetch dettagliato. All'arrivo del dettaglio hasRest flippa →
+  // tracksViewChanges=true per un frame (stesso container, ricattura pulita).
+  let coveredTotal = 0;
+  let filtersTotal = 0;
+  if (showMatchInfo) {
+    if (restaurant) {
+      coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
+      filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+    } else {
+      ({ covered: coveredTotal, total: filtersTotal } = clientCoverage(supportedAllergens, supportedDiets, userAllergens, userDiets));
+    }
   }
-
-  // ---- Full pin ----
-  const rating = restaurant.average_rating ?? 0;
+  const rating = restaurant ? (restaurant.average_rating ?? 0) : (pinRating ?? 0);
   const hasRating = rating > 0;
-  const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
-  const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+  const offersLodging = restaurant ? restaurant.offers_lodging : pinOffersLodging;
 
   const markerColor = showMatchInfo
     ? coverageColor(coveredTotal, filtersTotal, theme)
@@ -307,7 +325,7 @@ export default memo(function MapPin({
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <MaterialCommunityIcons name={venueIconName(restaurant.offers_lodging)} size={13} color={markerColor} />
+            <MaterialCommunityIcons name={venueIconName(offersLodging)} size={13} color={markerColor} />
           )}
         </View>
         <View style={styles.markerArrow}>
@@ -331,12 +349,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     overflow: 'visible',
   },
-  // Android: i pallini salvati hanno il badge sporgente in alto a destra; il
-  // padding asimmetrico serve a includerlo nella bitmap. Identico al comportamento
-  // storico (cambiarlo è il "Pezzo B", da affrontare con anchor esplicito). iOS
-  // invariato.
+  // Android: padding SIMMETRICO anche per i salvati (era asimmetrico, il "Pezzo
+  // B"): il badge sta DENTRO il padding invece di sporgere → niente clipping
+  // nella bitmap, e il pallino resta esattamente al centro del canvas → anchor
+  // {0.5,0.5} preciso a ogni zoom. iOS invariato (offset negativi + CALayer).
   dotWrapSaved: {
-    ...Platform.select({ android: { paddingTop: 8, paddingRight: 10 } }),
+    ...Platform.select({ android: { padding: 8 } }),
   },
   dotMarker: {
     width: 10,
@@ -361,7 +379,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   dotHeartBadge: {
     position: 'absolute',
     ...Platform.select({
-      android: { top: 7, right: 7, width: 8, height: 8, borderRadius: 4 },
+      // Sovrappone l'angolo alto-destro del pallino (12px a 8..20) restando a
+      // 2px dai bordi del wrap 28×28 → mai tagliato, sempre sopra il pallino.
+      android: { top: 2, right: 2, width: 10, height: 10, borderRadius: 5 },
       ios: { top: -3, right: -5, width: 10, height: 10, borderRadius: 5 },
     }),
     backgroundColor: theme.colors.onPrimary,
@@ -370,7 +390,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   dotHeartText: {
     ...Platform.select({
-      android: { fontSize: 5, lineHeight: 8, includeFontPadding: false, textAlignVertical: 'center' as const },
+      android: { fontSize: 6, lineHeight: 9, includeFontPadding: false, textAlignVertical: 'center' as const },
       ios: { fontSize: 7, lineHeight: 9 },
     }),
     textAlign: 'center',
@@ -402,11 +422,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   markerText: {
     fontSize: 12,
     fontWeight: '700',
-  },
-  markerDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   markerArrow: {
     alignItems: 'center',
