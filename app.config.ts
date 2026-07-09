@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
-    buildNumber: "20",
+    buildNumber: "21",
     // Universal Links: i link allergiapp.com/r/* aprono direttamente l'app (se installata).
     // Il pattern stretto (/r/*) e' gestito server-side nel file
     // landing/.well-known/apple-app-site-association: cosi' possiamo allargare i
@@ -34,7 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
-    versionCode: 31,
+    versionCode: 32,
     permissions: [
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
