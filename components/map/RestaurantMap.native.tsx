@@ -538,6 +538,9 @@ export default function RestaurantMap({
           customSymbol={customSymbols?.get(r.id)}
           showMatchInfo={showMatchInfo}
           onPress={handleMarkerPress}
+          // Rampa di taglia anche per i pin passati via `restaurants`
+          // (mini-mappe profilo, che non hanno allPins).
+          dotSize={isFarDotZoom ? 'sm' : 'lg'}
         />,
       );
     }

@@ -73,6 +73,18 @@ obbligatoria per testare (mai Expo Go).
    crash-path iOS patchato, servono chiavi stabili e batching).
 4. **Al bump SDK:** upgrade rn-maps 1.27 + rimozione patch, sguardo a expo-maps.
 
+**Note per lo step celle (decisioni 2026-07-09, secondo giro):**
+- **Rivelazione progressiva per prominenza** (pin "importanti" diventano pin a
+  zoom più largo, alla Google) valutata e RIMANDATA allo step celle: il voto non
+  discrimina (quasi tutti 5.0 con poche recensioni), servirebbe `review_count`
+  nel payload pin + taratura — va disegnata dentro il modello celle→pallini→pin,
+  non appiccicata prima. Palliativo già attivo: rampa di taglia pallini
+  (DOT_LARGE_THRESHOLD).
+- **Transizione pallino↔pin istantanea**: standard di settore (nemmeno
+  Google/Airbnb la animano); NON animare marker su rn-maps 1.20
+  (tracksViewChanges per-frame = trappola perf). Eventuale morbidezza extra solo
+  post-upgrade 1.27.
+
 ---
 
 ## 1. Giudizio sull'architettura attuale
