@@ -14,6 +14,8 @@ export type RestaurantPin = {
   /** Faccette lodging (per icona pin distinta / futura UI) */
   offers_lodging?: boolean;
   lodging_type?: string | null;
+  /** Voto medio (mig 073) — 0 se assente o su DB pre-migration */
+  average_rating?: number;
 };
 
 export interface Restaurant {

@@ -15,7 +15,10 @@
     },
     "beta": {
       "channel": "beta",
-      "environment": "preview"
+      "environment": "preview",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "channel": "production",

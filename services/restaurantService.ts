@@ -192,9 +192,11 @@ async function getAllPositions(): Promise<RestaurantPin[]> {
   }
 }
 
-/** Pin leggeri limitati al bounding box visibile — sostituisce getAllPositions per scalabilità */
+/** Pin leggeri limitati al bounding box visibile — sostituisce getAllPositions per scalabilità.
+ *  limit 3000 = ponte dati (MAP_SCALING.md §0): copre Italia (~1600) ed Europa
+ *  (~2100) interi finché non arriva l'aggregazione server-side a celle. */
 async function getPinsInBounds(
-  minLat: number, minLng: number, maxLat: number, maxLng: number, limit = 1000,
+  minLat: number, minLng: number, maxLat: number, maxLng: number, limit = 3000,
   lodgingMode = false,
 ): Promise<RestaurantPin[]> {
   try {
@@ -211,6 +213,7 @@ async function getPinsInBounds(
       supported_diets: (row.supported_diets ?? []) as string[],
       cuisine_types: (row.cuisine_types ?? []) as string[],
       offers_lodging: (row.offers_lodging ?? false) as boolean,
+      average_rating: Number(row.average_rating ?? 0),
       lodging_type: (row.lodging_type ?? null) as string | null,
     }));
   } catch (error) {

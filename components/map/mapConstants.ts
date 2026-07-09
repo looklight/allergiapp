@@ -61,6 +61,12 @@ export type RestaurantMapProps = {
 /** latitudeDelta above which markers render as dots instead of pins */
 export const ZOOM_PIN_THRESHOLD = 0.2;
 
+/** Rampa di taglia dei pallini: sotto questo latitudeDelta (ma sopra
+ *  ZOOM_PIN_THRESHOLD) i pallini usano il PNG grande (14pt vs 10pt), così il
+ *  salto visivo pallino→pin alla soglia è più morbido. Solo swap di icona
+ *  statica: nessuna cattura bitmap coinvolta. */
+export const DOT_LARGE_THRESHOLD = 0.7;
+
 /** Vista di default (nessuna posizione condivisa): Italia al centro, ma scala
  *  europea per mostrare la copertura internazionale dei locali (~62% dei dati è
  *  in Europa, distribuiti su più città → cluster multipli "vivi"). Il
