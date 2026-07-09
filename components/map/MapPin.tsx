@@ -8,6 +8,9 @@
  *   re-renders on selection change.
  * - Dot vs pin is controlled by the `asDot` prop. On threshold crossing,
  *   tracksViewChanges flips true for one frame so iOS recaptures a clean bitmap.
+ * - Unsaved dots are static PNG icons (`image` prop, assets/map/dots — see
+ *   scripts/generate-map-dots.js): no view bitmap capture at all. Saved dots
+ *   (list badge) remain custom views.
  * - When `restaurant` is null at close zoom, a placeholder pin (same 32px
  *   container) is rendered so iOS can recapture the bitmap when data arrives.
  * - At dot zoom without restaurant data, coverage is computed from
@@ -18,13 +21,34 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme, useThemePreference } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { isValidCoord, coverageColor } from './mapConstants';
 import { resolveBadge, badgeGlyph } from './mapBadge';
 import { getExpandedCoverage } from '../../constants/restrictionImplications';
 import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
+
+// PNG statici dei pallini non salvati (generati da scripts/generate-map-dots.js).
+// La prop `image` usa il percorso icona nativa di react-native-maps: niente
+// cattura bitmap della view → niente spicchi/settling/flicker, e nessun costo
+// tracksViewChanges per i marker più numerosi della mappa.
+const DOT_IMAGES = {
+  light: {
+    green: require('../../assets/map/dots/dot-green-light.png'),
+    amber: require('../../assets/map/dots/dot-amber-light.png'),
+    gray: require('../../assets/map/dots/dot-gray-light.png'),
+    primary: require('../../assets/map/dots/dot-primary-light.png'),
+    muted: require('../../assets/map/dots/dot-muted-light.png'),
+  },
+  dark: {
+    green: require('../../assets/map/dots/dot-green-dark.png'),
+    amber: require('../../assets/map/dots/dot-amber-dark.png'),
+    gray: require('../../assets/map/dots/dot-gray-dark.png'),
+    primary: require('../../assets/map/dots/dot-primary-dark.png'),
+    muted: require('../../assets/map/dots/dot-muted-dark.png'),
+  },
+} as const;
 
 export type MapPinProps = {
   id: string;
@@ -63,9 +87,18 @@ export default memo(function MapPin({
   userDiets,
 }: MapPinProps) {
   const theme = useTheme();
+  const { isDark } = useThemePreference();
   // Cache di stili per-tema (non useMemo per-istanza): MapPin ha molte istanze,
   // così lo StyleSheet si crea una volta sola per tema invece che per pin.
   const styles = getStyles(theme);
+
+  // Badge salvato (emoji > cuore > bookmark). `isSaved` generalizza il vecchio
+  // `isFavorite` per visibilità/zIndex: vale per qualsiasi lista, non solo Preferiti.
+  const badge = resolveBadge(isFavorite, customSymbol);
+  const isSaved = badge !== null;
+  // Pallino semplice → icona statica: nessuna cattura bitmap, quindi niente
+  // finestra di settling Android né one-frame recapture.
+  const isImageDot = asDot && !isSaved;
   // --- tracksViewChanges: true for ONE frame after visual change, then false ---
   // asDot è incluso qui (invece di usare key change nel parent) per evitare il
   // flash del pin rosso Apple Maps che si vede durante l'unmount/remount.
@@ -94,10 +127,18 @@ export default memo(function MapPin({
   );
   useEffect(() => {
     if (Platform.OS !== 'android') return;
+    // I pallini-immagine non hanno bitmap da catturare: niente timer (con
+    // centinaia di dot i setTimeout per-marker erano un costo reale). Il flag
+    // va comunque azzerato: al flip verso view-marker (zoom-in) l'effect
+    // riparte da qui con la finestra piena.
+    if (isImageDot) {
+      setAndroidSettling(false);
+      return;
+    }
     setAndroidSettling(true);
     const timer = setTimeout(() => setAndroidSettling(false), 100);
     return () => clearTimeout(timer);
-  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
+  }, [isImageDot, asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets]);
 
   const justChanged =
     androidSettling ||
@@ -122,11 +163,6 @@ export default memo(function MapPin({
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 
   if (!isValidCoord(latitude, longitude)) return null;
-
-  // Badge salvato (emoji > cuore > bookmark). `isSaved` generalizza il vecchio
-  // `isFavorite` per visibilità/zIndex: vale per qualsiasi lista, non solo Preferiti.
-  const badge = resolveBadge(isFavorite, customSymbol);
-  const isSaved = badge !== null;
 
   // ---- Dot (far zoom) ----
   if (asDot) {
@@ -160,15 +196,39 @@ export default memo(function MapPin({
     // attenuati (restano a piena visibilit\u00e0 con il badge della lista).
     const isMuted = showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isSaved;
 
-    const dotColor = showMatchInfo
-      ? coverageColor(dotCovered, dotTotal, theme)
-      : theme.colors.primary;
-
     // Verde/giallo emergono sopra i pallini grigi/primary (non valutati).
     const dotZ = isSaved ? 3
       : dotCovered > 0 && dotTotal > 0
         ? (dotCovered >= dotTotal ? 3 : 2)
         : 0;
+
+    // Pallini non salvati: PNG statico via `image`. Variante = stessa semantica
+    // di coverageColor (muted assorbe il caso covered=0 con filtri attivi).
+    if (!isSaved) {
+      const variant = !showMatchInfo ? 'primary'
+        : isMuted ? 'muted'
+        : dotTotal === 0 || dotCovered === 0 ? 'gray'
+        : dotCovered >= dotTotal ? 'green'
+        : 'amber';
+      return (
+        <Marker
+          identifier={id}
+          coordinate={{ latitude, longitude }}
+          image={DOT_IMAGES[isDark ? 'dark' : 'light'][variant]}
+          tracksViewChanges={false}
+          onPress={handlePress}
+          // Android: anchor esplicito al CENTRO (le icone statiche hanno default
+          // bottom-center come i pin) → il canvas simmetrico del PNG tiene la
+          // coordinata esattamente sotto il pallino a ogni zoom. iOS centra di
+          // default (centerOffset 0,0).
+          {...(Platform.OS === 'android' && { zIndex: dotZ, anchor: { x: 0.5, y: 0.5 } })}
+        />
+      );
+    }
+
+    const dotColor = showMatchInfo
+      ? coverageColor(dotCovered, dotTotal, theme)
+      : theme.colors.primary;
 
     return (
       <Marker
@@ -181,14 +241,13 @@ export default memo(function MapPin({
         // cade sotto il pallino → a zoom largo l'offset in px = km → "pin in mare".
         {...(Platform.OS === 'android' && { zIndex: dotZ, anchor: { x: 0.5, y: 0.5 } })}
       >
-        <View style={[styles.dotWrap, isSaved ? styles.dotWrapSaved : styles.dotWrapUnsaved]}>
+        <View style={[styles.dotWrap, styles.dotWrapSaved]}>
           <View style={[
             styles.dotMarker,
-            isSaved && styles.dotFavorite,
-            isMuted && styles.dotMuted,
+            styles.dotFavorite,
             { backgroundColor: dotColor },
           ]} />
-          <View style={[styles.dotHeartBadge, { opacity: isSaved ? 1 : 0 }]}>
+          <View style={styles.dotHeartBadge}>
             {badge && badgeGlyph(badge, styles.dotHeartText, 6, theme)}
           </View>
         </View>
@@ -272,16 +331,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     overflow: 'visible',
   },
-  // Android: padding SIMMETRICO per i pallini senza badge. Il marker custom è
-  // ancorato al centro della propria bitmap; con padding simmetrico il pallino
-  // resta esattamente al centro → posizione precisa sulla mappa anche a forte
-  // zoom out (un'asimmetria di pochi px diventa km a scala continentale, ed è ciò
-  // che faceva "finire in mare" i pin costieri su Android). Lo spazio evita anche
-  // il clipping dell'ombra. iOS: nessun padding (Platform.select android-only) →
-  // rendering invariato, nessuna regressione.
-  dotWrapUnsaved: {
-    ...Platform.select({ android: { padding: 5 } }),
-  },
   // Android: i pallini salvati hanno il badge sporgente in alto a destra; il
   // padding asimmetrico serve a includerlo nella bitmap. Identico al comportamento
   // storico (cambiarlo è il "Pezzo B", da affrontare con anchor esplicito). iOS
@@ -308,19 +357,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-  },
-  // Pallino "recesso" per i locali a zero match: più piccolo, semitrasparente e
-  // senza ombra, così resta leggibile come "esiste un locale" ma cede la scena
-  // ai match verde/ambra. Il bordo onPrimary di dotMarker (ridotto) garantisce
-  // la separazione dallo sfondo mappa in entrambi i temi.
-  dotMuted: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    borderWidth: 1,
-    opacity: 0.7,
-    shadowOpacity: 0,
-    elevation: 1,
   },
   dotHeartBadge: {
     position: 'absolute',
