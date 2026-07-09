@@ -25,7 +25,7 @@ interface TranslateOptions {
   targetLang: string;
 }
 
-async function translateText({ text, sourceLang, targetLang }: TranslateOptions): Promise<string> {
+export async function translateText({ text, sourceLang, targetLang }: TranslateOptions): Promise<string> {
   const params = new URLSearchParams({
     q: text,
     langpair: `${sourceLang}|${targetLang}`,
