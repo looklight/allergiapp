@@ -213,6 +213,7 @@ async function getPinsInBounds(
       supported_diets: (row.supported_diets ?? []) as string[],
       cuisine_types: (row.cuisine_types ?? []) as string[],
       offers_lodging: (row.offers_lodging ?? false) as boolean,
+      average_rating: Number(row.average_rating ?? 0),
       lodging_type: (row.lodging_type ?? null) as string | null,
     }));
   } catch (error) {
