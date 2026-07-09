@@ -16,7 +16,7 @@ import type { AppTheme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
 import StarRating from '../StarRating';
 import Avatar from '../Avatar';
-import i18n from '../../utils/i18n';
+import i18n, { getAppLanguage } from '../../utils/i18n';
 import { getAuthorLabel } from '../../utils/getDisplayName';
 import { shouldOfferTranslation, translateReview } from '../../services/reviewTranslationService';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
@@ -49,20 +49,24 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
   const canNavigateToProfile =
     !!item.userId && !item.isAnonymous && !item.isInactive && item.userId !== currentProfileUid;
 
-  const [translation, setTranslation] = useState<string | null>(null);
+  // La traduzione ricorda anche la lingua target: se l'utente cambia lingua
+  // dell'app (la schermata resta montata nello Stack) va invalidata, non riusata.
+  const [translation, setTranslation] = useState<{ target: string; text: string } | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translateFailed, setTranslateFailed] = useState(false);
 
+  const readerLang = getAppLanguage();
   const canTranslate = !!item.text && !isOwnReview && shouldOfferTranslation(item.language);
-  const displayedText = showTranslation && translation ? translation : item.text;
+  const isShowingTranslation = showTranslation && translation?.target === readerLang;
+  const displayedText = isShowingTranslation && translation ? translation.text : item.text;
 
   const handleTranslatePress = async () => {
-    if (showTranslation) {
+    if (isShowingTranslation) {
       setShowTranslation(false);
       return;
     }
-    if (translation) {
+    if (translation?.target === readerLang) {
       setShowTranslation(true);
       return;
     }
@@ -70,7 +74,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
     setTranslateFailed(false);
     try {
       const translated = await translateReview(item.text!, item.language);
-      setTranslation(translated);
+      setTranslation({ target: readerLang, text: translated });
       setShowTranslation(true);
     } catch {
       setTranslateFailed(true);
@@ -159,7 +163,7 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
         <View style={styles.translateRow}>
           {isTranslating ? (
             <ActivityIndicator size="small" color={theme.colors.textSecondary} />
-          ) : showTranslation ? (
+          ) : isShowingTranslation ? (
             <>
               <Text style={styles.translateCaption}>{i18n.t('restaurants.reviews.card.translatedAuto')}</Text>
               <TouchableOpacity onPress={handleTranslatePress} activeOpacity={0.6} hitSlop={8}>

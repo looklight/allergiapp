@@ -154,7 +154,9 @@ export default function AddReviewScreen() {
           userId: user.uid,
           oldPhotos: existingReview.photos,
           userDietaryNeeds: needsSnapshot,
-          language: i18n.locale,
+          // Solo se il testo è cambiato davvero: correggere un refuso con l'app
+          // in un'altra lingua non deve rietichettare la recensione.
+          language: comment.trim() !== (existingReview.comment ?? '').trim() ? i18n.locale : undefined,
         });
       } else {
         review = await RestaurantService.addReview({
