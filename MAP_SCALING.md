@@ -5,8 +5,73 @@ completa e la strategia decisa, per riprenderla quando si aprirà il lavoro.
 Integra (non sostituisce) la sezione "SCALABILITÀ PIN — gerarchia dei limiti" in
 `TODO.md`, che resta la fonte per i task operativi.
 
-**Stato: analisi chiusa, implementazione NON iniziata.** Si resta sulla versione
-attuale dell'app finché non si decide di aprire il branch (vedi §7).
+**Stato: implementazione INIZIATA su `feature/map-scaling` (2026-07-09).**
+Leggere prima la Revisione §0, che aggiorna §3/§4/§7 alla luce dei numeri di
+luglio e delle decisioni prese con l'utente.
+
+---
+
+## 0. REVISIONE 2026-07-09 — numeri nuovi, variante grid-dots, MapLibre esclusa
+
+Il DB è passato da 453 (22/06) a **2316 ristoranti (09/07, ~5× in 17 giorni)**,
+di cui **1595 in Italia** → il trigger 2 di §2 (LIMIT 1000 sui pallini) è GIÀ
+ATTIVO a zoom paese: ~600 locali tagliati in silenzio. Il trigger 1 è stato
+tamponato il 09/07 (fetch dettagliato a 200, commit `ed15d09`, OTA `a1ec072a`).
+Milano, la città più densa, è a 85 → il cerotto 200 copre le città per ora.
+Vincolo caduto: l'utente accetta build native (niente obbligo OTA). Vincolo
+confermato ed esplicito: **si resta su mappe native Apple/Google** (scelta di
+prodotto).
+
+**Decisioni prese (che aggiornano il resto del documento):**
+
+1. **Grid-dots al posto delle bolle neutre.** L'aggregazione server (§4) resta
+   il cuore, ma per cella si disegna **un pallino**, non una bolla col numero:
+   a zoom largo un pallino-cella (griglia ≈ ingombro visivo del pallino) è
+   indistinguibile da N pallini sovrapposti → payload costante, aspetto
+   invariato. Ogni cella porta centroide **dei ristoranti** (non della griglia),
+   `count` (nel payload anche se non mostrato) e **unione** di
+   `supported_allergens`/`supported_diets`: il client colora con
+   `getExpandedCoverage` come oggi → **il colore per-utente sopravvive a ogni
+   zoom** (il dilemma "colore vs cacheability" di §4 si scioglie: l'unione è
+   user-independent e mantiene l'invariante filter-independent della pinCache).
+   Semantica sfumata ma onesta: verde = "almeno un posto qui ti copre".
+   Tap su pallino-cella = zoom-in (logica `handleClusterPress` già esistente);
+   pallini veri/salvati continuano ad aprire la scheda.
+2. **Supercluster client: si salta.** Lo step 2 di §7 conteggerebbe bolle su
+   dati troncati e verrebbe buttato all'arrivo dell'aggregazione. Dalla via
+   `image` (step 1) si va dritti alla RPC a celle.
+3. **MapLibre GL valutata ed ESCLUSA — motivo di prodotto, non tecnico.**
+   Senza vincolo OTA era la candidata best-in-class (punti come layer GPU:
+   10k+ a 60fps, niente marker/bitmap/churn, colore data-driven, cluster
+   nativi; tutta la cicatrice rn-maps sparirebbe). MA richiede il suo renderer
+   con tile provider → si perdono Apple/Google Maps come base, e la basemap
+   nativa è un vincolo di prodotto confermato. Messo a verbale il costo del
+   vincolo: **su basemap nativa il tetto è "poche centinaia di marker fluidi"
+   per chiunque** (anche Google/Apple disegnano i POI dentro il proprio motore
+   tile, privilegio che le API marker non danno) → il piano garantisce
+   scalabilità dati illimitata e il miglior rendering *possibile* sotto quel
+   vincolo, non la fluidità GL. Se il vincolo basemap un giorno cadesse,
+   MapLibre è la porta — e RPC a celle/PNG/logica client si riusano.
+4. **Watch item: `expo-maps`** (mappe native, investimento Expo, oggi acerba) —
+   rivalutare a ogni bump SDK. L'upgrade **rn-maps 1.20→1.27 resta strutturale**
+   (cura churn-crash/drift/resa su Fabric), finestra: prossimo bump SDK.
+
+**Sequenza rivista (sostituisce §7):** branch `feature/map-scaling`, dev build
+obbligatoria per testare (mai Expo Go).
+
+1. **Ponte dati (client-side, scoperta 09/07):** il client passa già `lim`
+   esplicito a `get_pins_in_bounds` e il server non cappa → basta alzare il
+   default in `restaurantService.getPinsInBounds` 1000→3000 + trim pinCache
+   4500/3000. Niente migration. OTA-abile da solo se serve subito in prod.
+2. **Pallini non salvati → PNG statici via `image` prop** (5 varianti × 2 temi,
+   script `scripts/generate-map-dots.js`): de-fragilizza la mappa attuale e
+   valida la via `image` (densità pixel, anchor, transizione image↔view al
+   cambio soglia dot/pin = i punti da testare su device).
+3. **RPC `get_map_aggregates` zoom-aware** (celle `ST_SnapToGrid` sopra soglia,
+   pin individuali sotto) + consumo in `useRestaurantGeo` (pinCache a doppia
+   identità cella/ristorante — attenzione: churn del cambio regime = il
+   crash-path iOS patchato, servono chiavi stabili e batching).
+4. **Al bump SDK:** upgrade rn-maps 1.27 + rimozione patch, sguardo a expo-maps.
 
 ---
 
