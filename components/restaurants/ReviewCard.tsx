@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -10,7 +10,7 @@ import Animated, {
   withSequence,
   runOnJS,
 } from 'react-native-reanimated';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { getRestrictionById } from '../../constants/foodRestrictions';
@@ -18,6 +18,7 @@ import StarRating from '../StarRating';
 import Avatar from '../Avatar';
 import i18n from '../../utils/i18n';
 import { getAuthorLabel } from '../../utils/getDisplayName';
+import { shouldOfferTranslation, translateReview } from '../../services/reviewTranslationService';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
 
 interface ReviewCardProps {
@@ -47,6 +48,36 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
   });
   const canNavigateToProfile =
     !!item.userId && !item.isAnonymous && !item.isInactive && item.userId !== currentProfileUid;
+
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translateFailed, setTranslateFailed] = useState(false);
+
+  const canTranslate = !!item.text && !isOwnReview && shouldOfferTranslation(item.language);
+  const displayedText = showTranslation && translation ? translation : item.text;
+
+  const handleTranslatePress = async () => {
+    if (showTranslation) {
+      setShowTranslation(false);
+      return;
+    }
+    if (translation) {
+      setShowTranslation(true);
+      return;
+    }
+    setIsTranslating(true);
+    setTranslateFailed(false);
+    try {
+      const translated = await translateReview(item.text!, item.language);
+      setTranslation(translated);
+      setShowTranslation(true);
+    } catch {
+      setTranslateFailed(true);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   const burstScale = useSharedValue(0);
   const burstOpacity = useSharedValue(0);
@@ -113,14 +144,39 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
       {/* Testo */}
       {item.text && (
         isOwnReview ? (
-          <Text style={styles.contributionText}>{item.text}</Text>
+          <Text style={styles.contributionText}>{displayedText}</Text>
         ) : (
           <GestureDetector gesture={doubleTapLike}>
             <View>
-              <Text style={styles.contributionText}>{item.text}</Text>
+              <Text style={styles.contributionText}>{displayedText}</Text>
             </View>
           </GestureDetector>
         )
+      )}
+
+      {/* Traduzione: originale + Traduci / tradotto + Mostra originale */}
+      {canTranslate && (
+        <View style={styles.translateRow}>
+          {isTranslating ? (
+            <ActivityIndicator size="small" color={theme.colors.textSecondary} />
+          ) : showTranslation ? (
+            <>
+              <Text style={styles.translateCaption}>{i18n.t('restaurants.reviews.card.translatedAuto')}</Text>
+              <TouchableOpacity onPress={handleTranslatePress} activeOpacity={0.6} hitSlop={8}>
+                <Text style={styles.translateLink}>{i18n.t('restaurants.reviews.card.showOriginal')}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity onPress={handleTranslatePress} activeOpacity={0.6} hitSlop={8}>
+                <Text style={styles.translateLink}>{i18n.t('restaurants.reviews.card.translate')}</Text>
+              </TouchableOpacity>
+              {translateFailed && (
+                <Text style={styles.translateCaption}>{i18n.t('restaurants.reviews.card.translateError')}</Text>
+              )}
+            </>
+          )}
+        </View>
       )}
 
       {/* Esigenze alimentari dell'autore */}
@@ -241,6 +297,20 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textPrimary,
     lineHeight: 20,
+  },
+  translateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  translateLink: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  translateCaption: {
+    fontSize: 12,
+    color: theme.colors.textDisabled,
   },
   likeBurst: {
     position: 'absolute',

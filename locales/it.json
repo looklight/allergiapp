@@ -407,7 +407,11 @@
       },
       "card": {
         "reportFlag": "Segnala",
-        "reportedFlag": "Segnalata"
+        "reportedFlag": "Segnalata",
+        "translate": "Traduci",
+        "showOriginal": "Mostra originale",
+        "translatedAuto": "Tradotta automaticamente",
+        "translateError": "Traduzione non disponibile"
       }
     },
     "menu": {
