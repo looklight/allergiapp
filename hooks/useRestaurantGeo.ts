@@ -360,9 +360,11 @@ export function useRestaurantGeo(params: FilterParams) {
         const sizeBefore = pinCache.current.size;
         for (const p of pins) pinCache.current.set(p.id, p);
         let trimmed = false;
-        if (pinCache.current.size > 3000) {
+        // Soglia sopra il limite fetch (3000): un singolo fetch pieno non deve
+        // mai auto-decimarsi; il trim taglia solo pin di aree precedenti.
+        if (pinCache.current.size > 4500) {
           const entries = Array.from(pinCache.current.entries());
-          pinCache.current = new Map(entries.slice(-2000));
+          pinCache.current = new Map(entries.slice(-3000));
           trimmed = true;
         }
         if (pinCache.current.size !== sizeBefore || trimmed) {
