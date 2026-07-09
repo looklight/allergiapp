@@ -236,8 +236,9 @@ export async function updateReview(params: {
   userId: string;
   oldPhotos?: ReviewPhoto[];
   userDietaryNeeds?: { allergens: string[]; diets: string[] };
+  language?: string;
 }): Promise<Review | null> {
-  const { reviewId, restaurantId, input, userId, oldPhotos, userDietaryNeeds } = params;
+  const { reviewId, restaurantId, input, userId, oldPhotos, userDietaryNeeds, language } = params;
   try {
     // Upload nuove foto, mantieni quelle remote esistenti
     const photos: ReviewPhoto[] = await Promise.all(
@@ -261,6 +262,7 @@ export async function updateReview(params: {
       p_dietary_snapshot: userDietaryNeeds?.diets ?? [],
       p_photos: photos,
       p_review_id: reviewId,
+      p_language: language ?? null,
     });
     if (error) throw error;
 

@@ -154,6 +154,7 @@ export default function AddReviewScreen() {
           userId: user.uid,
           oldPhotos: existingReview.photos,
           userDietaryNeeds: needsSnapshot,
+          language: i18n.locale,
         });
       } else {
         review = await RestaurantService.addReview({
