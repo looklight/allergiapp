@@ -34,20 +34,40 @@ import type { Restaurant } from '../../services/restaurantService';
 // La prop `image` usa il percorso icona nativa di react-native-maps: niente
 // cattura bitmap della view → niente spicchi/settling/flicker, e nessun costo
 // tracksViewChanges per i marker più numerosi della mappa.
+// Due taglie (rampa): `sm` a zoom largo, `lg` nella fascia vicino alla soglia
+// pin (DOT_LARGE_THRESHOLD) — il salto pallino→pin risulta più morbido.
 const DOT_IMAGES = {
   light: {
-    green: require('../../assets/map/dots/dot-green-light.png'),
-    amber: require('../../assets/map/dots/dot-amber-light.png'),
-    gray: require('../../assets/map/dots/dot-gray-light.png'),
-    primary: require('../../assets/map/dots/dot-primary-light.png'),
-    muted: require('../../assets/map/dots/dot-muted-light.png'),
+    sm: {
+      green: require('../../assets/map/dots/dot-green-light.png'),
+      amber: require('../../assets/map/dots/dot-amber-light.png'),
+      gray: require('../../assets/map/dots/dot-gray-light.png'),
+      primary: require('../../assets/map/dots/dot-primary-light.png'),
+      muted: require('../../assets/map/dots/dot-muted-light.png'),
+    },
+    lg: {
+      green: require('../../assets/map/dots/dot-green-light-lg.png'),
+      amber: require('../../assets/map/dots/dot-amber-light-lg.png'),
+      gray: require('../../assets/map/dots/dot-gray-light-lg.png'),
+      primary: require('../../assets/map/dots/dot-primary-light-lg.png'),
+      muted: require('../../assets/map/dots/dot-muted-light-lg.png'),
+    },
   },
   dark: {
-    green: require('../../assets/map/dots/dot-green-dark.png'),
-    amber: require('../../assets/map/dots/dot-amber-dark.png'),
-    gray: require('../../assets/map/dots/dot-gray-dark.png'),
-    primary: require('../../assets/map/dots/dot-primary-dark.png'),
-    muted: require('../../assets/map/dots/dot-muted-dark.png'),
+    sm: {
+      green: require('../../assets/map/dots/dot-green-dark.png'),
+      amber: require('../../assets/map/dots/dot-amber-dark.png'),
+      gray: require('../../assets/map/dots/dot-gray-dark.png'),
+      primary: require('../../assets/map/dots/dot-primary-dark.png'),
+      muted: require('../../assets/map/dots/dot-muted-dark.png'),
+    },
+    lg: {
+      green: require('../../assets/map/dots/dot-green-dark-lg.png'),
+      amber: require('../../assets/map/dots/dot-amber-dark-lg.png'),
+      gray: require('../../assets/map/dots/dot-gray-dark-lg.png'),
+      primary: require('../../assets/map/dots/dot-primary-dark-lg.png'),
+      muted: require('../../assets/map/dots/dot-muted-dark-lg.png'),
+    },
   },
 } as const;
 
@@ -74,6 +94,8 @@ export type MapPinProps = {
   pinRating?: number;
   /** offers_lodging dal payload pin — icona corretta sui pin senza dettaglio */
   pinOffersLodging?: boolean;
+  /** Taglia del pallino PNG (rampa per fascia zoom, v. DOT_LARGE_THRESHOLD) */
+  dotSize?: 'sm' | 'lg';
 };
 
 /** Match client-side esigenze↔coperture del locale, implication-aware: stessa
@@ -114,6 +136,7 @@ export default memo(function MapPin({
   userDiets,
   pinRating,
   pinOffersLodging,
+  dotSize = 'sm',
 }: MapPinProps) {
   const theme = useTheme();
   const { isDark } = useThemePreference();
@@ -245,7 +268,7 @@ export default memo(function MapPin({
         <Marker
           identifier={id}
           coordinate={{ latitude, longitude }}
-          image={DOT_IMAGES[isDark ? 'dark' : 'light'][variant]}
+          image={DOT_IMAGES[isDark ? 'dark' : 'light'][dotSize][variant]}
           tracksViewChanges={false}
           onPress={handlePress}
           // Android: anchor esplicito al CENTRO (le icone statiche hanno default

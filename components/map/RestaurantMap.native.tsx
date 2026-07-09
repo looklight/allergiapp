@@ -34,6 +34,7 @@ import { useMapClusters, type MapCluster } from './useMapClusters';
 import {
   isValidCoord,
   ZOOM_PIN_THRESHOLD,
+  DOT_LARGE_THRESHOLD,
   DEFAULT_REGION,
   FIT_EDGE_PADDING,
   MIN_FIT_DELTA,
@@ -210,6 +211,12 @@ export default function RestaurantMap({
   const [isDotZoom, setIsDotZoom] = useState(
     DEFAULT_REGION.latitudeDelta > ZOOM_PIN_THRESHOLD,
   );
+  // Rampa di taglia pallini (true = zoom largo, PNG piccolo): stesso pattern
+  // isteresi di isDotZoom, banda più ampia (±0.1) perché a questi delta il
+  // pinch attraversa la soglia più in fretta.
+  const [isFarDotZoom, setIsFarDotZoom] = useState(
+    DEFAULT_REGION.latitudeDelta > DOT_LARGE_THRESHOLD,
+  );
   // Region in stato (non solo ref) per ricalcolare i cluster al region-change.
   // Aggiornata in handleRegionChange (= onRegionChangeComplete, fine gesto):
   // niente storm di re-render durante il pan, un solo update a gesto concluso.
@@ -342,6 +349,11 @@ export default function RestaurantMap({
           if (prev && targetRegion.latitudeDelta < ZOOM_PIN_THRESHOLD - 0.05) return false;
           return prev;
         });
+        setIsFarDotZoom(prev => {
+          if (!prev && targetRegion.latitudeDelta > DOT_LARGE_THRESHOLD + 0.1) return true;
+          if (prev && targetRegion.latitudeDelta < DOT_LARGE_THRESHOLD - 0.1) return false;
+          return prev;
+        });
         if (CLUSTERING_ENABLED) setClusterRegion(targetRegion);
         onRegionChangeCompleteRef.current?.(targetRegion);
       }, 650);
@@ -402,6 +414,11 @@ export default function RestaurantMap({
     setIsDotZoom(prev => {
       if (!prev && region.latitudeDelta > ZOOM_PIN_THRESHOLD + 0.05) return true;
       if (prev && region.latitudeDelta < ZOOM_PIN_THRESHOLD - 0.05) return false;
+      return prev;
+    });
+    setIsFarDotZoom(prev => {
+      if (!prev && region.latitudeDelta > DOT_LARGE_THRESHOLD + 0.1) return true;
+      if (prev && region.latitudeDelta < DOT_LARGE_THRESHOLD - 0.1) return false;
       return prev;
     });
   }, []);
@@ -500,6 +517,7 @@ export default function RestaurantMap({
           userDiets={userDiets}
           pinRating={p.average_rating}
           pinOffersLodging={p.offers_lodging}
+          dotSize={isFarDotZoom ? 'sm' : 'lg'}
         />,
       );
     }
@@ -569,7 +587,7 @@ export default function RestaurantMap({
 
     return elements;
     // selectedId serve solo al ramo Android dello skip (su iOS skip è costante '').
-  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
+  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   // --- Cluster elements (regime dot / zoom largo) -----------------------------
   // Salvati/preferiti SEMPRE individuali e sopra le bolle (esclusi dal cluster):

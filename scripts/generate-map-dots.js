@@ -4,16 +4,20 @@
  * via prop `image` di react-native-maps — il percorso di rendering che NON
  * passa dalla cattura bitmap della view (niente spicchi/settling/flicker).
  *
- * Replica la geometria dei vecchi pallini-view di MapPin (dotMarker/dotMuted):
- *  - normale: 10pt Ø incluso bordo bianco 1.5pt, ombra soft (parità iOS)
- *  - muted:    7pt Ø incluso bordo bianco 1pt, alpha 0.7, senza ombra
- * Canvas 18pt simmetrico (anchor centro = coordinate precise, tap target ~18pt).
+ * Replica la geometria dei vecchi pallini-view di MapPin (dotMarker/dotMuted),
+ * in DUE taglie (rampa: pallini più grandi nella fascia zoom vicina alla soglia
+ * pin, così il salto pallino→pin è più morbido):
+ *  - sm  normale: 10pt Ø incluso bordo 1.5pt / muted 7pt Ø bordo 1pt — canvas 18pt
+ *  - lg  normale: 14pt Ø incluso bordo 2pt   / muted 10pt Ø bordo 1.25pt — canvas 22pt
+ * Muted: alpha 0.7, senza ombra. Canvas simmetrico (anchor centro = coordinate
+ * precise; il canvas è anche il tap target).
  *
  * Colori replicati da constants/theme.ts (light/dark divergono su green/gray/
  * primary): aggiornare QUI e rilanciare lo script se cambiano i token tema.
  *
  * Uso: node scripts/generate-map-dots.js
- * Output: 5 varianti × 2 temi × 3 scale (@1x/@2x/@3x) = 30 file.
+ * Output: 5 varianti × 2 temi × 2 taglie × 3 scale = 60 file
+ * (taglia sm senza suffisso, lg con suffisso `-lg`).
  * Nessuna dipendenza: rasterizzatore supersampled + encoder PNG a mano.
  */
 const zlib = require('zlib');
@@ -22,7 +26,6 @@ const path = require('path');
 
 const OUT_DIR = path.join(__dirname, '..', 'assets', 'map', 'dots');
 
-const CANVAS_PT = 18;
 const SCALES = [1, 2, 3];
 const SUPERSAMPLE = 8; // 8×8 subsample per pixel (antialiasing)
 
@@ -48,9 +51,19 @@ const THEMES = {
 };
 
 // geometria in pt: outerR include il bordo (come width/borderWidth delle view)
-const GEOMETRY = {
-  normal: { outerR: 5, borderW: 1.5, alpha: 1, shadow: true },
-  muted: { outerR: 3.5, borderW: 1, alpha: 0.7, shadow: false },
+const SIZES = {
+  sm: {
+    canvas: 18,
+    suffix: '',
+    normal: { outerR: 5, borderW: 1.5, alpha: 1, shadow: true },
+    muted: { outerR: 3.5, borderW: 1, alpha: 0.7, shadow: false },
+  },
+  lg: {
+    canvas: 22,
+    suffix: '-lg',
+    normal: { outerR: 7, borderW: 2, alpha: 1, shadow: true },
+    muted: { outerR: 5, borderW: 1.25, alpha: 0.7, shadow: false },
+  },
 };
 
 function hexToRgb(hex) {
@@ -166,16 +179,18 @@ function encodePng(px, sizePx) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 fs.mkdirSync(OUT_DIR, { recursive: true });
 let count = 0;
-for (const [themeName, variants] of Object.entries(THEMES)) {
-  for (const [variant, fillHex] of Object.entries(variants)) {
-    const geo = variant === 'muted' ? GEOMETRY.muted : GEOMETRY.normal;
-    for (const scale of SCALES) {
-      const sizePx = CANVAS_PT * scale;
-      const png = encodePng(renderDot(sizePx, scale, fillHex, geo), sizePx);
-      const suffix = scale === 1 ? '' : `@${scale}x`;
-      const file = path.join(OUT_DIR, `dot-${variant}-${themeName}${suffix}.png`);
-      fs.writeFileSync(file, png);
-      count++;
+for (const [, size] of Object.entries(SIZES)) {
+  for (const [themeName, variants] of Object.entries(THEMES)) {
+    for (const [variant, fillHex] of Object.entries(variants)) {
+      const geo = variant === 'muted' ? size.muted : size.normal;
+      for (const scale of SCALES) {
+        const sizePx = size.canvas * scale;
+        const png = encodePng(renderDot(sizePx, scale, fillHex, geo), sizePx);
+        const scaleSuffix = scale === 1 ? '' : `@${scale}x`;
+        const file = path.join(OUT_DIR, `dot-${variant}-${themeName}${size.suffix}${scaleSuffix}.png`);
+        fs.writeFileSync(file, png);
+        count++;
+      }
     }
   }
 }
