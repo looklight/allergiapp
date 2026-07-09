@@ -34,6 +34,8 @@ export interface UnifiedReview {
   dietarySnapshot?: string[];
   likesCount: number;
   likedByMe: boolean;
+  /** Lingua in cui è stata scritta la recensione (reviews.language); sorgente per la traduzione. */
+  language?: string | null;
 }
 
 export type { ReviewSortOrder } from '../services/restaurant.types';
@@ -201,6 +203,7 @@ export function useRestaurantDetail(
       dietarySnapshot: r.dietary_snapshot,
       likesCount: r.likes_count ?? 0,
       likedByMe: r.liked_by_me ?? false,
+      language: r.language ?? null,
     })),
   [rawReviews]);
 
