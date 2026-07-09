@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Location from 'expo-location';
-import { RestaurantService, type Restaurant, type RestaurantPin } from '../services/restaurantService';
+import { RestaurantService, QUERY_LIMITS, type Restaurant, type RestaurantPin } from '../services/restaurantService';
 import { haversineKm } from '../utils/geo';
 import { DEFAULT_REGION } from '../components/map/mapConstants';
 
@@ -170,10 +170,10 @@ export function useRestaurantGeo(params: FilterParams) {
         ? await RestaurantService.getRestaurantsForMyNeeds(
             center.latitude, center.longitude,
             filterAllergensRef.current, filterDietsRef.current, radiusKm,
-            undefined, showLodgingRef.current,
+            QUERY_LIMITS.NEARBY_MAX, showLodgingRef.current,
           )
         : await RestaurantService.getNearbyRestaurants(
-            center.latitude, center.longitude, radiusKm, undefined, showLodgingRef.current,
+            center.latitude, center.longitude, radiusKm, QUERY_LIMITS.NEARBY_MAX, showLodgingRef.current,
           );
 
       if (reloadEpoch.current !== epoch) return;
@@ -237,10 +237,10 @@ export function useRestaurantGeo(params: FilterParams) {
         ? await RestaurantService.getRestaurantsForMyNeeds(
             fetchCenter.latitude, fetchCenter.longitude,
             filterAllergensRef.current, filterDietsRef.current, 50,
-            undefined, useShowLodging,
+            QUERY_LIMITS.NEARBY_MAX, useShowLodging,
           )
         : await RestaurantService.getNearbyRestaurants(
-            fetchCenter.latitude, fetchCenter.longitude, 50, undefined, useShowLodging,
+            fetchCenter.latitude, fetchCenter.longitude, 50, QUERY_LIMITS.NEARBY_MAX, useShowLodging,
           );
       if (reloadEpoch.current !== epoch) return;
       restaurantCache.current.clear();
