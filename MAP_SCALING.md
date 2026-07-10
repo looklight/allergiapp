@@ -73,6 +73,20 @@ obbligatoria per testare (mai Expo Go).
    crash-path iOS patchato, servono chiavi stabili e batching).
 4. **Al bump SDK:** upgrade rn-maps 1.27 + rimozione patch, sguardo a expo-maps.
 
+**Aggiornamento 2026-07-10 — regime pin gated sul viewport (fatto, su main):**
+il flip pallini→pin alla soglia era globale: TUTTA la pinCache (fino a
+~3000-4500 marker, anche fuori schermo) diventava pin completi insieme →
+migliaia di catture bitmap + settling Android nello stesso frame → freeze di
+secondi sui device lenti, osservato sul campo. Ora diventano pin solo i marker
+nel viewport allargato (±delta×1.5, tetto `MAX_FULL_PINS=300` sui più vicini
+al centro): costo proporzionale allo schermo, mai al dataset — regge anche a
+50k ristoranti. Nessun unmount (flip via tracksViewChanges nello stesso
+Marker, invariante churn-crash iOS). Questo è il pezzo "zoom stretto"
+dell'architettura finale; le celle (punto 3 sopra) restano il pezzo "zoom
+largo". Insieme: skip della RPC pin su zoom-in dentro un'area già fetchata
+per intero (risposta sotto cap), pallini muted alpha 0.5, pin zero-match a
+opacità 0.55 + zIndex compatibili>grigi su entrambe le piattaforme.
+
 **Note per lo step celle (decisioni 2026-07-09, secondo giro):**
 - **Rivelazione progressiva per prominenza** (pin "importanti" diventano pin a
   zoom più largo, alla Google) valutata e RIMANDATA allo step celle: il voto non
