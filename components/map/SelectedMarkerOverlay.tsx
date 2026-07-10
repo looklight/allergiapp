@@ -15,35 +15,47 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
-import { isValidCoord, coverageColor } from './mapConstants';
+import { isValidCoord, coverageColor, clientCoverage } from './mapConstants';
 import { resolveBadge, badgeGlyph } from './mapBadge';
 import { venueIconName } from '../../constants/restaurantCategories';
-import type { Restaurant } from '../../services/restaurantService';
+import type { Restaurant, RestaurantPin } from '../../services/restaurantService';
 
 type Props = {
   selectedId: string | null | undefined;
   restaurantById: Map<string, Restaurant>;
+  /** Payload pin del selezionato — fallback quando il dettaglio Restaurant non
+   *  è in cache (tipico dei zero-match sotto filtro: la RPC for-my-needs non li
+   *  ritorna). Senza fallback il pin evidenziato NON compariva affatto. */
+  selectedPin?: RestaurantPin | null;
   favoriteIds: Set<string>;
   customSymbols?: Map<string, string | null>;
   showMatchInfo?: boolean;
+  /** Esigenze attive — per il colore client-side nel ramo fallback (stessa
+   *  logica dei MapPin, Opzione B). */
+  userAllergens?: string[];
+  userDiets?: string[];
   onPress?: (id: string) => void;
 };
 
 export default memo(function SelectedMarkerOverlay({
   selectedId,
   restaurantById,
+  selectedPin,
   favoriteIds,
   customSymbols,
   showMatchInfo,
+  userAllergens,
+  userDiets,
   onPress,
 }: Props) {
   if (!selectedId) return null;
 
   const restaurant = restaurantById.get(selectedId);
-  if (!restaurant?.location) return null;
+  const pin = selectedPin && selectedPin.id === selectedId ? selectedPin : undefined;
 
-  const { latitude, longitude } = restaurant.location;
-  if (!isValidCoord(latitude, longitude)) return null;
+  const latitude = restaurant?.location?.latitude ?? pin?.latitude;
+  const longitude = restaurant?.location?.longitude ?? pin?.longitude;
+  if (latitude == null || longitude == null || !isValidCoord(latitude, longitude)) return null;
 
   return (
     <SelectedPin
@@ -51,9 +63,12 @@ export default memo(function SelectedMarkerOverlay({
       latitude={latitude}
       longitude={longitude}
       restaurant={restaurant}
+      pin={pin}
       isFavorite={favoriteIds.has(selectedId)}
       customSymbol={customSymbols?.get(selectedId)}
       showMatchInfo={showMatchInfo}
+      userAllergens={userAllergens}
+      userDiets={userDiets}
       onPress={onPress}
     />
   );
@@ -64,10 +79,13 @@ type SelectedPinProps = {
   id: string;
   latitude: number;
   longitude: number;
-  restaurant: Restaurant;
+  restaurant?: Restaurant;
+  pin?: RestaurantPin;
   isFavorite: boolean;
   customSymbol?: string | null;
   showMatchInfo?: boolean;
+  userAllergens?: string[];
+  userDiets?: string[];
   onPress?: (id: string) => void;
 };
 
@@ -76,9 +94,12 @@ const SelectedPin = memo(function SelectedPin({
   latitude,
   longitude,
   restaurant,
+  pin,
   isFavorite,
   customSymbol,
   showMatchInfo,
+  userAllergens,
+  userDiets,
   onPress,
 }: SelectedPinProps) {
   const theme = useTheme();
@@ -89,10 +110,21 @@ const SelectedPin = memo(function SelectedPin({
   // rendendo il pin invisibile dopo un cambio di isFavorite.
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 
-  const rating = restaurant.average_rating ?? 0;
+  // Dettaglio quando c'è, altrimenti payload pin (voto mig 073 + match
+  // client-side): il pin selezionato nasce completo come i MapPin.
+  const rating = restaurant ? (restaurant.average_rating ?? 0) : (pin?.average_rating ?? 0);
   const hasRating = rating > 0;
-  const coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
-  const filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+  let coveredTotal = 0;
+  let filtersTotal = 0;
+  if (showMatchInfo) {
+    if (restaurant) {
+      coveredTotal = (restaurant.covered_allergen_count ?? 0) + (restaurant.covered_dietary_count ?? 0);
+      filtersTotal = (restaurant.total_allergen_filters ?? 0) + (restaurant.total_dietary_filters ?? 0);
+    } else {
+      ({ covered: coveredTotal, total: filtersTotal } = clientCoverage(pin?.supported_allergens, pin?.supported_diets, userAllergens, userDiets));
+    }
+  }
+  const offersLodging = restaurant ? restaurant.offers_lodging : pin?.offers_lodging;
 
   const markerColor = showMatchInfo
     ? coverageColor(coveredTotal, filtersTotal, theme)
@@ -133,7 +165,7 @@ const SelectedPin = memo(function SelectedPin({
               {rating.toFixed(1)}
             </RNText>
           ) : (
-            <MaterialCommunityIcons name={venueIconName(restaurant.offers_lodging)} size={13} color={theme.colors.onPrimary} />
+            <MaterialCommunityIcons name={venueIconName(offersLodging)} size={13} color={theme.colors.onPrimary} />
           )}
         </View>
         <View style={styles.markerArrow}>

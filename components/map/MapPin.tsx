@@ -24,9 +24,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 import { useTheme, useThemePreference } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
-import { isValidCoord, coverageColor } from './mapConstants';
+import { isValidCoord, coverageColor, clientCoverage } from './mapConstants';
 import { resolveBadge, badgeGlyph } from './mapBadge';
-import { getExpandedCoverage } from '../../constants/restrictionImplications';
 import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
 
@@ -97,28 +96,6 @@ export type MapPinProps = {
   /** Taglia del pallino PNG (rampa per fascia zoom, v. DOT_LARGE_THRESHOLD) */
   dotSize?: 'sm' | 'lg';
 };
-
-/** Match client-side esigenze↔coperture del locale, implication-aware: stessa
- *  semantica della proiezione server (CTE implications). Usato da dot e pin
- *  quando il dettaglio non è (ancora) in cache. */
-function clientCoverage(
-  supportedAllergens: string[] | undefined,
-  supportedDiets: string[] | undefined,
-  userAllergens: string[] | undefined,
-  userDiets: string[] | undefined,
-): { covered: number; total: number } {
-  const total = (userAllergens?.length ?? 0) + (userDiets?.length ?? 0);
-  let covered = 0;
-  if (total > 0 && (supportedAllergens?.length || supportedDiets?.length)) {
-    const expanded = getExpandedCoverage([
-      ...(supportedAllergens ?? []),
-      ...(supportedDiets ?? []),
-    ]);
-    for (const a of (userAllergens ?? [])) if (expanded.has(a)) covered++;
-    for (const d of (userDiets ?? [])) if (expanded.has(d)) covered++;
-  }
-  return { covered, total };
-}
 
 export default memo(function MapPin({
   id,

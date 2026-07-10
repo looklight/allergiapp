@@ -783,9 +783,12 @@ export default function RestaurantMap({
         <SelectedMarkerOverlay
           selectedId={selectedId}
           restaurantById={restaurantById}
+          selectedPin={selectedId ? pinById.get(selectedId) ?? null : null}
           favoriteIds={favIds}
           customSymbols={customSymbols}
           showMatchInfo={showMatchInfo}
+          userAllergens={userAllergens}
+          userDiets={userDiets}
           onPress={onRestaurantPress}
         />
       )}

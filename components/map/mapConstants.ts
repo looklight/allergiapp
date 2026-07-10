@@ -1,5 +1,6 @@
 import type { AppTheme } from '../../constants/theme';
 import type { Restaurant, RestaurantPin } from '../../services/restaurantService';
+import { getExpandedCoverage } from '../../constants/restrictionImplications';
 
 // ---------------------------------------------------------------------------
 // Region type
@@ -143,4 +144,26 @@ export function coverageColor(covered: number, total: number, theme: AppTheme): 
   if (total === 0 || covered === 0) return theme.colors.textDisabled;
   if (covered >= total) return theme.colors.success;
   return theme.colors.coverageMedium;
+}
+
+/** Match client-side esigenze↔coperture del locale, implication-aware: stessa
+ *  semantica della proiezione server (CTE implications). Fallback per pin e
+ *  overlay selezione quando il dettaglio Restaurant non è (ancora) in cache. */
+export function clientCoverage(
+  supportedAllergens: string[] | undefined,
+  supportedDiets: string[] | undefined,
+  userAllergens: string[] | undefined,
+  userDiets: string[] | undefined,
+): { covered: number; total: number } {
+  const total = (userAllergens?.length ?? 0) + (userDiets?.length ?? 0);
+  let covered = 0;
+  if (total > 0 && (supportedAllergens?.length || supportedDiets?.length)) {
+    const expanded = getExpandedCoverage([
+      ...(supportedAllergens ?? []),
+      ...(supportedDiets ?? []),
+    ]);
+    for (const a of (userAllergens ?? [])) if (expanded.has(a)) covered++;
+    for (const d of (userDiets ?? [])) if (expanded.has(d)) covered++;
+  }
+  return { covered, total };
 }
