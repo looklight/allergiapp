@@ -420,6 +420,13 @@ export function useRestaurantGeo(params: FilterParams) {
    *  Usato al focus della schermata per avere subito i pallini visibili. */
   const refreshPinsAroundUser = useCallback(() => {
     if (!userLocation) return;
+    // Il focus è l'àncora di freschezza dei pin: un ristorante aggiunto durante
+    // la sessione (dall'utente stesso, tornando qui dalla schermata di
+    // inserimento) deve comparire. Quindi la garanzia di completezza decade:
+    // senza questo, lo skip su containment salterebbe il refetch e il locale
+    // nuovo resterebbe invisibile fino a un pan fuori area. La dedup su
+    // lastPinFetchRef resta attiva → stesso numero di RPC al focus di prima.
+    completePinBoundsRef.current = null;
     // Area ampia (±0.5° ≈ 50km) per coprire la vista iniziale
     loadPinsForViewport({
       latitude: userLocation.latitude,
