@@ -35,6 +35,12 @@ const AUTO_FETCH_DEBOUNCE = 800;
 const CACHE_MAX_SIZE = 1000;
 const OVERLAP_MARGIN = 0.7; // 30% overlap: fetch solo se centro fuori dal 70% del raggio
 const MAX_FETCHED_AREAS = 50; // Limita la crescita di fetchedAreas
+/** Cap del fetch pin — allineato al default `limit` di getPinsInBounds (ponte
+ *  dati MAP_SCALING.md §0). Serve al client per capire se una risposta era
+ *  troncata: solo le risposte NON a cap autorizzano lo skip su zoom-in. */
+const PIN_FETCH_CAP = 3000;
+
+type PinBounds = { minLat: number; minLng: number; maxLat: number; maxLng: number };
 
 export function useRestaurantGeo(params: FilterParams) {
   const { forMyNeeds, filterAllergens, filterDiets, showLodging, getSheetFraction } = params;
@@ -87,6 +93,11 @@ export function useRestaurantGeo(params: FilterParams) {
    *  deduplicare gli onRegionChangeComplete ripetuti di Android (che emette molti
    *  eventi per region quasi identiche → altrimenti una RPC per ognuno). */
   const lastPinFetchRef = useRef<MapRegion | null>(null);
+  /** Bounds dell'ultimo fetch pin riuscito e NON a cap: dentro quest'area la
+   *  pinCache è completa, quindi zoomare/pannare al suo interno non richiede
+   *  RPC (skip). Invalidato quando la cache viene trimmata o il SET cambia
+   *  (modalità alloggi). null = nessuna garanzia di completezza. */
+  const completePinBoundsRef = useRef<PinBounds | null>(null);
   /** Centro mappa corrente — aggiornato ad ogni region change */
   const lastMapCenterRef = useRef<LatLng | null>(null);
 
@@ -338,11 +349,8 @@ export function useRestaurantGeo(params: FilterParams) {
         if (moved < 0.25 && zoomRatio > 0.8 && zoomRatio < 1.25) return;
       }
     }
-    lastPinFetchRef.current = region;
-
-    // Epoch locale: se arriva una risposta più vecchia di un fetch successivo, viene scartata.
-    // Fondamentale durante pan veloce dove più richieste sono in volo contemporaneamente.
-    const epoch = ++pinFetchEpoch.current;
+    // Aggiornata anche quando lo skip sotto salta la RPC: è "dov'è la mappa ora",
+    // e il reload del toggle alloggi deve ripartire dal viewport corrente.
     lastRegionRef.current = region;
 
     const latDelta = region.latitudeDelta;
@@ -353,10 +361,37 @@ export function useRestaurantGeo(params: FilterParams) {
     const minLng = Math.max(-180, region.longitude - lngDelta / 2 - margin);
     const maxLng = Math.min(180, region.longitude + lngDelta / 2 + margin);
 
-    RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng, undefined, showLodgingRef.current)
+    // Skip su zoom-in/pan interno: se i bounds richiesti sono contenuti in
+    // un'area già fetchata per intero (risposta sotto il cap → nessun pin
+    // troncato), la pinCache ha già tutto e la RPC sarebbe identica ma più
+    // piccola. È il gesto più frequente sulla mappa: zoom dentro l'area appena
+    // vista. NON aggiorniamo lastPinFetchRef: la dedup resta ancorata
+    // all'ultimo fetch reale.
+    if (!force) {
+      const cb = completePinBoundsRef.current;
+      if (cb && minLat >= cb.minLat && maxLat <= cb.maxLat && minLng >= cb.minLng && maxLng <= cb.maxLng) {
+        return;
+      }
+    }
+    lastPinFetchRef.current = region;
+
+    // Epoch locale: se arriva una risposta più vecchia di un fetch successivo, viene scartata.
+    // Fondamentale durante pan veloce dove più richieste sono in volo contemporaneamente.
+    const epoch = ++pinFetchEpoch.current;
+
+    RestaurantService.getPinsInBounds(minLat, minLng, maxLat, maxLng, PIN_FETCH_CAP, showLodgingRef.current)
       .then(pins => {
         if (pinFetchEpoch.current !== epoch) return; // risposta stale, ignora
         setIsOffline(false); // risposta ricevuta → rete ok
+        // Risposta sotto il cap e non vuota → quest'area è in cache PER INTERO:
+        // i prossimi viewport contenuti qui dentro possono saltare la RPC.
+        // Il caso 0 pin è escluso: getPinsInBounds ritorna [] anche su errori
+        // non di rete, e cacheare "vuoto" su un errore renderebbe l'area cieca.
+        // Se NON qualifica, i bounds precedenti restano validi (la cache solo
+        // cresce; a invalidarli sono il trim sotto e il cambio modalità alloggi).
+        if (pins.length > 0 && pins.length < PIN_FETCH_CAP) {
+          completePinBoundsRef.current = { minLat, minLng, maxLat, maxLng };
+        }
         const sizeBefore = pinCache.current.size;
         for (const p of pins) pinCache.current.set(p.id, p);
         let trimmed = false;
@@ -366,6 +401,8 @@ export function useRestaurantGeo(params: FilterParams) {
           const entries = Array.from(pinCache.current.entries());
           pinCache.current = new Map(entries.slice(-3000));
           trimmed = true;
+          // Il trim può aver buttato pin dell'area "completa": la garanzia decade.
+          completePinBoundsRef.current = null;
         }
         if (pinCache.current.size !== sizeBefore || trimmed) {
           setViewportPins(Array.from(pinCache.current.values()));
@@ -402,6 +439,7 @@ export function useRestaurantGeo(params: FilterParams) {
     pinCache.current.clear();
     setViewportPins([]);
     lastPinFetchRef.current = null; // il SET di pin cambia → forza un nuovo fetch
+    completePinBoundsRef.current = null; // la completezza valeva per il SET vecchio
     const region = lastRegionRef.current
       ?? (userLocation ? { ...userLocation, latitudeDelta: 1.0, longitudeDelta: 1.0 } : null)
       ?? { ...DEFAULT_REGION };
