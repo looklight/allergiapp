@@ -73,6 +73,22 @@ obbligatoria per testare (mai Expo Go).
    crash-path iOS patchato, servono chiavi stabili e batching).
 4. **Al bump SDK:** upgrade rn-maps 1.27 + rimozione patch, sguardo a expo-maps.
 
+**⚠️ Aggiornamento 2026-07-10 sera — il "ponte 3000" NON è mai stato attivo:**
+verificato con curl sulla RPC di produzione: **PostgREST tronca OGNI risposta
+a `max-rows` = 1000** (default Supabase), qualunque `lim` chieda il client —
+`lim=3000` → 1000 righe. Il punto 1 qui sopra alzava il limite richiesto ma
+il tetto vero è rimasto 1000. Rimedio config (non migration): alzare Max Rows
+da Dashboard Supabase → Settings → API. Il client ora usa `PIN_RESPONSE_CAP
+= 1000` (useRestaurantGeo) come soglia di troncamento: aggiornarlo se
+max-rows viene alzato. Trovati e fixati lo stesso giorno (dev build, sessione
+di debug con telemetria [MAPDIAG]): race all'avvio che scartava il fetch-base
+(epoch vs GPS veloce → pinCache ridotta al solo viewport → pin che sparivano
+col filtro, perché fuori dal box vivevano solo nella lista dettagliata
+filtro-dipendente), colore pin stale al cambio esigenze (needsOverride +
+restKey), overlay selezione assente senza dettaglio in cache (fallback
+payload pin), muted 0.5 invisibile su sfondo chiaro (→0.6), guardia patch
+rn-maps su image nil (LogBox "(null)" alla transizione pallino↔pin).
+
 **Aggiornamento 2026-07-10 — regime pin gated sul viewport (fatto, su main):**
 il flip pallini→pin alla soglia era globale: TUTTA la pinCache (fino a
 ~3000-4500 marker, anche fuori schermo) diventava pin completi insieme →
