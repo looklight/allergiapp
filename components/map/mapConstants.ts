@@ -67,6 +67,18 @@ export const ZOOM_PIN_THRESHOLD = 0.2;
  *  statica: nessuna cattura bitmap coinvolta. */
 export const DOT_LARGE_THRESHOLD = 0.7;
 
+/** Mezzo-span del viewport allargato in multipli del delta regione: i pin
+ *  entro centro ± delta×1.5 contano come "in viewport" (mezzo schermo visibile
+ *  + uno schermo intero di margine per lato). Il margine fa sì che il flip
+ *  pallino→pin avvenga fuori schermo durante il pan, non sotto gli occhi. */
+export const PIN_VIEWPORT_MARGIN = 1.5;
+
+/** Tetto di pin completi renderizzabili insieme (regime pin). I pin completi
+ *  sono view-marker con cattura bitmap: il costo dev'essere proporzionale allo
+ *  schermo, mai al dataset. In aree oltre il tetto diventano pin i più vicini
+ *  al centro; gli altri restano pallini finché non si zooma ancora. */
+export const MAX_FULL_PINS = 300;
+
 /** Vista di default (nessuna posizione condivisa): Italia al centro, ma scala
  *  europea per mostrare la copertura internazionale dei locali (~62% dei dati è
  *  in Europa, distribuiti su più città → cluster multipli "vivi"). Il
@@ -93,6 +105,36 @@ export const MIN_FIT_DELTA = 0.05;
 
 export function isValidCoord(lat: number, lng: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng);
+}
+
+/** True se la coordinata cade nel viewport allargato (v. PIN_VIEWPORT_MARGIN). */
+export function withinPinViewport(vp: Region, lat: number, lng: number): boolean {
+  return (
+    Math.abs(lat - vp.latitude) <= vp.latitudeDelta * PIN_VIEWPORT_MARGIN &&
+    Math.abs(lng - vp.longitude) <= vp.longitudeDelta * PIN_VIEWPORT_MARGIN
+  );
+}
+
+/** Prossimo valore dello stato pinViewport (la regione che delimita quali
+ *  marker diventano pin completi). null nel regime pallini: lì il viewport non
+ *  serve e lo stato non deve aggiornarsi a ogni pan (niente re-render inutili
+ *  a zoom largo). Nel regime pin, ritorna `prev` per micro-spostamenti sotto
+ *  1/8 del delta: l'insieme dei pin nel viewport allargato non cambia in modo
+ *  significativo e markerElements non va ricalcolato. */
+export function nextPinViewport(prev: Region | null, region: Region): Region | null {
+  // +0.05 = stessa banda d'isteresi di isDotZoom: dentro la banda il regime è
+  // ancora (o già) pallini, il viewport tornerà utile appena sotto.
+  if (region.latitudeDelta > ZOOM_PIN_THRESHOLD + 0.05) return null;
+  if (prev) {
+    const grid = prev.latitudeDelta / 8;
+    const zoomRatio = region.latitudeDelta / Math.max(prev.latitudeDelta, 1e-9);
+    if (
+      Math.abs(region.latitude - prev.latitude) < grid &&
+      Math.abs(region.longitude - prev.longitude) < grid &&
+      zoomRatio > 0.9 && zoomRatio < 1.1
+    ) return prev;
+  }
+  return region;
 }
 
 /** Coverage color for the match badge on pins/dots. Pure: il tema viene passato

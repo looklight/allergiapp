@@ -21,6 +21,11 @@
  * 5. Clustering = Strada B: supercluster alimentato dai pin generici (allPins
  *    meno salvati/preferiti, che restano sempre individuali e sopra le bolle).
  *    Solo nel regime dot (isDotZoom); a zoom stretto il path è invariato.
+ * 6. Regime pin gated sul viewport (pinViewport/fullPinIds): diventano pin
+ *    completi solo i marker nel viewport allargato (con tetto MAX_FULL_PINS),
+ *    il resto della cache resta pallino PNG. Costo del flip alla soglia
+ *    proporzionale allo schermo, non alla cache (che può essere di migliaia).
+ *    Salvati/preferiti esclusi dal gate: pochi e "sempre visibili" per design.
  */
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text as RNText, useWindowDimensions } from 'react-native';
@@ -33,8 +38,11 @@ import SelectedMarkerOverlay from './SelectedMarkerOverlay';
 import { useMapClusters, type MapCluster } from './useMapClusters';
 import {
   isValidCoord,
+  withinPinViewport,
+  nextPinViewport,
   ZOOM_PIN_THRESHOLD,
   DOT_LARGE_THRESHOLD,
+  MAX_FULL_PINS,
   DEFAULT_REGION,
   FIT_EDGE_PADDING,
   MIN_FIT_DELTA,
@@ -221,6 +229,17 @@ export default function RestaurantMap({
   // Aggiornata in handleRegionChange (= onRegionChangeComplete, fine gesto):
   // niente storm di re-render durante il pan, un solo update a gesto concluso.
   const [clusterRegion, setClusterRegion] = useState<Region>(DEFAULT_REGION);
+  // Viewport allargato del regime pin: SOLO i marker al suo interno diventano
+  // pin completi (view-marker con cattura bitmap); il resto della cache resta
+  // pallino PNG a costo zero. Senza questo gate, al passaggio di soglia TUTTI i
+  // pin in cache (migliaia, anche fuori schermo) flippavano insieme → migliaia
+  // di catture bitmap + timer di settling Android nello stesso frame → freeze
+  // di secondi sui device più lenti. null nel regime pallini (fallback: asDot
+  // segue isDotZoom, comportamento pre-gate). Aggiornato negli STESSI punti di
+  // isDotZoom (handleRegionChange + sync post-animateToRegion) così i due stati
+  // restano coerenti; quantizzato in nextPinViewport per non ricalcolare
+  // markerElements sui micro-pan.
+  const [pinViewport, setPinViewport] = useState<Region | null>(null);
 
   // ---- Stable refs for prop callbacks ----
   const onRegionChangeCompleteRef = useRef(onRegionChangeComplete);
@@ -354,6 +373,7 @@ export default function RestaurantMap({
           if (prev && targetRegion.latitudeDelta < DOT_LARGE_THRESHOLD - 0.1) return false;
           return prev;
         });
+        setPinViewport(prev => nextPinViewport(prev, targetRegion));
         if (CLUSTERING_ENABLED) setClusterRegion(targetRegion);
         onRegionChangeCompleteRef.current?.(targetRegion);
       }, 650);
@@ -421,6 +441,7 @@ export default function RestaurantMap({
       if (prev && region.latitudeDelta < DOT_LARGE_THRESHOLD - 0.1) return false;
       return prev;
     });
+    setPinViewport(prev => nextPinViewport(prev, region));
   }, []);
 
   // Cleanup del timer di debounce cluster all'unmount.
@@ -474,6 +495,33 @@ export default function RestaurantMap({
   // `restaurants`), coerente con iOS dove il clustering è già spento.
   const clusteringActive = CLUSTERING_ENABLED && (allPins?.length ?? 0) > 0;
 
+  // Pin di allPins che nel regime pin vanno renderizzati COMPLETI (nel viewport
+  // allargato). null = regime pallini, il gate non si applica. Oltre
+  // MAX_FULL_PINS (aree densissime) diventano pin i più vicini al centro: il
+  // costo delle catture bitmap resta proporzionale allo schermo qualunque sia
+  // la dimensione del dataset; i rimanenti restano pallini finché non si zooma.
+  const fullPinIds = useMemo(() => {
+    if (!pinViewport) return null;
+    const candidates: { id: string; d: number }[] = [];
+    for (const p of (allPins ?? [])) {
+      if (!withinPinViewport(pinViewport, p.latitude, p.longitude)) continue;
+      // Distanza normalizzata sull'asse peggiore (stessa metrica del bounding
+      // box): basta per ordinare "vicino al centro" senza trigonometria.
+      const d = Math.max(
+        Math.abs(p.latitude - pinViewport.latitude) / Math.max(pinViewport.latitudeDelta, 1e-9),
+        Math.abs(p.longitude - pinViewport.longitude) / Math.max(pinViewport.longitudeDelta, 1e-9),
+      );
+      candidates.push({ id: p.id, d });
+    }
+    if (candidates.length > MAX_FULL_PINS) {
+      candidates.sort((a, b) => a.d - b.d);
+      candidates.length = MAX_FULL_PINS;
+    }
+    const ids = new Set<string>();
+    for (const c of candidates) ids.add(c.id);
+    return ids;
+  }, [allPins, pinViewport]);
+
   const markerElements = useMemo(() => {
     // A zoom largo (regime dot) renderizziamo i cluster (clusteredElements), non i
     // pin individuali: short-circuit per non costruire centinaia di elementi inutili.
@@ -506,7 +554,10 @@ export default function RestaurantMap({
           latitude={p.latitude}
           longitude={p.longitude}
           restaurant={restaurant}
-          asDot={isDotZoom}
+          // Pin completo solo nel viewport allargato (fullPinIds); fuori resta
+          // pallino anche a zoom stretto. Il flip avviene via tracksViewChanges
+          // nello stesso Marker montato — mai unmount/remount (churn-crash iOS).
+          asDot={isDotZoom || (fullPinIds != null && !fullPinIds.has(p.id))}
           isFavorite={favIds.has(p.id)}
           customSymbol={customSymbols?.get(p.id)}
           showMatchInfo={showMatchInfo}
@@ -533,7 +584,11 @@ export default function RestaurantMap({
           latitude={r.location.latitude}
           longitude={r.location.longitude}
           restaurant={r}
-          asDot={isDotZoom}
+          // Stesso gate viewport di allPins ma inline (questi non stanno in
+          // fullPinIds): sono la cache dettagliata (fino a 1000) e sulle
+          // mini-mappe profilo l'unica sorgente. pinViewport null → comportamento
+          // pre-gate (asDot = isDotZoom), che copre i flussi senza region-event.
+          asDot={isDotZoom || (pinViewport != null && !withinPinViewport(pinViewport, r.location.latitude, r.location.longitude))}
           isFavorite={favIds.has(r.id)}
           customSymbol={customSymbols?.get(r.id)}
           showMatchInfo={showMatchInfo}
@@ -590,7 +645,7 @@ export default function RestaurantMap({
 
     return elements;
     // selectedId serve solo al ramo Android dello skip (su iOS skip è costante '').
-  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
+  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, fullPinIds, pinViewport, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   // --- Cluster elements (regime dot / zoom largo) -----------------------------
   // Salvati/preferiti SEMPRE individuali e sopra le bolle (esclusi dal cluster):
