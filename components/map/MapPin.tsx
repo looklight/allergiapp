@@ -251,6 +251,9 @@ export default memo(function MapPin({
     const isMuted = showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isSaved;
 
     // Verde/giallo emergono sopra i pallini grigi/primary (non valutati).
+    // Su iOS lo zIndex mappa su zPosition del layer (stesso meccanismo del
+    // SelectedMarkerOverlay a 9999): senza, l'ordine di sovrapposizione è
+    // casuale e un grigio può coprire un verde.
     const dotZ = isSaved ? 3
       : dotCovered > 0 && dotTotal > 0
         ? (dotCovered >= dotTotal ? 3 : 2)
@@ -271,11 +274,12 @@ export default memo(function MapPin({
           image={DOT_IMAGES[isDark ? 'dark' : 'light'][dotSize][variant]}
           tracksViewChanges={false}
           onPress={handlePress}
+          zIndex={dotZ}
           // Android: anchor esplicito al CENTRO (le icone statiche hanno default
           // bottom-center come i pin) → il canvas simmetrico del PNG tiene la
           // coordinata esattamente sotto il pallino a ogni zoom. iOS centra di
           // default (centerOffset 0,0).
-          {...(Platform.OS === 'android' && { zIndex: dotZ, anchor: { x: 0.5, y: 0.5 } })}
+          {...(Platform.OS === 'android' && { anchor: { x: 0.5, y: 0.5 } })}
         />
       );
     }
@@ -290,10 +294,11 @@ export default memo(function MapPin({
         coordinate={{ latitude, longitude }}
         tracksViewChanges={justChanged}
         onPress={handlePress}
+        zIndex={dotZ}
         // Android: anchor esplicito al CENTRO. Senza, react-native-maps ancora il
         // marker custom in basso-centro (default tipo punta-di-pin) → la coordinata
         // cade sotto il pallino → a zoom largo l'offset in px = km → "pin in mare".
-        {...(Platform.OS === 'android' && { zIndex: dotZ, anchor: { x: 0.5, y: 0.5 } })}
+        {...(Platform.OS === 'android' && { anchor: { x: 0.5, y: 0.5 } })}
       >
         <View style={[styles.dotWrap, styles.dotWrapSaved]}>
           <View style={[
@@ -333,15 +338,28 @@ export default memo(function MapPin({
     ? coverageColor(coveredTotal, filtersTotal, theme)
     : theme.colors.primary;
 
+  // Con filtri attivi, il pin a zero match è recesso come il pallino muted:
+  // opacità ridotta ma MAI nascosto (stessa filosofia dei pallini — "il locale
+  // c'è, nessuna info per le tue esigenze"). 0.55 ben sopra lo zero: opacità 0
+  // rompe la cattura bitmap dei marker iOS (v. project_map_pins_ios).
+  const isMutedPin = showMatchInfo && filtersTotal > 0 && coveredTotal === 0 && !isSaved;
+
+  // Gerarchia identica ai pallini: salvati/verdi sopra, ambra in mezzo, grigi
+  // sotto — nelle zone affollate i compatibili restano leggibili.
+  const pinZ = isSaved ? 3
+    : coveredTotal > 0 && filtersTotal > 0
+      ? (coveredTotal >= filtersTotal ? 3 : 2)
+      : 0;
+
   return (
     <Marker
       identifier={id}
       coordinate={{ latitude, longitude }}
       tracksViewChanges={justChanged}
       onPress={handlePress}
-      {...(Platform.OS === 'android' && { zIndex: isSaved ? 2 : 1 })}
+      zIndex={pinZ}
     >
-      <View style={styles.markerWrap}>
+      <View style={[styles.markerWrap, isMutedPin && styles.markerWrapMuted]}>
         <View style={[styles.markerContainer, { borderColor: markerColor }]}>
           {hasRating ? (
             <RNText style={[styles.markerText, { color: markerColor }]}>
@@ -426,6 +444,11 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     // Android: estende il bounding rect del custom marker così
     // il heartBadge sporgente (top/right negativi) entra nella bitmap
     ...Platform.select({ android: { paddingTop: 10, paddingRight: 14 } }),
+  },
+  // Pin a zero match con filtri attivi (v. isMutedPin). L'alpha va sul wrap
+  // intero così la bitmap catturata la include su entrambe le piattaforme.
+  markerWrapMuted: {
+    opacity: 0.55,
   },
   markerContainer: {
     backgroundColor: theme.colors.onPrimary,
