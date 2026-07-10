@@ -9,8 +9,10 @@
  * pin, così il salto pallino→pin è più morbido):
  *  - sm  normale: 10pt Ø incluso bordo 1.5pt / muted 7pt Ø bordo 1pt — canvas 18pt
  *  - lg  normale: 14pt Ø incluso bordo 2pt   / muted 10pt Ø bordo 1.25pt — canvas 22pt
- * Muted: alpha 0.7, senza ombra. Canvas simmetrico (anchor centro = coordinate
- * precise; il canvas è anche il tap target).
+ * Muted: alpha 0.5, senza ombra — abbastanza recesso da far emergere i match
+ * colorati, ma mai invisibile (il locale "senza info per le tue esigenze"
+ * resta onestamente sulla mappa). Canvas simmetrico (anchor centro =
+ * coordinate precise; il canvas è anche il tap target).
  *
  * Colori replicati da constants/theme.ts (light/dark divergono su green/gray/
  * primary): aggiornare QUI e rilanciare lo script se cambiano i token tema.
@@ -56,13 +58,13 @@ const SIZES = {
     canvas: 18,
     suffix: '',
     normal: { outerR: 5, borderW: 1.5, alpha: 1, shadow: true },
-    muted: { outerR: 3.5, borderW: 1, alpha: 0.7, shadow: false },
+    muted: { outerR: 3.5, borderW: 1, alpha: 0.5, shadow: false },
   },
   lg: {
     canvas: 22,
     suffix: '-lg',
     normal: { outerR: 7, borderW: 2, alpha: 1, shadow: true },
-    muted: { outerR: 5, borderW: 1.25, alpha: 0.7, shadow: false },
+    muted: { outerR: 5, borderW: 1.25, alpha: 0.5, shadow: false },
   },
 };
 
