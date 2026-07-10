@@ -32,3 +32,23 @@ index 07a4638..3aca919 100644
  }
  #pragma clang diagnostic pop
  
+diff --git a/node_modules/react-native-maps/ios/AirMaps/AIRMapMarker.m b/node_modules/react-native-maps/ios/AirMaps/AIRMapMarker.m
+index 8c17ac7..2838c09 100644
+--- a/node_modules/react-native-maps/ios/AirMaps/AIRMapMarker.m
++++ b/node_modules/react-native-maps/ios/AirMaps/AIRMapMarker.m
+@@ -336,6 +336,15 @@ - (void)setImageSrc:(NSString *)imageSrc
+         _reloadImageCancellationBlock();
+         _reloadImageCancellationBlock = nil;
+     }
++    // PATCH(allergiapp): prop `image` rimossa (marker che passa da icona
++    // statica a custom view nello stesso mount, es. pallino->pin). Senza
++    // guardia RCTImageLoader viene invocato con URL nil -> LogBox "No
++    // suitable image URL loader found for (null)" a ogni transizione.
++    // self.image = nil e' lo stesso stato finale del percorso d'errore.
++    if (!imageSrc) {
++        self.image = nil;
++        return;
++    }
+     _reloadImageCancellationBlock = [[_bridge moduleForName:@"ImageLoader"] loadImageWithURLRequest:[RCTConvert NSURLRequest:_imageSrc]
+                                                                             size:self.bounds.size
+                                                                            scale:RCTScreenScale()
