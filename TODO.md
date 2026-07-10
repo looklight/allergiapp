@@ -45,6 +45,14 @@ Il fetch nearby porta fino a 200 risultati (tetto hard `LEAST(max_results, 200)`
 
 - [ ] **Trigger**: quando una città si avvicina a ~200 ristoranti nel raggio (15 km per `city`) → aggiungere parametro sort e conteggio totale alle RPC `get_nearby_restaurants` / `get_restaurants_for_my_needs`, re-fetch al cambio ordinamento nello sheet. Rientra nel lavoro `MAP_SCALING.md`.
 
+### Mappa — follow-up sessione 2026-07-10 (viewport-gating + debug, pushata `de97b5f`)
+Contesto in MAP_SCALING.md §0 e memoria `project_map_clustering.md`. Fix verificate su simulatore (telemetria + conteggio marker frame-per-frame); restano le verifiche device:
+
+- [ ] **Test su telefono fisico VECCHIO (dev/preview build, mai Expo Go)** — (a) freeze alla soglia pallini↔pin SPARITO (zona densa, pinch avanti-indietro); (b) pan fluido a zoom largo; (c) toggle filtri: nessun pin sparisce, colori assestati in ~1s (ammesso blink ≤0.5s durante il gesto, v. sotto).
+- [ ] **Decisione Max Rows Supabase** (Dashboard → Settings → API) — oggi 1000: a zoom Italia si vedono max 1000 pallini su 1595 (estetico, si ripara zoomando). Se si alza a 3000: aggiornare `PIN_RESPONSE_CAP` in `hooks/useRestaurantGeo.ts` E testare ~2300 marker montati sul telefono vecchio (mai provato sul campo: la beta 1.2.0 girava di fatto a 1000).
+- [ ] **Occhio al fantasma "tutti muted per >6s" dopo Apply filtri** — osservato UNA volta su simulatore, mai riprodotto nei test controllati (colori si assestano in ~1s). Se ricompare su device: segnalare con esigenze attive e timing.
+- Blink ≤0.5s dei pin durante i toggle filtro = interop rn-maps 1.20 (misurato: 1 frame, auto-riparante, bounded dal viewport-gate) → si chiude con l'upgrade rn-maps 1.27 al bump SDK, nessuna azione ora.
+
 ### Mappa Android — perf & rendering (sessione 2026-06-16, su main)
 Il "lag generale Android" era in gran parte la mappa. Cause risolte (contesto per l'upgrade rn-maps sotto, NON task aperti):
 - **Tempesta di fetch pin** → dedup in `useRestaurantGeo` (`80f2067`).
