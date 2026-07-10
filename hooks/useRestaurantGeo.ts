@@ -220,14 +220,28 @@ export function useRestaurantGeo(params: FilterParams) {
    *  con toggle rapidi. Epoch counter scarta risultati stale.
    *  forMyNeedsOverride: usa questo valore invece di forMyNeedsRef.current.
    *  Necessario perché setForMyNeeds è asincrono — la ref non è ancora
-   *  aggiornata quando clearAndReload è chiamato nello stesso handler. */
-  const clearAndReload = useCallback(async (forMyNeedsOverride?: boolean, showLodgingOverride?: boolean) => {
+   *  aggiornata quando clearAndReload è chiamato nello stesso handler.
+   *  needsOverride: stesso problema per le ESIGENZE del filtro — senza, il
+   *  refetch parte con allergens/diets vecchi e la coverage server in cache
+   *  resta calcolata sul filtro precedente (pin ambra/verdi sbagliati finché
+   *  non si rifetcha l'area per altre vie). */
+  const clearAndReload = useCallback(async (
+    forMyNeedsOverride?: boolean,
+    showLodgingOverride?: boolean,
+    needsOverride?: { allergens: string[]; diets: string[] },
+  ) => {
     const epoch = ++reloadEpoch.current;
     pendingFetch.current = null;
     fetchedAreas.current = [];
     // Sincronizza subito la ref lodging così eventuali fetch concorrenti (pin) usano
     // il valore nuovo prima che il re-render aggiorni la ref dal param.
     if (showLodgingOverride !== undefined) showLodgingRef.current = showLodgingOverride;
+    // Idem per le esigenze: sincrono prima di qualunque await, così anche il
+    // fetch qui sotto e gli eventuali fetchArea accodati usano il filtro nuovo.
+    if (needsOverride !== undefined) {
+      filterAllergensRef.current = needsOverride.allergens;
+      filterDietsRef.current = needsOverride.diets;
+    }
     // NON svuotare pinCache — i pin viewport sono dati geometrici,
     // non dipendono da forMyNeeds. Svuotandoli i pallini spariscono.
     // Usa il centro mappa corrente (se disponibile) invece della posizione GPS:

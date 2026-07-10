@@ -170,6 +170,16 @@ export default memo(function MapPin({
   // statiche senza cattura; da tenere d'occhio su device (churn iOS).
   const userKey = `${userAllergens?.join('|') ?? ''}§${userDiets?.join('|') ?? ''}`;
   const prevUserKey = useRef(userKey);
+  // Coverage/voto DAL DETTAGLIO server: al cambio esigenze il refetch sostituisce
+  // l'oggetto restaurant con valori nuovi ma hasRest resta true → senza questo
+  // trigger il bitmap iOS resterebbe col colore del filtro precedente (il
+  // trigger su userKey scatta subito, quando i dati nuovi non sono ancora
+  // arrivati). Confronto per contenuto: l'identità dell'oggetto cambia a ogni
+  // syncState anche a valori invariati.
+  const restKey = restaurant
+    ? `${restaurant.covered_allergen_count ?? 0}|${restaurant.covered_dietary_count ?? 0}|${restaurant.total_allergen_filters ?? 0}|${restaurant.total_dietary_filters ?? 0}|${restaurant.average_rating ?? 0}`
+    : '';
+  const prevRestKey = useRef(restKey);
 
   // Android-only: estende la finestra tracksViewChanges=true a ~100ms dopo
   // mount e dopo ogni cambio prop rilevante. react-native-maps su Android
@@ -198,7 +208,7 @@ export default memo(function MapPin({
     setAndroidSettling(true);
     const timer = setTimeout(() => setAndroidSettling(false), 100);
     return () => clearTimeout(timer);
-  }, [isImageDot, asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets, userKey]);
+  }, [isImageDot, asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets, userKey, restKey]);
 
   const justChanged =
     androidSettling ||
@@ -209,7 +219,8 @@ export default memo(function MapPin({
     hasRest !== prevHasRest.current ||
     supportedAllergens !== prevSupportedAllergens.current ||
     supportedDiets !== prevSupportedDiets.current ||
-    userKey !== prevUserKey.current;
+    userKey !== prevUserKey.current ||
+    restKey !== prevRestKey.current;
 
   useEffect(() => {
     prevAsDot.current = asDot;
@@ -220,7 +231,8 @@ export default memo(function MapPin({
     prevSupportedAllergens.current = supportedAllergens;
     prevSupportedDiets.current = supportedDiets;
     prevUserKey.current = userKey;
-  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets, userKey]);
+    prevRestKey.current = restKey;
+  }, [asDot, isFavorite, customSymbol, showMatchInfo, hasRest, supportedAllergens, supportedDiets, userKey, restKey]);
 
   const handlePress = useCallback(() => onPress?.(id), [onPress, id]);
 

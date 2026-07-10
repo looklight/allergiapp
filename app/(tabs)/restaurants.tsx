@@ -312,8 +312,11 @@ export default function RestaurantsScreen() {
     setShowLodging(newShowLodging);
 
     // Ricarica la lista geo se cambia un asse server-side (alloggi, forMyNeeds, esigenze).
+    // needsOverride: i setFilter* qui sopra sono asincroni — senza, il refetch
+    // partirebbe con le esigenze VECCHIE e la coverage in cache (→ colore pin)
+    // resterebbe quella del filtro precedente.
     if (lodgingChanged || (newFmn && (fmnChanged || allergensChanged || dietsChanged)) || (!newFmn && fmnChanged)) {
-      await geo.clearAndReload(newFmn, newShowLodging);
+      await geo.clearAndReload(newFmn, newShowLodging, { allergens, diets });
     }
     // I pin alloggi sono un SET diverso: svuota e ricarica solo al cambio modalità.
     if (lodgingChanged) {
