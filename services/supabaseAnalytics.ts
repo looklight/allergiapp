@@ -22,7 +22,8 @@ export type EventName =
   | 'restaurant_shared'
   | 'user_followed'
   | 'user_unfollowed'
-  | 'user_blocked';
+  | 'user_blocked'
+  | 'user_search';
 
 type EventProperties = Record<string, string | number | boolean | null>;
 
