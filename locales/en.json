@@ -862,5 +862,12 @@
     "feedEmptyNoReviews": "The profiles you follow haven't written any reviews yet.",
     "manage": "Manage",
     "manageEmpty": "You're not following anyone yet."
+  },
+  "block": {
+    "menu": "More options",
+    "block": "Block user",
+    "unblock": "Unblock user",
+    "confirmTitle": "Block this user?",
+    "confirmBody": "You will no longer see their reviews, and you won't be able to follow each other."
   }
 }

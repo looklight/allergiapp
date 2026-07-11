@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -12,6 +12,7 @@ import ProfileMapList from '../../../components/ProfileMapList';
 import UserReviewCard from '../../../components/UserReviewCard';
 import FollowButton from '../../../components/FollowButton';
 import { FollowService } from '../../../services/followService';
+import { BlockService } from '../../../services/blockService';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
@@ -36,6 +37,7 @@ export default function PublicProfileScreen() {
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
   const [following, setFollowing] = useState<boolean | null>(null);
+  const [blocked, setBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,25 +49,27 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, totalReviews, totalLikes, isFollowing] = await Promise.all([
+        const [prof, contribs, totalReviews, totalLikes, isFollowing, isBlocked] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
           RestaurantService.getReviewCountByUser(uid),
           RestaurantService.getLikesReceivedByUser(uid),
           FollowService.isFollowing(uid).catch(() => false),
+          user?.uid ? BlockService.isBlocked(user.uid, uid).catch(() => false) : Promise.resolve(false),
         ]);
         setProfile(prof);
         setReviews(contribs);
         setReviewCount(totalReviews);
         setLikesReceived(totalLikes);
         setFollowing(isFollowing);
+        setBlocked(isBlocked);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [uid, isAuthenticated]);
+  }, [uid, isAuthenticated, user?.uid]);
 
   // Mask username for anonymous users when viewed by others.
   // ProfileCard usa getDisplayName che oggi ritorna username; sovrascrivere
@@ -74,10 +78,50 @@ export default function PublicProfileScreen() {
     ? { ...profile, username: getAnonymousLabel(uid) }
     : profile;
 
-  // Pill "Segui": mai su anonimi (non followabili), su se stessi, o prima che
-  // lo stato iniziale sia noto (evita il flash Segui → Già segui).
+  // Pill "Segui": mai su anonimi (non followabili), su se stessi, su utenti
+  // bloccati, o prima che lo stato iniziale sia noto (evita il flash
+  // Segui → Già segui).
   const canFollow =
-    !!user?.uid && user.uid !== uid && !!profile && !profile.is_anonymous && following !== null;
+    !!user?.uid && user.uid !== uid && !!profile && !profile.is_anonymous && !blocked && following !== null;
+
+  // Menu "..." (blocca/sblocca): su qualunque profilo altrui, anonimi inclusi.
+  const handleBlockMenu = () => {
+    if (!user?.uid) return;
+    if (blocked) {
+      Alert.alert(i18n.t('block.unblock'), undefined, [
+        { text: i18n.t('common.cancel'), style: 'cancel' },
+        {
+          text: i18n.t('block.unblock'),
+          onPress: async () => {
+            try {
+              await BlockService.unblock(user.uid, uid);
+              setBlocked(false);
+            } catch (err) {
+              console.warn('[PublicProfile] unblock fallito:', err);
+            }
+          },
+        },
+      ]);
+      return;
+    }
+    Alert.alert(i18n.t('block.confirmTitle'), i18n.t('block.confirmBody'), [
+      { text: i18n.t('common.cancel'), style: 'cancel' },
+      {
+        text: i18n.t('block.block'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await BlockService.block(user.uid, uid);
+            // Il trigger DB ha già rimosso i follow in entrambe le direzioni.
+            setBlocked(true);
+            setFollowing(false);
+          } catch (err) {
+            console.warn('[PublicProfile] block fallito:', err);
+          }
+        },
+      },
+    ]);
+  };
 
   if (isLoading || !profile) {
     return (
@@ -106,6 +150,11 @@ export default function PublicProfileScreen() {
           canFollow ? (
             <FollowButton userId={user!.uid} targetId={uid} initialFollowing={following!} />
           ) : undefined
+        }
+        headerActions={
+          user?.uid && user.uid !== uid
+            ? [{ icon: 'dots-horizontal', onPress: handleBlockMenu, accessibilityLabel: i18n.t('block.menu') }]
+            : undefined
         }
         items={reviews}
         getLocation={getReviewLocation}

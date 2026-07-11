@@ -862,5 +862,12 @@
     "feedEmptyNoReviews": "I profili che segui non hanno ancora scritto recensioni.",
     "manage": "Gestisci",
     "manageEmpty": "Non segui ancora nessuno."
+  },
+  "block": {
+    "menu": "Altre opzioni",
+    "block": "Blocca utente",
+    "unblock": "Sblocca utente",
+    "confirmTitle": "Bloccare questo utente?",
+    "confirmBody": "Non vedrai più le sue recensioni e non potrete più seguirvi a vicenda."
   }
 }

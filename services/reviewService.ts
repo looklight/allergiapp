@@ -1,5 +1,6 @@
 import * as Crypto from 'expo-crypto';
 import { supabase } from './supabase';
+import { getBlockedIds } from './blockService';
 import { fetchRestaurantPositionsByIds } from './restaurantPositions';
 import { StorageService, type UploadResult } from './storageService';
 import { isRemoteUrl } from '../utils/url';
@@ -48,7 +49,7 @@ export async function getReviews(
   const rows = data ?? [];
   const totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
 
-  const reviews: Review[] = rows.map((r: any) => ({
+  let reviews: Review[] = rows.map((r: any) => ({
     id: r.id,
     restaurant_id: r.restaurant_id,
     user_id: r.user_id,
@@ -66,6 +67,21 @@ export async function getReviews(
     user_avatar_url: r.user_avatar_url ?? null,
     user_is_anonymous: r.user_is_anonymous ?? false,
   }));
+
+  // Recensioni degli utenti bloccati fuori dalla lista (filtro client-side:
+  // lista piccola e cached, evita di toccare la RPC). Best-effort: se la
+  // lettura dei blocchi fallisce la pagina resta completa. totalCount resta
+  // il conteggio pieno — i voti dei bloccati contano comunque nelle medie.
+  if (userId) {
+    try {
+      const blockedIds = await getBlockedIds(userId);
+      if (blockedIds.size > 0) {
+        reviews = reviews.filter((r) => !r.user_id || !blockedIds.has(r.user_id));
+      }
+    } catch (err) {
+      if (__DEV__) console.warn('[ReviewService] filtro bloccati saltato:', err);
+    }
+  }
 
   return { reviews, totalCount };
 }
