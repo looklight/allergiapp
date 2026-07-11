@@ -856,6 +856,11 @@
   },
   "follow": {
     "follow": "Follow",
-    "following": "Following"
+    "following": "Following",
+    "feedPill": "Following",
+    "feedEmptyNoFollows": "Follow other profiles to see their reviews here. You can discover them through restaurant reviews and the leaderboard.",
+    "feedEmptyNoReviews": "The profiles you follow haven't written any reviews yet.",
+    "manage": "Manage",
+    "manageEmpty": "You're not following anyone yet."
   }
 }

@@ -7,15 +7,23 @@ import { cardShadow, type AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { getCountryName } from '../utils/countryNames';
 import StarRating from './StarRating';
+import Avatar from './Avatar';
 import type { UserReview } from '../services/restaurantService';
 import { venueIconName } from '../constants/restaurantCategories';
 
 interface Props {
   review: UserReview;
   onPress: () => void;
+  /** Attribuzione autore in testa alla card (feed "Seguiti"): avatar + nome,
+   *  tap → profilo. Omesso nelle liste "mie recensioni" dove l'autore è ovvio. */
+  author?: {
+    username: string | null;
+    avatarUrl: string | null;
+    onPress?: () => void;
+  };
 }
 
-function UserReviewCard({ review, onPress }: Props) {
+function UserReviewCard({ review, onPress, author }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const restaurantName = review.restaurant_name ?? i18n.t('restaurants.myReviews.restaurantFallback');
@@ -31,6 +39,19 @@ function UserReviewCard({ review, onPress }: Props) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Surface style={styles.card} elevation={0}>
+        {author && (
+          <TouchableOpacity
+            style={styles.authorRow}
+            onPress={author.onPress}
+            disabled={!author.onPress}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel={author.username ?? undefined}
+          >
+            <Avatar avatarId={author.avatarUrl} initial={author.username ?? undefined} size={22} />
+            <Text style={styles.authorName} numberOfLines={1}>{author.username}</Text>
+          </TouchableOpacity>
+        )}
         <View style={styles.header}>
           <MaterialCommunityIcons name={venueIcon} size={16} color={theme.colors.primary} />
           <Text style={styles.name} numberOfLines={1}>{restaurantName}</Text>
@@ -85,6 +106,18 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  authorName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    flexShrink: 1,
   },
   name: {
     fontSize: 15,

@@ -59,6 +59,10 @@ interface ProfileMapListProps<T> {
   /** Reso al posto della lista quando il filtro corrente non ha elementi. */
   emptyState?: React.ReactNode;
 
+  /** Reso sopra la lista (sotto l'header di sezione), anche a lista vuota.
+   *  Usato dal feed "Seguiti" per il link di gestione dei profili seguiti. */
+  listHeaderSlot?: React.ReactNode;
+
   /** Filtro per tipo luogo (Ristoranti/Hotel). Reso come due toggle icona-sola
    *  allineati a destra SOTTO la mappa (nel corpo, scorre via). Applicato a monte
    *  del filtro paese, così mappa e lista restano coerenti. Omesso = niente riga. */
@@ -102,6 +106,7 @@ export default function ProfileMapList<T>({
   topActions,
   headerVisible,
   emptyState,
+  listHeaderSlot,
   typeFilter,
 }: ProfileMapListProps<T>) {
   const theme = useTheme();
@@ -288,6 +293,7 @@ export default function ProfileMapList<T>({
             <TypeFilterToggles toggles={presentTypes} hidden={hiddenTypes} onToggle={toggleType} />
           </View>
         )}
+        {showHeader ? listHeaderSlot : null}
         {filteredItems.length > 0 ? (
           <>
             {filteredItems.map((item) => {

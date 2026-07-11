@@ -856,6 +856,11 @@
   },
   "follow": {
     "follow": "Segui",
-    "following": "Già segui"
+    "following": "Già segui",
+    "feedPill": "Seguiti",
+    "feedEmptyNoFollows": "Segui altri profili per vedere qui le loro recensioni. Puoi scoprirli dalle recensioni dei ristoranti e dalle classifiche.",
+    "feedEmptyNoReviews": "I profili che segui non hanno ancora scritto recensioni.",
+    "manage": "Gestisci",
+    "manageEmpty": "Non segui ancora nessuno."
   }
 }
