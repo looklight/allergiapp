@@ -506,6 +506,7 @@
       "menuReviews": "My reviews",
       "menuMyRestaurants": "My restaurants",
       "menuLeaderboard": "Leaderboard",
+      "menuCommunity": "Community",
       "emptyReviews": "Your reviews will show up here. Visit a restaurant and share how it went.",
       "emptyFavorites": "Your favorites will show up here. Tap the heart on a place to save it."
     },
@@ -858,10 +859,16 @@
     "follow": "Follow",
     "following": "Following",
     "feedPill": "Following",
-    "feedEmptyNoFollows": "Follow other profiles to see their reviews here. You can discover them through restaurant reviews and the leaderboard.",
+    "feedEmptyNoFollows": "Follow other profiles to see their reviews here. You can discover them through restaurant reviews and the Community page.",
     "feedEmptyNoReviews": "The profiles you follow haven't written any reviews yet.",
     "manage": "Manage",
     "manageEmpty": "You're not following anyone yet."
+  },
+  "community": {
+    "title": "Community",
+    "searchPlaceholder": "Search users",
+    "noResults": "No users found.",
+    "clearSearch": "Clear search"
   },
   "block": {
     "menu": "More options",

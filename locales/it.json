@@ -506,6 +506,7 @@
       "menuReviews": "Le mie recensioni",
       "menuMyRestaurants": "I miei ristoranti",
       "menuLeaderboard": "Classifiche",
+      "menuCommunity": "Community",
       "emptyReviews": "Le tue recensioni appariranno qui. Visita un ristorante e racconta com'è andata.",
       "emptyFavorites": "I tuoi preferiti appariranno qui. Tocca il cuore su un locale per salvarlo."
     },
@@ -858,10 +859,16 @@
     "follow": "Segui",
     "following": "Già segui",
     "feedPill": "Seguiti",
-    "feedEmptyNoFollows": "Segui altri profili per vedere qui le loro recensioni. Puoi scoprirli dalle recensioni dei ristoranti e dalle classifiche.",
+    "feedEmptyNoFollows": "Segui altri profili per vedere qui le loro recensioni. Puoi scoprirli dalle recensioni dei ristoranti e dalla pagina Community.",
     "feedEmptyNoReviews": "I profili che segui non hanno ancora scritto recensioni.",
     "manage": "Gestisci",
     "manageEmpty": "Non segui ancora nessuno."
+  },
+  "community": {
+    "title": "Community",
+    "searchPlaceholder": "Cerca utenti",
+    "noResults": "Nessun utente trovato.",
+    "clearSearch": "Cancella ricerca"
   },
   "block": {
     "menu": "Altre opzioni",
