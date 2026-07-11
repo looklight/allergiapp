@@ -853,5 +853,9 @@
     "suffix": "visto su AllergiApp",
     "dialogTitle": "Condividi questo ristorante",
     "error": "Impossibile condividere. Riprova."
+  },
+  "follow": {
+    "follow": "Segui",
+    "following": "Già segui"
   }
 }

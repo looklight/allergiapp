@@ -10,6 +10,8 @@ import type { UserReview } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
 import ProfileMapList from '../../../components/ProfileMapList';
 import UserReviewCard from '../../../components/UserReviewCard';
+import FollowButton from '../../../components/FollowButton';
+import { FollowService } from '../../../services/followService';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
@@ -27,12 +29,13 @@ export default function PublicProfileScreen() {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
+  const [following, setFollowing] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,16 +47,18 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, totalReviews, totalLikes] = await Promise.all([
+        const [prof, contribs, totalReviews, totalLikes, isFollowing] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
           RestaurantService.getReviewCountByUser(uid),
           RestaurantService.getLikesReceivedByUser(uid),
+          FollowService.isFollowing(uid).catch(() => false),
         ]);
         setProfile(prof);
         setReviews(contribs);
         setReviewCount(totalReviews);
         setLikesReceived(totalLikes);
+        setFollowing(isFollowing);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
@@ -68,6 +73,11 @@ export default function PublicProfileScreen() {
   const visibleProfile = profile?.is_anonymous
     ? { ...profile, username: getAnonymousLabel(uid) }
     : profile;
+
+  // Pill "Segui": mai su anonimi (non followabili), su se stessi, o prima che
+  // lo stato iniziale sia noto (evita il flash Segui → Già segui).
+  const canFollow =
+    !!user?.uid && user.uid !== uid && !!profile && !profile.is_anonymous && following !== null;
 
   if (isLoading || !profile) {
     return (
@@ -92,6 +102,11 @@ export default function PublicProfileScreen() {
         profile={visibleProfile!}
         stats={{ reviews: reviewCount, likes: likesReceived }}
         onBack={() => router.back()}
+        nameAccessory={
+          canFollow ? (
+            <FollowButton userId={user!.uid} targetId={uid} initialFollowing={following!} />
+          ) : undefined
+        }
         items={reviews}
         getLocation={getReviewLocation}
         getMapPin={(r) => ({

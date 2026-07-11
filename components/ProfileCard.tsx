@@ -10,7 +10,7 @@ import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import type { UserProfile } from '../services/auth';
 import Avatar from './Avatar';
-import AppHeader from '../app/components/AppHeader';
+import AppHeader, { type HeaderAction } from '../app/components/AppHeader';
 
 interface ProfileStats {
   likes?: number;
@@ -30,6 +30,11 @@ interface ProfileCardProps {
   onEdit?: () => void;
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
+  /** Azioni extra in alto a destra nell'AppHeader, dopo l'eventuale matita
+   *  (es. menu "..." sul profilo altrui, share). */
+  headerActions?: HeaderAction[];
+  /** Elemento reso nel nameRow a destra del nome (es. pill "Segui"). */
+  nameAccessory?: React.ReactNode;
   title?: string;
   /** Elemento reso subito sotto la sezione profilo e reso "sticky" in alto allo scroll.
    *  Può essere una render-prop che riceve:
@@ -48,7 +53,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -102,11 +107,12 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
       <AppHeader
         title={title}
         onLeadingPress={onBack}
-        actions={
-          onEdit
-            ? [{ icon: 'pencil-outline', onPress: onEdit, accessibilityLabel: i18n.t('common.edit') }]
-            : undefined
-        }
+        actions={(() => {
+          const actions: HeaderAction[] = [];
+          if (onEdit) actions.push({ icon: 'pencil-outline', onPress: onEdit, accessibilityLabel: i18n.t('common.edit') });
+          if (headerActions) actions.push(...headerActions);
+          return actions.length > 0 ? actions : undefined;
+        })()}
       />
 
       <Animated.ScrollView
@@ -151,10 +157,11 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
             )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
+                <Text style={styles.displayName} numberOfLines={1}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
                 {profile.is_anonymous && (
                   <MaterialCommunityIcons name="incognito" size={18} color={theme.colors.textSecondary} />
                 )}
+                {nameAccessory}
               </View>
               {memberSince ? (
                 <Text style={styles.memberSince}>{i18n.t('restaurants.profileCard.memberSince', { date: memberSince })}</Text>
@@ -298,9 +305,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 6,
   },
   displayName: {
-    fontSize: 20,
+    // 18 (era 20) + flexShrink: lascia spazio all'accessorio nel nameRow
+    // (pill "Segui") senza spingerlo fuori con i nomi lunghi.
+    fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textPrimary,
+    flexShrink: 1,
   },
   memberSince: {
     fontSize: 13,

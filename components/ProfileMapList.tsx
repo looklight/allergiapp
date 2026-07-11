@@ -13,6 +13,7 @@ import MyRestaurantsMap, { type MapPinItem } from '../app/components/my-restaura
 import RestaurantDetailSheet from './restaurants/RestaurantDetailSheet';
 import { useLocationFilters, type LocationParts } from '../hooks/useLocationFilters';
 import type { UserProfile } from '../services/auth';
+import type { HeaderAction } from '../app/components/AppHeader';
 
 interface ProfileMapListProps<T> {
   /** Profilo già "visibile" (username eventualmente mascherato per anonimi). */
@@ -24,6 +25,10 @@ interface ProfileMapListProps<T> {
   onEdit?: () => void;
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
+  /** Azioni extra in alto a destra (dopo l'eventuale matita) — v. ProfileCard. */
+  headerActions?: HeaderAction[];
+  /** Elemento accanto al nome (es. pill "Segui") — v. ProfileCard. */
+  nameAccessory?: React.ReactNode;
   /** Se presente, mostra un pulsante "+" sulla mappa (specchiato al mini-avatar)
    *  che apre la schermata di aggiunta ristorante. Passato solo dal profilo
    *  personale: sui profili altrui non viene fornito e il pulsante non compare. */
@@ -82,6 +87,8 @@ export default function ProfileMapList<T>({
   onEdit,
   onEditDietary,
   onAvatarPress,
+  headerActions,
+  nameAccessory,
   onAddRestaurant,
   items,
   getLocation,
@@ -194,6 +201,8 @@ export default function ProfileMapList<T>({
         onEdit={onEdit}
         onEditDietary={onEditDietary}
         onAvatarPress={onAvatarPress}
+        headerActions={headerActions}
+        nameAccessory={nameAccessory}
         scrollRef={scrollRef}
         beforeStickyHeader={topActions}
         stickyHeader={showHeader ? (pinned, isPinned) => (

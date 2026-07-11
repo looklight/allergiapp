@@ -853,5 +853,9 @@
     "suffix": "seen on AllergiApp",
     "dialogTitle": "Share this restaurant",
     "error": "Could not share. Please try again."
+  },
+  "follow": {
+    "follow": "Follow",
+    "following": "Following"
   }
 }
