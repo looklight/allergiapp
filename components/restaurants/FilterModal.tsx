@@ -142,14 +142,15 @@ export default function FilterModal({
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* Per le mie esigenze. A toggle attivo il picker vive DENTRO la card
-            del toggle (bordo unico, senza il titolo interno che duplicherebbe
-            il label): sono un'unica funzione, la UI lo deve dire. */}
+        {/* Per le mie esigenze: un'unica card sempre. Il toggle fa da
+            intestazione; sotto, la descrizione vive DENTRO la card in entrambi
+            gli stati — hint a toggle spento, picker (col suo sottotitolo, senza
+            il titolo interno che duplicherebbe il label) a toggle acceso. */}
         <View style={styles.section}>
-          <View style={pendingMyNeeds ? styles.needsCard : undefined}>
+          <View style={styles.needsCard}>
             <TouchableOpacity
               onPress={handleToggleMyNeeds}
-              style={[styles.toggleRow, pendingMyNeeds && styles.toggleRowInCard]}
+              style={[styles.toggleRow, styles.toggleRowInCard]}
               activeOpacity={0.7}
             >
               <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
@@ -158,7 +159,7 @@ export default function FilterModal({
                 <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
               </View>
             </TouchableOpacity>
-            {pendingMyNeeds && (
+            {pendingMyNeeds ? (
               <DietaryNeedsPicker
                 allergens={pendingAllergens}
                 diets={pendingDiets}
@@ -172,15 +173,12 @@ export default function FilterModal({
                 hideHeader
                 style={styles.needsPickerNested}
               />
+            ) : (
+              <Text style={[styles.sectionHint, styles.hintInCard]}>
+                {i18n.t('restaurants.filter.myNeedsHint')}
+              </Text>
             )}
           </View>
-          {/* Hint mostrato solo a filtro spento: quando è attivo, il picker
-              annidato ha già il proprio sottotitolo. */}
-          {!pendingMyNeeds && (
-            <Text style={styles.sectionHint}>
-              {i18n.t('restaurants.filter.myNeedsHint')}
-            </Text>
-          )}
         </View>
 
         {/*
@@ -376,6 +374,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginHorizontal: 8,
     marginBottom: 8,
     borderRadius: 10,
+  },
+  // Hint dentro la card (toggle spento): allineato al padding del toggleRow.
+  hintInCard: {
+    marginTop: 0,
+    marginHorizontal: 12,
+    marginBottom: 12,
   },
   toggleRow: {
     flexDirection: 'row',
