@@ -15,12 +15,10 @@ import AppHeader, { type HeaderAction } from '../app/components/AppHeader';
 interface ProfileStats {
   likes?: number;
   reviews?: number;
-  /** Follower del profilo: passato solo sui profili pubblici (colonna stat).
-   *  Sul profilo proprio il follower count vive nel badge accanto al nome
-   *  (nameAccessory), non qui. */
-  followers?: number;
   /** Profili seguiti. Dal grafo pubblico (mig 080) compare anche sui
-   *  profili altrui non anonimi. */
+   *  profili altrui non anonimi. Il follower count invece non ha colonna:
+   *  vive solo nel badge accanto al nome del profilo proprio (scelta
+   *  2026-07-12: a numeri bassi sui profili altrui è anti-social-proof). */
   following?: number;
 }
 
@@ -39,9 +37,6 @@ interface ProfileCardProps {
   /** Tap sulla stat "Seguiti" (stile Instagram: gestione seguiti sul proprio,
    *  lista seguiti sui profili altrui). Se assente la colonna resta statica. */
   onFollowingPress?: () => void;
-  /** Tap sulla colonna "Follower" (lista follower del profilo).
-   *  Se assente la colonna resta statica. */
-  onFollowersPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -69,7 +64,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onFollowingPress, onFollowersPress, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onFollowingPress, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -191,7 +186,7 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, fo
                   (AnimatedLikesCounter) rende solo [numero][+N]: il badge resta
                   in flusso a destra del numero, la label è resa qui come per
                   le altre colonne. */}
-              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot || stats?.followers != null || stats?.following != null || followingSlot) && (
+              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot || stats?.following != null || followingSlot) && (
                 <View style={styles.inlineStatsRow}>
                   {(stats?.reviews != null || reviewsSlot) && (
                     <View style={styles.inlineStat}>
@@ -204,19 +199,6 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, fo
                       {likesSlot ?? <Text style={styles.inlineStatNumber}>{stats?.likes}</Text>}
                       <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
                     </View>
-                  )}
-                  {stats?.followers != null && (
-                    <TouchableOpacity
-                      style={styles.inlineStat}
-                      onPress={onFollowersPress}
-                      disabled={!onFollowersPress}
-                      activeOpacity={0.6}
-                      accessibilityRole={onFollowersPress ? 'button' : undefined}
-                      accessibilityLabel={i18n.t('follow.followers')}
-                    >
-                      <Text style={styles.inlineStatNumber}>{stats.followers}</Text>
-                      <Text style={styles.inlineStatLabel}>{i18n.t('follow.followers')}</Text>
-                    </TouchableOpacity>
                   )}
                   {(stats?.following != null || followingSlot) && (
                     // Stile Instagram: tap sulla stat → gestione seguiti.

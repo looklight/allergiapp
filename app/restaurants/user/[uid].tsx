@@ -46,8 +46,8 @@ export default function PublicProfileScreen() {
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
   const [following, setFollowing] = useState<boolean | null>(null);
-  // Grafo pubblico (mig 080): null sugli anonimi (la RPC non li serve) →
-  // colonne Follower/Seguiti assenti.
+  // Grafo pubblico (mig 080): qui serve solo il conteggio seguiti; null
+  // sugli anonimi (la RPC non li serve) → colonna Seguiti assente.
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -162,33 +162,23 @@ export default function PublicProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileMapList<UserReview>
         profile={visibleProfile!}
+        // Del grafo qui si mostra SOLO "Seguiti" (scelta 2026-07-12): il
+        // follower count altrui a numeri bassi è anti-social-proof, resta
+        // visibile solo a se stessi (badge sul profilo personale).
         stats={{
           reviews: reviewCount,
           likes: likesReceived,
-          followers: followStats?.followers,
           following: followStats?.following,
         }}
         onBack={() => router.back()}
-        // Stat del grafo tappabili → liste navigabili (Fase B). I handler sono
-        // innocui quando le colonne non compaiono (profili anonimi).
-        onFollowersPress={() =>
-          router.push({ pathname: '/restaurants/follow-list', params: { uid, mode: 'followers' } })
-        }
+        // Stat Seguiti tappabile → lista navigabile (innocuo quando la
+        // colonna non compare, profili anonimi).
         onFollowingPress={() =>
           router.push({ pathname: '/restaurants/follow-list', params: { uid, mode: 'following' } })
         }
         nameAccessory={
           canFollow ? (
-            <FollowButton
-              userId={user!.uid}
-              targetId={uid}
-              initialFollowing={following!}
-              // Il follower count segue il toggle senza rifetch: ±1 ottimista,
-              // coerente con la UI ottimistica del bottone stesso.
-              onChange={(f) =>
-                setFollowStats((s) => (s ? { ...s, followers: Math.max(0, s.followers + (f ? 1 : -1)) } : s))
-              }
-            />
+            <FollowButton userId={user!.uid} targetId={uid} initialFollowing={following!} />
           ) : undefined
         }
         headerActions={(() => {
