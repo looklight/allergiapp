@@ -7,7 +7,20 @@ import {
 import { supabase } from '@/lib/supabase';
 import { fetchAllPages } from '@/lib/fetchAllPages';
 
-type Granularity = 'month' | 'week';
+type Range = '1m' | '3m' | '1y' | 'all';
+type Mode = 'cumulative' | 'incremental';
+type Granularity = 'day' | 'week' | 'month';
+
+const RANGES: { key: Range; label: string }[] = [
+  { key: '1m', label: '1M' },
+  { key: '3m', label: '3M' },
+  { key: '1y', label: '1A' },
+  { key: 'all', label: 'Tutto' },
+];
+
+// Granularità implicita nella finestra (come le app di finanza): niente
+// scelta manuale, la pendenza resta leggibile a ogni soglia.
+const GRANULARITY: Record<Range, Granularity> = { '1m': 'day', '3m': 'week', '1y': 'month', all: 'month' };
 
 // Terna categorica validata (CVD ΔE min 21.6 su bianco); l'ordine dei colori
 // è parte della garanzia daltonismo, non cambiarlo. Aqua/giallo sono sotto
@@ -27,26 +40,27 @@ async function loadCreationDates(table: string): Promise<number[]> {
   return rows.map((r) => new Date(r.created_at).getTime());
 }
 
-/** Fine dei bucket (ms) dal mese/settimana della prima data fino a oggi. */
-function buildBucketEnds(minTs: number, granularity: Granularity): Date[] {
+function rangeStart(range: Range, minTs: number): number {
+  if (range === 'all') return minTs;
+  const d = new Date();
+  if (range === '1m') d.setMonth(d.getMonth() - 1);
+  if (range === '3m') d.setMonth(d.getMonth() - 3);
+  if (range === '1y') d.setFullYear(d.getFullYear() - 1);
+  return Math.max(d.getTime(), minTs);
+}
+
+/** Fine dei bucket (ms) dall'inizio finestra fino a oggi, allineati al calendario. */
+function buildBucketEnds(startTs: number, granularity: Granularity): Date[] {
   const ends: Date[] = [];
   const now = new Date();
-  const cursor = new Date(minTs);
-  if (granularity === 'month') {
-    cursor.setDate(1);
-    cursor.setHours(0, 0, 0, 0);
-    while (cursor <= now) {
-      cursor.setMonth(cursor.getMonth() + 1);
-      ends.push(new Date(Math.min(cursor.getTime() - 1, now.getTime())));
-    }
-  } else {
-    // Settimane lun-dom
-    cursor.setHours(0, 0, 0, 0);
-    cursor.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7));
-    while (cursor <= now) {
-      cursor.setDate(cursor.getDate() + 7);
-      ends.push(new Date(Math.min(cursor.getTime() - 1, now.getTime())));
-    }
+  const cursor = new Date(startTs);
+  cursor.setHours(0, 0, 0, 0);
+  if (granularity === 'month') cursor.setDate(1);
+  if (granularity === 'week') cursor.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7)); // lun-dom
+  while (cursor <= now) {
+    if (granularity === 'month') cursor.setMonth(cursor.getMonth() + 1);
+    else cursor.setDate(cursor.getDate() + (granularity === 'week' ? 7 : 1));
+    ends.push(new Date(Math.min(cursor.getTime() - 1, now.getTime())));
   }
   return ends;
 }
@@ -66,8 +80,22 @@ function bucketLabel(d: Date, granularity: Granularity): string {
     : d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
 }
 
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-2.5 py-1 rounded text-xs transition-colors ${
+        active ? 'bg-selected text-selected-foreground' : 'bg-muted text-foreground-secondary hover:bg-muted-hover'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function GrowthChartSection() {
-  const [granularity, setGranularity] = useState<Granularity>('month');
+  const [range, setRange] = useState<Range>('all');
+  const [mode, setMode] = useState<Mode>('cumulative');
   const [dates, setDates] = useState<number[][] | null>(null);
 
   useEffect(() => {
@@ -76,14 +104,29 @@ export default function GrowthChartSection() {
 
   const data = useMemo(() => {
     if (!dates) return [];
+    const granularity = GRANULARITY[range];
     const minTs = Math.min(...dates.map((d) => d[0] ?? Date.now()));
-    const ends = buildBucketEnds(minTs, granularity);
+    const start = rangeStart(range, minTs);
+    const ends = buildBucketEnds(start, granularity);
+    if (ends.length === 0) return [];
     const cumulative = dates.map((d) => cumulativeAt(d, ends));
+    // Base della finestra: quanti esistevano già prima del primo bucket
+    // (serve per il primo valore incrementale)
+    const base = dates.map((d) => {
+      let i = 0;
+      while (i < d.length && d[i] < start) i++;
+      return i;
+    });
     return ends.map((end, i) => ({
       label: bucketLabel(end, granularity),
-      ...Object.fromEntries(SERIES.map((s, si) => [s.key, cumulative[si][i]])),
+      ...Object.fromEntries(SERIES.map((s, si) => [
+        s.key,
+        mode === 'cumulative'
+          ? cumulative[si][i]
+          : cumulative[si][i] - (i === 0 ? base[si] : cumulative[si][i - 1]),
+      ])),
     }));
-  }, [dates, granularity]);
+  }, [dates, range, mode]);
 
   // Etichetta diretta a fine linea (ink testuale, non colore serie)
   const endLabel = (name: string) => (props: { x?: number | string; y?: number | string; index?: number }) => {
@@ -97,20 +140,19 @@ export default function GrowthChartSection() {
 
   return (
     <div className="bg-card rounded-lg shadow p-4 mt-6">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <h2 className="font-semibold">Crescita</h2>
-        <div className="flex gap-1">
-          {(['month', 'week'] as const).map((g) => (
-            <button
-              key={g}
-              onClick={() => setGranularity(g)}
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
-                granularity === g ? 'bg-selected text-selected-foreground' : 'bg-muted text-foreground-secondary hover:bg-muted-hover'
-              }`}
-            >
-              {g === 'month' ? 'Mese' : 'Settimana'}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1">
+            <Chip active={mode === 'cumulative'} onClick={() => setMode('cumulative')}>Cumulato</Chip>
+            <Chip active={mode === 'incremental'} onClick={() => setMode('incremental')}>Nuovi</Chip>
+          </div>
+          <div className="w-px h-4 bg-border" />
+          <div className="flex gap-1">
+            {RANGES.map((r) => (
+              <Chip key={r.key} active={range === r.key} onClick={() => setRange(r.key)}>{r.label}</Chip>
+            ))}
+          </div>
         </div>
       </div>
       {!dates ? (
@@ -119,8 +161,8 @@ export default function GrowthChartSection() {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data} margin={{ top: 8, right: 96, bottom: 0, left: 0 }}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={{ stroke: 'var(--border)' }} interval="preserveStartEnd" />
-            <YAxis tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={44} />
+            <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={{ stroke: 'var(--border)' }} interval="preserveStartEnd" minTickGap={24} />
+            <YAxis tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={44} allowDecimals={false} />
             <Tooltip
               contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
               labelStyle={{ fontWeight: 600 }}
