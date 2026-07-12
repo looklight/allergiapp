@@ -39,7 +39,8 @@ const MIN_RATIO = 0.4;
 const MAX_RATIO = 0.85;
 // Stima dell'altezza "non-lista" (header + nota + conferma + paddings): serve a
 // dimensionare il modal in modo adattivo a partire dall'altezza delle righe.
-const CHROME = 230;
+// Include la nota a 3 righe (minHeight 60): se cambia quella, aggiornare qui.
+const CHROME = 250;
 // Idem per il pannello editor (solo header + paddings: il form è misurato dal
 // suo ScrollView). Serve perché l'editor può essere più alto dell'elenco (form
 // + toggle mappa/profilo + azioni) e non deve richiedere scroll.
@@ -531,7 +532,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.detailMuted,
   },
-  noteInput: { fontSize: 14, color: theme.colors.textPrimary, lineHeight: 20, minHeight: 40, padding: 0 },
+  noteInput: { fontSize: 14, color: theme.colors.textPrimary, lineHeight: 20, minHeight: 60, padding: 0 },
   confirmButton: {
     marginHorizontal: theme.spacing.lg,
     marginTop: theme.spacing.xl,
