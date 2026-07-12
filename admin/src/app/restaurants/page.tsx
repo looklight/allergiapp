@@ -78,30 +78,39 @@ export default function RestaurantsPage() {
   const { items: restaurants, setItems: setRestaurants, loading, hasMore, loadMore, reset } =
     usePagination<Restaurant>({ fetchPage: fetchRestaurants });
 
-  // Carica lista paesi con conteggio (raggruppati per country_code)
+  // Carica lista paesi con conteggio (raggruppati per country_code).
+  // PostgREST tronca ogni risposta a max-rows (1000): senza paginazione i
+  // conteggi coprirebbero solo i primi 1000 ristoranti. Aggregato count()
+  // non disponibile (disabilitato su questo PostgREST).
   useEffect(() => {
-    supabase
-      .from('restaurants')
-      .select('country, country_code')
-      .not('country_code', 'is', null)
-      .then(({ data }) => {
-        if (data) {
-          const map = new Map<string, { name: string; count: number }>();
-          for (const r of data) {
-            const code = r.country_code as string;
-            const existing = map.get(code);
-            if (existing) {
-              existing.count++;
-            } else {
-              map.set(code, { name: getCountryName(code, r.country as string), count: 1 });
-            }
-          }
-          const sorted = [...map.entries()]
-            .sort((a, b) => b[1].count - a[1].count)
-            .map(([code, { name, count }]) => ({ code, name, count }));
-          setCountries(sorted);
+    (async () => {
+      const CHUNK = 1000;
+      const rows: { country: string | null; country_code: string }[] = [];
+      for (let from = 0; ; from += CHUNK) {
+        const { data } = await supabase
+          .from('restaurants')
+          .select('country, country_code')
+          .not('country_code', 'is', null)
+          .order('id')
+          .range(from, from + CHUNK - 1);
+        if (!data || data.length === 0) break;
+        rows.push(...(data as { country: string | null; country_code: string }[]));
+        if (data.length < CHUNK) break;
+      }
+      const map = new Map<string, { name: string; count: number }>();
+      for (const r of rows) {
+        const existing = map.get(r.country_code);
+        if (existing) {
+          existing.count++;
+        } else {
+          map.set(r.country_code, { name: getCountryName(r.country_code, r.country ?? ''), count: 1 });
         }
-      });
+      }
+      const sorted = [...map.entries()]
+        .sort((a, b) => b[1].count - a[1].count)
+        .map(([code, { name, count }]) => ({ code, name, count }));
+      setCountries(sorted);
+    })();
   }, []);
 
   const loadStats = async () => {
