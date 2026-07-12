@@ -23,6 +23,12 @@ interface DietaryNeedsPickerProps {
   initialExpanded?: boolean;
   /** Sottotitolo personalizzato (sovrascrive il testo default) */
   subtitle?: string;
+  /** Nasconde la riga icona+titolo: per i contesti dove il picker è annidato
+   *  sotto un'intestazione che dice già la stessa cosa (es. toggle "Filtra per
+   *  le mie esigenze" nel FilterModal). Il collasso resta sul link "Chiudi". */
+  hideHeader?: boolean;
+  /** Override del container (margini/radius nei contesti annidati) */
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function DietaryNeedsPicker({
@@ -36,6 +42,8 @@ export default function DietaryNeedsPicker({
   lang,
   initialExpanded = false,
   subtitle,
+  hideHeader = false,
+  style,
 }: DietaryNeedsPickerProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -106,16 +114,18 @@ export default function DietaryNeedsPicker({
     ) : null;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <MaterialCommunityIcons name="shield-check-outline" size={20} color={theme.colors.primary} />
-        <Text style={styles.title}>{i18n.t('restaurants.dietaryPicker.title')}</Text>
-        {expanded && (
-          <TouchableOpacity onPress={() => setExpanded(false)} hitSlop={8} activeOpacity={0.6}>
-            <MaterialCommunityIcons name="chevron-up" size={22} color={theme.colors.primary} />
-          </TouchableOpacity>
-        )}
-      </View>
+    <View style={[styles.container, style]}>
+      {!hideHeader && (
+        <View style={styles.header}>
+          <MaterialCommunityIcons name="shield-check-outline" size={20} color={theme.colors.primary} />
+          <Text style={styles.title}>{i18n.t('restaurants.dietaryPicker.title')}</Text>
+          {expanded && (
+            <TouchableOpacity onPress={() => setExpanded(false)} hitSlop={8} activeOpacity={0.6}>
+              <MaterialCommunityIcons name="chevron-up" size={22} color={theme.colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       <Text style={styles.description}>
         {subtitle

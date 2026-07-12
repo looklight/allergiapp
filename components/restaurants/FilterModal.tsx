@@ -142,24 +142,23 @@ export default function FilterModal({
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* Per le mie esigenze */}
+        {/* Per le mie esigenze. A toggle attivo il picker vive DENTRO la card
+            del toggle (bordo unico, senza il titolo interno che duplicherebbe
+            il label): sono un'unica funzione, la UI lo deve dire. */}
         <View style={styles.section}>
-          <TouchableOpacity onPress={handleToggleMyNeeds} style={styles.toggleRow} activeOpacity={0.7}>
-            <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
-            <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.myNeeds')}</Text>
-            <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
-              <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
-            </View>
-          </TouchableOpacity>
-          {/* Hint mostrato solo a filtro spento: quando è attivo, la scheda
-              "le tue esigenze alimentari" sotto ha già il proprio sottotitolo. */}
-          {!pendingMyNeeds && (
-            <Text style={styles.sectionHint}>
-              {i18n.t('restaurants.filter.myNeedsHint')}
-            </Text>
-          )}
-          {pendingMyNeeds && (
-            <View style={styles.needsPicker}>
+          <View style={pendingMyNeeds ? styles.needsCard : undefined}>
+            <TouchableOpacity
+              onPress={handleToggleMyNeeds}
+              style={[styles.toggleRow, pendingMyNeeds && styles.toggleRowInCard]}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
+              <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.myNeeds')}</Text>
+              <View style={[styles.switchTrack, pendingMyNeeds && styles.switchTrackActive]}>
+                <View style={[styles.switchThumb, pendingMyNeeds && styles.switchThumbActive]} />
+              </View>
+            </TouchableOpacity>
+            {pendingMyNeeds && (
               <DietaryNeedsPicker
                 allergens={pendingAllergens}
                 diets={pendingDiets}
@@ -170,8 +169,17 @@ export default function FilterModal({
                 onSyncProfile={onSyncProfile}
                 lang={lang}
                 subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
+                hideHeader
+                style={styles.needsPickerNested}
               />
-            </View>
+            )}
+          </View>
+          {/* Hint mostrato solo a filtro spento: quando è attivo, il picker
+              annidato ha già il proprio sottotitolo. */}
+          {!pendingMyNeeds && (
+            <Text style={styles.sectionHint}>
+              {i18n.t('restaurants.filter.myNeedsHint')}
+            </Text>
           )}
         </View>
 
@@ -353,10 +361,21 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 6,
     marginBottom: 12,
   },
-  // Respiro tra il toggle e il box esigenze quando il filtro è attivo
-  // (a filtro attivo l'hint sopra è nascosto, quindi il box resterebbe attaccato).
-  needsPicker: {
-    marginTop: 12,
+  // Card unificata a toggle attivo: il bordo passa dal toggleRow al wrapper,
+  // il picker (tinta primaryLight) diventa il "pozzetto" interno della card.
+  needsCard: {
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    borderRadius: 14,
+  },
+  toggleRowInCard: {
+    borderWidth: 0,
+  },
+  needsPickerNested: {
+    marginTop: 2,
+    marginHorizontal: 8,
+    marginBottom: 8,
+    borderRadius: 10,
   },
   toggleRow: {
     flexDirection: 'row',
