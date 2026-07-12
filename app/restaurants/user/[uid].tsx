@@ -13,6 +13,8 @@ import UserReviewCard from '../../../components/UserReviewCard';
 import FollowButton from '../../../components/FollowButton';
 import { FollowService } from '../../../services/followService';
 import { BlockService } from '../../../services/blockService';
+import { shareProfile } from '../../../services/shareProfile';
+import type { HeaderAction } from '../../components/AppHeader';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
@@ -151,11 +153,20 @@ export default function PublicProfileScreen() {
             <FollowButton userId={user!.uid} targetId={uid} initialFollowing={following!} />
           ) : undefined
         }
-        headerActions={
-          user?.uid && user.uid !== uid
-            ? [{ icon: 'dots-horizontal', onPress: handleBlockMenu, accessibilityLabel: i18n.t('block.menu') }]
-            : undefined
-        }
+        headerActions={(() => {
+          const actions: HeaderAction[] = [];
+          if (profile && !profile.is_anonymous && profile.username) {
+            actions.push({
+              icon: 'share-variant',
+              onPress: () => shareProfile({ id: uid, username: profile.username }),
+              accessibilityLabel: i18n.t('share.shareProfile'),
+            });
+          }
+          if (user?.uid && user.uid !== uid) {
+            actions.push({ icon: 'dots-horizontal', onPress: handleBlockMenu, accessibilityLabel: i18n.t('block.menu') });
+          }
+          return actions.length > 0 ? actions : undefined;
+        })()}
         // Utente bloccato: la promessa del blocco ("non vedrai più le sue
         // recensioni") vale anche visitando il suo profilo di proposito.
         items={blocked ? [] : reviews}

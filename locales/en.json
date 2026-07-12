@@ -853,7 +853,10 @@
     "shareRestaurant": "Share restaurant",
     "suffix": "seen on AllergiApp",
     "dialogTitle": "Share this restaurant",
-    "error": "Could not share. Please try again."
+    "error": "Could not share. Please try again.",
+    "shareProfile": "Share profile",
+    "profileSuffix": "profile on AllergiApp",
+    "profileDialogTitle": "Share this profile"
   },
   "follow": {
     "follow": "Follow",

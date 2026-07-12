@@ -38,3 +38,16 @@ export async function searchUsers(
   SupabaseAnalytics.track('user_search', { query: term, results: results.length });
   return results;
 }
+
+/**
+ * Risolve uno username in id profilo per il deep link /u/{username}
+ * (RPC get_profile_id_by_username, mig 078). Anonimi mai risolti (guardia
+ * server-side). Ritorna null se non trovato.
+ */
+export async function getProfileIdByUsername(username: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc('get_profile_id_by_username', {
+    p_username: username,
+  });
+  if (error) throw error;
+  return data ?? null;
+}

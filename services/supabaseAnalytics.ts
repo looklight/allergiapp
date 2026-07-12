@@ -23,7 +23,8 @@ export type EventName =
   | 'user_followed'
   | 'user_unfollowed'
   | 'user_blocked'
-  | 'user_search';
+  | 'user_search'
+  | 'profile_shared';
 
 type EventProperties = Record<string, string | number | boolean | null>;
 

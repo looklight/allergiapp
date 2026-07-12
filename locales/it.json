@@ -853,7 +853,10 @@
     "shareRestaurant": "Condividi ristorante",
     "suffix": "visto su AllergiApp",
     "dialogTitle": "Condividi questo ristorante",
-    "error": "Impossibile condividere. Riprova."
+    "error": "Impossibile condividere. Riprova.",
+    "shareProfile": "Condividi profilo",
+    "profileSuffix": "profilo su AllergiApp",
+    "profileDialogTitle": "Condividi questo profilo"
   },
   "follow": {
     "follow": "Segui",

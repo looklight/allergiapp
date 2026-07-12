@@ -11,6 +11,7 @@ import type { UserReview } from '../../services/restaurantService';
 import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
 import { CollectionService } from '../../services/collectionService';
 import { FollowService, getFollowGraphVersion, type FeedReview } from '../../services/followService';
+import { shareProfile } from '../../services/shareProfile';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
 import UserReviewCard from '../../components/UserReviewCard';
@@ -323,6 +324,17 @@ export default function ProfileScreen() {
         followingSlot={<CountText value={followingCount} style={styles.inlineStatNumber} />}
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
+        headerActions={
+          // Share accanto alla matita: solo se il profilo è condivisibile
+          // (mai per anonimi: l'URL esporrebbe lo username reale).
+          !userProfile.is_anonymous && userProfile.username && user?.uid
+            ? [{
+                icon: 'share-variant',
+                onPress: () => shareProfile({ id: user.uid, username: userProfile.username }),
+                accessibilityLabel: i18n.t('share.shareProfile'),
+              }]
+            : undefined
+        }
         onEditDietary={() => router.push('/restaurants/edit-dietary')}
         onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
         onAddRestaurant={() => router.push('/restaurants/add')}
