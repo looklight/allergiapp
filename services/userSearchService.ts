@@ -5,6 +5,7 @@ export type UserSearchResult = {
   id: string;
   username: string;
   avatar_url: string | null;
+  review_count: number;
 };
 
 /**
@@ -25,7 +26,13 @@ export async function searchUsers(
   });
   if (error) throw error;
 
-  const results: UserSearchResult[] = data ?? [];
+  const results: UserSearchResult[] = (data ?? []).map((r: any) => ({
+    id: r.id,
+    username: r.username,
+    avatar_url: r.avatar_url ?? null,
+    // BIGINT arriva come stringa/numero a seconda del driver: normalizza.
+    review_count: Number(r.review_count ?? 0),
+  }));
   SupabaseAnalytics.track('user_search', { query: term, results: results.length });
   return results;
 }

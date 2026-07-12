@@ -212,6 +212,12 @@ export default function CommunityScreen() {
                 </View>
                 <View style={styles.rowInfo}>
                   <Text style={styles.rowName} numberOfLines={1}>{item.username}</Text>
+                  {/* Attività del profilo: recensioni scritte, stessa icona
+                      della classifica Recensioni. */}
+                  <View style={styles.rowSubline}>
+                    <MaterialCommunityIcons name="star" size={12} color={theme.colors.textSecondary} />
+                    <Text style={styles.rowSubText}>{item.review_count}</Text>
+                  </View>
                 </View>
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -405,6 +411,16 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textPrimary,
+  },
+  rowSubline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 1,
+  },
+  rowSubText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
   },
   rowCount: {
     fontSize: 18,
