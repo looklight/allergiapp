@@ -23,6 +23,22 @@ interface CountryStats {
 
 type SortBy = 'created_desc' | 'city_asc' | 'reviews_desc';
 
+// PostgREST tronca ogni risposta (tabelle e RPC) a max-rows: qualunque
+// lettura "tutte le righe" va paginata fino a esaurimento.
+async function fetchAllPages<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null }>,
+): Promise<T[]> {
+  const CHUNK = 1000;
+  const rows: T[] = [];
+  for (let from = 0; ; from += CHUNK) {
+    const { data } = await page(from, from + CHUNK - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < CHUNK) break;
+  }
+  return rows;
+}
+
 export default function RestaurantsPage() {
   const [countries, setCountries] = useState<{ code: string; name: string; count: number }[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
@@ -79,24 +95,17 @@ export default function RestaurantsPage() {
     usePagination<Restaurant>({ fetchPage: fetchRestaurants });
 
   // Carica lista paesi con conteggio (raggruppati per country_code).
-  // PostgREST tronca ogni risposta a max-rows (1000): senza paginazione i
-  // conteggi coprirebbero solo i primi 1000 ristoranti. Aggregato count()
-  // non disponibile (disabilitato su questo PostgREST).
+  // Aggregato count() non disponibile (disabilitato su questo PostgREST).
   useEffect(() => {
     (async () => {
-      const CHUNK = 1000;
-      const rows: { country: string | null; country_code: string }[] = [];
-      for (let from = 0; ; from += CHUNK) {
-        const { data } = await supabase
+      const rows = await fetchAllPages<{ country: string | null; country_code: string }>(
+        (from, to) => supabase
           .from('restaurants')
           .select('country, country_code')
           .not('country_code', 'is', null)
           .order('id')
-          .range(from, from + CHUNK - 1);
-        if (!data || data.length === 0) break;
-        rows.push(...(data as { country: string | null; country_code: string }[]));
-        if (data.length < CHUNK) break;
-      }
+          .range(from, to),
+      );
       const map = new Map<string, { name: string; count: number }>();
       for (const r of rows) {
         const existing = map.get(r.country_code);
@@ -135,17 +144,22 @@ export default function RestaurantsPage() {
 
   const loadMapData = async () => {
     // RPC restituisce id + lat/lng (leggera)
-    const { data: positions } = await supabase.rpc('get_all_restaurant_positions');
-    if (!positions) { setMapRestaurants([]); return; }
+    const positions = await fetchAllPages<{ id: string; latitude: number; longitude: number }>(
+      (from, to) => supabase.rpc('get_all_restaurant_positions').order('id').range(from, to),
+    );
+    if (positions.length === 0) { setMapRestaurants([]); return; }
 
-    // Arricchisci con nome/city/country/country_code
-    const ids = positions.map((r: any) => r.id);
-    const { data: details } = await supabase
-      .from('restaurants')
-      .select('id, name, city, country, country_code')
-      .in('id', ids);
+    // Arricchisci con nome/city/country/country_code (fetch completa paginata:
+    // un .in() su migliaia di id sforerebbe la lunghezza URL)
+    const details = await fetchAllPages<{ id: string; name: string; city: string | null; country: string | null; country_code: string | null }>(
+      (from, to) => supabase
+        .from('restaurants')
+        .select('id, name, city, country, country_code')
+        .order('id')
+        .range(from, to),
+    );
 
-    const detailMap = new Map((details ?? []).map((d: any) => [d.id, d]));
+    const detailMap = new Map(details.map((d) => [d.id, d]));
 
     setMapRestaurants(positions
       .map((r: any) => {
