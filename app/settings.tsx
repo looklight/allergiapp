@@ -13,6 +13,7 @@ import type { AppTheme } from '../constants/theme';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
 import { useLanguageDownload } from '../hooks/useLanguageDownload';
+import { openStoreReviewPage } from '../utils/storeReviewPrompt';
 import DownloadableLanguagesSection from './components/DownloadableLanguagesSection';
 import AppHeader from './components/AppHeader';
 
@@ -265,6 +266,23 @@ export default function SettingsScreen() {
           <MaterialCommunityIcons
             name="chevron-right"
             size={20}
+            color={theme.colors.textSecondary}
+            style={{ marginLeft: 'auto' }}
+          />
+        </Pressable>
+
+        {/* Valuta l'app - deep-link allo store (su iOS direttamente al foglio recensione) */}
+        <Pressable
+          onPress={openStoreReviewPage}
+          style={({ pressed }) => [styles.sectionHeaderRow, pressed && styles.settingsRowPressed]}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('settings.rateApp')}
+        >
+          <MaterialCommunityIcons name="star-outline" size={22} color={theme.colors.primary} />
+          <Text style={styles.sectionHeaderTitle}>{i18n.t('settings.rateApp')}</Text>
+          <MaterialCommunityIcons
+            name="open-in-new"
+            size={18}
             color={theme.colors.textSecondary}
             style={{ marginLeft: 'auto' }}
           />

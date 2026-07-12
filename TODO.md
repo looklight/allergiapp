@@ -167,13 +167,14 @@ Ricordare agli utenti di lasciare una recensione dopo una visita a un ristorante
 
 Popup nativo "Lascia una recensione" (StoreKit `SKStoreReviewController` su iOS, Google Play In-App Review su Android), wrapper `expo-store-review`. L'overlay è dell'OS: tu *richiedi*, il sistema decide se mostrarlo (iOS ~3 prompt/anno per utente, nessun callback). App live su entrambi gli store dal 2026-07: i primi rating pesano molto sulla visibilità, il trigger selettivo protegge dai voti tiepidi.
 
-**Fase 1 — codice su main (INSIEME al bump versione, vedi vincolo):**
-- [ ] `npx expo install expo-store-review`
-- [ ] `utils/storeReviewPrompt.ts` — `maybeRequestStoreReview()`: throttle in AsyncStorage (min 90 giorni tra richieste), guard `isAvailableAsync()`
-- [ ] Innesto in `app/restaurants/add-review.tsx`: dopo submit riuscito con rating ≥ 4, fire-and-forget con piccolo delay
-- [ ] Voce "Valuta l'app" in settings via `StoreReview.storeUrl()` + `Linking.openURL` (deep-link, non consuma il budget prompt)
+**Fase 1 — codice su main (INSIEME al bump versione, vedi vincolo): FATTA 2026-07-12**
+- [x] `npx expo install expo-store-review` (~9.0.9)
+- [x] `utils/storeReviewPrompt.ts` — `maybeRequestStoreReview(rating)`: soglia rating ≥ 4, throttle in AsyncStorage (90 giorni), guard `isAvailableAsync()`, delay 1.5s; tutte le costanti di tuning stanno in questo file
+- [x] Innesto in `app/restaurants/add-review.tsx`: dopo l'OK sull'alert di conferma, solo recensioni nuove (mai in edit), fire-and-forget
+- [x] Voce "Valuta l'app" in settings (deep-link diretto: iOS foglio recensione via `?action=write-review`, Android scheda Play; URL hardcoded in `storeReviewPrompt.ts` perché `storeUrl()` richiederebbe config non presente) — i18n nelle 6 lingue UI
+- [ ] Verifica su device in beta: il popup su TestFlight appare quasi sempre (invio disabilitato = modalità test, è normale); su APK sideload non appare (niente Play Services, no-op voluto)
 
-**Fase 2 — build:** insieme alle voci di manutenzione, bump versione (→ nuovo runtime), beta TestFlight/Play internal, poi prod. Tuning soglie (rating minimo, giorni throttle) OTA-abile *dentro* il nuovo runtime.
+**Fase 2 — build:** insieme alle voci di manutenzione, bump versione (→ nuovo runtime), beta TestFlight/Play internal, poi prod. Tuning soglie (rating minimo, giorni throttle): costanti in `utils/storeReviewPrompt.ts`, con OTA bloccate si cambiano solo con una build.
 
 **VINCOLO runtime (policy `appVersion`):** il codice che importa `expo-store-review` NON deve finire in un'OTA per runtime 1.1.0 — le build live non hanno il modulo nativo, l'import crasha. Protezione: la Fase 1 atterra su main solo contestualmente al bump di versione; nessuna OTA production tra merge Fase 1 e bump.
 

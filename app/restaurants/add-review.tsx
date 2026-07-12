@@ -19,6 +19,7 @@ import AppHeader from '../components/AppHeader';
 import { useImagePicker } from '../../hooks/useImagePicker';
 import i18n from '../../utils/i18n';
 import { confirmReviewWithoutText } from '../../utils/reviewPrompts';
+import { maybeRequestStoreReview } from '../../utils/storeReviewPrompt';
 import type { Review, CuisineVote } from '../../services/restaurantService';
 import type { DietId, AppLanguage } from '../../types';
 
@@ -192,7 +193,13 @@ export default function AddReviewScreen() {
         Alert.alert(
           i18n.t('restaurants.review.thanksTitle'),
           isEditMode ? i18n.t('restaurants.review.updatedMsg') : i18n.t('restaurants.review.publishedMsg'),
-          [{ text: 'OK', onPress: () => router.back() }],
+          [{ text: 'OK', onPress: () => {
+            router.back();
+            // Momento di massimo aggancio: recensione nuova appena pubblicata
+            // con voto alto. Solo qui, mai in edit (correggere un refuso non è
+            // un segnale di entusiasmo).
+            if (!isEditMode) maybeRequestStoreReview(rating);
+          } }],
         );
       } else {
         Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.submitError'));
