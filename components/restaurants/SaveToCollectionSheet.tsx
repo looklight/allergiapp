@@ -31,6 +31,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import CreateListForm from './CreateListForm';
 import MapVisibilityToggle from './MapVisibilityToggle';
+import ProfileVisibilityToggle from './ProfileVisibilityToggle';
 import i18n from '../../utils/i18n';
 
 const NOTE_MAX_LENGTH = 200;
@@ -382,7 +383,23 @@ export default function SaveToCollectionSheet({
                   submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
                   onSubmit={handleFormSubmit}
                   onDelete={editing ? handleDelete : undefined}
-                  extraSection={userId ? (emoji) => <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} /> : undefined}
+                  extraSection={userId ? (emoji) => (
+                    <View style={styles.editorToggles}>
+                      <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} />
+                      <ProfileVisibilityToggle
+                        collectionId={editing?.id}
+                        locked={!editing}
+                        initialVisibility={editing?.visibility}
+                        // Aggiorna la copia locale: riaprendo l'editor nella
+                        // stessa sessione il toggle riparte dal valore giusto.
+                        onChanged={(visibility) => {
+                          if (!editing) return;
+                          setLocalCollections((prev) => prev.map((c) => (c.id === editing.id ? { ...c, visibility } : c)));
+                          setEditing((prev) => (prev && prev.id === editing.id ? { ...prev, visibility } : prev));
+                        }}
+                      />
+                    </View>
+                  ) : undefined}
                 />
               </ScrollView>
             </View>
@@ -436,6 +453,8 @@ function Row({
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: { flex: 1, justifyContent: 'flex-end' },
+  // Sezione toggle dell'editor (mappa + profilo): stesso respiro del form.
+  editorToggles: { gap: theme.spacing.lg },
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.overlay },
   content: {
     backgroundColor: theme.colors.detailSurface,

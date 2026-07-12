@@ -8,9 +8,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
 import CreateListForm from './restaurants/CreateListForm';
 import MapVisibilityToggle from './restaurants/MapVisibilityToggle';
+import ProfileVisibilityToggle from './restaurants/ProfileVisibilityToggle';
 import i18n from '../utils/i18n';
 
-export type EditingList = { id: string; name: string; emoji: string | null };
+export type EditingList = { id: string; name: string; emoji: string | null; visibility: 'private' | 'public' };
 
 type Props = {
   visible: boolean;
@@ -21,6 +22,8 @@ type Props = {
   onClose: () => void;
   onSubmit: (name: string, emoji: string | null) => void;
   onDelete?: () => void;
+  /** Notificato quando cambia la visibilita' sul profilo (per ricaricare le pill). */
+  onVisibilityChanged?: (visibility: 'private' | 'public') => void;
 };
 
 /**
@@ -28,7 +31,7 @@ type Props = {
  * CreateListForm (stesso form del pannello laterale dello sheet "Salva in…"),
  * cosi' la gestione liste e' coerente e bottom-up ovunque.
  */
-export default function ListEditorSheet({ visible, userId, editing, onClose, onSubmit, onDelete }: Props) {
+export default function ListEditorSheet({ visible, userId, editing, onClose, onSubmit, onDelete, onVisibilityChanged }: Props) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -89,7 +92,17 @@ export default function ListEditorSheet({ visible, userId, editing, onClose, onS
               submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
               onSubmit={onSubmit}
               onDelete={editing ? onDelete : undefined}
-              extraSection={userId ? (emoji) => <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} /> : undefined}
+              extraSection={userId ? (emoji) => (
+                <View style={styles.toggles}>
+                  <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} />
+                  <ProfileVisibilityToggle
+                    collectionId={editing?.id}
+                    locked={!editing}
+                    initialVisibility={editing?.visibility}
+                    onChanged={onVisibilityChanged}
+                  />
+                </View>
+              ) : undefined}
             />
           </ScrollView>
         </Animated.View>
@@ -120,5 +133,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     paddingBottom: theme.spacing.sm,
   },
   headerBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  // Sezione toggle (mappa + profilo): stesso respiro verticale del form.
+  toggles: { gap: theme.spacing.lg },
   title: { flex: 1, fontSize: 17, fontWeight: '700', color: theme.colors.textPrimary },
 });

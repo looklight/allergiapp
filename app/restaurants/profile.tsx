@@ -126,7 +126,7 @@ export default function ProfileScreen() {
   // Pill cache-first (come Recensioni/Preferiti via useProfileCounts): a freddo
   // le pill liste compaiono subito con l'ultimo conteggio noto, poi revalidano.
   const liveMeta = useMemo<CollectionMeta[]>(
-    () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count })),
+    () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count, visibility: c.visibility })),
     [listsData.items],
   );
   const customCollections = useCachedCollections(user?.uid, liveMeta, listsData.isLoading);
@@ -439,9 +439,15 @@ export default function ProfileScreen() {
                 label={c.name}
                 emoji={c.emoji}
                 count={c.item_count}
+                isPublic={c.visibility === 'public'}
                 active={selected === c.id}
                 onPress={() => setSelected(c.id)}
-                onLongPress={() => setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji } })}
+                // Visibilita' dal live quando disponibile: la cache pill puo'
+                // essere stale (o pre-feature, senza campo) per un attimo.
+                onLongPress={() => {
+                  const live = listsData.items.find((l) => l.id === c.id);
+                  setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji, visibility: live?.visibility ?? c.visibility ?? 'private' } });
+                }}
               />
             ))}
             <TouchableOpacity
@@ -481,6 +487,9 @@ export default function ProfileScreen() {
         onClose={() => setEditor(null)}
         onSubmit={handleEditorSubmit}
         onDelete={handleEditorDelete}
+        // Il toggle salva da solo: qui basta ricaricare le liste così la pill
+        // aggiorna l'icona "pubblica" senza aspettare la chiusura dello sheet.
+        onVisibilityChanged={() => listsData.reload()}
       />
 
       {user?.uid && userProfile.username && !userProfile.is_anonymous && (
@@ -499,6 +508,7 @@ function ListPill({
   label,
   emoji,
   count,
+  isPublic,
   active,
   onPress,
   onLongPress,
@@ -506,6 +516,8 @@ function ListPill({
   label: string;
   emoji?: string | null;
   count: number | null;
+  /** Lista visibile sul profilo pubblico: mostra il piccolo globo. */
+  isPublic?: boolean;
   active: boolean;
   onPress: () => void;
   onLongPress?: () => void;
@@ -523,6 +535,13 @@ function ListPill({
       {emoji ? <Text style={styles.kindButtonEmoji}>{emoji}</Text> : null}
       <Text style={textStyle} numberOfLines={1}>{label}</Text>
       <CountText value={count} style={textStyle} />
+      {isPublic && (
+        <MaterialCommunityIcons
+          name="earth"
+          size={13}
+          color={active ? theme.colors.onPrimary : theme.colors.textSecondary}
+        />
+      )}
     </TouchableOpacity>
   );
 }

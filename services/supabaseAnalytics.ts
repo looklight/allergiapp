@@ -26,7 +26,9 @@ export type EventName =
   | 'user_search'
   | 'profile_shared'
   | 'profile_link_copied'
-  | 'followed_filter_enabled';
+  | 'followed_filter_enabled'
+  | 'list_published'
+  | 'list_unpublished';
 
 type EventProperties = Record<string, string | number | boolean | null>;
 
