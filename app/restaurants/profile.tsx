@@ -311,14 +311,16 @@ export default function ProfileScreen() {
         stats={{ likes: currentLikes }}
         reviewsSlot={<CountText value={counts.reviews} style={styles.inlineStatNumber} />}
         likesSlot={
+          // Niente label qui: con le stat a colonna la rende ProfileCard sotto
+          // il numero; il badge "+N" resta in flusso a destra del numero.
           <AnimatedLikesCounter
             currentLikes={currentLikes}
             previousLikes={lastSeenLikes}
             onAnimationEnd={markAsSeen}
             numberStyle={styles.inlineLikesNumber}
-            label={i18n.t('restaurants.profileCard.statLikes')}
           />
         }
+        followingSlot={<CountText value={followingCount} style={styles.inlineStatNumber} />}
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         onEditDietary={() => router.push('/restaurants/edit-dietary')}

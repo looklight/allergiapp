@@ -18,9 +18,10 @@ import type { HeaderAction } from '../app/components/AppHeader';
 interface ProfileMapListProps<T> {
   /** Profilo già "visibile" (username eventualmente mascherato per anonimi). */
   profile: UserProfile;
-  stats?: { likes?: number; reviews?: number };
+  stats?: { likes?: number; reviews?: number; following?: number };
   likesSlot?: React.ReactNode;
   reviewsSlot?: React.ReactNode;
+  followingSlot?: React.ReactNode;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -87,6 +88,7 @@ export default function ProfileMapList<T>({
   stats,
   likesSlot,
   reviewsSlot,
+  followingSlot,
   onBack,
   onEdit,
   onEditDietary,
@@ -202,6 +204,7 @@ export default function ProfileMapList<T>({
         stats={stats}
         likesSlot={likesSlot}
         reviewsSlot={reviewsSlot}
+        followingSlot={followingSlot}
         onBack={onBack}
         onEdit={onEdit}
         onEditDietary={onEditDietary}

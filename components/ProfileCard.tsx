@@ -15,6 +15,9 @@ import AppHeader, { type HeaderAction } from '../app/components/AppHeader';
 interface ProfileStats {
   likes?: number;
   reviews?: number;
+  /** Numero di profili seguiti: SOLO profilo personale (contatore privato,
+   *  mai esposto sui profili altrui per scelta). */
+  following?: number;
 }
 
 interface ProfileCardProps {
@@ -26,6 +29,9 @@ interface ProfileCardProps {
   /** Override del numero "recensioni" — se passato, sostituisce il <Text> statico
    *  (usato per il conteggio cache-first con skeleton sul profilo proprio). */
   reviewsSlot?: React.ReactNode;
+  /** Override del numero "seguiti" (skeleton CountText sul profilo proprio).
+   *  Se né questo né stats.following sono presenti, la colonna non compare. */
+  followingSlot?: React.ReactNode;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -53,7 +59,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -169,7 +175,12 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
               {memberSince ? (
                 <Text style={styles.memberSince}>{i18n.t('restaurants.profileCard.memberSince', { date: memberSince })}</Text>
               ) : null}
-              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot) && (
+              {/* Stat a colonna (numero sopra, etichetta sotto): tre voci stanno
+                  sulla stessa riga anche su schermi stretti. Il likesSlot
+                  (AnimatedLikesCounter) rende solo [numero][+N]: il badge resta
+                  in flusso a destra del numero, la label è resa qui come per
+                  le altre colonne. */}
+              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot || stats?.following != null || followingSlot) && (
                 <View style={styles.inlineStatsRow}>
                   {(stats?.reviews != null || reviewsSlot) && (
                     <View style={styles.inlineStat}>
@@ -177,17 +188,16 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
                       <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statReviews')}</Text>
                     </View>
                   )}
-                  {stats?.likes != null && (
+                  {(stats?.likes != null || likesSlot) && (
                     <View style={styles.inlineStat}>
-                      {/* Quando c'è il likesSlot (AnimatedLikesCounter sul profilo
-                          proprio) è lui a rendere numero + label, così il badge "+N"
-                          può comparire in coda alla riga, a destra di "Like ricevuti". */}
-                      {likesSlot ?? (
-                        <>
-                          <Text style={styles.inlineStatNumber}>{stats.likes}</Text>
-                          <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
-                        </>
-                      )}
+                      {likesSlot ?? <Text style={styles.inlineStatNumber}>{stats?.likes}</Text>}
+                      <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
+                    </View>
+                  )}
+                  {(stats?.following != null || followingSlot) && (
+                    <View style={styles.inlineStat}>
+                      {followingSlot ?? <Text style={styles.inlineStatNumber}>{stats?.following}</Text>}
+                      <Text style={styles.inlineStatLabel}>{i18n.t('follow.feedPill')}</Text>
                     </View>
                   )}
                 </View>
@@ -343,10 +353,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 16,
     marginTop: 8,
   },
+  // Colonna [numero / etichetta]: due righe per stat, tre stat per riga.
   inlineStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   },
   inlineStatNumber: {
     fontSize: 15,
@@ -354,8 +364,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   inlineStatLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: theme.colors.textSecondary,
+    marginTop: 1,
   },
   allergensLabel: {
     fontSize: 13,
