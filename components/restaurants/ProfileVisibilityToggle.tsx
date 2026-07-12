@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -33,6 +33,13 @@ export default function ProfileVisibilityToggle({ collectionId, locked, initialV
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const { userProfile } = useAuth();
   const [isPublic, setIsPublic] = useState(initialVisibility === 'public');
+
+  // Riallinea quando cambia la lista in modifica: nel SaveToCollectionSheet il
+  // pannello editor resta montato tra una lista e l'altra (slide, non remount),
+  // come per il load di MapVisibilityToggle.
+  useEffect(() => {
+    setIsPublic(initialVisibility === 'public');
+  }, [collectionId, initialVisibility]);
 
   // Anonimi fuori dal layer social (come share profilo e follow): niente toggle.
   if (userProfile?.is_anonymous) return null;
