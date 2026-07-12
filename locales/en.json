@@ -511,7 +511,7 @@
       "menuReviews": "My reviews",
       "menuMyRestaurants": "My restaurants",
       "menuLeaderboard": "Leaderboard",
-      "menuCommunity": "Community",
+      "menuCommunity": "Users & Leaderboards",
       "emptyReviews": "Your reviews will show up here. Visit a restaurant and share how it went.",
       "emptyFavorites": "Your favorites will show up here. Tap the heart on a place to save it."
     },
@@ -889,7 +889,7 @@
     "listFollowingEmpty": "Not following anyone yet."
   },
   "community": {
-    "title": "Community",
+    "title": "Users & Leaderboards",
     "searchPlaceholder": "Search users",
     "noResults": "No users found.",
     "clearSearch": "Clear search"

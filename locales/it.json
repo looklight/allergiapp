@@ -511,7 +511,7 @@
       "menuReviews": "Le mie recensioni",
       "menuMyRestaurants": "I miei ristoranti",
       "menuLeaderboard": "Classifiche",
-      "menuCommunity": "Community",
+      "menuCommunity": "Utenti & Classifiche",
       "emptyReviews": "Le tue recensioni appariranno qui. Visita un ristorante e racconta com'è andata.",
       "emptyFavorites": "I tuoi preferiti appariranno qui. Tocca il cuore su un locale per salvarlo."
     },
@@ -889,7 +889,7 @@
     "listFollowingEmpty": "Non segue ancora nessuno."
   },
   "community": {
-    "title": "Community",
+    "title": "Utenti & Classifiche",
     "searchPlaceholder": "Cerca utenti",
     "noResults": "Nessun utente trovato.",
     "clearSearch": "Cancella ricerca"
