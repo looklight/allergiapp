@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -7,9 +7,12 @@ import type { AppTheme } from '../../../constants/theme';
 import { AuthService } from '../../../services/auth';
 import { RestaurantService } from '../../../services/restaurantService';
 import type { UserReview } from '../../../services/restaurantService';
+import { getPublicCollections, getPublicCollectionItems, type PublicCollectionMeta, type MyRestaurantItem } from '../../../services/myRestaurantsService';
 import { useAuth } from '../../../contexts/AuthContext';
 import ProfileMapList from '../../../components/ProfileMapList';
+import ListPill from '../../../components/ListPill';
 import UserReviewCard from '../../../components/UserReviewCard';
+import MyRestaurantCard from '../../components/my-restaurants/MyRestaurantCard';
 import FollowButton from '../../../components/FollowButton';
 import { FollowService, type FollowStats } from '../../../services/followService';
 import { BlockService } from '../../../services/blockService';
@@ -26,6 +29,12 @@ const getReviewLocation = (r: UserReview) => ({
   country: r.restaurant_country,
   countryCode: r.restaurant_country_code,
 });
+
+// Riga unificata (come ProfileRow sul profilo personale): una recensione o un
+// ristorante di una lista pubblica. La pill in alto sceglie l'insieme.
+type PublicRow =
+  | { kind: 'review'; data: UserReview }
+  | { kind: 'saved'; data: MyRestaurantItem };
 
 // Blocco utente: UI volutamente SPENTA (decisione 2026-07-12, rivalutare al
 // lancio social). Tutta l'infrastruttura resta attiva e testata (mig 075/077:
@@ -51,6 +60,13 @@ export default function PublicProfileScreen() {
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  // Liste pubbliche dell'utente: meta subito (pill), item al primo tap.
+  const [publicLists, setPublicLists] = useState<PublicCollectionMeta[]>([]);
+  const [selected, setSelected] = useState<'reviews' | string>('reviews');
+  const [listItems, setListItems] = useState<Map<string, MyRestaurantItem[]>>(new Map());
+  // Fetch in volo per-lista (non un boolean unico: cambiando pill mentre
+  // un'altra lista carica, lo spinner deve seguire la lista selezionata).
+  const [loadingLists, setLoadingLists] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!uid) return;
@@ -61,7 +77,7 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, totalReviews, totalLikes, isFollowing, graphStats, isBlocked] = await Promise.all([
+        const [prof, contribs, totalReviews, totalLikes, isFollowing, graphStats, isBlocked, lists] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
           RestaurantService.getReviewCountByUser(uid),
@@ -73,6 +89,9 @@ export default function PublicProfileScreen() {
           BLOCK_UI_ENABLED && user?.uid
             ? BlockService.isBlocked(user.uid, uid).catch(() => false)
             : Promise.resolve(false),
+          // In parallelo (is_anonymous non è ancora noto): sui profili anonimi
+          // il risultato viene scartato al render, come per il blocco.
+          getPublicCollections(uid),
         ]);
         setProfile(prof);
         setReviews(contribs);
@@ -81,6 +100,7 @@ export default function PublicProfileScreen() {
         setFollowing(isFollowing);
         setFollowStats(graphStats);
         setBlocked(isBlocked);
+        setPublicLists(lists);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
@@ -88,6 +108,15 @@ export default function PublicProfileScreen() {
       }
     })();
   }, [uid, isAuthenticated, user?.uid]);
+
+  const openList = (collectionId: string) => {
+    setSelected(collectionId);
+    if (listItems.has(collectionId)) return;
+    setLoadingLists((prev) => new Set(prev).add(collectionId));
+    getPublicCollectionItems(collectionId)
+      .then((items) => setListItems((prev) => new Map(prev).set(collectionId, items)))
+      .finally(() => setLoadingLists((prev) => { const n = new Set(prev); n.delete(collectionId); return n; }));
+  };
 
   // Mask username for anonymous users when viewed by others.
   // ProfileCard usa getDisplayName che oggi ritorna username; sovrascrivere
@@ -101,6 +130,18 @@ export default function PublicProfileScreen() {
   // Segui → Già segui).
   const canFollow =
     !!user?.uid && user.uid !== uid && !!profile && !profile.is_anonymous && !blocked && following !== null;
+
+  // Liste pubbliche: mai sui profili anonimi (le liste sono layer social, come
+  // follow e share) né su utenti bloccati. La barra pill compare solo se c'è
+  // almeno una lista da mostrare; altrimenti il profilo resta com'era.
+  const showLists = !!profile && !profile.is_anonymous && !blocked && publicLists.length > 0;
+  const effSelected = showLists ? selected : 'reviews';
+  const currentList = effSelected !== 'reviews' ? publicLists.find((c) => c.id === effSelected) : undefined;
+
+  const rows = useMemo<PublicRow[]>(() => {
+    if (effSelected === 'reviews') return reviews.map((data) => ({ kind: 'review' as const, data }));
+    return (listItems.get(effSelected) ?? []).map((data) => ({ kind: 'saved' as const, data }));
+  }, [effSelected, reviews, listItems]);
 
   // Menu "..." (blocca/sblocca): su qualunque profilo altrui, anonimi inclusi.
   const handleBlockMenu = () => {
@@ -160,7 +201,7 @@ export default function PublicProfileScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <ProfileMapList<UserReview>
+      <ProfileMapList<PublicRow>
         profile={visibleProfile!}
         // Del grafo qui si mostra SOLO "Seguiti" (scelta 2026-07-12): il
         // follower count altrui a numeri bassi è anti-social-proof, resta
@@ -197,28 +238,88 @@ export default function PublicProfileScreen() {
         })()}
         // Utente bloccato: la promessa del blocco ("non vedrai più le sue
         // recensioni") vale anche visitando il suo profilo di proposito.
-        items={blocked ? [] : reviews}
-        getLocation={getReviewLocation}
-        getMapPin={(r) => ({
-          id: r.restaurant_id,
-          name: r.restaurant_name ?? '',
-          location: r.restaurant_lat != null && r.restaurant_lng != null
-            ? { latitude: r.restaurant_lat, longitude: r.restaurant_lng }
-            : null,
-          is_favorite: false,
-          offers_lodging: r.restaurant_offers_lodging ?? false,
-        })}
-        getPinId={(r) => r.restaurant_id}
-        getRowKey={(r) => r.id}
-        renderRow={(r, onPress) => <UserReviewCard review={r} onPress={onPress} />}
-        sectionTitle={i18n.t('restaurants.user.reviewsLabel')}
+        items={blocked ? [] : rows}
+        // Barra pill solo se ci sono liste pubbliche da mostrare: senza, il
+        // profilo resta nella forma classica (solo recensioni, niente barra).
+        headerVisible={showLists ? true : undefined}
+        filterSlot={showLists ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.pillBar}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ListPill
+              label={i18n.t('restaurants.user.reviewsLabel')}
+              count={reviewCount}
+              active={effSelected === 'reviews'}
+              onPress={() => setSelected('reviews')}
+            />
+            {publicLists.map((c) => (
+              <ListPill
+                key={c.id}
+                label={c.name}
+                emoji={c.emoji}
+                count={c.item_count}
+                active={effSelected === c.id}
+                onPress={() => openList(c.id)}
+              />
+            ))}
+          </ScrollView>
+        ) : undefined}
+        getLocation={(row) =>
+          row.kind === 'review'
+            ? getReviewLocation(row.data)
+            : { city: row.data.city, country: row.data.country, countryCode: row.data.country_code }
+        }
+        getMapPin={(row) => {
+          if (row.kind === 'review') {
+            return {
+              id: row.data.restaurant_id,
+              name: row.data.restaurant_name ?? '',
+              location: row.data.restaurant_lat != null && row.data.restaurant_lng != null
+                ? { latitude: row.data.restaurant_lat, longitude: row.data.restaurant_lng }
+                : null,
+              is_favorite: false,
+              offers_lodging: row.data.restaurant_offers_lodging ?? false,
+            };
+          }
+          // Riga di lista pubblica: badge col simbolo della lista aperta,
+          // coerente col profilo personale.
+          return {
+            id: row.data.id,
+            name: row.data.name,
+            location: row.data.location,
+            offers_lodging: row.data.offers_lodging,
+            symbol: currentList?.emoji ?? null,
+          };
+        }}
+        getPinId={(row) => (row.kind === 'review' ? row.data.restaurant_id : row.data.id)}
+        getRowKey={(row) => (row.kind === 'review' ? `r-${row.data.id}` : `s-${row.data.id}`)}
+        renderRow={(row, onPress) =>
+          row.kind === 'review' ? (
+            <UserReviewCard review={row.data} onPress={onPress} />
+          ) : (
+            <MyRestaurantCard item={row.data} onPress={onPress} />
+          )
+        }
+        sectionTitle={effSelected === 'reviews' ? i18n.t('restaurants.user.reviewsLabel') : currentList?.name ?? ''}
         typeFilter={{
-          getKey: (r) => (r.restaurant_offers_lodging ? 'lodging' : 'restaurant'),
+          getKey: (row) =>
+            (row.kind === 'review' ? row.data.restaurant_offers_lodging : row.data.offers_lodging)
+              ? 'lodging'
+              : 'restaurant',
           types: [
             { key: 'restaurant', icon: venueIconName(false), label: i18n.t('restaurants.user.filterRestaurants') },
             { key: 'lodging', icon: venueIconName(true), label: i18n.t('restaurants.user.filterLodging') },
           ],
         }}
+        emptyState={
+          // Item della lista in caricamento al primo tap: spinner leggero.
+          effSelected !== 'reviews' && loadingLists.has(effSelected) ? (
+            <ActivityIndicator color={theme.colors.primary} style={styles.listSpinner} />
+          ) : undefined
+        }
       />
     </>
   );
@@ -238,5 +339,15 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   errorText: {
     color: theme.colors.textSecondary,
     fontSize: 16,
+  },
+  // Barra pill (Recensioni + liste pubbliche): stessa forma del profilo personale.
+  pillBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 4,
+  },
+  listSpinner: {
+    paddingVertical: 24,
   },
 });

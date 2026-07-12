@@ -127,10 +127,10 @@ export async function createCollection(userId: string, name: string, emoji: stri
   }
 }
 
-/** Aggiorna nome e/o emoji di una lista. La default non e' modificabile (guardia). */
+/** Aggiorna nome, emoji e/o visibilita' di una lista. La default non e' modificabile (guardia). */
 export async function updateCollection(
   collectionId: string,
-  patch: { name?: string; emoji?: string | null },
+  patch: { name?: string; emoji?: string | null; visibility?: 'private' | 'public' },
 ): Promise<boolean> {
   const fields: Record<string, unknown> = {};
   if (patch.name !== undefined) {
@@ -139,6 +139,7 @@ export async function updateCollection(
     fields.name = trimmed;
   }
   if (patch.emoji !== undefined) fields.emoji = patch.emoji;
+  if (patch.visibility !== undefined) fields.visibility = patch.visibility;
   if (Object.keys(fields).length === 0) return true;
 
   const { error } = await supabase

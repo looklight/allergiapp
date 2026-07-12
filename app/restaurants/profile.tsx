@@ -14,6 +14,7 @@ import { FollowService, getFollowGraphVersion, type FollowStats } from '../../se
 import ShareProfileSheet from '../../components/ShareProfileSheet';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
+import ListPill from '../../components/ListPill';
 import UserReviewCard from '../../components/UserReviewCard';
 import MyRestaurantCard from '../components/my-restaurants/MyRestaurantCard';
 import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
@@ -126,7 +127,7 @@ export default function ProfileScreen() {
   // Pill cache-first (come Recensioni/Preferiti via useProfileCounts): a freddo
   // le pill liste compaiono subito con l'ultimo conteggio noto, poi revalidano.
   const liveMeta = useMemo<CollectionMeta[]>(
-    () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count })),
+    () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count, visibility: c.visibility })),
     [listsData.items],
   );
   const customCollections = useCachedCollections(user?.uid, liveMeta, listsData.isLoading);
@@ -439,9 +440,12 @@ export default function ProfileScreen() {
                 label={c.name}
                 emoji={c.emoji}
                 count={c.item_count}
+                isPublic={c.visibility === 'public'}
                 active={selected === c.id}
                 onPress={() => setSelected(c.id)}
-                onLongPress={() => setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji } })}
+                // Stessa fonte dell'icona globo qui sopra; il fallback copre le
+                // cache pill scritte prima della feature (senza campo).
+                onLongPress={() => setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji, visibility: c.visibility ?? 'private' } })}
               />
             ))}
             <TouchableOpacity
@@ -481,6 +485,13 @@ export default function ProfileScreen() {
         onClose={() => setEditor(null)}
         onSubmit={handleEditorSubmit}
         onDelete={handleEditorDelete}
+        // Il toggle ha già scritto in DB: la pill aggiorna l'icona con un patch
+        // locale (niente reload dell'intera pipeline liste+item+stats).
+        onVisibilityChanged={(visibility) => {
+          const id = editor?.editing?.id;
+          if (!id) return;
+          listsData.setItems((prev) => prev.map((c) => (c.id === id ? { ...c, visibility } : c)));
+        }}
       />
 
       {user?.uid && userProfile.username && !userProfile.is_anonymous && (
@@ -492,38 +503,6 @@ export default function ProfileScreen() {
         />
       )}
     </>
-  );
-}
-
-function ListPill({
-  label,
-  emoji,
-  count,
-  active,
-  onPress,
-  onLongPress,
-}: {
-  label: string;
-  emoji?: string | null;
-  count: number | null;
-  active: boolean;
-  onPress: () => void;
-  onLongPress?: () => void;
-}) {
-  const theme = useTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  const textStyle = [styles.kindButtonText, active && styles.kindButtonTextActive];
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      onLongPress={onLongPress}
-      activeOpacity={0.7}
-      style={[styles.kindButton, styles.kindButtonInner, active && styles.kindButtonActive]}
-    >
-      {emoji ? <Text style={styles.kindButtonEmoji}>{emoji}</Text> : null}
-      <Text style={textStyle} numberOfLines={1}>{label}</Text>
-      <CountText value={count} style={textStyle} />
-    </TouchableOpacity>
   );
 }
 
@@ -614,13 +593,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 8,
     paddingRight: 4,
   },
-  kindButton: {
-    maxWidth: 170,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceMuted,
-  },
   addPill: {
     // Circolare e alto come le pill: stretch sull'altezza della riga +
     // aspectRatio 1 → cerchio della stessa altezza, senza sporgere.
@@ -630,25 +602,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 999,
     backgroundColor: theme.colors.surfaceMuted,
-  },
-  kindButtonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  kindButtonEmoji: {
-    fontSize: 13,
-  },
-  kindButtonActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  kindButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  kindButtonTextActive: {
-    color: theme.colors.onPrimary,
   },
   emptyText: {
     fontSize: 14,

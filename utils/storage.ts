@@ -36,8 +36,10 @@ const DEFAULT_THEME_MODE: ThemeMode = 'light';
 
 export type ProfileCounts = { reviews: number; favorites: number };
 
-/** Metadati pill lista (per la cache-first delle pill liste nel profilo). */
-export type CollectionMeta = { id: string; name: string; emoji: string | null; item_count: number };
+/** Metadati pill lista (per la cache-first delle pill liste nel profilo).
+ *  `visibility` opzionale: le cache scritte prima della feature non ce l'hanno
+ *  (assente = trattata come privata finche' il live non revalida). */
+export type CollectionMeta = { id: string; name: string; emoji: string | null; item_count: number; visibility?: 'private' | 'public' };
 
 export type RecentPlace = {
   name: string;

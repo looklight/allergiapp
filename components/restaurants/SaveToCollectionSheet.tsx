@@ -31,6 +31,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import CreateListForm from './CreateListForm';
 import MapVisibilityToggle from './MapVisibilityToggle';
+import ProfileVisibilityToggle from './ProfileVisibilityToggle';
 import i18n from '../../utils/i18n';
 
 const NOTE_MAX_LENGTH = 200;
@@ -38,7 +39,12 @@ const MIN_RATIO = 0.4;
 const MAX_RATIO = 0.85;
 // Stima dell'altezza "non-lista" (header + nota + conferma + paddings): serve a
 // dimensionare il modal in modo adattivo a partire dall'altezza delle righe.
-const CHROME = 230;
+// Include la nota a 3 righe (minHeight 60): se cambia quella, aggiornare qui.
+const CHROME = 250;
+// Idem per il pannello editor (solo header + paddings: il form è misurato dal
+// suo ScrollView). Serve perché l'editor può essere più alto dell'elenco (form
+// + toggle mappa/profilo + azioni) e non deve richiedere scroll.
+const EDITOR_CHROME = 72;
 const FAV_SENTINEL = 'favorites';
 
 // Android (old arch) richiede l'opt-in esplicito per LayoutAnimation.
@@ -100,6 +106,9 @@ export default function SaveToCollectionSheet({
   const [mode, setMode] = useState<'list' | 'editor'>('list');
   const [editing, setEditing] = useState<CollectionWithCount | null>(null);
   const [contentHeight, setContentHeight] = useState(height * 0.5);
+  // Altezza richiesta dal pannello editor (misurata dal suo contenuto): in
+  // modalità editor il foglio cresce fino a mostrarlo tutto, senza scroll.
+  const [editorHeight, setEditorHeight] = useState(0);
   const [kbInset, setKbInset] = useState(0);
 
   const progress = useSharedValue(0);
@@ -138,7 +147,10 @@ export default function SaveToCollectionSheet({
     return () => { s.remove(); h.remove(); };
   }, []);
 
-  const sheetHeight = Math.min(contentHeight, height - insets.top - kbInset);
+  // In editor il foglio si adatta al pannello attivo (solo crescita rispetto
+  // all'elenco: mai un salto verso il basso durante lo slide).
+  const activeHeight = mode === 'editor' ? Math.max(contentHeight, editorHeight) : contentHeight;
+  const sheetHeight = Math.min(activeHeight, height - insets.top - kbInset);
 
   // Inizializza la bozza a ogni apertura.
   useEffect(() => {
@@ -179,19 +191,30 @@ export default function SaveToCollectionSheet({
     });
   }, [progress, finishClose]);
 
-  // Altezza adattiva dalle righe della lista (min..max). L'editor condivide.
+  // Altezza adattiva dalle righe della lista (min..max).
   const onRowsSize = useCallback((_: number, h: number) => {
     const next = Math.min(maxH, Math.max(minH, h + CHROME + insets.bottom));
     setContentHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
   }, [minH, maxH, insets.bottom]);
 
+  // Altezza richiesta dall'editor, dal contenuto del suo ScrollView (che resta
+  // solo come rete di sicurezza su schermi piccoli/con tastiera).
+  const onEditorSize = useCallback((_: number, h: number) => {
+    const next = Math.min(maxH, h + EDITOR_CHROME + insets.bottom);
+    setEditorHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
+  }, [maxH, insets.bottom]);
+
+  // Il cambio altezza elenco↔editor è animato in layout nativo, in sincrono
+  // con lo slide orizzontale dei pannelli (stessa durata).
   const openEditor = (list: CollectionWithCount | null) => {
+    LayoutAnimation.configureNext(LayoutAnimation.create(280, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.scaleXY));
     setEditing(list);
     setMode('editor');
     panelX.value = withTiming(-width, { duration: 280 });
   };
   const closeEditor = useCallback(() => {
     Keyboard.dismiss();
+    LayoutAnimation.configureNext(LayoutAnimation.create(280, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.scaleXY));
     panelX.value = withTiming(0, { duration: 280 });
     setMode('list');
     setEditing(null);
@@ -374,7 +397,7 @@ export default function SaveToCollectionSheet({
                 </Text>
                 <View style={styles.headerBtn} />
               </View>
-              <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
+              <ScrollView keyboardShouldPersistTaps="handled" bounces={false} onContentSizeChange={onEditorSize}>
                 <CreateListForm
                   active={mode === 'editor'}
                   initialName={editing?.name ?? ''}
@@ -382,7 +405,23 @@ export default function SaveToCollectionSheet({
                   submitLabel={editing ? i18n.t('common.save') : i18n.t('restaurants.collections.create')}
                   onSubmit={handleFormSubmit}
                   onDelete={editing ? handleDelete : undefined}
-                  extraSection={userId ? (emoji) => <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} /> : undefined}
+                  extraSection={userId ? (emoji) => (
+                    <View style={styles.editorToggles}>
+                      <MapVisibilityToggle userId={userId} collectionId={editing?.id} locked={!editing} emoji={emoji} />
+                      <ProfileVisibilityToggle
+                        collectionId={editing?.id}
+                        locked={!editing}
+                        initialVisibility={editing?.visibility}
+                        // Aggiorna la copia locale: riaprendo l'editor nella
+                        // stessa sessione (openEditor risorge da qui) il toggle
+                        // riparte dal valore giusto.
+                        onChanged={(visibility) => {
+                          if (!editing) return;
+                          setLocalCollections((prev) => prev.map((c) => (c.id === editing.id ? { ...c, visibility } : c)));
+                        }}
+                      />
+                    </View>
+                  ) : undefined}
                 />
               </ScrollView>
             </View>
@@ -436,6 +475,8 @@ function Row({
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: { flex: 1, justifyContent: 'flex-end' },
+  // Sezione toggle dell'editor (mappa + profilo): stesso respiro del form.
+  editorToggles: { gap: theme.spacing.lg },
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.overlay },
   content: {
     backgroundColor: theme.colors.detailSurface,
@@ -491,7 +532,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.detailMuted,
   },
-  noteInput: { fontSize: 14, color: theme.colors.textPrimary, lineHeight: 20, minHeight: 40, padding: 0 },
+  noteInput: { fontSize: 14, color: theme.colors.textPrimary, lineHeight: 20, minHeight: 60, padding: 0 },
   confirmButton: {
     marginHorizontal: theme.spacing.lg,
     marginTop: theme.spacing.xl,
