@@ -30,19 +30,49 @@ export default function RestaurantsPage() {
   const [stats, setStats] = useState<CountryStats | null>(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('created_desc');
+  const [zeroReviewsOnly, setZeroReviewsOnly] = useState(false);
+  const [reviewsMenuOpen, setReviewsMenuOpen] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [mapRestaurants, setMapRestaurants] = useState<MapRestaurant[]>([]);
 
   const fetchRestaurants = useCallback(async (pageNum: number) => {
-    const { data } = await supabase.rpc('get_restaurants_admin', {
-      page_limit: PAGE_SIZE + 1,
-      page_offset: pageNum * PAGE_SIZE,
-      country_filter: countryFilter === 'all' ? null : countryFilter,
-      search_query: search.trim() || null,
-      sort_by: sortBy,
-    });
-    return (data ?? []) as Restaurant[];
-  }, [countryFilter, search, sortBy]);
+    if (!zeroReviewsOnly) {
+      const { data } = await supabase.rpc('get_restaurants_admin', {
+        page_limit: PAGE_SIZE + 1,
+        page_offset: pageNum * PAGE_SIZE,
+        country_filter: countryFilter === 'all' ? null : countryFilter,
+        search_query: search.trim() || null,
+        sort_by: sortBy,
+      });
+      return (data ?? []) as Restaurant[];
+    }
+
+    // "Senza recensioni" non passa dalla RPC (non ha questo filtro): anti-join
+    // PostgREST — left embed su reviews + is null tiene solo i ristoranti
+    // senza alcuna recensione. I conteggi recensioni/foto sono 0 per definizione.
+    let query = supabase
+      .from('restaurants')
+      .select('id, name, address, city, country, country_code, cuisine_types, created_at, reviews!left(id), menu_photos(count)')
+      .is('reviews', null);
+    if (countryFilter !== 'all') query = query.eq('country_code', countryFilter);
+    const q = search.trim();
+    if (q) query = query.or(`name.ilike.%${q}%,city.ilike.%${q}%`);
+    query = sortBy === 'city_asc'
+      ? query.order('city', { ascending: true, nullsFirst: false })
+      : query.order('created_at', { ascending: false });
+    const from = pageNum * PAGE_SIZE;
+    const { data } = await query.range(from, from + PAGE_SIZE);
+    return (data ?? []).map((row: any) => {
+      const { reviews: _reviews, menu_photos, ...rest } = row;
+      return {
+        ...rest,
+        review_count: 0,
+        review_photo_count: 0,
+        menu_photo_count: menu_photos?.[0]?.count ?? 0,
+        average_rating: 0,
+      };
+    }) as Restaurant[];
+  }, [countryFilter, search, sortBy, zeroReviewsOnly]);
 
   const { items: restaurants, setItems: setRestaurants, loading, hasMore, loadMore, reset } =
     usePagination<Restaurant>({ fetchPage: fetchRestaurants });
@@ -92,7 +122,7 @@ export default function RestaurantsPage() {
     reset();
     loadStats();
     if (showMap) loadMapData();
-  }, [countryFilter, search, sortBy]);
+  }, [countryFilter, search, sortBy, zeroReviewsOnly]);
 
   const loadMapData = async () => {
     // RPC restituisce id + lat/lng (leggera)
@@ -239,16 +269,49 @@ export default function RestaurantsPage() {
               {countryFilter === 'all' && <th className="px-4 py-3 font-medium">Paese</th>}
               <th className="px-4 py-3 font-medium">Cucina</th>
               <th className="px-4 py-3 font-medium text-right">
-                <button
-                  type="button"
-                  onClick={() => setSortBy('reviews_desc')}
-                  className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
-                >
-                  Recensioni
-                  <span className="text-faint text-xs w-3 text-center">
-                    {sortBy === 'reviews_desc' ? '▼' : ''}
-                  </span>
-                </button>
+                <div className="relative inline-block">
+                  <button
+                    type="button"
+                    onClick={() => setReviewsMenuOpen((o) => !o)}
+                    className={`inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded ${
+                      zeroReviewsOnly ? 'bg-selected text-selected-foreground hover:bg-selected-hover' : 'hover:bg-muted'
+                    }`}
+                  >
+                    Recensioni
+                    {zeroReviewsOnly ? (
+                      <span className="text-xs">= 0</span>
+                    ) : (
+                      <span className="text-faint text-xs w-3 text-center">
+                        {sortBy === 'reviews_desc' ? '▼' : ''}
+                      </span>
+                    )}
+                  </button>
+                  {reviewsMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setReviewsMenuOpen(false)} />
+                      <div className="absolute right-0 top-full mt-1 z-20 w-56 bg-card border rounded-lg shadow-lg py-1 text-left font-normal normal-case">
+                        <button
+                          type="button"
+                          onClick={() => { setSortBy('reviews_desc'); setZeroReviewsOnly(false); setReviewsMenuOpen(false); }}
+                          className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted ${
+                            sortBy === 'reviews_desc' && !zeroReviewsOnly ? 'text-foreground font-medium' : 'text-foreground-secondary'
+                          }`}
+                        >
+                          Ordina per più recensiti
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setZeroReviewsOnly((v) => !v); setReviewsMenuOpen(false); }}
+                          className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted ${
+                            zeroReviewsOnly ? 'text-foreground font-medium' : 'text-foreground-secondary'
+                          }`}
+                        >
+                          {zeroReviewsOnly ? 'Mostra tutti' : 'Solo senza recensioni'}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </th>
               <th className="px-4 py-3 font-medium text-right" title="Foto nelle recensioni">Foto</th>
               <th className="px-4 py-3 font-medium text-right" title="Foto del menu">Menu</th>
