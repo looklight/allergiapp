@@ -19,6 +19,17 @@ export type FollowedProfile = {
 // senza toccare il DB quando i grafi cresceranno.
 export const FEED_LIMIT = 100;
 
+// Versione del grafo follow: incrementata a ogni follow/unfollow/blocco.
+// Le schermate che mostrano dati derivati (pill Seguiti, feed) la confrontano
+// al focus per ricaricare solo quando qualcosa e' davvero cambiato altrove.
+let graphVersion = 0;
+export function bumpFollowGraphVersion(): void {
+  graphVersion += 1;
+}
+export function getFollowGraphVersion(): number {
+  return graphVersion;
+}
+
 export async function isFollowing(targetId: string): Promise<boolean> {
   // La RLS espone solo le righe del follower corrente: basta filtrare sul target.
   const { data, error } = await supabase
@@ -36,6 +47,7 @@ export async function follow(userId: string, targetId: string): Promise<void> {
     .from('follows')
     .insert({ follower_id: userId, following_id: targetId });
   if (error) throw error;
+  bumpFollowGraphVersion();
   SupabaseAnalytics.track('user_followed', { target_id: targetId });
 }
 
@@ -46,6 +58,7 @@ export async function unfollow(userId: string, targetId: string): Promise<void> 
     .eq('follower_id', userId)
     .eq('following_id', targetId);
   if (error) throw error;
+  bumpFollowGraphVersion();
   SupabaseAnalytics.track('user_unfollowed', { target_id: targetId });
 }
 

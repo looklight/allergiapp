@@ -10,7 +10,7 @@ import { FollowService, type FollowedProfile } from '../../services/followServic
 import FollowButton from '../../components/FollowButton';
 import Avatar from '../../components/Avatar';
 import AppHeader from '../components/AppHeader';
-import { getAnonymousLabel } from '../../utils/anonymousLabel';
+import { getAuthorLabel } from '../../utils/getDisplayName';
 import i18n from '../../utils/i18n';
 
 // Fetcher a livello modulo: riferimento stabile per useUserItemList.
@@ -30,7 +30,7 @@ export default function FollowingScreen() {
   const followingList = useUserItemList<FollowedProfile>(fetchFollowing);
 
   const renderItem = ({ item }: { item: FollowedProfile }) => {
-    const name = item.is_anonymous ? getAnonymousLabel(item.id) : item.username;
+    const name = getAuthorLabel({ userId: item.id, username: item.username, isAnonymous: item.is_anonymous });
     return (
       <View style={styles.row}>
         <TouchableOpacity
@@ -50,7 +50,15 @@ export default function FollowingScreen() {
           <Text style={styles.name} numberOfLines={1}>{name}</Text>
         </TouchableOpacity>
         {user?.uid && (
-          <FollowButton userId={user.uid} targetId={item.id} initialFollowing />
+          <FollowButton
+            userId={user.uid}
+            targetId={item.id}
+            initialFollowing
+            // Ricarica la lista dopo il toggle: la riga unfollowata sparisce
+            // invece di restare con una pill incoerente (e per gli anonimi,
+            // non ri-followabili per RLS, evita il re-follow che fallirebbe).
+            onChange={() => followingList.reload()}
+          />
         )}
       </View>
     );

@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { SupabaseAnalytics } from './supabaseAnalytics';
+import { bumpFollowGraphVersion } from './followService';
 
 // Cache modulo degli id bloccati: lista piccola, letta spesso (filtro liste
 // recensioni). Keyata sull'utente per non sopravvivere a un cambio account.
@@ -8,9 +9,12 @@ let blockedIdsCache: Set<string> | null = null;
 
 export async function getBlockedIds(userId: string): Promise<Set<string>> {
   if (blockedIdsCache && cacheOwnerId === userId) return blockedIdsCache;
+  // L'eq e' ridondante con la RLS own-rows (mig 075) ma la esplicita:
+  // difesa in profondita' se la policy cambiasse.
   const { data, error } = await supabase
     .from('blocked_users')
-    .select('blocked_id');
+    .select('blocked_id')
+    .eq('blocker_id', userId);
   if (error) throw error;
   blockedIdsCache = new Set((data ?? []).map((r: any) => r.blocked_id));
   cacheOwnerId = userId;
@@ -28,6 +32,8 @@ export async function block(userId: string, targetId: string): Promise<void> {
     .insert({ blocker_id: userId, blocked_id: targetId });
   if (error) throw error;
   if (blockedIdsCache && cacheOwnerId === userId) blockedIdsCache.add(targetId);
+  // Il trigger DB rimuove i follow nei due sensi: il grafo e' cambiato.
+  bumpFollowGraphVersion();
   SupabaseAnalytics.track('user_blocked', { target_id: targetId });
 }
 

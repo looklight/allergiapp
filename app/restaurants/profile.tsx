@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, useFocusEffect, Stack } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,7 +10,7 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
 import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
 import { CollectionService } from '../../services/collectionService';
-import { FollowService, type FeedReview, type FollowedProfile } from '../../services/followService';
+import { FollowService, getFollowGraphVersion, type FeedReview } from '../../services/followService';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
 import UserReviewCard from '../../components/UserReviewCard';
@@ -47,11 +47,6 @@ type ProfileRow =
   | { kind: 'favorite'; data: MyRestaurantItem }
   | { kind: 'feed'; data: FeedReview };
 
-// Fetcher a livello modulo: useUserItemList li usa come dep di load(), un
-// inline ricreato a ogni render rifetcherebbe in loop.
-const fetchFollowingFeed = () => FollowService.getFollowingFeed().then((r) => r.items);
-const fetchFollowing = (): Promise<FollowedProfile[]> => FollowService.getFollowing();
-
 export default function ProfileScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -77,10 +72,60 @@ export default function ProfileScreen() {
 
   const reviewsList = useUserItemList<UserReview>(RestaurantService.getReviewsByUser);
   const favoritesList = useUserItemList<MyRestaurantItem>(getMyRestaurants);
-  // Feed "Seguiti": recensioni dei profili seguiti + lista dei seguiti (per il
-  // conteggio pill; la gestione/unfollow vive in /restaurants/following).
-  const feedList = useUserItemList<FeedReview>(fetchFollowingFeed);
-  const followingList = useUserItemList<FollowedProfile>(fetchFollowing);
+
+  // ─── Grafo follow ──────────────────────────────────────────────────────────
+  // Conteggio seguiti (pill) caricato subito con una head-query; il feed è
+  // caricato pigramente alla prima apertura della tab "Seguiti" (la maggior
+  // parte delle aperture del profilo non lo paga). Al focus si ricarica solo
+  // se il grafo è cambiato altrove (unfollow in Gestisci, blocco su profilo).
+  const [followingCount, setFollowingCount] = useState<number | null>(null);
+  const [feedItems, setFeedItems] = useState<FeedReview[]>([]);
+  const [feedLoading, setFeedLoading] = useState(false);
+  const feedLoadedRef = useRef(false);
+
+  const loadFollowingCount = useCallback(async () => {
+    try {
+      setFollowingCount(await FollowService.getFollowingCount());
+    } catch (err) {
+      console.warn('[Profile] conteggio seguiti fallito:', err);
+      setFollowingCount((c) => c ?? 0);
+    }
+  }, []);
+
+  const loadFeed = useCallback(async () => {
+    setFeedLoading(true);
+    try {
+      const { items } = await FollowService.getFollowingFeed();
+      setFeedItems(items);
+    } catch (err) {
+      console.warn('[Profile] feed seguiti fallito:', err);
+    } finally {
+      setFeedLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.uid) loadFollowingCount();
+  }, [user?.uid, loadFollowingCount]);
+
+  useEffect(() => {
+    if (selected === 'following' && !feedLoadedRef.current) {
+      feedLoadedRef.current = true;
+      loadFeed();
+    }
+  }, [selected, loadFeed]);
+
+  const followVersionRef = useRef(getFollowGraphVersion());
+  useFocusEffect(
+    useCallback(() => {
+      const v = getFollowGraphVersion();
+      if (v !== followVersionRef.current) {
+        followVersionRef.current = v;
+        loadFollowingCount();
+        if (feedLoadedRef.current) loadFeed();
+      }
+    }, [loadFollowingCount, loadFeed]),
+  );
 
   const favorites = useMemo(
     () => favoritesList.items.filter((r) => r.is_favorite),
@@ -114,9 +159,9 @@ export default function ProfileScreen() {
   const rows = useMemo<ProfileRow[]>(() => {
     if (selected === 'reviews') return reviewsList.items.map((data) => ({ kind: 'review' as const, data }));
     if (selected === 'favorites') return favorites.map((data) => ({ kind: 'favorite' as const, data }));
-    if (selected === 'following') return feedList.items.map((data) => ({ kind: 'feed' as const, data }));
+    if (selected === 'following') return feedItems.map((data) => ({ kind: 'feed' as const, data }));
     return customItems.map((data) => ({ kind: 'favorite' as const, data }));
-  }, [selected, reviewsList.items, favorites, feedList.items, customItems]);
+  }, [selected, reviewsList.items, favorites, feedItems, customItems]);
 
   // Visibilità delle pill auto (Recensioni/Preferiti). Preferiti = lista
   // is_default: a 0 confermato è solo rumore → pill nascosta. Durante il loading
@@ -146,8 +191,7 @@ export default function ProfileScreen() {
   // Caricamento aggregato: serve a non mostrare il testo "stato vuoto" del
   // filtro corrente prima che i dati risolvano, e a ripristinare la pill salvata
   // solo a liste complete (vedi sotto).
-  const isLoadingLists =
-    reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading || feedList.isLoading;
+  const isLoadingLists = reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading;
 
   // Ricorda l'ultima pill scelta (Recensioni/Preferiti/lista) per utente.
   // Ripristino UNA volta, a caricamento finito: solo allora `visiblePillKeys` è
@@ -174,8 +218,8 @@ export default function ProfileScreen() {
     reviewsList.reload();
     favoritesList.reload();
     listsData.reload();
-    feedList.reload();
-    followingList.reload();
+    loadFollowingCount();
+    if (feedLoadedRef.current) loadFeed();
   };
 
   // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
@@ -395,7 +439,7 @@ export default function ProfileScreen() {
             )}
             <ListPill
               label={i18n.t('follow.feedPill')}
-              count={followingList.isLoading ? null : followingList.items.length}
+              count={followingCount}
               active={selected === 'following'}
               onPress={() => setSelected('following')}
             />
@@ -422,7 +466,7 @@ export default function ProfileScreen() {
           </ScrollView>
         }
         listHeaderSlot={
-          selected === 'following' && followingList.items.length > 0 ? (
+          selected === 'following' && (followingCount ?? 0) > 0 ? (
             <TouchableOpacity
               style={styles.manageRow}
               onPress={() => router.push('/restaurants/following')}
@@ -437,14 +481,14 @@ export default function ProfileScreen() {
           ) : undefined
         }
         emptyState={
-          isLoadingLists ? null : (
+          isLoadingLists || (selected === 'following' && feedLoading) ? null : (
             <Text style={styles.emptyText}>
               {selected === 'reviews' ? (
                 i18n.t('restaurants.profile.emptyReviews')
               ) : selected === 'favorites' ? (
                 i18n.t('restaurants.profile.emptyFavorites')
               ) : selected === 'following' ? (
-                followingList.items.length === 0
+                (followingCount ?? 0) === 0
                   ? i18n.t('follow.feedEmptyNoFollows')
                   : i18n.t('follow.feedEmptyNoReviews')
               ) : (
