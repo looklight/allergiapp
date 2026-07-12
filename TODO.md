@@ -293,6 +293,14 @@ Oggi il profilo carica le liste custom **eager, lato client** (`myRestaurantsSer
 
 **Decisione:** rimandata (l'utente non vuole over-engineering ora). **Momento giusto: quando si costruisce la condivisione liste** — un solo investimento che dà scala + sharing insieme. Vedi anche memoria `project_collections_feature.md`.
 
+**Aggiornamento 2026-07-12 (liste pubbliche fase A, branch `feature/public-lists`):** la condivisione in-app è arrivata con caricamento **on-demand per singola lista** (`getPublicCollectionItems`), che mitiga ma non elimina il problema: `batchLoadStats` ora ha anche un chiamante visitor-facing e su una lista pubblica molto grande scarica righe review fino al cap 1000 solo per contarle. La RPC `get_collection_items` resta il fix giusto; rivalutare se le liste pubbliche prendono piede.
+
+### Liste pubbliche — consolidamenti da review (2026-07-12)
+**Priorità: bassa — nessun bug, solo deduplicazione. Dalla review del branch `feature/public-lists`.**
+- [ ] **Switch custom condiviso** — il pattern track+thumb in View è duplicato in 5 file: `MapVisibilityToggle`, `ProfileVisibilityToggle`, `FilterModal`, `add.tsx`, `add-review.tsx`. Estrarre un `CustomSwitch` (ed eventualmente un `ToggleRow` icona+label+hint+switch usato dai due toggle liste). Un ritocco visivo/a11y oggi va replicato a mano in 5 posti.
+- [ ] **Barra pill condivisa** — lo stile della ScrollView orizzontale di `ListPill` vive due volte (`kindToggle` in `profile.tsx`, `pillBar` in `user/[uid].tsx`): estrarre un wrapper `ListPillBar` o almeno lo stile.
+- [ ] **Tipo meta pill unico** — `PublicCollectionMeta` (myRestaurantsService) è un sottoinsieme di `CollectionMeta` (utils/storage): unificare quando si aggiunge il prossimo campo (es. `slug` in fase B web).
+
 ### `reviews.language` non aggiornato su edit (DB) — fix residuo
 **Priorità: bassa — client già sistemato, resta solo il DB**
 
