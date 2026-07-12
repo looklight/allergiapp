@@ -289,6 +289,58 @@
   font-size: 12px;
 }
 
+/* ── Profilo pubblico /u/[username] ─────────────────────────────────── */
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.profile-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 3px solid var(--primary-light);
+  background: var(--bg);
+  object-fit: contain;
+  padding: 6px;
+}
+.profile-member-since {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 2px;
+}
+.profile-stats {
+  display: flex;
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.profile-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.profile-stat + .profile-stat {
+  border-left: 1px solid var(--border);
+}
+.profile-stat-number {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+.profile-stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.profile-follow-hint {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 /* ── Footer ─────────────────────────────────────────────────────────── */
 .restaurant-footer {
   border-top: 1px solid var(--border);
