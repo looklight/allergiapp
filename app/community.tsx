@@ -212,11 +212,19 @@ export default function CommunityScreen() {
                 </View>
                 <View style={styles.rowInfo}>
                   <Text style={styles.rowName} numberOfLines={1}>{item.username}</Text>
-                  {/* Attività del profilo: recensioni scritte, stessa icona
-                      della classifica Recensioni. */}
+                  {/* Attività del profilo: recensioni scritte (stessa icona
+                      della classifica Recensioni) + paesi visitati. Il gruppo
+                      paesi compare solo sopra zero: a 0 recensioni sarebbe
+                      rumore ridondante. */}
                   <View style={styles.rowSubline}>
                     <MaterialCommunityIcons name="star" size={12} color={theme.colors.textSecondary} />
                     <Text style={styles.rowSubText}>{item.review_count}</Text>
+                    {item.country_count > 0 && (
+                      <>
+                        <MaterialCommunityIcons name="earth" size={12} color={theme.colors.textSecondary} style={styles.rowSublineSpacer} />
+                        <Text style={styles.rowSubText}>{item.country_count}</Text>
+                      </>
+                    )}
                   </View>
                 </View>
                 <MaterialCommunityIcons
@@ -421,6 +429,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   rowSubText: {
     fontSize: 12,
     color: theme.colors.textSecondary,
+  },
+  rowSublineSpacer: {
+    marginLeft: 8,
   },
   rowCount: {
     fontSize: 18,

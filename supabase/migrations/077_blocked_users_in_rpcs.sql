@@ -173,17 +173,26 @@ AS $$
 $$;
 
 -- ════════════════════════════════════════════════════════════════════════════
--- 3. search_users — esclude bloccati e se stessi
+-- 3. search_users — esclude bloccati e se stessi; espone recensioni e paesi
 -- ════════════════════════════════════════════════════════════════════════════
+-- Conteggi via subquery correlate (girano solo sulle max p_limit righe
+-- restituite, costo irrilevante); paesi su country_code (sorgente di verità,
+-- mai il testo legacy `country`). DROP+CREATE perché rispetto alla mig 076
+-- cambia la signature di ritorno (colonne nuove) e Postgres non consente
+-- CREATE OR REPLACE in quel caso.
 
-CREATE OR REPLACE FUNCTION search_users(
+DROP FUNCTION IF EXISTS search_users(TEXT, INT);
+
+CREATE FUNCTION search_users(
   p_query TEXT,
   p_limit INT DEFAULT 20
 )
 RETURNS TABLE (
-  id         UUID,
-  username   TEXT,
-  avatar_url TEXT
+  id            UUID,
+  username      TEXT,
+  avatar_url    TEXT,
+  review_count  BIGINT,
+  country_count BIGINT
 )
 LANGUAGE sql STABLE
 SET search_path = public
@@ -192,7 +201,15 @@ AS $$
     -- Escape dei metacaratteri LIKE: l'utente cerca testo letterale.
     SELECT replace(replace(replace(trim(p_query), '\', '\\'), '%', '\%'), '_', '\_') AS term
   )
-  SELECT p.id, p.username, p.avatar_url
+  SELECT
+    p.id,
+    p.username,
+    p.avatar_url,
+    (SELECT COUNT(*) FROM reviews r WHERE r.user_id = p.id) AS review_count,
+    (SELECT COUNT(DISTINCT rst.country_code)
+     FROM reviews r
+     JOIN restaurants rst ON rst.id = r.restaurant_id
+     WHERE r.user_id = p.id AND rst.country_code IS NOT NULL) AS country_count
   FROM profiles p, q
   WHERE length(q.term) >= 2
     AND p.username IS NOT NULL

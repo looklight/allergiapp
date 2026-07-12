@@ -6,6 +6,7 @@ export type UserSearchResult = {
   username: string;
   avatar_url: string | null;
   review_count: number;
+  country_count: number;
 };
 
 /**
@@ -32,6 +33,7 @@ export async function searchUsers(
     avatar_url: r.avatar_url ?? null,
     // BIGINT arriva come stringa/numero a seconda del driver: normalizza.
     review_count: Number(r.review_count ?? 0),
+    country_count: Number(r.country_count ?? 0),
   }));
   SupabaseAnalytics.track('user_search', { query: term, results: results.length });
   return results;
