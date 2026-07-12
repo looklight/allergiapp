@@ -11,7 +11,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import ProfileMapList from '../../../components/ProfileMapList';
 import UserReviewCard from '../../../components/UserReviewCard';
 import FollowButton from '../../../components/FollowButton';
-import { FollowService } from '../../../services/followService';
+import { FollowService, type FollowStats } from '../../../services/followService';
 import { BlockService } from '../../../services/blockService';
 import { shareProfile } from '../../../services/shareProfile';
 import type { HeaderAction } from '../../components/AppHeader';
@@ -46,6 +46,9 @@ export default function PublicProfileScreen() {
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
   const [following, setFollowing] = useState<boolean | null>(null);
+  // Grafo pubblico (mig 080): null sugli anonimi (la RPC non li serve) →
+  // colonne Follower/Seguiti assenti.
+  const [followStats, setFollowStats] = useState<FollowStats | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,12 +61,13 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, totalReviews, totalLikes, isFollowing, isBlocked] = await Promise.all([
+        const [prof, contribs, totalReviews, totalLikes, isFollowing, graphStats, isBlocked] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
           RestaurantService.getReviewCountByUser(uid),
           RestaurantService.getLikesReceivedByUser(uid),
           FollowService.isFollowing(uid).catch(() => false),
+          FollowService.getFollowStats(uid).catch(() => null),
           // Col flag spento niente fetch: blocked resta false e non può
           // nascondere recensioni/pill di un profilo senza UI per sbloccarlo.
           BLOCK_UI_ENABLED && user?.uid
@@ -75,6 +79,7 @@ export default function PublicProfileScreen() {
         setReviewCount(totalReviews);
         setLikesReceived(totalLikes);
         setFollowing(isFollowing);
+        setFollowStats(graphStats);
         setBlocked(isBlocked);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
@@ -157,11 +162,25 @@ export default function PublicProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileMapList<UserReview>
         profile={visibleProfile!}
-        stats={{ reviews: reviewCount, likes: likesReceived }}
+        stats={{
+          reviews: reviewCount,
+          likes: likesReceived,
+          followers: followStats?.followers,
+          following: followStats?.following,
+        }}
         onBack={() => router.back()}
         nameAccessory={
           canFollow ? (
-            <FollowButton userId={user!.uid} targetId={uid} initialFollowing={following!} />
+            <FollowButton
+              userId={user!.uid}
+              targetId={uid}
+              initialFollowing={following!}
+              // Il follower count segue il toggle senza rifetch: ±1 ottimista,
+              // coerente con la UI ottimistica del bottone stesso.
+              onChange={(f) =>
+                setFollowStats((s) => (s ? { ...s, followers: Math.max(0, s.followers + (f ? 1 : -1)) } : s))
+              }
+            />
           ) : undefined
         }
         headerActions={(() => {

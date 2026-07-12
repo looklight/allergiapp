@@ -13,7 +13,21 @@ export type FollowedProfile = {
   username: string | null;
   avatar_url: string | null;
   is_anonymous: boolean;
+  review_count: number;
+  country_count: number;
+  // Totale dell'insieme (uguale su ogni riga, stile total_count del feed):
+  // resta esatto anche quando la lista e' cappata a FOLLOWING_LIST_LIMIT.
+  total_count: number;
 };
+
+export type FollowStats = {
+  followers: number;
+  following: number;
+};
+
+// Cap v1 della lista seguiti: la RPC e' gia' limit/offset, il "carica altri"
+// si aggiunge senza toccare il DB. Sotto il max-rows PostgREST (1000).
+export const FOLLOWING_LIST_LIMIT = 500;
 
 // Cap v1 del feed: la RPC e' gia' limit/offset, il "carica altri" si aggiunge
 // senza toccare il DB quando i grafi cresceranno.
@@ -62,29 +76,39 @@ export async function unfollow(userId: string, targetId: string): Promise<void> 
   SupabaseAnalytics.track('user_unfollowed', { target_id: targetId });
 }
 
-export async function getFollowing(): Promise<FollowedProfile[]> {
-  const { data, error } = await supabase
-    .from('follows')
-    .select('created_at, profile:profiles!following_id(id, username, avatar_url, is_anonymous)')
-    .order('created_at', { ascending: false });
+export async function getFollowing(userId: string): Promise<FollowedProfile[]> {
+  // RPC (mig 080) invece della lettura diretta via RLS: stesse righe, in piu'
+  // l'attivita' (recensioni/paesi) come nei risultati della ricerca Community.
+  const { data, error } = await supabase.rpc('get_following_public', {
+    p_profile_id: userId,
+    p_limit: FOLLOWING_LIST_LIMIT,
+  });
   if (error) throw error;
-  return (data ?? [])
-    .map((row: any) => row.profile)
-    .filter(Boolean)
-    .map((p: any) => ({
-      id: p.id,
-      username: p.username ?? null,
-      avatar_url: p.avatar_url ?? null,
-      is_anonymous: p.is_anonymous ?? false,
-    }));
+  return (data ?? []).map((p: any) => ({
+    id: p.id,
+    username: p.username ?? null,
+    avatar_url: p.avatar_url ?? null,
+    is_anonymous: p.is_anonymous ?? false,
+    review_count: Number(p.review_count ?? 0),
+    country_count: Number(p.country_count ?? 0),
+    total_count: Number(p.total_count ?? 0),
+  }));
 }
 
-export async function getFollowingCount(): Promise<number> {
-  const { count, error } = await supabase
-    .from('follows')
-    .select('*', { count: 'exact', head: true });
+// Conteggi follower/seguiti (mig 080): per il profilo proprio e, con la
+// stessa chiamata, per i profili pubblici non anonimi. Sui profili anonimi
+// altrui la RPC non restituisce righe: qui diventa null (stat non mostrate).
+export async function getFollowStats(profileId: string): Promise<FollowStats | null> {
+  const { data, error } = await supabase.rpc('get_follow_counts', {
+    p_profile_id: profileId,
+  });
   if (error) throw error;
-  return count ?? 0;
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return null;
+  return {
+    followers: Number(row.follower_count ?? 0),
+    following: Number(row.following_count ?? 0),
+  };
 }
 
 export async function getFollowingFeed(
@@ -133,6 +157,6 @@ export const FollowService = {
   follow,
   unfollow,
   getFollowing,
-  getFollowingCount,
+  getFollowStats,
   getFollowingFeed,
 };

@@ -866,10 +866,16 @@
     "follow": "Follow",
     "following": "Following",
     "feedPill": "Following",
-    "feedEmptyNoFollows": "Follow other profiles to see their reviews here. You can discover them through restaurant reviews and the Community page.",
-    "feedEmptyNoReviews": "The profiles you follow haven't written any reviews yet.",
-    "manage": "Manage",
-    "manageEmpty": "You're not following anyone yet."
+    "followers": "Followers",
+    "followersBadge": {
+      "one": "1 follower",
+      "other": "{{count}} followers"
+    },
+    "manageHeader": {
+      "one": "You follow 1 profile",
+      "other": "You follow {{count}} profiles"
+    },
+    "manageEmpty": "You're not following anyone yet. You can discover new profiles through restaurant reviews and the Community page."
   },
   "community": {
     "title": "Community",

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
@@ -14,7 +15,7 @@ import { getAuthorLabel } from '../../utils/getDisplayName';
 import i18n from '../../utils/i18n';
 
 // Fetcher a livello modulo: riferimento stabile per useUserItemList.
-const fetchFollowing = (): Promise<FollowedProfile[]> => FollowService.getFollowing();
+const fetchFollowing = (userId: string): Promise<FollowedProfile[]> => FollowService.getFollowing(userId);
 
 /**
  * Gestione dei profili seguiti: lista con unfollow inline (la pill riusa
@@ -47,17 +48,38 @@ export default function FollowingScreen() {
             initial={name ?? undefined}
             size={40}
           />
-          <Text style={styles.name} numberOfLines={1}>{name}</Text>
+          <View style={styles.identityInfo}>
+            <Text style={styles.name} numberOfLines={1}>{name}</Text>
+            {/* Attività come nelle righe della ricerca Community: recensioni
+                + paesi visitati (il gruppo paesi solo sopra zero). Mai sugli
+                anonimi: la RPC li serve mascherati con attività a 0. */}
+            {!item.is_anonymous && (
+              <View style={styles.subline}>
+                <MaterialCommunityIcons name="star" size={12} color={theme.colors.textSecondary} />
+                <Text style={styles.subText}>{item.review_count}</Text>
+                {item.country_count > 0 && (
+                  <>
+                    <MaterialCommunityIcons name="earth" size={12} color={theme.colors.textSecondary} style={styles.sublineSpacer} />
+                    <Text style={styles.subText}>{item.country_count}</Text>
+                  </>
+                )}
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
         {user?.uid && (
           <FollowButton
             userId={user.uid}
             targetId={item.id}
             initialFollowing
-            // Ricarica la lista dopo il toggle: la riga unfollowata sparisce
-            // invece di restare con una pill incoerente (e per gli anonimi,
-            // non ri-followabili per RLS, evita il re-follow che fallirebbe).
-            onChange={() => followingList.reload()}
+            // Unfollow "morbido": la riga resta col bottone tornato su
+            // "Segui", così un tocco sbagliato si annulla ripremendo; le
+            // righe unfollowate spariscono alla prossima apertura. Eccezione
+            // anonimi: non ri-followabili (RLS), l'undo è impossibile →
+            // spariscono subito come prima.
+            onChange={(nowFollowing) => {
+              if (!nowFollowing && item.is_anonymous) followingList.reload();
+            }}
           />
         )}
       </View>
@@ -79,6 +101,18 @@ export default function FollowingScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          // Intestazione: respiro e contesto prima dell'elenco. total_count
+          // dalla RPC (esatto anche oltre il cap della lista), congelato
+          // all'apertura: non segue gli unfollow morbidi (come le righe).
+          ListHeaderComponent={
+            followingList.items.length > 0 ? (
+              <View style={styles.headerBlock}>
+                <Text style={styles.headerCount}>
+                  {i18n.t('follow.manageHeader', { count: followingList.items[0].total_count })}
+                </Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <Text style={styles.emptyText}>{i18n.t('follow.manageEmpty')}</Text>
           }
@@ -115,11 +149,36 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 12,
     flex: 1,
   },
+  identityInfo: {
+    flex: 1,
+  },
   name: {
     fontSize: 15,
     fontWeight: '600',
     color: theme.colors.textPrimary,
     flexShrink: 1,
+  },
+  // Riga attività sotto il nome: stessi valori delle righe Community.
+  subline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 1,
+  },
+  subText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  sublineSpacer: {
+    marginLeft: 8,
+  },
+  headerBlock: {
+    paddingTop: 10,
+    paddingBottom: 12,
+  },
+  headerCount: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
   },
   separator: {
     height: 1,

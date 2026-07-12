@@ -10,7 +10,7 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
 import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
 import { CollectionService } from '../../services/collectionService';
-import { FollowService, getFollowGraphVersion, type FeedReview } from '../../services/followService';
+import { FollowService, getFollowGraphVersion, type FollowStats } from '../../services/followService';
 import ShareProfileSheet from '../../components/ShareProfileSheet';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
@@ -36,17 +36,15 @@ import i18n from '../../utils/i18n';
 const SHOW_REVIEWS_PILL_AT_ZERO = true;
 
 // Selezione corrente della barra liste: 'reviews', 'favorites' (lista di
-// default), 'following' (feed dei profili seguiti) oppure l'id di una lista
-// custom (UUID: nessuna collisione con i literal).
-type Selection = 'reviews' | 'favorites' | 'following' | string;
+// default) oppure l'id di una lista custom (UUID: nessuna collisione con i
+// literal).
+type Selection = 'reviews' | 'favorites' | string;
 
-// Riga unificata della lista: una recensione (card recensione), un ristorante
-// salvato (card ristorante) o una recensione del feed seguiti (card recensione
-// con autore). La pill in alto sceglie quale insieme mostrare.
+// Riga unificata della lista: una recensione (card recensione) o un ristorante
+// salvato (card ristorante). La pill in alto sceglie quale insieme mostrare.
 type ProfileRow =
   | { kind: 'review'; data: UserReview }
-  | { kind: 'favorite'; data: MyRestaurantItem }
-  | { kind: 'feed'; data: FeedReview };
+  | { kind: 'favorite'; data: MyRestaurantItem };
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -77,46 +75,25 @@ export default function ProfileScreen() {
   const favoritesList = useUserItemList<MyRestaurantItem>(getMyRestaurants);
 
   // ─── Grafo follow ──────────────────────────────────────────────────────────
-  // Conteggio seguiti (pill) caricato subito con una head-query; il feed è
-  // caricato pigramente alla prima apertura della tab "Seguiti" (la maggior
-  // parte delle aperture del profilo non lo paga). Al focus si ricarica solo
-  // se il grafo è cambiato altrove (unfollow in Gestisci, blocco su profilo).
-  const [followingCount, setFollowingCount] = useState<number | null>(null);
-  const [feedItems, setFeedItems] = useState<FeedReview[]>([]);
-  const [feedLoading, setFeedLoading] = useState(false);
-  const feedLoadedRef = useRef(false);
+  // Conteggi follower/seguiti in una chiamata (RPC get_follow_counts):
+  // seguiti nella stat in alto (tappabile → gestione seguiti), follower nel
+  // badge accanto al nome. Al focus si ricarica solo se il grafo è cambiato
+  // altrove (unfollow in gestione seguiti, blocco su profilo).
+  const [followStats, setFollowStats] = useState<FollowStats | null>(null);
 
-  const loadFollowingCount = useCallback(async () => {
+  const loadFollowStats = useCallback(async () => {
+    if (!user?.uid) return;
     try {
-      setFollowingCount(await FollowService.getFollowingCount());
+      setFollowStats(await FollowService.getFollowStats(user.uid));
     } catch (err) {
-      console.warn('[Profile] conteggio seguiti fallito:', err);
-      setFollowingCount((c) => c ?? 0);
+      console.warn('[Profile] conteggi follow falliti:', err);
+      setFollowStats((s) => s ?? { followers: 0, following: 0 });
     }
-  }, []);
-
-  const loadFeed = useCallback(async () => {
-    setFeedLoading(true);
-    try {
-      const { items } = await FollowService.getFollowingFeed();
-      setFeedItems(items);
-    } catch (err) {
-      console.warn('[Profile] feed seguiti fallito:', err);
-    } finally {
-      setFeedLoading(false);
-    }
-  }, []);
+  }, [user?.uid]);
 
   useEffect(() => {
-    if (user?.uid) loadFollowingCount();
-  }, [user?.uid, loadFollowingCount]);
-
-  useEffect(() => {
-    if (selected === 'following' && !feedLoadedRef.current) {
-      feedLoadedRef.current = true;
-      loadFeed();
-    }
-  }, [selected, loadFeed]);
+    loadFollowStats();
+  }, [loadFollowStats]);
 
   const followVersionRef = useRef(getFollowGraphVersion());
   useFocusEffect(
@@ -124,10 +101,9 @@ export default function ProfileScreen() {
       const v = getFollowGraphVersion();
       if (v !== followVersionRef.current) {
         followVersionRef.current = v;
-        loadFollowingCount();
-        if (feedLoadedRef.current) loadFeed();
+        loadFollowStats();
       }
-    }, [loadFollowingCount, loadFeed]),
+    }, [loadFollowStats]),
   );
 
   const favorites = useMemo(
@@ -162,9 +138,8 @@ export default function ProfileScreen() {
   const rows = useMemo<ProfileRow[]>(() => {
     if (selected === 'reviews') return reviewsList.items.map((data) => ({ kind: 'review' as const, data }));
     if (selected === 'favorites') return favorites.map((data) => ({ kind: 'favorite' as const, data }));
-    if (selected === 'following') return feedItems.map((data) => ({ kind: 'feed' as const, data }));
     return customItems.map((data) => ({ kind: 'favorite' as const, data }));
-  }, [selected, reviewsList.items, favorites, feedItems, customItems]);
+  }, [selected, reviewsList.items, favorites, customItems]);
 
   // Visibilità delle pill auto (Recensioni/Preferiti). Preferiti = lista
   // is_default: a 0 confermato è solo rumore → pill nascosta. Durante il loading
@@ -179,9 +154,6 @@ export default function ProfileScreen() {
     const keys: Selection[] = [];
     if (showReviewsPill) keys.push('reviews');
     if (showFavoritesPill) keys.push('favorites');
-    // "Seguiti" sempre visibile (anche a 0, come Recensioni): è il punto di
-    // scoperta della feature — l'empty state spinge verso Community/recensioni.
-    keys.push('following');
     for (const c of customCollections) keys.push(c.id);
     return keys;
   }, [showReviewsPill, showFavoritesPill, customCollections]);
@@ -221,8 +193,7 @@ export default function ProfileScreen() {
     reviewsList.reload();
     favoritesList.reload();
     listsData.reload();
-    loadFollowingCount();
-    if (feedLoadedRef.current) loadFeed();
+    loadFollowStats();
   };
 
   // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
@@ -323,7 +294,22 @@ export default function ProfileScreen() {
             numberStyle={styles.inlineLikesNumber}
           />
         }
-        followingSlot={<CountText value={followingCount} style={styles.inlineStatNumber} />}
+        followingSlot={<CountText value={followStats?.following ?? null} style={styles.inlineStatNumber} />}
+        // Stile Instagram: tap sulla stat "Seguiti" → gestione seguiti.
+        onFollowingPress={() => router.push('/restaurants/following')}
+        // Follower nel badge discreto accanto al nome (lo slot che sui profili
+        // altrui ospita la pill "Segui": è il posto della relazione col
+        // profilo). Compare dal primo follower.
+        nameAccessory={
+          (followStats?.followers ?? 0) >= 1 ? (
+            <View style={styles.followerBadge}>
+              <MaterialCommunityIcons name="account-multiple" size={13} color={theme.colors.textSecondary} />
+              <Text style={styles.followerBadgeText}>
+                {i18n.t('follow.followersBadge', { count: followStats!.followers })}
+              </Text>
+            </View>
+          ) : undefined
+        }
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         headerActions={
@@ -351,9 +337,7 @@ export default function ProfileScreen() {
             ? i18n.t('restaurants.user.reviewsLabel')
             : selected === 'favorites'
               ? i18n.t('restaurants.myRestaurants.filterFavorites')
-              : selected === 'following'
-                ? i18n.t('follow.feedPill')
-                : currentCollectionName
+              : currentCollectionName
         }
         onDetailClose={reloadAll}
         typeFilter={{
@@ -372,7 +356,7 @@ export default function ProfileScreen() {
             : { city: row.data.restaurant_city, country: row.data.restaurant_country, countryCode: row.data.restaurant_country_code }
         }
         getMapPin={(row) => {
-          if (row.kind === 'review' || row.kind === 'feed') {
+          if (row.kind === 'review') {
             return {
               id: row.data.restaurant_id,
               name: row.data.restaurant_name ?? '',
@@ -391,24 +375,10 @@ export default function ProfileScreen() {
             : { ...base, symbol: currentCollectionEmoji };
         }}
         getPinId={(row) => (row.kind === 'favorite' ? row.data.id : row.data.restaurant_id)}
-        getRowKey={(row) =>
-          row.kind === 'review' ? `r-${row.data.id}` : row.kind === 'feed' ? `fd-${row.data.id}` : `f-${row.data.id}`
-        }
+        getRowKey={(row) => (row.kind === 'review' ? `r-${row.data.id}` : `f-${row.data.id}`)}
         renderRow={(row, onPress) =>
           row.kind === 'review' ? (
             <UserReviewCard review={row.data} onPress={onPress} />
-          ) : row.kind === 'feed' ? (
-            <UserReviewCard
-              review={row.data}
-              onPress={onPress}
-              author={{
-                username: row.data.author_username,
-                avatarUrl: row.data.author_avatar_url,
-                onPress: row.data.user_id
-                  ? () => router.push(`/restaurants/user/${row.data.user_id}`)
-                  : undefined,
-              }}
-            />
           ) : (
             <MyRestaurantCard item={row.data} onPress={onPress} />
           )
@@ -454,12 +424,6 @@ export default function ProfileScreen() {
                 onPress={() => setSelected('favorites')}
               />
             )}
-            <ListPill
-              label={i18n.t('follow.feedPill')}
-              count={followingCount}
-              active={selected === 'following'}
-              onPress={() => setSelected('following')}
-            />
             {customCollections.map((c) => (
               <ListPill
                 key={c.id}
@@ -482,32 +446,13 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </ScrollView>
         }
-        listHeaderSlot={
-          selected === 'following' && (followingCount ?? 0) > 0 ? (
-            <TouchableOpacity
-              style={styles.manageRow}
-              onPress={() => router.push('/restaurants/following')}
-              activeOpacity={0.6}
-              accessibilityRole="button"
-              accessibilityLabel={i18n.t('follow.manage')}
-            >
-              <MaterialCommunityIcons name="account-multiple-outline" size={18} color={theme.colors.textSecondary} />
-              <Text style={styles.manageRowText}>{i18n.t('follow.manage')}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
-          ) : undefined
-        }
         emptyState={
-          isLoadingLists || (selected === 'following' && feedLoading) ? null : (
+          isLoadingLists ? null : (
             <Text style={styles.emptyText}>
               {selected === 'reviews' ? (
                 i18n.t('restaurants.profile.emptyReviews')
               ) : selected === 'favorites' ? (
                 i18n.t('restaurants.profile.emptyFavorites')
-              ) : selected === 'following' ? (
-                (followingCount ?? 0) === 0
-                  ? i18n.t('follow.feedEmptyNoFollows')
-                  : i18n.t('follow.feedEmptyNoReviews')
               ) : (
                 <>
                   {emptyListBefore}
@@ -702,18 +647,15 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 24,
   },
-  // Link "Gestisci" sopra il feed Seguiti: riga discreta allineata a destra.
-  manageRow: {
+  // Badge follower accanto al nome: discreto, solo icona piccola + testo
+  // secondario, nessuno sfondo (non deve competere col nome).
+  followerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-end',
-    gap: 4,
-    paddingVertical: 6,
-    marginBottom: 4,
+    gap: 3,
   },
-  manageRowText: {
-    fontSize: 13,
-    fontWeight: '600',
+  followerBadgeText: {
+    fontSize: 12,
     color: theme.colors.textSecondary,
   },
 });

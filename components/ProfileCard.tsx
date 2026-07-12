@@ -15,8 +15,12 @@ import AppHeader, { type HeaderAction } from '../app/components/AppHeader';
 interface ProfileStats {
   likes?: number;
   reviews?: number;
-  /** Numero di profili seguiti: SOLO profilo personale (contatore privato,
-   *  mai esposto sui profili altrui per scelta). */
+  /** Follower del profilo: passato solo sui profili pubblici (colonna stat).
+   *  Sul profilo proprio il follower count vive nel badge accanto al nome
+   *  (nameAccessory), non qui. */
+  followers?: number;
+  /** Profili seguiti. Dal grafo pubblico (mig 080) compare anche sui
+   *  profili altrui non anonimi. */
   following?: number;
 }
 
@@ -32,6 +36,9 @@ interface ProfileCardProps {
   /** Override del numero "seguiti" (skeleton CountText sul profilo proprio).
    *  Se né questo né stats.following sono presenti, la colonna non compare. */
   followingSlot?: React.ReactNode;
+  /** Tap sulla stat "Seguiti" (stile Instagram: apre la gestione seguiti).
+   *  Se assente la colonna resta statica. */
+  onFollowingPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -59,7 +66,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onFollowingPress, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -181,7 +188,7 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, fo
                   (AnimatedLikesCounter) rende solo [numero][+N]: il badge resta
                   in flusso a destra del numero, la label è resa qui come per
                   le altre colonne. */}
-              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot || stats?.following != null || followingSlot) && (
+              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot || stats?.followers != null || stats?.following != null || followingSlot) && (
                 <View style={styles.inlineStatsRow}>
                   {(stats?.reviews != null || reviewsSlot) && (
                     <View style={styles.inlineStat}>
@@ -195,11 +202,26 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, fo
                       <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
                     </View>
                   )}
-                  {(stats?.following != null || followingSlot) && (
+                  {stats?.followers != null && (
                     <View style={styles.inlineStat}>
+                      <Text style={styles.inlineStatNumber}>{stats.followers}</Text>
+                      <Text style={styles.inlineStatLabel}>{i18n.t('follow.followers')}</Text>
+                    </View>
+                  )}
+                  {(stats?.following != null || followingSlot) && (
+                    // Stile Instagram: tap sulla stat → gestione seguiti.
+                    // Senza handler resta una colonna statica come le altre.
+                    <TouchableOpacity
+                      style={styles.inlineStat}
+                      onPress={onFollowingPress}
+                      disabled={!onFollowingPress}
+                      activeOpacity={0.6}
+                      accessibilityRole={onFollowingPress ? 'button' : undefined}
+                      accessibilityLabel={i18n.t('follow.feedPill')}
+                    >
                       {followingSlot ?? <Text style={styles.inlineStatNumber}>{stats?.following}</Text>}
                       <Text style={styles.inlineStatLabel}>{i18n.t('follow.feedPill')}</Text>
-                    </View>
+                    </TouchableOpacity>
                   )}
                 </View>
               )}
@@ -347,16 +369,18 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 12,
     marginBottom: 0,
   },
+  // Le colonne si spartiscono equamente la larghezza disponibile (flex: 1)
+  // invece di ammassarsi a sinistra con gap fisso. alignItems flex-start:
+  // i numeri restano allineati in alto anche se un'etichetta va a capo.
   inlineStatsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 16,
+    alignItems: 'flex-start',
     marginTop: 8,
   },
-  // Colonna [numero / etichetta]: due righe per stat, tre stat per riga.
-  // Numero centrato sopra la sua etichetta (che è quasi sempre più larga).
+  // Colonna [numero / etichetta]: numero centrato sopra la sua etichetta
+  // (che è quasi sempre più larga), contenuto centrato nella propria fascia.
   inlineStat: {
+    flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
   },

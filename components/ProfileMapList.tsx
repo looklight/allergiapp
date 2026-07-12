@@ -18,10 +18,12 @@ import type { HeaderAction } from '../app/components/AppHeader';
 interface ProfileMapListProps<T> {
   /** Profilo già "visibile" (username eventualmente mascherato per anonimi). */
   profile: UserProfile;
-  stats?: { likes?: number; reviews?: number; following?: number };
+  stats?: { likes?: number; reviews?: number; followers?: number; following?: number };
   likesSlot?: React.ReactNode;
   reviewsSlot?: React.ReactNode;
   followingSlot?: React.ReactNode;
+  /** Tap sulla stat "Seguiti" (apre la gestione seguiti) — v. ProfileCard. */
+  onFollowingPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -89,6 +91,7 @@ export default function ProfileMapList<T>({
   likesSlot,
   reviewsSlot,
   followingSlot,
+  onFollowingPress,
   onBack,
   onEdit,
   onEditDietary,
@@ -205,6 +208,7 @@ export default function ProfileMapList<T>({
         likesSlot={likesSlot}
         reviewsSlot={reviewsSlot}
         followingSlot={followingSlot}
+        onFollowingPress={onFollowingPress}
         onBack={onBack}
         onEdit={onEdit}
         onEditDietary={onEditDietary}
