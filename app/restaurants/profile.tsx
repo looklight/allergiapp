@@ -401,7 +401,7 @@ export default function ProfileScreen() {
                   onPress={() => router.push('/community')}
                   activeOpacity={0.6}
                 >
-                  <MaterialCommunityIcons name="account-group" size={22} color={theme.colors.amberDark} />
+                  <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.amberDark} />
                   <Text style={[styles.menuItemText, styles.menuItemLeaderboardText]}>{i18n.t('restaurants.profile.menuCommunity')}</Text>
                   <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.amberDark} />
                 </TouchableOpacity>
