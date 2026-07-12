@@ -147,10 +147,10 @@ export default function FilterModal({
             gli stati — hint a toggle spento, picker (col suo sottotitolo, senza
             il titolo interno che duplicherebbe il label) a toggle acceso. */}
         <View style={styles.section}>
-          <View style={styles.toggleCard}>
+          <View style={[styles.toggleCard, pendingMyNeeds && styles.toggleCardActive]}>
             <TouchableOpacity
               onPress={handleToggleMyNeeds}
-              style={[styles.toggleRow, styles.toggleRowInCard]}
+              style={[styles.toggleRow, styles.toggleRowInCard, pendingMyNeeds && styles.toggleRowOnTint]}
               activeOpacity={0.7}
             >
               <MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />
@@ -367,35 +367,41 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginBottom: 12,
   },
   // Card unificata dei toggle: il bordo sta sul wrapper (il toggleRow dentro lo
-  // perde via toggleRowInCard) e la descrizione vive DENTRO la card — hint, o
-  // per le esigenze il picker (tinta primaryLight) come "pozzetto" interno.
+  // perde via toggleRowInCard) e la descrizione vive DENTRO la card.
   toggleCard: {
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     borderRadius: 14,
-    // Clippa la zona tinta del picker sugli angoli arrotondati della card:
-    // così la tinta corre da bordo a bordo senza raccordi di raggio a mano.
     overflow: 'hidden',
+  },
+  // Card esigenze attiva: si tinge TUTTA (riga toggle compresa, che diventa
+  // trasparente) — un solo box, stesse proporzioni dello stato spento; il
+  // picker sotto è trasparente e porta solo il contenuto.
+  toggleCardActive: {
+    backgroundColor: theme.colors.primaryLight,
+  },
+  toggleRowOnTint: {
+    backgroundColor: 'transparent',
   },
   toggleRowInCard: {
     borderWidth: 0,
   },
-  // Picker come sezione inferiore della card (niente box-in-box): la tinta
-  // primaryLight corre a tutta larghezza fino ai bordi, il clip degli angoli
-  // lo fa la card (overflow hidden).
+  // Picker annidato nella card tinta: trasparente (la tinta è della card),
+  // solo contenuto. paddingTop 0 = attacco del testo identico all'hint dello
+  // stato spento (il respiro lo dà il padding della riga toggle sopra).
   needsPickerNested: {
     marginTop: 0,
     marginHorizontal: 0,
     marginBottom: 0,
     borderRadius: 0,
-    // Pari al marginTop di hintInCard: il testo non si muove al toggle.
-    paddingTop: 12,
+    backgroundColor: 'transparent',
+    paddingTop: 0,
   },
   // Hint dentro la card. Corpo, rientro e attacco verticale identici al
-  // sottotitolo del picker (13/18, inset 16, top 12): nella card esigenze la
-  // stessa frase non deve saltare di misura o posizione al toggle.
+  // sottotitolo del picker (13/18, inset 16, attacco a filo riga): nella card
+  // esigenze la stessa frase non deve saltare di misura o posizione al toggle.
   hintInCard: {
-    marginTop: 12,
+    marginTop: 0,
     marginHorizontal: 16,
     marginBottom: 12,
     fontSize: 13,
