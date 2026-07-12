@@ -1,7 +1,7 @@
 // Compone e attiva lo share di un profilo utente via share sheet nativo.
 // Speculare a shareRestaurant.ts; evento Supabase 'profile_shared'.
 
-import { Share, Alert } from 'react-native';
+import { Share, Alert, Platform } from 'react-native';
 import { SupabaseAnalytics } from './supabaseAnalytics';
 import i18n from '../utils/i18n';
 
@@ -28,10 +28,16 @@ export async function shareProfile(profile: ShareProfileInput): Promise<void> {
   }
 
   const url = buildProfileUrl(profile.username, 'share');
-  const message = `${profile.username} — ${i18n.t('share.profileSuffix')}\n${url}`;
+  const text = `${profile.username} — ${i18n.t('share.profileSuffix')}`;
+
+  // Stesso split di shareRestaurant: su iOS l'URL va solo nel campo url
+  // (message+url sono elementi separati), su Android solo nel testo.
+  const content = Platform.OS === 'ios'
+    ? { message: text, url }
+    : { message: `${text}\n${url}` };
 
   try {
-    const result = await Share.share({ message, url }, { dialogTitle: i18n.t('share.profileDialogTitle') });
+    const result = await Share.share(content, { dialogTitle: i18n.t('share.profileDialogTitle') });
 
     // L'utente puo' annullare il share — non e' un errore.
     if (result.action === Share.dismissedAction) return;
