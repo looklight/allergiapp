@@ -856,7 +856,11 @@
     "error": "Impossibile condividere. Riprova.",
     "shareProfile": "Condividi profilo",
     "profileSuffix": "profilo su AllergiApp",
-    "profileDialogTitle": "Condividi questo profilo"
+    "profileDialogTitle": "Condividi questo profilo",
+    "sheetTitle": "Il link del tuo profilo",
+    "sheetCopy": "Copia link",
+    "sheetCopied": "Copiato!",
+    "sheetHint": "Condividilo con chi vuoi o aggiungilo alla bio dei tuoi social: chi lo apre vede le tue recensioni e può seguirti."
   },
   "follow": {
     "follow": "Segui",

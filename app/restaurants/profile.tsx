@@ -11,7 +11,7 @@ import type { UserReview } from '../../services/restaurantService';
 import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
 import { CollectionService } from '../../services/collectionService';
 import { FollowService, getFollowGraphVersion, type FeedReview } from '../../services/followService';
-import { shareProfile } from '../../services/shareProfile';
+import ShareProfileSheet from '../../components/ShareProfileSheet';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
 import UserReviewCard from '../../components/UserReviewCard';
@@ -57,6 +57,8 @@ export default function ProfileScreen() {
   const [selected, setSelected] = useState<Selection>('reviews');
   // Editor lista (crea/modifica/elimina) in bottom sheet. null = chiuso.
   const [editor, setEditor] = useState<null | { editing: EditingList | null }>(null);
+  // Sheet "il tuo link": si apre dal bottone condividi nell'header.
+  const [shareSheetVisible, setShareSheetVisible] = useState(false);
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
 
   const isCustom = selected !== 'reviews' && selected !== 'favorites';
@@ -325,12 +327,13 @@ export default function ProfileScreen() {
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
         headerActions={
-          // Share accanto alla matita: solo se il profilo è condivisibile
-          // (mai per anonimi: l'URL esporrebbe lo username reale).
+          // Share prima della matita: apre lo sheet "il tuo link" (copia +
+          // share nativo). Solo se il profilo è condivisibile (mai per
+          // anonimi: l'URL esporrebbe lo username reale).
           !userProfile.is_anonymous && userProfile.username && user?.uid
             ? [{
                 icon: 'share-variant',
-                onPress: () => shareProfile({ id: user.uid, username: userProfile.username }),
+                onPress: () => setShareSheetVisible(true),
                 accessibilityLabel: i18n.t('share.shareProfile'),
               }]
             : undefined
@@ -525,6 +528,15 @@ export default function ProfileScreen() {
         onSubmit={handleEditorSubmit}
         onDelete={handleEditorDelete}
       />
+
+      {user?.uid && userProfile.username && !userProfile.is_anonymous && (
+        <ShareProfileSheet
+          visible={shareSheetVisible}
+          onClose={() => setShareSheetVisible(false)}
+          userId={user.uid}
+          username={userProfile.username}
+        />
+      )}
     </>
   );
 }

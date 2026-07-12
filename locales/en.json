@@ -856,7 +856,11 @@
     "error": "Could not share. Please try again.",
     "shareProfile": "Share profile",
     "profileSuffix": "profile on AllergiApp",
-    "profileDialogTitle": "Share this profile"
+    "profileDialogTitle": "Share this profile",
+    "sheetTitle": "Your profile link",
+    "sheetCopy": "Copy link",
+    "sheetCopied": "Copied!",
+    "sheetHint": "Share it with anyone or add it to your social bios: whoever opens it sees your reviews and can follow you."
   },
   "follow": {
     "follow": "Follow",
