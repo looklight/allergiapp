@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -44,17 +44,26 @@ export default function ProfileVisibilityToggle({ collectionId, locked, initialV
   // Anonimi fuori dal layer social (come share profilo e follow): niente toggle.
   if (userProfile?.is_anonymous) return null;
 
+  // Una scrittura per volta: i tap durante l'attesa vengono ignorati, così due
+  // update concorrenti non possono lasciare il DB in disaccordo con lo switch.
+  const pendingRef = useRef(false);
+
   const onChange = async (value: boolean) => {
-    if (locked || !collectionId) return;
+    if (locked || !collectionId || pendingRef.current) return;
+    pendingRef.current = true;
     setIsPublic(value);
     const visibility = value ? 'public' : 'private';
-    const ok = await CollectionService.updateCollection(collectionId, { visibility });
-    if (!ok) {
-      setIsPublic(!value);
-      return;
+    try {
+      const ok = await CollectionService.updateCollection(collectionId, { visibility });
+      if (!ok) {
+        setIsPublic(!value);
+        return;
+      }
+      SupabaseAnalytics.track(value ? 'list_published' : 'list_unpublished', { collection_id: collectionId });
+      onChanged?.(visibility);
+    } finally {
+      pendingRef.current = false;
     }
-    SupabaseAnalytics.track(value ? 'list_published' : 'list_unpublished', { collection_id: collectionId });
-    onChanged?.(visibility);
   };
 
   return (

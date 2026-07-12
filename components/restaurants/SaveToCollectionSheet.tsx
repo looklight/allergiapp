@@ -413,11 +413,11 @@ export default function SaveToCollectionSheet({
                         locked={!editing}
                         initialVisibility={editing?.visibility}
                         // Aggiorna la copia locale: riaprendo l'editor nella
-                        // stessa sessione il toggle riparte dal valore giusto.
+                        // stessa sessione (openEditor risorge da qui) il toggle
+                        // riparte dal valore giusto.
                         onChanged={(visibility) => {
                           if (!editing) return;
                           setLocalCollections((prev) => prev.map((c) => (c.id === editing.id ? { ...c, visibility } : c)));
-                          setEditing((prev) => (prev && prev.id === editing.id ? { ...prev, visibility } : prev));
                         }}
                       />
                     </View>

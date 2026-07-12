@@ -64,7 +64,9 @@ export default function PublicProfileScreen() {
   const [publicLists, setPublicLists] = useState<PublicCollectionMeta[]>([]);
   const [selected, setSelected] = useState<'reviews' | string>('reviews');
   const [listItems, setListItems] = useState<Map<string, MyRestaurantItem[]>>(new Map());
-  const [listLoading, setListLoading] = useState(false);
+  // Fetch in volo per-lista (non un boolean unico: cambiando pill mentre
+  // un'altra lista carica, lo spinner deve seguire la lista selezionata).
+  const [loadingLists, setLoadingLists] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!uid) return;
@@ -110,10 +112,10 @@ export default function PublicProfileScreen() {
   const openList = (collectionId: string) => {
     setSelected(collectionId);
     if (listItems.has(collectionId)) return;
-    setListLoading(true);
+    setLoadingLists((prev) => new Set(prev).add(collectionId));
     getPublicCollectionItems(collectionId)
       .then((items) => setListItems((prev) => new Map(prev).set(collectionId, items)))
-      .finally(() => setListLoading(false));
+      .finally(() => setLoadingLists((prev) => { const n = new Set(prev); n.delete(collectionId); return n; }));
   };
 
   // Mask username for anonymous users when viewed by others.
@@ -314,7 +316,7 @@ export default function PublicProfileScreen() {
         }}
         emptyState={
           // Item della lista in caricamento al primo tap: spinner leggero.
-          effSelected !== 'reviews' && listLoading ? (
+          effSelected !== 'reviews' && loadingLists.has(effSelected) ? (
             <ActivityIndicator color={theme.colors.primary} style={styles.listSpinner} />
           ) : undefined
         }

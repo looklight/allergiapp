@@ -443,12 +443,9 @@ export default function ProfileScreen() {
                 isPublic={c.visibility === 'public'}
                 active={selected === c.id}
                 onPress={() => setSelected(c.id)}
-                // Visibilita' dal live quando disponibile: la cache pill puo'
-                // essere stale (o pre-feature, senza campo) per un attimo.
-                onLongPress={() => {
-                  const live = listsData.items.find((l) => l.id === c.id);
-                  setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji, visibility: live?.visibility ?? c.visibility ?? 'private' } });
-                }}
+                // Stessa fonte dell'icona globo qui sopra; il fallback copre le
+                // cache pill scritte prima della feature (senza campo).
+                onLongPress={() => setEditor({ editing: { id: c.id, name: c.name, emoji: c.emoji, visibility: c.visibility ?? 'private' } })}
               />
             ))}
             <TouchableOpacity
@@ -488,9 +485,13 @@ export default function ProfileScreen() {
         onClose={() => setEditor(null)}
         onSubmit={handleEditorSubmit}
         onDelete={handleEditorDelete}
-        // Il toggle salva da solo: qui basta ricaricare le liste così la pill
-        // aggiorna l'icona "pubblica" senza aspettare la chiusura dello sheet.
-        onVisibilityChanged={() => listsData.reload()}
+        // Il toggle ha già scritto in DB: la pill aggiorna l'icona con un patch
+        // locale (niente reload dell'intera pipeline liste+item+stats).
+        onVisibilityChanged={(visibility) => {
+          const id = editor?.editing?.id;
+          if (!id) return;
+          listsData.setItems((prev) => prev.map((c) => (c.id === id ? { ...c, visibility } : c)));
+        }}
       />
 
       {user?.uid && userProfile.username && !userProfile.is_anonymous && (
