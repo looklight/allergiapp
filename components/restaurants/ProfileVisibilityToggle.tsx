@@ -33,6 +33,9 @@ export default function ProfileVisibilityToggle({ collectionId, locked, initialV
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const { userProfile } = useAuth();
   const [isPublic, setIsPublic] = useState(initialVisibility === 'public');
+  // Una scrittura per volta: i tap durante l'attesa vengono ignorati, così due
+  // update concorrenti non possono lasciare il DB in disaccordo con lo switch.
+  const pendingRef = useRef(false);
 
   // Riallinea quando cambia la lista in modifica: nel SaveToCollectionSheet il
   // pannello editor resta montato tra una lista e l'altra (slide, non remount),
@@ -43,10 +46,6 @@ export default function ProfileVisibilityToggle({ collectionId, locked, initialV
 
   // Anonimi fuori dal layer social (come share profilo e follow): niente toggle.
   if (userProfile?.is_anonymous) return null;
-
-  // Una scrittura per volta: i tap durante l'attesa vengono ignorati, così due
-  // update concorrenti non possono lasciare il DB in disaccordo con lo switch.
-  const pendingRef = useRef(false);
 
   const onChange = async (value: boolean) => {
     if (locked || !collectionId || pendingRef.current) return;
