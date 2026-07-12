@@ -370,15 +370,21 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     borderRadius: 14,
+    // Clippa la zona tinta del picker sugli angoli arrotondati della card:
+    // così la tinta corre da bordo a bordo senza raccordi di raggio a mano.
+    overflow: 'hidden',
   },
   toggleRowInCard: {
     borderWidth: 0,
   },
+  // Picker come sezione inferiore della card (niente box-in-box): la tinta
+  // primaryLight corre a tutta larghezza fino ai bordi, il clip degli angoli
+  // lo fa la card (overflow hidden).
   needsPickerNested: {
-    marginTop: 2,
-    marginHorizontal: 8,
-    marginBottom: 8,
-    borderRadius: 10,
+    marginTop: 0,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderRadius: 0,
   },
   // Hint dentro la card (toggle spento): allineato al padding del toggleRow.
   hintInCard: {
