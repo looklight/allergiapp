@@ -31,7 +31,9 @@ export default function RestaurantsPage() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('created_desc');
   const [zeroReviewsOnly, setZeroReviewsOnly] = useState(false);
-  const [reviewsMenuOpen, setReviewsMenuOpen] = useState(false);
+  // Posizione fixed: il menu deve sfuggire all'overflow-hidden/overflow-x-auto
+  // dei contenitori tabella, altrimenti con poche righe viene tagliato.
+  const [reviewsMenuPos, setReviewsMenuPos] = useState<{ top: number; right: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [mapRestaurants, setMapRestaurants] = useState<MapRestaurant[]>([]);
 
@@ -269,49 +271,68 @@ export default function RestaurantsPage() {
               {countryFilter === 'all' && <th className="px-4 py-3 font-medium">Paese</th>}
               <th className="px-4 py-3 font-medium">Cucina</th>
               <th className="px-4 py-3 font-medium text-right">
-                <div className="relative inline-block">
-                  <button
-                    type="button"
-                    onClick={() => setReviewsMenuOpen((o) => !o)}
-                    className={`inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded ${
-                      zeroReviewsOnly ? 'bg-selected text-selected-foreground hover:bg-selected-hover' : 'hover:bg-muted'
-                    }`}
-                  >
-                    Recensioni
-                    {zeroReviewsOnly ? (
-                      <span className="text-xs">= 0</span>
-                    ) : (
-                      <span className="text-faint text-xs w-3 text-center">
-                        {sortBy === 'reviews_desc' ? '▼' : ''}
-                      </span>
-                    )}
-                  </button>
-                  {reviewsMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setReviewsMenuOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 z-20 w-56 bg-card border rounded-lg shadow-lg py-1 text-left font-normal normal-case">
-                        <button
-                          type="button"
-                          onClick={() => { setSortBy('reviews_desc'); setZeroReviewsOnly(false); setReviewsMenuOpen(false); }}
-                          className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted ${
-                            sortBy === 'reviews_desc' && !zeroReviewsOnly ? 'text-foreground font-medium' : 'text-foreground-secondary'
-                          }`}
-                        >
-                          Ordina per più recensiti
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setZeroReviewsOnly((v) => !v); setReviewsMenuOpen(false); }}
-                          className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted ${
-                            zeroReviewsOnly ? 'text-foreground font-medium' : 'text-foreground-secondary'
-                          }`}
-                        >
-                          {zeroReviewsOnly ? 'Mostra tutti' : 'Solo senza recensioni'}
-                        </button>
-                      </div>
-                    </>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    if (reviewsMenuPos) { setReviewsMenuPos(null); return; }
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setReviewsMenuPos({
+                      top: rect.bottom + 4,
+                      right: document.documentElement.clientWidth - rect.right,
+                    });
+                  }}
+                  className={`inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded ${
+                    zeroReviewsOnly ? 'bg-selected text-selected-foreground hover:bg-selected-hover' : 'hover:bg-muted'
+                  }`}
+                >
+                  Recensioni
+                  {zeroReviewsOnly ? (
+                    <span className="text-xs">= 0</span>
+                  ) : (
+                    <span className="text-faint text-xs w-3 text-center">
+                      {sortBy === 'reviews_desc' ? '▼' : ''}
+                    </span>
                   )}
-                </div>
+                </button>
+                {reviewsMenuPos && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setReviewsMenuPos(null)} />
+                    <div
+                      className="fixed z-20 w-60 bg-card border rounded-lg shadow-lg py-1 text-left font-normal normal-case"
+                      style={{ top: reviewsMenuPos.top, right: reviewsMenuPos.right }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => { setSortBy('reviews_desc'); setZeroReviewsOnly(false); setReviewsMenuPos(null); }}
+                        className={`flex w-full items-center gap-2 text-left px-3 py-2 text-sm hover:bg-muted ${
+                          sortBy === 'reviews_desc' && !zeroReviewsOnly ? 'text-foreground font-medium' : 'text-foreground-secondary'
+                        }`}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <line x1="3" y1="6" x2="16" y2="6" />
+                          <line x1="3" y1="12" x2="12" y2="12" />
+                          <line x1="3" y1="18" x2="8" y2="18" />
+                          <polyline points="19 10 19 20" />
+                          <polyline points="16 17 19 20 22 17" />
+                        </svg>
+                        Ordina per più recensiti
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setZeroReviewsOnly((v) => !v); setReviewsMenuPos(null); }}
+                        className={`flex w-full items-center gap-2 text-left px-3 py-2 text-sm hover:bg-muted ${
+                          zeroReviewsOnly ? 'text-foreground font-medium' : 'text-foreground-secondary'
+                        }`}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          <line x1="4" y1="4" x2="20" y2="18" />
+                        </svg>
+                        {zeroReviewsOnly ? 'Mostra tutti' : 'Solo senza recensioni'}
+                      </button>
+                    </div>
+                  </>
+                )}
               </th>
               <th className="px-4 py-3 font-medium text-right" title="Foto nelle recensioni">Foto</th>
               <th className="px-4 py-3 font-medium text-right" title="Foto del menu">Menu</th>
