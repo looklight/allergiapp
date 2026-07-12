@@ -26,19 +26,33 @@ const PLAY_PACKAGE = 'com.allergiapp.mobile';
  * non deve toccare il flusso recensione del chiamante.
  */
 export function maybeRequestStoreReview(rating: number): void {
-  if (rating < MIN_RATING) return;
+  if (__DEV__) console.log('[storeReview] trigger, rating:', rating);
+  if (rating < MIN_RATING) {
+    if (__DEV__) console.log('[storeReview] skip: rating', rating, '<', MIN_RATING);
+    return;
+  }
   setTimeout(async () => {
     try {
       const last = await AsyncStorage.getItem(LAST_REQUEST_KEY);
-      if (last && Date.now() - Number(last) < THROTTLE_DAYS * 24 * 60 * 60 * 1000) return;
+      const throttled = !!last && Date.now() - Number(last) < THROTTLE_DAYS * 24 * 60 * 60 * 1000;
+      if (throttled) {
+        if (__DEV__) console.log('[storeReview] throttled (ultimo tentativo:', new Date(Number(last)).toISOString(), ') — in dev si prosegue comunque');
+        // In dev il throttle non blocca: ritestabile senza reinstallare l'app.
+        if (!__DEV__) return;
+      }
       // false su device senza Play Services / APK sideload: no-op pulito.
-      if (!(await StoreReview.isAvailableAsync())) return;
+      if (!(await StoreReview.isAvailableAsync())) {
+        if (__DEV__) console.log('[storeReview] skip: isAvailableAsync false');
+        return;
+      }
       // Timestamp PRIMA della richiesta: anche se l'OS decide di non mostrare
       // nulla il tentativo è speso, niente richieste a raffica nei giorni dopo.
       await AsyncStorage.setItem(LAST_REQUEST_KEY, String(Date.now()));
+      if (__DEV__) console.log('[storeReview] requestReview() — l\'OS decide se mostrare il foglio');
       await StoreReview.requestReview();
-    } catch {
-      // Best-effort.
+    } catch (e) {
+      // Best-effort: mai impattare il flusso recensione.
+      if (__DEV__) console.warn('[storeReview] errore (innocuo in prod):', e);
     }
   }, REQUEST_DELAY_MS);
 }
