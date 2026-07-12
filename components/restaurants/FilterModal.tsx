@@ -169,15 +169,16 @@ export default function FilterModal({
                 profileDiets={profileDiets}
                 onSyncProfile={onSyncProfile}
                 lang={lang}
-                // Stessa scritta dello stato spento: al toggle si aggiungono
-                // solo tinta e parte modificabile, il testo non cambia.
-                subtitle={i18n.t('restaurants.filter.myNeedsHint')}
+                // Stessa scritta (compatta) nei due stati: al toggle si
+                // aggiungono solo tinta e parte modificabile, il testo non
+                // cambia né si sposta (paddingTop tinta = marginTop hint).
+                subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
                 hideHeader
                 style={styles.needsPickerNested}
               />
             ) : (
               <Text style={[styles.sectionHint, styles.hintInCard]}>
-                {i18n.t('restaurants.filter.myNeedsHint')}
+                {i18n.t('restaurants.filter.dietarySubtitle')}
               </Text>
             )}
           </View>
@@ -387,12 +388,14 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginHorizontal: 0,
     marginBottom: 0,
     borderRadius: 0,
+    // Pari al marginTop di hintInCard: il testo non si muove al toggle.
+    paddingTop: 12,
   },
-  // Hint dentro la card. Corpo e margini identici al sottotitolo del picker
-  // (description: 13/18, padding 16): nella card esigenze la stessa frase non
-  // deve saltare di misura o posizione quando il toggle si accende.
+  // Hint dentro la card. Corpo, rientro e attacco verticale identici al
+  // sottotitolo del picker (13/18, inset 16, top 12): nella card esigenze la
+  // stessa frase non deve saltare di misura o posizione al toggle.
   hintInCard: {
-    marginTop: 0,
+    marginTop: 12,
     marginHorizontal: 16,
     marginBottom: 12,
     fontSize: 13,
