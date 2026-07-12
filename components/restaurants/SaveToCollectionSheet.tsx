@@ -40,6 +40,10 @@ const MAX_RATIO = 0.85;
 // Stima dell'altezza "non-lista" (header + nota + conferma + paddings): serve a
 // dimensionare il modal in modo adattivo a partire dall'altezza delle righe.
 const CHROME = 230;
+// Idem per il pannello editor (solo header + paddings: il form è misurato dal
+// suo ScrollView). Serve perché l'editor può essere più alto dell'elenco (form
+// + toggle mappa/profilo + azioni) e non deve richiedere scroll.
+const EDITOR_CHROME = 72;
 const FAV_SENTINEL = 'favorites';
 
 // Android (old arch) richiede l'opt-in esplicito per LayoutAnimation.
@@ -101,6 +105,9 @@ export default function SaveToCollectionSheet({
   const [mode, setMode] = useState<'list' | 'editor'>('list');
   const [editing, setEditing] = useState<CollectionWithCount | null>(null);
   const [contentHeight, setContentHeight] = useState(height * 0.5);
+  // Altezza richiesta dal pannello editor (misurata dal suo contenuto): in
+  // modalità editor il foglio cresce fino a mostrarlo tutto, senza scroll.
+  const [editorHeight, setEditorHeight] = useState(0);
   const [kbInset, setKbInset] = useState(0);
 
   const progress = useSharedValue(0);
@@ -139,7 +146,10 @@ export default function SaveToCollectionSheet({
     return () => { s.remove(); h.remove(); };
   }, []);
 
-  const sheetHeight = Math.min(contentHeight, height - insets.top - kbInset);
+  // In editor il foglio si adatta al pannello attivo (solo crescita rispetto
+  // all'elenco: mai un salto verso il basso durante lo slide).
+  const activeHeight = mode === 'editor' ? Math.max(contentHeight, editorHeight) : contentHeight;
+  const sheetHeight = Math.min(activeHeight, height - insets.top - kbInset);
 
   // Inizializza la bozza a ogni apertura.
   useEffect(() => {
@@ -180,19 +190,30 @@ export default function SaveToCollectionSheet({
     });
   }, [progress, finishClose]);
 
-  // Altezza adattiva dalle righe della lista (min..max). L'editor condivide.
+  // Altezza adattiva dalle righe della lista (min..max).
   const onRowsSize = useCallback((_: number, h: number) => {
     const next = Math.min(maxH, Math.max(minH, h + CHROME + insets.bottom));
     setContentHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
   }, [minH, maxH, insets.bottom]);
 
+  // Altezza richiesta dall'editor, dal contenuto del suo ScrollView (che resta
+  // solo come rete di sicurezza su schermi piccoli/con tastiera).
+  const onEditorSize = useCallback((_: number, h: number) => {
+    const next = Math.min(maxH, h + EDITOR_CHROME + insets.bottom);
+    setEditorHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
+  }, [maxH, insets.bottom]);
+
+  // Il cambio altezza elenco↔editor è animato in layout nativo, in sincrono
+  // con lo slide orizzontale dei pannelli (stessa durata).
   const openEditor = (list: CollectionWithCount | null) => {
+    LayoutAnimation.configureNext(LayoutAnimation.create(280, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.scaleXY));
     setEditing(list);
     setMode('editor');
     panelX.value = withTiming(-width, { duration: 280 });
   };
   const closeEditor = useCallback(() => {
     Keyboard.dismiss();
+    LayoutAnimation.configureNext(LayoutAnimation.create(280, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.scaleXY));
     panelX.value = withTiming(0, { duration: 280 });
     setMode('list');
     setEditing(null);
@@ -375,7 +396,7 @@ export default function SaveToCollectionSheet({
                 </Text>
                 <View style={styles.headerBtn} />
               </View>
-              <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
+              <ScrollView keyboardShouldPersistTaps="handled" bounces={false} onContentSizeChange={onEditorSize}>
                 <CreateListForm
                   active={mode === 'editor'}
                   initialName={editing?.name ?? ''}
