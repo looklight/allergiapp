@@ -354,9 +354,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 8,
   },
   // Colonna [numero / etichetta]: due righe per stat, tre stat per riga.
+  // Numero centrato sopra la sua etichetta (che è quasi sempre più larga).
   inlineStat: {
     flexDirection: 'column',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   inlineStatNumber: {
     fontSize: 15,
