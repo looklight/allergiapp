@@ -299,6 +299,9 @@
       "rating4Plus": "4★ and up",
       "showLodging": "Show hotels & stays",
       "showLodgingHint": "Shows accommodations (hotels, B&Bs…) instead of restaurants. Hotels with a restaurant open to the public still appear among restaurants too.",
+      "followedFilter": "Reviewed by people you follow",
+      "followedFilterHint": "Only shows places reviewed by people you follow.",
+      "followedFilterDisabledHint": "Follow other users to use this filter.",
       "reset": "Reset filters",
       "apply": "Apply"
     },
@@ -452,6 +455,7 @@
       "activeChipForMe": "For me",
       "activeChipCustomNeeds": "Custom needs",
       "activeChipLodging": "Hotels & stays",
+      "activeChipFollowed": "From people you follow",
       "activeChipRating4Plus": "4★ and up",
       "loadingNearby": "Looking for restaurants in {{place}}...",
       "bannerNoneAt": "No restaurants in {{place}}",

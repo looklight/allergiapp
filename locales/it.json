@@ -299,6 +299,9 @@
       "rating4Plus": "Solo 4★ e più",
       "showLodging": "Mostra hotel e alloggi",
       "showLodgingHint": "Mostra strutture ricettive (hotel, B&B…) invece dei ristoranti. Gli hotel con ristorante aperto al pubblico restano anche tra i ristoranti.",
+      "followedFilter": "Recensiti dai tuoi seguiti",
+      "followedFilterHint": "Mostra solo i posti recensiti dalle persone che segui.",
+      "followedFilterDisabledHint": "Segui altri utenti per usare questo filtro.",
       "reset": "Resetta filtri",
       "apply": "Applica"
     },
@@ -452,6 +455,7 @@
       "activeChipForMe": "Per me",
       "activeChipCustomNeeds": "Esigenze personalizzate",
       "activeChipLodging": "Hotel e alloggi",
+      "activeChipFollowed": "Dai tuoi seguiti",
       "activeChipRating4Plus": "4★ e più",
       "loadingNearby": "Cerco ristoranti a {{place}}...",
       "bannerNoneAt": "Nessun ristorante a {{place}}",

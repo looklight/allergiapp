@@ -25,6 +25,8 @@ import { useRestaurantGeo } from '../../hooks/useRestaurantGeo';
 import { useRestaurantList } from '../../hooks/useRestaurantList';
 import { useRestaurantFavorites } from '../../hooks/useRestaurantFavorites';
 import { useSavedCollectionsMap } from '../../hooks/useSavedCollectionsMap';
+import { useFollowedPins } from '../../hooks/useFollowedPins';
+import { getFollowStats } from '../../services/followService';
 import { useMapSearch, MIN_PLACE_QUERY_LENGTH } from '../../hooks/useMapSearch';
 import SearchAutocomplete from '../../components/SearchAutocomplete';
 import RecentSearches from '../../components/RecentSearches';
@@ -61,6 +63,13 @@ function selectionReducer(state: SelectionState, action: SelectionAction): Selec
 
 const INITIAL_SELECTION: SelectionState = { selectedId: null, detailId: null };
 
+// Input della mappa a filtro "Recensiti dai seguiti" attivo: la mappa mostra
+// SOLO il set dei seguiti — layer dettagliato/preferiti/salvati azzerati per
+// sostituzione degli input, nessun gate dentro RestaurantMap da mantenere.
+// Const a livello modulo per stabilità referenziale (niente re-render inutili).
+const EMPTY_RESTAURANTS: Restaurant[] = [];
+const EMPTY_RESTAURANT_MAP = new Map<string, Restaurant>();
+
 // Frazione stimata di copertura della detail sheet: usata per offsettare la camera
 // in modo che il marker selezionato resti visibile sopra lo sheet.
 const DETAIL_SHEET_COVERAGE = 0.55;
@@ -94,6 +103,36 @@ export default function RestaurantsScreen() {
   // Modalità alloggi (filtro "Mostra hotel"): server-side, di default OFF (app = ristoranti).
   const [showLodging, setShowLodging] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  // Filtro mappa "Recensiti dai seguiti" (Step 2 follow) — persistito come forMyNeeds.
+  const [followedFilter, setFollowedFilter] = useState(false);
+  // Seguiti dell'utente: sotto 1 il toggle nel FilterModal è disabilitato con hint.
+  // null = non ancora noto (trattato come 0, ma il fetch parte all'autenticazione).
+  const [followingCount, setFollowingCount] = useState<number | null>(null);
+
+  // True dal ripristino della preferenza finché il primo load non risolve: solo
+  // in quella finestra un set vuoto CONFERMATO auto-spegne il filtro (grafo
+  // svuotato tra le sessioni → mappa vuota inspiegabile). Un errore di rete non
+  // spegne mai; dopo un toggle esplicito decide solo l'utente.
+  const followedRestoredRef = useRef(false);
+  const followedRestoreAttempted = useRef(false);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Logout: filtro spento (lo storage è già pulito da clearAll) e
+      // ripristino riabilitato per il prossimo login.
+      followedRestoreAttempted.current = false;
+      followedRestoredRef.current = false;
+      setFollowedFilter(false);
+      return;
+    }
+    if (followedRestoreAttempted.current) return;
+    followedRestoreAttempted.current = true;
+    storage.getFollowedFilter().then(saved => {
+      if (saved) {
+        followedRestoredRef.current = true;
+        setFollowedFilter(true);
+      }
+    });
+  }, [isAuthenticated]);
 
   // Segnala che il prossimo cambio di filterAllergens/filterDiets viene dal profilo
   const profileJustChanged = useRef(false);
@@ -207,6 +246,30 @@ export default function RestaurantsScreen() {
     minRating,
   });
 
+  // Set "recensiti dai seguiti" — sopra la pipeline viewport, pin già completi.
+  const { followedPins, followedIds, loadFollowedPins, followedConfirmedEmpty } =
+    useFollowedPins(user?.uid, followedFilter, showLodging);
+
+  // Auto-spegnimento post-ripristino su set vuoto confermato (v. followedRestoredRef).
+  useEffect(() => {
+    if (!followedRestoredRef.current || followedConfirmedEmpty === null) return;
+    followedRestoredRef.current = false;
+    if (followedConfirmedEmpty) {
+      setFollowedFilter(false);
+      storage.setFollowedFilter(false);
+    }
+  }, [followedConfirmedEmpty]);
+
+  // Conteggio seguiti per abilitare il toggle nel modal: fetch all'autenticazione,
+  // refresh all'apertura del modal (può cambiare in sessione, follow da Community).
+  useEffect(() => {
+    if (!user) { setFollowingCount(null); return; }
+    getFollowStats(user.uid).then(s => setFollowingCount(s?.following ?? 0)).catch(() => {});
+  }, [user]);
+
+  const canUseFollowedFilter =
+    followedFilter || followedIds.size > 0 || (followingCount ?? 0) > 0;
+
   // allPins accumula pin da tutti i viewport visitati (max 3000, gestito in useRestaurantGeo).
   // SuperCluster gestisce internamente la viewport culling: riceve tutti i pin ma renderizza
   // solo i cluster visibili. Il limite di 3000 pin nella cache è il guardrail sufficiente.
@@ -214,13 +277,17 @@ export default function RestaurantsScreen() {
   // — Il filtro cucina (activeFilters) usa cuisine_types direttamente dal pin (campo restituito
   //   da get_pins_in_bounds), evitando la dipendenza da geo.restaurants che contiene al max 50
   //   record e causerebbe la scomparsa di tutti i pin extra-viewport.
+  // — Filtro "Recensiti dai seguiti": SOSTITUISCE la base (il set arriva già
+  //   pin-shaped da get_followed_pins, colori inclusi); i filtri client sotto
+  //   intersecano sopra come sempre. Mentre il set carica la base è vuota:
+  //   mai un flash di pin non filtrati.
   const filteredAllPins = useMemo(() => {
-    const pins = geo.allPins ?? [];
+    const pins = followedFilter ? followedPins : (geo.allPins ?? []);
     if (activeFilters.length === 0) return pins;
     return pins.filter(p =>
       p.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
     );
-  }, [geo.allPins, activeFilters]);
+  }, [geo.allPins, activeFilters, followedFilter, followedPins]);
 
   const { favoriteIds, favoriteRestaurants, loadFavorites, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
@@ -232,7 +299,10 @@ export default function RestaurantsScreen() {
     loadFavorites();
     loadSaved();
     geo.refreshAllPins();
-  }, [loadFavorites, loadSaved, geo.refreshAllPins]));
+    // Copre follow/unfollow altrove E nuove recensioni dei seguiti (stesso
+    // pattern di loadSaved: refresh a ogni focus, RPC leggera).
+    if (followedFilter) loadFollowedPins();
+  }, [loadFavorites, loadSaved, geo.refreshAllPins, followedFilter, loadFollowedPins]));
 
   // Ref per lookup ristoranti senza destabilizzare il callback.
   const allRestaurantsRef = useRef(geo.restaurants);
@@ -288,7 +358,8 @@ export default function RestaurantsScreen() {
 
   const handleOpenFilterModal = useCallback(() => {
     setShowFilterModal(true);
-  }, []);
+    if (user) getFollowStats(user.uid).then(s => setFollowingCount(s?.following ?? 0)).catch(() => {});
+  }, [user]);
 
   const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
     if (!user) return;
@@ -296,11 +367,20 @@ export default function RestaurantsScreen() {
     await refreshProfile();
   }, [user, refreshProfile]);
 
-  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets, minRating: newMinRating, showLodging: newShowLodging }: FilterApplyResult) => {
+  const handleApplyFilters = useCallback(async ({ filters, forMyNeeds: newFmn, allergens, diets, minRating: newMinRating, showLodging: newShowLodging, followedFilter: newFollowed }: FilterApplyResult) => {
     setActiveFilters(filters);
     setFilterAllergens(allergens);
     setFilterDiets(diets);
     setMinRating(newMinRating);
+
+    // Filtro seguiti: solo stato locale + storage — il fetch del set lo fa
+    // l'effect di useFollowedPins (anche al cambio modalità alloggi).
+    if (newFollowed !== followedFilter) {
+      followedRestoredRef.current = false; // scelta esplicita: niente auto-off
+      setFollowedFilter(newFollowed);
+      storage.setFollowedFilter(newFollowed);
+      if (newFollowed) SupabaseAnalytics.track('followed_filter_enabled');
+    }
 
     const fmnChanged = newFmn !== forMyNeeds;
     const lodgingChanged = newShowLodging !== showLodging;
@@ -326,7 +406,7 @@ export default function RestaurantsScreen() {
     // via useEffect reattivo su forMyNeeds/filterAllergens/filterDiets.
     // Le esigenze del filtro restano locali alla ricerca: il profilo si aggiorna
     // solo tramite il bottone "Salva" esplicito del DietaryNeedsPicker (onSyncProfile).
-  }, [forMyNeeds, showLodging, filterAllergens, filterDiets, geo.clearAndReload, geo.reloadLodgingPins]);
+  }, [forMyNeeds, showLodging, followedFilter, filterAllergens, filterDiets, geo.clearAndReload, geo.reloadLodgingPins]);
 
   /** Query in attesa di auto-selezione da invio tastiera (v. handleSearchSubmit sotto). */
   const pendingEnterQueryRef = useRef<string | null>(null);
@@ -581,6 +661,10 @@ export default function RestaurantsScreen() {
   const handleResetFilters = useCallback(async () => {
     setActiveFilters([]);
     setMinRating(null);
+    if (followedFilter) {
+      setFollowedFilter(false);
+      storage.setFollowedFilter(false);
+    }
     const fmnWasOn = forMyNeeds;
     const lodgingWasOn = showLodging;
     if (fmnWasOn) {
@@ -592,7 +676,7 @@ export default function RestaurantsScreen() {
       await geo.clearAndReload(false, false);
     }
     if (lodgingWasOn) geo.reloadLodgingPins(false);
-  }, [forMyNeeds, showLodging, geo.clearAndReload, geo.reloadLodgingPins]);
+  }, [forMyNeeds, showLodging, followedFilter, geo.clearAndReload, geo.reloadLodgingPins]);
 
   const handleRemoveNeedsChip = useCallback(async () => {
     setForMyNeeds(false);
@@ -602,6 +686,12 @@ export default function RestaurantsScreen() {
 
   const handleRemoveRatingChip = useCallback(() => {
     setMinRating(null);
+  }, []);
+
+  const handleRemoveFollowedChip = useCallback(() => {
+    followedRestoredRef.current = false;
+    setFollowedFilter(false);
+    storage.setFollowedFilter(false);
   }, []);
 
   const handleRemoveLodgingChip = useCallback(async () => {
@@ -634,6 +724,9 @@ export default function RestaurantsScreen() {
   // tutti i pin, anche quelli grigi = non coperti).
   const filteredNearbyResults = useMemo(() => {
     let out = mapSearch.nearbyResults;
+    if (followedFilter) {
+      out = out.filter(r => followedIds.has(r.id));
+    }
     if (activeFilters.length > 0) {
       out = out.filter(r =>
         r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
@@ -643,7 +736,7 @@ export default function RestaurantsScreen() {
       out = out.filter(r => (r.average_rating ?? 0) >= minRating);
     }
     return out;
-  }, [mapSearch.nearbyResults, activeFilters, minRating]);
+  }, [mapSearch.nearbyResults, activeFilters, minRating, followedFilter, followedIds]);
 
   const nearbyCount = filteredNearbyResults.length;
 
@@ -692,7 +785,11 @@ export default function RestaurantsScreen() {
 
       <View style={styles.mapContainer}>
         <RestaurantMap
-          restaurants={mapRestaurants}
+          // Filtro seguiti ON: sostituzione degli input — la mappa mostra SOLO
+          // il set dei seguiti (in filteredAllPins); layer dettagliato,
+          // preferiti e salvati azzerati così nessun altro marker "buca" il
+          // filtro. Il pin selezionato resta visibile via selectedRestaurant.
+          restaurants={followedFilter ? EMPTY_RESTAURANTS : mapRestaurants}
           allPins={filteredAllPins}
           centerOn={geo.centerOn}
           hasUserLocation={!!geo.userLocation}
@@ -704,9 +801,9 @@ export default function RestaurantsScreen() {
           showMatchInfo={forMyNeeds}
           onRestaurantPress={handleOpenDetail}
           favoriteIds={favoriteIds}
-          favoriteRestaurants={favoriteRestaurants}
+          favoriteRestaurants={followedFilter ? EMPTY_RESTAURANT_MAP : favoriteRestaurants}
           customSymbols={savedSymbols}
-          savedRestaurants={savedRestaurants}
+          savedRestaurants={followedFilter ? EMPTY_RESTAURANT_MAP : savedRestaurants}
           compassOffset={{ x: -12, y: insets.top + 8 }}
           fullScreenChrome
           userAllergens={filterAllergens}
@@ -784,7 +881,7 @@ export default function RestaurantsScreen() {
           </View>
         )}
 
-        {(activeFilters.length > 0 || minRating !== null || showLodging || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
+        {(activeFilters.length > 0 || minRating !== null || showLodging || followedFilter || (forMyNeeds && (filterAllergens.length > 0 || filterDiets.length > 0))) && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -795,6 +892,13 @@ export default function RestaurantsScreen() {
               <TouchableOpacity key="lodging" style={styles.activeChip} onPress={handleRemoveLodgingChip} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="bed" size={13} color={theme.colors.primary} />
                 <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipLodging')}</Text>
+                <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            )}
+            {followedFilter && (
+              <TouchableOpacity key="followed" style={styles.activeChip} onPress={handleRemoveFollowedChip} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="account-group" size={13} color={theme.colors.primary} />
+                <Text style={styles.activeChipText}>{i18n.t('restaurants.tabs.activeChipFollowed')}</Text>
                 <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
               </TouchableOpacity>
             )}
@@ -911,6 +1015,8 @@ export default function RestaurantsScreen() {
         filterDiets={filterDiets}
         minRating={minRating}
         showLodging={showLodging}
+        followedFilter={followedFilter}
+        canUseFollowedFilter={canUseFollowedFilter}
         profileAllergens={dietaryNeeds.allergens as string[]}
         profileDiets={dietaryNeeds.diets as string[]}
         onSyncProfile={handleSyncProfile}
