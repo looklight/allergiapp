@@ -6,6 +6,7 @@ import { safeQuery, safeCount } from '@/lib/safeQuery';
 import type { Restaurant } from '@/lib/types';
 import StatCard from '@/components/StatCard';
 import EventAnalyticsSection from '@/components/EventAnalyticsSection';
+import GrowthChartSection from '@/components/GrowthChartSection';
 import Link from 'next/link';
 
 interface Stats {
@@ -126,6 +127,8 @@ export default function DashboardPage() {
       </div>
 
       <EventAnalyticsSection />
+
+      <GrowthChartSection />
     </div>
   );
 }

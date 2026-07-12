@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { deleteRestaurantWithCleanup } from '@/lib/storageCleanup';
 import { confirmDestructive } from '@/lib/confirm';
 import { getCountryName } from '@/lib/countryName';
+import { fetchAllPages } from '@/lib/fetchAllPages';
 import type { Restaurant } from '@/lib/types';
 import type { MapRestaurant } from '@/components/map/RestaurantMap';
 import StatCard from '@/components/StatCard';
@@ -22,22 +23,6 @@ interface CountryStats {
 }
 
 type SortBy = 'created_desc' | 'city_asc' | 'reviews_desc';
-
-// PostgREST tronca ogni risposta (tabelle e RPC) a max-rows: qualunque
-// lettura "tutte le righe" va paginata fino a esaurimento.
-async function fetchAllPages<T>(
-  page: (from: number, to: number) => PromiseLike<{ data: T[] | null }>,
-): Promise<T[]> {
-  const CHUNK = 1000;
-  const rows: T[] = [];
-  for (let from = 0; ; from += CHUNK) {
-    const { data } = await page(from, from + CHUNK - 1);
-    if (!data || data.length === 0) break;
-    rows.push(...data);
-    if (data.length < CHUNK) break;
-  }
-  return rows;
-}
 
 export default function RestaurantsPage() {
   const [countries, setCountries] = useState<{ code: string; name: string; count: number }[]>([]);
