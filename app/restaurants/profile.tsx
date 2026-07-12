@@ -415,6 +415,7 @@ export default function ProfileScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            style={styles.kindToggleScroll}
             contentContainerStyle={styles.kindToggle}
             keyboardShouldPersistTaps="handled"
           >
@@ -587,11 +588,17 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.amberText,
   },
+  // Edge bleed come CountryFilterChips: margine negativo per rompere il
+  // padding orizzontale del ProfileCard, così le pill si clippano al bordo
+  // dello schermo e non 16px prima.
+  kindToggleScroll: {
+    marginHorizontal: -16,
+  },
   kindToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingRight: 4,
+    paddingHorizontal: 16,
   },
   addPill: {
     // Circolare e alto come le pill: stretch sull'altezza della riga +

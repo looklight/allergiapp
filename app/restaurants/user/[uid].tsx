@@ -246,6 +246,7 @@ export default function PublicProfileScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            style={styles.pillBarScroll}
             contentContainerStyle={styles.pillBar}
             keyboardShouldPersistTaps="handled"
           >
@@ -341,11 +342,17 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 16,
   },
   // Barra pill (Recensioni + liste pubbliche): stessa forma del profilo personale.
+  // Edge bleed come CountryFilterChips: margine negativo per rompere il
+  // padding orizzontale del ProfileCard, così le pill si clippano al bordo
+  // dello schermo e non 16px prima.
+  pillBarScroll: {
+    marginHorizontal: -16,
+  },
   pillBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingRight: 4,
+    paddingHorizontal: 16,
   },
   listSpinner: {
     paddingVertical: 24,
