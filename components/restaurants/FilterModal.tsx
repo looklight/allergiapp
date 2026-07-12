@@ -147,7 +147,7 @@ export default function FilterModal({
             gli stati — hint a toggle spento, picker (col suo sottotitolo, senza
             il titolo interno che duplicherebbe il label) a toggle acceso. */}
         <View style={styles.section}>
-          <View style={styles.needsCard}>
+          <View style={styles.toggleCard}>
             <TouchableOpacity
               onPress={handleToggleMyNeeds}
               style={[styles.toggleRow, styles.toggleRowInCard]}
@@ -216,53 +216,57 @@ export default function FilterModal({
           />
         </View>
 
-        {/* Mostra alloggi — in fondo e defilato: la funzione hotel è un "di più",
-            il default dell'app resta 100% ristoranti. */}
-        <View style={styles.lodgingSection}>
-          <TouchableOpacity
-            onPress={() => setPendingShowLodging(prev => !prev)}
-            style={styles.toggleRow}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons name="bed" size={18} color={theme.colors.primary} />
-            <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.showLodging')}</Text>
-            <View style={[styles.switchTrack, pendingShowLodging && styles.switchTrackActive]}>
-              <View style={[styles.switchThumb, pendingShowLodging && styles.switchThumbActive]} />
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.sectionHint}>{i18n.t('restaurants.filter.showLodgingHint')}</Text>
+        {/* Recensiti dai seguiti — stessa card unificata del toggle esigenze.
+            Disabilitato (non nascosto) quando l'utente non segue nessuno: la
+            card con l'hint fa anche da scoperta della feature follow. */}
+        <View style={styles.toggleSection}>
+          <View style={styles.toggleCard}>
+            <TouchableOpacity
+              onPress={() => {
+                if (!isAuthenticated) { onRequestLogin(); return; }
+                if (!canUseFollowedFilter) return;
+                setPendingFollowed(prev => !prev);
+              }}
+              style={[styles.toggleRow, styles.toggleRowInCard, !canUseFollowedFilter && styles.toggleRowDisabled]}
+              activeOpacity={canUseFollowedFilter ? 0.7 : 1}
+            >
+              <MaterialCommunityIcons
+                name="account-group"
+                size={18}
+                color={canUseFollowedFilter ? theme.colors.primary : theme.colors.textSecondary}
+              />
+              <Text style={[styles.toggleLabel, !canUseFollowedFilter && styles.toggleLabelDisabled]}>
+                {i18n.t('restaurants.filter.followedFilter')}
+              </Text>
+              <View style={[styles.switchTrack, pendingFollowed && styles.switchTrackActive]}>
+                <View style={[styles.switchThumb, pendingFollowed && styles.switchThumbActive]} />
+              </View>
+            </TouchableOpacity>
+            <Text style={[styles.sectionHint, styles.hintInCard]}>
+              {i18n.t(canUseFollowedFilter
+                ? 'restaurants.filter.followedFilterHint'
+                : 'restaurants.filter.followedFilterDisabledHint')}
+            </Text>
+          </View>
         </View>
 
-        {/* Recensiti dai seguiti — disabilitato (non nascosto) quando l'utente
-            non segue nessuno: la riga con l'hint fa anche da scoperta della
-            feature follow. */}
-        <View style={styles.lodgingSection}>
-          <TouchableOpacity
-            onPress={() => {
-              if (!isAuthenticated) { onRequestLogin(); return; }
-              if (!canUseFollowedFilter) return;
-              setPendingFollowed(prev => !prev);
-            }}
-            style={[styles.toggleRow, !canUseFollowedFilter && styles.toggleRowDisabled]}
-            activeOpacity={canUseFollowedFilter ? 0.7 : 1}
-          >
-            <MaterialCommunityIcons
-              name="account-group"
-              size={18}
-              color={canUseFollowedFilter ? theme.colors.primary : theme.colors.textSecondary}
-            />
-            <Text style={[styles.toggleLabel, !canUseFollowedFilter && styles.toggleLabelDisabled]}>
-              {i18n.t('restaurants.filter.followedFilter')}
-            </Text>
-            <View style={[styles.switchTrack, pendingFollowed && styles.switchTrackActive]}>
-              <View style={[styles.switchThumb, pendingFollowed && styles.switchThumbActive]} />
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.sectionHint}>
-            {i18n.t(canUseFollowedFilter
-              ? 'restaurants.filter.followedFilterHint'
-              : 'restaurants.filter.followedFilterDisabledHint')}
-          </Text>
+        {/* Mostra alloggi — in fondo e defilato: la funzione hotel è un "di più",
+            il default dell'app resta 100% ristoranti. */}
+        <View style={styles.toggleSection}>
+          <View style={styles.toggleCard}>
+            <TouchableOpacity
+              onPress={() => setPendingShowLodging(prev => !prev)}
+              style={[styles.toggleRow, styles.toggleRowInCard]}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons name="bed" size={18} color={theme.colors.primary} />
+              <Text style={styles.toggleLabel}>{i18n.t('restaurants.filter.showLodging')}</Text>
+              <View style={[styles.switchTrack, pendingShowLodging && styles.switchTrackActive]}>
+                <View style={[styles.switchThumb, pendingShowLodging && styles.switchThumbActive]} />
+              </View>
+            </TouchableOpacity>
+            <Text style={[styles.sectionHint, styles.hintInCard]}>{i18n.t('restaurants.filter.showLodgingHint')}</Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -337,9 +341,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
-  // Sezione "Mostra alloggi": in fondo, separata da un bordo superiore (la sezione
-  // cucina sopra ha borderBottomWidth:0).
-  lodgingSection: {
+  // Sezioni toggle in fondo (seguiti, alloggi): separate da un bordo superiore
+  // (la sezione cucina sopra ha borderBottomWidth:0).
+  toggleSection: {
     paddingVertical: 14,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
@@ -359,9 +363,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 6,
     marginBottom: 12,
   },
-  // Card unificata a toggle attivo: il bordo passa dal toggleRow al wrapper,
-  // il picker (tinta primaryLight) diventa il "pozzetto" interno della card.
-  needsCard: {
+  // Card unificata dei toggle: il bordo sta sul wrapper (il toggleRow dentro lo
+  // perde via toggleRowInCard) e la descrizione vive DENTRO la card — hint, o
+  // per le esigenze il picker (tinta primaryLight) come "pozzetto" interno.
+  toggleCard: {
     borderWidth: 1.5,
     borderColor: theme.colors.border,
     borderRadius: 14,
