@@ -7,6 +7,10 @@
           {
             "/": "/r/*",
             "comment": "Pagina pubblica ristorante condivisibile"
+          },
+          {
+            "/": "/u/*",
+            "comment": "Pagina pubblica profilo condivisibile"
           }
         ]
       }
