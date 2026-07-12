@@ -195,6 +195,7 @@ const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
   // Bakery
   bakery:                     'bakery',
   pastry_shop:                'bakery',
+  cake_shop:                  'bakery',
   donut_shop:                 'bakery',
   bagel_shop:                 'bakery',
   chocolate_shop:             'bakery',
@@ -305,6 +306,16 @@ function extractCityFromComponents(
 // sono invisibili nella ricerca pur essendo mappati a una cucina. Verificato via
 // API 2026-06-01.
 //
+// 'food_court' idem: primaryType a sé, non espanso da 'restaurant'. Serve per i
+// mercati gastronomici (es. Eataly Genova, primaryType food_court) altrimenti
+// invisibili. Nessuna cucina pre-selezionata (assente da GOOGLE_TYPE_TO_CUISINE,
+// scelta deliberata): l'utente sceglie i chip a mano. Lo slot è stato liberato
+// togliendo 'pastry_shop', ridondante: 'bakery' espande sia pastry_shop che
+// cake_shop (verificato via API 2026-07-12 su primaryType esatti). NOTA: le sedi
+// Eataly con primaryType 'grocery_store' (Milano Smeraldo, Torino Lingotto, Roma)
+// restano fuori di proposito — includere grocery_store aprirebbe la ricerca a
+// tutti i supermercati.
+//
 // LODGING ('lodging'): tipo broad delle strutture ricettive, aggiunto al secondo
 // gruppo (che aveva 4 tipi su 5) per NON introdurre una terza chiamata API per
 // ogni ricerca — la feature hotel è un "di più", non deve appesantire il flusso
@@ -316,7 +327,7 @@ function extractCityFromComponents(
 // resort_hotel, hostel). Il primaryType di dettaglio (hotel/bed_and_breakfast/…)
 // resta mappato da GOOGLE_TYPE_TO_LODGING in ogni caso.
 const PLACE_TYPE_GROUPS = [
-  ['restaurant', 'bakery', 'pastry_shop', 'cafe', 'bar'],
+  ['restaurant', 'bakery', 'food_court', 'cafe', 'bar'],
   ['ice_cream_shop', 'dessert_shop', 'tea_house', 'wine_bar', 'lodging'],
 ];
 
