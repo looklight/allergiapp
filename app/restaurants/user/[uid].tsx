@@ -27,6 +27,13 @@ const getReviewLocation = (r: UserReview) => ({
   countryCode: r.restaurant_country_code,
 });
 
+// Blocco utente: UI volutamente SPENTA (decisione 2026-07-12, rivalutare al
+// lancio social). Tutta l'infrastruttura resta attiva e testata (mig 075/077:
+// tabella, RLS, trigger, filtri nelle RPC): per riattivare basta questo flag.
+// ATTENZIONE Apple: la guideline 1.2 (UGC social) si aspetta il blocco utenti
+// — se la review della 1.3.0 lo contesta, riaccendere qui.
+const BLOCK_UI_ENABLED = false;
+
 export default function PublicProfileScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -162,7 +169,7 @@ export default function PublicProfileScreen() {
               accessibilityLabel: i18n.t('share.shareProfile'),
             });
           }
-          if (user?.uid && user.uid !== uid) {
+          if (BLOCK_UI_ENABLED && user?.uid && user.uid !== uid) {
             actions.push({ icon: 'dots-horizontal', onPress: handleBlockMenu, accessibilityLabel: i18n.t('block.menu') });
           }
           return actions.length > 0 ? actions : undefined;

@@ -114,9 +114,10 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, fo
         title={title}
         onLeadingPress={onBack}
         actions={(() => {
-          const actions: HeaderAction[] = [];
+          // headerActions (es. share) PRIMA della matita: sul profilo proprio
+          // il condividi sta a sinistra del modifica.
+          const actions: HeaderAction[] = [...(headerActions ?? [])];
           if (onEdit) actions.push({ icon: 'pencil-outline', onPress: onEdit, accessibilityLabel: i18n.t('common.edit') });
-          if (headerActions) actions.push(...headerActions);
           return actions.length > 0 ? actions : undefined;
         })()}
       />
