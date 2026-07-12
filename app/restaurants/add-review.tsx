@@ -204,7 +204,8 @@ export default function AddReviewScreen() {
       } else {
         Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.submitError'));
       }
-    } catch {
+    } catch (e) {
+      if (__DEV__) console.warn('[AddReview] submit fallito dopo il salvataggio?', e);
       Alert.alert(i18n.t('common.error'), i18n.t('restaurants.review.submitError'));
     } finally {
       setIsSubmitting(false);
