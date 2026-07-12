@@ -22,13 +22,14 @@ const RANGES: { key: Range; label: string }[] = [
 // scelta manuale, la pendenza resta leggibile a ogni soglia.
 const GRANULARITY: Record<Range, Granularity> = { '1m': 'day', '3m': 'week', '1y': 'month', all: 'month' };
 
-// Terna categorica validata (CVD ΔE min 21.6 su bianco); l'ordine dei colori
-// è parte della garanzia daltonismo, non cambiarlo. Aqua/giallo sono sotto
-// 3:1 di contrasto → obbligo di etichette dirette a fine linea (relief rule).
+// Terna categorica validata in QUESTO ordine (CVD ΔE min 13.3, contrasto
+// tutti >=3:1 su bianco): regge senza etichette dirette sulle linee —
+// identità affidata a legenda + tooltip. Non riordinare né sostituire i
+// colori senza rivalidare (scripts/validate_palette.js del metodo dataviz).
 const SERIES = [
   { key: 'Utenti', table: 'profiles', color: '#2a78d6' },
-  { key: 'Ristoranti', table: 'restaurants', color: '#1baf7a' },
-  { key: 'Recensioni', table: 'reviews', color: '#eda100' },
+  { key: 'Ristoranti', table: 'restaurants', color: '#008300' },
+  { key: 'Recensioni', table: 'reviews', color: '#e34948' },
 ] as const;
 
 // Le curve sono "righe attuali per data di creazione": le cancellazioni
@@ -128,16 +129,6 @@ export default function GrowthChartSection() {
     }));
   }, [dates, range, mode]);
 
-  // Etichetta diretta a fine linea (ink testuale, non colore serie)
-  const endLabel = (name: string) => (props: { x?: number | string; y?: number | string; index?: number }) => {
-    if (props.index !== data.length - 1) return <g />;
-    return (
-      <text x={Number(props.x) + 8} y={Number(props.y)} fontSize={12} fontWeight={600} className="fill-gray-700" dominantBaseline="middle">
-        {name}
-      </text>
-    );
-  };
-
   return (
     <div className="bg-card rounded-lg shadow p-4 mt-6">
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
@@ -159,7 +150,7 @@ export default function GrowthChartSection() {
         <p className="text-sm text-faint">Caricamento...</p>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data} margin={{ top: 8, right: 96, bottom: 0, left: 0 }}>
+          <LineChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={{ stroke: 'var(--border)' }} interval="preserveStartEnd" minTickGap={24} />
             <YAxis tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={44} allowDecimals={false} />
@@ -177,7 +168,6 @@ export default function GrowthChartSection() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
-                label={endLabel(s.key)}
                 isAnimationActive={false}
               />
             ))}
