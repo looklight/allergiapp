@@ -14,6 +14,7 @@ import { FollowService, getFollowGraphVersion, type FollowStats } from '../../se
 import ShareProfileSheet from '../../components/ShareProfileSheet';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
+import ListPill from '../../components/ListPill';
 import UserReviewCard from '../../components/UserReviewCard';
 import MyRestaurantCard from '../components/my-restaurants/MyRestaurantCard';
 import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
@@ -504,48 +505,6 @@ export default function ProfileScreen() {
   );
 }
 
-function ListPill({
-  label,
-  emoji,
-  count,
-  isPublic,
-  active,
-  onPress,
-  onLongPress,
-}: {
-  label: string;
-  emoji?: string | null;
-  count: number | null;
-  /** Lista visibile sul profilo pubblico: mostra il piccolo globo. */
-  isPublic?: boolean;
-  active: boolean;
-  onPress: () => void;
-  onLongPress?: () => void;
-}) {
-  const theme = useTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  const textStyle = [styles.kindButtonText, active && styles.kindButtonTextActive];
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      onLongPress={onLongPress}
-      activeOpacity={0.7}
-      style={[styles.kindButton, styles.kindButtonInner, active && styles.kindButtonActive]}
-    >
-      {emoji ? <Text style={styles.kindButtonEmoji}>{emoji}</Text> : null}
-      <Text style={textStyle} numberOfLines={1}>{label}</Text>
-      <CountText value={count} style={textStyle} />
-      {isPublic && (
-        <MaterialCommunityIcons
-          name="earth"
-          size={13}
-          color={active ? theme.colors.onPrimary : theme.colors.textSecondary}
-        />
-      )}
-    </TouchableOpacity>
-  );
-}
-
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
@@ -633,13 +592,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 8,
     paddingRight: 4,
   },
-  kindButton: {
-    maxWidth: 170,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceMuted,
-  },
   addPill: {
     // Circolare e alto come le pill: stretch sull'altezza della riga +
     // aspectRatio 1 → cerchio della stessa altezza, senza sporgere.
@@ -649,25 +601,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 999,
     backgroundColor: theme.colors.surfaceMuted,
-  },
-  kindButtonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  kindButtonEmoji: {
-    fontSize: 13,
-  },
-  kindButtonActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  kindButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  kindButtonTextActive: {
-    color: theme.colors.onPrimary,
   },
   emptyText: {
     fontSize: 14,
