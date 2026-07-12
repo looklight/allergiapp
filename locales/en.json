@@ -875,7 +875,13 @@
       "one": "You follow 1 profile",
       "other": "You follow {{count}} profiles"
     },
-    "manageEmpty": "You're not following anyone yet. You can discover new profiles through restaurant reviews and the Community page."
+    "manageEmpty": "You're not following anyone yet. You can discover new profiles through restaurant reviews and the Community page.",
+    "listFollowingHeader": {
+      "one": "Follows 1 profile",
+      "other": "Follows {{count}} profiles"
+    },
+    "listFollowersEmpty": "No followers yet.",
+    "listFollowingEmpty": "Not following anyone yet."
   },
   "community": {
     "title": "Community",

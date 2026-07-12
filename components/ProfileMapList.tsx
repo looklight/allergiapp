@@ -22,8 +22,9 @@ interface ProfileMapListProps<T> {
   likesSlot?: React.ReactNode;
   reviewsSlot?: React.ReactNode;
   followingSlot?: React.ReactNode;
-  /** Tap sulla stat "Seguiti" (apre la gestione seguiti) — v. ProfileCard. */
+  /** Tap sulle stat "Seguiti"/"Follower" — v. ProfileCard. */
   onFollowingPress?: () => void;
+  onFollowersPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -92,6 +93,7 @@ export default function ProfileMapList<T>({
   reviewsSlot,
   followingSlot,
   onFollowingPress,
+  onFollowersPress,
   onBack,
   onEdit,
   onEditDietary,
@@ -209,6 +211,7 @@ export default function ProfileMapList<T>({
         reviewsSlot={reviewsSlot}
         followingSlot={followingSlot}
         onFollowingPress={onFollowingPress}
+        onFollowersPress={onFollowersPress}
         onBack={onBack}
         onEdit={onEdit}
         onEditDietary={onEditDietary}

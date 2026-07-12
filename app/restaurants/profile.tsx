@@ -299,15 +299,24 @@ export default function ProfileScreen() {
         onFollowingPress={() => router.push('/restaurants/following')}
         // Follower nel badge discreto accanto al nome (lo slot che sui profili
         // altrui ospita la pill "Segui": è il posto della relazione col
-        // profilo). Compare dal primo follower.
+        // profilo). Compare dal primo follower; tap → lista follower.
         nameAccessory={
           (followStats?.followers ?? 0) >= 1 ? (
-            <View style={styles.followerBadge}>
+            <TouchableOpacity
+              style={styles.followerBadge}
+              onPress={() =>
+                router.push({ pathname: '/restaurants/follow-list', params: { uid: user!.uid, mode: 'followers' } })
+              }
+              activeOpacity={0.6}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={i18n.t('follow.followers')}
+            >
               <MaterialCommunityIcons name="account-multiple" size={13} color={theme.colors.textSecondary} />
               <Text style={styles.followerBadgeText}>
                 {i18n.t('follow.followersBadge', { count: followStats!.followers })}
               </Text>
-            </View>
+            </TouchableOpacity>
           ) : undefined
         }
         onBack={() => router.back()}

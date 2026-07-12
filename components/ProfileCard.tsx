@@ -36,9 +36,12 @@ interface ProfileCardProps {
   /** Override del numero "seguiti" (skeleton CountText sul profilo proprio).
    *  Se né questo né stats.following sono presenti, la colonna non compare. */
   followingSlot?: React.ReactNode;
-  /** Tap sulla stat "Seguiti" (stile Instagram: apre la gestione seguiti).
-   *  Se assente la colonna resta statica. */
+  /** Tap sulla stat "Seguiti" (stile Instagram: gestione seguiti sul proprio,
+   *  lista seguiti sui profili altrui). Se assente la colonna resta statica. */
   onFollowingPress?: () => void;
+  /** Tap sulla colonna "Follower" (lista follower del profilo).
+   *  Se assente la colonna resta statica. */
+  onFollowersPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
@@ -66,7 +69,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onFollowingPress, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onFollowingPress, onFollowersPress, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -203,10 +206,17 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, fo
                     </View>
                   )}
                   {stats?.followers != null && (
-                    <View style={styles.inlineStat}>
+                    <TouchableOpacity
+                      style={styles.inlineStat}
+                      onPress={onFollowersPress}
+                      disabled={!onFollowersPress}
+                      activeOpacity={0.6}
+                      accessibilityRole={onFollowersPress ? 'button' : undefined}
+                      accessibilityLabel={i18n.t('follow.followers')}
+                    >
                       <Text style={styles.inlineStatNumber}>{stats.followers}</Text>
                       <Text style={styles.inlineStatLabel}>{i18n.t('follow.followers')}</Text>
-                    </View>
+                    </TouchableOpacity>
                   )}
                   {(stats?.following != null || followingSlot) && (
                     // Stile Instagram: tap sulla stat → gestione seguiti.

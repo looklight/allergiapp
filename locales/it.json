@@ -875,7 +875,13 @@
       "one": "Segui 1 profilo",
       "other": "Segui {{count}} profili"
     },
-    "manageEmpty": "Non segui ancora nessuno. Puoi scoprire nuovi profili dalle recensioni dei ristoranti e dalla pagina Community."
+    "manageEmpty": "Non segui ancora nessuno. Puoi scoprire nuovi profili dalle recensioni dei ristoranti e dalla pagina Community.",
+    "listFollowingHeader": {
+      "one": "Segue 1 profilo",
+      "other": "Segue {{count}} profili"
+    },
+    "listFollowersEmpty": "Ancora nessun follower.",
+    "listFollowingEmpty": "Non segue ancora nessuno."
   },
   "community": {
     "title": "Community",

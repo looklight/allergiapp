@@ -76,11 +76,15 @@ export async function unfollow(userId: string, targetId: string): Promise<void> 
   SupabaseAnalytics.track('user_unfollowed', { target_id: targetId });
 }
 
-export async function getFollowing(userId: string): Promise<FollowedProfile[]> {
-  // RPC (mig 080) invece della lettura diretta via RLS: stesse righe, in piu'
-  // l'attivita' (recensioni/paesi) come nei risultati della ricerca Community.
-  const { data, error } = await supabase.rpc('get_following_public', {
-    p_profile_id: userId,
+// Le due liste del grafo (mig 080) condividono forma e mapping: valgono per
+// qualunque profilo non anonimo (o per se stessi), con l'attivita'
+// (recensioni/paesi) come nei risultati della ricerca Community.
+async function fetchFollowList(
+  rpcName: 'get_following_public' | 'get_followers_public',
+  profileId: string,
+): Promise<FollowedProfile[]> {
+  const { data, error } = await supabase.rpc(rpcName, {
+    p_profile_id: profileId,
     p_limit: FOLLOWING_LIST_LIMIT,
   });
   if (error) throw error;
@@ -93,6 +97,14 @@ export async function getFollowing(userId: string): Promise<FollowedProfile[]> {
     country_count: Number(p.country_count ?? 0),
     total_count: Number(p.total_count ?? 0),
   }));
+}
+
+export async function getFollowing(profileId: string): Promise<FollowedProfile[]> {
+  return fetchFollowList('get_following_public', profileId);
+}
+
+export async function getFollowers(profileId: string): Promise<FollowedProfile[]> {
+  return fetchFollowList('get_followers_public', profileId);
 }
 
 // Conteggi follower/seguiti (mig 080): per il profilo proprio e, con la
@@ -157,6 +169,7 @@ export const FollowService = {
   follow,
   unfollow,
   getFollowing,
+  getFollowers,
   getFollowStats,
   getFollowingFeed,
 };

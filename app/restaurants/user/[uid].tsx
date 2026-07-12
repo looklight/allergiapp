@@ -169,6 +169,14 @@ export default function PublicProfileScreen() {
           following: followStats?.following,
         }}
         onBack={() => router.back()}
+        // Stat del grafo tappabili → liste navigabili (Fase B). I handler sono
+        // innocui quando le colonne non compaiono (profili anonimi).
+        onFollowersPress={() =>
+          router.push({ pathname: '/restaurants/follow-list', params: { uid, mode: 'followers' } })
+        }
+        onFollowingPress={() =>
+          router.push({ pathname: '/restaurants/follow-list', params: { uid, mode: 'following' } })
+        }
         nameAccessory={
           canFollow ? (
             <FollowButton
