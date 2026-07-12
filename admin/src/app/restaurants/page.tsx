@@ -17,7 +17,6 @@ const RestaurantMap = dynamic(() => import('@/components/map/RestaurantMap'), { 
 interface CountryStats {
   restaurant_count: number;
   review_count: number;
-  average_rating: number;
   favorite_count: number;
   city_count: number;
 }
@@ -113,7 +112,6 @@ export default function RestaurantsPage() {
       setStats({
         restaurant_count: Number(data[0].restaurant_count),
         review_count: Number(data[0].review_count),
-        average_rating: Number(data[0].average_rating),
         favorite_count: Number(data[0].favorite_count),
         city_count: Number(data[0].city_count),
       });
@@ -240,10 +238,9 @@ export default function RestaurantsPage() {
 
       {/* Stats cards */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
           <StatCard label="Ristoranti" value={stats.restaurant_count} />
           <StatCard label="Recensioni" value={stats.review_count} />
-          <StatCard label="Rating medio" value={stats.average_rating.toFixed(1)} />
           <StatCard label="Preferiti" value={stats.favorite_count} />
           <StatCard label="Citta" value={stats.city_count} />
         </div>
