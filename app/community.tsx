@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert, TextInput } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,11 @@ import Avatar from '../components/Avatar';
 import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
+import { searchUsers, type UserSearchResult } from '../services/userSearchService';
 import AppHeader from './components/AppHeader';
+
+const SEARCH_DEBOUNCE_MS = 300;
+const MIN_SEARCH_LENGTH = 2;
 
 type Tab = 'reviews' | 'likes';
 
@@ -68,7 +72,8 @@ function LeaderboardRow({ entry, rank, onPress }: { entry: LeaderboardEntry; ran
   );
 }
 
-export default function LeaderboardScreen() {
+/** Pagina Community: ricerca utenti in alto + classifiche sotto (ex Classifiche). */
+export default function CommunityScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
@@ -77,6 +82,43 @@ export default function LeaderboardScreen() {
   const [topLiked, setTopLiked] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // ─── Ricerca utenti ────────────────────────────────────────────────────────
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<UserSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Epoch anti-race: una risposta lenta di una query vecchia non deve
+  // sovrascrivere i risultati della query corrente.
+  const searchEpoch = useRef(0);
+  const trimmedQuery = query.trim();
+  const isSearchMode = trimmedQuery.length >= MIN_SEARCH_LENGTH;
+
+  useEffect(() => {
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    const epoch = ++searchEpoch.current;
+    if (trimmedQuery.length < MIN_SEARCH_LENGTH) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    searchDebounce.current = setTimeout(async () => {
+      try {
+        const found = await searchUsers(trimmedQuery);
+        if (epoch !== searchEpoch.current) return;
+        setResults(found);
+      } catch (err) {
+        console.warn('[Community] ricerca fallita:', err);
+        if (epoch === searchEpoch.current) setResults([]);
+      } finally {
+        if (epoch === searchEpoch.current) setSearching(false);
+      }
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    };
+  }, [trimmedQuery]);
 
   const loadData = useCallback(async () => {
     const data = await RestaurantService.getLeaderboard();
@@ -102,7 +144,7 @@ export default function LeaderboardScreen() {
   return (
     <View style={styles.container}>
       <AppHeader
-        title={i18n.t('leaderboard.title')}
+        title={i18n.t('community.title')}
         actions={[{
           icon: 'information-outline',
           onPress: () => Alert.alert(i18n.t('leaderboard.infoTitle'), i18n.t('leaderboard.infoBody')),
@@ -110,6 +152,94 @@ export default function LeaderboardScreen() {
         }]}
       />
 
+      {/* Ricerca utenti */}
+      <View style={styles.searchBar}>
+        <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder={i18n.t('community.searchPlaceholder')}
+          placeholderTextColor={theme.colors.textSecondary}
+          value={query}
+          onChangeText={setQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          accessibilityLabel={i18n.t('community.searchPlaceholder')}
+        />
+        {query.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setQuery('')}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={i18n.t('community.clearSearch')}
+          >
+            <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {isSearchMode ? (
+        /* Risultati ricerca al posto delle classifiche finché la query è attiva */
+        searching ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          </View>
+        ) : results.length === 0 ? (
+          <View style={styles.centered}>
+            <MaterialCommunityIcons name="account-search-outline" size={64} color={theme.colors.textDisabled} />
+            <Text style={styles.emptyText}>{i18n.t('community.noResults')}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => router.push(`/restaurants/user/${item.id}`)}
+                activeOpacity={0.6}
+                accessibilityRole="button"
+                accessibilityLabel={item.username}
+              >
+                <View style={styles.avatarSlot}>
+                  <Avatar
+                    avatarId={item.avatar_url}
+                    initial={item.username}
+                    size="md"
+                    backgroundColor={theme.colors.primaryContainer}
+                  />
+                </View>
+                <View style={styles.rowInfo}>
+                  <Text style={styles.rowName} numberOfLines={1}>{item.username}</Text>
+                  {/* Attività del profilo: recensioni scritte (stessa icona
+                      della classifica Recensioni) + paesi visitati. Il gruppo
+                      paesi compare solo sopra zero: a 0 recensioni sarebbe
+                      rumore ridondante. */}
+                  <View style={styles.rowSubline}>
+                    <MaterialCommunityIcons name="star" size={12} color={theme.colors.textSecondary} />
+                    <Text style={styles.rowSubText}>{item.review_count}</Text>
+                    {item.country_count > 0 && (
+                      <>
+                        <MaterialCommunityIcons name="earth" size={12} color={theme.colors.textSecondary} style={styles.rowSublineSpacer} />
+                        <Text style={styles.rowSubText}>{item.country_count}</Text>
+                      </>
+                    )}
+                  </View>
+                </View>
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={20}
+                  color={theme.colors.textDisabled}
+                  style={styles.rowChevron}
+                />
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.list}
+          />
+        )
+      ) : (
+      <>
       {/* Tabs */}
       <View style={styles.tabBar}>
         <TouchableOpacity
@@ -172,6 +302,8 @@ export default function LeaderboardScreen() {
           }
         />
       )}
+      </>
+      )}
     </View>
   );
 }
@@ -180,6 +312,22 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surfaceMuted,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: theme.colors.textPrimary,
+    paddingVertical: 10,
   },
   tabBar: {
     flexDirection: 'row',
@@ -271,6 +419,19 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textPrimary,
+  },
+  rowSubline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 1,
+  },
+  rowSubText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  rowSublineSpacer: {
+    marginLeft: 8,
   },
   rowCount: {
     fontSize: 18,

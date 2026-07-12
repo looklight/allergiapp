@@ -1,7 +1,7 @@
 // Compone e attiva lo share di un ristorante via share sheet nativo iOS/Android.
 // Tracciato come evento Supabase 'restaurant_shared' (no Firebase per nuovi eventi).
 
-import { Share, Alert } from 'react-native';
+import { Share, Alert, Platform } from 'react-native';
 import { SupabaseAnalytics } from './supabaseAnalytics';
 import i18n from '../utils/i18n';
 
@@ -26,10 +26,16 @@ export async function shareRestaurant(restaurant: ShareRestaurantInput): Promise
   const headline = restaurant.city
     ? `${restaurant.name}, ${restaurant.city}`
     : restaurant.name;
-  const message = `${headline} — ${i18n.t('share.suffix')}\n${url}`;
+  const text = `${headline} — ${i18n.t('share.suffix')}`;
+
+  // iOS compone message + url come elementi separati: l'URL va SOLO nel campo
+  // url, altrimenti compare due volte. Android ignora `url`: l'URL va nel testo.
+  const content = Platform.OS === 'ios'
+    ? { message: text, url }
+    : { message: `${text}\n${url}` };
 
   try {
-    const result = await Share.share({ message, url }, { dialogTitle: i18n.t('share.dialogTitle') });
+    const result = await Share.share(content, { dialogTitle: i18n.t('share.dialogTitle') });
 
     // L'utente puo' annullare il share — non e' un errore.
     if (result.action === Share.dismissedAction) return;

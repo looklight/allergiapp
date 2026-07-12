@@ -299,6 +299,9 @@
       "rating4Plus": "Solo 4★ e più",
       "showLodging": "Mostra hotel e alloggi",
       "showLodgingHint": "Mostra strutture ricettive (hotel, B&B…) invece dei ristoranti. Gli hotel con ristorante aperto al pubblico restano anche tra i ristoranti.",
+      "followedFilter": "Recensiti dai tuoi seguiti",
+      "followedFilterHint": "Mostra solo i posti recensiti dalle persone che segui.",
+      "followedFilterDisabledHint": "Segui altri utenti per usare questo filtro.",
       "reset": "Resetta filtri",
       "apply": "Applica"
     },
@@ -452,6 +455,7 @@
       "activeChipForMe": "Per me",
       "activeChipCustomNeeds": "Esigenze personalizzate",
       "activeChipLodging": "Hotel e alloggi",
+      "activeChipFollowed": "Dai tuoi seguiti",
       "activeChipRating4Plus": "4★ e più",
       "loadingNearby": "Cerco ristoranti a {{place}}...",
       "bannerNoneAt": "Nessun ristorante a {{place}}",
@@ -506,6 +510,7 @@
       "menuReviews": "Le mie recensioni",
       "menuMyRestaurants": "I miei ristoranti",
       "menuLeaderboard": "Classifiche",
+      "menuCommunity": "Community",
       "emptyReviews": "Le tue recensioni appariranno qui. Visita un ristorante e racconta com'è andata.",
       "emptyFavorites": "I tuoi preferiti appariranno qui. Tocca il cuore su un locale per salvarlo."
     },
@@ -852,6 +857,47 @@
     "shareRestaurant": "Condividi ristorante",
     "suffix": "visto su AllergiApp",
     "dialogTitle": "Condividi questo ristorante",
-    "error": "Impossibile condividere. Riprova."
+    "error": "Impossibile condividere. Riprova.",
+    "shareProfile": "Condividi profilo",
+    "profileSuffix": "profilo su AllergiApp",
+    "profileDialogTitle": "Condividi questo profilo",
+    "sheetTitle": "Il link del tuo profilo",
+    "sheetCopy": "Copia link",
+    "sheetCopied": "Copiato!",
+    "sheetHint": "Condividilo con chi vuoi o aggiungilo alla bio dei tuoi social: chi lo apre vede le tue recensioni e può seguirti."
+  },
+  "follow": {
+    "follow": "Segui",
+    "following": "Già segui",
+    "feedPill": "Seguiti",
+    "followers": "Follower",
+    "followersBadge": {
+      "one": "1 follower",
+      "other": "{{count}} follower"
+    },
+    "manageHeader": {
+      "one": "Segui 1 profilo",
+      "other": "Segui {{count}} profili"
+    },
+    "manageEmpty": "Non segui ancora nessuno. Puoi scoprire nuovi profili dalle recensioni dei ristoranti e dalla pagina Community.",
+    "listFollowingHeader": {
+      "one": "Segue 1 profilo",
+      "other": "Segue {{count}} profili"
+    },
+    "listFollowersEmpty": "Ancora nessun follower.",
+    "listFollowingEmpty": "Non segue ancora nessuno."
+  },
+  "community": {
+    "title": "Community",
+    "searchPlaceholder": "Cerca utenti",
+    "noResults": "Nessun utente trovato.",
+    "clearSearch": "Cancella ricerca"
+  },
+  "block": {
+    "menu": "Altre opzioni",
+    "block": "Blocca utente",
+    "unblock": "Sblocca utente",
+    "confirmTitle": "Bloccare questo utente?",
+    "confirmBody": "Non vedrai più le sue recensioni e non potrete più seguirvi a vicenda."
   }
 }

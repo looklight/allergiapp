@@ -45,7 +45,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? "",
       },
     },
-    // App Links: pattern https://allergiapp.com/r/* apre direttamente l'app.
+    // App Links: pattern https://allergiapp.com/r/* (ristoranti) e /u/*
+    // (profili) aprono direttamente l'app. MODIFICA NATIVA: /u/ è attivo solo
+    // dalle build che includono questo config (le OTA non lo toccano).
     // autoVerify=true richiede che landing/.well-known/assetlinks.json contenga
     // il SHA-256 del keystore production (recuperabile via `npx eas credentials`).
     // Senza SHA-256 valido: Android mostra il chooser invece di aprire diretto, ma niente si rompe.
@@ -58,6 +60,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
             scheme: "https",
             host: "allergiapp.com",
             pathPrefix: "/r/",
+          },
+          {
+            scheme: "https",
+            host: "allergiapp.com",
+            pathPrefix: "/u/",
           },
         ],
         category: ["BROWSABLE", "DEFAULT"],

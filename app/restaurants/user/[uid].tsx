@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -10,6 +10,11 @@ import type { UserReview } from '../../../services/restaurantService';
 import { useAuth } from '../../../contexts/AuthContext';
 import ProfileMapList from '../../../components/ProfileMapList';
 import UserReviewCard from '../../../components/UserReviewCard';
+import FollowButton from '../../../components/FollowButton';
+import { FollowService, type FollowStats } from '../../../services/followService';
+import { BlockService } from '../../../services/blockService';
+import { shareProfile } from '../../../services/shareProfile';
+import type { HeaderAction } from '../../components/AppHeader';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
@@ -22,17 +27,29 @@ const getReviewLocation = (r: UserReview) => ({
   countryCode: r.restaurant_country_code,
 });
 
+// Blocco utente: UI volutamente SPENTA (decisione 2026-07-12, rivalutare al
+// lancio social). Tutta l'infrastruttura resta attiva e testata (mig 075/077:
+// tabella, RLS, trigger, filtri nelle RPC): per riattivare basta questo flag.
+// ATTENZIONE Apple: la guideline 1.2 (UGC social) si aspetta il blocco utenti
+// — se la review della 1.3.0 lo contesta, riaccendere qui.
+const BLOCK_UI_ENABLED = false;
+
 export default function PublicProfileScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [reviewCount, setReviewCount] = useState(0);
   const [likesReceived, setLikesReceived] = useState(0);
+  const [following, setFollowing] = useState<boolean | null>(null);
+  // Grafo pubblico (mig 080): qui serve solo il conteggio seguiti; null
+  // sugli anonimi (la RPC non li serve) → colonna Seguiti assente.
+  const [followStats, setFollowStats] = useState<FollowStats | null>(null);
+  const [blocked, setBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,23 +61,33 @@ export default function PublicProfileScreen() {
 
     (async () => {
       try {
-        const [prof, contribs, totalReviews, totalLikes] = await Promise.all([
+        const [prof, contribs, totalReviews, totalLikes, isFollowing, graphStats, isBlocked] = await Promise.all([
           AuthService.getUserProfile(uid),
           RestaurantService.getReviewsByUser(uid),
           RestaurantService.getReviewCountByUser(uid),
           RestaurantService.getLikesReceivedByUser(uid),
+          FollowService.isFollowing(uid).catch(() => false),
+          FollowService.getFollowStats(uid).catch(() => null),
+          // Col flag spento niente fetch: blocked resta false e non può
+          // nascondere recensioni/pill di un profilo senza UI per sbloccarlo.
+          BLOCK_UI_ENABLED && user?.uid
+            ? BlockService.isBlocked(user.uid, uid).catch(() => false)
+            : Promise.resolve(false),
         ]);
         setProfile(prof);
         setReviews(contribs);
         setReviewCount(totalReviews);
         setLikesReceived(totalLikes);
+        setFollowing(isFollowing);
+        setFollowStats(graphStats);
+        setBlocked(isBlocked);
       } catch (err) {
         console.warn('[PublicProfile] Errore caricamento:', err);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [uid, isAuthenticated]);
+  }, [uid, isAuthenticated, user?.uid]);
 
   // Mask username for anonymous users when viewed by others.
   // ProfileCard usa getDisplayName che oggi ritorna username; sovrascrivere
@@ -68,6 +95,51 @@ export default function PublicProfileScreen() {
   const visibleProfile = profile?.is_anonymous
     ? { ...profile, username: getAnonymousLabel(uid) }
     : profile;
+
+  // Pill "Segui": mai su anonimi (non followabili), su se stessi, su utenti
+  // bloccati, o prima che lo stato iniziale sia noto (evita il flash
+  // Segui → Già segui).
+  const canFollow =
+    !!user?.uid && user.uid !== uid && !!profile && !profile.is_anonymous && !blocked && following !== null;
+
+  // Menu "..." (blocca/sblocca): su qualunque profilo altrui, anonimi inclusi.
+  const handleBlockMenu = () => {
+    if (!user?.uid) return;
+    if (blocked) {
+      Alert.alert(i18n.t('block.unblock'), undefined, [
+        { text: i18n.t('common.cancel'), style: 'cancel' },
+        {
+          text: i18n.t('block.unblock'),
+          onPress: async () => {
+            try {
+              await BlockService.unblock(user.uid, uid);
+              setBlocked(false);
+            } catch (err) {
+              console.warn('[PublicProfile] unblock fallito:', err);
+            }
+          },
+        },
+      ]);
+      return;
+    }
+    Alert.alert(i18n.t('block.confirmTitle'), i18n.t('block.confirmBody'), [
+      { text: i18n.t('common.cancel'), style: 'cancel' },
+      {
+        text: i18n.t('block.block'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await BlockService.block(user.uid, uid);
+            // Il trigger DB ha già rimosso i follow in entrambe le direzioni.
+            setBlocked(true);
+            setFollowing(false);
+          } catch (err) {
+            console.warn('[PublicProfile] block fallito:', err);
+          }
+        },
+      },
+    ]);
+  };
 
   if (isLoading || !profile) {
     return (
@@ -90,9 +162,42 @@ export default function PublicProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ProfileMapList<UserReview>
         profile={visibleProfile!}
-        stats={{ reviews: reviewCount, likes: likesReceived }}
+        // Del grafo qui si mostra SOLO "Seguiti" (scelta 2026-07-12): il
+        // follower count altrui a numeri bassi è anti-social-proof, resta
+        // visibile solo a se stessi (badge sul profilo personale).
+        stats={{
+          reviews: reviewCount,
+          likes: likesReceived,
+          following: followStats?.following,
+        }}
         onBack={() => router.back()}
-        items={reviews}
+        // Stat Seguiti tappabile → lista navigabile (innocuo quando la
+        // colonna non compare, profili anonimi).
+        onFollowingPress={() =>
+          router.push({ pathname: '/restaurants/follow-list', params: { uid, mode: 'following' } })
+        }
+        nameAccessory={
+          canFollow ? (
+            <FollowButton userId={user!.uid} targetId={uid} initialFollowing={following!} />
+          ) : undefined
+        }
+        headerActions={(() => {
+          const actions: HeaderAction[] = [];
+          if (profile && !profile.is_anonymous && profile.username) {
+            actions.push({
+              icon: 'share-variant',
+              onPress: () => shareProfile({ id: uid, username: profile.username }),
+              accessibilityLabel: i18n.t('share.shareProfile'),
+            });
+          }
+          if (BLOCK_UI_ENABLED && user?.uid && user.uid !== uid) {
+            actions.push({ icon: 'dots-horizontal', onPress: handleBlockMenu, accessibilityLabel: i18n.t('block.menu') });
+          }
+          return actions.length > 0 ? actions : undefined;
+        })()}
+        // Utente bloccato: la promessa del blocco ("non vedrai più le sue
+        // recensioni") vale anche visitando il suo profilo di proposito.
+        items={blocked ? [] : reviews}
         getLocation={getReviewLocation}
         getMapPin={(r) => ({
           id: r.restaurant_id,

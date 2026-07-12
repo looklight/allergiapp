@@ -17,6 +17,7 @@ export type FilterApplyResult = {
   diets: string[];
   minRating: number | null;
   showLodging: boolean;
+  followedFilter: boolean;
 };
 
 type Props = {
@@ -29,6 +30,9 @@ type Props = {
   filterDiets: string[];
   minRating: number | null;
   showLodging: boolean;
+  followedFilter: boolean;
+  /** False quando l'utente non segue nessuno: toggle disabilitato con hint. */
+  canUseFollowedFilter: boolean;
   // Profilo (per DietaryNeedsPicker)
   profileAllergens: string[];
   profileDiets: string[];
@@ -51,6 +55,8 @@ export default function FilterModal({
   filterDiets,
   minRating,
   showLodging,
+  followedFilter,
+  canUseFollowedFilter,
   profileAllergens,
   profileDiets,
   onSyncProfile,
@@ -69,6 +75,7 @@ export default function FilterModal({
   const [pendingDiets, setPendingDiets] = useState(filterDiets);
   const [pendingMinRating, setPendingMinRating] = useState<number | null>(minRating);
   const [pendingShowLodging, setPendingShowLodging] = useState(showLodging);
+  const [pendingFollowed, setPendingFollowed] = useState(followedFilter);
 
   useEffect(() => {
     if (visible) {
@@ -78,6 +85,7 @@ export default function FilterModal({
       setPendingDiets(filterDiets);
       setPendingMinRating(minRating);
       setPendingShowLodging(showLodging);
+      setPendingFollowed(followedFilter);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -105,6 +113,7 @@ export default function FilterModal({
       diets: pendingDiets,
       minRating: pendingMinRating,
       showLodging: pendingShowLodging,
+      followedFilter: pendingFollowed,
     });
     onClose();
   };
@@ -113,11 +122,12 @@ export default function FilterModal({
     setPendingFilters([]);
     setPendingMinRating(null);
     setPendingShowLodging(false);
+    setPendingFollowed(false);
     onReset();
     onClose();
   };
 
-  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds || pendingMinRating !== null || pendingShowLodging;
+  const hasPendingOrActive = pendingFilters.length > 0 || pendingMyNeeds || pendingMinRating !== null || pendingShowLodging || pendingFollowed;
 
   // Overlay split per piattaforma — trade-off del touch system nativo.
   // iOS: siblings (Pressable absoluteFill dietro) — il nested ruba il responder alla ScrollView interna su aree vuote.
@@ -215,6 +225,38 @@ export default function FilterModal({
             </View>
           </TouchableOpacity>
           <Text style={styles.sectionHint}>{i18n.t('restaurants.filter.showLodgingHint')}</Text>
+        </View>
+
+        {/* Recensiti dai seguiti — disabilitato (non nascosto) quando l'utente
+            non segue nessuno: la riga con l'hint fa anche da scoperta della
+            feature follow. */}
+        <View style={styles.lodgingSection}>
+          <TouchableOpacity
+            onPress={() => {
+              if (!isAuthenticated) { onRequestLogin(); return; }
+              if (!canUseFollowedFilter) return;
+              setPendingFollowed(prev => !prev);
+            }}
+            style={[styles.toggleRow, !canUseFollowedFilter && styles.toggleRowDisabled]}
+            activeOpacity={canUseFollowedFilter ? 0.7 : 1}
+          >
+            <MaterialCommunityIcons
+              name="account-group"
+              size={18}
+              color={canUseFollowedFilter ? theme.colors.primary : theme.colors.textSecondary}
+            />
+            <Text style={[styles.toggleLabel, !canUseFollowedFilter && styles.toggleLabelDisabled]}>
+              {i18n.t('restaurants.filter.followedFilter')}
+            </Text>
+            <View style={[styles.switchTrack, pendingFollowed && styles.switchTrackActive]}>
+              <View style={[styles.switchThumb, pendingFollowed && styles.switchThumbActive]} />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.sectionHint}>
+            {i18n.t(canUseFollowedFilter
+              ? 'restaurants.filter.followedFilterHint'
+              : 'restaurants.filter.followedFilterDisabledHint')}
+          </Text>
         </View>
       </ScrollView>
 
@@ -331,6 +373,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: theme.colors.textPrimary,
+  },
+  toggleRowDisabled: {
+    opacity: 0.55,
+  },
+  toggleLabelDisabled: {
+    color: theme.colors.textSecondary,
   },
   switchTrack: {
     width: 40,

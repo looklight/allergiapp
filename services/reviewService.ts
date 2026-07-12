@@ -67,6 +67,9 @@ export async function getReviews(
     user_is_anonymous: r.user_is_anonymous ?? false,
   }));
 
+  // I bloccati sono esclusi dalla RPC stessa (mig 077): righe e totalCount
+  // restano coerenti anche in paginazione. I loro voti contano comunque
+  // nelle medie community (scelta deliberata).
   return { reviews, totalCount };
 }
 

@@ -19,7 +19,14 @@ export type EventName =
   | 'restaurant_search'
   | 'review_created'
   | 'sign_in'
-  | 'restaurant_shared';
+  | 'restaurant_shared'
+  | 'user_followed'
+  | 'user_unfollowed'
+  | 'user_blocked'
+  | 'user_search'
+  | 'profile_shared'
+  | 'profile_link_copied'
+  | 'followed_filter_enabled';
 
 type EventProperties = Record<string, string | number | boolean | null>;
 

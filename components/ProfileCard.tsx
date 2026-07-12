@@ -10,11 +10,16 @@ import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import type { UserProfile } from '../services/auth';
 import Avatar from './Avatar';
-import AppHeader from '../app/components/AppHeader';
+import AppHeader, { type HeaderAction } from '../app/components/AppHeader';
 
 interface ProfileStats {
   likes?: number;
   reviews?: number;
+  /** Profili seguiti. Dal grafo pubblico (mig 080) compare anche sui
+   *  profili altrui non anonimi. Il follower count invece non ha colonna:
+   *  vive solo nel badge accanto al nome del profilo proprio (scelta
+   *  2026-07-12: a numeri bassi sui profili altrui è anti-social-proof). */
+  following?: number;
 }
 
 interface ProfileCardProps {
@@ -26,10 +31,21 @@ interface ProfileCardProps {
   /** Override del numero "recensioni" — se passato, sostituisce il <Text> statico
    *  (usato per il conteggio cache-first con skeleton sul profilo proprio). */
   reviewsSlot?: React.ReactNode;
+  /** Override del numero "seguiti" (skeleton CountText sul profilo proprio).
+   *  Se né questo né stats.following sono presenti, la colonna non compare. */
+  followingSlot?: React.ReactNode;
+  /** Tap sulla stat "Seguiti" (stile Instagram: gestione seguiti sul proprio,
+   *  lista seguiti sui profili altrui). Se assente la colonna resta statica. */
+  onFollowingPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
+  /** Azioni extra in alto a destra nell'AppHeader, dopo l'eventuale matita
+   *  (es. menu "..." sul profilo altrui, share). */
+  headerActions?: HeaderAction[];
+  /** Elemento reso nel nameRow a destra del nome (es. pill "Segui"). */
+  nameAccessory?: React.ReactNode;
   title?: string;
   /** Elemento reso subito sotto la sezione profilo e reso "sticky" in alto allo scroll.
    *  Può essere una render-prop che riceve:
@@ -48,7 +64,7 @@ interface ProfileCardProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, onBack, onEdit, onEditDietary, onAvatarPress, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
+export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, followingSlot, onFollowingPress, onBack, onEdit, onEditDietary, onAvatarPress, headerActions, nameAccessory, title = i18n.t('restaurants.profileCard.title'), stickyHeader, scrollRef, beforeStickyHeader, children }: ProfileCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -102,11 +118,13 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
       <AppHeader
         title={title}
         onLeadingPress={onBack}
-        actions={
-          onEdit
-            ? [{ icon: 'pencil-outline', onPress: onEdit, accessibilityLabel: i18n.t('common.edit') }]
-            : undefined
-        }
+        actions={(() => {
+          // headerActions (es. share) PRIMA della matita: sul profilo proprio
+          // il condividi sta a sinistra del modifica.
+          const actions: HeaderAction[] = [...(headerActions ?? [])];
+          if (onEdit) actions.push({ icon: 'pencil-outline', onPress: onEdit, accessibilityLabel: i18n.t('common.edit') });
+          return actions.length > 0 ? actions : undefined;
+        })()}
       />
 
       <Animated.ScrollView
@@ -151,15 +169,24 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
             )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
+                {/* Clamp a una riga solo quando c'è un accessorio (pill Segui)
+                    che deve restare visibile: senza, il nome lungo va a capo
+                    come sempre. */}
+                <Text style={styles.displayName} numberOfLines={nameAccessory ? 1 : undefined}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
                 {profile.is_anonymous && (
                   <MaterialCommunityIcons name="incognito" size={18} color={theme.colors.textSecondary} />
                 )}
+                {nameAccessory}
               </View>
               {memberSince ? (
                 <Text style={styles.memberSince}>{i18n.t('restaurants.profileCard.memberSince', { date: memberSince })}</Text>
               ) : null}
-              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot) && (
+              {/* Stat a colonna (numero sopra, etichetta sotto): tre voci stanno
+                  sulla stessa riga anche su schermi stretti. Il likesSlot
+                  (AnimatedLikesCounter) rende solo [numero][+N]: il badge resta
+                  in flusso a destra del numero, la label è resa qui come per
+                  le altre colonne. */}
+              {(stats?.reviews != null || reviewsSlot || stats?.likes != null || likesSlot || stats?.following != null || followingSlot) && (
                 <View style={styles.inlineStatsRow}>
                   {(stats?.reviews != null || reviewsSlot) && (
                     <View style={styles.inlineStat}>
@@ -167,18 +194,26 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
                       <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statReviews')}</Text>
                     </View>
                   )}
-                  {stats?.likes != null && (
+                  {(stats?.likes != null || likesSlot) && (
                     <View style={styles.inlineStat}>
-                      {/* Quando c'è il likesSlot (AnimatedLikesCounter sul profilo
-                          proprio) è lui a rendere numero + label, così il badge "+N"
-                          può comparire in coda alla riga, a destra di "Like ricevuti". */}
-                      {likesSlot ?? (
-                        <>
-                          <Text style={styles.inlineStatNumber}>{stats.likes}</Text>
-                          <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
-                        </>
-                      )}
+                      {likesSlot ?? <Text style={styles.inlineStatNumber}>{stats?.likes}</Text>}
+                      <Text style={styles.inlineStatLabel}>{i18n.t('restaurants.profileCard.statLikes')}</Text>
                     </View>
+                  )}
+                  {(stats?.following != null || followingSlot) && (
+                    // Stile Instagram: tap sulla stat → gestione seguiti.
+                    // Senza handler resta una colonna statica come le altre.
+                    <TouchableOpacity
+                      style={styles.inlineStat}
+                      onPress={onFollowingPress}
+                      disabled={!onFollowingPress}
+                      activeOpacity={0.6}
+                      accessibilityRole={onFollowingPress ? 'button' : undefined}
+                      accessibilityLabel={i18n.t('follow.feedPill')}
+                    >
+                      {followingSlot ?? <Text style={styles.inlineStatNumber}>{stats?.following}</Text>}
+                      <Text style={styles.inlineStatLabel}>{i18n.t('follow.feedPill')}</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               )}
@@ -298,9 +333,12 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 6,
   },
   displayName: {
-    fontSize: 20,
+    // 18 (era 20) + flexShrink: lascia spazio all'accessorio nel nameRow
+    // (pill "Segui") senza spingerlo fuori con i nomi lunghi.
+    fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textPrimary,
+    flexShrink: 1,
   },
   memberSince: {
     fontSize: 13,
@@ -323,17 +361,20 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: 12,
     marginBottom: 0,
   },
+  // Le colonne si spartiscono equamente la larghezza disponibile (flex: 1)
+  // invece di ammassarsi a sinistra con gap fisso. alignItems flex-start:
+  // i numeri restano allineati in alto anche se un'etichetta va a capo.
   inlineStatsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 16,
+    alignItems: 'flex-start',
     marginTop: 8,
   },
+  // Colonna [numero / etichetta]: numero centrato sopra la sua etichetta
+  // (che è quasi sempre più larga), contenuto centrato nella propria fascia.
   inlineStat: {
-    flexDirection: 'row',
+    flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 4,
   },
   inlineStatNumber: {
     fontSize: 15,
@@ -341,8 +382,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   inlineStatLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: theme.colors.textSecondary,
+    marginTop: 1,
   },
   allergensLabel: {
     fontSize: 13,

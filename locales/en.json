@@ -299,6 +299,9 @@
       "rating4Plus": "4★ and up",
       "showLodging": "Show hotels & stays",
       "showLodgingHint": "Shows accommodations (hotels, B&Bs…) instead of restaurants. Hotels with a restaurant open to the public still appear among restaurants too.",
+      "followedFilter": "Reviewed by people you follow",
+      "followedFilterHint": "Only shows places reviewed by people you follow.",
+      "followedFilterDisabledHint": "Follow other users to use this filter.",
       "reset": "Reset filters",
       "apply": "Apply"
     },
@@ -452,6 +455,7 @@
       "activeChipForMe": "For me",
       "activeChipCustomNeeds": "Custom needs",
       "activeChipLodging": "Hotels & stays",
+      "activeChipFollowed": "From people you follow",
       "activeChipRating4Plus": "4★ and up",
       "loadingNearby": "Looking for restaurants in {{place}}...",
       "bannerNoneAt": "No restaurants in {{place}}",
@@ -506,6 +510,7 @@
       "menuReviews": "My reviews",
       "menuMyRestaurants": "My restaurants",
       "menuLeaderboard": "Leaderboard",
+      "menuCommunity": "Community",
       "emptyReviews": "Your reviews will show up here. Visit a restaurant and share how it went.",
       "emptyFavorites": "Your favorites will show up here. Tap the heart on a place to save it."
     },
@@ -852,6 +857,47 @@
     "shareRestaurant": "Share restaurant",
     "suffix": "seen on AllergiApp",
     "dialogTitle": "Share this restaurant",
-    "error": "Could not share. Please try again."
+    "error": "Could not share. Please try again.",
+    "shareProfile": "Share profile",
+    "profileSuffix": "profile on AllergiApp",
+    "profileDialogTitle": "Share this profile",
+    "sheetTitle": "Your profile link",
+    "sheetCopy": "Copy link",
+    "sheetCopied": "Copied!",
+    "sheetHint": "Share it with anyone or add it to your social bios: whoever opens it sees your reviews and can follow you."
+  },
+  "follow": {
+    "follow": "Follow",
+    "following": "Following",
+    "feedPill": "Following",
+    "followers": "Followers",
+    "followersBadge": {
+      "one": "1 follower",
+      "other": "{{count}} followers"
+    },
+    "manageHeader": {
+      "one": "You follow 1 profile",
+      "other": "You follow {{count}} profiles"
+    },
+    "manageEmpty": "You're not following anyone yet. You can discover new profiles through restaurant reviews and the Community page.",
+    "listFollowingHeader": {
+      "one": "Follows 1 profile",
+      "other": "Follows {{count}} profiles"
+    },
+    "listFollowersEmpty": "No followers yet.",
+    "listFollowingEmpty": "Not following anyone yet."
+  },
+  "community": {
+    "title": "Community",
+    "searchPlaceholder": "Search users",
+    "noResults": "No users found.",
+    "clearSearch": "Clear search"
+  },
+  "block": {
+    "menu": "More options",
+    "block": "Block user",
+    "unblock": "Unblock user",
+    "confirmTitle": "Block this user?",
+    "confirmBody": "You will no longer see their reviews, and you won't be able to follow each other."
   }
 }

@@ -13,17 +13,25 @@ import MyRestaurantsMap, { type MapPinItem } from '../app/components/my-restaura
 import RestaurantDetailSheet from './restaurants/RestaurantDetailSheet';
 import { useLocationFilters, type LocationParts } from '../hooks/useLocationFilters';
 import type { UserProfile } from '../services/auth';
+import type { HeaderAction } from '../app/components/AppHeader';
 
 interface ProfileMapListProps<T> {
   /** Profilo già "visibile" (username eventualmente mascherato per anonimi). */
   profile: UserProfile;
-  stats?: { likes?: number; reviews?: number };
+  stats?: { likes?: number; reviews?: number; following?: number };
   likesSlot?: React.ReactNode;
   reviewsSlot?: React.ReactNode;
+  followingSlot?: React.ReactNode;
+  /** Tap sulla stat "Seguiti" — v. ProfileCard. */
+  onFollowingPress?: () => void;
   onBack: () => void;
   onEdit?: () => void;
   onEditDietary?: () => void;
   onAvatarPress?: () => void;
+  /** Azioni extra in alto a destra (dopo l'eventuale matita) — v. ProfileCard. */
+  headerActions?: HeaderAction[];
+  /** Elemento accanto al nome (es. pill "Segui") — v. ProfileCard. */
+  nameAccessory?: React.ReactNode;
   /** Se presente, mostra un pulsante "+" sulla mappa (specchiato al mini-avatar)
    *  che apre la schermata di aggiunta ristorante. Passato solo dal profilo
    *  personale: sui profili altrui non viene fornito e il pulsante non compare. */
@@ -54,6 +62,10 @@ interface ProfileMapListProps<T> {
   /** Reso al posto della lista quando il filtro corrente non ha elementi. */
   emptyState?: React.ReactNode;
 
+  /** Reso sopra la lista (sotto l'header di sezione), anche a lista vuota.
+   *  Usato dal feed "Seguiti" per il link di gestione dei profili seguiti. */
+  listHeaderSlot?: React.ReactNode;
+
   /** Filtro per tipo luogo (Ristoranti/Hotel). Reso come due toggle icona-sola
    *  allineati a destra SOTTO la mappa (nel corpo, scorre via). Applicato a monte
    *  del filtro paese, così mappa e lista restano coerenti. Omesso = niente riga. */
@@ -78,10 +90,14 @@ export default function ProfileMapList<T>({
   stats,
   likesSlot,
   reviewsSlot,
+  followingSlot,
+  onFollowingPress,
   onBack,
   onEdit,
   onEditDietary,
   onAvatarPress,
+  headerActions,
+  nameAccessory,
   onAddRestaurant,
   items,
   getLocation,
@@ -95,6 +111,7 @@ export default function ProfileMapList<T>({
   topActions,
   headerVisible,
   emptyState,
+  listHeaderSlot,
   typeFilter,
 }: ProfileMapListProps<T>) {
   const theme = useTheme();
@@ -190,10 +207,14 @@ export default function ProfileMapList<T>({
         stats={stats}
         likesSlot={likesSlot}
         reviewsSlot={reviewsSlot}
+        followingSlot={followingSlot}
+        onFollowingPress={onFollowingPress}
         onBack={onBack}
         onEdit={onEdit}
         onEditDietary={onEditDietary}
         onAvatarPress={onAvatarPress}
+        headerActions={headerActions}
+        nameAccessory={nameAccessory}
         scrollRef={scrollRef}
         beforeStickyHeader={topActions}
         stickyHeader={showHeader ? (pinned, isPinned) => (
@@ -279,6 +300,7 @@ export default function ProfileMapList<T>({
             <TypeFilterToggles toggles={presentTypes} hidden={hiddenTypes} onToggle={toggleType} />
           </View>
         )}
+        {showHeader ? listHeaderSlot : null}
         {filteredItems.length > 0 ? (
           <>
             {filteredItems.map((item) => {

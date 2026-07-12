@@ -18,6 +18,22 @@ export type RestaurantPin = {
   average_rating?: number;
 };
 
+/** Mappa una riga pin-shaped delle RPC (get_pins_in_bounds, get_followed_pins)
+ *  in RestaurantPin. Le RPC condividono il RETURNS TABLE: un solo mapper. */
+export function mapPinRow(row: any): RestaurantPin {
+  return {
+    id: row.id as string,
+    latitude: row.latitude as number,
+    longitude: row.longitude as number,
+    supported_allergens: (row.supported_allergens ?? []) as string[],
+    supported_diets: (row.supported_diets ?? []) as string[],
+    cuisine_types: (row.cuisine_types ?? []) as string[],
+    offers_lodging: (row.offers_lodging ?? false) as boolean,
+    average_rating: Number(row.average_rating ?? 0),
+    lodging_type: (row.lodging_type ?? null) as string | null,
+  };
+}
+
 export interface Restaurant {
   id: string;
   /**

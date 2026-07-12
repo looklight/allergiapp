@@ -17,6 +17,7 @@ const STORAGE_KEYS = {
   LEGAL_CONSENT: 'allergiapp_legal_consent',
   TRACKING_CONSENT: 'allergiapp_tracking_consent',
   FOR_MY_NEEDS: 'allergiapp_for_my_needs',
+  FOLLOWED_FILTER: 'allergiapp_followed_filter',
   DISMISSED_POPUPS: 'allergiapp_dismissed_popups',
   RECENT_PLACES: 'allergiapp_recent_places',
   USER_CARDS: 'allergiapp_user_cards',
@@ -288,6 +289,7 @@ export const storage = {
         STORAGE_KEYS.SETTINGS,
         STORAGE_KEYS.DOWNLOADED_LANGUAGES,
         STORAGE_KEYS.FOR_MY_NEEDS,
+        STORAGE_KEYS.FOLLOWED_FILTER,
         STORAGE_KEYS.USER_CARDS,
         STORAGE_KEYS.ACTIVE_CARD_ID,
         STORAGE_KEYS.PROFILE_COUNTS,
@@ -441,6 +443,24 @@ export const storage = {
   async setForMyNeeds(value: boolean): Promise<void> {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.FOR_MY_NEEDS, value ? 'true' : 'false');
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Filtro mappa "Recensiti dai seguiti" — persistito come forMyNeeds.
+  async getFollowedFilter(): Promise<boolean> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.FOLLOWED_FILTER);
+      return data === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  async setFollowedFilter(value: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.FOLLOWED_FILTER, value ? 'true' : 'false');
     } catch {
       // Storage write failed silently
     }

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, useFocusEffect, Stack } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,6 +10,8 @@ import { RestaurantService } from '../../services/restaurantService';
 import type { UserReview } from '../../services/restaurantService';
 import { getMyRestaurants, getCollectionsWithItems, type MyRestaurantItem, type CollectionWithItems } from '../../services/myRestaurantsService';
 import { CollectionService } from '../../services/collectionService';
+import { FollowService, getFollowGraphVersion, type FollowStats } from '../../services/followService';
+import ShareProfileSheet from '../../components/ShareProfileSheet';
 import ProfileMapList from '../../components/ProfileMapList';
 import ListEditorSheet, { type EditingList } from '../../components/ListEditorSheet';
 import UserReviewCard from '../../components/UserReviewCard';
@@ -34,7 +36,8 @@ import i18n from '../../utils/i18n';
 const SHOW_REVIEWS_PILL_AT_ZERO = true;
 
 // Selezione corrente della barra liste: 'reviews', 'favorites' (lista di
-// default) oppure l'id di una lista custom.
+// default) oppure l'id di una lista custom (UUID: nessuna collisione con i
+// literal).
 type Selection = 'reviews' | 'favorites' | string;
 
 // Riga unificata della lista: una recensione (card recensione) o un ristorante
@@ -52,6 +55,8 @@ export default function ProfileScreen() {
   const [selected, setSelected] = useState<Selection>('reviews');
   // Editor lista (crea/modifica/elimina) in bottom sheet. null = chiuso.
   const [editor, setEditor] = useState<null | { editing: EditingList | null }>(null);
+  // Sheet "il tuo link": si apre dal bottone condividi nell'header.
+  const [shareSheetVisible, setShareSheetVisible] = useState(false);
   const { currentLikes, lastSeenLikes, markAsSeen } = useLikesNotification();
 
   const isCustom = selected !== 'reviews' && selected !== 'favorites';
@@ -68,6 +73,38 @@ export default function ProfileScreen() {
 
   const reviewsList = useUserItemList<UserReview>(RestaurantService.getReviewsByUser);
   const favoritesList = useUserItemList<MyRestaurantItem>(getMyRestaurants);
+
+  // ─── Grafo follow ──────────────────────────────────────────────────────────
+  // Conteggi follower/seguiti in una chiamata (RPC get_follow_counts):
+  // seguiti nella stat in alto (tappabile → gestione seguiti), follower nel
+  // badge accanto al nome. Al focus si ricarica solo se il grafo è cambiato
+  // altrove (unfollow in gestione seguiti, blocco su profilo).
+  const [followStats, setFollowStats] = useState<FollowStats | null>(null);
+
+  const loadFollowStats = useCallback(async () => {
+    if (!user?.uid) return;
+    try {
+      setFollowStats(await FollowService.getFollowStats(user.uid));
+    } catch (err) {
+      console.warn('[Profile] conteggi follow falliti:', err);
+      setFollowStats((s) => s ?? { followers: 0, following: 0 });
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    loadFollowStats();
+  }, [loadFollowStats]);
+
+  const followVersionRef = useRef(getFollowGraphVersion());
+  useFocusEffect(
+    useCallback(() => {
+      const v = getFollowGraphVersion();
+      if (v !== followVersionRef.current) {
+        followVersionRef.current = v;
+        loadFollowStats();
+      }
+    }, [loadFollowStats]),
+  );
 
   const favorites = useMemo(
     () => favoritesList.items.filter((r) => r.is_favorite),
@@ -156,6 +193,7 @@ export default function ProfileScreen() {
     reviewsList.reload();
     favoritesList.reload();
     listsData.reload();
+    loadFollowStats();
   };
 
   // Titolo sezione e stato vuoto dipendono dalla selezione corrente.
@@ -247,16 +285,54 @@ export default function ProfileScreen() {
         stats={{ likes: currentLikes }}
         reviewsSlot={<CountText value={counts.reviews} style={styles.inlineStatNumber} />}
         likesSlot={
+          // Niente label qui: con le stat a colonna la rende ProfileCard sotto
+          // il numero; il badge "+N" resta in flusso a destra del numero.
           <AnimatedLikesCounter
             currentLikes={currentLikes}
             previousLikes={lastSeenLikes}
             onAnimationEnd={markAsSeen}
             numberStyle={styles.inlineLikesNumber}
-            label={i18n.t('restaurants.profileCard.statLikes')}
           />
+        }
+        followingSlot={<CountText value={followStats?.following ?? null} style={styles.inlineStatNumber} />}
+        // Stile Instagram: tap sulla stat "Seguiti" → gestione seguiti.
+        onFollowingPress={() => router.push('/restaurants/following')}
+        // Follower nel badge discreto accanto al nome (lo slot che sui profili
+        // altrui ospita la pill "Segui": è il posto della relazione col
+        // profilo). Compare dal primo follower; tap → lista follower.
+        nameAccessory={
+          (followStats?.followers ?? 0) >= 1 ? (
+            <TouchableOpacity
+              style={styles.followerBadge}
+              onPress={() =>
+                router.push({ pathname: '/restaurants/follow-list', params: { uid: user!.uid, mode: 'followers' } })
+              }
+              activeOpacity={0.6}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={i18n.t('follow.followers')}
+            >
+              <MaterialCommunityIcons name="account-multiple" size={13} color={theme.colors.textSecondary} />
+              <Text style={styles.followerBadgeText}>
+                {i18n.t('follow.followersBadge', { count: followStats!.followers })}
+              </Text>
+            </TouchableOpacity>
+          ) : undefined
         }
         onBack={() => router.back()}
         onEdit={() => router.push('/restaurants/edit-profile')}
+        headerActions={
+          // Share prima della matita: apre lo sheet "il tuo link" (copia +
+          // share nativo). Solo se il profilo è condivisibile (mai per
+          // anonimi: l'URL esporrebbe lo username reale).
+          !userProfile.is_anonymous && userProfile.username && user?.uid
+            ? [{
+                icon: 'share-variant',
+                onPress: () => setShareSheetVisible(true),
+                accessibilityLabel: i18n.t('share.shareProfile'),
+              }]
+            : undefined
+        }
         onEditDietary={() => router.push('/restaurants/edit-dietary')}
         onAvatarPress={() => router.push('/restaurants/avatar-gallery')}
         onAddRestaurant={() => router.push('/restaurants/add')}
@@ -275,7 +351,7 @@ export default function ProfileScreen() {
         onDetailClose={reloadAll}
         typeFilter={{
           getKey: (row) =>
-            (row.kind === 'review' ? row.data.restaurant_offers_lodging : row.data.offers_lodging)
+            (row.kind === 'favorite' ? row.data.offers_lodging : row.data.restaurant_offers_lodging)
               ? 'lodging'
               : 'restaurant',
           types: [
@@ -284,9 +360,9 @@ export default function ProfileScreen() {
           ],
         }}
         getLocation={(row) =>
-          row.kind === 'review'
-            ? { city: row.data.restaurant_city, country: row.data.restaurant_country, countryCode: row.data.restaurant_country_code }
-            : { city: row.data.city, country: row.data.country, countryCode: row.data.country_code }
+          row.kind === 'favorite'
+            ? { city: row.data.city, country: row.data.country, countryCode: row.data.country_code }
+            : { city: row.data.restaurant_city, country: row.data.restaurant_country, countryCode: row.data.restaurant_country_code }
         }
         getMapPin={(row) => {
           if (row.kind === 'review') {
@@ -307,12 +383,14 @@ export default function ProfileScreen() {
             ? { ...base, is_favorite: true }
             : { ...base, symbol: currentCollectionEmoji };
         }}
-        getPinId={(row) => (row.kind === 'review' ? row.data.restaurant_id : row.data.id)}
+        getPinId={(row) => (row.kind === 'favorite' ? row.data.id : row.data.restaurant_id)}
         getRowKey={(row) => (row.kind === 'review' ? `r-${row.data.id}` : `f-${row.data.id}`)}
         renderRow={(row, onPress) =>
-          row.kind === 'review'
-            ? <UserReviewCard review={row.data} onPress={onPress} />
-            : <MyRestaurantCard item={row.data} onPress={onPress} />
+          row.kind === 'review' ? (
+            <UserReviewCard review={row.data} onPress={onPress} />
+          ) : (
+            <MyRestaurantCard item={row.data} onPress={onPress} />
+          )
         }
         topActions={
           <>
@@ -320,11 +398,11 @@ export default function ProfileScreen() {
               <ShineSweep borderRadius={12}>
                 <TouchableOpacity
                   style={[styles.menuItem, styles.menuItemLeaderboard]}
-                  onPress={() => router.push('/leaderboard')}
+                  onPress={() => router.push('/community')}
                   activeOpacity={0.6}
                 >
-                  <MaterialCommunityIcons name="trophy" size={22} color={theme.colors.amberDark} />
-                  <Text style={[styles.menuItemText, styles.menuItemLeaderboardText]}>{i18n.t('restaurants.profile.menuLeaderboard')}</Text>
+                  <MaterialCommunityIcons name="account-group" size={22} color={theme.colors.amberDark} />
+                  <Text style={[styles.menuItemText, styles.menuItemLeaderboardText]}>{i18n.t('restaurants.profile.menuCommunity')}</Text>
                   <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.amberDark} />
                 </TouchableOpacity>
               </ShineSweep>
@@ -404,6 +482,15 @@ export default function ProfileScreen() {
         onSubmit={handleEditorSubmit}
         onDelete={handleEditorDelete}
       />
+
+      {user?.uid && userProfile.username && !userProfile.is_anonymous && (
+        <ShareProfileSheet
+          visible={shareSheetVisible}
+          onClose={() => setShareSheetVisible(false)}
+          userId={user.uid}
+          username={userProfile.username}
+        />
+      )}
     </>
   );
 }
@@ -568,5 +655,16 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
     paddingVertical: 24,
+  },
+  // Badge follower accanto al nome: discreto, solo icona piccola + testo
+  // secondario, nessuno sfondo (non deve competere col nome).
+  followerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  followerBadgeText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
   },
 });
