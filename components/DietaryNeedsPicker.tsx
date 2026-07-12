@@ -178,6 +178,13 @@ export default function DietaryNeedsPicker({
             onToggleDiet={handleToggleDiet}
             lang={lang}
             keyPrefix="dnp"
+            // Con l'intestazione nascosta il chevron di chiusura trasloca
+            // sulla prima riga dell'editor (accanto a "Diete").
+            titleRight={hideHeader ? (
+              <TouchableOpacity onPress={() => setExpanded(false)} hitSlop={8} activeOpacity={0.6}>
+                <MaterialCommunityIcons name="chevron-up" size={22} color={theme.colors.primary} />
+              </TouchableOpacity>
+            ) : undefined}
           />
           <TouchableOpacity onPress={() => setExpanded(false)} activeOpacity={0.6} style={styles.bottomLink}>
             <MaterialCommunityIcons name="chevron-up" size={16} color={theme.colors.primary} />

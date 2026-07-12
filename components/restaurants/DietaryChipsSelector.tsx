@@ -45,6 +45,9 @@ interface DietaryChipsSelectorProps {
   scrollPosRef?: React.RefObject<number>;
   /** Slot opzionale renderizzato in fondo alla sezione "Altre" quando espansa */
   othersFooterSlot?: React.ReactNode;
+  /** Slot opzionale a destra del titolo "Diete" (prima riga del selettore) —
+   *  es. il chevron di chiusura quando l'intestazione del picker è nascosta. */
+  titleRight?: React.ReactNode;
 }
 
 const OTHERS_SCROLL_DELTA = 180;
@@ -60,6 +63,7 @@ export default function DietaryChipsSelector({
   scrollViewRef,
   scrollPosRef,
   othersFooterSlot,
+  titleRight,
 }: DietaryChipsSelectorProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -93,7 +97,10 @@ export default function DietaryChipsSelector({
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>{i18n.t('profile.diets')}</Text>
+      <View style={styles.titleRow}>
+        <Text style={[styles.sectionTitle, styles.titleInRow]}>{i18n.t('profile.diets')}</Text>
+        {titleRight}
+      </View>
       {showHint && (
         <Text style={styles.sectionHint}>{i18n.t('profile.dietaryHint')}</Text>
       )}
@@ -171,6 +178,17 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.textPrimary,
     marginBottom: 8,
+  },
+  // Prima riga (titolo Diete + slot destro): il margine passa alla riga così
+  // lo slot resta centrato sul testo. Layout identico a slot vuoto.
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  titleInRow: {
+    marginBottom: 0,
   },
   sectionSpacing: {
     marginTop: 20,
