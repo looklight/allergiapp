@@ -23,16 +23,21 @@ export default function ProfileByUsernameScreen() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      let target = '/(tabs)/restaurants';
+      let id: string | null = null;
       if (username && typeof username === 'string') {
         try {
-          const id = await getProfileIdByUsername(username);
-          if (id) target = `/restaurants/user/${id}`;
+          id = await getProfileIdByUsername(username);
         } catch (err) {
           if (__DEV__) console.warn('[deeplink] risoluzione profilo fallita:', err);
         }
       }
-      if (!cancelled) router.replace(target as never);
+      if (cancelled) return;
+      if (id) {
+        // Href tipizzato: se la route del profilo cambia, il typecheck lo segnala.
+        router.replace({ pathname: '/restaurants/user/[uid]', params: { uid: id } });
+      } else {
+        router.replace('/(tabs)/restaurants');
+      }
     })();
     return () => {
       cancelled = true;

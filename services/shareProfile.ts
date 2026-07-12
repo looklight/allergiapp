@@ -7,6 +7,12 @@ import i18n from '../utils/i18n';
 
 const SHARE_BASE_URL = 'https://allergiapp.com/u';
 
+/** URL pubblico del profilo — unica fonte per share nativo e copia dallo sheet. */
+export function buildProfileUrl(username: string, ref?: 'share'): string {
+  const base = `${SHARE_BASE_URL}/${encodeURIComponent(username)}`;
+  return ref ? `${base}?ref=${ref}` : base;
+}
+
 interface ShareProfileInput {
   id: string;
   username?: string | null;
@@ -21,7 +27,7 @@ export async function shareProfile(profile: ShareProfileInput): Promise<void> {
     return;
   }
 
-  const url = `${SHARE_BASE_URL}/${encodeURIComponent(profile.username)}?ref=share`;
+  const url = buildProfileUrl(profile.username, 'share');
   const message = `${profile.username} — ${i18n.t('share.profileSuffix')}\n${url}`;
 
   try {

@@ -64,7 +64,11 @@ export default function PublicProfileScreen() {
           RestaurantService.getReviewCountByUser(uid),
           RestaurantService.getLikesReceivedByUser(uid),
           FollowService.isFollowing(uid).catch(() => false),
-          user?.uid ? BlockService.isBlocked(user.uid, uid).catch(() => false) : Promise.resolve(false),
+          // Col flag spento niente fetch: blocked resta false e non può
+          // nascondere recensioni/pill di un profilo senza UI per sbloccarlo.
+          BLOCK_UI_ENABLED && user?.uid
+            ? BlockService.isBlocked(user.uid, uid).catch(() => false)
+            : Promise.resolve(false),
         ]);
         setProfile(prof);
         setReviews(contribs);

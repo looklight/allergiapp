@@ -7,11 +7,9 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolate, ru
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
-import { shareProfile } from '../services/shareProfile';
+import { shareProfile, buildProfileUrl } from '../services/shareProfile';
 import { SupabaseAnalytics } from '../services/supabaseAnalytics';
 import i18n from '../utils/i18n';
-
-const SHARE_BASE_URL = 'https://allergiapp.com/u';
 
 type Props = {
   visible: boolean;
@@ -34,7 +32,8 @@ export default function ShareProfileSheet({ visible, onClose, userId, username }
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const url = `${SHARE_BASE_URL}/${encodeURIComponent(username)}`;
+  // Senza ?ref: il link copiato è pensato per le bio, deve restare pulito.
+  const url = buildProfileUrl(username);
   const displayUrl = url.replace('https://', '');
 
   const progress = useSharedValue(0);
