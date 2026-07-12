@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import { StorageService } from './storageService';
 import {
   DEFAULTS, QUERY_LIMITS,
-  mapRestaurant, extractLatLng,
+  mapRestaurant, extractLatLng, mapPinRow,
   type Restaurant, type RestaurantPin, type RestaurantRow, type CreateRestaurantInput,
   type RestaurantSearchResult,
 } from './restaurant.types';
@@ -205,17 +205,7 @@ async function getPinsInBounds(
       lodging_mode: lodgingMode,
     });
     if (error) throw error;
-    return (data ?? []).map((row: any) => ({
-      id: row.id as string,
-      latitude: row.latitude as number,
-      longitude: row.longitude as number,
-      supported_allergens: (row.supported_allergens ?? []) as string[],
-      supported_diets: (row.supported_diets ?? []) as string[],
-      cuisine_types: (row.cuisine_types ?? []) as string[],
-      offers_lodging: (row.offers_lodging ?? false) as boolean,
-      average_rating: Number(row.average_rating ?? 0),
-      lodging_type: (row.lodging_type ?? null) as string | null,
-    }));
+    return (data ?? []).map(mapPinRow);
   } catch (error) {
     console.warn('[RestaurantService] Errore getPinsInBounds:', error);
     // Rete assente: propaga così il chiamante (heartbeat) può segnalare l'offline.

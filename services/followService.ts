@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { SupabaseAnalytics } from './supabaseAnalytics';
 import type { UserReview } from './reviewService';
+import { mapPinRow, type RestaurantPin } from './restaurant.types';
 
 // Recensione del feed "Seguiti": UserReview + attribuzione autore.
 export type FeedReview = UserReview & {
@@ -164,6 +165,19 @@ export async function getFollowingFeed(
   return { items, totalCount };
 }
 
+/** Pin dei ristoranti recensiti dai seguiti (filtro mappa "Recensiti dai
+ *  seguiti", mig 081). Pin-shaped come get_pins_in_bounds: il client li
+ *  renderizza con lo stesso componente, colori inclusi. Lancia su errore:
+ *  il chiamante distingue "set vuoto confermato" (auto-spegnimento del
+ *  filtro al ripristino) da "fetch fallito" (preferenza persistita intatta). */
+export async function getFollowedPins(lodgingMode: boolean): Promise<RestaurantPin[]> {
+  const { data, error } = await supabase.rpc('get_followed_pins', {
+    lodging_mode: lodgingMode,
+  });
+  if (error) throw error;
+  return (data ?? []).map(mapPinRow);
+}
+
 export const FollowService = {
   isFollowing,
   follow,
@@ -172,4 +186,5 @@ export const FollowService = {
   getFollowers,
   getFollowStats,
   getFollowingFeed,
+  getFollowedPins,
 };
