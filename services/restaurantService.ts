@@ -29,7 +29,7 @@ export { mapRestaurant, extractLatLng, QUERY_LIMITS, DEFAULTS, PG_UNIQUE_VIOLATI
  *  applicativo (query/permessi). Su React Native il fetch fallito è
  *  "Network request failed"; sul web "Failed to fetch". Serve a distinguere
  *  "sei offline" da "nessun risultato", così solo il primo caso accende il banner. */
-function isNetworkError(err: any): boolean {
+export function isNetworkError(err: any): boolean {
   const msg = (err?.message ?? String(err ?? '')).toLowerCase();
   return (
     msg.includes('network request failed') || // React Native
@@ -208,10 +208,12 @@ async function getPinsInBounds(
     return (data ?? []).map(mapPinRow);
   } catch (error) {
     console.warn('[RestaurantService] Errore getPinsInBounds:', error);
-    // Rete assente: propaga così il chiamante (heartbeat) può segnalare l'offline.
-    // Gli altri errori restano silenziosi col fallback [] per non rompere la mappa.
-    if (isNetworkError(error)) throw error;
-    return [];
+    // Propaga OGNI errore (rete e applicativi): il chiamante deve distinguere
+    // "area davvero vuota" ([]) da "fetch fallito", altrimenti un errore
+    // transitorio lascia la dedup ancorata a un fetch mai riuscito e l'area
+    // resta senza pin finché non si cambia zoom. isNetworkError sta al
+    // chiamante per decidere se accendere il banner offline.
+    throw error;
   }
 }
 

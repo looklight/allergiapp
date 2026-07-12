@@ -542,14 +542,22 @@ export default function RestaurantsScreen() {
 
   /** Attiva la modalità "Ristoranti nell'area": centra mappa, autocompila search, popola banner. */
   const activateNearbyPlace = useCallback((name: string, lat: number, lng: number, placeType?: string) => {
-    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta: zoomForPlaceType(placeType) });
+    const zoom = zoomForPlaceType(placeType);
+    geo.setCenterOn({ latitude: lat, longitude: lng, sheetFraction: 0, latDelta: zoom });
+    // Carica subito i pin della destinazione, senza dipendere dalla catena
+    // animazione→timer sintetico→region event (rn-maps su New Arch non emette
+    // onRegionChangeComplete in modo affidabile — v. openRestaurantDetail).
+    // latitudeDelta gonfiato ×2.5: la region reale è più alta di quella chiesta
+    // (aspect ratio portrait; su Android anche il mapPadding bottom ~55%), e i
+    // bounds del fetch devono coprire tutto il visibile, non il quadrato chiesto.
+    geo.loadPinsForViewport({ latitude: lat, longitude: lng, latitudeDelta: zoom * 2.5, longitudeDelta: zoom });
     setSearchQuery(name);
     mapSearch.clear();
     mapSearch.selectPlace({ name, latitude: lat, longitude: lng, placeType });
     setNearbyExpanded(false);
     setIsSearchFocused(false);
     storage.addRecentPlace({ name, latitude: lat, longitude: lng, placeType }).then(setRecentPlaces);
-  }, [geo.setCenterOn, mapSearch.clear, mapSearch.selectPlace]);
+  }, [geo.setCenterOn, geo.loadPinsForViewport, mapSearch.clear, mapSearch.selectPlace]);
 
   const handleSelectRecentPlace = useCallback((place: RecentPlace) => {
     Keyboard.dismiss();

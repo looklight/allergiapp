@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Location from 'expo-location';
-import { RestaurantService, QUERY_LIMITS, type Restaurant, type RestaurantPin } from '../services/restaurantService';
+import { RestaurantService, QUERY_LIMITS, isNetworkError, type Restaurant, type RestaurantPin } from '../services/restaurantService';
 import { haversineKm } from '../utils/geo';
 import { DEFAULT_REGION } from '../components/map/mapConstants';
 
@@ -421,8 +421,8 @@ export function useRestaurantGeo(params: FilterParams) {
         if (isLatest) setIsOffline(false); // risposta ricevuta → rete ok
         // Risposta sotto il cap e non vuota → quest'area è in cache PER INTERO:
         // i prossimi viewport contenuti qui dentro possono saltare la RPC.
-        // Il caso 0 pin è escluso: getPinsInBounds ritorna [] anche su errori
-        // non di rete, e cacheare "vuoto" su un errore renderebbe l'area cieca.
+        // Il caso 0 pin è escluso per prudenza (un'area legittimamente vuota
+        // resta comunque coperta dalla dedup su lastPinFetchRef).
         // Se NON qualifica, i bounds precedenti restano validi (la cache solo
         // cresce; a invalidarli sono il trim sotto e il cambio modalità alloggi).
         if (isLatest && pins.length > 0 && pins.length < PIN_RESPONSE_CAP) {
@@ -444,11 +444,20 @@ export function useRestaurantGeo(params: FilterParams) {
           setViewportPins(Array.from(pinCache.current.values()));
         }
       })
-      .catch(() => {
-        // Rete non disponibile — mantieni i pin precedenti e segnala offline.
-        // Solo se è l'ultima richiesta: durante pan veloce un fetch vecchio fallito
-        // non deve riaccendere il flag dopo che uno più recente è andato a buon fine.
-        if (pinFetchEpoch.current === epoch) setIsOffline(true);
+      .catch((error) => {
+        // Fetch fallito (rete o RPC) — mantieni i pin precedenti. Contabilità
+        // solo se è l'ultima richiesta: durante pan veloce un fetch vecchio
+        // fallito non deve toccare lo stato di uno più recente andato a buon fine.
+        if (pinFetchEpoch.current !== epoch) return;
+        // La dedup non deve ancorarsi a un fetch MAI riuscito: senza questo
+        // reset l'area restava senza pin finché un gesto non cambiava zoom di
+        // oltre il 25% (caso reale: salto da ricerca città + errore transitorio
+        // → mappa vuota finché non si zoomava). Col reset, qualsiasi prossimo
+        // region event ritenta la RPC.
+        lastPinFetchRef.current = null;
+        // Il banner offline solo per connettività assente, non per errori
+        // applicativi della RPC (che prima venivano inghiottiti nel servizio).
+        if (isNetworkError(error)) setIsOffline(true);
       });
   }, []);
 
