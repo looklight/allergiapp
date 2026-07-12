@@ -156,7 +156,9 @@ export default function PublicProfileScreen() {
             ? [{ icon: 'dots-horizontal', onPress: handleBlockMenu, accessibilityLabel: i18n.t('block.menu') }]
             : undefined
         }
-        items={reviews}
+        // Utente bloccato: la promessa del blocco ("non vedrai più le sue
+        // recensioni") vale anche visitando il suo profilo di proposito.
+        items={blocked ? [] : reviews}
         getLocation={getReviewLocation}
         getMapPin={(r) => ({
           id: r.restaurant_id,

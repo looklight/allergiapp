@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { getBlockedIds } from './blockService';
 import { SupabaseAnalytics } from './supabaseAnalytics';
 
 export type UserSearchResult = {
@@ -9,13 +8,12 @@ export type UserSearchResult = {
 };
 
 /**
- * Ricerca utenti per username (RPC search_users, mig 076): sottostringa
- * case-insensitive, prefissi in testa, anonimi esclusi server-side.
- * Se `userId` è fornito, gli utenti bloccati vengono filtrati (best-effort).
+ * Ricerca utenti per username (RPC search_users, mig 076+077): sottostringa
+ * case-insensitive, prefissi in testa. Anonimi, bloccati e se stessi sono
+ * esclusi server-side.
  */
 export async function searchUsers(
   query: string,
-  userId?: string,
   limit: number = 20,
 ): Promise<UserSearchResult[]> {
   const term = query.trim();
@@ -27,18 +25,7 @@ export async function searchUsers(
   });
   if (error) throw error;
 
-  let results: UserSearchResult[] = data ?? [];
-  if (userId) {
-    try {
-      const blockedIds = await getBlockedIds(userId);
-      if (blockedIds.size > 0) {
-        results = results.filter((r) => !blockedIds.has(r.id));
-      }
-    } catch (err) {
-      if (__DEV__) console.warn('[UserSearch] filtro bloccati saltato:', err);
-    }
-  }
-
+  const results: UserSearchResult[] = data ?? [];
   SupabaseAnalytics.track('user_search', { query: term, results: results.length });
   return results;
 }

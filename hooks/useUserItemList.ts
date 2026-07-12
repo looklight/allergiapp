@@ -16,9 +16,16 @@ export function useUserItemList<T>(
   const load = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    const result = await fetchFn(user.uid);
-    setItems(result);
-    setIsLoading(false);
+    try {
+      const result = await fetchFn(user.uid);
+      setItems(result);
+    } catch (err) {
+      // Un fetcher che rigetta (es. RPC assente/rete) non deve inchiodare
+      // isLoading a true: gli item precedenti restano, il loading si chiude.
+      console.warn('[useUserItemList] fetch fallito:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [user, fetchFn]);
 
   useEffect(() => {

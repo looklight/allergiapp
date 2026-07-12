@@ -10,7 +10,6 @@ import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
 import { searchUsers, type UserSearchResult } from '../services/userSearchService';
-import { useAuth } from '../contexts/AuthContext';
 import AppHeader from './components/AppHeader';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -78,7 +77,6 @@ export default function CommunityScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('reviews');
   const [topReviewers, setTopReviewers] = useState<LeaderboardEntry[]>([]);
   const [topLiked, setTopLiked] = useState<LeaderboardEntry[]>([]);
@@ -107,7 +105,7 @@ export default function CommunityScreen() {
     setSearching(true);
     searchDebounce.current = setTimeout(async () => {
       try {
-        const found = await searchUsers(trimmedQuery, user?.uid);
+        const found = await searchUsers(trimmedQuery);
         if (epoch !== searchEpoch.current) return;
         setResults(found);
       } catch (err) {
@@ -120,7 +118,7 @@ export default function CommunityScreen() {
     return () => {
       if (searchDebounce.current) clearTimeout(searchDebounce.current);
     };
-  }, [trimmedQuery, user?.uid]);
+  }, [trimmedQuery]);
 
   const loadData = useCallback(async () => {
     const data = await RestaurantService.getLeaderboard();

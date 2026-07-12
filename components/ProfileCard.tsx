@@ -157,7 +157,10 @@ export default function ProfileCard({ profile, stats, likesSlot, reviewsSlot, on
             )}
             <View style={styles.profileText}>
               <View style={styles.nameRow}>
-                <Text style={styles.displayName} numberOfLines={1}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
+                {/* Clamp a una riga solo quando c'è un accessorio (pill Segui)
+                    che deve restare visibile: senza, il nome lungo va a capo
+                    come sempre. */}
+                <Text style={styles.displayName} numberOfLines={nameAccessory ? 1 : undefined}>{displayName || i18n.t('restaurants.profileCard.defaultName')}</Text>
                 {profile.is_anonymous && (
                   <MaterialCommunityIcons name="incognito" size={18} color={theme.colors.textSecondary} />
                 )}

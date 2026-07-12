@@ -89,9 +89,16 @@ function UserReviewCard({ review, onPress, author }: Props) {
 
 // Memo: salta i re-render quando il dato `review` non cambia (es. mentre altri
 // loader del profilo risolvono in background). `onPress` è ignorato di proposito:
-// per una data card apre sempre lo stesso dettaglio. I cambi di tema passano
-// comunque via context (useTheme), quindi la dark mode resta reattiva.
-export default memo(UserReviewCard, (prev, next) => prev.review === next.review);
+// per una data card apre sempre lo stesso dettaglio. L'autore è confrontato per
+// valore (l'oggetto è ricreato a ogni render dal chiamante). I cambi di tema
+// passano comunque via context (useTheme), quindi la dark mode resta reattiva.
+export default memo(
+  UserReviewCard,
+  (prev, next) =>
+    prev.review === next.review &&
+    prev.author?.username === next.author?.username &&
+    prev.author?.avatarUrl === next.author?.avatarUrl,
+);
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
   card: {
