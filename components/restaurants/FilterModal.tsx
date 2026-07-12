@@ -169,7 +169,9 @@ export default function FilterModal({
                 profileDiets={profileDiets}
                 onSyncProfile={onSyncProfile}
                 lang={lang}
-                subtitle={i18n.t('restaurants.filter.dietarySubtitle')}
+                // Stessa scritta dello stato spento: al toggle si aggiungono
+                // solo tinta e parte modificabile, il testo non cambia.
+                subtitle={i18n.t('restaurants.filter.myNeedsHint')}
                 hideHeader
                 style={styles.needsPickerNested}
               />
@@ -386,11 +388,15 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     marginBottom: 0,
     borderRadius: 0,
   },
-  // Hint dentro la card (toggle spento): allineato al padding del toggleRow.
+  // Hint dentro la card. Corpo e margini identici al sottotitolo del picker
+  // (description: 13/18, padding 16): nella card esigenze la stessa frase non
+  // deve saltare di misura o posizione quando il toggle si accende.
   hintInCard: {
     marginTop: 0,
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     marginBottom: 12,
+    fontSize: 13,
+    lineHeight: 18,
   },
   toggleRow: {
     flexDirection: 'row',
