@@ -11,6 +11,7 @@ import CountryFilterChips from './CountryFilterChips';
 import TypeFilterToggles, { type TypeToggleItem } from './TypeFilterToggles';
 import MyRestaurantsMap, { type MapPinItem } from '../app/components/my-restaurants/MyRestaurantsMap';
 import RestaurantDetailSheet from './restaurants/RestaurantDetailSheet';
+import Skeleton from './Skeleton';
 import { useLocationFilters, type LocationParts } from '../hooks/useLocationFilters';
 import type { UserProfile } from '../services/auth';
 import type { HeaderAction } from '../app/components/AppHeader';
@@ -70,7 +71,17 @@ interface ProfileMapListProps<T> {
    *  allineati a destra SOTTO la mappa (nel corpo, scorre via). Applicato a monte
    *  del filtro paese, così mappa e lista restano coerenti. Omesso = niente riga. */
   typeFilter?: TypeFilterConfig<T>;
+
+  /** Skeleton al posto della mappa mentre `items` è vuoto perché sta ancora
+   *  caricando. Il consumer lo accende solo quando SA che la mappa arriverà
+   *  (conteggio in cache > 0): a dati risolti la condizione items>0 prende il
+   *  sopravvento e la mappa vera rimpiazza lo skeleton senza layout shift. */
+  showMapSkeleton?: boolean;
 }
+
+/** Altezza fissa della mini-mappa profilo; lo skeleton usa lo stesso valore
+ *  così lo scambio skeleton→mappa non muove il contenuto sottostante. */
+const MAP_HEIGHT = 260;
 
 interface TypeFilterConfig<T> {
   /** Chiave tipo di un item (es. 'restaurant' | 'lodging'). */
@@ -113,6 +124,7 @@ export default function ProfileMapList<T>({
   emptyState,
   listHeaderSlot,
   typeFilter,
+  showMapSkeleton,
 }: ProfileMapListProps<T>) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -228,6 +240,14 @@ export default function ProfileMapList<T>({
               selected={selectedCountry}
               onSelect={setSelectedCountry}
             />
+            {filteredItems.length === 0 && showMapSkeleton && (
+              <Skeleton
+                width="100%"
+                height={MAP_HEIGHT}
+                radius={16}
+                accessibilityLabel={i18n.t('common.loading')}
+              />
+            )}
             {filteredItems.length > 0 && (
               <View>
                 <MyRestaurantsMap
@@ -235,7 +255,7 @@ export default function ProfileMapList<T>({
                   onSelect={handlePinPress}
                   selectedId={selectedId}
                   onDeselect={() => setSelectedId(null)}
-                  height={260}
+                  height={MAP_HEIGHT}
                 />
                 {/* Mini-avatar che compare in alto a sinistra sulla mappa quando
                     l'header si aggancia in cima (l'avatar grande è scrollato via).

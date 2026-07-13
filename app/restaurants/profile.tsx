@@ -169,6 +169,21 @@ export default function ProfileScreen() {
   // solo a liste complete (vedi sotto).
   const isLoadingLists = reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading;
 
+  // Skeleton mappa: acceso solo se la selezione corrente sta ancora caricando
+  // E la cache conteggi dice che la mappa arriverà (> 0). Cache assente (null,
+  // primissimo avvio) o a 0 → spento: uno skeleton che poi svanisce nel nulla
+  // è peggio dell'attesa. ProfileMapList lo rende solo a items vuoti, quindi
+  // durante i reload con dati già in pagina non compare mai.
+  const selectedLoading =
+    selected === 'reviews' ? reviewsList.isLoading
+    : selected === 'favorites' ? favoritesList.isLoading
+    : listsData.isLoading;
+  const expectedCount =
+    selected === 'reviews' ? counts.reviews
+    : selected === 'favorites' ? counts.favorites
+    : customCollections.find((c) => c.id === selected)?.item_count ?? null;
+  const showMapSkeleton = selectedLoading && (expectedCount ?? 0) > 0;
+
   // Ricorda l'ultima pill scelta (Recensioni/Preferiti/lista) per utente.
   // Ripristino UNA volta, a caricamento finito: solo allora `visiblePillKeys` è
   // completo, quindi una scelta non più valida (lista cancellata, pill sparita)
@@ -342,6 +357,7 @@ export default function ProfileScreen() {
         // Recensioni (a 0) e il "+", che è il punto d'accesso per creare la
         // prima lista. Niente più empty state separato che compare in ritardo.
         headerVisible
+        showMapSkeleton={showMapSkeleton}
         sectionTitle={
           selected === 'reviews'
             ? i18n.t('restaurants.user.reviewsLabel')
