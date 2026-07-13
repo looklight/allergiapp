@@ -12,14 +12,21 @@ export function useCachedCollections(
   userId: string | undefined,
   live: CollectionMeta[],
   isLoading: boolean,
-): CollectionMeta[] {
+): { collections: CollectionMeta[]; hydrated: boolean } {
   const [cached, setCached] = useState<CollectionMeta[] | null>(null);
+  // Utente per cui la lettura da storage è conclusa (anche se ha trovato null):
+  // il confronto con userId dà `hydrated` senza reset sincroni al cambio utente.
+  // Stesso significato del gemello useProfileCounts, per sequenziare sulle
+  // cache locali (es. ripristino pill selezionata nel profilo).
+  const [hydratedUser, setHydratedUser] = useState<string | null>(null);
 
   // Idrata dalla cache al cambio utente (mostra le pill istantanee a freddo).
   useEffect(() => {
     if (!userId) { setCached(null); return; }
     let active = true;
-    storage.getCachedCollections(userId).then((v) => { if (active) setCached(v); });
+    storage.getCachedCollections(userId).then((v) => {
+      if (active) { setCached(v); setHydratedUser(userId); }
+    });
     return () => { active = false; };
   }, [userId]);
 
@@ -31,5 +38,8 @@ export function useCachedCollections(
     setCached(live);
   }, [userId, isLoading, live]);
 
-  return isLoading ? (cached ?? []) : live;
+  return {
+    collections: isLoading ? (cached ?? []) : live,
+    hydrated: userId != null && hydratedUser === userId,
+  };
 }

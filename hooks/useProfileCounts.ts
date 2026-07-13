@@ -22,8 +22,13 @@ export function useProfileCounts(
   userId: string | undefined,
   live: Live,
   loading: Loading,
-): { reviews: number | null; favorites: number | null } {
+): { reviews: number | null; favorites: number | null; hydrated: boolean } {
   const [cached, setCached] = useState<ProfileCounts | null>(null);
+  // Utente per cui la lettura da storage è conclusa (anche se ha trovato null):
+  // il confronto con userId dà `hydrated` senza reset sincroni al cambio utente.
+  // Consente ai consumer di sequenziare sulle cache locali invece che sulla
+  // rete (es. ripristino pill selezionata nel profilo).
+  const [hydratedUser, setHydratedUser] = useState<string | null>(null);
 
   // Idrata la cache al cambio utente (null in attesa → skeleton al primo avvio).
   useEffect(() => {
@@ -33,7 +38,10 @@ export function useProfileCounts(
     }
     let active = true;
     storage.getProfileCounts(userId).then((v) => {
-      if (active) setCached(v);
+      if (active) {
+        setCached(v);
+        setHydratedUser(userId);
+      }
     });
     return () => {
       active = false;
@@ -55,5 +63,6 @@ export function useProfileCounts(
   return {
     reviews: loading.reviews ? cached?.reviews ?? null : live.reviews,
     favorites: loading.favorites ? cached?.favorites ?? null : live.favorites,
+    hydrated: userId != null && hydratedUser === userId,
   };
 }

@@ -130,7 +130,8 @@ export default function ProfileScreen() {
     () => listsData.items.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, item_count: c.item_count, visibility: c.visibility })),
     [listsData.items],
   );
-  const customCollections = useCachedCollections(user?.uid, liveMeta, listsData.isLoading);
+  const { collections: customCollections, hydrated: collectionsHydrated } =
+    useCachedCollections(user?.uid, liveMeta, listsData.isLoading);
   const customItems = useMemo(
     () => (isCustom ? (listsData.items.find((c) => c.id === selected)?.items ?? []) : []),
     [isCustom, selected, listsData.items],
@@ -165,8 +166,7 @@ export default function ProfileScreen() {
   }, [visiblePillKeys, selected]);
 
   // Caricamento aggregato: serve a non mostrare il testo "stato vuoto" del
-  // filtro corrente prima che i dati risolvano, e a ripristinare la pill salvata
-  // solo a liste complete (vedi sotto).
+  // filtro corrente prima che i dati risolvano.
   const isLoadingLists = reviewsList.isLoading || favoritesList.isLoading || listsData.isLoading;
 
   // Skeleton mappa: acceso solo se la selezione corrente sta ancora caricando
@@ -185,18 +185,23 @@ export default function ProfileScreen() {
   const showMapSkeleton = selectedLoading && (expectedCount ?? 0) > 0;
 
   // Ricorda l'ultima pill scelta (Recensioni/Preferiti/lista) per utente.
-  // Ripristino UNA volta, a caricamento finito: solo allora `visiblePillKeys` è
-  // completo, quindi una scelta non più valida (lista cancellata, pill sparita)
-  // viene semplicemente ignorata (resta il default, già coerente). hydratedFor
-  // traccia l'utente già ripristinato così il persist non sovrascrive prima.
+  // Ripristino UNA volta, appena le cache pill locali sono idratate (~50ms):
+  // a quel punto `visiblePillKeys` riflette l'ultimo snapshot noto, che è la
+  // stessa fonte con cui la barra è già a schermo. NON si aspetta la rete
+  // (prima si aspettava isLoadingLists: pill giusta dopo 1-2s, con swap
+  // visibile e doppio mount delle card). Una scelta salvata non più valida
+  // viene ignorata qui; se diverge dai dati veri in arrivo ci pensa il
+  // fallback su visiblePillKeys sopra. hydratedFor traccia l'utente già
+  // ripristinato così il persist non sovrascrive prima.
+  const pillsHydrated = counts.hydrated && collectionsHydrated;
   const hydratedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!user?.uid || hydratedFor.current === user.uid || isLoadingLists) return;
+    if (!user?.uid || hydratedFor.current === user.uid || !pillsHydrated) return;
     hydratedFor.current = user.uid;
     storage.getSelectedProfilePill(user.uid).then((saved) => {
       if (saved && visiblePillKeys.includes(saved)) setSelected(saved);
     });
-  }, [user?.uid, isLoadingLists, visiblePillKeys]);
+  }, [user?.uid, pillsHydrated, visiblePillKeys]);
 
   useEffect(() => {
     if (!user?.uid || hydratedFor.current !== user.uid) return;
