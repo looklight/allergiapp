@@ -46,7 +46,7 @@
     "selectLanguage": "Select language",
     "downloadMoreLanguages": "Download more languages",
     "bannerWelcome": "Wherever you go",
-    "bannerMotivation": "Travel safely, share your allergies or needs, without barriers",
+    "bannerMotivation": "Travel with peace of mind, share your allergies or needs, without barriers",
     "bannerTip": "Restaurants that suit you",
     "bannerTipDesc": "Discover them from the community, share your experience",
     "bannerTipCta": "Discover how",
@@ -251,7 +251,7 @@
       "title": "Add restaurant",
       "titleLodging": "Add accommodation",
       "intro": "Add a restaurant",
-      "introHint": "Every place you add helps people with dietary needs find safe spots to eat.",
+      "introHint": "Every place you add helps people with dietary needs find the right spots to eat.",
       "searchTitle": "Search the restaurant",
       "searchHint": "Type the name or address to find it on Google Maps.",
       "searchNotConfigured": "⚠️ Google Places API not configured. Please enter the details manually below.",
@@ -345,8 +345,8 @@
       "loginGateReviewsTitle": "Is this place right for you?",
       "loginGateReviewsSubtitle": "Sign in to see reviews, photos and compatibility with your dietary needs",
       "loginGateReviewsSubtitleWithCount": {
-        "one": "Sign in to read {{count}} review and check if it's safe for your dietary needs",
-        "other": "Sign in to read {{count}} reviews and check if it's safe for your dietary needs"
+        "one": "Sign in to read {{count}} review and check if it fits your dietary needs",
+        "other": "Sign in to read {{count}} reviews and check if it fits your dietary needs"
       },
       "loginGateSignInButton": "Sign in",
       "loginGateCreateAccount": "Create an account",
@@ -701,10 +701,10 @@
     "title": "Why is it free?",
     "intro": "This app was born from personal experience. As someone with food allergies, I've always loved traveling and discovering new cultures through food.",
     "paragraph1": "During my travels, I learned that language barriers can turn a dining experience into a moment of anxiety. I started handwriting small cards listing my allergies, then printing them, and discovered how invaluable they were for communicating with waiters and chefs who didn't speak my language.",
-    "paragraph2": "One simple gesture—showing a card—changed everything. Restaurant staff appreciated the clarity, I felt safer, and I could finally enjoy local cuisine without fear.",
+    "paragraph2": "One simple gesture—showing a card—changed everything. Restaurant staff appreciated the clarity, I felt more at ease, and I could finally enjoy local cuisine without fear.",
     "paragraph3": "I created AllergiApp to bring this solution to anyone who needs it. It's free because traveling and enjoying the world's food should be a right for everyone, not a privilege.",
     "paragraph4": "If this app helps even one person enjoy an extra meal while traveling, it will have achieved its purpose.",
-    "quoteText": "My mission? Make the world more accessible and help people with allergies explore it through food—safely and joyfully.",
+    "quoteText": "My mission? Make the world more accessible and help people with allergies explore it through food—with peace of mind and joy.",
     "quoteAuthor": "Marta Di Muro",
     "learnMore": "Learn more",
     "followMe": "My socials"
