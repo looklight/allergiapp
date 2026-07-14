@@ -13,7 +13,7 @@ export const LEGAL_CONTENT: Record<'it' | 'en', LegalDocument> = {
     privacy: `# Privacy Policy
 
 ## Titolare del trattamento
-AllergiApp — contatto: info@allergiapp.com
+Marta Di Muro (AllergiApp) — contatto: info@allergiapp.com
 
 ## Dati che raccogliamo
 
@@ -22,6 +22,11 @@ Le tue allergie, restrizioni e preferenze lingua sono salvate solo sul tuo dispo
 
 ### Account (opzionale)
 Se crei un account per recensire o aggiungere ristoranti raccogliamo la tua email, il nickname e i contenuti che pubblichi (recensioni, voti, foto, preferiti). Il nickname può essere anonimo: è l'unico identificativo visibile agli altri utenti. L'email serve solo per accedere e non viene mai mostrata pubblicamente né condivisa. L'app funziona senza account: la card allergeni e le traduzioni non lo richiedono.
+
+Registriamo inoltre la data di ultimo utilizzo dell'app, usata solo per statistiche di servizio e moderazione: non è visibile agli altri utenti.
+
+### Profilo pubblico e follow
+Il tuo profilo (nickname, avatar, recensioni e liste che rendi pubbliche) è visibile agli altri utenti; dalle impostazioni puoi renderlo anonimo. Se usi la funzione follow, gli elenchi di chi segui e di chi ti segue sono visibili sul tuo profilo.
 
 ### Allergie e restrizioni dietetiche
 Se scegli di salvare le tue allergie e restrizioni sul profilo, le usiamo per personalizzare la ricerca dei ristoranti e per associarle alle recensioni che pubblichi. Questo è il cuore della community: chi ha le stesse esigenze trova consigli rilevanti.
@@ -38,22 +43,24 @@ Se concedi il permesso, usiamo la posizione del dispositivo per mostrarti i rist
 ### Foto
 Quando aggiungi un ristorante o pubblichi una recensione puoi allegare foto da galleria o fotocamera. Le foto vengono mostrate insieme al ristorante o alla recensione a cui le alleghi.
 
-### Dati analytics anonimi
-Raccogliamo statistiche anonime di utilizzo (paese approssimativo, tipo di dispositivo, funzioni usate) e crash report per migliorare l'app. Nessun dato personale.
+### Dati analytics
+Per migliorare l'app raccogliamo statistiche d'uso (funzioni usate, tipo di dispositivo e area geografica approssimativa ricavata dalla connessione, a livello di paese o città) e crash report, tramite Google Analytics for Firebase e Crashlytics (Google) e un nostro sistema interno su server UE. Questi dati non includono mai il tuo nome, la tua email né le informazioni del tuo profilo: sono collegati solo a identificatori tecnici o, se sei registrato, al tuo account (scollegati se lo cancelli) — dati pseudonimizzati, non riconducibili direttamente a te. Su iOS l'analytics parte solo se autorizzi il tracciamento, revocabile dalle impostazioni di sistema.
 
 ### Traduzioni
 Le card sono già tradotte in 15 lingue principali e incluse nell'app: usarle non richiede internet né invia dati esterni. Per altre lingue puoi scaricare il pacchetto dal nostro server (solo i testi della card, nessun dato personale). Come riserva, se il nostro server non riesce a fornire la traduzione, l'app può ricorrere a un servizio esterno: vengono inviati solo i nomi degli allergeni, mai dati personali.
 
+Puoi inoltre tradurre le recensioni degli altri utenti: quando possibile la traduzione avviene sul dispositivo; altrimenti viene inviato al servizio esterno solo il testo della recensione (contenuto già pubblico, senza nickname né altri dati).
+
 ## Dove sono conservati i dati
 - **Account, recensioni, foto, ristoranti**: hosting cloud in regione UE
-- **Analytics e crash report**: Firebase (Google), server in USA — trasferimento basato su Standard Contractual Clauses
-- **Traduzioni di fallback**: MyMemory API (solo testo, no dati personali)
+- **Analytics e crash report**: Firebase (Google), server in USA — trasferimento basato su EU-U.S. Data Privacy Framework e Standard Contractual Clauses
+- **Traduzioni di fallback**: MyMemory API (solo i testi da tradurre: nomi allergeni o testo della recensione)
 
 ## Base giuridica (GDPR)
 - **Account e contenuti**: esecuzione del contratto (art. 6.1.b)
 - **Allergie e restrizioni sul profilo**: consenso esplicito (art. 9.2.a) — modificabile dalle impostazioni
 - **Posizione e foto**: consenso (art. 6.1.a) — modificabile dalle impostazioni del dispositivo
-- **Analytics e crash report**: legittimo interesse (art. 6.1.f) — dati anonimi
+- **Analytics e crash report**: legittimo interesse (art. 6.1.f) — dati pseudonimizzati
 
 ## Conservazione
 - Dati account: finché l'account esiste
@@ -153,7 +160,7 @@ Usando l'app accetti questi termini e il disclaimer medico.`
     privacy: `# Privacy Policy
 
 ## Data Controller
-AllergiApp — contact: info@allergiapp.com
+Marta Di Muro (AllergiApp) — contact: info@allergiapp.com
 
 ## Data we collect
 
@@ -162,6 +169,11 @@ Your allergies, restrictions, and language preferences are saved only on your de
 
 ### Account (optional)
 If you create an account to review or add restaurants we collect your email, nickname, and the content you post (reviews, votes, photos, favorites). Your nickname can be anonymous: it's the only identifier visible to other users. Your email is used only for sign-in and is never shown publicly or shared. The app works without an account: the allergen card and translations don't require one.
+
+We also record the date you last used the app, used only for service statistics and moderation: it is not visible to other users.
+
+### Public profile and follow
+Your profile (nickname, avatar, reviews, and lists you make public) is visible to other users; you can make it anonymous from settings. If you use the follow feature, the lists of who you follow and who follows you are visible on your profile.
 
 ### Allergies and dietary restrictions
 If you choose to save your allergies and restrictions on your profile, we use them to personalize restaurant search and to associate them with the reviews you post. This is the core of the community: people with the same needs find relevant recommendations.
@@ -178,22 +190,24 @@ If you grant permission, we use the device location to show you nearby restauran
 ### Photos
 When you add a restaurant or post a review you can attach photos from gallery or camera. Photos are shown alongside the restaurant or review you attach them to.
 
-### Anonymous analytics
-We collect anonymous usage statistics (approximate country, device type, features used) and crash reports to improve the app. No personal data.
+### Analytics data
+To improve the app we collect usage statistics (features used, device type, and approximate geographic area derived from the connection, at country or city level) and crash reports, through Google Analytics for Firebase and Crashlytics (Google) and our own internal system on EU servers. This data never includes your name, email, or profile information: it is linked only to technical identifiers or, if you're registered, to your account (unlinked if you delete it) — pseudonymized data, not directly traceable to you. On iOS, analytics runs only if you allow tracking, revocable from system settings.
 
 ### Translations
 Cards are pre-translated in 15 main languages bundled with the app: using them requires no internet and sends no external data. For other languages you can download the language pack from our server (card text only, no personal data). As a backup, if our server can't provide the translation, the app may use an external service: only allergen names are sent, never personal data.
 
+You can also translate other users' reviews: when possible the translation happens on-device; otherwise only the review text (already public content, without nickname or other data) is sent to the external service.
+
 ## Where data is stored
 - **Account, reviews, photos, restaurants**: cloud hosting in EU region
-- **Analytics and crash reports**: Firebase (Google), servers in USA — transfer based on Standard Contractual Clauses
-- **Fallback translations**: MyMemory API (text only, no personal data)
+- **Analytics and crash reports**: Firebase (Google), servers in USA — transfer based on the EU-U.S. Data Privacy Framework and Standard Contractual Clauses
+- **Fallback translations**: MyMemory API (only the texts to translate: allergen names or review text)
 
 ## Legal basis (GDPR)
 - **Account and content**: contract performance (art. 6.1.b)
 - **Allergies and restrictions on profile**: explicit consent (art. 9.2.a) — changeable from settings
 - **Location and photos**: consent (art. 6.1.a) — changeable from device settings
-- **Analytics and crash reports**: legitimate interest (art. 6.1.f) — anonymous data
+- **Analytics and crash reports**: legitimate interest (art. 6.1.f) — pseudonymized data
 
 ## Retention
 - Account data: while the account exists

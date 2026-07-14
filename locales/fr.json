@@ -159,7 +159,7 @@
   },
   "consent": {
     "title": "Bienvenue sur AllergiApp",
-    "disclaimerShort": "AllergiApp vous aide à communiquer vos allergies, mais ne remplace pas un avis médical. Vos données d'allergies sont stockées localement sur votre appareil, et des données anonymes peuvent être collectées pour améliorer le service. Vous pouvez utiliser l'application sans créer de compte.",
+    "disclaimerShort": "AllergiApp vous aide à communiquer vos allergies, mais ne remplace pas un avis médical. Vos données d'allergies sont stockées localement sur votre appareil, et des statistiques d'utilisation pseudonymisées peuvent être collectées pour améliorer le service. Vous pouvez utiliser l'application sans créer de compte.",
     "privacyTitle": "Confidentialité",
     "termsTitle": "Conditions",
     "acceptButton": "Continuer",

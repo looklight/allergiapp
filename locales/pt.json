@@ -159,7 +159,7 @@
   },
   "consent": {
     "title": "Bem-vindo à AllergiApp",
-    "disclaimerShort": "A AllergiApp ajuda-o a comunicar as suas alergias, mas não substitui o aconselhamento médico. Os dados das suas alergias são armazenados localmente no seu dispositivo, e podem ser recolhidos dados anónimos para melhorar o serviço. Pode usar a aplicação sem necessidade de se registar.",
+    "disclaimerShort": "A AllergiApp ajuda-o a comunicar as suas alergias, mas não substitui o aconselhamento médico. Os dados das suas alergias são armazenados localmente no seu dispositivo, e podem ser recolhidas estatísticas de utilização pseudonimizadas para melhorar o serviço. Pode usar a aplicação sem necessidade de se registar.",
     "privacyTitle": "Privacidade",
     "termsTitle": "Termos",
     "acceptButton": "Continuar",
