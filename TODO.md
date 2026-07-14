@@ -7,6 +7,9 @@
 ### Azioni manuali Supabase
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 
+### Legale / GDPR (revisione 2026-07-14/15, contesto in memoria `project_legal_gdpr_review.md`)
+- [ ] **Registro dei trattamenti (art. 30 GDPR)** — documento interno mancante (unico gap sostanziale rimasto dalla revisione). L'esenzione per le piccole realtà non si applica: trattiamo dati salute (art. 9) in modo non occasionale. Serve una tabella con: trattamenti, finalità, categorie di dati/interessati/destinatari, trasferimenti extra-UE, tempi di conservazione, misure di sicurezza. Non è pubblico: va solo tenuto pronto in caso di richiesta del Garante. Lavoro: ~1h.
+
 ### Social Auth (Google + Apple) — MERGED in main
 Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8). "Entra con Google" verificato su Android (giu 2026). Vedi memoria `project_social_auth.md`. Resta da chiudere:
 
