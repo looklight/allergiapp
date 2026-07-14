@@ -361,9 +361,9 @@ export default function RestaurantsScreen() {
     if (user) getFollowStats(user.uid).then(s => setFollowingCount(s?.following ?? 0)).catch(() => {});
   }, [user]);
 
-  const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
+  const handleSyncProfile = useCallback(async (a: string[], d: string[], consentAt?: string) => {
     if (!user) return;
-    await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
+    await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d }, consentAt);
     await refreshProfile();
   }, [user, refreshProfile]);
 

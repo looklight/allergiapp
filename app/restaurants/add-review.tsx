@@ -435,9 +435,9 @@ export default function AddReviewScreen() {
           onDietsChange={setSelectedDiets}
           profileAllergens={dietaryNeeds.allergens}
           profileDiets={dietaryNeeds.diets}
-          onSyncProfile={async (a, d) => {
+          onSyncProfile={async (a, d, consentAt) => {
             if (!user) return;
-            await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
+            await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d }, consentAt);
             await refreshProfile();
           }}
           lang={i18n.locale}

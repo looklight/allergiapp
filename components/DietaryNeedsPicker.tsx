@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
 import { getRestrictionById } from '../constants/foodRestrictions';
@@ -16,8 +18,9 @@ interface DietaryNeedsPickerProps {
   /** Valori dal profilo utente, per confronto e sync */
   profileAllergens: readonly string[];
   profileDiets: readonly string[];
-  /** Salva nel profilo. Chiamato con i valori correnti. */
-  onSyncProfile: (allergens: string[], diets: string[]) => Promise<void>;
+  /** Salva nel profilo. Chiamato con i valori correnti; consentAt è il
+   *  timestamp del consenso salute (art. 9 GDPR) quando raccolto qui. */
+  onSyncProfile: (allergens: string[], diets: string[], consentAt?: string) => Promise<void>;
   lang: string;
   /** Parte espanso (default: false) */
   initialExpanded?: boolean;
@@ -47,11 +50,18 @@ export default function DietaryNeedsPicker({
 }: DietaryNeedsPickerProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const { userProfile } = useAuth();
   const [expanded, setExpanded] = useState(initialExpanded);
   const [syncing, setSyncing] = useState(false);
   const [justSynced, setJustSynced] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const hasNeeds = allergens.length > 0 || diets.length > 0;
+
+  // Consenso salute (art. 9 GDPR): chi ha saltato le esigenze in onboarding
+  // non l'ha mai dato — va raccolto qui prima di scrivere dati sul profilo.
+  // Svuotare il profilo (hasNeeds false) è una rimozione e non lo richiede.
+  const needsHealthConsent = !!userProfile && !userProfile.health_consent_at && hasNeeds;
 
   const profileAllergenSet = new Set(profileAllergens);
   const profileDietSet = new Set(profileDiets);
@@ -78,7 +88,11 @@ export default function DietaryNeedsPicker({
   const handleSync = async () => {
     setSyncing(true);
     try {
-      await onSyncProfile(allergens, diets);
+      await onSyncProfile(
+        allergens,
+        diets,
+        needsHealthConsent ? new Date().toISOString() : undefined,
+      );
       setJustSynced(true);
     } catch {
       // Errore gestito dal parent
@@ -151,18 +165,43 @@ export default function DietaryNeedsPicker({
           {renderNeedsPills(styles.chipsExpanded)}
           {needsDifferFromProfile && (
             <View style={styles.syncCard}>
-              <Text style={styles.syncText}>{i18n.t('restaurants.dietaryPicker.syncTitle')}</Text>
-              <TouchableOpacity
-                onPress={handleSync}
-                disabled={syncing}
-                activeOpacity={0.6}
-                style={styles.syncBtn}
-              >
-                {syncing
-                  ? <ActivityIndicator size="small" color={theme.colors.primary} />
-                  : <Text style={styles.syncBtnText}>{i18n.t('common.save')}</Text>
-                }
-              </TouchableOpacity>
+              <View style={styles.syncRow}>
+                <Text style={styles.syncText}>{i18n.t('restaurants.dietaryPicker.syncTitle')}</Text>
+                <TouchableOpacity
+                  onPress={handleSync}
+                  disabled={syncing || (needsHealthConsent && !consentChecked)}
+                  activeOpacity={0.6}
+                  style={[styles.syncBtn, needsHealthConsent && !consentChecked && styles.syncBtnDisabled]}
+                >
+                  {syncing
+                    ? <ActivityIndicator size="small" color={theme.colors.primary} />
+                    : <Text style={styles.syncBtnText}>{i18n.t('common.save')}</Text>
+                  }
+                </TouchableOpacity>
+              </View>
+              {needsHealthConsent && (
+                <TouchableOpacity
+                  onPress={() => setConsentChecked(v => !v)}
+                  style={styles.consentRow}
+                  activeOpacity={0.7}
+                >
+                  <MaterialCommunityIcons
+                    name={consentChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                    size={20}
+                    color={consentChecked ? theme.colors.primary : theme.colors.textSecondary}
+                  />
+                  <Text style={styles.consentText}>
+                    {i18n.t('onboardingDietary.consentPart1')}
+                    <Text
+                      style={styles.consentLink}
+                      onPress={() => router.push('/legal?tab=privacy')}
+                    >
+                      {i18n.t('onboardingDietary.consentLink')}
+                    </Text>
+                    {i18n.t('onboardingDietary.consentPart2')}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
           {justSynced && !needsDifferFromProfile && (
@@ -256,8 +295,6 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 4,
   },
   syncCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 10,
     backgroundColor: theme.colors.surface,
     borderRadius: 10,
@@ -265,6 +302,26 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderColor: theme.colors.border,
     padding: 12,
     marginBottom: 12,
+  },
+  syncRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  consentText: {
+    flex: 1,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    lineHeight: 15,
+  },
+  consentLink: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
   syncCardDone: {
     flexDirection: 'row',
@@ -288,6 +345,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderColor: theme.colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 6,
+  },
+  syncBtnDisabled: {
+    opacity: 0.4,
   },
   syncBtnText: {
     fontSize: 13,

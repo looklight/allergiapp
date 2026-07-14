@@ -36,7 +36,7 @@ type Props = {
   // Profilo (per DietaryNeedsPicker)
   profileAllergens: string[];
   profileDiets: string[];
-  onSyncProfile: (allergens: string[], diets: string[]) => Promise<void>;
+  onSyncProfile: (allergens: string[], diets: string[], consentAt?: string) => Promise<void>;
   // Auth
   isAuthenticated: boolean;
   onRequestLogin: () => void;

@@ -231,7 +231,7 @@ function ConfirmStep({
   onDietsChange: (d: string[]) => void;
   profileAllergens: readonly string[];
   profileDiets: readonly string[];
-  onSyncProfile: (a: string[], d: string[]) => Promise<void>;
+  onSyncProfile: (a: string[], d: string[], consentAt?: string) => Promise<void>;
   hasNeeds: boolean;
   explicitlyNoNeeds: boolean;
   onSetNoNeeds: (v: boolean) => void;
@@ -472,9 +472,9 @@ export default function AddRestaurantScreen() {
 
   const hasNeeds = selectedAllergens.length > 0 || selectedDiets.length > 0;
 
-  const handleSyncProfile = useCallback(async (a: string[], d: string[]) => {
+  const handleSyncProfile = useCallback(async (a: string[], d: string[], consentAt?: string) => {
     if (!user) return;
-    await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d });
+    await AuthService.updateDietaryNeeds(user.uid, { allergens: a, diets: d }, consentAt);
     await refreshProfile();
   }, [user, refreshProfile]);
 

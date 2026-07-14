@@ -33,9 +33,9 @@ export default function EditDietaryScreen() {
           onDietsChange={setPendingDiets}
           profileAllergens={dietaryNeeds.allergens}
           profileDiets={dietaryNeeds.diets}
-          onSyncProfile={async (allergens, diets) => {
+          onSyncProfile={async (allergens, diets, consentAt) => {
             if (!user) return;
-            await AuthService.updateDietaryNeeds(user.uid, { allergens, diets });
+            await AuthService.updateDietaryNeeds(user.uid, { allergens, diets }, consentAt);
             await refreshProfile();
           }}
           lang={i18n.locale}

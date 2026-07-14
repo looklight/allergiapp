@@ -16,6 +16,7 @@ export interface UserProfile {
   allergens: string[];
   dietary_preferences: string[];
   role: 'user' | 'restaurant_owner' | 'admin';
+  health_consent_at: string | null;
   created_at: string;
   is_anonymous: boolean;
   onboarding_complete: boolean;
