@@ -31,7 +31,7 @@ Il tuo profilo (nickname, avatar, recensioni e liste che rendi pubbliche) è vis
 ### Allergie e restrizioni dietetiche
 Se scegli di salvare le tue allergie e restrizioni sul profilo, le usiamo per personalizzare la ricerca dei ristoranti e per associarle alle recensioni che pubblichi. Questo è il cuore della community: chi ha le stesse esigenze trova consigli rilevanti.
 
-Le allergie collegate a ciascuna recensione sono visibili pubblicamente come badge sotto il testo, insieme al tuo nickname (l'email non viene mai mostrata). Restano associate alla recensione anche se in seguito modifichi il profilo, salvo richiesta esplicita di rimozione.
+Le allergie e restrizioni collegate a ciascuna recensione sono visibili pubblicamente come badge sotto il testo, insieme al tuo nickname (l'email non viene mai mostrata). Restano associate alla recensione anche se in seguito modifichi il profilo, salvo richiesta esplicita di rimozione.
 
 Sono trattate come dati sulla salute (categoria speciale, art. 9 GDPR): la memorizzazione sul profilo richiede consenso esplicito (art. 9.2.a) modificabile dalle impostazioni; la pubblicazione tramite recensioni rende questi dati manifestamente pubblici (art. 9.2.e).
 
@@ -68,7 +68,7 @@ Puoi inoltre tradurre le recensioni degli altri utenti: quando possibile la trad
 - Analytics: 14 mesi (default Firebase)
 
 ## I tuoi diritti
-- **Accesso, rettifica, cancellazione, portabilità**: scrivi a info@allergiapp.com
+- **Accesso, rettifica, cancellazione, limitazione, opposizione, portabilità**: scrivi a info@allergiapp.com
 - **Cancellazione account**: dalle impostazioni dell'app o via email
 - **Revoca posizione/foto**: impostazioni del sistema operativo
 - **Reclamo**: Garante Privacy (garanteprivacy.it)
@@ -178,7 +178,7 @@ Your profile (nickname, avatar, reviews, and lists you make public) is visible t
 ### Allergies and dietary restrictions
 If you choose to save your allergies and restrictions on your profile, we use them to personalize restaurant search and to associate them with the reviews you post. This is the core of the community: people with the same needs find relevant recommendations.
 
-The allergies linked to each review are publicly visible as badges under the review text, alongside your nickname (your email is never shown). They remain attached to the review even if you later change your profile, unless you explicitly request removal.
+The allergies and restrictions linked to each review are publicly visible as badges under the review text, alongside your nickname (your email is never shown). They remain attached to the review even if you later change your profile, unless you explicitly request removal.
 
 They are treated as health data (special category, art. 9 GDPR): saving them on your profile requires explicit consent (art. 9.2.a) changeable from settings; publishing them through reviews makes this data manifestly public (art. 9.2.e).
 
@@ -215,7 +215,7 @@ You can also translate other users' reviews: when possible the translation happe
 - Analytics: 14 months (Firebase default)
 
 ## Your rights
-- **Access, rectification, deletion, portability**: email info@allergiapp.com
+- **Access, rectification, deletion, restriction of processing, objection, portability**: email info@allergiapp.com
 - **Account deletion**: from app settings or via email
 - **Revoke location/photos**: operating system settings
 - **Complaint**: your local data protection authority
