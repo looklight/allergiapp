@@ -90,6 +90,17 @@ export default function LoginScreen() {
 
         <SocialAuthButtons />
 
+        <Text style={styles.legalNote}>
+          {i18n.t('signup.legalNotePart1')}
+          <Text style={styles.legalLink} onPress={() => router.push('/legal?tab=terms')}>
+            {i18n.t('signup.legalTerms')}
+          </Text>
+          {i18n.t('signup.legalAnd')}
+          <Text style={styles.legalLink} onPress={() => router.push('/legal?tab=privacy')}>
+            {i18n.t('signup.legalPrivacy')}
+          </Text>
+        </Text>
+
         <Surface style={styles.form} elevation={1}>
           <TextInput
             label={i18n.t('login.emailLabel')}
@@ -174,6 +185,18 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     lineHeight: 22,
     marginBottom: 24,
     textAlign: 'center',
+  },
+  legalNote: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  legalLink: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
   form: {
     padding: 20,
