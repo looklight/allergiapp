@@ -439,10 +439,10 @@
       "deleteConfirm": "Do you want to delete this menu photo?",
       "deleteError": "Couldn't delete the photo.",
       "screenTitle": "Menu photos",
-      "infoText": "Menu photos help people with dietary needs know what they can order, even before walking in.",
-      "infoSubtext": "If you have the menu in front of you or more recent photos, feel free to add them — every contribution makes the app more useful for everyone.",
+      "infoText": "Photograph the menu pages: they let people with dietary needs see the full selection, prices and marked allergens, even before walking in.",
+      "infoSubtext": "Photos of individual dishes don't belong here — add them to your review instead. If you have the menu in front of you or more recent photos, feel free to add them.",
       "uploading": "Uploading...",
-      "addAction": "Add a menu photo",
+      "addAction": "Add a menu page",
       "beFirst": "Be the first to add one",
       "uploaderYou": "You",
       "uploaderCommunity": "Community user"

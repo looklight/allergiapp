@@ -439,10 +439,10 @@
       "deleteConfirm": "Vuoi eliminare questa foto del menu?",
       "deleteError": "Impossibile eliminare la foto.",
       "screenTitle": "Foto menu",
-      "infoText": "Le foto del menu aiutano chi ha esigenze alimentari a sapere cosa può ordinare, prima ancora di entrare.",
-      "infoSubtext": "Se hai il menu davanti o hai foto più aggiornate, aggiungile liberamente — ogni contributo rende l'app più utile per tutti.",
+      "infoText": "Fotografa le pagine del menu: così chi ha esigenze alimentari vede l'assortimento, i prezzi e gli allergeni segnalati, prima ancora di entrare.",
+      "infoSubtext": "Le foto dei singoli piatti non vanno qui: puoi aggiungerle alla tua recensione. Se invece hai il menu davanti o foto più aggiornate, aggiungile liberamente.",
       "uploading": "Caricamento...",
-      "addAction": "Aggiungi foto del menu",
+      "addAction": "Aggiungi una pagina del menu",
       "beFirst": "Sii il primo ad aggiungerne una",
       "uploaderYou": "Tu",
       "uploaderCommunity": "Utente della community"
