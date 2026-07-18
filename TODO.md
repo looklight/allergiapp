@@ -134,18 +134,11 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - Valutare se `is_premium` viene dato con il claim o separatamente (es. freemium: claim gratuito, feature premium a pagamento)
 
 ### Condivisione ristorante (native share + deep link)
-**Priorità: bassa — da pianificare. Fase 1 (share semplice + tracking `restaurant_shared`) già fatta. Resta la Fase 2.**
+**COMPLETA (2026-07-19).** Share button, pagina web `/r/[slug]`, Universal Links iOS e App Links Android tutti in produzione. Il 19/07 chiuso l'ultimo pezzo: SHA-256 Play App Signing in `assetlinks.json` → link diretti in-app anche per installazioni Play Store. Storia e decisioni in `SHARE_FEATURE.md`.
 
-**Fase 2 — Universal Links (rebuild nativo, no OTA):**
-- Aggiungere `associated-domains` in `app.config.ts` (entitlement iOS)
-- Servire `apple-app-site-association` (iOS) e `assetlinks.json` (Android) dalla landing
-- Configurare deep linking expo-router per route `/restaurants/[id]`
-- Risultato: il link apre direttamente la scheda nell'app se installata, fallback browser altrimenti
-- Rischio: se la config è sbagliata i link non aprono l'app, ma l'app non crasha. Va testato in TestFlight prima di prod.
+- [ ] Test facoltativo: su Android con app da Play Store, tap su link `/r/{slug}` deve aprire direttamente l'app (forzare riverifica: `adb shell pm verify-app-links --re-verify com.allergiapp.mobile`)
 
-**Note:**
-- Valutare se includere allergeni filtrati / dieta nel link (es. `?diet=vegan`) per pre-filtrare la scheda all'apertura
-- Privacy: il link è pubblico, non esporre info utente che condivide
+**Polish futuro (solo se i dati lo giustificano):** OG image dinamica, galleria foto sulla pagina web, mappa statica preview, JSON-LD Restaurant per SEO, avatar risolti sulla landing, parametro `?diet=` nel link per pre-filtrare la scheda.
 
 ### Notifiche per incentivare le recensioni
 **Priorità: bassa — da valutare dopo il lancio**

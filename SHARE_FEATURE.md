@@ -8,7 +8,7 @@ Serve solo a non perdere il filo.
 
 ## Stato attuale
 
-Fase 1 (DB foundation), Fase 2 (landing serverless function) e Fase 3 (app side) completate, mergeate in `main`/`landing`, in produzione. Landing live su apex `allergiapp.com`. DB migrations 059-061 applicate. Mancano solo: bump versioni app + EAS build + submit + test device.
+**FEATURE COMPLETA (2026-07-19).** Fase 1 (DB foundation), Fase 2 (landing serverless function) e Fase 3 (app side) in produzione dalle build 1.1.0. Landing live su apex `allergiapp.com`, migrations 059-061 applicate. Il 2026-07-19 chiuso anche l'ultimo residuo: SHA-256 Play App Signing aggiunto ad `assetlinks.json` (commit `07f1d50` su landing, verificato live) → App Links Android verificati anche per installazioni Play Store. Unico test facoltativo rimasto: su device Android con app da Play Store, tap su link `/r/{slug}` deve aprire direttamente l'app.
 
 ## Decisioni prese
 
@@ -206,24 +206,10 @@ _Nessun tema aperto. Design phase chiusa._
 
 ## Follow-up — Da fare quando possibile
 
-### SHA-256 Android per Universal Links verificati
-**Stato (aggiornato 2026-05-26)**: `landing/.well-known/assetlinks.json` ora contiene il SHA-256 del certificato **Internal App Sharing** Play Console (`6C:0F:D5:8A:...`). Copre App Links per utenti che installano via URL Internal App Sharing. **Manca ancora** il SHA-256 della **Play App Signing key** (la chiave con cui Google firma gli APK distribuiti via Play Store) — serve per coprire tester closed testing + utenti produzione. Quando assente, fallback funzionante (tap "Apri in AllergiApp" sulla pagina web → custom scheme `allergiapp://r/{slug}`).
+### SHA-256 Android per Universal Links verificati — ✅ CHIUSO 2026-07-19
+`landing/.well-known/assetlinks.json` contiene entrambi i SHA-256: Internal App Sharing (`6C:0F:D5:8A:...`, dal 2026-05-26) + **Play App Signing produzione** (`BE:11:38:E1:...`, aggiunto 2026-07-19, commit `07f1d50` su landing). Recuperato da Play Console → "Protetto con Play" → "Protezione del Play Store" → "Proteggi la chiave di firma dell'app" (la vecchia pagina Setup → App integrity è stata spostata lì). Verificato live: entrambi i fingerprint presenti, Content-Type `application/json`. Tutti i fingerprint salvati anche in memoria (`reference_google_cloud.md`).
 
-**Cosa serve**: SHA-256 della **app signing key** di Google Play (NON la upload key di EAS). Formato `AA:BB:CC:...` con 32 coppie esadecimali separate da `:`.
-
-**Dove cercare** (in ordine di probabilità):
-1. **Google Play Console** → Setup → App integrity → App signing → "Certificato della chiave di firma dell'app" → SHA-256. La UI è scomoda da raggiungere, ma è la fonte autoritativa.
-2. **Firebase Console** → Project settings → Le tue app → app Android con package `com.allergiapp.mobile` → SHA certificate fingerprints (se aggiunto in passato)
-3. Eventualmente recuperabile via `gcloud` / Google Play Developer API con service account
-
-**Cosa fare quando trovato il SHA-256 produzione (Play App Signing)**:
-1. Editare `landing/.well-known/assetlinks.json`: AGGIUNGERE il nuovo valore come SECONDO elemento dell'array `sha256_cert_fingerprints` (NON sostituire quello Internal — entrambi sono validi insieme, coprono scenari diversi)
-2. Commit + push branch landing → preview deploy automatico
-3. Verifica: aprire `https://allergiapp.com/.well-known/assetlinks.json` → vedere entrambi i SHA-256, Content-Type `application/json`
-4. Forzare riverifica Android (per device già esistenti): da terminale con device collegato → `adb shell pm verify-app-links --re-verify com.allergiapp.mobile`
-5. Salvare il valore in `reference_google_cloud.md` per evitare di ricercarlo di nuovo
-
-**Niente nuova build app richiesta** — è solo un file server-side.
+**Residuo facoltativo**: test su device Android con app installata da Play Store — tap su link `/r/{slug}` deve aprire direttamente l'app. Per forzare la riverifica senza aspettare: `adb shell pm verify-app-links --re-verify com.allergiapp.mobile` (Android riverifica comunque da solo al prossimo update dell'app).
 
 ### Discrepanza package name Firebase (separato)
 Firebase Console ha un'entry Android con package `com.allergiapp` (senza `.mobile`), mentre la build Android usa `com.allergiapp.mobile`. Da chiarire se questa entry è legacy/duplicata o se Firebase analytics/crashlytics in prod sta puntando al package sbagliato. Non urgente, da indagare separatamente.
