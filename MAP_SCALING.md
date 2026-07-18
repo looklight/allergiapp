@@ -5,9 +5,90 @@ completa e la strategia decisa, per riprenderla quando si aprirà il lavoro.
 Integra (non sostituisce) la sezione "SCALABILITÀ PIN — gerarchia dei limiti" in
 `TODO.md`, che resta la fonte per i task operativi.
 
-**Stato: implementazione INIZIATA su `feature/map-scaling` (2026-07-09).**
-Leggere prima la Revisione §0, che aggiorna §3/§4/§7 alla luce dei numeri di
-luglio e delle decisioni prese con l'utente.
+**Stato: Fase 1 COMPLETATA e in main (merge 2026-07-09, viewport-gating 2026-07-10). Piano operativo corrente: §0-bis.**
+La Revisione §0 (2026-07-09) resta il riferimento per design e decisioni;
+§0-bis la aggiorna con lo stato post-merge e i trigger del prossimo lavoro.
+
+---
+
+## 0-bis. PIANO 2026-07-18 — dopo Fase 1 + viewport-gating
+
+**Cosa è chiuso.** Lo strato RENDERING è risolto entro il vincolo basemap
+nativa: pallini PNG via `image` prop (Fase 1, merge `9601d3f`, testata beta
+1.2.0) + regime pin gated sul viewport (`MAX_FULL_PINS=300`, su main per
+1.3.0) → costo proporzionale allo schermo, mai al dataset; regge a 50k
+ristoranti. Non c'è altro lavoro rendering utile prima dell'upgrade rn-maps.
+
+**Cosa resta aperto.** Lo strato DATI è un ponte: taglio max-rows 1000 cieco
+e senza ranking (a zoom Italia già ~600 pallini tagliati, estetico), payload
+lineare con N, debito colore doppia-sorgente. La cura di tutti e tre è la
+stessa ed è già disegnata: la RPC a celle (design: §0 decisione 1
+"grid-dots"; è lo step 3 della sequenza rivista in §0).
+
+**Piano per trigger (non per date — al ritmo di luglio le date non
+significano nulla, i numeri sì):**
+
+1. **ADESSO (pre-build 1.3.0): verifiche device sul telefono fisico vecchio**
+   (dev/preview build, mai Expo Go) — freeze soglia pallini↔pin, pan a zoom
+   largo, toggle filtri. Unico lavoro attivo: valida tutto il pacchetto già
+   scritto. (Voce già in TODO.md.)
+2. **CONTINUO (costo zero): monitorare due numeri** quando si lavora sull'app —
+   (a) ristoranti nel bbox Italia (oggi ~1600) → trigger del punto 4;
+   (b) città più densa (Milano 85) → trigger del punto 3. Nessuna infra di
+   monitoraggio dedicata: basta guardare i conteggi in admin quando capita.
+3. **Prima città verso ~150: alzare "Per me" 50→~150.** Param RPC dal client
+   (il server cappa a 200 con `LEAST`), una riga, nessun rischio semantico
+   (§2.1). NON fare l'Opzione B prima dei ~200/città.
+4. **Bbox Italia verso ~3000 (o taglio 1000 visibile/lamentato): RPC
+   `get_map_aggregates` a celle** — il capitolo vero, design chiuso in §0
+   (grid-dots: pallino-cella, centroide dei ristoranti, unione `supported_*`,
+   colore client via `getExpandedCoverage`, tap = zoom-in). Step spedibili:
+   - (a) migration RPC (`ST_SnapToGrid` zoom-aware; via SQL editor, MAI
+     `db push`) + curl di verifica su prod;
+   - (b) consumo in `useRestaurantGeo`: pinCache a doppia identità
+     cella/ristorante — chiavi stabili e batching, il cambio regime è il
+     churn-crash path iOS patchato;
+   - (c) dev build su entrambe le piattaforme + telefono vecchio.
+   Effetto collaterale voluto: **chiude gratis la decisione Max Rows** — le
+   celle cappano il payload per costruzione, il limite PostgREST smette di
+   mordere la mappa (restare a 1000 diventa un pro, non un limite). Qui dentro
+   si rivede anche `PIN_RESPONSE_CAP` e la rivelazione progressiva per
+   prominenza (rimandata qui da §0, note step celle).
+   **Premium come segnale di prominenza (deciso 2026-07-18, feature premium
+   NON ancora in lavorazione):** quando si disegnerà il ranking dello step
+   celle, `is_premium` è il primo segnale che discrimina davvero (il voto no:
+   quasi tutti 5.0) ed è *globale/user-independent* → compatibile con
+   l'invariante pinCache per la nota §6. Ingressi naturali: sopravvive al
+   taglio pallini (ORDER BY), diventa pin pieno a zoom più largo, resta pin
+   sopra il layer celle. Fondamenta DB già esistenti (`is_premium`,
+   `subscription_expires_at`, ORDER BY nelle RPC di ricerca): zero lavoro
+   anticipato. **VINCOLO DI PRODOTTO non negoziabile: il premium non tocca
+   MAI il colore/semantica di compatibilità (verde/ambra = claim di
+   sicurezza, non in vendita) — compra solo visibilità (ordine, prominenza,
+   soglia di rivelazione).** Nota legale collegata: premium attiva P2B →
+   la priorità di visibilità andrà dichiarata nei termini (v. memoria legale).
+   **Design ranking (deciso 2026-07-18): due livelli, la scala determina cosa
+   è sicuro.** NIENTE ranking pre-celle: l'ORDER BY economico (review_count)
+   è la distorsione geografica già scartata in §6, quello equo è metà del
+   lavoro celle, e il taglio casuale attuale ha un pregio (distribuzione
+   proporzionale + la pinCache mergia subset diversi tra fetch → copertura
+   che cresce; un ORDER BY fisso escluderebbe SEMPRE gli stessi). Con le
+   celle: (a) equità geografica = la griglia stessa (ogni cella esiste
+   sempre, nessuna zona può sparire); (b) prominenza SOLO dentro la cella,
+   per chi si rivela come pin a zoom più largo: `is_premium DESC,
+   review_count DESC, id` (popolarità innocua a scala cella, id = tie-break
+   deterministico). Modello Google: ranking per tile, mai globale. I fetch
+   dettagliati NON si toccano: "Per me" per coverage DESC, nearby per
+   distanza — già corretti.
+5. **Al bump SDK Expo: upgrade rn-maps 1.20→1.27** — togliere la
+   patch-package, chiudere flicker interop e animazioni (pop pin selezionato),
+   rifare il debito colore a sorgente unica (finestra dichiarata in TODO.md),
+   rivalutare `expo-maps`.
+
+**Cosa NON fare (conferme, per non ridiscuterle):** niente supercluster
+client (§0 punto 2); niente Opzione B oltre quanto già fatto; Max Rows resta
+a 1000 finché non arriva il punto 4 (decisione utente 2026-07-12); nessuna
+semplificazione a freddo della cicatrice rn-maps (§1).
 
 ---
 
@@ -145,7 +226,11 @@ JSON → 5.000 pin ≈ 1 MB (ok wifi, lento su mobile), 20.000 ≈ 4-5 MB (no).
 → Si risolve *definitivamente* solo server-side (aggregazione, §4).
 
 **Gerarchia dei trigger** (analisi 2026-06-22, spostata qui da TODO.md che ora
-tiene solo i task — il primo che morde NON è il 1000):
+tiene solo i task — il primo che morde NON è il 1000).
+**[Agg. 2026-07-18: fotografia di giugno, numeri superati — trigger 1
+tamponato a 200 il 09/07, trigger 2 GIÀ ATTIVO a zoom Italia, e il rendering
+NON è più sull'intera pinCache (viewport-gated). Stato corrente: §0/§0-bis;
+restano validi i ragionamenti e le "prime mosse".]**
 
 1. **~50-100 per città — pin grigi a zoom città.** Si vede su Milano/Roma/Londra
    piena, ben prima dei 1000. I pin pieni *colorati* (voto + match) vengono dal
@@ -183,6 +268,10 @@ tiene solo i task — il primo che morde NON è il 1000):
 
 ## 3. Traccia RENDERING — rianimare il clustering, stavolta bene
 
+*(Agg. 2026-07-18: §3a-pallini FATTO in Fase 1; le bolle cluster a scaglioni
+e il supercluster di §3b sono SUPERATI dalla variante grid-dots — §0
+decisioni 1-2. Sezione conservata per il ragionamento sulla via `image`.)*
+
 Il clustering client era stato spento (giu 2026, `CLUSTERING_ENABLED = false`)
 NON perché supercluster non funzionasse, ma per due problemi di **rendering**:
 bolle "a spicchio" (cattura bitmap inaffidabile su rn-maps 1.20.1/New Arch
@@ -219,6 +308,11 @@ contano solo i pin *scaricati*: per numeri veri a zoom continente serve il
 server. È comprare tempo sullo strato dati sapendolo, non risolverlo.
 
 ## 4. Traccia DATI — aggregazione server-side (l'approdo)
+
+*(Agg. 2026-07-18: il nodo "colore vs cacheability" e la prima versione a
+"bolle neutre" sono RISOLTI dalla variante grid-dots — §0 decisione 1:
+unione coverage per cella, colore per-utente client-side. Restano validi
+latenza, estetica griglia, carico DB.)*
 
 RPC tipo `get_map_aggregates(bbox, zoom)`: sotto la soglia pin-zoom ritorna pin
 individuali come oggi; sopra, celle aggregate (PostGIS `ST_SnapToGrid`/geohash
@@ -290,6 +384,10 @@ base: NON è il nostro orizzonte, citato solo per completezza.
   margine generoso (~3× viewport), rimozioni pigie, e test su dev build.
 
 ## 7. Sequenza operativa (quando si parte)
+
+*(SUPERATA: sequenza rivista in §0, stato e trigger correnti in §0-bis.
+Conservata per storia — gli step 1 e 3 sono stati fatti in Fase 1, lo step 2
+è stato saltato per decisione §0.)*
 
 Branch dedicato `feature/map-scaling` da `main` (pattern `feature/my-restaurants`).
 La mappa NON si testa in Expo Go (rn-maps patchata) → **dev build** obbligatoria;
