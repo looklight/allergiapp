@@ -4,9 +4,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.allergiapp.mobile",
-      "comment_test_internal": "Certificato 'Internal App Sharing' Play Console (Condivisione interna dell'app). Copre App Links per chi installa via URL Internal Sharing. NON copre Play Store closed testing / produzione — quello richiede un secondo SHA-256 (Play App Signing) ancora da recuperare. Memo in SHARE_FEATURE.md sezione Follow-up.",
+      "comment": "Due certificati: [0] Internal App Sharing Play Console (installazioni via URL Internal Sharing), [1] Play App Signing produzione (installazioni Play Store, recuperato da Play Console il 2026-07-19). Entrambi validi insieme.",
       "sha256_cert_fingerprints": [
-        "6C:0F:D5:8A:D1:3B:A3:43:B0:55:75:5C:12:39:35:72:2D:BD:19:A7:AF:5C:74:CE:83:DD:CC:E3:2D:4D:C3:61"
+        "6C:0F:D5:8A:D1:3B:A3:43:B0:55:75:5C:12:39:35:72:2D:BD:19:A7:AF:5C:74:CE:83:DD:CC:E3:2D:4D:C3:61",
+        "BE:11:38:E1:56:AA:B4:2B:A1:4A:30:21:3B:2D:E4:6F:1D:74:53:10:4A:0D:D2:77:4C:4E:0F:CF:32:9C:89:24"
       ]
     }
   }
