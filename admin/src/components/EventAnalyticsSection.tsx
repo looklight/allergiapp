@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { safeQuery } from '@/lib/safeQuery';
+import { labelAllergen, labelDiet } from '@/lib/dietaryLabels';
 
-// Etichette italiane per i 6 eventi del catalogo (vedi services/supabaseAnalytics.ts).
+// Etichette italiane per gli eventi del catalogo (vedi services/supabaseAnalytics.ts).
 // Per nuovi eventi non in lista, fallback: snake_case → "Snake Case".
 const EVENT_LABELS: Record<string, string> = {
   onboarding_completed: 'Onboarding completati',
@@ -14,10 +15,21 @@ const EVENT_LABELS: Record<string, string> = {
   review_created: 'Recensioni create',
   sign_in: 'Sign in',
   restaurant_shared: 'Ristoranti condivisi',
+  filter_applied: 'Filtri applicati',
 };
 
 function eventLabel(name: string): string {
   return EVENT_LABELS[name] ?? name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Etichetta per un codice esigenza: allergeni/diete note, altrimenti
+// snake_case → "Snake Case" (cibi extra tipo pine_nuts non mappati in dietaryLabels).
+function needLabel(code: string): string {
+  const known = labelAllergen(code);
+  if (known !== code) return known;
+  const diet = labelDiet(code);
+  if (diet !== code) return diet;
+  return code.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface EventCount {
@@ -32,70 +44,69 @@ interface TopQuery {
   restaurant_count: number;
 }
 
-interface RecentEvent {
-  id: string;
-  event_name: string;
-  user_id: string | null;
-  username: string | null;
-  is_anonymous: boolean;
-  properties: Record<string, unknown>;
-  created_at: string;
+interface TopRestaurant {
+  restaurant_id: string;
+  name: string;
+  city: string | null;
+  view_count: number;
+  viewer_count: number;
 }
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return `${sec}s fa`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m fa`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h fa`;
-  const day = Math.floor(hr / 24);
-  return `${day}g fa`;
+interface NeedCount {
+  code: string;
+  need_type: string;
+  user_count: number;
 }
 
-function summarizeProperties(eventName: string, props: Record<string, unknown>): string {
-  // Sintesi compatta per il live feed.
-  switch (eventName) {
-    case 'restaurant_search': {
-      const q = props.query;
-      const k = props.selected_kind;
-      return q ? `"${q}" → ${k}` : '';
-    }
-    case 'sign_in':
-      return `provider: ${props.provider}${props.is_signup ? ' (signup)' : ''}`;
-    case 'onboarding_completed':
-      return `${props.allergen_count ?? 0} allergeni, ${props.diet_count ?? 0} diete`;
-    case 'review_created':
-      return `rating ${props.rating}${props.has_comment ? ', con commento' : ''}`;
-    case 'restaurant_shared':
-      return typeof props.slug === 'string' ? props.slug : '';
-    case 'restaurant_viewed':
-      return typeof props.restaurant_id === 'string' ? props.restaurant_id.slice(0, 8) : '';
-    default:
-      return '';
-  }
+interface FilteredNeed {
+  code: string;
+  use_count: number;
+}
+
+interface TopSaved {
+  restaurant_id: string;
+  name: string;
+  city: string | null;
+  saver_count: number;
+}
+
+interface TopCity {
+  city: string;
+  country_code: string | null;
+  review_count: number;
 }
 
 export default function EventAnalyticsSection() {
   const [counts7d, setCounts7d] = useState<EventCount[]>([]);
   const [counts30d, setCounts30d] = useState<EventCount[]>([]);
   const [topQueries, setTopQueries] = useState<TopQuery[]>([]);
-  const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
+  const [topRestaurants, setTopRestaurants] = useState<TopRestaurant[]>([]);
+  const [needsDistribution, setNeedsDistribution] = useState<NeedCount[]>([]);
+  const [filteredNeeds, setFilteredNeeds] = useState<FilteredNeed[]>([]);
+  const [topSaved, setTopSaved] = useState<TopSaved[]>([]);
+  const [topCities, setTopCities] = useState<TopCity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const [c7, c30, top, recent] = await Promise.all([
+      const [c7, c30, top, topRest, needs, filtered, saved, cities] = await Promise.all([
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 7 }), 'Event counts 7g'),
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 30 }), 'Event counts 30g'),
-        safeQuery(() => supabase.rpc('get_top_search_queries', { p_days: 30, p_limit: 20 }), 'Top ricerche'),
-        safeQuery(() => supabase.rpc('get_recent_events', { p_limit: 20 }), 'Ultimi eventi'),
+        safeQuery(() => supabase.rpc('get_top_search_queries', { p_days: 30, p_limit: 10 }), 'Top ricerche'),
+        safeQuery(() => supabase.rpc('get_top_viewed_restaurants', { p_days: 30, p_limit: 10 }), 'Ristoranti più aperti'),
+        safeQuery(() => supabase.rpc('get_needs_distribution', { p_limit: 10 }), 'Esigenze più diffuse'),
+        safeQuery(() => supabase.rpc('get_top_filtered_needs', { p_days: 30, p_limit: 10 }), 'Esigenze filtrate'),
+        safeQuery(() => supabase.rpc('get_top_saved_restaurants', { p_limit: 10 }), 'Ristoranti più salvati'),
+        safeQuery(() => supabase.rpc('get_top_cities', { p_days: 30, p_limit: 10 }), 'Città più attive'),
       ]);
       setCounts7d((c7 as EventCount[]) ?? []);
       setCounts30d((c30 as EventCount[]) ?? []);
       setTopQueries((top as TopQuery[]) ?? []);
-      setRecentEvents((recent as RecentEvent[]) ?? []);
+      setTopRestaurants((topRest as TopRestaurant[]) ?? []);
+      setNeedsDistribution((needs as NeedCount[]) ?? []);
+      setFilteredNeeds((filtered as FilteredNeed[]) ?? []);
+      setTopSaved((saved as TopSaved[]) ?? []);
+      setTopCities((cities as TopCity[]) ?? []);
       setLoading(false);
     }
     load();
@@ -141,6 +152,72 @@ export default function EventAnalyticsSection() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Ristoranti più aperti */}
+        <div className="bg-card rounded-lg shadow p-4">
+          <h3 className="font-semibold mb-3">Ristoranti più aperti (30g)</h3>
+          {topRestaurants.length === 0 ? (
+            <p className="text-sm text-faint">Nessuna apertura registrata.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-faint uppercase">
+                    <th className="py-1 font-normal">Ristorante</th>
+                    <th className="py-1 font-normal text-right">Aperture</th>
+                    <th className="py-1 font-normal text-right">Utenti</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topRestaurants.map((r) => (
+                    <tr key={r.restaurant_id} className="border-b last:border-0">
+                      <td className="py-2 truncate max-w-[220px]">
+                        <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline" title={r.name}>
+                          {r.name}
+                        </Link>
+                        {r.city && <span className="text-xs text-faint ml-1.5">{r.city}</span>}
+                      </td>
+                      <td className="py-2 text-right font-medium">{r.view_count}</td>
+                      <td className="py-2 text-right text-muted-foreground">{r.viewer_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Ristoranti più salvati */}
+        <div className="bg-card rounded-lg shadow p-4">
+          <h3 className="font-semibold mb-3">Ristoranti più salvati</h3>
+          {topSaved.length === 0 ? (
+            <p className="text-sm text-faint">Nessun ristorante salvato.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-faint uppercase">
+                    <th className="py-1 font-normal">Ristorante</th>
+                    <th className="py-1 font-normal text-right">Utenti</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topSaved.map((r) => (
+                    <tr key={r.restaurant_id} className="border-b last:border-0">
+                      <td className="py-2 truncate max-w-[220px]">
+                        <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline" title={r.name}>
+                          {r.name}
+                        </Link>
+                        {r.city && <span className="text-xs text-faint ml-1.5">{r.city}</span>}
+                      </td>
+                      <td className="py-2 text-right font-medium">{r.saver_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* Top ricerche */}
         <div className="bg-card rounded-lg shadow p-4">
           <h3 className="font-semibold mb-3">Top ricerche (30g)</h3>
@@ -172,34 +249,86 @@ export default function EventAnalyticsSection() {
           )}
         </div>
 
-        {/* Live feed ultimi eventi */}
+        {/* Città più attive per recensioni */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Ultimi eventi</h3>
-          {recentEvents.length === 0 ? (
-            <p className="text-sm text-faint">Nessun evento registrato.</p>
+          <h3 className="font-semibold mb-3">Città più attive (30g)</h3>
+          {topCities.length === 0 ? (
+            <p className="text-sm text-faint">Nessuna recensione negli ultimi 30 giorni.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-faint uppercase">
+                    <th className="py-1 font-normal">Città</th>
+                    <th className="py-1 font-normal text-right">Recensioni</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {recentEvents.map((e) => {
-                    const userLabel = e.user_id
-                      ? (e.is_anonymous ? 'anon' : (e.username ?? '—'))
-                      : 'anon';
-                    return (
-                      <tr key={e.id} className="border-b last:border-0">
-                        <td className="py-2 text-xs text-faint whitespace-nowrap pr-2">{timeAgo(e.created_at)}</td>
-                        <td className="py-2 whitespace-nowrap pr-2">{eventLabel(e.event_name)}</td>
-                        <td className="py-2 text-muted-foreground pr-2">
-                          {e.user_id && !e.is_anonymous && e.username ? (
-                            <Link href={`/users/${e.user_id}`} className="text-primary hover:underline">{userLabel}</Link>
-                          ) : userLabel}
-                        </td>
-                        <td className="py-2 text-muted-foreground text-xs truncate max-w-[180px]" title={JSON.stringify(e.properties)}>
-                          {summarizeProperties(e.event_name, e.properties)}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {topCities.map((c) => (
+                    <tr key={`${c.city}-${c.country_code ?? ''}`} className="border-b last:border-0">
+                      <td className="py-2 truncate max-w-[220px]">
+                        {c.city}
+                        {c.country_code && <span className="text-xs text-faint ml-1.5 uppercase">{c.country_code}</span>}
+                      </td>
+                      <td className="py-2 text-right font-medium">{c.review_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Esigenze più diffuse nei profili */}
+        <div className="bg-card rounded-lg shadow p-4">
+          <h3 className="font-semibold mb-3">Esigenze più diffuse (profili)</h3>
+          {needsDistribution.length === 0 ? (
+            <p className="text-sm text-faint">Nessuna esigenza registrata.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-faint uppercase">
+                    <th className="py-1 font-normal">Esigenza</th>
+                    <th className="py-1 font-normal text-right">Utenti</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {needsDistribution.map((n) => (
+                    <tr key={n.code} className="border-b last:border-0">
+                      <td className="py-2 truncate max-w-[220px]">{needLabel(n.code)}</td>
+                      <td className="py-2 text-right font-medium">{n.user_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Esigenze più usate nei filtri */}
+        <div className="bg-card rounded-lg shadow p-4">
+          <h3 className="font-semibold mb-3">Esigenze più filtrate (30g)</h3>
+          {filteredNeeds.length === 0 ? (
+            <p className="text-sm text-faint">
+              Nessun dato: l&apos;evento arriva con le build dalla 1.3.0 in poi.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-faint uppercase">
+                    <th className="py-1 font-normal">Esigenza</th>
+                    <th className="py-1 font-normal text-right">Usi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredNeeds.map((n) => (
+                    <tr key={n.code} className="border-b last:border-0">
+                      <td className="py-2 truncate max-w-[220px]">{needLabel(n.code)}</td>
+                      <td className="py-2 text-right font-medium">{n.use_count}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
