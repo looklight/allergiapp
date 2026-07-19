@@ -6,7 +6,7 @@ const isEasBuild = !!process.env.EAS_BUILD;
 export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "AllergiApp",
   slug: "allergiapp",
-  version: "1.2.0",
+  version: "1.3.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.allergiapp",
-    buildNumber: "21",
+    buildNumber: "22",
     // Universal Links: i link allergiapp.com/r/* aprono direttamente l'app (se installata).
     // Il pattern stretto (/r/*) e' gestito server-side nel file
     // landing/.well-known/apple-app-site-association: cosi' possiamo allargare i
@@ -34,7 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: "com.allergiapp.mobile",
     edgeToEdgeEnabled: true,
-    versionCode: 32,
+    versionCode: 33,
     permissions: [
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
