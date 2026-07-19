@@ -96,11 +96,10 @@ Edit puri già fatti (dipendenza rimossa da `package.json` + pod orfani rimossi 
 Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mode al plugin (`withAndroidColorsNight` scrive `app_window_background = #F7DCB3` anche in `values-night/colors.xml`, coerente con `userInterfaceStyle: "light"`). Resta:
 - [ ] Verifica al prossimo build EAS Android (anche su device con dark mode attiva).
 
-### Manutenzione al prossimo build (sessione review 2026-07-03)
-Nessuna urgenza: zero rischio a lasciare così, da agganciare al prossimo build nativo.
-- [ ] `npx expo install --fix` — allineare i pacchetti Expo alle patch attese dall'SDK (expo 54.0.32→~54.0.35, expo-updates, expo-router, ecc.). Verificare anche il mismatch `eslint-config-expo` (installato 56.0.4, expected ~10.0.0).
-- [ ] `babel-plugin-transform-remove-console` (solo produzione) — rimuove i ~109 `console.*` dal bundle release senza toccare il codice. Richiede build/OTA per avere effetto.
-- [ ] `npm audit fix` (senza `--force`) — 33 vulnerabilità tutte in toolchain di build (protobufjs/grpc via Firebase tooling, tar, shell-quote), non nel bundle app. Nessuna esposizione utenti.
+### Manutenzione al prossimo build (sessione review 2026-07-03) — FATTA 2026-07-19 (tranne npm audit fix)
+- [x] `npx expo install --fix` — fatto 2026-07-19 (`d44e379`): 9 pacchetti alla patch SDK 54 (expo 54.0.36, expo-router 6.0.24, expo-updates 29.0.19, ecc.) + `eslint-config-expo` 56.0.4→10.0.0. Il plugin react-hooks è tornato a v5: rimosso da `eslint.config.js` l'override delle regole compiler-powered (non esistono più). Lint 0 errori / 60 warning, tsc pulito.
+- [x] `babel-plugin-transform-remove-console` — fatto 2026-07-19 (`e5d9807`): attivo solo env production, esclusi `error`/`warn`. Verificato via `expo export`: 0 console.log nel bundle. Nota: aggiunto `babel-preset-expo` come devDependency esplicita (npm lo annidava sotto expo/ e Babel non lo risolveva).
+- [ ] `npm audit fix` (senza `--force`) — **SALTATO di proposito 2026-07-19**: dry-run = 112 pacchetti cambiati per vulnerabilità tutte in toolchain di build (nessuna esposizione utenti). Churn alto, beneficio solo igiene: rifare la valutazione in un ciclo senza release di mezzo.
 - [ ] **Prompt recensione store** (`expo-store-review`) — dettagli e vincolo runtime nella sezione dedicata sotto "Feature roadmap".
 
 ---
