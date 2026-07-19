@@ -46,6 +46,8 @@ export type OtherFoodId =
   | 'buckwheat'
   | 'rice'
   | 'oats'
+  | 'wheat'
+  | 'barley'
   // Spezie, semi e altro
   | 'pepper'
   | 'nutmeg'
@@ -66,6 +68,7 @@ export type OtherFoodId =
   | 'flax_seeds'
   | 'cacao_chocolate'
   | 'olive_oil'
+  | 'honey'
   // Additivi e fermenti
   | 'yeast'
   | 'artificial_colorings'
@@ -275,6 +278,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'oats', icon: '🌾', category: 'legumes_other', translations: {
     it: 'Avena', en: 'Oats', fr: 'Avoine', de: 'Hafer', es: 'Avena', pt: 'Aveia', nl: 'Haver', pl: 'Owies', ru: 'Овёс', sv: 'Havre', zh: '燕麦', ja: 'オーツ麦', ko: '귀리', th: 'ข้าวโอ๊ต', ar: 'الشوفان',
   }},
+  { id: 'wheat', icon: '🌾', category: 'legumes_other', translations: {
+    it: 'Frumento', en: 'Wheat', fr: 'Blé', de: 'Weizen', es: 'Trigo', pt: 'Trigo', nl: 'Tarwe', pl: 'Pszenica', ru: 'Пшеница', sv: 'Vete', zh: '小麦', ja: '小麦', ko: '밀', th: 'ข้าวสาลี', ar: 'القمح',
+  }},
+  { id: 'barley', icon: '🌾', category: 'legumes_other', translations: {
+    it: 'Orzo', en: 'Barley', fr: 'Orge', de: 'Gerste', es: 'Cebada', pt: 'Cevada', nl: 'Gerst', pl: 'Jęczmień', ru: 'Ячмень', sv: 'Korn', zh: '大麦', ja: '大麦', ko: '보리', th: 'ข้าวบาร์เลย์', ar: 'الشعير',
+  }},
   // Spezie, semi e altro
   { id: 'pepper', icon: '🫙', category: 'legumes_other', translations: {
     it: 'Pepe', en: 'Pepper', fr: 'Poivre', de: 'Pfeffer', es: 'Pimienta', pt: 'Pimenta', nl: 'Peper', pl: 'Pieprz', ru: 'Перец', sv: 'Peppar', zh: '胡椒', ja: 'コショウ', ko: '후추', th: 'พริกไทย', ar: 'الفلفل',
@@ -327,6 +336,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'cacao_chocolate', icon: '🍫', category: 'legumes_other', translations: {
     it: 'Cacao/Cioccolato', en: 'Cacao/Chocolate', fr: 'Cacao/Chocolat', de: 'Kakao/Schokolade', es: 'Cacao/Chocolate', pt: 'Cacau/Chocolate', nl: 'Cacao/Chocolade', pl: 'Kakao/Czekolada', ru: 'Какао/Шоколад', sv: 'Kakao/Choklad', zh: '可可/巧克力', ja: 'カカオ/チョコレート', ko: '카카오/초콜릿', th: 'โกโก้/ช็อกโกแลต', ar: 'الكاكاو/الشوكولاتة',
+  }},
+  { id: 'honey', icon: '🍯', category: 'legumes_other', translations: {
+    it: 'Miele', en: 'Honey', fr: 'Miel', de: 'Honig', es: 'Miel', pt: 'Mel', nl: 'Honing', pl: 'Miód', ru: 'Мёд', sv: 'Honung', zh: '蜂蜜', ja: 'はちみつ', ko: '꿀', th: 'น้ำผึ้ง', ar: 'العسل',
   }},
   { id: 'olive_oil', icon: '🫒', category: 'legumes_other', translations: {
     it: 'Olio d\'oliva', en: 'Olive oil', fr: 'Huile d\'olive', de: 'Olivenöl', es: 'Aceite de oliva', pt: 'Azeite', nl: 'Olijfolie', pl: 'Oliwa z oliwek', ru: 'Оливковое масло', sv: 'Olivolja', zh: '橄榄油', ja: 'オリーブオイル', ko: '올리브유', th: 'น้ำมันมะกอก', ar: 'زيت الزيتون',

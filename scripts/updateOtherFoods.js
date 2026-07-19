@@ -75,6 +75,9 @@ const NEW_OTHER_FOODS = {
   pine_nuts: 'Pine nuts',
   cacao_chocolate: 'Cacao / Chocolate',
   oats: 'Oats',
+  wheat: 'Wheat',
+  barley: 'Barley',
+  honey: 'Honey',
   olive_oil: 'Olive oil',
   // Additivi e fermenti
   yeast: 'Yeast',
