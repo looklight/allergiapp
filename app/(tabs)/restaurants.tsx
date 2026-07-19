@@ -382,6 +382,12 @@ export default function RestaurantsScreen() {
       if (newFollowed) SupabaseAnalytics.track('followed_filter_enabled');
     }
 
+    // Esigenze usate nel filtro: un "Applica" con esigenze attive = un uso
+    // (letto da get_top_filtered_needs sulla dashboard admin, mig 503).
+    if (newFmn && (allergens.length > 0 || diets.length > 0)) {
+      SupabaseAnalytics.track('filter_applied', { needs: [...allergens, ...diets] });
+    }
+
     const fmnChanged = newFmn !== forMyNeeds;
     const lodgingChanged = newShowLodging !== showLodging;
     const allergensChanged = allergens.length !== filterAllergens.length || allergens.some(a => !filterAllergens.includes(a));

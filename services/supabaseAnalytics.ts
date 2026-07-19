@@ -28,9 +28,10 @@ export type EventName =
   | 'profile_link_copied'
   | 'followed_filter_enabled'
   | 'list_published'
-  | 'list_unpublished';
+  | 'list_unpublished'
+  | 'filter_applied';
 
-type EventProperties = Record<string, string | number | boolean | null>;
+type EventProperties = Record<string, string | number | boolean | null | string[]>;
 
 let isTrackingAuthorized = false;
 
