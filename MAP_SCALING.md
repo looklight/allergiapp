@@ -9,6 +9,14 @@ Integra (non sostituisce) la sezione "SCALABILITÀ PIN — gerarchia dei limiti"
 La Revisione §0 (2026-07-09) resta il riferimento per design e decisioni;
 §0-bis la aggiorna con lo stato post-merge e i trigger del prossimo lavoro.
 
+**⚠️ Il lavoro restante NON è in programma (confermato 2026-07-19):** si parte
+solo quando scatta uno dei trigger numerici di §0-bis — fino ad allora nessuna
+implementazione, solo occhiata occasionale ai conteggi in admin. Il degrado è
+morbido (latenza/tagli silenziosi, mai rotture o dati persi), quindi aspettare
+è a basso rischio. Gli interventi pesanti (celle, colonne precomputate) sono
+solo server-side → spedibili in qualunque momento via SQL editor, senza build:
+anticiparli non compra nulla.
+
 ---
 
 ## 0-bis. PIANO 2026-07-18 — dopo Fase 1 + viewport-gating
@@ -23,7 +31,9 @@ ristoranti. Non c'è altro lavoro rendering utile prima dell'upgrade rn-maps.
 e senza ranking (a zoom Italia già ~600 pallini tagliati, estetico), payload
 lineare con N, debito colore doppia-sorgente. La cura di tutti e tre è la
 stessa ed è già disegnata: la RPC a celle (design: §0 decisione 1
-"grid-dots"; è lo step 3 della sequenza rivista in §0).
+"grid-dots"; è lo step 3 della sequenza rivista in §0). Quarto debito, a
+verbale dal 2026-07-19 con cura DIVERSA (colonne precomputate, non celle):
+l'aggregato full-table su `reviews` nelle RPC calde — punto 4-bis.
 
 **Piano per trigger (non per date — al ritmo di luglio le date non
 significano nulla, i numeri sì):**
@@ -36,9 +46,15 @@ significano nulla, i numeri sì):**
    (a) ristoranti nel bbox Italia (oggi ~1600) → trigger del punto 4;
    (b) città più densa (Milano 85) → trigger del punto 3. Nessuna infra di
    monitoraggio dedicata: basta guardare i conteggi in admin quando capita.
-3. **Prima città verso ~150: alzare "Per me" 50→~150.** Param RPC dal client
-   (il server cappa a 200 con `LEAST`), una riga, nessun rischio semantico
-   (§2.1). NON fare l'Opzione B prima dei ~200/città.
+3. **Prima città verso ~200: Opzione B.** [Corretto 2026-07-19: la mossa
+   "alzare Per me 50→~150" è GIÀ CONSUMATA — verificato nel codice che tutti i
+   call-site (`useRestaurantGeo`, `useMapSearch`) passano già
+   `NEARBY_MAX = 200`, il tetto server, dal tamponamento 09/07; il "50"
+   residuo è solo la lista top-50 per ordinamento, scelta UI deliberata.]
+   Quindi il margine città è oggi→~200 e la prossima leva NON è una riga: è
+   direttamente l'Opzione B (colorare i segnaposto client-side, §2.1), coi
+   suoi prerequisiti — PRIMA verificare l'equivalenza calcolo
+   client/server della coverage (memoria `project_pin_coverage_source_of_truth`).
 4. **Bbox Italia verso ~3000 (o taglio 1000 visibile/lamentato): RPC
    `get_map_aggregates` a celle** — il capitolo vero, design chiuso in §0
    (grid-dots: pallino-cella, centroide dei ristoranti, unione `supported_*`,
@@ -80,6 +96,73 @@ significano nulla, i numeri sì):**
    deterministico). Modello Google: ranking per tile, mai globale. I fetch
    dettagliati NON si toccano: "Per me" per coverage DESC, nearby per
    distanza — già corretti.
+   **Note di integrazione (a verbale 2026-07-19), da decidere NEL design
+   della RPC, non dopo:**
+   - **Filtro cucina vs celle**: oggi filtra client-side sui pallini perché
+     `cuisine_types` è nel payload pin. Una cella senza cucine non può
+     reagire al filtro → o il payload cella porta anche l'unione delle
+     cucine (costo piccolo, stesso ragionamento dell'unione `supported_*`),
+     o si accetta/dichiara che il filtro agisce solo sotto la soglia celle.
+   - **Filtro "Recensiti dai seguiti" (mig 081) vs celle**: a zoom largo i
+     due regimi si contraddicono. Soluzione probabile: in modalità seguiti
+     restare SEMPRE a pin individuali (insieme piccolo per costruzione),
+     mai celle. Da decidere esplicitamente, non scoprire in debug.
+4-bis. **A verbale 2026-07-19 — aggregato full-table su `reviews`/`favorites`
+   nelle RPC calde (trigger: recensioni totali verso ~50k, o latenza mappa
+   percepita; finestra naturale: lo step celle del punto 4).**
+   `get_pins_in_bounds` (073, la query più frequente dell'app),
+   `get_nearby_restaurants` e `get_all_restaurants` (068) e `get_leaderboard`
+   (039) calcolano voto medio/conteggi con una subquery
+   `SELECT restaurant_id, AVG(rating) FROM reviews GROUP BY restaurant_id`
+   **senza restrizione geografica**: Postgres non può spingere il filtro
+   bbox/ST_DWithin dentro il GROUP BY → ogni chiamata scansiona e aggrega
+   l'INTERA tabella reviews (nearby/all anche `favorites`), poi il join butta
+   via quasi tutto. Costo lineare col TOTALE recensioni, non con l'area
+   guardata; oggi invisibile (ms), a ~500k recensioni = full scan a ogni pan
+   di ogni utente → primo punto dove il DB scalda. Degrada in silenzio: solo
+   latenza, nessun errore. `get_restaurants_for_my_needs` NON è affetta (038
+   già scoped con `restaurant_id IN (SELECT id FROM geo_restaurants)`).
+   **Cura disegnata (economica, infra già in casa):** colonne
+   `review_count`/`average_rating` su `restaurants` mantenute estendendo il
+   trigger 044 (`refresh_restaurant_restrictions`, già fires a ogni
+   INSERT/UPDATE/DELETE su reviews e già riscansiona le review di quel
+   ristorante: aggiungere i due aggregati allo stesso UPDATE ≈ gratis) +
+   backfill one-off + le RPC leggono le colonne (mantenere semantica
+   `ROUND(avg,1)` / `COALESCE 0`). `favorite_count` analogo ma serve trigger
+   nuovo su `favorites`. Migration via SQL editor, MAI db push. Effetto
+   collaterale voluto: `average_rating` diventa colonna vera → chiude la
+   memoria "average_rating non è free lunch" (preferiti che arrivano con 0) e
+   la RPC celle del punto 4 nasce senza il vizio. Caveat onesti: (a)
+   denormalizzazione = un invariante in più — TRUNCATE/restore bulk NON fa
+   scattare i row trigger, rifare il backfill dopo; (b) import massivi già
+   pagano il trigger per-riga oggi (supported_*), i due aggregati non
+   cambiano l'ordine di costo.
+4-ter. **A verbale 2026-07-19 — trigger: PRIMO PREMIUM FIRMATO (evento, non
+   numero).** Stato attuale verificato nel codice: `is_premium` non è usato
+   DA NESSUNA PARTE client-side (esiste solo nel tipo TS) e il payload di
+   `get_pins_in_bounds` non lo porta → oggi un premium sulla mappa è
+   indistinguibile, può essere tagliato dal LIMIT 1000 a zoom largo come
+   chiunque, e il viewport-gating non lo privilegia. Unico effetto reale:
+   `ORDER BY is_premium DESC` nelle RPC dettagliate (mai grigio in aree
+   sature). Al primo contratto firmato, in ordine:
+   - (a) **Stesso giorno, via SQL editor (zero build):** `ORDER BY
+     r.is_premium DESC` in `get_pins_in_bounds` (il premium non può più
+     sparire dal taglio) + colonna `is_premium` nel payload pin (additiva,
+     client vecchi la ignorano — pattern 073). Sicuro per §6: ORDER BY
+     globale/user-independent su un insieme minuscolo e deliberato — il
+     resto del taglio resta casuale coi suoi pregi (distribuzione
+     proporzionale, merge pinCache). NON estendere l'ORDER BY ad altri
+     criteri (popolarità/voto/data): valutati e scartati, v. §6 e design
+     ranking punto 4 — l'unico ordinamento giusto per il taglio è l'equità
+     geografica, cioè le celle.
+   - (b) **Build successiva:** evidenza visiva pin/lista (PREVIA decisione
+     di prodotto sull'aspetto — non disegnare al buio) + inclusione
+     garantita nei `MAX_FULL_PINS` del viewport-gating. Accettato: tra (a)
+     e (b) il premium ha solo il vantaggio server, l'evidenza visiva arriva
+     con la build.
+   - (c) **Contestuale, non tecnico:** adeguamento P2B dei termini (v.
+     memoria legale) — la priorità di visibilità va dichiarata.
+   Vincolo invariato: il colore verde/ambra non si vende MAI.
 5. **Al bump SDK Expo: upgrade rn-maps 1.20→1.27** — togliere la
    patch-package, chiudere flicker interop e animazioni (pop pin selezionato),
    rifare il debito colore a sorgente unica (finestra dichiarata in TODO.md),
@@ -87,7 +170,11 @@ significano nulla, i numeri sì):**
 
 **Cosa NON fare (conferme, per non ridiscuterle):** niente supercluster
 client (§0 punto 2); niente Opzione B oltre quanto già fatto; Max Rows resta
-a 1000 finché non arriva il punto 4 (decisione utente 2026-07-12); nessuna
+a 1000 finché non arriva il punto 4 (decisione utente 2026-07-12, rafforzata
+2026-07-19: è config GLOBALE dell'istanza e i client pre-1.3.0 non hanno il
+viewport-gating — renderizzano l'intera pinCache, quindi alzarlo
+riporterebbe il freeze proprio sui device non aggiornabili via OTA; con la
+coda lunga di client vecchi è un vincolo quasi permanente); nessuna
 semplificazione a freddo della cicatrice rn-maps (§1).
 
 ---
