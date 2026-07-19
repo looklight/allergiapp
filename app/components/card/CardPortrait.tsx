@@ -29,7 +29,7 @@ export default function CardPortrait({
   translations,
   restrictionTranslations,
   dietModeSections,
-  expandedAllergen,
+  expandedAllergens,
   displayMode,
   showAppToggle,
   showEnglishToggle,
@@ -176,7 +176,7 @@ export default function CardPortrait({
                 const allergen = getAllergenInfo(id);
                 const images = ALLERGEN_IMAGES[id];
                 if (!allergen || !images) return null;
-                const isExpanded = expandedAllergen === id;
+                const isExpanded = expandedAllergens.has(id);
 
                 return (
                   <View key={id}>

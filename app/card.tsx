@@ -47,7 +47,7 @@ export default function CardScreen() {
   const cardLanguage = settings.cardLanguage;
   const appLanguage = settings.appLanguage;
   const [displayMode, setDisplayMode] = useState<CardDisplayMode>('card');
-  const [expandedAllergen, setExpandedAllergen] = useState<AllergenId | null>(null);
+  const [expandedAllergens, setExpandedAllergens] = useState<Set<AllergenId>>(new Set());
   const [selectedLandscapeItem, setSelectedLandscapeItem] = useState<string | null>(null);
 
   const isDownloadedLanguage = useMemo(() => {
@@ -299,7 +299,15 @@ export default function CardScreen() {
 
   const toggleExpand = (id: AllergenId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedAllergen(expandedAllergen === id ? null : id);
+    setExpandedAllergens((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   const showAppToggle = cardLanguage !== appLanguage;
@@ -424,7 +432,7 @@ export default function CardScreen() {
           translations={translations}
           restrictionTranslations={restrictionTranslations}
           dietModeSections={dietModeSections}
-          expandedAllergen={expandedAllergen}
+          expandedAllergens={expandedAllergens}
           displayMode={displayMode}
           showAppToggle={showAppToggle}
           showEnglishToggle={showEnglishToggle}

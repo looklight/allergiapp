@@ -88,7 +88,7 @@ export interface CardPortraitProps {
   translations: CardTranslationsData;
   restrictionTranslations: RestrictionTranslationsData;
   dietModeSections: DietModeSectionData[];
-  expandedAllergen: AllergenId | null;
+  expandedAllergens: Set<AllergenId>;
   displayMode: CardDisplayMode;
   showAppToggle: boolean;
   showEnglishToggle: boolean;
