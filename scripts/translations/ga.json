@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Rabhadh: d'fhéadfadh anlann soighe glútan a bheith ann",
     "fava_beans": "Easnamh G6PD: fiú méideanna beaga is féidir géarchéim haemailíteach a chur faoi deara",
-    "peanuts": "⚠️ Rabhadh: d'fhéadfadh ola peanut a bheith san ola friochta"
+    "peanuts": "⚠️ Rabhadh: d'fhéadfadh ola peanut a bheith san ola friochta",
+    "sesame": "⚠️ Rabhadh: féadfaidh tahini (pas sesame) nó ola sesame a bheith in anlainn agus tarsainn",
+    "celery": "⚠️ Rabhadh: is minic a bhíonn soilire i mbun anlann, brata agus ciúbanna stoic"
   },
   "cardTexts": {
     "header": "AIRE",

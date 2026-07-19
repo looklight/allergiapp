@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Rhybudd: gall saws soi gynnwys glwten",
     "fava_beans": "Diffyg G6PD: gall hyd yn oed symiau bach achosi argyfwng hemolytig",
-    "peanuts": "⚠️ Rhybudd: gall yr olew ffrio fod yn olew cnau daear"
+    "peanuts": "⚠️ Rhybudd: gall yr olew ffrio fod yn olew cnau daear",
+    "sesame": "⚠️ Rhybudd: gall sawsiau a chynfennau gynnwys tahini (pâst sesame) neu olew sesame",
+    "celery": "⚠️ Rhybudd: mae gwaelodion sawsiau, cawliau a chiwbiau stoc yn aml yn cynnwys seleri"
   },
   "cardTexts": {
     "header": "SYLW",

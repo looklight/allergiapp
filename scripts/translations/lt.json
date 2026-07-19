@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Dėmesio: sojų padažas gali turėti gliuteno",
     "fava_beans": "G6PD trūkumas: net maži kiekiai gali sukelti hemolizinę krizę",
-    "peanuts": "⚠️ Įspėjimas: kepimo aliejus gali būti žemės riešutų aliejus"
+    "peanuts": "⚠️ Įspėjimas: kepimo aliejus gali būti žemės riešutų aliejus",
+    "sesame": "⚠️ Įspėjimas: padažuose ir pagarduose gali būti tahini (sezamo pastos) arba sezamo aliejaus",
+    "celery": "⚠️ Įspėjimas: padažų pagrinduose, sultiniuose ir sultinio kubeliuose dažnai yra salierų"
   },
   "cardTexts": {
     "header": "DĖMESIO",

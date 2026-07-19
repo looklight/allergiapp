@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Uyarı: soya sosu gluten içerebilir",
     "fava_beans": "G6PD eksikliği: küçük miktarlar bile hemolitik krize neden olabilir",
-    "peanuts": "⚠️ Uyarı: Kızartma yağı fıstık yağı olabilir"
+    "peanuts": "⚠️ Uyarı: Kızartma yağı fıstık yağı olabilir",
+    "sesame": "⚠️ Uyarı: soslar ve çeşniler tahin (susam ezmesi) veya susam yağı içerebilir",
+    "celery": "⚠️ Uyarı: Sos bazları, et suları ve et suyu küpleri sıklıkla kereviz içerir"
   },
   "cardTexts": {
     "header": "DİKKAT",

@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Amaran: kicap mungkin mengandungi gluten",
     "fava_beans": "Kekurangan G6PD: walaupun jumlah kecil boleh menyebabkan krisis hemolitik",
-    "peanuts": "⚠️ Amaran: minyak goreng mungkin minyak kacang"
+    "peanuts": "⚠️ Amaran: minyak goreng mungkin minyak kacang",
+    "sesame": "⚠️ Amaran: sos dan perasa mungkin mengandungi tahini (pes bijan) atau minyak bijan",
+    "celery": "⚠️ Amaran: asas sos, sup dan kiub stok selalunya mengandungi saderi"
   },
   "cardTexts": {
     "header": "PERHATIAN",

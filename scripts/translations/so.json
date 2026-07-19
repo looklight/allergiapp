@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Digniin: suugo soy ah waxaa ku jiri kara gluten",
     "fava_beans": "Yaraanta G6PD: xitaa xaddi yar ayaa sababi kara qalalaasaha hemolytic",
-    "peanuts": "⚠️ Digniin: saliidda shiilan waxay noqon kartaa saliid lawska"
+    "peanuts": "⚠️ Digniin: saliidda shiilan waxay noqon kartaa saliid lawska",
+    "sesame": "⚠️ Digniin: suugada iyo maraqa waxa ku jiri kara tahini (koollada sisinta) ama saliidda sisinta",
+    "celery": "⚠️ Digniin: Saldhigyada maraqa, maraqyada iyo xabadaha kaydka ah waxay inta badan ku jiraan celery"
   },
   "cardTexts": {
     "header": "FIIRO GAAR AH",

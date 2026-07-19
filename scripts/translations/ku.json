@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Hişyarî: sosê soya dibe ku gluten hebe",
     "fava_beans": "Kêmasiya G6PD: hêjmarên piçûk jî dibe sedema krîza hemolîtîk",
-    "peanuts": "⚠️ Hişyarî: dibe ku rûnê fistiqê rûnê fistiqê be"
+    "peanuts": "⚠️ Hişyarî: dibe ku rûnê fistiqê rûnê fistiqê be",
+    "sesame": "⚠️ Hişyarî: dibe ku di sos û çêjên xwe de tahînî (paste konûsam) an rûnê semayê hebin",
+    "celery": "⚠️ Hişyarî: Bingehên sosê, bîhn û kubên stokê bi gelemperî kerfes hene"
   },
   "cardTexts": {
     "header": "BALDARÎ",

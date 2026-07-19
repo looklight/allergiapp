@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Gargadi: miya soya na iya ƙunsar alkama",
     "fava_beans": "Rashin G6PD: ko da ƙananan kuɗi na iya haifar da rikicin hemolytic",
-    "peanuts": "⚠️ Gargadi: man gyada zai iya zama man gyada"
+    "peanuts": "⚠️ Gargadi: man gyada zai iya zama man gyada",
+    "sesame": "⚠️ Gargadi: miya da kayan abinci na iya ƙunshi tahini (manna sesame) ko man sesame",
+    "celery": "⚠️ Gargaɗi: Tushen miya, broths da cubes na hannun jari galibi suna ɗauke da seleri"
   },
   "cardTexts": {
     "header": "HANKALI",

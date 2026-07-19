@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Kujdes: salca e sojës mund të përmbajë gluten",
     "fava_beans": "Mungesë e G6PD: edhe sasi të vogla mund të shkaktojnë krizë hemolitike",
-    "peanuts": "⚠️ Kujdes: vaji i skuqjes mund të jetë vaj kikiriku"
+    "peanuts": "⚠️ Kujdes: vaji i skuqjes mund të jetë vaj kikiriku",
+    "sesame": "⚠️ Kujdes: salcat dhe erëzat mund të përmbajnë tahini (pastë susami) ose vaj susami",
+    "celery": "⚠️ Paralajmërim: bazat e salcave, lëngjet dhe kubet e lëngut shpesh përmbajnë selino"
   },
   "cardTexts": {
     "header": "KUJDES",

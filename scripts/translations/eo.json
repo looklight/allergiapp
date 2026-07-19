@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Averto: sojsaŭco povas enhavi glutenon",
     "fava_beans": "G6PD-manko: eĉ malgrandaj kvantoj povas kaŭzi hemolitikan krizon",
-    "peanuts": "⚠️ Averto: la frita oleo povas esti arakida oleo"
+    "peanuts": "⚠️ Averto: la frita oleo povas esti arakida oleo",
+    "sesame": "⚠️ Averto: saŭcoj kaj kondimentoj povas enhavi tahini (sezama pasto) aŭ sezama oleo",
+    "celery": "⚠️ Averto: bazoj de saŭco, buljonoj kaj kuboj ofte enhavas celerion"
   },
   "cardTexts": {
     "header": "ATENTU",

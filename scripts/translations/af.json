@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Waarskuwing: sojasous kan gluten bevat",
     "fava_beans": "G6PD-tekort: selfs klein hoeveelhede kan hemolitiese krisis veroorsaak",
-    "peanuts": "⚠️ Waarskuwing: die braaiolie kan grondboontjieolie wees"
+    "peanuts": "⚠️ Waarskuwing: die braaiolie kan grondboontjieolie wees",
+    "sesame": "⚠️ Waarskuwing: souse en speserye kan tahini (sesampasta) of sesamolie bevat",
+    "celery": "⚠️ Waarskuwing: sousbasisse, sous en aftrekselblokkies bevat dikwels seldery"
   },
   "cardTexts": {
     "header": "AANDAG",

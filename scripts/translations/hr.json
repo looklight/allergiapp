@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Upozorenje: soja umak može sadržavati gluten",
     "fava_beans": "Nedostatak G6PD: čak i male količine mogu izazvati hemolitičku krizu",
-    "peanuts": "⚠️ Upozorenje: ulje za prženje može biti ulje od kikirikija"
+    "peanuts": "⚠️ Upozorenje: ulje za prženje može biti ulje od kikirikija",
+    "sesame": "⚠️ Upozorenje: umaci i začini mogu sadržavati tahini (tijesto od sezama) ili sezamovo ulje",
+    "celery": "⚠️ Upozorenje: temeljci za umake, temeljce i temeljce u kockama često sadrže celer"
   },
   "cardTexts": {
     "header": "PAŽNJA",

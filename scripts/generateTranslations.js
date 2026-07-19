@@ -58,6 +58,8 @@ const ALLERGEN_DESCRIPTIONS = {
 const ALLERGEN_WARNINGS = {
   gluten: 'Warning: soy sauce may contain gluten',
   peanuts: 'Warning: the frying oil may be peanut oil',
+  sesame: 'Warning: sauces and condiments may contain tahini (sesame paste) or sesame oil',
+  celery: 'Warning: sauce bases, broths and stock cubes often contain celery',
   fava_beans: 'G6PD deficiency: even small amounts can cause hemolytic crisis',
 };
 

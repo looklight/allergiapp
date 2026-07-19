@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Viðvörun: sojasósa getur innihaldið glúten",
     "fava_beans": "G6PD skortur: jafnvel lítið magn getur valdið rauðkornarofsun",
-    "peanuts": "⚠️ Viðvörun: steikingarolían gæti verið hnetuolía"
+    "peanuts": "⚠️ Viðvörun: steikingarolían gæti verið hnetuolía",
+    "sesame": "⚠️ Viðvörun: sósur og krydd geta innihaldið tahini (sesammauk) eða sesamolíu",
+    "celery": "⚠️ Viðvörun: Sósubotnar, seyði og soðið teningur innihalda oft sellerí"
   },
   "cardTexts": {
     "header": "ATHUGIÐ",

@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Ogohlantirish: soya sousida kleykovina bo'lishi mumkin",
     "fava_beans": "G6PD etishmovchiligi: hatto kichik miqdorlar ham gemolitik inqirozga olib kelishi mumkin",
-    "peanuts": "⚠️ Ogohlantirish: qovurilgan yog' yeryong'oq yog'i bo'lishi mumkin"
+    "peanuts": "⚠️ Ogohlantirish: qovurilgan yog' yeryong'oq yog'i bo'lishi mumkin",
+    "sesame": "⚠️ Ogohlantirish: soslar va ziravorlar tarkibida tahin (susan pastasi) yoki kunjut yog'i bo'lishi mumkin",
+    "celery": "⚠️ Ogohlantirish: sous asoslari, bulyon va bulonda ko'pincha selderey mavjud"
   },
   "cardTexts": {
     "header": "DIQQAT",

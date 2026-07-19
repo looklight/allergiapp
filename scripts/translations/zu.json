@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Isexwayiso: isoso yesoya ingase ibe ne-gluten",
     "fava_beans": "Ukushoda kwe-G6PD: ngisho amanani amancane angabangela inkinga ye-hemolytic",
-    "peanuts": "⚠️ Isexwayiso: amafutha okuthosa angase abe amafutha e-peanut"
+    "peanuts": "⚠️ Isexwayiso: amafutha okuthosa angase abe amafutha e-peanut",
+    "sesame": "⚠️ Isexwayiso: amasoso nama-condiments angaqukatha i-tahini (i-sesame paste) noma uwoyela wesesame",
+    "celery": "⚠️ Isexwayiso: izisekelo zesoso, ama-broths nama-stock cubes ngokuvamile aqukethe isilimo esidliwayo esinamagatsha anamanzi"
   },
   "cardTexts": {
     "header": "QAPHELA",

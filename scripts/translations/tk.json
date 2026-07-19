@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Duýduryş: soýa sousunda glýuten bolup biler",
     "fava_beans": "G6PD ýetmezçiligi: az mukdarda hem gemolitiki krizise sebäp bolup biler",
-    "peanuts": "⚠️ Duýduryş: gowrulan ýag nohut ýagy bolup biler"
+    "peanuts": "⚠️ Duýduryş: gowrulan ýag nohut ýagy bolup biler",
+    "sesame": "⚠️ Duýduryş: souslarda we ýakymly yslarda tahini (künji pastasy) ýa-da künji ýagy bolup biler",
+    "celery": "⚠️ Duýduryş: sous bazalary, çorbalar we ätiýaçlyk kublar köplenç selderini öz içine alýar"
   },
   "cardTexts": {
     "header": "Üns beriň",

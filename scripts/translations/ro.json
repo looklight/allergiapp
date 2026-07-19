@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Atenție: sosul de soia poate conține gluten",
     "fava_beans": "Deficit de G6PD: chiar și cantități mici pot provoca criză hemolitică",
-    "peanuts": "⚠️ Atenție: uleiul de prăjit poate fi ulei de arahide"
+    "peanuts": "⚠️ Atenție: uleiul de prăjit poate fi ulei de arahide",
+    "sesame": "⚠️ Atenție: sosurile și condimentele pot conține tahini (pastă de susan) sau ulei de susan",
+    "celery": "⚠️ Atenție: bazele de sos, bulionul și cuburile de bulion conțin adesea țelină"
   },
   "cardTexts": {
     "header": "ATENȚIE",

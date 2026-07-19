@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Hoiatus: sojakaste võib sisaldada gluteeni",
     "fava_beans": "G6PD puudulikkus: isegi väikesed kogused võivad põhjustada hemolüütilise kriisi",
-    "peanuts": "⚠️ Hoiatus: praadimisõli võib olla maapähkliõli"
+    "peanuts": "⚠️ Hoiatus: praadimisõli võib olla maapähkliõli",
+    "sesame": "⚠️ Hoiatus: kastmed ja maitseained võivad sisaldada tahini (seesamipastat) või seesamiõli",
+    "celery": "⚠️ Hoiatus: kastmepõhjad, puljongid ja puljongikuubikud sisaldavad sageli sellerit"
   },
   "cardTexts": {
     "header": "TÄHELEPANU",

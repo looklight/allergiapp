@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Kontuz: soja-saltsak glutena izan dezake",
     "fava_beans": "G6PD gabezia: kopuru txikiek ere krisi hemolitikoa eragin dezakete",
-    "peanuts": "⚠️ Abisua: frijitzeko olioa kakahuete olioa izan daiteke"
+    "peanuts": "⚠️ Abisua: frijitzeko olioa kakahuete olioa izan daiteke",
+    "sesame": "⚠️ Abisua: saltsak eta ongailuak tahini (sesame pasta) edo sesamo olioa izan ditzakete",
+    "celery": "⚠️ Abisua: saltsaren oinarriak, saldak eta salda kuboak askotan apioa izaten dute"
   },
   "cardTexts": {
     "header": "KONTUZ",

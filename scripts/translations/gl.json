@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Atención: a salsa de soia pode conter glute",
     "fava_beans": "Déficit de G6PD: mesmo pequenas cantidades poden causar unha crise hemolítica",
-    "peanuts": "⚠️ Aviso: o aceite de fritir pode ser aceite de cacahuete"
+    "peanuts": "⚠️ Aviso: o aceite de fritir pode ser aceite de cacahuete",
+    "sesame": "⚠️ Aviso: as salsas e os condimentos poden conter tahini (pasta de sésamo) ou aceite de sésamo",
+    "celery": "⚠️ Aviso: as bases de salsa, os caldos e os cubos de caldo adoitan conter apio"
   },
   "cardTexts": {
     "header": "ATENCIÓN",

@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Advarsel: soyasaus kan inneholde gluten",
     "fava_beans": "G6PD-mangel: selv små mengder kan forårsake hemolytisk krise",
-    "peanuts": "⚠️ Advarsel: frityroljen kan være peanøttolje"
+    "peanuts": "⚠️ Advarsel: frityroljen kan være peanøttolje",
+    "sesame": "⚠️ Advarsel: sauser og krydder kan inneholde tahini (sesampasta) eller sesamolje",
+    "celery": "⚠️ Advarsel: sausbunner, buljonger og buljongterninger inneholder ofte selleri"
   },
   "cardTexts": {
     "header": "OBS",

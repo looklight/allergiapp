@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Advarsel: sojasauce kan indeholde gluten",
     "fava_beans": "G6PD-mangel: selv små mængder kan forårsage hæmolytisk krise",
-    "peanuts": "⚠️ Advarsel: fritureolien kan være jordnøddeolie"
+    "peanuts": "⚠️ Advarsel: fritureolien kan være jordnøddeolie",
+    "sesame": "⚠️ Advarsel: saucer og krydderier kan indeholde tahin (sesampasta) eller sesamolie",
+    "celery": "⚠️ Advarsel: saucebunde, bouillon og bouillonterninger indeholder ofte selleri"
   },
   "cardTexts": {
     "header": "OBS",

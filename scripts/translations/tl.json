@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Babala: ang toyo ay maaaring maglaman ng gluten",
     "fava_beans": "Kakulangan sa G6PD: kahit maliit na dami ay maaaring magdulot ng hemolytic crisis",
-    "peanuts": "⚠️ Babala: ang pritong mantika ay maaaring peanut oil"
+    "peanuts": "⚠️ Babala: ang pritong mantika ay maaaring peanut oil",
+    "sesame": "⚠️ Babala: maaaring maglaman ng tahini (sesame paste) o sesame oil ang mga sarsa at pampalasa",
+    "celery": "⚠️ Babala: ang mga base ng sarsa, sabaw at stock cube ay kadalasang naglalaman ng kintsay"
   },
   "cardTexts": {
     "header": "PANSIN",

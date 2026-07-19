@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Peringatan: kecap bisa mengandung gluten",
     "fava_beans": "Defisiensi G6PD: bahkan jumlah kecil dapat menyebabkan krisis hemolitik",
-    "peanuts": "⚠️ Peringatan: minyak gorengnya mungkin minyak kacang"
+    "peanuts": "⚠️ Peringatan: minyak gorengnya mungkin minyak kacang",
+    "sesame": "⚠️ Peringatan: saus dan bumbu mungkin mengandung tahini (pasta wijen) atau minyak wijen",
+    "celery": "⚠️ Peringatan: bahan dasar saus, kaldu, dan kaldu kubus sering kali mengandung seledri"
   },
   "cardTexts": {
     "header": "PERHATIAN",

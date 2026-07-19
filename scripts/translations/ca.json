@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Atenció: la salsa de soja pot contenir gluten",
     "fava_beans": "Dèficit de G6PD: fins i tot petites quantitats poden causar una crisi hemolítica",
-    "peanuts": "⚠️ Avís: l'oli de fregir pot ser oli de cacauet"
+    "peanuts": "⚠️ Avís: l'oli de fregir pot ser oli de cacauet",
+    "sesame": "⚠️ Avís: les salses i els condiments poden contenir tahini (pasta de sèsam) o oli de sèsam",
+    "celery": "⚠️ Avís: les bases de salsa, els brous i els daus de brou sovint contenen api"
   },
   "cardTexts": {
     "header": "ATENCIÓ",

@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Varoitus: soijakastike voi sisältää gluteenia",
     "fava_beans": "G6PD-puutos: pienetkin määrät voivat aiheuttaa hemolyyttisen kriisin",
-    "peanuts": "⚠️ Varoitus: paistoöljy voi olla maapähkinäöljyä"
+    "peanuts": "⚠️ Varoitus: paistoöljy voi olla maapähkinäöljyä",
+    "sesame": "⚠️ Varoitus: kastikkeet ja mausteet voivat sisältää tahinia (seesamitahnaa) tai seesamiöljyä",
+    "celery": "⚠️ Varoitus: kastikepohjat, liemet ja liemikuutiot sisältävät usein selleriä"
   },
   "cardTexts": {
     "header": "HUOMIO",

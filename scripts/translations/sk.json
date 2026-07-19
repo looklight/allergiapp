@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "Upozornenie: sójová omáčka môže obsahovať lepok",
     "fava_beans": "Deficit G6PD: aj malé množstvá môžu spôsobiť hemolytickú krízu",
-    "peanuts": "⚠️ Upozornenie: Olej na vyprážanie môže byť arašidový olej"
+    "peanuts": "⚠️ Upozornenie: Olej na vyprážanie môže byť arašidový olej",
+    "sesame": "⚠️ Upozornenie: omáčky a koreniny môžu obsahovať tahini (sezamová pasta) alebo sezamový olej",
+    "celery": "⚠️ Upozornenie: Základy omáčok, bujónov a vývarových kociek často obsahujú zeler"
   },
   "cardTexts": {
     "header": "POZOR",

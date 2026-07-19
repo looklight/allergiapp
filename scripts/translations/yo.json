@@ -36,7 +36,9 @@
   "warnings": {
     "gluten": "⚠️ Ikilo: obe soy le ni giluteni ninu",
     "fava_beans": "Aipe G6PD: paapaa awọn oye kekere le fa aawọ hemolytic",
-    "peanuts": "⚠️ Ikilọ: epo didin le jẹ epo epa"
+    "peanuts": "⚠️ Ikilọ: epo didin le jẹ epo epa",
+    "sesame": "⚠️ Ikilọ: awọn obe ati awọn condiments le ni tahini (lẹẹ sesame) tabi epo sesame ninu",
+    "celery": "⚠️ Ikilọ: awọn ipilẹ obe, broths ati awọn cubes iṣura nigbagbogbo ni seleri ninu"
   },
   "cardTexts": {
     "header": "AKIYESI",
