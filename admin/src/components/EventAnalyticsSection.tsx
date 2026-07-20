@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { safeQuery } from '@/lib/safeQuery';
+import { safeQuery, safeCount } from '@/lib/safeQuery';
 import { labelAllergen, labelDiet } from '@/lib/dietaryLabels';
 import InfoHint from '@/components/InfoHint';
-
-const INFO = "Azioni tracciate nell'app (accesso, ricerca, apertura scheda, recensione, filtro, follow, condivisione…) con i relativi conteggi. Conta solo chi ha dato il consenso analytics: chi ha rifiutato non compare. Alcuni eventi arrivano solo dalle build ≥ 1.3.0, quindi i più recenti hanno storico più corto.";
 
 // Etichette italiane per gli eventi del catalogo (vedi services/supabaseAnalytics.ts).
 // Per nuovi eventi non in lista, fallback: snake_case → "Snake Case".
@@ -24,6 +22,29 @@ const EVENT_LABELS: Record<string, string> = {
 function eventLabel(name: string): string {
   return EVENT_LABELS[name] ?? name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+// Box contatori: mostriamo solo eventi significativi e raccolti da sempre.
+// Esclusi di proposito: sign_in (fuorviante per la sessione persistente),
+// eventi di flusso/interni e quelli partiti solo da build ≥1.3.0 (numeri
+// ancora sfasati per diffusione). Non tocca le tabelle sotto.
+const SHOWN_EVENTS = new Set([
+  'restaurant_viewed',
+  'restaurant_search',
+  'review_created',
+  'restaurant_shared',
+]);
+
+// Spiegazione per box (tooltip i). Numero grande = ultimi 7 giorni, piccolo = 30.
+// Gli eventi comportamentali contano solo chi ha dato il consenso analytics;
+// review_created è l'eccezione (totale reale dalla tabella, tutti gli utenti).
+const EVENT_HINTS: Record<string, string> = {
+  restaurant_viewed: 'Quante volte è stata aperta una scheda ristorante. Conta solo chi ha dato il consenso analytics.',
+  restaurant_search: 'Ricerche di ristoranti confermate (con selezione di un risultato). Conta solo chi ha dato il consenso analytics.',
+  review_created: 'Recensioni realmente create nel periodo (dalla tabella recensioni, tutti gli utenti — non l’evento tracciato). Le modifiche non contano.',
+  restaurant_shared: 'Quante volte un ristorante è stato condiviso. Conta solo chi ha dato il consenso analytics.',
+};
+
+const HINT_FALLBACK = 'Numero di volte che l’azione è stata tracciata. Conta solo chi ha dato il consenso analytics.';
 
 // Etichetta per un codice esigenza: allergeni/diete note, altrimenti
 // snake_case → "Snake Case" (cibi extra tipo pine_nuts non mappati in dietaryLabels).
@@ -88,11 +109,16 @@ export default function EventAnalyticsSection() {
   const [filteredNeeds, setFilteredNeeds] = useState<FilteredNeed[]>([]);
   const [topSaved, setTopSaved] = useState<TopSaved[]>([]);
   const [topCities, setTopCities] = useState<TopCity[]>([]);
+  // Recensioni reali (righe tabella reviews) per il box omonimo: numero esatto,
+  // tutti gli utenti, non l'evento consent-gated.
+  const [realReviews, setRealReviews] = useState<{ v7: number; v30: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const [c7, c30, top, topRest, needs, filtered, saved, cities] = await Promise.all([
+      const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const [c7, c30, top, topRest, needs, filtered, saved, cities, rv7, rv30] = await Promise.all([
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 7 }), 'Event counts 7g'),
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 30 }), 'Event counts 30g'),
         safeQuery(() => supabase.rpc('get_top_search_queries', { p_days: 30, p_limit: 10 }), 'Top ricerche'),
@@ -101,9 +127,12 @@ export default function EventAnalyticsSection() {
         safeQuery(() => supabase.rpc('get_top_filtered_needs', { p_days: 30, p_limit: 10 }), 'Esigenze filtrate'),
         safeQuery(() => supabase.rpc('get_top_saved_restaurants', { p_limit: 10 }), 'Ristoranti più salvati'),
         safeQuery(() => supabase.rpc('get_top_cities', { p_days: 30, p_limit: 10 }), 'Città più attive'),
+        safeCount(() => supabase.from('reviews').select('*', { count: 'exact', head: true }).gte('created_at', since7d)),
+        safeCount(() => supabase.from('reviews').select('*', { count: 'exact', head: true }).gte('created_at', since30d)),
       ]);
       setCounts7d((c7 as EventCount[]) ?? []);
       setCounts30d((c30 as EventCount[]) ?? []);
+      setRealReviews({ v7: rv7, v30: rv30 });
       setTopQueries((top as TopQuery[]) ?? []);
       setTopRestaurants((topRest as TopRestaurant[]) ?? []);
       setNeedsDistribution((needs as NeedCount[]) ?? []);
@@ -115,14 +144,20 @@ export default function EventAnalyticsSection() {
     load();
   }, []);
 
-  // Unione dei nomi evento presenti in 7g o 30g, ordinata per conteggio 30g desc.
-  const eventNames = Array.from(
-    new Set([...counts30d.map((c) => c.event_name), ...counts7d.map((c) => c.event_name)]),
-  ).sort((a, b) => {
-    const ca = counts30d.find((c) => c.event_name === a)?.event_count ?? 0;
-    const cb = counts30d.find((c) => c.event_name === b)?.event_count ?? 0;
-    return cb - ca;
-  });
+  // Valore su cui ordinare i box (30g): per review_created il conteggio reale
+  // dalla tabella, per gli altri il conteggio dell'evento.
+  const sortVal = (name: string) =>
+    name === 'review_created'
+      ? realReviews?.v30 ?? 0
+      : counts30d.find((c) => c.event_name === name)?.event_count ?? 0;
+
+  // Nomi evento presenti in 7g o 30g, filtrati alla whitelist. review_created è
+  // sempre incluso (fonte reale dalla tabella reviews, anche a zero eventi).
+  const names = new Set(
+    [...counts30d, ...counts7d].map((c) => c.event_name).filter((name) => SHOWN_EVENTS.has(name)),
+  );
+  names.add('review_created');
+  const eventNames = Array.from(names).sort((a, b) => sortVal(b) - sortVal(a));
 
   if (loading) {
     return <p className="text-sm text-faint mt-8">Caricamento eventi...</p>;
@@ -130,32 +165,33 @@ export default function EventAnalyticsSection() {
 
   return (
     <div className="mt-10">
-      <div className="flex items-center gap-1.5 mb-4">
-        <h2 className="text-xl font-bold">Eventi app</h2>
-        <InfoHint text={INFO} />
-      </div>
+      <h2 className="text-xl font-bold mb-4">Eventi app</h2>
 
-      {/* Counters per evento (7g / 30g) */}
-      {eventNames.length === 0 ? (
-        <p className="text-sm text-faint mb-6">Nessun evento registrato.</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
-          {eventNames.map((name) => {
-            const v7 = counts7d.find((c) => c.event_name === name)?.event_count ?? 0;
-            const v30 = counts30d.find((c) => c.event_name === name)?.event_count ?? 0;
-            return (
-              <div key={name} className="bg-card rounded-lg shadow p-4">
+      {/* Counters per evento (7g / 30g) — review_created sempre presente */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        {eventNames.map((name) => {
+          const isRealReview = name === 'review_created';
+          const v7 = isRealReview
+            ? realReviews?.v7 ?? 0
+            : counts7d.find((c) => c.event_name === name)?.event_count ?? 0;
+          const v30 = isRealReview
+            ? realReviews?.v30 ?? 0
+            : counts30d.find((c) => c.event_name === name)?.event_count ?? 0;
+          return (
+            <div key={name} className="bg-card rounded-lg shadow p-4">
+              <div className="flex items-center justify-between gap-2">
                 <p className="text-xs text-faint uppercase tracking-wide">{eventLabel(name)}</p>
-                <div className="flex items-baseline gap-3 mt-1">
-                  <span className="text-2xl font-bold text-foreground">{v7}</span>
-                  <span className="text-xs text-faint">/ {v30} (30g)</span>
-                </div>
-                <p className="text-[10px] text-faint mt-0.5">ultimi 7 giorni</p>
+                <InfoHint text={EVENT_HINTS[name] ?? HINT_FALLBACK} align="end" />
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div className="flex items-baseline gap-3 mt-1">
+                <span className="text-2xl font-bold text-foreground">{v7}</span>
+                <span className="text-xs text-faint">| {v30} (30g)</span>
+              </div>
+              <p className="text-[10px] text-faint mt-0.5">ultimi 7 giorni</p>
+            </div>
+          );
+        })}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ristoranti più aperti */}
