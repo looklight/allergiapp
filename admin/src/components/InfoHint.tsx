@@ -2,8 +2,9 @@
 // Si mostra su hover e su focus/click (accessibile, funziona anche da tap).
 // align: 'center' (default) o 'end' quando l'icona è sul bordo destro, così
 // il riquadro si estende verso sinistra e non esce dallo schermo.
-export default function InfoHint({ text, align = 'center' }: { text: string; align?: 'center' | 'end' }) {
-  const position = align === 'end' ? 'right-0' : 'left-1/2 -translate-x-1/2';
+export default function InfoHint({ text, align = 'center' }: { text: string; align?: 'center' | 'start' | 'end' }) {
+  const position =
+    align === 'end' ? 'right-0' : align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2';
   return (
     <span className="relative inline-flex group align-middle">
       <button

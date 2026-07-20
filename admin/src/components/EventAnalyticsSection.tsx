@@ -68,6 +68,21 @@ interface TopQuery {
   restaurant_count: number;
 }
 
+// Aggregato client-side delle aperture per città (dai ristoranti visti).
+// Nota: si raggruppa sul testo `city` (senza country_code, che l'RPC non
+// restituisce): città omonime di paesi diversi si fondono. Prima approssimazione
+// per "dove c'è fermento"; i distinti-utenti per città servirebbe una RPC.
+interface ViewedCity {
+  city: string;
+  view_count: number;
+  restaurant_count: number;
+}
+
+const toggleCls = (active: boolean) =>
+  `px-2 py-0.5 rounded text-xs transition-colors ${
+    active ? 'bg-selected text-selected-foreground' : 'bg-muted text-foreground-secondary hover:bg-muted-hover'
+  }`;
+
 interface TopRestaurant {
   restaurant_id: string;
   name: string;
@@ -104,7 +119,12 @@ export default function EventAnalyticsSection() {
   const [counts7d, setCounts7d] = useState<EventCount[]>([]);
   const [counts30d, setCounts30d] = useState<EventCount[]>([]);
   const [topQueries, setTopQueries] = useState<TopQuery[]>([]);
-  const [topRestaurants, setTopRestaurants] = useState<TopRestaurant[]>([]);
+  // Lista completa dei ristoranti visti (non solo i top 10): serve per
+  // aggregare le aperture per città lato client, senza RPC dedicata. Fetch con
+  // p_limit alto (1000): assume ≤1000 ristoranti visti (cap PostgREST max-rows).
+  // Oltre quella soglia l'aggregato città diventerebbe parziale → passare a RPC.
+  const [viewedRestaurants, setViewedRestaurants] = useState<TopRestaurant[]>([]);
+  const [viewMode, setViewMode] = useState<'restaurants' | 'cities'>('restaurants');
   const [needsDistribution, setNeedsDistribution] = useState<NeedCount[]>([]);
   const [filteredNeeds, setFilteredNeeds] = useState<FilteredNeed[]>([]);
   const [topSaved, setTopSaved] = useState<TopSaved[]>([]);
@@ -122,7 +142,7 @@ export default function EventAnalyticsSection() {
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 7 }), 'Event counts 7g'),
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 30 }), 'Event counts 30g'),
         safeQuery(() => supabase.rpc('get_top_search_queries', { p_days: 30, p_limit: 10 }), 'Top ricerche'),
-        safeQuery(() => supabase.rpc('get_top_viewed_restaurants', { p_days: 30, p_limit: 10 }), 'Ristoranti più aperti'),
+        safeQuery(() => supabase.rpc('get_top_viewed_restaurants', { p_days: 30, p_limit: 1000 }), 'Ristoranti più aperti'),
         safeQuery(() => supabase.rpc('get_needs_distribution', { p_limit: 10 }), 'Esigenze più diffuse'),
         safeQuery(() => supabase.rpc('get_top_filtered_needs', { p_days: 30, p_limit: 10 }), 'Esigenze filtrate'),
         safeQuery(() => supabase.rpc('get_top_saved_restaurants', { p_limit: 10 }), 'Ristoranti più salvati'),
@@ -134,7 +154,7 @@ export default function EventAnalyticsSection() {
       setCounts30d((c30 as EventCount[]) ?? []);
       setRealReviews({ v7: rv7, v30: rv30 });
       setTopQueries((top as TopQuery[]) ?? []);
-      setTopRestaurants((topRest as TopRestaurant[]) ?? []);
+      setViewedRestaurants((topRest as TopRestaurant[]) ?? []);
       setNeedsDistribution((needs as NeedCount[]) ?? []);
       setFilteredNeeds((filtered as FilteredNeed[]) ?? []);
       setTopSaved((saved as TopSaved[]) ?? []);
@@ -158,6 +178,21 @@ export default function EventAnalyticsSection() {
   );
   names.add('review_created');
   const eventNames = Array.from(names).sort((a, b) => sortVal(b) - sortVal(a));
+
+  // Box "più aperti": top 10 ristoranti (lista già ordinata desc) e, per la vista
+  // per città, aggregato delle aperture sommate per città (top 10).
+  const topRestaurants = viewedRestaurants.slice(0, 10);
+  const viewedCities: ViewedCity[] = Object.values(
+    viewedRestaurants.reduce<Record<string, ViewedCity>>((acc, r) => {
+      if (!r.city) return acc;
+      (acc[r.city] ??= { city: r.city, view_count: 0, restaurant_count: 0 });
+      acc[r.city].view_count += r.view_count;
+      acc[r.city].restaurant_count += 1;
+      return acc;
+    }, {}),
+  )
+    .sort((a, b) => b.view_count - a.view_count)
+    .slice(0, 10);
 
   if (loading) {
     return <p className="text-sm text-faint mt-8">Caricamento eventi...</p>;
@@ -194,32 +229,73 @@ export default function EventAnalyticsSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Ristoranti più aperti */}
+        {/* Più aperti: toggle Ristoranti / Città */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Ristoranti più aperti (30g)</h3>
-          {topRestaurants.length === 0 ? (
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            <span className="flex items-center gap-1.5">
+              <h3 className="font-semibold">
+                {viewMode === 'restaurants' ? 'Ristoranti più aperti (30g)' : 'Città più visitate (30g)'}
+              </h3>
+              <InfoHint
+                align="start"
+                text={viewMode === 'restaurants'
+                  ? 'Ristoranti con più aperture di scheda (30g). Solo chi ha dato il consenso analytics.'
+                  : 'Aperture di scheda sommate per città (30g). Solo chi ha dato il consenso analytics.'}
+              />
+            </span>
+            <div className="flex gap-1">
+              <button onClick={() => setViewMode('restaurants')} className={toggleCls(viewMode === 'restaurants')}>Ristoranti</button>
+              <button onClick={() => setViewMode('cities')} className={toggleCls(viewMode === 'cities')}>Città</button>
+            </div>
+          </div>
+          {viewMode === 'restaurants' ? (
+            topRestaurants.length === 0 ? (
+              <p className="text-sm text-faint">Nessuna apertura registrata.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-faint uppercase">
+                      <th className="py-1 font-normal w-full">Ristorante</th>
+                      <th className="py-1 font-normal text-right whitespace-nowrap pl-4">Aperture</th>
+                      <th className="py-1 font-normal text-right whitespace-nowrap pl-4">Utenti</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topRestaurants.map((r) => (
+                      <tr key={r.restaurant_id} className="border-b last:border-0">
+                        <td className="py-2 truncate max-w-[220px]">
+                          <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline" title={r.name}>
+                            {r.name}
+                          </Link>
+                          {r.city && <span className="text-xs text-faint ml-1.5">{r.city}</span>}
+                        </td>
+                        <td className="py-2 text-right font-medium pl-4">{r.view_count}</td>
+                        <td className="py-2 text-right text-muted-foreground pl-4">{r.viewer_count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          ) : viewedCities.length === 0 ? (
             <p className="text-sm text-faint">Nessuna apertura registrata.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-faint uppercase">
-                    <th className="py-1 font-normal">Ristorante</th>
-                    <th className="py-1 font-normal text-right">Aperture</th>
-                    <th className="py-1 font-normal text-right">Utenti</th>
+                    <th className="py-1 font-normal w-full">Città</th>
+                    <th className="py-1 font-normal text-right whitespace-nowrap pl-4">Aperture</th>
+                    <th className="py-1 font-normal text-right whitespace-nowrap pl-4">Ristoranti</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {topRestaurants.map((r) => (
-                    <tr key={r.restaurant_id} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">
-                        <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline" title={r.name}>
-                          {r.name}
-                        </Link>
-                        {r.city && <span className="text-xs text-faint ml-1.5">{r.city}</span>}
-                      </td>
-                      <td className="py-2 text-right font-medium">{r.view_count}</td>
-                      <td className="py-2 text-right text-muted-foreground">{r.viewer_count}</td>
+                  {viewedCities.map((c) => (
+                    <tr key={c.city} className="border-b last:border-0">
+                      <td className="py-2 truncate max-w-[220px]">{c.city}</td>
+                      <td className="py-2 text-right font-medium pl-4">{c.view_count}</td>
+                      <td className="py-2 text-right text-muted-foreground pl-4">{c.restaurant_count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -230,7 +306,10 @@ export default function EventAnalyticsSection() {
 
         {/* Ristoranti più salvati */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Ristoranti più salvati</h3>
+          <div className="flex items-center gap-1.5 mb-3">
+            <h3 className="font-semibold">Ristoranti più salvati</h3>
+            <InfoHint align="start" text="Ristoranti più aggiunti alle liste dagli utenti. Dato reale, tutti gli utenti." />
+          </div>
           {topSaved.length === 0 ? (
             <p className="text-sm text-faint">Nessun ristorante salvato.</p>
           ) : (
@@ -262,7 +341,10 @@ export default function EventAnalyticsSection() {
 
         {/* Top ricerche */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Top ricerche (30g)</h3>
+          <div className="flex items-center gap-1.5 mb-3">
+            <h3 className="font-semibold">Top ricerche (30g)</h3>
+            <InfoHint align="start" text="Ricerche di ristoranti più digitate (30g). Solo chi ha dato il consenso analytics." />
+          </div>
           {topQueries.length === 0 ? (
             <p className="text-sm text-faint">Nessuna ricerca registrata.</p>
           ) : (
@@ -293,7 +375,10 @@ export default function EventAnalyticsSection() {
 
         {/* Città più attive per recensioni */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Città più attive (30g)</h3>
+          <div className="flex items-center gap-1.5 mb-3">
+            <h3 className="font-semibold">Città più attive (30g)</h3>
+            <InfoHint align="start" text="Città con più recensioni negli ultimi 30 giorni. Dato reale, tutti gli utenti." />
+          </div>
           {topCities.length === 0 ? (
             <p className="text-sm text-faint">Nessuna recensione negli ultimi 30 giorni.</p>
           ) : (
@@ -323,7 +408,10 @@ export default function EventAnalyticsSection() {
 
         {/* Esigenze più diffuse nei profili */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Esigenze più diffuse (profili)</h3>
+          <div className="flex items-center gap-1.5 mb-3">
+            <h3 className="font-semibold">Esigenze più diffuse (profili)</h3>
+            <InfoHint align="start" text="Allergeni e diete più presenti nei profili utente. Dato reale, tutti gli utenti." />
+          </div>
           {needsDistribution.length === 0 ? (
             <p className="text-sm text-faint">Nessuna esigenza registrata.</p>
           ) : (
@@ -350,7 +438,10 @@ export default function EventAnalyticsSection() {
 
         {/* Esigenze più usate nei filtri */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-3">Esigenze più filtrate (30g)</h3>
+          <div className="flex items-center gap-1.5 mb-3">
+            <h3 className="font-semibold">Esigenze più filtrate (30g)</h3>
+            <InfoHint align="start" text="Esigenze più usate nei filtri della mappa (30g). Solo chi ha dato il consenso analytics." />
+          </div>
           {filteredNeeds.length === 0 ? (
             <p className="text-sm text-faint">
               Nessun dato: l&apos;evento arriva con le build dalla 1.3.0 in poi.
