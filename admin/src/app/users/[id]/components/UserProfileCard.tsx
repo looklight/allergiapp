@@ -28,6 +28,18 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, is
             {user.role === 'admin' && (
               <span className="px-2 py-0.5 rounded text-xs font-medium bg-badge-admin text-badge-admin-foreground">Admin</span>
             )}
+            {user.username && !user.is_anonymous && (
+              <a
+                href={`https://allergiapp.com/u/${encodeURIComponent(user.username)}?ref=admin`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Apri profilo in AllergiApp"
+                className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft-hover rounded-full text-xs font-medium transition-colors"
+              >
+                Apri in
+                <img src="/avatars/plate_main_logo.png" alt="" width={20} height={20} className="w-5 h-5 -my-0.5" />
+              </a>
+            )}
           </div>
 
           <p className="text-sm mt-1">

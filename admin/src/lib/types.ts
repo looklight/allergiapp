@@ -40,6 +40,8 @@ export interface Restaurant {
   added_by: string | null;
   owner_id: string | null;
   google_place_id: string | null;
+  // Identificatore stabile per il deep link pubblico /r/{slug}
+  slug: string | null;
   is_premium: boolean;
   created_at: string;
   updated_at: string;

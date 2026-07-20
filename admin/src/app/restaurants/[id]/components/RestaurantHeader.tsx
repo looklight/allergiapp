@@ -166,11 +166,24 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft-hover rounded-full text-xs font-medium ml-2 transition-colors"
+              aria-label="Apri in Google Maps"
+              className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft-hover rounded-full text-xs font-medium ml-2 transition-colors"
             >
+              Apri in
               <svg className="w-4 h-4" viewBox="0 0 92.3 132.3" xmlns="http://www.w3.org/2000/svg"><path fill="#1a73e8" d="M60.2 2.2C55.8.8 51 0 46.1 0 32 0 19.3 6.4 10.8 16.5l21.8 18.3L60.2 2.2z"/><path fill="#ea4335" d="M10.8 16.5C4.1 24.5 0 34.9 0 46.1c0 8.7 1.7 15.7 4.6 22l28-33.3-21.8-18.3z"/><path fill="#4285f4" d="M46.2 28.5c9.8 0 17.7 7.9 17.7 17.7 0 4.3-1.6 8.3-4.2 11.4 0 0 13.9-16.6 27.5-32.7-5.6-10.8-15.3-19-27-22.7L32.6 34.8c3.3-3.8 8.1-6.3 13.6-6.3"/><path fill="#fbbc04" d="M46.2 63.8c-9.8 0-17.7-7.9-17.7-17.7 0-4.3 1.5-8.3 4.1-11.3l-28 33.3c4.8 10.6 12.8 19.2 21 29.9l34.1-40.5c-3.3 3.9-8.1 6.3-13.5 6.3"/><path fill="#34a853" d="M59.1 109.2c15.4-24.1 33.3-35 33.3-63.1 0-9.1-2.4-17.2-6.5-24.3L25.6 98c2.6 3.4 5.3 7.3 7.9 11.3 9.4 14.5 6.8 23.1 12.8 23.1s3.4-8.7 12.8-23.2"/></svg>
-              Apri in Google Maps
             </a>
+            {restaurant.slug && (
+              <a
+                href={`https://allergiapp.com/r/${encodeURIComponent(restaurant.slug)}?ref=admin`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Apri in AllergiApp"
+                className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft-hover rounded-full text-xs font-medium ml-2 transition-colors"
+              >
+                Apri in
+                <img src="/avatars/plate_main_logo.png" alt="" width={20} height={20} className="w-5 h-5 -my-0.5" />
+              </a>
+            )}
           </p>
           <p className="text-faint text-sm">
             {restaurant.city}, {getCountryName(restaurant.country_code, restaurant.country)} &middot; Aggiunto da {restaurant.added_by ? (
