@@ -231,7 +231,7 @@ export default function EventAnalyticsSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Più aperti: toggle Ristoranti / Città */}
         <div className="bg-card rounded-lg shadow p-4">
-          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+          <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5">
               <h3 className="font-semibold">
                 {viewMode === 'restaurants' ? 'Ristoranti più aperti (30g)' : 'Città più visitate (30g)'}
