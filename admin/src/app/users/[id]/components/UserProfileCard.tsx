@@ -19,7 +19,7 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, is
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold">{user.username || 'Anonimo'}</h1>
+            <h1 className="text-2xl font-bold min-w-0 break-words">{user.username || 'Anonimo'}</h1>
             {user.is_anonymous && (
               <span className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded text-[11px] font-medium">
                 anonimo
@@ -56,9 +56,17 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, is
           <button
             onClick={onDelete}
             disabled={isDeleting}
-            className="shrink-0 px-3 py-2 text-sm text-danger border border-danger-border rounded hover:bg-danger-soft disabled:opacity-50 transition-colors"
+            title="Elimina utente"
+            aria-label="Elimina utente"
+            className="shrink-0 inline-flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 text-sm text-danger border border-danger-border rounded hover:bg-danger-soft disabled:opacity-50 transition-colors"
           >
-            {isDeleting ? 'Eliminazione...' : 'Elimina utente'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+            <span className="hidden sm:inline">{isDeleting ? 'Eliminazione...' : 'Elimina utente'}</span>
           </button>
         )}
       </div>
