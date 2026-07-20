@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { safeQuery } from '@/lib/safeQuery';
 import InfoHint from '@/components/InfoHint';
 
-const INFO = "Utenti unici che hanno compiuto almeno un'azione tracciata (accesso, ricerca, apertura scheda, recensione, filtro, follow…) nel giorno. Barre: nuovi (primo evento in assoluto) + di ritorno. Conta solo chi ha dato il consenso analytics: chi ha rifiutato non compare. La serie parte da quando gli eventi vengono scritti, non dal lancio dell'app.";
+const INFO = "Utenti unici che ogni giorno fanno un'azione nell'app (accesso, ricerca, recensione…). Split: nuovi (prima volta) vs di ritorno. Conta solo chi ha dato il consenso analytics.";
 
 type Range = 7 | 30 | 90;
 

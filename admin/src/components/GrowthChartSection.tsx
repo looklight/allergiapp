@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchAllPages } from '@/lib/fetchAllPages';
 import InfoHint from '@/components/InfoHint';
 
-const INFO = "Righe esistenti per data di creazione: utenti registrati, ristoranti aggiunti, recensioni. 'Cumulato' = totale a quella data; 'Nuovi' = quanti aggiunti in ogni intervallo. Conta tutti, nessun filtro di consenso. Nota: le cancellazioni spariscono retroattivamente (è un trend, non un registro contabile).";
+const INFO = "Quanti utenti, ristoranti e recensioni esistono, per data di creazione. Conta tutti gli iscritti (il consenso non c'entra). Le cancellazioni spariscono anche dal passato.";
 
 type Range = '1m' | '3m' | '1y' | 'all';
 type Mode = 'cumulative' | 'incremental';
