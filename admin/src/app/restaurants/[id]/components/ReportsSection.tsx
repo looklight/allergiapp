@@ -82,14 +82,14 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
                     else onDeleteRestaurant(r);
                   }}
                   disabled={isBusy(r.id)}
-                  className="text-danger hover:underline text-xs disabled:opacity-50"
+                  className="inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium text-danger-strong bg-danger-soft hover:bg-danger-soft-hover disabled:opacity-50 transition-colors"
                 >
                   {isBusy(r.id) ? '...' : r.menu_photo_id ? 'Elimina foto' : r.review_id ? 'Elimina recensione' : 'Elimina ristorante'}
                 </button>
                 <button
                   onClick={() => onDismiss(r.id)}
                   disabled={isBusy(r.id)}
-                  className="text-foreground-secondary hover:underline text-xs disabled:opacity-50"
+                  className="inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium text-foreground-secondary bg-muted hover:bg-muted-hover disabled:opacity-50 transition-colors"
                 >
                   Ignora
                 </button>

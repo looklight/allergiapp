@@ -41,7 +41,7 @@ export default function MenuPhotosSection({ menuPhotos, isBusy, onDelete }: Prop
                 <button
                   onClick={() => onDelete(p.id)}
                   disabled={isBusy(p.id)}
-                  className="mt-1.5 text-xs text-danger hover:underline disabled:opacity-50"
+                  className="mt-1.5 inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium text-danger-strong bg-danger-soft hover:bg-danger-soft-hover disabled:opacity-50 transition-colors"
                 >
                   {isBusy(p.id) ? '...' : 'Elimina'}
                 </button>

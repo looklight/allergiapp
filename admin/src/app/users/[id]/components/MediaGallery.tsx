@@ -49,8 +49,9 @@ export default function MediaGallery({ items, isBusy, onDeleteReviewPhoto, onDel
                     : onDeleteMenuPhoto(m.photoId)
                 }
                 disabled={busy}
-                className="absolute -top-1 -right-1 bg-danger text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger-strong disabled:opacity-50"
+                className="absolute -top-1 -right-1 bg-danger text-white rounded-full w-6 h-6 flex items-center justify-center text-sm leading-none hover:bg-danger-strong disabled:opacity-50 shadow"
                 title="Elimina foto"
+                aria-label="Elimina foto"
               >
                 &times;
               </button>

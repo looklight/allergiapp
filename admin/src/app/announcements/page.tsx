@@ -613,9 +613,9 @@ export default function AnnouncementsPage() {
                   </td>
                   <td className="px-4 py-3 text-faint text-xs">{new Date(a.created_at).toLocaleDateString('it-IT')}</td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-3">
-                      <button onClick={() => startEdit(a)} className="text-primary hover:underline text-xs">Modifica</button>
-                      <button onClick={() => remove(a)} className="text-danger hover:underline text-xs">Elimina</button>
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => startEdit(a)} className="inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium text-primary bg-primary-soft hover:bg-primary-soft-hover transition-colors">Modifica</button>
+                      <button onClick={() => remove(a)} className="inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium text-danger-strong bg-danger-soft hover:bg-danger-soft-hover transition-colors">Elimina</button>
                     </div>
                   </td>
                 </tr>

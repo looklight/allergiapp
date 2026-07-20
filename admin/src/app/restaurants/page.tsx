@@ -392,7 +392,7 @@ export default function RestaurantsPage() {
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => deleteRestaurant(r)}
-                    className="text-danger hover:text-danger-strong p-1 -m-1"
+                    className="text-danger hover:text-danger-strong hover:bg-danger-soft rounded p-2 -m-2 transition-colors"
                     title="Elimina ristorante"
                     aria-label="Elimina ristorante"
                   >

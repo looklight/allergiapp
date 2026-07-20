@@ -39,7 +39,7 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
                   <button
                     onClick={() => onDeleteReview(r.id)}
                     disabled={isBusy(r.id)}
-                    className="text-danger hover:underline text-xs disabled:opacity-50"
+                    className="inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium text-danger-strong bg-danger-soft hover:bg-danger-soft-hover disabled:opacity-50 transition-colors"
                   >
                     {isBusy(r.id) ? '...' : 'Elimina'}
                   </button>
@@ -60,10 +60,11 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
                       </button>
                       <button
                         onClick={() => onDeletePhoto(r.id, i)}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger text-white rounded-full text-xs hidden group-hover:flex items-center justify-center hover:bg-danger-strong"
+                        className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-danger text-white rounded-full text-sm flex items-center justify-center hover:bg-danger-strong shadow"
                         title="Elimina foto"
+                        aria-label="Elimina foto"
                       >
-                        x
+                        &times;
                       </button>
                     </div>
                   ))}
