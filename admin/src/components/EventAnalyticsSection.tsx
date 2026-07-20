@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { safeQuery } from '@/lib/safeQuery';
 import { labelAllergen, labelDiet } from '@/lib/dietaryLabels';
+import InfoHint from '@/components/InfoHint';
+
+const INFO = "Azioni tracciate nell'app (accesso, ricerca, apertura scheda, recensione, filtro, follow, condivisione…) con i relativi conteggi. Conta solo chi ha dato il consenso analytics: chi ha rifiutato non compare. Alcuni eventi arrivano solo dalle build ≥ 1.3.0, quindi i più recenti hanno storico più corto.";
 
 // Etichette italiane per gli eventi del catalogo (vedi services/supabaseAnalytics.ts).
 // Per nuovi eventi non in lista, fallback: snake_case → "Snake Case".
@@ -127,7 +130,10 @@ export default function EventAnalyticsSection() {
 
   return (
     <div className="mt-10">
-      <h2 className="text-xl font-bold mb-4">Eventi app</h2>
+      <div className="flex items-center gap-1.5 mb-4">
+        <h2 className="text-xl font-bold">Eventi app</h2>
+        <InfoHint text={INFO} />
+      </div>
 
       {/* Counters per evento (7g / 30g) */}
       {eventNames.length === 0 ? (

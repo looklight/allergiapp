@@ -6,6 +6,9 @@ import {
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
 import { fetchAllPages } from '@/lib/fetchAllPages';
+import InfoHint from '@/components/InfoHint';
+
+const INFO = "Righe esistenti per data di creazione: utenti registrati, ristoranti aggiunti, recensioni. 'Cumulato' = totale a quella data; 'Nuovi' = quanti aggiunti in ogni intervallo. Conta tutti, nessun filtro di consenso. Nota: le cancellazioni spariscono retroattivamente (è un trend, non un registro contabile).";
 
 type Range = '1m' | '3m' | '1y' | 'all';
 type Mode = 'cumulative' | 'incremental';
@@ -132,7 +135,10 @@ export default function GrowthChartSection() {
   return (
     <div className="bg-card rounded-lg shadow p-4 mt-6">
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-        <h2 className="font-semibold">Crescita</h2>
+        <span className="flex items-center gap-1.5">
+          <h2 className="font-semibold">Crescita</h2>
+          <InfoHint text={INFO} />
+        </span>
         <div className="flex items-center gap-3">
           <div className="flex gap-1">
             <Chip active={mode === 'cumulative'} onClick={() => setMode('cumulative')}>Cumulato</Chip>
