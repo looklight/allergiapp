@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import type { AppTheme } from '../../constants/theme';
 import type { Restaurant, RestaurantPin } from '../../services/restaurantService';
 import { getExpandedCoverage } from '../../constants/restrictionImplications';
@@ -99,6 +100,48 @@ export const FIT_EDGE_PADDING = { top: 80, right: 50, bottom: 50, left: 50 };
  *  il contesto geografico (non si capisce dove si trova). Sotto questo span
  *  inquadriamo una regione con questo delta centrata sui punti. */
 export const MIN_FIT_DELTA = 0.05;
+
+// ---------------------------------------------------------------------------
+// Z-order marker vs pallino di posizione (iOS)
+// ---------------------------------------------------------------------------
+
+/** Strategia di z-order dei marker su iOS rispetto al pallino blu di posizione
+ *  nativo (`showsUserLocation` → MKUserLocation).
+ *
+ *  Su iOS lo `zIndex` di un Marker mappa sulla `zPosition` del layer. Fino a
+ *  1.2.0 i pin NON avevano zIndex su iOS → MapKit teneva il pallino blu sopra da
+ *  solo (default stabile). Da 1.3.0 (commit ea8173a) i pin hanno zIndex 0..3
+ *  anche su iOS per ordinare colorati sopra i grigi: effetto collaterale, i pin
+ *  salgono sopra il pallino blu e lo nascondono.
+ *
+ *  - 'below-user' (B): zIndex NEGATIVI su iOS → i pin restano ordinati tra loro
+ *    (grigi sotto, colorati sopra) ma tutti sotto il pallino blu. Recupera sia
+ *    la gerarchia dei pin sia la visibilità della posizione. Si appoggia a come
+ *    MapKit compone una zPosition negativa col dot nativo (non documentato) →
+ *    DA VERIFICARE SU DEVICE.
+ *  - 'native' (A): nessuno zIndex su iOS → torna al comportamento 1.2.0, pallino
+ *    blu sopra garantito ma ordine tra pin non deterministico (i grigi restano
+ *    comunque recessi via opacità, v. markerWrapMuted). Fallback sicuro.
+ *
+ *  In caso di problemi con B, per passare ad A cambiare SOLO questa costante. */
+export const IOS_MARKER_Z_STRATEGY: 'below-user' | 'native' = 'below-user';
+
+/** Offset che porta i valori logici di priorità (0..3) sotto lo zero su iOS in
+ *  strategia 'below-user', preservandone l'ordine relativo. Ampio a sufficienza
+ *  da restare negativo per ogni priorità prevista. */
+const IOS_Z_BELOW_USER_OFFSET = 100;
+
+/** Props zIndex per un marker data la sua priorità logica (0 grigi/non valutati
+ *  … 2 ambra … 3 salvati/verdi). Unico punto che decide lo z-order per
+ *  piattaforma:
+ *  - Android: sempre il valore logico (il pallino blu è su un layer Google Maps
+ *    a parte, sempre sopra → nessun conflitto con i marker).
+ *  - iOS: dipende da IOS_MARKER_Z_STRATEGY (v. sopra). */
+export function markerZProps(logicalZ: number): { zIndex?: number } {
+  if (Platform.OS === 'android') return { zIndex: logicalZ };
+  if (IOS_MARKER_Z_STRATEGY === 'native') return {};
+  return { zIndex: logicalZ - IOS_Z_BELOW_USER_OFFSET };
+}
 
 // ---------------------------------------------------------------------------
 // Helpers

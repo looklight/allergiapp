@@ -24,7 +24,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 import { useTheme, useThemePreference } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
-import { isValidCoord, coverageColor, clientCoverage } from './mapConstants';
+import { isValidCoord, coverageColor, clientCoverage, markerZProps } from './mapConstants';
 import { resolveBadge, badgeGlyph } from './mapBadge';
 import { venueIconName } from '../../constants/restaurantCategories';
 import type { Restaurant } from '../../services/restaurantService';
@@ -239,10 +239,10 @@ export default memo(function MapPin({
     // attenuati (restano a piena visibilit\u00e0 con il badge della lista).
     const isMuted = showMatchInfo && dotTotal > 0 && dotCovered === 0 && !isSaved;
 
-    // Verde/giallo emergono sopra i pallini grigi/primary (non valutati).
-    // Su iOS lo zIndex mappa su zPosition del layer (stesso meccanismo del
-    // SelectedMarkerOverlay a 9999): senza, l'ordine di sovrapposizione è
-    // casuale e un grigio può coprire un verde.
+    // Priorità logica di sovrapposizione: verde/giallo emergono sopra i pallini
+    // grigi/primary (non valutati). La traduzione in zIndex per piattaforma —
+    // e il rapporto col pallino di posizione su iOS — è centralizzata in
+    // markerZProps (v. IOS_MARKER_Z_STRATEGY in mapConstants).
     const dotZ = isSaved ? 3
       : dotCovered > 0 && dotTotal > 0
         ? (dotCovered >= dotTotal ? 3 : 2)
@@ -263,7 +263,7 @@ export default memo(function MapPin({
           image={DOT_IMAGES[isDark ? 'dark' : 'light'][dotSize][variant]}
           tracksViewChanges={false}
           onPress={handlePress}
-          zIndex={dotZ}
+          {...markerZProps(dotZ)}
           // Android: anchor esplicito al CENTRO (le icone statiche hanno default
           // bottom-center come i pin) → il canvas simmetrico del PNG tiene la
           // coordinata esattamente sotto il pallino a ogni zoom. iOS centra di
@@ -283,7 +283,7 @@ export default memo(function MapPin({
         coordinate={{ latitude, longitude }}
         tracksViewChanges={justChanged}
         onPress={handlePress}
-        zIndex={dotZ}
+        {...markerZProps(dotZ)}
         // Android: anchor esplicito al CENTRO. Senza, react-native-maps ancora il
         // marker custom in basso-centro (default tipo punta-di-pin) → la coordinata
         // cade sotto il pallino → a zoom largo l'offset in px = km → "pin in mare".
@@ -334,7 +334,8 @@ export default memo(function MapPin({
   const isMutedPin = showMatchInfo && filtersTotal > 0 && coveredTotal === 0 && !isSaved;
 
   // Gerarchia identica ai pallini: salvati/verdi sopra, ambra in mezzo, grigi
-  // sotto — nelle zone affollate i compatibili restano leggibili.
+  // sotto — nelle zone affollate i compatibili restano leggibili. Traduzione in
+  // zIndex per piattaforma centralizzata in markerZProps (v. mapConstants).
   const pinZ = isSaved ? 3
     : coveredTotal > 0 && filtersTotal > 0
       ? (coveredTotal >= filtersTotal ? 3 : 2)
@@ -346,7 +347,7 @@ export default memo(function MapPin({
       coordinate={{ latitude, longitude }}
       tracksViewChanges={justChanged}
       onPress={handlePress}
-      zIndex={pinZ}
+      {...markerZProps(pinZ)}
     >
       <View style={[styles.markerWrap, isMutedPin && styles.markerWrapMuted]}>
         <View style={[styles.markerContainer, { borderColor: markerColor }]}>
