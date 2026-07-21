@@ -9,6 +9,11 @@
 
 ### Legale / GDPR (revisione 2026-07-14/15, contesto in memoria `project_legal_gdpr_review.md`)
 - [ ] **Registro dei trattamenti (art. 30 GDPR)** — documento interno mancante (unico gap sostanziale rimasto dalla revisione). L'esenzione per le piccole realtà non si applica: trattiamo dati salute (art. 9) in modo non occasionale. Serve una tabella con: trattamenti, finalità, categorie di dati/interessati/destinatari, trasferimenti extra-UE, tempi di conservazione, misure di sicurezza. Non è pubblico: va solo tenuto pronto in caso di richiesta del Garante. Lavoro: ~1h.
+- [ ] **Policy — email non più "solo per accedere"** (deciso 2026-07-21, non urgente: da fare alla prossima modifica dei legali). Oggi la policy dice che l'email serve *solo* per accedere: ci auto-vincola più di quanto serva, e un'email di servizio a un utente (chiarimento su una recensione, moderazione) risulterebbe fuori dalla finalità dichiarata. Testo nuovo, stessa lunghezza dell'attuale:
+  - IT: "L'email serve per accedere e per eventuali comunicazioni di servizio sul tuo account o sui tuoi contenuti. Non viene mai mostrata pubblicamente, condivisa con terzi, né usata per promozioni senza il tuo consenso."
+  - EN: "Your email is used for sign-in and for any service messages about your account or your content. It's never shown publicly, shared with third parties, or used for promotions without your consent."
+  - Punti da toccare (frase duplicata identica): `constants/legalContent.ts` it+en su `main`; `translations.json` chiavi `privacy.accountText` it+en e `privacy.html` (fallback IT inline) sul branch `landing`.
+  - Base giuridica invariata: "Account e contenuti — esecuzione del contratto (art. 6.1.b)" copre già le comunicazioni di servizio, non aggiungere bullet. La formula "senza il tuo consenso" lascia aperta la strada a eventuali campagne future senza riscrivere la policy (che però richiederebbero opt-in dedicato, unsubscribe e ESP con DPA UE — vedi memoria).
 
 ### Social Auth (Google + Apple) — MERGED in main
 Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8). "Entra con Google" verificato su Android (giu 2026). Vedi memoria `project_social_auth.md`. Resta da chiudere:
