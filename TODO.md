@@ -243,6 +243,31 @@ Pagina `app/restaurants/avatar-gallery.tsx` con sistema unlock già funzionante.
 - [ ] **Badge "NUOVO" sugli avatar appena sbloccati nella galleria** — dopo che il popup è stato confermato, l'utente entra in galleria ma non sa quali sono i nuovi. Soluzione: tracciare un set `viewed_in_gallery` (oltre a `seen_unlocked_avatars`) e mostrare un piccolo badge/glow finché l'utente non li ha "visti" tappandoli o scorrendoci sopra. ~30 min. Effort medio, valore UX alto se la gamification cresce.
 - [ ] **Aggregazioni server-side via RPC Postgres** — oggi `fetchUnlockStats` fa 5 query parallele e somma/distinct lato client. Per utenti con >100 recensioni significa scaricare molte righe per fare `SUM`/`COUNT DISTINCT`. Una RPC `get_user_unlock_stats(uid) RETURNS jsonb` farebbe tutto server-side: ~10ms e ~1KB di traffico invece di ~50KB. **Da fare quando avrai utenti con >100 recensioni**, prima è premature optimization.
 
+### Descrizione delle liste pubbliche — PIANIFICATA 2026-07-21
+**Priorità: bassa — feature piccola e additiva, nessun vincolo di tempo. Design chiuso, resta solo da implementare.**
+
+Una lista pubblica oggi comunica solo nome + emoji: "Tour Giappone" non dice al visitatore *cos'è*. Campo descrizione libero (~200 caratteri) per dare contesto ("il mio tour da Kyoto a Tokyo a base di sushi"). Lo schema è già predisposto: `collections` è additiva (l'emoji è arrivata così con la 070) e la RLS della 069 espone già l'intera riga delle liste pubbliche — nessuna policy nuova, nessuna RPC.
+
+**Dove si vede (deciso 2026-07-21):** nel profilo pubblico, **sotto la mappa e dentro la sezione scrollabile**, non nello sticky header. Nello sticky (`components/ProfileMapList.tsx:232`) l'ordine è pill → chip paesi → mappa e resta agganciato: una descrizione lì ruberebbe altezza alla mappa per tutto lo scroll. Sotto invece la leggi all'apertura della lista e scorre via al primo swipe. Quel punto **esiste già** come slot inutilizzato: `listHeaderSlot` (`components/ProfileMapList.tsx:322`), reso dopo la mappa e prima delle card → zero modifiche a `ProfileMapList`.
+
+**Campo sempre visibile, NON condizionato al toggle "Visibile sul profilo" (valutato e scartato):** `ProfileVisibilityToggle` è `locked` in creazione (le liste nascono private per scelta deliberata), quindi il campo non comparirebbe mai nel momento in cui uno crea la lista e ha in testa cosa scriverci; inoltre agli utenti anonimi il toggle non è proprio renderizzato (`return null`), e il testo che sparisce rendendo privata la lista è ambiguo (resta in DB ma l'utente non lo sa). Il senso "è roba pubblica" lo porta il placeholder + il toggle due righe sotto.
+
+**Altezza del modal (vincolo esplicito):** il form è già ~300px (nome + 2 toggle + azione + elimina) e con la tastiera aperta su iPhone piccoli lo spazio è quasi finito. Quindi: input **auto-grow che parte da 1 riga** (alto come il campo nome, ~42px) fino a max 3 righe; **niente label sopra** (basta il placeholder, −20px); **niente riga di aiuto separata** (il toggle sotto dice già la stessa cosa, −18px); **gap `sm` invece di `lg`** tra nome e descrizione, così leggono come un gruppo unico staccato dai toggle (−8px, e migliora la gerarchia). Costo netto ~50px invece di ~110. Scartato il link "+ Aggiungi descrizione" che si espande: costerebbe meno a riposo ma reintroduce il salto di layout a tastiera aperta e nasconde la feature.
+
+- [ ] **Migration 082** — `ALTER TABLE collections ADD COLUMN description TEXT` + `CHECK (char_length(description) <= 200)`. Additiva e nullable: le liste esistenti restano invariate. Applicare a mano da SQL editor (tracking fermo a 045, mai `supabase db push`).
+- [ ] **`components/restaurants/CreateListForm.tsx`** — input multiline auto-grow sotto il nome, `maxLength` 200, secondo le regole di altezza qui sopra. Il form è già pensato come sezione verticale estendibile.
+- [ ] **`services/collectionService.ts`** — `description` nell'interfaccia `Collection` e nel `patch` di `updateCollection` (riga ~133).
+- [ ] **`services/myRestaurantsService.ts`** — `description` nella select di `getPublicCollections` (~riga 213) e nel tipo `PublicCollectionMeta`. **Occasione per il consolidamento già in TODO** (v. "Liste pubbliche — consolidamenti"): è il "prossimo campo" che giustifica l'unificazione di `PublicCollectionMeta` con `CollectionMeta`.
+- [ ] **`app/restaurants/user/[uid].tsx`** — passare `listHeaderSlot={currentList?.description ? <…> : undefined}`. Se manca la descrizione lo slot resta `undefined` e la schermata è identica a oggi (niente spazio riservato, nessuno shift).
+- [ ] **i18n** — placeholder nelle 6 lingue UI.
+- [ ] Valutare se mostrarla anche sul **proprio** profilo (utile per ricordarsi cosa si è scritto) o solo su quello altrui — non deciso.
+
+**Fase 2 (separata):** la pagina web `/u/{username}` (branch `landing`, deploy Vercel a parte). Lì la descrizione vale ancora di più — chi arriva da un link WhatsApp non ha nessun contesto — ma è un altro branch e un altro deploy, non mescolarla al primo step.
+
+**Aperto — moderazione:** è nuovo UGC testuale pubblico. Oggi l'unico testo pubblico sono le recensioni, che hanno segnalazioni e (da 1.3.0) traduzione; una descrizione lista non avrebbe né l'una né l'altra. Non è un blocco, ma da decidere consapevolmente dato il lavoro DSA/GDPR già fatto. Via più leggera: riusare la segnalazione esistente puntata sul profilo. Traduzione fuori dal primo step.
+
+**Nota OTA:** con le OTA production bloccate esce comunque con una build nativa, quindi nessun vincolo di runtime da rispettare.
+
 ### Admin dashboard
 - [ ] **Card "Follow" sulla dashboard** (a ridosso del rilascio 1.3.0, branch `admin-prod`) — le RPC admin sono già live dalla mig 080: `get_follow_admin_stats` (totale follow, follower/following medi, utenti con ≥1 follow) + `get_top_followed_profiles` (classifica seguiti); trend nel tempo da `analytics_events` (`user_followed`/`user_unfollowed`, già tracciati). Solo UI Next.js, zero migrazioni.
 - [ ] Gestione claim ristoranti
