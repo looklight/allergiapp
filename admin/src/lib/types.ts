@@ -88,6 +88,11 @@ export interface UserProfile {
   // Aggregati
   restaurants_count?: number;
   reviews_count?: number;
+  followers_count?: number;
+  // Solo dalla scheda utente (get_profile_with_email)
+  following_count?: number;
+  collections_count?: number;
+  saved_count?: number;
   email?: string;
   last_seen_at?: string | null;
   last_sign_in_at?: string | null;

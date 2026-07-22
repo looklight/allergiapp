@@ -168,8 +168,6 @@ export default function UserDetailPage() {
 
       <UserProfileCard
         user={user}
-        restaurantCount={restaurants.length}
-        reviewCount={reviews.length}
         isDeleting={isDeleting}
         onDelete={deleteUser}
       />

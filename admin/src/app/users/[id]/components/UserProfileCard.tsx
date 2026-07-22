@@ -4,13 +4,13 @@ import UserAvatar from '@/components/UserAvatar';
 
 interface Props {
   user: UserProfile;
-  restaurantCount: number;
-  reviewCount: number;
   isDeleting: boolean;
   onDelete: () => void;
 }
 
-export default function UserProfileCard({ user, restaurantCount, reviewCount, isDeleting, onDelete }: Props) {
+// Tutti i conteggi arrivano da get_profile_with_email: le liste caricate dalla
+// pagina sono cappate a 50, quindi contarne le righe falserebbe i riquadri.
+export default function UserProfileCard({ user, isDeleting, onDelete }: Props) {
   return (
     <div className="bg-card rounded-lg shadow p-6 mt-4 mb-6">
       {/* Header: identità + azione */}
@@ -71,16 +71,21 @@ export default function UserProfileCard({ user, restaurantCount, reviewCount, is
         )}
       </div>
 
-      {/* Statistiche */}
-      <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
-        <div className="text-center">
-          <p className="text-2xl font-bold">{restaurantCount}</p>
-          <p className="text-sm text-muted-foreground">Ristoranti</p>
-        </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold">{reviewCount}</p>
-          <p className="text-sm text-muted-foreground">Recensioni</p>
-        </div>
+      {/* Statistiche: contributi · grafo follow · salvataggi */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-6 pt-6 border-t border-border">
+        {([
+          ['Ristoranti', user.restaurants_count ?? 0],
+          ['Recensioni', user.reviews_count ?? 0],
+          ['Follower', user.followers_count ?? 0],
+          ['Seguiti', user.following_count ?? 0],
+          ['Liste', user.collections_count ?? 0],
+          ['Salvati', user.saved_count ?? 0],
+        ] as const).map(([label, value]) => (
+          <div key={label} className="text-center">
+            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-sm text-muted-foreground">{label}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

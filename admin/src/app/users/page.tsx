@@ -8,7 +8,7 @@ import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import UserAvatar from '@/components/UserAvatar';
 import Link from 'next/link';
 
-type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc' | 'last_seen_desc';
+type SortBy = 'created_desc' | 'reviews_desc' | 'reviews_asc' | 'followers_desc' | 'last_seen_desc';
 
 function formatLastSeen(iso: string | null | undefined): string {
   if (!iso) return 'Mai';
@@ -67,6 +67,7 @@ export default function UsersPage() {
           ['created_desc', 'Più recenti'],
           ['reviews_desc', 'Più recensioni'],
           ['reviews_asc', 'Meno recensioni'],
+          ['followers_desc', 'Più follower'],
           ['last_seen_desc', 'Accesso recente'],
         ] as const).map(([value, label]) => (
           <button
@@ -103,6 +104,18 @@ export default function UsersPage() {
                     Recensioni
                     <span className="text-faint text-xs w-3 text-center">
                       {sortBy === 'reviews_desc' ? '▼' : sortBy === 'reviews_asc' ? '▲' : ''}
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-3 font-medium text-right">
+                  <button
+                    type="button"
+                    onClick={() => setSortBy('followers_desc')}
+                    className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
+                  >
+                    Follower
+                    <span className="text-faint text-xs w-3 text-center">
+                      {sortBy === 'followers_desc' ? '▼' : ''}
                     </span>
                   </button>
                 </th>
@@ -171,6 +184,13 @@ export default function UsersPage() {
                       <span className="text-faint">0</span>
                     )}
                   </td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {(u.followers_count ?? 0) > 0 ? (
+                      <span className="font-medium text-foreground-secondary">{u.followers_count}</span>
+                    ) : (
+                      <span className="text-faint">0</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {formatLastSeen(u.last_seen_at)}
                   </td>
@@ -213,6 +233,12 @@ export default function UsersPage() {
               )}
               <p className="text-xs text-faint mt-0.5">
                 {(u.reviews_count ?? 0)} {(u.reviews_count ?? 0) === 1 ? 'recensione' : 'recensioni'}
+                {(u.followers_count ?? 0) > 0 && (
+                  <>
+                    {' · '}
+                    {u.followers_count} follower
+                  </>
+                )}
                 {' · '}
                 Accesso {formatLastSeen(u.last_seen_at).toLowerCase()}
               </p>
