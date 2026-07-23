@@ -17,6 +17,10 @@ type ReviewRow = Review & {
   reviewer_is_anonymous?: boolean | null;
   /** Numero totale di recensioni fatte dall'autore. */
   reviewer_review_count?: number;
+  /** Numero totale di recensioni ricevute dal ristorante. */
+  restaurant_review_count?: number;
+  /** Punteggio medio del ristorante (calcolato client-side dalle recensioni). */
+  restaurant_avg_rating?: number;
 };
 
 interface ReviewStats {
@@ -80,6 +84,30 @@ export default function ReviewsPage() {
       }
       for (const r of rows) {
         if (r.user_id) r.reviewer_review_count = counts.get(r.user_id) ?? 0;
+      }
+    }
+
+    // Conteggio totale recensioni per ristorante (una sola query per i ristoranti di questa pagina)
+    const restaurantIds = [
+      ...new Set(rows.map((r) => r.restaurant_id).filter((id): id is string => !!id)),
+    ];
+    if (restaurantIds.length > 0) {
+      // Selezioniamo anche `rating`: la media è quindi gratis (nessuna query in più).
+      const { data: byRestaurant } = await supabase
+        .from('reviews')
+        .select('restaurant_id, rating')
+        .in('restaurant_id', restaurantIds);
+      const restaurantCounts = new Map<string, number>();
+      const restaurantSums = new Map<string, number>();
+      for (const a of (byRestaurant ?? []) as { restaurant_id: string; rating: number }[]) {
+        restaurantCounts.set(a.restaurant_id, (restaurantCounts.get(a.restaurant_id) ?? 0) + 1);
+        restaurantSums.set(a.restaurant_id, (restaurantSums.get(a.restaurant_id) ?? 0) + (a.rating ?? 0));
+      }
+      for (const r of rows) {
+        if (!r.restaurant_id) continue;
+        const count = restaurantCounts.get(r.restaurant_id) ?? 0;
+        r.restaurant_review_count = count;
+        r.restaurant_avg_rating = count > 0 ? (restaurantSums.get(r.restaurant_id) ?? 0) / count : 0;
       }
     }
     return rows;
@@ -253,6 +281,16 @@ export default function ReviewsPage() {
                     </Link>
                     {r.restaurant_city && (
                       <span className="text-faint text-xs block truncate">{r.restaurant_city}</span>
+                    )}
+                    {typeof r.restaurant_review_count === 'number' && (
+                      <span
+                        className="text-faint text-xs flex items-center gap-1 mt-0.5 tabular-nums"
+                        title="Punteggio medio e recensioni totali del ristorante"
+                      >
+                        <span aria-hidden="true">★</span>
+                        {(r.restaurant_avg_rating ?? 0).toFixed(1)}
+                        <span>({r.restaurant_review_count})</span>
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
