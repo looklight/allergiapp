@@ -36,6 +36,23 @@ const JOIN_MAPPING = {
   restaurants: { name: 'restaurant_name', city: 'restaurant_city', country: 'restaurant_country' },
 };
 
+/** Evidenzia le occorrenze di `term` in `text` (case-insensitive). */
+function highlightMatch(text: string, term: string) {
+  const q = term.trim();
+  if (!q) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
+  return parts.map((part, i) =>
+    part.toLowerCase() === q.toLowerCase() ? (
+      <mark key={i} className="bg-star/30 text-inherit rounded px-0.5">
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
+  );
+}
+
 export default function ReviewsPage() {
   const [search, setSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
@@ -304,7 +321,7 @@ export default function ReviewsPage() {
                   </td>
                   <td className="px-4 py-3 min-w-[280px] max-w-[480px]">
                     {r.comment ? (
-                      <p className="text-foreground-secondary whitespace-pre-line break-words">{r.comment}</p>
+                      <p className="text-foreground-secondary whitespace-pre-line break-words">{highlightMatch(r.comment, search)}</p>
                     ) : (
                       <span className="text-faint">Nessun commento</span>
                     )}
