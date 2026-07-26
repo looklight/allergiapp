@@ -21,10 +21,11 @@ export default function ReportScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const descriptionY = useRef(0);
   const isDescriptionFocused = useRef(false);
-  const { restaurantId, restaurantName, offersLodging } = useLocalSearchParams<{
+  const { restaurantId, restaurantName, offersLodging, servesFood } = useLocalSearchParams<{
     restaurantId: string;
     restaurantName?: string;
     offersLodging?: string;
+    servesFood?: string;
   }>();
   const venueIcon = venueIconName(offersLodging === '1');
   const { user } = useAuth();
@@ -149,12 +150,19 @@ export default function ReportScreen() {
         />
         <Text style={styles.charCount}>{description.length}/500</Text>
 
-        <View style={styles.reviewHint}>
+        <TouchableOpacity
+          style={styles.reviewHint}
+          activeOpacity={0.7}
+          onPress={() => {
+            router.replace(`/restaurants/add-review?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurantName ?? '')}&offersLodging=${offersLodging ?? '0'}&servesFood=${servesFood ?? '1'}`);
+          }}
+        >
           <MaterialCommunityIcons name="lightbulb-outline" size={16} color={theme.colors.textSecondary} />
           <Text style={styles.reviewHintText}>
             {i18n.t('restaurants.report.reviewHint')}
           </Text>
-        </View>
+          <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.textSecondary} style={styles.reviewHintChevron} />
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Bottone submit fisso in basso */}
@@ -280,6 +288,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     color: theme.colors.textSecondary,
+  },
+  reviewHintChevron: {
+    alignSelf: 'center',
+    marginRight: -4,
   },
   bottomBar: {
     paddingHorizontal: 20,
