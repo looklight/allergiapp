@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
 import SocialAuthButtons from '../../components/SocialAuthButtons';
+import { backOrHome } from '../../utils/backOrHome';
 
 export default function LoginScreen() {
   const theme = useTheme();
@@ -32,7 +33,10 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await AuthService.signIn(email.trim(), password);
-      router.back();
+      // Login raggiunto come radice dello stack (redirect da deep link a
+      // freddo): back() sarebbe un no-op e il login riuscito sembrerebbe
+      // fallito. Si ripiega sulla mappa.
+      backOrHome(router);
     } catch (error: any) {
       console.warn('[Login] Errore login:', error.message);
       const msg: string = (error?.message ?? '').toLowerCase();
@@ -155,7 +159,7 @@ export default function LoginScreen() {
           </Button>
         </View>
 
-        <TouchableOpacity onPress={() => router.back()} style={styles.skipRow}>
+        <TouchableOpacity onPress={() => backOrHome(router)} style={styles.skipRow}>
           <Text style={styles.skipText}>{i18n.t('login.skipLink')}</Text>
         </TouchableOpacity>
       </ScrollView>

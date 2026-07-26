@@ -7,6 +7,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
 import i18n from '../utils/i18n';
+import { backOrHome } from '../utils/backOrHome';
 
 // I moduli @react-native-google-signin e expo-apple-authentication richiedono
 // native binary, non presenti in Expo Go. Carico tutto via require condizionale
@@ -79,8 +80,9 @@ function SocialAuthButtonsImpl() {
       }
       // L'utente nuovo viene redirezionato a onboarding-nickname dal
       // useEffect globale in app/_layout.tsx (needsOnboarding === true).
-      // L'utente esistente torna allo screen precedente.
-      router.back();
+      // L'utente esistente torna allo screen precedente; se login è la radice
+      // dello stack (redirect da deep link a freddo) si ripiega sulla mappa.
+      backOrHome(router);
     } catch (err: unknown) {
       if (err instanceof SocialAuthCancelledError) return;
       const message = err instanceof Error ? err.message : String(err);

@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
 import SocialAuthButtons from '../../components/SocialAuthButtons';
+import { backOrHome } from '../../utils/backOrHome';
 
 export default function SignupScreen() {
   const theme = useTheme();
@@ -138,7 +139,7 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={() => router.back()} style={styles.skipRow}>
+        <TouchableOpacity onPress={() => backOrHome(router)} style={styles.skipRow}>
           <Text style={styles.skipText}>{i18n.t('signup.skipLink')}</Text>
         </TouchableOpacity>
       </ScrollView>

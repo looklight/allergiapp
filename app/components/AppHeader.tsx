@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
+import { backOrHome } from '../../utils/backOrHome';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -41,7 +42,7 @@ export default function AppHeader({
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const handleLeading = onLeadingPress ?? (() => router.back());
+  const handleLeading = onLeadingPress ?? (() => backOrHome(router));
 
   const leadingIcon: IconName | null =
     leading === 'back' ? 'arrow-left' : leading === 'close' ? 'close' : null;

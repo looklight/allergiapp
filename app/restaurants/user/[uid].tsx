@@ -21,6 +21,7 @@ import type { HeaderAction } from '../../components/AppHeader';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
+import { backOrHome } from '../../../utils/backOrHome';
 import { venueIconName } from '../../../constants/restaurantCategories';
 import AppHeader from '../../components/AppHeader';
 
@@ -211,7 +212,9 @@ export default function PublicProfileScreen() {
           likes: likesReceived,
           following: followStats?.following,
         }}
-        onBack={() => router.back()}
+        // Da deep link a freddo (/u/{username}) questa schermata è la radice
+        // dello stack: back() sarebbe un no-op, si ripiega sulla mappa.
+        onBack={() => backOrHome(router)}
         // Stat Seguiti tappabile → lista navigabile (innocuo quando la
         // colonna non compare, profili anonimi).
         onFollowingPress={() =>
