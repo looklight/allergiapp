@@ -96,6 +96,11 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
    - Il **mini-analytics** ("questo mese: X visite al profilo, Y click sul
      menù") è il motore della conversione a pagamento — come le statistiche
      host di Airbnb.
+   - **Vincolo non negoziabile (art. 9 GDPR)**: l'analytics mostrato ai
+     ristoratori è SOLO aggregato generico (visite, click) — **mai segmentato
+     per profilo allergie/esigenze degli utenti** ("ti hanno visto 12
+     celiaci" = trattamento di dati sanitari per fini commerciali, escluso
+     come la vendita di insight).
 
 3. **Billing self-serve**
    - Chi paga è un'azienda, non l'utente dell'app → portale web + **Stripe
@@ -405,9 +410,23 @@ dei claim di sicurezza, revisione legale lug 2026). Due livelli:
 
 ## Legale
 
+Valutazione d'insieme (2026-07-27, da confermare con avvocato prima del
+lancio): il design è ben orientato — B2B-only evita il diritto dei
+consumatori; "niente effetti su pin/ranking" rende banale la trasparenza P2B;
+wording attribuito + checkbox + moderazione a posteriori tengono la
+dichiarazione allergeni come contenuto del ristoratore (safe harbor hosting
+DSA); il Reg. 1169 mette l'obbligo allergeni in capo al ristoratore. **Quattro
+lavori prima del primo euro**: (1) ToS portale + pacchetto P2B, con clausola
+"la dichiarazione in app non sostituisce gli obblighi 1169 nel locale,
+esattezza responsabilità del ristoratore"; (2) vaglio legale del wording
+checkbox/disclaimer; (3) privacy policy del portale; (4) assetto fiscale
+(posizione IVA da cui fatturare, SdI, ROC — commercialista).
+
 - **P2B (Reg. UE 2019/1150)**: scatta col primo ristorante pagante —
   trasparenza su ranking e termini, gestione reclami. Da preventivare prima di
   incassare il primo euro. Idem valutazioni **ROC**.
+- **Analytics partner mai segmentato per allergie** (v. vincolo art. 9 nella
+  sezione dashboard): solo aggregati generici.
 - Dati allergie utenti = **art. 9 GDPR**: esclude ads profilate e vendita
   insight (v. sopra).
 - Risposte alle recensioni portano con sé moderazione e segnalazioni (già
