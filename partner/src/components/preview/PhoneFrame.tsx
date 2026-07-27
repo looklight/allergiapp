@@ -21,7 +21,7 @@ export default function PhoneFrame({ children }: { children: React.ReactNode }) 
         </div>
         {/* Area schermo: lo scroll (e gli overlay tipo bottom sheet)
             vivono dentro il contenuto */}
-        <div className="relative h-[500px] overflow-hidden">{children}</div>
+        <div className="relative h-[620px] overflow-hidden">{children}</div>
         {/* Home indicator */}
         <div className="flex h-6 items-center justify-center">
           <div className="h-1 w-32 rounded-full bg-[#1a1a1a]/80" />

@@ -686,7 +686,10 @@ export default function HomePage() {
       </div>
 
       {/* Anteprima desktop: colonna sticky con simulatore */}
-      <div className="hidden w-[380px] shrink-0 lg:block">
+      {/* overflow-hidden: se la colonna (in layout) supera l'altezza della
+          riga non deve gonfiare la pagina — a quelle altezze il contenuto
+          è comunque ridotto in scala e resta visibile intero */}
+      <div className="hidden w-[380px] shrink-0 lg:block lg:overflow-hidden">
         <div className="preview-column space-y-3">
           <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <button

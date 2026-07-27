@@ -20,14 +20,20 @@ body {
   transform-origin: top center;
 }
 
-@media (max-height: 860px) {
+@media (max-height: 980px) {
   .preview-column {
     transform: scale(0.9);
   }
 }
 
-@media (max-height: 770px) {
+@media (max-height: 860px) {
   .preview-column {
-    transform: scale(0.78);
+    transform: scale(0.8);
+  }
+}
+
+@media (max-height: 760px) {
+  .preview-column {
+    transform: scale(0.7);
   }
 }

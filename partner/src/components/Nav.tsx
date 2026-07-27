@@ -50,7 +50,8 @@ export default function Nav() {
   return (
     <>
       {/* Sidebar desktop */}
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
+      {/* Sticky a tutta altezza: resta ferma anche se la pagina scorre */}
+      <aside className="hidden md:flex md:sticky md:top-0 md:h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white">
         <div className="px-5 py-6">
           <span className="text-lg font-semibold text-gray-900">{d.common.appName}</span>
         </div>
