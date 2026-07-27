@@ -370,6 +370,48 @@ norma, consultabile da chi ne ha davvero bisogno").
   triangolano ma non si sommano in un punteggio unico. Il pin color resta
   community-driven.
 
+### Design della vetrina (deciso 2026-07-27/28, con l'editor del portale)
+
+Decisioni prese costruendo l'editor con anteprima live (mockup fedele della
+scheda app in cornice telefono, dentro il portale):
+
+- **Compatibilità per chi guarda**: per ogni piatto l'utente vede il match
+  col proprio profilo — verde (nessuna sua esigenza tra gli allergeni
+  dichiarati, diete richieste tutte taggate), ambra (contiene un suo
+  allergene), grigio quando una sua dieta non è indicata: **l'assenza di
+  dichiarazione non è mai mostrata come incompatibilità**. Piatto non
+  compatibile con foto → foto in trasparenza.
+- **Tag di compatibilità per piatto**: stessa lista esigenze dell'app
+  (`constants/diets.ts`: vegetarian, vegan, histamine, nickel, diabetes) →
+  matching uniforme coi profili. Doppio wording: il tag sul piatto è
+  centrato sulle persone ("Per diabetici", come i peopleLabel dell'app),
+  l'esigenza è breve dal punto di vista utente ("Diabete").
+  Istamina/nichel/diabete sono claim di idoneità su dimensioni non binarie:
+  wording SEGNATO per il vaglio legale già in programma.
+- **Categorie facoltative**: set fisso tradotto (antipasti, primi, secondi,
+  contorni, pizza, dolci, bevande, altro), nessuna di default; i piatti
+  senza categoria vengono prima, le sezioni emergono solo se usate.
+- **Foto piatti TONDE** (le foto community restano quadrate: due linguaggi
+  visivi distinti); tap → foto intera (lato app). Upload max 10 MB con
+  resize lato client a 640px — mai originali, l'egress Supabase è contato.
+- **Presentazione in app**: carosello orizzontale di card nella scheda
+  (badge scudo verde/ambra/grigio) + "Vedi tutto" → schermata menù dedicata
+  a pieno schermo, raggruppata per categorie. È lavoro lato app: viaggia
+  con una build store, e di fatto detta quando la vetrina potrà accendersi.
+- **Link**: pill colorate (Prenotazione blu, Delivery arancio, Menù verde,
+  Sito viola), nell'app su riga singola scorrevole (pattern
+  CollectionPills). **Menù multi-lingua**: più URL etichettati per lingua,
+  l'app mostra quello nella lingua dell'utente con fallback sul
+  predefinito. **Delivery multi-provider** (Glovo/Deliveroo/Just Eat/Uber
+  Eats/altro): un solo bottone; con più link, bottom sheet di scelta.
+- **Portale**: simulatore "Occhi del visitatore" (collassabile) per vedere
+  la scheda con le esigenze di un utente di prova — anche leva di vendita;
+  layout desktop a due pannelli (editor scrollabile, anteprima ferma);
+  bozza ancora in localStorage finché la 700 non verrà applicata.
+- **Nessuna migration applicata**: fase di sola progettazione (decisione
+  2026-07-28) — la 700 si aggiorna come documento di design e si applicherà
+  tutta insieme a lavoro finito.
+
 ## Modello commerciale: premium-only al lancio (deciso 2026-07-27)
 
 **Si parte solo col premium a pagamento (abbonamento mensile/annuale);

@@ -141,8 +141,20 @@ CREATE TABLE partner_dishes (
   showcase_id UUID NOT NULL REFERENCES partner_showcases(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
+  category TEXT
+    CHECK (category IS NULL OR
+           category IN ('starters', 'first_courses', 'second_courses',
+                        'sides', 'pizza', 'desserts', 'drinks', 'other')),
+    -- FACOLTATIVA (NULL = senza categoria, mostrati per primi); set fisso
+    -- tradotto lato client (niente testo libero: i18n gratis, UI ordinata,
+    -- zero moderazione); ampliabile in futuro senza dolore
   photo_url TEXT,
   declared_allergens TEXT[] NOT NULL DEFAULT '{}',  -- codici da allergens.code
+  diet_tags TEXT[] NOT NULL DEFAULT '{}',
+    -- compatibilità dichiarate (vegetarian/vegan/histamine/nickel/diabetes,
+    -- stessa lista esigenze di constants/diets.ts dell'app). Checkbox
+    -- strutturate, mai testo libero; wording per istamina/nichel/diabete
+    -- da vagliare legalmente prima del lancio.
   sort_order INTEGER NOT NULL DEFAULT 0,
   last_confirmed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     -- freschezza: timestamp visibile all'utente; senza riconferma
@@ -165,7 +177,14 @@ CREATE TABLE partner_links (
   showcase_id UUID NOT NULL REFERENCES partner_showcases(id) ON DELETE CASCADE,
   kind TEXT NOT NULL CHECK (kind IN ('booking', 'delivery', 'menu', 'website', 'other')),
   url TEXT NOT NULL,
+  language TEXT,
+    -- solo per kind='menu': più righe menu con lingue diverse; NULL =
+    -- predefinito. L'app mostra il menù nella lingua dell'utente,
+    -- fallback sul predefinito.
   label TEXT,
+    -- per kind='delivery': nome del provider (più righe = più servizi;
+    -- un link solo apre diretto, con più link l'app mostra un bottom
+    -- sheet di scelta)
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
