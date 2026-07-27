@@ -139,6 +139,12 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 4. **Moderazione a posteriori, non approvazione preventiva**
    - Il ristoratore pubblica subito; gli utenti segnalano; si interviene
      dall'admin solo sulle segnalazioni.
+   - **Scala graduata degli interventi admin** (2026-07-27): rimozione del
+     singolo contenuto (un piatto, una foto, un link) → sospensione
+     dell'intera vetrina → revoca del claim. Ogni intervento con motivazione
+     al partner e possibilità di replica (DSA art. 17). Il ristoratore ha
+     inoltre la **pausa volontaria** della propria vetrina (v. sezione
+     modello commerciale).
    - Eccezione: le **certificazioni** (v. sotto), dove la posta è la sicurezza.
    - Perimetro dell'auto-pubblicazione: libero su foto, piatti, link, risposte;
      vincolato su tutto ciò che può suonare come promessa di sicurezza. **Mai
@@ -384,6 +390,18 @@ Incastri operativi:
   all'ex abbonato con contenuti — quella regola colpisce lo squatting (claim
   con zero contenuti e zero accessi); chi ha lavorato mantiene claim e
   associazione a tempo indeterminato, li perde solo per contro-claim.
+- **Lo stesso interruttore serve quattro casi (aggiunto 2026-07-27)** — la
+  vetrina può spegnersi per: (1) **scadenza abbonamento**; (2) **pausa
+  volontaria del ristoratore** — un click, riattivabile da lui; è anche una
+  feature di *sicurezza*: menù cambiato e dichiarazioni non più accurate →
+  spegne subito invece di lasciare live info pericolose (coerente col
+  principio di freschezza); (3) **sospensione admin** (es. verifica su
+  segnalazione), con motivazione e possibilità di replica (DSA art. 17);
+  (4) **revoca del claim** (gestore sbagliato/frode: si scioglie
+  l'associazione). In tutti i casi: lato app solo la scheda community senza
+  alcuna segnaletica del perché; contenuti mai cancellati. Requisito tecnico:
+  lo stato di visibilità porta un **motivo** (expired / paused_by_partner /
+  suspended_by_admin / claim_revoked) + timestamp + audit.
 
 Perché non viola il principio guida ("mai vendere percezione di sicurezza"):
 il premium compra **spazio informativo dichiarato e attribuito**, non
