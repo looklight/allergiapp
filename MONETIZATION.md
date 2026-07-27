@@ -502,9 +502,25 @@ la densità per città è ancora bassa. Strategia:
   ogni ambiente col suo filone, così coesistono senza collisioni di numeri.
   Flusso invariato: file nel repo come storia canonica, applicazione a mano
   via SQL editor, mai `supabase db push`.
+- **Responsive mobile-first** (requisito utente 2026-07-27): il portale
+  dev'essere pienamente usabile da telefono quanto da desktop — il
+  ristoratore vive in sala, non alla scrivania. Shell: sidebar su desktop,
+  bottom bar su mobile.
+- **Legacy marzo 2026: nessuna cancellazione** (decisione utente
+  2026-07-27): le strutture della 001 (restaurant_claims, restaurant_dishes,
+  restaurant_allergens, colonne is_premium/owner_id/subscription_* su
+  restaurants) restano nel DB, semplicemente non usate dal nuovo design —
+  potrebbero tornare utili. Unico prerequisito prima del primo abbonamento
+  vero (e non è una cancellazione): neutralizzare l'`ORDER BY is_premium
+  DESC` ancora presente negli RPC live (ultima definizione in 068) — oggi
+  inerte, al primo premium diventerebbe ranking a pagamento.
 - **Percorso di costruzione concordato**: prima la bozza dello schema SQL
   (da rivedere insieme, senza applicare nulla), poi lo scaffold Next.js di
   `partner/`, progetto Vercel/DNS solo quando c'è qualcosa da deployare.
+  Stato al 2026-07-27: bozza `supabase/migrations/700_partner_foundation.sql`
+  scritta (NON applicata) e scaffold `partner/` creato (Next 15, Tailwind
+  v4, auth Supabase client-side come l'admin, i18n IT/EN, shell responsive
+  con pagine placeholder Vetrina/Locale/Account; dev su porta 3001).
 
 ## Fasi (bozza, da trasformare in piano quando saremo pronti)
 
