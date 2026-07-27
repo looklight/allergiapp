@@ -59,3 +59,7 @@ admin/.next/
 admin/node_modules/
 admin/service-account-key.json
 admin/.vercel/
+
+# Partner portal
+partner/.next/
+partner/node_modules/
