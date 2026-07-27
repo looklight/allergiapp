@@ -13,3 +13,21 @@ body {
 .bottom-nav-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Colonna anteprima: su schermi bassi si riduce in scala invece di
+   tagliarsi o scorrere internamente */
+.preview-column {
+  transform-origin: top center;
+}
+
+@media (max-height: 860px) {
+  .preview-column {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-height: 770px) {
+  .preview-column {
+    transform: scale(0.78);
+  }
+}
