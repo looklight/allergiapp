@@ -25,6 +25,11 @@
   vetrina spenta, win-back al rinnovo).
 - **Cold start**: fondatori con premium regalato 6–12 mesi nelle città dense.
 - **Fattura elettronica**: la emettiamo noi via SdI (Stripe non la fa).
+- **Fondazioni (27/07, seconda sessione)**: portale IT+EN con i18n dal
+  giorno 1; un solo gestore per locale (un account può gestire più locali,
+  mai il contrario); 1 abbonamento = 1 locale, non trasferibile; fase 1 solo
+  claim di schede esistenti (locale mancante → messaggio ponte verso l'app);
+  migrations partner in serie 7xx su main.
 
 ## Principio guida
 
@@ -112,6 +117,14 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
      venditori *guadagnano*); annuale con sconto classico (~2 mesi gratis),
      mensile come barriera d'ingresso bassa per lo scettico; il programma
      fondatori converte naturalmente in annuale a fine periodo gratuito.
+   - **Granularità (deciso 2026-07-27): 1 abbonamento = 1 locale, non
+     trasferibile** — né tra locali né tra account (chi subentra dopo un
+     contro-claim fa il proprio abbonamento, non eredita quello altrui;
+     nessuna funzione di "spostamento" da costruire). Su Stripe: un
+     **Customer per azienda** (anagrafica, carta e fatture in un posto
+     solo), una **Subscription per locale** agganciata a quel Customer;
+     eventuali sconti multi-locale via coupon sul Customer, senza toccare
+     l'architettura.
    - **Attenzione — il KYB di Stripe NON scatta**: Stripe verifica l'identità
      aziendale di chi *riceve* denaro, non di chi paga. Un abbonato è solo un
      titolare di carta: la carta dà tracciabilità (segnale alla TripAdvisor),
@@ -174,10 +187,23 @@ solo nel backend (SdI, regimi IVA) o negli strumenti admin.
 1. **Account** — registrazione normale su partner.allergiapp.com, stesso pool
    auth Supabase. L'account da solo non dà poteri: si è partner solo dopo il
    claim (anagrafica + associazione). L'accesso deriva dalle righe di `restaurant_managers`
-   (utente → ristorante, many-to-many: catene oggi, hotel domani), NON dal
-   campo `role` su profiles (evita superfici di role-escalation).
-2. **Trova il tuo locale** — ricerca per nome/città, più il ramo "non c'è?
-   aggiungilo" (inserimento + claim in un colpo, moderazione a posteriori).
+   (utente → ristorante), NON dal campo `role` su profiles (evita superfici
+   di role-escalation). **Uno-a-molti (deciso 2026-07-27)**: un account può
+   gestire più locali (catene oggi, hotel domani), ma ogni locale ha **un
+   solo gestore** — vincolo di unicità sul claim *attivo* (indice parziale:
+   le righe contese/storiche con altri stati restano possibili), niente
+   inviti co-gestori, il subentro passa solo dal contro-claim. Nota per la
+   bozza SQL: il nome `restaurant_managers` nasceva many-to-many — valutare
+   un nome più fedele.
+2. **Trova il tuo locale** — ricerca per nome/città. Il ramo "non c'è?
+   aggiungilo" è **rimandato (deciso 2026-07-27)**: in fase 1 si claimano
+   solo schede esistenti; a ricerca vuota un messaggio ponte ("Non trovi il
+   tuo locale? Aggiungilo dall'app AllergiApp, poi torna qui a richiederne
+   la gestione") — il flusso community `app/restaurants/add.tsx` esiste già
+   e la scheda creata appare subito nella ricerca del portale.
+   L'inserimento nativo nel portale (inserimento + claim in un colpo,
+   moderazione a posteriori) diventa **prerequisito della fase 4**: quando
+   arriva il partner organico, non deve passare dall'app consumer.
 3. **Anagrafica aziendale (al primo claim)** — form unico mondiale, 5 campi:
    **paese, denominazione, identificativo fiscale (P.IVA/VAT), sede, email di
    fatturazione**; blocco condizionale invisibile dove serve (es. codice SDI
@@ -466,6 +492,20 @@ la densità per città è ancora bassa. Strategia:
   ci sono numeri ("il tuo profilo è stato visto X volte") c'è anche
   l'argomento di vendita.
 
+## Fondazioni tecniche del portale (decise 2026-07-27)
+
+- **Lingue**: IT + EN al lancio, con struttura i18n montata dal giorno 1
+  (retrofittarla dopo tocca ogni componente); le 15 lingue dell'app non sono
+  un obiettivo del portale.
+- **Migrations**: serie dedicata **7xx** (700, 701, …) in `supabase/` su
+  main, accanto alle serie esistenti (app = numeri bassi, admin = 5xx) —
+  ogni ambiente col suo filone, così coesistono senza collisioni di numeri.
+  Flusso invariato: file nel repo come storia canonica, applicazione a mano
+  via SQL editor, mai `supabase db push`.
+- **Percorso di costruzione concordato**: prima la bozza dello schema SQL
+  (da rivedere insieme, senza applicare nulla), poi lo scaffold Next.js di
+  `partner/`, progetto Vercel/DNS solo quando c'è qualcosa da deployare.
+
 ## Fasi (bozza, da trasformare in piano quando saremo pronti)
 
 1. Claim self-service + dashboard in anteprima
@@ -473,7 +513,8 @@ la densità per città è ancora bassa. Strategia:
    rilasciati alla coorte fondatori (premium regalato), che fa da seeding e
    da beta
 3. Mini-analytics nella dashboard ristoratore
-4. Billing Stripe: apertura della vendita vera
+4. Billing Stripe: apertura della vendita vera (prerequisito: inserimento
+   locale nativo nel portale, v. flusso claim punto 2)
 5. Risposte alle recensioni (+ moderazione/segnalazioni)
 6. Certificazioni (prima "as is" con disclaimer, poi verificate)
 
@@ -498,12 +539,10 @@ eventuale piano free coi dati della coorte fondatori.
   quali equivalenti best-effort per paese
 - Soglie temporali del claim: N mesi di inattività per la decadenza, X giorni
   per la ri-verifica su contro-claim
-- Gestori multipli per locale: fase 1 solo titolare singolo o invito
-  co-gestori da subito? (lo schema many-to-many lo permette comunque)
-- Granularità dell'abbonamento: per singolo locale (design naturale: una
-  società con 3 locali = 3 abbonamenti) — sconti multi-locale/catene da
-  valutare quando capiterà il primo caso
-- Lingue del portale partner al lancio (IT + EN? l'app ne ha 15, il portale
-  può partire più stretto)
 - Fatturazione elettronica SdI: connettore Stripe → gestionale vs
   commercialista; da definire col commercialista prima del primo incasso
+
+> **Chiuse il 2026-07-27 (seconda sessione)**: gestori multipli (no: un solo
+> gestore per locale, uno-a-molti), granularità abbonamento (1 per locale,
+> non trasferibile), lingue (IT+EN con i18n dal giorno 1) — v. sezioni
+> relative.
