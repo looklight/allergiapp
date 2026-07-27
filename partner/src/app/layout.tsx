@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex min-h-screen">
                   <Nav />
                   <main className="flex-1 pb-bottom-nav md:pb-0">
-                    <div className="mx-auto max-w-3xl px-4 py-6 md:px-8 md:py-10">
+                    <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
                       {children}
                     </div>
                   </main>

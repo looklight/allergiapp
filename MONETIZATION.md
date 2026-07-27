@@ -521,6 +521,15 @@ la densità per città è ancora bassa. Strategia:
   scritta (NON applicata) e scaffold `partner/` creato (Next 15, Tailwind
   v4, auth Supabase client-side come l'admin, i18n IT/EN, shell responsive
   con pagine placeholder Vetrina/Locale/Account; dev su porta 3001).
+  Costruito e approvato come base design (stessa data): **editor vetrina con
+  anteprima live della scheda app** in cornice telefono — replica fedele di
+  sezioni e token della scheda vera (senza fascia prezzo: mai valorizzata),
+  con le proposte di design integrate: link partner come chip stile
+  "Indicazioni", sezione Menù con attribuzione "Dichiarato dal ristoratore"
+  + timestamp + disclaimer contaminazione sempre visibile, pill ambra
+  "Contiene: …" (semantica allergeni PRESENTI, Reg. 1169). Bozza per ora in
+  localStorage; persistenza vera all'applicazione della 700 (codici
+  allergene già identici a `allergens.code`).
 
 ## Fasi (bozza, da trasformare in piano quando saremo pronti)
 
