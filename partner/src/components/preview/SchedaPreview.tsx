@@ -374,13 +374,14 @@ function MenuScreen({
   onBack: () => void;
 }) {
   const { d, locale } = useI18n();
+  const visibleDishes = draft.dishes.filter((dish) => dish.available);
 
   // Senza categoria per primi (senza intestazione), poi le categorie
   const groups = [
-    { cat: null, dishes: draft.dishes.filter((dish) => dish.category === '') },
+    { cat: null, dishes: visibleDishes.filter((dish) => dish.category === '') },
     ...DISH_CATEGORIES.map((cat) => ({
       cat: cat as (typeof DISH_CATEGORIES)[number] | null,
-      dishes: draft.dishes.filter((dish) => dish.category === cat.code),
+      dishes: visibleDishes.filter((dish) => dish.category === cat.code),
     })),
   ].filter((g) => g.dishes.length > 0);
 
@@ -458,6 +459,8 @@ export default function SchedaPreview({
   const [screen, setScreen] = useState<'scheda' | 'menu'>('scheda');
   const [sheet, setSheet] = useState<'delivery' | null>(null);
   const venueName = draft.venueName.trim() || d.editor.venueNamePlaceholder;
+  // i piatti nascosti restano in bozza ma non compaiono nella scheda
+  const visibleDishes = draft.dishes.filter((dish) => dish.available);
 
   if (screen === 'menu') {
     return (
@@ -581,86 +584,77 @@ export default function SchedaPreview({
         )}
       </div>
 
-      <Separator />
+      {/* Menù del ristoratore (DALLA BOZZA): carosello orizzontale.
+          Sezione FACOLTATIVA: senza piatti (disponibili) non appare proprio,
+          la scheda passa dai link alle recensioni. */}
+      {visibleDishes.length > 0 && (
+        <>
+          <Separator />
 
-      {/* Menù del ristoratore (DALLA BOZZA): carosello orizzontale */}
-      <div style={{ padding: '12px 0 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px' }}>
-          <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: '#333333' }}>
-            {d.preview.menuTitle}
-            {draft.dishes.length > 0 ? ` (${draft.dishes.length})` : ''}
-          </span>
-          {draft.dishes.length > 0 && (
-            <button
-              onClick={() => setScreen('menu')}
-              style={{
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 2,
-              }}
-            >
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#4CAF50' }}>{d.preview.seeAll}</span>
-              <Icon size={16} color="#4CAF50">{paths.chevronRight}</Icon>
-            </button>
-          )}
-        </div>
-        <div style={{ padding: '0 16px' }}>
-          <MenuAttribution />
-        </div>
+          <div style={{ padding: '12px 0 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+              <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: '#333333' }}>
+                {d.preview.menuTitle}
+                {` (${visibleDishes.length})`}
+              </span>
+              <button
+                onClick={() => setScreen('menu')}
+                style={{
+                  background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: 2,
+                }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#4CAF50' }}>{d.preview.seeAll}</span>
+                <Icon size={16} color="#4CAF50">{paths.chevronRight}</Icon>
+              </button>
+            </div>
+            <div style={{ padding: '0 16px' }}>
+              <MenuAttribution />
+            </div>
 
-        {draft.dishes.length === 0 ? (
-          <div style={{ padding: '0 16px' }}>
             <div
               style={{
-                border: '1.5px dashed #E0E0E0', borderRadius: 10, padding: '18px 12px',
-                marginTop: 8, textAlign: 'center', fontSize: 13, color: '#999999',
+                display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 16px 4px',
               }}
             >
-              {d.preview.menuEmptyPlaceholder}
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 16px 4px',
-            }}
-          >
-            {draft.dishes.map((dish) => {
-              const compat = dishCompat(dish, viewer);
-              return (
-                <button
-                  key={dish.id}
-                  onClick={() => setScreen('menu')}
-                  style={{
-                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                    width: 110, flexShrink: 0, textAlign: 'left',
-                  }}
-                >
-                  <span style={{ position: 'relative', display: 'block' }}>
-                    {/* Foto piatti TONDE: le distingue dalle foto quadrate della community */}
-                    <DishPhoto dish={dish} size={{ w: 110, h: 110 }} radius={55} dimmed={compat?.level === 'amber'} />
-                    {compat && <CompatBadge level={compat.level} />}
-                  </span>
-                  <span
+              {visibleDishes.map((dish) => {
+                const compat = dishCompat(dish, viewer);
+                return (
+                  <button
+                    key={dish.id}
+                    onClick={() => setScreen('menu')}
                     style={{
-                      display: 'block', fontSize: 12, fontWeight: 600, color: '#333333',
-                      lineHeight: '15px', marginTop: 5, textAlign: 'center',
-                      overflow: 'hidden', textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+                      background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                      width: 110, flexShrink: 0, textAlign: 'left',
                     }}
                   >
-                    {dish.name}
-                  </span>
-                  {dish.category !== '' && (
-                    <span style={{ display: 'block', fontSize: 11, color: '#999999', marginTop: 1, textAlign: 'center' }}>
-                      {categoryName(dish.category, locale)}
+                    <span style={{ position: 'relative', display: 'block' }}>
+                      {/* Foto piatti TONDE: le distingue dalle foto quadrate della community */}
+                      <DishPhoto dish={dish} size={{ w: 110, h: 110 }} radius={55} dimmed={compat?.level === 'amber'} />
+                      {compat && <CompatBadge level={compat.level} />}
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                    <span
+                      style={{
+                        display: 'block', fontSize: 12, fontWeight: 600, color: '#333333',
+                        lineHeight: '15px', marginTop: 5, textAlign: 'center',
+                        overflow: 'hidden', textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {dish.name}
+                    </span>
+                    {dish.category !== '' && (
+                      <span style={{ display: 'block', fontSize: 11, color: '#999999', marginTop: 1, textAlign: 'center' }}>
+                        {categoryName(dish.category, locale)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       <Separator />
 

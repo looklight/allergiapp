@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
+import { useShowcases } from '@/lib/draft';
 
 function StorefrontIcon({ className }: { className?: string }) {
   return (
@@ -15,11 +16,11 @@ function StorefrontIcon({ className }: { className?: string }) {
   );
 }
 
-function MapPinIcon({ className }: { className?: string }) {
+function CardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z" />
-      <circle cx="12" cy="10" r="2.5" />
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+      <path d="M2.5 9.5h19M6 14.5h4" />
     </svg>
   );
 }
@@ -36,15 +37,19 @@ function UserIcon({ className }: { className?: string }) {
 export default function Nav() {
   const pathname = usePathname();
   const { d } = useI18n();
+  const { showcases } = useShowcases();
 
   const items = [
     { href: '/', label: d.nav.showcase, Icon: StorefrontIcon },
-    { href: '/locale', label: d.nav.venue, Icon: MapPinIcon },
+    { href: '/abbonamenti', label: d.nav.subscriptions, Icon: CardIcon },
     { href: '/account', label: d.nav.account, Icon: UserIcon },
   ];
 
   function isActive(href: string) {
-    return href === '/' ? pathname === '/' : pathname.startsWith(href);
+    // l'editor /vetrina/[id] appartiene alla voce "Vetrine"
+    return href === '/'
+      ? pathname === '/' || pathname.startsWith('/vetrina')
+      : pathname.startsWith(href);
   }
 
   return (
@@ -57,18 +62,37 @@ export default function Nav() {
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {items.map(({ href, label, Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                isActive(href)
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              {label}
-            </Link>
+            <div key={href}>
+              <Link
+                href={href}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive(href)
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                {label}
+              </Link>
+              {/* Sottomenu vetrine: solo navigazione, si crea/elimina dalla lista */}
+              {href === '/' && showcases && showcases.length > 0 && (
+                <div className="mt-1 space-y-0.5 pl-9">
+                  {showcases.map((s) => (
+                    <Link
+                      key={s.id}
+                      href={`/vetrina/${s.id}`}
+                      className={`block truncate rounded-md px-2 py-1.5 text-[13px] transition-colors ${
+                        pathname === `/vetrina/${s.id}`
+                          ? 'bg-gray-100 font-medium text-gray-900'
+                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {s.venueName.trim() || d.home.unnamed}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </nav>
       </aside>

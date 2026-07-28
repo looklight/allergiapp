@@ -11,8 +11,8 @@ const it = {
     close: 'Chiudi',
   },
   nav: {
-    showcase: 'Vetrina',
-    venue: 'Locale',
+    showcase: 'Vetrine',
+    subscriptions: 'Abbonamenti',
     account: 'Account',
   },
   login: {
@@ -27,19 +27,36 @@ const it = {
     signUpCta: 'Registrati',
     signInCta: 'Accedi',
     checkEmail: 'Controlla la tua casella email per confermare la registrazione.',
-    genericError: 'Qualcosa è andato storto. Riprova.',
   },
   home: {
-    title: 'La tua vetrina',
+    title: 'Le tue vetrine',
     intro:
-      'Compila la vetrina del tuo locale e guarda a destra come apparirà esattamente nella scheda dell’app. È una bozza privata: niente sarà visibile finché non deciderai di pubblicarla.',
-    draftBadge: 'Bozza privata',
+      'Una vetrina per ogni tuo locale: qui le crei e le gestisci, dentro compili piatti e link e vedi l’anteprima della scheda.',
+    empty: 'Nessuna vetrina ancora. Creane una e inizia a compilarla.',
+    create: 'Crea vetrina',
+    unnamed: 'Vetrina senza nome',
+    open: 'Apri',
+    dishOne: 'piatto',
+    dishOther: 'piatti',
+    linkOne: 'link',
+    linkOther: 'link',
+    deleteConfirm: 'Eliminare questa vetrina? I dati inseriti andranno persi.',
+    notFound: 'Vetrina non trovata: forse è stata eliminata.',
+    backToList: 'Le tue vetrine',
   },
   editor: {
-    venueNameLabel: 'Nome del locale',
+    title: 'La tua vetrina',
+    draftBadge: 'Bozza privata',
+    intro:
+      'La vetrina è la parte della scheda del tuo locale che curi tu: link utili e menù con gli allergeni. Compilala e guarda a destra come apparirà nell’app: per ora è una bozza privata, la mostrerai associandola al tuo locale presente su AllergiApp.',
+    subsLink: 'Come funziona l’associazione al locale',
+    venueNameLabel: 'Nome della vetrina',
     venueNamePlaceholder: 'Il tuo ristorante',
-    venueNameHint: 'Per ora serve solo all’anteprima: col collegamento al tuo locale arriverà da AllergiApp.',
+    venueNameHint:
+      'Ti serve per riconoscerla nella lista e l’anteprima lo usa come nome del locale; col collegamento al tuo locale reale arriverà da AllergiApp.',
     dishesTitle: 'Piatti e allergeni',
+    dishesHint:
+      'Sezione facoltativa: se non inserisci piatti, la scheda mostrerà solo i tuoi link, senza menù.',
     addDish: 'Aggiungi piatto',
     dishName: 'Nome del piatto',
     dishNamePlaceholder: 'Es. Spaghetti alla carbonara',
@@ -62,6 +79,8 @@ const it = {
     photoError: 'Impossibile leggere la foto. Prova con un altro file.',
     noDishes: 'Nessun piatto ancora. Aggiungi il primo: lo vedrai subito nell’anteprima.',
     dishNoAllergens: 'Nessun allergene',
+    dishAvailable: 'Disponibile',
+    dishHidden: 'Nascosto',
     simulatorTitle: 'Occhi del visitatore',
     simulatorHint:
       'Seleziona le esigenze di un utente di prova: i piatti nell’anteprima si colorano come li vedrebbe lui.',
@@ -105,7 +124,6 @@ const it = {
     orderWith: 'Ordina con',
     disclaimer:
       'Informazioni fornite dal ristoratore, riferite agli ingredienti. In cucina non è esclusa la contaminazione crociata: segnala sempre le tue allergie al personale.',
-    menuEmptyPlaceholder: 'I tuoi piatti appariranno qui',
     reviewsTitle: 'Recensioni',
     sampleReviewerName: 'Giulia',
     sampleReviewDate: '2 settimane fa',
@@ -114,12 +132,16 @@ const it = {
     samplePillGreen: 'Senza glutine',
     samplePillAmber: 'Senza lattosio',
   },
-  venue: {
-    title: 'Il tuo locale',
+  subs: {
+    title: 'Abbonamenti',
     intro:
-      'Qui collegherai il tuo account al tuo locale su AllergiApp, cercandolo per nome e città.',
+      'Qui collegherai ogni vetrina a un locale presente su AllergiApp, cercandolo per nome e città, e terrai d’occhio l’abbonamento che la rende visibile nell’app.',
+    empty: 'Nessuna vetrina ancora: creane una dalla sezione Vetrine.',
+    notLinked: 'Non collegata',
+    noSubscription: 'Nessun abbonamento',
+    linkCta: 'Collega a un locale',
     notFoundBridge:
-      'Non trovi il tuo locale? Aggiungilo dall’app AllergiApp, poi torna qui per richiederne la gestione.',
+      'Non trovi il tuo locale? Aggiungilo dall’app AllergiApp, poi torna qui per collegarlo.',
   },
   account: {
     title: 'Account',

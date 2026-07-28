@@ -13,8 +13,8 @@ const en: typeof it = {
     close: 'Close',
   },
   nav: {
-    showcase: 'Showcase',
-    venue: 'Venue',
+    showcase: 'Showcases',
+    subscriptions: 'Subscriptions',
     account: 'Account',
   },
   login: {
@@ -29,19 +29,36 @@ const en: typeof it = {
     signUpCta: 'Sign up',
     signInCta: 'Sign in',
     checkEmail: 'Check your inbox to confirm your registration.',
-    genericError: 'Something went wrong. Please try again.',
   },
   home: {
-    title: 'Your showcase',
+    title: 'Your showcases',
     intro:
-      'Fill in your venue’s showcase and watch on the right exactly how it will appear in the app. It is a private draft: nothing will be visible until you decide to publish it.',
-    draftBadge: 'Private draft',
+      'One showcase per venue: create and manage them here, then fill each one with dishes and links and preview its listing.',
+    empty: 'No showcases yet. Create one and start filling it in.',
+    create: 'Create showcase',
+    unnamed: 'Untitled showcase',
+    open: 'Open',
+    dishOne: 'dish',
+    dishOther: 'dishes',
+    linkOne: 'link',
+    linkOther: 'links',
+    deleteConfirm: 'Delete this showcase? The data you entered will be lost.',
+    notFound: 'Showcase not found: it may have been deleted.',
+    backToList: 'Your showcases',
   },
   editor: {
-    venueNameLabel: 'Venue name',
+    title: 'Your showcase',
+    draftBadge: 'Private draft',
+    intro:
+      'The showcase is the part of your venue’s listing that you curate: useful links and a menu with allergens. Fill it in and watch on the right how it will appear in the app: for now it is a private draft, you will publish it by linking it to your venue on AllergiApp.',
+    subsLink: 'How linking to your venue works',
+    venueNameLabel: 'Showcase name',
     venueNamePlaceholder: 'Your restaurant',
-    venueNameHint: 'For now it only feeds the preview: once linked to your venue it will come from AllergiApp.',
+    venueNameHint:
+      'It helps you recognize the showcase in the list and the preview uses it as the venue name; once linked to your real venue it will come from AllergiApp.',
     dishesTitle: 'Dishes and allergens',
+    dishesHint:
+      'Optional section: if you add no dishes, your listing will simply show your links, with no menu.',
     addDish: 'Add dish',
     dishName: 'Dish name',
     dishNamePlaceholder: 'E.g. Spaghetti carbonara',
@@ -64,6 +81,8 @@ const en: typeof it = {
     photoError: 'Could not read the photo. Try another file.',
     noDishes: 'No dishes yet. Add the first one: you will see it in the preview right away.',
     dishNoAllergens: 'No allergens',
+    dishAvailable: 'Available',
+    dishHidden: 'Hidden',
     simulatorTitle: 'Through a visitor’s eyes',
     simulatorHint:
       'Select the needs of a test user: the dishes in the preview take the colors they would see.',
@@ -107,7 +126,6 @@ const en: typeof it = {
     orderWith: 'Order with',
     disclaimer:
       'Information provided by the restaurateur, referring to ingredients. Cross-contamination in the kitchen cannot be ruled out: always tell the staff about your allergies.',
-    menuEmptyPlaceholder: 'Your dishes will appear here',
     reviewsTitle: 'Reviews',
     sampleReviewerName: 'Giulia',
     sampleReviewDate: '2 weeks ago',
@@ -116,12 +134,16 @@ const en: typeof it = {
     samplePillGreen: 'Gluten-free',
     samplePillAmber: 'Lactose-free',
   },
-  venue: {
-    title: 'Your venue',
+  subs: {
+    title: 'Subscriptions',
     intro:
-      'This is where you will link your account to your venue on AllergiApp, by searching for it by name and city.',
+      'This is where you will link each showcase to a venue on AllergiApp, searching for it by name and city, and keep an eye on the subscription that makes it visible in the app.',
+    empty: 'No showcases yet: create one from the Showcases section.',
+    notLinked: 'Not linked',
+    noSubscription: 'No subscription',
+    linkCta: 'Link to a venue',
     notFoundBridge:
-      'Can’t find your venue? Add it from the AllergiApp app, then come back here to request management.',
+      'Can’t find your venue? Add it from the AllergiApp app, then come back here to link it.',
   },
   account: {
     title: 'Account',
