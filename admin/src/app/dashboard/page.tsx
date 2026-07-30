@@ -8,6 +8,7 @@ import StatCard from '@/components/StatCard';
 import EventAnalyticsSection from '@/components/EventAnalyticsSection';
 import GrowthChartSection from '@/components/GrowthChartSection';
 import DailyActiveUsersSection from '@/components/DailyActiveUsersSection';
+import CardOpensSection from '@/components/CardOpensSection';
 import Link from 'next/link';
 
 interface Stats {
@@ -132,6 +133,8 @@ export default function DashboardPage() {
       <GrowthChartSection />
 
       <DailyActiveUsersSection />
+
+      <CardOpensSection />
     </div>
   );
 }
