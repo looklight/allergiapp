@@ -13,6 +13,7 @@ export type OtherFoodId =
   | 'mushrooms'
   | 'pumpkin'
   | 'zucchini'
+  | 'cucumber'
   | 'fennel'
   | 'celeriac'
   | 'spinach'
@@ -36,6 +37,7 @@ export type OtherFoodId =
   | 'watermelon'
   | 'fig'
   | 'passion_fruit'
+  | 'pomegranate'
   // Legumi
   | 'chickpeas'
   | 'lentils'
@@ -184,6 +186,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'zucchini', icon: '🥒', category: 'vegetables', translations: {
     it: 'Zucchina', en: 'Zucchini', fr: 'Courgette', de: 'Zucchini', es: 'Calabacín', pt: 'Abobrinha', nl: 'Courgette', pl: 'Cukinia', ru: 'Кабачок', sv: 'Zucchini', zh: '西葫芦', ja: 'ズッキーニ', ko: '주키니', th: 'ซูกินี', ar: 'كوسا',
   }},
+  { id: 'cucumber', icon: '🥒', category: 'vegetables', translations: {
+    it: 'Cetriolo', en: 'Cucumber', fr: 'Concombre', de: 'Gurke', es: 'Pepino', pt: 'Pepino', nl: 'Komkommer', pl: 'Ogórek', ru: 'Огурец', sv: 'Gurka', zh: '黄瓜', ja: 'キュウリ', ko: '오이', th: 'แตงกวา', ar: 'الخيار',
+  }},
   { id: 'fennel', icon: '🌱', category: 'vegetables', translations: {
     it: 'Finocchio', en: 'Fennel', fr: 'Fenouil', de: 'Fenchel', es: 'Hinojo', pt: 'Funcho', nl: 'Venkel', pl: 'Koper włoski', ru: 'Фенхель', sv: 'Fänkål', zh: '茴香', ja: 'フェンネル', ko: '회향', th: 'เฟนเนล', ar: 'الشمر',
   }},
@@ -250,6 +255,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'passion_fruit', icon: '🍊', category: 'fruits', translations: {
     it: 'Frutto della passione', en: 'Passion fruit', fr: 'Fruit de la passion', de: 'Passionsfrucht', es: 'Maracuyá', pt: 'Maracujá', nl: 'Passievrucht', pl: 'Marakuja', ru: 'Маракуйя', sv: 'Passionsfrukt', zh: '百香果', ja: 'パッションフルーツ', ko: '패션프루트', th: 'เสาวรส', ar: 'فاكهة العاطفة',
+  }},
+  { id: 'pomegranate', icon: '🍎', category: 'fruits', translations: {
+    it: 'Melograno', en: 'Pomegranate', fr: 'Grenade', de: 'Granatapfel', es: 'Granada', pt: 'Romã', nl: 'Granaatappel', pl: 'Granat', ru: 'Гранат', sv: 'Granatäpple', zh: '石榴', ja: 'ザクロ', ko: '석류', th: 'ทับทิม', ar: 'الرمان',
   }},
   // — Legumi, cereali e altro —
   // Legumi

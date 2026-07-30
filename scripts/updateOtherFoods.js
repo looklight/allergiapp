@@ -29,6 +29,7 @@ const NEW_OTHER_FOODS = {
   mushrooms: 'Mushrooms',
   pumpkin: 'Pumpkin',
   zucchini: 'Zucchini',
+  cucumber: 'Cucumber',
   fennel: 'Fennel',
   celeriac: 'Celeriac',
   spinach: 'Spinach',
@@ -52,6 +53,7 @@ const NEW_OTHER_FOODS = {
   watermelon: 'Watermelon',
   fig: 'Fig',
   passion_fruit: 'Passion fruit',
+  pomegranate: 'Pomegranate',
   // Legumi, cereali e altro
   chickpeas: 'Chickpeas',
   lentils: 'Lentils',
