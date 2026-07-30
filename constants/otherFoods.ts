@@ -17,11 +17,14 @@ export type OtherFoodId =
   | 'fennel'
   | 'celeriac'
   | 'spinach'
+  | 'broccoli'
+  | 'lettuce'
   | 'potato'
   // Frutta
   | 'peach'
   | 'kiwi'
   | 'strawberries'
+  | 'blueberries'
   | 'apple'
   | 'banana'
   | 'cherry'
@@ -65,6 +68,7 @@ export type OtherFoodId =
   | 'pistachios'
   | 'cashews'
   | 'pine_nuts'
+  | 'chestnuts'
   | 'poppy_seeds'
   | 'sunflower_seeds'
   | 'flax_seeds'
@@ -198,6 +202,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'spinach', icon: '🍃', category: 'vegetables', translations: {
     it: 'Spinaci', en: 'Spinach', fr: 'Épinards', de: 'Spinat', es: 'Espinacas', pt: 'Espinafre', nl: 'Spinazie', pl: 'Szpinak', ru: 'Шпинат', sv: 'Spenat', zh: '菠菜', ja: 'ほうれん草', ko: '시금치', th: 'ผักโขม', ar: 'السبانخ',
   }},
+  { id: 'broccoli', icon: '🥦', category: 'vegetables', translations: {
+    it: 'Broccoli', en: 'Broccoli', fr: 'Brocoli', de: 'Brokkoli', es: 'Brócoli', pt: 'Brócolis', nl: 'Broccoli', pl: 'Brokuły', ru: 'Брокколи', sv: 'Broccoli', zh: '西兰花', ja: 'ブロッコリー', ko: '브로콜리', th: 'บรอกโคลี', ar: 'البروكلي',
+  }},
+  { id: 'lettuce', icon: '🥬', category: 'vegetables', translations: {
+    it: 'Lattuga', en: 'Lettuce', fr: 'Laitue', de: 'Kopfsalat', es: 'Lechuga', pt: 'Alface', nl: 'Sla', pl: 'Sałata', ru: 'Салат латук', sv: 'Grönsallat', zh: '生菜', ja: 'レタス', ko: '상추', th: 'ผักกาดหอม', ar: 'الخس',
+  }},
   { id: 'potato', icon: '🥔', category: 'vegetables', translations: {
     it: 'Patata', en: 'Potato', fr: 'Pomme de terre', de: 'Kartoffel', es: 'Patata', pt: 'Batata', nl: 'Aardappel', pl: 'Ziemniak', ru: 'Картофель', sv: 'Potatis', zh: '土豆', ja: 'ジャガイモ', ko: '감자', th: 'มันฝรั่ง', ar: 'بطاطس',
   }},
@@ -210,6 +220,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'strawberries', icon: '🍓', category: 'fruits', translations: {
     it: 'Fragole', en: 'Strawberries', fr: 'Fraises', de: 'Erdbeeren', es: 'Fresas', pt: 'Morangos', nl: 'Aardbeien', pl: 'Truskawki', ru: 'Клубника', sv: 'Jordgubbar', zh: '草莓', ja: 'イチゴ', ko: '딸기', th: 'สตรอว์เบอร์รี', ar: 'الفراولة',
+  }},
+  { id: 'blueberries', icon: '🫐', category: 'fruits', translations: {
+    it: 'Mirtilli', en: 'Blueberries', fr: 'Myrtilles', de: 'Heidelbeeren', es: 'Arándanos', pt: 'Mirtilos', nl: 'Bosbessen', pl: 'Borówki', ru: 'Черника', sv: 'Blåbär', zh: '蓝莓', ja: 'ブルーベリー', ko: '블루베리', th: 'บลูเบอร์รี', ar: 'التوت الأزرق',
   }},
   { id: 'apple', icon: '🍎', category: 'fruits', translations: {
     it: 'Mela', en: 'Apple', fr: 'Pomme', de: 'Apfel', es: 'Manzana', pt: 'Maçã', nl: 'Appel', pl: 'Jabłko', ru: 'Яблоко', sv: 'Äpple', zh: '苹果', ja: 'りんご', ko: '사과', th: 'แอปเปิ้ล', ar: 'تفاح',
@@ -332,6 +345,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'pine_nuts', icon: '🌰', category: 'legumes_other', translations: {
     it: 'Pinoli', en: 'Pine nuts', fr: 'Pignons de pin', de: 'Pinienkerne', es: 'Piñones', pt: 'Pinhões', nl: 'Pijnboompitten', pl: 'Orzeszki piniowe', ru: 'Кедровые орехи', sv: 'Pinjenötter', zh: '松子', ja: '松の実', ko: '잣', th: 'เมล็ดสน', ar: 'حبوب الصنوبر',
+  }},
+  { id: 'chestnuts', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Castagne', en: 'Chestnuts', fr: 'Châtaignes', de: 'Esskastanien', es: 'Castañas', pt: 'Castanhas', nl: 'Tamme kastanjes', pl: 'Kasztany jadalne', ru: 'Каштаны', sv: 'Kastanjer', zh: '栗子', ja: '栗', ko: '밤', th: 'เกาลัด', ar: 'الكستناء',
   }},
   { id: 'poppy_seeds', icon: '🌸', category: 'legumes_other', translations: {
     it: 'Semi di papavero', en: 'Poppy seeds', fr: 'Graines de pavot', de: 'Mohnsamen', es: 'Semillas de amapola', pt: 'Sementes de papoula', nl: 'Maanzaad', pl: 'Nasiona maku', ru: 'Семена мака', sv: 'Vallmofrön', zh: '罂粟籽', ja: 'ケシの実', ko: '양귀비씨', th: 'เมล็ดฝิ่น', ar: 'بذور الخشخاش',
