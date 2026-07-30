@@ -4,7 +4,6 @@ import { useAuth } from '@/lib/auth';
 import type { Restaurant } from '@/lib/types';
 import { CUISINE_CATEGORIES, ACCOMMODATION_CATEGORIES } from '@/lib/restaurantCategories';
 import { getCountryName } from '@/lib/countryName';
-import InfoHint from '@/components/InfoHint';
 import Link from 'next/link';
 
 interface Props {
@@ -15,6 +14,52 @@ interface Props {
   isDeleting: boolean;
   onDelete: () => void;
   onRestaurantUpdate: (r: Restaurant) => void;
+}
+
+type ViewStats = NonNullable<Props['viewStats']>;
+
+// Popover con il dettaglio delle aperture scheda: stessa meccanica CSS di
+// InfoHint (hover + focus), ma con i numeri delle due sorgenti oltre alla
+// spiegazione. Le voci 'Totali' mostrano — finché il contatore anonimo non
+// ha ancora dati.
+function ViewStatsHint({ viewStats }: { viewStats: ViewStats }) {
+  const anonActive = viewStats.anon_total > 0;
+  const rows = [
+    { label: 'Totali (tutti gli utenti)', value: anonActive ? viewStats.anon_total : '—' },
+    { label: 'ultimi 30 giorni', value: anonActive ? viewStats.anon_30d : '—', indent: true },
+    { label: 'Con consenso analytics', value: viewStats.total_views },
+    { label: 'ultimi 30 giorni', value: viewStats.views_30d, indent: true },
+    { label: 'utenti unici', value: viewStats.unique_viewers, indent: true },
+  ];
+  return (
+    <span className="relative inline-flex group align-middle">
+      <button
+        type="button"
+        aria-label="Dettaglio aperture scheda"
+        className="inline-flex items-center text-faint hover:text-muted-foreground focus:text-muted-foreground focus:outline-none cursor-help transition-colors"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none invisible absolute right-0 top-full z-30 mt-2 w-72 rounded-md border border-border bg-card p-3 text-left text-xs font-normal leading-snug text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+      >
+        {rows.map((r, i) => (
+          <span key={i} className={`flex justify-between gap-4 ${r.indent ? 'pl-3 text-muted-foreground' : i > 0 ? 'mt-1.5' : ''}`}>
+            <span>{r.label}</span>
+            <span className="font-semibold tabular-nums">{r.value}</span>
+          </span>
+        ))}
+        <span className="mt-2 block border-t border-border pt-2 text-muted-foreground">
+          &lsquo;Totali&rsquo; è il contatore anonimo: tutte le aperture di tutti gli utenti, senza dati personali (per questo niente utenti unici). &lsquo;Con consenso&rsquo; conta le sole aperture di chi ha autorizzato il tracking. Ogni conteggio parte dal giorno della sua attivazione.
+        </span>
+      </span>
+    </span>
+  );
 }
 
 export default function RestaurantHeader({ restaurant, stats, viewStats, reportCount, isDeleting, onDelete, onRestaurantUpdate }: Props) {
@@ -336,11 +381,11 @@ export default function RestaurantHeader({ restaurant, stats, viewStats, reportC
         <span>Preferiti: <strong>{stats.favorite_count}</strong></span>
         {viewStats && (
           <span>
-            Aperture &mdash; totali: <strong>{viewStats.anon_total}</strong>
-            {' '}<span className="text-muted-foreground">({viewStats.anon_30d} in 30gg)</span>
-            {' '}&middot; con consenso: <strong>{viewStats.total_views}</strong>
-            {' '}<span className="text-muted-foreground">({viewStats.views_30d} in 30gg &middot; {viewStats.unique_viewers} utenti)</span>
-            {' '}<InfoHint text="Due conteggi delle aperture della scheda. 'Totali' è il contatore anonimo: conta tutte le aperture di tutti gli utenti, anche senza consenso analytics, ma non distingue gli utenti unici. 'Con consenso' viene dagli eventi analytics dei soli utenti che hanno autorizzato il tracking, e in più conta gli utenti unici. Ogni conteggio parte dal giorno della sua attivazione (nessun retroattivo), quindi i totali cumulati non sono direttamente confrontabili tra loro." align="end" />
+            {/* Finché il contatore anonimo non ha dati, il numero in riga è
+                quello consenzienti (l'unico reale); il popover chiarisce. */}
+            Aperture: <strong>{viewStats.anon_total > 0 ? viewStats.anon_total : viewStats.total_views}</strong>
+            {' '}<span className="text-muted-foreground">({viewStats.anon_total > 0 ? viewStats.anon_30d : viewStats.views_30d} in 30gg)</span>
+            {' '}<ViewStatsHint viewStats={viewStats} />
           </span>
         )}
         {reportCount > 0 && <span className="text-danger">Segnalazioni: <strong>{reportCount}</strong></span>}
