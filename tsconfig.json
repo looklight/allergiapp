@@ -15,6 +15,7 @@
   ],
   "exclude": [
     "admin",
+    "partner",
     "supabase/functions"
   ]
 }
