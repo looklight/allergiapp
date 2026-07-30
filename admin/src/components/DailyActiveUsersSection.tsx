@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
 import { safeQuery } from '@/lib/safeQuery';
 import InfoHint from '@/components/InfoHint';
 
-const INFO = "Utenti unici che ogni giorno fanno un'azione nell'app (accesso, ricerca, recensione…). Split: nuovi (prima volta) vs di ritorno. Conta solo chi ha dato il consenso analytics.";
+const INFO = "Utenti unici che ogni giorno fanno un'azione nell'app (accesso, ricerca, recensione…). Split: nuovi (prima volta) vs di ritorno. Le barre contano solo chi ha dato il consenso analytics; la linea 'Reali' conta TUTTI gli utenti loggati (contatore anonimo, mig 082) e parte dal giorno di attivazione.";
 
 type Range = 7 | 30 | 90;
 
@@ -25,11 +25,19 @@ const SERIES = [
   { key: 'returning_users', label: 'Di ritorno', color: '#2a78d6' },
 ] as const;
 
+// Linea sovrapposta: DAU reale da daily_counters (terzo colore della terna).
+const REAL_COLOR = '#e34948';
+
 interface DayRow {
   day: string; // date (YYYY-MM-DD) dal Postgres
   active_users: number;
   new_users: number;
   returning_users: number;
+}
+
+interface CounterRow {
+  day: string;
+  count: number;
 }
 
 interface Stats {
@@ -43,9 +51,13 @@ interface Stats {
 // Riempie i giorni senza attività con 0, così le barre mostrano i vuoti reali.
 // La finestra è "ultimi `days` giorni" fino a oggi, calendario locale del browser
 // (dashboard IT → coincide con Europe/Rome usato lato SQL).
-function fillDays(rows: DayRow[], days: number) {
+function fillDays(rows: DayRow[], realRows: CounterRow[], days: number) {
   const byDay = new Map(rows.map((r) => [r.day, r]));
-  const out: { label: string; new_users: number; returning_users: number }[] = [];
+  const realByDay = new Map(realRows.map((r) => [r.day, r.count]));
+  // Prima del giorno di attivazione del contatore (mig 082) il dato reale non
+  // esiste: null (la linea non si disegna) invece di uno 0 fuorviante.
+  const firstRealDay = realRows.length > 0 ? realRows[0].day : null;
+  const out: { label: string; new_users: number; returning_users: number; real_active: number | null }[] = [];
   const cursor = new Date();
   cursor.setHours(0, 0, 0, 0);
   cursor.setDate(cursor.getDate() - (days - 1));
@@ -56,6 +68,7 @@ function fillDays(rows: DayRow[], days: number) {
       label: cursor.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
       new_users: r?.new_users ?? 0,
       returning_users: r?.returning_users ?? 0,
+      real_active: firstRealDay !== null && key >= firstRealDay ? (realByDay.get(key) ?? 0) : null,
     });
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -66,7 +79,8 @@ function fillDays(rows: DayRow[], days: number) {
 interface TooltipEntry { name?: string; value?: number; color?: string; dataKey?: string | number }
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) {
   if (!active || !payload || payload.length === 0) return null;
-  const total = payload.reduce((s, p) => s + (p.value ?? 0), 0);
+  // Il totale somma solo le barre (consenso); la linea 'Reali' resta a parte.
+  const total = payload.reduce((s, p) => s + (p.dataKey === 'real_active' ? 0 : (p.value ?? 0)), 0);
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: 'var(--foreground)' }}>
       <p style={{ fontWeight: 600, marginBottom: 4 }}>{label}</p>
@@ -74,7 +88,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
         <p key={String(p.dataKey)} style={{ color: p.color }}>{p.name}: {p.value}</p>
       ))}
       <p style={{ fontWeight: 600, marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border)' }}>
-        Totale: {total}
+        Totale consenso: {total}
       </p>
     </div>
   );
@@ -110,19 +124,25 @@ function MiniStat({ label, value, hint }: { label: string; value: string; hint: 
 export default function DailyActiveUsersSection() {
   const [range, setRange] = useState<Range>(30);
   const [rows, setRows] = useState<DayRow[] | null>(null);
+  const [realRows, setRealRows] = useState<CounterRow[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setRows(null);
+    setRealRows([]);
     setStats(null);
     async function load() {
-      const [daily, agg] = await Promise.all([
+      const [daily, real, agg] = await Promise.all([
         safeQuery(() => supabase.rpc('get_daily_active_users', { p_days: range }), 'Utenti attivi/giorno'),
+        // Chiamata raw, errore ignorato di proposito (niente safeQuery: alerterebbe):
+        // se la mig 507 non è ancora applicata la linea semplicemente non appare.
+        supabase.rpc('get_daily_counters', { p_name: 'active_users', p_days: range }).then(({ data }) => data),
         safeQuery(() => supabase.rpc('get_active_users_stats', { p_days: range }), 'Statistiche utenti attivi'),
       ]);
       if (cancelled) return;
       setRows((daily as DayRow[]) ?? []);
+      setRealRows((real as CounterRow[]) ?? []);
       // La RPC stats ritorna una sola riga (o zero se non-admin)
       setStats(((agg as Stats[])?.[0]) ?? null);
     }
@@ -130,7 +150,7 @@ export default function DailyActiveUsersSection() {
     return () => { cancelled = true; };
   }, [range]);
 
-  const data = useMemo(() => (rows ? fillDays(rows, range) : []), [rows, range]);
+  const data = useMemo(() => (rows ? fillDays(rows, realRows, range) : []), [rows, realRows, range]);
 
   const actionsPerUser = stats && stats.period_active > 0
     ? (stats.period_events / stats.period_active).toFixed(1)
@@ -201,7 +221,7 @@ export default function DailyActiveUsersSection() {
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+          <ComposedChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={{ stroke: 'var(--border)' }} interval="preserveStartEnd" minTickGap={24} />
             <YAxis tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={44} allowDecimals={false} />
@@ -217,7 +237,17 @@ export default function DailyActiveUsersSection() {
                 isAnimationActive={false}
               />
             ))}
-          </BarChart>
+            {realRows.length > 0 && (
+              <Line
+                dataKey="real_active"
+                name="Reali (loggati)"
+                stroke={REAL_COLOR}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            )}
+          </ComposedChart>
         </ResponsiveContainer>
       )}
     </div>
