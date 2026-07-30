@@ -4,12 +4,13 @@ import { useAuth } from '@/lib/auth';
 import type { Restaurant } from '@/lib/types';
 import { CUISINE_CATEGORIES, ACCOMMODATION_CATEGORIES } from '@/lib/restaurantCategories';
 import { getCountryName } from '@/lib/countryName';
+import InfoHint from '@/components/InfoHint';
 import Link from 'next/link';
 
 interface Props {
   restaurant: Restaurant;
   stats: { review_count: number; average_rating: number; favorite_count: number };
-  viewStats: { total_views: number; views_30d: number; unique_viewers: number } | null;
+  viewStats: { total_views: number; views_30d: number; unique_viewers: number; anon_total: number; anon_30d: number } | null;
   reportCount: number;
   isDeleting: boolean;
   onDelete: () => void;
@@ -329,14 +330,17 @@ export default function RestaurantHeader({ restaurant, stats, viewStats, reportC
         )}
       </div>
 
-      <div className="flex gap-4 mt-4 text-sm">
+      <div className="flex flex-wrap gap-4 mt-4 text-sm">
         <span>Recensioni: <strong>{stats.review_count}</strong></span>
         <span>Rating: <strong>{stats.average_rating.toFixed(1)}</strong> ({stats.review_count})</span>
         <span>Preferiti: <strong>{stats.favorite_count}</strong></span>
         {viewStats && (
-          <span title="Aperture della scheda dagli utenti con tracking autorizzato (sottostima del reale), dalle build 1.1.0">
-            Aperture: <strong>{viewStats.total_views}</strong>
+          <span>
+            Aperture &mdash; totali: <strong>{viewStats.anon_total}</strong>
+            {' '}<span className="text-muted-foreground">({viewStats.anon_30d} in 30gg)</span>
+            {' '}&middot; con consenso: <strong>{viewStats.total_views}</strong>
             {' '}<span className="text-muted-foreground">({viewStats.views_30d} in 30gg &middot; {viewStats.unique_viewers} utenti)</span>
+            {' '}<InfoHint text="Due conteggi delle aperture della scheda. 'Totali' è il contatore anonimo: conta tutte le aperture di tutti gli utenti, anche senza consenso analytics, ma non distingue gli utenti unici. 'Con consenso' viene dagli eventi analytics dei soli utenti che hanno autorizzato il tracking, e in più conta gli utenti unici. Ogni conteggio parte dal giorno della sua attivazione (nessun retroattivo), quindi i totali cumulati non sono direttamente confrontabili tra loro." align="end" />
           </span>
         )}
         {reportCount > 0 && <span className="text-danger">Segnalazioni: <strong>{reportCount}</strong></span>}

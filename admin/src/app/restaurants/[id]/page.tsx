@@ -21,7 +21,7 @@ export default function RestaurantDetailPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({ review_count: 0, average_rating: 0, favorite_count: 0 });
-  const [viewStats, setViewStats] = useState<{ total_views: number; views_30d: number; unique_viewers: number } | null>(null);
+  const [viewStats, setViewStats] = useState<{ total_views: number; views_30d: number; unique_viewers: number; anon_total: number; anon_30d: number } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { isBusy, withBusy } = useBusyIds();
   const [menuPhotos, setMenuPhotos] = useState<MenuPhoto[]>([]);
@@ -68,8 +68,9 @@ export default function RestaurantDetailPage() {
         });
       }
 
-      // Aperture scheda (analytics_events, solo utenti con tracking autorizzato).
-      // Tollerante alla RPC assente (migration 506 non ancora applicata): resta null.
+      // Aperture scheda: consenzienti (analytics_events) + anonime (mig 082).
+      // Tollerante alla RPC assente (mig 506 non applicata): resta null.
+      // I campi anon_* mancano finché la mig 508 non è applicata: default 0.
       const { data: viewData } = await supabase.rpc('get_restaurant_view_stats', {
         target_restaurant_id: id,
       });
@@ -78,6 +79,8 @@ export default function RestaurantDetailPage() {
           total_views: Number(viewData[0].total_views),
           views_30d: Number(viewData[0].views_30d),
           unique_viewers: Number(viewData[0].unique_viewers),
+          anon_total: Number(viewData[0].anon_total ?? 0),
+          anon_30d: Number(viewData[0].anon_30d ?? 0),
         });
       }
 
