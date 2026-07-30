@@ -18,6 +18,7 @@ import { theme } from '../constants/theme';
 import i18n from '../utils/i18n';
 import { useAppContext } from '../contexts/AppContext';
 import { Analytics } from '../services/analytics';
+import { SupabaseAnalytics } from '../services/supabaseAnalytics';
 import CardPortrait from './components/card/CardPortrait';
 import CardLandscape from './components/card/CardLandscape';
 import { CardColors, CardDisplayMode, DietModeSectionData } from '../types/card';
@@ -57,6 +58,9 @@ export default function CardScreen() {
   useEffect(() => {
     ScreenOrientation.unlockAsync();
     Analytics.logCardViewed(cardLanguage, selectedAllergens.length, selectedAllergens, isDownloadedLanguage);
+    // Contatore anonimo (mig 082): conta anche gli utenti senza consenso
+    // tracking. Fire-and-forget: la card offline resta non contata.
+    SupabaseAnalytics.bumpDailyCounter('card_opened');
     return () => { ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
   }, []);
 

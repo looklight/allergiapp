@@ -33,6 +33,9 @@ export type EventName =
 
 type EventProperties = Record<string, string | number | boolean | null | string[]>;
 
+// Contatori anonimi (mig 082): nomi ammessi dalla whitelist di bump_daily_counter.
+export type DailyCounterName = 'card_opened';
+
 let isTrackingAuthorized = false;
 
 export const SupabaseAnalytics = {
@@ -70,6 +73,36 @@ export const SupabaseAnalytics = {
       .then(() => undefined, (err) => {
         // Errori silenziati: analytics non deve mai degradare l'UX.
         if (__DEV__) console.warn('[SupabaseAnalytics] track failed', name, err);
+      });
+  },
+
+  /**
+   * Contatori ANONIMI (mig 082): incrementano un aggregato (nome, giorno)
+   * senza alcun dato personale, quindi NON passano dal gate del consenso —
+   * contano tutti gli utenti. Fire-and-forget come track().
+   */
+  bumpDailyCounter(name: DailyCounterName): void {
+    if (__DEV__) {
+      console.log('[SupabaseAnalytics] bumpDailyCounter', name);
+      return;
+    }
+    supabase
+      .rpc('bump_daily_counter', { p_name: name })
+      .then(() => undefined, (err) => {
+        if (__DEV__) console.warn('[SupabaseAnalytics] bump failed', name, err);
+      });
+  },
+
+  /** Aperture scheda per ristorante, anch'esse anonime (vedi bumpDailyCounter). */
+  bumpRestaurantView(restaurantId: string): void {
+    if (__DEV__) {
+      console.log('[SupabaseAnalytics] bumpRestaurantView', restaurantId);
+      return;
+    }
+    supabase
+      .rpc('bump_restaurant_view', { p_restaurant_id: restaurantId })
+      .then(() => undefined, (err) => {
+        if (__DEV__) console.warn('[SupabaseAnalytics] bump failed', restaurantId, err);
       });
   },
 };

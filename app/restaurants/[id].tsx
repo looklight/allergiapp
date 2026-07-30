@@ -20,7 +20,11 @@ export default function RestaurantDetailScreen() {
   // Track una sola volta per ingresso schermata. Tracciamo l'id grezzo;
   // l'utente loggato e' gia' catturato da auth.uid() lato RPC.
   useEffect(() => {
-    if (id) SupabaseAnalytics.track('restaurant_viewed', { restaurant_id: id });
+    if (id) {
+      SupabaseAnalytics.track('restaurant_viewed', { restaurant_id: id });
+      // Contatore anonimo (mig 082): conta anche gli utenti senza consenso tracking.
+      SupabaseAnalytics.bumpRestaurantView(id);
+    }
   }, [id]);
 
   const handleDismiss = () => router.back();
