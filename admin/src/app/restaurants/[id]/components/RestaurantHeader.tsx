@@ -9,13 +9,14 @@ import Link from 'next/link';
 interface Props {
   restaurant: Restaurant;
   stats: { review_count: number; average_rating: number; favorite_count: number };
+  viewStats: { total_views: number; views_30d: number; unique_viewers: number } | null;
   reportCount: number;
   isDeleting: boolean;
   onDelete: () => void;
   onRestaurantUpdate: (r: Restaurant) => void;
 }
 
-export default function RestaurantHeader({ restaurant, stats, reportCount, isDeleting, onDelete, onRestaurantUpdate }: Props) {
+export default function RestaurantHeader({ restaurant, stats, viewStats, reportCount, isDeleting, onDelete, onRestaurantUpdate }: Props) {
   const { session } = useAuth();
   const [editingCategories, setEditingCategories] = useState(false);
   // adminVotes = stato dei voti dell'admin loggato per questo ristorante.
@@ -332,6 +333,12 @@ export default function RestaurantHeader({ restaurant, stats, reportCount, isDel
         <span>Recensioni: <strong>{stats.review_count}</strong></span>
         <span>Rating: <strong>{stats.average_rating.toFixed(1)}</strong> ({stats.review_count})</span>
         <span>Preferiti: <strong>{stats.favorite_count}</strong></span>
+        {viewStats && (
+          <span title="Aperture della scheda dagli utenti con tracking autorizzato (sottostima del reale), dalle build 1.1.0">
+            Aperture: <strong>{viewStats.total_views}</strong>
+            {' '}<span className="text-muted-foreground">({viewStats.views_30d} in 30gg &middot; {viewStats.unique_viewers} utenti)</span>
+          </span>
+        )}
         {reportCount > 0 && <span className="text-danger">Segnalazioni: <strong>{reportCount}</strong></span>}
       </div>
 

@@ -21,6 +21,7 @@ export default function RestaurantDetailPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({ review_count: 0, average_rating: 0, favorite_count: 0 });
+  const [viewStats, setViewStats] = useState<{ total_views: number; views_30d: number; unique_viewers: number } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { isBusy, withBusy } = useBusyIds();
   const [menuPhotos, setMenuPhotos] = useState<MenuPhoto[]>([]);
@@ -64,6 +65,19 @@ export default function RestaurantDetailPage() {
           review_count: Number(statsData[0].review_count),
           average_rating: Number(statsData[0].average_rating),
           favorite_count: Number(statsData[0].favorite_count),
+        });
+      }
+
+      // Aperture scheda (analytics_events, solo utenti con tracking autorizzato).
+      // Tollerante alla RPC assente (migration 506 non ancora applicata): resta null.
+      const { data: viewData } = await supabase.rpc('get_restaurant_view_stats', {
+        target_restaurant_id: id,
+      });
+      if (viewData && viewData.length > 0) {
+        setViewStats({
+          total_views: Number(viewData[0].total_views),
+          views_30d: Number(viewData[0].views_30d),
+          unique_viewers: Number(viewData[0].unique_viewers),
         });
       }
 
@@ -210,6 +224,7 @@ export default function RestaurantDetailPage() {
       <RestaurantHeader
         restaurant={restaurant}
         stats={stats}
+        viewStats={viewStats}
         reportCount={reports.length}
         isDeleting={isDeleting}
         onDelete={deleteRestaurant}
