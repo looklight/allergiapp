@@ -62,6 +62,7 @@
     "tomato": "Помідор",
     "onion": "Цибуля",
     "garlic": "Часник",
+    "chives": "Цибуля-різанець",
     "bell_pepper": "Солодкий перець",
     "eggplant": "Баклажани",
     "carrot": "Морква",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Насіння соняшнику",
     "cinnamon": "кориця",
     "ginger": "імбир",
+    "chamomile": "Ромашка",
     "almonds": "мигдаль",
     "hazelnuts": "лісові горіхи",
     "walnuts": "Волоські горіхи",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Штучні барвники",
     "pork": "Свинина",
     "red_meat": "Червоне м'ясо",
-    "chicken": "курка"
+    "chicken": "курка",
+    "snails": "Равлики"
   },
   "restrictions": {
     "raw_fish": "Сира риба / суші",

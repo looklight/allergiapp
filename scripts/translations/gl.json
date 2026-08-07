@@ -62,6 +62,7 @@
     "tomato": "Tomate",
     "onion": "Cebola",
     "garlic": "Allo",
+    "chives": "Ceboliño",
     "bell_pepper": "Pemento",
     "eggplant": "Berenjena",
     "carrot": "Cenoria",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Sementes de xirasol",
     "cinnamon": "Canela",
     "ginger": "xenxibre",
+    "chamomile": "Camomila",
     "almonds": "Améndoas",
     "hazelnuts": "Abelás",
     "walnuts": "Noces",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Colorantes artificiais",
     "pork": "Porco",
     "red_meat": "Carne vermella",
-    "chicken": "Polo"
+    "chicken": "Polo",
+    "snails": "Caracois"
   },
   "restrictions": {
     "raw_fish": "Peixe cru / sushi",

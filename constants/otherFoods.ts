@@ -7,6 +7,7 @@ export type OtherFoodId =
   | 'tomato'
   | 'onion'
   | 'garlic'
+  | 'chives'
   | 'bell_pepper'
   | 'eggplant'
   | 'carrot'
@@ -66,6 +67,7 @@ export type OtherFoodId =
   | 'spicy'
   | 'cinnamon'
   | 'ginger'
+  | 'chamomile'
   // Frutta a guscio (singoli, complemento di 'nuts' EU)
   | 'almonds'
   | 'hazelnuts'
@@ -86,7 +88,8 @@ export type OtherFoodId =
   // Proteine
   | 'pork'
   | 'red_meat'
-  | 'chicken';
+  | 'chicken'
+  | 'snails';
 
 export interface OtherFood {
   id: OtherFoodId;
@@ -176,6 +179,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'garlic', icon: '🧄', category: 'vegetables', translations: {
     it: 'Aglio', en: 'Garlic', fr: 'Ail', de: 'Knoblauch', es: 'Ajo', pt: 'Alho', nl: 'Knoflook', pl: 'Czosnek', ru: 'Чеснок', sv: 'Vitlök', zh: '大蒜', ja: 'ニンニク', ko: '마늘', th: 'กระเทียม', ar: 'الثوم',
+  }},
+  { id: 'chives', icon: '🌿', category: 'vegetables', translations: {
+    it: 'Erba cipollina', en: 'Chives', fr: 'Ciboulette', de: 'Schnittlauch', es: 'Cebollino', pt: 'Cebolinho', nl: 'Bieslook', pl: 'Szczypiorek', ru: 'Шнитт-лук', sv: 'Gräslök', zh: '细香葱', ja: 'チャイブ', ko: '차이브', th: 'ต้นหอมฝรั่ง', ar: 'الثوم المعمر',
   }},
   { id: 'bell_pepper', icon: '🫑', category: 'vegetables', translations: {
     it: 'Peperone', en: 'Bell pepper', fr: 'Poivron', de: 'Paprika', es: 'Pimiento', pt: 'Pimentão', nl: 'Paprika', pl: 'Papryka', ru: 'Сладкий перец', sv: 'Paprika', zh: '甜椒', ja: 'ピーマン', ko: '피망', th: 'พริกหวาน', ar: 'الفلفل الحلو',
@@ -347,6 +353,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'ginger', icon: '🫚', category: 'legumes_other', translations: {
     it: 'Zenzero', en: 'Ginger', fr: 'Gingembre', de: 'Ingwer', es: 'Jengibre', pt: 'Gengibre', nl: 'Gember', pl: 'Imbir', ru: 'Имбирь', sv: 'Ingefära', zh: '生姜', ja: 'ショウガ', ko: '생강', th: 'ขิง', ar: 'الزنجبيل',
   }},
+  { id: 'chamomile', icon: '🌼', category: 'legumes_other', translations: {
+    it: 'Camomilla', en: 'Chamomile', fr: 'Camomille', de: 'Kamille', es: 'Manzanilla', pt: 'Camomila', nl: 'Kamille', pl: 'Rumianek', ru: 'Ромашка', sv: 'Kamomill', zh: '洋甘菊', ja: 'カモミール', ko: '캐모마일', th: 'คาโมมายล์', ar: 'البابونج',
+  }},
   // — Frutta a guscio singole (complemento dell'allergene EU 'nuts') —
   { id: 'almonds', icon: '🌰', category: 'legumes_other', translations: {
     it: 'Mandorle', en: 'Almonds', fr: 'Amandes', de: 'Mandeln', es: 'Almendras', pt: 'Amêndoas', nl: 'Amandelen', pl: 'Migdały', ru: 'Миндаль', sv: 'Mandlar', zh: '杏仁', ja: 'アーモンド', ko: '아몬드', th: 'อัลมอนด์', ar: 'اللوز',
@@ -403,6 +412,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'chicken', icon: '🍗', category: 'proteins', translations: {
     it: 'Pollo', en: 'Chicken', fr: 'Poulet', de: 'Huhn', es: 'Pollo', pt: 'Frango', nl: 'Kip', pl: 'Kurczak', ru: 'Курица', sv: 'Kyckling', zh: '鸡肉', ja: '鶏肉', ko: '닭고기', th: 'เนื้อไก่', ar: 'دجاج',
+  }},
+  { id: 'snails', icon: '🐌', category: 'proteins', translations: {
+    it: 'Lumache', en: 'Snails', fr: 'Escargots', de: 'Schnecken', es: 'Caracoles', pt: 'Caracóis', nl: 'Slakken', pl: 'Ślimaki', ru: 'Улитки', sv: 'Sniglar', zh: '蜗牛', ja: 'エスカルゴ', ko: '달팽이', th: 'หอยทาก', ar: 'الحلزون',
   }},
 ];
 

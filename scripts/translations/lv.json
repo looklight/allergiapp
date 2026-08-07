@@ -62,6 +62,7 @@
     "tomato": "Tomāts",
     "onion": "Sīpols",
     "garlic": "Ķiploks",
+    "chives": "Maurloki",
     "bell_pepper": "Paprika",
     "eggplant": "Baklažāni",
     "carrot": "Burkāns",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Saulespuķu sēklas",
     "cinnamon": "Kanēlis",
     "ginger": "Ingvers",
+    "chamomile": "Kumelīte",
     "almonds": "Mandeles",
     "hazelnuts": "Lazdu rieksti",
     "walnuts": "Valrieksti",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Mākslīgās krāsvielas",
     "pork": "Cūkgaļa",
     "red_meat": "Sarkanā gaļa",
-    "chicken": "Vistas gaļa"
+    "chicken": "Vistas gaļa",
+    "snails": "Gliemeži"
   },
   "restrictions": {
     "raw_fish": "Jēla zivs / suši",

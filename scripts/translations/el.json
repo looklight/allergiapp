@@ -62,6 +62,7 @@
     "tomato": "Ντομάτα",
     "onion": "Κρεμμύδι",
     "garlic": "Σκόρδο",
+    "chives": "Σχοινόπρασο",
     "bell_pepper": "Πιπεριά",
     "eggplant": "Μελιτζάνα",
     "carrot": "Καρότο",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Ηλιόσποροι",
     "cinnamon": "Κανέλα",
     "ginger": "Τζίντζερ",
+    "chamomile": "Χαμομήλι",
     "almonds": "αμύγδαλα",
     "hazelnuts": "Φουντούκια",
     "walnuts": "Καρύδια",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Τεχνητοί χρωματισμοί",
     "pork": "Χοιρινό",
     "red_meat": "Κόκκινο κρέας",
-    "chicken": "Κοτόπουλο"
+    "chicken": "Κοτόπουλο",
+    "snails": "Σαλιγκάρια"
   },
   "restrictions": {
     "raw_fish": "Ωμό ψάρι / σούσι",

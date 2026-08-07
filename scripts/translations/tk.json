@@ -62,6 +62,7 @@
     "tomato": "Pomidor",
     "onion": "Sogan",
     "garlic": "Sarymsak",
+    "chives": "Chives",
     "bell_pepper": "Jaň burç",
     "eggplant": "Bägül",
     "carrot": "Käşir",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Günebakar tohumy",
     "cinnamon": "Darçyn",
     "ginger": "Zynjyr",
+    "chamomile": "Chamomile",
     "almonds": "Badam",
     "hazelnuts": "Fizik",
     "walnuts": "Hoz",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Emeli reňkler",
     "pork": "Doňuz eti",
     "red_meat": "Gyzyl et",
-    "chicken": "Towuk"
+    "chicken": "Towuk",
+    "snails": "Snails"
   },
   "restrictions": {
     "raw_fish": "Çig balyk / suşi",

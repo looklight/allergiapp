@@ -62,6 +62,7 @@
     "tomato": "Помидор",
     "onion": "Пияз",
     "garlic": "Сарымсак",
+    "chives": "Chives",
     "bell_pepper": "Калемпир",
     "eggplant": "Баклажан",
     "carrot": "Сабиз",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Күн карама уруктары",
     "cinnamon": "Cinnamon",
     "ginger": "Имбирь",
+    "chamomile": "ромашка",
     "almonds": "Бадам",
     "hazelnuts": "Фундук",
     "walnuts": "Жаңгак",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Жасалма боёктор",
     "pork": "Чочконун эти",
     "red_meat": "Кызыл эт",
-    "chicken": "тоок"
+    "chicken": "тоок",
+    "snails": "Үлүлдөр"
   },
   "restrictions": {
     "raw_fish": "Чийки балык / суши",

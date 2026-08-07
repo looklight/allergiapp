@@ -62,6 +62,7 @@
     "tomato": "Roșie",
     "onion": "Ceapă",
     "garlic": "Usturoi",
+    "chives": "Arpagic",
     "bell_pepper": "Ardei gras",
     "eggplant": "Vânătă",
     "carrot": "Morcov",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Semințe de floarea soarelui",
     "cinnamon": "Scorţişoară",
     "ginger": "Ghimbir",
+    "chamomile": "Mușețel",
     "almonds": "Migdale",
     "hazelnuts": "Alune",
     "walnuts": "Nuci",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Coloranti artificiali",
     "pork": "Porc",
     "red_meat": "Carne roșie",
-    "chicken": "Pui"
+    "chicken": "Pui",
+    "snails": "Melci"
   },
   "restrictions": {
     "raw_fish": "Pește crud / sushi",

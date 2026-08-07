@@ -62,6 +62,7 @@
     "tomato": "ប៉េងប៉ោះ",
     "onion": "ខ្ទឹមបារាំង",
     "garlic": "ខ្ទឹម",
+    "chives": "Chives",
     "bell_pepper": "ម្រេចកណ្ដឹង",
     "eggplant": "ពងទា",
     "carrot": "ការ៉ុត",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "គ្រាប់ផ្កាឈូករ័ត្ន",
     "cinnamon": "cinnamon",
     "ginger": "ខ្ញី",
+    "chamomile": "Chamomile",
     "almonds": "អាល់ម៉ុន",
     "hazelnuts": "Hazelnuts",
     "walnuts": "គ្រាប់ Walnut",
@@ -130,7 +132,8 @@
     "artificial_colorings": "ពណ៌សិប្បនិម្មិត",
     "pork": "សាច់ជ្រូក",
     "red_meat": "សាច់ក្រហម",
-    "chicken": "មាន់"
+    "chicken": "មាន់",
+    "snails": "ខ្យង"
   },
   "restrictions": {
     "raw_fish": "ត្រីឆៅ / ស៊ូស៊ី",

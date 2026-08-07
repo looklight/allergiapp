@@ -62,6 +62,7 @@
     "tomato": "Cà chua",
     "onion": "Hành",
     "garlic": "Tỏi",
+    "chives": "hẹ",
     "bell_pepper": "Ớt chuông",
     "eggplant": "cà tím",
     "carrot": "cà rốt",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Hạt hướng dương",
     "cinnamon": "quế",
     "ginger": "gừng",
+    "chamomile": "Hoa cúc La Mã",
     "almonds": "hạnh nhân",
     "hazelnuts": "hạt phỉ",
     "walnuts": "Quả óc chó",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Chất tạo màu nhân tạo",
     "pork": "Thịt lợn",
     "red_meat": "Thịt đỏ",
-    "chicken": "Thịt gà"
+    "chicken": "Thịt gà",
+    "snails": "Ốc sên"
   },
   "restrictions": {
     "raw_fish": "Cá sống / sushi",

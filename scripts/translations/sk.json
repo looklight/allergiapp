@@ -62,6 +62,7 @@
     "tomato": "Paradajka",
     "onion": "Cibuľa",
     "garlic": "Cesnak",
+    "chives": "Pažítka",
     "bell_pepper": "Paprika",
     "eggplant": "baklažán",
     "carrot": "Mrkva",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Slnečnicové semienka",
     "cinnamon": "Škorica",
     "ginger": "Zázvor",
+    "chamomile": "Harmanček",
     "almonds": "Mandle",
     "hazelnuts": "Lieskové oriešky",
     "walnuts": "Vlašské orechy",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Umelé farbivá",
     "pork": "Bravčové mäso",
     "red_meat": "Červené mäso",
-    "chicken": "Kuracie"
+    "chicken": "Kuracie",
+    "snails": "Slimáky"
   },
   "restrictions": {
     "raw_fish": "Surové ryby / sushi",

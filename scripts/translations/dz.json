@@ -62,6 +62,7 @@
     "tomato": "བླམ་བན་ད",
     "onion": "སྒོགཔ",
     "garlic": "སྐྱ༌སྒོགཔ",
+    "chives": "ཆིབས་ཚུ།",
     "bell_pepper": "བེལ་ཚལ་ལུ།",
     "eggplant": "དོ་ལོམ",
     "carrot": "ལ༌ཕགུ༌དམརཔོ",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "ཉི་མའི་མེ་ཏོག་གི་ས་བོན།",
     "cinnamon": "ཤིང་ཚ",
     "ginger": "ས༌སྒ",
+    "chamomile": "ཀ་མོ་མའིལ།",
     "almonds": "ཨ་ལཱན་ཌི།",
     "hazelnuts": "ཧ་ཟེལ་ནཊ།",
     "walnuts": "ཝལ་ནཊ།",
@@ -130,7 +132,8 @@
     "artificial_colorings": "བཅོས་མའི་ཚོས་གཞི།",
     "pork": "ཕག༌ཤ",
     "red_meat": "ཤ་དམར་པོ།",
-    "chicken": "བྱ༌ཤ"
+    "chicken": "བྱ༌ཤ",
+    "snails": "Snails"
   },
   "restrictions": {
     "raw_fish": "ཉ་མ་བཙོས་པ། / སུ་ཤི།",

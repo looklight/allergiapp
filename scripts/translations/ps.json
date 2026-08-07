@@ -62,6 +62,7 @@
     "tomato": "ټماټر",
     "onion": "پیاز",
     "garlic": "هوږه",
+    "chives": "Chives",
     "bell_pepper": "سور مرچ",
     "eggplant": "اګپلان",
     "carrot": "گاجر",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "د لمر ګل تخم",
     "cinnamon": "دارچینی",
     "ginger": "ادرک",
+    "chamomile": "کیمومائل",
     "almonds": "بادام",
     "hazelnuts": "هزلنټ",
     "walnuts": "اخروټ",
@@ -130,7 +132,8 @@
     "artificial_colorings": "مصنوعي رنګونه",
     "pork": "د خنزیر",
     "red_meat": "سور غوښه",
-    "chicken": "چرګ"
+    "chicken": "چرګ",
+    "snails": "Snails"
   },
   "restrictions": {
     "raw_fish": "خام کب / سوشي",

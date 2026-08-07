@@ -62,6 +62,7 @@
     "tomato": "Voatabia",
     "onion": "Tongolo",
     "garlic": "Tongolo gasy",
+    "chives": "Chives",
     "bell_pepper": "lakolosy dipoavatra",
     "eggplant": "Baranjely",
     "carrot": "Karaoty",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "voan'ny tanamasoandro",
     "cinnamon": "havozomanitra",
     "ginger": "Ginger",
+    "chamomile": "Chamomile",
     "almonds": "amygdala",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Walnuts",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Fandokoana artifisialy",
     "pork": "Henan-kisoa",
     "red_meat": "Hena mena",
-    "chicken": "akoho"
+    "chicken": "akoho",
+    "snails": "Sifotra"
   },
   "restrictions": {
     "raw_fish": "Trondro manta / sushi",

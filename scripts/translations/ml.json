@@ -62,6 +62,7 @@
     "tomato": "തക്കാളി",
     "onion": "ഉള്ളി",
     "garlic": "വെളുത്തുള്ളി",
+    "chives": "Chives",
     "bell_pepper": "മണി കുരുമുളക്",
     "eggplant": "എഗ്പ്ലാന്റ്",
     "carrot": "കാരറ്റ്",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "സൂര്യകാന്തി വിത്തുകൾ",
     "cinnamon": "കറുവപ്പട്ട",
     "ginger": "ഇഞ്ചി",
+    "chamomile": "ചമോമൈൽ",
     "almonds": "ബദാം",
     "hazelnuts": "ഹസൽനട്ട്സ്",
     "walnuts": "വാൽനട്ട്സ്",
@@ -130,7 +132,8 @@
     "artificial_colorings": "കൃത്രിമ നിറങ്ങൾ",
     "pork": "പന്നിയിറച്ചി",
     "red_meat": "ചുവന്ന മാംസം",
-    "chicken": "കോഴി"
+    "chicken": "കോഴി",
+    "snails": "ഒച്ചുകൾ"
   },
   "restrictions": {
     "raw_fish": "അസംസ്കൃത മത്സ്യം / സുഷി",

@@ -62,6 +62,7 @@
     "tomato": "Tumatir",
     "onion": "Albasa",
     "garlic": "Tafarnuwa",
+    "chives": "Chives",
     "bell_pepper": "barkono barkono",
     "eggplant": "Eggplant",
     "carrot": "Karas",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Sunflower tsaba",
     "cinnamon": "Cinnamon",
     "ginger": "Ginger",
+    "chamomile": "Chamomile",
     "almonds": "Almonds",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Gyada",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Launi na wucin gadi",
     "pork": "Alade",
     "red_meat": "Jan nama",
-    "chicken": "Kaza"
+    "chicken": "Kaza",
+    "snails": "Dodunan kodi"
   },
   "restrictions": {
     "raw_fish": "Danyen kifi / sushi",

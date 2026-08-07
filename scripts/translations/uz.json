@@ -62,6 +62,7 @@
     "tomato": "Pomidor",
     "onion": "Piyoz",
     "garlic": "Sarimsoq",
+    "chives": "Chives",
     "bell_pepper": "Bolgar qalampiri",
     "eggplant": "Baqlajon",
     "carrot": "Sabzi",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Ayçiçek urug'lari",
     "cinnamon": "dolchin",
     "ginger": "Zanjabil",
+    "chamomile": "Moychechak",
     "almonds": "Bodom",
     "hazelnuts": "Fındıklar",
     "walnuts": "Yong'oq",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Sun'iy bo'yoqlar",
     "pork": "Cho'chqa go'shti",
     "red_meat": "Qizil go'sht",
-    "chicken": "Tovuq"
+    "chicken": "Tovuq",
+    "snails": "Snails"
   },
   "restrictions": {
     "raw_fish": "Xom baliq / sushi",

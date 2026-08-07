@@ -62,6 +62,7 @@
     "tomato": "Tomat",
     "onion": "Zonyon",
     "garlic": "Lay",
+    "chives": "Siboulèt",
     "bell_pepper": "Bell piman",
     "eggplant": "Berejenn",
     "carrot": "Kawòt",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Grenn tounsòl",
     "cinnamon": "Kannèl",
     "ginger": "Jenjanm",
+    "chamomile": "Kamomiy",
     "almonds": "Zanmann",
     "hazelnuts": "nwazèt",
     "walnuts": "nwaye",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Koloran atifisyèl",
     "pork": "Vyann kochon",
     "red_meat": "Vyann wouj",
-    "chicken": "Poul"
+    "chicken": "Poul",
+    "snails": "Kalmason"
   },
   "restrictions": {
     "raw_fish": "Pwason kri / susi",

@@ -62,6 +62,7 @@
     "tomato": "Kamatis",
     "onion": "Sibuyas",
     "garlic": "Bawang",
+    "chives": "Chives",
     "bell_pepper": "Bell pepper",
     "eggplant": "Talong",
     "carrot": "karot",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Mga buto ng sunflower",
     "cinnamon": "kanela",
     "ginger": "luya",
+    "chamomile": "Chamomile",
     "almonds": "Almendras",
     "hazelnuts": "Mga Hazelnut",
     "walnuts": "Mga nogales",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Mga artipisyal na kulay",
     "pork": "Baboy",
     "red_meat": "Pulang karne",
-    "chicken": "manok"
+    "chicken": "manok",
+    "snails": "Mga kuhol"
   },
   "restrictions": {
     "raw_fish": "Hilaw na isda / sushi",

@@ -62,6 +62,7 @@
     "tomato": "टोमॅटो",
     "onion": "कांदा",
     "garlic": "लसूण",
+    "chives": "Chives",
     "bell_pepper": "भोपळी मिरची",
     "eggplant": "वांगी",
     "carrot": "गाजर",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "सूर्यफूल बिया",
     "cinnamon": "दालचिनी",
     "ginger": "आले",
+    "chamomile": "कॅमोमाइल",
     "almonds": "बदाम",
     "hazelnuts": "हेझलनट्स",
     "walnuts": "अक्रोड",
@@ -130,7 +132,8 @@
     "artificial_colorings": "कृत्रिम रंग",
     "pork": "डुकराचे मांस",
     "red_meat": "लाल मांस",
-    "chicken": "चिकन"
+    "chicken": "चिकन",
+    "snails": "गोगलगाय"
   },
   "restrictions": {
     "raw_fish": "कच्चा मासा / सुशी",

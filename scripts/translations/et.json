@@ -62,6 +62,7 @@
     "tomato": "Tomat",
     "onion": "Sibul",
     "garlic": "Küüslauk",
+    "chives": "Murulauk",
     "bell_pepper": "Paprika",
     "eggplant": "Baklažaan",
     "carrot": "Porgand",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Päevalilleseemned",
     "cinnamon": "Kaneel",
     "ginger": "Ingver",
+    "chamomile": "Kummel",
     "almonds": "Mandlid",
     "hazelnuts": "Sarapuupähklid",
     "walnuts": "Kreeka pähklid",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Kunstlikud värvained",
     "pork": "Sealiha",
     "red_meat": "Punane liha",
-    "chicken": "Kana"
+    "chicken": "Kana",
+    "snails": "Teod"
   },
   "restrictions": {
     "raw_fish": "Toores kala / sushi",

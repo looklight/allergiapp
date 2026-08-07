@@ -62,6 +62,7 @@
     "tomato": "گوجه فرنگی",
     "onion": "پیاز",
     "garlic": "سیر",
+    "chives": "پیازچه",
     "bell_pepper": "فلفل دلمه‌ای",
     "eggplant": "بادمجان",
     "carrot": "هویج",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "تخمه آفتابگردان",
     "cinnamon": "دارچین",
     "ginger": "زنجبیل",
+    "chamomile": "بابونه",
     "almonds": "بادام",
     "hazelnuts": "فندق",
     "walnuts": "گردو",
@@ -130,7 +132,8 @@
     "artificial_colorings": "رنگ های مصنوعی",
     "pork": "گوشت خوک",
     "red_meat": "گوشت قرمز",
-    "chicken": "مرغ"
+    "chicken": "مرغ",
+    "snails": "حلزون ها"
   },
   "restrictions": {
     "raw_fish": "ماهی خام / سوشی",

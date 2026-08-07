@@ -62,6 +62,7 @@
     "tomato": "ٹماٹر",
     "onion": "پیاز",
     "garlic": "لہسن",
+    "chives": "چائیوز",
     "bell_pepper": "گھنٹی مرچ",
     "eggplant": "بینگن",
     "carrot": "گاجر",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "سورج مکھی کے بیج",
     "cinnamon": "دار چینی",
     "ginger": "ادرک",
+    "chamomile": "کیمومائل",
     "almonds": "بادام",
     "hazelnuts": "ہیزلنٹس",
     "walnuts": "اخروٹ",
@@ -130,7 +132,8 @@
     "artificial_colorings": "مصنوعی رنگ",
     "pork": "سور کا گوشت",
     "red_meat": "سرخ گوشت",
-    "chicken": "چکن"
+    "chicken": "چکن",
+    "snails": "گھونگے"
   },
   "restrictions": {
     "raw_fish": "کچی مچھلی / سشی",

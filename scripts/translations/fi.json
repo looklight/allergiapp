@@ -62,6 +62,7 @@
     "tomato": "Tomaatti",
     "onion": "Sipuli",
     "garlic": "Valkosipuli",
+    "chives": "Ruohosipuli",
     "bell_pepper": "Paprika",
     "eggplant": "Munakoiso",
     "carrot": "Porkkana",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Auringonkukansiemenet",
     "cinnamon": "Kaneli",
     "ginger": "Inkivääri",
+    "chamomile": "Kamomilla",
     "almonds": "Mantelit",
     "hazelnuts": "Hasselpähkinät",
     "walnuts": "Saksanpähkinät",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Keinotekoiset väriaineet",
     "pork": "Sianliha",
     "red_meat": "Punainen liha",
-    "chicken": "Kana"
+    "chicken": "Kana",
+    "snails": "Etanat"
   },
   "restrictions": {
     "raw_fish": "Raaka kala / sushi",

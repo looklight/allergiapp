@@ -62,6 +62,7 @@
     "tomato": "Tadama",
     "onion": "Basal",
     "garlic": "Tewm",
+    "chives": "Chives",
     "bell_pepper": "Bżar aħmar",
     "eggplant": "Brunġiel",
     "carrot": "Zunnarija",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Żerriegħa tal-ġirasol",
     "cinnamon": "Kannella",
     "ginger": "Ġinġer",
+    "chamomile": "Chamomile",
     "almonds": "Lewż",
     "hazelnuts": "Ġellewż",
     "walnuts": "Ġewż",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Kuluri artifiċjali",
     "pork": "Majjal",
     "red_meat": "Laħam aħmar",
-    "chicken": "Tiġieġ"
+    "chicken": "Tiġieġ",
+    "snails": "Bebbux"
   },
   "restrictions": {
     "raw_fish": "Ħut mhux imsajjar / sushi",

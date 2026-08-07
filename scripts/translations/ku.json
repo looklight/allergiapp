@@ -62,6 +62,7 @@
     "tomato": "Bacanê sor",
     "onion": "Pîvaz",
     "garlic": "Sîr",
+    "chives": "Chives",
     "bell_pepper": "îsota bell",
     "eggplant": "Eggplant",
     "carrot": "Gizêr",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Tovên Sunflower",
     "cinnamon": "Darçîn",
     "ginger": "Ginger",
+    "chamomile": "Chamomile",
     "almonds": "Almonds",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Gûz",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Rengdêrên sûnî",
     "pork": "Goştê beraz",
     "red_meat": "Goştê sor",
-    "chicken": "Mirîşk"
+    "chicken": "Mirîşk",
+    "snails": "Snails"
   },
   "restrictions": {
     "raw_fish": "Masiyê xav / sushi",

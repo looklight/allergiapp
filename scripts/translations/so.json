@@ -62,6 +62,7 @@
     "tomato": "Tamaandho",
     "onion": "Basasha",
     "garlic": "Toonta",
+    "chives": "Chives",
     "bell_pepper": "Basbaaska dawan",
     "eggplant": "Eggplant",
     "carrot": "Karootada",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Abuurka gabbaldayaha",
     "cinnamon": "Qorfe",
     "ginger": "Sinjibiisha",
+    "chamomile": "Chamomile",
     "almonds": "Almonds",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Walnuts",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Midabaynta macmalka ah",
     "pork": "Doofaarka",
     "red_meat": "Hilib cas",
-    "chicken": "Digaag"
+    "chicken": "Digaag",
+    "snails": "Snails"
   },
   "restrictions": {
     "raw_fish": "Kalluunka ceeriin / sushi",

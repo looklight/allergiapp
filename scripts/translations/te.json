@@ -62,6 +62,7 @@
     "tomato": "టొమాటో",
     "onion": "ఉల్లిపాయ",
     "garlic": "వెల్లుల్లి",
+    "chives": "Chives",
     "bell_pepper": "బెల్ పెప్పర్",
     "eggplant": "వంకాయ",
     "carrot": "క్యారెట్",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "పొద్దుతిరుగుడు విత్తనాలు",
     "cinnamon": "దాల్చిన చెక్క",
     "ginger": "అల్లం",
+    "chamomile": "చమోమిలే",
     "almonds": "బాదం",
     "hazelnuts": "హాజెల్ నట్స్",
     "walnuts": "అక్రోట్లను",
@@ -130,7 +132,8 @@
     "artificial_colorings": "కృత్రిమ రంగులు",
     "pork": "పంది మాంసం",
     "red_meat": "ఎర్ర మాంసం",
-    "chicken": "చికెన్"
+    "chicken": "చికెన్",
+    "snails": "నత్తలు"
   },
   "restrictions": {
     "raw_fish": "ముడి చేప / సుషీ",

@@ -62,6 +62,7 @@
     "tomato": "Լոլիկ",
     "onion": "Սոխ",
     "garlic": "Սխտոր",
+    "chives": "Chives",
     "bell_pepper": "Բուլղարական պղպեղ",
     "eggplant": "Սմբուկ",
     "carrot": "Գազար",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Արևածաղկի սերմեր",
     "cinnamon": "Դարչին",
     "ginger": "Կոճապղպեղ",
+    "chamomile": "Երիցուկ",
     "almonds": "Նուշ",
     "hazelnuts": "Պնդուկ",
     "walnuts": "Ընկույզ",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Արհեստական ​​գունանյութեր",
     "pork": "Խոզի միս",
     "red_meat": "Կարմիր միս",
-    "chicken": "Հավ"
+    "chicken": "Հավ",
+    "snails": "Խխունջներ"
   },
   "restrictions": {
     "raw_fish": "Հում ձուկ / սուշի",

@@ -62,6 +62,7 @@
     "tomato": "Tomat",
     "onion": "Løk",
     "garlic": "Hvitløk",
+    "chives": "Gressløk",
     "bell_pepper": "Paprika",
     "eggplant": "Aubergine",
     "carrot": "Gulrot",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Solsikkefrø",
     "cinnamon": "Kanel",
     "ginger": "Ingefær",
+    "chamomile": "Kamille",
     "almonds": "Mandler",
     "hazelnuts": "Hasselnøtter",
     "walnuts": "Valnøtter",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Kunstige fargestoffer",
     "pork": "Svinekjøtt",
     "red_meat": "Rødt kjøtt",
-    "chicken": "Kylling"
+    "chicken": "Kylling",
+    "snails": "Snegler"
   },
   "restrictions": {
     "raw_fish": "Rå fisk / sushi",

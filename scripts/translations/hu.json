@@ -62,6 +62,7 @@
     "tomato": "Paradicsom",
     "onion": "Hagyma",
     "garlic": "Fokhagyma",
+    "chives": "Metélőhagyma",
     "bell_pepper": "Paprika",
     "eggplant": "Padlizsán",
     "carrot": "Sárgarépa",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Napraforgómag",
     "cinnamon": "Fahéj",
     "ginger": "Gyömbér",
+    "chamomile": "Kamilla",
     "almonds": "Mandula",
     "hazelnuts": "Mogyoró",
     "walnuts": "Dió",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Mesterséges színezékek",
     "pork": "Sertéshús",
     "red_meat": "Vörös hús",
-    "chicken": "Csirke"
+    "chicken": "Csirke",
+    "snails": "Csigák"
   },
   "restrictions": {
     "raw_fish": "Nyers hal / szusi",

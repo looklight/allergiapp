@@ -62,6 +62,7 @@
     "tomato": "Tráta",
     "onion": "Oinniún",
     "garlic": "Gairleog",
+    "chives": "Síobhais",
     "bell_pepper": "Piobar glas",
     "eggplant": "Eggplant",
     "carrot": "Cairéad",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Síolta lus na gréine",
     "cinnamon": "Cainéil",
     "ginger": "Sinséar",
+    "chamomile": "Camomile",
     "almonds": "Almonds",
     "hazelnuts": "Cnónna coill",
     "walnuts": "Gallchnónna",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Dathúcháin saorga",
     "pork": "Muiceoil",
     "red_meat": "Feoil dhearg",
-    "chicken": "sicín"
+    "chicken": "sicín",
+    "snails": "Seilidí"
   },
   "restrictions": {
     "raw_fish": "Iasc amh / sushi",

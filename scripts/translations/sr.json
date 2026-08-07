@@ -62,6 +62,7 @@
     "tomato": "Парадајз",
     "onion": "Црни лук",
     "garlic": "Бели лук",
+    "chives": "Власац",
     "bell_pepper": "Паприка",
     "eggplant": "Патлиџан",
     "carrot": "Шаргарепа",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Семе сунцокрета",
     "cinnamon": "Цимет",
     "ginger": "Ђумбир",
+    "chamomile": "Камилица",
     "almonds": "Бадеми",
     "hazelnuts": "Лешници",
     "walnuts": "ораси",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Вештачке боје",
     "pork": "Свињетина",
     "red_meat": "Црвено месо",
-    "chicken": "Пилетина"
+    "chicken": "Пилетина",
+    "snails": "Пужеви"
   },
   "restrictions": {
     "raw_fish": "Сирова риба / суши",

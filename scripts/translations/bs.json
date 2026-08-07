@@ -62,6 +62,7 @@
     "tomato": "Paradajz",
     "onion": "Crni luk",
     "garlic": "Bijeli luk",
+    "chives": "Vlasac",
     "bell_pepper": "Paprika",
     "eggplant": "Patlidžan",
     "carrot": "Šargarepa",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Sjemenke suncokreta",
     "cinnamon": "Cimet",
     "ginger": "Đumbir",
+    "chamomile": "Kamilica",
     "almonds": "Bademi",
     "hazelnuts": "Ljesnici",
     "walnuts": "orasi",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Umjetne boje",
     "pork": "Svinjetina",
     "red_meat": "Crveno meso",
-    "chicken": "Piletina"
+    "chicken": "Piletina",
+    "snails": "Puževi"
   },
   "restrictions": {
     "raw_fish": "Sirova riba / suši",

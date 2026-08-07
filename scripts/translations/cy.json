@@ -62,6 +62,7 @@
     "tomato": "Tomato",
     "onion": "Winwnsyn",
     "garlic": "Garlleg",
+    "chives": "Cennin syfi",
     "bell_pepper": "Pupur",
     "eggplant": "Eggplant",
     "carrot": "Moronen",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Hadau blodyn yr haul",
     "cinnamon": "Sinamon",
     "ginger": "Sinsir",
+    "chamomile": "Camri",
     "almonds": "Cnau almon",
     "hazelnuts": "Cnau cyll",
     "walnuts": "Cnau Ffrengig",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Lliwiau artiffisial",
     "pork": "Porc",
     "red_meat": "Cig coch",
-    "chicken": "Cyw iâr"
+    "chicken": "Cyw iâr",
+    "snails": "Malwod"
   },
   "restrictions": {
     "raw_fish": "Pysgod amrwd / swshi",

@@ -62,6 +62,7 @@
     "tomato": "ໝາກເລັ່ນ",
     "onion": "ຜັກບົ່ວ",
     "garlic": "ຜັກທຽມ",
+    "chives": "Chives",
     "bell_pepper": "ໝາກພິກໄທ",
     "eggplant": "ໝາກເຂືອ",
     "carrot": "ແຄລອດ",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "ແກ່ນດອກຕາເວັນ",
     "cinnamon": "ໄຄ",
     "ginger": "ຂີງ",
+    "chamomile": "Chamomile",
     "almonds": "ໝາກອະງຸ່ນ",
     "hazelnuts": "ໝາກເຜັດ",
     "walnuts": "ໝາກນັດ",
@@ -130,7 +132,8 @@
     "artificial_colorings": "ສີທຽມ",
     "pork": "ຫມູ",
     "red_meat": "ຊີ້ນແດງ",
-    "chicken": "ໄກ່"
+    "chicken": "ໄກ່",
+    "snails": "ຫອຍທາກ"
   },
   "restrictions": {
     "raw_fish": "ປາດິບ / ຊູຊິ",

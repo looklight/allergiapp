@@ -62,6 +62,7 @@
     "tomato": "Tómatur",
     "onion": "Laukur",
     "garlic": "Hvítlaukur",
+    "chives": "Graslaukur",
     "bell_pepper": "Paprika",
     "eggplant": "Eggaldin",
     "carrot": "Gulrót",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Sólblómafræ",
     "cinnamon": "Kanill",
     "ginger": "Engifer",
+    "chamomile": "Kamilla",
     "almonds": "Möndlur",
     "hazelnuts": "Heslihnetur",
     "walnuts": "Valhnetur",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Gervi litarefni",
     "pork": "Svínakjöt",
     "red_meat": "Rautt kjöt",
-    "chicken": "Kjúklingur"
+    "chicken": "Kjúklingur",
+    "snails": "Sniglar"
   },
   "restrictions": {
     "raw_fish": "Hrár fiskur / súsí",

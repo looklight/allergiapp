@@ -62,6 +62,7 @@
     "tomato": "პომიდორი",
     "onion": "ხახვი",
     "garlic": "ნიორი",
+    "chives": "Chives",
     "bell_pepper": "წიწაკა",
     "eggplant": "ბადრიჯანი",
     "carrot": "სტაფილო",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "მზესუმზირის თესლი",
     "cinnamon": "დარიჩინი",
     "ginger": "ჯანჯაფილი",
+    "chamomile": "გვირილა",
     "almonds": "ნუში",
     "hazelnuts": "თხილი",
     "walnuts": "კაკალი",
@@ -130,7 +132,8 @@
     "artificial_colorings": "ხელოვნური საღებავები",
     "pork": "ღორის ხორცი",
     "red_meat": "წითელი ხორცი",
-    "chicken": "ქათამი"
+    "chicken": "ქათამი",
+    "snails": "ლოკოკინები"
   },
   "restrictions": {
     "raw_fish": "უმი თევზი / სუში",

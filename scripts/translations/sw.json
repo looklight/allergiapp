@@ -62,6 +62,7 @@
     "tomato": "Nyanya",
     "onion": "Vitunguu",
     "garlic": "Vitunguu swaumu",
+    "chives": "Chives",
     "bell_pepper": "Pilipili hoho",
     "eggplant": "Biringanya",
     "carrot": "Karoti",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Mbegu za alizeti",
     "cinnamon": "Mdalasini",
     "ginger": "Tangawizi",
+    "chamomile": "Chamomile",
     "almonds": "Lozi",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Walnuts",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Rangi za bandia",
     "pork": "Nyama ya nguruwe",
     "red_meat": "Nyama nyekundu",
-    "chicken": "Kuku"
+    "chicken": "Kuku",
+    "snails": "Konokono"
   },
   "restrictions": {
     "raw_fish": "Samaki mbichi / sushi",

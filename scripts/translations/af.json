@@ -62,6 +62,7 @@
     "tomato": "Tamatie",
     "onion": "Ui",
     "garlic": "Knoffel",
+    "chives": "grasuie",
     "bell_pepper": "Soetrissie",
     "eggplant": "Eiervrug",
     "carrot": "Wortel",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Sonneblomsaad",
     "cinnamon": "Kaneel",
     "ginger": "Gemmer",
+    "chamomile": "Kamille",
     "almonds": "Amandels",
     "hazelnuts": "Hazelneute",
     "walnuts": "Okkerneute",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Kunsmatige kleurstowwe",
     "pork": "Varkvleis",
     "red_meat": "Rooivleis",
-    "chicken": "Hoender"
+    "chicken": "Hoender",
+    "snails": "Slakke"
   },
   "restrictions": {
     "raw_fish": "Rou vis / sushi",

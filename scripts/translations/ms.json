@@ -62,6 +62,7 @@
     "tomato": "Tomato",
     "onion": "Bawang merah",
     "garlic": "Bawang putih",
+    "chives": "daun kucai",
     "bell_pepper": "Lada benggala",
     "eggplant": "terung",
     "carrot": "lobak merah",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Biji bunga matahari",
     "cinnamon": "Kayu manis",
     "ginger": "halia",
+    "chamomile": "Chamomile",
     "almonds": "badam",
     "hazelnuts": "Hazelnut",
     "walnuts": "kenari",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Pewarna tiruan",
     "pork": "daging babi",
     "red_meat": "Daging merah",
-    "chicken": "ayam"
+    "chicken": "ayam",
+    "snails": "Siput"
   },
   "restrictions": {
     "raw_fish": "Ikan mentah / sushi",

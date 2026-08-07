@@ -62,6 +62,7 @@
     "tomato": "Tomàquet",
     "onion": "Ceba",
     "garlic": "All",
+    "chives": "Cibulet",
     "bell_pepper": "Pebrot",
     "eggplant": "Albergínia",
     "carrot": "pastanaga",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Llavors de gira-sol",
     "cinnamon": "Canyella",
     "ginger": "Gingebre",
+    "chamomile": "Camamilla",
     "almonds": "Ametlles",
     "hazelnuts": "Avellanes",
     "walnuts": "Nous",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Colorants artificials",
     "pork": "Porc",
     "red_meat": "Carn vermella",
-    "chicken": "Pollastre"
+    "chicken": "Pollastre",
+    "snails": "Cargols"
   },
   "restrictions": {
     "raw_fish": "Peix cru / sushi",

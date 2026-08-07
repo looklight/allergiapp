@@ -62,6 +62,7 @@
     "tomato": "Tomatea",
     "onion": "Tipula",
     "garlic": "Baratxuria",
+    "chives": "Tipulinak",
     "bell_pepper": "Piperra",
     "eggplant": "Berenjena",
     "carrot": "Azenarioa",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Ekilore haziak",
     "cinnamon": "Kanela",
     "ginger": "Jengibrea",
+    "chamomile": "Kamamila",
     "almonds": "Almendrak",
     "hazelnuts": "Hururrak",
     "walnuts": "Intxaurrak",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Koloratzaile artifizialak",
     "pork": "Txerrikia",
     "red_meat": "Haragi gorria",
-    "chicken": "Oilaskoa"
+    "chicken": "Oilaskoa",
+    "snails": "Barraskiloak"
   },
   "restrictions": {
     "raw_fish": "Arrain gordina / sushia",

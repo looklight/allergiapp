@@ -62,6 +62,7 @@
     "tomato": "Utamatisi",
     "onion": "U-anyanini",
     "garlic": "Ugaliki",
+    "chives": "Ama-Chives",
     "bell_pepper": "u-Bell pepper",
     "eggplant": "Isitshalo seqanda",
     "carrot": "Isaqathe",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Imbewu kabhekilanga",
     "cinnamon": "Isinamoni",
     "ginger": "Ujinja",
+    "chamomile": "I-Chamomile",
     "almonds": "Ama-alimondi",
     "hazelnuts": "Amantongomane",
     "walnuts": "Amantongomane",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Imibala yokwenziwa",
     "pork": "Inyama yengulube",
     "red_meat": "Inyama ebomvu",
-    "chicken": "Inyama yenkukhu"
+    "chicken": "Inyama yenkukhu",
+    "snails": "Iminenke"
   },
   "restrictions": {
     "raw_fish": "Inhlanzi eluhlaza / i-sushi",

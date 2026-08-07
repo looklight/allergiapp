@@ -62,6 +62,7 @@
     "tomato": "টমেটো",
     "onion": "পেঁয়াজ",
     "garlic": "রসুন",
+    "chives": "চিভস",
     "bell_pepper": "ক্যাপসিকাম",
     "eggplant": "বেগুন",
     "carrot": "গাজর",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "সূর্যমুখী বীজ",
     "cinnamon": "দারুচিনি",
     "ginger": "আদা",
+    "chamomile": "ক্যামোমাইল",
     "almonds": "বাদাম",
     "hazelnuts": "Hazelnuts",
     "walnuts": "আখরোট",
@@ -130,7 +132,8 @@
     "artificial_colorings": "কৃত্রিম রং",
     "pork": "শুয়োরের মাংস",
     "red_meat": "লাল মাংস",
-    "chicken": "চিকেন"
+    "chicken": "চিকেন",
+    "snails": "শামুক"
   },
   "restrictions": {
     "raw_fish": "কাঁচা মাছ / সুশি",

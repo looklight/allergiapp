@@ -62,6 +62,7 @@
     "tomato": "Домат",
     "onion": "Лук",
     "garlic": "Чесън",
+    "chives": "Лук резанец",
     "bell_pepper": "Чушка",
     "eggplant": "патладжан",
     "carrot": "Морков",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Слънчогледови семки",
     "cinnamon": "канела",
     "ginger": "джинджифил",
+    "chamomile": "лайка",
     "almonds": "Бадеми",
     "hazelnuts": "лешници",
     "walnuts": "Орехи",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Изкуствени оцветители",
     "pork": "Свинско",
     "red_meat": "Червено месо",
-    "chicken": "пиле"
+    "chicken": "пиле",
+    "snails": "Охлюви"
   },
   "restrictions": {
     "raw_fish": "Сурова риба / суши",

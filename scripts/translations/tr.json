@@ -62,6 +62,7 @@
     "tomato": "Domates",
     "onion": "Soğan",
     "garlic": "Sarımsak",
+    "chives": "Frenk soğanı",
     "bell_pepper": "Biber",
     "eggplant": "Patlıcan",
     "carrot": "Havuç",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Ayçiçeği tohumları",
     "cinnamon": "Tarçın",
     "ginger": "Zencefil",
+    "chamomile": "Papatya",
     "almonds": "Badem",
     "hazelnuts": "Fındık",
     "walnuts": "Ceviz",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Yapay renklendiriciler",
     "pork": "Domuz eti",
     "red_meat": "Kırmızı et",
-    "chicken": "Tavuk"
+    "chicken": "Tavuk",
+    "snails": "Salyangoz"
   },
   "restrictions": {
     "raw_fish": "Çiğ balık / suşi",

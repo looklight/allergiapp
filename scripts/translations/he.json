@@ -62,6 +62,7 @@
     "tomato": "עגבנייה",
     "onion": "בצל",
     "garlic": "שום",
+    "chives": "בצלית",
     "bell_pepper": "פלפל",
     "eggplant": "חָצִיל",
     "carrot": "גֶזֶר",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "גרעיני חמניות",
     "cinnamon": "קינמון",
     "ginger": "זַנגבִיל",
+    "chamomile": "קמומיל",
     "almonds": "שקדים",
     "hazelnuts": "אגוזי לוז",
     "walnuts": "אֱגוֹזֵי מֶלֶך",
@@ -130,7 +132,8 @@
     "artificial_colorings": "צבעים מלאכותיים",
     "pork": "חֲזִיר",
     "red_meat": "בשר אדום",
-    "chicken": "עוֹף"
+    "chicken": "עוֹף",
+    "snails": "חלזונות"
   },
   "restrictions": {
     "raw_fish": "דג נא / סושי",

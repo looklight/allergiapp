@@ -62,6 +62,7 @@
     "tomato": "ခရမ်းချဉ်သီး",
     "onion": "ကြက်သွန်နီ",
     "garlic": "ကြက်သွန်ဖြူ",
+    "chives": "Chives",
     "bell_pepper": "ငရုတ်ကောင်း",
     "eggplant": "ခရမ်းသီး",
     "carrot": "မုန်လာဥနီ",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "နေကြာစေ့",
     "cinnamon": "သစ်ကြံပိုးခေါက်",
     "ginger": "ဂျင်း",
+    "chamomile": "Chamomile",
     "almonds": "ဗာဒံစေ့",
     "hazelnuts": "Hazelnuts",
     "walnuts": "သစ်ကြားသီး",
@@ -130,7 +132,8 @@
     "artificial_colorings": "အတုအရောင်များ",
     "pork": "ဝက်",
     "red_meat": "အနီရောင်အသား",
-    "chicken": "ကြက်သား"
+    "chicken": "ကြက်သား",
+    "snails": "ခရု"
   },
   "restrictions": {
     "raw_fish": "ငါးစိမ်း/ဆူရှီ",

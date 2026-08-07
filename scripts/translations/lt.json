@@ -62,6 +62,7 @@
     "tomato": "Pomidoras",
     "onion": "Svogūnas",
     "garlic": "Česnakas",
+    "chives": "Laiškiniai česnakai",
     "bell_pepper": "Paprika",
     "eggplant": "Baklažanai",
     "carrot": "Morkos",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Saulėgrąžų sėklos",
     "cinnamon": "Cinamonas",
     "ginger": "Imbieras",
+    "chamomile": "Ramunė",
     "almonds": "Migdolai",
     "hazelnuts": "Lazdyno riešutai",
     "walnuts": "Graikiniai riešutai",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Dirbtiniai dažikliai",
     "pork": "Kiauliena",
     "red_meat": "Raudona mėsa",
-    "chicken": "Vištiena"
+    "chicken": "Vištiena",
+    "snails": "Sraigės"
   },
   "restrictions": {
     "raw_fish": "Žalia žuvis / sušiai",

@@ -23,6 +23,7 @@ const NEW_OTHER_FOODS = {
   tomato: 'Tomato',
   onion: 'Onion',
   garlic: 'Garlic',
+  chives: 'Chives',
   bell_pepper: 'Bell pepper',
   eggplant: 'Eggplant',
   carrot: 'Carrot',
@@ -76,6 +77,7 @@ const NEW_OTHER_FOODS = {
   sunflower_seeds: 'Sunflower seeds',
   cinnamon: 'Cinnamon',
   ginger: 'Ginger',
+  chamomile: 'Chamomile',
   // Frutta a guscio singole (complemento dell'allergene EU 'nuts')
   almonds: 'Almonds',
   hazelnuts: 'Hazelnuts',
@@ -97,6 +99,7 @@ const NEW_OTHER_FOODS = {
   pork: 'Pork',
   red_meat: 'Red meat',
   chicken: 'Chicken',
+  snails: 'Snails',
 };
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -62,6 +62,7 @@
     "tomato": "ಟೊಮೆಟೊ",
     "onion": "ಈರುಳ್ಳಿ",
     "garlic": "ಬೆಳ್ಳುಳ್ಳಿ",
+    "chives": "ಚೀವ್ಸ್",
     "bell_pepper": "ಬೆಲ್ ಪೆಪರ್",
     "eggplant": "ಬಿಳಿಬದನೆ",
     "carrot": "ಕ್ಯಾರೆಟ್",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "ಸೂರ್ಯಕಾಂತಿ ಬೀಜಗಳು",
     "cinnamon": "ದಾಲ್ಚಿನ್ನಿ",
     "ginger": "ಶುಂಠಿ",
+    "chamomile": "ಕ್ಯಾಮೊಮೈಲ್",
     "almonds": "ಬಾದಾಮಿ",
     "hazelnuts": "ಹ್ಯಾಝೆಲ್ನಟ್ಸ್",
     "walnuts": "ವಾಲ್ನಟ್ಸ್",
@@ -130,7 +132,8 @@
     "artificial_colorings": "ಕೃತಕ ಬಣ್ಣಗಳು",
     "pork": "ಹಂದಿಮಾಂಸ",
     "red_meat": "ಕೆಂಪು ಮಾಂಸ",
-    "chicken": "ಚಿಕನ್"
+    "chicken": "ಚಿಕನ್",
+    "snails": "ಬಸವನಹುಳುಗಳು"
   },
   "restrictions": {
     "raw_fish": "ಕಚ್ಚಾ ಮೀನು / ಸುಶಿ",

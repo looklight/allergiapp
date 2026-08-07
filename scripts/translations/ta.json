@@ -62,6 +62,7 @@
     "tomato": "தக்காளி",
     "onion": "வெங்காயம்",
     "garlic": "பூண்டு",
+    "chives": "Chives",
     "bell_pepper": "பெல் மிளகு",
     "eggplant": "கத்திரிக்காய்",
     "carrot": "கேரட்",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "சூரியகாந்தி விதைகள்",
     "cinnamon": "இலவங்கப்பட்டை",
     "ginger": "இஞ்சி",
+    "chamomile": "கெமோமில்",
     "almonds": "பாதாம்",
     "hazelnuts": "ஹேசல்நட்ஸ்",
     "walnuts": "அக்ரூட் பருப்புகள்",
@@ -130,7 +132,8 @@
     "artificial_colorings": "செயற்கை வண்ணங்கள்",
     "pork": "பன்றி இறைச்சி",
     "red_meat": "சிவப்பு இறைச்சி",
-    "chicken": "கோழி"
+    "chicken": "கோழி",
+    "snails": "நத்தைகள்"
   },
   "restrictions": {
     "raw_fish": "பச்சை மீன் / சுஷி",

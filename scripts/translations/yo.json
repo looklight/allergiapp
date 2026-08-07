@@ -62,6 +62,7 @@
     "tomato": "Tomati",
     "onion": "Alubosa",
     "garlic": "Ata ilẹ",
+    "chives": "Chives",
     "bell_pepper": "Belii ata",
     "eggplant": "Igba",
     "carrot": "Karọọti",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Awọn irugbin sunflower",
     "cinnamon": "eso igi gbigbẹ oloorun",
     "ginger": "Atalẹ",
+    "chamomile": "Chamomile",
     "almonds": "Almondi",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Wolinoti",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Oríkĕ awọn awọ",
     "pork": "Ẹran ẹlẹdẹ",
     "red_meat": "Eran pupa",
-    "chicken": "Adiẹ"
+    "chicken": "Adiẹ",
+    "snails": "Igbin"
   },
   "restrictions": {
     "raw_fish": "Eja aise / sushi",

@@ -62,6 +62,7 @@
     "tomato": "ਟਮਾਟਰ",
     "onion": "ਪਿਆਜ",
     "garlic": "ਲਸਣ",
+    "chives": "ਚਾਈਵਜ਼",
     "bell_pepper": "ਘੰਟੀ ਮਿਰਚ",
     "eggplant": "ਬੈਂਗਣ ਦਾ ਪੌਦਾ",
     "carrot": "ਗਾਜਰ",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "ਸੂਰਜਮੁਖੀ ਦੇ ਬੀਜ",
     "cinnamon": "ਦਾਲਚੀਨੀ",
     "ginger": "ਅਦਰਕ",
+    "chamomile": "ਕੈਮੋਮਾਈਲ",
     "almonds": "ਬਦਾਮ",
     "hazelnuts": "ਹੇਜ਼ਲਨਟਸ",
     "walnuts": "ਅਖਰੋਟ",
@@ -130,7 +132,8 @@
     "artificial_colorings": "ਨਕਲੀ ਰੰਗ",
     "pork": "ਸੂਰ ਦਾ ਮਾਸ",
     "red_meat": "ਲਾਲ ਮੀਟ",
-    "chicken": "ਮੁਰਗੇ ਦਾ ਮੀਟ"
+    "chicken": "ਮੁਰਗੇ ਦਾ ਮੀਟ",
+    "snails": "ਘੋਗਾ"
   },
   "restrictions": {
     "raw_fish": "ਕੱਚੀ ਮੱਛੀ/ਸੁਸ਼ੀ",

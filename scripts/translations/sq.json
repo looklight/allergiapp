@@ -62,6 +62,7 @@
     "tomato": "Domate",
     "onion": "Qepë",
     "garlic": "Hudhër",
+    "chives": "Chives",
     "bell_pepper": "Spec",
     "eggplant": "Patëllxhan",
     "carrot": "Karrota",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Farat e lulediellit",
     "cinnamon": "kanellë",
     "ginger": "Xhenxhefil",
+    "chamomile": "Kamomili",
     "almonds": "Bajame",
     "hazelnuts": "Lajthia",
     "walnuts": "Arra",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Ngjyrosje artificiale",
     "pork": "Mish derri",
     "red_meat": "Mishi i kuq",
-    "chicken": "Pulë"
+    "chicken": "Pulë",
+    "snails": "Kërmijtë"
   },
   "restrictions": {
     "raw_fish": "Peshk i papjekur / sushi",

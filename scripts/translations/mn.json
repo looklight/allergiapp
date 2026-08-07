@@ -62,6 +62,7 @@
     "tomato": "Улаан лооль",
     "onion": "Сонгино",
     "garlic": "Сармис",
+    "chives": "Chives",
     "bell_pepper": "Болгарын чинжүү",
     "eggplant": "Хаш",
     "carrot": "Лууван",
@@ -113,6 +114,7 @@
     "sunflower_seeds": "Наранцэцгийн үр",
     "cinnamon": "Шанцай",
     "ginger": "Цагаан гаа",
+    "chamomile": "Chamomile",
     "almonds": "Бүйлс",
     "hazelnuts": "Hazelnuts",
     "walnuts": "Хушга",
@@ -130,7 +132,8 @@
     "artificial_colorings": "Хиймэл будагч бодисууд",
     "pork": "Гахайн мах",
     "red_meat": "Улаан мах",
-    "chicken": "Тахианы мах"
+    "chicken": "Тахианы мах",
+    "snails": "Эмгэн хумс"
   },
   "restrictions": {
     "raw_fish": "Түүхий загас / суши",
