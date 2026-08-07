@@ -17,10 +17,11 @@ export type UnlockCondition =
    *  - countryIn / countryNotIn: country_code ∈ / ∉ (paesi noti soltanto)
    *  - distinctCities: se true conta CITTÀ distinte tra i match (città note),
    *    non i ristoranti — es. "10 giapponesi in 10 città diverse"
-   *  - requiresPhoto: se true conta solo i posti la cui recensione ha almeno
-   *    una foto (per-recensione, non "una foto totale")
+   *  - minPhotos: quanti dei posti che matchano devono avere una recensione con
+   *    foto. Gate SEPARATO dal conteggio (non un filtro su di esso): `minPhotos: 1`
+   *    = "almeno uno con foto", `minPhotos: count` = "tutti con foto".
    */
-  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean; requiresPhoto?: boolean }
+  | { type: 'reviews_matching'; count: number; cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean; minPhotos?: number }
   /**
    * Scrivi `count` recensioni con voto nel range (maxStars/minStars inclusi).
    * Asse "voto della recensione", distinto da reviews_matching (cucina/paese).
@@ -31,8 +32,12 @@ export type UnlockCondition =
    * Recensisci almeno `perCuisine` (default 1) ristoranti per OGNI cucina elencata.
    * AND tra cucine (≠ reviews_matching, che è OR su cuisineAny).
    * Es. una thai + una mexican + una indian: { cuisines: ['thai','mexican','indian'] }.
+   *  - minPhotos: come in reviews_matching, ma i posti con foto sono contati
+   *    cappati per cucina (come il conteggio stesso). `minPhotos: 1` = "almeno una
+   *    delle cucine ha un posto con foto"; `minPhotos: cuisines.length * perCuisine`
+   *    = "tutte con foto".
    */
-  | { type: 'reviews_each_cuisine'; cuisines: string[]; perCuisine?: number; requiresPhoto?: boolean };
+  | { type: 'reviews_each_cuisine'; cuisines: string[]; perCuisine?: number; minPhotos?: number };
 
 /** Un ristorante recensito dall'utente, ridotto ai campi per `reviews_matching`. */
 export interface ReviewedPlace {
@@ -222,8 +227,8 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_mario',
     source: require('../assets/avatars/plate_mario.png'),
     name: 'Plumber',
-    // Segreto: recensisci con foto 2 ristoranti italiani fuori dall'Italia (Mario, italiano nel mondo).
-    unlock: { type: 'reviews_matching', count: 2, cuisineAny: ['italian'], countryNotIn: ['IT'], requiresPhoto: true },
+    // Segreto: 2 ristoranti italiani fuori dall'Italia, almeno uno con foto (Mario, italiano nel mondo).
+    unlock: { type: 'reviews_matching', count: 2, cuisineAny: ['italian'], countryNotIn: ['IT'], minPhotos: 1 },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_mario',
   },
@@ -231,8 +236,8 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_lela',
     source: require('../assets/avatars/plate_lela.png'),
     name: 'Purple',
-    // Segreto: recensisci con foto 5 bakery in 5 città diverse (Leela, pilota esploratrice).
-    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['bakery'], distinctCities: true, requiresPhoto: true },
+    // Segreto: 5 bakery in 5 città diverse, almeno una con foto (Leela, pilota esploratrice).
+    unlock: { type: 'reviews_matching', count: 5, cuisineAny: ['bakery'], distinctCities: true, minPhotos: 1 },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_lela',
   },
@@ -241,10 +246,12 @@ export const AVATARS: AvatarOption[] = [
     source: require('../assets/avatars/plate_anakin.png'),
     name: 'Apprentice',
     // Segreto: recensisci con foto 10 cucine diverse del mondo (Jedi maestro di ogni sapore).
+    // Vetta del catalogo: `minPhotos` pari al totale richiesto = OGNI cucina con foto.
+    // Se cambi la lista delle cucine, aggiorna anche minPhotos (deve restare = cuisines.length).
     unlock: {
       type: 'reviews_each_cuisine',
       cuisines: ['italian', 'french', 'spanish', 'japanese', 'chinese', 'korean', 'thai', 'indian', 'mexican', 'middle_eastern'],
-      requiresPhoto: true,
+      minPhotos: 10,
     },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_anakin',
@@ -280,8 +287,8 @@ export const AVATARS: AvatarOption[] = [
     id: 'plate_zard',
     source: require('../assets/avatars/plate_zard.png'),
     name: 'Zard',
-    // Segreto: recensisci con foto almeno 1 thai, 1 mexican e 1 indian (drago di fuoco = piccante).
-    unlock: { type: 'reviews_each_cuisine', cuisines: ['thai', 'mexican', 'indian'], requiresPhoto: true },
+    // Segreto: almeno 1 thai, 1 mexican e 1 indian, di cui almeno una con foto (drago di fuoco = piccante).
+    unlock: { type: 'reviews_each_cuisine', cuisines: ['thai', 'mexican', 'indian'], minPhotos: 1 },
     secret: true,
     revealedKey: 'restaurants.avatarGallery.secretRevealed.plate_zard',
   },
@@ -310,26 +317,41 @@ export function getAvatarById(id: string): AvatarOption | undefined {
 }
 
 /**
- * Conta i ristoranti recensiti che soddisfano i filtri di una `reviews_matching`.
+ * Conta i ristoranti recensiti che soddisfano i filtri di una `reviews_matching`,
+ * più quanti di essi hanno una recensione con foto (per il gate `minPhotos`).
  * I posti arrivano già deduplicati per ristorante da `fetchUnlockStats`.
  * Per `countryNotIn` contano solo i posti con paese noto (country != null).
+ *
+ * `withPhoto` è sempre contato sui RISTORANTI matchati, anche quando
+ * `distinctCities` fa contare città: "5 bakery in 5 città, almeno una con foto"
+ * parla di una foto, non di una città.
  */
-function countMatchingReviews(
+function tallyMatchingReviews(
   places: readonly ReviewedPlace[] | undefined,
-  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean; requiresPhoto?: boolean },
-): number {
+  cond: { cuisineAny?: string[]; countryIn?: string[]; countryNotIn?: string[]; distinctCities?: boolean },
+): { matched: number; withPhoto: number } {
   const matched = (places ?? []).filter(
     (p) =>
-      (!cond.requiresPhoto || p.hasPhoto) &&
       (!cond.cuisineAny || cond.cuisineAny.some((c) => p.cuisines.includes(c))) &&
       (!cond.countryIn || (p.country != null && cond.countryIn.includes(p.country))) &&
       (!cond.countryNotIn || (p.country != null && !cond.countryNotIn.includes(p.country))),
   );
-  if (cond.distinctCities) {
-    // Conta città distinte (solo note); copre "N ristoranti in N città diverse".
-    return new Set(matched.map((p) => p.city).filter((c): c is string => c != null)).size;
-  }
-  return matched.length;
+  // Con distinctCities conta città distinte (solo note); copre "N ristoranti in N città diverse".
+  const count = cond.distinctCities
+    ? new Set(matched.map((p) => p.city).filter((c): c is string => c != null)).size
+    : matched.length;
+  return { matched: count, withPhoto: matched.filter((p) => p.hasPhoto).length };
+}
+
+/**
+ * Progresso (0‥1) di una condizione a due assi (conteggio + gate foto): il MINIMO
+ * dei due sotto-progressi, così la barra non tocca il 100% con i match a posto ma
+ * le foto ancora mancanti.
+ */
+function gatedProgress(matched: number, need: number, withPhoto: number, needPhotos: number): number {
+  const countRatio = Math.min(matched / need, 1);
+  if (needPhotos <= 0) return countRatio;
+  return Math.min(countRatio, withPhoto / needPhotos, 1);
 }
 
 /** Conta le recensioni dell'utente col voto nel range (maxStars/minStars inclusi). */
@@ -346,17 +368,22 @@ function countRatingReviews(
  * Per le `reviews_each_cuisine`: somma "cappata" dei match per ogni cucina
  * richiesta (ogni cucina conta al massimo `perCuisine`). Raggiunge il totale
  * `cuisines.length * perCuisine` solo se OGNI cucina ha almeno `perCuisine` match.
+ * `withPhoto` segue la stessa logica cappata, così `minPhotos` pari al totale
+ * equivale a "ogni cucina ha un posto con foto".
  */
-function cappedEachCuisine(
+function tallyEachCuisine(
   places: readonly ReviewedPlace[] | undefined,
   cuisines: string[],
   perCuisine: number,
-  requiresPhoto?: boolean,
-): number {
-  return cuisines.reduce((sum, c) => {
-    const n = (places ?? []).filter((p) => p.cuisines.includes(c) && (!requiresPhoto || p.hasPhoto)).length;
-    return sum + Math.min(n, perCuisine);
-  }, 0);
+): { matched: number; withPhoto: number } {
+  let matched = 0;
+  let withPhoto = 0;
+  for (const c of cuisines) {
+    const hits = (places ?? []).filter((p) => p.cuisines.includes(c));
+    matched += Math.min(hits.length, perCuisine);
+    withPhoto += Math.min(hits.filter((p) => p.hasPhoto).length, perCuisine);
+  }
+  return { matched, withPhoto };
 }
 
 /**
@@ -390,13 +417,16 @@ export function isAvatarUnlocked(
       return (stats.countriesReviewed ?? 0) >= avatar.unlock.count;
     case 'likes_to_restriction_reviews':
       return (stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) >= avatar.unlock.count;
-    case 'reviews_matching':
-      return countMatchingReviews(stats.reviewedPlaces, avatar.unlock) >= avatar.unlock.count;
+    case 'reviews_matching': {
+      const { matched, withPhoto } = tallyMatchingReviews(stats.reviewedPlaces, avatar.unlock);
+      return matched >= avatar.unlock.count && withPhoto >= (avatar.unlock.minPhotos ?? 0);
+    }
     case 'reviews_rating':
       return countRatingReviews(stats.reviewRatings, avatar.unlock) >= avatar.unlock.count;
     case 'reviews_each_cuisine': {
       const per = avatar.unlock.perCuisine ?? 1;
-      return cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per, avatar.unlock.requiresPhoto) >= avatar.unlock.cuisines.length * per;
+      const { matched, withPhoto } = tallyEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per);
+      return matched >= avatar.unlock.cuisines.length * per && withPhoto >= (avatar.unlock.minPhotos ?? 0);
     }
     default:
       return false;
@@ -442,14 +472,18 @@ export function getUnlockProgress(
       return Math.min((stats.countriesReviewed ?? 0) / avatar.unlock.count, 1);
     case 'likes_to_restriction_reviews':
       return Math.min((stats.likesToRestrictionReviews?.[avatar.unlock.restriction] ?? 0) / avatar.unlock.count, 1);
-    case 'reviews_matching':
-      return Math.min(countMatchingReviews(stats.reviewedPlaces, avatar.unlock) / avatar.unlock.count, 1);
+    case 'reviews_matching': {
+      const { matched, withPhoto } = tallyMatchingReviews(stats.reviewedPlaces, avatar.unlock);
+      return gatedProgress(matched, avatar.unlock.count, withPhoto, avatar.unlock.minPhotos ?? 0);
+    }
     case 'reviews_rating':
       return Math.min(countRatingReviews(stats.reviewRatings, avatar.unlock) / avatar.unlock.count, 1);
     case 'reviews_each_cuisine': {
       const per = avatar.unlock.perCuisine ?? 1;
       const total = avatar.unlock.cuisines.length * per;
-      return total > 0 ? Math.min(cappedEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per, avatar.unlock.requiresPhoto) / total, 1) : 1;
+      if (total <= 0) return 1;
+      const { matched, withPhoto } = tallyEachCuisine(stats.reviewedPlaces, avatar.unlock.cuisines, per);
+      return gatedProgress(matched, total, withPhoto, avatar.unlock.minPhotos ?? 0);
     }
     default:
       return 0;

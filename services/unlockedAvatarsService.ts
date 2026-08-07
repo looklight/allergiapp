@@ -42,7 +42,7 @@ export async function fetchUnlockStats(userId: string): Promise<UnlockStats> {
       // Per "Poliglotta" (countries_reviewed) E le condizioni `reviews_matching`:
       // JOIN inline su restaurants. Una sola query serve entrambe — porto
       // id (dedup per ristorante), country_code e cuisine_types. `photos` è la
-      // colonna della recensione stessa: serve alle condizioni `requiresPhoto`.
+      // colonna della recensione stessa: serve al gate `minPhotos`.
       supabase
         .from('reviews')
         .select('photos, restaurant:restaurants!restaurant_id(id, country_code, cuisine_types, city)')
