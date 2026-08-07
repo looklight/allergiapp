@@ -29,6 +29,7 @@ import Raspberries from './raspberries.svg';
 import Blackberries from './blackberries.svg';
 import Plum from './plum.svg';
 import Asparagus from './asparagus.svg';
+import Papaya from './papaya.svg';
 
 export type FoodIconId = OtherFoodId | AllergenId;
 
@@ -53,4 +54,5 @@ export const FOOD_SVG_ICONS: Partial<Record<FoodIconId, React.FC<SvgProps>>> = {
   blackberries: Blackberries,
   plum: Plum,
   asparagus: Asparagus,
+  papaya: Papaya,
 };

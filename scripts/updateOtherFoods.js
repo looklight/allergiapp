@@ -54,6 +54,7 @@ const NEW_OTHER_FOODS = {
   coconut: 'Coconut',
   pineapple: 'Pineapple',
   mango: 'Mango',
+  papaya: 'Papaya',
   avocado: 'Avocado',
   grapes: 'Grapes',
   melon: 'Melon',

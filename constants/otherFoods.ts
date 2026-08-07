@@ -38,6 +38,7 @@ export type OtherFoodId =
   | 'coconut'
   | 'pineapple'
   | 'mango'
+  | 'papaya'
   | 'avocado'
   | 'grapes'
   | 'melon'
@@ -266,6 +267,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'mango', icon: '🥭', category: 'fruits', translations: {
     it: 'Mango', en: 'Mango', fr: 'Mangue', de: 'Mango', es: 'Mango', pt: 'Manga', nl: 'Mango', pl: 'Mango', ru: 'Манго', sv: 'Mango', zh: '芒果', ja: 'マンゴー', ko: '망고', th: 'มะม่วง', ar: 'مانجو',
+  }},
+  { id: 'papaya', icon: '🥭', category: 'fruits', translations: {
+    it: 'Papaya', en: 'Papaya', fr: 'Papaye', de: 'Papaya', es: 'Papaya', pt: 'Papaia', nl: 'Papaja', pl: 'Papaja', ru: 'Папайя', sv: 'Papaya', zh: '木瓜', ja: 'パパイヤ', ko: '파파야', th: 'มะละกอ', ar: 'بابايا',
   }},
   { id: 'avocado', icon: '🥑', category: 'fruits', translations: {
     it: 'Avocado', en: 'Avocado', fr: 'Avocat', de: 'Avocado', es: 'Aguacate', pt: 'Abacate', nl: 'Avocado', pl: 'Awokado', ru: 'Авокадо', sv: 'Avokado', zh: '牛油果', ja: 'アボカド', ko: '아보카도', th: 'อะโวคาโด', ar: 'أفوكادو',
