@@ -21,7 +21,7 @@ import type { HeaderAction } from '../../components/AppHeader';
 import i18n from '../../../utils/i18n';
 import type { UserProfile } from '../../../services/auth';
 import { getAnonymousLabel } from '../../../utils/anonymousLabel';
-import { backOrHome } from '../../../utils/backOrHome';
+import { backOrHome, useAndroidBackOrHome } from '../../../utils/backOrHome';
 import { venueIconName } from '../../../constants/restaurantCategories';
 import AppHeader from '../../components/AppHeader';
 
@@ -50,6 +50,10 @@ export default function PublicProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
+
+  // Da /u/{username} a freddo questa schermata è la radice: allinea l'indietro
+  // di sistema Android alla freccia in header (vedi onBack più sotto).
+  useAndroidBackOrHome();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);

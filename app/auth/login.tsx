@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
 import SocialAuthButtons from '../../components/SocialAuthButtons';
-import { backOrHome } from '../../utils/backOrHome';
+import { backOrHome, useAndroidBackOrHome } from '../../utils/backOrHome';
 
 export default function LoginScreen() {
   const theme = useTheme();
@@ -20,6 +20,10 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Radice dello stack quando il deep link a freddo passa di qui (profilo →
+  // redirect a login): l'indietro di sistema segue la freccia, non chiude l'app.
+  useAndroidBackOrHome();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {

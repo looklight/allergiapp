@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth';
 import i18n from '../../utils/i18n';
 import AppHeader from '../components/AppHeader';
 import SocialAuthButtons from '../../components/SocialAuthButtons';
-import { backOrHome } from '../../utils/backOrHome';
+import { backOrHome, useAndroidBackOrHome } from '../../utils/backOrHome';
 
 export default function SignupScreen() {
   const theme = useTheme();
@@ -20,6 +20,9 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Ci si arriva da login con replace: se login era radice, lo è anche questa.
+  useAndroidBackOrHome();
 
   const handleSignup = async () => {
     if (!email.trim() || !password.trim()) {
