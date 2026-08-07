@@ -2,20 +2,21 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert, TextInput } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTheme } from '../contexts/ThemeContext';
 import type { AppTheme } from '../constants/theme';
+import { useAuth } from '../contexts/AuthContext';
 import Avatar from '../components/Avatar';
+import FollowButton from '../components/FollowButton';
 import i18n from '../utils/i18n';
 import { getDisplayName } from '../utils/getDisplayName';
 import { RestaurantService, type LeaderboardEntry } from '../services/restaurantService';
+import { FollowService, getFollowGraphVersion } from '../services/followService';
 import { searchUsers, type UserSearchResult } from '../services/userSearchService';
 import AppHeader from './components/AppHeader';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_SEARCH_LENGTH = 2;
-
-type Tab = 'reviews' | 'likes';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] as const;
 
@@ -36,7 +37,16 @@ function RankBadge({ rank }: { rank: number }) {
   );
 }
 
-function LeaderboardRow({ entry, rank, onPress }: { entry: LeaderboardEntry; rank: number; onPress: () => void }) {
+function LeaderboardRow({ entry, rank, currentUserId, isFollowed, onPress, onFollowChange }: {
+  entry: LeaderboardEntry;
+  rank: number;
+  /** null se non loggato. */
+  currentUserId: string | null;
+  /** null finché lo stato follow non è caricato (pill nascosta). */
+  isFollowed: boolean | null;
+  onPress: () => void;
+  onFollowChange: (following: boolean) => void;
+}) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const name = getDisplayName(entry);
@@ -61,13 +71,18 @@ function LeaderboardRow({ entry, rank, onPress }: { entry: LeaderboardEntry; ran
       <View style={styles.rowInfo}>
         <Text style={styles.rowName} numberOfLines={1}>{displayName}</Text>
       </View>
+      {/* Pill follow inline: mai sulla propria riga né sugli anonimi (la
+          policy INSERT li rifiuta); il conteggio resta ancorato a destra. */}
+      {currentUserId && isFollowed !== null && entry.user_id !== currentUserId && name && (
+        <FollowButton
+          userId={currentUserId}
+          targetId={entry.user_id}
+          initialFollowing={isFollowed}
+          compact
+          onChange={onFollowChange}
+        />
+      )}
       <Text style={styles.rowCount}>{entry.count}</Text>
-      <MaterialCommunityIcons
-        name="chevron-right"
-        size={20}
-        color={theme.colors.textDisabled}
-        style={styles.rowChevron}
-      />
     </TouchableOpacity>
   );
 }
@@ -77,9 +92,11 @@ export default function CommunityScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>('reviews');
+  const { user } = useAuth();
   const [topReviewers, setTopReviewers] = useState<LeaderboardEntry[]>([]);
-  const [topLiked, setTopLiked] = useState<LeaderboardEntry[]>([]);
+  // null = stato follow non (ancora) noto: pill nascoste, niente flash
+  // "Segui" su profili già seguiti.
+  const [followedIds, setFollowedIds] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -107,7 +124,15 @@ export default function CommunityScreen() {
       try {
         const found = await searchUsers(trimmedQuery);
         if (epoch !== searchEpoch.current) return;
-        setResults(found);
+        // Riordino di presentazione: la RPC mette i match di prefisso in
+        // testa (rilevanza) e qui, dentro ciascun gruppo, vince chi ha più
+        // recensioni. Client-side: review_count arriva già dalla RPC.
+        const lower = trimmedQuery.toLowerCase();
+        setResults([...found].sort((a, b) => {
+          const aPrefix = a.username.toLowerCase().startsWith(lower) ? 0 : 1;
+          const bPrefix = b.username.toLowerCase().startsWith(lower) ? 0 : 1;
+          return aPrefix - bPrefix || b.review_count - a.review_count;
+        }));
       } catch (err) {
         console.warn('[Community] ricerca fallita:', err);
         if (epoch === searchEpoch.current) setResults([]);
@@ -120,26 +145,48 @@ export default function CommunityScreen() {
     };
   }, [trimmedQuery]);
 
+  const loadFollowedIds = useCallback(async (entries: LeaderboardEntry[]) => {
+    if (!user?.uid) {
+      setFollowedIds(null);
+      return;
+    }
+    try {
+      const ids = entries.map((e) => e.user_id).filter((id) => id !== user.uid);
+      setFollowedIds(await FollowService.getFollowedIdsAmong(ids));
+    } catch (err) {
+      console.warn('[Community] stato follow fallito:', err);
+      setFollowedIds(null);
+    }
+  }, [user?.uid]);
+
   const loadData = useCallback(async () => {
     const data = await RestaurantService.getLeaderboard();
     setTopReviewers(data.topReviewers);
-    setTopLiked(data.topLiked);
-  }, []);
+    await loadFollowedIds(data.topReviewers);
+  }, [loadFollowedIds]);
 
   useEffect(() => {
     loadData().finally(() => setLoading(false));
   }, [loadData]);
+
+  // Come su profile.tsx: se il grafo follow è cambiato altrove (follow da un
+  // profilo, unfollow dalla lista Seguiti), al focus si riallineano le pill.
+  const followVersionRef = useRef(getFollowGraphVersion());
+  useFocusEffect(
+    useCallback(() => {
+      const v = getFollowGraphVersion();
+      if (v !== followVersionRef.current) {
+        followVersionRef.current = v;
+        loadFollowedIds(topReviewers);
+      }
+    }, [loadFollowedIds, topReviewers]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
   }, [loadData]);
-
-  const currentData = activeTab === 'reviews' ? topReviewers : topLiked;
-  const sectionSubtitle = activeTab === 'reviews'
-    ? i18n.t('leaderboard.reviewsSubtitle')
-    : i18n.t('leaderboard.likesSubtitle');
 
   return (
     <View style={styles.container}>
@@ -166,6 +213,9 @@ export default function CommunityScreen() {
           returnKeyType="search"
           accessibilityLabel={i18n.t('community.searchPlaceholder')}
         />
+        {/* Spinner inline: la ricerca in corso si segnala qui, senza smontare
+            i risultati precedenti (niente flicker a ogni tasto). */}
+        {searching && <ActivityIndicator size="small" color={theme.colors.textSecondary} />}
         {query.length > 0 && (
           <TouchableOpacity
             onPress={() => setQuery('')}
@@ -179,16 +229,21 @@ export default function CommunityScreen() {
       </View>
 
       {isSearchMode ? (
-        /* Risultati ricerca al posto delle classifiche finché la query è attiva */
-        searching ? (
-          <View style={styles.centered}>
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          </View>
-        ) : results.length === 0 ? (
-          <View style={styles.centered}>
-            <MaterialCommunityIcons name="account-search-outline" size={64} color={theme.colors.textDisabled} />
-            <Text style={styles.emptyText}>{i18n.t('community.noResults')}</Text>
-          </View>
+        /* Risultati ricerca al posto della classifica finché la query è attiva.
+           I risultati della query precedente restano montati mentre se ne
+           digita una nuova (pattern type-ahead): lo spinner grande compare
+           solo alla primissima ricerca, quando non c'è ancora nulla. */
+        results.length === 0 ? (
+          searching ? (
+            <View style={styles.centered}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            </View>
+          ) : (
+            <View style={styles.searchEmpty}>
+              <MaterialCommunityIcons name="account-search-outline" size={48} color={theme.colors.textDisabled} />
+              <Text style={styles.emptyText}>{i18n.t('community.noResults')}</Text>
+            </View>
+          )
         ) : (
           <FlatList
             data={results}
@@ -240,60 +295,41 @@ export default function CommunityScreen() {
         )
       ) : (
       <>
-      {/* Tabs */}
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'reviews' && styles.tabActive]}
-          onPress={() => setActiveTab('reviews')}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons
-            name="star"
-            size={18}
-            color={activeTab === 'reviews' ? theme.colors.primary : theme.colors.textSecondary}
-          />
-          <Text style={[styles.tabText, activeTab === 'reviews' && styles.tabTextActive]}>
-            {i18n.t('leaderboard.reviews')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'likes' && styles.tabActive]}
-          onPress={() => setActiveTab('likes')}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons
-            name="heart"
-            size={18}
-            color={activeTab === 'likes' ? theme.colors.primary : theme.colors.textSecondary}
-          />
-          <Text style={[styles.tabText, activeTab === 'likes' && styles.tabTextActive]}>
-            {i18n.t('leaderboard.likes')}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Content */}
+      {/* Classifica: solo Recensioni. Il tab "Like ricevuti" è nascosto
+          (like poco usati, classifica quasi vuota); service e chiavi i18n
+          restano al loro posto per un'eventuale riattivazione. */}
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
-      ) : currentData.length === 0 ? (
+      ) : topReviewers.length === 0 ? (
         <View style={styles.centered}>
           <MaterialCommunityIcons name="trophy-outline" size={64} color={theme.colors.textDisabled} />
           <Text style={styles.emptyText}>{i18n.t('leaderboard.empty')}</Text>
         </View>
       ) : (
         <FlatList
-          data={currentData}
+          data={topReviewers}
           keyExtractor={(item) => item.user_id}
-          ListHeaderComponent={
-            <Text style={styles.sectionSubtitle}>{sectionSubtitle}</Text>
-          }
           renderItem={({ item, index }) => (
             <LeaderboardRow
               entry={item}
               rank={index + 1}
+              currentUserId={user?.uid ?? null}
+              isFollowed={followedIds ? followedIds.has(item.user_id) : null}
               onPress={() => router.push(`/restaurants/user/${item.user_id}`)}
+              onFollowChange={(nowFollowing) => {
+                // Set locale allineato al toggle: il bump di versione appena
+                // fatto dal service è "nostro", non deve rifetchare al focus.
+                followVersionRef.current = getFollowGraphVersion();
+                setFollowedIds((prev) => {
+                  if (!prev) return prev;
+                  const next = new Set(prev);
+                  if (nowFollowing) next.add(item.user_id);
+                  else next.delete(item.user_id);
+                  return next;
+                });
+              }}
             />
           )}
           contentContainerStyle={styles.list}
@@ -318,7 +354,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 8,
     paddingHorizontal: 12,
     borderRadius: 12,
     backgroundColor: theme.colors.surfaceMuted,
@@ -329,51 +365,21 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.textPrimary,
     paddingVertical: 10,
   },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 14,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabActive: {
-    borderBottomColor: theme.colors.primary,
-  },
-  tabText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-  },
-  tabTextActive: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
+  // Gap barra→lista 16 totali (8 qui + 8 di marginBottom della barra),
+  // come i margini laterali: un ritmo solo su tutta la pagina.
   list: {
-    padding: 16,
+    paddingTop: 8,
+    paddingHorizontal: 16,
     paddingBottom: 32,
   },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 20,
-  },
+  // paddingHorizontal 12 come l'interno della barra di ricerca: badge,
+  // avatar e conteggi allineati in colonna col contenuto della barra.
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
     borderRadius: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 8,
   },
@@ -383,22 +389,22 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     backgroundColor: theme.colors.amberLight,
   },
   medalBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   medalText: {
     color: theme.colors.surface,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   rankBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -406,7 +412,7 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   rankText: {
     color: theme.colors.textSecondary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   avatarSlot: {
@@ -416,7 +422,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     flex: 1,
   },
   rowName: {
-    fontSize: 18,
+    // 15 come le righe della lista Seguiti: i nomi lunghi convivono meglio
+    // con la pill follow prima di troncare.
+    fontSize: 15,
     fontWeight: '600',
     color: theme.colors.textPrimary,
   },
@@ -447,6 +455,13 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // "Nessun risultato" in alto anziché centrato a tutta pagina: resta
+  // visibile anche con la tastiera aperta e pesa meno.
+  searchEmpty: {
+    alignItems: 'center',
+    paddingTop: 48,
+    paddingHorizontal: 32,
   },
   emptyText: {
     marginTop: 12,
