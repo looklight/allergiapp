@@ -19,8 +19,9 @@ module.exports = defineConfig([
       'patches/*',
       'scripts/*',
       'translate-builder.js',
-      // admin/ e' un progetto Next.js separato (branch admin-prod) con la sua config
+      // admin/ e partner/ sono progetti Next.js separati con la loro config
       'admin/*',
+      'partner/*',
       // supabase/functions e' codice Deno (import via URL), non lintabile qui
       'supabase/*',
       // asset, traduzioni e file di design: nessun codice da lintare
