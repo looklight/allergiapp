@@ -68,6 +68,11 @@ const NEW_OTHER_FOODS = {
   lentils: 'Lentils',
   corn: 'Corn',
   buckwheat: 'Buckwheat',
+  // 'Black pepper' e non 'Pepper': la sorgente generica veniva tradotta come
+  // peperone in diverse lingue, in conflitto con bell_pepper.
+  pepper: 'Black pepper',
+  nutmeg: 'Nutmeg',
+  turmeric: 'Turmeric',
   coriander: 'Coriander',
   spicy: 'Spicy foods',
   beans: 'Beans',
@@ -75,6 +80,7 @@ const NEW_OTHER_FOODS = {
   rice: 'Rice',
   poppy_seeds: 'Poppy seeds',
   sunflower_seeds: 'Sunflower seeds',
+  flax_seeds: 'Flax seeds',
   cinnamon: 'Cinnamon',
   ginger: 'Ginger',
   chamomile: 'Chamomile',
