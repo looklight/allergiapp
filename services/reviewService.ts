@@ -324,16 +324,6 @@ export async function deleteReview(reviewId: string, userId: string): Promise<bo
   }
 }
 
-export async function getUserHasAnyReview(userId: string): Promise<boolean> {
-  const { data } = await supabase
-    .from('reviews')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  return data !== null;
-}
-
 export const ReviewService = {
   getReviews,
   getUserReview,
@@ -342,5 +332,4 @@ export const ReviewService = {
   updateReview,
   deleteReview,
   toggleReviewLike,
-  getUserHasAnyReview,
 };

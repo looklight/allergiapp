@@ -1,12 +1,10 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Alert, Image } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import {
   RestaurantService,
   type Restaurant,
   type ReviewPhoto,
-  type MenuPhoto,
   type Report,
   type CuisineVote,
 } from '../services/restaurantService';
@@ -74,10 +72,6 @@ export function useRestaurantDetail(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userReview, setUserReview] = useState<import('../services/restaurantService').Review | null>(null);
-  const [menuPhotos, setMenuPhotos] = useState<MenuPhoto[]>([]);
-  const [isUploadingMenu, setIsUploadingMenu] = useState(false);
-  const [userHasReviews, setUserHasReviews] = useState(false);
-  const [isUpdatingMenuUrl, setIsUpdatingMenuUrl] = useState(false);
   const [userReport, setUserReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
@@ -127,7 +121,6 @@ export function useRestaurantDetail(
       const basePromise = Promise.all([
         RestaurantService.getRestaurant(restaurantId),
         fetchReviewsFirstPage(),
-        RestaurantService.getMenuPhotos(restaurantId),
         RestaurantService.getReports(restaurantId),
         RestaurantService.getCuisineVotes(restaurantId),
       ]);
@@ -136,23 +129,20 @@ export function useRestaurantDetail(
             RestaurantService.getUserReview(restaurantId, user.uid),
             RestaurantService.isFavorite(user.uid, restaurantId),
             RestaurantService.getUserReport(restaurantId, user.uid),
-            RestaurantService.getUserHasAnyReview(user.uid),
             FavoriteNoteService.getFavoriteNote(user.uid, restaurantId),
           ])
-        : Promise.resolve([null, false, null, false, null] as const);
+        : Promise.resolve([null, false, null, null] as const);
 
-      const [[rest, , mp, rp, cv], [ur, fav, urp, hasReviews, noteVal]] = await Promise.all([basePromise, userPromise]);
+      const [[rest, , rp, cv], [ur, fav, urp, noteVal]] = await Promise.all([basePromise, userPromise]);
 
       if (loadId !== loadIdRef.current) return;
 
       setRestaurant(rest);
-      setMenuPhotos(mp);
       setReports(rp);
       setCuisineVotes(cv);
       setUserReview(ur);
       setIsFavorite(fav ?? false);
       setUserReport(urp);
-      setUserHasReviews(hasReviews);
       setSavedNote((noteVal as string | null) ?? null);
     } catch (e) {
       if (loadId !== loadIdRef.current) return;
@@ -168,15 +158,12 @@ export function useRestaurantDetail(
   // Prefetch thumbnail URLs appena i dati arrivano: riduce il lag visivo
   // tra il mount della FlatList/ScrollView e la comparsa delle immagini.
   useEffect(() => {
-    for (const p of menuPhotos) {
-      if (p.thumbnail_url) Image.prefetch(p.thumbnail_url).catch(() => {});
-    }
     for (const r of rawReviews) {
       for (const photo of r.photos ?? []) {
         if (photo.thumbnailUrl) Image.prefetch(photo.thumbnailUrl).catch(() => {});
       }
     }
-  }, [menuPhotos, rawReviews]);
+  }, [rawReviews]);
 
   // ─── Derived state ─────────────────────────────────────────────────────────
   const userNeedsSet = useMemo(() => {
@@ -243,99 +230,6 @@ export function useRestaurantDetail(
     router.push(url);
   }, [isAuthenticated, restaurantId, restaurant, router]);
 
-  const handleAddMenuPhoto = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      router.push('/auth/login');
-      return;
-    }
-    if (!restaurantId) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-      exif: false,
-      preferredAssetRepresentationMode:
-        ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
-    });
-    if (result.canceled || !result.assets[0]) return;
-
-    setIsUploadingMenu(true);
-    try {
-      const photo = await RestaurantService.addMenuPhoto(restaurantId, result.assets[0].uri, user.uid);
-      if (photo) {
-        setMenuPhotos(prev => [photo, ...prev]);
-      } else {
-        Alert.alert('Errore', 'Non è stato possibile caricare la foto.');
-      }
-    } catch {
-      Alert.alert('Errore', 'Non è stato possibile caricare la foto.');
-    } finally {
-      setIsUploadingMenu(false);
-    }
-  }, [isAuthenticated, user, restaurantId, router]);
-
-  const handleUpdateMenuUrl = useCallback(() => {
-    if (!isAuthenticated || !user) {
-      router.push('/auth/login');
-      return;
-    }
-    Alert.prompt(
-      restaurant?.menu_url ? 'Modifica link menu' : 'Aggiungi link menu',
-      'Inserisci l\'URL del menu online (lascia vuoto per rimuovere)',
-      async (input?: string) => {
-        if (input === undefined) return;
-        let url = input.trim();
-        if (!url) {
-          setIsUpdatingMenuUrl(true);
-          const ok = await RestaurantService.updateMenuUrl(restaurantId!, null);
-          setIsUpdatingMenuUrl(false);
-          if (ok) setRestaurant(prev => prev ? { ...prev, menu_url: null } : prev);
-          else Alert.alert('Errore', 'Non è stato possibile aggiornare il link.');
-          return;
-        }
-        if (!/^https?:\/\//i.test(url)) {
-          url = 'https://' + url;
-        }
-        try {
-          new URL(url);
-        } catch {
-          Alert.alert('URL non valido', 'Inserisci un indirizzo web valido (es. www.ristorante.it/menu).');
-          return;
-        }
-        setIsUpdatingMenuUrl(true);
-        const ok = await RestaurantService.updateMenuUrl(restaurantId!, url || null);
-        setIsUpdatingMenuUrl(false);
-        if (ok) {
-          setRestaurant(prev => prev ? { ...prev, menu_url: url || null } : prev);
-        } else {
-          Alert.alert('Errore', 'Non è stato possibile aggiornare il link.');
-        }
-      },
-      'plain-text',
-      restaurant?.menu_url ?? '',
-    );
-  }, [isAuthenticated, user, restaurant?.menu_url, restaurantId, router]);
-
-  const handleDeleteMenuPhoto = useCallback((photo: MenuPhoto) => {
-    if (!user || !restaurantId) return;
-    Alert.alert(
-      'Elimina foto menu',
-      'Sei sicuro di voler eliminare questa foto?',
-      [
-        { text: 'Annulla', style: 'cancel' },
-        {
-          text: 'Elimina',
-          style: 'destructive',
-          onPress: async () => {
-            const ok = await RestaurantService.deleteMenuPhoto(restaurantId, photo.id, user.uid);
-            if (ok) {
-              setMenuPhotos(prev => prev.filter(p => p.id !== photo.id));
-            }
-          },
-        },
-      ],
-    );
-  }, [user, restaurantId]);
-
   const pendingLikes = useRef<Set<string>>(new Set());
 
   const handleToggleReviewLike = useCallback(async (reviewId: string) => {
@@ -381,7 +275,6 @@ export function useRestaurantDetail(
     hasMoreReviews,
     loadMoreReviews,
     isLoadingMoreReviews,
-    menuPhotos,
     reports,
     cuisineVotes,
     userReview,
@@ -397,19 +290,13 @@ export function useRestaurantDetail(
     closeSaveSheet,
     isLoading,
     error,
-    isUploadingMenu,
     reviewSortOrder,
     setReviewSortOrder,
     hasUserNeeds,
     effectiveNeeds,
     needsOverridden,
-    userHasReviews,
-    isUpdatingMenuUrl,
     setFavorite,
     handleToggleReviewLike,
     navigateToContribute,
-    handleAddMenuPhoto,
-    handleDeleteMenuPhoto,
-    handleUpdateMenuUrl,
   };
 }

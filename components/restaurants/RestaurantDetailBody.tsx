@@ -22,7 +22,6 @@ import ImageFullscreenModal from '../ImageFullscreenModal';
 import RestaurantHeader from './RestaurantHeader';
 import CollectionPills from './CollectionPills';
 import SaveToCollectionSheet from './SaveToCollectionSheet';
-import MenuPhotosSection from './MenuPhotosSection';
 import ReviewsSection from './ReviewsSection';
 import ReportsSection from './ReportsSection';
 import PhotoGalleryModal from './PhotoGalleryModal';
@@ -78,11 +77,10 @@ export default function RestaurantDetailBody({
 
   const {
     restaurant, allReviews, reviewsTotalCount, hasMoreReviews, loadMoreReviews, isLoadingMoreReviews,
-    menuPhotos, reports, cuisineVotes, userReview, userReport, isFavorite,
-    isLoading, error, isUploadingMenu, userHasReviews, isUpdatingMenuUrl,
+    reports, cuisineVotes, userReview, userReport, isFavorite,
+    isLoading, error,
     reviewSortOrder, setReviewSortOrder, hasUserNeeds, effectiveNeeds, needsOverridden,
     setFavorite, handleToggleReviewLike, navigateToContribute,
-    handleAddMenuPhoto, handleDeleteMenuPhoto, handleUpdateMenuUrl,
     collections, collectionMembership, reloadCollections, savedNote,
     saveSheetVisible, openSaveSheet, closeSaveSheet,
   } = detail;
@@ -95,7 +93,6 @@ export default function RestaurantDetailBody({
   };
 
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [menuGalleryIndex, setMenuGalleryIndex] = useState<number | null>(null);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [reportedReviewIds, setReportedReviewIds] = useState<Set<string>>(new Set());
@@ -387,19 +384,6 @@ export default function RestaurantDetailBody({
                 }}
               />
             )}
-            <MenuPhotosSection
-              menuPhotos={menuPhotos}
-              currentUserId={user?.uid}
-              isUploading={isUploadingMenu}
-              canUpload={isAuthenticated}
-              menuUrl={restaurant.menu_url}
-              onAddPhoto={handleAddMenuPhoto}
-              onDeletePhoto={handleDeleteMenuPhoto}
-              onPhotoPress={setMenuGalleryIndex}
-              onUpdateMenuUrl={handleUpdateMenuUrl}
-              isUpdatingMenuUrl={isUpdatingMenuUrl}
-              onManage={() => router.push(`/restaurants/menu-photos?restaurantId=${restaurantId}&restaurantName=${encodeURIComponent(restaurant.name)}&offersLodging=${restaurant.offers_lodging ? 1 : 0}`)}
-            />
         </View>
 
         <View style={styles.separator} />
@@ -518,15 +502,6 @@ export default function RestaurantDetailBody({
         imageUrl={fullscreenImage}
         onClose={() => setFullscreenImage(null)}
       />
-
-      {menuGalleryIndex !== null && (
-        <ImageFullscreenModal
-          visible
-          images={menuPhotos.map(p => p.image_url)}
-          initialIndex={menuGalleryIndex}
-          onClose={() => setMenuGalleryIndex(null)}
-        />
-      )}
 
       {galleryIndex !== null && (
         <PhotoGalleryModal

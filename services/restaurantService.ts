@@ -7,17 +7,16 @@ import {
   type RestaurantSearchResult,
 } from './restaurant.types';
 import { getCuisineVotes, voteCuisines } from './cuisineVoteService';
-import { getReviews, getUserReview, getReviewsByUser, getReviewCountByUser, getLikesReceivedByUser, addReview, updateReview, deleteReview, toggleReviewLike, getUserHasAnyReview } from './reviewService';
+import { getReviews, getUserReview, getReviewsByUser, getReviewCountByUser, getLikesReceivedByUser, addReview, updateReview, deleteReview, toggleReviewLike } from './reviewService';
 import { getFavorites, isFavorite, toggleFavorite, setFavorite, removeFavorite } from './favoriteService';
-import { updateMenuUrl, getMenuPhotos, addMenuPhoto, deleteMenuPhoto } from './menuService';
-import { getReports, getUserReport, addReport, reportMenuPhoto, reportReview } from './reportService';
+import { getReports, getUserReport, addReport, reportReview } from './reportService';
 import { getLeaderboard } from './leaderboardService';
 
 // ─── Re-export tipi e servizi per retrocompatibilità ────────────────────────
 // I consumer possono continuare a importare tutto da 'restaurantService'.
 
 export type {
-  Restaurant, RestaurantPin, RestaurantRow, ReviewPhoto, Review, Favorite, MenuPhoto,
+  Restaurant, RestaurantPin, RestaurantRow, ReviewPhoto, Review, Favorite,
   Report, CuisineVote, SortBy, CreateRestaurantInput, CreateReviewInput,
   CreateReportInput, LeaderboardEntry, ReviewSortOrder, PaginatedReviews,
   RestaurantSearchResult,
@@ -460,17 +459,10 @@ export const RestaurantService = {
   toggleFavorite,
   setFavorite,
   removeFavorite,
-  // Menu (da menuService)
-  getUserHasAnyReview,
-  updateMenuUrl,
-  getMenuPhotos,
-  addMenuPhoto,
-  deleteMenuPhoto,
   // Reports (da reportService)
   getReports,
   getUserReport,
   addReport,
-  reportMenuPhoto,
   reportReview,
   // Cuisine Votes (da cuisineVoteService)
   getCuisineVotes,

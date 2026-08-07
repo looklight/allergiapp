@@ -418,35 +418,6 @@
         "translateError": "Traduzione non disponibile"
       }
     },
-    "menu": {
-      "title": "Menu",
-      "manage": "Gestisci",
-      "add": "Aggiungi",
-      "empty": "Ancora nessuna foto del menu",
-      "loadError": "Impossibile caricare le foto del menu.",
-      "addTitle": "Aggiungi foto",
-      "gallery": "Galleria",
-      "camera": "Fotocamera",
-      "uploadError": "Impossibile caricare la foto. Riprova.",
-      "reportAlreadyTitle": "Segnalazione inviata",
-      "reportAlreadyMsg": "Hai già segnalato questa foto. La esamineremo al più presto.",
-      "reportTitle": "Segnala foto",
-      "reportPrompt": "Perché vuoi segnalare questa foto?",
-      "reportIncorrect": "Non è un menu / non pertinente",
-      "reportInappropriate": "Contenuto inappropriato",
-      "reportOther": "Altro",
-      "deleteTitle": "Elimina foto",
-      "deleteConfirm": "Vuoi eliminare questa foto del menu?",
-      "deleteError": "Impossibile eliminare la foto.",
-      "screenTitle": "Foto menu",
-      "infoText": "Fotografa le pagine del menu: così chi ha esigenze alimentari vede l'assortimento, i prezzi e gli allergeni segnalati, prima ancora di entrare.",
-      "infoSubtext": "Le foto dei singoli piatti non vanno qui: puoi aggiungerle alla tua recensione. Se invece hai il menu davanti o foto più aggiornate, aggiungile liberamente.",
-      "uploading": "Caricamento...",
-      "addAction": "Aggiungi una pagina del menu",
-      "beFirst": "Sii il primo ad aggiungerne una",
-      "uploaderYou": "Tu",
-      "uploaderCommunity": "Utente della community"
-    },
     "reports": {
       "titleWithCount": "Segnalazioni ({{count}})",
       "userLabel": "Utente"

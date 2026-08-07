@@ -66,7 +66,6 @@ export interface Restaurant {
   google_place_id: string | null;
   is_premium: boolean;
   subscription_status: string;
-  menu_url?: string | null;
   created_at: string;
   updated_at: string;
   // Calcolati (da RPC/join)
@@ -116,17 +115,6 @@ export interface Favorite {
   created_at: string;
   // Join
   restaurant?: Restaurant;
-}
-
-export interface MenuPhoto {
-  id: string;
-  restaurant_id: string;
-  user_id: string | null;
-  image_url: string;
-  thumbnail_url: string | null;
-  created_at: string;
-  // Dal profilo utente (join)
-  user_username?: string | null;
 }
 
 export interface Report {

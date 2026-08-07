@@ -12,9 +12,7 @@ const BUCKET = 'images';
 // Presets compressione immagini: { maxWidth, quality }
 const IMAGE_PRESETS = {
   thumbnailReview: { width: 250, quality: 0.65 },
-  thumbnailMenu:   { width: 400, quality: 0.7 },
   review:          { width: 600, quality: 0.7 },
-  menu:            { width: 1000, quality: 0.8 },
 } as const;
 
 type ImagePreset = { width: number; quality: number };
@@ -117,16 +115,6 @@ async function uploadReviewPhoto(
   return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.review, IMAGE_PRESETS.thumbnailReview, 'square');
 }
 
-async function uploadMenuPhoto(
-  restaurantId: string,
-  photoId: string,
-  localUri: string,
-): Promise<UploadResult> {
-  const userId = await getCurrentUserId();
-  const base = `${userId}/menus/${restaurantId}/${photoId}`;
-  return uploadWithThumbnail(localUri, `${base}.webp`, `${base}_thumb.webp`, IMAGE_PRESETS.menu, IMAGE_PRESETS.thumbnailMenu);
-}
-
 async function deleteByUrl(url: string): Promise<void> {
   // Estrai il path dal public URL: .../storage/v1/object/public/images/PATH
   const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
@@ -148,7 +136,6 @@ async function deleteImageWithThumbnail(imageUrl: string, thumbnailUrl?: string)
 
 export const StorageService = {
   uploadReviewPhoto,
-  uploadMenuPhoto,
   deleteByUrl,
   deleteImageWithThumbnail,
 };
