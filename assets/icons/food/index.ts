@@ -25,6 +25,10 @@ import PoppySeeds from './poppy_seeds.svg';
 import FlaxSeeds from './flax_seeds.svg';
 import Lentils from './lentils.svg';
 import Pomegranate from './pomegranate.svg';
+import Raspberries from './raspberries.svg';
+import Blackberries from './blackberries.svg';
+import Plum from './plum.svg';
+import Asparagus from './asparagus.svg';
 
 export type FoodIconId = OtherFoodId | AllergenId;
 
@@ -45,4 +49,8 @@ export const FOOD_SVG_ICONS: Partial<Record<FoodIconId, React.FC<SvgProps>>> = {
   flax_seeds: FlaxSeeds,
   lentils: Lentils,
   pomegranate: Pomegranate,
+  raspberries: Raspberries,
+  blackberries: Blackberries,
+  plum: Plum,
+  asparagus: Asparagus,
 };

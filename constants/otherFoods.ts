@@ -15,6 +15,7 @@ export type OtherFoodId =
   | 'zucchini'
   | 'cucumber'
   | 'fennel'
+  | 'asparagus'
   | 'celeriac'
   | 'spinach'
   | 'broccoli'
@@ -25,10 +26,13 @@ export type OtherFoodId =
   | 'kiwi'
   | 'strawberries'
   | 'blueberries'
+  | 'raspberries'
+  | 'blackberries'
   | 'apple'
   | 'banana'
   | 'cherry'
   | 'apricot'
+  | 'plum'
   | 'pear'
   | 'citrus'
   | 'coconut'
@@ -196,6 +200,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'fennel', icon: '🌱', category: 'vegetables', translations: {
     it: 'Finocchio', en: 'Fennel', fr: 'Fenouil', de: 'Fenchel', es: 'Hinojo', pt: 'Funcho', nl: 'Venkel', pl: 'Koper włoski', ru: 'Фенхель', sv: 'Fänkål', zh: '茴香', ja: 'フェンネル', ko: '회향', th: 'เฟนเนล', ar: 'الشمر',
   }},
+  { id: 'asparagus', icon: '🌱', category: 'vegetables', translations: {
+    it: 'Asparagi', en: 'Asparagus', fr: 'Asperges', de: 'Spargel', es: 'Espárragos', pt: 'Espargos', nl: 'Asperges', pl: 'Szparagi', ru: 'Спаржа', sv: 'Sparris', zh: '芦笋', ja: 'アスパラガス', ko: '아스파라거스', th: 'หน่อไม้ฝรั่ง', ar: 'الهليون',
+  }},
   { id: 'celeriac', icon: '🥬', category: 'vegetables', translations: {
     it: 'Sedano rapa', en: 'Celeriac', fr: 'Céleri-rave', de: 'Knollensellerie', es: 'Apio nabo', pt: 'Aipo-rábano', nl: 'Knolselderij', pl: 'Seler korzeniowy', ru: 'Сельдерей корневой', sv: 'Rotselleri', zh: '根芹', ja: 'セロリアック', ko: '셀러리악', th: 'เซเลอรีแอค', ar: 'كرفس جذري',
   }},
@@ -224,6 +231,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'blueberries', icon: '🫐', category: 'fruits', translations: {
     it: 'Mirtilli', en: 'Blueberries', fr: 'Myrtilles', de: 'Heidelbeeren', es: 'Arándanos', pt: 'Mirtilos', nl: 'Bosbessen', pl: 'Borówki', ru: 'Черника', sv: 'Blåbär', zh: '蓝莓', ja: 'ブルーベリー', ko: '블루베리', th: 'บลูเบอร์รี', ar: 'التوت الأزرق',
   }},
+  { id: 'raspberries', icon: '🍓', category: 'fruits', translations: {
+    it: 'Lamponi', en: 'Raspberries', fr: 'Framboises', de: 'Himbeeren', es: 'Frambuesas', pt: 'Framboesas', nl: 'Frambozen', pl: 'Maliny', ru: 'Малина', sv: 'Hallon', zh: '树莓', ja: 'ラズベリー', ko: '라즈베리', th: 'ราสป์เบอร์รี', ar: 'توت العليق',
+  }},
+  { id: 'blackberries', icon: '🫐', category: 'fruits', translations: {
+    it: 'More', en: 'Blackberries', fr: 'Mûres', de: 'Brombeeren', es: 'Moras', pt: 'Amoras', nl: 'Bramen', pl: 'Jeżyny', ru: 'Ежевика', sv: 'Björnbär', zh: '黑莓', ja: 'ブラックベリー', ko: '블랙베리', th: 'แบล็กเบอร์รี', ar: 'التوت الأسود',
+  }},
   { id: 'apple', icon: '🍎', category: 'fruits', translations: {
     it: 'Mela', en: 'Apple', fr: 'Pomme', de: 'Apfel', es: 'Manzana', pt: 'Maçã', nl: 'Appel', pl: 'Jabłko', ru: 'Яблоко', sv: 'Äpple', zh: '苹果', ja: 'りんご', ko: '사과', th: 'แอปเปิ้ล', ar: 'تفاح',
   }},
@@ -235,6 +248,9 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'apricot', icon: '🍑', category: 'fruits', translations: {
     it: 'Albicocca', en: 'Apricot', fr: 'Abricot', de: 'Aprikose', es: 'Albaricoque', pt: 'Damasco', nl: 'Abrikoos', pl: 'Morela', ru: 'Абрикос', sv: 'Aprikos', zh: '杏', ja: 'あんず', ko: '살구', th: 'แอพริคอท', ar: 'مشمش',
+  }},
+  { id: 'plum', icon: '🍑', category: 'fruits', translations: {
+    it: 'Prugna', en: 'Plum', fr: 'Prune', de: 'Pflaume', es: 'Ciruela', pt: 'Ameixa', nl: 'Pruim', pl: 'Śliwka', ru: 'Слива', sv: 'Plommon', zh: '李子', ja: 'プラム', ko: '자두', th: 'ลูกพลัม', ar: 'برقوق',
   }},
   { id: 'pear', icon: '🍐', category: 'fruits', translations: {
     it: 'Pera', en: 'Pear', fr: 'Poire', de: 'Birne', es: 'Pera', pt: 'Pera', nl: 'Peer', pl: 'Gruszka', ru: 'Груша', sv: 'Päron', zh: '梨', ja: '梨', ko: '배', th: 'ลูกแพร์', ar: 'كمثرى',
