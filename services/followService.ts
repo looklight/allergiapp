@@ -56,6 +56,19 @@ export async function isFollowing(targetId: string): Promise<boolean> {
   return data !== null;
 }
 
+// Stato follow di un gruppo di profili (es. righe della classifica) in una
+// query sola: come isFollowing, la RLS espone solo le righe del follower
+// corrente, quindi basta filtrare sui target.
+export async function getFollowedIdsAmong(targetIds: string[]): Promise<Set<string>> {
+  if (targetIds.length === 0) return new Set();
+  const { data, error } = await supabase
+    .from('follows')
+    .select('following_id')
+    .in('following_id', targetIds);
+  if (error) throw error;
+  return new Set((data ?? []).map((row: { following_id: string }) => row.following_id));
+}
+
 export async function follow(userId: string, targetId: string): Promise<void> {
   // Le guardie (no anonimi, no bloccati, no self) stanno nella policy INSERT.
   const { error } = await supabase
@@ -180,6 +193,7 @@ export async function getFollowedPins(lodgingMode: boolean): Promise<RestaurantP
 
 export const FollowService = {
   isFollowing,
+  getFollowedIdsAmong,
   follow,
   unfollow,
   getFollowing,

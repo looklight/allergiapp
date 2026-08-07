@@ -12,6 +12,8 @@ interface FollowButtonProps {
   /** Profilo da seguire. */
   targetId: string;
   initialFollowing: boolean;
+  /** Variante ridotta per contesti densi (es. righe della classifica). */
+  compact?: boolean;
   /** Notifica il parent dopo un toggle riuscito (es. per invalidare il feed). */
   onChange?: (following: boolean) => void;
 }
@@ -21,7 +23,7 @@ interface FollowButtonProps {
  * UI ottimistica: lo stato flippa subito e torna indietro se la scrittura
  * fallisce (es. RLS che rifiuta il follow di un profilo diventato anonimo).
  */
-export default function FollowButton({ userId, targetId, initialFollowing, onChange }: FollowButtonProps) {
+export default function FollowButton({ userId, targetId, initialFollowing, compact, onChange }: FollowButtonProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [following, setFollowing] = useState(initialFollowing);
@@ -54,9 +56,19 @@ export default function FollowButton({ userId, targetId, initialFollowing, onCha
       accessibilityRole="button"
       accessibilityState={{ selected: following }}
       accessibilityLabel={following ? i18n.t('follow.following') : i18n.t('follow.follow')}
-      style={[styles.pill, following ? styles.pillFollowing : styles.pillFollow]}
+      style={[
+        styles.pill,
+        compact && styles.pillCompact,
+        following ? styles.pillFollowing : styles.pillFollow,
+      ]}
     >
-      <Text style={[styles.label, following ? styles.labelFollowing : styles.labelFollow]}>
+      <Text
+        style={[
+          styles.label,
+          compact && styles.labelCompact,
+          following ? styles.labelFollowing : styles.labelFollow,
+        ]}
+      >
         {following ? i18n.t('follow.following') : i18n.t('follow.follow')}
       </Text>
     </TouchableOpacity>
@@ -70,6 +82,10 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
   },
+  pillCompact: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
   pillFollow: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
@@ -81,6 +97,9 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  labelCompact: {
+    fontSize: 12,
   },
   labelFollow: {
     color: theme.colors.onPrimary,
