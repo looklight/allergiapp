@@ -20,7 +20,7 @@ export default function InfoHint({ text, align = 'center' }: { text: string; ali
       </button>
       <span
         role="tooltip"
-        className={`pointer-events-none invisible absolute ${position} top-full z-30 mt-2 w-64 rounded-md border border-border bg-card p-2.5 text-left text-xs font-normal normal-case leading-snug tracking-normal text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100`}
+        className={`pointer-events-none hidden group-hover:block group-focus-within:block absolute ${position} top-full z-30 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-card p-2.5 text-left text-xs font-normal normal-case leading-snug tracking-normal text-foreground shadow-lg`}
       >
         {text}
       </span>
