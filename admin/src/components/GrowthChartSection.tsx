@@ -98,8 +98,11 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 export default function GrowthChartSection() {
-  const [range, setRange] = useState<Range>('all');
-  const [mode, setMode] = useState<Mode>('cumulative');
+  // Default sull'ultimo mese in incrementale: la dashboard risponde prima a
+  // "cosa è successo di recente". Con 1m i bucket sono giornalieri, quindi la
+  // serie è per forza frastagliata; per la tendenza si passa a 3M (settimanali).
+  const [range, setRange] = useState<Range>('1m');
+  const [mode, setMode] = useState<Mode>('incremental');
   const [dates, setDates] = useState<number[][] | null>(null);
 
   useEffect(() => {
