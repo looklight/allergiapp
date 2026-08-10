@@ -9,9 +9,11 @@ import InfoHint from '@/components/InfoHint';
 
 const INFO = "Aperture della card allergeni per giorno. Contatore anonimo: conta tutte le aperture di tutti gli utenti, anche senza consenso analytics (nessun dato personale, quindi niente utenti unici). Il conteggio parte dal giorno di attivazione del contatore, senza retroattivo; l'uso offline della card non viene registrato.";
 
-// Stesso colore della linea 'Reali' nel grafico Utenti attivi: in dashboard
-// identifica i contatori anonimi (mig 082).
-const COLOR = '#e34948';
+// Arancio: è lo step scuro (#d95926) e non quello chiaro (#eb6834), perché il
+// colore è uno solo per entrambi i temi e lo step chiaro esce dalla banda di
+// chiarezza sul fondo scuro. Rompe di proposito la convenzione precedente, per
+// cui il rosso della linea 'Reali' segnalava i contatori anonimi (mig 082).
+const COLOR = '#d95926';
 
 type Range = 7 | 30 | 90;
 
