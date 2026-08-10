@@ -1,10 +1,19 @@
 // Icona "i" con tooltip CSS che spiega cosa misura un dato.
 // Si mostra su hover e su focus/click (accessibile, funziona anche da tap).
-// align: 'center' (default) o 'end' quando l'icona è sul bordo destro, così
-// il riquadro si estende verso sinistra e non esce dallo schermo.
+//
+// Da `sm` in su il riquadro è ancorato all'icona, e `align` decide da che
+// parte si estende: 'center' (default), 'start' o 'end' quando l'icona è sul
+// bordo destro. Sotto `sm` `align` non si applica: il riquadro è 256px su
+// schermi da ~390px, quindi ancorarlo a un punto lo fa sempre uscire da un
+// lato o dall'altro. Diventa invece una barra fissa in fondo allo schermo,
+// larga quanto il viewport meno i margini, che per costruzione ci sta sempre.
 export default function InfoHint({ text, align = 'center' }: { text: string; align?: 'center' | 'start' | 'end' }) {
   const position =
-    align === 'end' ? 'right-0' : align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2';
+    align === 'end'
+      ? 'sm:right-0'
+      : align === 'start'
+        ? 'sm:left-0'
+        : 'sm:left-1/2 sm:-translate-x-1/2';
   return (
     <span className="relative inline-flex group align-middle">
       <button
@@ -20,7 +29,7 @@ export default function InfoHint({ text, align = 'center' }: { text: string; ali
       </button>
       <span
         role="tooltip"
-        className={`pointer-events-none hidden group-hover:block group-focus-within:block absolute ${position} top-full z-30 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-card p-2.5 text-left text-xs font-normal normal-case leading-snug tracking-normal text-foreground shadow-lg`}
+        className={`pointer-events-none hidden group-hover:block group-focus-within:block fixed inset-x-4 bottom-4 z-30 sm:absolute ${position} sm:inset-x-auto sm:bottom-auto sm:top-full sm:mt-2 sm:w-64 rounded-md border border-border bg-card p-2.5 text-left text-xs font-normal normal-case leading-snug tracking-normal text-foreground shadow-lg`}
       >
         {text}
       </span>
