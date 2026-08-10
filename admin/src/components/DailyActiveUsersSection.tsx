@@ -18,10 +18,15 @@ const RANGES: { key: Range; label: string }[] = [
   { key: 90, label: '90g' },
 ];
 
-// Barre impilate: nuovi (verde, crescita) sotto, di ritorno (blu, retention) sopra.
-// Colori dalla terna categorica già validata in GrowthChartSection.
+// Barre impilate: nuovi (acqua, crescita) sotto, di ritorno (blu, retention) sopra.
+// L'acqua sostituisce il verde: verde e blu distavano ΔE 29 come tinta ma solo
+// 0.046 in chiarezza (L 0.529 vs 0.575), e su segmenti che si toccano un confine
+// di sola tinta si legge male. Arancio e giallo, i candidati istintivi, non sono
+// utilizzabili: l'arancio collide con la linea rossa (ΔE 7.1) e il giallo esce
+// dalla banda di chiarezza del tema scuro. Rivalidare prima di cambiarli
+// (scripts/validate_palette.js del metodo dataviz).
 const SERIES = [
-  { key: 'new_users', label: 'Nuovi', color: '#008300' },
+  { key: 'new_users', label: 'Nuovi', color: '#1baf7a' },
   { key: 'returning_users', label: 'Di ritorno', color: '#2a78d6' },
 ] as const;
 
@@ -234,6 +239,10 @@ export default function DailyActiveUsersSection() {
                 name={s.label}
                 stackId="dau"
                 fill={s.color}
+                // 2px nel colore della superficie fra un segmento e l'altro: è
+                // lo stacco a rendere distinti i segmenti, non il solo colore.
+                stroke="var(--card)"
+                strokeWidth={2}
                 isAnimationActive={false}
               />
             ))}
