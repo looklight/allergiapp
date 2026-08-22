@@ -169,6 +169,10 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - Il trigger `claim → owner_id` è già nel debito tecnico (nessun automatismo attuale)
 - Valutare se `is_premium` viene dato con il claim o separatamente (es. freemium: claim gratuito, feature premium a pagamento)
 
+**Da fare quando si costruisce il menù premium nell'app (note dal portale partner, 2026-08-23):**
+- [ ] **Filtri in cima alla schermata menù** (quella che si apre da "Vedi tutto"): chip per le categorie *effettivamente usate* dal ristoratore + chip "Per me" che nasconde i piatti con gli allergeni di chi guarda. Mostrarle solo sopra ~6 piatti o con più di una categoria, sotto sono rumore. Niente scelta allergeni (è già il profilo utente) né ordinamento
+- [ ] **Verifica dei link lato server alla pubblicazione della vetrina**: dal browser del partner non è possibile (CORS), quindi controllo alla pubblicazione con esito visibile in admin. Nel portale c'è già `normalizeUrl` che completa lo schema mancante (`www.x.it` → `https://www.x.it`), ma non dice niente su dominio sbagliato o pagina rimossa
+
 ### Condivisione ristorante (native share + deep link)
 **COMPLETA (2026-07-19).** Share button, pagina web `/r/[slug]`, Universal Links iOS e App Links Android tutti in produzione. Il 19/07 chiuso l'ultimo pezzo: SHA-256 Play App Signing in `assetlinks.json` → link diretti in-app anche per installazioni Play Store. Storia e decisioni in `SHARE_FEATURE.md`.
 
