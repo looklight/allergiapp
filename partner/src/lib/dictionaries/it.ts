@@ -97,7 +97,7 @@ const it = {
       'La parte della scheda del tuo locale che curi tu: link e menù con gli allergeni. L’anteprima mostra come apparirà nell’app.',
     subsLink: 'Come funziona l’associazione al locale',
     venueNameLabel: 'Nome della vetrina',
-    venueNamePlaceholder: 'Es. Vetrina centro',
+    venueNamePlaceholder: 'Come vuoi chiamarla',
     dishesTitle: 'Piatti e allergeni',
     dishesHint: 'Facoltativi: senza piatti la scheda mostra solo i tuoi link.',
     addDish: 'Aggiungi piatto',

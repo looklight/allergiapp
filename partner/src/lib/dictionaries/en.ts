@@ -99,7 +99,7 @@ const en: typeof it = {
       'The part of your venue’s listing that you curate: links and a menu with allergens. The preview shows how it will look in the app.',
     subsLink: 'How linking to your venue works',
     venueNameLabel: 'Showcase name',
-    venueNamePlaceholder: 'E.g. Downtown showcase',
+    venueNamePlaceholder: 'What you want to call it',
     dishesTitle: 'Dishes and allergens',
     dishesHint: 'Optional: without dishes the app shows only your links.',
     addDish: 'Add dish',
