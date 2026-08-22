@@ -11,8 +11,27 @@ import { DISH_CATEGORIES } from '@/lib/categories';
 import { fileToResizedDataUrl } from '@/lib/image';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { DELIVERY_PROVIDERS } from '@/lib/providers';
+import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
+import LinkPill from '@/components/LinkPill';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
+
+// Testo di aiuto con una parola sottolineata, segnata tra graffe nel dizionario
+function EmphasizedText({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/\{|\}/).map((part, i) =>
+        i % 2 === 1 ? (
+          <span key={i} className="underline decoration-gray-400 underline-offset-2">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
 
 function DishForm({
   initial,
@@ -63,61 +82,31 @@ function DishForm({
   return (
     <div ref={container} className="scroll-mt-4 rounded-xl border border-gray-300 bg-gray-50 p-4">
       <div className="space-y-3">
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {d.editor.dishName}
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={d.editor.dishNamePlaceholder}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {d.editor.dishCategory}
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
-            >
-              <option value="">{d.editor.noCategory}</option>
-              {DISH_CATEGORIES.map((cat) => (
-                <option key={cat.code} value={cat.code}>
-                  {cat[locale]}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Categoria a scelta singola: una riga sola, scorre se non ci sta.
+            Ritoccare la pill accesa la spegne = nessuna categoria. */}
+        <div className="-mx-0.5 flex gap-1.5 overflow-x-auto px-0.5 pb-0.5">
+          {DISH_CATEGORIES.map((cat) => {
+            const selected = category === cat.code;
+            return (
+              <button
+                key={cat.code}
+                type="button"
+                onClick={() => setCategory(selected ? '' : cat.code)}
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  selected
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                {cat[locale]}
+              </button>
+            );
+          })}
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            {d.editor.dishDescription}
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={d.editor.dishDescriptionPlaceholder}
-            rows={2}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
-          />
-        </div>
-
-        {/* Foto */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            {d.editor.dishPhoto}
-          </label>
-          <p className="mb-2 text-xs text-gray-500">{d.editor.photoHint}</p>
-          <div className="flex items-center gap-3">
-            {photoUrl !== '' && (
-              <img src={photoUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
-            )}
+        {/* Foto tonda in linea col nome, come una foto profilo */}
+        <div className="flex items-center gap-3">
+          <div className="relative shrink-0">
             <input
               ref={fileInput}
               type="file"
@@ -128,33 +117,69 @@ function DishForm({
             <button
               type="button"
               onClick={() => fileInput.current?.click()}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              aria-label={photoUrl === '' ? d.editor.addPhoto : d.editor.changePhoto}
+              title={photoUrl === '' ? d.editor.addPhoto : d.editor.changePhoto}
+              className="block h-16 w-16 overflow-hidden rounded-full"
             >
-              {photoUrl === '' ? d.editor.addPhoto : d.editor.changePhoto}
+              {photoUrl === '' ? (
+                <span className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-gray-400 bg-white text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-600">
+                  <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
+                    <circle cx="12" cy="13" r="3.5" />
+                  </svg>
+                </span>
+              ) : (
+                <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+              )}
             </button>
             {photoUrl !== '' && (
               <button
                 type="button"
                 onClick={() => setPhotoUrl('')}
-                className="text-sm font-medium text-red-600 hover:text-red-700"
+                aria-label={d.editor.removePhoto}
+                title={d.editor.removePhoto}
+                className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 shadow-sm transition-colors hover:text-red-600"
               >
-                {d.editor.removePhoto}
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
               </button>
             )}
           </div>
-          {photoError && (
-            <p className="mt-1 text-xs text-red-600">
-              {photoError === 'size' ? d.editor.photoTooBig : d.editor.photoError}
-            </p>
-          )}
+
+          <div className="min-w-0 flex-1">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={d.editor.dishNamePlaceholder}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+            />
+          </div>
         </div>
+
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={d.editor.dishDescriptionPlaceholder}
+          rows={2}
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+        />
+
+        {photoError && (
+          <p className="text-xs text-red-600">
+            {photoError === 'size' ? d.editor.photoTooBig : d.editor.photoError}
+          </p>
+        )}
 
         {/* Allergeni presenti */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             {d.editor.dishAllergens}
           </label>
-          <p className="mb-2 text-xs text-gray-500">{d.editor.dishAllergensHint}</p>
+          <p className="mb-2 text-xs text-gray-500">
+            <EmphasizedText text={d.editor.dishAllergensHint} />
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {ALLERGENS.map((a) => {
               const selected = allergens.includes(a.code);
@@ -203,7 +228,12 @@ function DishForm({
           </div>
         </div>
 
-        <div className="flex gap-2 pt-1">
+        {/* Prima del salvataggio: quello che si dichiara resta dichiarazione del ristoratore */}
+        <p className="border-t border-gray-200 pt-3 text-xs text-gray-500">
+          {d.editor.declarationNotice}
+        </p>
+
+        <div className="flex gap-2">
           <button
             onClick={() =>
               onSave({ name: name.trim(), description, category, photoUrl, allergens, dietTags })
@@ -302,6 +332,32 @@ function ViewerChips({
   );
 }
 
+// Aggiunge una riga dentro un link già attivo (un servizio di delivery,
+// un menù in un'altra lingua): stesso colore della pill, forma da bottone.
+function AddRowButton({
+  kind,
+  label,
+  onClick,
+}: {
+  kind: LinkKind;
+  label: string;
+  onClick: () => void;
+}) {
+  const { bg, fg } = LINK_COLORS[kind];
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-sm font-medium transition-colors hover:bg-[var(--pill-bg)]"
+      style={{ '--pill-bg': bg, borderColor: `${fg}66`, color: fg } as React.CSSProperties}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      {label}
+    </button>
+  );
+}
+
 export default function ShowcaseEditorPage() {
   const { d, locale } = useI18n();
   const params = useParams<{ id: string }>();
@@ -310,9 +366,24 @@ export default function ShowcaseEditorPage() {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [viewer, setViewer] = useState<ViewerNeeds>(NO_VIEWER);
   const [simOpen, setSimOpen] = useState(false);
+  // Link accesi in questa sessione ma ancora vuoti: quelli con contenuto
+  // si riconoscono dalla bozza, questi no (e sparirebbero al reload).
+  const [activated, setActivated] = useState<LinkKind[]>([]);
   const viewerCount = viewer.allergens.length + viewer.diets.length;
 
-  const singleLinkKinds = [{ key: 'booking' as const, label: d.editor.linkBooking }];
+  const LINK_LABELS: Record<LinkKind, string> = {
+    booking: d.editor.linkBooking,
+    delivery: d.editor.linkDelivery,
+    menu: d.editor.linkMenu,
+    website: d.editor.linkWebsite,
+  };
+  // Una riga sola per spiegare cosa fa il link nella scheda
+  const LINK_HINTS: Record<LinkKind, string> = {
+    booking: d.editor.bookingHint,
+    delivery: d.editor.deliveryHint,
+    menu: d.editor.menuLangHint,
+    website: d.editor.websiteHint,
+  };
 
   const showcase = showcases?.find((s) => s.id === params.id);
 
@@ -383,6 +454,35 @@ export default function ShowcaseEditorPage() {
       ...draft,
       links: { ...draft.links, menus: draft.links.menus.filter((_, i) => i !== index) },
     });
+  }
+
+  // Un link è attivo se ha già contenuto in bozza oppure se è stato appena acceso
+  const hasContent: Record<LinkKind, boolean> = {
+    booking: draft.links.booking.trim() !== '',
+    delivery: draft.links.deliveries.length > 0,
+    menu: draft.links.menus.length > 0,
+    website: draft.links.website.trim() !== '',
+  };
+  const activeKinds = LINK_ORDER.filter((k) => hasContent[k] || activated.includes(k));
+  const addableKinds = LINK_ORDER.filter((k) => !activeKinds.includes(k));
+
+  function activateLink(kind: LinkKind) {
+    setActivated((prev) => (prev.includes(kind) ? prev : [...prev, kind]));
+    // delivery e menù nascono con la prima riga già pronta da compilare
+    if (kind === 'delivery' && draft.links.deliveries.length === 0) addDelivery();
+    if (kind === 'menu' && draft.links.menus.length === 0) addMenu();
+  }
+
+  // Spegnere un link ne svuota il contenuto: si rimette dalle pill "Aggiungi"
+  function removeLink(kind: LinkKind) {
+    setActivated((prev) => prev.filter((k) => k !== kind));
+    const cleared =
+      kind === 'delivery'
+        ? { deliveries: [] }
+        : kind === 'menu'
+          ? { menus: [] }
+          : { [kind]: '' };
+    setDraft({ ...draft, links: { ...draft.links, ...cleared } });
   }
 
   // Senza categoria per primi, poi le categorie nell'ordine del set
@@ -484,163 +584,173 @@ export default function ShowcaseEditorPage() {
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="mb-1 font-medium text-gray-900">{d.editor.linksTitle}</h2>
             <p className="mb-4 text-xs text-gray-500">{d.editor.linksHint}</p>
-            <div className="space-y-3">
-              {singleLinkKinds.map(({ key, label }) => (
-                <div key={key} className="sm:flex sm:items-center sm:gap-3">
-                  <label className="mb-1 block w-32 shrink-0 text-sm font-medium text-gray-700 sm:mb-0">
-                    {label}
-                  </label>
-                  <input
-                    type="url"
-                    value={draft.links[key]}
-                    onChange={(e) =>
-                      setDraft({ ...draft, links: { ...draft.links, [key]: e.target.value } })
-                    }
-                    placeholder={d.editor.linkPlaceholder}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                  />
-                </div>
-              ))}
-
-              {/* Delivery: più servizi (nella scheda un solo bottone,
-                  con più link l'app apre un bottom sheet di scelta) */}
-              <div className="sm:flex sm:items-start sm:gap-3">
-                <label className="mb-1 block w-32 shrink-0 text-sm font-medium text-gray-700 sm:mb-0 sm:pt-2">
-                  {d.editor.linkDelivery}
-                </label>
-                <div className="w-full space-y-2">
-                  {draft.links.deliveries.map((del, i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={del.provider}
-                          onChange={(e) => updateDelivery(i, { provider: e.target.value })}
-                          className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                        >
-                          <option value="">{d.editor.deliveryProviderPlaceholder}</option>
-                          {DELIVERY_PROVIDERS.map((p) => (
-                            <option key={p.code} value={p.code}>
-                              {p.name}
-                            </option>
-                          ))}
-                          <option value="other">{d.editor.providerOther}</option>
-                        </select>
-                        <input
-                          type="url"
-                          value={del.url}
-                          onChange={(e) => updateDelivery(i, { url: e.target.value })}
-                          placeholder={d.editor.linkPlaceholder}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                        />
-                        {draft.links.deliveries.length > 1 && (
-                          <button
-                            onClick={() => removeDelivery(i)}
-                            className="shrink-0 text-gray-400 transition-colors hover:text-red-600"
-                            aria-label={d.common.delete}
-                          >
-                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                              <path d="M6 6l12 12M18 6L6 18" />
-                            </svg>
-                          </button>
-                        )}
+            {activeKinds.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  {d.editor.linksActive}
+                </p>
+                {activeKinds.map((kind) => (
+                  <div key={kind} className="rounded-xl border border-gray-200 p-3.5">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                        <LinkPill kind={kind} label={LINK_LABELS[kind]} active />
+                        <span className="text-[11px] leading-snug text-gray-400">{LINK_HINTS[kind]}</span>
                       </div>
-                      {del.provider === 'other' && (
-                        <input
-                          type="text"
-                          value={del.label}
-                          onChange={(e) => updateDelivery(i, { label: e.target.value })}
-                          placeholder={d.editor.providerOtherName}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                        />
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    onClick={addDelivery}
-                    className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-                  >
-                    + {d.editor.addDeliveryProvider}
-                  </button>
-                  <p className="text-xs text-gray-500">{d.editor.deliveryHint}</p>
-                </div>
-              </div>
-
-              {/* Menù: più link, uno per lingua */}
-              <div className="sm:flex sm:items-start sm:gap-3">
-                <label className="mb-1 block w-32 shrink-0 text-sm font-medium text-gray-700 sm:mb-0 sm:pt-2">
-                  {d.editor.linkMenu}
-                </label>
-                <div className="w-full space-y-2">
-                  {draft.links.menus.map((menu, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <select
-                        value={menu.language}
-                        onChange={(e) => updateMenu(i, { language: e.target.value })}
-                        className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                      <button
+                        onClick={() => removeLink(kind)}
+                        aria-label={d.editor.removeLink}
+                        title={d.editor.removeLink}
+                        className="mt-1.5 shrink-0 text-gray-400 transition-colors hover:text-red-600"
                       >
-                        <option value="">{d.editor.menuLanguageDefault}</option>
-                        {MENU_LANGUAGES.map((lang) => (
-                          <option key={lang.code} value={lang.code}>
-                            {lang.native}
-                          </option>
-                        ))}
-                      </select>
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {(kind === 'booking' || kind === 'website') && (
                       <input
                         type="url"
-                        value={menu.url}
-                        onChange={(e) => updateMenu(i, { url: e.target.value })}
+                        value={draft.links[kind]}
+                        onChange={(e) =>
+                          setDraft({ ...draft, links: { ...draft.links, [kind]: e.target.value } })
+                        }
                         placeholder={d.editor.linkPlaceholder}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
                       />
-                      {draft.links.menus.length > 1 && (
-                        <button
-                          onClick={() => removeMenu(i)}
-                          className="shrink-0 text-gray-400 transition-colors hover:text-red-600"
-                          aria-label={d.common.delete}
-                        >
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <path d="M6 6l12 12M18 6L6 18" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
+                    )}
+
+                    {/* Delivery: più servizi (nella scheda un solo bottone,
+                        con più link l'app apre un bottom sheet di scelta) */}
+                    {kind === 'delivery' && (
+                      <div className="space-y-2">
+                        {draft.links.deliveries.map((del, i) => (
+                          <div key={i} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={del.provider}
+                                onChange={(e) => updateDelivery(i, { provider: e.target.value })}
+                                className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                              >
+                                <option value="">{d.editor.deliveryProviderPlaceholder}</option>
+                                {DELIVERY_PROVIDERS.map((p) => (
+                                  <option key={p.code} value={p.code}>
+                                    {p.name}
+                                  </option>
+                                ))}
+                                <option value="other">{d.editor.providerOther}</option>
+                              </select>
+                              <input
+                                type="url"
+                                value={del.url}
+                                onChange={(e) => updateDelivery(i, { url: e.target.value })}
+                                placeholder={d.editor.linkPlaceholder}
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                              />
+                              {draft.links.deliveries.length > 1 && (
+                                <button
+                                  onClick={() => removeDelivery(i)}
+                                  className="shrink-0 text-gray-400 transition-colors hover:text-red-600"
+                                  aria-label={d.common.delete}
+                                >
+                                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                    <path d="M6 6l12 12M18 6L6 18" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                            {del.provider === 'other' && (
+                              <input
+                                type="text"
+                                value={del.label}
+                                onChange={(e) => updateDelivery(i, { label: e.target.value })}
+                                placeholder={d.editor.providerOtherName}
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                              />
+                            )}
+                          </div>
+                        ))}
+                        <AddRowButton
+                          kind="delivery"
+                          label={d.editor.addDeliveryProvider}
+                          onClick={addDelivery}
+                        />
+                      </div>
+                    )}
+
+                    {/* Menù: più link, uno per lingua */}
+                    {kind === 'menu' && (
+                      <div className="space-y-2">
+                        {draft.links.menus.map((menu, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <select
+                              value={menu.language}
+                              onChange={(e) => updateMenu(i, { language: e.target.value })}
+                              className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                            >
+                              <option value="">{d.editor.menuLanguageDefault}</option>
+                              {MENU_LANGUAGES.map((lang) => (
+                                <option key={lang.code} value={lang.code}>
+                                  {lang.native}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="url"
+                              value={menu.url}
+                              onChange={(e) => updateMenu(i, { url: e.target.value })}
+                              placeholder={d.editor.linkPlaceholder}
+                              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                            />
+                            {draft.links.menus.length > 1 && (
+                              <button
+                                onClick={() => removeMenu(i)}
+                                className="shrink-0 text-gray-400 transition-colors hover:text-red-600"
+                                aria-label={d.common.delete}
+                              >
+                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                  <path d="M6 6l12 12M18 6L6 18" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <AddRowButton
+                          kind="menu"
+                          label={d.editor.addMenuLanguage}
+                          onClick={addMenu}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {addableKinds.length > 0 && (
+              <div className={activeKinds.length > 0 ? 'mt-4' : ''}>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+                  {d.editor.linksAdd}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {addableKinds.map((kind) => (
+                    <button
+                      key={kind}
+                      onClick={() => activateLink(kind)}
+                      className="rounded-full transition-opacity hover:opacity-70"
+                    >
+                      <LinkPill kind={kind} label={LINK_LABELS[kind]} active={false} />
+                    </button>
                   ))}
-                  <button
-                    onClick={addMenu}
-                    className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-                  >
-                    + {d.editor.addMenuLanguage}
-                  </button>
-                  <p className="text-xs text-gray-500">{d.editor.menuLangHint}</p>
                 </div>
               </div>
-
-              {/* Sito web */}
-              <div className="sm:flex sm:items-center sm:gap-3">
-                <label className="mb-1 block w-32 shrink-0 text-sm font-medium text-gray-700 sm:mb-0">
-                  {d.editor.linkWebsite}
-                </label>
-                <input
-                  type="url"
-                  value={draft.links.website}
-                  onChange={(e) =>
-                    setDraft({ ...draft, links: { ...draft.links, website: e.target.value } })
-                  }
-                  placeholder={d.editor.linkPlaceholder}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                />
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Piatti */}
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="mb-1 font-medium text-gray-900">{d.editor.dishesTitle}</h2>
             <p className="mb-4 text-xs text-gray-500">{d.editor.dishesHint}</p>
-
-            {draft.dishes.length === 0 && editing !== 'new' && (
-              <p className="mb-4 text-sm text-gray-500">{d.editor.noDishes}</p>
-            )}
 
             <div className="space-y-3">
               {dishGroups.map(({ cat, dishes }) => (
@@ -753,8 +863,11 @@ export default function ShowcaseEditorPage() {
               ) : (
                 <button
                   onClick={() => setEditing('new')}
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
                 >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
                   {d.editor.addDish}
                 </button>
               )}

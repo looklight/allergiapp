@@ -33,13 +33,13 @@ export interface DraftLinks {
   // mostra un bottom sheet di scelta
   deliveries: DeliveryLink[];
   // più menù per lingua: l'app mostra quello nella lingua dell'utente,
-  // altrimenti il predefinito
+  // altrimenti il primo della lista
   menus: MenuLink[];
 }
 
 export interface ShowcaseDraft {
   // Nome della vetrina: la identifica nella lista e l'anteprima lo usa
-  // come nome del locale finché non c'è il collegamento al locale reale.
+  // come nome del locale finché non c'è l'associazione al locale reale.
   venueName: string;
   dishes: DraftDish[];
   links: DraftLinks;
@@ -56,8 +56,9 @@ export function emptyDraft(): ShowcaseDraft {
     links: {
       booking: '',
       website: '',
-      deliveries: [{ provider: '', label: '', url: '' }],
-      menus: [{ language: '', url: '' }],
+      // vuoti: i link si accendono dalle pill dell'editor
+      deliveries: [],
+      menus: [],
     },
   };
 }
@@ -82,16 +83,19 @@ function normalizeDraft(parsed: any): ShowcaseDraft {
     links: {
       booking: rawLinks.booking ?? '',
       website: rawLinks.website ?? '',
-      deliveries:
-        Array.isArray(rawLinks.deliveries) && rawLinks.deliveries.length > 0
-          ? rawLinks.deliveries
-          // bozze salvate col vecchio campo `delivery` singolo
-          : [{ provider: '', label: '', url: typeof rawLinks.delivery === 'string' ? rawLinks.delivery : '' }],
-      menus:
-        Array.isArray(rawLinks.menus) && rawLinks.menus.length > 0
-          ? rawLinks.menus
-          // bozze salvate col vecchio campo `menu` singolo
-          : [{ language: '', url: typeof rawLinks.menu === 'string' ? rawLinks.menu : '' }],
+      // liste vuote ammesse: il link semplicemente non è attivo
+      deliveries: Array.isArray(rawLinks.deliveries)
+        ? rawLinks.deliveries
+        // bozze salvate col vecchio campo `delivery` singolo
+        : typeof rawLinks.delivery === 'string' && rawLinks.delivery.trim() !== ''
+          ? [{ provider: '', label: '', url: rawLinks.delivery }]
+          : [],
+      menus: Array.isArray(rawLinks.menus)
+        ? rawLinks.menus
+        // bozze salvate col vecchio campo `menu` singolo
+        : typeof rawLinks.menu === 'string' && rawLinks.menu.trim() !== ''
+          ? [{ language: '', url: rawLinks.menu }]
+          : [],
     },
     dishes: (parsed?.dishes ?? []).map((dish: Partial<DraftDish>) => ({
       category: '',

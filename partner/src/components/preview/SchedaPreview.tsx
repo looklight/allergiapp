@@ -14,6 +14,7 @@ import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
 import type { DeliveryLink, DraftDish, ShowcaseDraft } from '@/lib/draft';
+import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
 
 const SYSTEM_FONT =
   '-apple-system, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif';
@@ -72,31 +73,6 @@ const paths = {
   heart: (
     <path d="M12 20.5l-1.4-1.3C5.4 14.6 2 11.6 2 8.9 2 6.2 4.1 4 6.8 4c1.5 0 3 .7 3.9 1.8h2.6C14.2 4.7 15.7 4 17.2 4 19.9 4 22 6.2 22 8.9c0 2.7-3.4 5.7-8.6 10.3z" />
   ),
-  calendar: (
-    <>
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M8 3v4M16 3v4M3 10h18" />
-    </>
-  ),
-  bike: (
-    <>
-      <circle cx="6" cy="17" r="3.5" />
-      <circle cx="18" cy="17" r="3.5" />
-      <path d="M6 17l4-8h5l3 8M10 9h4M13 9l2-3h2" />
-    </>
-  ),
-  bookOpen: (
-    <>
-      <path d="M2 5h7a3 3 0 013 3v13a3 3 0 00-3-3H2z" />
-      <path d="M22 5h-7a3 3 0 00-3 3v13a3 3 0 013-3h7z" />
-    </>
-  ),
-  globe: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
-    </>
-  ),
   share: (
     <>
       <circle cx="18" cy="5" r="2.5" />
@@ -143,22 +119,6 @@ function Stars({ size, value }: { size: number; value: number }) {
 function Separator() {
   return <div style={{ height: 8, backgroundColor: '#F5F5F5' }} />;
 }
-
-const LINK_ICONS: Record<string, React.ReactNode> = {
-  booking: paths.calendar,
-  delivery: paths.bike,
-  menu: paths.bookOpen,
-  website: paths.globe,
-};
-
-// Pill link colorate (tinta + colore pieno, stile Material) per
-// differenziarle dai chip neutri della scheda e tra loro.
-const LINK_COLORS: Record<string, { bg: string; fg: string }> = {
-  booking: { bg: '#E3F2FD', fg: '#1976D2' },
-  delivery: { bg: '#FFF3E0', fg: '#E65100' },
-  menu: { bg: '#E8F5E9', fg: '#2E7D32' },
-  website: { bg: '#F3E5F5', fg: '#7B1FA2' },
-};
 
 function deliveryDisplayName(del: DeliveryLink, fallback: string): string {
   if (del.provider === 'other') return del.label.trim() || fallback;
@@ -216,7 +176,7 @@ function DishPhoto({
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       }}
     >
-      <Icon size={Math.min(22, size.h / 3)} color="#BBBBBB">{paths.bookOpen}</Icon>
+      <Icon size={Math.min(22, size.h / 3)} color="#BBBBBB">{LINK_ICONS.menu}</Icon>
     </span>
   );
 }
@@ -472,7 +432,7 @@ export default function SchedaPreview({
 
   const deliveries = draft.links.deliveries.filter((del) => del.url.trim() !== '');
 
-  const links: { kind: string; label: string }[] = [];
+  const links: { kind: LinkKind; label: string }[] = [];
   if (draft.links.booking.trim() !== '') links.push({ kind: 'booking', label: d.editor.linkBooking });
   // un solo bottone Delivery: con più servizi si apre il bottom sheet
   if (deliveries.length > 0) links.push({ kind: 'delivery', label: d.editor.linkDelivery });
@@ -739,7 +699,7 @@ export default function SchedaPreview({
                   borderTop: i > 0 ? '1px solid #E5E5E5' : 'none',
                 }}
               >
-                <Icon size={18} color="#E65100">{paths.bike}</Icon>
+                <Icon size={18} color="#E65100">{LINK_ICONS.delivery}</Icon>
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#333333' }}>
                   {deliveryDisplayName(del, d.editor.linkDelivery)}
                 </span>

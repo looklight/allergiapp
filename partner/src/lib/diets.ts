@@ -17,8 +17,8 @@ export interface DietInfo {
 // promessa non verificabile); l'ESIGENZA è il nome breve con cui
 // l'utente si descrive (profilo/simulatore).
 export const DIETS: DietInfo[] = [
-  { code: 'vegetarian', it: 'Vegetariano', en: 'Vegetarian', needIt: 'Vegetariano', needEn: 'Vegetarian' },
-  { code: 'vegan', it: 'Vegano', en: 'Vegan', needIt: 'Vegano', needEn: 'Vegan' },
+  { code: 'vegetarian', it: 'Per vegetariani', en: 'For vegetarians', needIt: 'Vegetariano', needEn: 'Vegetarian' },
+  { code: 'vegan', it: 'Per vegani', en: 'For vegans', needIt: 'Vegano', needEn: 'Vegan' },
   { code: 'histamine', it: 'Per intolleranti all’istamina', en: 'For histamine intolerance', needIt: 'Istamina', needEn: 'Histamine' },
   { code: 'nickel', it: 'Per intolleranti al nichel', en: 'For nickel intolerance', needIt: 'Nichel', needEn: 'Nickel' },
   { code: 'diabetes', it: 'Per diabetici', en: 'For diabetics', needIt: 'Diabete', needEn: 'Diabetes' },
