@@ -143,7 +143,7 @@ async function cmdList() {
 
 // ─── migrate ─────────────────────────────────────────────────────────────────
 
-async function cmdMigrate(menuPhotoId, reviewId, apply, cropTop = false) {
+async function cmdMigrate(menuPhotoId, reviewId, apply, cropTop = false, squareFull = false) {
   const { data: photo, error: phErr } = await supabase
     .from('menu_photos')
     .select('id, restaurant_id, user_id, image_url, thumbnail_url')
@@ -175,8 +175,8 @@ async function cmdMigrate(menuPhotoId, reviewId, apply, cropTop = false) {
 
   console.log(`Foto menu:   ${photo.id}`);
   console.log(`Recensione:  ${review.id} (${review.profiles?.username ?? '?'}, ${existing.length} foto attuali)`);
-  console.log(`Copia full:  ${origFull}`);
-  console.log(`         →   ${destFull}`);
+  console.log(`${squareFull ? 'Full 600²:  ' : 'Copia full:  '}${origFull}`);
+  console.log(`         →   ${destFull}${squareFull ? ' (rigenerata 600×600 q70)' : ''}`);
   console.log(`Thumb 250²:  ${destThumb} (rigenerata dal full)`);
   console.log(`Poi: append a reviews.photos, DELETE riga menu_photos, rimozione file originali`);
 
@@ -201,18 +201,33 @@ async function cmdMigrate(menuPhotoId, reviewId, apply, cropTop = false) {
     throw new Error('Serve sharp per generare la thumbnail: npm i -D sharp (nella root di allergiapp)');
   }
 
-  // 1. copia server-side del full (idempotente: se esiste già, prosegui)
-  const { error: copyErr } = await supabase.storage.from(BUCKET).copy(origFull, destFull);
-  if (copyErr && !/already exists|duplicate/i.test(copyErr.message)) {
-    throw new Error(`Copia full fallita: ${copyErr.message}`);
+  const { data: blob, error: dlErr } = await supabase.storage.from(BUCKET).download(origFull);
+  if (dlErr) throw new Error(`Download full fallito: ${dlErr.message}`);
+  const srcBuf = Buffer.from(await blob.arrayBuffer());
+
+  // 1. full: copia intatta (menù leggibile) oppure 600² a spec review con
+  // --square-full, per uniformarsi alle altre foto recensione
+  if (squareFull) {
+    const fullBuf = await sharp(srcBuf)
+      .resize(600, 600, { fit: 'cover', position: cropTop ? 'top' : 'centre' })
+      .webp({ quality: 70 })
+      .toBuffer();
+    const { error: upFullErr } = await supabase.storage
+      .from(BUCKET)
+      .upload(destFull, fullBuf, { contentType: 'image/webp', upsert: true });
+    if (upFullErr) throw new Error(`Upload full fallito: ${upFullErr.message}`);
+  } else {
+    // copia server-side (idempotente: se esiste già, prosegui)
+    const { error: copyErr } = await supabase.storage.from(BUCKET).copy(origFull, destFull);
+    if (copyErr && !/already exists|duplicate/i.test(copyErr.message)) {
+      throw new Error(`Copia full fallita: ${copyErr.message}`);
+    }
   }
 
   // 2. thumbnail 250px quadrata (crop centrale) a spec review
-  const { data: blob, error: dlErr } = await supabase.storage.from(BUCKET).download(origFull);
-  if (dlErr) throw new Error(`Download full fallito: ${dlErr.message}`);
   // crop quadrato: centrale di default, dall'alto con --crop-top (utile per
   // menù verticali dove l'intestazione/i piatti stanno in cima)
-  const thumbBuf = await sharp(Buffer.from(await blob.arrayBuffer()))
+  const thumbBuf = await sharp(srcBuf)
     .resize(250, 250, { fit: 'cover', position: cropTop ? 'top' : 'centre' })
     .webp({ quality: 65 })
     .toBuffer();
@@ -288,12 +303,13 @@ async function main() {
   } else if (cmd === 'migrate') {
     const apply = rest.includes('--apply');
     const cropTop = rest.includes('--crop-top');
+    const squareFull = rest.includes('--square-full');
     const [menuPhotoId, reviewId] = rest.filter((a) => !a.startsWith('--'));
     if (!menuPhotoId || !reviewId) {
-      console.error('Uso: migrate <menuPhotoId> <reviewId> [--apply] [--crop-top]');
+      console.error('Uso: migrate <menuPhotoId> <reviewId> [--apply] [--crop-top] [--square-full]');
       process.exit(1);
     }
-    await cmdMigrate(menuPhotoId, reviewId, apply, cropTop);
+    await cmdMigrate(menuPhotoId, reviewId, apply, cropTop, squareFull);
   } else if (cmd === 'purge') {
     const apply = rest.includes('--apply');
     const ids = rest.filter((a) => !a.startsWith('--'));
