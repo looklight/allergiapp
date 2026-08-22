@@ -5,9 +5,15 @@ body {
   overscroll-behavior: none;
 }
 
-/* Spazio per la bottom nav su mobile (safe area iOS inclusa) */
-.pb-bottom-nav {
-  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+/* Spazio per la bottom nav su mobile (safe area iOS inclusa).
+   La media query è necessaria: queste regole stanno fuori dai layer di
+   Tailwind, quindi vincono su qualunque utility (md:pb-0 compreso) e
+   senza il limite di larghezza lascerebbero 4rem di padding anche su
+   desktop, dove la barra non esiste. */
+@media (max-width: 767px) {
+  .pb-bottom-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
 }
 
 .bottom-nav-safe {

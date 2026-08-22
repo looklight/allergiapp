@@ -536,11 +536,11 @@ export default function ShowcaseEditorPage() {
   const preview = <SchedaPreview draft={draft} viewer={viewer} />;
 
   return (
-    // Su desktop la pagina non scorre: scorre solo la colonna editor,
-    // l'anteprima a destra è semplicemente ferma (pattern a due pannelli)
-    <div className="lg:flex lg:h-[calc(100vh-5rem)] lg:gap-8">
-      {/* Colonna editor (scrollabile) */}
-      <div className="min-w-0 flex-1 lg:h-full lg:overflow-y-auto lg:pr-4">
+    // Scorre la pagina, non un pannello interno: così niente bordi che
+    // tagliano le card a metà. L'anteprima resta in vista perché è sticky.
+    <div className="lg:flex lg:items-start lg:gap-8">
+      {/* Colonna editor */}
+      <div className="min-w-0 flex-1">
         <Link
           href="/"
           className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900"
@@ -861,11 +861,10 @@ export default function ShowcaseEditorPage() {
         </div>
       </div>
 
-      {/* Anteprima desktop: colonna sticky con simulatore */}
-      {/* overflow-hidden: se la colonna (in layout) supera l'altezza della
-          riga non deve gonfiare la pagina — a quelle altezze il contenuto
-          è comunque ridotto in scala e resta visibile intero */}
-      <div className="hidden w-[380px] shrink-0 lg:block lg:overflow-hidden">
+      {/* Anteprima desktop: resta in vista mentre l'editor scorre.
+          max-h + overflow-hidden: su finestre basse il contenuto è già
+          ridotto in scala (.preview-column) e non deve sbordare. */}
+      <div className="sticky top-10 hidden max-h-[calc(100dvh-5rem)] w-[380px] shrink-0 overflow-hidden lg:block">
         <div className="preview-column space-y-3">
           <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <button
