@@ -11,10 +11,16 @@
 - **Modello**: app gratis per gli utenti; lato ristoratori **premium-only**
   (abbonamento mensile/annuale via Stripe, **solo B2B a P.IVA**, nessun
   payout). Eventuale piano free deciso in seguito, sui dati dei fondatori.
-- **Flusso**: iscrizione leggera → dashboard compilabile come **bozza
-  privata** → claim = nome/cognome + 5 campi aziendali (paese, denominazione,
-  P.IVA/VAT validata via VIES, sede, email fatturazione) + associazione a una
-  scheda dell'app → abbonamento = pubblicazione.
+- **Utenti e partner = due entità diverse, due percorsi di iscrizione
+  separati** (deciso 22/08, modello Uber utente/driver): credenziale
+  condivisa (stessa email possibile), profili distinti (`profiles` vs
+  `partner_accounts`), nessun accesso automatico dall'app. Sezione dedicata
+  più sotto.
+- **Flusso**: iscrizione partner (persona: nome, cognome, contatto) →
+  dashboard compilabile come **bozza privata** → claim = 5 campi aziendali
+  (paese, denominazione, P.IVA/VAT validata via VIES, sede, email
+  fatturazione) + associazione a una scheda dell'app → abbonamento =
+  pubblicazione.
 - **Verifica**: identica in ogni paese, nessun documento nel flusso normale;
   i cancelli sono dichiarazione tracciabile + carta + fattura + moderazione a
   valle. Documento+selfie solo in escalation nei casi contesi.
@@ -572,6 +578,76 @@ la densità per città è ancora bassa. Strategia:
   "Contiene: …" (semantica allergeni PRESENTI, Reg. 1169). Bozza per ora in
   localStorage; persistenza vera all'applicazione della 700 (codici
   allergene già identici a `allergens.code`).
+
+## Utenti e partner: due entità, due percorsi (deciso 2026-08-22)
+
+Requisito dell'utente, formulato con l'analogia Uber (app passeggeri / app
+driver): **utenti dell'app e partner sono due entità totalmente diverse**.
+L'utente cerca ristoranti, il partner è il ristoratore che vuole provare e
+sottoscrivere il premium. Uno può essere anche l'altro, ma **i due percorsi
+di iscrizione restano separati**: nessun utente dell'app ha accesso
+automatico alla sezione partner.
+
+Cosa è condiviso e cosa no:
+
+- **Condivisa: la credenziale.** Un solo `auth.users`, quindi la stessa
+  email (e la stessa password) può servire entrambi i mondi. È un requisito
+  esplicito dell'utente: il ristoratore non deve inventarsi una seconda
+  identità per usare la sua email di sempre.
+- **Separate: le entità.** `profiles` = utente dell'app (avatar, allergeni,
+  recensioni). `partner_accounts` = profilo partner (persona: nome, cognome,
+  contatto). Non condividono un campo e nascono da due atti distinti.
+  Chi si iscrive dal portale senza usare l'app **non ha** una riga in
+  `profiles`: non esiste nella community, non conta nei DAU.
+- **Separati: i moduli.** L'iscrizione partner chiede più dell'email —
+  almeno nome e cognome, gli altri campi si valuteranno. Non è "la stessa
+  registrazione con un flag in più": è un altro modulo.
+- **Nessun ponte dall'app.** Niente voce "diventa partner" nell'app: al
+  portale si arriva da `partner.allergiapp.com`, di proposito.
+
+Perché NON due sistemi di login separati (valutato e scartato):
+
+1. La richiesta "stessa email" li esclude: due sistemi separati con la
+   stessa email = due account gemelli con password diverse, confusione.
+2. Le tabelle partner referenziano `restaurants(id)`: claim e vetrine
+   devono stare nello stesso database delle schede, sennò servirebbe
+   sincronizzazione tra due DB.
+3. Un login esterno non è riconosciuto dalle RLS: si dovrebbe rifare
+   l'autorizzazione a mano in un backend con la service-role key,
+   sostituendo un impianto già verificato (audit RLS giugno 2026, mig 064)
+   con controlli scritti a mano. Più codice, più superficie di errore.
+
+Unico motivo per ripensarci in futuro: policy di sicurezza **diverse** per i
+partner (2FA obbligatoria per chi gestisce fatturazione, sessioni più corte).
+Supabase applica una sola policy per progetto.
+
+Scala a tre gradini, ognuno con i suoi dati:
+
+1. **Profilo partner** (la persona) — nome, cognome, contatto, lingua,
+   accettazione condizioni. Affinamento del design di luglio, dove nome e
+   cognome stavano nel modulo del claim: ora salgono qui e il claim resta
+   puramente aziendale.
+2. **Claim** (l'azienda) — denominazione, paese, P.IVA/VIES, sede, email di
+   fatturazione. Invariato.
+3. **Abbonamento** — il pagamento, che pubblica la vetrina.
+
+Ricadute tecniche (già riportate nella bozza 700):
+
+- FK dei contenuti partner su `partner_accounts(user_id)`, non su
+  `profiles(id)`: il cancello è **strutturale**, niente profilo partner ⇒
+  niente vetrine, per vincolo di database e non per controllo applicativo.
+- Il cancello non può mai essere `raw_user_meta_data`: è modificabile dal
+  client con la anon key.
+- `partner_audit_log.actor_user_id` resta su `auth.users` (lì agiscono anche
+  gli admin, che sono utenti dell'app e non partner).
+- **Da fare all'applicazione della 700**: guardia in
+  `supabase/functions/delete-account` — oggi chiama `auth.admin.deleteUser`,
+  che cancellando la credenziale porterebbe via anche il mondo partner della
+  stessa persona.
+- Il controllo all'ingresso del portale (oggi `AuthGuard` chiede solo "c'è
+  una sessione?", quindi qualunque utente dell'app entrerebbe) diventa "esiste
+  un profilo partner?" solo con la 700: finché i dati stanno in localStorage
+  qualsiasi controllo sarebbe aggirabile.
 
 ## Fasi (bozza, da trasformare in piano quando saremo pronti)
 

@@ -13,7 +13,60 @@
 -- (restaurant_claims / restaurant_dishes / restaurant_allergens
 -- della 001) che resta nel DB ma è SUPERATO — v. sezione
 -- "Pulizie legacy" in fondo.
+--
+-- ------------------------------------------------------------
+-- SEPARAZIONE UTENTE / PARTNER (deciso 2026-08-22)
+-- Utenti dell'app e partner sono DUE ENTITÀ DIVERSE, con due
+-- percorsi di iscrizione diversi (modello Uber utente/driver):
+--   * la credenziale (auth.users) è UNA — la stessa email può
+--     servire entrambi i mondi, con una sola password;
+--   * il profilo utente (profiles) e il profilo partner
+--     (partner_accounts) nascono da due atti distinti e non si
+--     implicano a vicenda.
+-- Conseguenze applicate qui:
+--   1. le FK partner NON puntano più a profiles(id): un partner
+--      può esistere senza essere utente dell'app;
+--   2. tutto il contenuto partner pende da partner_accounts, che
+--      è il cancello strutturale: niente profilo partner ⇒
+--      niente vetrine, per vincolo di database e non per
+--      controllo applicativo;
+--   3. nome e cognome salgono dal claim al profilo partner (il
+--      claim resta un modulo puramente aziendale).
+-- Da fare quando questa migration verrà applicata: guardia in
+-- supabase/functions/delete-account (oggi fa auth.admin.deleteUser,
+-- che porterebbe via anche il mondo partner della stessa persona).
 -- ============================================================
+
+
+-- ============================================================
+-- TABELLA: partner_accounts
+-- IL PROFILO PARTNER: l'entità "ristoratore", distinta dal
+-- profilo utente dell'app (profiles). Nasce SOLO da un atto
+-- deliberato sul portale — non esiste "utente promosso a
+-- partner", non c'è nessun ponte dall'app.
+--
+-- Perché la chiave è auth.users e non profiles: la credenziale
+-- è condivisa (stessa email per entrambi i mondi), l'entità no.
+-- Chi si iscrive dal portale senza aver mai usato l'app NON ha
+-- una riga in profiles: non esiste nella community, non compare
+-- in classifiche o conteggi.
+--
+-- L'iscrizione partner chiede più dell'email: la persona si
+-- presenta (nome, cognome, contatto). I dati AZIENDALI non
+-- stanno qui — arrivano al primo claim (partner_companies).
+-- Tabella volutamente estendibile: altri campi del modulo di
+-- iscrizione si aggiungono qui senza rotture.
+-- ============================================================
+CREATE TABLE partner_accounts (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  phone TEXT,                           -- contatto operativo, non di fatturazione
+  preferred_language TEXT,              -- 'it' | 'en' (portale i18n dal giorno 1)
+  terms_accepted_at TIMESTAMPTZ,        -- accettazione condizioni portale (P2B/ToS)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 
 -- ============================================================
@@ -24,7 +77,7 @@
 -- ============================================================
 CREATE TABLE partner_companies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  owner_user_id UUID NOT NULL REFERENCES partner_accounts(user_id) ON DELETE CASCADE,
   country_code TEXT NOT NULL,           -- ISO 3166-1 alpha-2
   legal_name TEXT NOT NULL,             -- denominazione/ragione sociale
   vat_number TEXT NOT NULL,             -- P.IVA/VAT: identificativo universale
@@ -56,7 +109,7 @@ CREATE TABLE partner_companies (
 -- ============================================================
 CREATE TABLE partner_showcases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  owner_user_id UUID NOT NULL REFERENCES partner_accounts(user_id) ON DELETE CASCADE,
   restaurant_id UUID REFERENCES restaurants(id) ON DELETE SET NULL,
     -- NULL = bozza non ancora associata (pre-claim).
     -- SET NULL: se la scheda community sparisce il lavoro resta.
@@ -94,10 +147,12 @@ CREATE INDEX partner_showcases_owner_idx ON partner_showcases (owner_user_id);
 CREATE TABLE partner_claims (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES partner_accounts(user_id) ON DELETE CASCADE,
   company_id UUID NOT NULL REFERENCES partner_companies(id),
-  first_name TEXT NOT NULL,             -- persona identificata (dichiarata;
-  last_name TEXT NOT NULL,              --  l'email è già verificata dal login)
+  -- La persona NON si ridichiara qui: nome e cognome stanno in
+  -- partner_accounts (raccolti all'iscrizione partner, 2026-08-22),
+  -- l'email è già verificata dal login. Il claim è il modulo
+  -- puramente aziendale: azienda ↔ locale.
   status TEXT NOT NULL DEFAULT 'active'
     CHECK (status IN (
       'active',      -- claim in essere (unico per locale)
@@ -201,7 +256,10 @@ CREATE INDEX partner_links_showcase_idx ON partner_links (showcase_id);
 -- ============================================================
 CREATE TABLE partner_audit_log (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  actor_user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  actor_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    -- auth.users e non partner_accounts: qui agiscono anche gli
+    -- admin, che sono utenti dell'app e non partner
+
   claim_id UUID REFERENCES partner_claims(id) ON DELETE SET NULL,
   showcase_id UUID REFERENCES partner_showcases(id) ON DELETE SET NULL,
   restaurant_id UUID REFERENCES restaurants(id) ON DELETE SET NULL,
@@ -218,6 +276,8 @@ CREATE INDEX partner_audit_log_actor_idx ON partner_audit_log (actor_user_id);
 -- ============================================================
 -- TRIGGER updated_at (riusa update_updated_at() della 001)
 -- ============================================================
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_accounts
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_companies
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_showcases
@@ -235,12 +295,26 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_links
 -- Ruolo partner = derivato dalle righe (owner_user_id/user_id),
 -- MAI dal campo profiles.role (niente role-escalation).
 -- ============================================================
+ALTER TABLE partner_accounts  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_showcases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_claims    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_dishes    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_links     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_audit_log ENABLE ROW LEVEL SECURITY;
+
+-- Profilo partner: ognuno vede e gestisce solo il proprio.
+-- L'iscrizione è self-service (INSERT della propria riga), ma
+-- resta un atto esplicito: nessuna riga nasce da sola, e senza
+-- questa riga le FK impediscono qualunque contenuto partner.
+-- NOTA: il cancello è QUESTA tabella, mai raw_user_meta_data —
+-- i metadata dell'utente sono modificabili dal client con la
+-- anon key e non valgono nulla come controllo di sicurezza.
+CREATE POLICY partner_accounts_own ON partner_accounts
+  FOR ALL USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+CREATE POLICY partner_accounts_admin ON partner_accounts
+  FOR ALL USING (is_admin());
 
 -- Aziende: solo il proprietario (e l'admin)
 CREATE POLICY partner_companies_owner ON partner_companies
