@@ -16,6 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="it">
       <head>
         <title>AllergiApp Partner</title>
+        {/* portale in test: v. src/app/robots.ts */}
+        <meta name="robots" content="noindex, nofollow" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
