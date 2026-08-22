@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useI18n } from '@/lib/i18n';
+import { authErrorMessage } from '@/lib/authErrors';
 import type { Session } from '@supabase/supabase-js';
 
 // Creazione del profilo partner per chi è già autenticato: serve a chi ha
@@ -17,6 +18,23 @@ import type { Session } from '@supabase/supabase-js';
 export function hasPartnerProfile(session: Session | null): boolean {
   const meta = session?.user?.user_metadata;
   return Boolean(meta?.first_name && meta?.last_name);
+}
+
+// Un solo posto in cui si decide cosa compone il profilo partner: lo usano
+// sia la registrazione (credenziale nuova) sia questa schermata (credenziale
+// già esistente), così i due percorsi non divergono.
+export function partnerMetadata(fields: {
+  firstName: string;
+  lastName: string;
+  marketing: boolean;
+}) {
+  return {
+    account_type: 'partner',
+    first_name: fields.firstName.trim(),
+    last_name: fields.lastName.trim(),
+    terms_accepted_at: new Date().toISOString(),
+    marketing_consent: fields.marketing,
+  };
 }
 
 const inputClass =
@@ -43,17 +61,11 @@ export default function PartnerOnboarding({ session }: { session: Session }) {
 
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({
-      data: {
-        account_type: 'partner',
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        terms_accepted_at: new Date().toISOString(),
-        marketing_consent: marketing,
-      },
+      data: partnerMetadata({ firstName, lastName, marketing }),
     });
     // updateUser emette USER_UPDATED: la sessione si aggiorna da sola e il
     // guard lascia passare, senza ricaricare la pagina.
-    if (error) setError(error.message);
+    if (error) setError(authErrorMessage(error.message, d));
     setSubmitting(false);
   }
 

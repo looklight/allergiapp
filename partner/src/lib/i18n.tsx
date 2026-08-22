@@ -44,6 +44,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, next);
   }
 
+  // L'attributo lang dell'HTML segue la lingua scelta: conta per screen
+  // reader e traduttori automatici. Si imposta qui e non in layout.tsx
+  // perché il layout sta fuori dal provider.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   return (
     <I18nContext.Provider value={{ locale, setLocale, d: dictionaries[locale] }}>
       {children}

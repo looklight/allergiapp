@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
+import { authErrorMessage, PARTNER_MIN_PASSWORD } from '@/lib/authErrors';
+import { partnerMetadata } from '@/components/PartnerOnboarding';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const inputClass =
@@ -26,6 +28,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [existingAccount, setExistingAccount] = useState(false);
 
   const isSignUp = mode === 'signUp';
 
@@ -42,13 +45,39 @@ export default function LoginPage() {
     if (!isSignUp) {
       setSubmitting(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
+      if (error) setError(authErrorMessage(error.message, d));
       setSubmitting(false);
       return;
     }
 
     if (!terms) {
       setError(d.login.termsRequired);
+      return;
+    }
+
+    // Credenziale già esistente (tipicamente un utente dell'app): non si
+    // ricomincia da capo, si prosegue lo stesso percorso autenticandosi e
+    // creando il profilo partner sulla credenziale che c'è già.
+    if (existingAccount) {
+      setSubmitting(true);
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) {
+        setError(authErrorMessage(signInError.message, d));
+      } else {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: partnerMetadata({ firstName, lastName, marketing }),
+        });
+        if (updateError) setError(authErrorMessage(updateError.message, d));
+      }
+      setSubmitting(false);
+      return;
+    }
+
+    if (password.length < PARTNER_MIN_PASSWORD) {
+      setError(d.login.passwordTooShort);
       return;
     }
 
@@ -61,19 +90,18 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          account_type: 'partner',
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          terms_accepted_at: new Date().toISOString(),
-          marketing_consent: marketing,
-        },
-      },
+      options: { data: partnerMetadata({ firstName, lastName, marketing }) },
     });
 
     if (error) {
-      setError(error.message);
+      const m = error.message.toLowerCase();
+      if (m.includes('already registered') || m.includes('already exists')) {
+        // Niente vicolo cieco: il modulo si trasforma e chiede la password
+        // dell'account esistente, tenendo nome, cognome e consensi.
+        setExistingAccount(true);
+        setPassword('');
+      }
+      setError(authErrorMessage(error.message, d));
     } else if (!data.session) {
       // Nessuna sessione = il progetto richiede la conferma via email.
       setCheckEmail(true);
@@ -139,24 +167,28 @@ export default function LoginPage() {
                   type="email"
                   required
                   autoComplete="email"
+                  disabled={existingAccount}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={inputClass}
+                  className={`${inputClass} disabled:bg-gray-50 disabled:text-gray-500`}
                 />
               </div>
               <div>
                 <label htmlFor="password" className={labelClass}>
-                  {d.login.password}
+                  {existingAccount ? d.login.existingPassword : d.login.password}
                 </label>
                 <input
                   id="password"
                   type="password"
                   required
-                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  autoComplete={isSignUp && !existingAccount ? 'new-password' : 'current-password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={inputClass}
                 />
+                {isSignUp && !existingAccount && (
+                  <p className="mt-1 text-xs text-gray-500">{d.login.passwordHint}</p>
+                )}
               </div>
 
               {isSignUp && (
@@ -191,7 +223,11 @@ export default function LoginPage() {
                 disabled={submitting}
                 className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
               >
-                {isSignUp ? d.login.signUp : d.login.signIn}
+                {!isSignUp
+                  ? d.login.signIn
+                  : existingAccount
+                  ? d.login.continueExisting
+                  : d.login.signUp}
               </button>
             </form>
           )}
@@ -204,6 +240,7 @@ export default function LoginPage() {
               onClick={() => {
                 setMode(isSignUp ? 'signIn' : 'signUp');
                 setError(null);
+                setExistingAccount(false);
               }}
               className="font-medium text-gray-900 underline"
             >
