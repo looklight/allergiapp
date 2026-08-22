@@ -407,6 +407,15 @@ Soluzione a lungo termine: spostare `admin/` in un repo separato con il proprio 
 ### Error reporting
 - [ ] Valutare Sentry per error reporting (source maps, breadcrumbs, crash reporting)
 
+### Gate versione minima (forzare l'aggiornamento) — DA AGGANCIARE A UNA BUILD GIÀ IN PROGRAMMA (2026-08-22)
+Oggi non esiste: verificato, nessun `min_supported_version` / force-update nel codice. Serve come **assicurazione**, non per un problema attuale: un gate è utile solo se è già dentro le versioni installate *prima* che serva (aggiungerlo il giorno dell'emergenza non copre chi ha la build vecchia — è esattamente il caso delle foto menù). **Non fare una build solo per questo** (decisione utente): agganciarlo alla prossima build nativa in programma.
+- [ ] Sorgente remota della versione minima (tabellina di config su Supabase, RLS read-only pubblica) — **mai hardcodata nell'app**: se il valore è sbagliato deve bastare una UPDATE per sbloccare tutti
+- [ ] Check al boot + schermata bloccante con link allo store
+- [ ] **Fail-open**: rete assente, timeout, valore mancante o malformato → l'app parte normalmente. Si blocca solo se il server lo dice esplicitamente
+- [ ] Confronto versioni **numerico per componenti** (non stringa: "1.10.0" > "1.9.0") + test sui casi limite
+
+⚠️ Con le OTA bloccate (quota MAU) questa è l'unica feature dove un bug blocca l'app a tutti senza possibilità di correggere: l'unica via d'uscita sarebbe build nativa + review store. Le 4 voci sopra sono ciò che rende il rischio gestibile — non implementarlo senza.
+
 ### Performance
 - [ ] Aggiungere `useMemo`/`useCallback` negli screen con liste e computazioni ripetute
 - [ ] Ottimizzare FlatList: `removeClippedSubviews`, `maxToRenderPerBatch`, `React.memo` sugli item
