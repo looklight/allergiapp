@@ -33,6 +33,18 @@ Feature mergiata in main (commit `6b0d9f3`), distribuita su TestFlight 1.1.0 (8)
 
 **Vincolo assoluto Android:** ogni fix deve essere Android-only via `Platform.OS === 'android'` o equivalente. iOS è "perfetta" e non va toccato in nessun caso.
 
+### Credenziali senza profilo utente — creazione pigra che fallisce in silenzio (rilevato 2026-08-22)
+Al 22/08: **6984 righe in `auth.users` contro 6980 in `profiles`**. I 4 orfani sono registrazioni vere (3 email + 1 Google, dal 06/07 al 01/08), tutte con **un solo accesso il giorno stesso** e mai più tornate: il profilo non è mai stato creato.
+
+Causa: il profilo nasce in modo pigro da `ensureProfile` (`services/auth.ts:78`), chiamato da `AuthContext` al cambio sessione. Se l'app viene chiusa subito dopo la registrazione, o la rete salta in quell'istante, la creazione si perde **senza nessun errore visibile né lato utente né lato admin**.
+
+Impatto oggi ~nullo: 0,06% delle registrazioni, e l'account non è rotto — se quelle persone rientrassero, il profilo verrebbe creato al login successivo. Da capire con calma **come gestirla**, non urgente.
+
+- [ ] Decidere se vale un presidio: retry/telemetria su `ensureProfile` (oggi un fallimento è muto), oppure lasciare la creazione pigra così com'è e accettare la coda
+- [ ] Valutare una vista in admin "credenziali senza profilo" per accorgersene senza query manuali
+- [ ] Rivalutare se il numero cresce: 4 in due mesi è rumore, un'impennata sarebbe il sintomo di un bug vero (es. RLS o rete al primo avvio)
+- Nota: la stessa forma (credenziale senza `profiles`) sarà **normale** per i partner che non usano l'app — v. `MONETIZATION.md`, sezione utenti/partner. Qualunque presidio non deve trattarla come anomalia
+
 ### Deep link ristorante (share) — cleanup post-conferma (2026-07-01)
 Refactor risolutivo fatto e pushato (commit `867d8fb`, OTA beta): il deep link `/r/{slug}` ora apre il ristorante come la selezione da ricerca (focus a mappa pronta via `onReady`). Vedi memoria `project_deeplink_restaurant_flow`. **Le voci sotto vanno chiuse SOLO dopo conferma a runtime che il refactor funziona sul device** — togliere i rinforzi alla cieca rischia di riportare il bug.
 
