@@ -26,8 +26,15 @@ export interface DeliveryLink {
   url: string;
 }
 
+// Prenotazione: link, telefono o entrambi. Con tutti e due la scheda
+// mostra sempre una pill sola e fa scegliere all'utente.
+export interface BookingLink {
+  url: string;
+  phone: string; // come l'ha scritto il ristoratore; il tel: lo ripulisce
+}
+
 export interface DraftLinks {
-  booking: string;
+  booking: BookingLink;
   website: string;
   // più servizi delivery: un link solo apre diretto, con più link l'app
   // mostra un bottom sheet di scelta
@@ -54,7 +61,7 @@ export function emptyDraft(): ShowcaseDraft {
     venueName: '',
     dishes: [],
     links: {
-      booking: '',
+      booking: { url: '', phone: '' },
       website: '',
       // vuoti: i link si accendono dalle pill dell'editor
       deliveries: [],
@@ -81,7 +88,11 @@ function normalizeDraft(parsed: any): ShowcaseDraft {
   return {
     venueName: typeof parsed?.venueName === 'string' ? parsed.venueName : '',
     links: {
-      booking: rawLinks.booking ?? '',
+      // bozze salvate quando la prenotazione era solo un link
+      booking:
+        typeof rawLinks.booking === 'string'
+          ? { url: rawLinks.booking, phone: '' }
+          : { url: rawLinks.booking?.url ?? '', phone: rawLinks.booking?.phone ?? '' },
       website: rawLinks.website ?? '',
       // liste vuote ammesse: il link semplicemente non è attivo
       deliveries: Array.isArray(rawLinks.deliveries)
@@ -174,10 +185,25 @@ export function useShowcases() {
   return { showcases, create, update, rename, remove, restore };
 }
 
-// Quanti link compilati ha una vetrina (riga di riepilogo in lista)
+// Indirizzo scritto senza schema (www.osteria.it): l'app non saprebbe
+// aprirlo, quindi lo completiamo noi quando il campo perde il fuoco.
+// Vuoto o già con uno schema: lasciato esattamente com'è.
+export function normalizeUrl(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed === '' || /^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+// La pill Prenota si accende col link, col telefono o con entrambi
+export function hasBooking(booking: BookingLink): boolean {
+  return booking.url.trim() !== '' || booking.phone.trim() !== '';
+}
+
+// Quante pill compilate ha una vetrina (riga di riepilogo in lista):
+// la prenotazione conta una volta anche con link e telefono insieme
 export function countLinks(links: DraftLinks): number {
   return (
-    (links.booking.trim() !== '' ? 1 : 0) +
+    (hasBooking(links.booking) ? 1 : 0) +
     (links.website.trim() !== '' ? 1 : 0) +
     links.deliveries.filter((del) => del.url.trim() !== '').length +
     links.menus.filter((menu) => menu.url.trim() !== '').length

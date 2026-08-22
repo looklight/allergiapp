@@ -9,6 +9,9 @@ import { allergenName } from '@/lib/allergens';
 import { LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 
+// Allergeni dei piatti di esempio, nell'ordine di newShowcase.sampleDishes
+const SAMPLE_ALLERGENS = [['gluten', 'eggs'], ['crustaceans'], ['milk', 'eggs']];
+
 function Step({
   n,
   title,
@@ -99,20 +102,34 @@ export default function NewShowcaseDialog({
                       <LinkPill key={kind} kind={kind} label={LINK_LABELS[kind]} active compact />
                     ))}
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
-                    <p className="text-[13px] font-medium text-gray-900">
-                      {d.newShowcase.sampleDish}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {['gluten', 'eggs'].map((code) => (
-                        <span
-                          key={code}
-                          className="rounded-full bg-[#FFF8E1] px-2 py-0.5 text-[11px] font-medium text-[#8D6E00]"
-                        >
-                          {allergenName(code, locale)}
+                  {/* Stessa forma del carosello piatti nella scheda: foto tonde
+                      affiancate col nome sotto. Qui il segnaposto senza foto,
+                      con un allergene per piatto a dire cosa si dichiara. */}
+                  <div className="flex gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5">
+                    {SAMPLE_ALLERGENS.map((codes, i) => (
+                      <div key={codes[0]} className="min-w-0 flex-1 text-center">
+                        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-100">
+                          <svg className="h-5 w-5 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            {/* coltello e forchetta */}
+                            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20" />
+                            <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
+                          </svg>
                         </span>
-                      ))}
-                    </div>
+                        <p className="mt-1.5 line-clamp-2 text-[10px] leading-[13px] text-gray-700">
+                          {d.newShowcase.sampleDishes[i]}
+                        </p>
+                        <div className="mt-1 flex flex-wrap justify-center gap-1">
+                          {codes.map((code) => (
+                            <span
+                              key={code}
+                              className="rounded-full bg-[#FFF8E1] px-1.5 py-px text-[9px] font-medium text-[#8D6E00]"
+                            >
+                              {allergenName(code, locale)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </Step>

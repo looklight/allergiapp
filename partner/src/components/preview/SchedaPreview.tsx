@@ -13,6 +13,7 @@ import { allergenName } from '@/lib/allergens';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
+import { hasBooking } from '@/lib/draft';
 import type { DeliveryLink, DraftDish, ShowcaseDraft } from '@/lib/draft';
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
 
@@ -68,6 +69,9 @@ const paths = {
     <path d="M12 2l8 3v6c0 5-3.5 8.6-8 11-4.5-2.4-8-6-8-11V5l8-3zm-1.2 13.3l5-5-1.4-1.4-3.6 3.6-1.7-1.7-1.4 1.4 3.1 3.1z" />
   ),
   chevronRight: <path d="M9 6l6 6-6 6" />,
+  phone: (
+    <path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.1 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z" />
+  ),
   chevronLeft: <path d="M15 6l-6 6 6 6" />,
   check: <path d="M20 6L9 17l-5-5" />,
   heart: (
@@ -301,24 +305,18 @@ function DishPills({ dish, viewer }: { dish: DraftDish; viewer: ViewerNeeds }) {
   );
 }
 
-function MenuAttribution() {
+// Avviso sotto il menù: quello che il ristoratore dichiara resta suo,
+// AllergiApp non lo verifica. Ripetuto in scheda e in schermata menù.
+function MenuDisclaimer() {
   const { d } = useI18n();
+  // Stesso trattamento del disclaimer sulle recensioni nell'app
+  // (ReviewsSection): testo 11 su textDisabled, senza riquadro.
   return (
-    <>
-      <div style={{ fontSize: 11, color: '#999999', marginTop: 2 }}>
-        {d.preview.declaredBy} · {d.preview.updatedToday}
-      </div>
-      <div
-        style={{
-          borderRadius: 8, border: '1px solid #FFE082', backgroundColor: '#FFF8E1',
-          padding: '8px 10px', margin: '8px 0 4px',
-        }}
-      >
-        <span style={{ fontSize: 11, fontStyle: 'italic', color: '#8D6E00', lineHeight: '15px', display: 'block' }}>
-          {d.preview.disclaimer}
-        </span>
-      </div>
-    </>
+    <div style={{ padding: '8px 0', marginBottom: 4 }}>
+      <span style={{ fontSize: 11, color: '#999999', lineHeight: '15px', display: 'block' }}>
+        {d.preview.disclaimer}
+      </span>
+    </div>
   );
 }
 
@@ -364,7 +362,7 @@ function MenuScreen({
       </div>
 
       <div style={{ padding: '10px 16px 24px' }}>
-        <MenuAttribution />
+        <MenuDisclaimer />
 
         {groups.map(({ cat, dishes }) => (
           <div key={cat?.code ?? 'none'} style={{ marginTop: 14 }}>
@@ -417,7 +415,7 @@ export default function SchedaPreview({
 }) {
   const { d, locale } = useI18n();
   const [screen, setScreen] = useState<'scheda' | 'menu'>('scheda');
-  const [sheet, setSheet] = useState<'delivery' | null>(null);
+  const [sheet, setSheet] = useState<'delivery' | 'booking' | null>(null);
   // Il nome della vetrina NON è il nome del ristorante: nell'anteprima
   // l'intestazione resta un nome di esempio, come indirizzo e recensioni.
   // i piatti nascosti restano in bozza ma non compaiono nella scheda
@@ -433,8 +431,12 @@ export default function SchedaPreview({
 
   const deliveries = draft.links.deliveries.filter((del) => del.url.trim() !== '');
 
+  const booking = draft.links.booking;
+  // link e telefono insieme: una pill sola, la scelta la fa il bottom sheet
+  const bookingBoth = booking.url.trim() !== '' && booking.phone.trim() !== '';
+
   const links: { kind: LinkKind; label: string }[] = [];
-  if (draft.links.booking.trim() !== '') links.push({ kind: 'booking', label: d.editor.linkBooking });
+  if (hasBooking(booking)) links.push({ kind: 'booking', label: d.editor.linkBooking });
   // un solo bottone Delivery: con più servizi si apre il bottom sheet
   if (deliveries.length > 0) links.push({ kind: 'delivery', label: d.editor.linkDelivery });
   // un solo bottone Menù: l'app sceglie il link nella lingua dell'utente
@@ -521,7 +523,12 @@ export default function SchedaPreview({
         {links.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '0 0 12px' }}>
             {links.map(({ kind, label }) => {
-              const interactive = kind === 'delivery' && deliveries.length > 1;
+              const opensSheet =
+                kind === 'delivery' && deliveries.length > 1
+                  ? ('delivery' as const)
+                  : kind === 'booking' && bookingBoth
+                    ? ('booking' as const)
+                    : null;
               const pillStyle: React.CSSProperties = {
                 display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 14,
                 backgroundColor: LINK_COLORS[kind].bg, padding: '5px 11px',
@@ -533,8 +540,8 @@ export default function SchedaPreview({
                   <span style={{ fontSize: 12, fontWeight: 500, color: LINK_COLORS[kind].fg }}>{label}</span>
                 </>
               );
-              return interactive ? (
-                <button key={kind} onClick={() => setSheet('delivery')} style={{ ...pillStyle, cursor: 'pointer' }}>
+              return opensSheet ? (
+                <button key={kind} onClick={() => setSheet(opensSheet)} style={{ ...pillStyle, cursor: 'pointer' }}>
                   {content}
                 </button>
               ) : (
@@ -570,7 +577,7 @@ export default function SchedaPreview({
               </button>
             </div>
             <div style={{ padding: '0 16px' }}>
-              <MenuAttribution />
+              <MenuDisclaimer />
             </div>
 
             <div
@@ -672,8 +679,9 @@ export default function SchedaPreview({
       </div>
     </div>
 
-      {/* Bottom sheet scelta delivery (mock, pattern sheet dell'app) */}
-      {sheet === 'delivery' && (
+      {/* Bottom sheet di scelta (mock, pattern sheet dell'app): serve al
+          delivery con più servizi e alla prenotazione con link + telefono */}
+      {sheet && (
         <div
           onClick={() => setSheet(null)}
           style={{
@@ -690,9 +698,27 @@ export default function SchedaPreview({
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#E0E0E0', margin: '0 auto 12px' }} />
             <div style={{ fontSize: 16, fontWeight: 600, color: '#333333', marginBottom: 4 }}>
-              {d.preview.orderWith}
+              {sheet === 'delivery' ? d.preview.orderWith : d.preview.bookWith}
             </div>
-            {deliveries.map((del, i) => (
+            {(sheet === 'delivery'
+              ? deliveries.map((del) => ({
+                  icon: LINK_ICONS.delivery,
+                  color: LINK_COLORS.delivery.fg,
+                  label: deliveryDisplayName(del, d.editor.linkDelivery),
+                }))
+              : [
+                  {
+                    icon: LINK_ICONS.booking,
+                    color: LINK_COLORS.booking.fg,
+                    label: d.preview.bookOnline,
+                  },
+                  {
+                    icon: paths.phone,
+                    color: LINK_COLORS.booking.fg,
+                    label: booking.phone.trim(),
+                  },
+                ]
+            ).map((row, i) => (
               <div
                 key={i}
                 style={{
@@ -700,9 +726,9 @@ export default function SchedaPreview({
                   borderTop: i > 0 ? '1px solid #E5E5E5' : 'none',
                 }}
               >
-                <Icon size={18} color="#E65100">{LINK_ICONS.delivery}</Icon>
+                <Icon size={18} color={row.color}>{row.icon}</Icon>
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#333333' }}>
-                  {deliveryDisplayName(del, d.editor.linkDelivery)}
+                  {row.label}
                 </span>
                 <Icon size={18} color="#999999">{paths.chevronRight}</Icon>
               </div>

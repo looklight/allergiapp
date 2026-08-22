@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import { useShowcases, type DraftDish, type ShowcaseDraft } from '@/lib/draft';
+import { hasBooking, normalizeUrl, useShowcases, type DraftDish, type ShowcaseDraft } from '@/lib/draft';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
@@ -233,7 +233,15 @@ function DishForm({
           {d.editor.declarationNotice}
         </p>
 
-        <div className="flex gap-2">
+        {/* Salva in fondo a destra come nella card di un link (e nelle
+            maschere): Annulla lo precede, il primario resta l'ultimo */}
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            {d.common.cancel}
+          </button>
           <button
             onClick={() =>
               onSave({ name: name.trim(), description, category, photoUrl, allergens, dietTags })
@@ -242,12 +250,6 @@ function DishForm({
             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
           >
             {d.common.save}
-          </button>
-          <button
-            onClick={onCancel}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            {d.common.cancel}
           </button>
         </div>
       </div>
@@ -358,6 +360,67 @@ function AddRowButton({
   );
 }
 
+// Campo della prenotazione: etichetta sopra, ✕ per toglierlo come nelle
+// righe dei menù. Link e telefono hanno la stessa forma.
+function BookingField({
+  label,
+  type,
+  value,
+  autoFocus,
+  placeholder,
+  removeLabel,
+  onChange,
+  onBlur,
+  onRemove,
+}: {
+  label: string;
+  type: 'url' | 'tel';
+  value: string;
+  autoFocus: boolean;
+  placeholder: string;
+  removeLabel: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  onRemove: () => void;
+}) {
+  const id = useId();
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        {/* etichetta dentro al campo, come prefisso: niente colonna vuota
+            accanto a "Link" e le due righe restano allineate comunque */}
+        <div className="flex w-full items-stretch overflow-hidden rounded-lg border border-gray-300 focus-within:border-gray-900">
+          <label
+            htmlFor={id}
+            className="flex shrink-0 items-center border-r border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-500"
+          >
+            {label}
+          </label>
+          <input
+            id={id}
+            type={type}
+            autoFocus={autoFocus}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
+            placeholder={placeholder}
+            className="w-full bg-transparent px-3 py-2 text-sm focus:outline-none"
+          />
+        </div>
+        <button
+          onClick={onRemove}
+          aria-label={removeLabel}
+          className="shrink-0 text-gray-400 transition-colors hover:text-red-600"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ShowcaseEditorPage() {
   const { d, locale } = useI18n();
   const params = useParams<{ id: string }>();
@@ -369,6 +432,12 @@ export default function ShowcaseEditorPage() {
   // Link accesi in questa sessione ma ancora vuoti: quelli con contenuto
   // si riconoscono dalla bozza, questi no (e sparirebbero al reload).
   const [activated, setActivated] = useState<LinkKind[]>([]);
+  // Campi della prenotazione aperti o chiusi a mano in questa sessione:
+  // null = lascia decidere alla bozza (v. showBookingUrl/showBookingPhone)
+  // Link aperto in modifica: gli altri restano pill. null = tutti chiusi
+  const [openKind, setOpenKind] = useState<LinkKind | null>(null);
+  const [bookingUrlOpen, setBookingUrlOpen] = useState<boolean | null>(null);
+  const [bookingPhoneOpen, setBookingPhoneOpen] = useState<boolean | null>(null);
   const viewerCount = viewer.allergens.length + viewer.diets.length;
 
   const LINK_LABELS: Record<LinkKind, string> = {
@@ -404,6 +473,10 @@ export default function ShowcaseEditorPage() {
 
   const draft: ShowcaseDraft = showcase;
   const setDraft = (next: ShowcaseDraft) => update(showcase.id, next);
+
+  function setBooking(patch: Partial<{ url: string; phone: string }>) {
+    setDraft({ ...draft, links: { ...draft.links, booking: { ...draft.links.booking, ...patch } } });
+  }
 
   function updateDelivery(index: number, patch: Partial<{ provider: string; label: string; url: string }>) {
     setDraft({
@@ -456,18 +529,38 @@ export default function ShowcaseEditorPage() {
     });
   }
 
-  // Un link è attivo se ha già contenuto in bozza oppure se è stato appena acceso
-  const hasContent: Record<LinkKind, boolean> = {
-    booking: draft.links.booking.trim() !== '',
-    delivery: draft.links.deliveries.length > 0,
-    menu: draft.links.menus.length > 0,
+  // Un link ha un dato solo se c'è un indirizzo scritto: righe delivery o
+  // menù aggiunte e lasciate vuote non contano
+  const filled: Record<LinkKind, boolean> = {
+    booking: hasBooking(draft.links.booking),
+    delivery: draft.links.deliveries.some((del) => del.url.trim() !== ''),
+    menu: draft.links.menus.some((menu) => menu.url.trim() !== ''),
     website: draft.links.website.trim() !== '',
   };
-  const activeKinds = LINK_ORDER.filter((k) => hasContent[k] || activated.includes(k));
+  // È attivo se ha un dato oppure se è stato appena acceso (e non ancora chiuso)
+  const activeKinds = LINK_ORDER.filter((k) => filled[k] || activated.includes(k));
+  // Il link è il campo di partenza; sparisce se la bozza ha solo il telefono
+  const showBookingUrl =
+    bookingUrlOpen ??
+    (draft.links.booking.url !== '' || draft.links.booking.phone.trim() === '');
+  const showBookingPhone = bookingPhoneOpen ?? draft.links.booking.phone !== '';
   const addableKinds = LINK_ORDER.filter((k) => !activeKinds.includes(k));
+
+  // Aprire un altro link (o accenderne uno nuovo) chiude quello in corso:
+  // se era rimasto vuoto lo spegne, così negli attivi resta solo ciò che ha un dato
+  function openLink(kind: LinkKind) {
+    if (openKind && openKind !== kind && !filled[openKind]) removeLink(openKind);
+    setOpenKind(kind);
+  }
+
+  function closeLink(kind: LinkKind) {
+    if (filled[kind]) setOpenKind(null);
+    else removeLink(kind);
+  }
 
   function activateLink(kind: LinkKind) {
     setActivated((prev) => (prev.includes(kind) ? prev : [...prev, kind]));
+    openLink(kind);
     // delivery e menù nascono con la prima riga già pronta da compilare
     if (kind === 'delivery' && draft.links.deliveries.length === 0) addDelivery();
     if (kind === 'menu' && draft.links.menus.length === 0) addMenu();
@@ -476,12 +569,19 @@ export default function ShowcaseEditorPage() {
   // Spegnere un link ne svuota il contenuto: si rimette dalle pill "Aggiungi"
   function removeLink(kind: LinkKind) {
     setActivated((prev) => prev.filter((k) => k !== kind));
+    if (openKind === kind) setOpenKind(null);
+    if (kind === 'booking') {
+      setBookingUrlOpen(null);
+      setBookingPhoneOpen(null);
+    }
     const cleared =
       kind === 'delivery'
         ? { deliveries: [] }
         : kind === 'menu'
           ? { menus: [] }
-          : { [kind]: '' };
+          : kind === 'booking'
+            ? { booking: { url: '', phone: '' } }
+            : { [kind]: '' };
     setDraft({ ...draft, links: { ...draft.links, ...cleared } });
   }
 
@@ -574,35 +674,119 @@ export default function ShowcaseEditorPage() {
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
                   {d.editor.linksActive}
                 </p>
-                {activeKinds.map((kind) => (
+                {/* A regime si vedono solo le pill: si tocca quella da
+                    cambiare, si compila, si salva e torna una pill */}
+                <div className="flex flex-wrap gap-2">
+                  {activeKinds.map((kind) => (
+                    <button
+                      key={kind}
+                      onClick={() => (openKind === kind ? closeLink(kind) : openLink(kind))}
+                      className="rounded-full transition-opacity hover:opacity-70"
+                    >
+                      <LinkPill
+                        kind={kind}
+                        label={LINK_LABELS[kind]}
+                        active
+                        selected={openKind === kind}
+                      />
+                    </button>
+                  ))}
+                </div>
+                {activeKinds
+                  .filter((kind) => kind === openKind)
+                  .map((kind) => (
                   <div key={kind} className="rounded-xl border border-gray-200 p-3.5">
                     <div className="mb-2 flex items-start justify-between gap-2">
-                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                        <LinkPill kind={kind} label={LINK_LABELS[kind]} active />
-                        <span className="text-[11px] leading-snug text-gray-400">{LINK_HINTS[kind]}</span>
-                      </div>
+                      <span className="min-w-0 text-[11px] leading-snug text-gray-400">
+                        {LINK_HINTS[kind]}
+                      </span>
                       <button
                         onClick={() => removeLink(kind)}
                         aria-label={d.editor.removeLink}
                         title={d.editor.removeLink}
-                        className="mt-1.5 shrink-0 text-gray-400 transition-colors hover:text-red-600"
+                        className="-mt-0.5 shrink-0 text-gray-400 transition-colors hover:text-red-600"
                       >
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M6 6l12 12M18 6L6 18" />
+                        {/* cestino = si butta via il link intero; la ✕ delle
+                            righe qui sotto toglie solo quella riga */}
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12" />
                         </svg>
                       </button>
                     </div>
 
-                    {(kind === 'booking' || kind === 'website') && (
+                    {kind === 'website' && (
                       <input
                         type="url"
-                        value={draft.links[kind]}
+                        value={draft.links.website}
                         onChange={(e) =>
-                          setDraft({ ...draft, links: { ...draft.links, [kind]: e.target.value } })
+                          setDraft({ ...draft, links: { ...draft.links, website: e.target.value } })
+                        }
+                        onBlur={() =>
+                          setDraft({
+                            ...draft,
+                            links: { ...draft.links, website: normalizeUrl(draft.links.website) },
+                          })
                         }
                         placeholder={d.editor.linkPlaceholder}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
                       />
+                    )}
+
+                    {/* Prenotazione: link e telefono, tutti e due facoltativi
+                        e tutti e due eliminabili (c'è chi prende solo al
+                        telefono). Nessuna validazione sul numero: i formati
+                        veri sono troppo vari e un falso errore blocca il
+                        ristoratore su un dato che è suo. */}
+                    {kind === 'booking' && (
+                      <div className="space-y-2.5">
+                        {showBookingUrl && (
+                          <BookingField
+                            label={d.editor.linkFieldLabel}
+                            type="url"
+                            value={draft.links.booking.url}
+                            autoFocus={bookingUrlOpen === true && draft.links.booking.url === ''}
+                            placeholder={d.editor.linkPlaceholder}
+                            removeLabel={d.common.delete}
+                            onChange={(value) => setBooking({ url: value })}
+                            onBlur={() => setBooking({ url: normalizeUrl(draft.links.booking.url) })}
+                            onRemove={() => {
+                              setBookingUrlOpen(false);
+                              setBooking({ url: '' });
+                            }}
+                          />
+                        )}
+                        {showBookingPhone && (
+                          <BookingField
+                            label={d.editor.phoneFieldLabel}
+                            type="tel"
+                            value={draft.links.booking.phone}
+                            autoFocus={bookingPhoneOpen === true && draft.links.booking.phone === ''}
+                            placeholder={d.editor.phonePlaceholder}
+                            removeLabel={d.common.delete}
+                            onChange={(value) => setBooking({ phone: value })}
+                            onRemove={() => {
+                              setBookingPhoneOpen(false);
+                              setBooking({ phone: '' });
+                            }}
+                          />
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {!showBookingUrl && (
+                            <AddRowButton
+                              kind="booking"
+                              label={d.editor.addLink}
+                              onClick={() => setBookingUrlOpen(true)}
+                            />
+                          )}
+                          {!showBookingPhone && (
+                            <AddRowButton
+                              kind="booking"
+                              label={d.editor.addPhone}
+                              onClick={() => setBookingPhoneOpen(true)}
+                            />
+                          )}
+                        </div>
+                      </div>
                     )}
 
                     {/* Delivery: più servizi (nella scheda un solo bottone,
@@ -629,6 +813,7 @@ export default function ShowcaseEditorPage() {
                                 type="url"
                                 value={del.url}
                                 onChange={(e) => updateDelivery(i, { url: e.target.value })}
+                              onBlur={() => updateDelivery(i, { url: normalizeUrl(del.url) })}
                                 placeholder={d.editor.linkPlaceholder}
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
                               />
@@ -684,6 +869,7 @@ export default function ShowcaseEditorPage() {
                               type="url"
                               value={menu.url}
                               onChange={(e) => updateMenu(i, { url: e.target.value })}
+                              onBlur={() => updateMenu(i, { url: normalizeUrl(menu.url) })}
                               placeholder={d.editor.linkPlaceholder}
                               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
                             />
@@ -707,6 +893,18 @@ export default function ShowcaseEditorPage() {
                         />
                       </div>
                     )}
+
+                    {/* Salva qui non "invia" niente (la bozza è già scritta):
+                        chiude il link e lo riporta a pill, come nel form piatto */}
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={() => setOpenKind(null)}
+                        disabled={!filled[kind]}
+                        className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {d.common.save}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
