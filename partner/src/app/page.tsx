@@ -1,20 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import { useShowcases, countLinks } from '@/lib/draft';
+import { useShowcases, countLinks, type Showcase } from '@/lib/draft';
 import NewShowcaseDialog from '@/components/NewShowcaseDialog';
+import DeleteShowcaseDialog from '@/components/DeleteShowcaseDialog';
+
+// Quanto resta annullabile un'eliminazione, dal toast in fondo alla lista
+const UNDO_MS = 8000;
 
 export default function ShowcasesPage() {
   const { d } = useI18n();
   const router = useRouter();
-  const { showcases, create, rename, remove } = useShowcases();
+  const { showcases, create, rename, remove, restore } = useShowcases();
   const [creating, setCreating] = useState(false);
   // Rinomina in riga sulla card: nessuna schermata a parte
   const [renaming, setRenaming] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState('');
+  const [deleting, setDeleting] = useState<Showcase | null>(null);
+  // Vetrina appena eliminata, con la posizione che aveva: finché il toast è
+  // in piedi si può rimettere dov'era
+  const [undoable, setUndoable] = useState<{ showcase: Showcase; index: number } | null>(null);
+
+  // Scaduto il tempo il toast sparisce e l'eliminazione diventa definitiva
+  useEffect(() => {
+    if (!undoable) return;
+    const timer = setTimeout(() => setUndoable(null), UNDO_MS);
+    return () => clearTimeout(timer);
+  }, [undoable]);
+
+  function confirmDelete(showcase: Showcase) {
+    const index = (showcases ?? []).findIndex((s) => s.id === showcase.id);
+    remove(showcase.id);
+    setDeleting(null);
+    setUndoable({ showcase, index: index < 0 ? 0 : index });
+  }
+
+  function undoDelete() {
+    if (!undoable) return;
+    restore(undoable.showcase, undoable.index);
+    setUndoable(null);
+  }
 
   function handleCreate(venueName: string) {
     const created = create(venueName);
@@ -98,9 +126,7 @@ export default function ShowcasesPage() {
                   {d.home.open}
                 </Link>
                 <button
-                  onClick={() => {
-                    if (window.confirm(d.home.deleteConfirm)) remove(s.id);
-                  }}
+                  onClick={() => setDeleting(s)}
                   className="shrink-0 text-sm font-medium text-red-600 hover:text-red-700"
                 >
                   {d.common.delete}
@@ -123,6 +149,31 @@ export default function ShowcasesPage() {
 
       {creating && (
         <NewShowcaseDialog onCancel={() => setCreating(false)} onCreate={handleCreate} />
+      )}
+
+      {deleting && (
+        <DeleteShowcaseDialog
+          showcase={deleting}
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => confirmDelete(deleting)}
+        />
+      )}
+
+      {/* Toast di annullamento: l'eliminazione resta reversibile per qualche
+          secondo, la rete che serve davvero contro il click sbagliato */}
+      {undoable && (
+        <div
+          role="status"
+          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-gray-900 px-4 py-3 shadow-lg"
+        >
+          <span className="text-sm text-white">{d.home.deleted}</span>
+          <button
+            onClick={undoDelete}
+            className="text-sm font-medium text-white underline underline-offset-2 transition-opacity hover:opacity-80"
+          >
+            {d.home.undo}
+          </button>
+        </div>
       )}
     </div>
   );

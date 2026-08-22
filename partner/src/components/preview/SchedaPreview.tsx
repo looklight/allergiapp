@@ -418,7 +418,8 @@ export default function SchedaPreview({
   const { d, locale } = useI18n();
   const [screen, setScreen] = useState<'scheda' | 'menu'>('scheda');
   const [sheet, setSheet] = useState<'delivery' | null>(null);
-  const venueName = draft.venueName.trim() || d.editor.venueNamePlaceholder;
+  // Il nome della vetrina NON è il nome del ristorante: nell'anteprima
+  // l'intestazione resta un nome di esempio, come indirizzo e recensioni.
   // i piatti nascosti restano in bozza ma non compaiono nella scheda
   const visibleDishes = draft.dishes.filter((dish) => dish.available);
 
@@ -446,7 +447,7 @@ export default function SchedaPreview({
       {/* Header: nome + azioni */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 16px 8px' }}>
         <span style={{ flex: 1, fontSize: 20, fontWeight: 700, lineHeight: '26px', color: '#333333' }}>
-          {venueName}
+          {d.preview.venueName}
         </span>
         <span style={{ display: 'flex', gap: 10, paddingTop: 2 }}>
           <Icon size={22} color="#666666">{paths.bookmark}</Icon>

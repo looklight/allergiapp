@@ -38,8 +38,8 @@ export interface DraftLinks {
 }
 
 export interface ShowcaseDraft {
-  // Nome della vetrina: la identifica nella lista e l'anteprima lo usa
-  // come nome del locale finché non c'è l'associazione al locale reale.
+  // Nome della vetrina: la identifica nella lista, NON è il nome del locale
+  // (quello arriverà dall'associazione; l'anteprima mostra un nome di esempio).
   venueName: string;
   dishes: DraftDish[];
   links: DraftLinks;
@@ -164,7 +164,14 @@ export function useShowcases() {
     persist((showcases ?? []).filter((s) => s.id !== id));
   }
 
-  return { showcases, create, update, rename, remove };
+  // Ripristino dopo l'undo: la vetrina torna dov'era, non in fondo alla lista
+  function restore(showcase: Showcase, index: number) {
+    const next = [...(showcases ?? [])];
+    next.splice(index, 0, showcase);
+    persist(next);
+  }
+
+  return { showcases, create, update, rename, remove, restore };
 }
 
 // Quanti link compilati ha una vetrina (riga di riepilogo in lista)
