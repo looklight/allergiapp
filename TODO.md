@@ -137,7 +137,7 @@ Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mod
 Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium (verificati/certificati). La colonna `is_premium` esiste già su `restaurants`, manca il flusso completo.
 
 **Funzionalità esclusive premium:**
-- **Menu digitale** — link o caricamento PDF/immagini (già nascosto nell'UI, da riabilitare per premium)
+- **Menu digitale** — link multilingua a carico del ristoratore. La sezione foto menù community è stata **rimossa** dall'app (commit `32c6d61`, esce con 1.3.1): non è più codice da "riabilitare", va costruita lato premium. Nel portale partner esiste già come `MenuLink[]` (memoria `project_partner_portal.md`, menù facoltativo)
 - **Risposta alle recensioni** — il gestore può rispondere pubblicamente alle recensioni degli utenti
 - **Badge "Verificato"** nella lista ristoranti e nella scheda, con tooltip esplicativo
 - **Priorità nell'ordinamento** — già implementata (`ORDER BY is_premium DESC`), da sfruttare esplicitamente
@@ -426,12 +426,11 @@ Oggi non esiste: verificato, nessun `min_supported_version` / force-update nel c
 ## Gestione immagini — ottimizzazioni
 **Priorità: media — qualità percepita UX + contenimento costi Supabase**
 
-Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compressione client, cleanup cascade, RLS policies, thumb differenziati per tipo (review 250px @ q.0.65, menu 400px @ q.0.7 con aspect ratio preservato), prefetch in `useRestaurantDetail`. Restano margini per UX avanzata e resilienza.
+Il flusso (`services/storageService.ts`) è solido nei fondamentali: WEBP, compressione client, cleanup cascade, RLS policies, thumb 250px @ q.0.65 + full 600px @ q.0.7 quadrati (unico tipo rimasto dopo la rimozione delle foto menù: i preset `menu` non esistono più), prefetch in `useRestaurantDetail`. Restano margini per UX avanzata e resilienza.
 
 **Azioni aperte:**
 - [ ] **Migrare a `expo-image`** — **puramente migliorativo, bassa priorità**. Verifica 2026-06-02: la pipeline attuale è a posto (WEBP + compressione + thumb/full separati + `Image.prefetch` in `useRestaurantDetail` + `fadeDuration={0}` su Android). I benefici principali (flash bianco, scroll) sono **già mitigati** da prefetch + fadeDuration. Resterebbe solo il margine della cache su disco persistente (ritorno istantaneo su ristoranti già visti, meno dati) + blurhash placeholder cosmetico. Effort ~2-3h, ~23 file, API quasi drop-in (`resizeMode` → `contentFit`, `defaultSource` → `placeholder`). **Rivalutare solo se emergono problemi reali di caching/consumo dati.**
-- [ ] **Ridurre full menu** da 1000px a 800px (preset `menu.width`) — risparmio egress ~30%, valutare se la qualità su pinch-zoom resta accettabile.
-- [ ] **Job di cleanup orfani**: Edge Function Supabase schedulata settimanalmente che lista i file del bucket e rimuove quelli non referenziati in `reviews.photos` / `menu_photos.image_url` / `menu_photos.thumbnail_url`.
+- [ ] **Job di cleanup orfani**: Edge Function Supabase schedulata settimanalmente che lista i file del bucket e rimuove quelli non referenziati in `reviews.photos` (più `menu_photos.image_url` / `.thumbnail_url` finché quella tabella resta viva: è vuota ma le build ≤1.3.0 in store possono ancora scriverci).
 - [ ] **Retry upload** con backoff esponenziale (2-3 tentativi) per resilienza su reti instabili.
 - [ ] **Path opaco** con hash invece di userId esposto (privacy minore; richiede migrazione dati esistenti → valutare se vale).
 
