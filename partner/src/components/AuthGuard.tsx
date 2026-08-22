@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
-import PartnerOnboarding, { hasPartnerProfile } from './PartnerOnboarding';
+import PartnerOnboarding from './PartnerOnboarding';
+import { hasPartnerProfile } from '@/lib/partnerProfile';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();

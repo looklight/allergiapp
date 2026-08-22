@@ -67,7 +67,14 @@ const LEGACY_KEY = 'partner-showcase-draft'; // bozza singola pre-lista
 // Ogni salvataggio lo annuncia alle altre istanze dell'hook (es. sidebar)
 const CHANGE_EVENT = 'partner-showcases-changed';
 
-// Riporta qualunque bozza salvata (anche da versioni precedenti) alla forma corrente
+// Riporta qualunque bozza salvata (anche da versioni precedenti) alla forma corrente.
+//
+// `any` deliberato: qui è il confine con dati non tipizzati (JSON arbitrario
+// dal localStorage, scritto anche da versioni precedenti del portale).
+// Dichiararlo `unknown` costringerebbe a un cast per ogni singolo campo di un
+// parser che esiste apposta per essere tollerante. Sparisce con la migration
+// 700, quando i dati arriveranno tipizzati dal database.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeDraft(parsed: any): ShowcaseDraft {
   const rawLinks = parsed?.links ?? {};
   return {
@@ -100,6 +107,7 @@ function loadShowcases(): Showcase[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- stesso confine non tipizzato di normalizeDraft
       return (JSON.parse(raw) as any[]).map((s) => ({ id: s.id, ...normalizeDraft(s) }));
     }
     // migrazione: la vecchia bozza singola diventa la prima vetrina

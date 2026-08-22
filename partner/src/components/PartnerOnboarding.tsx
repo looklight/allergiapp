@@ -4,38 +4,13 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useI18n } from '@/lib/i18n';
 import { authErrorMessage } from '@/lib/authErrors';
+import { partnerMetadata } from '@/lib/partnerProfile';
 import type { Session } from '@supabase/supabase-js';
 
 // Creazione del profilo partner per chi è già autenticato: serve a chi ha
 // una credenziale AllergiApp (stessa email, un solo auth.users) e non può
 // quindi passare dalla registrazione. È l'atto deliberato che rende partner
 // una persona — nessuno lo diventa per il fatto di avere un account.
-//
-// Finché la 700 non è applicata i dati stanno nei metadati dell'utente:
-// vero server-side, ma è un cancello di percorso, NON di sicurezza (i
-// metadati sono modificabili dal client). Il cancello vero sarà la riga in
-// partner_accounts. V. MONETIZATION.md, sezione utenti/partner.
-export function hasPartnerProfile(session: Session | null): boolean {
-  const meta = session?.user?.user_metadata;
-  return Boolean(meta?.first_name && meta?.last_name);
-}
-
-// Un solo posto in cui si decide cosa compone il profilo partner: lo usano
-// sia la registrazione (credenziale nuova) sia questa schermata (credenziale
-// già esistente), così i due percorsi non divergono.
-export function partnerMetadata(fields: {
-  firstName: string;
-  lastName: string;
-  marketing: boolean;
-}) {
-  return {
-    account_type: 'partner',
-    first_name: fields.firstName.trim(),
-    last_name: fields.lastName.trim(),
-    terms_accepted_at: new Date().toISOString(),
-    marketing_consent: fields.marketing,
-  };
-}
 
 const inputClass =
   'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none';

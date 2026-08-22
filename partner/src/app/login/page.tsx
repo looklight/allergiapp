@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { authErrorMessage, PARTNER_MIN_PASSWORD } from '@/lib/authErrors';
-import { partnerMetadata } from '@/components/PartnerOnboarding';
+import { partnerMetadata } from '@/lib/partnerProfile';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const inputClass =
