@@ -36,6 +36,15 @@ const it = {
     signInCta: 'Accedi',
     checkEmail: 'Controlla la tua casella email per confermare la registrazione.',
   },
+  onboarding: {
+    title: 'Crea il tuo profilo partner',
+    intro:
+      'Questo account non ha ancora un profilo partner. Il profilo partner è distinto da quello con cui usi l’app AllergiApp: stessa email, due percorsi separati.',
+    signedInAs: 'Stai usando l’email',
+    submit: 'Crea profilo partner',
+    submitting: 'Creazione…',
+    wrongAccount: 'Non è l’account giusto?',
+  },
   home: {
     title: 'Le tue vetrine',
     intro:

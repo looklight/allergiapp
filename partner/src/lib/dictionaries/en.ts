@@ -38,6 +38,15 @@ const en: typeof it = {
     signInCta: 'Sign in',
     checkEmail: 'Check your inbox to confirm your registration.',
   },
+  onboarding: {
+    title: 'Create your partner profile',
+    intro:
+      'This account does not have a partner profile yet. A partner profile is separate from the one you use in the AllergiApp app: same email, two distinct journeys.',
+    signedInAs: 'You are using the email',
+    submit: 'Create partner profile',
+    submitting: 'Creating…',
+    wrongAccount: 'Not the right account?',
+  },
   home: {
     title: 'Your showcases',
     intro:
