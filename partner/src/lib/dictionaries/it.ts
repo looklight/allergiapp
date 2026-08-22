@@ -64,7 +64,6 @@ const it = {
     title: 'Le tue vetrine',
     intro:
       'Una vetrina per ogni tuo locale: qui le crei e le gestisci, dentro compili piatti e link e vedi l’anteprima della scheda.',
-    empty: 'Nessuna vetrina ancora. Creane una e inizia a compilarla.',
     create: 'Crea vetrina',
     unnamed: 'Vetrina senza nome',
     open: 'Apri',
@@ -74,7 +73,18 @@ const it = {
     linkOther: 'link',
     deleteConfirm: 'Eliminare questa vetrina? I dati inseriti andranno persi.',
     notFound: 'Vetrina non trovata: forse è stata eliminata.',
+    rename: 'Rinomina',
     backToList: 'Le tue vetrine',
+  },
+  newShowcase: {
+    title: 'Nuova vetrina',
+    nameHint: 'Puoi cambiarlo quando vuoi dalla lista.',
+    how: 'Come funziona?',
+    step1: 'Crei la vetrina con i tuoi link e i tuoi piatti',
+    step2: 'La associ al tuo locale presente su AllergiApp',
+    sampleDish: 'Spaghetti alla carbonara',
+    yourShowcase: 'La tua vetrina',
+    venueOnApp: 'Il tuo locale su AllergiApp',
   },
   editor: {
     title: 'La tua vetrina',
@@ -84,8 +94,6 @@ const it = {
     subsLink: 'Come funziona l’associazione al locale',
     venueNameLabel: 'Nome della vetrina',
     venueNamePlaceholder: 'Il tuo ristorante',
-    venueNameHint:
-      'Ti serve per riconoscerla nella lista e l’anteprima lo usa come nome del locale; col collegamento al tuo locale reale arriverà da AllergiApp.',
     dishesTitle: 'Piatti e allergeni',
     dishesHint: 'Facoltativi: senza piatti la scheda mostra solo i tuoi link.',
     addDish: 'Aggiungi piatto',

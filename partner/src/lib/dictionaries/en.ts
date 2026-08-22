@@ -66,7 +66,6 @@ const en: typeof it = {
     title: 'Your showcases',
     intro:
       'One showcase per venue: create and manage them here, then fill each one with dishes and links and preview its listing.',
-    empty: 'No showcases yet. Create one and start filling it in.',
     create: 'Create showcase',
     unnamed: 'Untitled showcase',
     open: 'Open',
@@ -76,7 +75,18 @@ const en: typeof it = {
     linkOther: 'links',
     deleteConfirm: 'Delete this showcase? The data you entered will be lost.',
     notFound: 'Showcase not found: it may have been deleted.',
+    rename: 'Rename',
     backToList: 'Your showcases',
+  },
+  newShowcase: {
+    title: 'New showcase',
+    nameHint: 'You can change it any time from the list.',
+    how: 'How does it work?',
+    step1: 'Build the showcase with your links and your dishes',
+    step2: 'Link it to your venue on AllergiApp',
+    sampleDish: 'Spaghetti carbonara',
+    yourShowcase: 'Your showcase',
+    venueOnApp: 'Your venue on AllergiApp',
   },
   editor: {
     title: 'Your showcase',
@@ -86,8 +96,6 @@ const en: typeof it = {
     subsLink: 'How linking to your venue works',
     venueNameLabel: 'Showcase name',
     venueNamePlaceholder: 'Your restaurant',
-    venueNameHint:
-      'It helps you recognize the showcase in the list and the preview uses it as the venue name; once linked to your real venue it will come from AllergiApp.',
     dishesTitle: 'Dishes and allergens',
     dishesHint: 'Optional: without dishes the app shows only your links.',
     addDish: 'Add dish',

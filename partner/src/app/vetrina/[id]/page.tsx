@@ -565,21 +565,6 @@ export default function ShowcaseEditorPage() {
         </Link>
 
         <div className="space-y-4">
-          {/* Nome vetrina (per lista e anteprima) */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {d.editor.venueNameLabel}
-            </label>
-            <input
-              type="text"
-              value={draft.venueName}
-              onChange={(e) => setDraft({ ...draft, venueName: e.target.value })}
-              placeholder={d.editor.venueNamePlaceholder}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
-            />
-            <p className="mt-1.5 text-xs text-gray-500">{d.editor.venueNameHint}</p>
-          </div>
-
           {/* Link */}
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="mb-1 font-medium text-gray-900">{d.editor.linksTitle}</h2>

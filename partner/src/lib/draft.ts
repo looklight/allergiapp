@@ -145,8 +145,8 @@ export function useShowcases() {
     window.dispatchEvent(new Event(CHANGE_EVENT));
   }
 
-  function create(): Showcase {
-    const created: Showcase = { id: crypto.randomUUID(), ...emptyDraft() };
+  function create(venueName = ''): Showcase {
+    const created: Showcase = { id: crypto.randomUUID(), ...emptyDraft(), venueName };
     persist([...(showcases ?? []), created]);
     return created;
   }
@@ -155,11 +155,16 @@ export function useShowcases() {
     persist((showcases ?? []).map((s) => (s.id === id ? { ...draft, id } : s)));
   }
 
+  // Rinomina dalla lista: tocca solo il nome, il resto della bozza resta com'è
+  function rename(id: string, venueName: string) {
+    persist((showcases ?? []).map((s) => (s.id === id ? { ...s, venueName } : s)));
+  }
+
   function remove(id: string) {
     persist((showcases ?? []).filter((s) => s.id !== id));
   }
 
-  return { showcases, create, update, remove };
+  return { showcases, create, update, rename, remove };
 }
 
 // Quanti link compilati ha una vetrina (riga di riepilogo in lista)
