@@ -17,6 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <title>AllergiApp Admin</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Icone servite da public/. Il layout è un client component, quindi
+            l'export `metadata` di Next non è disponibile: i link vanno espliciti. */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Applica il tema prima del paint per evitare il flash: scelta manuale
             salvata in localStorage, altrimenti preferenza di sistema. */}
         <script
