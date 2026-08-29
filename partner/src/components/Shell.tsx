@@ -5,6 +5,7 @@ import { AuthContext, useAuthState } from '@/lib/auth';
 import { I18nProvider } from '@/lib/i18n';
 import AuthGuard from './AuthGuard';
 import Nav from './Nav';
+import RegisterSW from './RegisterSW';
 
 // Tutto ciò che ha bisogno del browser (sessione, lingua, nav). Sta fuori dal
 // layout perché la radice deve restare un componente server: è l'unico posto
@@ -15,23 +16,26 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === '/login';
 
   return (
-    <I18nProvider>
-      <AuthContext.Provider value={authState}>
-        {isLoginPage ? (
-          children
-        ) : (
-          <AuthGuard>
-            <div className="flex min-h-screen">
-              <Nav />
-              <main className="flex-1 pb-bottom-nav">
-                <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
-                  {children}
-                </div>
-              </main>
-            </div>
-          </AuthGuard>
-        )}
-      </AuthContext.Provider>
-    </I18nProvider>
+    <>
+      <RegisterSW />
+      <I18nProvider>
+        <AuthContext.Provider value={authState}>
+          {isLoginPage ? (
+            children
+          ) : (
+            <AuthGuard>
+              <div className="flex min-h-screen">
+                <Nav />
+                <main className="flex-1 pb-bottom-nav">
+                  <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
+                    {children}
+                  </div>
+                </main>
+              </div>
+            </AuthGuard>
+          )}
+        </AuthContext.Provider>
+      </I18nProvider>
+    </>
   );
 }

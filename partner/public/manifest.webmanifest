@@ -1,0 +1,32 @@
+{
+  "name": "AllergiApp Partner",
+  "short_name": "Partner",
+  "id": "/",
+  "description": "Gestisci le vetrine del tuo locale su AllergiApp.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "it",
+  "background_color": "#F7DCB3",
+  "theme_color": "#F9FAFB",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

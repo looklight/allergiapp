@@ -28,5 +28,10 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Fuori dal muro anche i file della web app installabile: il browser scarica
+  // il manifest SENZA credenziali, un 401 lì e l'installazione non è proposta.
+  // Non sono segreti: icone, manifest, worker e pagina offline.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|apple-touch-icon.png|icons/).*)',
+  ],
 };
