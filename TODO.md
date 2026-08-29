@@ -438,7 +438,7 @@ build nativa — le build gia' in store (<=1.3.1) non lo avranno mai.
 - [x] Scialuppa `min_os_ios` / `min_os_android`: chi ha un OS troppo vecchio per installare la build nuova e' ESENTATO dal muro (oggi NULL = nessuna esenzione)
 - [x] Migration 083 applicata (29/08); lettura anonima e blocco scrittura verificati via REST
 - [x] `scripts/release-gate.js` + npm script `gate:*`: le soglie non si scrivono mai a mano
-- [ ] Verifica su dev build prima della release: soglia alta -> muro; soglia intermedia -> avviso; airplane mode -> app normale
+- [x] Verificato su simulatore 29/08: avviso compare e non torna dopo la chiusura; muro a schermo intero (assorbe l'avviso); backend irraggiungibile col muro ACCESO -> app parte normale (fail-open)
 
 **Come si usa** — sempre dallo script, mai numeri a mano (`scripts/release-gate.js`):
 ```bash
@@ -446,6 +446,7 @@ npm run gate:status                  # dove siamo: soglie, versione app, esenzio
 npm run gate:recommend -- --live     # avviso morbido -> versione presa da app.config.ts
 npm run gate:block 1.4.0             # MURO (raro: sicurezza, dati a rischio, API spenta)
 npm run gate:reset                   # rimette tutto a riposo (0.0.0)
+npm run gate:recommend -- --test 1.4.0   # SOLO prove: soglia arbitraria per far comparire l'avviso in dev
 ```
 `recommend` legge il numero da `app.config.ts`, quindi non si sbaglia. `--live` e'
 obbligatorio: conferma che la release e' GIA' SCARICABILE dallo store — tra build e

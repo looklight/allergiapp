@@ -121,6 +121,22 @@ async function main() {
   }
 
   if (command === 'recommend') {
+    // `--test <versione>`: solo per le prove su dev build, dove serve una soglia
+    // piu' alta della versione in sviluppo per far comparire l'avviso. Il
+    // percorso normale resta senza argomenti, con il numero preso da
+    // app.config.ts e nessuna cifra digitata a mano.
+    const testIndex = process.argv.indexOf('--test');
+    if (testIndex !== -1) {
+      const testVersion = process.argv[testIndex + 1];
+      if (!testVersion || !VERSION_RE.test(testVersion)) {
+        console.error('Uso: node scripts/release-gate.js recommend --test <versione>');
+        process.exit(1);
+      }
+      console.log(`PROVA — avviso morbido -> ${testVersion} (ricordarsi il reset)`);
+      print(await writeConfig({ recommended_version: testVersion }));
+      return;
+    }
+
     const version = appVersion();
     if (!process.argv.includes('--live')) {
       console.error('');
