@@ -32,6 +32,6 @@ export const config = {
   // il manifest SENZA credenziali, un 401 lì e l'installazione non è proposta.
   // Non sono segreti: icone, manifest, worker e pagina offline.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|apple-touch-icon.png|icons/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|apple-touch-icon.png|icons/|splash/).*)',
   ],
 };

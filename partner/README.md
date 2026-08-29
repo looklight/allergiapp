@@ -30,6 +30,44 @@ Env in `.env.local` (stesso progetto Supabase di app e admin):
   directory `partner/` (niente branch di deploy stile admin-prod).
   Dominio `partner.allergiapp.com`, dietro basic auth nel middleware.
 
+## App installabile (icone e schermate di avvio)
+
+Il portale si installa sulla home ("Aggiungi a Home" su iOS, "Installa" su
+Android). I file stanno in `public/` e li genera uno script, non si ritoccano
+a mano:
+
+```bash
+node partner/scripts/generate-pwa-assets.mjs
+```
+
+Sorgente unica: `assets/icons/logo/plate-forks.png`, la mascotte con le
+posate — **deliberatamente diversa dall'icona dell'app** (`assets/icon.png`),
+perché chi ha installato anche l'app del cliente deve distinguere le due
+icone in home senza leggere il nome.
+
+Lo script stampa anche l'elenco `startupImage` da incollare in
+`src/app/layout.tsx`: se si aggiunge un modello di iPhone o iPad va
+aggiornata la lista `SPLASH` nello script e ricopiato l'elenco.
+
+Due vincoli da non perdere se si rigenerano gli asset:
+
+- **La mascotte non va mai ridimensionata sulle schermate di avvio.** A
+  grandezza naturale l'immagine resta entro i 256 colori del sorgente e il
+  PNG si scrive indicizzato: 16 schermate pesano ~970 KB invece di 3,1 MB.
+- **L'icona maskable tiene la mascotte al 62%, non all'80%.** I launcher
+  Android ritagliano un cerchio più stretto della "safe zone" che si cita di
+  solito; all'80% le posate venivano tagliate.
+
+I file PWA (`manifest.webmanifest`, `sw.js`, `offline.html`, `icons/`,
+`splash/`) sono **fuori dal muro basic auth** nel middleware: il browser
+scarica il manifest senza credenziali, e un 401 lì significa nessuna
+installazione offerta.
+
+Il service worker **non mette in cache l'applicazione** di proposito:
+intercetta solo le navigazioni per servire `offline.html`. Così un deploy
+nuovo non resta indietro dietro una cache da svuotare. Esiste perché senza
+worker Chrome su Android non propone nemmeno l'installazione.
+
 ## ⚠️ Deploy: l'ultimo commit del push deve toccare `partner/`
 
 Per non buildare a ogni push dell'app Expo, il progetto ha un Ignored
