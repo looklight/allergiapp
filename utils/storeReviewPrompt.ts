@@ -1,6 +1,7 @@
 import { Platform, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as StoreReview from 'expo-store-review';
+import { APP_STORE_ID, PLAY_PACKAGE } from './storeLinks';
 
 // Prompt nativo di valutazione store (iOS SKStoreReviewController, Android
 // Play In-App Review). Noi *richiediamo*, l'OS decide se mostrarlo: iOS
@@ -15,9 +16,6 @@ const MIN_RATING = 4;
 const THROTTLE_DAYS = 90;
 // Lascia assestare la navigazione (router.back) prima che l'OS presenti il foglio.
 const REQUEST_DELAY_MS = 1500;
-
-const APP_STORE_ID = '6758859853';
-const PLAY_PACKAGE = 'com.allergiapp.mobile';
 
 /**
  * Richiede il popup nativo di valutazione dopo una recensione positiva
