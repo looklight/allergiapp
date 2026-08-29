@@ -5,6 +5,14 @@
     "errorRetry": "Riprova",
     "ok": "OK"
   },
+  "update": {
+    "wallTitle": "Aggiorna AllergiApp",
+    "wallMessage": "Questa versione non è più supportata. Aggiorna all'ultima versione per continuare a usare l'app.",
+    "popupTitle": "Aggiornamento disponibile",
+    "popupMessage": "È disponibile una nuova versione di AllergiApp, con miglioramenti e correzioni.",
+    "openStore": "Aggiorna ora",
+    "later": "Più tardi"
+  },
   "username": {
     "label": "Nome utente",
     "hint": "Lettere, numeri, _ e . (3–30 caratteri)",

@@ -19,6 +19,7 @@ const STORAGE_KEYS = {
   FOR_MY_NEEDS: 'allergiapp_for_my_needs',
   FOLLOWED_FILTER: 'allergiapp_followed_filter',
   DISMISSED_POPUPS: 'allergiapp_dismissed_popups',
+  DISMISSED_UPDATE_VERSION: 'allergiapp_dismissed_update_version',
   RECENT_PLACES: 'allergiapp_recent_places',
   USER_CARDS: 'allergiapp_user_cards',
   ACTIVE_CARD_ID: 'allergiapp_active_card_id',
@@ -485,6 +486,25 @@ export const storage = {
         dismissed.push(popupId);
         await AsyncStorage.setItem(STORAGE_KEYS.DISMISSED_POPUPS, JSON.stringify(dismissed));
       }
+    } catch {
+      // Storage write failed silently
+    }
+  },
+
+  // Avviso "aggiornamento disponibile" (livello morbido del gate versione):
+  // memorizza la versione consigliata gia' chiusa, cosi' l'avviso non assilla —
+  // torna solo quando il numero consigliato cambia.
+  async getDismissedUpdateVersion(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.DISMISSED_UPDATE_VERSION);
+    } catch {
+      return null;
+    }
+  },
+
+  async dismissUpdateVersion(version: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.DISMISSED_UPDATE_VERSION, version);
     } catch {
       // Storage write failed silently
     }

@@ -5,6 +5,14 @@
     "errorRetry": "Reintentar",
     "ok": "OK"
   },
+  "update": {
+    "wallTitle": "Actualiza AllergiApp",
+    "wallMessage": "Esta versión ya no es compatible. Actualiza a la última versión para seguir usando la aplicación.",
+    "popupTitle": "Actualización disponible",
+    "popupMessage": "Hay una nueva versión de AllergiApp disponible, con mejoras y correcciones.",
+    "openStore": "Actualizar ahora",
+    "later": "Más tarde"
+  },
   "common": {
     "cancel": "Cancelar",
     "confirm": "Confirmar",

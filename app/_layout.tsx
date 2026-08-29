@@ -19,6 +19,9 @@ import i18n from '../utils/i18n';
 import ConsentModal from './consent';
 import AnnouncementPopup from './components/AnnouncementPopup';
 import UnlockedAvatarsPopup from './components/UnlockedAvatarsPopup';
+import UpdateWall from './components/UpdateWall';
+import UpdatePopup from './components/UpdatePopup';
+import { useVersionGate } from '../hooks/useVersionGate';
 
 const splashLogo = require('../assets/splash-icon.png');
 
@@ -124,6 +127,7 @@ function AppContent() {
   const { isDark } = useThemePreference();
   const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, profileAllergens, profileOtherFoods, profileActiveDietModes, profileVegetarianLevel, profileRestrictions, settings } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
+  const versionGate = useVersionGate();
   const router = useRouter();
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
@@ -206,6 +210,13 @@ function AppContent() {
     );
   }
 
+  // Gate versione (mig 083): il muro sostituisce l'app, quindi vince su tutto
+  // il resto — consenso, onboarding, popup. `blocked` e' false salvo risposta
+  // esplicita del server: qualunque anomalia lascia passare (fail-open).
+  if (versionGate.blocked) {
+    return <UpdateWall />;
+  }
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -223,6 +234,8 @@ function AppContent() {
       {hasAcceptedLegalTerms && <AnnouncementPopup />}
       {/* Avatar unlock popup - shown when user unlocks new avatars */}
       <UnlockedAvatarsPopup />
+      {/* Avviso morbido di aggiornamento: una volta per versione consigliata */}
+      <UpdatePopup recommendedVersion={versionGate.recommended} />
     </>
   );
 }
