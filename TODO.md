@@ -423,14 +423,44 @@ Soluzione a lungo termine: spostare `admin/` in un repo separato con il proprio 
 ### Error reporting
 - [ ] Valutare Sentry per error reporting (source maps, breadcrumbs, crash reporting)
 
-### Gate versione minima (forzare l'aggiornamento) — DA AGGANCIARE A UNA BUILD GIÀ IN PROGRAMMA (2026-08-22)
-Oggi non esiste: verificato, nessun `min_supported_version` / force-update nel codice. Serve come **assicurazione**, non per un problema attuale: un gate è utile solo se è già dentro le versioni installate *prima* che serva (aggiungerlo il giorno dell'emergenza non copre chi ha la build vecchia — è esattamente il caso delle foto menù). **Non fare una build solo per questo** (decisione utente): agganciarlo alla prossima build nativa in programma.
-- [ ] Sorgente remota della versione minima (tabellina di config su Supabase, RLS read-only pubblica) — **mai hardcodata nell'app**: se il valore è sbagliato deve bastare una UPDATE per sbloccare tutti
-- [ ] Check al boot + schermata bloccante con link allo store
-- [ ] **Fail-open**: rete assente, timeout, valore mancante o malformato → l'app parte normalmente. Si blocca solo se il server lo dice esplicitamente
-- [ ] Confronto versioni **numerico per componenti** (non stringa: "1.10.0" > "1.9.0") + test sui casi limite
+### Gate versione minima (forzare l'aggiornamento) — IMPLEMENTATO 2026-08-29, DORMIENTE
+Due livelli, convenzione standard (Play In-App Updates "immediate" / "flexible"):
+**muro** non chiudibile sotto `min_supported_version`, **avviso chiudibile** sotto
+`recommended_version` (mostrato una volta sola per versione consigliata).
+Nasce spento: entrambe le soglie a `0.0.0`, nessuno vede niente. Esce con la prossima
+build nativa — le build gia' in store (<=1.3.1) non lo avranno mai.
 
-⚠️ Con le OTA bloccate (quota MAU) questa è l'unica feature dove un bug blocca l'app a tutti senza possibilità di correggere: l'unica via d'uscita sarebbe build nativa + review store. Le 4 voci sopra sono ciò che rende il rischio gestibile — non implementarlo senza.
+- [x] Sorgente remota (`app_config`, riga singola, RLS read pubblica) — mai hardcodata: una UPDATE attiva, una UPDATE sblocca
+- [x] Check al boot (`hooks/useVersionGate.ts`) + muro con link allo store (`app/components/UpdateWall.tsx`)
+- [x] Avviso morbido chiudibile (`app/components/UpdatePopup.tsx`), dismissal per versione in AsyncStorage
+- [x] Fail-open: rete assente, timeout 4s, riga mancante, valore malformato, versione app illeggibile -> l'app parte normale
+- [x] Confronto numerico per componenti (`utils/version.ts`) + 31 casi limite in `scripts/test-version-compare.mjs`
+- [x] Scialuppa `min_os_ios` / `min_os_android`: chi ha un OS troppo vecchio per installare la build nuova e' ESENTATO dal muro (oggi NULL = nessuna esenzione)
+- [x] Migration 083 applicata (29/08); lettura anonima e blocco scrittura verificati via REST
+- [x] `scripts/release-gate.js` + npm script `gate:*`: le soglie non si scrivono mai a mano
+- [ ] Verifica su dev build prima della release: soglia alta -> muro; soglia intermedia -> avviso; airplane mode -> app normale
+
+**Come si usa** — sempre dallo script, mai numeri a mano (`scripts/release-gate.js`):
+```bash
+npm run gate:status                  # dove siamo: soglie, versione app, esenzioni OS
+npm run gate:recommend -- --live     # avviso morbido -> versione presa da app.config.ts
+npm run gate:block 1.4.0             # MURO (raro: sicurezza, dati a rischio, API spenta)
+npm run gate:reset                   # rimette tutto a riposo (0.0.0)
+```
+`recommend` legge il numero da `app.config.ts`, quindi non si sbaglia. `--live` e'
+obbligatorio: conferma che la release e' GIA' SCARICABILE dallo store — tra build e
+disponibilita' passa la review, e suggerire un aggiornamento inesistente manda l'utente
+su una pagina store dove non trova nulla.
+
+`block` resta manuale di proposito: se il muro seguisse ogni release, ogni aggiornamento
+ordinario murerebbe fuori chi non aggiorna subito.
+
+**Passo da inserire nel rilascio:** quando la release e' live su ENTRAMBI gli store,
+`npm run gate:recommend -- --live`.
+
+Il giorno in cui una build alza il requisito di sistema, valorizzare anche
+`min_os_ios` (versione iOS, es. '16.0') o `min_os_android` (livello API, es. '26')
+via SQL editor: senza, quegli utenti resterebbero murati senza poter aggiornare.
 
 ### Performance
 - [ ] Aggiungere `useMemo`/`useCallback` negli screen con liste e computazioni ripetute
