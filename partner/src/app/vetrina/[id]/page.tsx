@@ -3,7 +3,7 @@
 import { useId, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useI18n } from '@/lib/i18n';
+import { fill, useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import { showcaseDishes, useDishes } from '@/lib/dishes';
 import { hasBooking, normalizeUrl, useShowcases, type ShowcaseDraft } from '@/lib/showcases';
@@ -739,8 +739,7 @@ export default function ShowcaseEditorPage() {
             ) : (
               <>
                 <p className="mb-3 text-xs text-gray-500">
-                  {draft.dishIds.length} {d.editor.dishesOnOf} {catalog.length}{' '}
-                  {d.editor.dishesOnLabel}
+                  {fill(d.editor.dishesOn, { on: draft.dishIds.length, total: catalog.length })}
                 </p>
                 <div className="space-y-4">
                   {dishGroups.map(({ cat, dishes }) => (

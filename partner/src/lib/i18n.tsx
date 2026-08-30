@@ -23,6 +23,14 @@ const I18nContext = createContext<I18nState>({
   d: it,
 });
 
+// Frasi che contengono un valore: nel dizionario stanno intere, col posto del
+// valore segnato da un nome fra graffe. Montarle a pezzi nel JSX vorrebbe dire
+// tenere preposizioni sciolte nel dizionario ("di", "su"), che in un'altra
+// lingua possono finire da tutt'altra parte della frase o sparire.
+export function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (whole, name) => String(values[name] ?? whole));
+}
+
 export function useI18n() {
   return useContext(I18nContext);
 }
