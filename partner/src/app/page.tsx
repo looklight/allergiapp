@@ -57,7 +57,7 @@ export default function ShowcasesPage() {
   return (
     <div>
       <h1 className="mb-2 text-xl font-semibold md:text-2xl">{d.home.title}</h1>
-      <p className="mb-8 max-w-xl text-sm text-gray-600">{d.home.intro}</p>
+      <p className="mb-8 max-w-2xl text-balance text-sm text-gray-600">{d.home.intro}</p>
 
       {!showcases ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>

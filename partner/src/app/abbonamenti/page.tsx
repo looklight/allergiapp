@@ -17,7 +17,7 @@ export default function SubscriptionsPage() {
           {d.common.comingSoon}
         </span>
       </div>
-      <p className="mb-8 max-w-xl text-sm text-gray-600">{d.subs.intro}</p>
+      <p className="mb-8 max-w-2xl text-balance text-sm text-gray-600">{d.subs.intro}</p>
 
       {!showcases ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>
