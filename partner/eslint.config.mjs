@@ -17,9 +17,8 @@ const eslintConfig = [
     // dimensioni fisse a una replica che deve somigliare all'app.
     files: [
       'src/components/preview/**',
-      'src/components/DishForm.tsx',
+      'src/components/dishes/**',
       'src/app/vetrina/**',
-      'src/app/piatti/**',
     ],
     rules: { '@next/next/no-img-element': 'off' },
   },
