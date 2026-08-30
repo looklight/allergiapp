@@ -316,7 +316,7 @@ export function useDishes() {
     const next = [...(dishes ?? [])];
     next.splice(index, 0, dish);
     persist(next);
-    attachDishToShowcases(dish.id, showcaseIds);
+    setDishShowcases(dish.id, showcaseIds);
   }
 
   return { dishes, create, update, remove, restore };
@@ -334,12 +334,19 @@ function detachDishFromShowcases(dishId: string) {
   rewriteShowcases((s) => ({ ...s, dishIds: s.dishIds.filter((id) => id !== dishId) }));
 }
 
-function attachDishToShowcases(dishId: string, showcaseIds: string[]) {
-  rewriteShowcases((s) =>
-    showcaseIds.includes(s.id) && !s.dishIds.includes(dishId)
-      ? { ...s, dishIds: [...s.dishIds, dishId] }
-      : s
-  );
+// Accende un piatto esattamente nelle vetrine elencate e lo spegne nelle
+// altre, in una scrittura sola: le caselle "In vetrina" del gestionale ne
+// cambiano più d'una insieme, e chiamare setDishOn in fila lavorerebbe ogni
+// volta su uno stato già vecchio.
+export function setDishShowcases(dishId: string, showcaseIds: string[]) {
+  rewriteShowcases((s) => {
+    const on = showcaseIds.includes(s.id);
+    if (on === s.dishIds.includes(dishId)) return s;
+    return {
+      ...s,
+      dishIds: on ? [...s.dishIds, dishId] : s.dishIds.filter((id) => id !== dishId),
+    };
+  });
 }
 
 // Piatti accesi in una vetrina, nell'ordine del catalogo (che è l'ordine in

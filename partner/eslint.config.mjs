@@ -11,11 +11,16 @@ const eslintConfig = [
   { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'] },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    // L'anteprima replica la scheda dell'app e mostra foto che l'utente ha
-    // appena caricato, ridimensionate nel browser e tenute come data-URL:
-    // next/image non le ottimizzerebbe comunque e imporrebbe dimensioni fisse
-    // a una replica che deve somigliare all'app, non essere una pagina web.
-    files: ['src/components/preview/**', 'src/app/vetrina/**'],
+    // Ovunque si mostrino le foto dei piatti: sono immagini che il partner ha
+    // appena caricato, ridimensionate nel browser e tenute come data-URL.
+    // next/image non le ottimizzerebbe comunque, e nell'anteprima imporrebbe
+    // dimensioni fisse a una replica che deve somigliare all'app.
+    files: [
+      'src/components/preview/**',
+      'src/components/DishForm.tsx',
+      'src/app/vetrina/**',
+      'src/app/piatti/**',
+    ],
     rules: { '@next/next/no-img-element': 'off' },
   },
 ];

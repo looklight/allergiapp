@@ -16,6 +16,16 @@ function StorefrontIcon({ className }: { className?: string }) {
   );
 }
 
+// Piatto visto dall'alto: al posto di posate che a 20px diventano un groviglio
+function PlateIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.5" />
+    </svg>
+  );
+}
+
 function CardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -41,6 +51,7 @@ export default function Nav() {
 
   const items = [
     { href: '/', label: d.nav.showcase, Icon: StorefrontIcon },
+    { href: '/piatti', label: d.nav.dishes, Icon: PlateIcon },
     { href: '/abbonamenti', label: d.nav.subscriptions, Icon: CardIcon },
     { href: '/account', label: d.nav.account, Icon: UserIcon },
   ];
