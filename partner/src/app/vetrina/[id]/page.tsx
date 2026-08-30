@@ -17,6 +17,10 @@ import LinkPill from '@/components/LinkPill';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
 
+// Sotto questa soglia la griglia si guarda tutta con un colpo d'occhio e un
+// campo di ricerca sarebbe solo un ingombro in più
+const DISH_SEARCH_FROM = 12;
+
 function ViewerChips({
   viewer,
   onToggle,
@@ -231,6 +235,7 @@ export default function ShowcaseEditorPage() {
   // Il catalogo è del partner: la vetrina dice solo quali piatti sono accesi
   const { dishes: catalog } = useDishes();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [dishQuery, setDishQuery] = useState('');
   const [viewer, setViewer] = useState<ViewerNeeds>(NO_VIEWER);
   const [simOpen, setSimOpen] = useState(false);
   // Link accesi in questa sessione ma ancora vuoti: quelli con contenuto
@@ -391,13 +396,18 @@ export default function ShowcaseEditorPage() {
   }
 
   // Tutto il catalogo, accesi e spenti: se mostrasse solo gli accesi, una
-  // vetrina nuova non avrebbe niente da accendere.
+  // vetrina nuova non avrebbe niente da accendere. Con un catalogo lungo
+  // però trovare un piatto da accendere significa scorrere un muro, e la
+  // ricerca lo riduce a quello che si sta cercando.
+  const dishSearch = dishQuery.trim().toLowerCase();
+  const visibleDishes =
+    dishSearch === '' ? catalog : catalog.filter((dish) => dish.name.toLowerCase().includes(dishSearch));
   // Senza categoria per primi, poi le categorie nell'ordine del set
   const dishGroups = [
-    { cat: null, dishes: catalog.filter((dish) => dish.category === '') },
+    { cat: null, dishes: visibleDishes.filter((dish) => dish.category === '') },
     ...DISH_CATEGORIES.map((cat) => ({
       cat: cat as (typeof DISH_CATEGORIES)[number] | null,
-      dishes: catalog.filter((dish) => dish.category === cat.code),
+      dishes: visibleDishes.filter((dish) => dish.category === cat.code),
     })),
   ].filter((g) => g.dishes.length > 0);
 
@@ -741,76 +751,97 @@ export default function ShowcaseEditorPage() {
                 <p className="mb-3 text-xs text-gray-500">
                   {fill(d.editor.dishesOn, { on: draft.dishIds.length, total: catalog.length })}
                 </p>
-                <div className="space-y-4">
-                  {dishGroups.map(({ cat, dishes }) => (
-                    <div key={cat?.code ?? 'none'}>
-                      {cat && (
-                        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                          {cat[locale]}
-                        </p>
-                      )}
-                      <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-3">
-                        {dishes.map((dish) => {
-                          const on = draft.dishIds.includes(dish.id);
-                          return (
-                            <button
-                              key={dish.id}
-                              type="button"
-                              role="switch"
-                              aria-checked={on}
-                              onClick={() => setDishOn(showcaseId, dish.id, !on)}
-                              className="flex flex-col items-center gap-1.5"
-                            >
-                              <span className="relative block">
-                                {/* Spento: foto smorzata e nome grigio. Si legge
-                                    a colpo d'occhio senza etichette da leggere. */}
-                                {dish.photoUrl !== '' ? (
-                                  <img
-                                    src={dish.photoUrl}
-                                    alt=""
-                                    className={`h-16 w-16 rounded-full object-cover transition ${
-                                      on ? '' : 'opacity-40 grayscale'
-                                    }`}
-                                  />
-                                ) : (
+
+                {catalog.length > DISH_SEARCH_FROM && (
+                  <div className="mb-4 flex items-center gap-2 rounded-lg border border-gray-300 px-3 focus-within:border-gray-900">
+                    <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="M20 20l-3.5-3.5" />
+                    </svg>
+                    <input
+                      type="search"
+                      value={dishQuery}
+                      onChange={(e) => setDishQuery(e.target.value)}
+                      placeholder={d.dishes.searchPlaceholder}
+                      className="w-full bg-transparent py-2 text-sm focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                {dishGroups.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-gray-500">{d.dishes.noResults}</p>
+                ) : (
+                  <div className="space-y-4">
+                    {dishGroups.map(({ cat, dishes }) => (
+                      <div key={cat?.code ?? 'none'}>
+                        {cat && (
+                          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+                            {cat[locale]}
+                          </p>
+                        )}
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-3">
+                          {dishes.map((dish) => {
+                            const on = draft.dishIds.includes(dish.id);
+                            return (
+                              <button
+                                key={dish.id}
+                                type="button"
+                                role="switch"
+                                aria-checked={on}
+                                onClick={() => setDishOn(showcaseId, dish.id, !on)}
+                                className="flex flex-col items-center gap-1.5"
+                              >
+                                <span className="relative block">
+                                  {/* Spento: foto smorzata e nome grigio. Si legge
+                                      a colpo d'occhio senza etichette da leggere. */}
+                                  {dish.photoUrl !== '' ? (
+                                    <img
+                                      src={dish.photoUrl}
+                                      alt=""
+                                      className={`h-16 w-16 rounded-full object-cover transition ${
+                                        on ? '' : 'opacity-40 grayscale'
+                                      }`}
+                                    />
+                                  ) : (
+                                    <span
+                                      className={`flex h-16 w-16 items-center justify-center rounded-full border border-dashed text-gray-400 transition ${
+                                        on ? 'border-gray-400' : 'border-gray-300 opacity-50'
+                                      }`}
+                                    >
+                                      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
+                                        <circle cx="12" cy="13" r="3.5" />
+                                      </svg>
+                                    </span>
+                                  )}
+                                  {/* Il segno di stato: acceso pieno, spento un
+                                      cerchio vuoto che dice che si può accendere */}
                                   <span
-                                    className={`flex h-16 w-16 items-center justify-center rounded-full border border-dashed text-gray-400 transition ${
-                                      on ? 'border-gray-400' : 'border-gray-300 opacity-50'
+                                    className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white transition-colors ${
+                                      on ? 'bg-[#4CAF50] text-white' : 'bg-gray-200 text-transparent'
                                     }`}
                                   >
-                                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
-                                      <circle cx="12" cy="13" r="3.5" />
+                                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M5 12.5l4.5 4.5L19 7" />
                                     </svg>
                                   </span>
-                                )}
-                                {/* Il segno di stato: acceso pieno, spento un
-                                    cerchio vuoto che dice che si può accendere */}
-                                <span
-                                  className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white transition-colors ${
-                                    on ? 'bg-[#4CAF50] text-white' : 'bg-gray-200 text-transparent'
-                                  }`}
-                                >
-                                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 12.5l4.5 4.5L19 7" />
-                                  </svg>
                                 </span>
-                              </span>
-                              <span
-                                className={`w-full truncate text-center text-xs ${
-                                  on ? 'font-medium text-gray-900' : 'text-gray-400'
-                                }`}
-                                title={dish.name}
-                              >
-                                {dish.name}
-                              </span>
-                            </button>
-                          );
-                        })}
+                                <span
+                                  className={`w-full truncate text-center text-xs ${
+                                    on ? 'font-medium text-gray-900' : 'text-gray-400'
+                                  }`}
+                                  title={dish.name}
+                                >
+                                  {dish.name}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </div>
