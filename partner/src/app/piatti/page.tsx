@@ -8,6 +8,8 @@ import { useI18n } from '@/lib/i18n';
 import { setDishShowcases, showcasesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useShowcases } from '@/lib/showcases';
 import { DISH_CATEGORIES } from '@/lib/categories';
+import { ALLERGENS } from '@/lib/allergens';
+import { DIETS } from '@/lib/diets';
 import DishRow from '@/components/dishes/DishRow';
 import DishPanel from '@/components/dishes/DishPanel';
 import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
@@ -20,6 +22,11 @@ export default function DishesPage() {
   const [query, setQuery] = useState('');
   // null = tutte le categorie; '' = i piatti senza categoria
   const [category, setCategory] = useState<string | null>(null);
+  // Allergeni contenuti ed esigenze dichiarate: dentro ogni gruppo basta che
+  // ne torni uno (cercare "latte o uova"), fra i due gruppi valgono entrambi
+  const [allergens, setAllergens] = useState<string[]>([]);
+  const [diets, setDiets] = useState<string[]>([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // 'new' = pannello aperto su un piatto da creare; un id = su quello
   const [editing, setEditing] = useState<'new' | string | null>(null);
   const [deleting, setDeleting] = useState<Dish | null>(null);
@@ -32,6 +39,10 @@ export default function DishesPage() {
   // Punto fermo dove torna il fuoco quando il toast se ne va: la riga da cui
   // era partito è stata eliminata
   const createButton = useRef<HTMLButtonElement>(null);
+
+  function toggleFilter(code: string, list: string[], setList: (next: string[]) => void) {
+    setList(list.includes(code) ? list.filter((c) => c !== code) : [...list, code]);
+  }
 
   function saveDish(data: Omit<Dish, 'id'>, showcaseIds: string[]) {
     const id = editing === 'new' ? create(data).id : editing;
@@ -70,10 +81,24 @@ export default function DishesPage() {
   // quella selezionata il filtro resterebbe acceso su un criterio invisibile
   const activeCategory =
     category !== null && usedCategories.some((cat) => cat.code === category) ? category : null;
+  // Come per le categorie: si elencano solo gli allergeni e le esigenze che
+  // compaiono davvero nel catalogo, non tutti e venti
+  const usedAllergens = ALLERGENS.filter((a) =>
+    (dishes ?? []).some((dish) => dish.allergens.includes(a.code))
+  );
+  const usedDiets = DIETS.filter((t) => (dishes ?? []).some((dish) => dish.dietTags.includes(t.code)));
+  // Correggendo un piatto può sparire l'ultimo allergene di un filtro acceso:
+  // come per le categorie, il criterio diventato invisibile decade
+  const activeAllergens = allergens.filter((code) => usedAllergens.some((a) => a.code === code));
+  const activeDiets = diets.filter((code) => usedDiets.some((t) => t.code === code));
+  const activeFilters = activeAllergens.length + activeDiets.length;
+
   const filtered = (dishes ?? []).filter(
     (dish) =>
       (activeCategory === null || dish.category === activeCategory) &&
-      (search === '' || dish.name.toLowerCase().includes(search))
+      (search === '' || dish.name.toLowerCase().includes(search)) &&
+      (activeAllergens.length === 0 || activeAllergens.some((code) => dish.allergens.includes(code))) &&
+      (activeDiets.length === 0 || activeDiets.some((code) => dish.dietTags.includes(code)))
   );
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
   // Un piatto nuovo nasce acceso ovunque: chi ha un locale solo non deve
@@ -122,6 +147,27 @@ export default function DishesPage() {
                 className="w-full bg-transparent py-2 text-sm focus:outline-none"
               />
             </div>
+            {(usedAllergens.length > 0 || usedDiets.length > 0) && (
+              <button
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                aria-expanded={filtersOpen}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  activeFilters > 0 || filtersOpen
+                    ? 'border-gray-900 text-gray-900'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 5h18l-7 8v5.5l-4 2V13z" />
+                </svg>
+                <span className="hidden sm:inline">{d.dishes.filters}</span>
+                {activeFilters > 0 && (
+                  <span className="rounded-full bg-gray-900 px-1.5 text-[11px] font-medium text-white">
+                    {activeFilters}
+                  </span>
+                )}
+              </button>
+            )}
             <button
               ref={createButton}
               onClick={() => setEditing('new')}
@@ -152,6 +198,78 @@ export default function DishesPage() {
               </button>
             ))}
           </div>
+          )}
+
+          {/* Il pannello dei filtri: chiuso finché non serve, perché venti pill
+              sempre aperte sono più ingombro che aiuto */}
+          {filtersOpen && (
+            <div className="mb-4 space-y-3 rounded-2xl border border-gray-200 bg-white p-4">
+              {usedAllergens.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+                    {d.dishes.filterAllergens}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {usedAllergens.map((a) => {
+                      const selected = activeAllergens.includes(a.code);
+                      return (
+                        <button
+                          key={a.code}
+                          onClick={() => toggleFilter(a.code, allergens, setAllergens)}
+                          aria-pressed={selected}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                            selected
+                              ? 'border-[#FFE082] bg-[#FFF8E1] text-[#8D6E00]'
+                              : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                          }`}
+                        >
+                          {a[locale]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {usedDiets.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+                    {d.dishes.filterDiets}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {usedDiets.map((t) => {
+                      const selected = activeDiets.includes(t.code);
+                      return (
+                        <button
+                          key={t.code}
+                          onClick={() => toggleFilter(t.code, diets, setDiets)}
+                          aria-pressed={selected}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                            selected
+                              ? 'border-[#C8E6C9] bg-[#E8F5E9] text-[#2E7D32]'
+                              : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                          }`}
+                        >
+                          {t[locale]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {activeFilters > 0 && (
+                <button
+                  onClick={() => {
+                    setAllergens([]);
+                    setDiets([]);
+                  }}
+                  className="text-xs font-medium text-gray-500 underline underline-offset-2 hover:text-gray-900"
+                >
+                  {d.dishes.filtersClear}
+                </button>
+              )}
+            </div>
           )}
 
           {/* Intestazione delle colonne: solo da tablet in su, sotto le righe
