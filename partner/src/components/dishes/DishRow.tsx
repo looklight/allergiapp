@@ -4,7 +4,7 @@
 // capire dove sta. Su telefono le colonne spariscono e i loro dati tornano una
 // riga di testo sotto al nome, perché una tabella a cinque colonne su 380px
 // non si legge.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import type { Dish } from '@/lib/dishes';
 import type { Showcase } from '@/lib/showcases';
@@ -12,9 +12,12 @@ import { allergenName } from '@/lib/allergens';
 import { dietName } from '@/lib/diets';
 import { categoryName } from '@/lib/categories';
 
-// Quante pill stanno nella colonna prima di contare le altre. Sei perché la
-// colonna ora è elastica e su uno schermo normale ce ne stanno due file.
-const MAX_CHIPS = 6;
+// Le pill occupano due righe piene e poi si contano quelle che restano fuori.
+// Un numero fisso non funzionerebbe: "Glutine" e "Per intolleranti
+// all'istamina" occupano spazi diversissimi, e la colonna è elastica.
+// 20px per riga (11px di testo su interlinea 16 + 2 di padding sopra e sotto)
+// più i 4 del gap: due righe fanno 44.
+const TWO_ROWS = 'max-h-11';
 
 function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
   return (
@@ -69,10 +72,27 @@ export default function DishRow({
     ...dish.allergens.map((code) => ({ code, label: allergenName(code, locale), allergen: true })),
     ...dish.dietTags.map((code) => ({ code, label: dietName(code, locale), allergen: false })),
   ];
-  // Nascondere un solo elemento dietro un "+1" non fa guadagnare spazio e
-  // costringe a un clic per leggere una parola
-  const chips = allTags || tags.length <= MAX_CHIPS + 1 ? tags : tags.slice(0, MAX_CHIPS);
-  const extra = tags.length - chips.length;
+  // Quante pill restano fuori dalle due righe. Si misura DOPO aver disegnato,
+  // ma le pill restano tutte nel DOM e il contatore è fuori dal flusso: così
+  // la misura non cambia ciò che misura, che sarebbe un'altalena senza fine.
+  const cell = useRef<HTMLSpanElement>(null);
+  const [extra, setExtra] = useState(0);
+
+  useEffect(() => {
+    const node = cell.current;
+    if (!node) return;
+    function measure() {
+      if (!node) return;
+      const limit = node.clientHeight;
+      const chips = [...node.querySelectorAll<HTMLElement>('[data-chip]')];
+      setExtra(chips.filter((chip) => chip.offsetTop + chip.offsetHeight > limit + 1).length);
+    }
+    measure();
+    // la colonna è elastica: allargando la finestra ne rientrano di più
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [tags.length, allTags]);
 
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -119,18 +139,20 @@ export default function DishRow({
       </span>
 
       <span
-        className={`hidden min-w-0 flex-[3] flex-wrap gap-1 transition lg:flex ${
-          on === false ? 'opacity-50' : ''
-        }`}
+        ref={cell}
+        className={`relative hidden min-w-0 flex-[3] flex-wrap gap-1 overflow-hidden transition lg:flex ${
+          allTags ? '' : TWO_ROWS
+        } ${on === false ? 'opacity-50' : ''}`}
       >
-        {chips.length === 0 ? (
+        {tags.length === 0 ? (
           <span className="text-xs text-gray-400">—</span>
         ) : (
           <>
-            {chips.map(({ code, label, allergen }) => (
+            {tags.map(({ code, label, allergen }) => (
               <span
                 key={`${allergen ? 'a' : 'd'}-${code}`}
-                className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                data-chip
+                className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ${
                   allergen ? 'bg-[#FFF8E1] text-[#8D6E00]' : 'bg-[#E8F5E9] text-[#2E7D32]'
                 }`}
               >
@@ -138,11 +160,18 @@ export default function DishRow({
               </span>
             ))}
             {(extra > 0 || allTags) && (
+              /* Sopra le pill e non in fila: entrando nel flusso ruberebbe il
+                 posto a una pill, e a quel punto ne resterebbe fuori un'altra.
+                 La sfumatura dice che sotto il conteggio il testo continua. */
               <button
                 onClick={() => setAllTags(!allTags)}
                 aria-expanded={allTags}
                 aria-label={dish.name}
-                className="rounded-full px-1 text-[11px] text-gray-400 transition-colors hover:text-gray-700"
+                className={`text-[11px] leading-5 text-gray-400 transition-colors hover:text-gray-700 ${
+                  allTags
+                    ? 'px-1'
+                    : 'absolute bottom-0 right-0 bg-gradient-to-l from-white via-white pl-6'
+                }`}
               >
                 {allTags ? '−' : `+${extra}`}
               </button>
