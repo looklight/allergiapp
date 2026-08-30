@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Aggiunge parametro di ricerca alla RPC get_profiles_with_email
 
 CREATE OR REPLACE FUNCTION get_profiles_with_email(

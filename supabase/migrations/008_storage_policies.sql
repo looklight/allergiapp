@@ -1,3 +1,7 @@
+-- STATO: non verificabile dallo schema (verificato il 2026-08-30):
+-- non crea tabelle, colonne, funzioni, indici o policy — tocca
+-- permessi, dati o impostazioni, che non lasciano traccia
+-- confrontabile con questo file.
 -- Assicura che le policy RLS per il bucket "images" esistano
 -- (potrebbero mancare se non create via Dashboard)
 

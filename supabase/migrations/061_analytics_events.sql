@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 061: tabella analytics_events + RPC track_event
 -- Sostituisce/affianca Firebase Analytics per gli eventi nuovi
 -- (vedi memory project_firebase_removal: niente nuovi eventi su Firebase,

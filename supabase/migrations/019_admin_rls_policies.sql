@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 019: Policy RLS per operazioni admin
 -- L'admin dashboard necessita di DELETE ristoranti/recensioni e UPDATE report,
 -- ma le policy attuali permettono queste operazioni solo ai rispettivi owner.

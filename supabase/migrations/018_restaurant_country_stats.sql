@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Stats aggregate per i ristoranti, opzionalmente filtrate per paese.
 -- Usata dalla pagina admin ristoranti.
 

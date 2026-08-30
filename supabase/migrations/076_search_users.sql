@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 076: ricerca utenti per la pagina Community (discovery follow).
 --
 -- Sottostringa case-insensitive su username, prefissi in testa. Esclusi

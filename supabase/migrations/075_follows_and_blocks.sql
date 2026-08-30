@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 075: grafo social minimo — follow utenti + blocco.
 --
 -- follows: chi segue chi. Scritture dirette da supabase-js (niente RPC di

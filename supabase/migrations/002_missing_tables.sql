@@ -1,3 +1,11 @@
+-- STATO: APPLICATA SOLO IN PARTE (verificato sullo schema il 2026-08-30).
+-- La tabella favorites in produzione NON ha la forma dichiarata qui:
+-- niente colonna id, nessuna chiave primaria, nessuna foreign key,
+-- nessun UNIQUE(user_id, restaurant_id) e nessuno dei due indici.
+-- Ha solo user_id, restaurant_id, created_at. Conseguenze reali:
+-- preferiti duplicabili, righe orfane possibili, e ogni lettura dei
+-- preferiti di un utente è una scansione completa della tabella.
+-- dish_likes invece è stata creata e poi rimossa dalla 027.
 -- Tabelle mancanti dalla migration iniziale
 
 -- ============================================

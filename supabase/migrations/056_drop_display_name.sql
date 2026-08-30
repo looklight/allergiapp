@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 056: cleanup finale del refactor username unico (Step 4).
 -- Rimuove display_name dalla tabella profiles e dalle RPC che la referenziano.
 -- Setta username NOT NULL.

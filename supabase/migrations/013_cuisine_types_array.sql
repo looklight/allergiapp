@@ -1,3 +1,6 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
+-- Alcuni oggetti non ci sono più perché rimossi da migration
+-- successive: funzione get_restaurants_by_allergens.
 -- Migrazione: cuisine_type TEXT → cuisine_types TEXT[]
 -- Supporto multi-tag per tipo di cucina (es. "sushi" + "japanese")
 

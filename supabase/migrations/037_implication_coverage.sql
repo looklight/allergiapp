@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Aggiunge logica di implicazioni alla RPC get_restaurants_for_my_needs.
 -- Es: una review vegana copre anche eggs, milk, fish, crustaceans, mollusks, vegetarian.
 -- Le implicazioni sono definite inline nella CTE `implications`.

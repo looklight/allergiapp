@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 071: RPC per aggiornare serves_food su una struttura lodging
 --
 -- Contesto: il toggle "ha un ristorante aperto al pubblico?" oggi viene settato

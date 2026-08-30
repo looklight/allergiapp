@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 048: Rimuove la feature "colore profilo".
 -- La colonna profiles.profile_color e tutti i suoi riferimenti negli RPC vengono eliminati.
 -- Nessun dato utente viene perso: la colonna era opzionale e ridondante (avatar + nickname coprono la personalizzazione).

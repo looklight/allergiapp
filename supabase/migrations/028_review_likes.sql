@@ -1,3 +1,7 @@
+-- STATO: APPLICATA SOLO IN PARTE (verificato sullo schema il 2026-08-30).
+-- Manca idx_review_likes_user_id, e nessuna migration lo elimina.
+-- In produzione c'è idx_review_likes_review_user, creato dalla 039,
+-- che copre le stesse letture: non è un buco di prestazioni.
 -- Migration 028: review_likes
 -- Tabella per i like alle recensioni + colonna denormalizzata likes_count
 

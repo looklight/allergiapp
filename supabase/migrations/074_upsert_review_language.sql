@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 074: upsert_review aggiorna anche language sul ramo UPDATE.
 --
 -- Bug storico: la lingua veniva scritta solo all'insert; chi modificava una

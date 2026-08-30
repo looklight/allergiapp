@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 062: "Ultimo accesso" reale (last_seen_at)
 --
 -- Problema: la dashboard admin mostrava auth.users.last_sign_in_at come

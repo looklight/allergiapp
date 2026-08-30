@@ -1,3 +1,7 @@
+-- STATO: non verificabile dallo schema (verificato il 2026-08-30):
+-- non crea tabelle, colonne, funzioni, indici o policy — tocca
+-- permessi, dati o impostazioni, che non lasciano traccia
+-- confrontabile con questo file.
 -- 012: Allinea codici allergeni SQL ai TypeScript ID + fix RLS reports
 
 -- ─── Fix codici allergeni nella tabella di riferimento ─────────────────────

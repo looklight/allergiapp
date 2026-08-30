@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Feature: "Per le mie esigenze" — filtro ristoranti per compatibilita allergeni
 -- Nuova RPC con matching parziale (overlap) + punteggio copertura
 -- Indice composito per performance subquery

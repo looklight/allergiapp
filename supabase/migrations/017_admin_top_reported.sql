@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- RPC per ottenere i ristoranti con piu segnalazioni pending (top N).
 -- Evita di scaricare tutte le segnalazioni client-side.
 

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 078: risoluzione username → id per il deep link profilo /u/{username}.
 --
 -- Guardia server-side: mai risolvere profili anonimi (il link condiviso di un

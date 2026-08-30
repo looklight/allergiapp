@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 083: Gate versione minima (forzare / suggerire l'aggiornamento dell'app)
 --
 -- Riga singola di configurazione remota letta dall'app a ogni avvio. Serve come

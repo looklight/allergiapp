@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 070: emoji per le liste
 --
 -- Ogni lista custom puo' avere un'emoji (stile Google Maps): leggera, nessun

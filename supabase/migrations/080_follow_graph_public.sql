@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 080: grafo follow visibile — conteggi e liste pubbliche.
 --
 -- Rovescia la scelta della mig 075 ("contatori pubblici volutamente

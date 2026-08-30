@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 069: Liste (collezioni) di ristoranti
 --
 -- Evoluzione dei "preferiti" in liste stile Google Maps: l'utente puo' creare

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 082: contatori d'uso ANONIMI (nessun dato personale).
 --
 -- Contesto: gli eventi analytics_events (mig 061) sono consent-gated lato

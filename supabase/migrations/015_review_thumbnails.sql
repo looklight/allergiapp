@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Sostituisce photo_urls TEXT[] con photos JSONB.
 -- Ogni entry: {"url": "https://...", "thumbnailUrl": "https://..."}
 -- Elimina il rischio di array paralleli fuori sync.

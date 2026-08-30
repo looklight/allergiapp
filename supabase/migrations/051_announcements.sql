@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 051: Tabella annunci in-app
 -- Permette all'admin di pubblicare messaggi popup agli utenti.
 -- Un solo annuncio può essere attivo alla volta.

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 032: Server-side sorted + paginated reviews
 -- Sostituisce il caricamento client-side di TUTTE le recensioni.
 -- Supporta ordinamento per: recent, rating, rating-asc, likes, relevance.

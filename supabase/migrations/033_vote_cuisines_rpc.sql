@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 033: Atomic vote cuisines RPC
 -- Sostituisce il pattern non atomico DELETE + INSERT lato client.
 -- Una singola transazione: se qualcosa fallisce, nessun dato viene perso.

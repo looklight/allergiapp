@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Fix: search_path mancante su funzioni trigger SECURITY DEFINER.
 -- Quando il trigger gira sotto ruolo supabase_auth_admin (cascade delete da
 -- auth.admin.deleteUser), il search_path non include "public" e le reference

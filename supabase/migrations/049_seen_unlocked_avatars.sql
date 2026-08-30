@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 049: Sistema di notifica per nuovi avatar sbloccati + cleanup catalogo.
 --
 -- 1) Aggiunge il tracking degli avatar che l'utente ha già visto come "sbloccati"

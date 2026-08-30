@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Sistema tag cucina validati dalla community
 -- Ogni utente può votare per i tag che ritiene appropriati per un ristorante
 

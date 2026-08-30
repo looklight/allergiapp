@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Fix: get_restaurants_for_my_needs deve restituire latitude/longitude espliciti
 -- (come get_nearby_restaurants), non location GEOGRAPHY.
 -- La migrazione 037 ha regredito questa correzione introdotta in 021.

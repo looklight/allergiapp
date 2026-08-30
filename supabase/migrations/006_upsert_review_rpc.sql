@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- RPC atomica per creare o aggiornare una review con piatti
 -- Tutte le operazioni DB in una singola transaction
 

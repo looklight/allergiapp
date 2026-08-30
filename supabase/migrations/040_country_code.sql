@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Aggiunge colonna country_code (ISO 3166-1 alpha-2) per identificare il paese
 -- in modo indipendente dalla lingua del dispositivo.
 

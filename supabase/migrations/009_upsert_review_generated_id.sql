@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Aggiunge parametro p_generated_id alla RPC upsert_review
 -- Permette al client di pre-generare l'UUID della review PRIMA dell'upload foto,
 -- così il path Storage e l'ID review coincidono fin dall'inizio.

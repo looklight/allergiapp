@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Aggiunge supported_allergens e supported_diets alla tabella restaurants.
 -- Questi campi aggregano le restrizioni coperte dalle recensioni esistenti,
 -- permettendo a get_pins_in_bounds di restituire dati di copertura per ogni pin

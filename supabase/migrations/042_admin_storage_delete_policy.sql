@@ -1,3 +1,7 @@
+-- STATO: non verificabile dallo schema (verificato il 2026-08-30):
+-- non crea tabelle, colonne, funzioni, indici o policy — tocca
+-- permessi, dati o impostazioni, che non lasciano traccia
+-- confrontabile con questo file.
 -- 042: Policy mancanti per operazioni admin
 --
 -- 1. Storage: senza questa policy, storageCleanup.ts fallisce silenziosamente

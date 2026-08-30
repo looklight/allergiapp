@@ -1,3 +1,5 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
+-- La colonna non esiste più perché la 027 ha eliminato review_dishes.
 -- Aggiunge thumbnail_url a review_dishes per immagini ottimizzate nelle liste
 ALTER TABLE review_dishes ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
 

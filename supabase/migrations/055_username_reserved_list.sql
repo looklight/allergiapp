@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 055: amplia la reserved list di is_username_available.
 -- Aggiunge:
 --   - substring block per 'user' e 'utente' (anti-confusione con auto-generati)

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 053: username unico ASCII
 -- Aggiunge profiles.username come identificatore unico (case-insensitive).
 -- Twitter-style: casing preservata in storage, unicità su lower(username).

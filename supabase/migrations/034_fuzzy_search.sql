@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 034: Fuzzy search per nome ristorante (pg_trgm + GIN index)
 -- Usato dall'autocomplete nella barra di ricerca mappa
 

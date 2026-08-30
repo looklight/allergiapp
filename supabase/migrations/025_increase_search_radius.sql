@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migrazione: aumenta raggio massimo di ricerca da 50km a 500km
 
 -- ═══ 1. get_nearby_restaurants ═══════════════════════════════════════════════

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Funzione RPC per ottenere profili con email (solo per admin).
 -- Usa SECURITY DEFINER per accedere a auth.users, che non e' accessibile dal client.
 

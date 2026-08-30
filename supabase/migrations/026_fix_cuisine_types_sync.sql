@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Fix trigger sync_restaurant_cuisine_types:
 -- 1. SECURITY DEFINER per bypassare RLS su restaurants (UPDATE)
 -- 2. ORDER BY COUNT(*) DESC così cuisine_types[1] è sempre il più votato

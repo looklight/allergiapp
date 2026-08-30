@@ -1,3 +1,6 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
+-- Alcuni oggetti non ci sono più perché rimossi da migration
+-- successive: reviews.photo_urls.
 -- Semplificazione review: foto + lingua source per futura traduzione
 
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photo_urls TEXT[] DEFAULT '{}';

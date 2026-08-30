@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Pin leggeri (id + coordinate) limitati a un bounding box.
 -- Sostituisce get_all_restaurant_positions per il caricamento viewport-based.
 -- Usa l'indice spaziale su location (geography) per performance O(log n).

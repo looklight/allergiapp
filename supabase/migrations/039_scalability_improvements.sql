@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 039: Scalability improvements
 -- Prepara il DB per migliaia di ristoranti e decine di migliaia di recensioni.
 

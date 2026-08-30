@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migrazione: restituisci latitude/longitude espliciti dalle RPC
 -- Elimina la dipendenza dal parsing GEOGRAPHY→GeoJSON lato client
 

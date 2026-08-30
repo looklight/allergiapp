@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 081: pin dei ristoranti recensiti dai propri seguiti
 -- (Step 2 follow: filtro mappa "Recensiti dai seguiti").
 --

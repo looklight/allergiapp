@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 030: Segnalazioni su foto menu
 -- Aggiunge menu_photo_id a reports e permette all'admin di eliminare foto del menu
 

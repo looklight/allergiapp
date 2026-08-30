@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 059: restaurant slug per URL pubblici condivisibili
 -- Aggiunge restaurants.slug come identificatore stabile per la pagina web /r/[slug].
 -- Slug generato da name + city via translitterazione ASCII + collision handling con suffix numerico.

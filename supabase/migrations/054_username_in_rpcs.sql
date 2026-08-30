@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 054: aggiunge username alle RPC che leggono profiles.
 -- Step 2 del piano in docs/unique-username-plan.md.
 -- Mantiene display_name in tutti i return per retrocompat con client esistenti.

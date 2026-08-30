@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 079: dati pubblici profilo per la pagina web /u/{username}.
 --
 -- Stesso pattern di get_restaurant_public_by_slug: una RPC che dà alla

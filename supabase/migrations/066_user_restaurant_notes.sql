@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 066: Note personali sui ristoranti preferiti
 --
 -- L'utente puo' allegare una nota privata a un ristorante che ha tra i

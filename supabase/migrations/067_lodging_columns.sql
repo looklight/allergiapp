@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 067: Faccette lodging su `restaurants` (hotel / B&B / strutture)
 --
 -- Contesto: una struttura ricettiva NON e' una tabella a parte. Un "luogo" puo'

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 058: last_seen_likes_count
 -- Snapshot del totale "like ricevuti" all'ultima apertura del profilo da parte
 -- dell'utente. Permette di calcolare unseen = currentLikes - lastSeenLikesCount

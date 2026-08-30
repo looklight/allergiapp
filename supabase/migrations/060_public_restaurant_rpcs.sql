@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 060: RPC pubbliche per la feature share ristorante
 -- Due funzioni con GRANT EXECUTE TO anon per consentire l'accesso dal landing pubblico:
 --   1. get_restaurant_by_slug(slug) -> UUID    (deep link app: slug -> id per redirect)

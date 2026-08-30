@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 072: posizioni ristoranti per lista di id (fix pin mancanti mappa profilo)
 --
 -- Contesto: la mappa profilo arricchisce recensioni/preferiti/liste con le

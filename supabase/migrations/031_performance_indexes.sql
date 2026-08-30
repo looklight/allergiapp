@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 031: Performance indexes
 -- Indexes mancanti su colonne usate nelle RLS policy e nelle query frequenti.
 -- Senza questi, PostgreSQL fa sequential scan su ogni operazione di write

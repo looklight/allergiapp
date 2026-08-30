@@ -1,3 +1,6 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
+-- Alcuni oggetti non ci sono più perché rimossi da migration
+-- successive: funzione get_restaurants_by_allergens.
 -- Funzioni RPC e viste per query complesse
 -- NOTA: versione aggiornata con plpgsql + cap parametri + google_place_id
 

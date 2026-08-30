@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Fix: SECURITY DEFINER su refresh_restaurant_restrictions e sul trigger.
 -- Senza SECURITY DEFINER, il trigger su reviews fallisce quando il cascade
 -- delete parte da auth.admin.deleteUser (ruolo supabase_auth_admin) perche'

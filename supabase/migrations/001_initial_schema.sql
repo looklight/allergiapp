@@ -1,3 +1,6 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
+-- Alcuni oggetti non ci sono più perché rimossi da migration
+-- successive: tabella review_dishes.
 -- AllergiApp - Schema iniziale Supabase
 -- Eseguire nel SQL Editor di Supabase
 

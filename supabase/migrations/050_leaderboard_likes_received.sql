@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 050: Leaderboard "Like ricevuti" + difese anti-gaming sui like.
 --
 -- 1) Sostituisce nella leaderboard la categoria "ristoranti aggiunti" con "like

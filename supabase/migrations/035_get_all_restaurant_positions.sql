@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Restituisce id + coordinate di tutti i ristoranti (query leggera per i pallini mappa)
 CREATE OR REPLACE FUNCTION get_all_restaurant_positions()
 RETURNS TABLE(id uuid, latitude double precision, longitude double precision)

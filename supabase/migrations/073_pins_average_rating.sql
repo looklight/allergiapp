@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 073: average_rating nel payload di get_pins_in_bounds.
 --
 -- I pin a zoom ravvicinato oltre il cap del fetch dettagliato (200/area)

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 068: RPC facet-aware per le faccette lodging (vedi 067)
 --
 -- Tutte le RPC che elencano luoghi leggevano `FROM restaurants` SENZA filtro di

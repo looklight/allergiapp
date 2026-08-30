@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 077: esclusione utenti bloccati DENTRO le RPC di lettura.
 --
 -- Sostituisce il filtro client-side introdotto con la feature follow (che

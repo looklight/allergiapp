@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- 027: Rimozione tabelle deprecate review_dishes e dish_likes
 -- Le foto delle recensioni sono migrate a reviews.photos (JSONB) dalla migration 015.
 -- review_dishes e dish_likes non sono più usate dal codice app.

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Migration 022: link menu su restaurants + gate upload foto menu a soli reviewer
 
 -- 1. Aggiungi colonna menu_url alla tabella restaurants

@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Hotfix post-migrazione (eseguite manualmente su Supabase, consolidate qui per documentazione)
 -- NOTA: queste policy sono GIA attive nel DB. Questo file serve come riferimento.
 

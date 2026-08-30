@@ -1,3 +1,7 @@
+-- STATO: non verificabile dallo schema (verificato il 2026-08-30):
+-- non crea tabelle, colonne, funzioni, indici o policy — tocca
+-- permessi, dati o impostazioni, che non lasciano traccia
+-- confrontabile con questo file.
 -- Chiude i warning "function_search_path_mutable" del Security Advisor: imposta un
 -- search_path fisso sulle nostre funzioni (senza, una funzione SECURITY DEFINER è
 -- esposta a search_path injection). Usiamo `public` e NON `''` perché l'estensione

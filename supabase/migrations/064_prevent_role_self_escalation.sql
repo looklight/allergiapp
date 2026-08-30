@@ -1,3 +1,4 @@
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
 -- Chiude una scalata a privilegi: la policy "Users can update their own profile"
 -- (001_initial_schema) è `FOR UPDATE USING (auth.uid() = id)` senza restrizione di
 -- colonna. Poiché la colonna `role` ('user'|'restaurant_owner'|'admin') vive in
