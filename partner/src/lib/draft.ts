@@ -135,59 +135,19 @@ function normalizeDraft(parsed: any): ShowcaseDraft {
   };
 }
 
-// Porta il localStorage alla forma corrente prima di qualsiasi lettura.
-// Gira a ogni load ed è idempotente: quando non c'è niente da spostare esce subito.
-function migrateStorage() {
-  try {
-    // 1. la vecchia bozza singola diventa la prima vetrina
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      if (!localStorage.getItem(STORAGE_KEY)) {
-        const first = { id: crypto.randomUUID(), ...JSON.parse(legacy) };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([first]));
-      }
-      localStorage.removeItem(LEGACY_KEY);
-    }
-
-    // 2. i piatti stavano dentro ogni vetrina: diventano il catalogo del
-    //    partner e la vetrina ne tiene solo gli id accesi. `available: false`
-    //    non si perde, diventa "piatto nel catalogo ma spento in quella vetrina".
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const showcases = JSON.parse(raw);
-    if (!Array.isArray(showcases) || !showcases.some((s) => Array.isArray(s?.dishes))) return;
-
-    const catalogRaw = localStorage.getItem(DISHES_KEY);
-    const parsedCatalog = catalogRaw ? JSON.parse(catalogRaw) : null;
-    const catalog: Dish[] = Array.isArray(parsedCatalog) ? parsedCatalog.map(normalizeDish) : [];
-
-    const migrated = showcases.map((showcase: any) => {
-      if (!Array.isArray(showcase?.dishes)) return showcase;
-      const dishIds: string[] = Array.isArray(showcase.dishIds) ? [...showcase.dishIds] : [];
-      for (const legacyDish of showcase.dishes) {
-        const dish = normalizeDish(legacyDish);
-        catalog.push(dish);
-        // spento solo chi era esplicitamente nascosto
-        if (legacyDish?.available !== false) dishIds.push(dish.id);
-      }
-      const migrated = { ...showcase, dishIds };
-      delete migrated.dishes; // il campo vecchio sparisce: la migrazione non si ripete
-      return migrated;
-    });
-
-    localStorage.setItem(DISHES_KEY, JSON.stringify(catalog));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-  } catch {
-    // dati corrotti: le load qui sotto ripartono vuote
-  }
-}
-
 function loadShowcases(): Showcase[] {
-  migrateStorage();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       return (JSON.parse(raw) as any[]).map((s) => ({ id: s.id, ...normalizeDraft(s) }));
+    }
+    // migrazione: la vecchia bozza singola diventa la prima vetrina
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      const first: Showcase = { id: crypto.randomUUID(), ...normalizeDraft(JSON.parse(legacy)) };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([first]));
+      localStorage.removeItem(LEGACY_KEY);
+      return [first];
     }
   } catch {
     // dati corrotti: si riparte vuoti
@@ -196,7 +156,6 @@ function loadShowcases(): Showcase[] {
 }
 
 function loadDishes(): Dish[] {
-  migrateStorage();
   try {
     const raw = localStorage.getItem(DISHES_KEY);
     if (raw) return (JSON.parse(raw) as any[]).map(normalizeDish);
