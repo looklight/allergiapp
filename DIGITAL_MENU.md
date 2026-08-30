@@ -138,9 +138,110 @@ del ristorante, col suo nome sopra.
 **Implicazioni**: qui torna utile la schermata a due colonne (originale a sinistra, traduzione a
 destra, tutto il catalogo in una passata) che per il solo portale era stata messa da parte.
 
+### 2026-08-30 — Tema 10: I gratuiti saranno la maggioranza, e sono l'inventario
+
+**Premessa (dell'utente, non una previsione mia)**: molti ristoratori useranno solo il menù
+digitale gratuito e non pagheranno mai per la scheda dentro AllergiApp.
+
+**Perché cambia le cose**: un ristoratore che compila il catalogo produce esattamente il dato che
+all'app serve e che oggi manca — allergeni dichiarati da chi cucina, strutturati come codici.
+Anche senza un euro, quel dato è nel database. Quindi il piano gratuito non è un cliente mancato:
+è il canale con cui l'app si riempie di contenuto vero.
+
+**Implicazioni**:
+- Il costo del prodotto è concentrato su chi non paga, e arriva prima dei ricavi (v. Tema 11).
+- Il portale deve essere utile con **zero locali associati**: oggi non lo è, è costruito attorno
+  alla vetrina e il claim è il cancello di tutto.
+- La vendita si sposta dentro il prodotto gratuito. Il momento naturale non è un banner ma le
+  statistiche: *"il 22% di chi ha aperto il tuo menù cercava senza glutine — vuoi che chi cerca
+  senza glutine ti trovi anche quando non è già seduto da te?"*. È una proposta che nasce da un
+  dato suo, non da un listino.
+
+### 2026-08-30 — Tema 11: Il costo è quasi tutto foto, e la pagina si genera al salvataggio
+
+**Decisione**: la pagina pubblica si **genera quando il ristoratore salva** e da lì in poi viene
+servita dalla cache al bordo. Il cliente al tavolo non tocca mai il database.
+
+**Perché**: un menù cambia raramente e viene letto continuamente. Così il costo di un menù non
+dipende da quante persone lo aprono ma da quante volte viene modificato — che è l'unico rapporto
+sostenibile con un prodotto gratuito. E la banda diventa quella della cache, non quella metrata
+di Supabase.
+
+**Implicazioni**:
+- **Le foto sono l'ordine di grandezza, tutto il resto è rumore.** Quaranta piatti con le foto
+  fatte male sono 3-4 MB a cliente; fatte bene stanno sotto i 200 KB. Servono due misure (miniatura
+  per la lista, grande solo al tocco), un formato moderno, e il caricamento delle sole visibili.
+  Oggi il portale fa la cosa peggiore: le foto sono data-URL dentro al testo salvato, quindi
+  arriverebbero tutte intere a ogni apertura. Il passaggio a Storage non è ordine, è questo.
+- Al cliente non va spedita l'applicazione: niente client Supabase, niente autenticazione, niente
+  tempo reale. Il filtro allergeni gira sui dati già dentro la pagina, quindi resta istantaneo
+  anche in una sala interrata con due tacche.
+- **Rovescio da presidiare**: se la rigenerazione fallisce dopo un salvataggio, il cliente legge un
+  menù vecchio con un prezzo sbagliato, e nessuno se ne accorge. Il portale deve confermare al
+  ristoratore che la pagina pubblica è stata aggiornata (con l'ora), altrimenti la promessa dei
+  "dieci secondi" del Tema 7 si rompe in silenzio.
+- Se un giorno servisse un limite al piano gratuito, il posto economicamente sensato sono le
+  **foto**, non i piatti né il filtro. Con la tensione dichiarata: le foto il cliente le vede, e
+  un limite visibile al tavolo mette in imbarazzo il ristoratore.
+
+### 2026-08-30 — Tema 12: Un solo progetto Supabase
+
+**Decisione**: menù e portale stanno nello **stesso progetto Supabase**, stesso schema `public`.
+La separazione si fa a livello di *servizio* — un progetto Vercel a sé per la pagina pubblica —
+non a livello di dati.
+
+**Perché**: l'identità sta in un progetto solo e il ristoratore fa un login solo; e il menù legge
+il catalogo, che è il substrato comune. Separando, o si duplicano i piatti — e allora ci sono
+**due verità sugli allergeni**, cioè la cosa che il prodotto esiste per evitare — o si chiama un
+database dall'altro a ogni lettura.
+
+**L'argomento contrario, per onestà**: due progetti gratuiti sono due quote gratuite. Ma è un
+modello di costi fragile, e soprattutto risolve un problema che il Tema 11 elimina: con la pagina
+generata al salvataggio il traffico dei clienti non passa da Supabase.
+
+**Implicazioni**: se la spinta è l'isolamento, lo strumento non è un secondo progetto. La pagina
+pubblica non ha **nessuna connessione al database** — viene generata con dentro solo i campi che
+il cliente deve vedere. È un isolamento più forte di quello che darebbero due progetti.
+
+### 2026-08-30 — Tema 13: L'indirizzo pubblico e il QR
+
+**Decisione**: indirizzo sull'apice, nella forma `allergiapp.com/menu/<slug>`, copiabile e
+trasformabile in QR dal portale.
+
+**Perché l'apice e non un sottodominio**: ogni cliente a ogni tavolo legge il nome AllergiApp
+mentre fa una cosa che gli è utile. Sui gratuiti, che saranno i più (Tema 10), è forse il ritorno
+principale. Attrito da mettere in conto: l'apice oggi è del progetto landing, che sta su un branch
+separato — si tiene l'indirizzo e si fa servire da un progetto suo con una riscrittura.
+
+**Implicazioni**:
+- **Lo slug appartiene alla vetrina, non al locale rivendicato.** Chi resta gratis non farà mai il
+  claim e non avrà nessuna riga in `restaurants`: se lo slug dipendesse da quella, il gratuito non
+  potrebbe avere un indirizzo.
+- **Lo slug finisce stampato.** Un QR viene plastificato sul tavolo e appiccicato alla vetrina:
+  cambiarlo rompe oggetti fisici già in giro per il locale. Quindi si sceglie una volta, si cambia
+  solo con un avviso esplicito, i vecchi indirizzi reindirizzano per sempre e **non si riciclano
+  mai** — o il QR di Mario porta i clienti da Giuseppe. Per `/r/` lo stesso problema era già stato
+  affrontato con gli slug ritirati.
+- **Un indirizzo per locale, non per menù.** Il QR è incollato al tavolo e non cambia a mezzogiorno:
+  carta, pranzo e bevande si scelgono *dentro* la pagina. Tutto ciò che varia sta dentro, perché il
+  supporto è fisico e costante.
+- Il QR lo genera il portale, in PNG **e in vettoriale**: chi lo porta in tipografia ha bisogno del
+  secondo, e se non glielo diamo se lo fa fare male altrove.
+- Da decidere come convivono `/menu/<slug>` e `/r/<slug>` per un locale rivendicato: sono due pagine
+  pubbliche dello stesso posto e devono almeno rimandarsi a vicenda.
+
 ---
 
 ## Aperto, non deciso
+
+**Il contenuto gratuito entra in AllergiApp?** È il bivio che discende dal Tema 10, e oggi la 700
+risponde di no: si vede in app solo ciò che sta in una vetrina `published`, cioè con abbonamento
+attivo. Le due strade sono (a) tutto dietro il muro — pulito, coerente col premium, ma si butta via
+il contenuto di chi non paga; (b) i piatti e gli allergeni visibili anche dal gratuito, mentre
+restano a pagamento le cose che servono al ristoratore (link, prenotazione, delivery, risalto,
+statistiche). La (b) sembra più forte proprio se i gratuiti saranno i più, perché altrimenti l'app
+resta con pochi ristoranti visibili e una montagna di dati fermi. Ha però implicazioni legali e di
+responsabilità che vanno pesate prima, non dopo.
 
 **Il confine del freemium.** Orientamento emerso, da riprendere in `MONETIZATION.md` quando si
 arriva ai prezzi: gratis un menù completo, piatti illimitati, filtro allergeni, QR su un nostro
