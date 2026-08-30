@@ -60,17 +60,19 @@ export default function LoginPage() {
     // creando il profilo partner sulla credenziale che c'è già.
     if (existingAccount) {
       setSubmitting(true);
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: accesso, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (signInError) {
         setError(authErrorMessage(signInError.message, d));
-      } else {
-        const { data: utente } = await supabase.auth.getUser();
-        const { error: profileError } = utente.user
-          ? await createPartnerProfile(utente.user.id, { firstName, lastName, marketing }, locale)
-          : { error: 'no session' };
+      } else if (accesso.user) {
+        // l'utente arriva già nella risposta dell'accesso: non serve richiederlo
+        const { error: profileError } = await createPartnerProfile(
+          accesso.user.id,
+          { firstName, lastName, marketing },
+          locale
+        );
         if (profileError) setError(authErrorMessage(profileError, d));
       }
       setSubmitting(false);
