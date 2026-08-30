@@ -15,6 +15,7 @@ import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
 import { hasBooking } from '@/lib/showcases';
 import type { DeliveryLink, ShowcaseDraft } from '@/lib/showcases';
+import { dishText } from '@/lib/dishes';
 import type { Dish } from '@/lib/dishes';
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
 
@@ -388,10 +389,14 @@ function MenuScreen({
                   dimmed={dishCompat(dish, viewer)?.level === 'amber'}
                 />
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#333333' }}>{dish.name}</div>
-                  {dish.description.trim() !== '' && (
+                  {/* Nella lingua del portale: il partner cambia lingua in alto
+                      e vede la sua traduzione, o l'originale dove non l'ha scritta */}
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#333333' }}>
+                    {dishText(dish, locale).name}
+                  </div>
+                  {dishText(dish, locale).description.trim() !== '' && (
                     <div style={{ fontSize: 13, color: '#666666', lineHeight: '18px', marginTop: 2 }}>
-                      {dish.description}
+                      {dishText(dish, locale).description}
                     </div>
                   )}
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 6 }}>
@@ -613,7 +618,7 @@ export default function SchedaPreview({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {dish.name}
+                      {dishText(dish, locale).name}
                     </span>
                     {dish.category !== '' && (
                       <span style={{ display: 'block', fontSize: 11, color: '#999999', marginTop: 1, textAlign: 'center' }}>

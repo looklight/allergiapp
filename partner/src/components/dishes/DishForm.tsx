@@ -5,7 +5,8 @@
 // Non disegna il proprio contenitore: lo mette chi la ospita.
 import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { type Dish } from '@/lib/dishes';
+import { useDishLanguages, type Dish, type DishTranslation } from '@/lib/dishes';
+import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
@@ -53,7 +54,26 @@ export default function DishForm({
   const [allergens, setAllergens] = useState<string[]>(initial?.allergens ?? []);
   const [dietTags, setDietTags] = useState<string[]>(initial?.dietTags ?? []);
   const [photoError, setPhotoError] = useState<'read' | 'size' | null>(null);
+  // Le lingue scelte per il menù: i blocchi compaiono solo per quelle, e se
+  // non ne è stata scelta nessuna la sezione non esiste proprio
+  const { languages } = useDishLanguages();
+  const [translations, setTranslations] = useState<DishTranslation[]>(initial?.translations ?? []);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  function translation(language: string): DishTranslation {
+    return (
+      translations.find((t) => t.language === language) ?? { language, name: '', description: '' }
+    );
+  }
+
+  function setTranslation(language: string, patch: Partial<DishTranslation>) {
+    setTranslations((prev) => {
+      const found = prev.some((t) => t.language === language);
+      return found
+        ? prev.map((t) => (t.language === language ? { ...t, ...patch } : t))
+        : [...prev, { ...translation(language), ...patch }];
+    });
+  }
 
   function toggle(list: string[], setList: (v: string[]) => void, code: string) {
     setList(list.includes(code) ? list.filter((c) => c !== code) : [...list, code]);
@@ -162,6 +182,39 @@ export default function DishForm({
         className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
       />
 
+      {/* Le altre lingue stanno subito sotto ai campi che traducono. Il segna-
+          posto grigio è l'originale: mostra al partner cosa leggerà il cliente
+          se lascia il campo vuoto, che per il nome è il caso normale. */}
+      {(languages ?? []).length > 0 && (
+        <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+          <p className="text-xs text-gray-500">{d.editor.translationsHint}</p>
+          {MENU_LANGUAGES.filter((lang) => (languages ?? []).includes(lang.code)).map((lang) => {
+            const t = translation(lang.code);
+            return (
+              <div key={lang.code} className="space-y-1.5">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  {lang.native}
+                </p>
+                <input
+                  type="text"
+                  value={t.name}
+                  onChange={(e) => setTranslation(lang.code, { name: e.target.value })}
+                  placeholder={name.trim() || d.editor.dishNamePlaceholder}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                />
+                <textarea
+                  value={t.description}
+                  onChange={(e) => setTranslation(lang.code, { description: e.target.value })}
+                  placeholder={description.trim() || d.editor.dishDescriptionPlaceholder}
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {photoError && (
         <p className="text-xs text-red-600">
           {photoError === 'size' ? d.editor.photoTooBig : d.editor.photoError}
@@ -249,7 +302,17 @@ export default function DishForm({
           </button>
           <button
             onClick={() =>
-              onSave({ name: name.trim(), description, category, photoUrl, allergens, dietTags })
+              onSave({
+              name: name.trim(),
+              description,
+              category,
+              photoUrl,
+              allergens,
+              dietTags,
+              // le lingue tolte dalle impostazioni non si buttano via: se il
+              // partner le rimette, il lavoro fatto è ancora lì
+              translations: translations.map((t) => ({ ...t, name: t.name.trim() })),
+            })
             }
             disabled={name.trim() === ''}
             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"

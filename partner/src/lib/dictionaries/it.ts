@@ -107,6 +107,7 @@ const it = {
     // {…} = parte sottolineata nell'interfaccia
     dishAllergensHint:
       'Seleziona gli {allergeni contenuti nel piatto}, come già previsto dal Reg. UE 1169/2011.',
+    translationsHint: 'Lasciando un campo vuoto, il cliente legge l’originale.',
     dishTags: 'Compatibilità dichiarate',
     dishTagsHint: 'Indica le compatibilità che puoi garantire sul piatto.',
     declarationNotice:
@@ -167,6 +168,9 @@ const it = {
     filterDiets: 'Indicati per',
     colOn: 'In vetrina',
     toggleIn: 'Accendi in',
+    languages: 'Lingue',
+    languagesTitle: 'Lingue del menù',
+    languagesHint: 'Scegli in quali lingue vuoi scrivere nomi e descrizioni dei piatti. I campi compaiono nella maschera di ogni piatto.',
     colDish: 'Piatto',
     colCategory: 'Categoria',
     colTags: 'Allergeni ed esigenze',

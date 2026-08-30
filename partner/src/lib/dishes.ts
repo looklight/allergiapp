@@ -6,17 +6,30 @@
 import { readList, useStoredList, writeList } from './storage';
 import { rewriteShowcases, type Showcase, type ShowcaseDraft } from './showcases';
 
+// Nome e descrizione in un'altra lingua. Campi facoltativi uno per uno: il
+// caso normale è tradurre la descrizione e lasciare il nome com'è, perché
+// "Carbonara" resta "Carbonara" e serve al cliente per dirlo al cameriere.
+export interface DishTranslation {
+  language: string; // codice da MENU_LANGUAGES
+  name: string;
+  description: string;
+}
+
 export interface Dish {
   id: string;
-  name: string;
+  name: string; // l'originale: c'è sempre ed è il ripiego di ogni traduzione
   description: string;
   category: string; // codici da DISH_CATEGORIES; '' = nessuna categoria
   photoUrl: string; // data-URL ridimensionato (localStorage); Storage in futuro
   allergens: string[]; // codici da allergens.code (presenti nel piatto)
   dietTags: string[]; // codici da DIETS (compatibilità dichiarate)
+  translations: DishTranslation[];
 }
 
 const DISHES_KEY = 'partner-dishes';
+// Le lingue in cui il partner vuole scrivere il suo menù. Sono del catalogo e
+// non della singola vetrina: i piatti sono suoi, le traduzioni pure.
+const LANGUAGES_KEY = 'partner-dish-languages';
 
 // `any` deliberato: v. il commento di readList in storage.ts
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,6 +42,14 @@ function normalizeDish(parsed: any): Dish {
     photoUrl: typeof parsed?.photoUrl === 'string' ? parsed.photoUrl : '',
     allergens: Array.isArray(parsed?.allergens) ? parsed.allergens : [],
     dietTags: Array.isArray(parsed?.dietTags) ? parsed.dietTags : [],
+    translations: Array.isArray(parsed?.translations)
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        parsed.translations.map((t: any) => ({
+          language: typeof t?.language === 'string' ? t.language : '',
+          name: typeof t?.name === 'string' ? t.name : '',
+          description: typeof t?.description === 'string' ? t.description : '',
+        }))
+      : [],
   };
 }
 
@@ -72,6 +93,37 @@ export function useDishes() {
   }
 
   return { dishes, create, update, remove, restore };
+}
+
+function loadDishLanguages(): string[] {
+  return (readList(LANGUAGES_KEY, (raw) => String(raw)) ?? []).filter((code) => code !== '');
+}
+
+// Le lingue restano nell'ordine di MENU_LANGUAGES, non in quello in cui sono
+// state spuntate: nella maschera i blocchi devono stare sempre nello stesso
+// posto, o si cerca ogni volta dove si era finito.
+export function useDishLanguages() {
+  const [languages, setLanguages] = useStoredList(loadDishLanguages);
+
+  function toggle(code: string, on: boolean) {
+    const next = (languages ?? []).filter((c) => c !== code);
+    if (on) next.push(code);
+    setLanguages(next);
+    writeList(LANGUAGES_KEY, next);
+  }
+
+  return { languages, toggle };
+}
+
+// Il testo da mostrare in una lingua: la traduzione se c'è, altrimenti
+// l'originale. Campo per campo, perché tradurre la descrizione e lasciare il
+// nome è la norma e non deve lasciare buchi.
+export function dishText(dish: Dish, language: string): { name: string; description: string } {
+  const t = dish.translations.find((x) => x.language === language);
+  return {
+    name: t?.name.trim() ? t.name : dish.name,
+    description: t?.description.trim() ? t.description : dish.description,
+  };
 }
 
 // Accende un piatto esattamente nelle vetrine elencate e lo spegne nelle
