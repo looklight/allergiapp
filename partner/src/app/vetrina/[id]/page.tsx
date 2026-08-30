@@ -10,7 +10,6 @@ import {
   showcaseDishes,
   useDishes,
   useShowcases,
-  type Dish,
   type ShowcaseDraft,
 } from '@/lib/draft';
 import { ALLERGENS } from '@/lib/allergens';
@@ -19,7 +18,6 @@ import { DISH_CATEGORIES } from '@/lib/categories';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
-import DishForm from '@/components/DishForm';
 import LinkPill from '@/components/LinkPill';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
@@ -193,8 +191,7 @@ export default function ShowcaseEditorPage() {
   const params = useParams<{ id: string }>();
   const { showcases, update, setDishOn } = useShowcases();
   // Il catalogo è del partner: la vetrina dice solo quali piatti sono accesi
-  const { dishes: catalog, create: createDish, update: updateDish, remove: removeDish } = useDishes();
-  const [editing, setEditing] = useState<'new' | string | null>(null);
+  const { dishes: catalog } = useDishes();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [viewer, setViewer] = useState<ViewerNeeds>(NO_VIEWER);
   const [simOpen, setSimOpen] = useState(false);
@@ -373,16 +370,6 @@ export default function ShowcaseEditorPage() {
         ? prev[kind].filter((c) => c !== code)
         : [...prev[kind], code],
     }));
-  }
-
-  // Il piatto nuovo nasce acceso in questa vetrina: è da qui che lo si crea
-  function saveDish(data: Omit<Dish, 'id'>) {
-    if (editing === 'new') {
-      setDishOn(showcaseId, createDish(data).id, true);
-    } else if (editing) {
-      updateDish(editing, data);
-    }
-    setEditing(null);
   }
 
   const preview = <SchedaPreview draft={draft} dishes={showcaseDishes(catalog, draft)} viewer={viewer} />;
@@ -682,131 +669,113 @@ export default function ShowcaseEditorPage() {
             )}
           </div>
 
-          {/* Piatti */}
+          {/* Piatti: qui si sceglie solo cosa mostrare in questa vetrina.
+              Il piatto in sé (foto, allergeni, categoria) si cura nel
+              gestionale, che è del partner e non della singola vetrina. */}
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-1 font-medium text-gray-900">{d.editor.dishesTitle}</h2>
+            <div className="mb-1 flex items-start justify-between gap-3">
+              <h2 className="font-medium text-gray-900">{d.editor.dishesTitle}</h2>
+              <Link
+                href="/piatti"
+                className="shrink-0 text-sm font-medium text-gray-700 underline hover:text-gray-900"
+              >
+                {d.editor.manageDishes}
+              </Link>
+            </div>
             <p className="mb-4 text-xs text-gray-500">{d.editor.dishesHint}</p>
 
-            <div className="space-y-3">
-              {dishGroups.map(({ cat, dishes }) => (
-                <div key={cat?.code ?? 'none'}>
-                  {cat && (
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                      {cat[locale]}
-                    </p>
-                  )}
-                  <div className="space-y-3">
-                    {dishes.map((dish) =>
-                      editing === dish.id ? (
-                        <DishForm
-                          key={dish.id}
-                          initial={dish}
-                          onSave={saveDish}
-                          onCancel={() => setEditing(null)}
-                        />
-                      ) : (
-                        <div
-                          key={dish.id}
-                          className="flex items-start justify-between gap-3 rounded-xl border border-gray-200 p-3.5"
-                        >
-                          <div className={`flex min-w-0 gap-3 ${draft.dishIds.includes(dish.id) ? '' : 'opacity-50'}`}>
-                            {dish.photoUrl !== '' && (
-                              <img
-                                src={dish.photoUrl}
-                                alt=""
-                                className="h-11 w-11 shrink-0 rounded-full object-cover"
-                              />
-                            )}
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="truncate text-sm font-medium text-gray-900">{dish.name}</p>
-                                {!draft.dishIds.includes(dish.id) && (
-                                  <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-                                    {d.editor.dishHidden}
-                                  </span>
-                                )}
-                              </div>
-                              {dish.allergens.length + dish.dietTags.length > 0 ? (
-                                <div className="mt-1.5 flex flex-wrap gap-1">
-                                  {dish.allergens.map((code) => {
-                                    const info = ALLERGENS.find((a) => a.code === code);
-                                    return (
-                                      <span
-                                        key={code}
-                                        className="rounded-full bg-[#FFF8E1] px-2 py-0.5 text-[11px] font-medium text-[#8D6E00]"
-                                      >
-                                        {info ? info[locale] : code}
-                                      </span>
-                                    );
-                                  })}
-                                  {dish.dietTags.map((code) => {
-                                    const info = DIETS.find((t) => t.code === code);
-                                    return (
-                                      <span
-                                        key={code}
-                                        className="rounded-full bg-[#E8F5E9] px-2 py-0.5 text-[11px] font-medium text-[#2E7D32]"
-                                      >
-                                        {info ? info[locale] : code}
-                                      </span>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="mt-1 text-xs text-gray-400">{d.editor.dishNoAllergens}</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-3 text-xs font-medium">
-                            <button
-                              type="button"
-                              role="switch"
-                              aria-checked={draft.dishIds.includes(dish.id)}
-                              title={draft.dishIds.includes(dish.id) ? d.editor.dishAvailable : d.editor.dishHidden}
-                              onClick={() => setDishOn(showcaseId, dish.id, !draft.dishIds.includes(dish.id))}
-                              className={`relative h-5 w-9 rounded-full transition-colors ${
-                                draft.dishIds.includes(dish.id) ? 'bg-[#4CAF50]' : 'bg-gray-300'
-                              }`}
-                            >
-                              <span
-                                className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                                  draft.dishIds.includes(dish.id) ? 'translate-x-4' : ''
-                                }`}
-                              />
-                            </button>
-                            <button
-                              onClick={() => setEditing(dish.id)}
-                              className="text-gray-600 hover:text-gray-900"
-                            >
-                              {d.common.edit}
-                            </button>
-                            <button
-                              onClick={() => removeDish(dish.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              {d.common.delete}
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {editing === 'new' ? (
-                <DishForm onSave={saveDish} onCancel={() => setEditing(null)} />
-              ) : (
-                <button
-                  onClick={() => setEditing('new')}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+            {catalog.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
+                <p className="text-sm font-medium text-gray-900">{d.dishes.empty}</p>
+                <p className="mt-1 text-sm text-gray-500">{d.dishes.emptyHint}</p>
+                <Link
+                  href="/piatti"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <path d="M12 5v14M5 12h14" />
                   </svg>
-                  {d.editor.addDish}
-                </button>
-              )}
-            </div>
+                  {d.dishes.create}
+                </Link>
+              </div>
+            ) : (
+              <>
+                <p className="mb-3 text-xs text-gray-500">
+                  {draft.dishIds.length} {d.editor.dishesOnOf} {catalog.length}{' '}
+                  {d.editor.dishesOnLabel}
+                </p>
+                <div className="space-y-4">
+                  {dishGroups.map(({ cat, dishes }) => (
+                    <div key={cat?.code ?? 'none'}>
+                      {cat && (
+                        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+                          {cat[locale]}
+                        </p>
+                      )}
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-3">
+                        {dishes.map((dish) => {
+                          const on = draft.dishIds.includes(dish.id);
+                          return (
+                            <button
+                              key={dish.id}
+                              type="button"
+                              role="switch"
+                              aria-checked={on}
+                              onClick={() => setDishOn(showcaseId, dish.id, !on)}
+                              className="flex flex-col items-center gap-1.5"
+                            >
+                              <span className="relative block">
+                                {/* Spento: foto smorzata e nome grigio. Si legge
+                                    a colpo d'occhio senza etichette da leggere. */}
+                                {dish.photoUrl !== '' ? (
+                                  <img
+                                    src={dish.photoUrl}
+                                    alt=""
+                                    className={`h-16 w-16 rounded-full object-cover transition ${
+                                      on ? '' : 'opacity-40 grayscale'
+                                    }`}
+                                  />
+                                ) : (
+                                  <span
+                                    className={`flex h-16 w-16 items-center justify-center rounded-full border border-dashed text-gray-400 transition ${
+                                      on ? 'border-gray-400' : 'border-gray-300 opacity-50'
+                                    }`}
+                                  >
+                                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
+                                      <circle cx="12" cy="13" r="3.5" />
+                                    </svg>
+                                  </span>
+                                )}
+                                {/* Il segno di stato: acceso pieno, spento un
+                                    cerchio vuoto che dice che si può accendere */}
+                                <span
+                                  className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white transition-colors ${
+                                    on ? 'bg-[#4CAF50] text-white' : 'bg-gray-200 text-transparent'
+                                  }`}
+                                >
+                                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12.5l4.5 4.5L19 7" />
+                                  </svg>
+                                </span>
+                              </span>
+                              <span
+                                className={`w-full truncate text-center text-xs ${
+                                  on ? 'font-medium text-gray-900' : 'text-gray-400'
+                                }`}
+                                title={dish.name}
+                              >
+                                {dish.name}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
