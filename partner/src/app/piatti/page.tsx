@@ -373,7 +373,7 @@ export default function DishesPage() {
             <span className="w-24 shrink-0">
               <SortHeader label={d.dishes.colCategory} sortKey="category" sort={sort} onClick={toggleSort} />
             </span>
-            <span className="hidden min-w-0 flex-[3] lg:block">{d.dishes.colAllergens}</span>
+            <span className="hidden min-w-0 flex-[3] lg:block">{d.dishes.colTags}</span>
             {targetShowcase && (
               <span className="flex w-20 shrink-0 justify-center">
                 <SortHeader label={d.dishes.colOn} sortKey="on" sort={sort} onClick={toggleSort} />

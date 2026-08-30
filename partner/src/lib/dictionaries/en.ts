@@ -170,7 +170,7 @@ const en: typeof it = {
     toggleIn: 'Switch on in',
     colDish: 'Dish',
     colCategory: 'Category',
-    colAllergens: 'Allergens',
+    colTags: 'Allergens and needs',
     countOne: 'dish',
     countOther: 'dishes',
     showcaseCount: 'showcases',

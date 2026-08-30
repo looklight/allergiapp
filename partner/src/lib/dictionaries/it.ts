@@ -169,7 +169,7 @@ const it = {
     toggleIn: 'Accendi in',
     colDish: 'Piatto',
     colCategory: 'Categoria',
-    colAllergens: 'Allergeni',
+    colTags: 'Allergeni ed esigenze',
     countOne: 'piatto',
     countOther: 'piatti',
     showcaseCount: 'vetrine',

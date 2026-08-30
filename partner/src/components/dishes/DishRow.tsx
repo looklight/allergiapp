@@ -8,12 +8,13 @@ import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import type { Dish } from '@/lib/dishes';
 import type { Showcase } from '@/lib/showcases';
-import { ALLERGENS } from '@/lib/allergens';
+import { allergenName } from '@/lib/allergens';
+import { dietName } from '@/lib/diets';
 import { categoryName } from '@/lib/categories';
 
-// Quanti allergeni stanno nella colonna prima di contare gli altri: la riga
-// deve restare alta una riga sola, o la lista smette di essere scorribile
-const ALLERGEN_CHIPS = 3;
+// Quante pill stanno nella colonna prima di contare le altre. Sei perché la
+// colonna ora è elastica e su uno schermo normale ce ne stanno due file.
+const MAX_CHIPS = 6;
 
 function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
   return (
@@ -49,10 +50,10 @@ export default function DishRow({
   onDelete: () => void;
 }) {
   const { d, locale } = useI18n();
-  // Gli allergeni in eccesso si aprono per riga: chi sta controllando un
-  // piatto vuole leggerli tutti, ma tenerli aperti su tutte le righe
-  // renderebbe la tabella una colonna di paragrafi
-  const [allAllergens, setAllAllergens] = useState(false);
+  // Le pill in eccesso si aprono per riga: chi sta controllando un piatto
+  // vuole leggerle tutte, ma tenerle aperte su tutte le righe renderebbe la
+  // tabella una colonna di paragrafi
+  const [allTags, setAllTags] = useState(false);
 
   // Con una vetrina sola il nome dice più del numero; da due in su non ci sta
   const showcaseLabel =
@@ -62,8 +63,16 @@ export default function DishRow({
         ? showcases[0].venueName.trim() || d.home.unnamed
         : `${showcases.length} ${d.dishes.showcaseCount}`;
   const category = dish.category === '' ? '' : categoryName(dish.category, locale);
-  const chips = allAllergens ? dish.allergens : dish.allergens.slice(0, ALLERGEN_CHIPS);
-  const extra = dish.allergens.length - chips.length;
+  // Allergeni contenuti e compatibilità dichiarate, nello stesso ordine in cui
+  // stanno nella maschera: prima cosa c'è dentro, poi per chi va bene
+  const tags = [
+    ...dish.allergens.map((code) => ({ code, label: allergenName(code, locale), allergen: true })),
+    ...dish.dietTags.map((code) => ({ code, label: dietName(code, locale), allergen: false })),
+  ];
+  // Nascondere un solo elemento dietro un "+1" non fa guadagnare spazio e
+  // costringe a un clic per leggere una parola
+  const chips = allTags || tags.length <= MAX_CHIPS + 1 ? tags : tags.slice(0, MAX_CHIPS);
+  const extra = tags.length - chips.length;
 
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -82,10 +91,10 @@ export default function DishRow({
         <PhotoPlaceholder dimmed={on === false} />
       )}
 
-      {/* Spento: si smorzano foto, nome e categoria, cioè quello che descrive
-          il piatto. Restano piene le pill degli allergeni, che è l'informazione
-          per cui si viene in questa tabella, l'interruttore che deve restare
-          leggibile e le azioni, che smorzate sembrerebbero disabilitate. */}
+      {/* Spento: si smorza tutto quello che descrive il piatto, pill comprese.
+          Restano piene solo due cose: l'interruttore, che deve restare
+          leggibile perché è il modo di riaccenderlo, e le azioni, che smorzate
+          sembrerebbero disabilitate mentre funzionano. */}
       <button
         onClick={onEdit}
         className={`min-w-0 flex-[2] text-left transition ${on === false ? 'opacity-50' : ''}`}
@@ -109,30 +118,33 @@ export default function DishRow({
         {category === '' ? '—' : category}
       </span>
 
-      <span className="hidden min-w-0 flex-[3] flex-wrap gap-1 lg:flex">
+      <span
+        className={`hidden min-w-0 flex-[3] flex-wrap gap-1 transition lg:flex ${
+          on === false ? 'opacity-50' : ''
+        }`}
+      >
         {chips.length === 0 ? (
           <span className="text-xs text-gray-400">—</span>
         ) : (
           <>
-            {chips.map((code) => {
-              const info = ALLERGENS.find((a) => a.code === code);
-              return (
-                <span
-                  key={code}
-                  className="rounded-full bg-[#FFF8E1] px-2 py-0.5 text-[11px] font-medium text-[#8D6E00]"
-                >
-                  {info ? info[locale] : code}
-                </span>
-              );
-            })}
-            {(extra > 0 || allAllergens) && (
+            {chips.map(({ code, label, allergen }) => (
+              <span
+                key={`${allergen ? 'a' : 'd'}-${code}`}
+                className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                  allergen ? 'bg-[#FFF8E1] text-[#8D6E00]' : 'bg-[#E8F5E9] text-[#2E7D32]'
+                }`}
+              >
+                {label}
+              </span>
+            ))}
+            {(extra > 0 || allTags) && (
               <button
-                onClick={() => setAllAllergens(!allAllergens)}
-                aria-expanded={allAllergens}
+                onClick={() => setAllTags(!allTags)}
+                aria-expanded={allTags}
                 aria-label={dish.name}
                 className="rounded-full px-1 text-[11px] text-gray-400 transition-colors hover:text-gray-700"
               >
-                {allAllergens ? '−' : `+${extra}`}
+                {allTags ? '−' : `+${extra}`}
               </button>
             )}
           </>
