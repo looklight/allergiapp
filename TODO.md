@@ -149,7 +149,7 @@ Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mod
 Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium (verificati/certificati). La colonna `is_premium` esiste già su `restaurants`, manca il flusso completo.
 
 **Funzionalità esclusive premium:**
-- **Menu digitale** — link multilingua a carico del ristoratore. La sezione foto menù community è stata **rimossa** dall'app (commit `32c6d61`, esce con 1.3.1): non è più codice da "riabilitare", va costruita lato premium. Nel portale partner esiste già come `MenuLink[]` (memoria `project_partner_portal.md`, menù facoltativo)
+- **Menu digitale** — v. `DIGITAL_MENU.md` per la direzione (menù interattivo del ristoratore, filtrabile per allergeni). Qui sotto la parte già esistente: link multilingua a carico del ristoratore. La sezione foto menù community è stata **rimossa** dall'app (commit `32c6d61`, esce con 1.3.1): non è più codice da "riabilitare", va costruita lato premium. Nel portale partner esiste già come `MenuLink[]` (memoria `project_partner_portal.md`, menù facoltativo)
 - **Risposta alle recensioni** — il gestore può rispondere pubblicamente alle recensioni degli utenti
 - **Badge "Verificato"** nella lista ristoranti e nella scheda, con tooltip esplicativo
 - **Priorità nell'ordinamento** — già implementata (`ORDER BY is_premium DESC`), da sfruttare esplicitamente
