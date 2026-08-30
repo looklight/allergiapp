@@ -5,7 +5,7 @@
 // solo gli id accesi, quindi da qui si scrive anche là — mai il contrario.
 // Dal 30/08 vive in partner_dishes invece che nel localStorage.
 import { supabase } from './supabase';
-import { currentUserId, useRemoteList } from './storage';
+import { currentUserId, reportError, useRemoteList } from './storage';
 import type { Showcase, ShowcaseDraft } from './showcases';
 
 export interface DishTranslation {
@@ -61,18 +61,23 @@ function fromDish(data: Omit<Dish, 'id'>) {
 }
 
 async function loadDishes(): Promise<Dish[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('partner_dishes')
     .select('*, partner_dish_translations(language, name, description)')
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true });
+  reportError('lettura piatti', error);
   return (data ?? []).map(toDish);
 }
 
 // Le traduzioni si riscrivono tutte: sono poche e i campi vuoti non vanno
 // salvati, quindi calcolare la differenza costerebbe più di quanto risparmi.
 async function saveTranslations(dishId: string, translations: DishTranslation[]) {
-  await supabase.from('partner_dish_translations').delete().eq('dish_id', dishId);
+  const { error: cancella } = await supabase
+    .from('partner_dish_translations')
+    .delete()
+    .eq('dish_id', dishId);
+  reportError('cancellazione traduzioni', cancella);
   const righe = translations
     .filter((t) => t.language !== '' && (t.name.trim() !== '' || t.description.trim() !== ''))
     .map((t) => ({
@@ -81,7 +86,10 @@ async function saveTranslations(dishId: string, translations: DishTranslation[])
       name: t.name.trim() || null,
       description: t.description.trim() || null,
     }));
-  if (righe.length > 0) await supabase.from('partner_dish_translations').insert(righe);
+  if (righe.length > 0) {
+    const { error } = await supabase.from('partner_dish_translations').insert(righe);
+    reportError('scrittura traduzioni', error);
+  }
 }
 
 // dishes è null finché la prima lettura non è tornata
@@ -91,11 +99,12 @@ export function useDishes() {
   async function create(data: Omit<Dish, 'id'>): Promise<Dish | null> {
     const ownerId = await currentUserId();
     if (!ownerId) return null;
-    const { data: row } = await supabase
+    const { data: row, error } = await supabase
       .from('partner_dishes')
       .insert({ owner_user_id: ownerId, ...fromDish(data) })
       .select('id')
       .single();
+    reportError('creazione piatto', error);
     if (!row) return null;
     await saveTranslations(row.id, data.translations);
     const creato: Dish = { ...data, id: row.id };
@@ -105,7 +114,8 @@ export function useDishes() {
 
   async function update(id: string, data: Omit<Dish, 'id'>) {
     setList((dishes ?? []).map((dish) => (dish.id === id ? { ...data, id } : dish)));
-    await supabase.from('partner_dishes').update(fromDish(data)).eq('id', id);
+    const { error } = await supabase.from('partner_dishes').update(fromDish(data)).eq('id', id);
+    reportError('modifica piatto', error);
     await saveTranslations(id, data.translations);
   }
 
@@ -113,7 +123,8 @@ export function useDishes() {
   // occupa il database con la cascata sull'accostamento.
   async function remove(id: string) {
     setList((dishes ?? []).filter((dish) => dish.id !== id));
-    await supabase.from('partner_dishes').delete().eq('id', id);
+    const { error } = await supabase.from('partner_dishes').delete().eq('id', id);
+    reportError('eliminazione piatto', error);
   }
 
   // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
@@ -139,15 +150,20 @@ export function useDishes() {
 export async function setDishShowcases(dishId: string, showcaseIds: string[]) {
   const ownerId = await currentUserId();
   if (!ownerId) return;
-  await supabase.from('partner_showcase_dishes').delete().eq('dish_id', dishId);
+  const { error: cancella } = await supabase
+    .from('partner_showcase_dishes')
+    .delete()
+    .eq('dish_id', dishId);
+  reportError('spegnimento piatto nelle vetrine', cancella);
   if (showcaseIds.length > 0) {
-    await supabase.from('partner_showcase_dishes').insert(
+    const { error } = await supabase.from('partner_showcase_dishes').insert(
       showcaseIds.map((showcaseId) => ({
         showcase_id: showcaseId,
         dish_id: dishId,
         owner_user_id: ownerId,
       }))
     );
+    reportError('accensione piatto nelle vetrine', error);
   }
 }
 

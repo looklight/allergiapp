@@ -17,6 +17,15 @@ import { supabase } from './supabase';
 // annunciarle vorrebbe dire una rilettura di rete a ogni pausa di battitura.
 const CHANGE_EVENT = 'partner-storage-changed';
 
+// Ogni scrittura passa di qui: se il database rifiuta, almeno si vede.
+// Non è ancora l'avviso in interfaccia che serve (v. TODO), ma è la
+// differenza fra un errore che si legge e uno che sparisce.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function reportError(dove: string, error: any) {
+  if (error) console.error(`[partner] ${dove}:`, error.message ?? error, error.details ?? '');
+  return error;
+}
+
 export function notifyChange() {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }

@@ -3,7 +3,13 @@
 // Le vetrine del partner: una per locale, con i suoi link e i piatti accesi.
 // Dal 30/08 vivono nelle tabelle partner_* invece che nel localStorage.
 import { supabase } from './supabase';
-import { currentUserId, notifyChange, useDebouncedSave, useRemoteList } from './storage';
+import {
+  currentUserId,
+  notifyChange,
+  reportError,
+  useDebouncedSave,
+  useRemoteList,
+} from './storage';
 
 export interface MenuLink {
   language: string; // codice lingua; '' = predefinito (fallback)
@@ -112,10 +118,11 @@ function fromLinks(showcaseId: string, links: DraftLinks) {
 // Una query sola con gli innesti: vetrine, i loro link e gli id dei piatti
 // accesi. Le RLS mostrano solo le proprie, quindi non serve filtrare.
 async function loadShowcases(): Promise<Showcase[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('partner_showcases')
     .select('id, venue_name, partner_links(*), partner_showcase_dishes(dish_id)')
     .order('created_at', { ascending: true });
+  reportError('lettura vetrine', error);
 
   return (data ?? []).map((row: any) => ({
     id: row.id,
@@ -130,13 +137,21 @@ async function loadShowcases(): Promise<Showcase[]> {
 // Il contenuto di una vetrina si riscrive tutto: i link sono pochi, l'ordine
 // conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.
 async function saveShowcaseContent(showcase: Showcase) {
-  await supabase
+  const { error: nome } = await supabase
     .from('partner_showcases')
     .update({ venue_name: showcase.venueName })
     .eq('id', showcase.id);
-  await supabase.from('partner_links').delete().eq('showcase_id', showcase.id);
+  reportError('salvataggio nome vetrina', nome);
+  const { error: cancella } = await supabase
+    .from('partner_links')
+    .delete()
+    .eq('showcase_id', showcase.id);
+  reportError('cancellazione link', cancella);
   const righe = fromLinks(showcase.id, showcase.links);
-  if (righe.length > 0) await supabase.from('partner_links').insert(righe);
+  if (righe.length > 0) {
+    const { error } = await supabase.from('partner_links').insert(righe);
+    reportError('scrittura link', error);
+  }
 }
 
 // showcases è null finché la prima lettura non è tornata
@@ -148,11 +163,12 @@ export function useShowcases() {
   async function create(venueName = ''): Promise<Showcase | null> {
     const ownerId = await currentUserId();
     if (!ownerId) return null;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('partner_showcases')
       .insert({ owner_user_id: ownerId, venue_name: venueName })
       .select('id')
       .single();
+    reportError('creazione vetrina', error);
     if (!data) return null;
     const creata: Showcase = { id: data.id, venueName, dishIds: [], links: emptyLinks() };
     setList([...(showcases ?? []), creata]);
@@ -230,15 +246,17 @@ export function useShowcases() {
     if (on) {
       const ownerId = await currentUserId();
       if (!ownerId) return;
-      await supabase
+      const { error } = await supabase
         .from('partner_showcase_dishes')
         .insert({ showcase_id: showcaseId, dish_id: dishId, owner_user_id: ownerId });
+      reportError('accensione piatto', error);
     } else {
-      await supabase
+      const { error } = await supabase
         .from('partner_showcase_dishes')
         .delete()
         .eq('showcase_id', showcaseId)
         .eq('dish_id', dishId);
+      reportError('spegnimento piatto', error);
     }
   }
 
