@@ -49,8 +49,11 @@ body {
    l'app mostra le sue schede; da tablet in su entra da destra, dal bordo da
    cui arriva davvero. Solo l'entrata: l'uscita è un'attesa fra il clic e la
    pagina, e non aiuta nessuno.
-   Sono transform e opacity, quindi il browser le anima senza ridisegnare. */
-@keyframes overlay-fade-in {
+   Sono transform e opacity, quindi il browser le anima senza ridisegnare.
+   La dissolvenza sta su un elemento suo e non sul contenitore: l'opacità si
+   eredita, e messa lì sbiadiva anche il pannello, che per un istante lasciava
+   vedere la lista attraverso. */
+@keyframes backdrop-fade-in {
   from {
     opacity: 0;
   }
@@ -68,8 +71,8 @@ body {
   }
 }
 
-.overlay-enter {
-  animation: overlay-fade-in 180ms ease-out;
+.backdrop-enter {
+  animation: backdrop-fade-in 180ms ease-out;
 }
 
 .panel-enter {
@@ -85,7 +88,7 @@ body {
 /* Chi ha chiesto meno animazioni al sistema operativo lo ha chiesto sul
    serio: il pannello compare e basta. */
 @media (prefers-reduced-motion: reduce) {
-  .overlay-enter,
+  .backdrop-enter,
   .panel-enter {
     animation: none;
   }

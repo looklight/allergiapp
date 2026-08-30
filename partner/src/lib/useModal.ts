@@ -26,6 +26,16 @@ export function useModal<T extends HTMLElement>(onClose: () => void) {
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
+
+    // La pagina dietro non deve scorrere sotto la finestra aperta: girare la
+    // rotella e vedere muoversi qualcosa che non si sta guardando è il modo
+    // più rapido di far sembrare rotta un'interfaccia. La barra di scorrimento
+    // che sparisce lascerebbe il suo posto vuoto e la pagina salterebbe di
+    // lato: il padding la sostituisce per il tempo che la finestra è aperta.
+    const { overflow, paddingRight } = document.body.style;
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
     const items = () => [...(panel.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
     // Il primo elemento su cui si può agire; se non ce n'è, il pannello stesso.
     // preventScroll perché il pannello entra animato da fuori schermo: dare il
@@ -51,6 +61,8 @@ export function useModal<T extends HTMLElement>(onClose: () => void) {
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+      document.body.style.paddingRight = paddingRight;
       previous?.focus();
     };
   }, []);
