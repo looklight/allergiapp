@@ -1,6 +1,6 @@
 -- ============================================================
 -- 700_partner_foundation.sql
--- STATO: BOZZA (2026-07-27) — NON APPLICATA
+-- STATO: BOZZA (2026-07-27, rivista 2026-08-30) — NON APPLICATA
 -- Da rivedere insieme prima di applicare via SQL editor.
 --
 -- Fondazioni del portale partner (fase 1: claim self-service +
@@ -14,6 +14,28 @@
 -- della 001) che resta nel DB ma è SUPERATO — v. sezione
 -- "Pulizie legacy" in fondo.
 --
+-- ------------------------------------------------------------
+-- IL CATALOGO È DEL PARTNER, NON DELLA VETRINA (deciso 2026-08-30)
+-- Revisione della bozza dopo il lavoro sul portale.
+-- Un ristoratore con due locali riusa gli stessi piatti: se i
+-- piatti pendessero dalla vetrina, la stessa carbonara sarebbe
+-- due righe diverse, con due liste di allergeni da tenere
+-- allineate a mano. Quindi:
+--   1. partner_dishes pende da partner_accounts — è il catalogo
+--      del ristoratore, non il contenuto di un locale;
+--   2. partner_showcase_dishes dice quali piatti sono ACCESI in
+--      quale vetrina, ed è l'unico stato di disponibilità che
+--      esiste: spegnere un piatto in un locale non lo tocca
+--      nell'altro e non lo toglie dal catalogo;
+--   3. eliminare una vetrina non porta via i piatti, che restano
+--      del partner (il portale lo dice già a chi cancella).
+-- Conseguenza sul menù digitale (fase futura): il prezzo NON
+-- starà su partner_dishes ma sull'accostamento piatto↔menù. È il
+-- motivo per cui qui una colonna prezzo non c'è: lo stesso piatto
+-- costa diverso a pranzo e a cena, e dentro un degustazione non
+-- ha prezzo affatto.
+-- ------------------------------------------------------------
+
 -- ------------------------------------------------------------
 -- SEPARAZIONE UTENTE / PARTNER (deciso 2026-08-22)
 -- Utenti dell'app e partner sono DUE ENTITÀ DIVERSE, con due
@@ -110,6 +132,10 @@ CREATE TABLE partner_companies (
 CREATE TABLE partner_showcases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_user_id UUID NOT NULL REFERENCES partner_accounts(user_id) ON DELETE CASCADE,
+  venue_name TEXT,
+    -- Nome che il partner dà alla vetrina per riconoscerla nella sua lista.
+    -- NON è il nome del locale: quello arriva dalla scheda con il claim.
+    -- Prima del claim è l'unica etichetta che ha; dopo resta un suo appunto.
   restaurant_id UUID REFERENCES restaurants(id) ON DELETE SET NULL,
     -- NULL = bozza non ancora associata (pre-claim).
     -- SET NULL: se la scheda community sparisce il lavoro resta.
@@ -134,6 +160,12 @@ CREATE UNIQUE INDEX partner_showcases_one_per_restaurant
   WHERE restaurant_id IS NOT NULL;
 
 CREATE INDEX partner_showcases_owner_idx ON partner_showcases (owner_user_id);
+
+-- Serve alla chiave composta di partner_showcase_dishes: è quella che rende
+-- IMPOSSIBILE accendere il piatto di un partner nella vetrina di un altro,
+-- per vincolo di database e non per controllo applicativo.
+ALTER TABLE partner_showcases ADD CONSTRAINT partner_showcases_id_owner_key
+  UNIQUE (id, owner_user_id);
 
 
 -- ============================================================
@@ -184,17 +216,24 @@ CREATE INDEX partner_claims_user_idx ON partner_claims (user_id);
 
 -- ============================================================
 -- TABELLA: partner_dishes
--- Piatti dichiarati dal ristoratore (la feature più forte).
+-- IL CATALOGO del ristoratore: i piatti come fatti, non come
+-- contenuto di un locale. Pende da partner_accounts, così chi
+-- gestisce due locali scrive la carbonara una volta sola.
+-- Dove appare lo dice partner_showcase_dishes, qui sotto.
+--
 -- declared_allergens = allergeni PRESENTI nel piatto (semantica
--- Reg. 1169/2011: si dichiarano i presenti — DA CONFERMARE
--- quando disegneremo il menù; il legacy usava "allergen_free").
--- Niente triplo stato tracce: disclaimer contaminazione a
--- livello locale, sempre visibile (vincolo di design).
+-- Reg. 1169/2011: si dichiarano i presenti; il legacy usava
+-- "allergen_free"). Niente triplo stato tracce: il disclaimer
+-- contaminazione sta a livello locale ed è sempre visibile.
+--
+-- NIENTE COLONNA PREZZO, e non è una dimenticanza: v. la nota
+-- sul menù digitale in testa al file.
 -- ============================================================
 CREATE TABLE partner_dishes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  showcase_id UUID NOT NULL REFERENCES partner_showcases(id) ON DELETE CASCADE,
+  owner_user_id UUID NOT NULL REFERENCES partner_accounts(user_id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+    -- l'ORIGINALE: c'è sempre, ed è il ripiego di ogni traduzione
   description TEXT,
   category TEXT
     CHECK (category IS NULL OR
@@ -202,8 +241,16 @@ CREATE TABLE partner_dishes (
                         'sides', 'pizza', 'desserts', 'drinks', 'other')),
     -- FACOLTATIVA (NULL = senza categoria, mostrati per primi); set fisso
     -- tradotto lato client (niente testo libero: i18n gratis, UI ordinata,
-    -- zero moderazione); ampliabile in futuro senza dolore
+    -- zero moderazione); ampliabile in futuro senza dolore.
+    -- ATTENZIONE alla mappatura col portale, che usa stringa vuota per
+    -- "senza categoria": '' lato client ⇄ NULL qui.
+    -- Resta il set di AllergiApp, quello che rende confrontabili i
+    -- ristoranti fra loro. Le SEZIONI del menù digitale (testo libero,
+    -- "Le nostre paste fresche") saranno un'altra cosa, in un'altra
+    -- tabella: una classificazione e un indice non sono la stessa cosa.
   photo_url TEXT,
+    -- Supabase Storage. Il portale oggi tiene data-URL nel browser:
+    -- al passaggio al database vanno caricate come file.
   declared_allergens TEXT[] NOT NULL DEFAULT '{}',  -- codici da allergens.code
   diet_tags TEXT[] NOT NULL DEFAULT '{}',
     -- compatibilità dichiarate (vegetarian/vegan/histamine/nickel/diabetes,
@@ -211,6 +258,8 @@ CREATE TABLE partner_dishes (
     -- strutturate, mai testo libero; wording per istamina/nichel/diabete
     -- da vagliare legalmente prima del lancio.
   sort_order INTEGER NOT NULL DEFAULT 0,
+    -- ordine del catalogo, che è anche quello con cui l'app mostra i
+    -- piatti: non esiste un ordinamento per vetrina
   last_confirmed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     -- freschezza: timestamp visibile all'utente; senza riconferma
     -- entro X mesi il matching degrada a neutro (X da tarare)
@@ -218,7 +267,65 @@ CREATE TABLE partner_dishes (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX partner_dishes_showcase_idx ON partner_dishes (showcase_id);
+CREATE INDEX partner_dishes_owner_idx ON partner_dishes (owner_user_id);
+
+-- Coppia referenziabile, come per le vetrine: serve all'accostamento.
+ALTER TABLE partner_dishes ADD CONSTRAINT partner_dishes_id_owner_key
+  UNIQUE (id, owner_user_id);
+
+
+-- ============================================================
+-- TABELLA: partner_showcase_dishes
+-- Quali piatti del catalogo sono ACCESI in quale vetrina.
+-- La riga c'è = il piatto compare in quella scheda. Non c'è =
+-- resta nel catalogo, spento lì. È l'unico stato di
+-- disponibilità del sistema: niente colonna "available" sul
+-- piatto, che sarebbe globale e spegnerebbe la carbonara in
+-- tutti i locali insieme.
+--
+-- Le due chiavi composte con owner_user_id rendono impossibile
+-- accendere il piatto di un partner nella vetrina di un altro:
+-- è un vincolo del database, non una policy che si può
+-- dimenticare di scrivere.
+-- ============================================================
+CREATE TABLE partner_showcase_dishes (
+  showcase_id UUID NOT NULL,
+  dish_id UUID NOT NULL,
+  owner_user_id UUID NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (showcase_id, dish_id),
+  FOREIGN KEY (showcase_id, owner_user_id)
+    REFERENCES partner_showcases (id, owner_user_id) ON DELETE CASCADE,
+  FOREIGN KEY (dish_id, owner_user_id)
+    REFERENCES partner_dishes (id, owner_user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX partner_showcase_dishes_dish_idx ON partner_showcase_dishes (dish_id);
+
+
+-- ============================================================
+-- TABELLA: partner_dish_translations
+-- Nome e descrizione in un'altra lingua. Campi FACOLTATIVI uno
+-- per uno: il caso normale è tradurre la descrizione e lasciare
+-- il nome com'è — "Carbonara" resta "Carbonara", ed è anche la
+-- parola che serve al cliente per dirla al cameriere.
+-- Vuoto o assente ⇒ si legge l'originale su partner_dishes,
+-- campo per campo. Un campo vuoto non è un buco: è una scelta.
+--
+-- Tabella e non colonna JSONB perché la pagina pubblica del
+-- menù (fase futura) leggerà una lingua sola.
+-- ============================================================
+CREATE TABLE partner_dish_translations (
+  dish_id UUID NOT NULL REFERENCES partner_dishes(id) ON DELETE CASCADE,
+  language TEXT NOT NULL CHECK (language ~ '^[a-z]{2}$'),
+    -- codice ISO 639-1. Nessun CHECK sull'elenco: le lingue offerte dal
+    -- portale (oggi 15) crescono senza dover migrare il database.
+  name TEXT,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dish_id, language)
+);
 
 
 -- ============================================================
@@ -231,18 +338,29 @@ CREATE TABLE partner_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   showcase_id UUID NOT NULL REFERENCES partner_showcases(id) ON DELETE CASCADE,
   kind TEXT NOT NULL CHECK (kind IN ('booking', 'delivery', 'menu', 'website', 'other')),
-  url TEXT NOT NULL,
+  url TEXT,
+  phone TEXT,
+    -- solo per kind='booking': c'è chi prende le prenotazioni solo al
+    -- telefono, chi solo online e chi in tutti e due i modi. Nessuna
+    -- validazione sul numero: i formati veri sono troppo vari e un falso
+    -- errore blocca il ristoratore su un dato che è suo.
   language TEXT,
     -- solo per kind='menu': più righe menu con lingue diverse; NULL =
     -- predefinito. L'app mostra il menù nella lingua dell'utente,
     -- fallback sul predefinito.
+  provider TEXT,
+    -- solo per kind='delivery': codice del servizio (deliveroo, glovo…)
+    -- oppure 'other'. Serve a mostrare il logo giusto in app.
   label TEXT,
-    -- per kind='delivery': nome del provider (più righe = più servizi;
-    -- un link solo apre diretto, con più link l'app mostra un bottom
-    -- sheet di scelta)
+    -- nome scritto a mano del servizio quando provider = 'other'
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Una riga vale qualcosa solo se porta da qualche parte: un indirizzo,
+  -- oppure un numero se è una prenotazione. Il vincolo ha un nome perché
+  -- l'errore lo dica in chiaro invece di citare una sigla generata.
+  CONSTRAINT partner_links_has_target
+    CHECK (url IS NOT NULL OR (kind = 'booking' AND phone IS NOT NULL))
 );
 
 CREATE INDEX partner_links_showcase_idx ON partner_links (showcase_id);
@@ -286,8 +404,11 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_claims
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_dishes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_dish_translations
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON partner_links
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+-- partner_showcase_dishes non ha updated_at: la riga o c'è o non c'è.
 
 
 -- ============================================================
@@ -300,6 +421,8 @@ ALTER TABLE partner_companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_showcases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_claims    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_dishes    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE partner_showcase_dishes    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE partner_dish_translations  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_links     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partner_audit_log ENABLE ROW LEVEL SECURITY;
 
@@ -332,20 +455,51 @@ CREATE POLICY partner_showcases_public_read ON partner_showcases
 CREATE POLICY partner_showcases_admin ON partner_showcases
   FOR ALL USING (is_admin());
 
--- Piatti e link: seguono la vetrina
+-- Il catalogo è del partner: si legge e si scrive per proprietario, non
+-- passando dalla vetrina. Pubblico invece è solo il piatto ACCESO in una
+-- vetrina pubblicata: il resto del catalogo è lavoro privato e non deve
+-- uscire (comprese le bozze dei piatti non ancora messi in scheda).
 CREATE POLICY partner_dishes_owner ON partner_dishes
-  FOR ALL USING (EXISTS (
-    SELECT 1 FROM partner_showcases s
-    WHERE s.id = showcase_id AND s.owner_user_id = auth.uid()))
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM partner_showcases s
-    WHERE s.id = showcase_id AND s.owner_user_id = auth.uid()));
+  FOR ALL USING (owner_user_id = auth.uid())
+  WITH CHECK (owner_user_id = auth.uid());
 CREATE POLICY partner_dishes_public_read ON partner_dishes
+  FOR SELECT USING (EXISTS (
+    SELECT 1 FROM partner_showcase_dishes sd
+    JOIN partner_showcases s ON s.id = sd.showcase_id
+    WHERE sd.dish_id = partner_dishes.id AND s.status = 'published'));
+CREATE POLICY partner_dishes_admin ON partner_dishes
+  FOR ALL USING (is_admin());
+
+-- Accostamento: il proprietario accende e spegne i suoi. In lettura
+-- pubblica passa solo l'accostamento a una vetrina pubblicata — è la riga
+-- che dice all'app quali piatti mostrare in quella scheda.
+CREATE POLICY partner_showcase_dishes_owner ON partner_showcase_dishes
+  FOR ALL USING (owner_user_id = auth.uid())
+  WITH CHECK (owner_user_id = auth.uid());
+CREATE POLICY partner_showcase_dishes_public_read ON partner_showcase_dishes
   FOR SELECT USING (EXISTS (
     SELECT 1 FROM partner_showcases s
     WHERE s.id = showcase_id AND s.status = 'published'));
-CREATE POLICY partner_dishes_admin ON partner_dishes
+CREATE POLICY partner_showcase_dishes_admin ON partner_showcase_dishes
   FOR ALL USING (is_admin());
+
+-- Traduzioni: seguono il piatto, in scrittura come in lettura
+CREATE POLICY partner_dish_translations_owner ON partner_dish_translations
+  FOR ALL USING (EXISTS (
+    SELECT 1 FROM partner_dishes d
+    WHERE d.id = dish_id AND d.owner_user_id = auth.uid()))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM partner_dishes d
+    WHERE d.id = dish_id AND d.owner_user_id = auth.uid()));
+CREATE POLICY partner_dish_translations_public_read ON partner_dish_translations
+  FOR SELECT USING (EXISTS (
+    SELECT 1 FROM partner_showcase_dishes sd
+    JOIN partner_showcases s ON s.id = sd.showcase_id
+    WHERE sd.dish_id = partner_dish_translations.dish_id AND s.status = 'published'));
+CREATE POLICY partner_dish_translations_admin ON partner_dish_translations
+  FOR ALL USING (is_admin());
+
+-- I link seguono la vetrina
 
 CREATE POLICY partner_links_owner ON partner_links
   FOR ALL USING (EXISTS (
