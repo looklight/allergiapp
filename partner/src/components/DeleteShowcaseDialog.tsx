@@ -1,7 +1,8 @@
 'use client';
 
 // Conferma di eliminazione: al posto di un confirm generico dice QUANTO si
-// perde (piatti e link di quella vetrina), così la scelta è informata.
+// perde (i link di quella vetrina), così la scelta è informata. I piatti
+// non si perdono: sono del catalogo, la vetrina teneva solo quali accendere.
 // L'eliminazione resta comunque annullabile dal toast in lista.
 import { useEffect } from 'react';
 import { useI18n } from '@/lib/i18n';
@@ -27,7 +28,7 @@ export default function DeleteShowcaseDialog({
     return () => window.removeEventListener('keydown', onKey);
   }, [onCancel]);
 
-  const dishes = showcase.dishes.length;
+  const dishes = showcase.dishIds.length;
   const links = countLinks(showcase.links);
   const summary =
     dishes === 0 && links === 0

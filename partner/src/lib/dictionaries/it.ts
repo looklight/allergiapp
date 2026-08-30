@@ -72,7 +72,7 @@ const it = {
     linkOne: 'link',
     linkOther: 'link',
     deleteTitle: 'Eliminare questa vetrina?',
-    deleteBody: 'Quello che hai inserito qui dentro andrà perso.',
+    deleteBody: 'I link di questa vetrina andranno persi. I piatti restano nel tuo catalogo.',
     deleteEmpty: 'Questa vetrina è ancora vuota.',
     deleted: 'Vetrina eliminata',
     undo: 'Annulla',

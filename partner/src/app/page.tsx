@@ -113,8 +113,8 @@ export default function ShowcasesPage() {
                       </button>
                     </div>
                     <p className="mt-0.5 text-xs text-gray-500">
-                      {s.dishes.length}{' '}
-                      {s.dishes.length === 1 ? d.home.dishOne : d.home.dishOther} ·{' '}
+                      {s.dishIds.length}{' '}
+                      {s.dishIds.length === 1 ? d.home.dishOne : d.home.dishOther} ·{' '}
                       {links} {links === 1 ? d.home.linkOne : d.home.linkOther}
                     </p>
                   </div>

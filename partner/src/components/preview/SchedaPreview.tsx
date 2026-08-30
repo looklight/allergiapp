@@ -14,7 +14,7 @@ import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
 import { hasBooking } from '@/lib/draft';
-import type { DeliveryLink, DraftDish, ShowcaseDraft } from '@/lib/draft';
+import type { DeliveryLink, Dish, ShowcaseDraft } from '@/lib/draft';
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
 
 const SYSTEM_FONT =
@@ -140,7 +140,7 @@ export const NO_VIEWER: ViewerNeeds = { allergens: [], diets: [] };
 // visitatore. Livelli: amber = contiene almeno un allergene del
 // visitatore; gray = allergeni ok ma qualche sua dieta non è indicata
 // (assenza di tag ≠ incompatibilità, resta neutro); green = tutto ok.
-function dishCompat(dish: DraftDish, viewer: ViewerNeeds) {
+function dishCompat(dish: Dish, viewer: ViewerNeeds) {
   if (viewer.allergens.length === 0 && viewer.diets.length === 0) return null;
   const contained = viewer.allergens.filter((code) => dish.allergens.includes(code));
   const missingDiets = viewer.diets.filter((code) => !dish.dietTags.includes(code));
@@ -155,7 +155,7 @@ function DishPhoto({
   radius,
   dimmed = false, // piatto non compatibile col visitatore → foto in trasparenza
 }: {
-  dish: DraftDish;
+  dish: Dish;
   size: { w: number; h: number };
   radius: number;
   dimmed?: boolean;
@@ -250,7 +250,7 @@ function GrayPill({ text }: { text: string }) {
 // tag compatibilità dichiarati. Con visitatore: ambra se contiene le sue
 // allergie, verde "Senza …" se no, e per ogni sua dieta verde (dichiarata)
 // o grigia "non indicato".
-function DishPills({ dish, viewer }: { dish: DraftDish; viewer: ViewerNeeds }) {
+function DishPills({ dish, viewer }: { dish: Dish; viewer: ViewerNeeds }) {
   const { d, locale } = useI18n();
   const compat = dishCompat(dish, viewer);
 
@@ -323,16 +323,16 @@ function MenuDisclaimer() {
 // Schermata menù a pieno schermo (la "sezione dedicata" dell'app):
 // piatti raggruppati per categoria, foto grandi, pill compatibilità.
 function MenuScreen({
-  draft,
+  dishes,
   viewer,
   onBack,
 }: {
-  draft: ShowcaseDraft;
+  dishes: Dish[];
   viewer: ViewerNeeds;
   onBack: () => void;
 }) {
   const { d, locale } = useI18n();
-  const visibleDishes = draft.dishes.filter((dish) => dish.available);
+  const visibleDishes = dishes;
 
   // Senza categoria per primi (senza intestazione), poi le categorie
   const groups = [
@@ -408,9 +408,12 @@ function MenuScreen({
 
 export default function SchedaPreview({
   draft,
+  dishes,
   viewer = NO_VIEWER,
 }: {
   draft: ShowcaseDraft;
+  // i piatti del catalogo accesi in questa vetrina, già nell'ordine giusto
+  dishes: Dish[];
   viewer?: ViewerNeeds;
 }) {
   const { d, locale } = useI18n();
@@ -418,13 +421,13 @@ export default function SchedaPreview({
   const [sheet, setSheet] = useState<'delivery' | 'booking' | null>(null);
   // Il nome della vetrina NON è il nome del ristorante: nell'anteprima
   // l'intestazione resta un nome di esempio, come indirizzo e recensioni.
-  // i piatti nascosti restano in bozza ma non compaiono nella scheda
-  const visibleDishes = draft.dishes.filter((dish) => dish.available);
+  // arrivano già filtrati: sono i piatti del catalogo accesi in questa vetrina
+  const visibleDishes = dishes;
 
   if (screen === 'menu') {
     return (
       <div style={{ height: '100%', overflowY: 'auto' }}>
-        <MenuScreen draft={draft} viewer={viewer} onBack={() => setScreen('scheda')} />
+        <MenuScreen dishes={dishes} viewer={viewer} onBack={() => setScreen('scheda')} />
       </div>
     );
   }

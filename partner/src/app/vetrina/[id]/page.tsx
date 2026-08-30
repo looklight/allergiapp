@@ -4,7 +4,15 @@ import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import { hasBooking, normalizeUrl, useShowcases, type DraftDish, type ShowcaseDraft } from '@/lib/draft';
+import {
+  hasBooking,
+  normalizeUrl,
+  showcaseDishes,
+  useDishes,
+  useShowcases,
+  type Dish,
+  type ShowcaseDraft,
+} from '@/lib/draft';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
@@ -38,9 +46,9 @@ function DishForm({
   onSave,
   onCancel,
 }: {
-  initial?: DraftDish;
-  // la disponibilità si gestisce col toggle sulla card, non dal form
-  onSave: (dish: Omit<DraftDish, 'id' | 'available'>) => void;
+  initial?: Dish;
+  // se il piatto è in vetrina si decide col toggle sulla card, non dal form
+  onSave: (dish: Omit<Dish, 'id'>) => void;
   onCancel: () => void;
 }) {
   const { d, locale } = useI18n();
@@ -424,7 +432,9 @@ function BookingField({
 export default function ShowcaseEditorPage() {
   const { d, locale } = useI18n();
   const params = useParams<{ id: string }>();
-  const { showcases, update } = useShowcases();
+  const { showcases, update, setDishOn } = useShowcases();
+  // Il catalogo è del partner: la vetrina dice solo quali piatti sono accesi
+  const { dishes: catalog, create: createDish, update: updateDish, remove: removeDish } = useDishes();
   const [editing, setEditing] = useState<'new' | string | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [viewer, setViewer] = useState<ViewerNeeds>(NO_VIEWER);
@@ -457,7 +467,7 @@ export default function ShowcaseEditorPage() {
   const showcase = showcases?.find((s) => s.id === params.id);
 
   // Prima lettura di localStorage ancora in corso
-  if (!showcases) {
+  if (!showcases || !catalog) {
     return <p className="text-sm text-gray-500">{d.common.loading}</p>;
   }
   if (!showcase) {
@@ -472,7 +482,8 @@ export default function ShowcaseEditorPage() {
   }
 
   const draft: ShowcaseDraft = showcase;
-  const setDraft = (next: ShowcaseDraft) => update(showcase.id, next);
+  const showcaseId = showcase.id;
+  const setDraft = (next: ShowcaseDraft) => update(showcaseId, next);
 
   function setBooking(patch: Partial<{ url: string; phone: string }>) {
     setDraft({ ...draft, links: { ...draft.links, booking: { ...draft.links.booking, ...patch } } });
@@ -585,12 +596,14 @@ export default function ShowcaseEditorPage() {
     setDraft({ ...draft, links: { ...draft.links, ...cleared } });
   }
 
+  // Tutto il catalogo, accesi e spenti: se mostrasse solo gli accesi, una
+  // vetrina nuova non avrebbe niente da accendere.
   // Senza categoria per primi, poi le categorie nell'ordine del set
   const dishGroups = [
-    { cat: null, dishes: draft.dishes.filter((dish) => dish.category === '') },
+    { cat: null, dishes: catalog.filter((dish) => dish.category === '') },
     ...DISH_CATEGORIES.map((cat) => ({
       cat: cat as (typeof DISH_CATEGORIES)[number] | null,
-      dishes: draft.dishes.filter((dish) => dish.category === cat.code),
+      dishes: catalog.filter((dish) => dish.category === cat.code),
     })),
   ].filter((g) => g.dishes.length > 0);
 
@@ -603,37 +616,17 @@ export default function ShowcaseEditorPage() {
     }));
   }
 
-  function saveDish(data: Omit<DraftDish, 'id' | 'available'>) {
+  // Il piatto nuovo nasce acceso in questa vetrina: è da qui che lo si crea
+  function saveDish(data: Omit<Dish, 'id'>) {
     if (editing === 'new') {
-      setDraft({
-        ...draft,
-        dishes: [...draft.dishes, { ...data, id: crypto.randomUUID(), available: true }],
-      });
+      setDishOn(showcaseId, createDish(data).id, true);
     } else if (editing) {
-      setDraft({
-        ...draft,
-        dishes: draft.dishes.map((dish) =>
-          dish.id === editing ? { ...dish, ...data } : dish
-        ),
-      });
+      updateDish(editing, data);
     }
     setEditing(null);
   }
 
-  function deleteDish(id: string) {
-    setDraft({ ...draft, dishes: draft.dishes.filter((dish) => dish.id !== id) });
-  }
-
-  function toggleDishAvailable(id: string) {
-    setDraft({
-      ...draft,
-      dishes: draft.dishes.map((dish) =>
-        dish.id === id ? { ...dish, available: !dish.available } : dish
-      ),
-    });
-  }
-
-  const preview = <SchedaPreview draft={draft} viewer={viewer} />;
+  const preview = <SchedaPreview draft={draft} dishes={showcaseDishes(catalog, draft)} viewer={viewer} />;
 
   return (
     // Scorre la pagina, non un pannello interno: così niente bordi che
@@ -957,7 +950,7 @@ export default function ShowcaseEditorPage() {
                           key={dish.id}
                           className="flex items-start justify-between gap-3 rounded-xl border border-gray-200 p-3.5"
                         >
-                          <div className={`flex min-w-0 gap-3 ${dish.available ? '' : 'opacity-50'}`}>
+                          <div className={`flex min-w-0 gap-3 ${draft.dishIds.includes(dish.id) ? '' : 'opacity-50'}`}>
                             {dish.photoUrl !== '' && (
                               <img
                                 src={dish.photoUrl}
@@ -968,7 +961,7 @@ export default function ShowcaseEditorPage() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 <p className="truncate text-sm font-medium text-gray-900">{dish.name}</p>
-                                {!dish.available && (
+                                {!draft.dishIds.includes(dish.id) && (
                                   <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
                                     {d.editor.dishHidden}
                                   </span>
@@ -1008,16 +1001,16 @@ export default function ShowcaseEditorPage() {
                             <button
                               type="button"
                               role="switch"
-                              aria-checked={dish.available}
-                              title={dish.available ? d.editor.dishAvailable : d.editor.dishHidden}
-                              onClick={() => toggleDishAvailable(dish.id)}
+                              aria-checked={draft.dishIds.includes(dish.id)}
+                              title={draft.dishIds.includes(dish.id) ? d.editor.dishAvailable : d.editor.dishHidden}
+                              onClick={() => setDishOn(showcaseId, dish.id, !draft.dishIds.includes(dish.id))}
                               className={`relative h-5 w-9 rounded-full transition-colors ${
-                                dish.available ? 'bg-[#4CAF50]' : 'bg-gray-300'
+                                draft.dishIds.includes(dish.id) ? 'bg-[#4CAF50]' : 'bg-gray-300'
                               }`}
                             >
                               <span
                                 className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                                  dish.available ? 'translate-x-4' : ''
+                                  draft.dishIds.includes(dish.id) ? 'translate-x-4' : ''
                                 }`}
                               />
                             </button>
@@ -1028,7 +1021,7 @@ export default function ShowcaseEditorPage() {
                               {d.common.edit}
                             </button>
                             <button
-                              onClick={() => deleteDish(dish.id)}
+                              onClick={() => removeDish(dish.id)}
                               className="text-red-600 hover:text-red-700"
                             >
                               {d.common.delete}

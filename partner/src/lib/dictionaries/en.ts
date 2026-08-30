@@ -74,7 +74,7 @@ const en: typeof it = {
     linkOne: 'link',
     linkOther: 'links',
     deleteTitle: 'Delete this showcase?',
-    deleteBody: 'Everything you put in it will be lost.',
+    deleteBody: 'This showcase’s links will be lost. Your dishes stay in your catalogue.',
     deleteEmpty: 'This showcase is still empty.',
     deleted: 'Showcase deleted',
     undo: 'Undo',
