@@ -4,8 +4,9 @@
 // quello che conta è dove il piatto era acceso — cancellarlo dal catalogo lo
 // toglie da tutte le vetrine insieme, non solo da quella che si sta guardando.
 // L'eliminazione resta comunque annullabile dal toast in lista.
-import { useEffect } from 'react';
+import { useId } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { useModal } from '@/lib/useModal';
 import type { Dish } from '@/lib/dishes';
 import type { Showcase } from '@/lib/showcases';
 
@@ -22,15 +23,8 @@ export default function DeleteDishDialog({
   onConfirm: () => void;
 }) {
   const { d } = useI18n();
-
-  // Esc chiude, come da qualsiasi finestra modale
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onCancel();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel]);
+  const panel = useModal<HTMLDivElement>(onCancel);
+  const titleId = useId();
 
   // Con una o due vetrine i nomi ci stanno e dicono di più del numero
   const summary =
@@ -44,14 +38,17 @@ export default function DeleteDishDialog({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={onCancel}
-      role="dialog"
-      aria-modal="true"
     >
       <div
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+        ref={panel}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-900">{d.dishes.deleteTitle}</h2>
+        <h2 id={titleId} className="text-lg font-semibold text-gray-900">{d.dishes.deleteTitle}</h2>
 
         <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
           <p className="truncate text-sm font-medium text-gray-900">{dish.name}</p>
@@ -69,7 +66,6 @@ export default function DeleteDishDialog({
           </button>
           <button
             onClick={onConfirm}
-            autoFocus
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
           >
             {d.common.delete}

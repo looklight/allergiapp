@@ -3,8 +3,9 @@
 // Maschera di creazione: si dà un nome alla vetrina e si vede in tre passi
 // cosa ci si fa dentro. I tre esempi sono gli elementi veri dell'editor e
 // della scheda (pill dei link, riga piatto con allergeni), non disegni.
-import { useEffect, useState } from 'react';
+import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { useModal } from '@/lib/useModal';
 import { allergenName } from '@/lib/allergens';
 import { LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
@@ -44,14 +45,8 @@ export default function NewShowcaseDialog({
   const { d, locale } = useI18n();
   const [name, setName] = useState('');
 
-  // Esc chiude, come da qualsiasi finestra modale
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onCancel();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel]);
+  const panel = useModal<HTMLDivElement>(onCancel);
+  const titleId = useId();
 
   // nello schema a sinistra c'è la vetrina: senza nome lo dice, non finge un locale
   const showcaseLabel = name.trim() || d.newShowcase.yourShowcase;
@@ -68,10 +63,17 @@ export default function NewShowcaseDialog({
       onClick={onCancel}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+        ref={panel}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">{d.newShowcase.title}</h2>
+        <h2 id={titleId} className="mb-4 text-lg font-semibold text-gray-900">
+          {d.newShowcase.title}
+        </h2>
 
         <label className="mb-1 block text-sm font-medium text-gray-700">
           {d.editor.venueNameLabel}
@@ -79,7 +81,6 @@ export default function NewShowcaseDialog({
         <input
           type="text"
           value={name}
-          autoFocus
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onCreate(name.trim());

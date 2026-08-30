@@ -4,8 +4,9 @@
 // perde (i link di quella vetrina), così la scelta è informata. I piatti
 // non si perdono: sono del catalogo, la vetrina teneva solo quali accendere.
 // L'eliminazione resta comunque annullabile dal toast in lista.
-import { useEffect } from 'react';
+import { useId } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { useModal } from '@/lib/useModal';
 import { countLinks, type Showcase } from '@/lib/showcases';
 
 export default function DeleteShowcaseDialog({
@@ -18,15 +19,8 @@ export default function DeleteShowcaseDialog({
   onConfirm: () => void;
 }) {
   const { d } = useI18n();
-
-  // Esc chiude, come da qualsiasi finestra modale
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onCancel();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel]);
+  const panel = useModal<HTMLDivElement>(onCancel);
+  const titleId = useId();
 
   const dishes = showcase.dishIds.length;
   const links = countLinks(showcase.links);
@@ -41,14 +35,17 @@ export default function DeleteShowcaseDialog({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={onCancel}
-      role="dialog"
-      aria-modal="true"
     >
       <div
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+        ref={panel}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-900">{d.home.deleteTitle}</h2>
+        <h2 id={titleId} className="text-lg font-semibold text-gray-900">{d.home.deleteTitle}</h2>
 
         <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
           <p className="truncate text-sm font-medium text-gray-900">
@@ -68,7 +65,6 @@ export default function DeleteShowcaseDialog({
           </button>
           <button
             onClick={onConfirm}
-            autoFocus
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
           >
             {d.common.delete}

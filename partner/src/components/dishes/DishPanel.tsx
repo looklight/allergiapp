@@ -3,8 +3,9 @@
 // Il pannello che entra da destra col piatto da creare o correggere. Tiene
 // anche la scelta delle vetrine, che si applica solo al salvataggio: chiudere
 // senza salvare non deve lasciare in giro un piatto acceso a metà.
-import { useEffect, useState } from 'react';
+import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { useModal } from '@/lib/useModal';
 import type { Dish } from '@/lib/dishes';
 import type { Showcase } from '@/lib/showcases';
 import DishForm from './DishForm';
@@ -26,29 +27,22 @@ export default function DishPanel({
 }) {
   const { d } = useI18n();
   const [inShowcases, setInShowcases] = useState<string[]>(initialShowcaseIds);
-
-  // Esc chiude, come da qualsiasi finestra modale
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  const panel = useModal<HTMLDivElement>(onClose);
+  const titleId = useId();
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end bg-black/40"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
       <div
-        className="h-full w-full max-w-[43rem] overflow-y-auto bg-white p-5 shadow-xl md:p-6"
+        ref={panel}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="h-full w-full max-w-[43rem] overflow-y-auto bg-white p-5 shadow-xl outline-none md:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {dish ? d.dishes.editTitle : d.dishes.newTitle}
           </h2>
           <button

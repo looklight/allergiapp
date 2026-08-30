@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
+import { useModal } from '@/lib/useModal';
 import { showcaseDishes, useDishes } from '@/lib/dishes';
 import { hasBooking, normalizeUrl, useShowcases, type ShowcaseDraft } from '@/lib/showcases';
 import { ALLERGENS } from '@/lib/allergens';
@@ -176,6 +177,49 @@ function BookingField({
           </svg>
         </button>
       </div>
+    </div>
+  );
+}
+
+// L'anteprima a schermo intero su telefono. È una finestra come le altre, e
+// come le altre deve chiudersi con Esc e non lasciare il fuoco sull'editor
+// che sta coprendo: per questo vive in un componente suo, montato solo
+// mentre è aperta.
+function MobilePreview({
+  viewer,
+  onToggleViewer,
+  onClose,
+  children,
+}: {
+  viewer: ViewerNeeds;
+  onToggleViewer: (kind: 'allergens' | 'diets', code: string) => void;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const { d } = useI18n();
+  const panel = useModal<HTMLDivElement>(onClose);
+
+  return (
+    <div
+      ref={panel}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-label={d.editor.previewButton}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/75 p-4 outline-none lg:hidden"
+    >
+      <div className="w-full max-w-[380px]">
+        <ViewerChips viewer={viewer} onToggle={onToggleViewer} compact />
+      </div>
+      <div className="max-h-full origin-center scale-[0.85] overflow-visible sm:scale-100">
+        <PhoneFrame>{children}</PhoneFrame>
+      </div>
+      <button
+        onClick={onClose}
+        className="mt-1 rounded-full bg-white px-5 py-2 text-sm font-medium text-gray-900 shadow-lg"
+      >
+        {d.common.close}
+      </button>
     </div>
   );
 }
@@ -831,20 +875,13 @@ export default function ShowcaseEditorPage() {
       </button>
 
       {showMobilePreview && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/75 p-4 lg:hidden">
-          <div className="w-full max-w-[380px]">
-            <ViewerChips viewer={viewer} onToggle={toggleViewer} compact />
-          </div>
-          <div className="max-h-full origin-center scale-[0.85] overflow-visible sm:scale-100">
-            <PhoneFrame>{preview}</PhoneFrame>
-          </div>
-          <button
-            onClick={() => setShowMobilePreview(false)}
-            className="mt-1 rounded-full bg-white px-5 py-2 text-sm font-medium text-gray-900 shadow-lg"
-          >
-            {d.common.close}
-          </button>
-        </div>
+        <MobilePreview
+          viewer={viewer}
+          onToggleViewer={toggleViewer}
+          onClose={() => setShowMobilePreview(false)}
+        >
+          {preview}
+        </MobilePreview>
       )}
     </div>
   );
