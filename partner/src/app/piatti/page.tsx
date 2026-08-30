@@ -56,13 +56,25 @@ export default function DishesPage() {
   }
 
   const search = query.trim().toLowerCase();
+  // Solo le categorie in cui il partner ha davvero dei piatti: una pill che
+  // non filtra niente è un bottone che non fa niente, e sono otto.
+  const usedCategories = [
+    ...((dishes ?? []).some((dish) => dish.category === '')
+      ? [{ code: '', label: d.dishes.noCategory }]
+      : []),
+    ...DISH_CATEGORIES.filter((cat) => (dishes ?? []).some((dish) => dish.category === cat.code)).map(
+      (cat) => ({ code: cat.code, label: cat[locale] })
+    ),
+  ];
+  // Eliminando l'ultimo piatto di una categoria la sua pill sparisce: se era
+  // quella selezionata il filtro resterebbe acceso su un criterio invisibile
+  const activeCategory =
+    category !== null && usedCategories.some((cat) => cat.code === category) ? category : null;
   const filtered = (dishes ?? []).filter(
     (dish) =>
-      (category === null || dish.category === category) &&
+      (activeCategory === null || dish.category === activeCategory) &&
       (search === '' || dish.name.toLowerCase().includes(search))
   );
-  // La pill "Senza categoria" compare solo se c'è qualcosa da filtrarci
-  const hasUncategorized = (dishes ?? []).some((dish) => dish.category === '');
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
   // Un piatto nuovo nasce acceso ovunque: chi ha un locale solo non deve
   // spuntare niente, chi ne ha di più vede subito le caselle e sceglie
@@ -122,18 +134,16 @@ export default function DishesPage() {
             </button>
           </div>
 
-          {/* Categorie: una riga sola, scorre se non ci sta (come nella maschera) */}
+          {/* Categorie: una riga sola, scorre se non ci sta (come nella maschera).
+              Con una categoria sola in uso non c'è niente da scegliere. */}
+          {usedCategories.length > 1 && (
           <div className="-mx-0.5 mb-4 flex gap-1.5 overflow-x-auto px-0.5 pb-0.5">
-            {[
-              { code: null, label: d.dishes.allCategories },
-              ...(hasUncategorized ? [{ code: '', label: d.dishes.noCategory }] : []),
-              ...DISH_CATEGORIES.map((cat) => ({ code: cat.code, label: cat[locale] })),
-            ].map(({ code, label }) => (
+            {[{ code: null as string | null, label: d.dishes.allCategories }, ...usedCategories].map(({ code, label }) => (
               <button
                 key={code ?? 'all'}
                 onClick={() => setCategory(code)}
                 className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  category === code
+                  activeCategory === code
                     ? 'border-gray-900 bg-gray-900 text-white'
                     : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                 }`}
@@ -142,6 +152,7 @@ export default function DishesPage() {
               </button>
             ))}
           </div>
+          )}
 
           {/* Intestazione delle colonne: solo da tablet in su, sotto le righe
               si impilano e i dati tornano una riga di testo sotto al nome */}
