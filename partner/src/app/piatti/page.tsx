@@ -5,13 +5,7 @@
 // toggle sulla vetrina o con le caselle in fondo alla maschera.
 import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import {
-  setDishShowcases,
-  showcasesWithDish,
-  useDishes,
-  useDishLanguages,
-  type Dish,
-} from '@/lib/dishes';
+import { setDishShowcases, showcasesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useShowcases } from '@/lib/showcases';
 import { DISH_CATEGORIES } from '@/lib/categories';
 import { ALLERGENS } from '@/lib/allergens';
@@ -19,7 +13,6 @@ import { DIETS } from '@/lib/diets';
 import DishRow from '@/components/dishes/DishRow';
 import DishPanel from '@/components/dishes/DishPanel';
 import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
-import DishLanguagesDialog from '@/components/dishes/DishLanguagesDialog';
 import UndoToast from '@/components/UndoToast';
 
 type SortKey = 'name' | 'category' | 'on';
@@ -62,7 +55,6 @@ export default function DishesPage() {
   const { d, locale } = useI18n();
   const { dishes, create, update, remove, restore } = useDishes();
   const { showcases, setDishOn } = useShowcases();
-  const { languages, toggle: toggleLanguage } = useDishLanguages();
   const [query, setQuery] = useState('');
   // null = tutte le categorie; '' = i piatti senza categoria
   const [category, setCategory] = useState<string | null>(null);
@@ -71,7 +63,6 @@ export default function DishesPage() {
   const [allergens, setAllergens] = useState<string[]>([]);
   const [diets, setDiets] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [languagesOpen, setLanguagesOpen] = useState(false);
   // A quale vetrina si riferiscono gli interruttori della tabella. Acceso è
   // uno stato per vetrina, non del piatto: con più vetrine bisogna dire quale.
   const [toggleTarget, setToggleTarget] = useState<string | null>(null);
@@ -246,25 +237,6 @@ export default function DishesPage() {
                 )}
               </button>
             )}
-            <button
-              onClick={() => setLanguagesOpen(true)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                (languages ?? []).length > 0
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-gray-300 text-gray-600 hover:border-gray-400'
-              }`}
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
-              </svg>
-              <span className="hidden sm:inline">{d.dishes.languages}</span>
-              {(languages ?? []).length > 0 && (
-                <span className="rounded-full bg-gray-900 px-1.5 text-[11px] font-medium text-white">
-                  {(languages ?? []).length}
-                </span>
-              )}
-            </button>
             <button
               ref={createButton}
               onClick={() => setEditing('new')}
@@ -447,14 +419,6 @@ export default function DishesPage() {
           initialShowcaseIds={editingShowcaseIds}
           onSave={saveDish}
           onClose={() => setEditing(null)}
-        />
-      )}
-
-      {languagesOpen && (
-        <DishLanguagesDialog
-          languages={languages ?? []}
-          onToggle={toggleLanguage}
-          onClose={() => setLanguagesOpen(false)}
         />
       )}
 

@@ -5,7 +5,7 @@
 // Non disegna il proprio contenitore: lo mette chi la ospita.
 import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { useDishLanguages, type Dish, type DishTranslation } from '@/lib/dishes';
+import { catalogLanguages, useDishes, type Dish, type DishTranslation } from '@/lib/dishes';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
@@ -54,25 +54,28 @@ export default function DishForm({
   const [allergens, setAllergens] = useState<string[]>(initial?.allergens ?? []);
   const [dietTags, setDietTags] = useState<string[]>(initial?.dietTags ?? []);
   const [photoError, setPhotoError] = useState<'read' | 'size' | null>(null);
-  // Le lingue scelte per il menù: i blocchi compaiono solo per quelle, e se
-  // non ne è stata scelta nessuna la sezione non esiste proprio
-  const { languages } = useDishLanguages();
+  // Le traduzioni si aggiungono qui, piatto per piatto: quasi tutti i
+  // ristoratori scriveranno solo in italiano, e chi ne vuole un'altra la
+  // aggiunge dove sta già scrivendo invece che in un'impostazione a parte.
   const [translations, setTranslations] = useState<DishTranslation[]>(initial?.translations ?? []);
+  // Le lingue già usate altrove nel catalogo si propongono per prime
+  const { dishes } = useDishes();
+  const used = catalogLanguages(dishes ?? []).filter(
+    (code) => !translations.some((t) => t.language === code)
+  );
   const fileInput = useRef<HTMLInputElement>(null);
 
-  function translation(language: string): DishTranslation {
-    return (
-      translations.find((t) => t.language === language) ?? { language, name: '', description: '' }
-    );
+  function setTranslation(index: number, patch: Partial<DishTranslation>) {
+    setTranslations((prev) => prev.map((t, i) => (i === index ? { ...t, ...patch } : t)));
   }
 
-  function setTranslation(language: string, patch: Partial<DishTranslation>) {
-    setTranslations((prev) => {
-      const found = prev.some((t) => t.language === language);
-      return found
-        ? prev.map((t) => (t.language === language ? { ...t, ...patch } : t))
-        : [...prev, { ...translation(language), ...patch }];
-    });
+  // Nasce senza lingua: il blocco mostra la tendina finché non se ne sceglie una
+  function addTranslation(language = '') {
+    setTranslations((prev) => [...prev, { language, name: '', description: '' }]);
+  }
+
+  function removeTranslation(index: number) {
+    setTranslations((prev) => prev.filter((_, i) => i !== index));
   }
 
   function toggle(list: string[], setList: (v: string[]) => void, code: string) {
@@ -183,38 +186,97 @@ export default function DishForm({
         className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
       />
 
-      {/* Le altre lingue stanno subito sotto ai campi che traducono. Il segna-
-          posto grigio è l'originale: mostra al partner cosa leggerà il cliente
-          se lascia il campo vuoto, che per il nome è il caso normale. */}
-      {(languages ?? []).length > 0 && (
-        <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
-          <p className="text-xs text-gray-500">{d.editor.translationsHint}</p>
-          {MENU_LANGUAGES.filter((lang) => (languages ?? []).includes(lang.code)).map((lang) => {
-            const t = translation(lang.code);
-            return (
-              <div key={lang.code} className="space-y-1.5">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  {lang.native}
-                </p>
-                <input
-                  type="text"
-                  value={t.name}
-                  onChange={(e) => setTranslation(lang.code, { name: e.target.value })}
-                  placeholder={name.trim() || d.editor.dishNamePlaceholder}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                />
-                <textarea
-                  value={t.description}
-                  onChange={(e) => setTranslation(lang.code, { description: e.target.value })}
-                  placeholder={description.trim() || d.editor.dishDescriptionPlaceholder}
-                  rows={2}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                />
+      {/* Le altre lingue stanno subito sotto ai campi che traducono, e si
+          aggiungono da qui: chi scrive solo in italiano vede un bottone
+          smorto, chi ne vuole una la aggiunge senza uscire dalla scheda.
+          Il segnaposto grigio è l'originale: mostra cosa leggerà il cliente
+          se il campo resta vuoto, che per il nome è il caso normale. */}
+      <div className="space-y-2">
+        {translations.length > 0 && (
+          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+            <p className="text-xs text-gray-500">{d.editor.translationsHint}</p>
+            {translations.map((t, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  {t.language === '' ? (
+                    <select
+                      value=""
+                      autoFocus
+                      onChange={(e) => setTranslation(i, { language: e.target.value })}
+                      className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
+                    >
+                      <option value="">{d.editor.languagePlaceholder}</option>
+                      {MENU_LANGUAGES.filter(
+                        (lang) => !translations.some((x, j) => j !== i && x.language === lang.code)
+                      ).map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.native}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="min-w-0 flex-1 truncate text-xs font-medium uppercase tracking-wide text-gray-400">
+                      {MENU_LANGUAGES.find((lang) => lang.code === t.language)?.native ?? t.language}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeTranslation(i)}
+                    aria-label={d.editor.removeLanguage}
+                    title={d.editor.removeLanguage}
+                    className="shrink-0 text-gray-400 transition-colors hover:text-red-600"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
+                {t.language !== '' && (
+                  <>
+                    <input
+                      type="text"
+                      value={t.name}
+                      onChange={(e) => setTranslation(i, { name: e.target.value })}
+                      placeholder={name.trim() || d.editor.dishNamePlaceholder}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                    />
+                    <textarea
+                      value={t.description}
+                      onChange={(e) => setTranslation(i, { description: e.target.value })}
+                      placeholder={description.trim() || d.editor.dishDescriptionPlaceholder}
+                      rows={2}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                    />
+                  </>
+                )}
               </div>
-            );
-          })}
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-1.5">
+          {/* Le lingue già usate altrove: un tocco solo, senza ripescarle */}
+          {used.map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => addTranslation(code)}
+              className="rounded-full border border-dashed border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:border-gray-500 hover:text-gray-900"
+            >
+              + {MENU_LANGUAGES.find((lang) => lang.code === code)?.native ?? code}
+            </button>
+          ))}
+          {translations.some((t) => t.language === '') ? null : (
+            <button
+              type="button"
+              onClick={() => addTranslation()}
+              className="rounded-full border border-dashed border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:border-gray-500 hover:text-gray-900"
+            >
+              + {d.editor.addLanguage}
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {photoError && (
         <p className="text-xs text-red-600">
@@ -311,9 +373,10 @@ export default function DishForm({
                 photoUrl,
                 allergens,
                 dietTags,
-                // le lingue tolte dalle impostazioni non si buttano via: se il
-                // partner le rimette, il lavoro fatto è ancora lì
-                translations: translations.map((t) => ({ ...t, name: t.name.trim() })),
+                // un blocco aperto e lasciato senza lingua non è una traduzione
+                translations: translations
+                  .filter((t) => t.language !== '')
+                  .map((t) => ({ ...t, name: t.name.trim() })),
               })
             }
             disabled={name.trim() === ''}

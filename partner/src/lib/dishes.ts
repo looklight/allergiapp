@@ -27,10 +27,6 @@ export interface Dish {
 }
 
 const DISHES_KEY = 'partner-dishes';
-// Le lingue in cui il partner vuole scrivere il suo menù. Sono del catalogo e
-// non della singola vetrina: i piatti sono suoi, le traduzioni pure.
-const LANGUAGES_KEY = 'partner-dish-languages';
-
 // `any` deliberato: v. il commento di readList in storage.ts
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeDish(parsed: any): Dish {
@@ -95,24 +91,15 @@ export function useDishes() {
   return { dishes, create, update, remove, restore };
 }
 
-function loadDishLanguages(): string[] {
-  return (readList(LANGUAGES_KEY, (raw) => String(raw)) ?? []).filter((code) => code !== '');
-}
-
-// Le lingue restano nell'ordine di MENU_LANGUAGES, non in quello in cui sono
-// state spuntate: nella maschera i blocchi devono stare sempre nello stesso
-// posto, o si cerca ogni volta dove si era finito.
-export function useDishLanguages() {
-  const [languages, setLanguages] = useStoredList(loadDishLanguages);
-
-  function toggle(code: string, on: boolean) {
-    const next = (languages ?? []).filter((c) => c !== code);
-    if (on) next.push(code);
-    setLanguages(next);
-    writeList(LANGUAGES_KEY, next);
+// Le lingue che il partner ha già usato da qualche parte nel catalogo: nella
+// maschera si propongono per prime, così dal secondo piatto in poi non si
+// ripesca la stessa lingua in fondo a un elenco di quindici.
+export function catalogLanguages(dishes: Dish[]): string[] {
+  const codes = new Set<string>();
+  for (const dish of dishes) {
+    for (const t of dish.translations) if (t.language !== '') codes.add(t.language);
   }
-
-  return { languages, toggle };
+  return [...codes];
 }
 
 // Il testo da mostrare in una lingua: la traduzione se c'è, altrimenti
