@@ -27,8 +27,10 @@ export function useModal<T extends HTMLElement>(onClose: () => void) {
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const items = () => [...(panel.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
-    // il primo elemento su cui si può agire; se non ce n'è, il pannello stesso
-    (items()[0] ?? panel.current)?.focus();
+    // Il primo elemento su cui si può agire; se non ce n'è, il pannello stesso.
+    // preventScroll perché il pannello entra animato da fuori schermo: dare il
+    // fuoco a qualcosa che è ancora là fuori farebbe rincorrere la pagina.
+    (items()[0] ?? panel.current)?.focus({ preventScroll: true });
 
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {

@@ -38,7 +38,7 @@ export default function UndoToast({
 
   useEffect(() => {
     const node = toast.current;
-    undoButton.current?.focus();
+    undoButton.current?.focus({ preventScroll: true });
     const timer = setTimeout(() => expire.current(), UNDO_MS);
     return () => {
       clearTimeout(timer);

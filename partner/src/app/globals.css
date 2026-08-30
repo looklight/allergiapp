@@ -43,3 +43,50 @@ body {
     transform: scale(0.7);
   }
 }
+
+/* Comparsa del pannello laterale (maschera del piatto).
+   Da telefono sale dal basso come un bottom sheet, che è il gesto con cui
+   l'app mostra le sue schede; da tablet in su entra da destra, dal bordo da
+   cui arriva davvero. Solo l'entrata: l'uscita è un'attesa fra il clic e la
+   pagina, e non aiuta nessuno.
+   Sono transform e opacity, quindi il browser le anima senza ridisegnare. */
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes panel-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes panel-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.overlay-enter {
+  animation: overlay-fade-in 180ms ease-out;
+}
+
+.panel-enter {
+  animation: panel-slide-up 260ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (min-width: 768px) {
+  .panel-enter {
+    animation-name: panel-slide-in;
+  }
+}
+
+/* Chi ha chiesto meno animazioni al sistema operativo lo ha chiesto sul
+   serio: il pannello compare e basta. */
+@media (prefers-reduced-motion: reduce) {
+  .overlay-enter,
+  .panel-enter {
+    animation: none;
+  }
+}

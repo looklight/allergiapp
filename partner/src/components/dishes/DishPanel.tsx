@@ -31,14 +31,14 @@ export default function DishPanel({
   const titleId = useId();
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
+    <div className="overlay-enter fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
       <div
         ref={panel}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="h-full w-full max-w-[43rem] overflow-y-auto bg-white p-5 shadow-xl outline-none md:p-6"
+        className="panel-enter h-full w-full max-w-[43rem] overflow-y-auto bg-white p-5 shadow-xl outline-none md:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between gap-3">
