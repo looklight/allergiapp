@@ -3,7 +3,7 @@
 // Il gestionale: il catalogo piatti del partner, che vive sopra le singole
 // vetrine. Qui si crea e si corregge un piatto; dove appare si decide col
 // toggle sulla vetrina o con le caselle in fondo alla maschera.
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { setDishShowcases, showcasesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useShowcases } from '@/lib/showcases';
@@ -11,9 +11,7 @@ import { DISH_CATEGORIES } from '@/lib/categories';
 import DishRow from '@/components/dishes/DishRow';
 import DishPanel from '@/components/dishes/DishPanel';
 import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
-
-// Quanto resta annullabile un'eliminazione, dal toast in fondo alla lista
-const UNDO_MS = 8000;
+import UndoToast from '@/components/UndoToast';
 
 export default function DishesPage() {
   const { d, locale } = useI18n();
@@ -31,13 +29,9 @@ export default function DishesPage() {
     index: number;
     showcaseIds: string[];
   } | null>(null);
-
-  // Scaduto il tempo il toast sparisce e l'eliminazione diventa definitiva
-  useEffect(() => {
-    if (!undoable) return;
-    const timer = setTimeout(() => setUndoable(null), UNDO_MS);
-    return () => clearTimeout(timer);
-  }, [undoable]);
+  // Punto fermo dove torna il fuoco quando il toast se ne va: la riga da cui
+  // era partito è stata eliminata
+  const createButton = useRef<HTMLButtonElement>(null);
 
   function saveDish(data: Omit<Dish, 'id'>, showcaseIds: string[]) {
     const id = editing === 'new' ? create(data).id : editing;
@@ -89,6 +83,7 @@ export default function DishesPage() {
           <p className="text-sm font-medium text-gray-900">{d.dishes.empty}</p>
           <p className="mt-1 text-sm text-gray-500">{d.dishes.emptyHint}</p>
           <button
+            ref={createButton}
             onClick={() => setEditing('new')}
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
           >
@@ -116,6 +111,7 @@ export default function DishesPage() {
               />
             </div>
             <button
+              ref={createButton}
               onClick={() => setEditing('new')}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
             >
@@ -202,22 +198,17 @@ export default function DishesPage() {
         />
       )}
 
-      {/* Toast di annullamento: come per le vetrine, l'eliminazione resta
-          reversibile per qualche secondo */}
       {undoable && (
-        <div
-          role="status"
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-gray-900 px-4 py-3 shadow-lg"
-        >
-          <span className="text-sm text-white">{d.dishes.deleted}</span>
-          <button
-            onClick={undoDelete}
-            className="text-sm font-medium text-white underline underline-offset-2 transition-opacity hover:opacity-80"
-          >
-            {d.dishes.undo}
-          </button>
-        </div>
+        <UndoToast
+          key={undoable.dish.id}
+          message={d.dishes.deleted}
+          undoLabel={d.dishes.undo}
+          onUndo={undoDelete}
+          onExpire={() => setUndoable(null)}
+          returnFocusTo={createButton}
+        />
       )}
+
     </div>
   );
 }

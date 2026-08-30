@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { useShowcases, countLinks, type Showcase } from '@/lib/showcases';
 import NewShowcaseDialog from '@/components/NewShowcaseDialog';
 import DeleteShowcaseDialog from '@/components/DeleteShowcaseDialog';
-
-// Quanto resta annullabile un'eliminazione, dal toast in fondo alla lista
-const UNDO_MS = 8000;
+import UndoToast from '@/components/UndoToast';
 
 export default function ShowcasesPage() {
   const { d } = useI18n();
@@ -23,13 +21,9 @@ export default function ShowcasesPage() {
   // Vetrina appena eliminata, con la posizione che aveva: finché il toast è
   // in piedi si può rimettere dov'era
   const [undoable, setUndoable] = useState<{ showcase: Showcase; index: number } | null>(null);
-
-  // Scaduto il tempo il toast sparisce e l'eliminazione diventa definitiva
-  useEffect(() => {
-    if (!undoable) return;
-    const timer = setTimeout(() => setUndoable(null), UNDO_MS);
-    return () => clearTimeout(timer);
-  }, [undoable]);
+  // Punto fermo dove torna il fuoco quando il toast se ne va: la card da cui
+  // era partito è stata eliminata
+  const createButton = useRef<HTMLButtonElement>(null);
 
   function confirmDelete(showcase: Showcase) {
     const index = (showcases ?? []).findIndex((s) => s.id === showcase.id);
@@ -136,6 +130,7 @@ export default function ShowcasesPage() {
           })}
 
           <button
+            ref={createButton}
             onClick={() => setCreating(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
           >
@@ -159,22 +154,17 @@ export default function ShowcasesPage() {
         />
       )}
 
-      {/* Toast di annullamento: l'eliminazione resta reversibile per qualche
-          secondo, la rete che serve davvero contro il click sbagliato */}
       {undoable && (
-        <div
-          role="status"
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-gray-900 px-4 py-3 shadow-lg"
-        >
-          <span className="text-sm text-white">{d.home.deleted}</span>
-          <button
-            onClick={undoDelete}
-            className="text-sm font-medium text-white underline underline-offset-2 transition-opacity hover:opacity-80"
-          >
-            {d.home.undo}
-          </button>
-        </div>
+        <UndoToast
+          key={undoable.showcase.id}
+          message={d.home.deleted}
+          undoLabel={d.home.undo}
+          onUndo={undoDelete}
+          onExpire={() => setUndoable(null)}
+          returnFocusTo={createButton}
+        />
       )}
+
     </div>
   );
 }
