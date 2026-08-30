@@ -87,12 +87,16 @@ export default function DishesPage() {
     setList(list.includes(code) ? list.filter((c) => c !== code) : [...list, code]);
   }
 
-  function saveDish(data: Omit<Dish, 'id'>, showcaseIds: string[]) {
-    const id = editing === 'new' ? create(data).id : editing;
-    if (!id) return;
-    if (editing !== 'new') update(id, data);
-    setDishShowcases(id, showcaseIds);
+  async function saveDish(data: Omit<Dish, 'id'>, showcaseIds: string[]) {
+    // Il pannello si chiude subito: la lista è già aggiornata in locale e
+    // far aspettare tre giri di rete davanti a un bottone "Salva" che non
+    // reagisce è peggio che scriverli in sottofondo.
+    const apertoSu = editing;
     setEditing(null);
+    const id = apertoSu === 'new' ? (await create(data))?.id : apertoSu;
+    if (!id) return;
+    if (apertoSu !== 'new') await update(id, data);
+    await setDishShowcases(id, showcaseIds);
   }
 
   function confirmDelete(dish: Dish) {

@@ -18,30 +18,30 @@ export default function ShowcasesPage() {
   const [renaming, setRenaming] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState('');
   const [deleting, setDeleting] = useState<Showcase | null>(null);
-  // Vetrina appena eliminata, con la posizione che aveva: finché il toast è
-  // in piedi si può rimettere dov'era
-  const [undoable, setUndoable] = useState<{ showcase: Showcase; index: number } | null>(null);
+  // Vetrina appena eliminata: finché il toast è in piedi si può rimettere.
+  // La posizione non serve più tenerla: l'ordine della lista è quello di
+  // creazione, quindi ripristinandola torna da sola dov'era.
+  const [undoable, setUndoable] = useState<Showcase | null>(null);
   // Punto fermo dove torna il fuoco quando il toast se ne va: la card da cui
   // era partito è stata eliminata
   const createButton = useRef<HTMLButtonElement>(null);
 
   function confirmDelete(showcase: Showcase) {
-    const index = (showcases ?? []).findIndex((s) => s.id === showcase.id);
     remove(showcase.id);
     setDeleting(null);
-    setUndoable({ showcase, index: index < 0 ? 0 : index });
+    setUndoable(showcase);
   }
 
   function undoDelete() {
     if (!undoable) return;
-    restore(undoable.showcase, undoable.index);
+    void restore(undoable);
     setUndoable(null);
   }
 
-  function handleCreate(venueName: string) {
-    const created = create(venueName);
+  async function handleCreate(venueName: string) {
+    const created = await create(venueName);
     setCreating(false);
-    router.push(`/vetrina/${created.id}`);
+    if (created) router.push(`/vetrina/${created.id}`);
   }
 
   function startRename(id: string, current: string) {
@@ -156,7 +156,7 @@ export default function ShowcasesPage() {
 
       {undoable && (
         <UndoToast
-          key={undoable.showcase.id}
+          key={undoable.id}
           message={d.home.deleted}
           undoLabel={d.home.undo}
           onUndo={undoDelete}

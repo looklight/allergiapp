@@ -3,12 +3,11 @@
 // Il catalogo piatti del partner: sta SOPRA le vetrine, perché lo stesso
 // ristoratore con due locali riusa gli stessi piatti. La vetrina ne tiene
 // solo gli id accesi, quindi da qui si scrive anche là — mai il contrario.
-import { readList, useStoredList, writeList } from './storage';
-import { rewriteShowcases, type Showcase, type ShowcaseDraft } from './showcases';
+// Dal 30/08 vive in partner_dishes invece che nel localStorage.
+import { supabase } from './supabase';
+import { currentUserId, useRemoteList } from './storage';
+import type { Showcase, ShowcaseDraft } from './showcases';
 
-// Nome e descrizione in un'altra lingua. Campi facoltativi uno per uno: il
-// caso normale è tradurre la descrizione e lasciare il nome com'è, perché
-// "Carbonara" resta "Carbonara" e serve al cliente per dirlo al cameriere.
 export interface DishTranslation {
   language: string; // codice da MENU_LANGUAGES
   name: string;
@@ -20,80 +19,140 @@ export interface Dish {
   name: string; // l'originale: c'è sempre ed è il ripiego di ogni traduzione
   description: string;
   category: string; // codici da DISH_CATEGORIES; '' = nessuna categoria
-  photoUrl: string; // data-URL ridimensionato (localStorage); Storage in futuro
+  photoUrl: string;
   allergens: string[]; // codici da allergens.code (presenti nel piatto)
   dietTags: string[]; // codici da DIETS (compatibilità dichiarate)
   translations: DishTranslation[];
 }
 
-const DISHES_KEY = 'partner-dishes';
-// `any` deliberato: v. il commento di readList in storage.ts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeDish(parsed: any): Dish {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Il database usa NULL per "senza categoria" e per i campi non compilati;
+// l'interfaccia lavora con stringhe vuote. La conversione sta qui, in un
+// punto solo, e non sparsa nei componenti.
+function toDish(row: any): Dish {
   return {
-    id: typeof parsed?.id === 'string' ? parsed.id : crypto.randomUUID(),
-    name: typeof parsed?.name === 'string' ? parsed.name : '',
-    description: typeof parsed?.description === 'string' ? parsed.description : '',
-    category: typeof parsed?.category === 'string' ? parsed.category : '',
-    photoUrl: typeof parsed?.photoUrl === 'string' ? parsed.photoUrl : '',
-    allergens: Array.isArray(parsed?.allergens) ? parsed.allergens : [],
-    dietTags: Array.isArray(parsed?.dietTags) ? parsed.dietTags : [],
-    translations: Array.isArray(parsed?.translations)
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        parsed.translations.map((t: any) => ({
-          language: typeof t?.language === 'string' ? t.language : '',
-          name: typeof t?.name === 'string' ? t.name : '',
-          description: typeof t?.description === 'string' ? t.description : '',
-        }))
-      : [],
+    id: row.id,
+    name: row.name ?? '',
+    description: row.description ?? '',
+    category: row.category ?? '',
+    photoUrl: row.photo_url ?? '',
+    allergens: row.declared_allergens ?? [],
+    dietTags: row.diet_tags ?? [],
+    translations: (row.partner_dish_translations ?? []).map((t: any) => ({
+      language: t.language,
+      name: t.name ?? '',
+      description: t.description ?? '',
+    })),
   };
 }
 
-function loadDishes(): Dish[] {
-  return readList(DISHES_KEY, normalizeDish) ?? [];
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+function fromDish(data: Omit<Dish, 'id'>) {
+  return {
+    name: data.name,
+    description: data.description.trim() || null,
+    category: data.category || null,
+    photo_url: data.photoUrl || null,
+    declared_allergens: data.allergens,
+    diet_tags: data.dietTags,
+  };
 }
 
-// dishes è null finché il localStorage non è stato letto (solo client)
+async function loadDishes(): Promise<Dish[]> {
+  const { data } = await supabase
+    .from('partner_dishes')
+    .select('*, partner_dish_translations(language, name, description)')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true });
+  return (data ?? []).map(toDish);
+}
+
+// Le traduzioni si riscrivono tutte: sono poche e i campi vuoti non vanno
+// salvati, quindi calcolare la differenza costerebbe più di quanto risparmi.
+async function saveTranslations(dishId: string, translations: DishTranslation[]) {
+  await supabase.from('partner_dish_translations').delete().eq('dish_id', dishId);
+  const righe = translations
+    .filter((t) => t.language !== '' && (t.name.trim() !== '' || t.description.trim() !== ''))
+    .map((t) => ({
+      dish_id: dishId,
+      language: t.language,
+      name: t.name.trim() || null,
+      description: t.description.trim() || null,
+    }));
+  if (righe.length > 0) await supabase.from('partner_dish_translations').insert(righe);
+}
+
+// dishes è null finché la prima lettura non è tornata
 export function useDishes() {
-  const [dishes, setDishes] = useStoredList(loadDishes);
+  const { list: dishes, setList, reload } = useRemoteList(loadDishes);
 
-  function persist(next: Dish[]) {
-    setDishes(next);
-    writeList(DISHES_KEY, next);
+  async function create(data: Omit<Dish, 'id'>): Promise<Dish | null> {
+    const ownerId = await currentUserId();
+    if (!ownerId) return null;
+    const { data: row } = await supabase
+      .from('partner_dishes')
+      .insert({ owner_user_id: ownerId, ...fromDish(data) })
+      .select('id')
+      .single();
+    if (!row) return null;
+    await saveTranslations(row.id, data.translations);
+    const creato: Dish = { ...data, id: row.id };
+    setList([...(dishes ?? []), creato]);
+    return creato;
   }
 
-  function create(data: Omit<Dish, 'id'>): Dish {
-    const created: Dish = { ...data, id: crypto.randomUUID() };
-    persist([...(dishes ?? []), created]);
-    return created;
+  async function update(id: string, data: Omit<Dish, 'id'>) {
+    setList((dishes ?? []).map((dish) => (dish.id === id ? { ...data, id } : dish)));
+    await supabase.from('partner_dishes').update(fromDish(data)).eq('id', id);
+    await saveTranslations(id, data.translations);
   }
 
-  function update(id: string, data: Omit<Dish, 'id'>) {
-    persist((dishes ?? []).map((dish) => (dish.id === id ? { ...data, id } : dish)));
+  // Il piatto eliminato sparisce anche dalle vetrine in cui era acceso: se ne
+  // occupa il database con la cascata sull'accostamento.
+  async function remove(id: string) {
+    setList((dishes ?? []).filter((dish) => dish.id !== id));
+    await supabase.from('partner_dishes').delete().eq('id', id);
   }
 
-  // Il piatto eliminato sparisce anche dalle vetrine in cui era acceso:
-  // un id orfano lì dentro non mostrerebbe niente, ma resterebbe nel conteggio.
-  function remove(id: string) {
-    persist((dishes ?? []).filter((dish) => dish.id !== id));
-    setDishShowcases(id, []);
-  }
-
-  // Ripristino dopo l'undo: il piatto torna dov'era nel catalogo e si
-  // riaccende nelle vetrine in cui era acceso prima
-  function restore(dish: Dish, index: number, showcaseIds: string[]) {
-    const next = [...(dishes ?? [])];
-    next.splice(index, 0, dish);
-    persist(next);
-    setDishShowcases(dish.id, showcaseIds);
+  // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
+  // nelle vetrine in cui era acceso prima.
+  async function restore(dish: Dish, _index: number, showcaseIds: string[]) {
+    const ownerId = await currentUserId();
+    if (!ownerId) return;
+    await supabase.from('partner_dishes').insert({
+      id: dish.id,
+      owner_user_id: ownerId,
+      ...fromDish(dish),
+    });
+    await saveTranslations(dish.id, dish.translations);
+    await setDishShowcases(dish.id, showcaseIds);
+    await reload();
   }
 
   return { dishes, create, update, remove, restore };
 }
 
-// Le lingue che il partner ha già usato da qualche parte nel catalogo: nella
-// maschera si propongono per prime, così dal secondo piatto in poi non si
-// ripesca la stessa lingua in fondo a un elenco di quindici.
+// Accende un piatto esattamente nelle vetrine elencate e lo spegne nelle
+// altre: le caselle "In vetrina" della maschera ne cambiano più d'una insieme.
+export async function setDishShowcases(dishId: string, showcaseIds: string[]) {
+  const ownerId = await currentUserId();
+  if (!ownerId) return;
+  await supabase.from('partner_showcase_dishes').delete().eq('dish_id', dishId);
+  if (showcaseIds.length > 0) {
+    await supabase.from('partner_showcase_dishes').insert(
+      showcaseIds.map((showcaseId) => ({
+        showcase_id: showcaseId,
+        dish_id: dishId,
+        owner_user_id: ownerId,
+      }))
+    );
+  }
+}
+
+// Le lingue già usate nel catalogo: nella maschera si propongono per prime,
+// così dal secondo piatto in poi non si ripesca la stessa in fondo a quindici.
 export function catalogLanguages(dishes: Dish[]): string[] {
   const codes = new Set<string>();
   for (const dish of dishes) {
@@ -102,34 +161,7 @@ export function catalogLanguages(dishes: Dish[]): string[] {
   return [...codes];
 }
 
-// Il testo da mostrare in una lingua: la traduzione se c'è, altrimenti
-// l'originale. Campo per campo, perché tradurre la descrizione e lasciare il
-// nome è la norma e non deve lasciare buchi.
-export function dishText(dish: Dish, language: string): { name: string; description: string } {
-  const t = dish.translations.find((x) => x.language === language);
-  return {
-    name: t?.name.trim() ? t.name : dish.name,
-    description: t?.description.trim() ? t.description : dish.description,
-  };
-}
-
-// Accende un piatto esattamente nelle vetrine elencate e lo spegne nelle
-// altre, in una scrittura sola: le caselle "In vetrina" del gestionale ne
-// cambiano più d'una insieme, e chiamare setDishOn in fila lavorerebbe ogni
-// volta su uno stato già vecchio.
-export function setDishShowcases(dishId: string, showcaseIds: string[]) {
-  rewriteShowcases((s) => {
-    const on = showcaseIds.includes(s.id);
-    if (on === s.dishIds.includes(dishId)) return s;
-    return {
-      ...s,
-      dishIds: on ? [...s.dishIds, dishId] : s.dishIds.filter((id) => id !== dishId),
-    };
-  });
-}
-
-// Piatti accesi in una vetrina, nell'ordine del catalogo (che è l'ordine in
-// cui il partner li ha creati): non c'è un ordinamento per vetrina.
+// Piatti accesi in una vetrina, nell'ordine del catalogo
 export function showcaseDishes(dishes: Dish[], showcase: ShowcaseDraft): Dish[] {
   return dishes.filter((dish) => showcase.dishIds.includes(dish.id));
 }
@@ -137,4 +169,14 @@ export function showcaseDishes(dishes: Dish[], showcase: ShowcaseDraft): Dish[] 
 // In quante vetrine un piatto è acceso (colonna del gestionale)
 export function showcasesWithDish(showcases: Showcase[], dishId: string): Showcase[] {
   return showcases.filter((s) => s.dishIds.includes(dishId));
+}
+
+// Il testo da mostrare in una lingua: la traduzione se c'è, altrimenti
+// l'originale. Campo per campo.
+export function dishText(dish: Dish, language: string): { name: string; description: string } {
+  const t = dish.translations.find((x) => x.language === language);
+  return {
+    name: t?.name.trim() ? t.name : dish.name,
+    description: t?.description.trim() ? t.description : dish.description,
+  };
 }

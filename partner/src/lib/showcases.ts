@@ -1,9 +1,9 @@
 'use client';
 
 // Le vetrine del partner: una per locale, con i suoi link e i piatti accesi.
-// Per ora vivono in localStorage; passeranno alle tabelle partner_*
-// (migration 700) quando verrà applicata.
-import { readList, useStoredList, writeList } from './storage';
+// Dal 30/08 vivono nelle tabelle partner_* invece che nel localStorage.
+import { supabase } from './supabase';
+import { currentUserId, notifyChange, useDebouncedSave, useRemoteList } from './storage';
 
 export interface MenuLink {
   language: string; // codice lingua; '' = predefinito (fallback)
@@ -26,21 +26,16 @@ export interface BookingLink {
 export interface DraftLinks {
   booking: BookingLink;
   website: string;
-  // più servizi delivery: un link solo apre diretto, con più link l'app
-  // mostra un bottom sheet di scelta
   deliveries: DeliveryLink[];
-  // più menù per lingua: l'app mostra quello nella lingua dell'utente,
-  // altrimenti il primo della lista
   menus: MenuLink[];
 }
 
 export interface ShowcaseDraft {
-  // Nome della vetrina: la identifica nella lista, NON è il nome del locale
-  // (quello arriverà dall'associazione; l'anteprima mostra un nome di esempio).
+  // Nome che il partner dà alla vetrina per riconoscerla nella sua lista.
+  // NON è il nome del locale: quello arriva dalla scheda con il claim.
   venueName: string;
   // Piatti del catalogo accesi in questa vetrina. È l'UNICO stato di
-  // disponibilità: spegnerne uno qui non lo tocca nelle altre vetrine, e
-  // il piatto resta comunque nel catalogo.
+  // disponibilità: spegnerne uno qui non lo tocca nelle altre vetrine.
   dishIds: string[];
   links: DraftLinks;
 }
@@ -49,119 +44,176 @@ export interface Showcase extends ShowcaseDraft {
   id: string;
 }
 
-function emptyDraft(): ShowcaseDraft {
-  return {
-    venueName: '',
-    // una vetrina nuova nasce con tutti i piatti spenti: li accende il partner
-    dishIds: [],
-    links: {
-      booking: { url: '', phone: '' },
-      website: '',
-      // vuoti: i link si accendono dalle pill dell'editor
-      deliveries: [],
-      menus: [],
-    },
-  };
+function emptyLinks(): DraftLinks {
+  return { booking: { url: '', phone: '' }, website: '', deliveries: [], menus: [] };
 }
 
-const STORAGE_KEY = 'partner-showcases';
-const LEGACY_KEY = 'partner-showcase-draft'; // bozza singola pre-lista
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Riporta qualunque bozza salvata (anche da versioni precedenti) alla forma
-// corrente. `any` deliberato: v. il commento di readList in storage.ts.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeDraft(parsed: any): ShowcaseDraft {
-  const rawLinks = parsed?.links ?? {};
-  return {
-    venueName: typeof parsed?.venueName === 'string' ? parsed.venueName : '',
-    dishIds: Array.isArray(parsed?.dishIds) ? parsed.dishIds : [],
-    links: {
-      // bozze salvate quando la prenotazione era solo un link
-      booking:
-        typeof rawLinks.booking === 'string'
-          ? { url: rawLinks.booking, phone: '' }
-          : { url: rawLinks.booking?.url ?? '', phone: rawLinks.booking?.phone ?? '' },
-      website: rawLinks.website ?? '',
-      // liste vuote ammesse: il link semplicemente non è attivo
-      deliveries: Array.isArray(rawLinks.deliveries)
-        ? rawLinks.deliveries
-        // bozze salvate col vecchio campo `delivery` singolo
-        : typeof rawLinks.delivery === 'string' && rawLinks.delivery.trim() !== ''
-          ? [{ provider: '', label: '', url: rawLinks.delivery }]
-          : [],
-      menus: Array.isArray(rawLinks.menus)
-        ? rawLinks.menus
-        // bozze salvate col vecchio campo `menu` singolo
-        : typeof rawLinks.menu === 'string' && rawLinks.menu.trim() !== ''
-          ? [{ language: '', url: rawLinks.menu }]
-          : [],
-    },
-  };
-}
-
-function loadShowcases(): Showcase[] {
-  const saved = readList(STORAGE_KEY, (raw) => ({ id: raw.id, ...normalizeDraft(raw) }));
-  if (saved) return saved;
-
-  // migrazione: la vecchia bozza singola diventa la prima vetrina
-  try {
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      const first: Showcase = { id: crypto.randomUUID(), ...normalizeDraft(JSON.parse(legacy)) };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([first]));
-      localStorage.removeItem(LEGACY_KEY);
-      return [first];
+// Le righe di partner_links diventano la forma che l'editor si aspetta:
+// una prenotazione sola, un sito solo, e liste per delivery e menù.
+function toLinks(righe: any[]): DraftLinks {
+  const links = emptyLinks();
+  for (const r of righe ?? []) {
+    if (r.kind === 'booking') {
+      links.booking = { url: r.url ?? '', phone: r.phone ?? '' };
+    } else if (r.kind === 'website') {
+      links.website = r.url ?? '';
+    } else if (r.kind === 'delivery') {
+      links.deliveries.push({ provider: r.provider ?? '', label: r.label ?? '', url: r.url ?? '' });
+    } else if (r.kind === 'menu') {
+      links.menus.push({ language: r.language ?? '', url: r.url ?? '' });
     }
-  } catch {
-    // bozza illeggibile: si riparte vuoti
   }
-  return [];
+  return links;
 }
 
-// Scrittura fuori dagli hook: rilegge dal localStorage invece di partire dallo
-// stato di React, perché chi chiama (il catalogo) può non avere l'hook montato.
-export function rewriteShowcases(change: (showcase: Showcase) => Showcase) {
-  writeList(STORAGE_KEY, loadShowcases().map(change));
+// …e viceversa. Solo le righe che portano da qualche parte: il database ha un
+// vincolo che rifiuta un link senza indirizzo (tranne la prenotazione col
+// telefono), e comunque una riga vuota non è un link.
+function fromLinks(showcaseId: string, links: DraftLinks) {
+  const righe: Record<string, unknown>[] = [];
+  const booking = links.booking;
+  if (booking.url.trim() !== '' || booking.phone.trim() !== '') {
+    righe.push({
+      showcase_id: showcaseId,
+      kind: 'booking',
+      url: booking.url.trim() || null,
+      phone: booking.phone.trim() || null,
+    });
+  }
+  if (links.website.trim() !== '') {
+    righe.push({ showcase_id: showcaseId, kind: 'website', url: links.website.trim() });
+  }
+  links.deliveries.forEach((del, i) => {
+    if (del.url.trim() === '') return;
+    righe.push({
+      showcase_id: showcaseId,
+      kind: 'delivery',
+      url: del.url.trim(),
+      provider: del.provider || null,
+      label: del.label || null,
+      sort_order: i,
+    });
+  });
+  links.menus.forEach((menu, i) => {
+    if (menu.url.trim() === '') return;
+    righe.push({
+      showcase_id: showcaseId,
+      kind: 'menu',
+      url: menu.url.trim(),
+      language: menu.language || null,
+      sort_order: i,
+    });
+  });
+  return righe;
 }
 
-// showcases è null finché il localStorage non è stato letto (solo client)
+// Una query sola con gli innesti: vetrine, i loro link e gli id dei piatti
+// accesi. Le RLS mostrano solo le proprie, quindi non serve filtrare.
+async function loadShowcases(): Promise<Showcase[]> {
+  const { data } = await supabase
+    .from('partner_showcases')
+    .select('id, venue_name, partner_links(*), partner_showcase_dishes(dish_id)')
+    .order('created_at', { ascending: true });
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    venueName: row.venue_name ?? '',
+    dishIds: (row.partner_showcase_dishes ?? []).map((d: any) => d.dish_id),
+    links: toLinks(row.partner_links),
+  }));
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+// Il contenuto di una vetrina si riscrive tutto: i link sono pochi, l'ordine
+// conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.
+async function saveShowcaseContent(showcase: Showcase) {
+  await supabase
+    .from('partner_showcases')
+    .update({ venue_name: showcase.venueName })
+    .eq('id', showcase.id);
+  await supabase.from('partner_links').delete().eq('showcase_id', showcase.id);
+  const righe = fromLinks(showcase.id, showcase.links);
+  if (righe.length > 0) await supabase.from('partner_links').insert(righe);
+}
+
+// showcases è null finché la prima lettura non è tornata
 export function useShowcases() {
-  const [showcases, setShowcases] = useStoredList(loadShowcases);
+  const { list: showcases, setList, reload } = useRemoteList(loadShowcases);
+  // L'editor cambia la bozza a ogni tasto: si scrive dopo la pausa
+  const { schedule } = useDebouncedSave(saveShowcaseContent);
 
-  function persist(next: Showcase[]) {
-    setShowcases(next);
-    writeList(STORAGE_KEY, next);
+  async function create(venueName = ''): Promise<Showcase | null> {
+    const ownerId = await currentUserId();
+    if (!ownerId) return null;
+    const { data } = await supabase
+      .from('partner_showcases')
+      .insert({ owner_user_id: ownerId, venue_name: venueName })
+      .select('id')
+      .single();
+    if (!data) return null;
+    const creata: Showcase = { id: data.id, venueName, dishIds: [], links: emptyLinks() };
+    setList([...(showcases ?? []), creata]);
+    notifyChange(); // la barra laterale elenca le vetrine
+    return creata;
   }
 
-  function create(venueName = ''): Showcase {
-    const created: Showcase = { id: crypto.randomUUID(), ...emptyDraft(), venueName };
-    persist([...(showcases ?? []), created]);
-    return created;
-  }
-
+  // Contenuto della vetrina: nome e link. NON tocca i piatti accesi, che
+  // passano da setDishOn — l'editor non li cambia mai per questa strada.
   function update(id: string, draft: ShowcaseDraft) {
-    persist((showcases ?? []).map((s) => (s.id === id ? { ...draft, id } : s)));
+    const next = (showcases ?? []).map((s) => (s.id === id ? { ...draft, id } : s));
+    setList(next);
+    const aggiornata = next.find((s) => s.id === id);
+    if (aggiornata) schedule(aggiornata);
   }
 
-  // Rinomina dalla lista: tocca solo il nome, il resto della bozza resta com'è
   function rename(id: string, venueName: string) {
-    persist((showcases ?? []).map((s) => (s.id === id ? { ...s, venueName } : s)));
+    setList((showcases ?? []).map((s) => (s.id === id ? { ...s, venueName } : s)));
+    void supabase
+      .from('partner_showcases')
+      .update({ venue_name: venueName })
+      .eq('id', id)
+      .then(() => notifyChange());
   }
 
   function remove(id: string) {
-    persist((showcases ?? []).filter((s) => s.id !== id));
+    setList((showcases ?? []).filter((s) => s.id !== id));
+    void supabase
+      .from('partner_showcases')
+      .delete()
+      .eq('id', id)
+      .then(() => notifyChange());
   }
 
-  // Ripristino dopo l'undo: la vetrina torna dov'era, non in fondo alla lista
-  function restore(showcase: Showcase, index: number) {
-    const next = [...(showcases ?? [])];
-    next.splice(index, 0, showcase);
-    persist(next);
+  // Ripristino dopo l'undo: la vetrina torna com'era, id compreso, così i
+  // link e i piatti accesi si riattaccano alla stessa riga. Torna anche al
+  // suo posto nella lista, perché l'ordine è quello di creazione.
+  async function restore(showcase: Showcase) {
+    const ownerId = await currentUserId();
+    if (!ownerId) return;
+    await supabase
+      .from('partner_showcases')
+      .insert({ id: showcase.id, owner_user_id: ownerId, venue_name: showcase.venueName });
+    const righe = fromLinks(showcase.id, showcase.links);
+    if (righe.length > 0) await supabase.from('partner_links').insert(righe);
+    if (showcase.dishIds.length > 0) {
+      await supabase.from('partner_showcase_dishes').insert(
+        showcase.dishIds.map((dishId) => ({
+          showcase_id: showcase.id,
+          dish_id: dishId,
+          owner_user_id: ownerId,
+        }))
+      );
+    }
+    await reload();
+    notifyChange();
   }
 
-  // Accende o spegne un piatto in una vetrina: il toggle della griglia passa di qui
-  function setDishOn(showcaseId: string, dishId: string, on: boolean) {
-    persist(
+  // Accende o spegne un piatto in una vetrina: una riga che c'è o non c'è.
+  async function setDishOn(showcaseId: string, dishId: string, on: boolean) {
+    setList(
       (showcases ?? []).map((s) =>
         s.id !== showcaseId
           ? s
@@ -175,6 +227,19 @@ export function useShowcases() {
             }
       )
     );
+    if (on) {
+      const ownerId = await currentUserId();
+      if (!ownerId) return;
+      await supabase
+        .from('partner_showcase_dishes')
+        .insert({ showcase_id: showcaseId, dish_id: dishId, owner_user_id: ownerId });
+    } else {
+      await supabase
+        .from('partner_showcase_dishes')
+        .delete()
+        .eq('showcase_id', showcaseId)
+        .eq('dish_id', dishId);
+    }
   }
 
   return { showcases, create, update, rename, remove, restore, setDishOn };
@@ -182,7 +247,6 @@ export function useShowcases() {
 
 // Indirizzo scritto senza schema (www.osteria.it): l'app non saprebbe
 // aprirlo, quindi lo completiamo noi quando il campo perde il fuoco.
-// Vuoto o già con uno schema: lasciato esattamente com'è.
 export function normalizeUrl(value: string): string {
   const trimmed = value.trim();
   if (trimmed === '' || /^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
