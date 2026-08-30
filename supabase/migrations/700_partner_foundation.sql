@@ -1,7 +1,10 @@
 -- ============================================================
 -- 700_partner_foundation.sql
--- STATO: BOZZA (2026-07-27, rivista 2026-08-30) — NON APPLICATA
--- Da rivedere insieme prima di applicare via SQL editor.
+-- STATO: APPLICATA il 2026-08-30 via SQL editor.
+-- Scritta come bozza il 2026-07-27, rivista il 2026-08-30 dopo il
+-- lavoro sul portale (v. la nota sul catalogo qui sotto).
+-- Il tracking locale delle migration è fermo alla 045: questa,
+-- come tutte le 046+, è stata applicata a mano — MAI db push.
 --
 -- Fondazioni del portale partner (fase 1: claim self-service +
 -- dashboard compilabile come bozza privata).
