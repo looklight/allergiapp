@@ -4,6 +4,7 @@
 // capire dove sta. Su telefono le colonne spariscono e i loro dati tornano una
 // riga di testo sotto al nome, perché una tabella a cinque colonne su 380px
 // non si legge.
+import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import type { Dish } from '@/lib/dishes';
 import type { Showcase } from '@/lib/showcases';
@@ -14,9 +15,13 @@ import { categoryName } from '@/lib/categories';
 // deve restare alta una riga sola, o la lista smette di essere scorribile
 const ALLERGEN_CHIPS = 3;
 
-function PhotoPlaceholder() {
+function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-gray-300">
+    <span
+      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-gray-300 transition ${
+        dimmed ? 'opacity-50' : ''
+      }`}
+    >
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
         <circle cx="12" cy="13" r="3.5" />
@@ -44,6 +49,10 @@ export default function DishRow({
   onDelete: () => void;
 }) {
   const { d, locale } = useI18n();
+  // Gli allergeni in eccesso si aprono per riga: chi sta controllando un
+  // piatto vuole leggerli tutti, ma tenerli aperti su tutte le righe
+  // renderebbe la tabella una colonna di paragrafi
+  const [allAllergens, setAllAllergens] = useState(false);
 
   // Con una vetrina sola il nome dice più del numero; da due in su non ci sta
   const showcaseLabel =
@@ -53,15 +62,24 @@ export default function DishRow({
         ? showcases[0].venueName.trim() || d.home.unnamed
         : `${showcases.length} ${d.dishes.showcaseCount}`;
   const category = dish.category === '' ? '' : categoryName(dish.category, locale);
-  const chips = dish.allergens.slice(0, ALLERGEN_CHIPS);
+  const chips = allAllergens ? dish.allergens : dish.allergens.slice(0, ALLERGEN_CHIPS);
   const extra = dish.allergens.length - chips.length;
 
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      {/* Spento in questa vetrina: la foto si smorza come nella griglia della
+          vetrina, così scorrendo la tabella si distingue cosa è in scheda
+          senza dover leggere ogni interruttore */}
       {dish.photoUrl !== '' ? (
-        <img src={dish.photoUrl} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
+        <img
+          src={dish.photoUrl}
+          alt=""
+          className={`h-11 w-11 shrink-0 rounded-full object-cover transition ${
+            on === false ? 'opacity-40 grayscale' : ''
+          }`}
+        />
       ) : (
-        <PhotoPlaceholder />
+        <PhotoPlaceholder dimmed={on === false} />
       )}
 
       <button onClick={onEdit} className="min-w-0 flex-1 text-left">
@@ -96,7 +114,16 @@ export default function DishRow({
                 </span>
               );
             })}
-            {extra > 0 && <span className="text-[11px] text-gray-400">+{extra}</span>}
+            {(extra > 0 || allAllergens) && (
+              <button
+                onClick={() => setAllAllergens(!allAllergens)}
+                aria-expanded={allAllergens}
+                aria-label={dish.name}
+                className="rounded-full px-1 text-[11px] text-gray-400 transition-colors hover:text-gray-700"
+              >
+                {allAllergens ? '−' : `+${extra}`}
+              </button>
+            )}
           </>
         )}
       </span>
