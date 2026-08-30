@@ -96,7 +96,8 @@ export default function DishForm({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-4 md:px-6">
       {/* Categoria a scelta singola: le pill vanno a capo invece di scorrere,
           così si vedono tutte insieme senza doverne cercare una fuori campo.
           Ritoccare la pill accesa la spegne = nessuna categoria. */}
@@ -279,40 +280,41 @@ export default function DishForm({
 
       {children}
 
-      {/* Sempre in fondo alla vista, non in fondo al modulo: su telefono la
-          maschera è più lunga dello schermo e il salvataggio finiva sotto,
-          da cercare scorrendo. I margini negativi annullano il padding del
-          pannello, così la striscia bianca arriva ai bordi e il contenuto le
-          scorre sotto; il padding in basso tiene conto della barretta home.
-          Quando il modulo ci sta tutto, resta dov'era. */}
-      <div className="sticky bottom-0 -mx-5 -mb-5 space-y-2 border-t border-gray-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 md:-mx-6 md:-mb-6 md:px-6 md:pb-6">
-        {/* Quello che si dichiara resta dichiarazione del ristoratore. Testo
-            più piccolo e righe più strette per non rubare mezzo schermo al
-            telefono: le parole restano quelle, è una nota legale. */}
-        <p className="text-[11px] leading-snug text-gray-500">{d.editor.declarationNotice}</p>
+      </div>
 
-        {/* Salva in fondo a destra come nella card di un link (e nelle
-            maschere): Annulla lo precede, il primario resta l'ultimo */}
-        <div className="flex justify-end gap-2">
+      {/* Il piede sta fuori dalla parte che scorre. La nota va accanto ai
+          bottoni e non sopra: sta sulla stessa riga, quindi si legge insieme
+          alla decisione che accompagna e ruba meno schermo al telefono.
+          Il padding in basso tiene conto della barretta home. */}
+      <div className="flex shrink-0 items-center gap-4 border-t border-gray-200 px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:px-6 md:pb-3">
+        {/* Quello che si dichiara resta dichiarazione del ristoratore: parole
+            invariate, è una nota legale, solo più compatta */}
+        <p className="min-w-0 flex-1 text-[11px] leading-snug text-gray-500">
+          {d.editor.declarationNotice}
+        </p>
+
+        {/* Salva è l'azione: Annulla perde il bordo e resta un'uscita
+            disponibile, non una scelta da soppesare */}
+        <div className="flex shrink-0 items-center gap-1">
           <button
             onClick={onCancel}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
           >
             {d.common.cancel}
           </button>
           <button
             onClick={() =>
-              onSave({
-              name: name.trim(),
-              description,
-              category,
-              photoUrl,
-              allergens,
-              dietTags,
-              // le lingue tolte dalle impostazioni non si buttano via: se il
-              // partner le rimette, il lavoro fatto è ancora lì
-              translations: translations.map((t) => ({ ...t, name: t.name.trim() })),
-            })
+                onSave({
+                name: name.trim(),
+                description,
+                category,
+                photoUrl,
+                allergens,
+                dietTags,
+                // le lingue tolte dalle impostazioni non si buttano via: se il
+                // partner le rimette, il lavoro fatto è ancora lì
+                translations: translations.map((t) => ({ ...t, name: t.name.trim() })),
+              })
             }
             disabled={name.trim() === ''}
             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"

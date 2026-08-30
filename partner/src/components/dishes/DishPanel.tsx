@@ -39,10 +39,13 @@ export default function DishPanel({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="panel-enter relative h-full w-full max-w-[43rem] overflow-y-auto bg-white p-5 shadow-xl outline-none md:p-6"
+        className="panel-enter relative flex h-full w-full max-w-[43rem] flex-col overflow-hidden bg-white shadow-xl outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
+        {/* Tre fasce: intestazione ferma, corpo che scorre, piede fermo. Il
+            piede è fuori dalla parte che scorre, non appiccicato dentro: così
+            non c'è nessun bordo sotto cui possa passare del testo. */}
+        <div className="flex shrink-0 items-center justify-between gap-3 px-5 pb-4 pt-5 md:px-6 md:pt-6">
           <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {dish ? d.dishes.editTitle : d.dishes.newTitle}
           </h2>
