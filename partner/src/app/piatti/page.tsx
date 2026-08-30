@@ -15,6 +15,42 @@ import DishPanel from '@/components/dishes/DishPanel';
 import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
 import UndoToast from '@/components/UndoToast';
 
+type SortKey = 'name' | 'category' | 'on';
+
+// Intestazione che ordina: la freccia compare solo sulla colonna attiva, così
+// si vede a colpo d'occhio da cosa dipende l'ordine che si sta guardando.
+function SortHeader({
+  label,
+  sortKey,
+  sort,
+  onClick,
+}: {
+  label: string;
+  sortKey: SortKey;
+  sort: { key: SortKey; dir: 'asc' | 'desc' } | null;
+  onClick: (key: SortKey) => void;
+}) {
+  const active = sort?.key === sortKey;
+  return (
+    <button
+      onClick={() => onClick(sortKey)}
+      className={`inline-flex items-center gap-1 uppercase tracking-wide transition-colors hover:text-gray-700 ${
+        active ? 'text-gray-700' : ''
+      }`}
+    >
+      {label}
+      {active && (
+        <svg
+          className={`h-3 w-3 ${sort.dir === 'desc' ? 'rotate-180' : ''}`}
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        >
+          <path d="M6 15l6-6 6 6" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export default function DishesPage() {
   const { d, locale } = useI18n();
   const { dishes, create, update, remove, restore } = useDishes();
@@ -30,6 +66,10 @@ export default function DishesPage() {
   // A quale vetrina si riferiscono gli interruttori della tabella. Acceso è
   // uno stato per vetrina, non del piatto: con più vetrine bisogna dire quale.
   const [toggleTarget, setToggleTarget] = useState<string | null>(null);
+  // null = l'ordine del catalogo, cioè quello in cui il partner li ha creati
+  // (ed è anche l'ordine con cui l'app li mostra). Le intestazioni ci tornano
+  // al terzo clic, perché è un ordine che si vuole poter recuperare.
+  const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
   // 'new' = pannello aperto su un piatto da creare; un id = su quello
   const [editing, setEditing] = useState<'new' | string | null>(null);
   const [deleting, setDeleting] = useState<Dish | null>(null);
@@ -103,6 +143,29 @@ export default function DishesPage() {
       (activeAllergens.length === 0 || activeAllergens.some((code) => dish.allergens.includes(code))) &&
       (activeDiets.length === 0 || activeDiets.some((code) => dish.dietTags.includes(code)))
   );
+
+  // I piatti senza categoria per primi, come nella scheda dell'app
+  const categoryRank = (code: string) =>
+    code === '' ? -1 : DISH_CATEGORIES.findIndex((cat) => cat.code === code);
+
+  function compare(a: Dish, b: Dish) {
+    if (!sort) return 0;
+    const verso = sort.dir === 'asc' ? 1 : -1;
+    if (sort.key === 'name') return a.name.localeCompare(b.name, locale) * verso;
+    if (sort.key === 'category') return (categoryRank(a.category) - categoryRank(b.category)) * verso;
+    // acceso prima di spento, e a parità restano nell'ordine del catalogo
+    const on = (dish: Dish) => (targetShowcase?.dishIds.includes(dish.id) ? 0 : 1);
+    return (on(a) - on(b)) * verso;
+  }
+
+  const rows = sort === null ? filtered : [...filtered].sort(compare);
+
+  // Primo clic crescente, secondo decrescente, terzo si torna al catalogo
+  function toggleSort(key: SortKey) {
+    setSort((prev) =>
+      prev?.key !== key ? { key, dir: 'asc' } : prev.dir === 'asc' ? { key, dir: 'desc' } : null
+    );
+  }
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
   // Senza vetrine non c'è niente da accendere; con una sola è quella e basta
   const targetShowcase =
@@ -304,22 +367,28 @@ export default function DishesPage() {
               si impilano e i dati tornano una riga di testo sotto al nome */}
           <div className="hidden items-center gap-3 px-4 pb-2 text-xs font-medium uppercase tracking-wide text-gray-400 md:flex">
             <span className="w-11 shrink-0" />
-            <span className="min-w-0 flex-1">{d.dishes.colDish}</span>
-            <span className="w-24 shrink-0">{d.dishes.colCategory}</span>
+            <span className="min-w-0 flex-1">
+              <SortHeader label={d.dishes.colDish} sortKey="name" sort={sort} onClick={toggleSort} />
+            </span>
+            <span className="w-24 shrink-0">
+              <SortHeader label={d.dishes.colCategory} sortKey="category" sort={sort} onClick={toggleSort} />
+            </span>
             <span className="hidden w-44 shrink-0 lg:block">{d.dishes.colAllergens}</span>
             {targetShowcase && (
-              <span className="w-20 shrink-0 text-center">{d.dishes.colOn}</span>
+              <span className="flex w-20 shrink-0 justify-center">
+                <SortHeader label={d.dishes.colOn} sortKey="on" sort={sort} onClick={toggleSort} />
+              </span>
             )}
             <span className="w-28 shrink-0" />
           </div>
 
-          {filtered.length === 0 ? (
+          {rows.length === 0 ? (
             <p className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
               {d.dishes.noResults}
             </p>
           ) : (
             <div className="space-y-2">
-              {filtered.map((dish) => (
+              {rows.map((dish) => (
                 <DishRow
                   key={dish.id}
                   dish={dish}
@@ -337,7 +406,7 @@ export default function DishesPage() {
           )}
 
           <p className="mt-3 text-xs text-gray-400">
-            {filtered.length} {filtered.length === 1 ? d.dishes.countOne : d.dishes.countOther}
+            {rows.length} {rows.length === 1 ? d.dishes.countOne : d.dishes.countOther}
           </p>
         </>
       )}
