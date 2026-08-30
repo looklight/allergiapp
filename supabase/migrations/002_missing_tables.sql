@@ -1,11 +1,12 @@
--- STATO: APPLICATA SOLO IN PARTE (verificato sullo schema il 2026-08-30).
--- La tabella favorites in produzione NON ha la forma dichiarata qui:
--- niente colonna id, nessuna chiave primaria, nessuna foreign key,
--- nessun UNIQUE(user_id, restaurant_id) e nessuno dei due indici.
--- Ha solo user_id, restaurant_id, created_at. Conseguenze reali:
--- preferiti duplicabili, righe orfane possibili, e ogni lettura dei
--- preferiti di un utente è una scansione completa della tabella.
--- dish_likes invece è stata creata e poi rimossa dalla 027.
+-- STATO: APPLICATA (verificato sullo schema il 2026-08-30).
+-- La tabella favorites non esiste più: la 069 l'ha eliminata e ha creato
+-- una VISTA con lo stesso nome sopra collection_items, per non riscrivere
+-- il codice che leggeva i preferiti. Le regole di integrità stanno ora
+-- sulle tabelle vere: collection_items ha la chiave primaria sulla coppia
+-- (collection_id, restaurant_id) e le due chiavi esterne. Una vista non
+-- ha né vincoli né indici per definizione, e non è un difetto.
+-- dish_likes è stata creata e poi rimossa dalla 027; i suoi indici sono
+-- spariti con lei.
 -- Tabelle mancanti dalla migration iniziale
 
 -- ============================================
