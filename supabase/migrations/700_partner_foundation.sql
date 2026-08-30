@@ -29,6 +29,11 @@
 --      nell'altro e non lo toglie dal catalogo;
 --   3. eliminare una vetrina non porta via i piatti, che restano
 --      del partner (il portale lo dice già a chi cancella).
+-- NIENTE IMPORTAZIONE dal prototipo (deciso 2026-08-30): quello
+-- che oggi sta nel localStorage del portale sono prove, non dati
+-- da salvare. Al passaggio al database il catalogo riparte
+-- vuoto, e non va scritto nessun importatore.
+--
 -- Conseguenza sul menù digitale (fase futura): il prezzo NON
 -- starà su partner_dishes ma sull'accostamento piatto↔menù. È il
 -- motivo per cui qui una colonna prezzo non c'è: lo stesso piatto
