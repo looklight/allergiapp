@@ -107,7 +107,7 @@ const en: typeof it = {
     dishDescriptionPlaceholder: 'Description (optional): main ingredients, preparation…',
     dishAllergens: 'Allergens present in the dish',
     dishAllergensHint:
-      'Select the allergens {contained} in the dish, as already required by EU Reg. 1169/2011.',
+      'Select the {allergens contained in the dish}, as already required by EU Reg. 1169/2011.',
     dishTags: 'Declared compatibilities',
     dishTagsHint: 'Mark the compatibilities you can guarantee for the dish.',
     declarationNotice:

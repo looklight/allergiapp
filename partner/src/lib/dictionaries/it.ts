@@ -104,9 +104,9 @@ const it = {
     dishNamePlaceholder: 'Es. Spaghetti alla carbonara',
     dishDescriptionPlaceholder: 'Descrizione (facoltativa): ingredienti principali, preparazione…',
     dishAllergens: 'Allergeni presenti nel piatto',
-    // {…} = parola sottolineata nell'interfaccia
+    // {…} = parte sottolineata nell'interfaccia
     dishAllergensHint:
-      'Seleziona gli allergeni {contenuti} nel piatto, come già previsto dal Reg. UE 1169/2011.',
+      'Seleziona gli {allergeni contenuti nel piatto}, come già previsto dal Reg. UE 1169/2011.',
     dishTags: 'Compatibilità dichiarate',
     dishTagsHint: 'Indica le compatibilità che puoi garantire sul piatto.',
     declarationNotice:

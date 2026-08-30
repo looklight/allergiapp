@@ -11,10 +11,11 @@ import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
 import { fileToResizedDataUrl } from '@/lib/image';
 
-// Testo di aiuto con una parola sottolineata, segnata tra graffe nel dizionario.
-// Le graffe qui racchiudono la parola da sottolineare; quelle di fill() in
-// i18n.tsx racchiudono il NOME di un valore da sostituire: due usi diversi
-// che non si incontrano mai nella stessa frase.
+// Testo di aiuto con una parte sottolineata, segnata tra graffe nel dizionario.
+// Le graffe qui racchiudono il testo da sottolineare, che può essere una
+// parola o un pezzo di frase; quelle di fill() in i18n.tsx racchiudono il NOME
+// di un valore da sostituire: due usi diversi che non si incontrano mai nella
+// stessa frase.
 function EmphasizedText({ text }: { text: string }) {
   return (
     <>
