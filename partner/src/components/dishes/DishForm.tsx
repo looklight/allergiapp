@@ -226,29 +226,37 @@ export default function DishForm({
 
       {children}
 
-      {/* Prima del salvataggio: quello che si dichiara resta dichiarazione del ristoratore */}
-      <p className="border-t border-gray-200 pt-3 text-xs text-gray-500">
-        {d.editor.declarationNotice}
-      </p>
+      {/* Sempre in fondo alla vista, non in fondo al modulo: su telefono la
+          maschera è più lunga dello schermo e il salvataggio finiva sotto,
+          da cercare scorrendo. I margini negativi annullano il padding del
+          pannello, così la striscia bianca arriva ai bordi e il contenuto le
+          scorre sotto; il padding in basso tiene conto della barretta home.
+          Quando il modulo ci sta tutto, resta dov'era. */}
+      <div className="sticky bottom-0 -mx-5 -mb-5 space-y-2 border-t border-gray-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 md:-mx-6 md:-mb-6 md:px-6 md:pb-6">
+        {/* Quello che si dichiara resta dichiarazione del ristoratore. Testo
+            più piccolo e righe più strette per non rubare mezzo schermo al
+            telefono: le parole restano quelle, è una nota legale. */}
+        <p className="text-[11px] leading-snug text-gray-500">{d.editor.declarationNotice}</p>
 
-      {/* Salva in fondo a destra come nella card di un link (e nelle
-          maschere): Annulla lo precede, il primario resta l'ultimo */}
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={onCancel}
-          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          {d.common.cancel}
-        </button>
-        <button
-          onClick={() =>
-            onSave({ name: name.trim(), description, category, photoUrl, allergens, dietTags })
-          }
-          disabled={name.trim() === ''}
-          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
-        >
-          {d.common.save}
-        </button>
+        {/* Salva in fondo a destra come nella card di un link (e nelle
+            maschere): Annulla lo precede, il primario resta l'ultimo */}
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            {d.common.cancel}
+          </button>
+          <button
+            onClick={() =>
+              onSave({ name: name.trim(), description, category, photoUrl, allergens, dietTags })
+            }
+            disabled={name.trim() === ''}
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
+          >
+            {d.common.save}
+          </button>
+        </div>
       </div>
     </div>
   );
