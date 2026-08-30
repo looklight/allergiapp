@@ -66,6 +66,19 @@
 
 
 -- ============================================================
+-- TUTTO O NIENTE
+-- In PostgreSQL anche il DDL è transazionale: se una delle
+-- istruzioni qui sotto fallisce, il ROLLBACK riporta il
+-- database esattamente com'era. Senza, un errore a metà
+-- lascerebbe nove tabelle create a pezzi da smontare a mano
+-- capendo quali sono passate e quali no.
+-- Va eseguita TUTTA D'UN PEZZO: le chiavi composte
+-- dell'accostamento pretendono che vetrine e piatti esistano già.
+-- ============================================================
+BEGIN;
+
+
+-- ============================================================
 -- TABELLA: partner_accounts
 -- IL PROFILO PARTNER: l'entità "ristoratore", distinta dal
 -- profilo utente dell'app (profiles). Nasce SOLO da un atto
@@ -534,6 +547,9 @@ CREATE POLICY partner_audit_insert ON partner_audit_log
   FOR INSERT WITH CHECK (actor_user_id = auth.uid());
 CREATE POLICY partner_audit_admin_read ON partner_audit_log
   FOR SELECT USING (is_admin());
+
+
+COMMIT;
 
 
 -- ============================================================
