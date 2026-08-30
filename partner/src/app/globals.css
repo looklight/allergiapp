@@ -79,6 +79,22 @@ body {
   animation: panel-slide-up 260ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Le finestre centrate non arrivano da un bordo: si formano dove sono. Per
+   questo qui la dissolvenza va bene anche sul riquadro (un pannello che
+   scorre semitrasparente sembra rotto, una finestra che si forma no), con un
+   accenno di scala che le dà la spinta. Corta: è una domanda, e la risposta
+   la si vuole dare subito. */
+@keyframes dialog-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.dialog-enter {
+  animation: dialog-pop-in 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
 @media (min-width: 768px) {
   .panel-enter {
     animation-name: panel-slide-in;
@@ -89,7 +105,8 @@ body {
    serio: il pannello compare e basta. */
 @media (prefers-reduced-motion: reduce) {
   .backdrop-enter,
-  .panel-enter {
+  .panel-enter,
+  .dialog-enter {
     animation: none;
   }
 }
