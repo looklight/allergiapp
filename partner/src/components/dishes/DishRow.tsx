@@ -82,7 +82,14 @@ export default function DishRow({
         <PhotoPlaceholder dimmed={on === false} />
       )}
 
-      <button onClick={onEdit} className="min-w-0 flex-1 text-left">
+      {/* Spento: si smorzano foto, nome e categoria, cioè quello che descrive
+          il piatto. Restano piene le pill degli allergeni, che è l'informazione
+          per cui si viene in questa tabella, l'interruttore che deve restare
+          leggibile e le azioni, che smorzate sembrerebbero disabilitate. */}
+      <button
+        onClick={onEdit}
+        className={`min-w-0 flex-[2] text-left transition ${on === false ? 'opacity-50' : ''}`}
+      >
         <p className="truncate text-sm font-medium text-gray-900">{dish.name}</p>
         {dish.description.trim() !== '' && (
           <p className="truncate text-xs text-gray-500">{dish.description}</p>
@@ -94,11 +101,15 @@ export default function DishRow({
         </p>
       </button>
 
-      <span className="hidden w-24 shrink-0 truncate text-xs text-gray-500 md:block">
+      <span
+        className={`hidden w-24 shrink-0 truncate text-xs text-gray-500 transition md:block ${
+          on === false ? 'opacity-50' : ''
+        }`}
+      >
         {category === '' ? '—' : category}
       </span>
 
-      <span className="hidden w-44 shrink-0 flex-wrap gap-1 lg:flex">
+      <span className="hidden min-w-0 flex-[3] flex-wrap gap-1 lg:flex">
         {chips.length === 0 ? (
           <span className="text-xs text-gray-400">—</span>
         ) : (
@@ -171,7 +182,7 @@ export default function DishRow({
         </button>
       )}
 
-      <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-28 md:justify-end">
+      <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-32 md:justify-end">
         {/* Su telefono "Modifica" sparisce: le due azioni scritte per esteso
             lasciavano al nome del piatto una sessantina di pixel, e qui la
             modifica si apre già toccando la riga. L'eliminazione invece resta

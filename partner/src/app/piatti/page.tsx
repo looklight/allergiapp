@@ -367,19 +367,19 @@ export default function DishesPage() {
               si impilano e i dati tornano una riga di testo sotto al nome */}
           <div className="hidden items-center gap-3 px-4 pb-2 text-xs font-medium uppercase tracking-wide text-gray-400 md:flex">
             <span className="w-11 shrink-0" />
-            <span className="min-w-0 flex-1">
+            <span className="min-w-0 flex-[2]">
               <SortHeader label={d.dishes.colDish} sortKey="name" sort={sort} onClick={toggleSort} />
             </span>
             <span className="w-24 shrink-0">
               <SortHeader label={d.dishes.colCategory} sortKey="category" sort={sort} onClick={toggleSort} />
             </span>
-            <span className="hidden w-44 shrink-0 lg:block">{d.dishes.colAllergens}</span>
+            <span className="hidden min-w-0 flex-[3] lg:block">{d.dishes.colAllergens}</span>
             {targetShowcase && (
               <span className="flex w-20 shrink-0 justify-center">
                 <SortHeader label={d.dishes.colOn} sortKey="on" sort={sort} onClick={toggleSort} />
               </span>
             )}
-            <span className="w-28 shrink-0" />
+            <span className="w-32 shrink-0" />
           </div>
 
           {rows.length === 0 ? (
