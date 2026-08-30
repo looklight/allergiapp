@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 // e vetrine: eliminare un piatto tocca tutti e due.
 const CHANGE_EVENT = 'partner-storage-changed';
 
-export function notifyChange() {
+function notifyChange() {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 

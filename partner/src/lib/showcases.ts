@@ -49,7 +49,7 @@ export interface Showcase extends ShowcaseDraft {
   id: string;
 }
 
-export function emptyDraft(): ShowcaseDraft {
+function emptyDraft(): ShowcaseDraft {
   return {
     venueName: '',
     // una vetrina nuova nasce con tutti i piatti spenti: li accende il partner
@@ -99,7 +99,7 @@ function normalizeDraft(parsed: any): ShowcaseDraft {
   };
 }
 
-export function loadShowcases(): Showcase[] {
+function loadShowcases(): Showcase[] {
   const saved = readList(STORAGE_KEY, (raw) => ({ id: raw.id, ...normalizeDraft(raw) }));
   if (saved) return saved;
 
