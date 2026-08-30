@@ -18,6 +18,9 @@ import { categoryName } from '@/lib/categories';
 // 20px per riga (11px di testo su interlinea 16 + 2 di padding sopra e sotto)
 // più i 4 del gap: due righe fanno 44.
 const TWO_ROWS = 'max-h-11';
+const CHIP_GAP = 4;
+// Larghezza fissa del contatore: sapendola non serve misurarla, e "+99" ci sta
+const COUNTER_W = 32;
 
 function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
   return (
@@ -72,11 +75,13 @@ export default function DishRow({
     ...dish.allergens.map((code) => ({ code, label: allergenName(code, locale), allergen: true })),
     ...dish.dietTags.map((code) => ({ code, label: dietName(code, locale), allergen: false })),
   ];
-  // Quante pill restano fuori dalle due righe. Si misura DOPO aver disegnato,
-  // ma le pill restano tutte nel DOM e il contatore è fuori dal flusso: così
-  // la misura non cambia ciò che misura, che sarebbe un'altalena senza fine.
+  // Quante pill restano fuori dalle due righe, e dove finisce l'ultima che si
+  // vede: il contatore si mette lì di seguito, come fosse in fila. Si misura
+  // DOPO aver disegnato, ma le pill restano tutte nel DOM e il contatore è
+  // fuori dal flusso: così la misura non cambia ciò che misura, che sarebbe
+  // un'altalena senza fine.
   const cell = useRef<HTMLSpanElement>(null);
-  const [extra, setExtra] = useState(0);
+  const [overflow, setOverflow] = useState<{ count: number; left: number; top: number } | null>(null);
 
   useEffect(() => {
     const node = cell.current;
@@ -85,7 +90,16 @@ export default function DishRow({
       if (!node) return;
       const limit = node.clientHeight;
       const chips = [...node.querySelectorAll<HTMLElement>('[data-chip]')];
-      setExtra(chips.filter((chip) => chip.offsetTop + chip.offsetHeight > limit + 1).length);
+      const shown = chips.filter((chip) => chip.offsetTop + chip.offsetHeight <= limit + 1);
+      const last = shown[shown.length - 1];
+      if (chips.length === shown.length || !last) return setOverflow(null);
+      setOverflow({
+        count: chips.length - shown.length,
+        // se in coda all'ultima pill non ci sta, si appoggia al bordo destro
+        // e la sfumatura dice che sotto il testo continua
+        left: Math.min(last.offsetLeft + last.offsetWidth + CHIP_GAP, node.clientWidth - COUNTER_W),
+        top: last.offsetTop,
+      });
     }
     measure();
     // la colonna è elastica: allargando la finestra ne rientrano di più
@@ -159,21 +173,24 @@ export default function DishRow({
                 {label}
               </span>
             ))}
-            {(extra > 0 || allTags) && (
-              /* Sopra le pill e non in fila: entrando nel flusso ruberebbe il
+            {(overflow || allTags) && (
+              /* Posizionato e non in fila: entrando nel flusso ruberebbe il
                  posto a una pill, e a quel punto ne resterebbe fuori un'altra.
-                 La sfumatura dice che sotto il conteggio il testo continua. */
+                 Le coordinate però lo mettono dove sarebbe se ci fosse. */
               <button
                 onClick={() => setAllTags(!allTags)}
                 aria-expanded={allTags}
                 aria-label={dish.name}
+                style={
+                  allTags || !overflow
+                    ? undefined
+                    : { left: overflow.left, top: overflow.top, width: COUNTER_W }
+                }
                 className={`text-[11px] leading-5 text-gray-400 transition-colors hover:text-gray-700 ${
-                  allTags
-                    ? 'px-1'
-                    : 'absolute bottom-0 right-0 bg-gradient-to-l from-white via-white pl-6'
+                  allTags ? 'px-1' : 'absolute bg-gradient-to-l from-white via-white pl-2 text-left'
                 }`}
               >
-                {allTags ? '−' : `+${extra}`}
+                {allTags ? '−' : `+${overflow?.count}`}
               </button>
             )}
           </>
