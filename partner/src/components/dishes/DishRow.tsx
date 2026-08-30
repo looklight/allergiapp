@@ -104,7 +104,11 @@ export default function DishRow({
       </span>
 
       <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-32 md:justify-end">
-        <button onClick={onEdit} className="text-gray-600 hover:text-gray-900">
+        {/* Su telefono "Modifica" sparisce: le due azioni scritte per esteso
+            lasciavano al nome del piatto una sessantina di pixel, e qui la
+            modifica si apre già toccando la riga. L'eliminazione invece resta
+            scritta, perché non deve capitare per sbaglio. */}
+        <button onClick={onEdit} className="hidden text-gray-600 hover:text-gray-900 md:inline">
           {d.common.edit}
         </button>
         <button onClick={onDelete} className="text-red-600 hover:text-red-700">

@@ -115,12 +115,16 @@ export default function Nav() {
             <Link
               key={href}
               href={href}
-              className={`flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium ${
+              className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-xs font-medium ${
                 isActive(href) ? 'text-gray-900' : 'text-gray-500'
               }`}
             >
               <Icon className="h-6 w-6" />
-              {label}
+              {/* Con quattro voci su uno schermo da 320px la colonna è larga
+                  quanto "Abbonamenti": senza truncate l'etichetta andrebbe a
+                  capo e la barra si alzerebbe sotto le icone. Meglio una
+                  parola tagliata che una riga in più. */}
+              <span className="w-full truncate text-center">{label}</span>
             </Link>
           ))}
         </div>

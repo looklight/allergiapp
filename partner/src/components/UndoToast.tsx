@@ -52,11 +52,14 @@ export default function UndoToast({
     };
   }, [returnFocusTo]);
 
+  // Su telefono la barra di navigazione occupa i primi 64px dal fondo: il
+  // toast la scavalca alla stessa quota del bottone Anteprima nell'editor.
+  // Da tablet in su la barra non c'è e il toast torna vicino al bordo.
   return (
     <div
       ref={toast}
       role="status"
-      className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-gray-900 px-4 py-3 shadow-lg"
+      className="fixed bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-gray-900 px-4 py-3 shadow-lg md:bottom-6"
     >
       <span className="text-sm text-white">{message}</span>
       <button
