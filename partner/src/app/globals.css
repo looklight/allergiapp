@@ -110,3 +110,19 @@ body {
     animation: none;
   }
 }
+
+/* Safari su iOS ingrandisce la pagina quando il fuoco entra in un campo il cui
+   testo è sotto i 16px, e poi tocca all'utente rimettere a posto lo zoom a
+   mano. Il rimedio è alzare il testo, non impedire lo zoom: bloccarlo con
+   maximum-scale funzionerebbe, ma toglierebbe anche a chi ci vede poco la
+   possibilità di ingrandire quello che vuole.
+   Solo sotto md: da tablet in su i campi tornano alla misura del resto
+   dell'interfaccia. Sta fuori dai layer di Tailwind, quindi vince sulle
+   utility text-sm dei singoli campi. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
