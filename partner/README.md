@@ -30,6 +30,23 @@ Env in `.env.local` (stesso progetto Supabase di app e admin):
   directory `partner/` (niente branch di deploy stile admin-prod).
   Dominio `partner.allergiapp.com`, dietro basic auth nel middleware.
 
+## Dove sta cosa
+
+- `src/lib/storage.ts` — l'unico file che parla col localStorage: legge e
+  scrive liste sotto una chiave e avvisa chi le sta mostrando. **È qui che
+  entrerà Supabase**: nessun componente sa dove finiscono i dati.
+- `src/lib/showcases.ts` — le vetrine (una per locale): link, nome, e gli id
+  dei piatti accesi.
+- `src/lib/dishes.ts` — il catalogo piatti, che è **del partner** e non della
+  vetrina: lo stesso piatto si accende in più locali senza duplicarsi.
+  Acceso/spento è uno stato della coppia piatto-vetrina, non del piatto.
+- `src/components/dishes/` — maschera, riga della tabella, pannello laterale
+  e finestra di eliminazione dei piatti.
+- `src/lib/useModal.ts` — comportamento comune di tutte le finestre: Esc,
+  fuoco che entra e non esce col Tab, scorrimento della pagina bloccato.
+- Le pagine: `/` le vetrine, `/vetrina/[id]` l'editor con l'anteprima,
+  `/piatti` il gestionale del catalogo.
+
 ## App installabile (icone e schermate di avvio)
 
 Il portale si installa sulla home ("Aggiungi a Home" su iOS, "Installa" su
@@ -90,10 +107,11 @@ Nell'HTML iniziale c'è solo `Caricamento…`: il portale non disegna niente
 finché il JS non ha finito e la sessione non è stata ripristinata.
 
 **La cura è la sessione nei cookie (`@supabase/ssr`), ma va fatta insieme
-alla migration 700**, non prima: finché le vetrine stanno in localStorage il
-server non potrebbe comunque disegnare il contenuto. Dettagli e alternative
-scartate (alzare `jwt_exp`, togliere il muro, alleggerire il bundle) in
-`../TODO.md`, sezione Ristoranti Premium.
+allo scambio del livello dati**, non prima: finché le vetrine stanno in
+localStorage il server non potrebbe comunque disegnare il contenuto. (La
+migration 700 è applicata dal 2026-08-30, ma il portale non ci scrive
+ancora.) Dettagli e alternative scartate (alzare `jwt_exp`, togliere il
+muro, alleggerire il bundle) in `../TODO.md`, sezione Ristoranti Premium.
 
 ## ⚠️ Deploy: l'ultimo commit del push deve toccare `partner/`
 
