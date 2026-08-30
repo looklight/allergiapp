@@ -1,8 +1,9 @@
 -- ============================================================
 -- 701_partner_marketing_consent.sql
--- STATO: BOZZA — NON APPLICATA.
+-- STATO: APPLICATA il 2026-08-30 via SQL editor (verificato: le due
+-- colonne esistono, il default è false e la data è nullable).
 -- Il tracking locale delle migration è fermo alla 045: questa,
--- come tutte le 046+, va applicata a mano dal SQL editor.
+-- come tutte le 046+, è stata applicata a mano — MAI db push.
 --
 -- Il modulo di iscrizione partner raccoglie un consenso marketing
 -- facoltativo dal 22/08, ma la 700 non gli ha dato una colonna:
