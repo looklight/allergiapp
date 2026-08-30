@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import { useShowcases, countLinks, type Showcase } from '@/lib/draft';
+import { useShowcases, countLinks, type Showcase } from '@/lib/showcases';
 import NewShowcaseDialog from '@/components/NewShowcaseDialog';
 import DeleteShowcaseDialog from '@/components/DeleteShowcaseDialog';
 

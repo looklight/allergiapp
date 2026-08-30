@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import { useShowcases } from '@/lib/draft';
+import { useShowcases } from '@/lib/showcases';
 
 function StorefrontIcon({ className }: { className?: string }) {
   return (

@@ -6,7 +6,8 @@
 // L'eliminazione resta comunque annullabile dal toast in lista.
 import { useEffect } from 'react';
 import { useI18n } from '@/lib/i18n';
-import type { Dish, Showcase } from '@/lib/draft';
+import type { Dish } from '@/lib/dishes';
+import type { Showcase } from '@/lib/showcases';
 
 export default function DeleteDishDialog({
   dish,

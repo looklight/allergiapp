@@ -3,7 +3,7 @@
 // Pagina amministrativa (tappo): collegamento vetrina → locale e stato
 // abbonamento. Ricerca del locale e pagamenti arriveranno qui.
 import { useI18n } from '@/lib/i18n';
-import { useShowcases } from '@/lib/draft';
+import { useShowcases } from '@/lib/showcases';
 
 export default function SubscriptionsPage() {
   const { d } = useI18n();

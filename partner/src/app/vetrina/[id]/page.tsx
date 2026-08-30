@@ -4,14 +4,8 @@ import { useId, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import {
-  hasBooking,
-  normalizeUrl,
-  showcaseDishes,
-  useDishes,
-  useShowcases,
-  type ShowcaseDraft,
-} from '@/lib/draft';
+import { showcaseDishes, useDishes } from '@/lib/dishes';
+import { hasBooking, normalizeUrl, useShowcases, type ShowcaseDraft } from '@/lib/showcases';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';

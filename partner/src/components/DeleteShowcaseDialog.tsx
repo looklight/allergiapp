@@ -6,7 +6,7 @@
 // L'eliminazione resta comunque annullabile dal toast in lista.
 import { useEffect } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { countLinks, type Showcase } from '@/lib/draft';
+import { countLinks, type Showcase } from '@/lib/showcases';
 
 export default function DeleteShowcaseDialog({
   showcase,

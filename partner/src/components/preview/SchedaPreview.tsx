@@ -13,8 +13,9 @@ import { allergenName } from '@/lib/allergens';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
-import { hasBooking } from '@/lib/draft';
-import type { DeliveryLink, Dish, ShowcaseDraft } from '@/lib/draft';
+import { hasBooking } from '@/lib/showcases';
+import type { DeliveryLink, ShowcaseDraft } from '@/lib/showcases';
+import type { Dish } from '@/lib/dishes';
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
 
 const SYSTEM_FONT =

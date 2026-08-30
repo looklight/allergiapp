@@ -5,7 +5,7 @@
 // Non disegna il proprio contenitore: lo mette chi la ospita.
 import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { type Dish } from '@/lib/draft';
+import { type Dish } from '@/lib/dishes';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';

@@ -5,13 +5,8 @@
 // toggle sulla vetrina o con le caselle in fondo alla maschera.
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import {
-  setDishShowcases,
-  showcasesWithDish,
-  useDishes,
-  useShowcases,
-  type Dish,
-} from '@/lib/draft';
+import { setDishShowcases, showcasesWithDish, useDishes, type Dish } from '@/lib/dishes';
+import { useShowcases } from '@/lib/showcases';
 import { ALLERGENS } from '@/lib/allergens';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import DishForm from '@/components/DishForm';
