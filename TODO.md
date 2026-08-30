@@ -173,6 +173,14 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
 - [ ] **Filtri in cima alla schermata menù** (quella che si apre da "Vedi tutto"): chip per le categorie *effettivamente usate* dal ristoratore + chip "Per me" che nasconde i piatti con gli allergeni di chi guarda. Mostrarle solo sopra ~6 piatti o con più di una categoria, sotto sono rumore. Niente scelta allergeni (è già il profilo utente) né ordinamento
 - [ ] **Verifica dei link lato server alla pubblicazione della vetrina**: dal browser del partner non è possibile (CORS), quindi controllo alla pubblicazione con esito visibile in admin. Nel portale c'è già `normalizeUrl` che completa lo schema mancante (`www.x.it` → `https://www.x.it`), ma non dice niente su dominio sbagliato o pagina rimossa
 
+**Portale partner — da fare INSIEME alla migration 700 (misurato 2026-08-30):**
+- [ ] **Sessione nei cookie con `@supabase/ssr`.** Oggi il server non sa chi è l'utente: manda a tutti la stessa pagina vuota con scritto "Caricamento…", e solo dopo il JS scopre se sei loggato. Vale ~0,3-0,8 s all'apertura e toglie `@supabase/supabase-js` (~50 KB compressi) dal percorso di avvio della home, perché l'autenticazione la farebbe il server. **Non farlo prima della 700**: finché le vetrine stanno in localStorage il server non può disegnare il contenuto lo stesso, quindi si incasserebbe una frazione del beneficio e si rifarebbe il lavoro. L'auth tocca solo 4 file (`AuthGuard`, `login/page`, `account/page`, `PartnerOnboarding`), è un lavoro contenuto quando sarà il momento
+- [ ] Solo dopo la 700, e solo se serve: valutare di togliere realtime/storage dal bundle Supabase. Prima no, alla 700 servirà il client del database
+
+**Scartati con motivo, non riproporre:**
+- **Alzare `jwt_exp`** (oggi 3600 s) per evitare il rinnovo del token a ogni apertura: è impostazione **di progetto**, varrebbe anche per app mobile e admin; l'access token è un bearer JWT **non revocabile** (logout e revoca ruolo non spengono un token già emesso), quindi allungarlo allunga il danno di un token trapelato; e comunque non risolve l'apertura a freddo, che è la prima della giornata col token scaduto in ogni caso
+- **Togliere il muro basic auth** per guadagnare velocità: misurato, costa **un solo giro (~150 ms)**, non è lui la lentezza. E il sottodominio non è un segreto (i certificati TLS finiscono nei log pubblici di Certificate Transparency), con l'iscrizione partner aperta dietro
+
 ### Condivisione ristorante (native share + deep link)
 **COMPLETA (2026-07-19).** Share button, pagina web `/r/[slug]`, Universal Links iOS e App Links Android tutti in produzione. Il 19/07 chiuso l'ultimo pezzo: SHA-256 Play App Signing in `assetlinks.json` → link diretti in-app anche per installazioni Play Store. Storia e decisioni in `SHARE_FEATURE.md`.
 

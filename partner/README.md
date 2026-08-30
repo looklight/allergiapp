@@ -68,6 +68,33 @@ intercetta solo le navigazioni per servire `offline.html`. Così un deploy
 nuovo non resta indietro dietro una cache da svuotare. Esiste perché senza
 worker Chrome su Android non propone nemmeno l'installazione.
 
+Ha il **navigation preload** attivo, e non è un dettaglio: un worker con un
+fetch handler obbliga il browser ad accenderlo *prima* di chiedere la pagina
+alla rete, ed è il motivo per cui un sito può sembrare più lento **dopo**
+averlo installato. Col preload la richiesta parte in parallelo. Se un domani
+si toglie quel `navigationPreload.enable()`, l'avvio peggiora senza che
+niente si rompa — cioè in modo difficile da collegare alla causa.
+
+## Tempi di apertura — cosa è già stato misurato
+
+Misurato sul dominio live il 2026-08-30, per non rifare l'analisi da capo:
+
+| | costo |
+|---|---|
+| HTML dal server | 150-270 ms |
+| muro basic auth | **un solo giro, ~150 ms** — non è lui la lentezza |
+| rinnovo token Supabase | ~100 ms via cavo, 200-400 ms da telefono, **in serie dopo il JS** |
+| JS: 180 KB compressi (~50 KB sono il client Supabase) | esecuzione su telefono **300-800 ms** |
+
+Nell'HTML iniziale c'è solo `Caricamento…`: il portale non disegna niente
+finché il JS non ha finito e la sessione non è stata ripristinata.
+
+**La cura è la sessione nei cookie (`@supabase/ssr`), ma va fatta insieme
+alla migration 700**, non prima: finché le vetrine stanno in localStorage il
+server non potrebbe comunque disegnare il contenuto. Dettagli e alternative
+scartate (alzare `jwt_exp`, togliere il muro, alleggerire il bundle) in
+`../TODO.md`, sezione Ristoranti Premium.
+
 ## ⚠️ Deploy: l'ultimo commit del push deve toccare `partner/`
 
 Per non buildare a ogni push dell'app Expo, il progetto ha un Ignored
