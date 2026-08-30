@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useI18n } from '@/lib/i18n';
 import { authErrorMessage } from '@/lib/authErrors';
-import { partnerMetadata } from '@/lib/partnerProfile';
+import { createPartnerProfile } from '@/lib/partnerProfile';
 import type { Session } from '@supabase/supabase-js';
 
 // Creazione del profilo partner per chi è già autenticato: serve a chi ha
@@ -16,8 +16,15 @@ const inputClass =
   'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none';
 const labelClass = 'mb-1 block text-sm font-medium text-gray-700';
 
-export default function PartnerOnboarding({ session }: { session: Session }) {
-  const { d } = useI18n();
+export default function PartnerOnboarding({
+  session,
+  onCreated,
+}: {
+  session: Session;
+  // il profilo è una riga sul database: creata, va detto al guard
+  onCreated: () => void;
+}) {
+  const { d, locale } = useI18n();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [terms, setTerms] = useState(false);
@@ -35,12 +42,15 @@ export default function PartnerOnboarding({ session }: { session: Session }) {
     }
 
     setSubmitting(true);
-    const { error } = await supabase.auth.updateUser({
-      data: partnerMetadata({ firstName, lastName, marketing }),
-    });
-    // updateUser emette USER_UPDATED: la sessione si aggiorna da sola e il
-    // guard lascia passare, senza ricaricare la pagina.
-    if (error) setError(authErrorMessage(error.message, d));
+    const { error } = await createPartnerProfile(
+      session.user.id,
+      { firstName, lastName, marketing },
+      locale
+    );
+    // Scrivere una riga non emette nessun evento di sessione: è questo
+    // componente a dire al guard che adesso può lasciar passare.
+    if (error) setError(authErrorMessage(error, d));
+    else onCreated();
     setSubmitting(false);
   }
 

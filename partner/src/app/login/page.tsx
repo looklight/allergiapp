@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { authErrorMessage, PARTNER_MIN_PASSWORD } from '@/lib/authErrors';
-import { partnerMetadata } from '@/lib/partnerProfile';
+import { createPartnerProfile } from '@/lib/partnerProfile';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const inputClass =
@@ -15,7 +15,7 @@ const labelClass = 'mb-1 block text-sm font-medium text-gray-700';
 
 export default function LoginPage() {
   const { session, loading } = useAuth();
-  const { d } = useI18n();
+  const { d, locale } = useI18n();
   const router = useRouter();
 
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
@@ -67,10 +67,11 @@ export default function LoginPage() {
       if (signInError) {
         setError(authErrorMessage(signInError.message, d));
       } else {
-        const { error: updateError } = await supabase.auth.updateUser({
-          data: partnerMetadata({ firstName, lastName, marketing }),
-        });
-        if (updateError) setError(authErrorMessage(updateError.message, d));
+        const { data: utente } = await supabase.auth.getUser();
+        const { error: profileError } = utente.user
+          ? await createPartnerProfile(utente.user.id, { firstName, lastName, marketing }, locale)
+          : { error: 'no session' };
+        if (profileError) setError(authErrorMessage(profileError, d));
       }
       setSubmitting(false);
       return;
@@ -82,16 +83,10 @@ export default function LoginPage() {
     }
 
     setSubmitting(true);
-    // Nome, cognome e consensi viaggiano nei metadati dell'utente: sono dati
-    // veri sul server già prima della migration 700, che li travaserà in
-    // partner_accounts. NON sono e non saranno mai il cancello d'accesso al
-    // portale (i metadati sono modificabili dal client): quello è la riga in
-    // partner_accounts. V. MONETIZATION.md, sezione utenti/partner.
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: partnerMetadata({ firstName, lastName, marketing }) },
-    });
+    // La credenziale e il profilo partner sono due cose diverse: qui nasce
+    // la prima, la riga in partner_accounts subito dopo. È quella riga il
+    // cancello del portale, protetta da RLS.
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       const m = error.message.toLowerCase();
@@ -103,8 +98,17 @@ export default function LoginPage() {
       }
       setError(authErrorMessage(error.message, d));
     } else if (!data.session) {
-      // Nessuna sessione = il progetto richiede la conferma via email.
+      // Nessuna sessione = il progetto richiede la conferma via email. Il
+      // profilo lo creerà PartnerOnboarding al primo accesso: senza sessione
+      // le RLS rifiuterebbero comunque la scrittura.
       setCheckEmail(true);
+    } else if (data.user) {
+      const { error: profileError } = await createPartnerProfile(
+        data.user.id,
+        { firstName, lastName, marketing },
+        locale
+      );
+      if (profileError) setError(authErrorMessage(profileError, d));
     }
     setSubmitting(false);
   }

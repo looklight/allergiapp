@@ -1,11 +1,15 @@
-import type { Session } from '@supabase/supabase-js';
+'use client';
 
-// Il profilo partner: cosa lo compone e come si riconosce.
+// Il profilo partner: l'entità "ristoratore", distinta dal profilo utente
+// dell'app. Vive nella tabella partner_accounts (migration 700).
 //
-// Oggi vive nei metadati dell'utente Supabase, perché le tabelle partner_*
-// non esistono ancora. Con la migration 700 diventerà una riga in
-// partner_accounts e cambieranno le due funzioni qui sotto, non i punti che
-// le usano. V. MONETIZATION.md, sezione utenti/partner.
+// È il cancello VERO del portale, non più di percorso: tutte le tabelle
+// partner hanno la chiave esterna verso partner_accounts, quindi senza
+// questa riga il database rifiuta vetrine e piatti — e la riga è protetta
+// da RLS, quindi nessuno può fabbricarsene una per conto d'altri.
+// Prima del 30/08 stava nei metadati dell'utente, che il client può
+// riscriversi: andava bene finché non c'erano dati veri dietro.
+import { supabase } from './supabase';
 
 export interface PartnerProfileFields {
   firstName: string;
@@ -13,24 +17,54 @@ export interface PartnerProfileFields {
   marketing: boolean;
 }
 
-// Un solo posto in cui si decide cosa compone il profilo partner: lo usano
-// sia la registrazione (credenziale nuova) sia la creazione del profilo su
-// credenziale esistente, così i due percorsi non divergono.
-export function partnerMetadata(fields: PartnerProfileFields) {
-  return {
-    account_type: 'partner',
-    first_name: fields.firstName.trim(),
-    last_name: fields.lastName.trim(),
-    terms_accepted_at: new Date().toISOString(),
-    marketing_consent: fields.marketing,
-  };
+export interface PartnerProfile extends PartnerProfileFields {
+  phone: string | null;
 }
 
-// ATTENZIONE: è un cancello di PERCORSO, non di sicurezza — i metadati sono
-// modificabili dal client. Il cancello vero sarà la riga in partner_accounts,
-// protetta da RLS. Finché il portale non scrive dati veri la differenza non
-// espone nulla, ma non costruirci sopra controlli di sicurezza.
-export function hasPartnerProfile(session: Session | null): boolean {
-  const meta = session?.user?.user_metadata;
-  return Boolean(meta?.first_name && meta?.last_name);
+// Un solo posto in cui si decide cosa compone il profilo: lo usano sia la
+// registrazione (credenziale nuova) sia la creazione su credenziale
+// esistente, così i due percorsi non divergono.
+export async function createPartnerProfile(
+  userId: string,
+  fields: PartnerProfileFields,
+  language: string
+): Promise<{ error: string | null }> {
+  const now = new Date().toISOString();
+  const { error } = await supabase.from('partner_accounts').insert({
+    user_id: userId,
+    first_name: fields.firstName.trim(),
+    last_name: fields.lastName.trim(),
+    preferred_language: language,
+    terms_accepted_at: now,
+    marketing_consent: fields.marketing,
+    // la data del consenso ha senso solo se il consenso c'è
+    marketing_consent_at: fields.marketing ? now : null,
+  });
+
+  // 23505 = riga già presente. Succede col doppio invio o rientrando su una
+  // registrazione interrotta: il profilo c'è, che è quello che volevamo.
+  if (error && error.code !== '23505') return { error: error.message };
+  return { error: null };
+}
+
+// null = non ha un profilo partner.
+//
+// Il filtro sull'id è necessario, non ridondante: le RLS di partner_accounts
+// hanno anche una policy per gli admin (`FOR ALL USING (is_admin())`), quindi
+// un partner che è pure amministratore vedrebbe TUTTE le righe e maybeSingle
+// fallirebbe appena esiste un secondo partner. Non fidarsi delle RLS per la
+// FORMA di una query: quelle decidono cosa è permesso, non quante righe torni.
+export async function loadPartnerProfile(userId: string): Promise<PartnerProfile | null> {
+  const { data } = await supabase
+    .from('partner_accounts')
+    .select('first_name, last_name, phone, marketing_consent')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    firstName: data.first_name,
+    lastName: data.last_name,
+    phone: data.phone,
+    marketing: data.marketing_consent,
+  };
 }
