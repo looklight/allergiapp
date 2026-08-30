@@ -73,9 +73,10 @@ export default function DishForm({
 
   return (
     <div className="space-y-3">
-      {/* Categoria a scelta singola: una riga sola, scorre se non ci sta.
+      {/* Categoria a scelta singola: le pill vanno a capo invece di scorrere,
+          così si vedono tutte insieme senza doverne cercare una fuori campo.
           Ritoccare la pill accesa la spegne = nessuna categoria. */}
-      <div className="-mx-0.5 flex gap-1.5 overflow-x-auto px-0.5 pb-0.5">
+      <div className="flex flex-wrap gap-1.5">
         {DISH_CATEGORIES.map((cat) => {
           const selected = category === cat.code;
           return (

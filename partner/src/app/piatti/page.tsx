@@ -303,7 +303,7 @@ export default function DishesPage() {
           aria-modal="true"
         >
           <div
-            className="h-full w-full max-w-md overflow-y-auto bg-white p-5 shadow-xl"
+            className="h-full w-full max-w-[43rem] overflow-y-auto bg-white p-5 shadow-xl md:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between gap-3">
