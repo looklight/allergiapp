@@ -7,8 +7,7 @@ export const metadata: Metadata = {
   description: 'Gestisci le vetrine del tuo locale su AllergiApp.',
   // portale in test: v. src/app/robots.ts
   robots: { index: false, follow: false },
-  // Installabile su home screen. I file stanno in public/ ed escono dal muro
-  // basic auth: il browser scarica il manifest SENZA credenziali (v. middleware).
+  // Installabile su home screen. I file stanno in public/.
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [

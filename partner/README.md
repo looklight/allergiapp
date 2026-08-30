@@ -28,7 +28,9 @@ Env in `.env.local` (stesso progetto Supabase di app e admin):
   (applicate a mano via SQL editor, mai `supabase db push`).
 - Deploy: progetto Vercel `allergiapp-partner`, **da `main`** con root
   directory `partner/` (niente branch di deploy stile admin-prod).
-  Dominio `partner.allergiapp.com`, dietro basic auth nel middleware.
+  Dominio `partner.allergiapp.com`. Nessun muro davanti: a proteggere i dati
+  sono l'autenticazione Supabase e le RLS, non una password condivisa. Resta
+  il `noindex` + `robots.txt` finché il portale non è davvero aperto.
 
 ## Dove sta cosa
 
@@ -76,9 +78,9 @@ Due vincoli da non perdere se si rigenerano gli asset:
   solito; all'80% le posate venivano tagliate.
 
 I file PWA (`manifest.webmanifest`, `sw.js`, `offline.html`, `icons/`,
-`splash/`) sono **fuori dal muro basic auth** nel middleware: il browser
-scarica il manifest senza credenziali, e un 401 lì significa nessuna
-installazione offerta.
+`splash/`) devono restare raggiungibili senza credenziali: il browser scarica
+il manifest da solo, e un 401 lì significa nessuna installazione offerta.
+Vale la pena ricordarlo se un domani si rimette un muro davanti al portale.
 
 Il service worker **non mette in cache l'applicazione** di proposito:
 intercetta solo le navigazioni per servire `offline.html`. Così un deploy
@@ -99,7 +101,7 @@ Misurato sul dominio live il 2026-08-30, per non rifare l'analisi da capo:
 | | costo |
 |---|---|
 | HTML dal server | 150-270 ms |
-| muro basic auth | **un solo giro, ~150 ms** — non è lui la lentezza |
+| ~~muro basic auth~~ | costava un giro, ~150 ms; rimosso il 30/08 |
 | rinnovo token Supabase | ~100 ms via cavo, 200-400 ms da telefono, **in serie dopo il JS** |
 | JS: 180 KB compressi (~50 KB sono il client Supabase) | esecuzione su telefono **300-800 ms** |
 
