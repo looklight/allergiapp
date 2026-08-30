@@ -28,12 +28,18 @@ function PhotoPlaceholder() {
 export default function DishRow({
   dish,
   showcases,
+  on,
+  onToggle,
   onEdit,
   onDelete,
 }: {
   dish: Dish;
   // le vetrine in cui il piatto è acceso, non tutte quelle del partner
   showcases: Showcase[];
+  // acceso nella vetrina a cui si riferisce la colonna; null = il partner non
+  // ha ancora vetrine, quindi non c'è niente da accendere e la colonna non c'è
+  on: boolean | null;
+  onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -51,7 +57,7 @@ export default function DishRow({
   const extra = dish.allergens.length - chips.length;
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
       {dish.photoUrl !== '' ? (
         <img src={dish.photoUrl} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
       ) : (
@@ -70,11 +76,11 @@ export default function DishRow({
         </p>
       </button>
 
-      <span className="hidden w-28 shrink-0 truncate text-xs text-gray-500 md:block">
+      <span className="hidden w-24 shrink-0 truncate text-xs text-gray-500 md:block">
         {category === '' ? '—' : category}
       </span>
 
-      <span className="hidden w-52 shrink-0 flex-wrap gap-1 md:flex">
+      <span className="hidden w-44 shrink-0 flex-wrap gap-1 lg:flex">
         {chips.length === 0 ? (
           <span className="text-xs text-gray-400">—</span>
         ) : (
@@ -95,15 +101,50 @@ export default function DishRow({
         )}
       </span>
 
-      <span
-        className={`hidden w-32 shrink-0 truncate text-xs md:block ${
-          showcases.length === 0 ? 'text-gray-400' : 'text-gray-700'
-        }`}
-      >
-        {showcaseLabel}
-      </span>
+      {/* L'interruttore vale per UNA vetrina, quella che la pagina indica
+          sopra la tabella: acceso qui non vuol dire acceso ovunque. Dove sta
+          altrove lo dicono la riga sotto al nome e la maschera. */}
+      {on !== null && (
+        <span className="hidden w-20 shrink-0 justify-center md:flex">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={on}
+            aria-label={dish.name}
+            onClick={onToggle}
+            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+              on ? 'bg-[#4CAF50]' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                on ? 'translate-x-4' : ''
+              }`}
+            />
+          </button>
+        </span>
+      )}
 
-      <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-32 md:justify-end">
+      {on !== null && (
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={dish.name}
+          onClick={onToggle}
+          className={`relative h-5 w-9 shrink-0 rounded-full transition-colors md:hidden ${
+            on ? 'bg-[#4CAF50]' : 'bg-gray-300'
+          }`}
+        >
+          <span
+            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              on ? 'translate-x-4' : ''
+            }`}
+          />
+        </button>
+      )}
+
+      <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-28 md:justify-end">
         {/* Su telefono "Modifica" sparisce: le due azioni scritte per esteso
             lasciavano al nome del piatto una sessantina di pixel, e qui la
             modifica si apre già toccando la riga. L'eliminazione invece resta

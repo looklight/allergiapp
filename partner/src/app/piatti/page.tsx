@@ -18,7 +18,7 @@ import UndoToast from '@/components/UndoToast';
 export default function DishesPage() {
   const { d, locale } = useI18n();
   const { dishes, create, update, remove, restore } = useDishes();
-  const { showcases } = useShowcases();
+  const { showcases, setDishOn } = useShowcases();
   const [query, setQuery] = useState('');
   // null = tutte le categorie; '' = i piatti senza categoria
   const [category, setCategory] = useState<string | null>(null);
@@ -27,6 +27,9 @@ export default function DishesPage() {
   const [allergens, setAllergens] = useState<string[]>([]);
   const [diets, setDiets] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // A quale vetrina si riferiscono gli interruttori della tabella. Acceso è
+  // uno stato per vetrina, non del piatto: con più vetrine bisogna dire quale.
+  const [toggleTarget, setToggleTarget] = useState<string | null>(null);
   // 'new' = pannello aperto su un piatto da creare; un id = su quello
   const [editing, setEditing] = useState<'new' | string | null>(null);
   const [deleting, setDeleting] = useState<Dish | null>(null);
@@ -101,6 +104,9 @@ export default function DishesPage() {
       (activeDiets.length === 0 || activeDiets.some((code) => dish.dietTags.includes(code)))
   );
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
+  // Senza vetrine non c'è niente da accendere; con una sola è quella e basta
+  const targetShowcase =
+    (showcases ?? []).find((s) => s.id === toggleTarget) ?? (showcases ?? [])[0] ?? null;
   // Un piatto nuovo nasce acceso ovunque: chi ha un locale solo non deve
   // spuntare niente, chi ne ha di più vede subito le caselle e sceglie
   const editingShowcaseIds =
@@ -200,6 +206,28 @@ export default function DishesPage() {
           </div>
           )}
 
+          {/* Con più vetrine "acceso" è ambiguo finché non si dice dove: gli
+              interruttori della tabella si riferiscono a questa. */}
+          {(showcases ?? []).length > 1 && targetShowcase && (
+            <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+              <label htmlFor="toggle-target" className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-400">
+                {d.dishes.toggleIn}
+              </label>
+              <select
+                id="toggle-target"
+                value={targetShowcase.id}
+                onChange={(e) => setToggleTarget(e.target.value)}
+                className="min-w-0 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
+              >
+                {(showcases ?? []).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.venueName.trim() || d.home.unnamed}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Il pannello dei filtri: chiuso finché non serve, perché venti pill
               sempre aperte sono più ingombro che aiuto */}
           {filtersOpen && (
@@ -274,13 +302,15 @@ export default function DishesPage() {
 
           {/* Intestazione delle colonne: solo da tablet in su, sotto le righe
               si impilano e i dati tornano una riga di testo sotto al nome */}
-          <div className="hidden items-center gap-4 px-4 pb-2 text-xs font-medium uppercase tracking-wide text-gray-400 md:flex">
+          <div className="hidden items-center gap-3 px-4 pb-2 text-xs font-medium uppercase tracking-wide text-gray-400 md:flex">
             <span className="w-11 shrink-0" />
             <span className="min-w-0 flex-1">{d.dishes.colDish}</span>
-            <span className="w-28 shrink-0">{d.dishes.colCategory}</span>
-            <span className="w-52 shrink-0">{d.dishes.colAllergens}</span>
-            <span className="w-32 shrink-0">{d.dishes.colShowcases}</span>
-            <span className="w-32 shrink-0" />
+            <span className="w-24 shrink-0">{d.dishes.colCategory}</span>
+            <span className="hidden w-44 shrink-0 lg:block">{d.dishes.colAllergens}</span>
+            {targetShowcase && (
+              <span className="w-20 shrink-0 text-center">{d.dishes.colOn}</span>
+            )}
+            <span className="w-28 shrink-0" />
           </div>
 
           {filtered.length === 0 ? (
@@ -294,6 +324,11 @@ export default function DishesPage() {
                   key={dish.id}
                   dish={dish}
                   showcases={showcasesWithDish(showcases, dish.id)}
+                  on={targetShowcase ? targetShowcase.dishIds.includes(dish.id) : null}
+                  onToggle={() =>
+                    targetShowcase &&
+                    setDishOn(targetShowcase.id, dish.id, !targetShowcase.dishIds.includes(dish.id))
+                  }
                   onEdit={() => setEditing(dish.id)}
                   onDelete={() => setDeleting(dish)}
                 />
