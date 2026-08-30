@@ -294,7 +294,7 @@ export default function DishesPage() {
         </>
       )}
 
-      {/* Pannello laterale: la maschera è la stessa che usa la vetrina */}
+      {/* Pannello laterale: entra da destra e ospita la maschera del piatto */}
       {editing && (
         <div
           className="fixed inset-0 z-50 flex justify-end bg-black/40"

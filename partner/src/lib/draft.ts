@@ -75,10 +75,6 @@ export function emptyDraft(): ShowcaseDraft {
   };
 }
 
-export function emptyDish(): Omit<Dish, 'id'> {
-  return { name: '', description: '', category: '', photoUrl: '', allergens: [], dietTags: [] };
-}
-
 const STORAGE_KEY = 'partner-showcases';
 const DISHES_KEY = 'partner-dishes';
 const LEGACY_KEY = 'partner-showcase-draft'; // bozza singola pre-lista
