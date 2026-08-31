@@ -8,18 +8,22 @@ Serve a non ridiscutere da capo cose già chiuse.
 
 ## Stato attuale
 
-**SOLO IDEA (2026-08-30).** Non esiste una riga di codice. Esistono però le fondamenta, ed è per
-questo che vale la pena scriverne adesso: il portale partner ha già il catalogo piatti con gli
-allergeni come **codici strutturati**, e la migration 700 è stata scritta lasciando spazio a
+Nato come **sola idea il 2026-08-30**, quando non esisteva una riga di codice: si scriveva già
+allora perché le fondamenta c'erano — il portale partner aveva il catalogo piatti con gli
+allergeni come **codici strutturati**, e la migration 700 era stata scritta lasciando spazio a
 questa direzione (in particolare: nessuna colonna prezzo su `partner_dishes`, v. Tema 3).
 
-**I due passi che servivano prima sono chiusi** (2026-08-31): il livello dati è su Supabase dal
-30/08, e le foto stanno su Storage in due misure ritagliate quadrate — che era il presupposto del
-Tema 11, non un riordino. Restano due decisioni da prendere PRIMA di scrivere lo schema, e sono
-quelle di "Cosa serve davvero a un menù" qui sotto: il **prezzo** (importo, valuta, e se esistono
-le varianti tipo porzione piccola e grande, che è un prezzo per riga in più) e le **sezioni**
-(testo libero per ogni menù, oppure riusabili fra i menù dello stesso partner). Deciderle dopo
-vorrebbe dire rifare l'accostamento piatto↔menù.
+**Aggiornamento 2026-08-31 (sera): lo schema è scritto.** I due passi tecnici erano già chiusi —
+il livello dati è su Supabase dal 30/08, le foto su Storage in due misure ritagliate quadrate, che
+era il presupposto del Tema 11. Restavano le due decisioni sul **prezzo** e sulle **sezioni**:
+prese oggi, v. Tema 15, e da lì è nata la migration `703_partner_menus.sql`
+(`partner_menus`, `partner_menu_sections`, `partner_menu_items`).
+
+**La 703 è scritta ma NON ancora applicata**: va eseguita a mano dal SQL editor, come tutte le
+046+. Non contiene niente della pubblicazione — nessuno stato, nessuno slug, nessun timestamp di
+rigenerazione — e non è una dimenticanza: quei campi si pensano insieme quando si sa come viene
+generata la pagina (Temi 6, 11, 13), altrimenti si indovinano. Per lo stesso motivo non ha
+nessuna policy di lettura pubblica, a differenza di ogni altra tabella partner.
 
 ---
 
@@ -49,8 +53,20 @@ regalano nel pacchetto: entrando come "menù digitale" si perde contro chi lo fa
 cosa che non ha nessun altro sono gli allergeni come dati strutturati invece che come testo libero
 in fondo alla pagina.
 
-**Implicazioni**: il filtro non può essere una funzione a pagamento — è la dimostrazione del
-prodotto. Chiuderlo è come vendere un'auto senza far salire nessuno.
+**Implicazioni**:
+- Il filtro non può essere una funzione a pagamento — è la dimostrazione del prodotto. Chiuderlo è
+  come vendere un'auto senza far salire nessuno.
+- **Aggiunta 2026-08-31 — il filtro RIORDINA, non nasconde.** I piatti che non vanno bene restano
+  leggibili in fondo alla loro sezione, in grigio, col motivo scritto ("Contiene glutine"). Farli
+  sparire darebbe due impressioni sbagliate: che il ristorante non abbia altro, e — più grave —
+  che quello che resta sia stato *verificato*. Il dato è dichiarato dal ristoratore, e su un dato
+  dichiarato una sparizione è una promessa che non possiamo mantenere.
+- Per le esigenze (vegetariano, vegano…) il testo dice **"non indicato per"**, mai "non è": un
+  piatto non dichiarato vegetariano non è un piatto con la carne, è un piatto su cui il ristoratore
+  non si è espresso.
+- Si offrono solo le pastiglie che servono: gli allergeni che qualche piatto del menù dichiara e le
+  esigenze che qualche piatto soddisfa. Una pastiglia che non toglie niente è un bottone che non fa
+  niente; una che svuota il menù è peggio.
 
 ### 2026-08-30 — Tema 3: Catalogo e menù sono due cose diverse
 
@@ -127,7 +143,14 @@ ristoratore ci passa venti minuti una volta sola, e la maggior parte delle scelt
 risultato. E va contro l'argomento di vendita: un menù che si vende come leggibile da chi ha
 un'allergia non può lasciar scegliere testo beige su panna.
 
-**Implicazioni**: il contrasto resta una cosa che decidiamo noi, non un'opzione.
+**Implicazioni**:
+- Il contrasto resta una cosa che decidiamo noi, non un'opzione. In pratica: non un selettore di
+  colore libero ma una fila di tinte già scelte, tutte scure abbastanza da reggere il testo.
+- **Aggiunta 2026-08-31 — logo e colore appartengono alla VETRINA, non al menù.** Discende dal
+  Tema 13: al tavolo carta, pranzo e bevande sono linguette della stessa pagina, quindi un logo
+  per menù darebbe tre intestazioni diverse allo stesso ristorante nella stessa schermata. Si
+  cambiano da dentro l'editor di un menù, perché è lì che se ne vede l'effetto, ma l'interfaccia
+  deve dire che valgono per tutto il locale. In schema saranno due colonne su `partner_showcases`.
 
 ### 2026-08-30 — Tema 9: Le lingue diventano centrali
 
@@ -218,14 +241,22 @@ principale. Attrito da mettere in conto: l'apice oggi è del progetto landing, c
 separato — si tiene l'indirizzo e si fa servire da un progetto suo con una riscrittura.
 
 **Implicazioni**:
-- **Lo slug appartiene alla vetrina, non al locale rivendicato.** Chi resta gratis non farà mai il
-  claim e non avrà nessuna riga in `restaurants`: se lo slug dipendesse da quella, il gratuito non
-  potrebbe avere un indirizzo.
+- **Lo slug appartiene al locale** (era scritto "alla vetrina"; v. Tema 16). Chi resta gratis non
+  farà mai il claim e non avrà nessuna riga in `restaurants`: se lo slug dipendesse da quella, il
+  gratuito non potrebbe avere un indirizzo.
 - **Lo slug finisce stampato.** Un QR viene plastificato sul tavolo e appiccicato alla vetrina:
   cambiarlo rompe oggetti fisici già in giro per il locale. Quindi si sceglie una volta, si cambia
   solo con un avviso esplicito, i vecchi indirizzi reindirizzano per sempre e **non si riciclano
-  mai** — o il QR di Mario porta i clienti da Giuseppe. Per `/r/` lo stesso problema era già stato
-  affrontato con gli slug ritirati.
+  mai** — o il QR di Mario porta i clienti da Giuseppe.
+
+  > ⚠️ **CORREZIONE 2026-08-31.** Qui c'era scritto che "per `/r/` lo stesso problema era già stato
+  > affrontato con gli slug ritirati". **È falso**, e va detto perché è stato ripetuto come se fosse
+  > vero. `SHARE_FEATURE.md`, Tema 2 sub del 2026-05-26, decide l'opposto: *"Rischio accettato.
+  > Niente tabella `retired_slugs`"*. Su `/r/` uno slug liberato oggi **si ricicla**, e il vecchio
+  > link porta silenziosamente sul ristorante nuovo. Là era accettabile — un link vive in una chat.
+  > Qui no: il link vive plastificato su un tavolo, e il ristoratore non può né accorgersene né
+  > rimediare, perché l'oggetto è fisico. Quindi il meccanismo per il menù **va costruito da zero**,
+  > non riusato.
 - **Un indirizzo per locale, non per menù.** Il QR è incollato al tavolo e non cambia a mezzogiorno:
   carta, pranzo e bevande si scelgono *dentro* la pagina. Tutto ciò che varia sta dentro, perché il
   supporto è fisico e costante.
@@ -233,6 +264,11 @@ separato — si tiene l'indirizzo e si fa servire da un progetto suo con una ris
   secondo, e se non glielo diamo se lo fa fare male altrove.
 - Da decidere come convivono `/menu/<slug>` e `/r/<slug>` per un locale rivendicato: sono due pagine
   pubbliche dello stesso posto e devono almeno rimandarsi a vicenda.
+- **Aggiunta 2026-08-31 — nel portale esiste `/menu/<id>/anteprima`, e NON è questo indirizzo.**
+  È un'anteprima a tutta pagina dietro l'autenticazione, aperta in una scheda a parte dall'editor,
+  e porta in cima una fascia che lo dice. Serve a guardare il risultato adesso, non a distribuirlo:
+  la cosa da non far succedere è che qualcuno ci stampi sopra un QR. Quando l'indirizzo pubblico
+  esisterà, questa route o resta come "vedi come viene" o sparisce.
 
 ---
 
@@ -263,7 +299,7 @@ volta e non ci pensi più.
 piccola e grande), menù del giorno. Il modello oggi non ha niente di tutto questo, e non per
 dimenticanza: ad AllergiApp servivano nome e allergeni.
 
-### 2026-08-31 — Tema 14: Il menù pende dalla vetrina, e non è un nodo aperto
+### 2026-08-31 — Tema 14: Il menù pende dalla vetrina ~~e non è un nodo aperto~~ — **SUPERATO dal Tema 16**
 
 **Decisione**: il menù (e quindi lo slug del Tema 13) si appende alla **vetrina**, non a una riga
 in `restaurants`.
@@ -276,6 +312,120 @@ menù e il suo indirizzo pubblico. Non serve un oggetto nuovo, e non serve tocca
 **Implicazione**: il vincolo "una sola vetrina per locale" vale solo dopo il claim (è un indice
 parziale su `restaurant_id` non nullo), quindi non limita chi resta gratuito.
 
+> **Superato il 2026-08-31 (sera), v. Tema 16.** La conclusione — "il menù ha dove appendersi
+> anche senza claim" — resta giusta. Sbagliato era l'oggetto: appendendolo alla *vetrina*, il menù
+> dipendeva da una cosa che parla di AllergiApp, mentre chi usa solo il menù di AllergiApp non sa
+> nemmeno di doversene occupare. Si appende al **locale**, che è quello che la vetrina stava
+> facendo per sbaglio.
+
+### 2026-08-31 — Tema 15: Un piatto un prezzo, e le sezioni sono del menù
+
+Le due decisioni che il Tema 3 e il Tema 4 lasciavano aperte, e che bloccavano lo schema.
+
+**Prezzo**: importo in **centesimi interi**, sulla riga menù↔piatto, facoltativo. Interi perché
+sui soldi la virgola mobile sbaglia e un prezzo sbagliato sul menù è una discussione al tavolo
+(Tema 7); facoltativo perché dentro un degustazione i piatti non hanno prezzo, ce l'ha il menù.
+La **valuta sta sul menù**, non sulla riga: un menù con due valute dentro non esiste, e chiederla
+per piatto sarebbe quaranta volte la stessa risposta.
+
+**Varianti (porzione piccola e grande): NO, per ora.** Dentro un menù un piatto compare una volta
+sola — è un `UNIQUE (menu_id, dish_id)`. Con una precauzione che costa zero: la riga ha un **id
+suo** invece della chiave composta, quindi il giorno che le varianti servono davvero si toglie
+quel vincolo e si aggiunge un'etichetta facoltativa, e le varianti sono due righe dello stesso
+piatto. Con la chiave composta si sarebbe invece dovuto rifare le chiavi e il client che ci si
+appoggia. È l'unica conseguenza spiacevole della scelta semplice, ed è disinnescata.
+
+**Sezioni: appartengono al menù**, non al partner. Riusabili fra menù diversi pagherebbero solo
+per chi ha più menù con la stessa struttura, e costerebbero subito tre domande senza risposta
+ovvia (il nome è del menù o globale? l'ordine di chi è? cancellarne una tocca menù che il
+ristoratore non sta guardando?). Il caso vero — "il pranzo ha la stessa struttura della carta" —
+si copre con un **duplica menù** nel portale.
+
+**Implicazioni**:
+- La sezione è **facoltativa** sulla riga: chi butta dentro dieci piatti prima di pensare agli
+  intertitoli non va fermato da un campo obbligatorio. Le righe senza sezione stanno in cima.
+- **Eliminare una sezione non porta via i piatti**: risalgono fuori sezione, col loro prezzo.
+  Perdere sei prezzi per aver rinominato male un intertitolo sarebbe un castigo sproporzionato,
+  e silenzioso.
+- Promuovere le sezioni a riusabili domani si può; tornare indietro no.
+
+### 2026-08-31 — Tema 16: Il locale, e tre cose indipendenti
+
+**Decisione**: al centro del portale c'è il **locale** — nome, logo, colore, e domani l'indirizzo
+pubblico. Sotto ci stanno tre cose che si accendono **in qualunque ordine e anche da sole**:
+
+```
+Catalogo piatti ──┬── Menù (QR al tavolo)      non tocca l'app
+                  │
+                  └── piatti sulla scheda ─┐
+                                           ├── Scheda AllergiApp
+      Link e contatti ─────────────────────┘   (claim + abbonamento)
+```
+
+**Perché**: la "vetrina" faceva da contenitore a tutto, ed è una parola che parla di AllergiApp.
+Ma chi resta gratuito — la maggioranza, Tema 10 — di AllergiApp non gli importa niente: vuole il
+menù sul tavolo. Farlo passare da un oggetto che si chiama vetrina è l'attrito che il Tema 10
+denunciava già ("il portale è costruito attorno alla vetrina e il claim è il cancello di tutto").
+
+**Le tre cose sono davvero indipendenti**, e nessuna è il passaggio obbligato dell'altra:
+- c'è chi vuole **solo i link** sulla sua scheda in app e non compilerà mai un piatto;
+- c'è chi vuole **solo il menù** e non farà mai il claim;
+- il catalogo è il substrato *quando serve*, non il primo passo di un percorso a tappe.
+
+**Implicazioni**:
+- **La scheda esiste solo dopo il claim.** Sparisce lo stato "vetrina bozza non ancora associata",
+  che esisteva solo perché era l'unico posto dove mettere le cose prima del claim. Adesso quel
+  posto è il locale.
+- **"Vetrina" si chiamerà "Scheda AllergiApp"**: dice dove finisce la roba, e il ristoratore sa
+  già cos'è una scheda perché la vede nell'app. "Vetrina" non dice dove.
+- **I link stanno sul locale, non sulla scheda.** Sono fatti del posto — il telefono per prenotare
+  è lo stesso ovunque compaia. Così li può mostrare anche il menù al tavolo, dove un "Prenota" ci
+  sta benissimo, senza riscriverli.
+- **Il nome del locale va CHIESTO**, non dedotto: senza claim non esiste nessun'altra fonte.
+  Si chiede quando serve — alla creazione del primo menù — e non all'iscrizione, dove sarebbe un
+  ostacolo prima di aver dato qualcosa. Da lì escono l'intestazione del menù e lo slug proposto.
+- Il portale vuole una **home** che mostri le tre cose e a che punto sono, invece dell'elenco delle
+  vetrine. Non un percorso a tappe: tre interruttori.
+
+**La finestra per farlo è adesso** (verificato il 2026-08-31): fuori dal portale **nessuno** legge
+le tabelle `partner_*` — né l'app né l'admin — e dentro c'è solo roba di prova. Si chiude appena
+l'app comincia a leggerle.
+
+**Rimandato con cognizione**: modelli di business su visibilità e posizionamento, e la domanda "chi
+paga solo per i link contribuisce zero dati sugli allergeni?". Decisione dell'utente il 31/08:
+prima si fa funzionare il flusso. Resta scritta qui per non riscoprirla al primo che compra.
+
+### 2026-08-31 — Tema 17: Gli slug non si riassegnano, e non a tempo
+
+**Decisione**: uno slug usato una volta **non torna mai disponibile da solo**. Niente quarantena a
+scadenza. L'unica via per liberarne uno è un **admin che lo fa a mano**, su richiesta.
+
+**La domanda a cui risponde** (posta il 31/08): "e se li bloccassimo solo per un certo periodo?
+altrimenti a tendere i nomi diventano difficili da dare". Cioè: lo spazio dei nomi si esaurisce.
+
+**Perché la quarantena non serve**:
+- **Lo spazio dei nomi lo occupano i locali VIVI, non i ritirati.** I ritirati sono solo quelli che
+  chiudono o cambiano indirizzo: una frazione piccola. Se un giorno `trattoria-da-mario` è difficile
+  da ottenere è perché c'è una trattoria da Mario *aperta* che ce l'ha, e riciclare i morti non
+  cambia niente. Sarebbe un meccanismo per liberare il 2% mentre il 98% resta occupato lo stesso.
+- **I due errori non costano uguale.** Tenere uno slug bloccato per sempre costa una riga di testo:
+  un milione di slug ritirati sono qualche decina di MB, mai un problema. Rilasciarlo troppo presto
+  manda una persona con un'allergia, seduta a un tavolo, sul menù di un altro ristorante.
+- **La durata non è tarabile.** I registrar usano mesi perché il danno è commerciale; qui l'orologio
+  è quanto dura un adesivo su una vetrina, e la risposta onesta è che non lo sappiamo. Si sceglierebbe
+  un numero a caso, scoprendo se era sbagliato solo dal caso in cui va male.
+
+**La valvola**: un admin può liberare uno slug su richiesta — raro, deliberato, e l'audit per
+registrarlo esiste già (`partner_audit_log`). Nel caso più frequente, stesso locale sotto nuova
+gestione, mandare i vecchi QR al nuovo ristorante è per giunta quello che si vuole.
+
+**Due implicazioni da non perdere**:
+- **Uno slug ritirato non dà 404.** Chi è al tavolo col telefono in mano deve leggere "questo menù
+  non è più attivo", non una pagina rotta.
+- **Il suffisso numerico dei doppioni non va bene qui.** Su `/r/` la 059 fa `da-mario-pisa-2` e va
+  benissimo, perché quell'indirizzo non lo legge nessuno. Questo il ristoratore se lo stampa su una
+  locandina: sul doppione gli si propone un'alternativa vera — la via, il quartiere — non un numero.
+
 ---
 
 ## Prossimo passo
@@ -285,7 +435,21 @@ com'è e chiedendo: *"se questo diventasse il tuo menù al tavolo, cosa manca?"*
 prezzi, sezioni e bevande — ma l'ordine con cui le dicono, e quanto insistono, valgono più di
 questa lista.
 
-Aggiornamento 2026-08-31: **questo resta il prossimo passo anche ora che i prerequisiti tecnici
-sono chiusi.** Il freno non è più il portale, sono le due decisioni sul prezzo e sulle sezioni —
-e sono esattamente quelle a cui una conversazione con tre ristoratori risponde meglio di
-qualunque ragionamento a tavolino.
+Aggiornamento 2026-08-31 (sera): le due decisioni sono state prese a tavolino (Tema 15) e lo
+schema è scritto, perché entrambe avevano un default a basso rimpianto e tenere fermo tutto per
+una conversazione non ancora fissata non serviva a niente.
+
+**Ma la conversazione con i ristoratori non è stata sostituita, è stata solo spostata di un
+gradino**: si fa mostrando l'editor dei menù invece di `/piatti`, ed è una domanda migliore —
+"questo è il tuo menù al tavolo, cosa manca?" con la cosa in mano vale più della stessa domanda
+fatta su un catalogo. Da fare **prima della pagina pubblica**, che è la fase con l'infrastruttura
+dentro e quella che costa di più da rifare.
+
+Le fasi concordate:
+
+1. **L'editor, senza niente di pubblico.** Migration 703 + pagina `/menu` nel portale: crei un
+   menù, ci metti sezioni, ci accosti i piatti del catalogo, metti i prezzi, riordini. Anteprima
+   dentro il portale riusando `PhoneFrame`. Zero slug, zero QR, nessun deployable nuovo.
+2. **La pagina pubblica.** Progetto Vercel a sé, slug sulla vetrina, generazione al salvataggio
+   (Tema 11), filtro allergeni. Qui servono i campi di pubblicazione che la 703 non ha.
+3. **QR** (PNG e vettoriale) e le poche manopole del Tema 8.
