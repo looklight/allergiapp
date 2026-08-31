@@ -7,27 +7,16 @@
 // Fino al 30/08 al posto di Supabase c'era il localStorage. La differenza che
 // si sente è una sola ma pesa: le letture non sono più istantanee, quindi
 // "non lo so ancora" (null) è uno stato vero e non un lampo.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 
-// Un cambiamento STRUTTURALE si annuncia alle altre viste montate: la barra
-// laterale elenca le vetrine, e deve accorgersi se ne nasce o ne sparisce una.
-// NON si annunciano le modifiche di contenuto (un link che si scrive, un
-// piatto acceso): fuori dalla schermata che le fa non le guarda nessuno, e
-// annunciarle vorrebbe dire una rilettura di rete a ogni pausa di battitura.
-const CHANGE_EVENT = 'partner-storage-changed';
-
 // Ogni scrittura passa di qui: se il database rifiuta, almeno si vede.
-// Non è ancora l'avviso in interfaccia che serve (v. TODO), ma è la
-// differenza fra un errore che si legge e uno che sparisce.
+// L'avviso a schermo lo mette saveState.ts; questo resta il posto in cui il
+// dettaglio tecnico finisce in console.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function reportError(dove: string, error: any) {
   if (error) console.error(`[partner] ${dove}:`, error.message ?? error, error.details ?? '');
   return error;
-}
-
-export function notifyChange() {
-  window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
 // L'id del partner autenticato. Serve a scrivere le righe: le RLS pretendono
@@ -37,30 +26,104 @@ export async function currentUserId(): Promise<string | null> {
   return data.session?.user.id ?? null;
 }
 
-// Carica una lista e la ricarica quando qualcuno annuncia un cambiamento.
-// list è null finché la prima lettura non è tornata.
-export function useRemoteList<T>(load: () => Promise<T[]>) {
-  const [list, setList] = useState<T[] | null>(null);
-  // load arriva quasi sempre come funzione scritta al volo: in un ref, così
-  // l'effetto non riparte a ogni render rifacendo la stessa query
-  const loadRef = useRef(load);
-  useEffect(() => {
-    loadRef.current = load;
-  });
+// ------------------------------------------------------------------
+// LE LISTE LETTE DAL DATABASE, IN UN POSTO SOLO
+//
+// Prima ogni componente che chiamava useDishes o useShowcases faceva la SUA
+// interrogazione: aprire /piatti ne faceva tre, due delle quali identiche —
+// la pagina e la barra laterale chiedevano le stesse vetrine — e aprire la
+// scheda di un piatto ne aggiungeva una quarta che rileggeva l'intero
+// catalogo con tutte le traduzioni. Adesso la lista è una, e chi la guarda
+// ci si affaccia.
+//
+// Ne è sparita anche la sveglia: c'era un evento del browser per dire alla
+// barra laterale di rileggere quando nasceva o spariva una vetrina. Con una
+// lista sola non serve più, perché chi la cambia la cambia per tutti — ed è
+// pure più veloce, visto che prima significava tornare al server.
+// ------------------------------------------------------------------
 
-  const reload = useCallback(async () => {
-    const righe = await loadRef.current();
-    setList(righe);
-  }, []);
+interface Lista {
+  righe: unknown[] | null;
+  carica: () => Promise<unknown[]>;
+  ascoltatori: Set<() => void>;
+  // La prima lettura parte una volta sola anche se tre componenti si
+  // affacciano nello stesso istante
+  inCorso: Promise<void> | null;
+}
 
+const liste = new Map<string, Lista>();
+
+// Il primo che si affaccia dice anche come si carica. Con una chiave sola per
+// tipo di lista non c'è modo che due modi diversi si contendano lo stesso
+// posto, ed è il motivo per cui la chiave è una costante e non un valore.
+function lista(chiave: string, carica: () => Promise<unknown[]>): Lista {
+  const esistente = liste.get(chiave);
+  if (esistente) return esistente;
+  const nuova: Lista = { righe: null, carica, ascoltatori: new Set(), inCorso: null };
+  liste.set(chiave, nuova);
+  return nuova;
+}
+
+function annuncia(l: Lista) {
+  for (const ascolta of l.ascoltatori) ascolta();
+}
+
+async function rileggi(l: Lista) {
+  l.righe = await l.carica();
+  annuncia(l);
+}
+
+// Cambiando partner nella stessa scheda le liste di prima non valgono più.
+// Senza, chi esce e rientra con un altro account vedrebbe i piatti del
+// precedente finché non ricarica: il portale non ricarica la pagina al
+// cambio di sessione, la aggiorna e basta.
+export function resetLists() {
+  for (const l of liste.values()) {
+    l.righe = null;
+    l.inCorso = null;
+    annuncia(l);
+  }
+}
+
+// list è null finché la prima lettura non è tornata
+export function useRemoteList<T>(chiave: string, carica: () => Promise<T[]>) {
+  const l = lista(chiave, carica as () => Promise<unknown[]>);
+
+  const subscribe = useCallback(
+    (ascolta: () => void) => {
+      l.ascoltatori.add(ascolta);
+      return () => {
+        l.ascoltatori.delete(ascolta);
+      };
+    },
+    [l]
+  );
+
+  const list = useSyncExternalStore(
+    subscribe,
+    () => l.righe as T[] | null,
+    // Sul server non si legge niente: la lista è sempre "non lo so ancora"
+    () => null
+  );
+
+  const reload = useCallback(() => rileggi(l), [l]);
+
+  // Riparte anche dopo resetLists(), che riporta le righe a null
   useEffect(() => {
-    reload();
-    const onChange = () => {
-      reload();
-    };
-    window.addEventListener(CHANGE_EVENT, onChange);
-    return () => window.removeEventListener(CHANGE_EVENT, onChange);
-  }, [reload]);
+    if (l.righe === null && l.inCorso === null) {
+      l.inCorso = rileggi(l).finally(() => {
+        l.inCorso = null;
+      });
+    }
+  }, [l, list]);
+
+  const setList = useCallback(
+    (righe: T[]) => {
+      l.righe = righe;
+      annuncia(l);
+    },
+    [l]
+  );
 
   return { list, setList, reload };
 }

@@ -3,13 +3,7 @@
 // Le vetrine del partner: una per locale, con i suoi link e i piatti accesi.
 // Dal 30/08 vivono nelle tabelle partner_* invece che nel localStorage.
 import { supabase } from './supabase';
-import {
-  currentUserId,
-  notifyChange,
-  reportError,
-  useDebouncedSave,
-  useRemoteList,
-} from './storage';
+import { currentUserId, reportError, useDebouncedSave, useRemoteList } from './storage';
 import { write } from './saveState';
 
 export interface MenuLink {
@@ -141,38 +135,64 @@ async function loadShowcases(): Promise<Showcase[]> {
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+// Cosa è già stato scritto per ogni vetrina, per non riscrivere ciò che non è
+// cambiato. Scrivendo il nome si fa una pausa a ogni parola, e senza questo
+// ogni pausa porterebbe con sé anche la cancellazione e la riscrittura di
+// TUTTI i link, che non c'entrano niente. Parte vuota a ogni apertura: cosa
+// c'è sul server non lo sappiamo, e la prima scrittura lo mette in chiaro.
+const ultimoSalvato = new Map<string, { nome: string; link: string }>();
+
 // Il contenuto di una vetrina si riscrive tutto: i link sono pochi, l'ordine
 // conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.
+// Quello che si evita è riscrivere un blocco che non è stato toccato affatto.
 async function saveShowcaseContent(showcase: Showcase) {
-  await write(
-    'salvataggio nome vetrina',
-    () =>
-      supabase
-        .from('partner_showcases')
-        .update({ venue_name: showcase.venueName })
-        .eq('id', showcase.id),
-    // Stessa chiave che usa rename() dalla lista: è lo stesso campo della
-    // stessa riga, e fra due modi di scriverlo vale l'ultimo
-    `nome:${showcase.id}`
-  );
-  await write(
-    'cancellazione link',
-    () => supabase.from('partner_links').delete().eq('showcase_id', showcase.id),
-    `link-cancella:${showcase.id}`
-  );
   const righe = fromLinks(showcase.id, showcase.links);
-  if (righe.length > 0) {
-    await write(
-      'scrittura link',
-      () => supabase.from('partner_links').insert(righe),
-      `link-scrivi:${showcase.id}`
+  const nome = showcase.venueName;
+  const link = JSON.stringify(righe);
+  const precedente = ultimoSalvato.get(showcase.id);
+  // Si segna come scritto solo ciò che il server ha accettato: dandolo per
+  // buono a prescindere, una scrittura rifiutata verrebbe saltata anche la
+  // volta dopo e il dato non arriverebbe mai
+  const fatto = { nome: precedente?.nome ?? '\u0000', link: precedente?.link ?? '\u0000' };
+
+  if (precedente?.nome !== nome) {
+    const { error } = await write(
+      'salvataggio nome vetrina',
+      () =>
+        supabase
+          .from('partner_showcases')
+          .update({ venue_name: nome })
+          .eq('id', showcase.id),
+      // Stessa chiave che usa rename() dalla lista: è lo stesso campo della
+      // stessa riga, e fra due modi di scriverlo vale l'ultimo
+      `nome:${showcase.id}`
     );
+    if (!error) fatto.nome = nome;
   }
+
+  if (precedente?.link !== link) {
+    const { error: cancellati } = await write(
+      'cancellazione link',
+      () => supabase.from('partner_links').delete().eq('showcase_id', showcase.id),
+      `link-cancella:${showcase.id}`
+    );
+    let scritti = null;
+    if (righe.length > 0) {
+      ({ error: scritti } = await write(
+        'scrittura link',
+        () => supabase.from('partner_links').insert(righe),
+        `link-scrivi:${showcase.id}`
+      ));
+    }
+    if (!cancellati && !scritti) fatto.link = link;
+  }
+
+  ultimoSalvato.set(showcase.id, fatto);
 }
 
 // showcases è null finché la prima lettura non è tornata
 export function useShowcases() {
-  const { list: showcases, setList, reload } = useRemoteList(loadShowcases);
+  const { list: showcases, setList, reload } = useRemoteList('vetrine', loadShowcases);
   // L'editor cambia la bozza a ogni tasto: si scrive dopo la pausa
   const { schedule } = useDebouncedSave(saveShowcaseContent);
 
@@ -188,8 +208,9 @@ export function useShowcases() {
     );
     if (!data) return null;
     const creata: Showcase = { id: data.id, venueName, dishIds: [], links: emptyLinks() };
+    // La barra laterale elenca le vetrine e guarda questa stessa lista:
+    // aggiornandola qui si aggiorna anche là, senza tornare al server
     setList([...(showcases ?? []), creata]);
-    notifyChange(); // la barra laterale elenca le vetrine
     return creata;
   }
 
@@ -208,14 +229,14 @@ export function useShowcases() {
       'rinomina vetrina',
       () => supabase.from('partner_showcases').update({ venue_name: venueName }).eq('id', id),
       `nome:${id}`
-    ).then(() => notifyChange());
+    );
   }
 
   function remove(id: string) {
     setList((showcases ?? []).filter((s) => s.id !== id));
     void write('eliminazione vetrina', () =>
       supabase.from('partner_showcases').delete().eq('id', id)
-    ).then(() => notifyChange());
+    );
   }
 
   // Ripristino dopo l'undo: la vetrina torna com'era, id compreso, così i
@@ -245,7 +266,6 @@ export function useShowcases() {
       );
     }
     await reload();
-    notifyChange();
   }
 
   // Accende o spegne un piatto in una vetrina: una riga che c'è o non c'è.

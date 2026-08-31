@@ -97,7 +97,16 @@ export default function DishesPage() {
     const id = apertoSu === 'new' ? (await create(data))?.id : apertoSu;
     if (!id) return;
     if (apertoSu !== 'new') await update(id, data);
-    await setDishShowcases(id, showcaseIds);
+    // In quali vetrine sta il piatto si riscrive solo se è cambiato: la
+    // maschera si apre e si salva anche solo per correggere una virgola nella
+    // descrizione, e quello non c'entra niente con dove il piatto appare.
+    // Su un piatto NUOVO si scrive sempre: le caselle nascono già spuntate,
+    // quindi "non è cambiato niente" vorrebbe dire non accenderlo da nessuna
+    // parte proprio quando invece va acceso ovunque.
+    const cambiate =
+      apertoSu === 'new' ||
+      [...editingShowcaseIds].sort().join() !== [...showcaseIds].sort().join();
+    if (cambiate) await setDishShowcases(id, showcaseIds);
   }
 
   function confirmDelete(dish: Dish) {

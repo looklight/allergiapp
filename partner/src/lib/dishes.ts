@@ -75,26 +75,45 @@ async function loadDishes(): Promise<Dish[]> {
   return (data ?? []).map(toDish);
 }
 
+// Una traduzione senza lingua o senza niente scritto dentro non è una riga:
+// il conto sta qui, in un posto solo, perché lo usano sia la scrittura sia la
+// decisione di non scrivere affatto.
+function compilate(translations: DishTranslation[]) {
+  return translations.filter(
+    (t) => t.language !== '' && (t.name.trim() !== '' || t.description.trim() !== '')
+  );
+}
+
 // Le traduzioni si riscrivono tutte: sono poche e i campi vuoti non vanno
 // salvati, quindi calcolare la differenza costerebbe più di quanto risparmi.
-async function saveTranslations(dishId: string, translations: DishTranslation[]) {
+async function saveTranslations(
+  dishId: string,
+  translations: DishTranslation[],
+  precedenti: DishTranslation[] = []
+) {
+  const righe = compilate(translations);
+  // Quasi tutti i ristoratori scrivono solo in italiano: senza questa uscita,
+  // ogni salvataggio di ogni piatto porterebbe con sé una cancellazione di
+  // righe che non sono mai esistite.
+  if (righe.length === 0 && compilate(precedenti).length === 0) return;
+
   await write(
     'cancellazione traduzioni',
     () => supabase.from('partner_dish_translations').delete().eq('dish_id', dishId),
     `trad-cancella:${dishId}`
   );
-  const righe = translations
-    .filter((t) => t.language !== '' && (t.name.trim() !== '' || t.description.trim() !== ''))
-    .map((t) => ({
-      dish_id: dishId,
-      language: t.language,
-      name: t.name.trim() || null,
-      description: t.description.trim() || null,
-    }));
   if (righe.length > 0) {
     await write(
       'scrittura traduzioni',
-      () => supabase.from('partner_dish_translations').insert(righe),
+      () =>
+        supabase.from('partner_dish_translations').insert(
+          righe.map((t) => ({
+            dish_id: dishId,
+            language: t.language,
+            name: t.name.trim() || null,
+            description: t.description.trim() || null,
+          }))
+        ),
       `trad-scrivi:${dishId}`
     );
   }
@@ -102,7 +121,7 @@ async function saveTranslations(dishId: string, translations: DishTranslation[])
 
 // dishes è null finché la prima lettura non è tornata
 export function useDishes() {
-  const { list: dishes, setList, reload } = useRemoteList(loadDishes);
+  const { list: dishes, setList, reload } = useRemoteList('piatti', loadDishes);
 
   async function create(data: Omit<Dish, 'id'>): Promise<Dish | null> {
     const ownerId = await currentUserId();
@@ -136,7 +155,7 @@ export function useDishes() {
     if (!error && precedente && precedente.photoUrl !== '' && precedente.photoUrl !== data.photoUrl) {
       void deleteDishPhoto(precedente.photoUrl, precedente.photoThumbUrl);
     }
-    await saveTranslations(id, data.translations);
+    await saveTranslations(id, data.translations, precedente?.translations ?? []);
   }
 
   // Il piatto eliminato sparisce anche dalle vetrine in cui era acceso: se ne
