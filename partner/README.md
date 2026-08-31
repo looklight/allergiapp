@@ -2,7 +2,12 @@
 
 Portale web per i ristoratori (`partner.allergiapp.com`) — claim della
 scheda, vetrina (piatti+allergeni, link), abbonamento. Design e decisioni in
-`../MONETIZATION.md`.
+`../MONETIZATION.md`; il menù digitale, che nascerà da questo stesso
+catalogo, in `../DIGITAL_MENU.md`.
+
+**I dati stanno su Supabase dal 2026-08-30** (tabelle `partner_*`, migration
+700/701) e le foto sullo Storage dal 31/08 (bucket `partner`, migration 702).
+Il localStorage non tiene più niente se non la lingua scelta.
 
 ## Sviluppo
 
@@ -14,6 +19,12 @@ npm run dev   # http://localhost:3001 (porta diversa dall'admin)
 
 Env in `.env.local` (stesso progetto Supabase di app e admin):
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+⚠️ **Non lanciare `npm run build` mentre `npm run dev` sta girando**:
+scrivono nella stessa cartella `.next` e la build di produzione sovrascrive
+i file che il server ha in uso. Il portale resta piantato su `Caricamento…`
+con i chunk a 404, e sembra un errore del codice. Si rimedia fermando il
+server, `rm -rf .next`, e riavviando.
 
 ## Convenzioni
 
@@ -34,20 +45,79 @@ Env in `.env.local` (stesso progetto Supabase di app e admin):
 
 ## Dove sta cosa
 
-- `src/lib/storage.ts` — l'unico file che parla col localStorage: legge e
-  scrive liste sotto una chiave e avvisa chi le sta mostrando. **È qui che
-  entrerà Supabase**: nessun componente sa dove finiscono i dati.
+- `src/lib/storage.ts` — il livello che legge dal database, e l'unico posto
+  che sa come. Le liste (catalogo e vetrine) stanno **in un posto solo e
+  condiviso**: chi le guarda ci si affaccia, e chi le cambia le cambia per
+  tutti. Prima ogni componente faceva la sua interrogazione — `/piatti` ne
+  faceva tre, due identiche, più una quarta aprendo un piatto. Qui dentro
+  c'è anche `forgetServerState()`: **chi tiene da parte una convinzione su
+  cosa c'è sul server la registra con `onForget`**, così "dimentica tutto"
+  al cambio di persona resta un gesto solo e non tre da ricordarsi.
+- `src/lib/saveState.ts` — lo stato delle scritture, fuori da React perché
+  le scritture partono dal livello dati e l'avviso deve sopravvivere al
+  cambio di schermata. **Ogni scrittura passa da `write()`**, che prende la
+  *funzione* e non la richiesta già partita (o "Riprova" non potrebbe
+  rilanciarla) e **non lancia mai** (un'eccezione dentro un gestore di
+  evento salterebbe le istruzioni successive). Il terzo argomento, la
+  chiave, identifica il *bersaglio* e serve solo a chi riscrive per intero
+  qualcosa di preciso: senza chiave non si sostituisce niente, che è la
+  scelta prudente.
+- `src/lib/photos.ts` — le foto dei piatti: ridimensionamento nel browser e
+  caricamento sul bucket `partner` (v. sezione più sotto).
+- `src/components/SaveStatus.tsx` — "Salvataggio…/Salvato" in un angolo,
+  fascia rossa con Riprova quando qualcosa è stato rifiutato. Sta nella
+  Shell perché il guasto può arrivare mentre si guarda un'altra pagina.
 - `src/lib/showcases.ts` — le vetrine (una per locale): link, nome, e gli id
   dei piatti accesi.
 - `src/lib/dishes.ts` — il catalogo piatti, che è **del partner** e non della
   vetrina: lo stesso piatto si accende in più locali senza duplicarsi.
   Acceso/spento è uno stato della coppia piatto-vetrina, non del piatto.
-- `src/components/dishes/` — maschera, riga della tabella, pannello laterale
-  e finestra di eliminazione dei piatti.
+- `src/components/dishes/` — maschera, riga della tabella, pannello laterale,
+  finestra di eliminazione e **finestra del ritaglio** dei piatti.
 - `src/lib/useModal.ts` — comportamento comune di tutte le finestre: Esc,
   fuoco che entra e non esce col Tab, scorrimento della pagina bloccato.
 - Le pagine: `/` le vetrine, `/vetrina/[id]` l'editor con l'anteprima,
   `/piatti` il gestionale del catalogo.
+
+## Le foto dei piatti
+
+Bucket **`partner`** (migration 702), separato da `images` dell'app: porta un
+tetto alla dimensione e l'elenco dei tipi ammessi, cioè un limite applicato
+dal *server*, e tiene distinti i due mondi utenti/partner. Le policy chiedono
+la propria cartella **e** un profilo partner.
+
+Tre cose da non perdere se qualcuno ci rimette mano:
+
+- **Due misure, generate al caricamento e mai dopo.** Sul piano gratuito
+  Supabase non esiste la trasformazione immagini lato server: una misura che
+  non si genera adesso non si potrà più ottenere se non facendo ricaricare
+  le foto al ristoratore, una per una. Grande 900px per la scheda e
+  l'ingrandimento, miniatura 240px per le liste — che è quella che si
+  moltiplica per quaranta.
+- **WebP con ripiego JPEG.** `canvas.toBlob` con un tipo che il browser non
+  sa scrivere **non fallisce**: restituisce un PNG in silenzio, che su una
+  fotografia pesa molte volte tanto. Quindi il tipo di quello che torna si
+  controlla.
+- **Il ritaglio quadrato lo sceglie il ristoratore** (`PhotoCropDialog`), e
+  ha un asse solo: il quadrato preso è il più grande che ci sta dentro,
+  quindi sul lato corto è già tutto dentro. Si mostra perché è distruttivo e
+  definitivo — l'originale non lo teniamo.
+
+I file si cancellano in tre momenti, ognuno con la sua condizione: la foto
+sostituita **dopo** che la riga è stata scritta; il piatto eliminato allo
+scadere dell'annulla e **solo se** la riga è sparita davvero (un piatto che
+ricompare con l'immagine rotta è peggio di un file di troppo); le foto
+caricate e abbandonate allo smontaggio della maschera, non nel bottone
+Annulla, perché da lì si esce anche con la ✕ e con Esc.
+
+Restano fuori portata gli orfani da scheda chiusa al momento sbagliato o da
+scrittura rifiutata. Una passata di pulizia è stata **valutata e rimandata**:
+cancellerebbe per *assenza*, quindi con un elenco dei piatti incompleto
+porterebbe via foto vere — v. `../TODO.md` per il motivo esteso.
+
+⚠️ **Per verificare se un file è stato cancellato non serve chiedere il suo
+indirizzo pubblico**: la CDN continua a servire una copia in cache anche con
+`cache: 'no-store'`. Va guardata `storage.objects`.
 
 ## App installabile (icone e schermate di avvio)
 
@@ -108,12 +178,18 @@ Misurato sul dominio live il 2026-08-30, per non rifare l'analisi da capo:
 Nell'HTML iniziale c'è solo `Caricamento…`: il portale non disegna niente
 finché il JS non ha finito e la sessione non è stata ripristinata.
 
-**La cura è la sessione nei cookie (`@supabase/ssr`), ma va fatta insieme
-allo scambio del livello dati**, non prima: finché le vetrine stanno in
-localStorage il server non potrebbe comunque disegnare il contenuto. (La
-migration 700 è applicata dal 2026-08-30, ma il portale non ci scrive
-ancora.) Dettagli e alternative scartate (alzare `jwt_exp`, togliere il
-muro, alleggerire il bundle) in `../TODO.md`, sezione Ristoranti Premium.
+**La cura è la sessione nei cookie (`@supabase/ssr`), e dal 2026-08-31 non
+è più bloccata**: il vincolo era che finché le vetrine stavano in
+localStorage il server non poteva comunque disegnare il contenuto, e quello
+scambio è fatto. Ora il server prenderebbe sessione dal cookie e vetrine dal
+database in un colpo solo. Tocca quattro file (`AuthGuard`, `login/page`,
+`account/page`, `PartnerOnboarding`). Dettagli e alternative scartate
+(alzare `jwt_exp`, togliere il muro, alleggerire il bundle) in `../TODO.md`,
+sezione Ristoranti Premium.
+
+Nota: la tabella qui sopra è di prima delle letture condivise (31/08), che
+hanno tolto due interrogazioni all'apertura di `/piatti` e una all'apertura
+di ogni piatto. I tempi del JS non cambiano; cambia quanto si aspetta dopo.
 
 ## ⚠️ Deploy: l'ultimo commit del push deve toccare `partner/`
 
