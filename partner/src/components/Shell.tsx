@@ -6,6 +6,7 @@ import { I18nProvider } from '@/lib/i18n';
 import AuthGuard from './AuthGuard';
 import Nav from './Nav';
 import RegisterSW from './RegisterSW';
+import SaveStatus from './SaveStatus';
 
 // Tutto ciò che ha bisogno del browser (sessione, lingua, nav). Sta fuori dal
 // layout perché la radice deve restare un componente server: è l'unico posto
@@ -24,6 +25,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             children
           ) : (
             <AuthGuard>
+              {/* Fuori dal <main>: l'avviso vale per tutte le schermate e non
+                  deve scorrere via col contenuto di quella che si sta guardando */}
+              <SaveStatus />
               <div className="flex min-h-screen">
                 <Nav />
                 <main className="flex-1 pb-bottom-nav">

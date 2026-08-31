@@ -6,6 +6,7 @@
 // Dal 30/08 vive in partner_dishes invece che nel localStorage.
 import { supabase } from './supabase';
 import { currentUserId, reportError, useRemoteList } from './storage';
+import { write } from './saveState';
 import { deleteDishPhoto } from './photos';
 import type { Showcase, ShowcaseDraft } from './showcases';
 
@@ -77,11 +78,11 @@ async function loadDishes(): Promise<Dish[]> {
 // Le traduzioni si riscrivono tutte: sono poche e i campi vuoti non vanno
 // salvati, quindi calcolare la differenza costerebbe più di quanto risparmi.
 async function saveTranslations(dishId: string, translations: DishTranslation[]) {
-  const { error: cancella } = await supabase
-    .from('partner_dish_translations')
-    .delete()
-    .eq('dish_id', dishId);
-  reportError('cancellazione traduzioni', cancella);
+  await write(
+    'cancellazione traduzioni',
+    () => supabase.from('partner_dish_translations').delete().eq('dish_id', dishId),
+    `trad-cancella:${dishId}`
+  );
   const righe = translations
     .filter((t) => t.language !== '' && (t.name.trim() !== '' || t.description.trim() !== ''))
     .map((t) => ({
@@ -91,8 +92,11 @@ async function saveTranslations(dishId: string, translations: DishTranslation[])
       description: t.description.trim() || null,
     }));
   if (righe.length > 0) {
-    const { error } = await supabase.from('partner_dish_translations').insert(righe);
-    reportError('scrittura traduzioni', error);
+    await write(
+      'scrittura traduzioni',
+      () => supabase.from('partner_dish_translations').insert(righe),
+      `trad-scrivi:${dishId}`
+    );
   }
 }
 
@@ -103,12 +107,13 @@ export function useDishes() {
   async function create(data: Omit<Dish, 'id'>): Promise<Dish | null> {
     const ownerId = await currentUserId();
     if (!ownerId) return null;
-    const { data: row, error } = await supabase
-      .from('partner_dishes')
-      .insert({ owner_user_id: ownerId, ...fromDish(data) })
-      .select('id')
-      .single();
-    reportError('creazione piatto', error);
+    const { data: row } = await write('creazione piatto', () =>
+      supabase
+        .from('partner_dishes')
+        .insert({ owner_user_id: ownerId, ...fromDish(data) })
+        .select('id')
+        .single()
+    );
     if (!row) return null;
     await saveTranslations(row.id, data.translations);
     const creato: Dish = { ...data, id: row.id };
@@ -119,8 +124,11 @@ export function useDishes() {
   async function update(id: string, data: Omit<Dish, 'id'>) {
     const precedente = (dishes ?? []).find((dish) => dish.id === id);
     setList((dishes ?? []).map((dish) => (dish.id === id ? { ...data, id } : dish)));
-    const { error } = await supabase.from('partner_dishes').update(fromDish(data)).eq('id', id);
-    reportError('modifica piatto', error);
+    const { error } = await write(
+      'modifica piatto',
+      () => supabase.from('partner_dishes').update(fromDish(data)).eq('id', id),
+      `piatto:${id}`
+    );
     // La foto sostituita si cancella SOLO dopo che la riga che ha smesso di
     // puntarci è stata scritta davvero. Cancellandola prima, una scrittura
     // rifiutata lascerebbe il piatto con l'indirizzo di un file che non
@@ -139,14 +147,11 @@ export function useDishes() {
   // l'immagine sarebbe un annulla che non annulla. La cancella la schermata
   // quando l'annulla scade (v. /piatti), che è l'unico momento in cui
   // l'eliminazione diventa definitiva.
-  //
-  // Restituisce se la riga è sparita davvero: la schermata ci si basa per
-  // decidere se può portare via anche i file della foto.
-  async function remove(id: string): Promise<boolean> {
+  async function remove(id: string) {
     setList((dishes ?? []).filter((dish) => dish.id !== id));
-    const { error } = await supabase.from('partner_dishes').delete().eq('id', id);
-    reportError('eliminazione piatto', error);
-    return !error;
+    await write('eliminazione piatto', () =>
+      supabase.from('partner_dishes').delete().eq('id', id)
+    );
   }
 
   // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
@@ -154,11 +159,13 @@ export function useDishes() {
   async function restore(dish: Dish, _index: number, showcaseIds: string[]) {
     const ownerId = await currentUserId();
     if (!ownerId) return;
-    await supabase.from('partner_dishes').insert({
-      id: dish.id,
-      owner_user_id: ownerId,
-      ...fromDish(dish),
-    });
+    await write('ripristino piatto', () =>
+      supabase.from('partner_dishes').insert({
+        id: dish.id,
+        owner_user_id: ownerId,
+        ...fromDish(dish),
+      })
+    );
     await saveTranslations(dish.id, dish.translations);
     await setDishShowcases(dish.id, showcaseIds);
     await reload();
@@ -172,20 +179,24 @@ export function useDishes() {
 export async function setDishShowcases(dishId: string, showcaseIds: string[]) {
   const ownerId = await currentUserId();
   if (!ownerId) return;
-  const { error: cancella } = await supabase
-    .from('partner_showcase_dishes')
-    .delete()
-    .eq('dish_id', dishId);
-  reportError('spegnimento piatto nelle vetrine', cancella);
+  await write(
+    'spegnimento piatto nelle vetrine',
+    () => supabase.from('partner_showcase_dishes').delete().eq('dish_id', dishId),
+    `vetrine-spegni:${dishId}`
+  );
   if (showcaseIds.length > 0) {
-    const { error } = await supabase.from('partner_showcase_dishes').insert(
-      showcaseIds.map((showcaseId) => ({
-        showcase_id: showcaseId,
-        dish_id: dishId,
-        owner_user_id: ownerId,
-      }))
+    await write(
+      'accensione piatto nelle vetrine',
+      () =>
+        supabase.from('partner_showcase_dishes').insert(
+          showcaseIds.map((showcaseId) => ({
+            showcase_id: showcaseId,
+            dish_id: dishId,
+            owner_user_id: ownerId,
+          }))
+        ),
+      `vetrine-accendi:${dishId}`
     );
-    reportError('accensione piatto nelle vetrine', error);
   }
 }
 

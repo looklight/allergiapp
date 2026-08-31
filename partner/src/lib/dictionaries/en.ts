@@ -12,6 +12,14 @@ const en: typeof it = {
     delete: 'Delete',
     close: 'Close',
   },
+  // Stato delle scritture, visibile su ogni schermata
+  saving: {
+    inProgress: 'Saving…',
+    done: 'Saved',
+    failed: 'Some changes were not saved.',
+    retry: 'Retry',
+    leaveWarning: 'You have unsaved changes.',
+  },
   nav: {
     showcase: 'Showcases',
     dishes: 'Dishes',

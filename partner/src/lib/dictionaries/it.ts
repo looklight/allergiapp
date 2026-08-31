@@ -10,6 +10,14 @@ const it = {
     delete: 'Elimina',
     close: 'Chiudi',
   },
+  // Stato delle scritture, visibile su ogni schermata
+  saving: {
+    inProgress: 'Salvataggio…',
+    done: 'Salvato',
+    failed: 'Alcune modifiche non sono state salvate.',
+    retry: 'Riprova',
+    leaveWarning: 'Ci sono modifiche non salvate.',
+  },
   nav: {
     showcase: 'Vetrine',
     dishes: 'Piatti',

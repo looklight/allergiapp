@@ -10,6 +10,7 @@ import {
   useDebouncedSave,
   useRemoteList,
 } from './storage';
+import { write } from './saveState';
 
 export interface MenuLink {
   language: string; // codice lingua; '' = predefinito (fallback)
@@ -48,6 +49,12 @@ export interface ShowcaseDraft {
 
 export interface Showcase extends ShowcaseDraft {
   id: string;
+}
+
+// La chiave del piatto acceso in una vetrina, condivisa fra accensione e
+// spegnimento (v. setDishOn)
+function acceso(showcaseId: string, dishId: string) {
+  return `in-vetrina:${showcaseId}:${dishId}`;
 }
 
 function emptyLinks(): DraftLinks {
@@ -137,20 +144,29 @@ async function loadShowcases(): Promise<Showcase[]> {
 // Il contenuto di una vetrina si riscrive tutto: i link sono pochi, l'ordine
 // conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.
 async function saveShowcaseContent(showcase: Showcase) {
-  const { error: nome } = await supabase
-    .from('partner_showcases')
-    .update({ venue_name: showcase.venueName })
-    .eq('id', showcase.id);
-  reportError('salvataggio nome vetrina', nome);
-  const { error: cancella } = await supabase
-    .from('partner_links')
-    .delete()
-    .eq('showcase_id', showcase.id);
-  reportError('cancellazione link', cancella);
+  await write(
+    'salvataggio nome vetrina',
+    () =>
+      supabase
+        .from('partner_showcases')
+        .update({ venue_name: showcase.venueName })
+        .eq('id', showcase.id),
+    // Stessa chiave che usa rename() dalla lista: è lo stesso campo della
+    // stessa riga, e fra due modi di scriverlo vale l'ultimo
+    `nome:${showcase.id}`
+  );
+  await write(
+    'cancellazione link',
+    () => supabase.from('partner_links').delete().eq('showcase_id', showcase.id),
+    `link-cancella:${showcase.id}`
+  );
   const righe = fromLinks(showcase.id, showcase.links);
   if (righe.length > 0) {
-    const { error } = await supabase.from('partner_links').insert(righe);
-    reportError('scrittura link', error);
+    await write(
+      'scrittura link',
+      () => supabase.from('partner_links').insert(righe),
+      `link-scrivi:${showcase.id}`
+    );
   }
 }
 
@@ -163,12 +179,13 @@ export function useShowcases() {
   async function create(venueName = ''): Promise<Showcase | null> {
     const ownerId = await currentUserId();
     if (!ownerId) return null;
-    const { data, error } = await supabase
-      .from('partner_showcases')
-      .insert({ owner_user_id: ownerId, venue_name: venueName })
-      .select('id')
-      .single();
-    reportError('creazione vetrina', error);
+    const { data } = await write('creazione vetrina', () =>
+      supabase
+        .from('partner_showcases')
+        .insert({ owner_user_id: ownerId, venue_name: venueName })
+        .select('id')
+        .single()
+    );
     if (!data) return null;
     const creata: Showcase = { id: data.id, venueName, dishIds: [], links: emptyLinks() };
     setList([...(showcases ?? []), creata]);
@@ -187,20 +204,18 @@ export function useShowcases() {
 
   function rename(id: string, venueName: string) {
     setList((showcases ?? []).map((s) => (s.id === id ? { ...s, venueName } : s)));
-    void supabase
-      .from('partner_showcases')
-      .update({ venue_name: venueName })
-      .eq('id', id)
-      .then(() => notifyChange());
+    void write(
+      'rinomina vetrina',
+      () => supabase.from('partner_showcases').update({ venue_name: venueName }).eq('id', id),
+      `nome:${id}`
+    ).then(() => notifyChange());
   }
 
   function remove(id: string) {
     setList((showcases ?? []).filter((s) => s.id !== id));
-    void supabase
-      .from('partner_showcases')
-      .delete()
-      .eq('id', id)
-      .then(() => notifyChange());
+    void write('eliminazione vetrina', () =>
+      supabase.from('partner_showcases').delete().eq('id', id)
+    ).then(() => notifyChange());
   }
 
   // Ripristino dopo l'undo: la vetrina torna com'era, id compreso, così i
@@ -209,18 +224,24 @@ export function useShowcases() {
   async function restore(showcase: Showcase) {
     const ownerId = await currentUserId();
     if (!ownerId) return;
-    await supabase
-      .from('partner_showcases')
-      .insert({ id: showcase.id, owner_user_id: ownerId, venue_name: showcase.venueName });
+    await write('ripristino vetrina', () =>
+      supabase
+        .from('partner_showcases')
+        .insert({ id: showcase.id, owner_user_id: ownerId, venue_name: showcase.venueName })
+    );
     const righe = fromLinks(showcase.id, showcase.links);
-    if (righe.length > 0) await supabase.from('partner_links').insert(righe);
+    if (righe.length > 0) {
+      await write('ripristino link', () => supabase.from('partner_links').insert(righe));
+    }
     if (showcase.dishIds.length > 0) {
-      await supabase.from('partner_showcase_dishes').insert(
-        showcase.dishIds.map((dishId) => ({
-          showcase_id: showcase.id,
-          dish_id: dishId,
-          owner_user_id: ownerId,
-        }))
+      await write('ripristino piatti in vetrina', () =>
+        supabase.from('partner_showcase_dishes').insert(
+          showcase.dishIds.map((dishId) => ({
+            showcase_id: showcase.id,
+            dish_id: dishId,
+            owner_user_id: ownerId,
+          }))
+        )
       );
     }
     await reload();
@@ -228,6 +249,9 @@ export function useShowcases() {
   }
 
   // Accende o spegne un piatto in una vetrina: una riga che c'è o non c'è.
+  // Accendere e spegnere condividono la chiave, pur essendo due scritture
+  // opposte: sono lo stesso interruttore, e dopo due tocchi rapidi da
+  // rifare c'è solo l'ultimo.
   async function setDishOn(showcaseId: string, dishId: string, on: boolean) {
     setList(
       (showcases ?? []).map((s) =>
@@ -246,17 +270,25 @@ export function useShowcases() {
     if (on) {
       const ownerId = await currentUserId();
       if (!ownerId) return;
-      const { error } = await supabase
-        .from('partner_showcase_dishes')
-        .insert({ showcase_id: showcaseId, dish_id: dishId, owner_user_id: ownerId });
-      reportError('accensione piatto', error);
+      await write(
+        'accensione piatto',
+        () =>
+          supabase
+            .from('partner_showcase_dishes')
+            .insert({ showcase_id: showcaseId, dish_id: dishId, owner_user_id: ownerId }),
+        acceso(showcaseId, dishId)
+      );
     } else {
-      const { error } = await supabase
-        .from('partner_showcase_dishes')
-        .delete()
-        .eq('showcase_id', showcaseId)
-        .eq('dish_id', dishId);
-      reportError('spegnimento piatto', error);
+      await write(
+        'spegnimento piatto',
+        () =>
+          supabase
+            .from('partner_showcase_dishes')
+            .delete()
+            .eq('showcase_id', showcaseId)
+            .eq('dish_id', dishId),
+        acceso(showcaseId, dishId)
+      );
     }
   }
 
