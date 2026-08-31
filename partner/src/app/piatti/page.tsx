@@ -79,6 +79,10 @@ export default function DishesPage() {
     dish: Dish;
     index: number;
     showcaseIds: string[];
+    // Se la riga è sparita davvero dal database. È una promessa e non un
+    // valore perché l'annulla compare subito, mentre l'esito della scrittura
+    // arriva dopo: quando scade, la risposta c'è già.
+    eliminata: Promise<boolean>;
   } | null>(null);
   // Punto fermo dove torna il fuoco quando il toast se ne va: la riga da cui
   // era partito è stata eliminata
@@ -116,9 +120,9 @@ export default function DishesPage() {
     purgePhoto();
     const index = (dishes ?? []).findIndex((item) => item.id === dish.id);
     const showcaseIds = showcasesWithDish(showcases ?? [], dish.id).map((s) => s.id);
-    remove(dish.id);
+    const eliminata = remove(dish.id);
     setDeleting(null);
-    setUndoable({ dish, index: index < 0 ? 0 : index, showcaseIds });
+    setUndoable({ dish, index: index < 0 ? 0 : index, showcaseIds, eliminata });
   }
 
   function undoDelete() {
@@ -131,10 +135,16 @@ export default function DishesPage() {
   // insieme alla riga farebbe tornare il piatto con l'immagine rotta, cioè
   // un annulla che non annulla del tutto. Si portano via quando
   // l'eliminazione diventa davvero definitiva — qui e non in remove().
+  // ...e solo se la riga è sparita davvero. Se il database ha rifiutato
+  // l'eliminazione, il piatto ricomparirà al prossimo caricamento: portargli
+  // via la foto lo farebbe tornare con l'immagine rotta, che è peggio di un
+  // file di troppo rimasto sullo Storage.
   function purgePhoto() {
-    if (undoable) {
-      void deleteDishPhoto(undoable.dish.photoUrl, undoable.dish.photoThumbUrl);
-    }
+    if (!undoable) return;
+    const { dish, eliminata } = undoable;
+    void eliminata.then((ok) => {
+      if (ok) void deleteDishPhoto(dish.photoUrl, dish.photoThumbUrl);
+    });
   }
 
   function forgetDeleted() {

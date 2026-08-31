@@ -166,11 +166,14 @@ export function useDishes() {
   // l'immagine sarebbe un annulla che non annulla. La cancella la schermata
   // quando l'annulla scade (v. /piatti), che è l'unico momento in cui
   // l'eliminazione diventa definitiva.
-  async function remove(id: string) {
+  // Restituisce se la riga è sparita davvero: la schermata ci si basa per
+  // decidere se può portare via anche i file della foto.
+  async function remove(id: string): Promise<boolean> {
     setList((dishes ?? []).filter((dish) => dish.id !== id));
-    await write('eliminazione piatto', () =>
+    const { error } = await write('eliminazione piatto', () =>
       supabase.from('partner_dishes').delete().eq('id', id)
     );
+    return !error;
   }
 
   // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
