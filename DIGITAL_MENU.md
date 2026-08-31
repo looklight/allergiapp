@@ -13,9 +13,13 @@ questo che vale la pena scriverne adesso: il portale partner ha già il catalogo
 allergeni come **codici strutturati**, e la migration 700 è stata scritta lasciando spazio a
 questa direzione (in particolare: nessuna colonna prezzo su `partner_dishes`, v. Tema 3).
 
-Prima di costruire qualsiasi cosa servono due passi che riguardano il portale e non il menù:
-lo scambio del livello dati da `localStorage` a Supabase e le foto su Supabase Storage.
-Entrambi in `TODO.md`.
+**I due passi che servivano prima sono chiusi** (2026-08-31): il livello dati è su Supabase dal
+30/08, e le foto stanno su Storage in due misure ritagliate quadrate — che era il presupposto del
+Tema 11, non un riordino. Restano due decisioni da prendere PRIMA di scrivere lo schema, e sono
+quelle di "Cosa serve davvero a un menù" qui sotto: il **prezzo** (importo, valuta, e se esistono
+le varianti tipo porzione piccola e grande, che è un prezzo per riga in più) e le **sezioni**
+(testo libero per ogni menù, oppure riusabili fra i menù dello stesso partner). Deciderle dopo
+vorrebbe dire rifare l'accostamento piatto↔menù.
 
 ---
 
@@ -259,6 +263,19 @@ volta e non ci pensi più.
 piccola e grande), menù del giorno. Il modello oggi non ha niente di tutto questo, e non per
 dimenticanza: ad AllergiApp servivano nome e allergeni.
 
+### 2026-08-31 — Tema 14: Il menù pende dalla vetrina, e non è un nodo aperto
+
+**Decisione**: il menù (e quindi lo slug del Tema 13) si appende alla **vetrina**, non a una riga
+in `restaurants`.
+
+**Perché non è un problema**: sembrava un nodo perché il gratuito non farà mai il claim e non avrà
+nessun locale rivendicato. Ma la vetrina esiste già senza claim — `partner_showcases.restaurant_id`
+nasce NULL e la 700 lo dice esplicitamente — quindi anche chi non paga ha dove appendere il suo
+menù e il suo indirizzo pubblico. Non serve un oggetto nuovo, e non serve toccare la 700.
+
+**Implicazione**: il vincolo "una sola vetrina per locale" vale solo dopo il claim (è un indice
+parziale su `restaurant_id` non nullo), quindi non limita chi resta gratuito.
+
 ---
 
 ## Prossimo passo
@@ -267,3 +284,8 @@ dimenticanza: ad AllergiApp servivano nome e allergeni.
 com'è e chiedendo: *"se questo diventasse il tuo menù al tavolo, cosa manca?"*. Le risposte saranno
 prezzi, sezioni e bevande — ma l'ordine con cui le dicono, e quanto insistono, valgono più di
 questa lista.
+
+Aggiornamento 2026-08-31: **questo resta il prossimo passo anche ora che i prerequisiti tecnici
+sono chiusi.** Il freno non è più il portale, sono le due decisioni sul prezzo e sulle sezioni —
+e sono esattamente quelle a cui una conversazione con tre ristoratori risponde meglio di
+qualunque ragionamento a tavolino.
