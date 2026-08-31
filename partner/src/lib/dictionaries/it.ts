@@ -267,6 +267,7 @@ const it = {
       'I {count} piatti che contiene non vengono persi: risalgono fuori sezione, con i loro prezzi.',
     deleteSectionEmptyBody: 'La sezione è vuota, non si perde nessun piatto.',
     pickerTitle: 'Aggiungi piatti',
+    pickerCreateNew: 'Nuovo piatto',
     pickerInto: 'in “{section}”',
     pickerIntoLoose: 'fuori sezione',
     pickerSearch: 'Cerca un piatto',

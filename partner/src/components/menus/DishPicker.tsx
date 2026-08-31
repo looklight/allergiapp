@@ -22,6 +22,7 @@ export default function DishPicker({
   alreadyIn,
   sectionName,
   onAdd,
+  onCreateNew,
   onClose,
 }: {
   dishes: Dish[];
@@ -30,6 +31,9 @@ export default function DishPicker({
   // il nome della sezione di destinazione; assente = fuori sezione
   sectionName?: string;
   onAdd: (dishIds: string[]) => void;
+  // "non c'è, lo creo adesso": il momento in cui ci si accorge che manca un
+  // piatto è mentre lo si cerca qui, non nel gestionale del catalogo
+  onCreateNew: () => void;
   onClose: () => void;
 }) {
   const { d } = useI18n();
@@ -108,6 +112,15 @@ export default function DishPicker({
             <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
               <p className="text-sm font-medium text-gray-900">{d.menuEditor.pickerCatalogEmpty}</p>
               <p className="mt-1 text-sm text-gray-500">{d.menuEditor.pickerCatalogEmptyHint}</p>
+              <button
+                onClick={onCreateNew}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                {d.menuEditor.pickerCreateNew}
+              </button>
             </div>
           ) : disponibili.length === 0 ? (
             <p className="py-6 text-center text-sm text-gray-500">{d.menuEditor.pickerAllIn}</p>
@@ -158,7 +171,18 @@ export default function DishPicker({
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-3 border-t border-gray-200 px-5 py-4">
+        <div className="flex shrink-0 items-center gap-3 border-t border-gray-200 px-5 py-4">
+          {/* A sinistra, staccato dai due bottoni della finestra: non è
+              un'alternativa a "Aggiungi", è un'altra strada */}
+          <button
+            onClick={onCreateNew}
+            className="mr-auto inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            {d.menuEditor.pickerCreateNew}
+          </button>
           <button
             onClick={onClose}
             className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"

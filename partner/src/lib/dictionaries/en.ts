@@ -267,6 +267,7 @@ const en: typeof it = {
       'The {count} dishes it holds are not lost: they move up out of any section, prices included.',
     deleteSectionEmptyBody: 'The section is empty, no dish is lost.',
     pickerTitle: 'Add dishes',
+    pickerCreateNew: 'New dish',
     pickerInto: 'to “{section}”',
     pickerIntoLoose: 'with no section',
     pickerSearch: 'Search a dish',

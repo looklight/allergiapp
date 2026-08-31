@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
-import { useDishes } from '@/lib/dishes';
+import { useDishes, type Dish } from '@/lib/dishes';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
 import { useShowcases } from '@/lib/showcases';
 import {
@@ -34,6 +34,7 @@ import {
 } from '@/lib/menus';
 import MenuItemRow from '@/components/menus/MenuItemRow';
 import DishPicker from '@/components/menus/DishPicker';
+import DishPanel from '@/components/dishes/DishPanel';
 import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import BrandBar from '@/components/menus/BrandBar';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
@@ -42,7 +43,7 @@ import PhoneFrame from '@/components/preview/PhoneFrame';
 export default function MenuEditorPage() {
   const { id } = useParams<{ id: string }>();
   const { d } = useI18n();
-  const { dishes } = useDishes();
+  const { dishes, create: createDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
   const { showcases, update: updateVenue, setIdentity } = useShowcases();
@@ -50,6 +51,9 @@ export default function MenuEditorPage() {
   // null per le righe fuori sezione. 'chiuso' perché null è già un valore.
   const [adding, setAdding] = useState<{ sectionId: string | null } | null>(null);
   const [deletingSection, setDeletingSection] = useState<string | null>(null);
+  // Maschera di un piatto NUOVO aperta dal menù: si ricorda in quale sezione
+  // stava andando, perché è lì che deve comparire appena salvato.
+  const [creatingDish, setCreatingDish] = useState<{ sectionId: string | null } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   // Le esigenze di chi guarda il menù. Stanno QUI e non dentro l'anteprima
   // perché le anteprime sono due — quella a lato e quella a tutto schermo da
@@ -112,6 +116,16 @@ export default function MenuEditorPage() {
     if (next.logoUrl !== undefined || next.accent !== undefined) {
       setIdentity(vetrina.id, { logoUrl: next.logoUrl, accent: next.accent });
     }
+  }
+
+  // Il piatto nasce nel CATALOGO come sempre — è lì che vivono i fatti del
+  // piatto — e in più entra nella sezione da cui si è partiti. Senza il
+  // secondo passo bisognerebbe riaprire il selettore e ricercarselo, che è
+  // esattamente l'attrito che questa scorciatoia esiste per togliere.
+  async function saveNewDish(data: Omit<Dish, 'id'>, sectionId: string | null) {
+    setCreatingDish(null);
+    const creato = await createDish(data);
+    if (creato) save(addDishes(menu!, sectionId, [creato.id]));
   }
 
   const catalogo = dishes ?? [];
@@ -464,7 +478,23 @@ export default function MenuEditorPage() {
             save(addDishes(menu, adding.sectionId, dishIds));
             setAdding(null);
           }}
+          onCreateNew={() => {
+            // Il selettore si CHIUDE invece di restare sotto: due finestre
+            // sovrapposte si contendono il blocco dello scorrimento e il
+            // fuoco, e chi torna indietro non sa più dove si trova.
+            setCreatingDish({ sectionId: adding.sectionId });
+            setAdding(null);
+          }}
           onClose={() => setAdding(null)}
+        />
+      )}
+
+      {creatingDish && (
+        // Senza le caselle "In vetrina": qui il piatto sta per finire in una
+        // sezione del menù, non acceso su una scheda AllergiApp
+        <DishPanel
+          onSave={(data) => saveNewDish(data, creatingDish.sectionId)}
+          onClose={() => setCreatingDish(null)}
         />
       )}
 

@@ -3,6 +3,11 @@
 // Il pannello che entra da destra col piatto da creare o correggere. Tiene
 // anche la scelta delle vetrine, che si applica solo al salvataggio: chiudere
 // senza salvare non deve lasciare in giro un piatto acceso a metà.
+//
+// Le vetrine sono FACOLTATIVE: aprendo la maschera dal menù non c'entrano
+// niente — lì il piatto sta per essere messo in una sezione, non acceso su
+// una scheda — e mostrarle sarebbe una domanda fuori posto a cui rispondere
+// mentre si sta facendo altro.
 import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
@@ -19,14 +24,14 @@ export default function DishPanel({
 }: {
   // assente = piatto nuovo
   dish?: Dish;
-  // tutte le vetrine del partner, accese o no
-  showcases: Showcase[];
-  initialShowcaseIds: string[];
+  // tutte le vetrine del partner, accese o no; assenti = non si chiedono
+  showcases?: Showcase[];
+  initialShowcaseIds?: string[];
   onSave: (data: Omit<Dish, 'id'>, showcaseIds: string[]) => void;
   onClose: () => void;
 }) {
   const { d } = useI18n();
-  const [inShowcases, setInShowcases] = useState<string[]>(initialShowcaseIds);
+  const [inShowcases, setInShowcases] = useState<string[]>(initialShowcaseIds ?? []);
   const panel = useModal<HTMLDivElement>(onClose);
   const titleId = useId();
 
@@ -62,6 +67,7 @@ export default function DishPanel({
 
         <DishForm initial={dish} onSave={(data) => onSave(data, inShowcases)} onCancel={onClose}>
           {/* Dove appare il piatto: stesso stato del toggle sulla vetrina */}
+          {showcases !== undefined && (
           <div className="border-t border-gray-200 pt-3">
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {d.dishes.showcasesLabel}
@@ -91,6 +97,7 @@ export default function DishPanel({
               </>
             )}
           </div>
+          )}
         </DishForm>
       </div>
     </div>
