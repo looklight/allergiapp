@@ -1,13 +1,44 @@
 # AllergiApp Partner
 
-Portale web per i ristoratori (`partner.allergiapp.com`) — claim della
-scheda, vetrina (piatti+allergeni, link), abbonamento. Design e decisioni in
-`../MONETIZATION.md`; il menù digitale, che nascerà da questo stesso
-catalogo, in `../DIGITAL_MENU.md`.
+Portale web per i ristoratori (`partner.allergiapp.com`) — catalogo piatti,
+**menù digitale** (QR al tavolo), scheda dentro AllergiApp, abbonamento.
+Design e decisioni in `../MONETIZATION.md` e `../DIGITAL_MENU.md`.
 
 **I dati stanno su Supabase dal 2026-08-30** (tabelle `partner_*`, migration
-700/701) e le foto sullo Storage dal 31/08 (bucket `partner`, migration 702).
+700/701), le foto sullo Storage dal 31/08 (bucket `partner`, migration 702).
 Il localStorage non tiene più niente se non la lingua scelta.
+
+## Il modello, dal 2026-08-31 (migration 703/704)
+
+Al centro c'è il **locale** (`partner_venues`: nome, logo, colore). Sopra al
+catalogo dei piatti ci stanno **tre cose indipendenti**, che si accendono in
+qualunque ordine e anche da sole:
+
+```
+Catalogo piatti ──┬── Menù (QR al tavolo)      non tocca l'app
+                  │
+                  └── piatti sulla scheda ─┐
+      Link e contatti ───────────────────  ├── Scheda AllergiApp
+                                           ┘   (claim + abbonamento)
+```
+
+La "vetrina" faceva da contenitore a tutto ed è stata spaccata in due: il
+locale (che hanno tutti, dal primo giorno) e `partner_cards`, la presenza
+dentro l'app, che esiste **solo dopo il claim**. I link stanno sul locale —
+il numero per prenotare è lo stesso ovunque compaia. Il ragionamento per
+esteso è il Tema 16 di `../DIGITAL_MENU.md`.
+
+⚠️ **Due debiti aperti da questo cambio**, entrambi visibili a schermo:
+
+1. **La rinomina non è stata fatta.** Nel codice il tipo si chiama ancora
+   `Showcase` e le schermate dicono ancora "Vetrina". È stato tenuto fuori di
+   proposito dal giro in cui il codice è stato rimesso in pari col database:
+   mescolare la riparazione di un guasto con un cambio di parole vuol dire
+   non sapere più quale dei due ha rotto cosa.
+2. **Gli interruttori "in vetrina" in `/piatti` non fanno niente.** I piatti
+   accesi ora pendono dalla scheda, che senza claim non esiste: `setDishOn`
+   esce senza scrivere (e senza fingere), ma il comando a schermo resta lì
+   senza spiegazione. Va disabilitato con un messaggio.
 
 ## Sviluppo
 
@@ -67,8 +98,28 @@ server, `rm -rf .next`, e riavviando.
 - `src/components/SaveStatus.tsx` — "Salvataggio…/Salvato" in un angolo,
   fascia rossa con Riprova quando qualcosa è stato rifiutato. Sta nella
   Shell perché il guasto può arrivare mentre si guarda un'altra pagina.
-- `src/lib/showcases.ts` — le vetrine (una per locale): link, nome, e gli id
-  dei piatti accesi.
+- `src/lib/showcases.ts` — il **locale** (`partner_venues`): nome, logo,
+  colore, link, e gli id dei piatti accesi sulla sua scheda. Il nome e
+  l'aspetto stanno qui e non in un modulo a parte perché è la **stessa riga**
+  che questo file legge già: una seconda interrogazione sulla stessa tabella
+  è esattamente quello che il livello dati condiviso serve a togliere.
+  `cardId` è null quando non c'è nessuna scheda — chi mostra comandi che
+  scrivono lì deve spegnerli.
+- `src/lib/menus.ts` — i menù, con sezioni e righe. **Non cancella e
+  reinserisce: sovrascrive per id**, perché gli id li generiamo noi e
+  l'interfaccia li usa come chiavi — con id nuovi a ogni salvataggio, una
+  riga che si sta trascinando cambierebbe identità sotto le dita. Le righe si
+  ripuliscono PRIMA delle sezioni: il vincolo della 704 fa risalire fuori
+  sezione le righe di una sezione cancellata, e nell'ordine sbagliato i
+  piatti riapparirebbero in cima invece di sparire.
+- `src/lib/menuBrand.ts` — solo costanti: i sei colori (scelti da noi, tutti
+  scuri abbastanza da reggere il testo) e la riduzione del logo. ⚠️ Il logo è
+  ancora un **data URL dentro la riga**, non un file su Storage: va portato
+  su `photos.ts`, per la stessa ragione scritta nella 702.
+- `src/components/menus/` — selettore dei piatti dal catalogo (con "Nuovo
+  piatto", che apre la stessa maschera del gestionale), riga con prezzo e
+  maniglia di trascinamento, aspetto del locale, anteprima pubblica col
+  filtro allergeni, finestra di creazione.
 - `src/lib/dishes.ts` — il catalogo piatti, che è **del partner** e non della
   vetrina: lo stesso piatto si accende in più locali senza duplicarsi.
   Acceso/spento è uno stato della coppia piatto-vetrina, non del piatto.
@@ -77,7 +128,40 @@ server, `rm -rf .next`, e riavviando.
 - `src/lib/useModal.ts` — comportamento comune di tutte le finestre: Esc,
   fuoco che entra e non esce col Tab, scorrimento della pagina bloccato.
 - Le pagine: `/` le vetrine, `/vetrina/[id]` l'editor con l'anteprima,
-  `/piatti` il gestionale del catalogo.
+  `/piatti` il gestionale del catalogo, `/menu` l'elenco dei menù,
+  `/menu/[id]` l'editor col telefono a lato, `/menu/[id]/anteprima` la stessa
+  anteprima a tutta pagina — che si apre in una scheda a parte e porta una
+  fascia che dice che **non è l'indirizzo pubblico**: sta dentro il portale,
+  quindi è dietro l'autenticazione. La cosa da non far succedere è che
+  qualcuno ci stampi sopra un QR.
+
+## Il menù digitale
+
+Il ristoratore compone un menù coi piatti che ha già in catalogo: sezioni con
+nome libero, prezzi, riordino trascinando (con le frecce accanto, che restano
+perché il trascinamento HTML5 col dito non funziona e questo portale si usa
+dal telefono). L'anteprima a lato mostra la pagina che legge il cliente.
+
+Tre cose da non disfare per sbaglio:
+
+- **Il filtro allergeni riordina, non nasconde.** I piatti esclusi restano
+  leggibili in fondo alla loro sezione, col motivo scritto. Farli sparire
+  direbbe che quel che resta è stato *verificato*, e il dato lo dichiara il
+  ristoratore. Per le esigenze il testo dice "non indicato per", mai "non è".
+- **Il prezzo è in centesimi interi**, e il campo tiene il testo mentre si
+  scrive: altrimenti chi scrive "12," se lo vede riscrivere sotto le dita.
+- **Logo e colore appartengono al LOCALE, non al menù.** Al tavolo carta,
+  pranzo e bevande sono linguette della stessa pagina: un logo per menù
+  darebbe tre intestazioni diverse allo stesso ristorante.
+
+Alla creazione la domanda è **"di quale ristorante?"**, non "che nome dai al
+menù": il nome del menù è solo l'etichetta della linguetta e si chiede dal
+secondo menù dello stesso locale in poi. Il nome del ristorante invece non ha
+nessun'altra fonte — chi non fa il claim non ce l'ha da nessuna parte.
+
+Non c'è ancora **niente della pubblicazione**: nessuno slug, nessun QR,
+nessuna pagina pubblica. Sono la fase successiva, e le regole dello slug
+(mai riassegnato, v. Tema 17) si decidono insieme a quella.
 
 ## Le foto dei piatti
 

@@ -149,7 +149,11 @@ Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mod
 Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium (verificati/certificati). La colonna `is_premium` esiste già su `restaurants`, manca il flusso completo.
 
 **Funzionalità esclusive premium:**
-- **Menu digitale** — v. `DIGITAL_MENU.md` per la direzione (menù interattivo del ristoratore, filtrabile per allergeni). Qui sotto la parte già esistente: link multilingua a carico del ristoratore. La sezione foto menù community è stata **rimossa** dall'app (commit `32c6d61`, esce con 1.3.1): non è più codice da "riabilitare", va costruita lato premium. Nel portale partner esiste già come `MenuLink[]` (memoria `project_partner_portal.md`, menù facoltativo)
+- **Menu digitale** — **l'editor ESISTE dal 2026-08-31** (`/menu` nel portale partner, migrations 703/704 applicate): sezioni, prezzi, riordino trascinando, anteprima col filtro allergeni. Direzione e 17 decisioni in `DIGITAL_MENU.md`. ⚠️ **Non è un premium**: il Tema 2 dice che il filtro è la dimostrazione del prodotto e non si chiude, e il Tema 10 che i gratuiti saranno la maggioranza ed è da loro che arriva il contenuto sugli allergeni. La sezione foto menù community è stata **rimossa** dall'app (commit `32c6d61`, esce con 1.3.1). Il `MenuLink[]` del portale (link a un menù esterno) resta una cosa diversa e continua a valere.
+  - [ ] **Rinomina "vetrina" → "Scheda AllergiApp"** nel codice e nelle schermate: dopo la 703 il tipo si chiama ancora `Showcase`. Tenuta fuori di proposito dal giro in cui il codice è stato rimesso in pari col database
+  - [ ] **Gli interruttori "in vetrina" in `/piatti` non fanno niente** e non lo dicono: i piatti accesi pendono dalla scheda, che senza claim non esiste. Da disabilitare con una spiegazione
+  - [ ] **Home-dashboard del portale**: le tre cose (menù, scheda, catalogo) e a che punto sono, invece dell'elenco delle vetrine. È il Tema 10 — "il portale deve essere utile con zero locali associati"
+  - [ ] **Il logo del locale è un data URL dentro la riga**, non un file su Storage: da portare su `photos.ts`, per la stessa ragione scritta nella migration 702
 - **Risposta alle recensioni** — il gestore può rispondere pubblicamente alle recensioni degli utenti
 - **Badge "Verificato"** nella lista ristoranti e nella scheda, con tooltip esplicativo
 - **Priorità nell'ordinamento** — già implementata (`ORDER BY is_premium DESC`), da sfruttare esplicitamente

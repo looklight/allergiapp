@@ -13,17 +13,21 @@ allora perché le fondamenta c'erano — il portale partner aveva il catalogo pi
 allergeni come **codici strutturati**, e la migration 700 era stata scritta lasciando spazio a
 questa direzione (in particolare: nessuna colonna prezzo su `partner_dishes`, v. Tema 3).
 
-**Aggiornamento 2026-08-31 (sera): lo schema è scritto.** I due passi tecnici erano già chiusi —
-il livello dati è su Supabase dal 30/08, le foto su Storage in due misure ritagliate quadrate, che
-era il presupposto del Tema 11. Restavano le due decisioni sul **prezzo** e sulle **sezioni**:
-prese oggi, v. Tema 15, e da lì è nata la migration `703_partner_menus.sql`
-(`partner_menus`, `partner_menu_sections`, `partner_menu_items`).
+**Aggiornamento 2026-08-31 (notte): il menù digitale esiste e vive sul database.**
+Migrations **703 (il locale) e 704 (i menù) APPLICATE**. Nel portale c'è `/menu`: si crea un menù
+scegliendo il ristorante, ci si mettono sezioni con nome libero, si accostano i piatti del catalogo
+(o se ne crea uno nuovo da lì, con la stessa maschera del gestionale), si mettono i prezzi, si
+riordina trascinando. A lato un telefono mostra la pagina che leggerà il cliente, **col filtro
+allergeni funzionante**, e un link la apre a tutta pagina in una scheda a parte.
 
-**La 703 è scritta ma NON ancora applicata**: va eseguita a mano dal SQL editor, come tutte le
-046+. Non contiene niente della pubblicazione — nessuno stato, nessuno slug, nessun timestamp di
-rigenerazione — e non è una dimenticanza: quei campi si pensano insieme quando si sa come viene
-generata la pagina (Temi 6, 11, 13), altrimenti si indovinano. Per lo stesso motivo non ha
-nessuna policy di lettura pubblica, a differenza di ogni altra tabella partner.
+**Cosa NON c'è ancora, ed è tutta la fase 2**: nessuno slug, nessun QR, nessuna pagina pubblica.
+L'anteprima a tutta pagina sta dentro il portale, dietro l'autenticazione, e lo dichiara con una
+fascia in cima — la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
+
+**Due debiti aperti**, entrambi visibili a schermo e scritti in `partner/README.md`: la rinomina
+"vetrina" → "Scheda AllergiApp" non è stata fatta (tenuta fuori di proposito dal giro in cui il
+codice è stato rimesso in pari col database), e gli interruttori "in vetrina" in `/piatti` non
+fanno più niente — i piatti accesi pendono dalla scheda, che senza claim non esiste.
 
 ---
 
@@ -386,6 +390,12 @@ denunciava già ("il portale è costruito attorno alla vetrina e il claim è il 
   ostacolo prima di aver dato qualcosa. Da lì escono l'intestazione del menù e lo slug proposto.
 - Il portale vuole una **home** che mostri le tre cose e a che punto sono, invece dell'elenco delle
   vetrine. Non un percorso a tappe: tre interruttori.
+- **Aggiunta 2026-08-31 — alla creazione di un menù la domanda è "di quale ristorante?".** Non
+  "che nome dai al menù": un menù non è "la Carta", è la carta *di qualcuno*, e il nome che conta —
+  quello che il cliente legge in cima e da cui uscirà lo slug — è quello del ristorante. Il nome del
+  menù è solo l'etichetta della linguetta, quindi si chiede dal **secondo** menù dello stesso locale
+  in poi: al primo non c'è niente da cui distinguerlo. Da lì si può anche creare un ristorante
+  nuovo, perché uno stesso partner può averne più d'uno.
 
 **La finestra per farlo è adesso** (verificato il 2026-08-31): fuori dal portale **nessuno** legge
 le tabelle `partner_*` — né l'app né l'admin — e dentro c'è solo roba di prova. Si chiude appena
@@ -447,9 +457,14 @@ dentro e quella che costa di più da rifare.
 
 Le fasi concordate:
 
-1. **L'editor, senza niente di pubblico.** Migration 703 + pagina `/menu` nel portale: crei un
-   menù, ci metti sezioni, ci accosti i piatti del catalogo, metti i prezzi, riordini. Anteprima
-   dentro il portale riusando `PhoneFrame`. Zero slug, zero QR, nessun deployable nuovo.
-2. **La pagina pubblica.** Progetto Vercel a sé, slug sulla vetrina, generazione al salvataggio
-   (Tema 11), filtro allergeni. Qui servono i campi di pubblicazione che la 703 non ha.
-3. **QR** (PNG e vettoriale) e le poche manopole del Tema 8.
+1. ~~**L'editor, senza niente di pubblico.**~~ **FATTO il 2026-08-31**: migrations 703/704
+   applicate, `/menu` nel portale, anteprima col filtro, aspetto del locale, creazione dei piatti
+   dal menù. Restano i due debiti in "Stato attuale" (rinomina, interruttori morti) e la home.
+2. **La pagina pubblica.** Progetto Vercel a sé, slug sul locale, generazione al salvataggio
+   (Tema 11), filtro allergeni. Qui servono i campi di pubblicazione che la 704 non ha e le regole
+   dello slug del Tema 17.
+3. **QR** (PNG e vettoriale) e le poche manopole del Tema 8 — logo e colore ci sono già.
+
+**E la conversazione con i ristoratori adesso si può fare davvero**: c'era da mostrare l'editor, e
+l'editor c'è. Da fare PRIMA della fase 2, che è quella con l'infrastruttura dentro e quella che
+costa di più da rifare.
