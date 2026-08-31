@@ -73,16 +73,27 @@ async function rileggi(l: Lista) {
   annuncia(l);
 }
 
-// Cambiando partner nella stessa scheda le liste di prima non valgono più.
-// Senza, chi esce e rientra con un altro account vedrebbe i piatti del
-// precedente finché non ricarica: il portale non ricarica la pagina al
-// cambio di sessione, la aggiorna e basta.
-export function resetLists() {
+// Chi tiene da parte una convinzione su cosa c'è sul server la registra qui.
+// Serve perché "dimentica tutto" resti UNA cosa sola: con le liste svuotate
+// da una parte e gli altri depositi dall'altra, chi ne aggiunge uno domani
+// non ha modo di accorgersi che andava svuotato anche il suo.
+const dimenticanze = new Set<() => void>();
+
+export function onForget(dimentica: () => void) {
+  dimenticanze.add(dimentica);
+}
+
+// Cambiando partner nella stessa scheda, tutto quello che credevamo del
+// server è di un'altra persona. Senza questo, chi esce e rientra con un altro
+// account vedrebbe i piatti del precedente finché non ricarica: il portale
+// non ricarica la pagina al cambio di sessione, la aggiorna e basta.
+export function forgetServerState() {
   for (const l of liste.values()) {
     l.righe = null;
     l.inCorso = null;
     annuncia(l);
   }
+  for (const dimentica of dimenticanze) dimentica();
 }
 
 // list è null finché la prima lettura non è tornata

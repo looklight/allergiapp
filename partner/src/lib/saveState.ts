@@ -12,7 +12,7 @@
 // (showcases.ts, dishes.ts), che non vive dentro nessun componente, e l'avviso
 // deve restare a schermo anche cambiando schermata.
 import { useSyncExternalStore } from 'react';
-import { reportError } from './storage';
+import { onForget, reportError } from './storage';
 
 export interface SaveState {
   saving: boolean;
@@ -35,6 +35,17 @@ let riuscitaAlle: number | null = null;
 let fallite: Fallita[] = [];
 
 const ascoltatori = new Set<() => void>();
+
+// Uscendo e rientrando con un altro account, le scritture rifiutate di prima
+// non si possono più rifare: le RLS le rifiuterebbero comunque, perché
+// porterebbero l'identificativo del proprietario di prima. Il dato è perso in
+// ogni caso; mostrare al nuovo arrivato una fascia rossa su roba non sua
+// sarebbe solo la stessa perdita, raccontata male.
+onForget(() => {
+  fallite = [];
+  riuscitaAlle = null;
+  aggiorna();
+});
 
 // useSyncExternalStore confronta gli oggetti per identità: se ne restituissimo
 // uno nuovo a ogni lettura React ridisegnerebbe all'infinito. Quindi

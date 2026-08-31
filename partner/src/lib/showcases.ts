@@ -3,7 +3,7 @@
 // Le vetrine del partner: una per locale, con i suoi link e i piatti accesi.
 // Dal 30/08 vivono nelle tabelle partner_* invece che nel localStorage.
 import { supabase } from './supabase';
-import { currentUserId, reportError, useDebouncedSave, useRemoteList } from './storage';
+import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
 import { write } from './saveState';
 
 export interface MenuLink {
@@ -141,6 +141,7 @@ async function loadShowcases(): Promise<Showcase[]> {
 // TUTTI i link, che non c'entrano niente. Parte vuota a ogni apertura: cosa
 // c'è sul server non lo sappiamo, e la prima scrittura lo mette in chiaro.
 const ultimoSalvato = new Map<string, { nome: string; link: string }>();
+onForget(() => ultimoSalvato.clear());
 
 // Il contenuto di una vetrina si riscrive tutto: i link sono pochi, l'ordine
 // conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.

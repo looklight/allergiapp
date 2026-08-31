@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from './supabase';
-import { resetLists } from './storage';
+import { forgetServerState } from './storage';
 import type { Session } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -40,8 +40,8 @@ export function useAuthState(): AuthState {
       const id = session?.user.id ?? null;
       if (id !== utente.current) {
         utente.current = id;
-        // Vetrine e piatti letti prima erano di un'altra persona
-        resetLists();
+        // Vetrine, piatti e ogni altra convinzione erano di un'altra persona
+        forgetServerState();
       }
       setState({ session, loading: false });
     });

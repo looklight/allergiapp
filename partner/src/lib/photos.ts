@@ -193,7 +193,10 @@ export async function uploadDishPhoto(file: File, posizione = 0.5): Promise<Dish
 // Restituisce null per tutto ciò che non è un file del nostro bucket: le
 // foto vecchie sono data-URL, e su quelle non c'è niente da cancellare.
 function bucketPath(url: string): string | null {
-  const match = url.match(/\/storage\/v1\/object\/public\/partner\/(.+)$/);
+  // L'espressione si costruisce dalla costante e non si riscrive a mano: col
+  // nome del bucket copiato qui dentro, rinominarlo farebbe smettere alla
+  // cancellazione di riconoscere i propri file — in silenzio.
+  const match = url.match(new RegExp(`/storage/v1/object/public/${BUCKET}/(.+)$`));
   return match ? decodeURIComponent(match[1]) : null;
 }
 
