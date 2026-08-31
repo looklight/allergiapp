@@ -6,6 +6,7 @@
 // Dal 30/08 vive in partner_dishes invece che nel localStorage.
 import { supabase } from './supabase';
 import { currentUserId, reportError, useRemoteList } from './storage';
+import { deleteDishPhoto } from './photos';
 import type { Showcase, ShowcaseDraft } from './showcases';
 
 export interface DishTranslation {
@@ -19,7 +20,8 @@ export interface Dish {
   name: string; // l'originale: c'è sempre ed è il ripiego di ogni traduzione
   description: string;
   category: string; // codici da DISH_CATEGORIES; '' = nessuna categoria
-  photoUrl: string;
+  photoUrl: string; // foto grande, o un data-URL sulle righe anteriori alla 702
+  photoThumbUrl: string; // miniatura per le liste; vuota sulle foto vecchie
   allergens: string[]; // codici da allergens.code (presenti nel piatto)
   dietTags: string[]; // codici da DIETS (compatibilità dichiarate)
   translations: DishTranslation[];
@@ -37,6 +39,7 @@ function toDish(row: any): Dish {
     description: row.description ?? '',
     category: row.category ?? '',
     photoUrl: row.photo_url ?? '',
+    photoThumbUrl: row.photo_thumb_url ?? '',
     allergens: row.declared_allergens ?? [],
     dietTags: row.diet_tags ?? [],
     translations: (row.partner_dish_translations ?? []).map((t: any) => ({
@@ -55,6 +58,7 @@ function fromDish(data: Omit<Dish, 'id'>) {
     description: data.description.trim() || null,
     category: data.category || null,
     photo_url: data.photoUrl || null,
+    photo_thumb_url: data.photoThumbUrl || null,
     declared_allergens: data.allergens,
     diet_tags: data.dietTags,
   };
@@ -113,18 +117,36 @@ export function useDishes() {
   }
 
   async function update(id: string, data: Omit<Dish, 'id'>) {
+    const precedente = (dishes ?? []).find((dish) => dish.id === id);
     setList((dishes ?? []).map((dish) => (dish.id === id ? { ...data, id } : dish)));
     const { error } = await supabase.from('partner_dishes').update(fromDish(data)).eq('id', id);
     reportError('modifica piatto', error);
+    // La foto sostituita si cancella SOLO dopo che la riga che ha smesso di
+    // puntarci è stata scritta davvero. Cancellandola prima, una scrittura
+    // rifiutata lascerebbe il piatto con l'indirizzo di un file che non
+    // c'è più — e un'immagine rotta è peggio di un file di troppo.
+    if (!error && precedente && precedente.photoUrl !== '' && precedente.photoUrl !== data.photoUrl) {
+      void deleteDishPhoto(precedente.photoUrl, precedente.photoThumbUrl);
+    }
     await saveTranslations(id, data.translations);
   }
 
   // Il piatto eliminato sparisce anche dalle vetrine in cui era acceso: se ne
   // occupa il database con la cascata sull'accostamento.
-  async function remove(id: string) {
+  //
+  // La FOTO invece resta, e non è una dimenticanza: per otto secondi
+  // l'eliminazione è annullabile, e un ripristino che riporta il piatto senza
+  // l'immagine sarebbe un annulla che non annulla. La cancella la schermata
+  // quando l'annulla scade (v. /piatti), che è l'unico momento in cui
+  // l'eliminazione diventa definitiva.
+  //
+  // Restituisce se la riga è sparita davvero: la schermata ci si basa per
+  // decidere se può portare via anche i file della foto.
+  async function remove(id: string): Promise<boolean> {
     setList((dishes ?? []).filter((dish) => dish.id !== id));
     const { error } = await supabase.from('partner_dishes').delete().eq('id', id);
     reportError('eliminazione piatto', error);
+    return !error;
   }
 
   // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
@@ -185,6 +207,13 @@ export function showcaseDishes(dishes: Dish[], showcase: ShowcaseDraft): Dish[] 
 // In quante vetrine un piatto è acceso (colonna del gestionale)
 export function showcasesWithDish(showcases: Showcase[], dishId: string): Showcase[] {
   return showcases.filter((s) => s.dishIds.includes(dishId));
+}
+
+// L'indirizzo da usare dove la foto è piccola — righe, griglie, cerchi —
+// cioè quasi ovunque. Ripiega sulla grande per le foto caricate prima della
+// 702, che una miniatura non ce l'hanno.
+export function dishThumb(dish: Dish): string {
+  return dish.photoThumbUrl || dish.photoUrl;
 }
 
 // Il testo da mostrare in una lingua: la traduzione se c'è, altrimenti

@@ -6,6 +6,7 @@
 // non si legge.
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { dishThumb } from '@/lib/dishes';
 import type { Dish } from '@/lib/dishes';
 import type { Showcase } from '@/lib/showcases';
 import { allergenName } from '@/lib/allergens';
@@ -115,7 +116,8 @@ export default function DishRow({
           senza dover leggere ogni interruttore */}
       {dish.photoUrl !== '' ? (
         <img
-          src={dish.photoUrl}
+          src={dishThumb(dish)}
+          loading="lazy"
           alt=""
           className={`h-11 w-11 shrink-0 rounded-full object-cover transition ${
             on === false ? 'opacity-40 grayscale' : ''

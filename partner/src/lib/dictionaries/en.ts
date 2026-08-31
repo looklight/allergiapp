@@ -121,6 +121,7 @@ const en: typeof it = {
     changePhoto: 'Change photo',
     removePhoto: 'Remove photo',
     photoError: 'Could not read the photo. Try another file.',
+    photoUploadError: 'The photo was not uploaded. Check your connection and try again.',
     simulatorTitle: 'Through a visitor’s eyes',
     simulatorHint:
       'Select the needs of a test user: the dishes in the preview take the colors they would see.',

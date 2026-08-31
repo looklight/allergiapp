@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
-import { showcaseDishes, useDishes } from '@/lib/dishes';
+import { dishThumb, showcaseDishes, useDishes } from '@/lib/dishes';
 import { hasBooking, normalizeUrl, useShowcases, type ShowcaseDraft } from '@/lib/showcases';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
@@ -796,7 +796,8 @@ export default function ShowcaseEditorPage() {
                                       a colpo d'occhio senza etichette da leggere. */}
                                   {dish.photoUrl !== '' ? (
                                     <img
-                                      src={dish.photoUrl}
+                                      src={dishThumb(dish)}
+                                      loading="lazy"
                                       alt=""
                                       className={`h-16 w-16 rounded-full object-cover transition ${
                                         on ? '' : 'opacity-40 grayscale'

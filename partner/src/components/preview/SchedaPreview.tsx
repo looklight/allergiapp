@@ -15,7 +15,7 @@ import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
 import { hasBooking } from '@/lib/showcases';
 import type { DeliveryLink, ShowcaseDraft } from '@/lib/showcases';
-import { dishText } from '@/lib/dishes';
+import { dishText, dishThumb } from '@/lib/dishes';
 import type { Dish } from '@/lib/dishes';
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
 
@@ -165,7 +165,8 @@ function DishPhoto({
   if (dish.photoUrl) {
     return (
       <img
-        src={dish.photoUrl}
+        src={dishThumb(dish)}
+        loading="lazy"
         alt=""
         style={{
           width: size.w, height: size.h, borderRadius: radius,

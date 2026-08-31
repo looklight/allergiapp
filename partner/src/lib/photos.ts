@@ -1,0 +1,197 @@
+'use client';
+
+// Le foto dei piatti: ridimensionamento nel browser e caricamento su
+// Supabase Storage (bucket 'partner', v. migration 702).
+//
+// Fino al 30/08 la foto finiva come data-URL dentro la colonna photo_url,
+// cioè l'immagine intera in testo dentro la riga: riletta per intero a ogni
+// apertura del catalogo, insieme ai nomi e agli allergeni.
+//
+// DUE MISURE, generate qui e non altrove: sul piano gratuito Supabase non
+// esiste la trasformazione immagini lato server, quindi quello che non si
+// genera adesso non si può più ottenere se non facendo ricaricare la foto al
+// ristoratore. La miniatura è quella che conta: è l'unica che si moltiplica
+// per quaranta in una lista.
+import { supabase } from './supabase';
+import { currentUserId, reportError } from './storage';
+
+const BUCKET = 'partner';
+
+// Il lato del quadrato, non il lato lungo: le foto si ritagliano quadrate
+// (v. renderToBlob). La grande si vede una alla volta — la scheda, e
+// l'ingrandimento al tocco; la miniatura sta in un cerchio da 64px al
+// massimo, quindi 240 la copre anche sugli schermi a tripla densità.
+const GRANDE = { lato: 900, qualita: 0.78 };
+const MINIATURA = { lato: 240, qualita: 0.7 };
+
+export interface DishPhoto {
+  url: string;
+  thumbUrl: string;
+}
+
+// Perché fallisce, in termini che la maschera possa dire al ristoratore.
+// 'read' = il file non è un'immagine che il browser sappia aprire: cambiare
+// file è l'unica cosa che serve. 'upload' = l'immagine era buona ma non è
+// arrivata: riprovare ha senso. Sono due messaggi diversi perché portano a
+// due gesti diversi. Il dettaglio tecnico va in console, non a schermo.
+export type PhotoFailure = 'read' | 'upload';
+
+export class PhotoError extends Error {
+  constructor(readonly kind: PhotoFailure) {
+    super(kind);
+    this.name = 'PhotoError';
+  }
+}
+
+// Il file scelto dal ristoratore, prima di toccarlo. Il tetto vero è sul
+// bucket (5 MB, applicato dal server): questo è solo il messaggio gentile
+// che arriva prima di aver caricato qualcosa.
+export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('immagine non leggibile'));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error('file non leggibile'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// RITAGLIO QUADRATO DAL CENTRO, come le foto delle recensioni nell'app.
+// Il quadrato è la forma CONSERVATA, non quella mostrata: nelle liste il
+// cerchio lo fa il CSS, e sotto al cerchio il quadrato resta intero, pronto
+// per chi lo vorrà ingrandire premendo.
+//
+// WebP a parità di occhio pesa circa un terzo meno del JPEG. Non è ovunque:
+// se il browser non sa scriverlo, toBlob NON fallisce — restituisce un PNG,
+// che su una fotografia pesa diverse volte tanto. Quindi il tipo di quello
+// che torna si controlla, e in quel caso si riprova in JPEG.
+function renderToBlob(img: HTMLImageElement, lato: number, qualita: number): Promise<Blob> {
+  // Il lato del quadrato più grande che ci sta dentro
+  const sorgente = Math.min(img.width, img.height);
+  // Una foto già piccola non si ingrandisce: si tiene com'è
+  const destinazione = Math.min(lato, sorgente);
+  const scorrimento = (misura: number) => Math.floor((misura - sorgente) / 2);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = destinazione;
+  canvas.height = destinazione;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return Promise.reject(new Error('canvas non disponibile'));
+  ctx.drawImage(
+    img,
+    scorrimento(img.width),
+    scorrimento(img.height),
+    sorgente,
+    sorgente,
+    0,
+    0,
+    destinazione,
+    destinazione
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob && blob.type === 'image/webp') {
+          resolve(blob);
+          return;
+        }
+        canvas.toBlob(
+          (jpeg) => (jpeg ? resolve(jpeg) : reject(new Error('immagine non convertibile'))),
+          'image/jpeg',
+          qualita
+        );
+      },
+      'image/webp',
+      qualita
+    );
+  });
+}
+
+function estensione(blob: Blob) {
+  return blob.type === 'image/webp' ? 'webp' : 'jpg';
+}
+
+async function upload(path: string, blob: Blob): Promise<string> {
+  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
+    contentType: blob.type,
+    // I file non si sovrascrivono mai (il nome è casuale): se il percorso
+    // esiste è successo qualcosa che va visto, non nascosto.
+    upsert: false,
+  });
+  if (error) throw error;
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+// Carica le due misure. Se una delle due non arriva, si porta via l'altra:
+// mezza foto è peggio di nessuna, perché la lista mostrerebbe un buco senza
+// che nessuno sappia perché.
+export async function uploadDishPhoto(file: File): Promise<DishPhoto> {
+  let grande: Blob;
+  let mini: Blob;
+  try {
+    const img = await loadImage(file);
+    [grande, mini] = await Promise.all([
+      renderToBlob(img, GRANDE.lato, GRANDE.qualita),
+      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita),
+    ]);
+  } catch (error) {
+    reportError('lettura foto piatto', error);
+    throw new PhotoError('read');
+  }
+
+  const ownerId = await currentUserId();
+  if (!ownerId) {
+    reportError('caricamento foto piatto', new Error('sessione assente'));
+    throw new PhotoError('upload');
+  }
+
+  // Il nome del file è casuale e NON è l'id del piatto, per due motivi: la
+  // foto si sceglie prima che il piatto esista, e sostituendone una il file
+  // vecchio dev'essere ancora lì finché il salvataggio non è riuscito.
+  const nome = crypto.randomUUID();
+  const base = `${ownerId}/dishes/${nome}`;
+  const pathGrande = `${base}.${estensione(grande)}`;
+  const pathMini = `${base}_thumb.${estensione(mini)}`;
+
+  // allSettled e non all: con all, il rifiuto di una delle due farebbe
+  // partire la pulizia mentre l'altra è ancora per aria, e il file arrivato
+  // un istante dopo resterebbe lì per sempre. Qui si aspetta che siano
+  // finite entrambe, poi si porta via tutto — togliere un percorso che non
+  // è mai stato scritto non fa niente. È lo stesso modo in cui l'app carica
+  // le foto di una recensione.
+  const esiti = await Promise.allSettled([upload(pathGrande, grande), upload(pathMini, mini)]);
+  const fallito = esiti.find((e) => e.status === 'rejected');
+  if (fallito) {
+    await supabase.storage.from(BUCKET).remove([pathGrande, pathMini]);
+    reportError('caricamento foto piatto', fallito.reason);
+    throw new PhotoError('upload');
+  }
+
+  const [url, thumbUrl] = (esiti as PromiseFulfilledResult<string>[]).map((e) => e.value);
+  return { url, thumbUrl };
+}
+
+// Il percorso dentro il bucket a partire dall'indirizzo pubblico.
+// Restituisce null per tutto ciò che non è un file del nostro bucket: le
+// foto vecchie sono data-URL, e su quelle non c'è niente da cancellare.
+function bucketPath(url: string): string | null {
+  const match = url.match(/\/storage\/v1\/object\/public\/partner\/(.+)$/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// Cancella i file di una foto. Non blocca mai chi la chiama e non ha un
+// esito da guardare: un file rimasto sono byte, e far fallire per questo
+// un'eliminazione riuscita sarebbe peggio del file.
+export async function deleteDishPhoto(url: string, thumbUrl: string): Promise<void> {
+  const paths = [url, thumbUrl].map(bucketPath).filter((p): p is string => p !== null);
+  if (paths.length === 0) return;
+  const { error } = await supabase.storage.from(BUCKET).remove(paths);
+  reportError('cancellazione foto piatto', error);
+}

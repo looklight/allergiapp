@@ -120,6 +120,7 @@ const it = {
     changePhoto: 'Cambia foto',
     removePhoto: 'Rimuovi foto',
     photoError: 'Impossibile leggere la foto. Prova con un altro file.',
+    photoUploadError: 'La foto non è stata caricata. Controlla la connessione e riprova.',
     simulatorTitle: 'Occhi del visitatore',
     simulatorHint:
       'Seleziona le esigenze di un utente di prova: i piatti nell’anteprima si colorano come li vedrebbe lui.',

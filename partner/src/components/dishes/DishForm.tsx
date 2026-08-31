@@ -3,14 +3,20 @@
 // La maschera del piatto: una sola, usata dal gestionale (pannello laterale)
 // e da chiunque altro debba creare o correggere un piatto del catalogo.
 // Non disegna il proprio contenitore: lo mette chi la ospita.
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { catalogLanguages, useDishes, type Dish, type DishTranslation } from '@/lib/dishes';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
-import { fileToResizedDataUrl } from '@/lib/image';
+import {
+  deleteDishPhoto,
+  uploadDishPhoto,
+  MAX_FILE_BYTES,
+  PhotoError,
+  type DishPhoto,
+} from '@/lib/photos';
 
 // Testo di aiuto con una parte sottolineata, segnata tra graffe nel dizionario.
 // Le graffe qui racchiudono il testo da sottolineare, che può essere una
@@ -50,10 +56,18 @@ export default function DishForm({
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
-  const [photoUrl, setPhotoUrl] = useState(initial?.photoUrl ?? '');
+  // La foto sta già sullo Storage: qui ci sono i suoi due indirizzi, non
+  // l'immagine. Si carica appena la si sceglie e non al salvataggio, così il
+  // ristoratore vede subito se è arrivata — è la scrittura più lenta e
+  // l'unica che valga la pena aspettare guardando.
+  const [photo, setPhoto] = useState<DishPhoto>({
+    url: initial?.photoUrl ?? '',
+    thumbUrl: initial?.photoThumbUrl ?? '',
+  });
+  const [uploading, setUploading] = useState(false);
   const [allergens, setAllergens] = useState<string[]>(initial?.allergens ?? []);
   const [dietTags, setDietTags] = useState<string[]>(initial?.dietTags ?? []);
-  const [photoError, setPhotoError] = useState<'read' | 'size' | null>(null);
+  const [photoError, setPhotoError] = useState<'read' | 'size' | 'upload' | null>(null);
   // Le traduzioni si aggiungono qui, piatto per piatto: quasi tutti i
   // ristoratori scriveranno solo in italiano, e chi ne vuole un'altra la
   // aggiunge dove sta già scrivendo invece che in un'impostazione a parte.
@@ -64,6 +78,25 @@ export default function DishForm({
     (code) => !translations.some((t) => t.language === code)
   );
   const fileInput = useRef<HTMLInputElement>(null);
+  // Le foto caricate mentre la maschera era aperta. Chi cambia idea due volte
+  // ne lascia dietro una: qui si tiene il conto per portarle via all'uscita.
+  const caricate = useRef<DishPhoto[]>([]);
+  // L'indirizzo consegnato al salvataggio: è l'unico che NON va cancellato.
+  const conservata = useRef<string | null>(null);
+
+  // La pulizia sta allo smontaggio e non nel bottone Annulla apposta: dalla
+  // maschera si esce anche con la ✕, con Esc e cliccando fuori, e una foto
+  // caricata per sbaglio non deve restare sullo Storage per la strada scelta
+  // per uscire. La foto di partenza non si tocca: quella la cancella
+  // l'aggiornamento del piatto, e solo se la riga viene scritta davvero.
+  useEffect(
+    () => () => {
+      for (const f of caricate.current) {
+        if (f.url !== conservata.current) void deleteDishPhoto(f.url, f.thumbUrl);
+      }
+    },
+    []
+  );
 
   function setTranslation(index: number, patch: Partial<DishTranslation>) {
     setTranslations((prev) => prev.map((t, i) => (i === index ? { ...t, ...patch } : t)));
@@ -84,18 +117,25 @@ export default function DishForm({
 
   async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    // Azzerato subito: senza, riscegliere lo stesso file dopo un errore non
+    // farebbe scattare nessun cambiamento e sembrerebbe che il bottone sia morto
+    e.target.value = '';
     if (!file) return;
     setPhotoError(null);
-    if (file.size > 10 * 1024 * 1024) {
-    setPhotoError('size');
-    } else {
+    if (file.size > MAX_FILE_BYTES) {
+      setPhotoError('size');
+      return;
+    }
+    setUploading(true);
     try {
-      setPhotoUrl(await fileToResizedDataUrl(file));
-    } catch {
-      setPhotoError('read');
+      const caricata = await uploadDishPhoto(file);
+      caricate.current.push(caricata);
+      setPhoto(caricata);
+    } catch (error) {
+      setPhotoError(error instanceof PhotoError ? error.kind : 'upload');
+    } finally {
+      setUploading(false);
     }
-    }
-    e.target.value = '';
   }
 
   return (
@@ -137,11 +177,22 @@ export default function DishForm({
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            aria-label={photoUrl === '' ? d.editor.addPhoto : d.editor.changePhoto}
-            title={photoUrl === '' ? d.editor.addPhoto : d.editor.changePhoto}
+            disabled={uploading}
+            aria-label={photo.url === '' ? d.editor.addPhoto : d.editor.changePhoto}
+            title={photo.url === '' ? d.editor.addPhoto : d.editor.changePhoto}
+            aria-busy={uploading}
             className="block h-16 w-16 overflow-hidden rounded-full"
           >
-            {photoUrl === '' ? (
+            {uploading ? (
+              // Il cerchio che gira sta DENTRO il posto della foto: quello che
+              // si aspetta è quello, e chi guarda non deve cercare altrove
+              <span className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-gray-400 bg-white">
+                <svg className="h-6 w-6 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
+                  <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+              </span>
+            ) : photo.url === '' ? (
               <span className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-gray-400 bg-white text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-600">
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
@@ -149,13 +200,13 @@ export default function DishForm({
                 </svg>
               </span>
             ) : (
-              <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+              <img src={photo.thumbUrl || photo.url} alt="" className="h-full w-full object-cover" />
             )}
           </button>
-          {photoUrl !== '' && (
+          {photo.url !== '' && !uploading && (
             <button
               type="button"
-              onClick={() => setPhotoUrl('')}
+              onClick={() => setPhoto({ url: '', thumbUrl: '' })}
               aria-label={d.editor.removePhoto}
               title={d.editor.removePhoto}
               className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 shadow-sm transition-colors hover:text-red-600"
@@ -177,6 +228,20 @@ export default function DishForm({
           />
         </div>
       </div>
+
+      {/* Il messaggio sta sotto la riga della foto e non in fondo alla
+          maschera: dice tre cose diverse, e ognuna porta a un gesto diverso —
+          scegliere un file più leggero, sceglierne uno che sia un'immagine,
+          oppure riprovare. */}
+      {photoError && (
+        <p className="text-xs text-red-600" role="alert">
+          {photoError === 'size'
+            ? d.editor.photoTooBig
+            : photoError === 'upload'
+              ? d.editor.photoUploadError
+              : d.editor.photoError}
+        </p>
+      )}
 
       <textarea
         value={description}
@@ -278,12 +343,6 @@ export default function DishForm({
         </div>
       </div>
 
-      {photoError && (
-        <p className="text-xs text-red-600">
-          {photoError === 'size' ? d.editor.photoTooBig : d.editor.photoError}
-        </p>
-      )}
-
       {/* Allergeni presenti */}
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -365,21 +424,26 @@ export default function DishForm({
             {d.common.cancel}
           </button>
           <button
-            onClick={() =>
-                onSave({
+            onClick={() => {
+              // L'indirizzo consegnato è l'unico da non cancellare all'uscita
+              conservata.current = photo.url;
+              onSave({
                 name: name.trim(),
                 description,
                 category,
-                photoUrl,
+                photoUrl: photo.url,
+                photoThumbUrl: photo.thumbUrl,
                 allergens,
                 dietTags,
                 // un blocco aperto e lasciato senza lingua non è una traduzione
                 translations: translations
                   .filter((t) => t.language !== '')
                   .map((t) => ({ ...t, name: t.name.trim() })),
-              })
-            }
-            disabled={name.trim() === ''}
+              });
+            }}
+            // Salvare mentre la foto sta salendo la lascerebbe fuori dal
+            // piatto: è l'unico campo che non è già pronto quando lo si guarda
+            disabled={name.trim() === '' || uploading}
             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
           >
             {d.common.save}

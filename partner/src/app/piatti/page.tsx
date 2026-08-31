@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { setDishShowcases, showcasesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useShowcases } from '@/lib/showcases';
+import { deleteDishPhoto } from '@/lib/photos';
 import { DISH_CATEGORIES } from '@/lib/categories';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
@@ -100,6 +101,10 @@ export default function DishesPage() {
   }
 
   function confirmDelete(dish: Dish) {
+    // Eliminandone due di fila, il toast del primo lascia il posto al secondo
+    // e da lì in poi il primo non è più annullabile: è il suo momento di
+    // diventare definitivo, foto compresa.
+    purgePhoto();
     const index = (dishes ?? []).findIndex((item) => item.id === dish.id);
     const showcaseIds = showcasesWithDish(showcases ?? [], dish.id).map((s) => s.id);
     remove(dish.id);
@@ -110,6 +115,21 @@ export default function DishesPage() {
   function undoDelete() {
     if (!undoable) return;
     restore(undoable.dish, undoable.index, undoable.showcaseIds);
+    setUndoable(null);
+  }
+
+  // Finché l'annulla è a schermo i file della foto restano: cancellarli
+  // insieme alla riga farebbe tornare il piatto con l'immagine rotta, cioè
+  // un annulla che non annulla del tutto. Si portano via quando
+  // l'eliminazione diventa davvero definitiva — qui e non in remove().
+  function purgePhoto() {
+    if (undoable) {
+      void deleteDishPhoto(undoable.dish.photoUrl, undoable.dish.photoThumbUrl);
+    }
+  }
+
+  function forgetDeleted() {
+    purgePhoto();
     setUndoable(null);
   }
 
@@ -441,7 +461,7 @@ export default function DishesPage() {
           message={d.dishes.deleted}
           undoLabel={d.dishes.undo}
           onUndo={undoDelete}
-          onExpire={() => setUndoable(null)}
+          onExpire={forgetDeleted}
           returnFocusTo={createButton}
         />
       )}
