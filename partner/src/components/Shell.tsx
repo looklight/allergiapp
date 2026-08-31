@@ -15,6 +15,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const authState = useAuthState();
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
+  // L'anteprima a tutta pagina resta dietro l'autenticazione — è roba del
+  // ristoratore — ma senza barra laterale né margini del pannello: mostra
+  // quello che vedrà il cliente, e il portale intorno falserebbe il giudizio.
+  const isFullPreview = pathname.startsWith('/menu/') && pathname.endsWith('/anteprima');
 
   return (
     <>
@@ -25,6 +29,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             children
           ) : (
             <AuthGuard>
+              {isFullPreview ? (
+                children
+              ) : (
+                <>
               {/* Fuori dal <main>: l'avviso vale per tutte le schermate e non
                   deve scorrere via col contenuto di quella che si sta guardando */}
               <SaveStatus />
@@ -36,6 +44,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                   </div>
                 </main>
               </div>
+                </>
+              )}
             </AuthGuard>
           )}
         </AuthContext.Provider>
