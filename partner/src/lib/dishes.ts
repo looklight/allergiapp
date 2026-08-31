@@ -196,28 +196,44 @@ export function useDishes() {
   return { dishes, create, update, remove, restore };
 }
 
-// Accende un piatto esattamente nelle vetrine elencate e lo spegne nelle
-// altre: le caselle "In vetrina" della maschera ne cambiano più d'una insieme.
-export async function setDishShowcases(dishId: string, showcaseIds: string[]) {
+// Accende un piatto esattamente nei locali elencati e lo spegne negli altri:
+// le caselle della maschera ne cambiano più d'uno insieme.
+//
+// Riceve id di LOCALI perché è quello che la maschera mostra, ma i piatti
+// accesi stanno sulle SCHEDE (migration 703): la conversione si fa qui, in un
+// punto solo. Un locale senza scheda non produce nessuna riga — non c'è
+// ancora nessun posto in cui quel piatto potrebbe comparire.
+export async function setDishShowcases(dishId: string, venueIds: string[]) {
   const ownerId = await currentUserId();
   if (!ownerId) return;
+
+  let cardIds: string[] = [];
+  if (venueIds.length > 0) {
+    const { data, error } = await supabase
+      .from('partner_cards')
+      .select('id')
+      .in('venue_id', venueIds);
+    reportError('lettura schede', error);
+    cardIds = (data ?? []).map((row) => row.id);
+  }
+
   await write(
-    'spegnimento piatto nelle vetrine',
-    () => supabase.from('partner_showcase_dishes').delete().eq('dish_id', dishId),
-    `vetrine-spegni:${dishId}`
+    'spegnimento piatto sulle schede',
+    () => supabase.from('partner_card_dishes').delete().eq('dish_id', dishId),
+    `schede-spegni:${dishId}`
   );
-  if (showcaseIds.length > 0) {
+  if (cardIds.length > 0) {
     await write(
-      'accensione piatto nelle vetrine',
+      'accensione piatto sulle schede',
       () =>
-        supabase.from('partner_showcase_dishes').insert(
-          showcaseIds.map((showcaseId) => ({
-            showcase_id: showcaseId,
+        supabase.from('partner_card_dishes').insert(
+          cardIds.map((cardId) => ({
+            card_id: cardId,
             dish_id: dishId,
             owner_user_id: ownerId,
           }))
         ),
-      `vetrine-accendi:${dishId}`
+      `schede-accendi:${dishId}`
     );
   }
 }
