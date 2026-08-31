@@ -10,6 +10,7 @@ import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
+import PhotoCropDialog from './PhotoCropDialog';
 import {
   deleteDishPhoto,
   uploadDishPhoto,
@@ -65,6 +66,9 @@ export default function DishForm({
     thumbUrl: initial?.photoThumbUrl ?? '',
   });
   const [uploading, setUploading] = useState(false);
+  // Il file scelto, in attesa che si decida quale quadrato tenerne: il
+  // caricamento parte dopo, perché dopo non si può più scegliere
+  const [daRitagliare, setDaRitagliare] = useState<File | null>(null);
   const [allergens, setAllergens] = useState<string[]>(initial?.allergens ?? []);
   const [dietTags, setDietTags] = useState<string[]>(initial?.dietTags ?? []);
   const [photoError, setPhotoError] = useState<'read' | 'size' | 'upload' | null>(null);
@@ -126,9 +130,14 @@ export default function DishForm({
       setPhotoError('size');
       return;
     }
+    setDaRitagliare(file);
+  }
+
+  async function carica(file: File, posizione: number) {
+    setDaRitagliare(null);
     setUploading(true);
     try {
-      const caricata = await uploadDishPhoto(file);
+      const caricata = await uploadDishPhoto(file, posizione);
       caricate.current.push(caricata);
       setPhoto(caricata);
     } catch (error) {
@@ -140,6 +149,17 @@ export default function DishForm({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {daRitagliare !== null && (
+        <PhotoCropDialog
+          file={daRitagliare}
+          onConfirm={(posizione) => carica(daRitagliare, posizione)}
+          onCancel={() => setDaRitagliare(null)}
+          onUnreadable={() => {
+            setDaRitagliare(null);
+            setPhotoError('read');
+          }}
+        />
+      )}
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-4 md:px-6">
       {/* Categoria a scelta singola: le pill vanno a capo invece di scorrere,
           così si vedono tutte insieme senza doverne cercare una fuori campo.

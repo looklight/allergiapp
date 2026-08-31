@@ -62,7 +62,11 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-// RITAGLIO QUADRATO DAL CENTRO, come le foto delle recensioni nell'app.
+// RITAGLIO QUADRATO, come le foto delle recensioni nell'app — ma il punto da
+// cui prenderlo lo sceglie il ristoratore (v. PhotoCropDialog), perché qui è
+// definitivo: l'originale non lo teniamo. `posizione` è dove cade il quadrato
+// lungo il lato lungo, da 0 a 1; 0.5 è il centro, che è anche il ripiego.
+//
 // Il quadrato è la forma CONSERVATA, non quella mostrata: nelle liste il
 // cerchio lo fa il CSS, e sotto al cerchio il quadrato resta intero, pronto
 // per chi lo vorrà ingrandire premendo.
@@ -71,12 +75,19 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 // se il browser non sa scriverlo, toBlob NON fallisce — restituisce un PNG,
 // che su una fotografia pesa diverse volte tanto. Quindi il tipo di quello
 // che torna si controlla, e in quel caso si riprova in JPEG.
-function renderToBlob(img: HTMLImageElement, lato: number, qualita: number): Promise<Blob> {
+function renderToBlob(
+  img: HTMLImageElement,
+  lato: number,
+  qualita: number,
+  posizione: number
+): Promise<Blob> {
   // Il lato del quadrato più grande che ci sta dentro
   const sorgente = Math.min(img.width, img.height);
   // Una foto già piccola non si ingrandisce: si tiene com'è
   const destinazione = Math.min(lato, sorgente);
-  const scorrimento = (misura: number) => Math.floor((misura - sorgente) / 2);
+  // Sul lato corto non c'è niente da scegliere, ed è per questo che il
+  // ritaglio ha un asse solo
+  const scorrimento = (misura: number) => Math.round((misura - sorgente) * posizione);
 
   const canvas = document.createElement('canvas');
   canvas.width = destinazione;
@@ -132,14 +143,14 @@ async function upload(path: string, blob: Blob): Promise<string> {
 // Carica le due misure. Se una delle due non arriva, si porta via l'altra:
 // mezza foto è peggio di nessuna, perché la lista mostrerebbe un buco senza
 // che nessuno sappia perché.
-export async function uploadDishPhoto(file: File): Promise<DishPhoto> {
+export async function uploadDishPhoto(file: File, posizione = 0.5): Promise<DishPhoto> {
   let grande: Blob;
   let mini: Blob;
   try {
     const img = await loadImage(file);
     [grande, mini] = await Promise.all([
-      renderToBlob(img, GRANDE.lato, GRANDE.qualita),
-      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita),
+      renderToBlob(img, GRANDE.lato, GRANDE.qualita, posizione),
+      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita, posizione),
     ]);
   } catch (error) {
     reportError('lettura foto piatto', error);

@@ -121,6 +121,10 @@ const it = {
     removePhoto: 'Rimuovi foto',
     photoError: 'Impossibile leggere la foto. Prova con un altro file.',
     photoUploadError: 'La foto non è stata caricata. Controlla la connessione e riprova.',
+    cropTitle: 'Scegli il ritaglio',
+    cropHint: 'Trascina per scegliere la parte da tenere: quella in ombra non viene salvata. Il cerchio è come si vedrà negli elenchi.',
+    cropHintSquare: 'La foto è già quadrata: si salva tutta.',
+    cropConfirm: 'Usa questa',
     simulatorTitle: 'Occhi del visitatore',
     simulatorHint:
       'Seleziona le esigenze di un utente di prova: i piatti nell’anteprima si colorano come li vedrebbe lui.',

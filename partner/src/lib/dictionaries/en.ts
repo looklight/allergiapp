@@ -122,6 +122,10 @@ const en: typeof it = {
     removePhoto: 'Remove photo',
     photoError: 'Could not read the photo. Try another file.',
     photoUploadError: 'The photo was not uploaded. Check your connection and try again.',
+    cropTitle: 'Choose the crop',
+    cropHint: 'Drag to choose which part to keep: the shaded area is not saved. The circle is how it will look in lists.',
+    cropHintSquare: 'The photo is already square: all of it is saved.',
+    cropConfirm: 'Use this',
     simulatorTitle: 'Through a visitor’s eyes',
     simulatorHint:
       'Select the needs of a test user: the dishes in the preview take the colors they would see.',
