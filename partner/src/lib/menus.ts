@@ -23,11 +23,21 @@ export interface MenuItem {
   // null = senza prezzo, ed è un caso vero: dentro un degustazione i piatti
   // non hanno prezzo, ce l'ha il menù.
   priceCents: number | null;
+  // In evidenza: un'offerta, un consigliato dallo chef. Cambia solo il PESO
+  // VISIVO della riga, mai la sua posizione — spostarla in cima aprirebbe un
+  // secondo criterio d'ordine oltre a quello già usato dal filtro allergeni
+  // (i piatti esclusi che scivolano in fondo alla sezione), e i due si
+  // confonderebbero.
+  highlighted: boolean;
+  // Rilevante solo quando highlighted è true: l'editor la svuota spegnendo la
+  // stella, così non resta testo nascosto che nessuno vede più.
+  highlightNote: string;
 }
 
 export interface MenuSection {
   id: string;
   name: string; // testo libero: "Le nostre paste fresche", "Dalla brace"
+  description: string; // riga sotto il nome, facoltativa: "Tutti fatti in casa"
   items: MenuItem[];
 }
 
@@ -35,6 +45,7 @@ export interface Menu {
   id: string;
   venueId: string;
   name: string; // "Carta", "Pranzo", "Bevande"
+  description: string; // sotto il titolo: orari, avvisi, due righe di presentazione
   currency: string; // ISO 4217, sul MENÙ e non sulla riga
   // Le righe fuori sezione stanno in cima, come i piatti senza categoria nel
   // catalogo: chi butta dentro dieci piatti prima di pensare agli intertitoli
@@ -133,16 +144,20 @@ function toMenu(row: any): Menu {
     id: r.id,
     dishId: r.dish_id,
     priceCents: r.price_cents ?? null,
+    highlighted: r.highlighted ?? false,
+    highlightNote: r.highlight_note ?? '',
   });
   return {
     id: row.id,
     venueId: row.venue_id,
     name: row.name ?? '',
+    description: row.description ?? '',
     currency: row.currency ?? 'EUR',
     loose: righe.filter((r: any) => r.section_id === null).map(item),
     sections: [...(row.partner_menu_sections ?? [])].sort(perOrdine).map((s: any) => ({
       id: s.id,
       name: s.name ?? '',
+      description: s.description ?? '',
       items: righe.filter((r: any) => r.section_id === s.id).map(item),
     })),
   };
@@ -154,9 +169,9 @@ async function loadMenus(): Promise<Menu[]> {
   const { data, error } = await supabase
     .from('partner_menus')
     .select(
-      'id, venue_id, name, currency, sort_order, ' +
-        'partner_menu_sections(id, name, sort_order), ' +
-        'partner_menu_items(id, dish_id, section_id, price_cents, sort_order)'
+      'id, venue_id, name, description, currency, sort_order, ' +
+        'partner_menu_sections(id, name, description, sort_order), ' +
+        'partner_menu_items(id, dish_id, section_id, price_cents, highlighted, highlight_note, sort_order)'
     )
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true });
@@ -181,7 +196,7 @@ async function saveMenu(menu: Menu) {
     () =>
       supabase
         .from('partner_menus')
-        .update({ name: menu.name, currency: menu.currency })
+        .update({ name: menu.name, description: menu.description, currency: menu.currency })
         .eq('id', menu.id),
     `menu:${menu.id}`
   );
@@ -191,6 +206,7 @@ async function saveMenu(menu: Menu) {
     menu_id: menu.id,
     owner_user_id: ownerId,
     name: s.name,
+    description: s.description,
     sort_order: i,
   }));
   // Le righe fuori sezione prima, come si vedono: sort_order riparte da zero
@@ -205,6 +221,8 @@ async function saveMenu(menu: Menu) {
     dish_id: riga.dishId,
     owner_user_id: ownerId,
     price_cents: riga.priceCents,
+    highlighted: riga.highlighted,
+    highlight_note: riga.highlightNote,
     sort_order: i,
   }));
 
@@ -274,6 +292,7 @@ export function useMenus() {
         id: nuovoId(),
         venueId,
         name,
+        description: '',
         currency: 'EUR',
         loose: [],
         sections: [],
@@ -335,6 +354,7 @@ export function useMenus() {
             venue_id: menu.venueId,
             owner_user_id: ownerId,
             name: menu.name,
+            description: menu.description,
             currency: menu.currency,
             sort_order: i,
           }))
@@ -408,13 +428,23 @@ function conRighe(menu: Menu, sectionId: string | null, cambia: (items: MenuItem
 }
 
 export function addSection(menu: Menu, name: string): Menu {
-  return { ...menu, sections: [...menu.sections, { id: nuovoId(), name, items: [] }] };
+  return {
+    ...menu,
+    sections: [...menu.sections, { id: nuovoId(), name, description: '', items: [] }],
+  };
 }
 
 export function renameSection(menu: Menu, sectionId: string, name: string): Menu {
   return {
     ...menu,
     sections: menu.sections.map((s) => (s.id === sectionId ? { ...s, name } : s)),
+  };
+}
+
+export function setSectionDescription(menu: Menu, sectionId: string, description: string): Menu {
+  return {
+    ...menu,
+    sections: menu.sections.map((s) => (s.id === sectionId ? { ...s, description } : s)),
   };
 }
 
@@ -447,7 +477,7 @@ export function moveSection(menu: Menu, sectionId: string, verso: -1 | 1): Menu 
 export function addDishes(menu: Menu, sectionId: string | null, dishIds: string[]): Menu {
   const nuovi = dishIds
     .filter((dishId) => !hasDish(menu, dishId))
-    .map((dishId) => ({ id: nuovoId(), dishId, priceCents: null }));
+    .map((dishId) => ({ id: nuovoId(), dishId, priceCents: null, highlighted: false, highlightNote: '' }));
   return conRighe(menu, sectionId, (items) => [...items, ...nuovi]);
 }
 
@@ -459,6 +489,23 @@ export function removeItem(menu: Menu, itemId: string): Menu {
 export function setItemPrice(menu: Menu, itemId: string, priceCents: number | null): Menu {
   const cambia = (items: MenuItem[]) =>
     items.map((item) => (item.id === itemId ? { ...item, priceCents } : item));
+  return { ...menu, loose: cambia(menu.loose), sections: menu.sections.map((s) => ({ ...s, items: cambia(s.items) })) };
+}
+
+// Spegnendo la stella la nota sparisce con lei: senza, resterebbe un testo
+// scritto ma invisibile, pronto a ricomparire com'era se il piatto viene
+// evidenziato di nuovo — una sorpresa, non una comodità.
+export function setItemHighlighted(menu: Menu, itemId: string, highlighted: boolean): Menu {
+  const cambia = (items: MenuItem[]) =>
+    items.map((item) =>
+      item.id === itemId ? { ...item, highlighted, highlightNote: highlighted ? item.highlightNote : '' } : item
+    );
+  return { ...menu, loose: cambia(menu.loose), sections: menu.sections.map((s) => ({ ...s, items: cambia(s.items) })) };
+}
+
+export function setItemHighlightNote(menu: Menu, itemId: string, highlightNote: string): Menu {
+  const cambia = (items: MenuItem[]) =>
+    items.map((item) => (item.id === itemId ? { ...item, highlightNote } : item));
   return { ...menu, loose: cambia(menu.loose), sections: menu.sections.map((s) => ({ ...s, items: cambia(s.items) })) };
 }
 
@@ -523,6 +570,10 @@ export function moveItemToSection(menu: Menu, itemId: string, sectionId: string 
 
 export function setMenuName(menu: Menu, name: string): Menu {
   return { ...menu, name };
+}
+
+export function setMenuDescription(menu: Menu, description: string): Menu {
+  return { ...menu, description };
 }
 
 export function setMenuCurrency(menu: Menu, currency: string): Menu {

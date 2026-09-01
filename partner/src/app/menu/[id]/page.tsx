@@ -25,9 +25,13 @@ import {
   removeItem,
   removeSection,
   renameSection,
+  setItemHighlighted,
+  setItemHighlightNote,
   setItemPrice,
   setMenuCurrency,
+  setMenuDescription,
   setMenuName,
+  setSectionDescription,
   useMenu,
   useMenus,
   type MenuItem as Riga,
@@ -188,6 +192,8 @@ export default function MenuEditorPage() {
             isFirst={i === 0}
             isLast={i === items.length - 1}
             onPrice={(cents) => save(setItemPrice(menu!, item.id, cents))}
+            onHighlight={(highlighted) => save(setItemHighlighted(menu!, item.id, highlighted))}
+            onHighlightNote={(note) => save(setItemHighlightNote(menu!, item.id, note))}
             onMove={(verso) => save(moveItem(menu!, sectionId, item.id, verso))}
             onMoveToSection={(dove) => save(moveItemToSection(menu!, item.id, dove))}
             onRemove={() => save(removeItem(menu!, item.id))}
@@ -255,7 +261,7 @@ export default function MenuEditorPage() {
       {/* Nome e valuta: il nome è un campo e basta, senza matita da premere
           prima — è la prima cosa che si cambia su un menù che ne ha bisogno.
           Quando non ne ha, al suo posto c'è un titolo e basta. */}
-      <div className="mb-6 mt-4 flex flex-wrap items-center gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         {mostraNome.current ? (
           <input
             type="text"
@@ -285,6 +291,18 @@ export default function MenuEditorPage() {
           </select>
         </label>
       </div>
+
+      {/* Descrizione del menù: facoltativa, sotto il titolo. Stesso stile
+          "invisibile finché non ci si passa sopra" del titolo, per non
+          aggiungere un riquadro a un editor che finora non ne aveva. */}
+      <textarea
+        value={menu.description}
+        onChange={(e) => save(setMenuDescription(menu, e.target.value))}
+        placeholder={d.menuEditor.descriptionPlaceholder}
+        aria-label={d.menuEditor.descriptionPlaceholder}
+        rows={2}
+        className="mb-6 mt-1 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-sm text-gray-600 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
+      />
 
       <div className="mb-4">
         <BrandBar brand={brand} onChange={setBrand} />
@@ -415,6 +433,17 @@ export default function MenuEditorPage() {
                   </svg>
                 </button>
               </div>
+
+              {/* Descrizione della sezione: stesso trattamento di quella del
+                  menù, ma un rigo solo — qui lo spazio è più stretto. */}
+              <textarea
+                value={section.description}
+                onChange={(e) => save(setSectionDescription(menu, section.id, e.target.value))}
+                placeholder={d.menuEditor.sectionDescriptionPlaceholder}
+                aria-label={d.menuEditor.sectionDescriptionPlaceholder}
+                rows={1}
+                className="mb-2 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
+              />
 
               {section.items.length === 0 ? (
                 <p className="px-2 py-3 text-sm text-gray-400">{d.menuEditor.emptySection}</p>

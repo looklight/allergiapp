@@ -84,8 +84,8 @@ export default function MenuPreview({
   const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
 
   const gruppi = [
-    { id: 'loose', name: '', items: menu.loose },
-    ...menu.sections.map((s) => ({ id: s.id, name: s.name, items: s.items })),
+    { id: 'loose', name: '', description: '', items: menu.loose },
+    ...menu.sections.map((s) => ({ id: s.id, name: s.name, description: s.description, items: s.items })),
   ].filter((g) => g.items.length > 0);
 
   return (
@@ -106,6 +106,14 @@ export default function MenuPreview({
           />
           <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{venueName}</p>
         </div>
+
+        {/* Descrizione del menù: facoltativa, quello che il ristoratore ha
+            scritto sotto il titolo nell'editor (orari, un avviso). */}
+        {menu.description.trim() !== '' && (
+          <p className="mt-1.5 whitespace-pre-line text-[12px] leading-snug text-white/85">
+            {menu.description}
+          </p>
+        )}
 
         {/* Le linguette: quella aperta è piena, le altre restano leggibili.
             Nell'anteprima non si cambiano — si sta guardando questo menù. */}
@@ -191,11 +199,16 @@ export default function MenuPreview({
               <section key={gruppo.id} className="mb-4">
                 {gruppo.name.trim() !== '' && (
                   <h3
-                    className="mb-2 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide"
+                    className="mb-1 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide"
                     style={{ color: accent, borderColor: `${accent}33` }}
                   >
                     {gruppo.name}
                   </h3>
+                )}
+                {gruppo.description.trim() !== '' && (
+                  <p className="mb-2 whitespace-pre-line text-[11px] leading-snug text-gray-500">
+                    {gruppo.description}
+                  </p>
                 )}
                 <ul className="space-y-2.5">
                   {righe.map((item) => (
@@ -273,14 +286,26 @@ function Riga({
   const fuori = esclusa(perche);
 
   return (
-    <li className={fuori ? 'opacity-45' : undefined}>
+    <li
+      className={`${fuori ? 'opacity-45' : ''} ${
+        item.highlighted ? '-mx-1.5 rounded-lg bg-amber-50 px-1.5 py-1' : ''
+      }`}
+    >
       <div className="flex gap-2.5">
         {dishThumb(dish) !== '' && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dishThumb(dish)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-1.5">
+            {/* La stella qui è solo un segno, non un bottone: nell'anteprima
+                (come nella pagina pubblica) il cliente non evidenzia niente,
+                legge quello che il ristoratore ha già deciso. */}
+            {item.highlighted && (
+              <svg className="h-3 w-3 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 3.5l2.55 5.6 6.05.58-4.55 4.06 1.3 5.94L12 16.75l-5.35 2.93 1.3-5.94-4.55-4.06 6.05-.58L12 3.5z" />
+              </svg>
+            )}
             <p className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-gray-900">
               {dish.name}
             </p>
@@ -293,6 +318,11 @@ function Riga({
           {dish.description.trim() !== '' && (
             <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-gray-500">
               {dish.description}
+            </p>
+          )}
+          {item.highlighted && item.highlightNote.trim() !== '' && (
+            <p className="mt-0.5 text-[11px] font-medium leading-snug text-amber-700">
+              {item.highlightNote}
             </p>
           )}
           {/* Col filtro acceso il motivo prende il posto dell'elenco intero:

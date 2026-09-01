@@ -20,6 +20,8 @@ export default function MenuItemRow({
   isFirst,
   isLast,
   onPrice,
+  onHighlight,
+  onHighlightNote,
   onMove,
   onMoveToSection,
   onRemove,
@@ -40,6 +42,8 @@ export default function MenuItemRow({
   isFirst: boolean;
   isLast: boolean;
   onPrice: (cents: number | null) => void;
+  onHighlight: (highlighted: boolean) => void;
+  onHighlightNote: (note: string) => void;
   onMove: (verso: -1 | 1) => void;
   onMoveToSection: (sectionId: string | null) => void;
   onRemove: () => void;
@@ -154,6 +158,19 @@ export default function MenuItemRow({
         {dish.description.trim() !== '' && (
           <p className="truncate text-xs text-gray-500">{dish.description}</p>
         )}
+        {/* La nota compare solo se il piatto è evidenziato: è la stella che
+            decide, non il testo. Sfondo ambra per restare agganciata visivamente
+            alla stella che l'ha aperta, anche a riga non più a fuoco. */}
+        {item.highlighted && (
+          <input
+            type="text"
+            value={item.highlightNote}
+            onChange={(e) => onHighlightNote(e.target.value)}
+            placeholder={d.menuEditor.highlightNotePlaceholder}
+            aria-label={fill(d.menuEditor.highlightNoteLabel, { dish: nome })}
+            className="mt-0.5 w-full min-w-0 rounded border border-transparent bg-amber-50 px-1.5 py-0.5 text-xs text-amber-800 placeholder:text-amber-700/60 hover:border-amber-300 focus:border-amber-500 focus:outline-none"
+          />
+        )}
       </div>
 
       {/* Con una destinazione sola non c'è niente da scegliere.
@@ -176,6 +193,23 @@ export default function MenuItemRow({
           ))}
         </select>
       )}
+
+      {/* La stella resta sempre visibile e non solo al passaggio, come il
+          prezzo: dice se il piatto è in evidenza anche a schermata ferma,
+          scorrendo la carta da lontano. */}
+      <button
+        onClick={() => onHighlight(!item.highlighted)}
+        aria-pressed={item.highlighted}
+        aria-label={item.highlighted ? d.menuEditor.highlightOff : d.menuEditor.highlightOn}
+        title={item.highlighted ? d.menuEditor.highlightOff : d.menuEditor.highlightOn}
+        className={`shrink-0 transition-colors ${
+          item.highlighted ? 'text-amber-500 hover:text-amber-600' : 'text-gray-300 hover:text-gray-600'
+        }`}
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill={item.highlighted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+          <path d="M12 3.5l2.55 5.6 6.05.58-4.55 4.06 1.3 5.94L12 16.75l-5.35 2.93 1.3-5.94-4.55-4.06 6.05-.58L12 3.5z" />
+        </svg>
+      </button>
 
       <div className="shrink-0">
         <PriceField
