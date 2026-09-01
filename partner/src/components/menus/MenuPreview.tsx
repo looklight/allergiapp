@@ -346,17 +346,33 @@ function Riga({
             <p className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-gray-900">
               {dish.name}
             </p>
+            {/* La descrizione NON sta più qui: occupava una riga in più solo
+                sui piatti che ce l'hanno, e la carta perdeva l'altezza
+                uniforme fra una riga e l'altra scorrendola. Questa "i" dice
+                che c'è, senza costare lo spazio — il testo intero si legge
+                aprendo il dettaglio. */}
+            {dish.description.trim() !== '' && (
+              <svg
+                className="h-3 w-3 shrink-0 text-gray-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            )}
             {/* Un piatto senza prezzo non mostra niente: una riga vuota o uno
                 zero al tavolo sono peggio del silenzio */}
             {prezzo !== '' && (
               <p className="shrink-0 text-[13px] font-semibold tabular-nums text-gray-900">{prezzo}</p>
             )}
           </div>
-          {dish.description.trim() !== '' && (
-            <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-gray-500">
-              {dish.description}
-            </p>
-          )}
           {item.highlighted && item.highlightNote.trim() !== '' && (
             <p className="mt-0.5 text-[11px] font-medium leading-snug text-amber-700">
               {item.highlightNote}
