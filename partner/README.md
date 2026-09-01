@@ -159,6 +159,12 @@ li rimette insieme al locale (`useMenus().restore`, che riscrive gli stessi
 id: tornano i menù di prima, non delle copie). L'ordine conta — prima il
 locale, poi i menù — o la chiave esterna della 704 li rifiuta.
 
+**Anche eliminare un singolo menù ha l'annulla**, dalla stessa `restore`.
+Era l'unica eliminazione del portale protetta dalla sola finestra di conferma,
+ed era quella che pesava di più: un piatto — che gli otto secondi ce li ha da
+sempre — si riscrive in un minuto, un menù no. Regola generale: se
+un'eliminazione porta via del lavoro, l'annulla non è un lusso.
+
 ## Sviluppo
 
 ```bash
@@ -246,6 +252,22 @@ server, `rm -rf .next`, e riavviando.
   finestra di eliminazione e **finestra del ritaglio** dei piatti.
 - `src/lib/useModal.ts` — comportamento comune di tutte le finestre: Esc,
   fuoco che entra e non esce col Tab, scorrimento della pagina bloccato.
+  ⚠️ **Le finestre si annidano** — il ritaglio della foto dentro la maschera
+  del piatto, il foglio di dettaglio dentro l'anteprima — quindi qui c'è la
+  **pila** di quelle aperte e a Esc risponde solo l'ultima. Con un
+  ascoltatore a testa su `window` un Esc ne chiudeva due, e la seconda era la
+  maschera con dentro quello che si era appena scritto. Vale anche per il
+  Tab, perché una finestra annidata è figlia nel DOM di quella che la
+  contiene. `useEscape` è la parte minima, per chi non vuole anche il blocco
+  dello scorrimento (il foglio di dettaglio copre lo schermo simulato del
+  cliente, non la pagina del portale). **Chi aggiunge una finestra passi da
+  qui**: un ascoltatore suo su `window` rimette il problema.
+- `src/lib/partnerProfile.ts` — la riga `partner_accounts`: il **cancello**
+  del portale (senza, il database rifiuta locali e piatti, per vincolo e non
+  per controllo applicativo) e insieme i dati della persona. La legge
+  l'AuthGuard e la passa alle schermate col contesto, che porta anche **come
+  aggiornarla**: `/account` la corregge, e senza quello la home continuerebbe
+  a salutarti col nome vecchio fino al ricaricamento.
 - Le pagine: `/` la **home**, `/locale/[id]` la **scheda AllergiApp** (link, piatti, anteprima; ci si arriva anche dalla barra laterale),
   `/piatti` il gestionale del catalogo, `/menu` l'elenco dei menù,
   `/menu/[id]` l'editor col telefono a lato, `/menu/[id]/anteprima` la stessa
@@ -269,6 +291,14 @@ Tre cose da non disfare per sbaglio:
   ristoratore. Per le esigenze il testo dice "non indicato per", mai "non è".
 - **Il prezzo è in centesimi interi**, e il campo tiene il testo mentre si
   scrive: altrimenti chi scrive "12," se lo vede riscrivere sotto le dita.
+  `parsePrice` decide **dalla forma e non dalla lingua** quale separatore
+  sono i decimali — è l'ultimo, e solo con una o due cifre dietro — così
+  "12,50" e "12.50" valgono entrambi e i separatori delle migliaia si
+  tolgono invece di rompere la lettura. Non è teoria: è `formatPrice` stesso
+  a scriverli, quindi un prezzo sopra il migliaio tornava nel campo come
+  "1.500,00" (o "1,500.00" col portale in inglese) e si cancellava da solo
+  al primo tasto premuto per correggerlo. Chi tocca queste due funzioni le
+  provi **andata e ritorno**, in tutte e due le lingue.
 - **Logo e colore appartengono al LOCALE, non al menù.** Al tavolo carta,
   pranzo e bevande sono linguette della stessa pagina: un logo per menù
   darebbe tre intestazioni diverse allo stesso ristorante.
@@ -281,6 +311,54 @@ nessun'altra fonte — chi non fa il claim non ce l'ha da nessuna parte.
 Non c'è ancora **niente della pubblicazione**: nessuno slug, nessun QR,
 nessuna pagina pubblica. Sono la fase successiva, e le regole dello slug
 (mai riassegnato, v. Tema 17) si decidono insieme a quella.
+
+## L'account e l'accesso
+
+`/account` non è una pagina di sola lettura: da lì si correggono **nome,
+cognome e telefono** (la registrazione li chiede di fretta, e un refuso nel
+nome poi ti saluta in cima alla home ogni volta), si **cambia la password**, e
+si **ritira il consenso marketing**. L'ultimo non è una comodità: un consenso
+si revoca con la stessa facilità con cui si dà, e darlo era una casella
+spuntata — quindi qui è un interruttore che scrive subito, non un modulo da
+confermare e tantomeno una mail da scrivere a qualcuno. La data
+(`marketing_consent_at`) se ne va con la revoca: tenerla vorrebbe dire
+conservare la prova di un permesso che non c'è più.
+
+Nessuna migration serve: `partner_accounts_own` è già `FOR ALL` sulla propria
+riga (700), e `updated_at` lo muove il trigger.
+
+**Password dimenticata** (`/login`): al portale si entra una volta al mese,
+quindi dimenticarla è il caso normale e non l'eccezione. Due cose da non
+cambiare distrattamente:
+
+- Il link della mail porta a **`/account?password=1`**, cioè allo stesso
+  riquadro da cui si cambia la password stando già dentro: una pagina sola con
+  due ingressi, invece di due moduli identici da tenere allineati. È un
+  **parametro** e non un'ancora perché Supabase si prende il *frammento*
+  dell'indirizzo per il suo gettone (`#access_token=…`) e un `#password`
+  verrebbe sovrascritto.
+- Non si dice **mai** se quell'email esiste: risponderebbe a chi prova
+  indirizzi per sapere chi è iscritto. Il messaggio è lo stesso in tutti i
+  casi, e per la stessa ragione un rifiuto del server non si mostra.
+
+⚠️ **Dipende dalla config Supabase, non solo dal codice.** L'indirizzo di
+ritorno dev'essere nella `uri_allow_list` del progetto, altrimenti il link
+della mail rimanda al `site_url` e chi lo apre finisce da un'altra parte senza
+capire perché. Stato al 2026-09-01: in lista ci sono
+`https://partner.allergiapp.com/**` e `https://allergiapp-partner.vercel.app/**`
+— **la produzione funziona, `http://localhost:3001` no** (il `site_url` è
+`http://localhost:3000`, cioè l'app). Per provare il recupero in locale va
+aggiunto `http://localhost:3001/**` alla lista. Si legge e si cambia via
+Management API senza Dashboard: v. la memoria
+`reference_supabase_management_api`.
+
+Il progetto ha `mailer_autoconfirm = true`, quindi la registrazione non manda
+nessun link di conferma: il ramo `checkEmail` del login oggi non si raggiunge,
+e resta lì perché quell'impostazione può cambiare.
+
+Restano da fare, **prima di aprire il portale al pubblico**: i link a
+condizioni d'uso e informativa privacy (oggi due `TODO` in `/login` e
+nell'onboarding), che aspettano le pagine legali.
 
 ## Le foto dei piatti
 
