@@ -15,6 +15,7 @@ import { useVenues } from '@/lib/venues';
 import {
   CURRENCIES,
   addDishes,
+  addNote,
   addSection,
   menuItems,
   moveItem,
@@ -50,7 +51,7 @@ export default function MenuEditorPage() {
   const { dishes, create: createDish, update: updateDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
-  const { venues, update: updateVenue, setIdentity } = useVenues();
+  const { venues, update: updateVenue, setIdentity, setTableConditions } = useVenues();
   // La sezione a cui il pannello dei piatti sta aggiungendo: un id, oppure
   // null per le righe fuori sezione. 'chiuso' perché null è già un valore.
   const [adding, setAdding] = useState<{ sectionId: string | null } | null>(null);
@@ -154,10 +155,13 @@ export default function MenuEditorPage() {
   // perché è dove le righe risalgono quando una sezione viene eliminata.
   const destinazioni = [
     { id: null as string | null, name: d.menuEditor.loose },
-    ...menu.sections.map((s) => ({
-      id: s.id as string | null,
-      name: s.name.trim() || d.menuEditor.newSectionName,
-    })),
+    // I blocchi di testo restano fuori: dentro non ci va nessun piatto
+    ...menu.sections
+      .filter((s) => s.kind === 'section')
+      .map((s) => ({
+        id: s.id as string | null,
+        name: s.name.trim() || d.menuEditor.newSectionName,
+      })),
   ];
   const sezioneInEliminazione = menu.sections.find((s) => s.id === deletingSection);
   const vuoto = menu.sections.length === 0 && menu.loose.length === 0;
@@ -172,6 +176,7 @@ export default function MenuEditorPage() {
       dishes={catalogo}
       brand={brand}
       venueName={brand.name.trim() || d.preview.venueName}
+      tableConditions={locale?.tableConditions ?? ''}
       needs={needs}
       onToggleNeed={toggleNeed}
     />
@@ -371,6 +376,15 @@ export default function MenuEditorPage() {
               {dropSection?.beforeId === section.id && drag?.kind === 'section' && (
                 <span className="pointer-events-none absolute inset-x-4 -top-1 h-0.5 rounded-full bg-gray-900" />
               )}
+              {/* Un blocco senza titolo, in mezzo alle sezioni, sarebbe una
+                  scheda anonima: questa riga dice cos'è prima ancora che ci
+                  si scriva dentro. Sulle sezioni non serve — ce lo dicono i
+                  piatti che hanno sotto. */}
+              {section.kind === 'note' && (
+                <p className="mb-1 px-2 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                  {d.menuEditor.noteLabel}
+                </p>
+              )}
               <div className="mb-2 flex items-center gap-2">
                 {/* Maniglia della sezione: stessa idea di quella delle righe,
                     e le frecce qui accanto restano per il dito e la tastiera */}
@@ -398,8 +412,16 @@ export default function MenuEditorPage() {
                   type="text"
                   value={section.name}
                   onChange={(e) => save(renameSection(menu, section.id, e.target.value))}
-                  placeholder={d.menuEditor.sectionNamePlaceholder}
-                  aria-label={d.menuEditor.sectionNamePlaceholder}
+                  placeholder={
+                    section.kind === 'note'
+                      ? d.menuEditor.noteTitlePlaceholder
+                      : d.menuEditor.sectionNamePlaceholder
+                  }
+                  aria-label={
+                    section.kind === 'note'
+                      ? d.menuEditor.noteTitlePlaceholder
+                      : d.menuEditor.sectionNamePlaceholder
+                  }
                   className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-sm font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
                 />
                 <button
@@ -434,36 +456,93 @@ export default function MenuEditorPage() {
                 </button>
               </div>
 
-              {/* Descrizione della sezione: stesso trattamento di quella del
-                  menù, ma un rigo solo — qui lo spazio è più stretto. */}
+              {/* Lo stesso campo fa due mestieri, e la differenza è tutta
+                  nel peso: sotto una sezione è una didascalia (un rigo,
+                  grigio chiaro), dentro un blocco è IL contenuto — più righe
+                  e testo leggibile, perché è quello che il cliente leggerà. */}
               <textarea
                 value={section.description}
                 onChange={(e) => save(setSectionDescription(menu, section.id, e.target.value))}
-                placeholder={d.menuEditor.sectionDescriptionPlaceholder}
-                aria-label={d.menuEditor.sectionDescriptionPlaceholder}
-                rows={1}
-                className="mb-3 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
+                placeholder={
+                  section.kind === 'note'
+                    ? d.menuEditor.noteTextPlaceholder
+                    : d.menuEditor.sectionDescriptionPlaceholder
+                }
+                aria-label={
+                  section.kind === 'note'
+                    ? d.menuEditor.noteTextPlaceholder
+                    : d.menuEditor.sectionDescriptionPlaceholder
+                }
+                rows={section.kind === 'note' ? 3 : 1}
+                className={
+                  section.kind === 'note'
+                    ? 'w-full resize-none rounded-lg border border-transparent px-2 py-1 text-sm text-gray-700 hover:border-gray-300 focus:border-gray-900 focus:outline-none'
+                    : 'mb-3 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none'
+                }
               />
 
-              {section.items.length === 0 ? (
-                <p className="px-2 py-3 text-sm text-gray-400">{d.menuEditor.emptySection}</p>
-              ) : (
-                righe(section.items, section.id)
+              {/* Un blocco finisce qui: niente piatti, niente zona di rilascio
+                  e nessun "Aggiungi piatti". Il tipo si decide creandolo e non
+                  si cambia — un interruttore sezione/blocco vorrebbe dire
+                  decidere ogni volta che fine fanno i piatti che ci sono
+                  dentro, per una cosa che si fa una volta sola. */}
+              {section.kind === 'section' && (
+                <>
+                  {section.items.length === 0 ? (
+                    <p className="px-2 py-3 text-sm text-gray-400">{d.menuEditor.emptySection}</p>
+                  ) : (
+                    righe(section.items, section.id)
+                  )}
+                  {zonaFine(section.id)}
+                  <AddDishesButton onClick={() => setAdding({ sectionId: section.id })} />
+                </>
               )}
-              {zonaFine(section.id)}
-              <AddDishesButton onClick={() => setAdding({ sectionId: section.id })} />
             </section>
           ))}
 
-          <button
-            onClick={() => save(addSection(menu, d.menuEditor.newSectionName))}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            {d.menuEditor.addSection}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => save(addSection(menu, d.menuEditor.newSectionName))}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              {d.menuEditor.addSection}
+            </button>
+            {/* Il blocco nasce in fondo come la sezione, e da lì si trascina
+                dove serve: sono nella stessa fila, quindi si spostano con lo
+                stesso gesto. */}
+            <button
+              onClick={() => save(addNote(menu))}
+              title={d.menuEditor.noteHint}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 7h16M4 12h16M4 17h9" />
+              </svg>
+              {d.menuEditor.addNote}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* LE CONDIZIONI AL TAVOLO, in fondo all'editor perché è dove finiscono
+          nel menù. Sono del LOCALE come il logo e il colore — si scrivono da
+          qui perché è qui che se ne vede l'effetto, e la riga sotto il titolo
+          dice che valgono per tutte le linguette. */}
+      {locale && (
+        <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <h2 className="text-sm font-medium text-gray-900">{d.menuEditor.conditionsTitle}</h2>
+          <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.conditionsHint}</p>
+          <textarea
+            value={locale.tableConditions}
+            onChange={(e) => setTableConditions(locale.id, e.target.value)}
+            placeholder={d.menuEditor.conditionsPlaceholder}
+            aria-label={d.menuEditor.conditionsTitle}
+            rows={2}
+            className="mt-2 w-full resize-none rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-700 focus:border-gray-900 focus:outline-none"
+          />
         </div>
       )}
 
@@ -560,17 +639,30 @@ export default function MenuEditorPage() {
 
       {sezioneInEliminazione && (
         <ConfirmDialog
-          title={d.menuEditor.deleteSectionTitle}
-          // Quanto si perde, detto prima: qui la risposta è "niente", ed è
-          // esattamente la cosa che chi sta per premere non dà per scontata
-          body={
-            sezioneInEliminazione.items.length === 0
-              ? d.menuEditor.deleteSectionEmptyBody
-              : fill(d.menuEditor.deleteSectionBody, {
-                  count: sezioneInEliminazione.items.length,
-                })
+          title={
+            sezioneInEliminazione.kind === 'note'
+              ? d.menuEditor.deleteNoteTitle
+              : d.menuEditor.deleteSectionTitle
           }
-          subject={sezioneInEliminazione.name.trim() || d.menuEditor.newSectionName}
+          // Quanto si perde, detto prima: su una sezione la risposta è
+          // "niente" (i piatti risalgono fuori sezione) ed è esattamente la
+          // cosa che chi sta per premere non dà per scontata. Su un blocco
+          // invece si perde il testo, e va detto altrettanto chiaramente.
+          body={
+            sezioneInEliminazione.kind === 'note'
+              ? d.menuEditor.deleteNoteBody
+              : sezioneInEliminazione.items.length === 0
+                ? d.menuEditor.deleteSectionEmptyBody
+                : fill(d.menuEditor.deleteSectionBody, {
+                    count: sezioneInEliminazione.items.length,
+                  })
+          }
+          subject={
+            sezioneInEliminazione.name.trim() ||
+            (sezioneInEliminazione.kind === 'note'
+              ? d.menuEditor.untitledNote
+              : d.menuEditor.newSectionName)
+          }
           confirmLabel={d.common.delete}
           onCancel={() => setDeletingSection(null)}
           onConfirm={() => {

@@ -331,6 +331,14 @@ const it = {
     newSectionName: 'Nuova sezione',
     sectionNamePlaceholder: 'Nome della sezione',
     sectionDescriptionPlaceholder: 'Descrizione della sezione (facoltativa)',
+    addNote: 'Blocco di testo',
+    noteLabel: 'Blocco di testo',
+    noteHint: 'Testo libero fra una sezione e l’altra: lo leggono i tuoi clienti.',
+    noteTitlePlaceholder: 'Titolo (facoltativo)',
+    noteTextPlaceholder: 'Il pane è fatto in casa. La cucina chiude alle 22:30…',
+    deleteNoteTitle: 'Eliminare questo blocco?',
+    deleteNoteBody: 'Il testo che contiene viene eliminato.',
+    untitledNote: 'Blocco senza titolo',
     addDishes: 'Aggiungi piatti',
     dropHere: 'Trascina qui',
     emptySection: 'Nessun piatto in questa sezione.',
@@ -364,12 +372,23 @@ const it = {
     pickerCatalogEmpty: 'Il tuo catalogo è vuoto.',
     pickerCatalogEmptyHint: 'Crea i piatti dalla pagina Piatti, poi torna qui a comporre il menù.',
     pickerAllIn: 'Tutti i piatti del catalogo sono già in questo menù.',
+    conditionsTitle: 'Condizioni al tavolo',
+    conditionsHint:
+      'In fondo a ogni menù di questo locale: coperto, servizio, pagamenti. Valgono per tutte le linguette, quindi si scrivono una volta sola.',
+    conditionsPlaceholder: 'Coperto 2,00 €. Servizio non incluso…',
   },
   // Le stringhe che legge il CLIENTE al tavolo, non il ristoratore. Stanno
   // in una sezione a sé perché la pagina pubblica diventerà un deployable
   // suo (Tema 6) e si porterà via queste, non il resto del portale.
   menuPublic: {
     filterHint: 'Filtra per le tue esigenze',
+    filterButton: 'Filtri',
+    filterTitle: 'Filtra il menù',
+    filterSheetHint: 'I piatti che non vanno bene restano leggibili, in fondo alla loro sezione.',
+    filterDiets: 'Esigenze',
+    filterAllergens: 'Senza…',
+    filterDone: 'Vedi il menù',
+    filterDeclared: 'Allergeni e ingredienti dichiarati dal ristorante.',
     filterReset: 'Azzera',
     filterSummary: '{matching} piatti su {total}',
     filterSummaryOne: '{matching} piatto su {total}',

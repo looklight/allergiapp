@@ -65,6 +65,13 @@ export interface Venue extends VenueDraft {
   // livello dati condiviso è stato scritto per togliere.
   logoUrl: string; // vuoto = compare quello di AllergiApp
   accent: string;  // codice da MENU_ACCENTS
+  // Le CONDIZIONI AL TAVOLO: coperto, servizio, pagamenti. Poche righe in
+  // fondo a OGNI menù di questo locale, ed è la ragione per cui stanno qui e
+  // non sul menù — le linguette in cima alla pagina (carta, pranzo, bevande)
+  // sono lo stesso tavolo, e il coperto non cambia passando dall'una
+  // all'altra. Quello che è del singolo menù si scrive in un blocco di testo.
+  // Le legge il cliente: qui dentro non va niente di interno.
+  tableConditions: string;
   // La scheda AllergiApp di questo locale, se esiste. null = nessun
   // ristorante associato, quindi nessun posto dove accendere i piatti.
   cardId: string | null;
@@ -149,7 +156,7 @@ async function loadVenues(): Promise<Venue[]> {
   // sul ristorante), quindi si prende la prima e basta.
   const { data, error } = await supabase
     .from('partner_venues')
-    .select('id, name, logo_url, accent, partner_links(*), partner_cards(id, partner_card_dishes(dish_id))')
+    .select('id, name, logo_url, accent, table_conditions, partner_links(*), partner_cards(id, partner_card_dishes(dish_id))')
     .order('created_at', { ascending: true });
   reportError('lettura locali', error);
 
@@ -160,6 +167,7 @@ async function loadVenues(): Promise<Venue[]> {
       venueName: row.name ?? '',
       logoUrl: row.logo_url ?? '',
       accent: row.accent ?? 'charcoal',
+      tableConditions: row.table_conditions ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
@@ -174,7 +182,7 @@ async function loadVenues(): Promise<Venue[]> {
 // ogni pausa porterebbe con sé anche la cancellazione e la riscrittura di
 // TUTTI i link, che non c'entrano niente. Parte vuota a ogni apertura: cosa
 // c'è sul server non lo sappiamo, e la prima scrittura lo mette in chiaro.
-const ultimoSalvato = new Map<string, { nome: string; link: string }>();
+const ultimoSalvato = new Map<string, { nome: string; link: string; condizioni: string }>();
 onForget(() => ultimoSalvato.clear());
 
 // Il contenuto di un locale si riscrive tutto: i link sono pochi, l'ordine
@@ -184,11 +192,16 @@ async function saveVenueContent(venue: Venue) {
   const righe = fromLinks(venue.id, venue.links);
   const nome = venue.venueName;
   const link = JSON.stringify(righe);
+  const condizioni = venue.tableConditions;
   const precedente = ultimoSalvato.get(venue.id);
   // Si segna come scritto solo ciò che il server ha accettato: dandolo per
   // buono a prescindere, una scrittura rifiutata verrebbe saltata anche la
   // volta dopo e il dato non arriverebbe mai
-  const fatto = { nome: precedente?.nome ?? '\u0000', link: precedente?.link ?? '\u0000' };
+  const fatto = {
+    nome: precedente?.nome ?? '\u0000',
+    link: precedente?.link ?? '\u0000',
+    condizioni: precedente?.condizioni ?? '\u0000',
+  };
 
   if (precedente?.nome !== nome) {
     const { error } = await write(
@@ -203,6 +216,21 @@ async function saveVenueContent(venue: Venue) {
       `nome:${venue.id}`
     );
     if (!error) fatto.nome = nome;
+  }
+
+  // Si battono a mano come il nome, quindi stessa pausa e stesso confronto:
+  // senza, ogni pausa nella battitura riscriverebbe anche i link.
+  if (precedente?.condizioni !== condizioni) {
+    const { error } = await write(
+      'salvataggio condizioni al tavolo',
+      () =>
+        supabase
+          .from('partner_venues')
+          .update({ table_conditions: condizioni.trim() || null })
+          .eq('id', venue.id),
+      `condizioni:${venue.id}`
+    );
+    if (!error) fatto.condizioni = condizioni;
   }
 
   if (precedente?.link !== link) {
@@ -247,6 +275,7 @@ export function useVenues() {
       venueName,
       logoUrl: '',
       accent: 'charcoal',
+      tableConditions: '',
       cardId: null,
       dishIds: [],
       links: emptyLinks(),
@@ -263,7 +292,16 @@ export function useVenues() {
     // cardId non sta nella bozza (l'editor non lo tocca) e va conservato,
     // o salvando il nome si perderebbe la scheda associata
     const next = (venues ?? []).map((s) =>
-      s.id === id ? { ...draft, id, cardId: s.cardId, logoUrl: s.logoUrl, accent: s.accent } : s
+      s.id === id
+        ? {
+            ...draft,
+            id,
+            cardId: s.cardId,
+            logoUrl: s.logoUrl,
+            accent: s.accent,
+            tableConditions: s.tableConditions,
+          }
+        : s
     );
     setList(next);
     const aggiornata = next.find((s) => s.id === id);
@@ -295,6 +333,16 @@ export function useVenues() {
     );
   }
 
+  // Le condizioni al tavolo si battono a mano: passano dalla stessa pausa del
+  // nome e dei link (schedule), non dalla scrittura immediata di setIdentity —
+  // quella è per i gesti singoli, scegliere un colore o caricare un logo.
+  function setTableConditions(id: string, tableConditions: string) {
+    const next = (venues ?? []).map((s) => (s.id === id ? { ...s, tableConditions } : s));
+    setList(next);
+    const aggiornata = next.find((s) => s.id === id);
+    if (aggiornata) schedule(aggiornata);
+  }
+
   function remove(id: string) {
     setList((venues ?? []).filter((s) => s.id !== id));
     void write('eliminazione locale', () =>
@@ -317,6 +365,7 @@ export function useVenues() {
           name: venue.venueName,
           logo_url: venue.logoUrl || null,
           accent: venue.accent,
+          table_conditions: venue.tableConditions.trim() || null,
         })
     );
     const righe = fromLinks(venue.id, venue.links);
@@ -389,7 +438,17 @@ export function useVenues() {
     }
   }
 
-  return { venues, create, update, rename, remove, restore, setDishOn, setIdentity };
+  return {
+    venues,
+    create,
+    update,
+    rename,
+    remove,
+    restore,
+    setDishOn,
+    setIdentity,
+    setTableConditions,
+  };
 }
 
 // Indirizzo scritto senza schema (www.osteria.it): l'app non saprebbe

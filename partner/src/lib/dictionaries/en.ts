@@ -309,6 +309,14 @@ const en: typeof it = {
     newSectionName: 'New section',
     sectionNamePlaceholder: 'Section name',
     sectionDescriptionPlaceholder: 'Section description (optional)',
+    addNote: 'Text block',
+    noteLabel: 'Text block',
+    noteHint: 'Free text between sections: your guests read it.',
+    noteTitlePlaceholder: 'Title (optional)',
+    noteTextPlaceholder: 'Our bread is homemade. The kitchen closes at 10:30pm…',
+    deleteNoteTitle: 'Delete this block?',
+    deleteNoteBody: 'The text it contains will be deleted.',
+    untitledNote: 'Untitled block',
     addDishes: 'Add dishes',
     dropHere: 'Drop here',
     emptySection: 'No dishes in this section.',
@@ -342,12 +350,23 @@ const en: typeof it = {
     pickerCatalogEmpty: 'Your catalogue is empty.',
     pickerCatalogEmptyHint: 'Create dishes from the Dishes page, then come back to compose the menu.',
     pickerAllIn: 'Every dish in your catalogue is already in this menu.',
+    conditionsTitle: 'Table conditions',
+    conditionsHint:
+      'At the bottom of every menu for this venue: cover charge, service, payments. They apply to all tabs, so you write them once.',
+    conditionsPlaceholder: 'Cover charge €2.00. Service not included…',
   },
   // Strings the GUEST reads at the table, not the restaurateur. Kept apart
   // because the public page will become its own deployable (Theme 6) and
   // will take these with it, not the rest of the portal.
   menuPublic: {
     filterHint: 'Filter by your needs',
+    filterButton: 'Filters',
+    filterTitle: 'Filter the menu',
+    filterSheetHint: 'Dishes that do not match stay readable, at the bottom of their section.',
+    filterDiets: 'Needs',
+    filterAllergens: 'Without…',
+    filterDone: 'See the menu',
+    filterDeclared: 'Allergens and ingredients as declared by the restaurant.',
     filterReset: 'Clear',
     filterSummary: '{matching} of {total} dishes',
     // L'inglese non cambia al singolare: "1 of 2 dishes" è già giusto.

@@ -20,6 +20,15 @@ scegliendo il ristorante, ci si mettono sezioni con nome libero, si accostano i 
 riordina trascinando. A lato un telefono mostra la pagina che leggerà il cliente, **col filtro
 allergeni funzionante**, e un link la apre a tutta pagina in una scheda a parte.
 
+**Aggiornamento 2026-09-01: il fondo del menù è del ristoratore (Tema 18).** Migrations **705 e 706
+APPLICATE** (colonne verificate sul database lo stesso giorno). Tre cose: il
+disclaimer non compare più in fondo al menù al tavolo — resta una riga minuscola attaccata al
+filtro, che è l'unica cosa nostra in quella pagina — e al suo posto ci sono le **condizioni al
+tavolo** del locale (coperto, servizio, pagamenti); nell'editor si aggiungono **blocchi di solo
+testo** che si trascinano fra le sezioni; le pastiglie del filtro hanno una **graduatoria fissa**
+(glutine, vegetariano, vegano, latte, uova…) con un bottone **Filtri** ancorato che apre l'elenco
+intero. La ricerca nel menù è stata valutata e **scartata**, per la ragione scritta nel Tema 18.
+
 **Cosa NON c'è ancora, ed è tutta la fase 2**: nessuno slug, nessun QR, nessuna pagina pubblica.
 L'anteprima a tutta pagina sta dentro il portale, dietro l'autenticazione, e lo dichiara con una
 fascia in cima — la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
@@ -482,6 +491,81 @@ gestione, mandare i vecchi QR al nuovo ristorante è per giunta quello che si vu
   locandina: sul doppione gli si propone un'alternativa vera — la via, il quartiere — non un numero.
 
 ---
+
+### 2026-09-01 — Tema 18: Il fondo del menù è del ristoratore
+
+Nasce da tre richieste arrivate insieme — una ricerca nel menù, una nota finale al posto del
+disclaimer, dei blocchi di solo testo fra le sezioni — e si chiude con **una funzione in meno di
+quelle chieste** e una decisione che tocca il tono di tutto il prodotto.
+
+**La ricerca è stata scartata**, e non per costo. Il nodo era semantico: se il cliente cerca
+"glutine", una ricerca testuale onesta gli restituisce i piatti che il glutine **ce l'hanno** —
+l'esatto contrario di quello che intende un celiaco, con l'aria di essere una risposta. Restava
+la versione sicura (cercare solo nei nomi e nelle descrizioni, e sugli allergeni proporre la
+pastiglia del filtro invece dei piatti), ma su un menù da trenta righe è un campo che quasi
+nessuno tocca. Quel che serviva davvero era **arrivare prima alla propria pastiglia**, e quello
+si è fatto (v. sotto).
+
+**Decisione 1 — il disclaimer scende dal menù al tavolo.** "Dichiarato dal ristorante, non
+verificato da AllergiApp" **non compare più** in fondo alla pagina che si apre col QR. Al tavolo è
+il ristorante che ti porge il **suo** menù: nessuno pensa che una carta stampata sia stata
+verificata da un terzo, e il QR non cambia la cosa.
+
+Dove quella frase resta, e dove serve davvero, è la **scheda in app**: lì siamo NOI a presentare
+un ristorante a chi lo sta scegliendo da lontano, e la responsabilità è di un'altra natura.
+
+**Ma non sparisce del tutto dal menù, si sposta**: una riga minuscola sotto le pastiglie —
+"allergeni e ingredienti dichiarati dal ristorante" — perché il **filtro è l'unica cosa nostra**
+in quella pagina, ed è l'unico punto in cui un cliente potrebbe leggere una verifica che non
+abbiamo fatto. Non è una copertura legale in fondo alla pagina: è dire da dove viene il dato
+accanto allo strumento che ci lavora sopra. Il fondo, liberato, diventa del ristoratore.
+
+**Decisione 2 — due contenitori di testo, non uno.** La nota finale e i blocchi fra le sezioni
+sembravano la stessa cosa (senza il disclaimer da scavalcare, una "nota finale" è solo un blocco
+messo per ultimo), ma si comportano diversamente rispetto alle **linguette**:
+
+- **Le condizioni al tavolo** — coperto, servizio, pagamenti — stanno sul **LOCALE**
+  (`partner_venues.table_conditions`) e compaiono in fondo a **ogni** menù. Come blocco andrebbero
+  riscritte in carta, pranzo e bevande, e poi corrette in tutte e tre: il coperto non cambia
+  passando da una linguetta all'altra, perché è lo stesso tavolo.
+- **I blocchi di testo** stanno sul **menù**, come sezioni di tipo `note`
+  (`partner_menu_sections.kind`), e servono a quello che è di quel menù lì: "il pane è fatto in
+  casa", "la cucina chiude alle 22:30".
+
+Le due cose non si pestano i piedi, e ognuna fa il mestiere in cui l'altra sarebbe scomoda.
+
+**Perché il blocco è una SEZIONE e non una riga né una tabella nuova**: nel menù occupa lo stesso
+posto di una sezione — sta nella stessa fila e si trascina con lo stesso gesto. Un'altra tabella
+avrebbe voluto un secondo ordinamento da fondere col primo, per un contenuto che è già "un titolo
+più un testo", cioè esattamente le colonne che la sezione ha (`name`, `description`).
+
+**Decisione 3 — le pastiglie hanno una graduatoria, e un pannello.** Erano nell'ordine delle
+costanti: prima tutti e quindici gli allergeni, poi le esigenze, su una riga sola che scorre — chi
+è vegetariano doveva scorrere oltre nove allergeni per trovarsi, cioè non si trovava. Adesso:
+
+- **Una graduatoria sola e mescolata** (glutine · vegetariano · vegano · latte · uova · frutta a
+  guscio · arachidi · il resto): al tavolo nessuno pensa "allergene o esigenza", pensa alla cosa
+  sua. **È fissa, non calcolata sul menù**: chi ha un'allergia cerca la sua parola e la trova
+  sempre nello stesso punto, in ogni ristorante. Una graduatoria che cambia di locale in locale
+  risparmierebbe mezzo dito di scorrimento e costerebbe l'abitudine.
+- **Un bottone "Filtri" ancorato a sinistra**, fuori dalla parte che scorre, che apre l'elenco
+  intero. È lì, e non nella fila, che ha senso separare esigenze e allergeni: in un elenco due
+  titoletti aiutano a scorrere, in una fila da sette sarebbero una barriera in mezzo.
+- **Le pastiglie accese risalgono sempre in testa alla fila.** È la regola che tiene insieme le due
+  cose: senza, si sceglie dal pannello, si chiude, il menù si riordina sotto gli occhi e il motivo
+  è fuori schermo a destra — il cliente vede un effetto senza vederne la causa.
+
+Resta valida la regola del Tema 2: si offrono solo le pastiglie che questo menù usa davvero,
+quindi il pannello non è mai un muro di quindici voci.
+
+**Rimandato, ed è la versione forte di "gerarchizzare"**: chi apre il menù **dall'app** invece che
+dal QR ha già le sue esigenze nel profilo, e le sue pastiglie potrebbero essere in cima e già
+accese. Dal QR non si può — il lettore è anonimo, Tema 6 — quindi è roba della fase 2.
+
+**Da sistemare prima della pagina pubblica**: i piatti hanno le traduzioni per lingua
+(`partner_dish_translations`, Tema 9), questi due testi no. Al primo cliente straniero il menù è
+tradotto e il "coperto 2 €" è in italiano. Non blocca niente adesso; va deciso **insieme** alla
+pagina pubblica, non dopo.
 
 ## Prossimo passo
 

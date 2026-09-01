@@ -230,13 +230,26 @@ server, `rm -rf .next`, e riavviando.
   è esattamente quello che il livello dati condiviso serve a togliere.
   `cardId` è null quando non c'è nessuna scheda — chi mostra comandi che
   scrivono lì deve spegnerli.
-- `src/lib/menus.ts` — i menù, con sezioni e righe. **Non cancella e
+- `src/lib/menus.ts` — i menù, con sezioni e righe. Una sezione ha un
+  **tipo**: `section` (con dentro i piatti) o `note`, il blocco di solo testo
+  che si trascina fra le sezioni. Sono lo stesso oggetto perché occupano lo
+  stesso posto nell'ordine del menù — una tabella a parte avrebbe voluto un
+  secondo ordinamento da fondere col primo. Il blocco riusa le colonne che ci
+  sono: `name` è il titolo (facoltativo) e `description` è il testo. **Non cancella e
   reinserisce: sovrascrive per id**, perché gli id li generiamo noi e
   l'interfaccia li usa come chiavi — con id nuovi a ogni salvataggio, una
   riga che si sta trascinando cambierebbe identità sotto le dita. Le righe si
   ripuliscono PRIMA delle sezioni: il vincolo della 704 fa risalire fuori
   sezione le righe di una sezione cancellata, e nell'ordine sbagliato i
   piatti riapparirebbero in cima invece di sparire.
+- `src/lib/menuFilters.ts` — l'**ordine delle pastiglie** del filtro, ed è
+  solo quello: una graduatoria unica e mescolata (glutine, vegetariano,
+  vegano, latte, uova…) invece di "prima tutti gli allergeni, poi tutte le
+  esigenze". ⚠️ È **fissa e non calcolata sul menù**: chi ha un'allergia cerca
+  la sua parola e la trova sempre nello stesso punto, in ogni ristorante.
+  Qui dentro c'è anche la regola che le pastiglie **accese risalgono in
+  testa** alla fila — senza, si sceglie dal pannello "Filtri", si chiude, il
+  menù si riordina e il motivo è fuori schermo a destra.
 - `src/lib/menuBrand.ts` — solo costanti: i sei colori (scelti da noi, tutti
   scuri abbastanza da reggere il testo) e la riduzione del logo. ⚠️ Il logo è
   ancora un **data URL dentro la riga**, non un file su Storage: va portato
@@ -302,6 +315,26 @@ Tre cose da non disfare per sbaglio:
 - **Logo e colore appartengono al LOCALE, non al menù.** Al tavolo carta,
   pranzo e bevande sono linguette della stessa pagina: un logo per menù
   darebbe tre intestazioni diverse allo stesso ristorante.
+- **In fondo al menù al tavolo NON c'è il disclaimer** ("dichiarato dal
+  ristorante, non verificato da AllergiApp"), e non è una dimenticanza
+  (2026-09-01, Tema 18): al tavolo è il ristorante che ti porge il **suo**
+  menù col QR, e quella frase resta dove serve davvero — sulla **scheda in
+  app**, dove siamo noi a presentare un ristorante a chi lo sceglie da
+  lontano. Ne resta una riga minuscola **attaccata al filtro**, perché il
+  filtro è l'unica cosa nostra in quella pagina. Chi la sposta in fondo
+  rimette in piedi quello che è stato tolto apposta.
+- **Le condizioni al tavolo sono del LOCALE, i blocchi di testo del MENÙ.**
+  Coperto e servizio non cambiano passando da una linguetta all'altra (è lo
+  stesso tavolo), quindi stanno su `partner_venues` e compaiono in fondo a
+  ogni menù; quel che riguarda un menù solo si scrive in un blocco di testo.
+  Scambiarli vuol dire far riscrivere il coperto in carta, pranzo e bevande —
+  e poi correggerlo in tutte e tre.
+
+Dall'editor di un menù si cambiano anche cose del **locale** — nome, logo,
+colore, condizioni al tavolo — perché è lì che se ne vede l'effetto. Passano
+per `venues.ts` e valgono per tutti i menù di quel locale: quello che si
+digita (nome, condizioni) va con la stessa pausa dei link, i gesti singoli
+(logo, colore) si scrivono subito.
 
 Alla creazione la domanda è **"di quale ristorante?"**, non "che nome dai al
 menù": il nome del menù è solo l'etichetta della linguetta e si chiede dal

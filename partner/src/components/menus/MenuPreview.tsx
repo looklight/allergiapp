@@ -9,6 +9,17 @@
 // non al menù: il QR è incollato al tavolo e non cambia a mezzogiorno, quindi
 // carta e pranzo stanno DENTRO la stessa pagina (DIGITAL_MENU.md, Tema 13).
 //
+// ⚠️ QUI NON C'È PIÙ IL DISCLAIMER "dichiarato dal ristorante, non verificato
+// da AllergiApp", e non è una dimenticanza: è la decisione del 2026-09-01
+// (Tema 18). Al tavolo è il ristorante che ti porge il SUO menù col QR, e
+// nessuno pensa che una carta stampata sia stata verificata da un terzo.
+// Quella frase resta dov'è indispensabile — sulla SCHEDA in app
+// (SchedaPreview), dove siamo NOI a presentare un ristorante a chi lo sta
+// scegliendo da lontano. Di nostro qui resta il FILTRO, ed è l'unico posto
+// dove un cliente potrebbe leggere una verifica che non abbiamo fatto:
+// perciò la riga "dichiarati dal ristorante" sta attaccata al filtro e non
+// in fondo alla pagina. Il fondo è del ristoratore (condizioni al tavolo).
+//
 // Ma si vedono **da due menù in su**. Il nome di un menù serve a distinguerlo
 // da un altro: con un menù solo la linguetta è un'etichetta che al cliente non
 // dice niente e per giunta non si può premere. (Prima c'era sempre, per far
@@ -19,9 +30,18 @@ import { fill, useI18n } from '@/lib/i18n';
 import { ALLERGENS, allergenName } from '@/lib/allergens';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
-import { displayPrice, menuItems, type Menu, type MenuItem } from '@/lib/menus';
+import {
+  displayPrice,
+  hasNoteText,
+  menuItems,
+  type Menu,
+  type MenuItem,
+  type MenuSection,
+} from '@/lib/menus';
+import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
 import { DEFAULT_LOGO, accentHex, type MenuBrand } from '@/lib/menuBrand';
 import DishDetailSheet from './DishDetailSheet';
+import FilterSheet from './FilterSheet';
 
 export interface ViewerNeeds {
   allergens: string[];
@@ -56,6 +76,7 @@ export default function MenuPreview({
   dishes,
   brand,
   venueName,
+  tableConditions,
   needs,
   onToggleNeed,
 }: {
@@ -65,6 +86,9 @@ export default function MenuPreview({
   dishes: Dish[];
   brand: MenuBrand;
   venueName: string;
+  // Coperto, servizio, pagamenti: sono del LOCALE, quindi identiche sotto
+  // ogni linguetta. Vuote = non si mostra niente.
+  tableConditions: string;
   needs: ViewerNeeds;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
@@ -75,6 +99,7 @@ export default function MenuPreview({
   // usa MenuPreview, perché è uno stato di QUESTA schermata (il telefono
   // simulato), non dell'editor che le sta intorno.
   const [detail, setDetail] = useState<{ item: MenuItem; dish: Dish } | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const nelMenu = menuItems(menu)
     .map((item) => dishById(item.dishId))
@@ -83,16 +108,34 @@ export default function MenuPreview({
   // Si offrono SOLO gli allergeni che qualche piatto dichiara e le esigenze
   // che qualche piatto soddisfa: una pastiglia che non toglie niente è un
   // bottone che non fa niente, e una che svuota il menù è peggio.
-  const allergeniUsati = ALLERGENS.filter((a) => nelMenu.some((dish) => dish.allergens.includes(a.code)));
-  const esigenzeUsate = DIETS.filter((t) => nelMenu.some((dish) => dish.dietTags.includes(t.code)));
+  const disponibili: FilterPill[] = [
+    ...ALLERGENS.filter((a) => nelMenu.some((dish) => dish.allergens.includes(a.code))).map((a) => ({
+      kind: 'allergens' as const,
+      code: a.code,
+    })),
+    ...DIETS.filter((t) => nelMenu.some((dish) => dish.dietTags.includes(t.code))).map((t) => ({
+      kind: 'diets' as const,
+      code: t.code,
+    })),
+  ];
+  const accese: FilterPill[] = [
+    ...needs.allergens.map((code) => ({ kind: 'allergens' as const, code })),
+    ...needs.diets.map((code) => ({ kind: 'diets' as const, code })),
+  ].filter((p) => disponibili.some((x) => x.kind === p.kind && x.code === p.code));
+  // La fila: le accese in testa, poi la graduatoria (v. menuFilters.ts)
+  const fila = filaPastiglie(disponibili, accese);
 
-  const scelte = needs.allergens.length + needs.diets.length;
+  const scelte = accese.length;
   const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
 
-  const gruppi = [
-    { id: 'loose', name: '', description: '', items: menu.loose },
-    ...menu.sections.map((s) => ({ id: s.id, name: s.name, description: s.description, items: s.items })),
-  ].filter((g) => g.items.length > 0);
+  // Sezioni e BLOCCHI DI TESTO nella stessa fila, perché nel menù occupano
+  // lo stesso posto. Si mostra una sezione se ha piatti, e un blocco se ha
+  // qualcosa scritto dentro: un blocco appena creato nell'editor non deve
+  // comparire al tavolo come un riquadro vuoto.
+  const gruppi: MenuSection[] = [
+    { id: 'loose', kind: 'section' as const, name: '', description: '', items: menu.loose },
+    ...menu.sections,
+  ].filter((g) => (g.kind === 'note' ? hasNoteText(g) : g.items.length > 0));
 
   return (
     // relative: è l'ancora del foglio di dettaglio (absolute inset-0), che
@@ -150,7 +193,7 @@ export default function MenuPreview({
       {/* IL FILTRO. È la ragione per cui questo menù non è come gli altri
           menù col QR (Tema 2), quindi sta in alto e si tocca subito — e non
           è mai una funzione a pagamento: è la dimostrazione del prodotto. */}
-      {(allergeniUsati.length > 0 || esigenzeUsate.length > 0) && (
+      {disponibili.length > 0 && (
         <div className="shrink-0 border-b border-gray-100 px-4 py-2">
           <div className="flex items-baseline justify-between gap-2">
             <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
@@ -165,26 +208,47 @@ export default function MenuPreview({
               </span>
             )}
           </div>
-          <div className="-mx-4 mt-1.5 flex gap-1.5 overflow-x-auto px-4 pb-0.5">
-            {allergeniUsati.map((a) => (
-              <Pastiglia
-                key={`a-${a.code}`}
-                label={`${d.preview.withoutPrefix} ${a[locale].toLowerCase()}`}
-                selected={needs.allergens.includes(a.code)}
-                accent={accent}
-                onClick={() => onToggleNeed('allergens', a.code)}
-              />
-            ))}
-            {esigenzeUsate.map((t) => (
-              <Pastiglia
-                key={`d-${t.code}`}
-                label={dietNeedName(t.code, locale)}
-                selected={needs.diets.includes(t.code)}
-                accent={accent}
-                onClick={() => onToggleNeed('diets', t.code)}
-              />
-            ))}
+
+          {/* Il bottone sta FUORI dalla parte che scorre, non in coda: da
+              sinistra non se ne va mai, e la fila gli scorre accanto. Le
+              pastiglie escono dal bordo destro (-mr-4 pr-4) perché una fila
+              che si ferma prima del margine sembra finita anche quando non
+              lo è. */}
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <button
+              onClick={() => setFilterOpen(true)}
+              className="flex shrink-0 items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700"
+            >
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 7h16M7 12h10M10 17h4" />
+              </svg>
+              {d.menuPublic.filterButton}
+              {scelte > 0 && (
+                <span className="tabular-nums font-semibold" style={{ color: accent }}>
+                  {scelte}
+                </span>
+              )}
+            </button>
+            <div className="-mr-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 pr-4">
+              {fila.map((pill) => (
+                <Pastiglia
+                  key={`${pill.kind}-${pill.code}`}
+                  label={filterLabel(pill, locale, d.preview.withoutPrefix)}
+                  selected={needs[pill.kind].includes(pill.code)}
+                  accent={accent}
+                  onClick={() => onToggleNeed(pill.kind, pill.code)}
+                />
+              ))}
+            </div>
           </div>
+
+          {/* L'UNICA riga che parla a nome nostro, ed è attaccata al filtro
+              perché il filtro è l'unica cosa nostra in questa pagina (v. la
+              nota in testa al file). Non è in fondo e non è un disclaimer:
+              dice da dove viene il dato su cui il filtro sta lavorando. */}
+          <p className="mt-1 text-[10px] leading-snug text-gray-400">
+            {d.menuPublic.filterDeclared}
+          </p>
         </div>
       )}
 
@@ -193,6 +257,28 @@ export default function MenuPreview({
           <p className="pt-10 text-center text-sm text-gray-400">{d.menuEditor.previewEmpty}</p>
         ) : (
           gruppi.map((gruppo) => {
+            // Un blocco di testo non è una sezione con dentro niente: non ha
+            // intestazione col colore del locale (quella annuncia dei piatti
+            // che qui non arrivano mai) e non partecipa al filtro — non c'è
+            // niente da riordinare, e sbiadirlo direbbe che riguarda le
+            // esigenze scelte, che è proprio quello che non è.
+            if (gruppo.kind === 'note') {
+              return (
+                <div key={gruppo.id} className="mb-4 rounded-xl bg-gray-50 px-3 py-2.5">
+                  {gruppo.name.trim() !== '' && (
+                    <p className="text-[12px] font-semibold leading-snug text-gray-900">
+                      {gruppo.name}
+                    </p>
+                  )}
+                  {gruppo.description.trim() !== '' && (
+                    <p className="mt-0.5 whitespace-pre-line text-[11px] leading-snug text-gray-600">
+                      {gruppo.description}
+                    </p>
+                  )}
+                </div>
+              );
+            }
+
             // "La carta si riordina", non si accorcia (Tema 2). I piatti che
             // non vanno bene restano leggibili in fondo alla loro sezione,
             // col motivo scritto: nasconderli darebbe l'impressione che il
@@ -238,15 +324,28 @@ export default function MenuPreview({
           })
         )}
 
-        {/* Lo stesso avviso della scheda in app: quello che il cliente legge
-            è dichiarato dal ristorante, non verificato da noi. Sul menù al
-            tavolo non è meno vero — è più vero, perché lì sta per ordinare. */}
-        {gruppi.length > 0 && (
-          <p className="mt-2 border-t border-gray-100 pt-3 text-[10px] leading-snug text-gray-400">
-            {d.preview.disclaimer}
+        {/* Il fondo del menù è del RISTORATORE: coperto, servizio,
+            pagamenti. Su un menù vuoto non compare — sarebbe il coperto di
+            una carta che non c'è. */}
+        {gruppi.length > 0 && tableConditions.trim() !== '' && (
+          <p className="mt-2 whitespace-pre-line border-t border-gray-100 pt-3 text-[10px] leading-snug text-gray-500">
+            {tableConditions}
           </p>
         )}
       </div>
+
+      {filterOpen && (
+        <FilterSheet
+          available={disponibili}
+          selected={accese}
+          accent={accent}
+          onToggle={onToggleNeed}
+          onReset={() => {
+            for (const pill of accese) onToggleNeed(pill.kind, pill.code);
+          }}
+          onClose={() => setFilterOpen(false)}
+        />
+      )}
 
       {detail && (
         <DishDetailSheet

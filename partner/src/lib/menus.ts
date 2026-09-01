@@ -34,11 +34,27 @@ export interface MenuItem {
   highlightNote: string;
 }
 
+// Una sezione di piatti, oppure un BLOCCO DI TESTO fra una sezione e l'altra
+// ("il pane è fatto in casa", "la cucina chiude alle 22:30"). Sono lo stesso
+// oggetto perché occupano lo stesso posto nell'ordine del menù: si trascinano
+// nella stessa fila e l'ordine è già la posizione nell'array. Il blocco riusa
+// le colonne che ci sono — `name` è il titolo, facoltativo, e `description` è
+// il testo — perché un blocco È un titolo più un testo.
+export type SectionKind = 'section' | 'note';
+
 export interface MenuSection {
   id: string;
+  kind: SectionKind;
   name: string; // testo libero: "Le nostre paste fresche", "Dalla brace"
   description: string; // riga sotto il nome, facoltativa: "Tutti fatti in casa"
-  items: MenuItem[];
+  items: MenuItem[]; // sempre vuoto sui blocchi di testo
+}
+
+// Un blocco vuoto non si mostra al cliente: nell'editor è appena stato creato
+// e non ci si è ancora scritto niente, e un rettangolo vuoto in mezzo alla
+// carta non è un contenuto — è un lavoro a metà che si è visto in sala.
+export function hasNoteText(section: MenuSection): boolean {
+  return section.name.trim() !== '' || section.description.trim() !== '';
 }
 
 export interface Menu {
@@ -176,6 +192,7 @@ function toMenu(row: any): Menu {
     loose: righe.filter((r: any) => r.section_id === null).map(item),
     sections: [...(row.partner_menu_sections ?? [])].sort(perOrdine).map((s: any) => ({
       id: s.id,
+      kind: s.kind === 'note' ? 'note' : 'section',
       name: s.name ?? '',
       description: s.description ?? '',
       items: righe.filter((r: any) => r.section_id === s.id).map(item),
@@ -190,7 +207,7 @@ async function loadMenus(): Promise<Menu[]> {
     .from('partner_menus')
     .select(
       'id, venue_id, name, description, currency, sort_order, ' +
-        'partner_menu_sections(id, name, description, sort_order), ' +
+        'partner_menu_sections(id, kind, name, description, sort_order), ' +
         'partner_menu_items(id, dish_id, section_id, price_cents, highlighted, highlight_note, sort_order)'
     )
     .order('sort_order', { ascending: true })
@@ -225,6 +242,7 @@ async function saveMenu(menu: Menu) {
     id: s.id,
     menu_id: menu.id,
     owner_user_id: ownerId,
+    kind: s.kind,
     name: s.name,
     description: s.description,
     sort_order: i,
@@ -450,7 +468,19 @@ function conRighe(menu: Menu, sectionId: string | null, cambia: (items: MenuItem
 export function addSection(menu: Menu, name: string): Menu {
   return {
     ...menu,
-    sections: [...menu.sections, { id: nuovoId(), name, description: '', items: [] }],
+    sections: [...menu.sections, { id: nuovoId(), kind: 'section', name, description: '', items: [] }],
+  };
+}
+
+// Il blocco di testo nasce SENZA titolo e senza testo, e senza nome
+// provvisorio: una sezione vuota si chiama "Nuova sezione" perché quel nome il
+// cliente lo leggerà comunque e intanto serve a distinguerla nella tendina
+// "Sposta in", mentre qui un segnaposto sarebbe solo una cosa da cancellare
+// prima di scrivere.
+export function addNote(menu: Menu): Menu {
+  return {
+    ...menu,
+    sections: [...menu.sections, { id: nuovoId(), kind: 'note', name: '', description: '', items: [] }],
   };
 }
 
