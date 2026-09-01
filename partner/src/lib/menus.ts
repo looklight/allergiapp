@@ -568,10 +568,6 @@ export function moveItemToSection(menu: Menu, itemId: string, sectionId: string 
   return conRighe(senza, sectionId, (items) => [...items, riga]);
 }
 
-export function setMenuName(menu: Menu, name: string): Menu {
-  return { ...menu, name };
-}
-
 export function setMenuDescription(menu: Menu, description: string): Menu {
   return { ...menu, description };
 }

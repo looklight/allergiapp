@@ -4,7 +4,7 @@
 // Tutta la logica di struttura sta in menus.ts come funzioni pure: qui si
 // compone la modifica e si passa il risultato a save(), così non c'è uno
 // stato locale che possa divergere da quello mostrato.
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
@@ -30,7 +30,6 @@ import {
   setItemPrice,
   setMenuCurrency,
   setMenuDescription,
-  setMenuName,
   setSectionDescription,
   useMenu,
   useMenus,
@@ -41,12 +40,11 @@ import DishPicker from '@/components/menus/DishPicker';
 import DishPanel from '@/components/dishes/DishPanel';
 import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import BrandBar from '@/components/menus/BrandBar';
+import LogoPicker from '@/components/menus/LogoPicker';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 
 export default function MenuEditorPage() {
-  // vedi più sotto: il campo del nome si mostra o no, deciso una volta sola
-  const mostraNome = useRef<boolean | null>(null);
   const { id } = useParams<{ id: string }>();
   const { d } = useI18n();
   const { dishes, create: createDish } = useDishes();
@@ -152,18 +150,6 @@ export default function MenuEditorPage() {
   // alto, che è il modo in cui il cliente al tavolo passa dalla carta alle
   // bevande senza cambiare QR.
   const fratelli = (menus ?? []).filter((m) => m.venueId === menu.venueId);
-  // IL NOME SI CHIEDE SOLO SE SERVE. Con un menù solo non distingue niente:
-  // il cliente non lo vede (niente linguette sotto i due menù) e il portale
-  // lo chiama "Menù senza nome" dove deve elencarlo. Il campo compare quando
-  // i menù sono più d'uno — o quando un nome c'è già, o non ci sarebbe più
-  // modo di correggerlo.
-  //
-  // La decisione si prende UNA volta, all'apertura: se seguisse il valore
-  // mentre si scrive, cancellando l'ultima lettera il campo sparirebbe sotto
-  // le dita di chi lo stava svuotando.
-  if (mostraNome.current === null) {
-    mostraNome.current = fratelli.length > 1 || menu.name.trim() !== '';
-  }
   const anteprima = (
     <MenuPreview
       menu={menu}
@@ -258,24 +244,22 @@ export default function MenuEditorPage() {
       <div className="min-w-0 flex-1 lg:max-w-3xl">
       <BackLink />
 
-      {/* Nome e valuta: il nome è un campo e basta, senza matita da premere
-          prima — è la prima cosa che si cambia su un menù che ne ha bisogno.
-          Quando non ne ha, al suo posto c'è un titolo e basta. */}
+      {/* Il titolo della pagina è il NOME DEL LOCALE, non un'etichetta
+          generica: è l'unica cosa che il cliente legge per forza, in cima a
+          ogni menù di questo ristorante (vale per tutti, come logo e
+          colore — da qui e non più da "Aspetto"). Il logo viene prima del
+          nome per restare coerente con l'intestazione dell'anteprima, che lo
+          mostra nello stesso ordine. */}
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        {mostraNome.current ? (
-          <input
-            type="text"
-            value={menu.name}
-            onChange={(e) => save(setMenuName(menu, e.target.value))}
-            placeholder={d.menuEditor.namePlaceholder}
-            aria-label={d.menuEditor.namePlaceholder}
-            className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
-          />
-        ) : (
-          <h1 className="min-w-0 flex-1 px-2 py-1 text-xl font-semibold text-gray-900 md:text-2xl">
-            {d.menuEditor.onlyMenuTitle}
-          </h1>
-        )}
+        <LogoPicker logoUrl={brand.logoUrl} onChange={(logoUrl) => setBrand({ logoUrl })} />
+        <input
+          type="text"
+          value={brand.name}
+          onChange={(e) => setBrand({ name: e.target.value })}
+          placeholder={d.menuEditor.venueNamePlaceholder}
+          aria-label={d.menuEditor.venueNameLabel}
+          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
+        />
         <label className="flex shrink-0 items-center gap-2 text-xs text-gray-500">
           {d.menuEditor.currency}
           <select
@@ -305,7 +289,7 @@ export default function MenuEditorPage() {
       />
 
       <div className="mb-4">
-        <BrandBar brand={brand} onChange={setBrand} />
+        <BrandBar accent={brand.accent} onChange={(accent) => setBrand({ accent })} />
       </div>
 
       {vuoto ? (
