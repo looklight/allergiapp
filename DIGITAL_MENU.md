@@ -264,6 +264,10 @@ separato — si tiene l'indirizzo e si fa servire da un progetto suo con una ris
 - **Un indirizzo per locale, non per menù.** Il QR è incollato al tavolo e non cambia a mezzogiorno:
   carta, pranzo e bevande si scelgono *dentro* la pagina. Tutto ciò che varia sta dentro, perché il
   supporto è fisico e costante.
+  > **Precisazione 01/09**: le linguette si vedono **da due menù in su**. Il nome di un menù esiste
+  > per distinguerlo da un altro: con un menù solo la linguetta mostra al cliente un'etichetta che
+  > non dice niente e non si può nemmeno premere. Domanda dell'utente — *"che senso ha la pill con
+  > il nome del menù?"* — e non ne aveva.
 - Il QR lo genera il portale, in PNG **e in vettoriale**: chi lo porta in tipografia ha bisogno del
   secondo, e se non glielo diamo se lo fa fare male altrove.
 - Da decidere come convivono `/menu/<slug>` e `/r/<slug>` per un locale rivendicato: sono due pagine
@@ -381,7 +385,9 @@ denunciava già ("il portale è costruito attorno alla vetrina e il claim è il 
   che esisteva solo perché era l'unico posto dove mettere le cose prima del claim. Adesso quel
   posto è il locale.
 - **"Vetrina" si chiamerà "Scheda AllergiApp"**: dice dove finisce la roba, e il ristoratore sa
-  già cos'è una scheda perché la vede nell'app. "Vetrina" non dice dove.
+  già cos'è una scheda perché la vede nell'app. "Vetrina" non dice dove. *(Fatta la sera del 31/08 —
+  v. il riquadro in fondo alle implicazioni. Il contenitore, cioè l'elenco e la rotta, si chiama
+  invece **locale**: la scheda è una delle tre cose che ci si accendono sopra, non il contenitore.)*
 - **I link stanno sul locale, non sulla scheda.** Sono fatti del posto — il telefono per prenotare
   è lo stesso ovunque compaia. Così li può mostrare anche il menù al tavolo, dove un "Prenota" ci
   sta benissimo, senza riscriverli.
@@ -389,13 +395,52 @@ denunciava già ("il portale è costruito attorno alla vetrina e il claim è il 
   Si chiede quando serve — alla creazione del primo menù — e non all'iscrizione, dove sarebbe un
   ostacolo prima di aver dato qualcosa. Da lì escono l'intestazione del menù e lo slug proposto.
 - Il portale vuole una **home** che mostri le tre cose e a che punto sono, invece dell'elenco delle
-  vetrine. Non un percorso a tappe: tre interruttori.
-- **Aggiunta 2026-08-31 — alla creazione di un menù la domanda è "di quale ristorante?".** Non
+  vetrine. Non un percorso a tappe: tre interruttori. *(**FATTA il 31/08 sera**, e **rifatta il
+  01/09** — v. la nota qui sotto.)*
+
+> **01/09 — Le cose a schermo sono DUE, non tre.** Decisione dell'utente dopo aver visto la prima
+> versione: *"quella dovrebbe essere la scheda dedicata quando si vuole andare a definire i link e
+> contatti (deve rientrare nella scheda AllergiApp)"*. Quindi la home mostra **menù al tavolo** e
+> **scheda AllergiApp**, e i link si definiscono dentro la scheda, che è la pagina `/locale/[id]`.
+>
+> **Non contraddice il Tema 16, lo precisa**: "i link stanno sul locale" resta vero *sul database*,
+> ed è la ragione per cui domani li potrà mostrare anche il menù pubblico senza riscriverli. Quello
+> che cambia è il **posto in cui si modificano**, che è uno solo — e il ristoratore non ha nessun
+> motivo di sapere a quale riga sono appesi.
+>
+> Nella stessa passata: la home **saluta per nome**, **non si chiama più "Locali"** (era il nome di
+> un archivio, non di una home), ha le **azioni rapide** che aprono la maschera già pronta, e
+> **creando un locale ci si resta** invece di finire dritti nella scheda — che per chi vuole solo il
+> menù al tavolo è la schermata sbagliata da mostrare per prima.
+- **Aggiunta 2026-08-31 — alla creazione di un menù la domanda è "di quale locale?".** Non
   "che nome dai al menù": un menù non è "la Carta", è la carta *di qualcuno*, e il nome che conta —
-  quello che il cliente legge in cima e da cui uscirà lo slug — è quello del ristorante. Il nome del
+  quello che il cliente legge in cima e da cui uscirà lo slug — è quello del locale. Il nome del
   menù è solo l'etichetta della linguetta, quindi si chiede dal **secondo** menù dello stesso locale
-  in poi: al primo non c'è niente da cui distinguerlo. Da lì si può anche creare un ristorante
+  in poi: al primo non c'è niente da cui distinguerlo. Da lì si può anche creare un locale
   nuovo, perché uno stesso partner può averne più d'uno.
+
+> ✅ **FATTA il 2026-08-31 (sera): la rinomina.** Il tipo è `Venue`, il modulo `src/lib/venues.ts`,
+> la rotta `/locale/[id]`; le schermate dicono **locale** per il contenitore e **scheda AllergiApp**
+> per quello che finisce nell'app. Nel dizionario "vetrina" non compare più in nessuna delle due
+> lingue.
+>
+> **Cosa l'ha resa urgente**: la domanda dell'utente — *"non capisco come mai il menù lo devo
+> associare a una vetrina, dovrebbero essere cose parallele"*. Ed erano parallele davvero: il menù
+> pende dal locale, non dalla scheda, esattamente come dice questo tema. A confonderlo era solo che
+> **la stessa riga aveva due nomi in due schermate** — "Nome della vetrina" (con placeholder *"come
+> vuoi chiamarla"*, cioè un'etichetta privata) nell'editor, "Nome del locale" nell'editor del menù,
+> dove però quel nome lo leggono i clienti in cima alla pagina al tavolo. Chi lo compilava la prima
+> volta scriveva un promemoria per sé e se lo ritrovava stampato sul menù.
+>
+> Morale, per la prossima volta: **un debito di sole parole non è cosmetico** se le parole in
+> disaccordo descrivono la stessa riga. Qui è costato un'incomprensione sul modello a chi il modello
+> l'aveva disegnato il giorno prima.
+>
+> **Trovato mentre la si faceva**: eliminare un locale dalla lista **porta via i suoi menù** (cascata
+> della 704), e la finestra di conferma parlava ancora solo di link — l'annulla rimetteva in piedi
+> locale, link e piatti accesi, e lasciava perso il lavoro vero. Adesso i menù si contano e si
+> dicono prima, e l'annulla li ripristina con gli stessi id (prima il locale, poi i menù, o la
+> chiave esterna li rifiuta).
 
 **La finestra per farlo è adesso** (verificato il 2026-08-31): fuori dal portale **nessuno** legge
 le tabelle `partner_*` — né l'app né l'admin — e dentro c'è solo roba di prova. Si chiude appena
