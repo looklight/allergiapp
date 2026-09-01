@@ -78,6 +78,14 @@ export default function DishDetailSheet({
         )}
 
         <div className="px-4 pt-3">
+          {/* Un avviso diverso da quello sugli allergeni: qui si dice che la
+              foto è indicativa, non che gli ingredienti non sono verificati
+              — due dubbi diversi, due righe diverse. */}
+          {dish.photoUrl !== '' && (
+            <p className="mb-2 text-[10px] leading-snug text-gray-400">
+              {d.menuPublic.dishDetailPhotoDisclaimer}
+            </p>
+          )}
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="text-base font-semibold leading-snug text-gray-900">{dish.name}</h3>
             {prezzo !== '' && (

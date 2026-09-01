@@ -365,6 +365,7 @@ const it = {
     excludedContains: 'Contiene {list}',
     excludedNotFor: 'Non indicato per {list}',
     dishDetailOpen: 'Vedi {dish}',
+    dishDetailPhotoDisclaimer: 'Immagine indicativa, la presentazione può variare.',
     dishDetailAllergensTitle: 'Allergeni dichiarati',
     dishDetailNoAllergens: 'Nessun allergene dichiarato dal ristorante.',
     dishDetailDietsTitle: 'Adatto a',

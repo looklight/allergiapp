@@ -348,6 +348,7 @@ const en: typeof it = {
     excludedContains: 'Contains {list}',
     excludedNotFor: 'Not marked for {list}',
     dishDetailOpen: 'View {dish}',
+    dishDetailPhotoDisclaimer: 'Photo for illustration only — actual presentation may vary.',
     dishDetailAllergensTitle: 'Declared allergens',
     dishDetailNoAllergens: 'No allergens declared by the restaurant.',
     dishDetailDietsTitle: 'Suitable for',
