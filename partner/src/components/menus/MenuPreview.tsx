@@ -292,9 +292,14 @@ function Riga({
       }`}
     >
       <div className="flex gap-2.5">
-        {dishThumb(dish) !== '' && (
+        {/* Un piatto senza foto tiene comunque lo spazio: senza, le righe
+            fotografate e quelle no avrebbero il testo che parte da punti
+            diversi, e la carta sembrerebbe storta scorrendola. */}
+        {dishThumb(dish) !== '' ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dishThumb(dish)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+        ) : (
+          <div className="h-11 w-11 shrink-0 rounded-lg bg-gray-100" />
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5">
