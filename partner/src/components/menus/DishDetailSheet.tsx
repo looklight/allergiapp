@@ -65,11 +65,16 @@ export default function DishDetailSheet({
           <span className="h-1 w-10 rounded-full bg-gray-200" />
         </div>
 
+        {/* Quadrata perché il piatto ARRIVA quadrato: photos.ts ritaglia un
+            canvas square al caricamento. Un riquadro largo e basso con
+            object-cover ne avrebbe tagliato sopra e sotto — qui invece
+            l'aspect ratio del box è la stessa della foto, quindi si vede
+            intera. */}
         {dish.photoUrl !== '' ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={dish.photoUrl} alt="" className="h-44 w-full object-cover" />
+          <img src={dish.photoUrl} alt="" className="aspect-square w-full object-cover" />
         ) : (
-          <div className="h-44 w-full bg-gray-100" />
+          <div className="aspect-square w-full bg-gray-100" />
         )}
 
         <div className="px-4 pt-3">
@@ -131,10 +136,6 @@ export default function DishDetailSheet({
               </div>
             </div>
           )}
-
-          <p className="mt-4 border-t border-gray-100 pt-3 text-[10px] leading-snug text-gray-400">
-            {d.preview.disclaimer}
-          </p>
         </div>
       </div>
     </div>
