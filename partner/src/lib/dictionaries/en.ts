@@ -53,6 +53,10 @@ const en: typeof it = {
     signUpCta: 'Create partner profile',
     signInCta: 'Sign in',
     checkEmail: 'Check your inbox to confirm your registration.',
+    forgot: 'Forgot your password?',
+    forgotNeedsEmail: 'Type your email above, then press again.',
+    forgotSent:
+      'If this email has an account, a message with a link to get back in is on its way. You will pick a new password from there.',
   },
   authErrors: {
     alreadyRegistered:
@@ -404,6 +408,22 @@ const en: typeof it = {
     subsHint:
       'Linking your venues to restaurants on AllergiApp, and the subscription that makes the listing visible.',
     subsOpen: 'Open',
+    profileTitle: 'Your details',
+    profileHint: 'The name we greet you with in here. Your guests never see it.',
+    phone: 'Phone',
+    phoneHint: 'Optional: only we use it, and only to write to you about your account.',
+    profileSaved: 'Details updated',
+    marketingTitle: 'Emails from us',
+    marketingLabel: 'I want updates about AllergiApp Partner.',
+    marketingHint: 'Change your mind whenever you like: it takes effect straight away.',
+    passwordTitle: 'Password',
+    passwordHint: 'Change it whenever you like. You will need it next time you sign in.',
+    passwordNew: 'New password',
+    passwordRepeat: 'Repeat the password',
+    passwordMismatch: 'The two passwords do not match.',
+    passwordChange: 'Change password',
+    passwordChanged: 'Password updated',
+    passwordFromRecovery: 'Pick your new password: this is the one you will use from now on.',
   },
 };
 

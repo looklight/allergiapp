@@ -53,6 +53,13 @@ const it = {
     signUpCta: 'Crea profilo partner',
     signInCta: 'Accedi',
     checkEmail: 'Controlla la tua casella email per confermare la registrazione.',
+    // Chi al portale entra una volta al mese la password se la dimentica: è
+    // il caso normale, non l'eccezione, e senza questa via l'unica uscita
+    // era scriverci.
+    forgot: 'Password dimenticata?',
+    forgotNeedsEmail: 'Scrivi la tua email qui sopra, poi premi di nuovo.',
+    forgotSent:
+      'Se questa email ha un account, ti è arrivato un messaggio col link per rientrare. Da lì potrai scegliere la password nuova.',
   },
   authErrors: {
     alreadyRegistered:
@@ -422,6 +429,26 @@ const it = {
     subsHint:
       'L’associazione dei tuoi locali ai ristoranti su AllergiApp e l’abbonamento che rende visibile la scheda.',
     subsOpen: 'Apri',
+    // Dati personali
+    profileTitle: 'I tuoi dati',
+    profileHint: 'Il nome con cui ti salutiamo qui dentro. I clienti non lo vedono.',
+    phone: 'Telefono',
+    phoneHint: 'Facoltativo: serve solo a noi, se dobbiamo scriverti per il tuo account.',
+    profileSaved: 'Dati aggiornati',
+    // Consenso marketing: si toglie con lo stesso gesto con cui si è dato
+    marketingTitle: 'Comunicazioni',
+    marketingLabel: 'Voglio ricevere aggiornamenti su AllergiApp Partner.',
+    marketingHint: 'Puoi cambiare idea quando vuoi: vale da subito.',
+    // Password
+    passwordTitle: 'Password',
+    passwordHint: 'Cambiala quando vuoi. Ti servirà al prossimo accesso.',
+    passwordNew: 'Nuova password',
+    passwordRepeat: 'Ripeti la password',
+    passwordMismatch: 'Le due password non coincidono.',
+    passwordChange: 'Cambia password',
+    passwordChanged: 'Password aggiornata',
+    // Si arriva qui col link della mail di recupero (v. login.forgot)
+    passwordFromRecovery: 'Scegli la password nuova: da qui in poi userai questa.',
   },
 };
 

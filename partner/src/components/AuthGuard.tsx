@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -43,6 +43,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // l'onboarding a dire al guard che adesso può passare
   const onCreated = useCallback(() => setProfile('presente'), []);
 
+  // Il profilo che /account ha appena corretto. Il guard è l'unico che quella
+  // riga la legge, quindi è l'unico che può tenerla aggiornata per tutti.
+  const condiviso = useMemo(
+    () => ({ profile: fields, aggiorna: setFields }),
+    [fields]
+  );
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-gray-500">
@@ -69,5 +76,5 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return <PartnerOnboarding session={session} onCreated={onCreated} />;
   }
 
-  return <PartnerProfileProvider value={fields}>{children}</PartnerProfileProvider>;
+  return <PartnerProfileProvider value={condiviso}>{children}</PartnerProfileProvider>;
 }

@@ -11,6 +11,7 @@
 // riscriversi: andava bene finché non c'erano dati veri dietro.
 import { createContext, useContext } from 'react';
 import { supabase } from './supabase';
+import { write } from './saveState';
 
 export interface PartnerProfileFields {
   firstName: string;
@@ -72,6 +73,62 @@ export async function loadPartnerProfile(userId: string): Promise<PartnerProfile
 
 
 // ------------------------------------------------------------------
+// LE MODIFICHE AL PROFILO
+//
+// Nome, cognome e telefono si correggono: la registrazione li chiede di
+// fretta e un refuso nel nome resta poi in cima a ogni saluto.
+//
+// Il CONSENSO MARKETING sta qui e non con gli altri due, pur essendo la
+// stessa riga, perché non è un dato anagrafico: è una revoca, e va scritta
+// con la sua data. Toglierlo deve costare quanto darlo — nella registrazione
+// è una casella, quindi qui è un interruttore, non un modulo da compilare e
+// nemmeno una mail da scrivere a qualcuno.
+//
+// Le RLS lo permettono già senza aggiungere niente: partner_accounts_own è
+// FOR ALL sulla propria riga (migration 700), e updated_at lo muove il
+// trigger.
+// ------------------------------------------------------------------
+export async function updatePartnerProfile(
+  userId: string,
+  fields: { firstName: string; lastName: string; phone: string }
+): Promise<void> {
+  await write(
+    'salvataggio profilo',
+    () =>
+      supabase
+        .from('partner_accounts')
+        .update({
+          first_name: fields.firstName.trim(),
+          last_name: fields.lastName.trim(),
+          // il telefono è facoltativo: vuoto vuol dire "non ce l'ho", che sul
+          // database è NULL e non una stringa vuota
+          phone: fields.phone.trim() || null,
+        })
+        .eq('user_id', userId),
+    `profilo:${userId}`
+  );
+}
+
+export async function setMarketingConsent(userId: string, consent: boolean): Promise<void> {
+  await write(
+    'salvataggio consenso marketing',
+    () =>
+      supabase
+        .from('partner_accounts')
+        .update({
+          marketing_consent: consent,
+          // La data segna QUANDO è stato dato, quindi con la revoca se ne va:
+          // tenerla su un consenso ritirato vorrebbe dire conservare la prova
+          // di un permesso che non c'è più (stessa regola di
+          // createPartnerProfile, dove nasce null se il consenso manca).
+          marketing_consent_at: consent ? new Date().toISOString() : null,
+        })
+        .eq('user_id', userId),
+    `consenso:${userId}`
+  );
+}
+
+// ------------------------------------------------------------------
 // IL PROFILO A DISPOSIZIONE DELLE SCHERMATE
 //
 // L'AuthGuard il profilo lo legge già — è il cancello del portale — e finora
@@ -79,11 +136,28 @@ export async function loadPartnerProfile(userId: string): Promise<PartnerProfile
 // interrogazione sarebbe una richiesta in più per un dato che è già in casa.
 // Nessun caricamento qui dentro: chi entra è passato dal guard, quindi il
 // profilo c'è per forza.
+//
+// Da quando /account lo modifica, il contesto porta anche COME AGGIORNARLO:
+// senza, correggersi il nome lascerebbe la home a salutarti con quello
+// vecchio fino al ricaricamento — cioè esattamente il posto in cui si va a
+// controllare se la correzione ha funzionato.
 // ------------------------------------------------------------------
-const PartnerProfileContext = createContext<PartnerProfile | null>(null);
+interface ProfiloCondiviso {
+  profile: PartnerProfile | null;
+  aggiorna: (profile: PartnerProfile) => void;
+}
+
+const PartnerProfileContext = createContext<ProfiloCondiviso>({
+  profile: null,
+  aggiorna: () => {},
+});
 
 export const PartnerProfileProvider = PartnerProfileContext.Provider;
 
 export function usePartnerProfile(): PartnerProfile | null {
-  return useContext(PartnerProfileContext);
+  return useContext(PartnerProfileContext).profile;
+}
+
+export function useUpdatePartnerProfile(): (profile: PartnerProfile) => void {
+  return useContext(PartnerProfileContext).aggiorna;
 }
