@@ -216,7 +216,7 @@ export default function MenuPreview({
                   </h3>
                 )}
                 {gruppo.description.trim() !== '' && (
-                  <p className="mb-2 whitespace-pre-line text-[11px] leading-snug text-gray-500">
+                  <p className="mb-3 whitespace-pre-line text-[11px] leading-snug text-gray-500">
                     {gruppo.description}
                   </p>
                 )}

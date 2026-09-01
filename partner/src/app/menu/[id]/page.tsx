@@ -442,7 +442,7 @@ export default function MenuEditorPage() {
                 placeholder={d.menuEditor.sectionDescriptionPlaceholder}
                 aria-label={d.menuEditor.sectionDescriptionPlaceholder}
                 rows={1}
-                className="mb-2 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
+                className="mb-3 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
               />
 
               {section.items.length === 0 ? (
