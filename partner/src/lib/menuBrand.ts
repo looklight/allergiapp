@@ -9,7 +9,7 @@
 // intestazioni diverse allo stesso ristorante nella stessa pagina.
 //
 // I VALORI non stanno qui: vivono su partner_venues e si leggono da
-// showcases.ts, che quella riga la legge già. Qui restano solo le costanti e
+// venues.ts, che quella riga la legge già. Qui restano solo le costanti e
 // la riduzione del logo.
 //
 // ⚠️ Il logo è ancora un data URL dentro la riga, non un file su Storage.

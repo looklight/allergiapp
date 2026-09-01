@@ -1,12 +1,12 @@
 'use client';
 
-// Il gestionale: il catalogo piatti del partner, che vive sopra le singole
-// vetrine. Qui si crea e si corregge un piatto; dove appare si decide col
-// toggle sulla vetrina o con le caselle in fondo alla maschera.
-import { useRef, useState } from 'react';
+// Il gestionale: il catalogo piatti del partner, che vive sopra i singoli
+// locali. Qui si crea e si corregge un piatto; dove appare si decide col
+// toggle sulla scheda o con le caselle in fondo alla maschera.
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { setDishShowcases, showcasesWithDish, useDishes, type Dish } from '@/lib/dishes';
-import { useShowcases } from '@/lib/showcases';
+import { setDishVenues, venuesWithDish, useDishes, type Dish } from '@/lib/dishes';
+import { useVenues } from '@/lib/venues';
 import { deleteDishPhoto } from '@/lib/photos';
 import { DISH_CATEGORIES } from '@/lib/categories';
 import { ALLERGENS } from '@/lib/allergens';
@@ -55,7 +55,7 @@ function SortHeader({
 export default function DishesPage() {
   const { d, locale } = useI18n();
   const { dishes, create, update, remove, restore } = useDishes();
-  const { showcases, setDishOn } = useShowcases();
+  const { venues, setDishOn } = useVenues();
   const [query, setQuery] = useState('');
   // null = tutte le categorie; '' = i piatti senza categoria
   const [category, setCategory] = useState<string | null>(null);
@@ -64,8 +64,8 @@ export default function DishesPage() {
   const [allergens, setAllergens] = useState<string[]>([]);
   const [diets, setDiets] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  // A quale vetrina si riferiscono gli interruttori della tabella. Acceso è
-  // uno stato per vetrina, non del piatto: con più vetrine bisogna dire quale.
+  // A quale scheda si riferiscono gli interruttori della tabella. Acceso è
+  // uno stato per scheda, non del piatto: con più locali bisogna dire quale.
   const [toggleTarget, setToggleTarget] = useState<string | null>(null);
   // null = l'ordine del catalogo, cioè quello in cui il partner li ha creati
   // (ed è anche l'ordine con cui l'app li mostra). Le intestazioni ci tornano
@@ -73,12 +73,34 @@ export default function DishesPage() {
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
   // 'new' = pannello aperto su un piatto da creare; un id = su quello
   const [editing, setEditing] = useState<'new' | string | null>(null);
+
+  // La home ha un'azione rapida che porta qui con la maschera GIÀ APERTA: una
+  // scorciatoia che ti lascia davanti alla pagina, a cercare il bottone, non è
+  // una scorciatoia. Si legge l'indirizzo invece di useSearchParams, che
+  // obbligherebbe a incartare la pagina in un <Suspense> per la generazione
+  // statica — molto rumore per un parametro.
+  //
+  // Si aspetta che i DATI ci siano, e non basta il montaggio: aprendola subito
+  // la finestra nasceva con le liste ancora vuote e proponeva di creare un
+  // locale nuovo a chi ce l'aveva già. Una volta sola, o riaprirebbe la
+  // maschera a ogni ricarica delle liste.
+  const nuovoChiesto = useRef(false);
+  useEffect(() => {
+    if (nuovoChiesto.current || !dishes || !venues) return;
+    nuovoChiesto.current = true;
+    if (new URLSearchParams(window.location.search).has('nuovo')) {
+      // consumato subito: tornando indietro dall'editor la maschera non deve
+      // riaprirsi da sola
+      window.history.replaceState(null, '', '/piatti');
+      setEditing('new');
+    }
+  }, [dishes, venues]);
   const [deleting, setDeleting] = useState<Dish | null>(null);
-  // Piatto appena eliminato, con la posizione e le vetrine che aveva
+  // Piatto appena eliminato, con la posizione e le schede su cui era acceso
   const [undoable, setUndoable] = useState<{
     dish: Dish;
     index: number;
-    showcaseIds: string[];
+    venueIds: string[];
     // Se la riga è sparita davvero dal database. È una promessa e non un
     // valore perché l'annulla compare subito, mentre l'esito della scrittura
     // arriva dopo: quando scade, la risposta c'è già.
@@ -92,7 +114,7 @@ export default function DishesPage() {
     setList(list.includes(code) ? list.filter((c) => c !== code) : [...list, code]);
   }
 
-  async function saveDish(data: Omit<Dish, 'id'>, showcaseIds: string[]) {
+  async function saveDish(data: Omit<Dish, 'id'>, venueIds: string[]) {
     // Il pannello si chiude subito: la lista è già aggiornata in locale e
     // far aspettare tre giri di rete davanti a un bottone "Salva" che non
     // reagisce è peggio che scriverli in sottofondo.
@@ -101,7 +123,7 @@ export default function DishesPage() {
     const id = apertoSu === 'new' ? (await create(data))?.id : apertoSu;
     if (!id) return;
     if (apertoSu !== 'new') await update(id, data);
-    // In quali vetrine sta il piatto si riscrive solo se è cambiato: la
+    // Su quali schede sta il piatto si riscrive solo se è cambiato: la
     // maschera si apre e si salva anche solo per correggere una virgola nella
     // descrizione, e quello non c'entra niente con dove il piatto appare.
     // Su un piatto NUOVO si scrive sempre: le caselle nascono già spuntate,
@@ -109,8 +131,8 @@ export default function DishesPage() {
     // parte proprio quando invece va acceso ovunque.
     const cambiate =
       apertoSu === 'new' ||
-      [...editingShowcaseIds].sort().join() !== [...showcaseIds].sort().join();
-    if (cambiate) await setDishShowcases(id, showcaseIds);
+      [...editingVenueIds].sort().join() !== [...venueIds].sort().join();
+    if (cambiate) await setDishVenues(id, venueIds);
   }
 
   function confirmDelete(dish: Dish) {
@@ -119,15 +141,15 @@ export default function DishesPage() {
     // diventare definitivo, foto compresa.
     purgePhoto();
     const index = (dishes ?? []).findIndex((item) => item.id === dish.id);
-    const showcaseIds = showcasesWithDish(showcases ?? [], dish.id).map((s) => s.id);
+    const venueIds = venuesWithDish(venues ?? [], dish.id).map((s) => s.id);
     const eliminata = remove(dish.id);
     setDeleting(null);
-    setUndoable({ dish, index: index < 0 ? 0 : index, showcaseIds, eliminata });
+    setUndoable({ dish, index: index < 0 ? 0 : index, venueIds, eliminata });
   }
 
   function undoDelete() {
     if (!undoable) return;
-    restore(undoable.dish, undoable.index, undoable.showcaseIds);
+    restore(undoable.dish, undoable.index, undoable.venueIds);
     setUndoable(null);
   }
 
@@ -197,7 +219,7 @@ export default function DishesPage() {
     if (sort.key === 'name') return a.name.localeCompare(b.name, locale) * verso;
     if (sort.key === 'category') return (categoryRank(a.category) - categoryRank(b.category)) * verso;
     // acceso prima di spento, e a parità restano nell'ordine del catalogo
-    const on = (dish: Dish) => (targetShowcase?.dishIds.includes(dish.id) ? 0 : 1);
+    const on = (dish: Dish) => (targetVenue?.dishIds.includes(dish.id) ? 0 : 1);
     return (on(a) - on(b)) * verso;
   }
 
@@ -210,22 +232,28 @@ export default function DishesPage() {
     );
   }
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
-  // Senza vetrine non c'è niente da accendere; con una sola è quella e basta
-  const targetShowcase =
-    (showcases ?? []).find((s) => s.id === toggleTarget) ?? (showcases ?? [])[0] ?? null;
-  // Un piatto nuovo nasce acceso ovunque: chi ha un locale solo non deve
+  // Un piatto si accende sulla SCHEDA, e la scheda esiste solo dopo il claim
+  // (Tema 16): un locale che non ce l'ha non ha nessun interruttore da
+  // mostrare. Il filtro sta qui, in un punto solo, così la colonna, il
+  // selettore e le caselle spariscono insieme e per la stessa ragione —
+  // invece di restare a schermo e non fare niente quando si toccano.
+  const venuesConScheda = (venues ?? []).filter((s) => s.cardId !== null);
+  // Senza schede non c'è niente da accendere; con una sola è quella e basta
+  const targetVenue =
+    venuesConScheda.find((s) => s.id === toggleTarget) ?? venuesConScheda[0] ?? null;
+  // Un piatto nuovo nasce acceso ovunque: chi ha una scheda sola non deve
   // spuntare niente, chi ne ha di più vede subito le caselle e sceglie
-  const editingShowcaseIds =
+  const editingVenueIds =
     editing === 'new'
-      ? (showcases ?? []).map((s) => s.id)
-      : showcasesWithDish(showcases ?? [], editing ?? '').map((s) => s.id);
+      ? venuesConScheda.map((s) => s.id)
+      : venuesWithDish(venues ?? [], editing ?? '').map((s) => s.id);
 
   return (
     <div>
       <h1 className="mb-2 text-xl font-semibold md:text-2xl">{d.dishes.title}</h1>
       <p className="mb-8 max-w-2xl text-balance text-sm text-gray-600">{d.dishes.intro}</p>
 
-      {!dishes || !showcases ? (
+      {!dishes || !venues ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>
       ) : dishes.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
@@ -312,20 +340,26 @@ export default function DishesPage() {
           </div>
           )}
 
-          {/* Con più vetrine "acceso" è ambiguo finché non si dice dove: gli
+          {/* Locali sì, schede no: la colonna degli interruttori non c'è, e
+              sparire senza spiegazione sembra un guasto */}
+          {venuesConScheda.length === 0 && (venues ?? []).length > 0 && (
+            <p className="mb-4 max-w-2xl text-xs text-gray-500">{d.dishes.needsCard}</p>
+          )}
+
+          {/* Con più schede "acceso" è ambiguo finché non si dice dove: gli
               interruttori della tabella si riferiscono a questa. */}
-          {(showcases ?? []).length > 1 && targetShowcase && (
+          {venuesConScheda.length > 1 && targetVenue && (
             <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
               <label htmlFor="toggle-target" className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-400">
                 {d.dishes.toggleIn}
               </label>
               <select
                 id="toggle-target"
-                value={targetShowcase.id}
+                value={targetVenue.id}
                 onChange={(e) => setToggleTarget(e.target.value)}
                 className="min-w-0 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
               >
-                {(showcases ?? []).map((s) => (
+                {venuesConScheda.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.venueName.trim() || d.home.unnamed}
                   </option>
@@ -417,7 +451,7 @@ export default function DishesPage() {
               <SortHeader label={d.dishes.colCategory} sortKey="category" sort={sort} onClick={toggleSort} />
             </span>
             <span className="hidden min-w-0 flex-[3] lg:block">{d.dishes.colTags}</span>
-            {targetShowcase && (
+            {targetVenue && (
               <span className="flex w-20 shrink-0 justify-center">
                 <SortHeader label={d.dishes.colOn} sortKey="on" sort={sort} onClick={toggleSort} />
               </span>
@@ -435,11 +469,11 @@ export default function DishesPage() {
                 <DishRow
                   key={dish.id}
                   dish={dish}
-                  showcases={showcasesWithDish(showcases, dish.id)}
-                  on={targetShowcase ? targetShowcase.dishIds.includes(dish.id) : null}
+                  venues={venuesWithDish(venues, dish.id)}
+                  on={targetVenue ? targetVenue.dishIds.includes(dish.id) : null}
                   onToggle={() =>
-                    targetShowcase &&
-                    setDishOn(targetShowcase.id, dish.id, !targetShowcase.dishIds.includes(dish.id))
+                    targetVenue &&
+                    setDishOn(targetVenue.id, dish.id, !targetVenue.dishIds.includes(dish.id))
                   }
                   onEdit={() => setEditing(dish.id)}
                   onDelete={() => setDeleting(dish)}
@@ -454,12 +488,12 @@ export default function DishesPage() {
         </>
       )}
 
-      {editing && showcases && (
+      {editing && venues && (
         <DishPanel
           key={editing}
           dish={editingDish}
-          showcases={showcases}
-          initialShowcaseIds={editingShowcaseIds}
+          venues={venues}
+          initialVenueIds={editingVenueIds}
           onSave={saveDish}
           onClose={() => setEditing(null)}
         />
@@ -468,7 +502,7 @@ export default function DishesPage() {
       {deleting && (
         <DeleteDishDialog
           dish={deleting}
-          showcases={showcasesWithDish(showcases ?? [], deleting.id)}
+          venues={venuesWithDish(venues ?? [], deleting.id)}
           onCancel={() => setDeleting(null)}
           onConfirm={() => confirmDelete(deleting)}
         />

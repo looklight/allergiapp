@@ -1,8 +1,10 @@
 'use client';
 
-// Maschera di creazione: si dà un nome alla vetrina e si vede in tre passi
-// cosa ci si fa dentro. I tre esempi sono gli elementi veri dell'editor e
-// della scheda (pill dei link, riga piatto con allergeni), non disegni.
+// Maschera di creazione: si dà un nome al locale e si vede in tre passi cosa
+// ci si fa dentro. Il nome NON è un'etichetta privata — è quello che i
+// clienti leggono in cima al menù al tavolo (Tema 16). I tre esempi sono gli
+// elementi veri dell'editor e della scheda (pill dei link, riga piatto con
+// allergeni), non disegni.
 import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
@@ -10,7 +12,7 @@ import { allergenName } from '@/lib/allergens';
 import { LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 
-// Allergeni dei piatti di esempio, nell'ordine di newShowcase.sampleDishes
+// Allergeni dei piatti di esempio, nell'ordine di newVenue.sampleDishes
 const SAMPLE_ALLERGENS = [['gluten', 'eggs'], ['crustaceans'], ['milk', 'eggs']];
 
 function Step({
@@ -35,7 +37,7 @@ function Step({
   );
 }
 
-export default function NewShowcaseDialog({
+export default function NewVenueDialog({
   onCancel,
   onCreate,
 }: {
@@ -48,8 +50,8 @@ export default function NewShowcaseDialog({
   const panel = useModal<HTMLDivElement>(onCancel);
   const titleId = useId();
 
-  // nello schema a sinistra c'è la vetrina: senza nome lo dice, non finge un locale
-  const showcaseLabel = name.trim() || d.newShowcase.yourShowcase;
+  // nello schema a sinistra c'è il locale: senza nome lo dice, non ne finge uno
+  const venueLabel = name.trim() || d.newVenue.yourVenue;
   const LINK_LABELS: Record<LinkKind, string> = {
     booking: d.editor.linkBooking,
     delivery: d.editor.linkDelivery,
@@ -73,7 +75,7 @@ export default function NewShowcaseDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id={titleId} className="mb-4 text-lg font-semibold text-gray-900">
-          {d.newShowcase.title}
+          {d.newVenue.title}
         </h2>
 
         <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -89,15 +91,15 @@ export default function NewShowcaseDialog({
           placeholder={d.editor.venueNamePlaceholder}
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
         />
-        <p className="mt-1.5 text-xs text-gray-500">{d.newShowcase.nameHint}</p>
+        <p className="mt-1.5 text-xs text-gray-500">{d.newVenue.nameHint}</p>
 
         <div className="mt-6 border-t border-gray-200 pt-4">
           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
-            {d.newShowcase.how}
+            {d.newVenue.how}
           </p>
           <div className="divide-y divide-gray-100">
             <div className="pb-4">
-              <Step n={1} title={d.newShowcase.step1}>
+              <Step n={1} title={d.newVenue.step1}>
                 <div className="space-y-1.5">
                   <div className="flex flex-nowrap gap-1 overflow-hidden">
                     {LINK_ORDER.map((kind) => (
@@ -118,7 +120,7 @@ export default function NewShowcaseDialog({
                           </svg>
                         </span>
                         <p className="mt-1.5 line-clamp-2 text-[10px] leading-[13px] text-gray-700">
-                          {d.newShowcase.sampleDishes[i]}
+                          {d.newVenue.sampleDishes[i]}
                         </p>
                         <div className="mt-1 flex flex-wrap justify-center gap-1">
                           {codes.map((code) => (
@@ -138,7 +140,7 @@ export default function NewShowcaseDialog({
             </div>
 
             <div className="pt-4">
-              <Step n={2} title={d.newShowcase.step2}>
+              <Step n={2} title={d.newVenue.step2}>
                 <div className="flex items-center gap-2">
                   <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-2">
                     <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -146,7 +148,7 @@ export default function NewShowcaseDialog({
                       <path d="M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0" />
                       <path d="M4.5 11.5V20h15v-8.5" />
                     </svg>
-                    <span className="min-w-0 flex-1 truncate text-[12px] text-gray-700">{showcaseLabel}</span>
+                    <span className="min-w-0 flex-1 truncate text-[12px] text-gray-700">{venueLabel}</span>
                   </div>
                   <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 12h15M13 6l6 6-6 6" />
@@ -157,7 +159,7 @@ export default function NewShowcaseDialog({
                       <circle cx="12" cy="10" r="2.5" />
                     </svg>
                     <span className="min-w-0 flex-1 truncate text-[12px] text-gray-700">
-                      {d.newShowcase.venueOnApp}
+                      {d.newVenue.venueOnApp}
                     </span>
                   </div>
                 </div>

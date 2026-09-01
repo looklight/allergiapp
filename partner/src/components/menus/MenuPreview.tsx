@@ -5,10 +5,15 @@
 // apre col QR — intestazione del locale, le linguette dei menù, il filtro,
 // le sezioni.
 //
-// Le LINGUETTE ci sono anche con un menù solo, e non è un ornamento: sono la
-// ragione per cui logo e colore appartengono al locale e non al menù. Il QR è
-// incollato al tavolo e non cambia a mezzogiorno, quindi carta e pranzo
-// stanno DENTRO la stessa pagina (DIGITAL_MENU.md, Tema 13).
+// Le LINGUETTE sono la ragione per cui logo e colore appartengono al locale e
+// non al menù: il QR è incollato al tavolo e non cambia a mezzogiorno, quindi
+// carta e pranzo stanno DENTRO la stessa pagina (DIGITAL_MENU.md, Tema 13).
+//
+// Ma si vedono **da due menù in su**. Il nome di un menù serve a distinguerlo
+// da un altro: con un menù solo la linguetta è un'etichetta che al cliente non
+// dice niente e per giunta non si può premere. (Prima c'era sempre, per far
+// capire nell'editor che i menù possono essere più d'uno: didattica pagata dal
+// cliente al tavolo, che di quel ripasso non sa che farsene.)
 import { fill, useI18n } from '@/lib/i18n';
 import { ALLERGENS, allergenName } from '@/lib/allergens';
 import { DIETS, dietNeedName } from '@/lib/diets';
@@ -104,6 +109,7 @@ export default function MenuPreview({
 
         {/* Le linguette: quella aperta è piena, le altre restano leggibili.
             Nell'anteprima non si cambiano — si sta guardando questo menù. */}
+        {siblings.length > 1 && (
         <div className="-mx-4 mt-3 flex gap-1.5 overflow-x-auto px-4 pb-0.5">
           {siblings.map((m) => {
             const attivo = m.id === menu.id;
@@ -115,11 +121,12 @@ export default function MenuPreview({
                 }`}
                 style={attivo ? { color: accent } : undefined}
               >
-                {m.name.trim() || d.menus.defaultName}
+                {m.name.trim() || d.menus.genericTab}
               </span>
             );
           })}
         </div>
+        )}
       </div>
 
       {/* IL FILTRO. È la ragione per cui questo menù non è come gli altri

@@ -50,7 +50,7 @@ export default function DishForm({
   onSave: (dish: Omit<Dish, 'id'>) => void;
   onCancel: () => void;
   // sezione in coda ai campi, prima della nota legale: il gestionale ci
-  // mette le caselle "In vetrina"
+  // mette le caselle "Sulle schede"
   children?: React.ReactNode;
 }) {
   const { d, locale } = useI18n();

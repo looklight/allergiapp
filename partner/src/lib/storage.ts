@@ -1,7 +1,7 @@
 'use client';
 
-// Il livello che parla col database, condiviso da vetrine e catalogo.
-// Qui non si sa cosa siano una vetrina o un piatto: si carica una lista, si
+// Il livello che parla col database, condiviso da locali e catalogo.
+// Qui non si sa cosa siano un locale o un piatto: si carica una lista, si
 // aspetta che arrivi, e si avvisa chi la sta mostrando quando cambia.
 //
 // Fino al 30/08 al posto di Supabase c'era il localStorage. La differenza che
@@ -29,15 +29,15 @@ export async function currentUserId(): Promise<string | null> {
 // ------------------------------------------------------------------
 // LE LISTE LETTE DAL DATABASE, IN UN POSTO SOLO
 //
-// Prima ogni componente che chiamava useDishes o useShowcases faceva la SUA
+// Prima ogni componente che chiamava useDishes o useVenues faceva la SUA
 // interrogazione: aprire /piatti ne faceva tre, due delle quali identiche —
-// la pagina e la barra laterale chiedevano le stesse vetrine — e aprire la
+// la pagina e la barra laterale chiedevano gli stessi locali — e aprire la
 // scheda di un piatto ne aggiungeva una quarta che rileggeva l'intero
 // catalogo con tutte le traduzioni. Adesso la lista è una, e chi la guarda
 // ci si affaccia.
 //
 // Ne è sparita anche la sveglia: c'era un evento del browser per dire alla
-// barra laterale di rileggere quando nasceva o spariva una vetrina. Con una
+// barra laterale di rileggere quando nasceva o spariva un locale. Con una
 // lista sola non serve più, perché chi la cambia la cambia per tutti — ed è
 // pure più veloce, visto che prima significava tornare al server.
 // ------------------------------------------------------------------
@@ -141,7 +141,7 @@ export function useRemoteList<T>(chiave: string, carica: () => Promise<T[]>) {
 
 // Salvataggio che aspetta la fine della battitura.
 //
-// Nell'editor della vetrina ogni tasto premuto cambia la bozza: sul
+// Nell'editor del locale ogni tasto premuto cambia la bozza: sul
 // localStorage era gratis, su un database sarebbe una richiesta per carattere.
 // Qui lo stato dell'interfaccia si aggiorna subito e la scrittura parte dopo
 // una pausa — con `flush()` da chiamare quando si lascia la pagina, o l'ultima

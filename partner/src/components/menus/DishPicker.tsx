@@ -14,7 +14,7 @@ import { useModal } from '@/lib/useModal';
 import { dishThumb, type Dish } from '@/lib/dishes';
 
 // Sotto questa soglia il catalogo si guarda tutto con un colpo d'occhio e la
-// ricerca sarebbe un ingombro. Stessa soglia dell'editor della vetrina.
+// ricerca sarebbe un ingombro. Stessa soglia dell'editor del locale.
 const SEARCH_FROM = 12;
 
 export default function DishPicker({

@@ -4,7 +4,7 @@ import Shell from '@/components/Shell';
 
 export const metadata: Metadata = {
   title: 'AllergiApp Partner',
-  description: 'Gestisci le vetrine del tuo locale su AllergiApp.',
+  description: 'Il portale dei ristoratori: i menù al tavolo e la scheda su AllergiApp.',
   // portale in test: v. src/app/robots.ts
   robots: { index: false, follow: false },
   // Installabile su home screen. I file stanno in public/.

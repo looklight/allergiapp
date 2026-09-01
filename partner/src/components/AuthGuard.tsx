@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import PartnerOnboarding from './PartnerOnboarding';
-import { loadPartnerProfile } from '@/lib/partnerProfile';
+import { loadPartnerProfile, PartnerProfileProvider, type PartnerProfile } from '@/lib/partnerProfile';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -14,6 +14,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Il profilo partner ora è una riga sul database, quindi va chiesto e
   // aspettato: 'chiedendo' finché non si sa, e non si può indovinare
   const [profile, setProfile] = useState<'chiedendo' | 'assente' | 'presente'>('chiedendo');
+  // La riga letta, non solo il suo esserci: la home saluta per nome e non
+  // deve richiederla al database (v. PartnerProfileProvider)
+  const [fields, setFields] = useState<PartnerProfile | null>(null);
   const userId = session?.user?.id;
 
   useEffect(() => {
@@ -27,7 +30,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     let annullato = false;
     setProfile('chiedendo');
     loadPartnerProfile(userId).then((p) => {
-      if (!annullato) setProfile(p ? 'presente' : 'assente');
+      if (annullato) return;
+      setFields(p);
+      setProfile(p ? 'presente' : 'assente');
     });
     return () => {
       annullato = true;
@@ -64,5 +69,5 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return <PartnerOnboarding session={session} onCreated={onCreated} />;
   }
 
-  return <>{children}</>;
+  return <PartnerProfileProvider value={fields}>{children}</PartnerProfileProvider>;
 }

@@ -5,10 +5,11 @@
 //
 // È il cancello VERO del portale, non più di percorso: tutte le tabelle
 // partner hanno la chiave esterna verso partner_accounts, quindi senza
-// questa riga il database rifiuta vetrine e piatti — e la riga è protetta
+// questa riga il database rifiuta locali e piatti — e la riga è protetta
 // da RLS, quindi nessuno può fabbricarsene una per conto d'altri.
 // Prima del 30/08 stava nei metadati dell'utente, che il client può
 // riscriversi: andava bene finché non c'erano dati veri dietro.
+import { createContext, useContext } from 'react';
 import { supabase } from './supabase';
 
 export interface PartnerProfileFields {
@@ -67,4 +68,22 @@ export async function loadPartnerProfile(userId: string): Promise<PartnerProfile
     phone: data.phone,
     marketing: data.marketing_consent,
   };
+}
+
+
+// ------------------------------------------------------------------
+// IL PROFILO A DISPOSIZIONE DELLE SCHERMATE
+//
+// L'AuthGuard il profilo lo legge già — è il cancello del portale — e finora
+// ne teneva solo il sì/no. La home saluta per nome, e farle rifare la stessa
+// interrogazione sarebbe una richiesta in più per un dato che è già in casa.
+// Nessun caricamento qui dentro: chi entra è passato dal guard, quindi il
+// profilo c'è per forza.
+// ------------------------------------------------------------------
+const PartnerProfileContext = createContext<PartnerProfile | null>(null);
+
+export const PartnerProfileProvider = PartnerProfileContext.Provider;
+
+export function usePartnerProfile(): PartnerProfile | null {
+  return useContext(PartnerProfileContext);
 }

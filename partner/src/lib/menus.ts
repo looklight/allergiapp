@@ -33,7 +33,7 @@ export interface MenuSection {
 
 export interface Menu {
   id: string;
-  showcaseId: string;
+  venueId: string;
   name: string; // "Carta", "Pranzo", "Bevande"
   currency: string; // ISO 4217, sul MENÙ e non sulla riga
   // Le righe fuori sezione stanno in cima, come i piatti senza categoria nel
@@ -136,7 +136,7 @@ function toMenu(row: any): Menu {
   });
   return {
     id: row.id,
-    showcaseId: row.venue_id,
+    venueId: row.venue_id,
     name: row.name ?? '',
     currency: row.currency ?? 'EUR',
     loose: righe.filter((r: any) => r.section_id === null).map(item),
@@ -272,7 +272,7 @@ export function useMenus() {
       if (!ownerId) return null;
       const menu: Menu = {
         id: nuovoId(),
-        showcaseId: venueId,
+        venueId,
         name,
         currency: 'EUR',
         loose: [],
@@ -307,7 +307,63 @@ export function useMenus() {
     [menus, setList]
   );
 
-  return { menus, create, remove };
+  // Eliminando un LOCALE il database si porta via anche i suoi menù (cascata
+  // della 704). Qui si toglie dalla lista in memoria quello che là è già
+  // sparito: senza, la pagina Menù continuerebbe a mostrare i menù di un
+  // locale che non c'è più finché qualcuno non ricarica.
+  const forgetVenue = useCallback(
+    (venueId: string) => {
+      setList((menus ?? []).filter((menu) => menu.venueId !== venueId));
+    },
+    [menus, setList]
+  );
+
+  // …e annullando quell'eliminazione i menù devono tornare, o l'annulla
+  // sarebbe una bugia: rimetterebbe in piedi il locale e lascerebbe perso il
+  // lavoro vero, che è la carta con le sue sezioni e i suoi prezzi.
+  // Il LOCALE va ripristinato PRIMA: la chiave esterna della 704 rifiuta un
+  // menù appeso a un locale che non esiste.
+  const restore = useCallback(
+    async (daRimettere: Menu[]) => {
+      if (daRimettere.length === 0) return;
+      const ownerId = await currentUserId();
+      if (!ownerId) return;
+      const { error } = await write('ripristino menù', () =>
+        supabase.from('partner_menus').insert(
+          daRimettere.map((menu, i) => ({
+            id: menu.id,
+            venue_id: menu.venueId,
+            owner_user_id: ownerId,
+            name: menu.name,
+            currency: menu.currency,
+            sort_order: i,
+          }))
+        )
+      );
+      if (error) return;
+      // Sezioni e righe le riscrive saveMenu, che scrive per id: gli stessi
+      // di prima, quindi tornano i menù di prima e non delle copie.
+      for (const menu of daRimettere) await saveMenu(menu);
+      setList([...(menus ?? []), ...daRimettere]);
+    },
+    [menus, setList]
+  );
+
+  // Rinomina secca, senza passare dall'editor: serve alla finestra del nuovo
+  // menù, che deve poter battezzare anche quello che c'era già (v. sotto).
+  const rename = useCallback(
+    async (id: string, name: string) => {
+      setList((menus ?? []).map((menu) => (menu.id === id ? { ...menu, name } : menu)));
+      await write(
+        'rinomina menù',
+        () => supabase.from('partner_menus').update({ name }).eq('id', id),
+        `menu-nome:${id}`
+      );
+    },
+    [menus, setList]
+  );
+
+  return { menus, create, remove, rename, forgetVenue, restore };
 }
 
 export function useMenu(id: string) {

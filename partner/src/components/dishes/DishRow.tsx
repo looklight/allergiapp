@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { dishThumb } from '@/lib/dishes';
 import type { Dish } from '@/lib/dishes';
-import type { Showcase } from '@/lib/showcases';
+import type { Venue } from '@/lib/venues';
 import { allergenName } from '@/lib/allergens';
 import { dietName } from '@/lib/diets';
 import { categoryName } from '@/lib/categories';
@@ -40,17 +40,17 @@ function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
 
 export default function DishRow({
   dish,
-  showcases,
+  venues,
   on,
   onToggle,
   onEdit,
   onDelete,
 }: {
   dish: Dish;
-  // le vetrine in cui il piatto è acceso, non tutte quelle del partner
-  showcases: Showcase[];
-  // acceso nella vetrina a cui si riferisce la colonna; null = il partner non
-  // ha ancora vetrine, quindi non c'è niente da accendere e la colonna non c'è
+  // i locali sulla cui scheda il piatto è acceso, non tutti quelli del partner
+  venues: Venue[];
+  // acceso sulla scheda a cui si riferisce la colonna; null = il partner non
+  // ha ancora locali, quindi non c'è niente da accendere e la colonna non c'è
   on: boolean | null;
   onToggle: () => void;
   onEdit: () => void;
@@ -62,13 +62,13 @@ export default function DishRow({
   // tabella una colonna di paragrafi
   const [allTags, setAllTags] = useState(false);
 
-  // Con una vetrina sola il nome dice più del numero; da due in su non ci sta
-  const showcaseLabel =
-    showcases.length === 0
+  // Con un locale solo il nome dice più del numero; da due in su non ci sta
+  const venueLabel =
+    venues.length === 0
       ? '—'
-      : showcases.length === 1
-        ? showcases[0].venueName.trim() || d.home.unnamed
-        : `${showcases.length} ${d.dishes.showcaseCount}`;
+      : venues.length === 1
+        ? venues[0].venueName.trim() || d.home.unnamed
+        : `${venues.length} ${d.dishes.listingCount}`;
   const category = dish.category === '' ? '' : categoryName(dish.category, locale);
   // Allergeni contenuti e compatibilità dichiarate, nello stesso ordine in cui
   // stanno nella maschera: prima cosa c'è dentro, poi per chi va bene
@@ -111,8 +111,8 @@ export default function DishRow({
 
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      {/* Spento in questa vetrina: la foto si smorza come nella griglia della
-          vetrina, così scorrendo la tabella si distingue cosa è in scheda
+      {/* Spento su questa scheda: la foto si smorza come nella griglia del
+          locale, così scorrendo la tabella si distingue cosa è in scheda
           senza dover leggere ogni interruttore */}
       {dish.photoUrl !== '' ? (
         <img
@@ -142,7 +142,7 @@ export default function DishRow({
         <p className="mt-0.5 truncate text-xs text-gray-400 md:hidden">
           {category === '' ? d.dishes.noCategory : category}
           {' · '}
-          {showcases.length === 0 ? d.dishes.inNoShowcase : showcaseLabel}
+          {venues.length === 0 ? d.dishes.onNoListing : venueLabel}
         </p>
       </button>
 
@@ -199,7 +199,7 @@ export default function DishRow({
         )}
       </span>
 
-      {/* L'interruttore vale per UNA vetrina, quella che la pagina indica
+      {/* L'interruttore vale per UNA scheda, quella che la pagina indica
           sopra la tabella: acceso qui non vuol dire acceso ovunque. Dove sta
           altrove lo dicono la riga sotto al nome e la maschera. */}
       {on !== null && (

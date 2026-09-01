@@ -1,12 +1,12 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
-import { dishThumb, showcaseDishes, useDishes } from '@/lib/dishes';
-import { hasBooking, normalizeUrl, useShowcases, type ShowcaseDraft } from '@/lib/showcases';
+import { dishThumb, venueDishes, useDishes } from '@/lib/dishes';
+import { hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
@@ -228,11 +228,11 @@ function MobilePreview({
   );
 }
 
-export default function ShowcaseEditorPage() {
+export default function VenueEditorPage() {
   const { d, locale } = useI18n();
   const params = useParams<{ id: string }>();
-  const { showcases, update, setDishOn } = useShowcases();
-  // Il catalogo è del partner: la vetrina dice solo quali piatti sono accesi
+  const { venues, update, setDishOn } = useVenues();
+  // Il catalogo è del partner: la scheda dice solo quali piatti sono accesi
   const { dishes: catalog } = useDishes();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [dishQuery, setDishQuery] = useState('');
@@ -263,13 +263,26 @@ export default function ShowcaseEditorPage() {
     website: d.editor.websiteHint,
   };
 
-  const showcase = showcases?.find((s) => s.id === params.id);
+  // La panoramica manda qui con #link o #scheda. Quando la navigazione
+  // arriva, però, la pagina sta ancora leggendo dal database e il bersaglio
+  // non esiste: il browser non ha su cosa saltare e si resta in cima. Quindi
+  // si salta quando i dati ci sono — UNA volta sola, o ogni salvataggio
+  // (che rifà la lista) riporterebbe la pagina su per conto suo.
+  const saltoFatto = useRef(false);
+  useEffect(() => {
+    if (saltoFatto.current || !venues || !catalog) return;
+    saltoFatto.current = true;
+    const bersaglio = window.location.hash.slice(1);
+    if (bersaglio !== '') document.getElementById(bersaglio)?.scrollIntoView({ block: 'start' });
+  }, [venues, catalog]);
+
+  const venue = venues?.find((s) => s.id === params.id);
 
   // Prima lettura di localStorage ancora in corso
-  if (!showcases || !catalog) {
+  if (!venues || !catalog) {
     return <p className="text-sm text-gray-500">{d.common.loading}</p>;
   }
-  if (!showcase) {
+  if (!venue) {
     return (
       <div>
         <p className="mb-3 text-sm text-gray-600">{d.home.notFound}</p>
@@ -280,9 +293,9 @@ export default function ShowcaseEditorPage() {
     );
   }
 
-  const draft: ShowcaseDraft = showcase;
-  const showcaseId = showcase.id;
-  const setDraft = (next: ShowcaseDraft) => update(showcaseId, next);
+  const draft: VenueDraft = venue;
+  const venueId = venue.id;
+  const setDraft = (next: VenueDraft) => update(venueId, next);
 
   function setBooking(patch: Partial<{ url: string; phone: string }>) {
     setDraft({ ...draft, links: { ...draft.links, booking: { ...draft.links.booking, ...patch } } });
@@ -396,7 +409,7 @@ export default function ShowcaseEditorPage() {
   }
 
   // Tutto il catalogo, accesi e spenti: se mostrasse solo gli accesi, una
-  // vetrina nuova non avrebbe niente da accendere. Con un catalogo lungo
+  // scheda nuova non avrebbe niente da accendere. Con un catalogo lungo
   // però trovare un piatto da accendere significa scorrere un muro, e la
   // ricerca lo riduce a quello che si sta cercando.
   const dishSearch = dishQuery.trim().toLowerCase();
@@ -420,7 +433,7 @@ export default function ShowcaseEditorPage() {
     }));
   }
 
-  const preview = <SchedaPreview draft={draft} dishes={showcaseDishes(catalog, draft)} viewer={viewer} />;
+  const preview = <SchedaPreview draft={draft} dishes={venueDishes(catalog, draft)} viewer={viewer} />;
 
   return (
     // Scorre la pagina, non un pannello interno: così niente bordi che
@@ -437,7 +450,12 @@ export default function ShowcaseEditorPage() {
           </svg>
           {d.home.backToList}
         </Link>
-        <div className="mb-2 flex items-center gap-3">
+        {/* Di CHI è questa scheda, sopra al titolo: il portale ne regge più
+            d'una e "Scheda AllergiApp" da solo non dice di quale locale */}
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          {venue.venueName.trim() || d.home.unnamed}
+        </p>
+        <div className="mb-2 mt-1 flex items-center gap-3">
           <h1 className="text-xl font-semibold md:text-2xl">{d.editor.title}</h1>
           <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
             {d.editor.draftBadge}
@@ -452,8 +470,10 @@ export default function ShowcaseEditorPage() {
         </Link>
 
         <div className="space-y-4">
-          {/* Link */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          {/* Link. L'id è il bersaglio della panoramica: da lì "Modifica"
+              deve arrivare QUI e non in cima alla pagina, o si atterra su una
+              schermata lunga senza sapere cosa si era chiesto. */}
+          <div id="link" className="scroll-mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="mb-1 font-medium text-gray-900">{d.editor.linksTitle}</h2>
             <p className="mb-4 text-xs text-gray-500">{d.editor.linksHint}</p>
             {activeKinds.length > 0 && (
@@ -717,10 +737,10 @@ export default function ShowcaseEditorPage() {
             )}
           </div>
 
-          {/* Piatti: qui si sceglie solo cosa mostrare in questa vetrina.
+          {/* Piatti: qui si sceglie solo cosa mostrare su questa scheda.
               Il piatto in sé (foto, allergeni, categoria) si cura nel
-              gestionale, che è del partner e non della singola vetrina. */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+              gestionale, che è del partner e non del singolo locale. */}
+          <div id="scheda" className="scroll-mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-1 flex items-start justify-between gap-3">
               <h2 className="font-medium text-gray-900">{d.editor.dishesTitle}</h2>
               <Link
@@ -732,7 +752,24 @@ export default function ShowcaseEditorPage() {
             </div>
             <p className="mb-4 text-xs text-gray-500">{d.editor.dishesHint}</p>
 
-            {catalog.length === 0 ? (
+            {/* Senza scheda non c'è nessun posto dove accendere un piatto
+                (Tema 16): la griglia non si mostra spenta, si mostra il
+                motivo e la strada per averla. Prima si spuntavano piatti e
+                non succedeva niente. */}
+            {venue.cardId === null ? (
+              <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
+                <p className="text-sm text-gray-600">{d.dishes.needsCard}</p>
+                {/* Etichetta diversa da quella in cima alla pagina, che porta
+                    allo stesso posto: là si spiega come funziona, qui si va a
+                    farlo. Lo stesso testo due volte sembrerebbe un doppione. */}
+                <Link
+                  href="/abbonamenti"
+                  className="mt-3 inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                >
+                  {d.dashboard.cardLink}
+                </Link>
+              </div>
+            ) : catalog.length === 0 ? (
               <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
                 <p className="text-sm font-medium text-gray-900">{d.dishes.empty}</p>
                 <p className="mt-1 text-sm text-gray-500">{d.dishes.emptyHint}</p>
@@ -788,7 +825,7 @@ export default function ShowcaseEditorPage() {
                                 type="button"
                                 role="switch"
                                 aria-checked={on}
-                                onClick={() => setDishOn(showcaseId, dish.id, !on)}
+                                onClick={() => setDishOn(venueId, dish.id, !on)}
                                 className="flex flex-col items-center gap-1.5"
                               >
                                 <span className="relative block">

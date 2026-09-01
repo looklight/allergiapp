@@ -1,10 +1,10 @@
 'use client';
 
 // Il pannello che entra da destra col piatto da creare o correggere. Tiene
-// anche la scelta delle vetrine, che si applica solo al salvataggio: chiudere
+// anche la scelta delle schede, che si applica solo al salvataggio: chiudere
 // senza salvare non deve lasciare in giro un piatto acceso a metà.
 //
-// Le vetrine sono FACOLTATIVE: aprendo la maschera dal menù non c'entrano
+// Le schede sono FACOLTATIVE: aprendo la maschera dal menù non c'entrano
 // niente — lì il piatto sta per essere messo in una sezione, non acceso su
 // una scheda — e mostrarle sarebbe una domanda fuori posto a cui rispondere
 // mentre si sta facendo altro.
@@ -12,26 +12,30 @@ import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import type { Dish } from '@/lib/dishes';
-import type { Showcase } from '@/lib/showcases';
+import type { Venue } from '@/lib/venues';
 import DishForm from './DishForm';
 
 export default function DishPanel({
   dish,
-  showcases,
-  initialShowcaseIds,
+  venues,
+  initialVenueIds,
   onSave,
   onClose,
 }: {
   // assente = piatto nuovo
   dish?: Dish;
-  // tutte le vetrine del partner, accese o no; assenti = non si chiedono
-  showcases?: Showcase[];
-  initialShowcaseIds?: string[];
-  onSave: (data: Omit<Dish, 'id'>, showcaseIds: string[]) => void;
+  // tutti i locali del partner, accesi o no; assenti = non si chiedono
+  venues?: Venue[];
+  initialVenueIds?: string[];
+  onSave: (data: Omit<Dish, 'id'>, venueIds: string[]) => void;
   onClose: () => void;
 }) {
   const { d } = useI18n();
-  const [inShowcases, setInShowcases] = useState<string[]>(initialShowcaseIds ?? []);
+  const [inVenues, setInVenues] = useState<string[]>(initialVenueIds ?? []);
+  // Le caselle sono i posti in cui il piatto può DAVVERO comparire: senza
+  // scheda AllergiApp non c'è niente da spuntare, e una casella che si
+  // spunta senza che succeda nulla è peggio di una casella che non c'è
+  const conScheda = (venues ?? []).filter((s) => s.cardId !== null);
   const panel = useModal<HTMLDivElement>(onClose);
   const titleId = useId();
 
@@ -65,26 +69,31 @@ export default function DishPanel({
           </button>
         </div>
 
-        <DishForm initial={dish} onSave={(data) => onSave(data, inShowcases)} onCancel={onClose}>
-          {/* Dove appare il piatto: stesso stato del toggle sulla vetrina */}
-          {showcases !== undefined && (
+        <DishForm initial={dish} onSave={(data) => onSave(data, inVenues)} onCancel={onClose}>
+          {/* Dove appare il piatto: stesso stato del toggle sulla scheda */}
+          {venues !== undefined && (
           <div className="border-t border-gray-200 pt-3">
             <label className="mb-1 block text-sm font-medium text-gray-700">
-              {d.dishes.showcasesLabel}
+              {d.dishes.listingsLabel}
             </label>
-            {showcases.length === 0 ? (
-              <p className="text-xs text-gray-500">{d.dishes.noShowcases}</p>
+            {conScheda.length === 0 ? (
+              // Due vuoti diversi, e dirlo sbagliato manda dalla parte
+              // opposta: senza locali se ne crea uno, con locali ma senza
+              // scheda si associa il locale a un ristorante dell'app
+              <p className="text-xs text-gray-500">
+                {venues.length === 0 ? d.dishes.noVenues : d.dishes.needsCard}
+              </p>
             ) : (
               <>
-                <p className="mb-2 text-xs text-gray-500">{d.dishes.showcasesHint}</p>
+                <p className="mb-2 text-xs text-gray-500">{d.dishes.listingsHint}</p>
                 <div className="space-y-1.5">
-                  {showcases.map((s) => (
+                  {conScheda.map((s) => (
                     <label key={s.id} className="flex items-center gap-2 text-sm text-gray-700">
                       <input
                         type="checkbox"
-                        checked={inShowcases.includes(s.id)}
+                        checked={inVenues.includes(s.id)}
                         onChange={(e) =>
-                          setInShowcases((prev) =>
+                          setInVenues((prev) =>
                             e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id)
                           )
                         }

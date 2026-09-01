@@ -28,17 +28,136 @@ dentro l'app, che esiste **solo dopo il claim**. I link stanno sul locale —
 il numero per prenotare è lo stesso ovunque compaia. Il ragionamento per
 esteso è il Tema 16 di `../DIGITAL_MENU.md`.
 
-⚠️ **Due debiti aperti da questo cambio**, entrambi visibili a schermo:
+**La parola "vetrina" non esiste più** (rinomina fatta il 2026-08-31, dopo
+lo schema): il tipo è `Venue`, il modulo è `src/lib/venues.ts`, la rotta è
+`/locale/[id]` e le schermate dicono **locale** per il contenitore e
+**scheda AllergiApp** per quello che finisce nell'app. Non era un vezzo: la
+stessa riga si chiamava "Nome della vetrina" nell'editor e "Nome del locale"
+nel menù, e il ristoratore scriveva un'etichetta privata dove poi i clienti
+leggevano l'intestazione del menù al tavolo.
 
-1. **La rinomina non è stata fatta.** Nel codice il tipo si chiama ancora
-   `Showcase` e le schermate dicono ancora "Vetrina". È stato tenuto fuori di
-   proposito dal giro in cui il codice è stato rimesso in pari col database:
-   mescolare la riparazione di un guasto con un cambio di parole vuol dire
-   non sapere più quale dei due ha rotto cosa.
-2. **Gli interruttori "in vetrina" in `/piatti` non fanno niente.** I piatti
-   accesi ora pendono dalla scheda, che senza claim non esiste: `setDishOn`
-   esce senza scrivere (e senza fingere), ma il comando a schermo resta lì
-   senza spiegazione. Va disabilitato con un messaggio.
+⚠️ **Debito ancora aperto da questo cambio**, visibile a schermo: **gli
+interruttori "Sulla scheda" in `/piatti` non fanno niente.** I piatti accesi
+ora pendono dalla scheda, che senza claim non esiste: `setDishOn` esce senza
+scrivere (e senza fingere), ma il comando a schermo resta lì senza
+spiegazione. Va disabilitato con un messaggio.
+
+## La home è una home (2026-09-01)
+
+`/` non è più l'elenco delle vetrine, e la voce di menù non si chiama più
+"Locali" — che è il nome di un archivio, non di una home. Adesso:
+
+- **saluta per nome** (`Ciao Luca`) col profilo che l'`AuthGuard` legge già e
+  che prima buttava via: nessuna interrogazione in più, il profilo passa da un
+  contesto (`PartnerProfileProvider`);
+- dice **di quale locale** si sta parlando, col nome correggibile lì per lì —
+  è il nome che i clienti leggono in cima al menù, non un'etichetta interna —
+  e una tendina per cambiarlo **solo da due locali in su**, con la scelta
+  ricordata in `localStorage` (`partner-venue`);
+- mostra **le due cose** che il ristoratore può accendere, affiancate perché
+  sono pari: **menù al tavolo** e **scheda AllergiApp**, ognuna con stato,
+  contenuto e un bottone;
+- offre le **azioni rapide** (`/piatti?nuovo`, `/menu?nuovo`, i link della
+  scheda), che portano dove la cosa succede — la maschera già aperta — non
+  alla pagina che la contiene;
+- tiene il **catalogo piatti** fuori dalle due, in una riga più leggera: è il
+  substrato del partner, non una terza cosa da accendere.
+
+**Le cose sono DUE, non tre.** I link e i contatti non sono una cosa a sé:
+si definiscono dentro la **scheda AllergiApp**, che è la pagina `/locale/[id]`
+(decisione dell'utente, 01/09 — v. `../DIGITAL_MENU.md`, nota al Tema 16). Sul
+**database** restano appesi al locale, perché domani serviranno anche al menù
+pubblico: è il posto in cui si modificano che è uno solo.
+
+**Creando un locale si RESTA sulla home.** Prima si finiva dritti nella scheda
+AllergiApp, cioè in una schermata che parla dell'app: per la maggioranza dei
+ristoratori — quelli che vogliono il menù al tavolo — è la cosa sbagliata da
+mostrare per prima.
+
+Dettagli che sembrano arbitrari e non lo sono:
+- **Il menù è "da finire" se esiste ma è vuoto**: un menù senza piatti non è
+  pronto, è la carta bianca che si troverebbe davanti il cliente.
+- **Il pallino di stato non è mai da solo**: accanto c'è sempre la parola, o
+  chi non distingue i colori non legge niente.
+- **Il "+" sulle azioni rapide c'è solo dove si crea qualcosa**: su "Link e
+  contatti" prometterebbe una cosa nuova mentre si va a correggere le esistenti.
+- **`?nuovo` apre la maschera solo quando i dati sono arrivati.** Aprendola al
+  montaggio, la finestra del menù nasceva con le liste vuote e proponeva di
+  creare un locale nuovo a chi ce l'aveva già — visto nel browser e corretto.
+- **Dalla home il menù si crea SENZA finestra.** Il link è `/menu?nuovo=<id>`:
+  il locale lo sa già chi ci manda, e se non resta niente da chiedere — il
+  locale ha un nome e non ha ancora menù — il menù nasce e si apre l'editor.
+  La finestra torna solo quando c'è davvero una domanda: il nome del **secondo**
+  menù dello stesso locale (e lì il campo parte vuoto, non con "Carta" già
+  scritto, che è il nome del primo), o il nome del locale se è vuoto. In quel
+  caso non c'è la tendina: il locale è fissato (`fixed` su `NewMenuDialog`).
+- **Il parametro si consuma subito** (`history.replaceState`): senza, tornando
+  indietro dall'editor si ricadeva su `/menu?nuovo=…` e partiva un secondo
+  menù per sbaglio.
+- **Le linguette del menù si vedono da due menù in su** (`MenuPreview`): il
+  nome di un menù serve a distinguerlo da un altro, e con un menù solo è
+  un'etichetta che al cliente non dice niente.
+- **Il nome del menù si chiede solo quando serve — e non serve quasi mai.**
+  Un menù nuovo **nasce senza nome**, e nell'editor il campo **non compare**
+  finché il locale ha un menù solo (al suo posto c'è il titolo "Il tuo menù");
+  compare da due in su, o se un nome c'è già — altrimenti non ci sarebbe più
+  modo di correggerlo. La visibilità si decide **all'apertura della pagina** e
+  non segue il valore mentre si scrive, o cancellando l'ultima lettera il
+  campo sparirebbe sotto le dita. Il nome diventa obbligatorio nel **momento
+  esatto in cui inizia a distinguere qualcosa**: creando il secondo menù, e
+  lì la finestra chiede anche il nome di quello che c'era già, se non ce
+  l'ha (`useMenus().rename`, scritto **prima** di creare il secondo).
+- **Le tre etichette del nome vuoto sono tre cose diverse, di proposito**:
+  "Menù senza nome" nelle liste del portale (serve al ristoratore per
+  riconoscerlo), **"Menù"** nella linguetta al tavolo (la vede il cliente, e
+  "senza nome" sembrerebbe un difetto), "Il tuo menù" come titolo dell'editor
+  quando il menù è l'unico.
+- **Il nome non serve a niente sotto**: la colonna è `NOT NULL` ma la stringa
+  vuota è legittima, la chiave è l'`id`, sezioni e righe pendono da `menu_id`,
+  e lo slug dell'indirizzo pubblico verrà dal **locale** (Tema 13). È
+  un'etichetta, e basta.
+- **Storia**: c'era un `defaultName` ("Carta") che
+  faceva due mestieri: veniva **scritto** nel menù alla creazione e faceva da
+  ripiego dove il nome andava mostrato. Risultato: il ristoratore cancellava
+  un nome che non aveva scelto e al menù dopo se lo ritrovava uguale. Adesso
+  la creazione non scrive niente, e dove il nome serve per identificare il
+  menù (la riga in `/menu`, la finestra di eliminazione, la home) si legge
+  **"Menù senza nome"** — come "Locale senza nome", e senza fingere una scelta
+  che nessuno ha fatto. Il nome torna obbligatorio dal **secondo** menù dello
+  stesso locale, che è l'unico momento in cui serve davvero.
+- **È sparito il sottomenu dei locali nella barra laterale**: apriva la scheda
+  mentre la tendina della home cambia locale, e due comandi uguali che portano
+  in due posti diversi sono un modo di sbagliare.
+
+**La barra laterale (01/09)**: Home · Piatti · Menù · **Scheda AllergiApp** ·
+Account.
+- La voce **Scheda AllergiApp** punta al locale che si sta guardando, ed è lo
+  stesso che sceglie la tendina della home: la scelta vive in **uno stato
+  condiviso** (`useVenueChoice` in `lib/venues.ts`, stesso meccanismo delle
+  liste in `storage.ts`). Con due stati separati, cambiando locale dalla home
+  la barra avrebbe continuato a puntare al precedente. Senza locali la voce
+  non c'è, invece di esserci e non portare da nessuna parte.
+- Due etichette per quella voce (`nav.card` e `nav.cardShort`): sulla barra in
+  basso del telefono "Scheda AllergiApp" verrebbe tagliata a metà parola.
+- **Abbonamenti è finito dentro Account**, con il ritorno ad Account in cima
+  alla pagina e la voce Account che resta accesa quando ci si è dentro. Finché
+  è un tappo, una voce di primo livello prometteva una sezione che non c'è. I
+  richiami dalla home e dalla scheda ("Associa il locale") continuano a
+  portarci.
+
+**Statistiche: non esistono, ed è deliberato.** Non c'è niente da contare
+finché la pagina pubblica del menù non esiste e l'app non legge le tabelle
+`partner_*`: sarebbe una schermata di zeri. Quando ci sarà, la cosa da
+mostrare non sono le visite ma **quali esigenze filtrano i clienti al tavolo**
+— viene gratis dal filtro che il menù pubblico ha già, è aggregata, e nessun
+altro può darla a un ristoratore.
+
+**Eliminare un locale porta via i suoi menù**, per cascata della 704 — e non
+è un dettaglio del database: sezioni, ordine e prezzi sono il lavoro di un
+pomeriggio. La finestra di conferma li conta e lo dice **prima**, e l'annulla
+li rimette insieme al locale (`useMenus().restore`, che riscrive gli stessi
+id: tornano i menù di prima, non delle copie). L'ordine conta — prima il
+locale, poi i menù — o la chiave esterna della 704 li rifiuta.
 
 ## Sviluppo
 
@@ -77,7 +196,7 @@ server, `rm -rf .next`, e riavviando.
 ## Dove sta cosa
 
 - `src/lib/storage.ts` — il livello che legge dal database, e l'unico posto
-  che sa come. Le liste (catalogo e vetrine) stanno **in un posto solo e
+  che sa come. Le liste (catalogo e locali) stanno **in un posto solo e
   condiviso**: chi le guarda ci si affaccia, e chi le cambia le cambia per
   tutti. Prima ogni componente faceva la sua interrogazione — `/piatti` ne
   faceva tre, due identiche, più una quarta aprendo un piatto. Qui dentro
@@ -120,14 +239,14 @@ server, `rm -rf .next`, e riavviando.
   piatto", che apre la stessa maschera del gestionale), riga con prezzo e
   maniglia di trascinamento, aspetto del locale, anteprima pubblica col
   filtro allergeni, finestra di creazione.
-- `src/lib/dishes.ts` — il catalogo piatti, che è **del partner** e non della
-  vetrina: lo stesso piatto si accende in più locali senza duplicarsi.
-  Acceso/spento è uno stato della coppia piatto-vetrina, non del piatto.
+- `src/lib/dishes.ts` — il catalogo piatti, che è **del partner** e non del
+  locale: lo stesso piatto si accende su più schede senza duplicarsi.
+  Acceso/spento è uno stato della coppia piatto-scheda, non del piatto.
 - `src/components/dishes/` — maschera, riga della tabella, pannello laterale,
   finestra di eliminazione e **finestra del ritaglio** dei piatti.
 - `src/lib/useModal.ts` — comportamento comune di tutte le finestre: Esc,
   fuoco che entra e non esce col Tab, scorrimento della pagina bloccato.
-- Le pagine: `/` le vetrine, `/vetrina/[id]` l'editor con l'anteprima,
+- Le pagine: `/` la **home**, `/locale/[id]` la **scheda AllergiApp** (link, piatti, anteprima; ci si arriva anche dalla barra laterale),
   `/piatti` il gestionale del catalogo, `/menu` l'elenco dei menù,
   `/menu/[id]` l'editor col telefono a lato, `/menu/[id]/anteprima` la stessa
   anteprima a tutta pagina — che si apre in una scheda a parte e porta una
@@ -263,9 +382,9 @@ Nell'HTML iniziale c'è solo `Caricamento…`: il portale non disegna niente
 finché il JS non ha finito e la sessione non è stata ripristinata.
 
 **La cura è la sessione nei cookie (`@supabase/ssr`), e dal 2026-08-31 non
-è più bloccata**: il vincolo era che finché le vetrine stavano in
+è più bloccata**: il vincolo era che finché i locali stavano in
 localStorage il server non poteva comunque disegnare il contenuto, e quello
-scambio è fatto. Ora il server prenderebbe sessione dal cookie e vetrine dal
+scambio è fatto. Ora il server prenderebbe sessione dal cookie e locali dal
 database in un colpo solo. Tocca quattro file (`AuthGuard`, `login/page`,
 `account/page`, `PartnerOnboarding`). Dettagli e alternative scartate
 (alzare `jwt_exp`, togliere il muro, alleggerire il bundle) in `../TODO.md`,

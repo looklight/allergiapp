@@ -1,4 +1,4 @@
-// Tipi di link della vetrina: ordine, colori e icone sono gli stessi
+// Tipi di link del locale: ordine, colori e icone sono gli stessi
 // nell'editor (pill da attivare) e nella scheda dell'app (SchedaPreview),
 // così la pill che il ristoratore accende è quella che vedrà l'utente.
 import type { ReactNode } from 'react';

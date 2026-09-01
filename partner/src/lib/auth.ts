@@ -40,7 +40,7 @@ export function useAuthState(): AuthState {
       const id = session?.user.id ?? null;
       if (id !== utente.current) {
         utente.current = id;
-        // Vetrine, piatti e ogni altra convinzione erano di un'altra persona
+        // Locali, piatti e ogni altra convinzione erano di un'altra persona
         forgetServerState();
       }
       setState({ session, loading: false });

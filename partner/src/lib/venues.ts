@@ -4,16 +4,18 @@
 // AllergiApp. Dal 30/08 vive nelle tabelle partner_*; dal 31/08 la tabella si
 // chiama partner_venues (migration 703).
 //
-// ⚠️ Il tipo qui dentro si chiama ancora Showcase e le schermate dicono
-// ancora "vetrina": la rinomina è un passo a sé, deliberatamente separato da
-// questo — qui si è solo rimesso il codice in pari col database nuovo, e
-// mescolare un guasto da riparare con un cambio di parole vuol dire non
-// sapere più quale dei due ha rotto cosa.
+// La parola "vetrina" non esiste più, in nessuno dei due sensi in cui veniva
+// usata: il contenitore è il LOCALE (questo file), e quello che finisce
+// nell'app è la SCHEDA AllergiApp, che esiste solo dopo il claim. Erano la
+// stessa cosa per sbaglio, e la stessa riga si chiamava in due modi diversi
+// in due schermate — "Nome della vetrina" nell'editor, "Nome del locale" nel
+// menù — mentre il cliente al tavolo leggeva la seconda (Tema 16).
 //
 // COSA È CAMBIATO SOTTO (703): i piatti accesi non pendono più dal locale ma
 // dalla SCHEDA AllergiApp, che esiste solo dopo aver associato un ristorante.
 // Senza scheda non c'è niente da accendere, e `cardId` è null: le schermate
 // devono spegnere quei comandi invece di far scrivere a vuoto.
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
 import { write } from './saveState';
@@ -43,17 +45,19 @@ export interface DraftLinks {
   menus: MenuLink[];
 }
 
-export interface ShowcaseDraft {
-  // Nome che il partner dà alla vetrina per riconoscerla nella sua lista.
-  // NON è il nome del locale: quello arriva dalla scheda con il claim.
+export interface VenueDraft {
+  // Il nome del LOCALE. Non è un'etichetta privata: è quello che il cliente
+  // legge in cima al menù al tavolo, ed è l'unica fonte possibile per chi non
+  // farà mai il claim (Tema 16). Sulla scheda AllergiApp, invece,
+  // l'intestazione continua ad arrivare dal ristorante rivendicato.
   venueName: string;
-  // Piatti del catalogo accesi in questa vetrina. È l'UNICO stato di
-  // disponibilità: spegnerne uno qui non lo tocca nelle altre vetrine.
+  // Piatti del catalogo accesi sulla scheda di questo locale. È l'UNICO
+  // stato di disponibilità: spegnerne uno qui non lo tocca sulle altre schede.
   dishIds: string[];
   links: DraftLinks;
 }
 
-export interface Showcase extends ShowcaseDraft {
+export interface Venue extends VenueDraft {
   id: string;
   // L'identità che il cliente vede in cima al menù. Sta qui e non in un
   // modulo suo perché è la STESSA riga che questo file legge già: due
@@ -66,10 +70,10 @@ export interface Showcase extends ShowcaseDraft {
   cardId: string | null;
 }
 
-// La chiave del piatto acceso in una vetrina, condivisa fra accensione e
+// La chiave del piatto acceso su una scheda, condivisa fra accensione e
 // spegnimento (v. setDishOn)
-function acceso(showcaseId: string, dishId: string) {
-  return `in-vetrina:${showcaseId}:${dishId}`;
+function acceso(venueId: string, dishId: string) {
+  return `su-scheda:${venueId}:${dishId}`;
 }
 
 function emptyLinks(): DraftLinks {
@@ -137,9 +141,9 @@ function fromLinks(venueId: string, links: DraftLinks) {
   return righe;
 }
 
-// Una query sola con gli innesti: vetrine, i loro link e gli id dei piatti
+// Una query sola con gli innesti: locali, i loro link e gli id dei piatti
 // accesi. Le RLS mostrano solo le proprie, quindi non serve filtrare.
-async function loadShowcases(): Promise<Showcase[]> {
+async function loadVenues(): Promise<Venue[]> {
   // Un innesto in più rispetto a prima: i piatti accesi stanno sotto la
   // scheda, non sotto il locale. La scheda è al massimo una (indice unico
   // sul ristorante), quindi si prende la prima e basta.
@@ -165,7 +169,7 @@ async function loadShowcases(): Promise<Showcase[]> {
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-// Cosa è già stato scritto per ogni vetrina, per non riscrivere ciò che non è
+// Cosa è già stato scritto per ogni locale, per non riscrivere ciò che non è
 // cambiato. Scrivendo il nome si fa una pausa a ogni parola, e senza questo
 // ogni pausa porterebbe con sé anche la cancellazione e la riscrittura di
 // TUTTI i link, che non c'entrano niente. Parte vuota a ogni apertura: cosa
@@ -173,14 +177,14 @@ async function loadShowcases(): Promise<Showcase[]> {
 const ultimoSalvato = new Map<string, { nome: string; link: string }>();
 onForget(() => ultimoSalvato.clear());
 
-// Il contenuto di una vetrina si riscrive tutto: i link sono pochi, l'ordine
+// Il contenuto di un locale si riscrive tutto: i link sono pochi, l'ordine
 // conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.
 // Quello che si evita è riscrivere un blocco che non è stato toccato affatto.
-async function saveShowcaseContent(showcase: Showcase) {
-  const righe = fromLinks(showcase.id, showcase.links);
-  const nome = showcase.venueName;
+async function saveVenueContent(venue: Venue) {
+  const righe = fromLinks(venue.id, venue.links);
+  const nome = venue.venueName;
   const link = JSON.stringify(righe);
-  const precedente = ultimoSalvato.get(showcase.id);
+  const precedente = ultimoSalvato.get(venue.id);
   // Si segna come scritto solo ciò che il server ha accettato: dandolo per
   // buono a prescindere, una scrittura rifiutata verrebbe saltata anche la
   // volta dopo e il dato non arriverebbe mai
@@ -193,10 +197,10 @@ async function saveShowcaseContent(showcase: Showcase) {
         supabase
           .from('partner_venues')
           .update({ name: nome })
-          .eq('id', showcase.id),
+          .eq('id', venue.id),
       // Stessa chiave che usa rename() dalla lista: è lo stesso campo della
       // stessa riga, e fra due modi di scriverlo vale l'ultimo
-      `nome:${showcase.id}`
+      `nome:${venue.id}`
     );
     if (!error) fatto.nome = nome;
   }
@@ -204,30 +208,30 @@ async function saveShowcaseContent(showcase: Showcase) {
   if (precedente?.link !== link) {
     const { error: cancellati } = await write(
       'cancellazione link',
-      () => supabase.from('partner_links').delete().eq('venue_id', showcase.id),
-      `link-cancella:${showcase.id}`
+      () => supabase.from('partner_links').delete().eq('venue_id', venue.id),
+      `link-cancella:${venue.id}`
     );
     let scritti = null;
     if (righe.length > 0) {
       ({ error: scritti } = await write(
         'scrittura link',
         () => supabase.from('partner_links').insert(righe),
-        `link-scrivi:${showcase.id}`
+        `link-scrivi:${venue.id}`
       ));
     }
     if (!cancellati && !scritti) fatto.link = link;
   }
 
-  ultimoSalvato.set(showcase.id, fatto);
+  ultimoSalvato.set(venue.id, fatto);
 }
 
-// showcases è null finché la prima lettura non è tornata
-export function useShowcases() {
-  const { list: showcases, setList, reload } = useRemoteList('locali', loadShowcases);
+// venues è null finché la prima lettura non è tornata
+export function useVenues() {
+  const { list: venues, setList, reload } = useRemoteList('locali', loadVenues);
   // L'editor cambia la bozza a ogni tasto: si scrive dopo la pausa
-  const { schedule } = useDebouncedSave(saveShowcaseContent);
+  const { schedule } = useDebouncedSave(saveVenueContent);
 
-  async function create(venueName = ''): Promise<Showcase | null> {
+  async function create(venueName = ''): Promise<Venue | null> {
     const ownerId = await currentUserId();
     if (!ownerId) return null;
     const { data } = await write('creazione locale', () =>
@@ -238,7 +242,7 @@ export function useShowcases() {
         .single()
     );
     if (!data) return null;
-    const creata: Showcase = {
+    const creata: Venue = {
       id: data.id,
       venueName,
       logoUrl: '',
@@ -247,18 +251,18 @@ export function useShowcases() {
       dishIds: [],
       links: emptyLinks(),
     };
-    // La barra laterale elenca le vetrine e guarda questa stessa lista:
+    // La barra laterale elenca i locali e guarda questa stessa lista:
     // aggiornandola qui si aggiorna anche là, senza tornare al server
-    setList([...(showcases ?? []), creata]);
+    setList([...(venues ?? []), creata]);
     return creata;
   }
 
-  // Contenuto della vetrina: nome e link. NON tocca i piatti accesi, che
+  // Contenuto del locale: nome e link. NON tocca i piatti accesi, che
   // passano da setDishOn — l'editor non li cambia mai per questa strada.
-  function update(id: string, draft: ShowcaseDraft) {
+  function update(id: string, draft: VenueDraft) {
     // cardId non sta nella bozza (l'editor non lo tocca) e va conservato,
     // o salvando il nome si perderebbe la scheda associata
-    const next = (showcases ?? []).map((s) =>
+    const next = (venues ?? []).map((s) =>
       s.id === id ? { ...draft, id, cardId: s.cardId, logoUrl: s.logoUrl, accent: s.accent } : s
     );
     setList(next);
@@ -267,7 +271,7 @@ export function useShowcases() {
   }
 
   function rename(id: string, venueName: string) {
-    setList((showcases ?? []).map((s) => (s.id === id ? { ...s, venueName } : s)));
+    setList((venues ?? []).map((s) => (s.id === id ? { ...s, venueName } : s)));
     void write(
       'rinomina locale',
       () => supabase.from('partner_venues').update({ name: venueName }).eq('id', id),
@@ -279,8 +283,8 @@ export function useShowcases() {
   // Scrittura immediata e non ritardata — sono gesti singoli (scegli un
   // colore, carichi un logo), non una battitura continua. Il nome invece
   // passa da rename(), che la pausa ce l'ha già.
-  function setIdentity(id: string, next: Partial<Pick<Showcase, 'logoUrl' | 'accent'>>) {
-    setList((showcases ?? []).map((s) => (s.id === id ? { ...s, ...next } : s)));
+  function setIdentity(id: string, next: Partial<Pick<Venue, 'logoUrl' | 'accent'>>) {
+    setList((venues ?? []).map((s) => (s.id === id ? { ...s, ...next } : s)));
     const riga: Record<string, unknown> = {};
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
     if (next.accent !== undefined) riga.accent = next.accent;
@@ -292,41 +296,41 @@ export function useShowcases() {
   }
 
   function remove(id: string) {
-    setList((showcases ?? []).filter((s) => s.id !== id));
+    setList((venues ?? []).filter((s) => s.id !== id));
     void write('eliminazione locale', () =>
       supabase.from('partner_venues').delete().eq('id', id)
     );
   }
 
-  // Ripristino dopo l'undo: la vetrina torna com'era, id compreso, così i
+  // Ripristino dopo l'undo: il locale torna com'era, id compreso, così i
   // link e i piatti accesi si riattaccano alla stessa riga. Torna anche al
   // suo posto nella lista, perché l'ordine è quello di creazione.
-  async function restore(showcase: Showcase) {
+  async function restore(venue: Venue) {
     const ownerId = await currentUserId();
     if (!ownerId) return;
     await write('ripristino locale', () =>
       supabase
         .from('partner_venues')
         .insert({
-          id: showcase.id,
+          id: venue.id,
           owner_user_id: ownerId,
-          name: showcase.venueName,
-          logo_url: showcase.logoUrl || null,
-          accent: showcase.accent,
+          name: venue.venueName,
+          logo_url: venue.logoUrl || null,
+          accent: venue.accent,
         })
     );
-    const righe = fromLinks(showcase.id, showcase.links);
+    const righe = fromLinks(venue.id, venue.links);
     if (righe.length > 0) {
       await write('ripristino link', () => supabase.from('partner_links').insert(righe));
     }
     // I piatti accesi tornano sulla SCHEDA, non sul locale — e solo se la
     // scheda c'è ancora. Senza, non si perde niente di importante: i piatti
     // vivono nel catalogo, qui c'era solo dove comparivano.
-    if (showcase.cardId !== null && showcase.dishIds.length > 0) {
+    if (venue.cardId !== null && venue.dishIds.length > 0) {
       await write('ripristino piatti sulla scheda', () =>
         supabase.from('partner_card_dishes').insert(
-          showcase.dishIds.map((dishId) => ({
-            card_id: showcase.cardId,
+          venue.dishIds.map((dishId) => ({
+            card_id: venue.cardId,
             dish_id: dishId,
             owner_user_id: ownerId,
           }))
@@ -343,12 +347,12 @@ export function useShowcases() {
   //
   // Senza scheda non si scrive niente e non si finge che sia successo: chi
   // chiama deve aver già spento il comando (v. `cardId`).
-  async function setDishOn(showcaseId: string, dishId: string, on: boolean) {
-    const cardId = (showcases ?? []).find((s) => s.id === showcaseId)?.cardId ?? null;
+  async function setDishOn(venueId: string, dishId: string, on: boolean) {
+    const cardId = (venues ?? []).find((s) => s.id === venueId)?.cardId ?? null;
     if (cardId === null) return;
     setList(
-      (showcases ?? []).map((s) =>
-        s.id !== showcaseId
+      (venues ?? []).map((s) =>
+        s.id !== venueId
           ? s
           : {
               ...s,
@@ -369,7 +373,7 @@ export function useShowcases() {
           supabase
             .from('partner_card_dishes')
             .insert({ card_id: cardId, dish_id: dishId, owner_user_id: ownerId }),
-        acceso(showcaseId, dishId)
+        acceso(venueId, dishId)
       );
     } else {
       await write(
@@ -380,12 +384,12 @@ export function useShowcases() {
             .delete()
             .eq('card_id', cardId)
             .eq('dish_id', dishId),
-        acceso(showcaseId, dishId)
+        acceso(venueId, dishId)
       );
     }
   }
 
-  return { showcases, create, update, rename, remove, restore, setDishOn, setIdentity };
+  return { venues, create, update, rename, remove, restore, setDishOn, setIdentity };
 }
 
 // Indirizzo scritto senza schema (www.osteria.it): l'app non saprebbe
@@ -401,7 +405,7 @@ export function hasBooking(booking: BookingLink): boolean {
   return booking.url.trim() !== '' || booking.phone.trim() !== '';
 }
 
-// Quante pill compilate ha una vetrina (riga di riepilogo in lista):
+// Quante pill compilate ha un locale (riga di riepilogo in lista):
 // la prenotazione conta una volta anche con link e telefono insieme
 export function countLinks(links: DraftLinks): number {
   return (
@@ -410,4 +414,84 @@ export function countLinks(links: DraftLinks): number {
     links.deliveries.filter((del) => del.url.trim() !== '').length +
     links.menus.filter((menu) => menu.url.trim() !== '').length
   );
+}
+
+
+// ------------------------------------------------------------------
+// IL LOCALE CHE SI STA GUARDANDO
+//
+// Non è un dato del partner: è dove eravamo rimasti su QUESTA postazione,
+// quindi vive nel browser. Ma lo guardano in due — la home, che ha la tendina
+// per cambiarlo, e la barra laterale, che ci punta la voce "Scheda
+// AllergiApp" — e con due stati separati cambiando locale dalla home la barra
+// avrebbe continuato a puntare al precedente. Quindi UNO condiviso, come le
+// liste in storage.ts: chi lo cambia lo cambia per tutti.
+// ------------------------------------------------------------------
+const ULTIMO_LOCALE = 'partner-venue';
+
+let scelto: string | null = null;
+const ascoltatori = new Set<() => void>();
+
+function annuncia() {
+  for (const ascolta of ascoltatori) ascolta();
+}
+
+// Cambiando persona il locale ricordato è di un'altra: si dimentica con
+// tutto il resto (v. forgetServerState)
+onForget(() => {
+  scelto = null;
+  try {
+    localStorage.removeItem(ULTIMO_LOCALE);
+  } catch {
+    // storage negato: non c'era niente da dimenticare
+  }
+  annuncia();
+});
+
+export function useVenueChoice() {
+  const id = useSyncExternalStore(
+    (ascolta) => {
+      ascoltatori.add(ascolta);
+      return () => ascoltatori.delete(ascolta);
+    },
+    () => scelto,
+    // Sul server non c'è nessun browser da cui sapere dove eravamo rimasti,
+    // e rispondere diversamente qui vorrebbe dire due HTML che non combaciano
+    () => null
+  );
+
+  // La lettura sta in un effetto per la stessa ragione: il primo disegno
+  // deve essere identico a quello del server, poi si aggiusta
+  useEffect(() => {
+    if (scelto !== null) return;
+    try {
+      const salvato = localStorage.getItem(ULTIMO_LOCALE);
+      if (salvato) {
+        scelto = salvato;
+        annuncia();
+      }
+    } catch {
+      // navigazione privata: si parte dal primo locale
+    }
+  }, []);
+
+  const scegli = useCallback((venueId: string) => {
+    scelto = venueId;
+    try {
+      localStorage.setItem(ULTIMO_LOCALE, venueId);
+    } catch {
+      // se non si può ricordare, pazienza: la scelta vale per questa visita
+    }
+    annuncia();
+  }, []);
+
+  return { venueId: id, scegli };
+}
+
+// Il locale ricordato può non esistere più (eliminato, o di un'altra persona
+// dopo un cambio di account): in quel caso si ricade sul primo. Sta qui e non
+// nelle schermate perché la home e la barra laterale devono ricadere sullo
+// STESSO, o punterebbero a due locali diversi.
+export function currentVenue(venues: Venue[] | null, venueId: string | null): Venue | null {
+  return venues?.find((v) => v.id === venueId) ?? venues?.[0] ?? null;
 }

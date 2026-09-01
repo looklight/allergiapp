@@ -1,7 +1,7 @@
 'use client';
 
 // La conferma di un'eliminazione, con il titolo e il corpo scritti da chi la
-// apre. DeleteShowcaseDialog e DeleteDishDialog restano a sé perché ognuno
+// apre. DeleteVenueDialog e DeleteDishDialog restano a sé perché ognuno
 // mostra un riepilogo suo di cosa si perde; qui il riepilogo È il corpo, e i
 // due punti in cui serve nei menù (il menù, la sezione) avrebbero prodotto
 // due copie della stessa finestra.

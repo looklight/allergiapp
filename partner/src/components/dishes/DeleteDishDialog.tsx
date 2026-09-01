@@ -1,24 +1,24 @@
 'use client';
 
-// Conferma di eliminazione: come per le vetrine dice QUANTO si perde, e qui
+// Conferma di eliminazione: come per i locali dice QUANTO si perde, e qui
 // quello che conta è dove il piatto era acceso — cancellarlo dal catalogo lo
-// toglie da tutte le vetrine insieme, non solo da quella che si sta guardando.
+// toglie da tutte le schede insieme, e dai menù in cui l'avevi messo.
 // L'eliminazione resta comunque annullabile dal toast in lista.
 import { useId } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import type { Dish } from '@/lib/dishes';
-import type { Showcase } from '@/lib/showcases';
+import type { Venue } from '@/lib/venues';
 
 export default function DeleteDishDialog({
   dish,
-  showcases,
+  venues,
   onCancel,
   onConfirm,
 }: {
   dish: Dish;
-  // le vetrine in cui il piatto è acceso, non tutte quelle del partner
-  showcases: Showcase[];
+  // i locali sulla cui scheda il piatto è acceso, non tutti quelli del partner
+  venues: Venue[];
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -26,13 +26,13 @@ export default function DeleteDishDialog({
   const panel = useModal<HTMLDivElement>(onCancel);
   const titleId = useId();
 
-  // Con una o due vetrine i nomi ci stanno e dicono di più del numero
+  // Con uno o due locali i nomi ci stanno e dicono di più del numero
   const summary =
-    showcases.length === 0
-      ? d.dishes.inNoShowcase
-      : showcases.length <= 2
-        ? showcases.map((s) => s.venueName.trim() || d.home.unnamed).join(' · ')
-        : `${showcases.length} ${d.dishes.showcaseCount}`;
+    venues.length === 0
+      ? d.dishes.onNoListing
+      : venues.length <= 2
+        ? venues.map((s) => s.venueName.trim() || d.home.unnamed).join(' · ')
+        : `${venues.length} ${d.dishes.listingCount}`;
 
   return (
     <div

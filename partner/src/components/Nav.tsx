@@ -3,15 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
-import { useShowcases } from '@/lib/showcases';
+import { useVenues, useVenueChoice, currentVenue } from '@/lib/venues';
 
-function StorefrontIcon({ className }: { className?: string }) {
+function HomeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9l1.5-5h15L21 9" />
-      <path d="M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0" />
-      <path d="M4.5 11.5V20h15v-8.5" />
-      <path d="M9.5 20v-5h5v5" />
+      <path d="M3 10.5L12 3l9 7.5" />
+      <path d="M5.5 9.5V20h13V9.5" />
+      <path d="M9.75 20v-5.5h4.5V20" />
     </svg>
   );
 }
@@ -59,21 +58,40 @@ function UserIcon({ className }: { className?: string }) {
 export default function Nav() {
   const pathname = usePathname();
   const { d } = useI18n();
-  const { showcases } = useShowcases();
+  // La scheda è di UN locale: la voce punta a quello che si sta guardando,
+  // lo stesso che sceglie la tendina della home (v. useVenueChoice)
+  const { venues } = useVenues();
+  const { venueId } = useVenueChoice();
+  const venue = currentVenue(venues ?? null, venueId);
 
   const items = [
-    { href: '/', label: d.nav.showcase, Icon: StorefrontIcon },
-    { href: '/piatti', label: d.nav.dishes, Icon: PlateIcon },
-    { href: '/menu', label: d.nav.menus, Icon: MenuIcon },
-    { href: '/abbonamenti', label: d.nav.subscriptions, Icon: CardIcon },
-    { href: '/account', label: d.nav.account, Icon: UserIcon },
+    { href: '/', label: d.nav.home, short: d.nav.home, Icon: HomeIcon },
+    { href: '/piatti', label: d.nav.dishes, short: d.nav.dishes, Icon: PlateIcon },
+    { href: '/menu', label: d.nav.menus, short: d.nav.menus, Icon: MenuIcon },
+    // Senza locali non c'è nessuna scheda da aprire: la voce non c'è, invece
+    // di esserci e non portare da nessuna parte
+    ...(venue
+      ? [
+          {
+            href: `/locale/${venue.id}`,
+            label: d.nav.card,
+            short: d.nav.cardShort,
+            Icon: CardIcon,
+          },
+        ]
+      : []),
+    // Gli abbonamenti sono finiti DENTRO Account (01/09): finché sono un
+    // tappo, una voce di primo livello prometteva più di quanto c'è
+    { href: '/account', label: d.nav.account, short: d.nav.account, Icon: UserIcon },
   ];
 
   function isActive(href: string) {
-    // l'editor /vetrina/[id] appartiene alla voce "Vetrine"
-    return href === '/'
-      ? pathname === '/' || pathname.startsWith('/vetrina')
-      : pathname.startsWith(href);
+    if (href === '/') return pathname === '/';
+    // la scheda di QUALSIASI locale accende la voce, anche dopo un cambio
+    if (href.startsWith('/locale')) return pathname.startsWith('/locale');
+    // gli abbonamenti stanno dentro Account, quindi accendono Account
+    if (href === '/account') return pathname.startsWith('/account') || pathname.startsWith('/abbonamenti');
+    return pathname.startsWith(href);
   }
 
   return (
@@ -98,24 +116,10 @@ export default function Nav() {
                 <Icon className="h-5 w-5" />
                 {label}
               </Link>
-              {/* Sottomenu vetrine: solo navigazione, si crea/elimina dalla lista */}
-              {href === '/' && showcases && showcases.length > 0 && (
-                <div className="mt-1 space-y-0.5 pl-9">
-                  {showcases.map((s) => (
-                    <Link
-                      key={s.id}
-                      href={`/vetrina/${s.id}`}
-                      className={`block truncate rounded-md px-2 py-1.5 text-[13px] transition-colors ${
-                        pathname === `/vetrina/${s.id}`
-                          ? 'bg-gray-100 font-medium text-gray-900'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
-                    >
-                      {s.venueName.trim() || d.home.unnamed}
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {/* Qui c'era il sottomenu con l'elenco dei locali. È sparito con
+                  la panoramica: il locale si cambia dalla tendina in cima a
+                  "/", e due modi di cambiarlo che portano in due posti diversi
+                  (il sottomenu apriva l'editor) sono un modo di sbagliare. */}
             </div>
           ))}
         </nav>
@@ -124,7 +128,7 @@ export default function Nav() {
       {/* Bottom nav mobile */}
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-200 bg-white bottom-nav-safe md:hidden">
         <div className="flex h-16">
-          {items.map(({ href, label, Icon }) => (
+          {items.map(({ href, short, Icon }) => (
             <Link
               key={href}
               href={href}
@@ -137,7 +141,7 @@ export default function Nav() {
                   quanto "Abbonamenti": senza truncate l'etichetta andrebbe a
                   capo e la barra si alzerebbe sotto le icone. Meglio una
                   parola tagliata che una riga in più. */}
-              <span className="w-full truncate text-center">{label}</span>
+              <span className="w-full truncate text-center">{short}</span>
             </Link>
           ))}
         </div>

@@ -1,14 +1,14 @@
 'use client';
 
-// Il catalogo piatti del partner: sta SOPRA le vetrine, perché lo stesso
-// ristoratore con due locali riusa gli stessi piatti. La vetrina ne tiene
+// Il catalogo piatti del partner: sta SOPRA i locali, perché lo stesso
+// ristoratore con due locali riusa gli stessi piatti. La scheda ne tiene
 // solo gli id accesi, quindi da qui si scrive anche là — mai il contrario.
 // Dal 30/08 vive in partner_dishes invece che nel localStorage.
 import { supabase } from './supabase';
 import { currentUserId, reportError, useRemoteList } from './storage';
 import { write } from './saveState';
 import { deleteDishPhoto } from './photos';
-import type { Showcase, ShowcaseDraft } from './showcases';
+import type { Venue, VenueDraft } from './venues';
 
 export interface DishTranslation {
   language: string; // codice da MENU_LANGUAGES
@@ -158,7 +158,7 @@ export function useDishes() {
     await saveTranslations(id, data.translations, precedente?.translations ?? []);
   }
 
-  // Il piatto eliminato sparisce anche dalle vetrine in cui era acceso: se ne
+  // Il piatto eliminato sparisce anche dalle schede su cui era acceso: se ne
   // occupa il database con la cascata sull'accostamento.
   //
   // La FOTO invece resta, e non è una dimenticanza: per otto secondi
@@ -177,8 +177,8 @@ export function useDishes() {
   }
 
   // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
-  // nelle vetrine in cui era acceso prima.
-  async function restore(dish: Dish, _index: number, showcaseIds: string[]) {
+  // sulle schede su cui era acceso prima.
+  async function restore(dish: Dish, _index: number, venueIds: string[]) {
     const ownerId = await currentUserId();
     if (!ownerId) return;
     await write('ripristino piatto', () =>
@@ -189,7 +189,7 @@ export function useDishes() {
       })
     );
     await saveTranslations(dish.id, dish.translations);
-    await setDishShowcases(dish.id, showcaseIds);
+    await setDishVenues(dish.id, venueIds);
     await reload();
   }
 
@@ -203,7 +203,7 @@ export function useDishes() {
 // accesi stanno sulle SCHEDE (migration 703): la conversione si fa qui, in un
 // punto solo. Un locale senza scheda non produce nessuna riga — non c'è
 // ancora nessun posto in cui quel piatto potrebbe comparire.
-export async function setDishShowcases(dishId: string, venueIds: string[]) {
+export async function setDishVenues(dishId: string, venueIds: string[]) {
   const ownerId = await currentUserId();
   if (!ownerId) return;
 
@@ -248,14 +248,14 @@ export function catalogLanguages(dishes: Dish[]): string[] {
   return [...codes];
 }
 
-// Piatti accesi in una vetrina, nell'ordine del catalogo
-export function showcaseDishes(dishes: Dish[], showcase: ShowcaseDraft): Dish[] {
-  return dishes.filter((dish) => showcase.dishIds.includes(dish.id));
+// Piatti accesi su una scheda, nell'ordine del catalogo
+export function venueDishes(dishes: Dish[], venue: VenueDraft): Dish[] {
+  return dishes.filter((dish) => venue.dishIds.includes(dish.id));
 }
 
-// In quante vetrine un piatto è acceso (colonna del gestionale)
-export function showcasesWithDish(showcases: Showcase[], dishId: string): Showcase[] {
-  return showcases.filter((s) => s.dishIds.includes(dishId));
+// Su quante schede un piatto è acceso (colonna del gestionale)
+export function venuesWithDish(venues: Venue[], dishId: string): Venue[] {
+  return venues.filter((s) => s.dishIds.includes(dishId));
 }
 
 // L'indirizzo da usare dove la foto è piccola — righe, griglie, cerchi —

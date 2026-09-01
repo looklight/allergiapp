@@ -9,7 +9,7 @@
 // menù quello non è un dato impreciso: è una discussione al tavolo.
 //
 // Sta fuori da React apposta. Le scritture partono dal livello dati
-// (showcases.ts, dishes.ts), che non vive dentro nessun componente, e l'avviso
+// (venues.ts, dishes.ts), che non vive dentro nessun componente, e l'avviso
 // deve restare a schermo anche cambiando schermata.
 import { useSyncExternalStore } from 'react';
 import { onForget, reportError } from './storage';
@@ -80,7 +80,7 @@ export function useSaveState(): SaveState {
 //
 // `dove` è l'etichetta che finisce in console: dice quale scrittura è, non su
 // cosa. `chiave` invece identifica il BERSAGLIO, e serve solo alle scritture
-// che riscrivono per intero qualcosa di preciso — il nome di quella vetrina,
+// che riscrivono per intero qualcosa di preciso — il nome di quel locale,
 // le traduzioni di quel piatto. Fra due scritture con la stessa chiave l'ultima
 // vince: nell'editor si riscrive il contenuto intero a ogni pausa di battitura,
 // e rifare la vecchia dopo che l'utente ha continuato a scrivere rimetterebbe

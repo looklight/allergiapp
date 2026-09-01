@@ -17,7 +17,7 @@ import { useI18n } from '@/lib/i18n';
 import { useDishes } from '@/lib/dishes';
 import { useMenu, useMenus } from '@/lib/menus';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
-import { useShowcases } from '@/lib/showcases';
+import { useVenues } from '@/lib/venues';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
 
 export default function FullPreviewPage() {
@@ -25,7 +25,7 @@ export default function FullPreviewPage() {
   const { d } = useI18n();
   const { dishes } = useDishes();
   const { menus } = useMenus();
-  const { showcases } = useShowcases();
+  const { venues } = useVenues();
   const { menu, loading } = useMenu(id);
   const [needs, setNeeds] = useState<ViewerNeeds>(NO_NEEDS);
 
@@ -58,11 +58,11 @@ export default function FullPreviewPage() {
   }
 
 
-  const vetrina = (showcases ?? []).find((s) => s.id === menu.showcaseId) ?? null;
+  const locale = (venues ?? []).find((v) => v.id === menu.venueId) ?? null;
   const brand: MenuBrand = {
-    name: vetrina?.venueName ?? '',
-    logoUrl: vetrina?.logoUrl ?? '',
-    accent: vetrina?.accent ?? DEFAULT_ACCENT,
+    name: locale?.venueName ?? '',
+    logoUrl: locale?.logoUrl ?? '',
+    accent: locale?.accent ?? DEFAULT_ACCENT,
   };
 
   return (
@@ -89,7 +89,7 @@ export default function FullPreviewPage() {
         <div className="flex min-h-[calc(100dvh-1.75rem)] flex-col">
           <MenuPreview
             menu={menu}
-            siblings={(menus ?? []).filter((m) => m.showcaseId === menu.showcaseId)}
+            siblings={(menus ?? []).filter((m) => m.venueId === menu.venueId)}
             dishes={dishes ?? []}
             brand={brand}
             venueName={brand.name.trim() || d.preview.venueName}

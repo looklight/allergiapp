@@ -13,8 +13,8 @@ import { allergenName } from '@/lib/allergens';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
-import { hasBooking } from '@/lib/showcases';
-import type { DeliveryLink, ShowcaseDraft } from '@/lib/showcases';
+import { hasBooking } from '@/lib/venues';
+import type { DeliveryLink, VenueDraft } from '@/lib/venues';
 import { dishText, dishThumb } from '@/lib/dishes';
 import type { Dish } from '@/lib/dishes';
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';
@@ -418,17 +418,19 @@ export default function SchedaPreview({
   dishes,
   viewer = NO_VIEWER,
 }: {
-  draft: ShowcaseDraft;
-  // i piatti del catalogo accesi in questa vetrina, già nell'ordine giusto
+  draft: VenueDraft;
+  // i piatti del catalogo accesi su questa scheda, già nell'ordine giusto
   dishes: Dish[];
   viewer?: ViewerNeeds;
 }) {
   const { d, locale } = useI18n();
   const [screen, setScreen] = useState<'scheda' | 'menu'>('scheda');
   const [sheet, setSheet] = useState<'delivery' | 'booking' | null>(null);
-  // Il nome della vetrina NON è il nome del ristorante: nell'anteprima
-  // l'intestazione resta un nome di esempio, come indirizzo e recensioni.
-  // arrivano già filtrati: sono i piatti del catalogo accesi in questa vetrina
+  // Il nome del locale qui NON compare: sulla scheda l'intestazione arriva
+  // dal ristorante su AllergiApp, quindi resta un nome di esempio come
+  // l'indirizzo e le recensioni. Sul menù al tavolo, invece, quel nome è
+  // proprio quello che si legge in cima (Tema 16).
+  // arrivano già filtrati: sono i piatti del catalogo accesi su questa scheda
   const visibleDishes = dishes;
 
   if (screen === 'menu') {

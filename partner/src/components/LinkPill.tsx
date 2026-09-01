@@ -1,6 +1,6 @@
 'use client';
 
-// Pill di un link della vetrina, identica a quella della scheda nell'app:
+// Pill di un link del locale, identica a quella della scheda nell'app:
 // piena quando il link è attivo, in contorno quando è ancora da aggiungere.
 // `selected` è solo dell'editor: il link aperto in modifica si tinge pieno.
 import { LINK_COLORS, LINK_ICONS, type LinkKind } from '@/lib/linkKinds';

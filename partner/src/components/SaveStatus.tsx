@@ -4,8 +4,8 @@
 // arrivato al server.
 //
 // Sta nella Shell e non accanto al titolo dell'editor come si era pensato
-// all'inizio: le scritture partono da tre schermate diverse — l'editor della
-// vetrina, il gestionale dei piatti, la lista delle vetrine — e un
+// all'inizio: le scritture partono da tre schermate diverse — l'editor del
+// locale, il gestionale dei piatti, la lista dei locali — e un
 // salvataggio può fallire mentre si sta già guardando un'altra pagina.
 //
 // Due registri diversi, perché sono due notizie diverse:
@@ -24,7 +24,7 @@ import { retryFailed, useSaveState } from '@/lib/saveState';
 const DURATA_SALVATO_MS = 2500;
 
 // Quanto si aspetta, a richieste ferme, prima di dire "Salvato". Un
-// salvataggio non è UNA richiesta: salvare la vetrina ne fa tre in fila (il
+// salvataggio non è UNA richiesta: salvare il locale ne fa tre in fila (il
 // nome, i link cancellati, i link riscritti) e fra l'una e l'altra non c'è
 // niente in volo. Annunciando la fine a ogni buco, la scritta lampeggerebbe
 // tre volte per ogni pausa di battitura.

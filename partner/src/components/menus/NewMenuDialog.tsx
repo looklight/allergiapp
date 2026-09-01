@@ -15,23 +15,36 @@
 import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
-import type { Showcase } from '@/lib/showcases';
+import type { Venue } from '@/lib/venues';
+import type { Menu } from '@/lib/menus';
 
 // Valore della tendina che vuol dire "non è nessuno di questi"
 const NUOVO = 'nuovo';
 
 export default function NewMenuDialog({
   venues,
-  hasMenus,
+  fixed,
+  menusOf,
   onCancel,
   onCreate,
 }: {
-  venues: Showcase[];
-  // se quel locale ha già dei menù: da lì in poi il nome serve a distinguerli
-  hasMenus: (venueId: string) => boolean;
+  venues: Venue[];
+  // Il locale già deciso da chi ha aperto la finestra: dalla home ci si sta
+  // dentro, quindi la tendina non ha niente da chiedere. Resta solo quello
+  // che qui ancora manca — il nome del menù, o quello del locale se è vuoto.
+  fixed?: Venue | null;
+  // i menù di quel locale: da uno in su il nome serve a distinguerli, e se
+  // quello che c'è già non ce l'ha va chiesto adesso (v. senzaNome)
+  menusOf: (venueId: string) => Menu[];
   onCancel: () => void;
-  // venueId null = va creato, col nome scritto qui
-  onCreate: (venueId: string | null, venueName: string, menuName: string) => void;
+  // venueId null = va creato, col nome scritto qui.
+  // rename = il menù che c'era già, battezzato qui perché adesso serve.
+  onCreate: (
+    venueId: string | null,
+    venueName: string,
+    menuName: string,
+    rename?: { id: string; name: string }
+  ) => void;
 }) {
   const { d } = useI18n();
   const panel = useModal<HTMLDivElement>(onCancel);
@@ -41,24 +54,41 @@ export default function NewMenuDialog({
 
   // Con un locale solo si parte da quello: la tendina esiste per chi ne ha di
   // più, e a chi ne ha uno non deve chiedere niente.
-  const [scelto, setScelto] = useState<string>(venues[0]?.id ?? NUOVO);
+  const [scelto, setScelto] = useState<string>(fixed?.id ?? venues[0]?.id ?? NUOVO);
   const [nuovoNome, setNuovoNome] = useState('');
-  const [menuName, setMenuName] = useState(d.menus.defaultName);
+  // Vuoto, non "Carta": il nome si chiede SOLO quando c'è già un menù da cui
+  // distinguere questo, e proporre lo stesso nome del primo è il contrario di
+  // quello che serve
+  const [menuName, setMenuName] = useState('');
+  const [nomeEsistente, setNomeEsistente] = useState('');
 
   const locale = venues.find((v) => v.id === scelto) ?? null;
-  // Un locale può esistere senza nome (le vetrine di prima non lo chiedevano):
+  // Un locale può esistere senza nome (prima della 703 non lo si chiedeva):
   // in quel caso si chiede adesso, perché senza il menù non ha intestazione.
   const serveNome = locale === null || locale.venueName.trim() === '';
   // Il nome del menù solo quando c'è già qualcosa da cui distinguerlo
-  const serveNomeMenu = locale !== null && hasMenus(locale.id);
-  const pronto = !serveNome || nuovoNome.trim() !== '';
+  const esistenti = locale === null ? [] : menusOf(locale.id);
+  const serveNomeMenu = esistenti.length > 0;
+  // …e se quello che c'è già è rimasto senza nome, adesso ne ha bisogno pure
+  // lui: da qui in poi sono due linguette accanto, e una senza nome sarebbe
+  // l'unica cosa che il cliente non sa scegliere.
+  const senzaNome = esistenti.find((m) => m.name.trim() === '') ?? null;
+  // Non si conferma finché non c'è la risposta alla domanda che si è fatta:
+  // se il nome del menù serve, serve davvero
+  const pronto =
+    (!serveNome || nuovoNome.trim() !== '') &&
+    (!serveNomeMenu || menuName.trim() !== '') &&
+    (senzaNome === null || nomeEsistente.trim() !== '');
 
   function conferma() {
     if (!pronto) return;
     onCreate(
       locale?.id ?? null,
       serveNome ? nuovoNome.trim() : locale!.venueName,
-      (serveNomeMenu ? menuName.trim() : '') || d.menus.defaultName
+      // senza nome si resta senza: il primo menù non ne ha bisogno, e
+      // inventargliene uno vuol dire farglielo cancellare
+      serveNomeMenu ? menuName.trim() : '',
+      senzaNome ? { id: senzaNome.id, name: nomeEsistente.trim() } : undefined
     );
   }
 
@@ -79,7 +109,7 @@ export default function NewMenuDialog({
         </h2>
 
         {/* La tendina compare solo se c'è davvero una scelta da fare */}
-        {venues.length > 0 && (
+        {venues.length > 0 && !fixed && (
           <div className="mt-4">
             <label htmlFor={venueField} className="mb-1 block text-sm font-medium text-gray-700">
               {d.menus.forVenue}
@@ -131,9 +161,28 @@ export default function NewMenuDialog({
               autoFocus={!serveNome}
               onChange={(e) => setMenuName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && conferma()}
+              placeholder={d.menuEditor.namePlaceholder}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
             />
             <p className="mt-1 text-xs text-gray-500">{d.menus.menuNameHint}</p>
+          </div>
+        )}
+
+        {senzaNome && (
+          <div className="mt-4">
+            <label htmlFor={`${menuField}-esistente`} className="mb-1 block text-sm font-medium text-gray-700">
+              {d.menus.existingNameLabel}
+            </label>
+            <input
+              id={`${menuField}-esistente`}
+              type="text"
+              value={nomeEsistente}
+              onChange={(e) => setNomeEsistente(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && conferma()}
+              placeholder={d.menus.existingNamePlaceholder}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-gray-500">{d.menus.existingNameHint}</p>
           </div>
         )}
 

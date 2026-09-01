@@ -4,14 +4,14 @@
 // Tutta la logica di struttura sta in menus.ts come funzioni pure: qui si
 // compone la modifica e si passa il risultato a save(), così non c'è uno
 // stato locale che possa divergere da quello mostrato.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import { useDishes, type Dish } from '@/lib/dishes';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
-import { useShowcases } from '@/lib/showcases';
+import { useVenues } from '@/lib/venues';
 import {
   CURRENCIES,
   addDishes,
@@ -41,12 +41,14 @@ import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/Menu
 import PhoneFrame from '@/components/preview/PhoneFrame';
 
 export default function MenuEditorPage() {
+  // vedi più sotto: il campo del nome si mostra o no, deciso una volta sola
+  const mostraNome = useRef<boolean | null>(null);
   const { id } = useParams<{ id: string }>();
   const { d } = useI18n();
   const { dishes, create: createDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
-  const { showcases, update: updateVenue, setIdentity } = useShowcases();
+  const { venues, update: updateVenue, setIdentity } = useVenues();
   // La sezione a cui il pannello dei piatti sta aggiungendo: un id, oppure
   // null per le righe fuori sezione. 'chiuso' perché null è già un valore.
   const [adding, setAdding] = useState<{ sectionId: string | null } | null>(null);
@@ -94,27 +96,27 @@ export default function MenuEditorPage() {
 
   // L'aspetto pende dal LOCALE e non dal menù: si cambia da qui perché è qui
   // che se ne vede l'effetto, ma vale per tutti i menù di quel locale.
-  const vetrina = (showcases ?? []).find((s) => s.id === menu.showcaseId) ?? null;
+  const locale = (venues ?? []).find((v) => v.id === menu.venueId) ?? null;
   const brand: MenuBrand = {
-    name: vetrina?.venueName ?? '',
-    logoUrl: vetrina?.logoUrl ?? '',
-    accent: vetrina?.accent ?? DEFAULT_ACCENT,
+    name: locale?.venueName ?? '',
+    logoUrl: locale?.logoUrl ?? '',
+    accent: locale?.accent ?? DEFAULT_ACCENT,
   };
 
   // Il NOME passa da update(), che aspetta la fine della battitura e non
   // riscrive i link se non sono cambiati. Logo e colore sono gesti singoli e
   // si scrivono subito.
   function setBrand(next: Partial<MenuBrand>) {
-    if (!vetrina) return;
+    if (!locale) return;
     if (next.name !== undefined) {
-      updateVenue(vetrina.id, {
+      updateVenue(locale.id, {
         venueName: next.name,
-        dishIds: vetrina.dishIds,
-        links: vetrina.links,
+        dishIds: locale.dishIds,
+        links: locale.links,
       });
     }
     if (next.logoUrl !== undefined || next.accent !== undefined) {
-      setIdentity(vetrina.id, { logoUrl: next.logoUrl, accent: next.accent });
+      setIdentity(locale.id, { logoUrl: next.logoUrl, accent: next.accent });
     }
   }
 
@@ -145,7 +147,19 @@ export default function MenuEditorPage() {
   // Gli altri menù dello stesso locale: nell'anteprima sono le linguette in
   // alto, che è il modo in cui il cliente al tavolo passa dalla carta alle
   // bevande senza cambiare QR.
-  const fratelli = (menus ?? []).filter((m) => m.showcaseId === menu.showcaseId);
+  const fratelli = (menus ?? []).filter((m) => m.venueId === menu.venueId);
+  // IL NOME SI CHIEDE SOLO SE SERVE. Con un menù solo non distingue niente:
+  // il cliente non lo vede (niente linguette sotto i due menù) e il portale
+  // lo chiama "Menù senza nome" dove deve elencarlo. Il campo compare quando
+  // i menù sono più d'uno — o quando un nome c'è già, o non ci sarebbe più
+  // modo di correggerlo.
+  //
+  // La decisione si prende UNA volta, all'apertura: se seguisse il valore
+  // mentre si scrive, cancellando l'ultima lettera il campo sparirebbe sotto
+  // le dita di chi lo stava svuotando.
+  if (mostraNome.current === null) {
+    mostraNome.current = fratelli.length > 1 || menu.name.trim() !== '';
+  }
   const anteprima = (
     <MenuPreview
       menu={menu}
@@ -233,22 +247,29 @@ export default function MenuEditorPage() {
   return (
     // Editor a sinistra, anteprima a destra che resta in vista mentre si
     // scorre. Sotto lg l'anteprima non ci sta accanto e diventa un bottone
-    // flottante: stessa scelta dell'editor della vetrina, stesso gesto.
+    // flottante: stessa scelta dell'editor del locale, stesso gesto.
     <div className="lg:flex lg:items-start lg:gap-8">
       <div className="min-w-0 flex-1 lg:max-w-3xl">
       <BackLink />
 
       {/* Nome e valuta: il nome è un campo e basta, senza matita da premere
-          prima — è la prima cosa che si cambia su un menù appena creato. */}
+          prima — è la prima cosa che si cambia su un menù che ne ha bisogno.
+          Quando non ne ha, al suo posto c'è un titolo e basta. */}
       <div className="mb-6 mt-4 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          value={menu.name}
-          onChange={(e) => save(setMenuName(menu, e.target.value))}
-          placeholder={d.menuEditor.namePlaceholder}
-          aria-label={d.menuEditor.namePlaceholder}
-          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
-        />
+        {mostraNome.current ? (
+          <input
+            type="text"
+            value={menu.name}
+            onChange={(e) => save(setMenuName(menu, e.target.value))}
+            placeholder={d.menuEditor.namePlaceholder}
+            aria-label={d.menuEditor.namePlaceholder}
+            className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
+          />
+        ) : (
+          <h1 className="min-w-0 flex-1 px-2 py-1 text-xl font-semibold text-gray-900 md:text-2xl">
+            {d.menuEditor.onlyMenuTitle}
+          </h1>
+        )}
         <label className="flex shrink-0 items-center gap-2 text-xs text-gray-500">
           {d.menuEditor.currency}
           <select
@@ -490,7 +511,7 @@ export default function MenuEditorPage() {
       )}
 
       {creatingDish && (
-        // Senza le caselle "In vetrina": qui il piatto sta per finire in una
+        // Senza le caselle "Sulle schede": qui il piatto sta per finire in una
         // sezione del menù, non acceso su una scheda AllergiApp
         <DishPanel
           onSave={(data) => saveNewDish(data, creatingDish.sectionId)}

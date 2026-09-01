@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -22,6 +23,24 @@ export default function AccountPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <p className="mb-3 text-sm font-medium text-gray-700">{d.account.language}</p>
           <LanguageSwitcher />
+        </div>
+
+        {/* Gli abbonamenti stanno qui dentro finché sono un tappo: una voce
+            nella barra laterale prometteva una sezione, e dietro c'è una
+            pagina che non fa ancora niente. */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-700">{d.account.subsTitle}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{d.account.subsHint}</p>
+            </div>
+            <Link
+              href="/abbonamenti"
+              className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              {d.account.subsOpen}
+            </Link>
+          </div>
         </div>
 
         <button
