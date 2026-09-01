@@ -88,12 +88,32 @@ export function currencySymbol(code: string): string {
 // ignora tutto il resto (spazi, il simbolo della valuta incollato per
 // abitudine); quello che non è un numero non diventa zero, diventa NIENTE —
 // zero è un prezzo, e scriverlo per errore vuol dire regalare un piatto.
+//
+// ⚠️ I SEPARATORI DELLE MIGLIAIA vanno tolti, non ignorati, e non è un caso
+// di scuola: formatPrice li SCRIVE, quindi erano quello che il campo si
+// ritrovava dentro da solo. Un prezzo sopra il migliaio tornava indietro come
+// "1.500,00" (o "1,500.00" col portale in inglese), la lettura si fermava al
+// secondo separatore e restituiva null — cioè il prezzo si cancellava da sé
+// al primo tasto premuto per correggerlo, in silenzio. Con l'euro capita di
+// rado; con le corone e lo złoty, che sono nella tendina delle valute, è la
+// normalità.
 // ------------------------------------------------------------------
 export function parsePrice(text: string): number | null {
-  const pulito = text.replace(/[^\d.,]/g, '').replace(',', '.');
-  if (pulito === '') return null;
-  const valore = Number(pulito);
-  if (!Number.isFinite(valore) || valore < 0) return null;
+  const grezzo = text.replace(/[^\d.,]/g, '');
+  // Senza nemmeno una cifra non c'è nessun prezzo da leggere
+  if (!/\d/.test(grezzo)) return null;
+  // QUALE separatore siano i decimali non lo decide la lingua ma la forma, ed
+  // è l'unico modo di restare larghi su come lo scrive il ristoratore: è
+  // l'ultimo, e solo se ha una o due cifre dietro. Con tre ("1.500", "1,500")
+  // sono migliaia in tutte e due le convenzioni, e tutti i separatori
+  // precedenti lo sono comunque.
+  const ultimo = Math.max(grezzo.lastIndexOf('.'), grezzo.lastIndexOf(','));
+  const cifreDopo = ultimo < 0 ? -1 : grezzo.length - ultimo - 1;
+  const decimale = cifreDopo === 1 || cifreDopo === 2;
+  const intero = (decimale ? grezzo.slice(0, ultimo) : grezzo).replace(/[.,]/g, '');
+  const decimali = decimale ? grezzo.slice(ultimo + 1) : '';
+  const valore = Number(`${intero || '0'}.${decimali || '0'}`);
+  if (!Number.isFinite(valore)) return null;
   return Math.round(valore * 100);
 }
 
