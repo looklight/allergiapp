@@ -20,20 +20,26 @@ export default function LogoPicker({
   const file = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex shrink-0 flex-col items-center gap-1">
+    <div className="group flex shrink-0 flex-col items-center gap-1">
       {/* Si mostra quello che comparirà davvero, non un segnaposto
           tratteggiato: senza logo proprio è quello di AllergiApp, e vederlo
-          qui è come si scopre che c'è */}
+          qui è come si scopre che c'è. Grande quanto il titolo accanto, non
+          più la miniatura di prima: è la stessa coppia logo+nome
+          dell'anteprima, alla stessa scala. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={logoUrl || DEFAULT_LOGO}
         alt={d.menuEditor.logoAlt}
         onClick={() => file.current?.click()}
-        className={`h-11 w-11 cursor-pointer rounded-full border object-cover transition-opacity hover:opacity-80 ${
+        className={`h-14 w-14 cursor-pointer rounded-full border object-cover transition-opacity hover:opacity-80 ${
           logoUrl === '' ? 'border-dashed border-gray-300' : 'border-gray-200'
         }`}
       />
-      <div className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium">
+      {/* La didascalia si vede solo al passaggio: a riposo qui deve restare
+          solo il logo, come lo vede il cliente. Su telefono, dove il
+          passaggio non esiste, resta sempre visibile — stessa scelta delle
+          frecce di MenuItemRow. */}
+      <div className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
         <button
           onClick={() => file.current?.click()}
           className="text-gray-500 transition-colors hover:text-gray-900"
