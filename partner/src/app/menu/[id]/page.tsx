@@ -320,9 +320,7 @@ export default function MenuEditorPage() {
               {d.menuEditor.addDishes}
             </button>
             <button
-              // Vuota e non "Nuova sezione": così il campo mostra il
-              // segnaposto a rotazione invece di un nome vero da cancellare.
-              onClick={() => save(addSection(menu, ''))}
+              onClick={() => save(addSection(menu, d.menuEditor.newSectionName))}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               {d.menuEditor.addSection}
@@ -400,12 +398,7 @@ export default function MenuEditorPage() {
                   type="text"
                   value={section.name}
                   onChange={(e) => save(renameSection(menu, section.id, e.target.value))}
-                  // A rotazione sulla posizione: la prima sezione vuota
-                  // suggerisce "Antipasti", la seconda "Primi", e così via —
-                  // un'idea di struttura a chi non sa da dove cominciare,
-                  // non un nome che finisce scritto per davvero se non lo
-                  // tocca (il valore resta vuoto finché non si scrive).
-                  placeholder={d.menuEditor.sectionNameSuggestions[i % d.menuEditor.sectionNameSuggestions.length]}
+                  placeholder={d.menuEditor.sectionNamePlaceholder}
                   aria-label={d.menuEditor.sectionNamePlaceholder}
                   className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-sm font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
                 />
@@ -463,7 +456,7 @@ export default function MenuEditorPage() {
           ))}
 
           <button
-            onClick={() => save(addSection(menu, ''))}
+            onClick={() => save(addSection(menu, d.menuEditor.newSectionName))}
             className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

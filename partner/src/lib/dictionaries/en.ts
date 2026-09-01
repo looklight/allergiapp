@@ -301,7 +301,6 @@ const en: typeof it = {
     addSection: 'New section',
     newSectionName: 'New section',
     sectionNamePlaceholder: 'Section name',
-    sectionNameSuggestions: ['Starters', 'First courses', 'Main courses', 'Sides', 'Desserts', 'Drinks'],
     sectionDescriptionPlaceholder: 'Section description (optional)',
     addDishes: 'Add dishes',
     dropHere: 'Drop here',

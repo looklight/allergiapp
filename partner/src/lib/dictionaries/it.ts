@@ -319,10 +319,6 @@ const it = {
     addSection: 'Nuova sezione',
     newSectionName: 'Nuova sezione',
     sectionNamePlaceholder: 'Nome della sezione',
-    // Suggerimenti per il segnaposto di una sezione nuova, a rotazione: senza,
-    // ogni sezione vuota diceva la stessa cosa ("Nome della sezione") e non
-    // aiutava chi non sa da dove iniziare a strutturare il menù.
-    sectionNameSuggestions: ['Antipasti', 'Primi', 'Secondi', 'Contorni', 'Dolci', 'Bevande'],
     sectionDescriptionPlaceholder: 'Descrizione della sezione (facoltativa)',
     addDishes: 'Aggiungi piatti',
     dropHere: 'Trascina qui',
