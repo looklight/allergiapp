@@ -314,6 +314,7 @@ const en: typeof it = {
     highlightOff: 'Remove highlight',
     highlightNotePlaceholder: 'Optional note: "On offer", "Chef\'s pick"…',
     highlightNoteLabel: 'Note for {dish}',
+    editDish: 'Edit {dish}',
     removeItem: 'Remove from menu',
     moveUp: 'Move up',
     moveDown: 'Move down',

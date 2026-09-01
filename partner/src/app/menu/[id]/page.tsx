@@ -47,7 +47,7 @@ import PhoneFrame from '@/components/preview/PhoneFrame';
 export default function MenuEditorPage() {
   const { id } = useParams<{ id: string }>();
   const { d } = useI18n();
-  const { dishes, create: createDish } = useDishes();
+  const { dishes, create: createDish, update: updateDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
   const { venues, update: updateVenue, setIdentity } = useVenues();
@@ -58,6 +58,11 @@ export default function MenuEditorPage() {
   // Maschera di un piatto NUOVO aperta dal menù: si ricorda in quale sezione
   // stava andando, perché è lì che deve comparire appena salvato.
   const [creatingDish, setCreatingDish] = useState<{ sectionId: string | null } | null>(null);
+  // Il piatto già esistente aperto per una correzione dalla matita di una
+  // riga: si tiene l'OGGETTO e non l'id, perché nel frattempo la riga può
+  // sparire (il piatto tolto dal menù) senza che il pannello aperto ne debba
+  // risentire — sta correggendo il catalogo, non questa riga.
+  const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   // Le esigenze di chi guarda il menù. Stanno QUI e non dentro l'anteprima
   // perché le anteprime sono due — quella a lato e quella a tutto schermo da
@@ -132,6 +137,16 @@ export default function MenuEditorPage() {
     if (creato) save(addDishes(menu!, sectionId, [creato.id]));
   }
 
+  // Corregge il piatto nel CATALOGO, non in questo menù: la stessa modifica
+  // vale ovunque il piatto compare (altri menù, scheda AllergiApp). È lo
+  // stesso pannello di /piatti, aperto qui per non doverci andare apposta.
+  async function saveEditedDish(data: Omit<Dish, 'id'>) {
+    if (!editingDish) return;
+    const id = editingDish.id;
+    setEditingDish(null);
+    await updateDish(id, data);
+  }
+
   const catalogo = dishes ?? [];
   const dishById = (dishId: string) => catalogo.find((dish) => dish.id === dishId);
   const dentro = menuItems(menu).map((item) => item.dishId);
@@ -180,6 +195,7 @@ export default function MenuEditorPage() {
             onPrice={(cents) => save(setItemPrice(menu!, item.id, cents))}
             onHighlight={(highlighted) => save(setItemHighlighted(menu!, item.id, highlighted))}
             onHighlightNote={(note) => save(setItemHighlightNote(menu!, item.id, note))}
+            onEdit={(piatto) => setEditingDish(piatto)}
             onMove={(verso) => save(moveItem(menu!, sectionId, item.id, verso))}
             onMoveToSection={(dove) => save(moveItemToSection(menu!, item.id, dove))}
             onRemove={() => save(removeItem(menu!, item.id))}
@@ -529,6 +545,16 @@ export default function MenuEditorPage() {
         <DishPanel
           onSave={(data) => saveNewDish(data, creatingDish.sectionId)}
           onClose={() => setCreatingDish(null)}
+        />
+      )}
+
+      {editingDish && (
+        // Stessa ragione: si sta correggendo un piatto già in catalogo, non
+        // decidendo su quali schede accenderlo — quella scelta resta a /piatti.
+        <DishPanel
+          dish={editingDish}
+          onSave={saveEditedDish}
+          onClose={() => setEditingDish(null)}
         />
       )}
 

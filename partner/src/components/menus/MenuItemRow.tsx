@@ -1,10 +1,11 @@
 'use client';
 
 // Una riga della carta: il piatto com'è in catalogo, più le due sole cose che
-// il MENÙ aggiunge — il prezzo e la posizione. Nome, foto e allergeni non si
-// possono correggere da qui, e non è una mancanza: sono fatti del piatto, e
-// correggerli in un menù solo vorrebbe dire due verità sugli allergeni, che è
-// esattamente la cosa che il prodotto esiste per evitare.
+// il MENÙ aggiunge — il prezzo e la posizione. Nome, foto e allergeni restano
+// FATTI DEL PIATTO: qui non hanno un campo proprio (due verità sugli
+// allergeni è esattamente il rischio che il prodotto esiste per evitare), ma
+// la matita al passaggio apre lo stesso pannello del catalogo — corregge il
+// piatto ovunque compaia, non uno che vale solo per questo menù.
 import { useRef } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
 import { dishThumb, type Dish } from '@/lib/dishes';
@@ -22,6 +23,7 @@ export default function MenuItemRow({
   onPrice,
   onHighlight,
   onHighlightNote,
+  onEdit,
   onMove,
   onMoveToSection,
   onRemove,
@@ -44,6 +46,7 @@ export default function MenuItemRow({
   onPrice: (cents: number | null) => void;
   onHighlight: (highlighted: boolean) => void;
   onHighlightNote: (note: string) => void;
+  onEdit: (dish: Dish) => void;
   onMove: (verso: -1 | 1) => void;
   onMoveToSection: (sectionId: string | null) => void;
   onRemove: () => void;
@@ -219,6 +222,21 @@ export default function MenuItemRow({
           onChange={onPrice}
         />
       </div>
+
+      {/* Come la tendina "Sposta in": si scopre al passaggio, sempre visibile
+          su telefono dove il passaggio non esiste. Apre lo stesso pannello di
+          /piatti — corregge il catalogo, non solo questa riga. */}
+      <button
+        onClick={() => onEdit(dish)}
+        aria-label={fill(d.menuEditor.editDish, { dish: nome })}
+        title={fill(d.menuEditor.editDish, { dish: nome })}
+        className="shrink-0 text-gray-300 opacity-100 transition-opacity hover:text-gray-900 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+      </button>
 
       <button
         onClick={onRemove}

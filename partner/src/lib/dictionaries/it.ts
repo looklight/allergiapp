@@ -332,6 +332,7 @@ const it = {
     highlightOff: 'Togli evidenza',
     highlightNotePlaceholder: 'Nota (facoltativa): «In offerta», «Consigliato»…',
     highlightNoteLabel: 'Nota per {dish}',
+    editDish: 'Modifica {dish}',
     removeItem: 'Togli dal menù',
     moveUp: 'Sposta su',
     moveDown: 'Sposta giù',
