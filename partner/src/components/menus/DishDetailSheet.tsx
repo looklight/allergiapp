@@ -11,9 +11,12 @@
 // l'anteprima (la pagina pubblica non esiste ancora, DIGITAL_MENU.md Tema
 // 11), quindi niente URL da gestire — chiuderlo torna esattamente al menù.
 // Niente useModal: quello blocca lo scroll della PAGINA DEL PORTALE, e qui
-// dentro c'è solo lo schermo simulato del cliente.
-import { useEffect } from 'react';
+// dentro c'è solo lo schermo simulato del cliente. Di quello resta useEscape,
+// che è la parte che serve anche qui — dentro l'anteprima a telefono questo
+// foglio è una finestra DENTRO un'altra, e con un ascoltatore per conto suo
+// un Esc chiudeva tutte e due.
 import { useI18n } from '@/lib/i18n';
+import { useEscape } from '@/lib/useModal';
 import { ALLERGENS } from '@/lib/allergens';
 import { dietNeedName } from '@/lib/diets';
 import { displayPrice, type MenuItem } from '@/lib/menus';
@@ -34,14 +37,7 @@ export default function DishDetailSheet({
   onClose: () => void;
 }) {
   const { d, locale } = useI18n();
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   const prezzo = displayPrice(item.priceCents, currency, locale);
   // Gli allergeni dichiarati nell'ordine fisso di ALLERGENS (non in quello di
