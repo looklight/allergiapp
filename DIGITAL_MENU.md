@@ -464,7 +464,12 @@ l'app comincia a leggerle.
 paga solo per i link contribuisce zero dati sugli allergeni?". Decisione dell'utente il 31/08:
 prima si fa funzionare il flusso. Resta scritta qui per non riscoprirla al primo che compra.
 
-### 2026-08-31 — Tema 17: Gli slug non si riassegnano, e non a tempo
+### 2026-08-31 — Tema 17: Gli slug non si riassegnano, e non a tempo — **SUPERATO dal Tema 22**
+
+> ⚠️ La decisione qui sotto è stata **rovesciata il 2026-09-01** (Tema 22): un locale ha un
+> indirizzo alla volta, e cambiandolo il precedente torna libero. Il ragionamento sulla quarantena
+> resta valido e vale la pena rileggerlo — è il motivo per cui non esiste un tempo di attesa — ma
+> la valvola dell'admin che libera a mano non c'è mai stata e non ci sarà.
 
 **Decisione**: uno slug usato una volta **non torna mai disponibile da solo**. Niente quarantena a
 scadenza. L'unica via per liberarne uno è un **admin che lo fa a mano**, su richiesta.
@@ -681,6 +686,57 @@ sa leggere il menù.
 (`partner_dish_translations`), le **condizioni al tavolo** e i **blocchi di testo** no. Al primo
 cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. Non blocca lo slug; si
 decide insieme alla pagina pubblica, che è il momento in cui si vede.
+
+---
+
+### 2026-09-01 — Tema 22: Un indirizzo alla volta, e cambiarlo lo libera
+
+**Decisione**: il locale ha **un indirizzo alla volta**. Si può cambiare quando si vuole, e il
+precedente **torna libero**. Nessuno storico, nessun reindirizzamento, nessuna coda di slug da
+liberare a mano. Una colonna sola (`partner_venues.slug`, migration 707).
+
+**Rovescia il Tema 17**, che teneva ogni slug occupato per sempre con la valvola di un admin che
+lo libera su richiesta. L'obiezione dell'utente, ed è quella giusta: *"secondo me un utente non
+libererà mai gli slug"*. Una valvola che nessuno aziona non è una valvola: è una coda di richieste
+che non evade nessuno, e nel frattempo il ristoratore che torna dopo sei mesi non può riprendersi
+il proprio nome.
+
+**Cosa si perde, detto per intero**: un QR già stampato smette di funzionare quando il ristoratore
+cambia indirizzo. Ma va guardato **chi lo rompe** — è lui, con un gesto suo, dentro il portale, non
+un terzo che gli soffia il nome mentre non guarda. Un gesto si copre con un **avviso al momento
+giusto**; il caso del terzo, no, e per quello serviva una tabella. Il pericolo che giustificava la
+macchina non è il pericolo che resta.
+
+**Quindi l'avviso è la funzione**, e ha un posto preciso (Tema 20):
+
+- **Prima della pubblicazione** l'indirizzo si cambia in silenzio: non esiste niente di stampato,
+  non c'è niente da proteggere. È lo stato di tutti, oggi.
+- **Dopo**, lo stesso gesto porta scritto che i QR in giro smetteranno di funzionare e vanno
+  ristampati. Il posto dove metterlo è la card dell'indirizzo nell'editor del menù, ed è annotato
+  nel componente: è l'ultimo punto in cui il ristoratore può ancora fermarsi.
+
+**Resta valido del Tema 17**, e non va perso nella riscrittura:
+
+- **Un indirizzo che non esiste più non dà 404.** Chi è al tavolo col telefono in mano deve leggere
+  "questo menù non è più attivo", non una pagina rotta del browser.
+- **Niente suffisso numerico sui doppioni.** Su `/r/` la 059 fa `da-mario-pisa-2` e va benissimo,
+  perché quell'indirizzo non lo legge nessuno. Questo finisce su una locandina: sul doppione si
+  propone un'alternativa vera — la via, il quartiere — non un numero.
+- **Nessuna quarantena a tempo.** Non c'è un orologio da tarare, perché non sappiamo quanto duri un
+  adesivo su una vetrina. Qui il punto non si pone nemmeno più: la liberazione è immediata e la
+  decide il ristoratore, non un timer.
+
+**È reversibile, e questo è il motivo per cui si può scegliere il semplice adesso**: se un giorno i
+reindirizzamenti servissero davvero, si aggiungono senza disfare niente — la colonna resta com'è e
+si comincia a tenere lo storico da quel giorno in poi. L'unica cosa che non si recupera sono i
+cambi avvenuti prima, e prima della pubblicazione non ce n'è nessuno che conti.
+
+**Cos'è stato fatto** (2026-09-01): migration **707 DA APPLICARE** — colonna `slug`, vincoli di
+forma (minuscolo, `a-z0-9-`, 3–60 caratteri), indice unico globale, e la funzione
+`partner_slug_taken` che risponde solo sì/no perché le RLS non lasciano vedere i locali altrui. Nel
+portale, in fondo all'editor del menù, la card **"Indirizzo del menù"**: proposta ricavata dal nome
+del locale, controllo di disponibilità mentre si scrive, e la pastiglia **"Non ancora attivo"** —
+la pagina pubblica non esiste, e la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
 
 ## Prossimo passo
 

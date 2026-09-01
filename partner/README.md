@@ -352,9 +352,28 @@ già più d'uno li tiene e può aprirli. **Chi tocca questa parte non aggiunga u
 `UNIQUE (venue_id)`**: descriverebbe lo stesso stato di oggi e sarebbe la cosa
 difficile da togliere quando più menù si venderà.
 
-Non c'è ancora **niente della pubblicazione**: nessuno slug, nessun QR,
-nessuna pagina pubblica. Sono la fase successiva, e le regole dello slug
-(mai riassegnato, v. Tema 17) si decidono insieme a quella.
+**L'indirizzo del menù c'è dal 2026-09-01** (migration 707), ma **non è
+attivo**: in fondo all'editor una card lo propone dal nome del locale,
+controlla che sia libero e lo salva su `partner_venues.slug`. Serve a
+mettere il nome al sicuro, non a distribuirlo — la pagina pubblica non
+esiste ancora, e la card lo dichiara con una pastiglia. Chi la rende
+cliccabile prima che la pagina risponda sta consegnando un indirizzo da
+stampare che porta a un errore.
+
+**Un locale, un indirizzo alla volta** (Tema 22, che rovescia il 17):
+cambiarlo libera il precedente, senza storico e senza reindirizzamenti.
+La conseguenza — un QR stampato che smette di funzionare — la produce il
+ristoratore con un gesto suo, e si copre con un avviso al momento del
+cambio: **il posto dove metterlo è `MenuAddress.tsx`**, il giorno in cui
+esisterà la pubblicazione. Non aggiungere una tabella di slug ritirati
+senza rileggere il Tema 22.
+
+Il controllo di disponibilità passa dalla funzione `partner_slug_taken` e
+non da una select: le RLS mostrano a ogni partner solo i propri locali,
+quindi una select direbbe "libero" anche per un indirizzo già preso.
+
+Manca ancora tutto il resto della pubblicazione: nessun QR, nessuna pagina
+pubblica.
 
 ## L'account e l'accesso
 

@@ -328,6 +328,24 @@ const it = {
     logoAlt: 'Il tuo logo',
     accent: 'Colore',
     notFound: 'Questo menù non esiste.',
+    // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni
+    // occasione utile: la cosa da non far succedere è che qualcuno lo stampi
+    // su una locandina prima che la pagina esista.
+    addressTitle: 'Indirizzo del menù',
+    addressNotLive: 'Non ancora attivo',
+    addressHint:
+      'È l’indirizzo che finirà sul QR del tavolo. Scegliendolo adesso lo metti al sicuro: la pagina pubblica arriva più avanti.',
+    addressNeedName: 'Scrivi prima il nome del locale: l’indirizzo si propone da lì.',
+    addressNotChosen: 'Non ancora scelto.',
+    addressChecking: 'Controllo…',
+    addressFree: 'Libero.',
+    addressTaken: 'Questo indirizzo è già di un altro locale.',
+    addressInvalid: 'Lettere minuscole, numeri e trattini, da 3 a 60 caratteri.',
+    addressUnknown: 'Non è stato possibile controllare adesso.',
+    addressChoose: 'Scegli indirizzo',
+    addressChange: 'Cambia indirizzo',
+    addressSaved: 'Indirizzo salvato.',
+    addressFailed: 'Non è stato salvato: qualcuno potrebbe averlo preso in questo momento.',
     descriptionPlaceholder: 'Aggiungi una descrizione (facoltativa): orari, un avviso…',
     currency: 'Valuta',
     loose: 'Fuori sezione',

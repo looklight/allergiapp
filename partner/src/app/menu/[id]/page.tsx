@@ -43,6 +43,7 @@ import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import BrandBar from '@/components/menus/BrandBar';
 import LogoPicker from '@/components/menus/LogoPicker';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
+import MenuAddress from '@/components/menus/MenuAddress';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 
 export default function MenuEditorPage() {
@@ -51,7 +52,7 @@ export default function MenuEditorPage() {
   const { dishes, create: createDish, update: updateDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
-  const { venues, update: updateVenue, setIdentity, setTableConditions } = useVenues();
+  const { venues, update: updateVenue, setIdentity, setTableConditions, setSlug } = useVenues();
   // La sezione a cui il pannello dei piatti sta aggiungendo: un id, oppure
   // null per le righe fuori sezione. 'chiuso' perché null è già un valore.
   const [adding, setAdding] = useState<{ sectionId: string | null } | null>(null);
@@ -544,6 +545,13 @@ export default function MenuEditorPage() {
             className="mt-2 w-full resize-none rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-700 focus:border-gray-900 focus:outline-none"
           />
         </div>
+      )}
+
+      {/* L'INDIRIZZO PUBBLICO, in fondo insieme alle altre cose del locale.
+          Non è ancora attivo, e la card lo dichiara: qui si sceglie il nome e
+          lo si mette al sicuro prima che lo prenda qualcun altro. */}
+      {locale && (
+        <MenuAddress venue={locale} onSave={(slug) => setSlug(locale.id, slug)} />
       )}
 
       </div>

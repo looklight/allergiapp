@@ -75,6 +75,13 @@ export interface Venue extends VenueDraft {
   // La scheda AllergiApp di questo locale, se esiste. null = nessun
   // ristorante associato, quindi nessun posto dove accendere i piatti.
   cardId: string | null;
+  // L'indirizzo pubblico del menù: allergiapp.com/menu/<slug>. Vuoto = non
+  // ancora scelto, ed è lo stato di tutti i locali che esistono oggi. Ne
+  // esiste UNO alla volta e cambiandolo il precedente torna libero
+  // (migration 707, DIGITAL_MENU.md Tema 17). NON è ancora attivo: la
+  // pagina pubblica è la fase successiva, qui il nome si mette solo al
+  // sicuro.
+  slug: string;
 }
 
 // La chiave del piatto acceso su una scheda, condivisa fra accensione e
@@ -156,7 +163,7 @@ async function loadVenues(): Promise<Venue[]> {
   // sul ristorante), quindi si prende la prima e basta.
   const { data, error } = await supabase
     .from('partner_venues')
-    .select('id, name, logo_url, accent, table_conditions, partner_links(*), partner_cards(id, partner_card_dishes(dish_id))')
+    .select('id, name, slug, logo_url, accent, table_conditions, partner_links(*), partner_cards(id, partner_card_dishes(dish_id))')
     .order('created_at', { ascending: true });
   reportError('lettura locali', error);
 
@@ -168,6 +175,7 @@ async function loadVenues(): Promise<Venue[]> {
       logoUrl: row.logo_url ?? '',
       accent: row.accent ?? 'charcoal',
       tableConditions: row.table_conditions ?? '',
+      slug: row.slug ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
@@ -253,6 +261,24 @@ async function saveVenueContent(venue: Venue) {
   ultimoSalvato.set(venue.id, fatto);
 }
 
+// Se un indirizzo è già di qualcun altro. Passa da una funzione del database
+// (`partner_slug_taken`, migration 707) e non da una select: le RLS mostrano a
+// ogni partner solo i PROPRI locali, quindi una select direbbe "libero" anche
+// per un indirizzo preso — e il ristoratore scoprirebbe il contrario solo dal
+// rifiuto della scrittura. La funzione risponde sì/no e non dice di chi sia.
+//
+// null = non si è potuto controllare (rete, server). È diverso da "libero", e
+// chi chiama non deve confonderli: l'ultima parola ce l'ha comunque l'indice
+// unico del database.
+export async function slugOccupato(slug: string): Promise<boolean | null> {
+  const { data, error } = await supabase.rpc('partner_slug_taken', { candidate: slug });
+  if (error) {
+    reportError('controllo indirizzo del menù', error);
+    return null;
+  }
+  return data === true;
+}
+
 // venues è null finché la prima lettura non è tornata
 export function useVenues() {
   const { list: venues, setList, reload } = useRemoteList('locali', loadVenues);
@@ -276,6 +302,7 @@ export function useVenues() {
       logoUrl: '',
       accent: 'charcoal',
       tableConditions: '',
+      slug: '',
       cardId: null,
       dishIds: [],
       links: emptyLinks(),
@@ -300,6 +327,7 @@ export function useVenues() {
             logoUrl: s.logoUrl,
             accent: s.accent,
             tableConditions: s.tableConditions,
+            slug: s.slug,
           }
         : s
     );
@@ -343,6 +371,25 @@ export function useVenues() {
     if (aggiornata) schedule(aggiornata);
   }
 
+  // L'indirizzo del menù. Gesto singolo come il logo e il colore, quindi
+  // scrittura immediata: non è una battitura continua: si scrive nel campo,
+  // si controlla che sia libero, si conferma.
+  //
+  // Dice se ha funzionato, e non per pignoleria: l'unicità è del database, e
+  // fra il controllo di disponibilità e questa scrittura ci sta in mezzo
+  // qualcun altro che si prende lo stesso nome. Chi chiama deve poterlo dire
+  // invece di mostrare un indirizzo che non è suo.
+  async function setSlug(id: string, slug: string): Promise<boolean> {
+    const { error } = await write(
+      'salvataggio indirizzo del menù',
+      () => supabase.from('partner_venues').update({ slug: slug || null }).eq('id', id),
+      `slug:${id}`
+    );
+    if (error) return false;
+    setList((venues ?? []).map((s) => (s.id === id ? { ...s, slug } : s)));
+    return true;
+  }
+
   function remove(id: string) {
     setList((venues ?? []).filter((s) => s.id !== id));
     void write('eliminazione locale', () =>
@@ -366,6 +413,12 @@ export function useVenues() {
           logo_url: venue.logoUrl || null,
           accent: venue.accent,
           table_conditions: venue.tableConditions.trim() || null,
+          // L'indirizzo torna col locale: eliminandolo era tornato libero, e
+          // se nel frattempo se l'è preso qualcun altro questa insert fallisce
+          // — il ripristino si vede fallire nella barra di stato, che è meglio
+          // di un locale che torna con un indirizzo diverso da quello che
+          // aveva.
+          slug: venue.slug || null,
         })
     );
     const righe = fromLinks(venue.id, venue.links);
@@ -447,6 +500,7 @@ export function useVenues() {
     restore,
     setDishOn,
     setIdentity,
+    setSlug,
     setTableConditions,
   };
 }
