@@ -2,9 +2,12 @@
 
 // Il logo del locale: era dentro "Aspetto", ora sta in cima all'editor,
 // accanto al nome — nello stesso ordine in cui lo mostra l'anteprima (logo,
-// poi nome). Impilato invece che in fila, come nel vecchio riquadro: qui
-// condivide la riga col titolo, e una didascalia larga glielo spingerebbe
-// fuori dallo schermo.
+// poi nome), alla stessa scala.
+//
+// La didascalia sta DENTRO al cerchio, su sfondo scurito, e non sotto: fuori
+// dal cerchio su un fondo chiaro si leggeva a fatica, e in più occupava uno
+// spazio che — anche da invisibile — spostava il logo fuori dal centro
+// rispetto al nome (items-center lo allineava contando anche quello).
 import { useRef } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { DEFAULT_LOGO, logoDataUrl } from '@/lib/menuBrand';
@@ -20,44 +23,41 @@ export default function LogoPicker({
   const file = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="group flex shrink-0 flex-col items-center gap-1">
+    <div className="group relative inline-block shrink-0">
       {/* Si mostra quello che comparirà davvero, non un segnaposto
           tratteggiato: senza logo proprio è quello di AllergiApp, e vederlo
-          qui è come si scopre che c'è. Grande quanto il titolo accanto, non
-          più la miniatura di prima: è la stessa coppia logo+nome
-          dell'anteprima, alla stessa scala. */}
+          qui è come si scopre che c'è */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={logoUrl || DEFAULT_LOGO}
         alt={d.menuEditor.logoAlt}
-        onClick={() => file.current?.click()}
-        className={`h-14 w-14 cursor-pointer rounded-full border object-cover transition-opacity hover:opacity-80 ${
+        className={`block h-14 w-14 rounded-full border object-cover ${
           logoUrl === '' ? 'border-dashed border-gray-300' : 'border-gray-200'
         }`}
       />
-      {/* La didascalia si vede solo al passaggio: a riposo qui deve restare
-          solo il logo, come lo vede il cliente. Su telefono, dove il
-          passaggio non esiste, resta sempre visibile — stessa scelta delle
-          frecce di MenuItemRow. */}
-      <div className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+      <button
+        type="button"
+        onClick={() => file.current?.click()}
+        aria-label={logoUrl === '' ? d.menuEditor.logoAdd : d.menuEditor.logoReplace}
+        className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 px-1 text-center text-[9px] font-medium leading-tight text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+      >
+        {logoUrl === '' ? d.menuEditor.logoAdd : d.menuEditor.logoReplace}
+      </button>
+      {/* Il "Togli": un badge in un angolo e non una seconda riga dentro il
+          cerchio, che a quella taglia di font non ci sarebbe stata */}
+      {logoUrl !== '' && (
         <button
-          onClick={() => file.current?.click()}
-          className="text-gray-500 transition-colors hover:text-gray-900"
+          type="button"
+          onClick={() => onChange('')}
+          aria-label={d.menuEditor.logoRemove}
+          title={d.menuEditor.logoRemove}
+          className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-gray-400 opacity-0 shadow ring-1 ring-gray-200 transition-opacity hover:text-red-600 group-hover:opacity-100 group-focus-within:opacity-100"
         >
-          {logoUrl === '' ? d.menuEditor.logoAdd : d.menuEditor.logoReplace}
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
         </button>
-        {logoUrl !== '' && (
-          <>
-            <span className="text-gray-300" aria-hidden="true">·</span>
-            <button
-              onClick={() => onChange('')}
-              className="text-gray-400 transition-colors hover:text-red-600"
-            >
-              {d.menuEditor.logoRemove}
-            </button>
-          </>
-        )}
-      </div>
+      )}
       <input
         ref={file}
         type="file"
