@@ -108,8 +108,10 @@ export default function NewMenuDialog({
           {d.menus.create}
         </h2>
 
-        {/* La tendina compare solo se c'è davvero una scelta da fare */}
-        {venues.length > 0 && !fixed && (
+        {/* La tendina compare solo se c'è davvero una scelta da fare: con un
+            locale solo non c'è niente da scegliere, e "+ Un altro locale" ha
+            comunque una strada dedicata dalla home (NewVenueDialog). */}
+        {venues.length > 1 && !fixed && (
           <div className="mt-4">
             <label htmlFor={venueField} className="mb-1 block text-sm font-medium text-gray-700">
               {d.menus.forVenue}
