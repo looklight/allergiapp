@@ -343,30 +343,35 @@ function Riga({
                 <path d="M12 3.5l2.55 5.6 6.05.58-4.55 4.06 1.3 5.94L12 16.75l-5.35 2.93 1.3-5.94-4.55-4.06 6.05-.58L12 3.5z" />
               </svg>
             )}
-            <p className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-gray-900">
-              {dish.name}
-            </p>
-            {/* La descrizione NON sta più qui: occupava una riga in più solo
-                sui piatti che ce l'hanno, e la carta perdeva l'altezza
-                uniforme fra una riga e l'altra scorrendola. Questa "i" dice
-                che c'è, senza costare lo spazio — il testo intero si legge
-                aprendo il dettaglio. */}
-            {dish.description.trim() !== '' && (
-              <svg
-                className="h-3 w-3 shrink-0 text-gray-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-            )}
+            {/* Nome e "i" insieme, non nome-flex-1-poi-i: senza questo
+                raggruppamento l'icona finiva spinta accanto al prezzo,
+                sembrando un'informazione sul prezzo invece che sul piatto. */}
+            <span className="flex min-w-0 flex-1 items-baseline gap-1">
+              <p className="min-w-0 truncate text-[13px] font-medium leading-snug text-gray-900">
+                {dish.name}
+              </p>
+              {/* La descrizione NON sta più qui: occupava una riga in più solo
+                  sui piatti che ce l'hanno, e la carta perdeva l'altezza
+                  uniforme fra una riga e l'altra scorrendola. Questa "i" dice
+                  che c'è, senza costare lo spazio — il testo intero si legge
+                  aprendo il dettaglio. */}
+              {dish.description.trim() !== '' && (
+                <svg
+                  className="h-3 w-3 shrink-0 text-gray-400"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              )}
+            </span>
             {/* Un piatto senza prezzo non mostra niente: una riga vuota o uno
                 zero al tavolo sono peggio del silenzio */}
             {prezzo !== '' && (
