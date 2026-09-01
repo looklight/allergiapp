@@ -29,8 +29,36 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkEmail, setCheckEmail] = useState(false);
   const [existingAccount, setExistingAccount] = useState(false);
+  // Recupero password: quello che si dice dopo averlo chiesto
+  const [recovery, setRecovery] = useState<string | null>(null);
 
   const isSignUp = mode === 'signUp';
+
+  // Password dimenticata. Al portale si entra una volta al mese, quindi
+  // dimenticarla è il caso normale e non l'eccezione: senza questa via
+  // l'unica uscita era scriverci.
+  //
+  // Il link della mail porta a /account?password=1, cioè al riquadro della
+  // password dell'account, che è LO STESSO da cui la si cambia stando già
+  // dentro. Una pagina sola con due ingressi, invece di due moduli identici
+  // da tenere allineati.
+  //
+  // Non si dice MAI se quell'email esiste: risponderebbe a chi prova indirizzi
+  // per sapere chi è iscritto. Il messaggio è lo stesso in tutti i casi, e per
+  // la stessa ragione un rifiuto del server non si mostra.
+  async function handleForgot() {
+    setError(null);
+    if (email.trim() === '') {
+      setRecovery(d.login.forgotNeedsEmail);
+      return;
+    }
+    setSubmitting(true);
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/account?password=1`,
+    });
+    setRecovery(d.login.forgotSent);
+    setSubmitting(false);
+  }
 
   useEffect(() => {
     if (!loading && session) {
@@ -41,6 +69,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setRecovery(null);
 
     if (!isSignUp) {
       setSubmitting(true);
@@ -195,6 +224,20 @@ export default function LoginPage() {
                 {isSignUp && !existingAccount && (
                   <p className="mt-1 text-xs text-gray-500">{d.login.passwordHint}</p>
                 )}
+                {/* Anche nel percorso "questa email ce l'ha già": lì si chiede
+                    la password di un account AllergiApp che si può benissimo
+                    non ricordare, ed era l'unico punto del portale senza
+                    nessuna via d'uscita. */}
+                {(!isSignUp || existingAccount) && (
+                  <button
+                    type="button"
+                    onClick={handleForgot}
+                    disabled={submitting}
+                    className="mt-1.5 text-xs font-medium text-gray-500 underline underline-offset-2 transition-colors hover:text-gray-900 disabled:opacity-50"
+                  >
+                    {d.login.forgot}
+                  </button>
+                )}
               </div>
 
               {isSignUp && (
@@ -222,6 +265,9 @@ export default function LoginPage() {
                 </div>
               )}
 
+              {recovery && (
+                <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">{recovery}</p>
+              )}
               {error && <p className="text-sm text-red-600">{error}</p>}
 
               <button
@@ -246,6 +292,7 @@ export default function LoginPage() {
               onClick={() => {
                 setMode(isSignUp ? 'signIn' : 'signUp');
                 setError(null);
+                setRecovery(null);
                 setExistingAccount(false);
               }}
               className="font-medium text-gray-900 underline"
