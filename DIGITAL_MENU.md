@@ -649,6 +649,39 @@ diventare un 404.
 mostrare il ristorante a chi lo cerca da lontano — ed è già governato dal claim e
 dall'abbonamento. Il menù al tavolo è del ristoratore, e lì la domanda è un'altra.
 
+---
+
+### 2026-09-01 — Tema 21: La lingua non sta nell'indirizzo stampato
+
+**Domanda**: ha senso un `/it` o un `/en` nell'indirizzo del menù?
+
+**Decisione**: sì per gli indirizzi in più, **no per quello che finisce sul QR**.
+`allergiapp.com/menu/<slug>` resta senza lingua ed è il canonico; le versioni per lingua esistono
+come indirizzi aggiuntivi (`/menu/<slug>/en`), e non si stampano mai.
+
+**Perché**: il QR sul tavolo è **uno** e lo inquadrano un tedesco, un francese e uno del posto. Con
+la lingua nell'indirizzo stampato restano due strade, entrambe sbagliate: un QR per lingua (nessun
+ristoratore lo fa) oppure la lingua del ristoratore stampata addosso a tutti — cioè la lingua
+sbagliata proprio al cliente per cui questo prodotto esiste, lo straniero con un'allergia che non
+sa leggere il menù.
+
+**Implicazioni**:
+- L'indirizzo canonico **sceglie la lingua alla lettura** (quella del telefono), con un selettore
+  ben visibile in cima: l'automatismo sbaglia sempre qualcuno, tipicamente chi ha il telefono in
+  inglese e parla italiano.
+- Le versioni per lingua servono a due cose vere — mandare il menù a qualcuno nella sua lingua, e
+  farsi indicizzare (una pagina per lingua con i rimandi reciproci è l'unico modo perché una
+  ricerca tipo "menu senza glutine Pisa" arrivi qui). Il canonico resta quello senza lingua.
+- **La lingua non tocca mai lo slug.** Se un giorno diventa un prefisso invece di un suffisso,
+  l'indirizzo stampato non cambia: l'unica parte irreversibile è il nome del locale.
+- Suffisso e non prefisso (`/menu/mario/en`) per tenere corto il canonico e mettere il nome del
+  locale subito dopo il dominio — è quello che il ristoratore legge e riconosce sulla locandina.
+
+**Tira dentro il punto lasciato aperto dal Tema 18**: i piatti hanno le traduzioni
+(`partner_dish_translations`), le **condizioni al tavolo** e i **blocchi di testo** no. Al primo
+cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. Non blocca lo slug; si
+decide insieme alla pagina pubblica, che è il momento in cui si vede.
+
 ## Prossimo passo
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così
