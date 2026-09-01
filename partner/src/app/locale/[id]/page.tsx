@@ -278,7 +278,8 @@ export default function VenueEditorPage() {
 
   const venue = venues?.find((s) => s.id === params.id);
 
-  // Prima lettura di localStorage ancora in corso
+  // Prima lettura dal database ancora in corso: null vuol dire "non lo so
+  // ancora", che è diverso da "non c'è" (v. useRemoteList in storage.ts)
   if (!venues || !catalog) {
     return <p className="text-sm text-gray-500">{d.common.loading}</p>;
   }

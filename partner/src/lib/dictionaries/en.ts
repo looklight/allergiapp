@@ -272,7 +272,10 @@ const en: typeof it = {
     counts: '{dishes} dishes · {sections} sections',
     countsNoSections: '{dishes} dishes',
     deleteTitle: 'Delete this menu?',
-    deleteBody: 'Sections, order and prices are gone. The dishes stay in your catalogue.',
+    deleteBody:
+      'Sections, order and prices are gone. The dishes stay in your catalogue, and while the undo message is up you can put it all back.',
+    deleted: 'Menu deleted',
+    undo: 'Undo',
   },
   menuEditor: {
     back: 'All menus',

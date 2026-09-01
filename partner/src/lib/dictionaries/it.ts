@@ -289,8 +289,12 @@ const it = {
     counts: '{dishes} piatti · {sections} sezioni',
     countsNoSections: '{dishes} piatti',
     deleteTitle: 'Eliminare questo menù?',
+    // Stessa promessa che fa già l'eliminazione del locale: quello che si
+    // perde, e che per qualche secondo si può ancora rimettere
     deleteBody:
-      'Spariscono le sezioni, l’ordine e i prezzi. I piatti restano nel tuo catalogo.',
+      'Spariscono le sezioni, l’ordine e i prezzi. I piatti restano nel tuo catalogo, e finché il messaggio di annullamento è in piedi puoi rimettere tutto com’era.',
+    deleted: 'Menù eliminato',
+    undo: 'Annulla',
   },
   menuEditor: {
     back: 'Tutti i menù',

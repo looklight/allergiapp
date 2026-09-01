@@ -217,7 +217,7 @@ server, `rm -rf .next`, e riavviando.
 - `src/components/SaveStatus.tsx` — "Salvataggio…/Salvato" in un angolo,
   fascia rossa con Riprova quando qualcosa è stato rifiutato. Sta nella
   Shell perché il guasto può arrivare mentre si guarda un'altra pagina.
-- `src/lib/showcases.ts` — il **locale** (`partner_venues`): nome, logo,
+- `src/lib/venues.ts` — il **locale** (`partner_venues`): nome, logo,
   colore, link, e gli id dei piatti accesi sulla sua scheda. Il nome e
   l'aspetto stanno qui e non in un modulo a parte perché è la **stessa riga**
   che questo file legge già: una seconda interrogazione sulla stessa tabella

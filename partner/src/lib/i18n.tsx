@@ -38,10 +38,21 @@ export function useI18n() {
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('it');
 
+  // ⚠️ Il deposito del browser va chiesto dentro un try, e qui più che
+  // altrove: con lo storage negato (navigazione privata su certi browser,
+  // cookie di terze parti bloccati) leggerlo non restituisce null, LANCIA — e
+  // questo provider avvolge tutta l'app, quindi non si degraderebbe alla
+  // lingua di partenza, si spegnerebbe la pagina intera. Lo fa già venues.ts
+  // col locale ricordato; qui era rimasto scoperto.
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'it' || saved === 'en') {
-      setLocaleState(saved);
+    let salvata: string | null = null;
+    try {
+      salvata = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      // deposito negato: si riparte da quello che dice il browser
+    }
+    if (salvata === 'it' || salvata === 'en') {
+      setLocaleState(salvata);
     } else if (!navigator.language.toLowerCase().startsWith('it')) {
       setLocaleState('en');
     }
@@ -49,7 +60,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   function setLocale(next: Locale) {
     setLocaleState(next);
-    localStorage.setItem(STORAGE_KEY, next);
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // se non si può ricordare, pazienza: la scelta vale per questa visita
+    }
   }
 
   // L'attributo lang dell'HTML segue la lingua scelta: conta per screen

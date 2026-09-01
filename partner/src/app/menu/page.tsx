@@ -13,14 +13,27 @@ import { useVenues, type Venue } from '@/lib/venues';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import NewMenuDialog from '@/components/menus/NewMenuDialog';
+import UndoToast from '@/components/UndoToast';
 
 export default function MenusPage() {
   const { d } = useI18n();
   const router = useRouter();
   const { dishes } = useDishes();
-  const { menus, create, remove, rename } = useMenus();
+  const { menus, create, remove, rename, restore } = useMenus();
   const { venues, create: createVenue } = useVenues();
   const [deleting, setDeleting] = useState<Menu | null>(null);
+  // Menù appena eliminato: finché il toast è in piedi si può rimettere.
+  //
+  // Qui il rischio è più alto che altrove, non più basso: un menù sono le
+  // sezioni, l'ordine e i prezzi — il lavoro di un pomeriggio — mentre un
+  // piatto, che l'annulla ce l'ha da sempre, si riscrive in un minuto. Era
+  // l'unica eliminazione del portale protetta dalla sola finestra di
+  // conferma, ed era quella che pesava di più.
+  //
+  // Si tiene il MENÙ INTERO e non il suo id: dal database è già sparito
+  // (sezioni e righe con lui, per cascata), quindi questa copia è l'unico
+  // posto da cui può tornare.
+  const [undoable, setUndoable] = useState<Menu | null>(null);
   // il locale a cui si sta aggiungendo un menù; null = nessuna finestra aperta
   const [creating, setCreating] = useState(false);
   // Il locale già deciso da chi ci ha mandati qui: la finestra non lo chiede
@@ -212,7 +225,27 @@ export default function MenusPage() {
           onConfirm={() => {
             remove(deleting.id);
             setDeleting(null);
+            setUndoable(deleting);
           }}
+        />
+      )}
+
+      {undoable && (
+        <UndoToast
+          key={undoable.id}
+          message={d.menus.deleted}
+          undoLabel={d.menus.undo}
+          // Il toast sparisce SUBITO, prima che il ripristino sia finito: le
+          // scritture sono tre in fila (il menù, le sezioni, le righe) e
+          // lasciare a schermo un "Annulla" ancora premibile vorrebbe dire
+          // farlo partire due volte.
+          onUndo={() => {
+            const tornato = undoable;
+            setUndoable(null);
+            void restore([tornato]);
+          }}
+          onExpire={() => setUndoable(null)}
+          returnFocusTo={createButton}
         />
       )}
     </div>
