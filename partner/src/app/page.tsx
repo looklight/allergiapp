@@ -20,6 +20,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { fill, useI18n } from '@/lib/i18n';
+import { MULTI_MENU } from '@/lib/features';
 import { useVenues, useVenueChoice, currentVenue, countLinks, type Venue } from '@/lib/venues';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import { useDishes } from '@/lib/dishes';
@@ -207,9 +208,9 @@ export default function HomePage() {
   // Nessun locale: non c'è niente da riassumere, si chiede il primo
   if (!venue) {
     return (
-      <div className="max-w-3xl">
+      <div>
         <h1 className="mb-2 text-xl font-semibold md:text-2xl">{saluto}</h1>
-        <p className="mb-8 max-w-2xl text-balance text-sm text-gray-600">{d.dashboard.intro}</p>
+        <p className="mb-8 text-balance text-sm text-gray-600">{d.dashboard.intro}</p>
         <div className="max-w-xl rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
           <p className="text-sm font-medium text-gray-900">{d.dashboard.emptyTitle}</p>
           <p className="mt-1 text-sm text-gray-500">{d.dashboard.emptyHint}</p>
@@ -240,12 +241,17 @@ export default function HomePage() {
   // non è "pronto" — è la carta bianca che il cliente si troverebbe davanti.
   const statoMenu: Stato =
     suoiMenu.length === 0 ? 'todo' : piattiNeiMenu === 0 ? 'draft' : 'ready';
+  // I nomi dei menù solo quando sono più d'uno: il nome di un menù serve a
+  // distinguerlo dagli altri, e da solo, sotto una card che si chiama già
+  // "Menù al tavolo", direbbe soltanto "Menù senza nome".
+  const nomiMenu =
+    suoiMenu.length > 1
+      ? `${suoiMenu.map((menu) => menu.name.trim() || d.menus.unnamed).join(' · ')} — `
+      : '';
   const dettaglioMenu =
     suoiMenu.length === 0
       ? d.dashboard.menusEmpty
-      : `${suoiMenu.map((menu) => menu.name.trim() || d.menus.unnamed).join(' · ')} — ${piattiNeiMenu} ${
-          piattiNeiMenu === 1 ? d.home.dishOne : d.home.dishOther
-        }`;
+      : `${nomiMenu}${piattiNeiMenu} ${piattiNeiMenu === 1 ? d.home.dishOne : d.home.dishOther}`;
 
   // SCHEDA: si dice cosa c'è già dentro. Lo stato invece è l'unica cosa che
   // il ristoratore non decide da solo — senza claim la scheda non è nell'app.
@@ -258,9 +264,9 @@ export default function HomePage() {
   const dettaglioScheda = pezziScheda.length === 0 ? d.dashboard.cardEmpty : pezziScheda.join(' · ');
 
   return (
-    <div className="max-w-3xl">
+    <div>
       <h1 className="text-xl font-semibold md:text-2xl">{saluto}</h1>
-      <p className="mt-2 max-w-2xl text-balance text-sm text-gray-600">{d.dashboard.intro}</p>
+      <p className="mt-2 text-balance text-sm text-gray-600">{d.dashboard.intro}</p>
 
       {/* Di quale locale parla tutto quello che c'è sotto. Il nome si corregge
           da qui: è quello che i clienti leggono in cima al menù, non
@@ -371,8 +377,13 @@ export default function HomePage() {
         <div className="flex flex-wrap gap-2">
           <QuickAction href="/piatti?nuovo" label={d.dashboard.quickDish} />
           {/* col locale in coda: da qui è già scelto, e la finestra non deve
-              richiederlo (con un menù già fatto chiederà solo il nome) */}
-          <QuickAction href={`/menu?nuovo=${venue.id}`} label={d.dashboard.quickMenu} />
+              richiederlo (con un menù già fatto chiederà solo il nome).
+              Sparisce quando non c'è nessun menù da fare: con i menù multipli
+              spenti (features.ts) un locale che ce l'ha già non può averne un
+              altro, e la card qui sopra ha già "Apri". */}
+          {(MULTI_MENU || suoiMenu.length === 0) && (
+            <QuickAction href={`/menu?nuovo=${venue.id}`} label={d.dashboard.quickMenu} />
+          )}
           <QuickAction href={`/locale/${venue.id}#link`} label={d.dashboard.quickLinks} crea={false} />
         </div>
       </div>

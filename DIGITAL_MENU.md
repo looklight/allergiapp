@@ -29,6 +29,11 @@ testo** che si trascinano fra le sezioni; le pastiglie del filtro hanno una **gr
 (glutine, vegetariano, vegano, latte, uova…) con un bottone **Filtri** ancorato che apre l'elenco
 intero. La ricerca nel menù è stata valutata e **scartata**, per la ragione scritta nel Tema 18.
 
+**Aggiornamento 2026-09-01: un menù per locale (Tema 19).** Più menù per lo stesso locale resta
+nel modello dati e nel codice, ma è **spento** da `MULTI_MENU` in `partner/src/lib/features.ts`:
+è una voce del futuro premium, e finché non si vende complicava la creazione per tutti. Nessuna
+migration, nessun vincolo sul database.
+
 **Cosa NON c'è ancora, ed è tutta la fase 2**: nessuno slug, nessun QR, nessuna pagina pubblica.
 L'anteprima a tutta pagina sta dentro il portale, dietro l'autenticazione, e lo dichiara con una
 fascia in cima — la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
@@ -567,7 +572,54 @@ accese. Dal QR non si può — il lettore è anonimo, Tema 6 — quindi è roba 
 tradotto e il "coperto 2 €" è in italiano. Non blocca niente adesso; va deciso **insieme** alla
 pagina pubblica, non dopo.
 
-## Prossimo passo
+---
+
+### 2026-09-01 — Tema 19: Un menù per locale, con un interruttore
+
+**Decisione**: in questa fase **un locale ha un menù**. Non perché il modello sia sbagliato — più
+menù è la cosa giusta al tavolo, ed è già scritta nel confine del freemium come voce **a
+pagamento** — ma perché oggi complica il portale per tutti allo scopo di servire una cosa che non
+si vende ancora.
+
+**Il tappo è nel PORTALE, non nel database.** `partner_menus` resta com'è: una riga per menù,
+nessun vincolo di unicità sul locale. Un `UNIQUE (venue_id)` avrebbe descritto lo stesso stato di
+oggi, ma sarebbe stato la cosa difficile da togliere il giorno in cui più menù diventa una voce
+del listino — e quel giorno è previsto, non ipotetico.
+
+**Come si accende**: `MULTI_MENU` in `partner/src/lib/features.ts`, `true`, e torna tutto quello
+che c'era prima. Sta in un file del codice e non in una variabile d'ambiente perché la sua forma
+successiva non è una configurazione del sito: è il **piano del ristoratore letto dal database**, e
+una variabile d'ambiente andrebbe buttata via il giorno dopo avendo intanto sparso la stessa
+decisione fra il codice e la configurazione di Vercel.
+
+**Cosa sparisce con l'interruttore spento** (tutto ciò che esisteva solo perché i menù potevano
+essere tanti):
+
+- la domanda **"come si chiama il menù?"** nella finestra di creazione, e con lei quella che
+  battezzava il menù già esistente: nessun locale ne avrà due, quindi non c'è niente da
+  distinguere;
+- i locali che il menù ce l'hanno già **escono dalla tendina**; se non ne resta nessuno la finestra
+  lo dice e chiede il nome di un **locale nuovo**, invece di far trovare "Nome del locale" a chi
+  aveva premuto "Nuovo menù";
+- l'azione rapida **"Nuovo menù"** in home sparisce quando quel locale il menù ce l'ha, e la
+  scorciatoia `/menu?nuovo=<id>` **apre** quel menù invece di proporne un secondo;
+- nelle liste un menù senza nome si chiama **"Menù"** e non "Menù senza nome": rimproverare
+  un'assenza che è una nostra scelta è una svista che si vede a schermo.
+
+**Le linguette non sono state toccate**: si vedevano già da due menù in su (precisazione del Tema
+13), quindi con l'interruttore spento non compaiono da sole.
+
+**Chi ha già più di un menù li tiene**: restano in elenco, si aprono, si eliminano. Spegnere una
+funzione non è nascondere il lavoro di chi l'aveva usata — e non c'è nessuna migrazione di dati da
+fare, in nessuna delle due direzioni.
+
+**Nella stessa passata**, una cosa vista dall'utente: il campo *"E quello che hai già, come si
+chiama?"* aveva come segnaposto **"Carta"**. Dentro un campo vuoto un nome plausibile si legge
+come una risposta già data, e chi ha fretta conferma senza scrivere niente. Adesso i segnaposto di
+quei campi sono **esempi dichiarati** ("es. Carta", "es. Pranzo"), e il campo del menù nuovo non
+ripete più l'etichetta che ha sopra.
+
+-## Prossimo passo
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così
 com'è e chiedendo: *"se questo diventasse il tuo menù al tavolo, cosa manca?"*. Le risposte saranno

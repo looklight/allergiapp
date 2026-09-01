@@ -341,6 +341,17 @@ menù": il nome del menù è solo l'etichetta della linguetta e si chiede dal
 secondo menù dello stesso locale in poi. Il nome del ristorante invece non ha
 nessun'altra fonte — chi non fa il claim non ce l'ha da nessuna parte.
 
+**Dal 2026-09-01 un locale ha UN menù** (Tema 19). Il modello dati non è
+cambiato — `partner_menus` non ha nessun vincolo di unicità, e più menù resta
+una voce del futuro premium — il tappo è l'interruttore `MULTI_MENU` in
+`src/lib/features.ts`: `true` e torna tutto com'era. Spento, sparisce solo
+quello che esisteva perché i menù potevano essere tanti (la domanda del nome
+del menù, i locali già serviti nella tendina, l'azione rapida "Nuovo menù" in
+home, e `/menu?nuovo=<id>` apre il menù invece di crearne un altro). Chi ne ha
+già più d'uno li tiene e può aprirli. **Chi tocca questa parte non aggiunga un
+`UNIQUE (venue_id)`**: descriverebbe lo stesso stato di oggi e sarebbe la cosa
+difficile da togliere quando più menù si venderà.
+
 Non c'è ancora **niente della pubblicazione**: nessuno slug, nessun QR,
 nessuna pagina pubblica. Sono la fase successiva, e le regole dello slug
 (mai riassegnato, v. Tema 17) si decidono insieme a quella.

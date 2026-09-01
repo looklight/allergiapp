@@ -284,13 +284,19 @@ const it = {
     venueHint: 'Compare in cima al menù: lo leggono i tuoi clienti.',
     menuNameLabel: 'Nome del menù',
     menuNameHint: 'Serve a distinguerlo: è la linguetta in alto nella pagina.',
+    // "es." davanti: dentro un campo vuoto un nome plausibile si legge come
+    // una risposta già data, e chi ha fretta conferma senza scrivere niente.
+    menuNamePlaceholder: 'es. Pranzo',
     // Compare SOLO creando il secondo menù di un locale il cui primo non ha
     // nome: è l'istante esatto in cui il nome comincia a servire, e chiederlo
     // prima sarebbe stata una domanda senza motivo.
     existingNameLabel: 'E quello che hai già, come si chiama?',
     existingNameHint:
       'Adesso i menù sono due: al tavolo il cliente li sceglie dalle linguette, quindi servono due nomi.',
-    existingNamePlaceholder: 'Carta',
+    existingNamePlaceholder: 'es. Carta',
+    // Tutti i locali hanno già il loro menù: si spiega perché la finestra
+    // chiede il nome di un locale invece di quello di un menù
+    oneEach: 'Ogni locale ha il suo menù, e i tuoi ce l’hanno già: questo sarà il menù di un nuovo locale.',
     empty: 'Non hai ancora nessun menù.',
     emptyHint: 'Creane uno: i piatti li prendi dal tuo catalogo, senza riscriverli.',
     counts: '{dishes} piatti · {sections} sezioni',
@@ -322,7 +328,6 @@ const it = {
     logoAlt: 'Il tuo logo',
     accent: 'Colore',
     notFound: 'Questo menù non esiste.',
-    namePlaceholder: 'Nome del menù',
     descriptionPlaceholder: 'Aggiungi una descrizione (facoltativa): orari, un avviso…',
     currency: 'Valuta',
     loose: 'Fuori sezione',

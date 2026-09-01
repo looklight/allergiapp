@@ -12,9 +12,15 @@
 //
 // Il ristorante non c'è nessun altro modo di saperlo: chi non associa una
 // scheda AllergiApp non ha nessun nome da nessuna parte (v. Tema 16).
+//
+// CON I MENÙ MULTIPLI SPENTI (MULTI_MENU, features.ts) qui resta una domanda
+// sola: quale locale. Il nome del menù non si chiede più — nessun locale ne
+// avrà due, quindi non c'è niente da distinguere — e i locali che il menù ce
+// l'hanno già escono dalla tendina.
 import { useId, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
+import { MULTI_MENU } from '@/lib/features';
 import type { Venue } from '@/lib/venues';
 import type { Menu } from '@/lib/menus';
 
@@ -52,9 +58,15 @@ export default function NewMenuDialog({
   const venueField = useId();
   const menuField = useId();
 
+  // I locali a cui si può ancora appendere un menù. Con i menù multipli spenti
+  // quelli che ce l'hanno già non sono una scelta: sceglierli porterebbe a un
+  // secondo menù che non può esistere.
+  const sceglibili = MULTI_MENU ? venues : venues.filter((v) => menusOf(v.id).length === 0);
+
   // Con un locale solo si parte da quello: la tendina esiste per chi ne ha di
-  // più, e a chi ne ha uno non deve chiedere niente.
-  const [scelto, setScelto] = useState<string>(fixed?.id ?? venues[0]?.id ?? NUOVO);
+  // più, e a chi ne ha uno non deve chiedere niente. Se non ne resta nessuno
+  // si parte da "un locale nuovo", che è l'unica strada rimasta.
+  const [scelto, setScelto] = useState<string>(fixed?.id ?? sceglibili[0]?.id ?? NUOVO);
   const [nuovoNome, setNuovoNome] = useState('');
   // Vuoto, non "Carta": il nome si chiede SOLO quando c'è già un menù da cui
   // distinguere questo, e proporre lo stesso nome del primo è il contrario di
@@ -66,8 +78,9 @@ export default function NewMenuDialog({
   // Un locale può esistere senza nome (prima della 703 non lo si chiedeva):
   // in quel caso si chiede adesso, perché senza il menù non ha intestazione.
   const serveNome = locale === null || locale.venueName.trim() === '';
-  // Il nome del menù solo quando c'è già qualcosa da cui distinguerlo
-  const esistenti = locale === null ? [] : menusOf(locale.id);
+  // Il nome del menù solo quando c'è già qualcosa da cui distinguerlo — cioè
+  // mai, finché i menù multipli sono spenti
+  const esistenti = locale === null || !MULTI_MENU ? [] : menusOf(locale.id);
   const serveNomeMenu = esistenti.length > 0;
   // …e se quello che c'è già è rimasto senza nome, adesso ne ha bisogno pure
   // lui: da qui in poi sono due linguette accanto, e una senza nome sarebbe
@@ -111,7 +124,7 @@ export default function NewMenuDialog({
         {/* La tendina compare solo se c'è davvero una scelta da fare: con un
             locale solo non c'è niente da scegliere, e "+ Un altro locale" ha
             comunque una strada dedicata dalla home (NewVenueDialog). */}
-        {venues.length > 1 && !fixed && (
+        {sceglibili.length > 1 && !fixed && (
           <div className="mt-4">
             <label htmlFor={venueField} className="mb-1 block text-sm font-medium text-gray-700">
               {d.menus.forVenue}
@@ -122,7 +135,7 @@ export default function NewMenuDialog({
               onChange={(e) => setScelto(e.target.value)}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
             >
-              {venues.map((v) => (
+              {sceglibili.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.venueName.trim() || d.home.unnamed}
                 </option>
@@ -130,6 +143,14 @@ export default function NewMenuDialog({
               <option value={NUOVO}>{d.menus.newVenue}</option>
             </select>
           </div>
+        )}
+
+        {/* Tutti i locali hanno già il loro menù: l'unico modo di averne un
+            altro è un altro locale, e va detto PRIMA del campo — altrimenti
+            si apre "Nuovo menù" e ci si trova davanti "Nome del locale"
+            senza sapere perché. */}
+        {!MULTI_MENU && !fixed && sceglibili.length === 0 && venues.length > 0 && (
+          <p className="mt-3 text-sm text-gray-500">{d.menus.oneEach}</p>
         )}
 
         {serveNome && (
@@ -163,7 +184,7 @@ export default function NewMenuDialog({
               autoFocus={!serveNome}
               onChange={(e) => setMenuName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && conferma()}
-              placeholder={d.menuEditor.namePlaceholder}
+              placeholder={d.menus.menuNamePlaceholder}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
             />
             <p className="mt-1 text-xs text-gray-500">{d.menus.menuNameHint}</p>

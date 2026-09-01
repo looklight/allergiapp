@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { fill, useI18n } from '@/lib/i18n';
+import { MULTI_MENU } from '@/lib/features';
 import { useDishes } from '@/lib/dishes';
 import { useVenues, type Venue } from '@/lib/venues';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
@@ -69,6 +70,14 @@ export default function MenusPage() {
       setCreating(true);
       return;
     }
+    // Con i menù multipli spenti un locale ne ha uno: se ce l'ha già, la
+    // scorciatoia lo APRE. Portare a una finestra che propone di crearne un
+    // secondo vorrebbe dire offrire una cosa che poi non si può fare.
+    const suo = menus.find((m) => m.venueId === locale.id);
+    if (!MULTI_MENU && suo) {
+      router.push(`/menu/${suo.id}`);
+      return;
+    }
     if (locale.venueName.trim() !== '' && !menus.some((m) => m.venueId === locale.id)) {
       void handleCreate(locale.id, locale.venueName, '');
       return;
@@ -107,6 +116,12 @@ export default function MenusPage() {
   }
 
   const loading = !venues || !dishes || !menus;
+  // Come si chiama un menù che non ha nome. "Menù senza nome" suona come una
+  // cosa da sistemare, ed è giusto così finché un nome glielo si può dare:
+  // con i menù multipli spenti il nome non si chiede più a nessuno, quindi
+  // rimproverare chi non l'ha scritto sarebbe rimproverarlo di una scelta
+  // nostra.
+  const ripiego = MULTI_MENU ? d.menus.unnamed : d.menus.genericTab;
   // Solo i locali che hanno almeno un menù: un locale esiste anche per la
   // sola scheda AllergiApp, e qui elencare un ristorante vuoto vorrebbe dire
   // mostrare in questa pagina una cosa che con i menù non c'entra.
@@ -130,7 +145,7 @@ export default function MenusPage() {
   return (
     <div>
       <h1 className="mb-2 text-xl font-semibold md:text-2xl">{d.menus.title}</h1>
-      <p className="mb-8 max-w-2xl text-balance text-sm text-gray-600">{d.menus.intro}</p>
+      <p className="mb-8 text-balance text-sm text-gray-600">{d.menus.intro}</p>
 
       {loading ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>
@@ -169,7 +184,7 @@ export default function MenusPage() {
                           href={`/menu/${menu.id}`}
                           className="block truncate text-sm font-medium text-gray-900"
                         >
-                          {menu.name.trim() || d.menus.unnamed}
+                          {menu.name.trim() || ripiego}
                         </Link>
                         <p className="mt-0.5 text-xs text-gray-500">
                           {sezioni === 0
@@ -219,7 +234,7 @@ export default function MenusPage() {
         <ConfirmDialog
           title={d.menus.deleteTitle}
           body={d.menus.deleteBody}
-          subject={deleting.name.trim() || d.menus.unnamed}
+          subject={deleting.name.trim() || ripiego}
           confirmLabel={d.common.delete}
           onCancel={() => setDeleting(null)}
           onConfirm={() => {
