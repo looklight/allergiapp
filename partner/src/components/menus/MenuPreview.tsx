@@ -114,7 +114,7 @@ export default function MenuPreview({
             alt=""
             className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
           />
-          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{venueName}</p>
+          <p className="min-w-0 flex-1 truncate text-lg font-semibold">{venueName}</p>
         </div>
 
         {/* Descrizione del menù: facoltativa, quello che il ristoratore ha

@@ -274,7 +274,7 @@ export default function MenuEditorPage() {
           onChange={(e) => setBrand({ name: e.target.value })}
           placeholder={d.menuEditor.venueNamePlaceholder}
           aria-label={d.menuEditor.venueNameLabel}
-          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-2xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-3xl"
+          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
         />
         <label className="flex shrink-0 items-center gap-2 text-xs text-gray-500">
           {d.menuEditor.currency}
