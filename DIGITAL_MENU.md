@@ -619,7 +619,37 @@ come una risposta già data, e chi ha fretta conferma senza scrivere niente. Ade
 quei campi sono **esempi dichiarati** ("es. Carta", "es. Pranzo"), e il campo del menù nuovo non
 ripete più l'etichetta che ha sopra.
 
--## Prossimo passo
+---
+
+### 2026-09-01 — Tema 20: La pubblicazione è uno stato in avanti, non un interruttore
+
+**Domanda**: anche con un menù solo, il ristoratore deve poter decidere se è **attivo o
+disattivato**?
+
+**Oggi no, e non è pigrizia**: non esiste niente di pubblico. L'unico posto in cui il menù si vede
+è l'anteprima, che sta dietro l'accesso del ristoratore. Un interruttore spegnerebbe una cosa che
+nessun cliente può già vedere, e sarebbe una manopola da mantenere per zero effetto.
+
+**Con la pagina pubblica (fase 2) la domanda diventa vera, e la risposta è uno stato SOLO, che va
+in avanti**: *non ancora pubblicato* → *pubblicato*. Non un acceso/spento.
+
+**Perché**: il QR è plastificato sul tavolo e appiccicato alla vetrina. Prima della pubblicazione
+l'indirizzo non esiste e il ristoratore lavora tranquillo — ed è già così oggi, senza bisogno di
+un campo. Dopo, "disattivare" non nasconde niente: trasforma un oggetto fisico già in giro per il
+locale in un cartello che porta a una pagina morta, e il ristoratore non se ne accorge finché non
+glielo dice un cliente seduto al tavolo. È lo stesso ragionamento del Tema 13 sugli slug che non
+si riciclano: il supporto è fisico, quindi le decisioni sono a senso unico.
+
+**Serve comunque una via d'uscita**, ma non è la sparizione: se il locale chiude, cambia gestione
+o smette di usarci, la pagina **resta e lo dice** ("il menù non è al momento disponibile"), perché
+davanti a un cliente al tavolo è meglio di un errore del browser. Chi lo implementa non lo faccia
+diventare un 404.
+
+**Nota su cosa NON è questo**: l'acceso/spento vero serve alla **scheda in app**, dove siamo noi a
+mostrare il ristorante a chi lo cerca da lontano — ed è già governato dal claim e
+dall'abbonamento. Il menù al tavolo è del ristoratore, e lì la domanda è un'altra.
+
+## Prossimo passo
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così
 com'è e chiedendo: *"se questo diventasse il tuo menù al tavolo, cosa manca?"*. Le risposte saranno
