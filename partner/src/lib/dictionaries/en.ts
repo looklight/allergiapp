@@ -347,6 +347,10 @@ const en: typeof it = {
     filterNone: 'No suitable dish in this section.',
     excludedContains: 'Contains {list}',
     excludedNotFor: 'Not marked for {list}',
+    dishDetailOpen: 'View {dish}',
+    dishDetailAllergensTitle: 'Declared allergens',
+    dishDetailNoAllergens: 'No allergens declared by the restaurant.',
+    dishDetailDietsTitle: 'Suitable for',
   },
   preview: {
     venueName: 'Your restaurant',

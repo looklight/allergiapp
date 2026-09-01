@@ -364,6 +364,10 @@ const it = {
     filterNone: 'Nessun piatto adatto in questa sezione.',
     excludedContains: 'Contiene {list}',
     excludedNotFor: 'Non indicato per {list}',
+    dishDetailOpen: 'Vedi {dish}',
+    dishDetailAllergensTitle: 'Allergeni dichiarati',
+    dishDetailNoAllergens: 'Nessun allergene dichiarato dal ristorante.',
+    dishDetailDietsTitle: 'Adatto a',
   },
   preview: {
     venueName: 'Il tuo ristorante',

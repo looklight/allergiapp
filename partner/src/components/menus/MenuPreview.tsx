@@ -14,12 +14,14 @@
 // dice niente e per giunta non si può premere. (Prima c'era sempre, per far
 // capire nell'editor che i menù possono essere più d'uno: didattica pagata dal
 // cliente al tavolo, che di quel ripasso non sa che farsene.)
+import { useState } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
 import { ALLERGENS, allergenName } from '@/lib/allergens';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
 import { displayPrice, menuItems, type Menu, type MenuItem } from '@/lib/menus';
 import { DEFAULT_LOGO, accentHex, type MenuBrand } from '@/lib/menuBrand';
+import DishDetailSheet from './DishDetailSheet';
 
 export interface ViewerNeeds {
   allergens: string[];
@@ -69,6 +71,10 @@ export default function MenuPreview({
   const { d, locale } = useI18n();
   const accent = accentHex(brand.accent);
   const dishById = (id: string) => dishes.find((dish) => dish.id === id);
+  // Il piatto aperto nel foglio di dettaglio: sta qui e non nella pagina che
+  // usa MenuPreview, perché è uno stato di QUESTA schermata (il telefono
+  // simulato), non dell'editor che le sta intorno.
+  const [detail, setDetail] = useState<{ item: MenuItem; dish: Dish } | null>(null);
 
   const nelMenu = menuItems(menu)
     .map((item) => dishById(item.dishId))
@@ -89,7 +95,11 @@ export default function MenuPreview({
   ].filter((g) => g.items.length > 0);
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    // relative: è l'ancora del foglio di dettaglio (absolute inset-0), che
+    // deve coprire SOLO lo schermo simulato e non la pagina del portale
+    // intorno — dentro il telefono mockup o dentro l'anteprima a tutta
+    // pagina, mai oltre.
+    <div className="relative flex h-full flex-col bg-white">
       {/* Intestazione: la fascia colorata è l'unico posto in cui il colore
           scelto fa da fondo. Sul testo dei piatti resterebbe una scelta di
           contrasto lasciata al ristoratore, che il Tema 8 non concede. */}
@@ -219,6 +229,7 @@ export default function MenuPreview({
                       currency={menu.currency}
                       locale={locale}
                       needs={needs}
+                      onOpen={(dish) => setDetail({ item, dish })}
                     />
                   ))}
                 </ul>
@@ -236,6 +247,16 @@ export default function MenuPreview({
           </p>
         )}
       </div>
+
+      {detail && (
+        <DishDetailSheet
+          item={detail.item}
+          dish={detail.dish}
+          currency={menu.currency}
+          needs={needs}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </div>
   );
 }
@@ -271,12 +292,14 @@ function Riga({
   currency,
   locale,
   needs,
+  onOpen,
 }: {
   item: MenuItem;
   dish: Dish | undefined;
   currency: string;
   locale: 'it' | 'en';
   needs: ViewerNeeds;
+  onOpen: (dish: Dish) => void;
 }) {
   const { d } = useI18n();
   if (!dish) return null;
@@ -291,7 +314,16 @@ function Riga({
         item.highlighted ? '-mx-1.5 rounded-lg bg-amber-50 px-1.5 py-1' : ''
       }`}
     >
-      <div className="flex gap-2.5">
+      {/* Tutta la riga si tocca, non solo il nome: sul telefono un bersaglio
+          piccolo è un bersaglio mancato. Apre il dettaglio — foto grande,
+          descrizione intera, tutti gli allergeni — che qui non c'è spazio
+          per mostrare per intero. */}
+      <button
+        type="button"
+        onClick={() => onOpen(dish)}
+        aria-label={fill(d.menuPublic.dishDetailOpen, { dish: dish.name })}
+        className="flex w-full gap-2.5 text-left"
+      >
         {/* Un piatto senza foto tiene comunque lo spazio: senza, le righe
             fotografate e quelle no avrebbero il testo che parte da punti
             diversi, e la carta sembrerebbe storta scorrendola. */}
@@ -354,7 +386,7 @@ function Riga({
             )
           )}
         </div>
-      </div>
+      </button>
     </li>
   );
 }
