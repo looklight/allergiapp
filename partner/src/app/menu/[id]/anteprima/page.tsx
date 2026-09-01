@@ -86,7 +86,15 @@ export default function FullPreviewPage() {
           farebbe giudicare al ristoratore un'impaginazione che nessuno dei
           suoi clienti vedrà mai. */}
       <div className="mx-auto min-h-[calc(100dvh-1.75rem)] w-full max-w-[420px] bg-white shadow-sm">
-        <div className="flex min-h-[calc(100dvh-1.75rem)] flex-col">
+        {/* Altezza FISSA e non minima: MenuPreview ha già dentro di sé
+            l'intestazione ferma e la lista che scorre (flex-1
+            overflow-y-auto) — ma quello scorrimento interno funziona solo
+            se questo contenitore ha un'altezza vera da passargli (h-full),
+            non semplicemente un minimo. Senza, con pochi piatti la pagina
+            prendeva l'altezza del contenuto e basta: un foglio aperto sopra
+            un piatto (DishDetailSheet, absolute inset-0) si ritrovava
+            schiacciato in cima invece di coprire tutto lo schermo. */}
+        <div className="flex h-[calc(100dvh-1.75rem)] flex-col">
           <MenuPreview
             menu={menu}
             siblings={(menus ?? []).filter((m) => m.venueId === menu.venueId)}
