@@ -48,7 +48,7 @@ export default function PublishBar({
   if (!daPubblicare) {
     return (
       <div className="flex min-w-0 flex-1 items-center justify-end gap-x-3">
-        <p className="min-w-0 truncate text-xs text-gray-400">
+        <p className="line-clamp-2 min-w-0 text-right text-xs leading-tight text-gray-400">
           {fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })}
         </p>
       </div>
@@ -63,16 +63,21 @@ export default function PublishBar({
       : d.menuEditor.publishPending;
 
   return (
-    // min-w-0 + truncate sul messaggio: su una finestra stretta si accorcia
-    // invece di mandare a capo il bottone e raddoppiare l'altezza della riga
-    // di servizio, che sta in cima e ruba spazio al menù per tutto il tempo.
-    // Il testo intero resta nel title, quindi non si perde.
+    // Il messaggio va a capo su DUE righe invece di accorciarsi con i
+    // puntini: è un avviso, e mezzo avviso non serve a niente. Due righe di
+    // testo minuto stanno nell'altezza che il bottone occupa comunque, quindi
+    // la riga di servizio non cresce — era quello il motivo per cui prima si
+    // troncava. Oltre le due righe si taglia: a quel punto il testo sarebbe
+    // sbagliato, non lungo.
     <div
       className={`flex min-w-0 flex-1 items-center justify-end gap-x-3 ${
         allarme ? 'text-amber-800' : 'text-gray-600'
       }`}
     >
-      <p className="min-w-0 truncate text-xs leading-snug" title={messaggio}>
+      <p
+        className="line-clamp-2 min-w-0 text-balance text-right text-xs leading-tight"
+        title={messaggio}
+      >
         {messaggio}
       </p>
       <button
