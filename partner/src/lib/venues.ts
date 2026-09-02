@@ -296,6 +296,46 @@ export async function slugOccupato(slug: string): Promise<boolean | null> {
   return data === true;
 }
 
+// ------------------------------------------------------------------
+// BOZZA E PUBBLICATO
+// Il portale continua a salvare da solo mentre si scrive — la bozza non si
+// perde mai — ma quello che il cliente legge al tavolo cambia solo quando il
+// ristoratore preme "Pubblica le modifiche" (DIGITAL_MENU.md, Tema 24).
+// ------------------------------------------------------------------
+
+export interface PublishState {
+  // quando è stato pubblicato l'ultima volta; null = mai
+  publishedAt: string | null;
+  // la bozza è più avanti dello scatto pubblicato
+  hasChanges: boolean;
+  // …e fra le modifiche ci sono ALLERGENI. È la ragione per cui questo campo
+  // esiste: un allergene corretto e mai pubblicato resta vecchio sul tavolo, e
+  // dal portale non si vede — lì la correzione c'è. L'avviso deve poter
+  // nominare quel rischio invece di dire genericamente "hai modifiche".
+  allergensChanged: boolean;
+}
+
+export async function menuPublishState(venueId: string): Promise<PublishState | null> {
+  const { data, error } = await supabase.rpc('menu_publish_state', { p_venue_id: venueId });
+  if (error) {
+    reportError('stato di pubblicazione', error);
+    return null;
+  }
+  return (data as PublishState) ?? null;
+}
+
+// Restituisce quando è stata fatta, o null se non è andata. Passa da write()
+// come tutte le altre scritture: se fallisce si vede nella barra di stato e
+// si può riprovare, invece di lasciare il ristoratore convinto di aver
+// pubblicato.
+export async function publishMenu(venueId: string): Promise<string | null> {
+  const { data, error } = await write('pubblicazione del menù', () =>
+    supabase.rpc('publish_menu', { p_venue_id: venueId })
+  );
+  if (error) return null;
+  return (data as string) ?? null;
+}
+
 // venues è null finché la prima lettura non è tornata
 export function useVenues() {
   const { list: venues, setList, reload } = useRemoteList('locali', loadVenues);

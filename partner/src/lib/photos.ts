@@ -309,7 +309,24 @@ function bucketPath(url: string): string | null {
 // Cancella i file di una foto. Non blocca mai chi la chiama e non ha un
 // esito da guardare: un file rimasto sono byte, e far fallire per questo
 // un'eliminazione riuscita sarebbe peggio del file.
+//
+// ⚠️ TRANNE SE QUELLA FOTO È IN UN MENÙ GIÀ PUBBLICATO. Da quando esiste la
+// pubblicazione (Tema 24), il menù che il cliente legge al tavolo è uno
+// SCATTO: se il ristoratore sostituisce la foto di un piatto, lo scatto punta
+// ancora al file vecchio, e cancellarlo vuol dire un'immagine rotta in sala —
+// invisibile dal portale, dove si vede la foto nuova. Il file resta lì finché
+// quel locale non pubblica di nuovo; da quel momento è un orfano di qualche
+// decina di KB, che costa incomparabilmente meno.
 export async function deleteDishPhoto(url: string, thumbUrl: string): Promise<void> {
+  const { data: inSala, error: erroreControllo } = await supabase.rpc('photo_in_published_menu', {
+    p_url: url,
+  });
+  // Se il controllo non riesce NON si cancella: nel dubbio si tiene un file
+  // di troppo, che è il lato dell'errore che non si vede al tavolo.
+  if (erroreControllo || inSala === true) {
+    reportError('controllo foto pubblicata', erroreControllo);
+    return;
+  }
   const paths = [url, thumbUrl].map(bucketPath).filter((p): p is string => p !== null);
   if (paths.length === 0) return;
   const { error } = await supabase.storage.from(BUCKET).remove(paths);

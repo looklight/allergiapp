@@ -796,6 +796,62 @@ ampliata (e verrà ampliata, l'utente l'ha già detto):
 oggi — acceso il primo, spento il secondo. Nessuna colonna nuova per le foto: quelle stanno dove
 sono sempre state.
 
+---
+
+### 2026-09-02 — Tema 24: Bozza e pubblicato, e il bottone che dà peso al lavoro
+
+**Domanda dell'utente**: mettere un "Salva" al posto del salvataggio automatico, *"anche per gestire
+meglio quello che va live"*.
+
+**Decisione**: il salvataggio automatico **resta**, e si aggiunge **"Pubblica le modifiche"**. Sono
+due problemi diversi e vanno risolti separatamente:
+
+- **Salvare** protegge il ristoratore dal perdere il lavoro. Il portale si usa dal telefono, in
+  piedi in mezzo alla sala: una scheda chiusa per sbaglio e un pomeriggio se ne va. Tutto il
+  portale salva da solo, e togliere quello qui vorrebbe dire due comportamenti dentro lo stesso
+  prodotto.
+- **Pubblicare** protegge il cliente seduto al tavolo. Ed è il problema vero che nasce con la
+  pagina pubblica: senza, chi riorganizza la carta alle sette e mezza la dà in pasto ai clienti a
+  metà, con una sezione vuota e tre prezzi da correggere.
+
+**E c'è una ragione in più, che l'ha detta l'utente ed è quella che convince**: il gesto **dà peso
+al lavoro**. Prima di premere si guarda meglio quello che si sta per mettere in sala.
+
+**Come funziona**: le tabelle `partner_menu*` diventano la **bozza**; `partner_venues.published_menu`
+tiene lo **scatto**, cioè il menù nella forma esatta che legge la pagina pubblica, traduzioni
+comprese. `publish_menu()` prende lo scatto, `get_public_menu()` legge solo quello. Effetto
+collaterale buono: al tavolo si legge **una riga sola** invece di tre tabelle ricomposte a ogni
+scansione — è la versione concreta di quello che il Tema 11 chiamava "generare al salvataggio",
+solo che si genera alla pubblicazione, che è meglio.
+
+**⚠️ IL RISCHIO CHE QUESTA SCELTA INTRODUCE, e come è stato mitigato.** Un allergene corretto e mai
+pubblicato resta **vecchio sul tavolo**, e nessuno se ne accorge: nel portale la correzione si
+vede. È l'unico argomento serio a favore di com'era prima, ed è di sicurezza, non di comodità. Due
+cose lo tengono a bada, e chi tocca questa parte non le smonti:
+
+1. `menu_publish_state()` non dice solo "ci sono modifiche": dice se toccano gli **allergeni**,
+   confrontandoli con quelli dello scatto. L'avviso può così nominare il rischio — *"hai cambiato
+   degli allergeni: al tavolo si legge ancora la versione precedente"* — invece di essere
+   l'ennesima scritta grigia.
+2. La riga sta **in cima e resta in cima** (sticky) mentre si lavora: un avviso del genere non può
+   scorrere via su un menù lungo.
+
+**⚠️ LA TRAPPOLA CHE NON SI VEDE: le foto.** Sostituendo la foto di un piatto, il portale cancella
+subito il file vecchio dallo Storage. Con lo scatto pubblicato che lo referenzia ancora, il
+risultato è un'**immagine rotta in sala**, invisibile dal portale dove si vede quella nuova. Perciò
+`deleteDishPhoto` prima chiede a `photo_in_published_menu()` e, se la foto è in un menù pubblicato,
+**non cancella**: il file resta finché quel locale non pubblica di nuovo, e da lì è un orfano di
+qualche decina di KB. Un'immagine rotta davanti a un cliente costa incomparabilmente di più.
+
+**Il terzo costo, che resta e non si elimina**: un concetto in più da capire per chi non è tecnico
+("ho cambiato il prezzo e sul menù c'è ancora quello vecchio"). Si attenua con lo stato sempre
+visibile e con la data dell'ultima pubblicazione scritta in chiaro, non sparisce.
+
+**Valutata e scartata**: la via di mezzo "tutto live, con un bottone *sospendi gli aggiornamenti*
+per chi sta rifacendo la carta". Inverte il difetto — di norma il tavolo è sempre aggiornato, il
+che è la cosa giusta per gli allergeni — ma quasi nessuno si ricorderebbe di premerlo **prima** di
+cominciare, e si ritroverebbe comunque a modificare in sala.
+
 ## Prossimo passo
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così

@@ -339,6 +339,17 @@ const it = {
     logoFailed: 'Il logo non è stato caricato. Riprova.',
     accent: 'Colore',
     notFound: 'Questo menù non esiste.',
+    // PUBBLICAZIONE. "Modifiche non pubblicate" e non "non salvate": il
+    // lavoro è già al sicuro, quello che manca è il passaggio in sala.
+    publish: 'Pubblica le modifiche',
+    publishFirst: 'Pubblica il menù',
+    publishing: 'Pubblico…',
+    publishPending: 'Modifiche non pubblicate: al tavolo si legge ancora la versione precedente.',
+    // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
+    // grigia: è la mitigazione della scelta di avere una bozza (Tema 24).
+    publishAllergens: 'Hai cambiato degli allergeni: al tavolo si legge ancora la versione precedente.',
+    publishNever: 'Questo menù non è ancora pubblicato.',
+    publishedOn: 'Pubblicato il {date}',
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni
     // occasione utile: la cosa da non far succedere è che qualcuno lo stampi
     // su una locandina prima che la pagina esista.

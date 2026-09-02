@@ -311,6 +311,13 @@ const en: typeof it = {
     logoFailed: 'The logo was not uploaded. Try again.',
     accent: 'Colour',
     notFound: 'This menu does not exist.',
+    publish: 'Publish changes',
+    publishFirst: 'Publish the menu',
+    publishing: 'Publishing…',
+    publishPending: 'Unpublished changes: the table still shows the previous version.',
+    publishAllergens: 'You changed allergens: the table still shows the previous version.',
+    publishNever: 'This menu is not published yet.',
+    publishedOn: 'Published on {date}',
     addressTitle: 'Menu address',
     addressNotLive: 'Not live yet',
     addressHint:

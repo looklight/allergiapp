@@ -44,6 +44,7 @@ import BrandBar from '@/components/menus/BrandBar';
 import LogoPicker from '@/components/menus/LogoPicker';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
 import MenuAddress from '@/components/menus/MenuAddress';
+import PublishBar from '@/components/menus/PublishBar';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 
 export default function MenuEditorPage() {
@@ -266,7 +267,14 @@ export default function MenuEditorPage() {
     // flottante: stessa scelta dell'editor del locale, stesso gesto.
     <div className="lg:flex lg:items-start lg:gap-8">
       <div className="min-w-0 flex-1 lg:max-w-3xl">
-      <BackLink />
+      {/* La riga di servizio in cima: da dove si torna indietro e — a destra
+          — se quello che si sta guardando è già in sala. Sticky, perché
+          l'avviso sugli allergeni non pubblicati non può scorrere via mentre
+          si lavora su un menù lungo (v. PublishBar). */}
+      <div className="sticky top-0 z-30 -mx-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+        <BackLink />
+        {locale && <PublishBar venueId={locale.id} />}
+      </div>
 
       {/* Il titolo della pagina è il NOME DEL LOCALE, non un'etichetta
           generica: è l'unica cosa che il cliente legge per forza, in cima a

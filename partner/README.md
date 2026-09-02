@@ -362,6 +362,20 @@ già più d'uno li tiene e può aprirli. **Chi tocca questa parte non aggiunga u
 `UNIQUE (venue_id)`**: descriverebbe lo stesso stato di oggi e sarebbe la cosa
 difficile da togliere quando più menù si venderà.
 
+**Dal 2026-09-02 la bozza e il pubblicato sono due cose** (Tema 24): le
+tabelle del menù sono la bozza e continuano a salvarsi da sole, mentre
+quello che il cliente legge al tavolo cambia solo premendo **"Pubblica le
+modifiche"** (`PublishBar`, in cima all'editor e **sticky**). Sotto,
+`publish_menu()` prende uno scatto in `partner_venues.published_menu` e la
+pagina pubblica legge solo quello.
+
+⚠️ Due presidi che non vanno smontati: l'avviso dice se le modifiche non
+pubblicate toccano gli **allergeni** (`menu_publish_state`), perché un
+allergene corretto e mai pubblicato resta vecchio sul tavolo e dal portale
+non si vede; e `deleteDishPhoto` **non cancella** una foto che è dentro un
+menù già pubblicato (`photo_in_published_menu`), o in sala resterebbe
+un'immagine rotta mentre nel portale si vede quella nuova.
+
 **L'indirizzo del menù c'è dal 2026-09-01** (migration 707, applicata il
 02/09), ma **non è
 attivo**: in fondo all'editor una card lo propone dal nome del locale,
