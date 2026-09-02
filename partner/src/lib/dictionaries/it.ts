@@ -344,10 +344,10 @@ const it = {
     publish: 'Pubblica le modifiche',
     publishFirst: 'Pubblica il menù',
     publishing: 'Pubblico…',
-    publishPending: 'Modifiche non pubblicate: al tavolo si legge ancora la versione precedente.',
+    publishPending: 'Modifiche non pubblicate: al tavolo c’è ancora la versione precedente.',
     // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
     // grigia: è la mitigazione della scelta di avere una bozza (Tema 24).
-    publishAllergens: 'Hai cambiato degli allergeni: al tavolo si legge ancora la versione precedente.',
+    publishAllergens: 'Allergeni cambiati: al tavolo c’è ancora la versione precedente.',
     publishNever: 'Questo menù non è ancora pubblicato.',
     publishedOn: 'Pubblicato il {date}',
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni

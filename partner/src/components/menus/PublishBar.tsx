@@ -78,9 +78,9 @@ export default function PublishBar({ venueId }: { venueId: string }) {
   // questo?", che senza una data scritta da qualche parte non ha risposta.
   if (!daPubblicare) {
     return (
-      <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-x-3">
         {salvataggio}
-        <p className="text-xs text-gray-400">
+        <p className="min-w-0 truncate text-xs text-gray-400">
           {fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })}
         </p>
       </div>
@@ -88,20 +88,25 @@ export default function PublishBar({ venueId }: { venueId: string }) {
   }
 
   const allarme = stato.allergensChanged;
+  const messaggio = mai
+    ? d.menuEditor.publishNever
+    : allarme
+      ? d.menuEditor.publishAllergens
+      : d.menuEditor.publishPending;
 
   return (
+    // min-w-0 + truncate sul messaggio: su una finestra stretta si accorcia
+    // invece di mandare a capo il bottone e raddoppiare l'altezza della riga
+    // di servizio, che sta in cima e ruba spazio al menù per tutto il tempo.
+    // Il testo intero resta nel title, quindi non si perde.
     <div
-      className={`flex flex-wrap items-center justify-end gap-x-3 gap-y-1.5 ${
+      className={`flex min-w-0 flex-1 items-center justify-end gap-x-3 ${
         allarme ? 'text-amber-800' : 'text-gray-600'
       }`}
     >
       {salvataggio}
-      <p className="text-xs leading-snug">
-        {mai
-          ? d.menuEditor.publishNever
-          : allarme
-            ? d.menuEditor.publishAllergens
-            : d.menuEditor.publishPending}
+      <p className="min-w-0 truncate text-xs leading-snug" title={messaggio}>
+        {messaggio}
       </p>
       <button
         onClick={() => void pubblica()}

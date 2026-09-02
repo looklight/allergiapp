@@ -271,8 +271,8 @@ export default function MenuEditorPage() {
           — se quello che si sta guardando è già in sala. Sticky, perché
           l'avviso sugli allergeni non pubblicati non può scorrere via mentre
           si lavora su un menù lungo (v. PublishBar). */}
-      <div className="sticky top-0 z-30 -mx-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
-        <BackLink />
+      <div className="sticky top-0 z-30 -mx-4 flex items-center gap-x-4 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+        <span className="shrink-0"><BackLink /></span>
         {locale && <PublishBar venueId={locale.id} />}
       </div>
 
