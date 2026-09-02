@@ -1,8 +1,8 @@
 -- Migration 709: ritirare il menù dalla sala, e tre manopole d'aspetto
 --
--- STATO: DA APPLICARE via SQL editor, DOPO la 708 (il tracking locale è
--- fermo alla 045: questa, come tutte le 046+, va eseguita a mano — MAI
--- db push).
+-- STATO: APPLICATA il 2026-09-02 via SQL editor, dopo la 708 (il
+-- tracking locale è fermo alla 045: questa, come tutte le 046+, va
+-- eseguita a mano — MAI db push).
 --
 -- ------------------------------------------------------------
 -- LA VIA D'USCITA CHE IL TEMA 20 AVEVA PREVISTO
