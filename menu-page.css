@@ -205,54 +205,60 @@
   border-color: #fff;
 }
 
-/* IL CARATTERE VALE SUI TESTI PRINCIPALI — nome del locale, titoli delle
-   sezioni, nomi dei piatti e prezzi. NON su descrizioni, note, condizioni al
-   tavolo e soprattutto sulla riga degli ALLERGENI, che restano di sistema:
-   quella riga la legge una persona con un'allergia, in una sala poco
-   illuminata, mentre le chiedono cosa ordina (Tema 25). Chi estende queste
-   regole ai testi secondari le sta usando contro il prodotto.
-
-   Il PESO cambia col ruolo, ed è il motivo per cui ogni famiglia ha due file:
-   un nome di piatto in Archivo 700 sarebbe un muro di grassetto, e un titolo
-   in Jost 400 non sarebbe un titolo. Scrivere i pesi qui evita anche il
-   grassetto finto, che a queste dimensioni si vede. */
-.font-classic .menu-venue,
-.font-classic .menu-section-title {
+/* I PACCHETTI DI STILE (DIGITAL_MENU.md, Tema 25)
+ *
+ * Un pacchetto decide TUTTA la tipografia del menù, non solo i titoli: metà
+ * pagina in un carattere e metà in un altro sembra un errore, non una scelta.
+ * Quindi la famiglia si applica al corpo intero e sotto si aggiustano solo i
+ * pesi, che cambiano col ruolo — un nome di piatto in Archivo 700 sarebbe un
+ * muro di grassetto, un titolo in Jost 400 non sarebbe un titolo.
+ *
+ * ⚠️ DOVE IL CARATTERE COSTA LEGGIBILITÀ, SI COMPENSA invece di fare
+ * un'eccezione. La riga degli allergeni è di 10px e grigia: in un serif o in
+ * un geometrico leggero, a quella misura, si legge peggio del carattere di
+ * sistema — e quella riga la legge una persona con un'allergia, in una sala
+ * poco illuminata, mentre le chiedono cosa ordina. Nei pacchetti "classico" e
+ * "sottile" cresce di un punto e si scurisce. Chi toglie questa compensazione
+ * si tenga la responsabilità di quella riga.
+ */
+.font-classic {
   font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+}
+.font-bold {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.font-light {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* I pesi per ruolo. Il corpo (nomi, descrizioni) tiene il peso leggero della
+   famiglia; titoli e prezzi quello marcato. */
+.font-classic .menu-venue,
+.font-classic .menu-section-title,
+.font-classic .menu-price,
+.font-classic .menu-detail-price {
   font-weight: 600;
 }
 .font-classic .menu-item-name,
 .font-classic .menu-note-title,
 .font-classic .menu-detail-head h3 {
-  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
   font-weight: 400;
-}
-.font-classic .menu-price,
-.font-classic .menu-detail-price {
-  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
-  font-weight: 600;
 }
 
 .font-bold .menu-venue,
-.font-bold .menu-section-title {
-  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+.font-bold .menu-section-title,
+.font-bold .menu-price,
+.font-bold .menu-detail-price {
   font-weight: 700;
 }
 .font-bold .menu-item-name,
 .font-bold .menu-note-title,
 .font-bold .menu-detail-head h3 {
-  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 500;
-}
-.font-bold .menu-price,
-.font-bold .menu-detail-price {
-  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 700;
 }
 
 .font-light .menu-venue,
 .font-light .menu-section-title {
-  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 300;
 }
 .font-light .menu-item-name,
@@ -260,7 +266,6 @@
 .font-light .menu-detail-head h3,
 .font-light .menu-price,
 .font-light .menu-detail-price {
-  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 400;
 }
 /* Il maiuscoletto stretto, con un carattere leggero, si legge peggio: gli si
@@ -268,6 +273,20 @@
 .font-light .menu-section-title.is-underline,
 .font-light .menu-section-title.is-banner {
   letter-spacing: 0.09em;
+}
+
+/* LA COMPENSAZIONE: un punto in più e un grigio più scuro sulle righe minute
+   che portano informazione — allergeni, motivo dell'esclusione, descrizioni. */
+.font-classic .menu-item-allergens,
+.font-classic .menu-item-reason,
+.font-light .menu-item-allergens,
+.font-light .menu-item-reason {
+  font-size: 11px;
+  color: #6b6b6b;
+}
+.font-classic .menu-item-desc,
+.font-light .menu-item-desc {
+  font-size: 12.5px;
 }
 
 /* ── Il filtro ─────────────────────────────────────────────────── */
