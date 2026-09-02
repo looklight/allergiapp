@@ -184,6 +184,7 @@ export default function MenuEditorPage() {
       siblings={fratelli}
       dishes={catalogo}
       brand={brand}
+      coverUrl={locale?.coverUrl ?? ''}
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
       showPhotos={locale?.showDishPhotos ?? true}
@@ -340,6 +341,7 @@ export default function MenuEditorPage() {
           showDescriptions={locale?.showDishDescriptions ?? false}
           sectionStyle={locale?.sectionStyle ?? 'underline'}
           headingFont={locale?.headingFont ?? 'modern'}
+          coverUrl={locale?.coverUrl ?? ''}
           onAccent={(accent) => setBrand({ accent })}
           onShowPhotos={(showDishPhotos) => locale && setIdentity(locale.id, { showDishPhotos })}
           onShowDescriptions={(showDishDescriptions) =>
@@ -347,6 +349,7 @@ export default function MenuEditorPage() {
           }
           onSectionStyle={(sectionStyle) => locale && setIdentity(locale.id, { sectionStyle })}
           onHeadingFont={(headingFont) => locale && setIdentity(locale.id, { headingFont })}
+          onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
         />
       </div>
 

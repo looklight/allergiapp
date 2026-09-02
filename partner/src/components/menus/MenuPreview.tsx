@@ -76,6 +76,7 @@ export default function MenuPreview({
   siblings,
   dishes,
   brand,
+  coverUrl,
   venueName,
   tableConditions,
   showPhotos,
@@ -90,6 +91,9 @@ export default function MenuPreview({
   siblings: Menu[];
   dishes: Dish[];
   brand: MenuBrand;
+  // L'immagine dietro l'intestazione, al posto del colore pieno. Vuota =
+  // resta il colore.
+  coverUrl: string;
   venueName: string;
   // Coperto, servizio, pagamenti: sono del LOCALE, quindi identiche sotto
   // ogni linguetta. Vuote = non si mostra niente.
@@ -194,7 +198,23 @@ export default function MenuPreview({
       {/* Intestazione: la fascia colorata è l'unico posto in cui il colore
           scelto fa da fondo. Sul testo dei piatti resterebbe una scelta di
           contrasto lasciata al ristoratore, che il Tema 8 non concede. */}
-      <div className="shrink-0 px-4 pb-3 pt-4 text-white" style={{ backgroundColor: accent }}>
+      {/* L'intestazione: il colore pieno, oppure la COPERTINA con sopra una
+          velatura scura. La velatura non è facoltativa — il nome è bianco, e
+          su una foto chiara (una sala luminosa, un piatto di pasta)
+          sparirebbe. È la stessa ragione per cui le tinte le scegliamo noi
+          (Tema 8). Il colore resta come fondo sotto l'immagine: se la foto
+          non arriva, l'intestazione non diventa bianca. */}
+      <div
+        className="shrink-0 bg-cover bg-center px-4 pb-3 pt-4 text-white"
+        style={
+          coverUrl === ''
+            ? { backgroundColor: accent }
+            : {
+                backgroundColor: accent,
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.6)), url(${coverUrl})`,
+              }
+        }
+      >
         <div className="flex items-center gap-2.5">
           {/* SENZA LOGO NON C'È NESSUN LOGO, e prima invece compariva quello
               di AllergiApp (2026-09-02, deciso dall'utente). Sembrava una

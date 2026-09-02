@@ -22,6 +22,7 @@
 import { useI18n } from '@/lib/i18n';
 import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
 import { HEADING_FONTS, SECTION_STYLES, type HeadingFont, type SectionStyle } from '@/lib/venues';
+import CoverPicker from './CoverPicker';
 
 export default function BrandBar({
   accent,
@@ -29,22 +30,26 @@ export default function BrandBar({
   showDescriptions,
   sectionStyle,
   headingFont,
+  coverUrl,
   onAccent,
   onShowPhotos,
   onShowDescriptions,
   onSectionStyle,
   onHeadingFont,
+  onCover,
 }: {
   accent: string;
   showPhotos: boolean;
   showDescriptions: boolean;
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
+  coverUrl: string;
   onAccent: (accent: string) => void;
   onShowPhotos: (value: boolean) => void;
   onShowDescriptions: (value: boolean) => void;
   onSectionStyle: (value: SectionStyle) => void;
   onHeadingFont: (value: HeadingFont) => void;
+  onCover: (value: string) => void;
 }) {
   const { d, locale } = useI18n();
 
@@ -181,6 +186,8 @@ export default function BrandBar({
           })}
         </div>
       </div>
+
+      <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />
 
       {/* Gli interruttori sotto al colore, staccati da una riga: il colore è
           identità, questi due sono impaginazione. L'effetto si vede

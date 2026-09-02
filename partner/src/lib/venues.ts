@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
-import { deleteLogo } from './photos';
+import { deleteCover, deleteLogo } from './photos';
 import { write } from './saveState';
 
 // I tre stili dei titoli di sezione. Sono un elenco chiuso anche nel
@@ -103,6 +103,10 @@ export interface Venue extends VenueDraft {
   // 'underline' è quello di sempre.
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
+  // L'immagine dietro l'intestazione del menù, al posto del colore pieno.
+  // Vuota = resta il colore. Sotto ci va SEMPRE una velatura scura, o il nome
+  // del locale sopra una foto chiara sparisce (DIGITAL_MENU, Tema 25).
+  coverUrl: string;
   // L'indirizzo pubblico del menù: allergiapp.com/menu/<slug>. Vuoto = non
   // ancora scelto, ed è lo stato di tutti i locali che esistono oggi. Ne
   // esiste UNO alla volta e cambiandolo il precedente torna libero
@@ -193,7 +197,7 @@ async function loadVenues(): Promise<Venue[]> {
     .from('partner_venues')
     .select(
       'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, ' +
-        'show_dish_descriptions, section_style, heading_font, ' +
+        'show_dish_descriptions, section_style, heading_font, cover_url, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
     )
     .order('created_at', { ascending: true });
@@ -212,6 +216,7 @@ async function loadVenues(): Promise<Venue[]> {
       showDishDescriptions: row.show_dish_descriptions ?? false,
       sectionStyle: (row.section_style ?? 'underline') as SectionStyle,
       headingFont: (row.heading_font ?? 'modern') as HeadingFont,
+      coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
@@ -395,6 +400,7 @@ export function useVenues() {
       showDishDescriptions: false,
       sectionStyle: 'underline',
       headingFont: 'modern',
+      coverUrl: '',
       cardId: null,
       dishIds: [],
       links: emptyLinks(),
@@ -424,6 +430,7 @@ export function useVenues() {
             showDishDescriptions: s.showDishDescriptions,
             sectionStyle: s.sectionStyle,
             headingFont: s.headingFont,
+            coverUrl: s.coverUrl,
           }
         : s
     );
@@ -456,12 +463,14 @@ export function useVenues() {
         | 'showDishDescriptions'
         | 'sectionStyle'
         | 'headingFont'
+        | 'coverUrl'
       >
     >
   ) {
     // Il logo che c'era prima, letto PRIMA di sovrascrivere la lista: se la
     // scrittura riesce, quel file non è più di nessuno e va portato via.
     const precedente = (venues ?? []).find((s) => s.id === id)?.logoUrl ?? '';
+    const copertinaPrecedente = (venues ?? []).find((s) => s.id === id)?.coverUrl ?? '';
     setList((venues ?? []).map((s) => (s.id === id ? { ...s, ...next } : s)));
     const riga: Record<string, unknown> = {};
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
@@ -470,6 +479,7 @@ export function useVenues() {
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     if (next.headingFont !== undefined) riga.heading_font = next.headingFont;
+    if (next.coverUrl !== undefined) riga.cover_url = next.coverUrl || null;
     void write(
       'salvataggio aspetto del locale',
       () => supabase.from('partner_venues').update(riga).eq('id', id),
@@ -479,8 +489,24 @@ export function useVenues() {
       // prima, una scrittura fallita lascerebbe la riga che punta a un file
       // che nel frattempo abbiamo distrutto noi. Sui loghi vecchi, che sono
       // data-URL e non file, deleteLogo non fa niente.
-      if (error || next.logoUrl === undefined) return;
-      if (precedente !== '' && precedente !== next.logoUrl) void deleteLogo(precedente);
+      if (error) return;
+      if (
+        next.logoUrl !== undefined &&
+        precedente !== '' &&
+        precedente !== next.logoUrl
+      ) {
+        void deleteLogo(precedente);
+      }
+      // Stessa regola per la copertina: si porta via la vecchia solo dopo che
+      // la riga è stata scritta, e mai se è dentro un menù già pubblicato —
+      // se ne occupa deleteCover, che passa dallo stesso controllo del logo.
+      if (
+        next.coverUrl !== undefined &&
+        copertinaPrecedente !== '' &&
+        copertinaPrecedente !== next.coverUrl
+      ) {
+        void deleteCover(copertinaPrecedente);
+      }
     });
   }
 
@@ -546,6 +572,7 @@ export function useVenues() {
           show_dish_descriptions: venue.showDishDescriptions,
           section_style: venue.sectionStyle,
           heading_font: venue.headingFont,
+          cover_url: venue.coverUrl || null,
         })
     );
     const righe = fromLinks(venue.id, venue.links);

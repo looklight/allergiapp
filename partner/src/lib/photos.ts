@@ -51,6 +51,17 @@ export const ZOOM_MAX = 4;
 const GRANDE = { lato: 900, qualita: 0.78 };
 const MINIATURA = { lato: 240, qualita: 0.7 };
 
+// LA COPERTINA DEL MENÙ: l'immagine dietro l'intestazione, al posto del
+// colore pieno. Larga e bassa (3:1) perché è una fascia in cima a una
+// pagina di telefono, non una fotografia da guardare: più alta mangerebbe
+// il menù, che è la ragione per cui il cliente ha inquadrato il QR.
+//
+// 1000px di larghezza e qualità bassa (0.7): è l'immagine più grande della
+// pagina ed è la PRIMA a caricarsi, cioè la voce che il Tema 11 indica come
+// il costo dell'intera fase gratuita. Sotto ci va comunque una velatura
+// scura, che perdona parecchio sulla compressione.
+const COPERTINA = { lato: 1000, qualita: 0.7, ratio: 3 };
+
 // IL LOGO DEL LOCALE. 240 basta: nell'anteprima sta in un cerchio da 56px, e
 // in cima al menù pubblico non è più grande.
 const LOGO = { lato: 240, qualita: 0.85 };
@@ -111,6 +122,9 @@ function renderToBlob(
   lato: number,
   qualita: number,
   crop: Crop,
+  // larghezza / altezza. 1 = quadrato (piatti, logo); la copertina del menù è
+  // larga e bassa.
+  ratio: number,
   // Il colore sotto l'immagine, per chi arriva con la trasparenza: serve ai
   // LOGHI, che sono quasi sempre PNG trasparenti e su un formato senza
   // trasparenza diventerebbero neri. Le foto dei piatti non ne hanno bisogno,
@@ -119,35 +133,38 @@ function renderToBlob(
 ): Promise<Blob> {
   // Il lato del quadrato che si tiene: il più grande che ci sta dentro,
   // stretto dallo zoom
-  const sorgente = Math.min(img.width, img.height) / Math.max(1, crop.zoom);
+  const pienaW = img.width / img.height > ratio ? img.height * ratio : img.width;
+  const sorgenteW = pienaW / Math.max(1, crop.zoom);
+  const sorgenteH = sorgenteW / ratio;
   // Una foto già piccola non si ingrandisce: si tiene com'è. Vale anche per
   // il ritaglio stretto dallo zoom — avvicinandosi molto si salva un quadrato
   // più piccolo, che è la verità di quanti pixel sono rimasti.
-  const destinazione = Math.round(Math.min(lato, sorgente));
+  const destinazioneW = Math.round(Math.min(lato, sorgenteW));
+  const destinazioneH = Math.round(destinazioneW / ratio);
   // Quanto margine c'è su ciascun asse, e dove ci si mette dentro. Su un asse
   // senza margine il conto fa zero da sé.
-  const scorrimento = (misura: number, dove: number) =>
-    Math.round((misura - sorgente) * dove);
+  const scorrimento = (misura: number, presa: number, dove: number) =>
+    Math.round((misura - presa) * dove);
 
   const canvas = document.createElement('canvas');
-  canvas.width = destinazione;
-  canvas.height = destinazione;
+  canvas.width = destinazioneW;
+  canvas.height = destinazioneH;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Promise.reject(new Error('canvas non disponibile'));
   if (fondo !== undefined) {
     ctx.fillStyle = fondo;
-    ctx.fillRect(0, 0, destinazione, destinazione);
+    ctx.fillRect(0, 0, destinazioneW, destinazioneH);
   }
   ctx.drawImage(
     img,
-    scorrimento(img.width, crop.x),
-    scorrimento(img.height, crop.y),
-    sorgente,
-    sorgente,
+    scorrimento(img.width, sorgenteW, crop.x),
+    scorrimento(img.height, sorgenteH, crop.y),
+    sorgenteW,
+    sorgenteH,
     0,
     0,
-    destinazione,
-    destinazione
+    destinazioneW,
+    destinazioneH
   );
 
   return new Promise((resolve, reject) => {
@@ -213,8 +230,8 @@ export async function uploadDishPhoto(file: File, crop: Crop = CROP_CENTRO): Pro
   try {
     const img = await loadImage(file);
     [grande, mini] = await Promise.all([
-      renderToBlob(img, GRANDE.lato, GRANDE.qualita, crop),
-      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita, crop),
+      renderToBlob(img, GRANDE.lato, GRANDE.qualita, crop, 1),
+      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita, crop, 1),
     ]);
   } catch (error) {
     reportError('lettura foto piatto', error);
@@ -279,7 +296,7 @@ export async function uploadLogo(file: File, crop: Crop = CROP_CENTRO): Promise<
     // trasparente, e su un formato che la trasparenza non ce l'ha
     // diventerebbe nero. Bianco è anche il cerchio su cui il logo sta
     // nell'anteprima, quindi non si vede la giunta.
-    blob = await renderToBlob(await loadImage(file), LOGO.lato, LOGO.qualita, crop, '#ffffff');
+    blob = await renderToBlob(await loadImage(file), LOGO.lato, LOGO.qualita, crop, 1, '#ffffff');
   } catch (errore) {
     reportError('lettura logo', errore);
     throw new PhotoError('read');
@@ -294,6 +311,38 @@ export async function uploadLogo(file: File, crop: Crop = CROP_CENTRO): Promise<
     throw new PhotoError('upload');
   }
 }
+
+// La copertina su Storage. Un file solo, come il logo: non serve una
+// miniatura, perché non compare mai in una lista.
+export async function uploadCover(file: File, crop: Crop = CROP_CENTRO): Promise<string> {
+  const ownerId = await currentUserId();
+  if (!ownerId) {
+    reportError('caricamento copertina', new Error('sessione assente'));
+    throw new PhotoError('upload');
+  }
+  let blob: Blob;
+  try {
+    blob = await renderToBlob(
+      await loadImage(file),
+      COPERTINA.lato,
+      COPERTINA.qualita,
+      crop,
+      COPERTINA.ratio
+    );
+  } catch (errore) {
+    reportError('lettura copertina', errore);
+    throw new PhotoError('read');
+  }
+  const path = `${ownerId}/covers/${crypto.randomUUID()}.${estensione(blob)}`;
+  try {
+    return await upload(path, blob);
+  } catch (errore) {
+    reportError('caricamento copertina', errore);
+    throw new PhotoError('upload');
+  }
+}
+
+export const COPERTINA_RATIO = COPERTINA.ratio;
 
 // Il percorso dentro il bucket a partire dall'indirizzo pubblico.
 // Restituisce null per tutto ciò che non è un file del nostro bucket: le
@@ -337,6 +386,12 @@ export async function deleteDishPhoto(url: string, thumbUrl: string): Promise<vo
 // chi la chiama: un file rimasto sono byte, e i loghi vecchi delle righe
 // scritte prima del 02/09 sono data-URL, su cui non c'è niente da cancellare
 // (bucketPath restituisce null e qui non si fa nulla).
+export async function deleteCover(url: string): Promise<void> {
+  return deleteLogo(url);
+}
+
+// Porta via un file che non è più di nessuno. Vale per il logo e per la
+// copertina: sono tutti e due un file solo nello stesso bucket.
 export async function deleteLogo(url: string): Promise<void> {
   const path = bucketPath(url);
   if (path === null) return;

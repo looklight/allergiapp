@@ -15,7 +15,10 @@
 // avvicinare non c'era modo di riempire il cerchio col marchio.
 //
 // DUE ASSI E UNO ZOOM, e niente di più: nessuna maniglia da afferrare,
-// nessuna proporzione da scegliere, nessuna rotazione. Con lo zoom a uno il
+// nessuna rotazione. LA PROPORZIONE la decide chi apre la finestra (`ratio`,
+// larghezza diviso altezza): 1 per piatti e logo, larga e bassa per la
+// copertina del menù. È un parametro e non una seconda finestra, perché il
+// gesto è lo stesso e due copie divergerebbero al primo ritocco. Con lo zoom a uno il
 // quadrato è il più grande che ci sta dentro e su un asse non c'è margine —
 // esattamente il comportamento di prima, che era a un asse solo.
 import { useEffect, useRef, useState } from 'react';
@@ -33,11 +36,14 @@ const PASSO_ZOOM = 0.05;
 
 export default function PhotoCropDialog({
   file,
+  ratio = 1,
   onConfirm,
   onCancel,
   onUnreadable,
 }: {
   file: File;
+  // larghezza / altezza del ritaglio. 1 = quadrato (piatti, logo)
+  ratio?: number;
   // Il quadrato scelto: dove cade sui due assi (0..1) e quanto ci si è
   // avvicinati. Il centro senza ingrandimento è CROP_CENTRO.
   onConfirm: (crop: Crop) => void;
@@ -67,9 +73,19 @@ export default function PhotoCropDialog({
   // Il lato del quadrato in frazione di ciascun asse. Tenendo tutto in
   // frazioni non serve misurare nessun pixel, e il conto resta giusto a
   // qualunque grandezza si veda la foto.
-  const lato = dimensioni === null ? 1 : Math.min(dimensioni.w, dimensioni.h) / crop.zoom;
-  const quotaX = dimensioni === null ? 1 : lato / dimensioni.w;
-  const quotaY = dimensioni === null ? 1 : lato / dimensioni.h;
+  // Il rettangolo più grande con quella proporzione che ci sta dentro: lo
+  // limita la larghezza o l'altezza, a seconda di quale "finisce" prima. Con
+  // ratio 1 il conto torna al quadrato di prima.
+  const pienaW =
+    dimensioni === null
+      ? 1
+      : dimensioni.w / dimensioni.h > ratio
+        ? dimensioni.h * ratio
+        : dimensioni.w;
+  const cropW = pienaW / crop.zoom;
+  const cropH = cropW / ratio;
+  const quotaX = dimensioni === null ? 1 : cropW / dimensioni.w;
+  const quotaY = dimensioni === null ? 1 : cropH / dimensioni.h;
   // Quanto si può scorrere su ciascun asse. Zero sul lato corto quando lo
   // zoom è uno: là non c'è niente da scegliere.
   const corsaX = 1 - quotaX;
@@ -176,9 +192,12 @@ export default function PhotoCropDialog({
                 scorrevole ? 'cursor-move' : ''
               }`}
             >
-              {/* Dove cadrà il cerchio nelle liste: il quadrato è quello che si
-                  salva, il cerchio è solo come lo si vedrà quasi sempre */}
-              <div className="pointer-events-none absolute inset-0 rounded-full border border-dashed border-white/70" />
+              {/* Dove cadrà il cerchio nelle liste: il quadrato è quello che
+                  si salva, il cerchio è come lo si vedrà quasi sempre. Su un
+                  ritaglio non quadrato non ha senso e non c'è. */}
+              {ratio === 1 && (
+                <div className="pointer-events-none absolute inset-0 rounded-full border border-dashed border-white/70" />
+              )}
             </div>
           )}
         </div>

@@ -100,6 +100,7 @@ export default function FullPreviewPage() {
             siblings={(menus ?? []).filter((m) => m.venueId === menu.venueId)}
             dishes={dishes ?? []}
             brand={brand}
+            coverUrl={locale?.coverUrl ?? ''}
             venueName={brand.name.trim() || d.preview.venueName}
             tableConditions={locale?.tableConditions ?? ''}
             showPhotos={locale?.showDishPhotos ?? true}
