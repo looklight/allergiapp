@@ -17,6 +17,8 @@
     { "source": "/review", "destination": "/review.html" },
     { "source": "/restaurants", "destination": "/restaurants.html" },
     { "source": "/r/:slug", "destination": "/api/r/:slug" },
+    { "source": "/menu/:slug", "destination": "/api/menu/:slug" },
+    { "source": "/menu/:slug/:lang", "destination": "/api/menu/:slug?lang=:lang" },
     { "source": "/u/:username", "destination": "/api/u/:username" }
   ],
   "headers": [

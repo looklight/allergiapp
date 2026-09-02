@@ -504,6 +504,28 @@
   color: #b0b0b0;
 }
 
+/* La pagina di cortesia: menù non disponibile, o un errore. Non è un 404 del
+   browser perché chi la legge è seduto a un tavolo col telefono in mano e il
+   QR appena inquadrato. */
+.menu-message {
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 64px 24px;
+  text-align: center;
+}
+.menu-message-logo { width: 44px; height: 44px; }
+.menu-message h1 {
+  margin: 16px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.menu-message p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 /* Il piede del sito (privacy, termini, contatti) è condiviso con /r/ e /u/,
    ma il suo stile vive in restaurant-page.css: qui si ripete il minimo invece
    di tirarsi dentro un foglio intero fatto per un'altra pagina. Al tavolo
