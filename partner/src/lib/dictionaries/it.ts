@@ -365,10 +365,6 @@ const it = {
     publishAllergens: 'Modifiche non pubblicate, allergeni compresi: al tavolo c’è ancora la versione precedente.',
     publishNever: 'Questo menù non è ancora pubblicato.',
     publishedOn: 'Pubblicato il {date}',
-    unpublish: 'Ritira il menù dalla sala',
-    unpublishTitle: 'Ritirare il menù?',
-    unpublishBody:
-      'I QR già stampati continueranno a funzionare, ma chi li inquadra leggerà che il menù non è al momento disponibile. Puoi rimetterlo in sala quando vuoi, ripubblicandolo.',
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni
     // occasione utile: la cosa da non far succedere è che qualcuno lo stampi
     // su una locandina prima che la pagina esista.
@@ -376,6 +372,11 @@ const it = {
     addressNotLive: 'Non ancora attivo',
     addressTitleLive: 'Il menù è online',
     addressLive: 'Attivo',
+    addressOffline: 'Inattivo',
+    addressTurnOn: 'Rimetti il menù in sala',
+    addressTurnOff: 'Togli il menù dalla sala',
+    addressHintOffline:
+      'Il link e il QR esistono ma non mostrano il menù: chi li apre legge che non è al momento disponibile. Riaccendi quando vuoi.',
     addressHintLive:
       'Questo è l’indirizzo che i tuoi clienti aprono col QR. Cambiandolo, i QR già stampati smettono di funzionare.',
     addressHint:

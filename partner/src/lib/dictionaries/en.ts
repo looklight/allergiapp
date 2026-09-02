@@ -322,14 +322,15 @@ const en: typeof it = {
     publishAllergens: 'Unpublished changes, allergens among them: the table still shows the previous version.',
     publishNever: 'This menu is not published yet.',
     publishedOn: 'Published on {date}',
-    unpublish: 'Take the menu offline',
-    unpublishTitle: 'Take the menu offline?',
-    unpublishBody:
-      'Printed QR codes will still work, but people scanning them will read that the menu is not available right now. You can put it back any time by publishing again.',
     addressTitle: 'Menu address',
     addressNotLive: 'Not live yet',
     addressTitleLive: 'The menu is live',
     addressLive: 'Live',
+    addressOffline: 'Off',
+    addressTurnOn: 'Put the menu back online',
+    addressTurnOff: 'Take the menu offline',
+    addressHintOffline:
+      'The link and QR code exist but show no menu: whoever opens them reads that it is not available right now. Turn it back on any time.',
     addressHintLive:
       'This is the address your guests open with the QR code. If you change it, printed QR codes stop working.',
     addressHint:

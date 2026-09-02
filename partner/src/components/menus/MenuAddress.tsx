@@ -22,7 +22,6 @@ import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
 import { slugOccupato, type Venue } from '@/lib/venues';
 import MenuQr from './MenuQr';
-import ConfirmDialog from './ConfirmDialog';
 
 // L'ancora a cui punta il "Modifica" del riquadro sotto l'anteprima
 // (LiveBox): il posto in cui si cambia l'indirizzo e si scaricano i file per
@@ -37,17 +36,20 @@ export default function MenuAddress({
   venue,
   online,
   onSave,
-  onUnpublish,
+  onOnline,
+  inCorso,
 }: {
   venue: Venue;
   // il menù è già stato pubblicato almeno una volta: l'indirizzo risponde
   // davvero, e da quel momento il QR si può stampare
   online: boolean;
   onSave: (slug: string) => Promise<boolean>;
-  // Stacca il menù dalla sala. Sta qui e non in cima con "Pubblica": ritirare
-  // è raro e non deve stare accanto al gesto che si fa tutti i giorni, o
-  // prima o poi qualcuno lo preme al posto suo.
-  onUnpublish: () => void;
+  // L'interruttore: acceso mette il menù in sala (ne prende uno scatto
+  // nuovo), spento lo stacca. Non c'è una finestra di conferma perché il
+  // ripensamento è un tocco — e perché la conferma diceva quello che adesso
+  // dice il sottotesto, sempre e non solo al momento del gesto.
+  onOnline: (online: boolean) => void;
+  inCorso: boolean;
 }) {
   const { d } = useI18n();
   const campo = useId();
@@ -58,7 +60,6 @@ export default function MenuAddress({
   const [stato, setStato] = useState<Stato>('fermo');
   const [salvato, setSalvato] = useState(false);
   const [fallito, setFallito] = useState(false);
-  const [ritirando, setRitirando] = useState(false);
   const scatola = useRef<HTMLDivElement>(null);
 
   // QUANDO L'INDIRIZZO NASCE, il riquadro si allunga di colpo: sotto al campo
@@ -174,16 +175,43 @@ export default function MenuAddress({
         </h2>
         {/* Lo stato accanto al titolo e non in fondo: è la prima cosa da
             sapere prima di stampare l'indirizzo da qualche parte. */}
-        <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-            online ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+        {/* LA PASTIGLIA È L'INTERRUTTORE: diceva già lo stato, adesso lo
+            cambia anche. Un comando in meno e nessun oggetto nuovo da
+            imparare — e la cosa che si tocca è esattamente quella che si
+            stava leggendo.
+
+            Spenta finché non c'è un indirizzo: non si mette in sala un menù
+            che non ha un posto dove stare. */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={online}
+          disabled={venue.slug === '' || inCorso}
+          onClick={() => onOnline(!online)}
+          title={venue.slug === '' ? undefined : online ? d.menuEditor.addressTurnOff : d.menuEditor.addressTurnOn}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors disabled:cursor-default disabled:opacity-70 ${
+            online
+              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
           }`}
         >
-          {online ? d.menuEditor.addressLive : d.menuEditor.addressNotLive}
-        </span>
+          {venue.slug === ''
+            ? d.menuEditor.addressNotLive
+            : online
+              ? d.menuEditor.addressLive
+              : d.menuEditor.addressOffline}
+        </button>
       </div>
+      {/* Il sottotesto dice COSA VEDE CHI APRE il link e il QR, sempre e non
+          solo nel momento in cui si tocca l'interruttore: è l'unica cosa che
+          il ristoratore non può controllare da solo — il QR ce l'hanno in
+          mano i suoi clienti, non lui. */}
       <p className="mt-0.5 text-xs text-gray-500">
-        {online ? d.menuEditor.addressHintLive : d.menuEditor.addressHint}
+        {venue.slug === ''
+          ? d.menuEditor.addressHint
+          : online
+            ? d.menuEditor.addressHintLive
+            : d.menuEditor.addressHintOffline}
       </p>
 
       {senzaNome ? (
@@ -234,36 +262,9 @@ export default function MenuAddress({
               cambia sotto le dita, buono da scaricare per sbaglio. */}
           {venue.slug !== '' && <MenuQr slug={venue.slug} online={online} />}
 
-          {/* IL RITIRO, in fondo e sottovoce: è raro, e sta lontano dal
-              bottone "Pubblica" che si preme tutti i giorni. La conferma non
-              chiede "sei sicuro?" ma dice cosa succede ai QR già in giro —
-              che è l'unica cosa che il ristoratore non può vedere da solo. */}
-          {online && (
-            <div className="mt-3 border-t border-emerald-200/70 pt-2.5">
-              <button
-                onClick={() => setRitirando(true)}
-                className="text-xs font-medium text-gray-500 transition-colors hover:text-red-700"
-              >
-                {d.menuEditor.unpublish}
-              </button>
-            </div>
-          )}
         </>
       )}
 
-      {ritirando && (
-        <ConfirmDialog
-          title={d.menuEditor.unpublishTitle}
-          body={d.menuEditor.unpublishBody}
-          subject={`${MENU_DOMINIO}${venue.slug}`}
-          confirmLabel={d.menuEditor.unpublish}
-          onCancel={() => setRitirando(false)}
-          onConfirm={() => {
-            setRitirando(false);
-            onUnpublish();
-          }}
-        />
-      )}
     </div>
   );
 }
