@@ -36,11 +36,17 @@ stessa riga si chiamava "Nome della vetrina" nell'editor e "Nome del locale"
 nel menù, e il ristoratore scriveva un'etichetta privata dove poi i clienti
 leggevano l'intestazione del menù al tavolo.
 
-⚠️ **Debito ancora aperto da questo cambio**, visibile a schermo: **gli
-interruttori "Sulla scheda" in `/piatti` non fanno niente.** I piatti accesi
-ora pendono dalla scheda, che senza claim non esiste: `setDishOn` esce senza
-scrivere (e senza fingere), ma il comando a schermo resta lì senza
-spiegazione. Va disabilitato con un messaggio.
+**Il debito che questo cambio aveva aperto è chiuso** (verificato il
+2026-09-02): un piatto si accende sulla **scheda**, che senza claim non
+esiste, e prima si spuntavano caselle senza che succedesse niente. Adesso il
+comando non c'è dove non funziona, e al suo posto c'è il motivo
+(`d.dishes.needsCard`) con la strada per averla. Il filtro `cardId !== null`
+sta in tre punti, uno per schermata — `venuesConScheda` in `/piatti` (fa
+sparire insieme colonna, selettore e caselle), `venue.cardId === null`
+nell'editor del locale, `conScheda` in `DishPanel` — e `setDishOn` tiene
+comunque la sua guardia: esce senza scrivere e senza fingere. Se qualcuno
+aggiunge una quarta schermata con quegli interruttori, quella guardia è
+l'ultima rete, non la prima.
 
 ## La home è una home (2026-09-01)
 
@@ -350,9 +356,9 @@ Tre cose da non disfare per sbaglio:
 **La scatola "Aspetto del menù"** (`BrandBar`) è **comprimibile** e chiusa di
 partenza — l'aspetto si sceglie una volta, il menù si tocca ogni giorno — con
 un riassunto sulla riga ("Moderno · Filetto · con foto") per non doverla
-aprire. Dentro: colore, **pacchetto di stile** dei testi, **stile dei titoli
-di sezione**, **copertina**, e due interruttori — **foto dei piatti** e
-**descrizioni in lista**.
+aprire. Dentro: colore, **pacchetto di stile** dei testi, **grandezza dei
+testi**, **stile dei titoli di sezione**, **copertina**, e due interruttori —
+**foto dei piatti** e **descrizioni in lista**.
 
 Tre regole di quella scatola, tutte per lo stesso motivo:
 
@@ -437,11 +443,28 @@ Aggiungere una manopola d'aspetto = una colonna, una riga lì, una riga in
 in `VenueAppearance` (`src/lib/venues.ts`) — e lo scatto e il confronto si
 adeguano da sé.
 
-`partner_venues.text_scale` (`normal` / `compact` / `roomy`) **esiste già dalla
-710 ma non ha ancora interfaccia**: la colonna è entrata con la migration
-aperta, come `cover_url` nella 709, così la scatola nel portale arriverà senza
-toccare il database. ⚠️ Quando si disegna: la riga degli allergeni ha un
-pavimento che `compact` non sfonda.
+**La grandezza dei testi** (`partner_venues.text_scale`: `compact` / `normal`
+/ `roomy`, migration 710) è **fatta dal 2026-09-02**, senza nessuna migration
+nuova — la colonna era entrata in anticipo, come `cover_url` nella 709.
+
+Non è una classe per grandezza ma **un numero solo**: `--ms` sulla radice
+(`TEXT_SCALE_FACTORS` in `venues.ts` → `style` in `MenuPreview`, e lo `style`
+di `<body>` sul sito), e ogni misura del contenuto è
+`calc(Npx * var(--ms, 1))`. Così una manopola muove tutta la carta e non c'è
+un secondo elenco di misure da tenere allineato quando ne nasce una. Scala il
+**contenuto** — nome del locale, sezioni, piatti, prezzi, descrizioni,
+condizioni; **non** i comandi (lingue, filtro, pastiglie): sono bersagli da
+toccare, e un dito non rimpicciolisce con la carta.
+
+⚠️ **La riga degli allergeni ha un pavimento** e `compact` non lo sfonda: sta
+nel CSS, `font-size: max(10px, calc(10px * var(--ms, 1)))` sulla classe
+`riga-minuta` (e `max(11px, …)` nei pacchetti serif e leggero, dove il
+pavimento è il punto in più della compensazione). Sotto le tre scelte, nel
+portale, c'è scritto anche al ristoratore — o "Compatta" sembra rimpicciolire
+anche gli allergeni e chi ci tiene non la toccherebbe mai. I fattori
+(0.92 / 1 / 1.12) hanno una **copia gemella** sul sito in
+`landing/lib/render-menu.js`: se divergono, il ristoratore sceglie guardando
+una cosa e il suo cliente al tavolo ne vede un'altra.
 
 **"Rimetti com'è in sala"** (`revert_appearance`) sta in fondo alla scatola
 Aspetto in `BrandBar`, e compare solo se c'è qualcosa da annullare. ⚠️ Vale

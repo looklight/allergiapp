@@ -1049,19 +1049,40 @@ dalla sala con la pastiglia Attivo/Inattivo, e tutte le manopole d'aspetto — p
 stile delle sezioni, foto e descrizioni, copertina.
 
 **Aggiunto il 2026-09-02 (sera)**: contenuto e aspetto sono due generi di modifica distinti (Tema 27,
-migration 710 applicata), con l'annulla dell'aspetto e la colonna `text_scale` che aspetta la sua
-interfaccia. E l'editor è stato rifatto per il telefono a 375px, dove veniva usato peggio di quanto
-sembrasse.
+migration 710 applicata), con l'annulla dell'aspetto. E l'editor è stato rifatto per il telefono a
+375px, dove veniva usato peggio di quanto sembrasse.
+
+**E la grandezza dei testi è fatta** (stessa sera, nessuna migration: la colonna era già in piedi
+dalla 710). Pacchetti Compatta/Normale/Ampia nella scatola Aspetto, resi anche dalla pagina
+pubblica. La forma conta più delle tre scelte: **un numero solo** — `--ms` sulla radice, e ogni
+misura del contenuto è `calc(Npx * var(--ms, 1))` — invece di tre fogli di stile paralleli, così la
+prossima manopola di questo genere non riapre venti misure. Scala il contenuto e **non i comandi**
+(lingue, filtro, pastiglie: sono bersagli da toccare). ⚠️ Il **pavimento** della riga degli
+allergeni è scritto dove si applica, cioè nel CSS (`max()` su `.riga-minuta`), in tutt'e due le
+copie — portale e sito — e sotto le tre scelte il portale lo dice anche al ristoratore, o
+"Compatta" sembrerebbe rimpicciolire anche quella riga.
 
 **Cosa resta, in ordine:**
 
-0. **La scatola per la grandezza dei testi** (colonna già in piedi dalla 710, nessuna migration da
-   fare): pacchetti Compatta/Normale/Ampia, col pavimento sotto la riga degli allergeni.
 1. **Le traduzioni di condizioni al tavolo e blocchi di testo** (aperto dal Tema 18). Al primo
    cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. È l'ultimo buco visibile
    della pagina pubblica.
-2. **Le statistiche degli scan** (Tema 10): l'unica voce del listino che dà un motivo per pagare
-   **ogni mese**. Non è ancora disegnata — non ha nemmeno una tabella.
+2. **Le statistiche degli scan** (Tema 10) — **RIMANDATE il 2026-09-02, dopo averle discusse**.
+   Restano l'unica voce del listino che dà un motivo per pagare **ogni mese**, ma quattro cose
+   vanno decise prima di scrivere una riga: (a) la pagina è servita dalla **cache al bordo**,
+   quindi contare lato server è sbagliato di una quantità ignota — l'unico modo onesto è un
+   beacon dalla pagina, che però è **una invocazione per lettore**, cioè esattamente il rapporto
+   costo/lettori che il Tema 11 aveva evitato; (b) "X visite" è un numero che il ristoratore non
+   può usare (un tavolo da quattro sono quattro, l'anteprima di un link su WhatsApp è una, le
+   proprie aperture pure), mentre **quali esigenze filtrano** è un gesto intenzionale e vale;
+   (c) quel numero regge solo col volume — 30 letture al mese fanno percentuali che ballano, e
+   una funzione premium che dice "dati insufficienti" fa disdire; (d) l'**art. 9** vuole che
+   nascano **già aggregate** (un contatore per locale/giorno/filtro, nessun registro di eventi:
+   un evento con l'orario, in un locale piccolo, è un dato sanitario riferibile a una persona) —
+   e così restano anche senza banner cookie al tavolo. Orientamento emerso, da rimettere in
+   discussione coi dati: il pannello dei filtri **gratis per tutti** (è la miccia che genera da
+   sé la frase di vendita) e a pagamento i numeri del lato **AllergiApp**. Prima di tutto questo,
+   però, i due o tre ristoratori qui sotto.
 3. **Il rimando reciproco `/menu/<slug>` ↔ `/r/<slug>`** per un locale rivendicato (aperto dal
    Tema 13): sono due pagine pubbliche dello stesso posto e non si conoscono.
 4. **Svuotare la cache alla pubblicazione**, quando le letture del menù cominceranno a vedersi nel
