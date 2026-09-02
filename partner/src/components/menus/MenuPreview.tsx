@@ -39,7 +39,7 @@ import {
   type MenuSection,
 } from '@/lib/menus';
 import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
-import type { HeadingFont, SectionStyle } from '@/lib/venues';
+import { TEXT_SCALE_FACTORS, type HeadingFont, type SectionStyle, type TextScale } from '@/lib/venues';
 import { accentHex, type MenuBrand } from '@/lib/menuBrand';
 import DishDetailSheet from './DishDetailSheet';
 import FilterSheet from './FilterSheet';
@@ -83,6 +83,7 @@ export default function MenuPreview({
   showDescriptions,
   sectionStyle,
   headingFont,
+  textScale,
   needs,
   onToggleNeed,
 }: {
@@ -105,6 +106,7 @@ export default function MenuPreview({
   // Come si vede il titolo di una sezione: filetto, fascia o solo testo
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
+  textScale: TextScale;
   needs: ViewerNeeds;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
@@ -194,6 +196,11 @@ export default function MenuPreview({
       className={`relative flex h-full flex-col bg-white${
         headingFont === 'modern' ? '' : ` menu-font-${headingFont}`
       }`}
+      // La grandezza dei testi come sul sito: un moltiplicatore solo sulla
+      // radice, e ogni misura del contenuto è calc(Npx * var(--ms)). Le due
+      // copie vanno tenute allineate (v. lib/render-menu.js), o il
+      // ristoratore sceglie guardando una cosa e il cliente ne vede un'altra.
+      style={{ '--ms': TEXT_SCALE_FACTORS[textScale] } as React.CSSProperties}
     >
       {/* Intestazione: la fascia colorata è l'unico posto in cui il colore
           scelto fa da fondo. Sul testo dei piatti resterebbe una scelta di
@@ -231,7 +238,7 @@ export default function MenuPreview({
               className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
             />
           )}
-          <p className={`min-w-0 flex-1 text-lg font-semibold leading-snug${carattere}`}>
+          <p className={`min-w-0 flex-1 text-[calc(18px*var(--ms))] font-semibold leading-snug${carattere}`}>
             {venueName}
           </p>
         </div>
@@ -239,7 +246,7 @@ export default function MenuPreview({
         {/* Descrizione del menù: facoltativa, quello che il ristoratore ha
             scritto sotto il titolo nell'editor (orari, un avviso). */}
         {menu.description.trim() !== '' && (
-          <p className="mt-1.5 whitespace-pre-line text-[12px] leading-snug text-white/85">
+          <p className="mt-1.5 whitespace-pre-line text-[calc(12px*var(--ms))] leading-snug text-white/85">
             {menu.description}
           </p>
         )}
@@ -342,12 +349,12 @@ export default function MenuPreview({
               return (
                 <div key={gruppo.id} className="mb-4 rounded-xl bg-gray-50 px-3 py-2.5">
                   {gruppo.name.trim() !== '' && (
-                    <p className="text-[12px] font-semibold leading-snug text-gray-900">
+                    <p className="text-[calc(12px*var(--ms))] font-semibold leading-snug text-gray-900">
                       {gruppo.name}
                     </p>
                   )}
                   {gruppo.description.trim() !== '' && (
-                    <p className="mt-0.5 whitespace-pre-line text-[11px] leading-snug text-gray-600">
+                    <p className="mt-0.5 whitespace-pre-line text-[calc(11px*var(--ms))] leading-snug text-gray-600">
                       {gruppo.description}
                     </p>
                   )}
@@ -375,7 +382,7 @@ export default function MenuPreview({
                   </TitoloSezione>
                 )}
                 {gruppo.description.trim() !== '' && (
-                  <p className="mb-3 whitespace-pre-line text-[11px] leading-snug text-gray-500">
+                  <p className="mb-3 whitespace-pre-line text-[calc(11px*var(--ms))] leading-snug text-gray-500">
                     {gruppo.description}
                   </p>
                 )}
@@ -404,7 +411,7 @@ export default function MenuPreview({
             pagamenti. Su un menù vuoto non compare — sarebbe il coperto di
             una carta che non c'è. */}
         {gruppi.length > 0 && tableConditions.trim() !== '' && (
-          <p className="mt-2 whitespace-pre-line border-t border-gray-100 pt-3 text-[10px] leading-snug text-gray-500">
+          <p className="riga-minuta mt-2 whitespace-pre-line border-t border-gray-100 pt-3 leading-snug text-gray-500">
             {tableConditions}
           </p>
         )}
@@ -468,7 +475,7 @@ function TitoloSezione({
   if (stile === 'banner') {
     return (
       <h3
-        className={`-mx-4 mb-2 px-4 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-white${carattere}`}
+        className={`-mx-4 mb-2 px-4 py-1.5 text-[calc(13px*var(--ms))] font-semibold uppercase tracking-wide text-white${carattere}`}
         style={{ backgroundColor: accent }}
       >
         {children}
@@ -477,12 +484,12 @@ function TitoloSezione({
   }
   if (stile === 'plain') {
     return (
-      <h3 className={`mb-1.5 text-[15px] font-semibold text-gray-900${carattere}`}>{children}</h3>
+      <h3 className={`mb-1.5 text-[calc(15px*var(--ms))] font-semibold text-gray-900${carattere}`}>{children}</h3>
     );
   }
   return (
     <h3
-      className={`mb-1 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide${carattere}`}
+      className={`mb-1 border-b pb-1 text-[calc(13px*var(--ms))] font-semibold uppercase tracking-wide${carattere}`}
       style={{ color: accent, borderColor: `${accent}33` }}
     >
       {children}
@@ -588,7 +595,7 @@ function Riga({
                 sembrando un'informazione sul prezzo invece che sul piatto. */}
             <span className="flex min-w-0 flex-1 items-baseline gap-1">
               <p
-                className={`min-w-0 truncate text-[13px] font-medium leading-snug text-gray-900${
+                className={`min-w-0 truncate text-[calc(13px*var(--ms))] font-medium leading-snug text-gray-900${
                   suffisso === '' ? '' : ` name${suffisso}`
                 }`}
               >
@@ -620,7 +627,7 @@ function Riga({
                 zero al tavolo sono peggio del silenzio */}
             {prezzo !== '' && (
               <p
-                className={`shrink-0 text-[13px] font-semibold tabular-nums text-gray-900${
+                className={`shrink-0 text-[calc(13px*var(--ms))] font-semibold tabular-nums text-gray-900${
                   suffisso === '' ? '' : ` price${suffisso}`
                 }`}
               >
@@ -632,10 +639,10 @@ function Riga({
               suo posto, sopra, sparisce la "i" che diceva soltanto che
               c'era. */}
           {conDescrizioni && dish.description.trim() !== '' && (
-            <p className="mt-0.5 text-[11px] leading-snug text-gray-500">{dish.description}</p>
+            <p className="mt-0.5 text-[calc(11px*var(--ms))] leading-snug text-gray-500">{dish.description}</p>
           )}
           {item.highlighted && item.highlightNote.trim() !== '' && (
-            <p className="mt-0.5 text-[11px] font-medium leading-snug text-amber-700">
+            <p className="mt-0.5 text-[calc(11px*var(--ms))] font-medium leading-snug text-amber-700">
               {item.highlightNote}
             </p>
           )}
@@ -643,7 +650,7 @@ function Riga({
               chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
               piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
           {fuori ? (
-            <p className="riga-minuta mt-1 text-[10px] font-medium leading-snug text-gray-500">
+            <p className="riga-minuta mt-1 font-medium leading-snug text-gray-500">
               {perche.contiene.length > 0 &&
                 fill(d.menuPublic.excludedContains, {
                   list: perche.contiene.map((c) => allergenName(c, locale).toLowerCase()).join(', '),
@@ -656,7 +663,7 @@ function Riga({
             </p>
           ) : (
             dish.allergens.length > 0 && (
-              <p className="riga-minuta mt-1 text-[10px] leading-snug text-gray-400">
+              <p className="riga-minuta mt-1 leading-snug text-gray-400">
                 {d.preview.contains}{' '}
                 {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
               </p>

@@ -165,10 +165,15 @@ const it = {
     cardOpen: 'Apri la scheda',
     dishesChosen: 'piatti scelti',
     dishChosen: 'piatto scelto',
-    quickTitle: 'Azioni rapide',
     quickDish: 'Nuovo piatto',
-    quickMenu: 'Nuovo menù',
     quickLinks: 'Link e contatti',
+    // Lo stato del menù non è quanti piatti ha dentro: è cosa leggono i
+    // clienti al tavolo adesso (v. page.tsx).
+    liveOn: 'in sala, aggiornato',
+    livePending: 'da pubblicare',
+    liveNever: 'non pubblicato',
+    sectionOne: 'sezione',
+    sectionOther: 'sezioni',
     catalogTitle: 'Catalogo piatti',
     catalogHint: 'I piatti sono tuoi, non del singolo locale: gli stessi finiscono nei menù e sulla scheda.',
     catalogOpen: 'Gestisci',
@@ -377,6 +382,14 @@ const it = {
     headingFonts: { modern: 'Moderno', classic: 'Classico', bold: 'Marcato', light: 'Sottile' },
     sectionStyle: 'Titoli delle sezioni',
     sectionStyles: { underline: 'Filetto', banner: 'Fascia', plain: 'Solo testo' },
+    // Pacchetti e non un cursore: v. TEXT_SCALES in venues.ts. I nomi dicono
+    // com'è la CARTA, non di quanto cambia il testo — un ristoratore sceglie
+    // "più fitta" o "più ariosa", non "92%".
+    textScale: 'Grandezza dei testi',
+    textScales: { compact: 'Compatta', normal: 'Normale', roomy: 'Ampia' },
+    // Sta sotto le tre scelte, e non è un dettaglio tecnico: è la ragione per
+    // cui Compatta non rimpicciolisce tutto.
+    textScaleFloor: 'La riga degli allergeni non rimpicciolisce: resta leggibile anche con la carta più fitta.',
     showPhotos: 'Mostra le foto dei piatti',
     // Si dice cosa succede spegnendo, non cosa sono le foto: chi legge sta
     // decidendo, e la domanda che ha in testa è "e se le tolgo?"

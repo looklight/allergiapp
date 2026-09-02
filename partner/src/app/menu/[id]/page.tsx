@@ -202,6 +202,7 @@ export default function MenuEditorPage() {
       showDescriptions={locale?.showDishDescriptions ?? false}
       sectionStyle={locale?.sectionStyle ?? 'underline'}
       headingFont={locale?.headingFont ?? 'modern'}
+      textScale={locale?.textScale ?? 'normal'}
       needs={needs}
       onToggleNeed={toggleNeed}
     />
@@ -357,6 +358,7 @@ export default function MenuEditorPage() {
           showDescriptions={locale?.showDishDescriptions ?? false}
           sectionStyle={locale?.sectionStyle ?? 'underline'}
           headingFont={locale?.headingFont ?? 'modern'}
+          textScale={locale?.textScale ?? 'normal'}
           coverUrl={locale?.coverUrl ?? ''}
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           onRevert={() => setRevertingBrand(true)}
@@ -367,6 +369,7 @@ export default function MenuEditorPage() {
           }
           onSectionStyle={(sectionStyle) => locale && setIdentity(locale.id, { sectionStyle })}
           onHeadingFont={(headingFont) => locale && setIdentity(locale.id, { headingFont })}
+          onTextScale={(textScale) => locale && setIdentity(locale.id, { textScale })}
           onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
         />
       </div>

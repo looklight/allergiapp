@@ -21,7 +21,14 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
-import { HEADING_FONTS, SECTION_STYLES, type HeadingFont, type SectionStyle } from '@/lib/venues';
+import {
+  HEADING_FONTS,
+  SECTION_STYLES,
+  TEXT_SCALES,
+  type HeadingFont,
+  type SectionStyle,
+  type TextScale,
+} from '@/lib/venues';
 import CoverPicker from './CoverPicker';
 
 export default function BrandBar({
@@ -30,6 +37,7 @@ export default function BrandBar({
   showDescriptions,
   sectionStyle,
   headingFont,
+  textScale,
   coverUrl,
   // Se l'aspetto di adesso è diverso da quello in sala, e c'è una sala a cui
   // tornare: fuori di qui è appearanceChanged di menu_publish_state (710).
@@ -40,6 +48,7 @@ export default function BrandBar({
   onShowDescriptions,
   onSectionStyle,
   onHeadingFont,
+  onTextScale,
   onCover,
 }: {
   accent: string;
@@ -47,6 +56,7 @@ export default function BrandBar({
   showDescriptions: boolean;
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
+  textScale: TextScale;
   coverUrl: string;
   changed: boolean;
   onRevert: () => void;
@@ -55,6 +65,7 @@ export default function BrandBar({
   onShowDescriptions: (value: boolean) => void;
   onSectionStyle: (value: SectionStyle) => void;
   onHeadingFont: (value: HeadingFont) => void;
+  onTextScale: (value: TextScale) => void;
   onCover: (value: string) => void;
 }) {
   const { d, locale } = useI18n();
@@ -64,6 +75,9 @@ export default function BrandBar({
   const riassunto = [
     d.menuEditor.headingFonts[headingFont],
     d.menuEditor.sectionStyles[sectionStyle],
+    // 'Normale' non si scrive: sarebbe una parola in più su ogni riga chiusa
+    // per dire che non è stato cambiato niente.
+    textScale === 'normal' ? null : d.menuEditor.textScales[textScale],
     showPhotos ? d.menuEditor.summaryPhotosOn : d.menuEditor.summaryPhotosOff,
     showDescriptions ? d.menuEditor.summaryDescOn : null,
   ]
@@ -191,6 +205,49 @@ export default function BrandBar({
             );
           })}
         </div>
+      </div>
+
+      {/* LA GRANDEZZA DEI TESTI, subito sotto al pacchetto: sono la stessa
+          materia — come sono fatte le lettere — e separarli manderebbe a
+          cercare in due punti la stessa decisione.
+
+          Tre scelte e non un cursore (v. TEXT_SCALES): un cursore libero
+          finirebbe tirato al minimo per far stare la carta in una schermata,
+          e la prima riga a diventare illeggibile sarebbe quella degli
+          allergeni.
+
+          Ogni scelta si scrive con la propria grandezza, come i pacchetti si
+          scrivono col proprio carattere: si sceglie guardando, non leggendo
+          un nome. */}
+      <div className="mt-4 border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-500">{d.menuEditor.textScale}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {TEXT_SCALES.map((grandezza) => {
+            const scelto = textScale === grandezza;
+            return (
+              <button
+                key={grandezza}
+                onClick={() => onTextScale(grandezza)}
+                aria-pressed={scelto}
+                className={`rounded-lg border px-3 py-1.5 transition-colors ${
+                  grandezza === 'compact'
+                    ? 'text-xs'
+                    : grandezza === 'roomy'
+                    ? 'text-base'
+                    : 'text-sm'
+                } ${
+                  scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                {d.menuEditor.textScales[grandezza]}
+              </button>
+            );
+          })}
+        </div>
+        {/* Il pavimento, detto a chi sceglie: senza questa riga "Compatta"
+            sembra rimpicciolire tutto, allergeni compresi, e chi ci tiene non
+            la toccherebbe mai. */}
+        <p className="mt-2 text-xs leading-relaxed text-gray-400">{d.menuEditor.textScaleFloor}</p>
       </div>
 
       <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />

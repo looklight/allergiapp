@@ -107,6 +107,7 @@ export default function FullPreviewPage() {
             showDescriptions={locale?.showDishDescriptions ?? false}
             sectionStyle={locale?.sectionStyle ?? 'underline'}
             headingFont={locale?.headingFont ?? 'modern'}
+            textScale={locale?.textScale ?? 'normal'}
             needs={needs}
             onToggleNeed={toggleNeed}
           />

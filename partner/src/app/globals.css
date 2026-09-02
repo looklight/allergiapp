@@ -182,9 +182,28 @@ body {
 .name-light { font-weight: 400; }
 .price-light { font-weight: 400; }
 
+/* LA GRANDEZZA DEI TESTI (DIGITAL_MENU, Tema 27). Il moltiplicatore lo
+   scrive l'anteprima sulla propria radice (`--ms`, v. MenuPreview) e ogni
+   misura del contenuto è calc(Npx * var(--ms)): stessa ricetta del sito, dove
+   il numero sta nello style di <body>.
+
+   ⚠️ QUI C'È IL PAVIMENTO. Le righe minute che portano informazione — gli
+   allergeni, il motivo dell'esclusione, le condizioni al tavolo — usano
+   max(), quindi la carta Compatta NON le rimpicciolisce: crescono con Ampia e
+   basta. Quella riga la legge una persona con un'allergia, in una sala poco
+   illuminata, mentre qualcuno le chiede cosa ordina. Chi toglie il max() si
+   tiene la responsabilità di quella riga.
+
+   Il fallback var(--ms, 1) non è pignoleria: senza, in un punto dove la
+   variabile non fosse stata scritta il calc() sarebbe invalido e la riga
+   perderebbe la propria misura del tutto. */
+.riga-minuta {
+  font-size: max(10px, calc(10px * var(--ms, 1)));
+}
 .menu-font-classic .riga-minuta,
 .menu-font-light .riga-minuta {
-  font-size: 11px;
+  /* il pavimento qui è il punto in più della compensazione, non i 10px */
+  font-size: max(11px, calc(11px * var(--ms, 1)));
   color: #6b6b6b;
 }
 

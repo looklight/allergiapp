@@ -33,6 +33,34 @@ export type SectionStyle = (typeof SECTION_STYLES)[number];
 export const HEADING_FONTS = ['modern', 'classic', 'bold', 'light'] as const;
 export type HeadingFont = (typeof HEADING_FONTS)[number];
 
+// QUANTO SONO GRANDI I TESTI del menù al tavolo. Pacchetti e non un cursore
+// libero, per la stessa ragione dei caratteri (Tema 25): un cursore finirebbe
+// tirato al minimo per far stare la carta in una schermata, e la prima riga a
+// diventare illeggibile sarebbe quella degli allergeni. Elenco chiuso anche
+// nel database (CHECK della 710): aggiungerne uno vuol dire toccare entrambi.
+//
+// L'ordine è quello in cui si mostrano: dalla più fitta alla più ariosa.
+export const TEXT_SCALES = ['compact', 'normal', 'roomy'] as const;
+export type TextScale = (typeof TEXT_SCALES)[number];
+
+// DI QUANTO. Un moltiplicatore solo: nell'anteprima e sul sito ogni misura
+// del contenuto è calc(Npx * var(--ms)), quindi questi tre numeri muovono
+// tutta la carta e non c'è un secondo elenco di misure da tenere allineato
+// quando ne nasce una nuova.
+//
+// ⚠️ La copia gemella sta sul sito (landing/lib/render-menu.js): se questi
+// numeri cambiano di qua e non di là, il ristoratore sceglie guardando una
+// cosa e il suo cliente al tavolo ne vede un'altra.
+//
+// Perché non più larghi: sotto 0.9 la carta comincia a sembrare un foglietto
+// e i nomi dei piatti vanno a capo; sopra 1.15 in una schermata ci stanno tre
+// piatti e il menù diventa un rotolo.
+export const TEXT_SCALE_FACTORS: Record<TextScale, number> = {
+  compact: 0.92,
+  normal: 1,
+  roomy: 1.12,
+};
+
 // L'ASPETTO DEL MENÙ: i campi che decidono come si vede, e che non dicono
 // niente su cosa c'è dentro un piatto. È lo stesso elenco di
 // venue_appearance() nel database (migration 710), e i due vanno tenuti
@@ -52,6 +80,7 @@ export type VenueAppearance = Pick<
   | 'sectionStyle'
   | 'showDishPhotos'
   | 'showDishDescriptions'
+  | 'textScale'
 >;
 
 export interface MenuLink {
@@ -124,6 +153,10 @@ export interface Venue extends VenueDraft {
   // 'underline' è quello di sempre.
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
+  // Quanto sono grandi i testi al tavolo (migration 710). 'normal' è quello
+  // di sempre. ⚠️ La riga degli allergeni ha un pavimento che 'compact' non
+  // sfonda: sta nel CSS, di qua e sul sito (v. .menu-body in menu-page.css).
+  textScale: TextScale;
   // L'immagine dietro l'intestazione del menù, al posto del colore pieno.
   // Vuota = resta il colore. Sotto ci va SEMPRE una velatura scura, o il nome
   // del locale sopra una foto chiara sparisce (DIGITAL_MENU, Tema 25).
@@ -218,7 +251,7 @@ async function loadVenues(): Promise<Venue[]> {
     .from('partner_venues')
     .select(
       'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, ' +
-        'show_dish_descriptions, section_style, heading_font, cover_url, ' +
+        'show_dish_descriptions, section_style, heading_font, text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
     )
     .order('created_at', { ascending: true });
@@ -237,6 +270,7 @@ async function loadVenues(): Promise<Venue[]> {
       showDishDescriptions: row.show_dish_descriptions ?? false,
       sectionStyle: (row.section_style ?? 'underline') as SectionStyle,
       headingFont: (row.heading_font ?? 'modern') as HeadingFont,
+      textScale: (row.text_scale ?? 'normal') as TextScale,
       coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
@@ -409,6 +443,7 @@ export async function revertAppearance(venueId: string): Promise<VenueAppearance
     coverUrl: String(scatto.coverUrl ?? ''),
     headingFont: (scatto.headingFont ?? 'modern') as HeadingFont,
     sectionStyle: (scatto.sectionStyle ?? 'underline') as SectionStyle,
+    textScale: (scatto.textScale ?? 'normal') as TextScale,
     showDishPhotos: scatto.showPhotos !== false,
     showDishDescriptions: scatto.showDescriptions === true,
   };
@@ -454,6 +489,7 @@ export function useVenues() {
       showDishDescriptions: false,
       sectionStyle: 'underline',
       headingFont: 'modern',
+      textScale: 'normal',
       coverUrl: '',
       cardId: null,
       dishIds: [],
@@ -484,6 +520,7 @@ export function useVenues() {
             showDishDescriptions: s.showDishDescriptions,
             sectionStyle: s.sectionStyle,
             headingFont: s.headingFont,
+            textScale: s.textScale,
             coverUrl: s.coverUrl,
           }
         : s
@@ -519,6 +556,7 @@ export function useVenues() {
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     if (next.headingFont !== undefined) riga.heading_font = next.headingFont;
+    if (next.textScale !== undefined) riga.text_scale = next.textScale;
     if (next.coverUrl !== undefined) riga.cover_url = next.coverUrl || null;
     void write(
       'salvataggio aspetto del locale',
