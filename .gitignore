@@ -10,5 +10,7 @@
 .vercel
 
 # Anteprime locali del menù al tavolo, generate da lib/menu-sample.js per
-# guardare la pagina senza database (v. lib/render-menu.js)
-_preview-menu*.html
+# guardare la pagina senza database (v. lib/render-menu.js). Il modello è
+# largo perché le varianti si moltiplicano: stili di sezione, pacchetti di
+# testo, lingue.
+_preview-*.html
