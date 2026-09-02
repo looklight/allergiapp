@@ -1,7 +1,8 @@
 -- Migration 707: l'indirizzo pubblico del menù (lo slug del locale)
 --
--- STATO: DA APPLICARE via SQL editor (il tracking locale è fermo alla 045:
--- questa, come tutte le 046+, va eseguita a mano — MAI db push).
+-- STATO: APPLICATA il 2026-09-02 via SQL editor (il tracking locale è
+-- fermo alla 045: questa, come tutte le 046+, va eseguita a mano — MAI
+-- db push).
 --
 -- ------------------------------------------------------------
 -- UNA COLONNA, E BASTA (DIGITAL_MENU.md, Temi 13 e 17)

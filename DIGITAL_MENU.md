@@ -731,7 +731,7 @@ reindirizzamenti servissero davvero, si aggiungono senza disfare niente — la c
 si comincia a tenere lo storico da quel giorno in poi. L'unica cosa che non si recupera sono i
 cambi avvenuti prima, e prima della pubblicazione non ce n'è nessuno che conti.
 
-**Cos'è stato fatto** (2026-09-01): migration **707 DA APPLICARE** — colonna `slug`, vincoli di
+**Cos'è stato fatto** (2026-09-01, migration applicata il 02/09): migration **707 APPLICATA** — colonna `slug`, vincoli di
 forma (minuscolo, `a-z0-9-`, 3–60 caratteri), indice unico globale, e la funzione
 `partner_slug_taken` che risponde solo sì/no perché le RLS non lasciano vedere i locali altrui. Nel
 portale, in fondo all'editor del menù, la card **"Indirizzo del menù"**: proposta ricavata dal nome

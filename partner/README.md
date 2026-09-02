@@ -352,7 +352,8 @@ già più d'uno li tiene e può aprirli. **Chi tocca questa parte non aggiunga u
 `UNIQUE (venue_id)`**: descriverebbe lo stesso stato di oggi e sarebbe la cosa
 difficile da togliere quando più menù si venderà.
 
-**L'indirizzo del menù c'è dal 2026-09-01** (migration 707), ma **non è
+**L'indirizzo del menù c'è dal 2026-09-01** (migration 707, applicata il
+02/09), ma **non è
 attivo**: in fondo all'editor una card lo propone dal nome del locale,
 controlla che sia libero e lo salva su `partner_venues.slug`. Serve a
 mettere il nome al sicuro, non a distribuirlo — la pagina pubblica non
