@@ -619,32 +619,15 @@ export default function MenuEditorPage() {
             {d.menuEditor.previewCaption}
           </p>
           <PhoneFrame>{anteprima}</PhoneFrame>
-          {/* IL MENÙ COM'È RAGGIUNGIBILE DAL MONDO, sotto il telefono: è lì
-              che si guarda l'anteprima e viene da chiedersi "e quello vero
-              com'è?". Il codice piccolo serve a riconoscerlo, i due bottoni a
-              copiarlo e ad aprirlo; "Modifica" porta alla sezione in fondo,
-              che resta l'unico posto in cui si cambia l'indirizzo e si
-              scaricano i file per la stampa. Solo a menù pubblicato: prima
-              quell'indirizzo non risponde a nessuno. */}
-          {pubblicazione.online && locale?.slug && (
-            <LiveBox
-              slug={locale.slug}
-              onEdit={() =>
-                document
-                  .getElementById(ANCORA_INDIRIZZO)
-                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }
-            />
-          )}
-
-          {/* In una scheda a parte, non al posto dell'editor: serve a
-              guardarla grande e a tenerla aperta accanto mentre si lavora.
-              rel noopener perché è pur sempre un target _blank. */}
+          {/* ATTACCATO AL TELEFONO, perché parla del telefono: è lo stesso
+              schermo, guardato più grande. In una scheda a parte e non al
+              posto dell'editor, così si può tenere aperta accanto mentre si
+              lavora. rel noopener perché è pur sempre un target _blank. */}
           <a
             href={`/menu/${menu.id}/anteprima`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mx-auto mt-2 flex w-fit items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-900"
+            className="mx-auto mt-1.5 flex w-fit items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-900"
           >
             {d.menuEditor.fullPreview}
             <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -652,6 +635,25 @@ export default function MenuEditorPage() {
               <path d="M18 14v5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 014 19V8a1.5 1.5 0 011.5-1.5H10" />
             </svg>
           </a>
+
+          {/* Staccato da un respiro, perché è un'ALTRA cosa: sopra c'è
+              l'anteprima e come guardarla, qui c'è il menù com'è
+              raggiungibile dal mondo — il codice per riconoscerlo, il link da
+              copiare, la pagina vera da aprire. "Modifica" porta alla sezione
+              in fondo, che resta l'unico posto in cui si cambia l'indirizzo e
+              si scaricano i file per la stampa. Solo a menù pubblicato: prima
+              quell'indirizzo non risponde a nessuno. */}
+          {locale && (
+            <LiveBox
+              slug={locale.slug}
+              online={pubblicazione.online}
+              onEdit={() =>
+                document
+                  .getElementById(ANCORA_INDIRIZZO)
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            />
+          )}
         </div>
       </div>
 

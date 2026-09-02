@@ -14,29 +14,9 @@
 // la tipografia — glielo si dà noi, o se lo fa rifare male da qualcun altro
 // (DIGITAL_MENU.md, Tema 13).
 import { useEffect, useRef, useState } from 'react';
-import QRCode from 'qrcode';
 import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO } from '@/lib/slug';
-
-// Correzione d'errore media: il QR resta leggibile con un quinto del disegno
-// rovinato, che è la misura giusta per una cosa che vive su un tavolo fra
-// bicchieri e tovaglioli. Più alta sprecherebbe spazio a parità di utilità.
-const OPZIONI = { errorCorrectionLevel: 'M', margin: 2 } as const;
-
-// Il lato del PNG da scaricare. Grande abbastanza da reggere la stampa di un
-// cartoncino da tavolo: chi lo apre a schermo lo vede comunque rimpicciolito,
-// mentre chi lo porta in stampa da un file piccolo ottiene un quadrato sfocato.
-const LATO_PNG = 1024;
-
-function scarica(contenuto: Blob | string, nome: string) {
-  const url = typeof contenuto === 'string' ? contenuto : URL.createObjectURL(contenuto);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = nome;
-  a.click();
-  // Solo gli oggetti creati qui vanno liberati: un data-URL non occupa niente
-  if (typeof contenuto !== 'string') URL.revokeObjectURL(url);
-}
+import { qrDataUrl, scaricaQrPng, scaricaQrSvg } from '@/lib/qr';
 
 export default function MenuQr({ slug, online }: { slug: string; online: boolean }) {
   const { d } = useI18n();
@@ -49,7 +29,7 @@ export default function MenuQr({ slug, online }: { slug: string; online: boolean
 
   useEffect(() => {
     let vivo = true;
-    void QRCode.toDataURL(indirizzo, { ...OPZIONI, width: 240 }).then((url) => {
+    void qrDataUrl(indirizzo, 240).then((url) => {
       if (vivo) setAnteprima(url);
     });
     return () => {
@@ -74,14 +54,8 @@ export default function MenuQr({ slug, online }: { slug: string; online: boolean
     }
   }
 
-  async function scaricaPng() {
-    scarica(await QRCode.toDataURL(indirizzo, { ...OPZIONI, width: LATO_PNG }), `qr-${slug}.png`);
-  }
-
-  async function scaricaSvg() {
-    const svg = await QRCode.toString(indirizzo, { ...OPZIONI, type: 'svg' });
-    scarica(new Blob([svg], { type: 'image/svg+xml' }), `qr-${slug}.svg`);
-  }
+  const scaricaPng = () => scaricaQrPng(indirizzo, slug);
+  const scaricaSvg = () => scaricaQrSvg(indirizzo, slug);
 
   return (
     <div className="mt-3 flex flex-wrap items-start gap-4 border-t border-gray-100 pt-3">
