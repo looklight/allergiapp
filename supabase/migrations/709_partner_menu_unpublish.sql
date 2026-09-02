@@ -1,4 +1,4 @@
--- Migration 709: ritirare il menù dalla sala, e la copertina
+-- Migration 709: ritirare il menù dalla sala, la copertina, il carattere
 --
 -- STATO: DA APPLICARE via SQL editor, DOPO la 708 (il tracking locale è
 -- fermo alla 045: questa, come tutte le 046+, va eseguita a mano — MAI
@@ -64,6 +64,39 @@ alter table partner_venues
 comment on column partner_venues.cover_url is
   'Immagine di copertina del menù al tavolo, su Storage. NULL = nessuna, resta il colore del locale.';
 
+-- ------------------------------------------------------------
+-- IL CARATTERE DELLE INTESTAZIONI
+-- Un CODICE, non il nome di un file: 'modern' (quello di oggi),
+-- 'classic', 'bold', 'light'. Il file lo decide chi rende la
+-- pagina, e cambiarlo un domani non tocca il database.
+--
+-- ⚠️ VALE SOLO SULLE INTESTAZIONI — nome del locale e titoli
+-- delle sezioni. Nome del piatto, prezzo, descrizione e
+-- soprattutto la riga degli ALLERGENI restano nel carattere di
+-- sistema, che è il più leggibile che esista su ogni telefono.
+-- È la stessa ragione per cui le tinte le scegliamo noi (Tema 8):
+-- quella riga la legge una persona con un'allergia, in una sala
+-- poco illuminata, mentre qualcuno le chiede cosa ordina. Chi
+-- estende questa colonna al corpo del menù la sta usando contro
+-- il prodotto.
+--
+-- E POCHI, decisi da noi, non un elenco da cui scegliere: sono
+-- tre voci della stessa lingua — raffinata, marcata, sottile —
+-- provate da noi a quelle dimensioni.
+--
+-- I FILE SI OSPITANO CON IL SITO, mai da Google Fonts: quel file
+-- arriverebbe dai server di Google a ogni scansione, cioè
+-- manderemmo l'indirizzo IP del cliente seduto al tavolo a un
+-- terzo senza che nessuno gliel'abbia chiesto. In Europa è un
+-- problema vero, e va nella direzione opposta a quella presa con
+-- Firebase.
+alter table partner_venues
+  add column heading_font text not null default 'modern'
+    check (heading_font in ('modern', 'classic', 'bold', 'light'));
+
+comment on column partner_venues.heading_font is
+  'Carattere delle INTESTAZIONI del menù (nome del locale, titoli delle sezioni). Il corpo e la riga degli allergeni restano di sistema. Candidato premium.';
+
 -- Esce anche nello scatto pubblicato, altrimenti la copertina
 -- resterebbe una cosa che si vede solo nell'anteprima del
 -- portale. Le pagine già pubblicate non ce l'hanno dentro: chi
@@ -75,8 +108,8 @@ language sql
 stable
 as $$
   with locale as (
-    select v.id, v.name, v.slug, v.logo_url, v.accent, v.cover_url, v.table_conditions,
-           v.show_dish_photos, v.show_dish_descriptions
+    select v.id, v.name, v.slug, v.logo_url, v.accent, v.cover_url, v.heading_font,
+           v.table_conditions, v.show_dish_photos, v.show_dish_descriptions
       from partner_venues v
      where v.id = p_venue_id
   ),
@@ -153,6 +186,7 @@ as $$
       'logoUrl', coalesce((select logo_url from locale), ''),
       'accent', (select accent from locale),
       'coverUrl', coalesce((select cover_url from locale), ''),
+      'headingFont', (select heading_font from locale),
       'tableConditions', coalesce((select table_conditions from locale), ''),
       'showPhotos', (select show_dish_photos from locale),
       'showDescriptions', (select show_dish_descriptions from locale),

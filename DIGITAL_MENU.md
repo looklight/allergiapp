@@ -886,6 +886,43 @@ per chi sta rifacendo la carta". Inverte il difetto — di norma il tavolo è se
 che è la cosa giusta per gli allergeni — ma quasi nessuno si ricorderebbe di premerlo **prima** di
 cominciare, e si ritroverebbe comunque a modificare in sala.
 
+---
+
+### 2026-09-02 — Tema 25: Il carattere si cambia, ma solo dove non si legge un allergene
+
+**Domanda dell'utente**: *"alcuni locali vogliono uno stile più raffinato, altri più bold, altri
+più sottile"* — e la scelta del carattere come voce in più nella scatola "Aspetto", destinata a
+diventare premium.
+
+**Decisione**: sì, con **due confini** che non sono negoziabili.
+
+**1. Vale solo sulle INTESTAZIONI**: il nome del locale in cima e i titoli delle sezioni. Nome del
+piatto, prezzo, descrizione e soprattutto la riga degli **allergeni** restano nel carattere di
+sistema, che è il più leggibile che esista su ogni telefono. È lo stesso ragionamento delle tinte
+scelte da noi (Tema 8): quella riga la legge una persona con un'allergia, in una sala poco
+illuminata, mentre qualcuno le sta chiedendo cosa ordina. Ed è anche dove l'identità si vede
+davvero — una trattoria e un sushi bar si distinguono dall'intestazione, non dal corpo del menù.
+
+**2. Pochi e decisi da noi**, non un elenco da cui scegliere: `modern` (quello di oggi), `classic`,
+`bold`, `light`. Tre voci della stessa lingua — raffinata, marcata, sottile — provate a quelle
+dimensioni, come le sei tinte. Un selettore libero rimetterebbe in gioco proprio la leggibilità che
+il Tema 8 protegge.
+
+**⚠️ I FILE SI OSPITANO CON IL SITO, mai da Google Fonts.** Da lì il file arriverebbe dai server di
+Google **a ogni scansione**: manderemmo l'indirizzo IP del cliente seduto al tavolo a un terzo
+senza che nessuno gliel'abbia chiesto. In Europa è un problema reale, e va nella direzione opposta
+a quella già presa con Firebase. Qualche decina di kilobyte per carattere, caricati solo dai locali
+che lo usano.
+
+**Sul database** (migration 709, aggiunta mentre era aperta): `heading_font` su `partner_venues`,
+un CODICE e non il nome di un file — il file lo decide chi rende la pagina, e cambiarlo domani non
+tocca il database. Esce già nello scatto pubblicato (`headingFont`). **Manca tutta la funzione**:
+i file, il selettore nella scatola "Aspetto", l'anteprima e la pagina pubblica.
+
+**È un candidato premium**, come la copertina e il logo: cose che un ristoratore vede e riconosce
+come "il mio menù". La regola del Tema 23 resta ferma — quello che il cliente al tavolo usa (il
+filtro, gli allergeni) non si vende e non si spegne.
+
 ## Prossimo passo
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così
