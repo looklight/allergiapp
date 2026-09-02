@@ -17,6 +17,33 @@ import { currentUserId, reportError } from './storage';
 
 const BUCKET = 'partner';
 
+// COS'È UN RITAGLIO. Il quadrato che si tiene, detto in frazioni e non in
+// pixel: così lo stesso ritaglio vale per la miniatura e per la grande, e non
+// c'è nessuna misura da riscalare fra le due.
+//
+// `zoom` 1 = il quadrato più grande che ci sta dentro (fino al 2026-09-02 era
+// l'unica cosa possibile). Da lì in su il quadrato si stringe: zoom 2 vuol
+// dire prenderne metà lato, cioè avvicinarsi al doppio.
+//
+// `x` e `y` sono DOVE cade quel quadrato lungo i due assi, da 0 a 1, e 0.5 è
+// il centro. Sono frazioni della corsa disponibile, non della foto: se su un
+// asse non c'è margine — il lato corto quando lo zoom è 1 — quel valore non
+// sposta niente, e non serve trattarlo a parte.
+export interface Crop {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+// Il ritaglio da cui si parte, e quello di chi non ne sceglie nessuno: al
+// centro, senza ingrandimento.
+export const CROP_CENTRO: Crop = { x: 0.5, y: 0.5, zoom: 1 };
+
+// Quanto ci si può avvicinare. Oltre il quadruplo si comincia a ingrandire dei
+// pixel che non ci sono: il ritaglio diventa più piccolo della misura che
+// vogliamo salvare, e il risultato è una foto sfocata scelta a occhi aperti.
+export const ZOOM_MAX = 4;
+
 // Il lato del quadrato, non il lato lungo: le foto si ritagliano quadrate
 // (v. renderToBlob). La grande si vede una alla volta — la scheda, e
 // l'ingrandimento al tocco; la miniatura sta in un cerchio da 64px al
@@ -24,10 +51,8 @@ const BUCKET = 'partner';
 const GRANDE = { lato: 900, qualita: 0.78 };
 const MINIATURA = { lato: 240, qualita: 0.7 };
 
-// IL LOGO DEL LOCALE. Lato massimo e non lato del quadrato: un logo non si
-// ritaglia, si rimpicciolisce — tagliarne un pezzo vuol dire tagliare il nome
-// del ristorante. 240 basta: nell'anteprima sta in un cerchio da 56px, e in
-// cima al menù pubblico non è più grande.
+// IL LOGO DEL LOCALE. 240 basta: nell'anteprima sta in un cerchio da 56px, e
+// in cima al menù pubblico non è più grande.
 const LOGO = { lato: 240, qualita: 0.85 };
 
 export interface DishPhoto {
@@ -85,25 +110,38 @@ function renderToBlob(
   img: HTMLImageElement,
   lato: number,
   qualita: number,
-  posizione: number
+  crop: Crop,
+  // Il colore sotto l'immagine, per chi arriva con la trasparenza: serve ai
+  // LOGHI, che sono quasi sempre PNG trasparenti e su un formato senza
+  // trasparenza diventerebbero neri. Le foto dei piatti non ne hanno bisogno,
+  // e senza questo parametro il comportamento è quello di prima.
+  fondo?: string
 ): Promise<Blob> {
-  // Il lato del quadrato più grande che ci sta dentro
-  const sorgente = Math.min(img.width, img.height);
-  // Una foto già piccola non si ingrandisce: si tiene com'è
-  const destinazione = Math.min(lato, sorgente);
-  // Sul lato corto non c'è niente da scegliere, ed è per questo che il
-  // ritaglio ha un asse solo
-  const scorrimento = (misura: number) => Math.round((misura - sorgente) * posizione);
+  // Il lato del quadrato che si tiene: il più grande che ci sta dentro,
+  // stretto dallo zoom
+  const sorgente = Math.min(img.width, img.height) / Math.max(1, crop.zoom);
+  // Una foto già piccola non si ingrandisce: si tiene com'è. Vale anche per
+  // il ritaglio stretto dallo zoom — avvicinandosi molto si salva un quadrato
+  // più piccolo, che è la verità di quanti pixel sono rimasti.
+  const destinazione = Math.round(Math.min(lato, sorgente));
+  // Quanto margine c'è su ciascun asse, e dove ci si mette dentro. Su un asse
+  // senza margine il conto fa zero da sé.
+  const scorrimento = (misura: number, dove: number) =>
+    Math.round((misura - sorgente) * dove);
 
   const canvas = document.createElement('canvas');
   canvas.width = destinazione;
   canvas.height = destinazione;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Promise.reject(new Error('canvas non disponibile'));
+  if (fondo !== undefined) {
+    ctx.fillStyle = fondo;
+    ctx.fillRect(0, 0, destinazione, destinazione);
+  }
   ctx.drawImage(
     img,
-    scorrimento(img.width),
-    scorrimento(img.height),
+    scorrimento(img.width, crop.x),
+    scorrimento(img.height, crop.y),
     sorgente,
     sorgente,
     0,
@@ -127,46 +165,6 @@ function renderToBlob(
       },
       'image/webp',
       qualita
-    );
-  });
-}
-
-// Il logo ridotto, con le PROPORZIONI INTATTE e il fondo bianco sotto.
-// Quasi tutti i loghi arrivano in PNG con lo sfondo trasparente, e su un
-// formato che la trasparenza non ce l'ha diventerebbe nero: bianco è anche il
-// cerchio su cui il logo sta nell'anteprima, quindi non si vede la giunta.
-//
-// Stessa cautela di renderToBlob sul WebP: se il browser non lo sa scrivere,
-// toBlob NON fallisce — restituisce un PNG, che su un'immagine vera pesa
-// molte volte tanto. Quindi si guarda cosa è tornato davvero.
-function renderLogoBlob(img: HTMLImageElement): Promise<Blob> {
-  return new Promise((risolvi, rifiuta) => {
-    const scala = Math.min(1, LOGO.lato / Math.max(img.width, img.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(img.width * scala));
-    canvas.height = Math.max(1, Math.round(img.height * scala));
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      rifiuta(new Error('logo: canvas non disponibile'));
-      return;
-    }
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(
-      (webp) => {
-        if (webp && webp.type === 'image/webp') {
-          risolvi(webp);
-          return;
-        }
-        canvas.toBlob(
-          (jpeg) => (jpeg ? risolvi(jpeg) : rifiuta(new Error('logo: conversione fallita'))),
-          'image/jpeg',
-          LOGO.qualita
-        );
-      },
-      'image/webp',
-      LOGO.qualita
     );
   });
 }
@@ -209,14 +207,14 @@ async function upload(path: string, blob: Blob): Promise<string> {
 // Carica le due misure. Se una delle due non arriva, si porta via l'altra:
 // mezza foto è peggio di nessuna, perché la lista mostrerebbe un buco senza
 // che nessuno sappia perché.
-export async function uploadDishPhoto(file: File, posizione = 0.5): Promise<DishPhoto> {
+export async function uploadDishPhoto(file: File, crop: Crop = CROP_CENTRO): Promise<DishPhoto> {
   let grande: Blob;
   let mini: Blob;
   try {
     const img = await loadImage(file);
     [grande, mini] = await Promise.all([
-      renderToBlob(img, GRANDE.lato, GRANDE.qualita, posizione),
-      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita, posizione),
+      renderToBlob(img, GRANDE.lato, GRANDE.qualita, crop),
+      renderToBlob(img, MINIATURA.lato, MINIATURA.qualita, crop),
     ]);
   } catch (error) {
     reportError('lettura foto piatto', error);
@@ -264,7 +262,7 @@ export async function uploadDishPhoto(file: File, posizione = 0.5): Promise<Dish
 // destinata a finire dentro OGNI pagina pubblica generata, invece di essere
 // scaricata una volta e tenuta in cache come tutte le altre immagini. La
 // colonna non è cambiata: prima conteneva l'immagine, adesso il suo indirizzo.
-export async function uploadLogo(file: File): Promise<string> {
+export async function uploadLogo(file: File, crop: Crop = CROP_CENTRO): Promise<string> {
   const ownerId = await currentUserId();
   if (!ownerId) {
     reportError('caricamento logo', new Error('sessione assente'));
@@ -272,7 +270,16 @@ export async function uploadLogo(file: File): Promise<string> {
   }
   let blob: Blob;
   try {
-    blob = await renderLogoBlob(await loadImage(file));
+    // Quadrato come le foto dei piatti, e ritagliato dalla stessa finestra:
+    // il logo si vede SEMPRE dentro un cerchio — nell'editor e in cima al
+    // menù — quindi un rettangolo verrebbe tagliato comunque, ma dal browser
+    // e dal centro. Meglio che a scegliere il pezzo sia il ristoratore.
+    //
+    // Il fondo bianco si disegna sotto: quasi tutti i loghi arrivano in PNG
+    // trasparente, e su un formato che la trasparenza non ce l'ha
+    // diventerebbe nero. Bianco è anche il cerchio su cui il logo sta
+    // nell'anteprima, quindi non si vede la giunta.
+    blob = await renderToBlob(await loadImage(file), LOGO.lato, LOGO.qualita, crop, '#ffffff');
   } catch (errore) {
     reportError('lettura logo', errore);
     throw new PhotoError('read');

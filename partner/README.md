@@ -443,10 +443,18 @@ Tre cose da non perdere se qualcuno ci rimette mano:
   sa scrivere **non fallisce**: restituisce un PNG in silenzio, che su una
   fotografia pesa molte volte tanto. Quindi il tipo di quello che torna si
   controlla.
-- **Il ritaglio quadrato lo sceglie il ristoratore** (`PhotoCropDialog`), e
-  ha un asse solo: il quadrato preso è il più grande che ci sta dentro,
-  quindi sul lato corto è già tutto dentro. Si mostra perché è distruttivo e
-  definitivo — l'originale non lo teniamo.
+- **Il ritaglio quadrato lo sceglie il ristoratore** (`PhotoCropDialog`, che
+  dal 02/09 sta in `src/components/` perché serve anche al logo): si trascina
+  su **due assi** e ci si avvicina con lo **zoom**. Con lo zoom a uno il
+  quadrato è il più grande che ci sta dentro e su un asse non c'è margine —
+  il comportamento di prima, che aveva un asse solo. Si mostra perché è
+  distruttivo e definitivo: l'originale non lo teniamo. Il ritaglio viaggia
+  come `Crop` (`{x, y, zoom}`, tutto in frazioni) così lo stesso vale per la
+  miniatura e per la grande, senza misure da riscalare.
+- **Avvicinandosi si salva meno.** Il quadrato ritagliato si stringe e non si
+  ingrandisce mai oltre i pixel che ci sono: a zoom alto il file salvato è più
+  piccolo di 900px, ed è la verità di quanto è rimasto. Per questo lo zoom si
+  ferma a 4.
 
 **Il logo del locale sta nello stesso bucket** (`<utente>/logos/<casuale>`),
 dal 2026-09-02: un file solo e nessuna miniatura, perché la misura piena

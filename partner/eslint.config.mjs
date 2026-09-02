@@ -18,6 +18,10 @@ const eslintConfig = [
     files: [
       'src/components/preview/**',
       'src/components/dishes/**',
+      // Il ritaglio: mostra il file locale appena scelto (un blob), che
+      // next/image non saprebbe ottimizzare. Stava sotto dishes/ finché non
+      // è servito anche al logo del locale.
+      'src/components/PhotoCropDialog.tsx',
       'src/app/vetrina/**',
     ],
     rules: { '@next/next/no-img-element': 'off' },

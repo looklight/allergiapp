@@ -187,8 +187,9 @@ const it = {
     photoError: 'Impossibile leggere la foto. Prova con un altro file.',
     photoUploadError: 'La foto non è stata caricata. Controlla la connessione e riprova.',
     cropTitle: 'Scegli il ritaglio',
-    cropHint: 'Trascina per scegliere la parte da tenere: quella in ombra non viene salvata. Il cerchio è come si vedrà negli elenchi.',
-    cropHintSquare: 'La foto è già quadrata: si salva tutta.',
+    cropZoom: 'Ingrandisci',
+    cropHint: 'Trascina per scegliere la parte da tenere e ingrandisci per avvicinarti: quello in ombra non viene salvato. Il cerchio è come si vedrà negli elenchi.',
+    cropHintSquare: 'Si salva tutta: ingrandisci se vuoi tenerne solo un pezzo.',
     cropConfirm: 'Usa questa',
     simulatorTitle: 'Occhi del visitatore',
     simulatorHint:

@@ -8,17 +8,28 @@
 // può ancora scegliere — ritagliare dal centro di nascosto è il modo classico
 // di tagliare mezza portata a una foto scattata di traverso.
 //
-// Un asse solo, e non è una semplificazione: il quadrato che prendiamo è il
-// più grande che ci sta dentro, quindi sul lato corto è già tutto dentro e
-// l'unico grado di libertà è scorrere lungo il lato lungo. Niente zoom,
-// niente maniglie, niente proporzioni da scegliere.
+// LA STESSA FINESTRA SERVE ANCHE AL LOGO DEL LOCALE (dal 2026-09-02): il logo
+// si vede sempre dentro un cerchio, quindi il problema è identico e la
+// risposta pure. Da qui nasce anche il perché lo zoom: su un logo largo, il
+// quadrato più grande possibile prende sfondo inutile ai lati, e senza potersi
+// avvicinare non c'era modo di riempire il cerchio col marchio.
+//
+// DUE ASSI E UNO ZOOM, e niente di più: nessuna maniglia da afferrare,
+// nessuna proporzione da scegliere, nessuna rotazione. Con lo zoom a uno il
+// quadrato è il più grande che ci sta dentro e su un asse non c'è margine —
+// esattamente il comportamento di prima, che era a un asse solo.
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
+import { CROP_CENTRO, ZOOM_MAX, type Crop } from '@/lib/photos';
 
 // Di quanto si sposta il ritaglio a ogni freccia della tastiera: due
 // centesimi della corsa, cioè una cinquantina di passi da un capo all'altro
 const PASSO_TASTIERA = 0.02;
+
+// Quanto è fitto il cursore dello zoom. Passi grossi si sentono a scatti su
+// un'immagine ferma sotto gli occhi.
+const PASSO_ZOOM = 0.05;
 
 export default function PhotoCropDialog({
   file,
@@ -27,9 +38,9 @@ export default function PhotoCropDialog({
   onUnreadable,
 }: {
   file: File;
-  // posizione: 0 = tutto a sinistra (o in alto), 1 = tutto a destra (in basso),
-  // 0.5 = il centro, che è da dove si parte
-  onConfirm: (posizione: number) => void;
+  // Il quadrato scelto: dove cade sui due assi (0..1) e quanto ci si è
+  // avvicinati. Il centro senza ingrandimento è CROP_CENTRO.
+  onConfirm: (crop: Crop) => void;
   onCancel: () => void;
   // il file non è un'immagine che il browser sappia aprire
   onUnreadable: () => void;
@@ -38,12 +49,12 @@ export default function PhotoCropDialog({
   const panel = useModal<HTMLDivElement>(onCancel);
   const [src, setSrc] = useState<string | null>(null);
   const [dimensioni, setDimensioni] = useState<{ w: number; h: number } | null>(null);
-  const [posizione, setPosizione] = useState(0.5);
+  const [crop, setCrop] = useState<Crop>(CROP_CENTRO);
   const cornice = useRef<HTMLDivElement>(null);
   // Da dove è partito il trascinamento: il punto toccato e il ritaglio di
   // allora. Serve perché lo spostamento è relativo, non assoluto — altrimenti
   // il quadrato salterebbe sotto il dito al primo movimento.
-  const partenza = useRef<{ punto: number; posizione: number } | null>(null);
+  const partenza = useRef<{ x: number; y: number; crop: Crop } | null>(null);
 
   // L'indirizzo temporaneo del file va restituito, o resta appeso alla pagina
   // per tutta la sua vita
@@ -53,51 +64,50 @@ export default function PhotoCropDialog({
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  const orizzontale = dimensioni !== null && dimensioni.w >= dimensioni.h;
-  // Quanto occupa il quadrato sul lato lungo, in frazione: è il rapporto fra i
-  // due lati. Tenendo tutto in frazioni non serve misurare nessun pixel, e il
-  // conto resta giusto a qualunque grandezza si veda la foto.
-  const quota = dimensioni === null
-    ? 1
-    : orizzontale
-      ? dimensioni.h / dimensioni.w
-      : dimensioni.w / dimensioni.h;
-  // Quanto si può scorrere. Zero su una foto già quadrata: niente da scegliere.
-  const corsa = 1 - quota;
-  const scorrevole = corsa > 0.001;
-  const inizio = posizione * corsa;
+  // Il lato del quadrato in frazione di ciascun asse. Tenendo tutto in
+  // frazioni non serve misurare nessun pixel, e il conto resta giusto a
+  // qualunque grandezza si veda la foto.
+  const lato = dimensioni === null ? 1 : Math.min(dimensioni.w, dimensioni.h) / crop.zoom;
+  const quotaX = dimensioni === null ? 1 : lato / dimensioni.w;
+  const quotaY = dimensioni === null ? 1 : lato / dimensioni.h;
+  // Quanto si può scorrere su ciascun asse. Zero sul lato corto quando lo
+  // zoom è uno: là non c'è niente da scegliere.
+  const corsaX = 1 - quotaX;
+  const corsaY = 1 - quotaY;
+  const scorrevole = corsaX > 0.001 || corsaY > 0.001;
+
+  function limita(v: number) {
+    return Math.min(1, Math.max(0, v));
+  }
 
   function sposta(e: React.PointerEvent<HTMLDivElement>) {
-    if (!scorrevole || partenza.current === null) return;
+    if (partenza.current === null) return;
     const rect = cornice.current?.getBoundingClientRect();
     if (!rect) return;
-    const lato = orizzontale ? rect.width : rect.height;
-    const punto = orizzontale ? e.clientX : e.clientY;
-    const delta = (punto - partenza.current.punto) / (lato * corsa);
-    setPosizione(Math.min(1, Math.max(0, partenza.current.posizione + delta)));
+    const da = partenza.current;
+    // Su un asse senza margine il trascinamento non deve fare niente, e
+    // dividere per zero farebbe un salto a fondo corsa
+    const dx = corsaX > 0.001 ? (e.clientX - da.x) / (rect.width * corsaX) : 0;
+    const dy = corsaY > 0.001 ? (e.clientY - da.y) / (rect.height * corsaY) : 0;
+    setCrop((c) => ({ ...c, x: limita(da.crop.x + dx), y: limita(da.crop.y + dy) }));
   }
 
   function daTastiera(e: React.KeyboardEvent) {
-    if (!scorrevole) return;
-    const indietro = orizzontale ? 'ArrowLeft' : 'ArrowUp';
-    const avanti = orizzontale ? 'ArrowRight' : 'ArrowDown';
-    if (e.key !== indietro && e.key !== avanti) return;
+    const passi: Record<string, [number, number]> = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const passo = passi[e.key];
+    if (!passo) return;
     e.preventDefault();
-    const verso = e.key === avanti ? 1 : -1;
-    setPosizione((p) => Math.min(1, Math.max(0, p + verso * PASSO_TASTIERA)));
+    setCrop((c) => ({
+      ...c,
+      x: corsaX > 0.001 ? limita(c.x + passo[0] * PASSO_TASTIERA) : c.x,
+      y: corsaY > 0.001 ? limita(c.y + passo[1] * PASSO_TASTIERA) : c.y,
+    }));
   }
-
-  // Le due fasce in ombra sono ciò che si perde: si disegnano ai lati del
-  // quadrato, e su una foto quadrata non esistono proprio.
-  const primaFascia = orizzontale
-    ? { left: 0, top: 0, bottom: 0, width: `${inizio * 100}%` }
-    : { left: 0, right: 0, top: 0, height: `${inizio * 100}%` };
-  const secondaFascia = orizzontale
-    ? { right: 0, top: 0, bottom: 0, width: `${(corsa - inizio) * 100}%` }
-    : { left: 0, right: 0, bottom: 0, height: `${(corsa - inizio) * 100}%` };
-  const quadrato = orizzontale
-    ? { left: `${inizio * 100}%`, width: `${quota * 100}%`, top: 0, bottom: 0 }
-    : { top: `${inizio * 100}%`, height: `${quota * 100}%`, left: 0, right: 0 };
 
   return (
     // Il clic sullo sfondo NON chiude, al contrario delle altre finestre:
@@ -116,7 +126,10 @@ export default function PhotoCropDialog({
       >
         <p className="text-sm font-medium text-gray-900">{d.editor.cropTitle}</p>
 
-        <div ref={cornice} className="relative mx-auto select-none">
+        {/* overflow-hidden regge l'ombra fuori dal quadrato, che è disegnata
+            con un'ombra larghissima invece che con quattro fasce da tenere
+            allineate a mano */}
+        <div ref={cornice} className="relative mx-auto select-none overflow-hidden">
           {src !== null && (
             <img
               src={src}
@@ -133,29 +146,14 @@ export default function PhotoCropDialog({
             />
           )}
 
-          {dimensioni !== null && scorrevole && (
-            <>
-              <div className="pointer-events-none absolute bg-black/55" style={primaFascia} />
-              <div className="pointer-events-none absolute bg-black/55" style={secondaFascia} />
-            </>
-          )}
-
           {dimensioni !== null && (
             <div
-              role={scorrevole ? 'slider' : undefined}
-              aria-label={scorrevole ? d.editor.cropTitle : undefined}
-              aria-orientation={scorrevole ? (orizzontale ? 'horizontal' : 'vertical') : undefined}
-              aria-valuemin={scorrevole ? 0 : undefined}
-              aria-valuemax={scorrevole ? 100 : undefined}
-              aria-valuenow={scorrevole ? Math.round(posizione * 100) : undefined}
-              tabIndex={scorrevole ? 0 : -1}
+              tabIndex={0}
+              aria-label={d.editor.cropTitle}
               onKeyDown={daTastiera}
               onPointerDown={(e) => {
                 if (!scorrevole) return;
-                partenza.current = {
-                  punto: orizzontale ? e.clientX : e.clientY,
-                  posizione,
-                };
+                partenza.current = { x: e.clientX, y: e.clientY, crop };
                 e.currentTarget.setPointerCapture(e.pointerId);
               }}
               onPointerMove={sposta}
@@ -165,9 +163,17 @@ export default function PhotoCropDialog({
               onPointerCancel={() => {
                 partenza.current = null;
               }}
-              style={{ ...quadrato, touchAction: 'none' }}
+              style={{
+                left: `${crop.x * corsaX * 100}%`,
+                top: `${crop.y * corsaY * 100}%`,
+                width: `${quotaX * 100}%`,
+                height: `${quotaY * 100}%`,
+                touchAction: 'none',
+                // Tutto ciò che sta fuori dal quadrato è quello che si perde
+                boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)',
+              }}
               className={`absolute border-2 border-white outline-none ring-inset focus-visible:ring-2 focus-visible:ring-gray-900 ${
-                scorrevole ? (orizzontale ? 'cursor-ew-resize' : 'cursor-ns-resize') : ''
+                scorrevole ? 'cursor-move' : ''
               }`}
             >
               {/* Dove cadrà il cerchio nelle liste: il quadrato è quello che si
@@ -176,6 +182,22 @@ export default function PhotoCropDialog({
             </div>
           )}
         </div>
+
+        {/* Lo zoom sta SOTTO l'immagine e non addosso al quadrato: è l'unico
+            comando con due estremi, e un cursore vero si usa anche da tastiera
+            senza che dobbiamo inventarci niente. */}
+        <label className="flex items-center gap-3 text-xs text-gray-500">
+          {d.editor.cropZoom}
+          <input
+            type="range"
+            min={1}
+            max={ZOOM_MAX}
+            step={PASSO_ZOOM}
+            value={crop.zoom}
+            onChange={(e) => setCrop((c) => ({ ...c, zoom: Number(e.target.value) }))}
+            className="min-w-0 flex-1 accent-gray-900"
+          />
+        </label>
 
         <p className="text-xs text-gray-500">
           {scorrevole ? d.editor.cropHint : d.editor.cropHintSquare}
@@ -189,7 +211,7 @@ export default function PhotoCropDialog({
             {d.common.cancel}
           </button>
           <button
-            onClick={() => onConfirm(posizione)}
+            onClick={() => onConfirm(crop)}
             disabled={dimensioni === null}
             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
           >

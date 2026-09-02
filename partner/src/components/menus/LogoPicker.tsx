@@ -16,7 +16,8 @@
 import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { DEFAULT_LOGO } from '@/lib/menuBrand';
-import { MAX_FILE_BYTES, PhotoError, uploadLogo } from '@/lib/photos';
+import { MAX_FILE_BYTES, PhotoError, uploadLogo, type Crop } from '@/lib/photos';
+import PhotoCropDialog from '../PhotoCropDialog';
 
 export default function LogoPicker({
   logoUrl,
@@ -28,19 +29,29 @@ export default function LogoPicker({
   const { d } = useI18n();
   const file = useRef<HTMLInputElement>(null);
   const [caricamento, setCaricamento] = useState(false);
+  // Il file scelto, in attesa che si dica quale quadrato tenerne. Il logo si
+  // vede sempre dentro un cerchio — qui e in cima al menù — quindi un logo
+  // largo verrebbe tagliato comunque: tanto vale far scegliere dove, ed è la
+  // stessa finestra delle foto dei piatti.
+  const [daRitagliare, setDaRitagliare] = useState<File | null>(null);
   // Perché non è andata, con le stesse due categorie delle foto dei piatti:
   // il file non è leggibile (cambia file) oppure non è arrivato (riprova).
   const [errore, setErrore] = useState<'read' | 'upload' | 'size' | null>(null);
 
-  async function scegli(scelto: File) {
+  function scegli(scelto: File) {
     setErrore(null);
     if (scelto.size > MAX_FILE_BYTES) {
       setErrore('size');
       return;
     }
+    setDaRitagliare(scelto);
+  }
+
+  async function carica(scelto: File, crop: Crop) {
+    setDaRitagliare(null);
     setCaricamento(true);
     try {
-      onChange(await uploadLogo(scelto));
+      onChange(await uploadLogo(scelto, crop));
     } catch (e) {
       setErrore(e instanceof PhotoError ? e.kind : 'upload');
     } finally {
@@ -59,6 +70,17 @@ export default function LogoPicker({
 
   return (
     <div className="shrink-0">
+      {daRitagliare !== null && (
+        <PhotoCropDialog
+          file={daRitagliare}
+          onConfirm={(crop) => carica(daRitagliare, crop)}
+          onCancel={() => setDaRitagliare(null)}
+          onUnreadable={() => {
+            setDaRitagliare(null);
+            setErrore('read');
+          }}
+        />
+      )}
     <div className="group relative inline-block">
       {/* Si mostra quello che comparirà davvero, non un segnaposto
           tratteggiato: senza logo proprio è quello di AllergiApp, e vederlo
@@ -114,7 +136,7 @@ export default function LogoPicker({
           const scelto = e.target.files?.[0];
           // Un logo che non si carica non deve far saltare la schermata: si
           // lascia quello di prima e si dice cos'è andato storto
-          if (scelto) void scegli(scelto);
+          if (scelto) scegli(scelto);
           // Azzerare il campo: scegliendo di nuovo LO STESSO file il
           // browser non scatterebbe un secondo change, e sembrerebbe che
           // il caricamento non abbia funzionato

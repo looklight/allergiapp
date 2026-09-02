@@ -179,8 +179,9 @@ const en: typeof it = {
     photoError: 'Could not read the photo. Try another file.',
     photoUploadError: 'The photo was not uploaded. Check your connection and try again.',
     cropTitle: 'Choose the crop',
-    cropHint: 'Drag to choose which part to keep: the shaded area is not saved. The circle is how it will look in lists.',
-    cropHintSquare: 'The photo is already square: all of it is saved.',
+    cropZoom: 'Zoom',
+    cropHint: 'Drag to choose which part to keep, and zoom to get closer: the shaded area is not saved. The circle is how it will look in lists.',
+    cropHintSquare: 'All of it is saved: zoom in if you want to keep only a part.',
     cropConfirm: 'Use this',
     simulatorTitle: 'Through a visitor’s eyes',
     simulatorHint:

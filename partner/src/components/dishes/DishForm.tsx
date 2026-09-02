@@ -10,10 +10,11 @@ import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES } from '@/lib/categories';
-import PhotoCropDialog from './PhotoCropDialog';
+import PhotoCropDialog from '../PhotoCropDialog';
 import {
   deleteDishPhoto,
   uploadDishPhoto,
+  type Crop,
   MAX_FILE_BYTES,
   PhotoError,
   type DishPhoto,
@@ -133,11 +134,11 @@ export default function DishForm({
     setDaRitagliare(file);
   }
 
-  async function carica(file: File, posizione: number) {
+  async function carica(file: File, crop: Crop) {
     setDaRitagliare(null);
     setUploading(true);
     try {
-      const caricata = await uploadDishPhoto(file, posizione);
+      const caricata = await uploadDishPhoto(file, crop);
       caricate.current.push(caricata);
       setPhoto(caricata);
     } catch (error) {
@@ -152,7 +153,7 @@ export default function DishForm({
       {daRitagliare !== null && (
         <PhotoCropDialog
           file={daRitagliare}
-          onConfirm={(posizione) => carica(daRitagliare, posizione)}
+          onConfirm={(crop) => carica(daRitagliare, crop)}
           onCancel={() => setDaRitagliare(null)}
           onUnreadable={() => {
             setDaRitagliare(null);
