@@ -397,8 +397,17 @@ Il controllo di disponibilità passa dalla funzione `partner_slug_taken` e
 non da una select: le RLS mostrano a ogni partner solo i propri locali,
 quindi una select direbbe "libero" anche per un indirizzo già preso.
 
-Manca ancora tutto il resto della pubblicazione: nessun QR, nessuna pagina
-pubblica.
+**Il QR c'è** (`MenuQr`, sotto la card dell'indirizzo, quando uno slug è
+stato scelto): anteprima, copia del link, PNG e vettoriale — il secondo
+non è un lusso, è quello che chiede la tipografia. Finché la pagina
+pubblica non è **online** porta un avviso ambra attaccato ai bottoni di
+scarico: è lì che qualcuno sta per portare un file in stampa, e un QR
+stampato non si corregge da remoto.
+
+**La pagina pubblica esiste** e sta sul branch `landing`
+(`/menu/[slug]`): legge `get_public_menu`, cioè solo lo scatto pubblicato.
+Manca il **deploy** — finché il branch non è pushato, quell'indirizzo non
+risponde a nessuno.
 
 ## L'account e l'accesso
 

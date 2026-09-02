@@ -37,10 +37,13 @@ migration, nessun vincolo sul database.
 **Aggiornamento 2026-09-02: la pagina pubblica esiste, con dati finti.** Vive sul branch
 `landing` (`lib/render-menu.js`, `menu-page.css`, `menu-page.js`) e riusa la ricetta già in piedi
 per `/r/` e `/u/`: una funzione che rende HTML dal server, niente framework, lingua dedotta dal
-browser. **Non è ancora collegata**: nessuna rotta, nessuna lettura dal database — i dati vengono
-da `lib/menu-sample.js`, che serve anche da contratto. La **migration 708 è scritta e DA
-APPLICARE**: stato di pubblicazione (Tema 20), le due manopole dell'aspetto (Tema 23) e
-`get_public_menu(slug, lingua)`, che è l'unico punto da cui i dati del menù escono verso il mondo.
+browser. **È collegata** (rotta in `vercel.json` + `api/menu/[slug].js`) e legge `get_public_menu`, cioè
+solo lo scatto pubblicato: la **migration 708 è APPLICATA** — stato di pubblicazione (Tema 20), lo
+scatto e "Pubblica le modifiche" (Tema 24), le due manopole dell'aspetto (Tema 23). Il 2 settembre
+un menù vero è stato pubblicato e riletto da fuori con la chiave pubblica: esce quello che deve, e
+non esce nient'altro. `lib/menu-sample.js` resta come contratto e per guardare la pagina senza
+database. **Manca il deploy**: finché il branch `landing` non è pushato, l'indirizzo non risponde a
+nessuno.
 L'ordine è stato deciso dall'utente: *"la migration la faccio quando la UI è definita, che magari
 dobbiamo aggiungere altro"* — ed è servito, perché guardando la pagina sono nate le due manopole.
 
