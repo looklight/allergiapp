@@ -108,12 +108,26 @@ export default function MenuPreview({
   // Si offrono SOLO gli allergeni che qualche piatto dichiara e le esigenze
   // che qualche piatto soddisfa: una pastiglia che non toglie niente è un
   // bottone che non fa niente, e una che svuota il menù è peggio.
+  //
+  // …e "senza glutine" NON compare due volte. `gluten_free` sta fra le
+  // esigenze e `gluten` fra gli allergeni: due pastiglie con la stessa
+  // identica scritta che filtrano in modo diverso — una chiede che il glutine
+  // non sia fra gli allergeni dichiarati, l'altra che il ristoratore abbia
+  // spuntato "senza glutine" su quel piatto. Davanti a un celiaco seduto al
+  // tavolo sono due bottoni uguali con due risposte diverse. Resta
+  // l'ALLERGENE, che il ristoratore compila su ogni piatto mentre l'esigenza è
+  // facoltativa; nel dettaglio la targhetta verde "Senza glutine" rimane, e lì
+  // è un'informazione e non un comando. Stessa regola sulla pagina pubblica
+  // (landing, lib/render-menu.js): se divergono, il ristoratore vede
+  // un'anteprima che non è quella che vedrà il suo cliente.
   const disponibili: FilterPill[] = [
     ...ALLERGENS.filter((a) => nelMenu.some((dish) => dish.allergens.includes(a.code))).map((a) => ({
       kind: 'allergens' as const,
       code: a.code,
     })),
-    ...DIETS.filter((t) => nelMenu.some((dish) => dish.dietTags.includes(t.code))).map((t) => ({
+    ...DIETS.filter(
+      (t) => t.code !== 'gluten_free' && nelMenu.some((dish) => dish.dietTags.includes(t.code))
+    ).map((t) => ({
       kind: 'diets' as const,
       code: t.code,
     })),
@@ -124,6 +138,13 @@ export default function MenuPreview({
   ].filter((p) => disponibili.some((x) => x.kind === p.kind && x.code === p.code));
   // La fila: le accese in testa, poi la graduatoria (v. menuFilters.ts)
   const fila = filaPastiglie(disponibili, accese);
+
+  // Lo spazio della foto si tiene per ALLINEARE le righe fra loro: senza, in
+  // un menù dove alcuni piatti hanno la foto e altri no, il testo partirebbe
+  // da due punti diversi. Ma se non ce l'ha NESSUNO non c'è niente da
+  // allineare, e resta una colonna di quadrati grigi lunga tutto il menù —
+  // che è il caso della maggior parte dei menù veri.
+  const conFoto = nelMenu.some((dish) => dishThumb(dish) !== '');
 
   const scelte = accese.length;
   const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
@@ -312,6 +333,7 @@ export default function MenuPreview({
                       key={item.id}
                       item={item}
                       dish={dishById(item.dishId)}
+                      conFoto={conFoto}
                       currency={menu.currency}
                       locale={locale}
                       needs={needs}
@@ -388,6 +410,7 @@ function Pastiglia({
 function Riga({
   item,
   dish,
+  conFoto,
   currency,
   locale,
   needs,
@@ -395,6 +418,9 @@ function Riga({
 }: {
   item: MenuItem;
   dish: Dish | undefined;
+  // almeno un piatto di questo menù ha una foto: solo allora si tiene lo
+  // spazio anche a chi non ce l'ha
+  conFoto: boolean;
   currency: string;
   locale: 'it' | 'en';
   needs: ViewerNeeds;
@@ -423,15 +449,16 @@ function Riga({
         aria-label={fill(d.menuPublic.dishDetailOpen, { dish: dish.name })}
         className="flex w-full gap-2.5 text-left"
       >
-        {/* Un piatto senza foto tiene comunque lo spazio: senza, le righe
-            fotografate e quelle no avrebbero il testo che parte da punti
-            diversi, e la carta sembrerebbe storta scorrendola. */}
+        {/* Un piatto senza foto tiene lo spazio SOLO se in questo menù
+            qualcuno la foto ce l'ha: fra righe fotografate e righe no, il
+            testo partirebbe da punti diversi e la carta sembrerebbe storta.
+            Se non ce l'ha nessuno non c'è niente da allineare (v. conFoto). */}
         {dishThumb(dish) !== '' ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dishThumb(dish)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
-        ) : (
+        ) : conFoto ? (
           <div className="h-11 w-11 shrink-0 rounded-lg bg-gray-100" />
-        )}
+        ) : null}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5">
             {/* La stella qui è solo un segno, non un bottone: nell'anteprima
