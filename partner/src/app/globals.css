@@ -26,6 +26,14 @@ body {
   transform-origin: top center;
 }
 
+/* Quando la colonna è centrata nella finestra (editor del menù) la riduzione
+   deve partire dal centro e non dall'alto: con l'origine in alto, su una
+   finestra bassa il telefono si rimpicciolisce restando appeso al bordo
+   superiore della sua scatola, e a schermo si vede storto verso l'alto. */
+.preview-column.is-centered {
+  transform-origin: center;
+}
+
 @media (max-height: 980px) {
   .preview-column {
     transform: scale(0.9);

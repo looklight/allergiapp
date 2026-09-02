@@ -575,10 +575,16 @@ export default function MenuEditorPage() {
 
       </div>
 
-      {/* Anteprima desktop. max-h + overflow-hidden perché su finestre basse
-          la colonna è già ridotta in scala da .preview-column */}
-      <div className="sticky top-10 hidden max-h-[calc(100dvh-5rem)] w-[380px] shrink-0 overflow-hidden lg:block">
-        <div className="preview-column">
+      {/* Anteprima desktop, CENTRATA nella finestra e non appesa in alto.
+          Appesa in alto finiva addosso alla riga di servizio (indietro +
+          pubblicazione), che adesso è ferma là sopra; e su schermi alti
+          lasciava sotto di sé una colonna di vuoto lunga quanto l'editor.
+          Il contenitore è alto quanto la finestra e centra quello che ha
+          dentro: il telefono resta a metà schermo mentre si scorre.
+          overflow-hidden perché su finestre basse .preview-column è ridotta
+          in scala. */}
+      <div className="sticky top-0 hidden h-[100dvh] w-[380px] shrink-0 items-center overflow-hidden lg:flex">
+        <div className="preview-column is-centered w-full">
           <p className="mb-0.5 text-center text-sm font-medium text-gray-900">
             {d.menuEditor.previewTitle}
           </p>
