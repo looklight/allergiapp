@@ -579,11 +579,20 @@ export default function MenuEditorPage() {
           Appesa in alto finiva addosso alla riga di servizio (indietro +
           pubblicazione), che adesso è ferma là sopra; e su schermi alti
           lasciava sotto di sé una colonna di vuoto lunga quanto l'editor.
-          Il contenitore è alto quanto la finestra e centra quello che ha
-          dentro: il telefono resta a metà schermo mentre si scorre.
+          Il contenitore è alto quanto la finestra meno i margini e centra
+          quello che ha dentro: il telefono resta a metà schermo mentre si
+          scorre.
+
+          ⚠️ top-10 e non top-0, e l'altezza tolti DUE margini: la colonna
+          nasce già a 2.5rem dal bordo (è il padding della pagina), quindi
+          agganciandola a filo schermo scivolava su di 40 pixel prima di
+          fermarsi — e a ogni inizio di scorrimento l'anteprima si vedeva
+          sobbalzare. Con l'aggancio alla stessa altezza da cui parte, non si
+          muove mai; e i due margini uguali la tengono centrata davvero.
+
           overflow-hidden perché su finestre basse .preview-column è ridotta
           in scala. */}
-      <div className="sticky top-0 hidden h-[100dvh] w-[380px] shrink-0 items-center overflow-hidden lg:flex">
+      <div className="sticky top-10 hidden h-[calc(100dvh-5rem)] w-[380px] shrink-0 items-center overflow-hidden lg:flex">
         <div className="preview-column is-centered w-full">
           <p className="mb-0.5 text-center text-sm font-medium text-gray-900">
             {d.menuEditor.previewTitle}
