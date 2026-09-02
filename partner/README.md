@@ -251,9 +251,9 @@ server, `rm -rf .next`, e riavviando.
   testa** alla fila — senza, si sceglie dal pannello "Filtri", si chiude, il
   menù si riordina e il motivo è fuori schermo a destra.
 - `src/lib/menuBrand.ts` — solo costanti: i sei colori (scelti da noi, tutti
-  scuri abbastanza da reggere il testo) e la riduzione del logo. ⚠️ Il logo è
-  ancora un **data URL dentro la riga**, non un file su Storage: va portato
-  su `photos.ts`, per la stessa ragione scritta nella 702.
+  scuri abbastanza da reggere il testo). La riduzione del logo se n'è andata
+  il 02/09: adesso il logo è un file su Storage e passa da `photos.ts`
+  (`uploadLogo`), com'era scritto che sarebbe successo.
 - `src/components/menus/` — selettore dei piatti dal catalogo (con "Nuovo
   piatto", che apre la stessa maschera del gestionale), riga con prezzo e
   maniglia di trascinamento, aspetto del locale, anteprima pubblica col
@@ -424,7 +424,7 @@ Restano da fare, **prima di aprire il portale al pubblico**: i link a
 condizioni d'uso e informativa privacy (oggi due `TODO` in `/login` e
 nell'onboarding), che aspettano le pagine legali.
 
-## Le foto dei piatti
+## Le foto dei piatti e il logo
 
 Bucket **`partner`** (migration 702), separato da `images` dell'app: porta un
 tetto alla dimensione e l'elenco dei tipi ammessi, cioè un limite applicato
@@ -448,12 +448,39 @@ Tre cose da non perdere se qualcuno ci rimette mano:
   quindi sul lato corto è già tutto dentro. Si mostra perché è distruttivo e
   definitivo — l'originale non lo teniamo.
 
+**Il logo del locale sta nello stesso bucket** (`<utente>/logos/<casuale>`),
+dal 2026-09-02: un file solo e nessuna miniatura, perché la misura piena
+(lato lungo 240px) è già quella di una miniatura, e **le proporzioni restano
+intatte** — un logo non si ritaglia, o si taglia il nome del ristorante. Il
+fondo bianco si disegna prima: quasi tutti arrivano in PNG trasparente, e su
+un formato senza trasparenza diventerebbe nero.
+
+Prima era un **data URL dentro `partner_venues.logo_url`**, cioè l'immagine
+in testo dentro la riga. La colonna non è cambiata — prima conteneva
+l'immagine, adesso il suo indirizzo — quindi **nessuna migration**, e i loghi
+vecchi continuano a mostrarsi finché non vengono sostituiti. Il motivo vero
+non era il portale ma la **pagina pubblica**: un data URL finisce dentro ogni
+pagina generata, invece di essere scaricato una volta e tenuto in cache.
+
+**I file partono con "conservabile un anno"** (`cacheControl`), non con l'ora
+predefinita di Supabase: il nome è casuale e non si sovrascrive mai, quindi il
+file a quell'indirizzo non può cambiare e una cache lunga non ha rischi. ⚠️
+Non copiare questo valore sulle foto delle **recensioni nell'app**: là il
+percorso è fisso (`<idRecensione>_<indice>.webp`) e la sostituzione riscrive
+lo stesso file — si cambierebbe il nome, non la durata.
+
 I file si cancellano in tre momenti, ognuno con la sua condizione: la foto
 sostituita **dopo** che la riga è stata scritta; il piatto eliminato allo
 scadere dell'annulla e **solo se** la riga è sparita davvero (un piatto che
 ricompare con l'immagine rotta è peggio di un file di troppo); le foto
 caricate e abbandonate allo smontaggio della maschera, non nel bottone
 Annulla, perché da lì si esce anche con la ✕ e con Esc.
+
+Il **logo** segue la stessa regola della foto sostituita: si porta via il
+precedente solo **dopo** che la riga è stata scritta davvero (`setIdentity` in
+`venues.ts`). Cancellando prima, una scrittura fallita lascerebbe la riga a
+puntare a un file distrutto da noi. Sui loghi vecchi, che sono data URL e non
+file, la cancellazione non fa niente.
 
 Restano fuori portata gli orfani da scheda chiusa al momento sbagliato o da
 scrittura rifiutata. Una passata di pulizia è stata **valutata e rimandata**:

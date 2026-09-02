@@ -8,9 +8,15 @@
 // dal cerchio su un fondo chiaro si leggeva a fatica, e in più occupava uno
 // spazio che — anche da invisibile — spostava il logo fuori dal centro
 // rispetto al nome (items-center lo allineava contando anche quello).
-import { useRef } from 'react';
+//
+// Dal 2026-09-02 il logo è un FILE su Storage e non più un'immagine dentro la
+// riga del locale: quindi il caricamento può volerci un attimo e può fallire,
+// e tutte e due le cose si vedono — prima il cerchio cambiava e basta, perché
+// non usciva niente dal browser.
+import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { DEFAULT_LOGO, logoDataUrl } from '@/lib/menuBrand';
+import { DEFAULT_LOGO } from '@/lib/menuBrand';
+import { MAX_FILE_BYTES, PhotoError, uploadLogo } from '@/lib/photos';
 
 export default function LogoPicker({
   logoUrl,
@@ -21,9 +27,39 @@ export default function LogoPicker({
 }) {
   const { d } = useI18n();
   const file = useRef<HTMLInputElement>(null);
+  const [caricamento, setCaricamento] = useState(false);
+  // Perché non è andata, con le stesse due categorie delle foto dei piatti:
+  // il file non è leggibile (cambia file) oppure non è arrivato (riprova).
+  const [errore, setErrore] = useState<'read' | 'upload' | 'size' | null>(null);
+
+  async function scegli(scelto: File) {
+    setErrore(null);
+    if (scelto.size > MAX_FILE_BYTES) {
+      setErrore('size');
+      return;
+    }
+    setCaricamento(true);
+    try {
+      onChange(await uploadLogo(scelto));
+    } catch (e) {
+      setErrore(e instanceof PhotoError ? e.kind : 'upload');
+    } finally {
+      setCaricamento(false);
+    }
+  }
+
+  const messaggio =
+    errore === 'size'
+      ? d.menuEditor.logoTooBig
+      : errore === 'read'
+        ? d.menuEditor.logoUnreadable
+        : errore === 'upload'
+          ? d.menuEditor.logoFailed
+          : null;
 
   return (
-    <div className="group relative inline-block shrink-0">
+    <div className="shrink-0">
+    <div className="group relative inline-block">
       {/* Si mostra quello che comparirà davvero, non un segnaposto
           tratteggiato: senza logo proprio è quello di AllergiApp, e vederlo
           qui è come si scopre che c'è */}
@@ -35,8 +71,16 @@ export default function LogoPicker({
           logoUrl === '' ? 'border-dashed border-gray-300' : 'border-gray-200'
         }`}
       />
+      {/* Mentre il file sale, il cerchio lo dice: senza, si resta davanti al
+          logo di prima senza sapere se il clic è servito a qualcosa */}
+      {caricamento && (
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-white/75 text-[9px] font-medium text-gray-600">
+          {d.menuEditor.logoLoading}
+        </span>
+      )}
       <button
         type="button"
+        disabled={caricamento}
         onClick={() => file.current?.click()}
         aria-label={logoUrl === '' ? d.menuEditor.logoAdd : d.menuEditor.logoReplace}
         className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 px-1 text-center text-[9px] font-medium leading-tight text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
@@ -45,10 +89,13 @@ export default function LogoPicker({
       </button>
       {/* Il "Togli": un badge in un angolo e non una seconda riga dentro il
           cerchio, che a quella taglia di font non ci sarebbe stata */}
-      {logoUrl !== '' && (
+      {logoUrl !== '' && !caricamento && (
         <button
           type="button"
-          onClick={() => onChange('')}
+          onClick={() => {
+            setErrore(null);
+            onChange('');
+          }}
           aria-label={d.menuEditor.logoRemove}
           title={d.menuEditor.logoRemove}
           className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-gray-400 opacity-0 shadow ring-1 ring-gray-200 transition-opacity hover:text-red-600 group-hover:opacity-100 group-focus-within:opacity-100"
@@ -65,19 +112,19 @@ export default function LogoPicker({
         className="hidden"
         onChange={(e) => {
           const scelto = e.target.files?.[0];
-          // Un logo illeggibile non deve far saltare la schermata: si
-          // lascia semplicemente quello di prima
-          if (scelto) {
-            void logoDataUrl(scelto)
-              .then((next) => onChange(next))
-              .catch((errore) => console.error('[partner] logo:', errore));
-          }
+          // Un logo che non si carica non deve far saltare la schermata: si
+          // lascia quello di prima e si dice cos'è andato storto
+          if (scelto) void scegli(scelto);
           // Azzerare il campo: scegliendo di nuovo LO STESSO file il
           // browser non scatterebbe un secondo change, e sembrerebbe che
           // il caricamento non abbia funzionato
           e.target.value = '';
         }}
       />
+    </div>
+      {messaggio !== null && (
+        <p className="mt-1 max-w-[9rem] text-[10px] leading-tight text-red-600">{messaggio}</p>
+      )}
     </div>
   );
 }

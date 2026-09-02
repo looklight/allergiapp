@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
+import { deleteLogo } from './photos';
 import { write } from './saveState';
 
 export interface MenuLink {
@@ -350,6 +351,9 @@ export function useVenues() {
   // colore, carichi un logo), non una battitura continua. Il nome invece
   // passa da rename(), che la pausa ce l'ha già.
   function setIdentity(id: string, next: Partial<Pick<Venue, 'logoUrl' | 'accent'>>) {
+    // Il logo che c'era prima, letto PRIMA di sovrascrivere la lista: se la
+    // scrittura riesce, quel file non è più di nessuno e va portato via.
+    const precedente = (venues ?? []).find((s) => s.id === id)?.logoUrl ?? '';
     setList((venues ?? []).map((s) => (s.id === id ? { ...s, ...next } : s)));
     const riga: Record<string, unknown> = {};
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
@@ -358,7 +362,14 @@ export function useVenues() {
       'salvataggio aspetto del locale',
       () => supabase.from('partner_venues').update(riga).eq('id', id),
       `aspetto:${id}`
-    );
+    ).then(({ error }) => {
+      // Solo DOPO che il nuovo logo è stato scritto davvero: cancellando
+      // prima, una scrittura fallita lascerebbe la riga che punta a un file
+      // che nel frattempo abbiamo distrutto noi. Sui loghi vecchi, che sono
+      // data-URL e non file, deleteLogo non fa niente.
+      if (error || next.logoUrl === undefined) return;
+      if (precedente !== '' && precedente !== next.logoUrl) void deleteLogo(precedente);
+    });
   }
 
   // Le condizioni al tavolo si battono a mano: passano dalla stessa pausa del

@@ -64,50 +64,10 @@ export function accentHex(code: string): string {
 }
 
 // ------------------------------------------------------------------
-// IL LOGO
-// Ridotto nel browser e tenuto come data URL. Due motivi, e nessuno dei due
-// è pigrizia: un createObjectURL non sopravvive né a un ricaricamento né al
-// passaggio a un'altra scheda (ed è proprio quello che fa "apri a tutta
-// pagina"), e un logo da tre megapixel dentro il deposito lo riempirebbe.
-//
-// Quando si collega il database questa funzione sparisce e il logo passa da
-// photos.ts, che carica su Storage — stessa riduzione, altro posto dove
-// finisce.
+// IL LOGO NON STA PIÙ QUI (2026-09-02)
+// Ci stava `logoDataUrl`, che riduceva il logo e lo restituiva come
+// data-URL da mettere dentro la riga del locale. Adesso il logo è un file
+// su Storage e passa da photos.ts (`uploadLogo`), che è il posto dove vive
+// tutto ciò che si carica — stessa riduzione, altro posto dove finisce.
+// Era già scritto qui che sarebbe successo.
 // ------------------------------------------------------------------
-const LATO_LOGO = 240;
-
-export function logoDataUrl(file: File): Promise<string> {
-  return new Promise((risolvi, rifiuta) => {
-    const lettore = new FileReader();
-    lettore.onerror = () => rifiuta(new Error('logo: lettura fallita'));
-    lettore.onload = () => {
-      const img = new Image();
-      img.onerror = () => rifiuta(new Error('logo: immagine illeggibile'));
-      img.onload = () => {
-        const scala = Math.min(1, LATO_LOGO / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(img.width * scala));
-        canvas.height = Math.max(1, Math.round(img.height * scala));
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          rifiuta(new Error('logo: canvas non disponibile'));
-          return;
-        }
-        // Fondo bianco PRIMA di disegnare: quasi tutti i loghi arrivano in PNG
-        // con lo sfondo trasparente, e su un formato che la trasparenza non
-        // ce l'ha diventerebbe nero. Bianco è anche il cerchio su cui il logo
-        // sta nell'anteprima, quindi non si vede la giunta.
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // toDataURL con un tipo che il browser non sa scrivere NON fallisce:
-        // restituisce un PNG in silenzio, che su una fotografia pesa molte
-        // volte tanto. Quindi si controlla cosa è tornato davvero.
-        const webp = canvas.toDataURL('image/webp', 0.85);
-        risolvi(webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.85));
-      };
-      img.src = lettore.result as string;
-    };
-    lettore.readAsDataURL(file);
-  });
-}

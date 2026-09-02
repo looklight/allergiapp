@@ -326,6 +326,10 @@ const it = {
     logoReplace: 'Sostituisci',
     logoRemove: 'Togli',
     logoAlt: 'Il tuo logo',
+    logoLoading: 'Carico…',
+    logoTooBig: 'Immagine troppo grande: scegline una più leggera.',
+    logoUnreadable: 'Non riesco ad aprire questa immagine: prova con un altro file.',
+    logoFailed: 'Il logo non è stato caricato. Riprova.',
     accent: 'Colore',
     notFound: 'Questo menù non esiste.',
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni

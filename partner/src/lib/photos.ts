@@ -24,6 +24,12 @@ const BUCKET = 'partner';
 const GRANDE = { lato: 900, qualita: 0.78 };
 const MINIATURA = { lato: 240, qualita: 0.7 };
 
+// IL LOGO DEL LOCALE. Lato massimo e non lato del quadrato: un logo non si
+// ritaglia, si rimpicciolisce — tagliarne un pezzo vuol dire tagliare il nome
+// del ristorante. 240 basta: nell'anteprima sta in un cerchio da 56px, e in
+// cima al menù pubblico non è più grande.
+const LOGO = { lato: 240, qualita: 0.85 };
+
 export interface DishPhoto {
   url: string;
   thumbUrl: string;
@@ -125,6 +131,46 @@ function renderToBlob(
   });
 }
 
+// Il logo ridotto, con le PROPORZIONI INTATTE e il fondo bianco sotto.
+// Quasi tutti i loghi arrivano in PNG con lo sfondo trasparente, e su un
+// formato che la trasparenza non ce l'ha diventerebbe nero: bianco è anche il
+// cerchio su cui il logo sta nell'anteprima, quindi non si vede la giunta.
+//
+// Stessa cautela di renderToBlob sul WebP: se il browser non lo sa scrivere,
+// toBlob NON fallisce — restituisce un PNG, che su un'immagine vera pesa
+// molte volte tanto. Quindi si guarda cosa è tornato davvero.
+function renderLogoBlob(img: HTMLImageElement): Promise<Blob> {
+  return new Promise((risolvi, rifiuta) => {
+    const scala = Math.min(1, LOGO.lato / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.width * scala));
+    canvas.height = Math.max(1, Math.round(img.height * scala));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      rifiuta(new Error('logo: canvas non disponibile'));
+      return;
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(
+      (webp) => {
+        if (webp && webp.type === 'image/webp') {
+          risolvi(webp);
+          return;
+        }
+        canvas.toBlob(
+          (jpeg) => (jpeg ? risolvi(jpeg) : rifiuta(new Error('logo: conversione fallita'))),
+          'image/jpeg',
+          LOGO.qualita
+        );
+      },
+      'image/webp',
+      LOGO.qualita
+    );
+  });
+}
+
 function estensione(blob: Blob) {
   return blob.type === 'image/webp' ? 'webp' : 'jpg';
 }
@@ -209,6 +255,39 @@ export async function uploadDishPhoto(file: File, posizione = 0.5): Promise<Dish
   return { url, thumbUrl };
 }
 
+// Il logo del locale su Storage. Un file solo: a differenza dei piatti non
+// serve una miniatura, perché la misura piena è già quella di una miniatura.
+//
+// Fino al 2026-09-02 il logo restava una data-URL dentro `partner_venues.
+// logo_url`, cioè l'immagine intera in testo dentro la riga: riletta a ogni
+// apertura del portale insieme a nomi e link, e — cosa che conta di più —
+// destinata a finire dentro OGNI pagina pubblica generata, invece di essere
+// scaricata una volta e tenuta in cache come tutte le altre immagini. La
+// colonna non è cambiata: prima conteneva l'immagine, adesso il suo indirizzo.
+export async function uploadLogo(file: File): Promise<string> {
+  const ownerId = await currentUserId();
+  if (!ownerId) {
+    reportError('caricamento logo', new Error('sessione assente'));
+    throw new PhotoError('upload');
+  }
+  let blob: Blob;
+  try {
+    blob = await renderLogoBlob(await loadImage(file));
+  } catch (errore) {
+    reportError('lettura logo', errore);
+    throw new PhotoError('read');
+  }
+  // Nome casuale come per le foto dei piatti, e per lo stesso motivo: il file
+  // vecchio deve restare al suo posto finché il nuovo non è arrivato davvero.
+  const path = `${ownerId}/logos/${crypto.randomUUID()}.${estensione(blob)}`;
+  try {
+    return await upload(path, blob);
+  } catch (errore) {
+    reportError('caricamento logo', errore);
+    throw new PhotoError('upload');
+  }
+}
+
 // Il percorso dentro il bucket a partire dall'indirizzo pubblico.
 // Restituisce null per tutto ciò che non è un file del nostro bucket: le
 // foto vecchie sono data-URL, e su quelle non c'è niente da cancellare.
@@ -228,4 +307,15 @@ export async function deleteDishPhoto(url: string, thumbUrl: string): Promise<vo
   if (paths.length === 0) return;
   const { error } = await supabase.storage.from(BUCKET).remove(paths);
   reportError('cancellazione foto piatto', error);
+}
+
+// Porta via il logo che non è più di nessuno. Come per i piatti non blocca
+// chi la chiama: un file rimasto sono byte, e i loghi vecchi delle righe
+// scritte prima del 02/09 sono data-URL, su cui non c'è niente da cancellare
+// (bucketPath restituisce null e qui non si fa nulla).
+export async function deleteLogo(url: string): Promise<void> {
+  const path = bucketPath(url);
+  if (path === null) return;
+  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+  reportError('cancellazione logo', error);
 }
