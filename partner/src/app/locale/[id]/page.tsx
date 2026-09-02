@@ -462,7 +462,7 @@ export default function VenueEditorPage() {
             {d.editor.draftBadge}
           </span>
         </div>
-        <p className="mb-2 max-w-2xl text-balance text-sm text-gray-600">{d.editor.intro}</p>
+        <p className="mb-2 text-balance text-sm text-gray-600">{d.editor.intro}</p>
         <Link
           href="/abbonamenti"
           className="mb-8 inline-block text-sm font-medium text-gray-700 underline hover:text-gray-900"

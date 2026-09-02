@@ -251,7 +251,7 @@ export default function DishesPage() {
   return (
     <div>
       <h1 className="mb-2 text-xl font-semibold md:text-2xl">{d.dishes.title}</h1>
-      <p className="mb-8 max-w-2xl text-balance text-sm text-gray-600">{d.dishes.intro}</p>
+      <p className="mb-8 text-balance text-sm text-gray-600">{d.dishes.intro}</p>
 
       {!dishes || !venues ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>
