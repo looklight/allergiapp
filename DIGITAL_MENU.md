@@ -331,8 +331,10 @@ l'unica voce di quell'elenco che dà un motivo per pagare **ogni mese**. Il logo
 volta e non ci pensi più.
 
 **Una foto di copertina al posto del colore pieno** (chiesto il 2026-09-02, rimandato lo stesso
-giorno). La colonna non è il problema — `cover_url` è una riga, e non c'è niente di irreversibile
-da decidere adesso. Le tre condizioni da risolvere prima, che sono il lavoro vero:
+giorno). **La colonna c'è dalla migration 709**, ed esce già nello scatto pubblicato
+(`coverUrl`): è stata aggiunta mentre quella migration era aperta, perché costava una riga e
+risparmia un giro sul database. Manca la funzione, e sono le tre condizioni da risolvere prima —
+il lavoro vero, che è tutto di interfaccia e non chiederà altre migration:
 
 1. **La leggibilità**, su cui il Tema 8 non concede niente. Oggi il nome è bianco su un colore
    scelto da noi apposta perché regga il testo; su una foto chiara sparisce. Serve una velatura

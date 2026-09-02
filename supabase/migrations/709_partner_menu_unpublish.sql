@@ -1,4 +1,4 @@
--- Migration 709: ritirare il menù dalla sala
+-- Migration 709: ritirare il menù dalla sala, e la copertina
 --
 -- STATO: DA APPLICARE via SQL editor, DOPO la 708 (il tracking locale è
 -- fermo alla 045: questa, come tutte le 046+, va eseguita a mano — MAI
@@ -34,6 +34,140 @@
 
 BEGIN;
 
+-- ------------------------------------------------------------
+-- LA COPERTINA DEL MENÙ
+-- Un'immagine dietro l'intestazione, al posto del colore pieno.
+-- La colonna si aggiunge ADESSO perché costa una riga e la
+-- migration è già aperta; la FUNZIONE — caricamento, ritaglio
+-- largo, velatura — è lavoro di interfaccia e non chiederà altre
+-- migration (DIGITAL_MENU.md, punto aperto del 2026-09-02).
+--
+-- Come il logo (703) è solo un indirizzo su Storage: l'immagine
+-- si carica una volta e sta nel bucket 'partner'. NULL = nessuna
+-- copertina, e resta il colore scelto — che è il caso di tutti i
+-- locali che esistono oggi.
+--
+-- ⚠️ QUANDO SI IMPLEMENTA, tre cose che il Tema 8 non lascia
+-- negoziare, scritte qui perché è il posto che si rilegge:
+--   * il nome del locale sopra una foto qualsiasi diventa
+--     illeggibile: serve una velatura scura SEMPRE, non
+--     facoltativa;
+--   * il ritaglio va largo e basso, mentre PhotoCropDialog
+--     oggi sa fare solo quadrati: si insegna una proporzione
+--     diversa alla stessa finestra, non se ne fa una seconda;
+--   * è l'immagine più grande della pagina ed è la prima a
+--     caricarsi, cioè la voce che il Tema 11 indica come il costo
+--     dell'intera fase gratuita.
+alter table partner_venues
+  add column cover_url text;
+
+comment on column partner_venues.cover_url is
+  'Immagine di copertina del menù al tavolo, su Storage. NULL = nessuna, resta il colore del locale.';
+
+-- Esce anche nello scatto pubblicato, altrimenti la copertina
+-- resterebbe una cosa che si vede solo nell'anteprima del
+-- portale. Le pagine già pubblicate non ce l'hanno dentro: chi
+-- rende la pagina deve reggere il campo mancante, che è la
+-- ragione per cui la pagina pubblica legge tutto con un ripiego.
+create or replace function build_public_menu(p_venue_id uuid)
+returns jsonb
+language sql
+stable
+as $$
+  with locale as (
+    select v.id, v.name, v.slug, v.logo_url, v.accent, v.cover_url, v.table_conditions,
+           v.show_dish_photos, v.show_dish_descriptions
+      from partner_venues v
+     where v.id = p_venue_id
+  ),
+  menu as (
+    select m.id, m.name, m.description, m.currency
+      from partner_menus m
+      join locale l on l.id = m.venue_id
+     order by m.sort_order, m.created_at
+     limit 1
+  ),
+  righe as (
+    select i.section_id,
+           i.sort_order,
+           jsonb_build_object(
+             'id', i.id,
+             'name', d.name,
+             'description', coalesce(d.description, ''),
+             'priceCents', i.price_cents,
+             'highlighted', i.highlighted,
+             'highlightNote', coalesce(i.highlight_note, ''),
+             'allergens', to_jsonb(d.declared_allergens),
+             'diets', to_jsonb(d.diet_tags),
+             'thumbUrl', coalesce(d.photo_thumb_url, d.photo_url, ''),
+             'photoUrl', coalesce(d.photo_url, ''),
+             'i18n', coalesce(
+               (select jsonb_object_agg(
+                         tr.language,
+                         jsonb_build_object(
+                           'name', coalesce(tr.name, ''),
+                           'description', coalesce(tr.description, '')
+                         ))
+                  from partner_dish_translations tr
+                 where tr.dish_id = d.id),
+               '{}'::jsonb)
+           ) as riga
+      from partner_menu_items i
+      join menu on menu.id = i.menu_id
+      join partner_dishes d on d.id = i.dish_id
+  ),
+  fuori as (
+    select jsonb_build_object(
+             'kind', 'section',
+             'name', '',
+             'description', '',
+             'items', jsonb_agg(riga order by sort_order)
+           ) as gruppo
+      from righe
+     where section_id is null
+    having count(*) > 0
+  ),
+  sezioni as (
+    select jsonb_build_object(
+             'kind', s.kind,
+             'name', s.name,
+             'description', coalesce(s.description, ''),
+             'items', coalesce(
+               (select jsonb_agg(r.riga order by r.sort_order)
+                  from righe r where r.section_id = s.id),
+               '[]'::jsonb)
+           ) as gruppo,
+           s.sort_order
+      from partner_menu_sections s
+      join menu on menu.id = s.menu_id
+  ),
+  gruppi as (
+    select gruppo, -1 as ordine from fuori
+    union all
+    select gruppo, sort_order from sezioni
+  )
+  select case when (select count(*) from menu) = 0 then null else
+    jsonb_build_object(
+      'slug', (select slug from locale),
+      'venueName', (select name from locale),
+      'logoUrl', coalesce((select logo_url from locale), ''),
+      'accent', (select accent from locale),
+      'coverUrl', coalesce((select cover_url from locale), ''),
+      'tableConditions', coalesce((select table_conditions from locale), ''),
+      'showPhotos', (select show_dish_photos from locale),
+      'showDescriptions', (select show_dish_descriptions from locale),
+      'menu', jsonb_build_object(
+        'name', (select name from menu),
+        'description', coalesce((select description from menu), ''),
+        'currency', (select currency from menu),
+        'groups', coalesce((select jsonb_agg(gruppo order by ordine) from gruppi), '[]'::jsonb)
+      )
+    )
+  end;
+$$;
+
+-- ------------------------------------------------------------
+-- RITIRARE IL MENÙ DALLA SALA
 create or replace function unpublish_menu(p_venue_id uuid)
 returns boolean
 language plpgsql
