@@ -14,6 +14,7 @@
 //  * "non è stato salvato" è un guasto. Prende la fascia in cima, resta lì
 //    finché non si risolve, e porta con sé il modo di risolverlo.
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { retryFailed, useSaveState } from '@/lib/saveState';
 
@@ -30,11 +31,14 @@ const DURATA_SALVATO_MS = 2500;
 // tre volte per ogni pausa di battitura.
 const ATTESA_PRIMA_DI_SALVATO_MS = 400;
 
-export default function SaveStatus() {
-  const { d } = useI18n();
-  const { saving, savedAt, failed } = useSaveState();
+// La CRONACA del salvataggio, senza il posto in cui mostrarla: 'salvando',
+// 'salvato', o niente. Sta in un hook perché la stessa notizia si legge in due
+// posti diversi — la pill in un angolo su tutte le schermate, e la riga di
+// servizio dell'editor del menù, dove sta accanto allo stato di pubblicazione
+// (v. PublishBar). Le tempistiche restano scritte una volta sola.
+export function useSaveChronicle(): 'niente' | 'salvando' | 'salvato' {
+  const { saving, savedAt } = useSaveState();
   const [mostra, setMostra] = useState<'niente' | 'salvando' | 'salvato'>('niente');
-  const [riprovando, setRiprovando] = useState(false);
 
   useEffect(() => {
     if (saving) {
@@ -51,6 +55,24 @@ export default function SaveStatus() {
     const via = setTimeout(() => setMostra('niente'), DURATA_SALVATO_MS);
     return () => clearTimeout(via);
   }, [mostra]);
+
+  return mostra;
+}
+
+// Dove la pill NON deve comparire, perché quella schermata la ospita già da
+// sé: l'editor di un menù (/menu/<id>, non /menu e non /menu/<id>/anteprima).
+// Là la cronaca sta nella riga di servizio, accanto allo stato di
+// pubblicazione — due passi dello stesso percorso, letti insieme.
+function ospitataAltrove(pathname: string): boolean {
+  return /^\/menu\/[^/]+$/.test(pathname);
+}
+
+export default function SaveStatus() {
+  const { d } = useI18n();
+  const { failed } = useSaveState();
+  const mostra = useSaveChronicle();
+  const pathname = usePathname();
+  const [riprovando, setRiprovando] = useState(false);
 
   // Chiudere la scheda con qualcosa di non salvato è il modo in cui il lavoro
   // si perde per davvero: il messaggio lo scrive il browser, a noi tocca solo
@@ -90,7 +112,9 @@ export default function SaveStatus() {
     );
   }
 
-  if (mostra === 'niente') return null;
+  // Il guasto invece si mostra SEMPRE e ovunque, anche dove la cronaca è
+  // ospitata dalla pagina: è l'unico avviso che chiede di fare qualcosa.
+  if (mostra === 'niente' || ospitataAltrove(pathname)) return null;
 
   return (
     // aria-live e non role=status: è cronaca, e chi usa un lettore di schermo
