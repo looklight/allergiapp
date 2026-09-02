@@ -14,6 +14,13 @@
 // corretto non è ancora arrivato in sala. Un avviso del genere non può
 // scorrere via mentre si lavora sul menù, che è lungo.
 //
+// SU TELEFONO LA RIGA DIVENTA DUE, e non è una rifinitura: a 375px, fra il
+// link "Tutti i menù" e il bottone, all'avviso restavano una cinquantina di
+// pixel — cioè "Modifiche…" al posto della frase che nomina gli allergeni non
+// pubblicati. Un avviso che si tronca proprio lì è peggio che non averlo,
+// perché occupa il posto di quello vero. Sopra `sm` la riga resta una sola,
+// dove lo spazio c'è davvero.
+//
 // QUI NON C'È il "Salvato": c'era, ed è tornato nella sua pill (in basso a
 // destra, v. SaveStatus). Su questa riga rubava larghezza proprio alla frase
 // che deve leggersi per intera — quella che dice che al tavolo c'è ancora la
@@ -46,12 +53,12 @@ export default function PublishBar({
   // rumore — è la risposta alla domanda "ma quello che vedono i clienti è
   // questo?", che senza una data scritta da qualche parte non ha risposta.
   if (!daPubblicare) {
+    // Questa resta in linea anche su telefono: sono quattro parole e una
+    // data, e mandarle a capo da sole farebbe crescere la riga per niente.
     return (
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-x-3">
-        <p className="line-clamp-2 min-w-0 text-right text-xs leading-tight text-gray-400">
-          {fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })}
-        </p>
-      </div>
+      <p className="line-clamp-2 min-w-0 flex-1 text-right text-xs leading-tight text-gray-400">
+        {fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })}
+      </p>
     );
   }
 
@@ -68,20 +75,20 @@ export default function PublishBar({
         ? d.menuEditor.publishAppearance
         : d.menuEditor.publishPending;
 
+  // Due figli diretti della riga sticky e non un involucro: è la riga stessa
+  // che va a capo (flex-wrap), e solo così su telefono l'avviso può prendersi
+  // tutta la larghezza sotto al bottone invece della fetta che avanza.
+  //
+  // Il messaggio va a capo su DUE righe invece di accorciarsi con i puntini:
+  // è un avviso, e mezzo avviso non serve a niente. Oltre le due righe si
+  // taglia: a quel punto il testo sarebbe sbagliato, non lungo — e a tutta
+  // larghezza due righe bastano per la più lunga delle tre frasi.
   return (
-    // Il messaggio va a capo su DUE righe invece di accorciarsi con i
-    // puntini: è un avviso, e mezzo avviso non serve a niente. Due righe di
-    // testo minuto stanno nell'altezza che il bottone occupa comunque, quindi
-    // la riga di servizio non cresce — era quello il motivo per cui prima si
-    // troncava. Oltre le due righe si taglia: a quel punto il testo sarebbe
-    // sbagliato, non lungo.
-    <div
-      className={`flex min-w-0 flex-1 items-center justify-end gap-x-3 ${
-        allarme ? 'text-amber-800' : 'text-gray-600'
-      }`}
-    >
+    <>
       <p
-        className="line-clamp-2 min-w-0 text-balance text-right text-xs leading-tight"
+        className={`line-clamp-2 order-last w-full text-balance text-xs leading-tight sm:order-none sm:min-w-0 sm:flex-1 sm:text-right ${
+          allarme ? 'text-amber-800' : 'text-gray-600'
+        }`}
         title={messaggio}
       >
         {messaggio}
@@ -89,13 +96,15 @@ export default function PublishBar({
       <button
         onClick={pubblica}
         disabled={inCorso}
-        className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+        // ml-auto perché su telefono il bottone è solo, in fondo alla prima
+        // riga: senza, resterebbe appiccicato al link del ritorno.
+        className={`ml-auto shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
           allarme ? 'bg-amber-700 hover:bg-amber-800' : 'bg-gray-900 hover:bg-gray-700'
         }`}
       >
         {inCorso ? d.menuEditor.publishing : mai ? d.menuEditor.publishFirst : d.menuEditor.publish}
       </button>
-    </div>
+    </>
   );
 }
 

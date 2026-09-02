@@ -84,7 +84,12 @@ export default function MenuItemRow({
         e.preventDefault();
         onDropRow();
       }}
-      className={`group relative flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-gray-50 ${
+      // SU TELEFONO LA RIGA STA SU DUE LIVELLI: nome sopra, comandi sotto.
+      // A 375px, contati maniglia, miniatura, stella, prezzo e croce con i
+      // loro spazi, al NOME restavano una cinquantina di pixel — sei o sette
+      // caratteri per l'unica cosa che si legge scorrendo una carta. Sopra
+      // `sm` torna tutto in linea, che è la forma giusta dove lo spazio c'è.
+      className={`group relative flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-2 py-1.5 hover:bg-gray-50 ${
         dragging ? 'opacity-40' : ''
       }`}
     >
@@ -194,6 +199,11 @@ export default function MenuItemRow({
         )}
       </div>
 
+      {/* I COMANDI DI CODA, in gruppo: su telefono scendono insieme sulla
+          seconda riga, allineati a destra, invece di spingere il nome fuori
+          dalla riga. Sopra `sm` il gruppo non esiste più (w-auto) e i suoi
+          pezzi tornano in fila come prima. */}
+      <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
       {/* Con una destinazione sola non c'è niente da scegliere.
           Come le frecce, si scopre al passaggio: a riposo una riga deve dire
           il piatto e il prezzo, che sono le due cose che si guardano
@@ -251,6 +261,7 @@ export default function MenuItemRow({
           <path d="M6 6l12 12M18 6L6 18" />
         </svg>
       </button>
+      </div>
     </li>
   );
 }

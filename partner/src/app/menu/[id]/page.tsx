@@ -291,8 +291,13 @@ export default function MenuEditorPage() {
       {/* La riga di servizio in cima: da dove si torna indietro e — a destra
           — se quello che si sta guardando è già in sala. Sticky, perché
           l'avviso sugli allergeni non pubblicati non può scorrere via mentre
-          si lavora su un menù lungo (v. PublishBar). */}
-      <div className="sticky top-0 z-30 -mx-4 flex items-center gap-x-4 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+          si lavora su un menù lungo (v. PublishBar).
+
+          flex-wrap: su telefono l'avviso scende sotto e si prende tutta la
+          larghezza, altrimenti gli restano cinquanta pixel fra il link e il
+          bottone. PublishBar mette qui DUE figli, non un involucro, proprio
+          perché sia questa riga a poter andare a capo. */}
+      <div className="sticky top-0 z-30 -mx-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
         <BackLink />
         <PublishBar
           stato={pubblicazione.stato}
