@@ -330,24 +330,6 @@ Nota: le statistiche degli scan ("il 22% di chi ha aperto il tuo menù cercava s
 l'unica voce di quell'elenco che dà un motivo per pagare **ogni mese**. Il logo lo carichi una
 volta e non ci pensi più.
 
-**Una foto di copertina al posto del colore pieno** (chiesto il 2026-09-02, rimandato lo stesso
-giorno). **La colonna c'è dalla migration 709**, ed esce già nello scatto pubblicato
-(`coverUrl`): è stata aggiunta mentre quella migration era aperta, perché costava una riga e
-risparmia un giro sul database. Manca la funzione, e sono le tre condizioni da risolvere prima —
-il lavoro vero, che è tutto di interfaccia e non chiederà altre migration:
-
-1. **La leggibilità**, su cui il Tema 8 non concede niente. Oggi il nome è bianco su un colore
-   scelto da noi apposta perché regga il testo; su una foto chiara sparisce. Serve una velatura
-   scura sempre, non facoltativa, e va guardata a schermo — non data per scontata.
-2. **Il ritaglio non sa fare i rettangoli.** `PhotoCropDialog` ritaglia quadrati ed è quadrato di
-   proposito; una copertina è larga e bassa. Va insegnata alla stessa finestra una proporzione
-   diversa (la strada giusta), non fatta una seconda finestra.
-3. **Il peso.** È l'immagine più grande della pagina e la prima a caricarsi: è esattamente la voce
-   che il Tema 11 indica come il costo dell'intera fase gratuita.
-
-E una ragione di ordine: si valuta molto meglio guardando la pagina **vera**, col menù di un
-ristorante vero dentro, che sui dati finti.
-
 **Cosa serve davvero a un menù, oltre al catalogo.** Prezzi, sezioni, bevande, varianti (porzione
 piccola e grande), menù del giorno. Il modello oggi non ha niente di tutto questo, e non per
 dimenticanza: ad AllergiApp servivano nome e allergeni.
@@ -931,6 +913,17 @@ bottone scrive il nome dello stile con quel carattere.
 come "il mio menù". La regola del Tema 23 resta ferma — quello che il cliente al tavolo usa (il
 filtro, gli allergeni) non si vende e non si spegne.
 
+**DIVENTATI PACCHETTI il 2026-09-02 (stessa giornata).** Applicare il carattere ai soli titoli
+lasciava metà pagina in un carattere e metà in un altro: guardandola non sembrava sobrietà,
+sembrava un lavoro a metà. Adesso ogni scelta è un **pacchetto** che decide tutta la tipografia, e
+l'etichetta nel portale lo dice — *"Stile dei testi"*, non "Carattere dei titoli".
+
+**Il confine sugli allergeni non è sparito, ha cambiato forma**: prima era "quella riga non la
+tocco", adesso è "la tocco e la COMPENSO". Nei pacchetti *Classico* (serif) e *Sottile*
+(geometrico leggero) la riga degli allergeni e il motivo dell'esclusione crescono di un punto e si
+scuriscono: a 10px grigi, in un serif, in una sala poco illuminata, quella riga si legge peggio del
+carattere di sistema. Chi toglie la compensazione si tiene la responsabilità di quella riga.
+
 **Insieme al carattere è arrivato lo STILE DELLE SEZIONI** (stessa migration, stesso ragionamento):
 `underline` (maiuscoletto col filetto, quello di oggi), `banner` (fascia piena col colore del
 locale, testo bianco) e `plain` (solo testo, più grande). La fascia colorata **si può offrire solo
@@ -943,7 +936,62 @@ accorgerebbe dai clienti — non dal portale.
 > schermo, quindi ognuna è una decisione presa senza guardare. Prima di aggiungerne una quarta
 > conviene costruirne almeno una e vedere se il ragionamento regge davanti agli occhi.
 
+---
+
+### 2026-09-02 — Tema 26: La copertina, e perché la velatura non è facoltativa
+
+**Decisione**: un'immagine dietro l'intestazione al posto del colore pieno, **sempre con una
+velatura scura sopra**.
+
+**La velatura è la ragione per cui questa cosa era stata rimandata**, non un dettaglio di
+rifinitura: il nome del locale è bianco, e sopra una foto chiara — una sala luminosa, un piatto di
+pasta — sparisce. È la stessa cosa che il Tema 8 protegge scegliendo noi le tinte. Non è
+un'opzione del ristoratore, e chi la togliesse renderebbe illeggibile l'unica cosa che il cliente
+legge per forza.
+
+**Il colore del locale resta SOTTO l'immagine.** Se la foto non arriva — rete lenta, file sparito —
+l'intestazione non diventa bianca col nome bianco sopra.
+
+**Il ritaglio è 3:1**, largo e basso: è una fascia in cima allo schermo di un telefono, non una
+fotografia da guardare. Più alta mangerebbe il menù, che è la ragione per cui il cliente ha
+inquadrato il QR. Per farlo, `PhotoCropDialog` ha imparato le **proporzioni** (`ratio`): 1 per
+piatti e logo, 3 per la copertina. Un parametro e non una seconda finestra — il gesto è lo stesso,
+e due copie divergerebbero al primo ritocco.
+
+**1000px e qualità bassa (0.7)**: è l'immagine più grande della pagina ed è la **prima** a
+caricarsi, cioè la voce che il Tema 11 indica come il costo dell'intera fase gratuita. La velatura
+perdona parecchio sulla compressione.
+
+**Nel portale si sceglie guardandola già velata**, col nome sopra: sceglierla pulita e ritrovarla
+scurita nel menù sarebbe una sorpresa, e al ristoratore sembrerebbe un difetto nostro.
+
 ## Prossimo passo
+
+**Aggiornato il 2026-09-02, fine giornata.** La fase 2 è fatta e in produzione: il menù al tavolo
+si apre da `allergiapp.com/menu/<slug>`. Migrations 707, 708 e 709 applicate.
+
+**Fatto oggi**: indirizzo e QR (PNG + vettoriale), pagina pubblica collegata, bozza/pubblicato con
+i due presidi (avviso sugli allergeni non pubblicati, foto protette dalla cancellazione), ritiro
+dalla sala con la pastiglia Attivo/Inattivo, e tutte le manopole d'aspetto — pacchetti di stile,
+stile delle sezioni, foto e descrizioni, copertina.
+
+**Cosa resta, in ordine:**
+
+1. **Le traduzioni di condizioni al tavolo e blocchi di testo** (aperto dal Tema 18). Al primo
+   cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. È l'ultimo buco visibile
+   della pagina pubblica.
+2. **Le statistiche degli scan** (Tema 10): l'unica voce del listino che dà un motivo per pagare
+   **ogni mese**. Non è ancora disegnata — non ha nemmeno una tabella.
+3. **Il rimando reciproco `/menu/<slug>` ↔ `/r/<slug>`** per un locale rivendicato (aperto dal
+   Tema 13): sono due pagine pubbliche dello stesso posto e non si conoscono.
+4. **Svuotare la cache alla pubblicazione**, quando le letture del menù cominceranno a vedersi nel
+   traffico di Supabase: l'etichetta `Vercel-Cache-Tag` è già sulle risposte, manca il segreto
+   lato server. Fino ad allora la cache è di un minuto.
+
+**E la cosa che questo diario chiede da agosto**: mostrarlo a due o tre ristoratori. Adesso c'è un
+menù vero, online, con un QR che funziona — è una conversazione diversa da quella di ieri.
+
+## Prossimo passo (storico)
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così
 com'è e chiedendo: *"se questo diventasse il tuo menù al tavolo, cosa manca?"*. Le risposte saranno

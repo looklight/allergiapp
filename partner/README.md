@@ -330,8 +330,26 @@ Tre cose da non disfare per sbaglio:
   Scambiarli vuol dire far riscrivere il coperto in carta, pranzo e bevande —
   e poi correggerlo in tutte e tre.
 
-**La scatola "Aspetto del menù"** (`BrandBar`) tiene il colore e due
-interruttori: **foto dei piatti** e **descrizioni in lista**. Stanno sul
+**La scatola "Aspetto del menù"** (`BrandBar`) è **comprimibile** e chiusa di
+partenza — l'aspetto si sceglie una volta, il menù si tocca ogni giorno — con
+un riassunto sulla riga ("Moderno · Filetto · con foto") per non doverla
+aprire. Dentro: colore, **pacchetto di stile** dei testi, **stile dei titoli
+di sezione**, **copertina**, e due interruttori — **foto dei piatti** e
+**descrizioni in lista**.
+
+Tre regole di quella scatola, tutte per lo stesso motivo:
+
+- **I pacchetti di stile decidono TUTTA la tipografia**, non solo i titoli:
+  metà pagina in un carattere e metà in un altro sembra un errore. Dove il
+  carattere costa leggibilità — la riga degli allergeni nei pacchetti serif e
+  leggero — il pacchetto **compensa** (un punto in più, grigio più scuro)
+  invece di fare eccezioni. I caratteri sono ospitati con noi
+  (`public/fonts`), **mai** presi da Google Fonts.
+- **La velatura scura sulla copertina non è facoltativa**: il nome del locale
+  è bianco e su una foto chiara sparisce. Il colore del locale resta sotto
+  l'immagine, così se la foto non arriva l'intestazione non diventa bianca.
+- **Il ritaglio prende una proporzione** (`PhotoCropDialog`, `ratio`): 1 per
+  piatti e logo, 3:1 per la copertina. Una finestra sola, non due. Stanno sul
 locale (migration 708, applicata il 02/09) perché al tavolo è una pagina
 sola, e l'anteprima
 accanto li rispetta — se non lo facesse, il ristoratore sceglierebbe alla
