@@ -8,3 +8,7 @@
 # Claude
 .claude/
 .vercel
+
+# Anteprime locali del menù al tavolo, generate da lib/menu-sample.js per
+# guardare la pagina senza database (v. lib/render-menu.js)
+_preview-menu*.html

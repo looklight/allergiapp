@@ -1,0 +1,526 @@
+/* Menù al tavolo — /menu/[slug]
+ *
+ * Una colonna sola, pensata per un telefono tenuto in mano fra i bicchieri.
+ * Su schermi larghi NON si allarga: resta una colonna stretta al centro,
+ * perché è così che la vedranno tutti i clienti veri, e un menù disteso su
+ * un monitor farebbe giudicare al ristoratore un'impaginazione che nessuno
+ * incontrerà mai.
+ *
+ * --accent è il colore scelto dal ristoratore, messo sul body dal server.
+ * Fa da fondo SOLO all'intestazione e alle pastiglie accese: sul testo dei
+ * piatti il contrasto sarebbe una scelta lasciata a lui.
+ */
+
+.menu-body {
+  margin: 0;
+  background: var(--bg-alt);
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+
+.menu-header,
+.menu-filter,
+.menu-main,
+.menu-brand {
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+/* ── Intestazione ──────────────────────────────────────────────── */
+.menu-header {
+  background: var(--accent);
+  color: #fff;
+  padding: 18px 16px 14px;
+}
+.menu-header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.menu-logo {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+}
+.menu-venue {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.menu-intro {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: pre-line;
+}
+
+/* Le lingue: due lettere, non una bandiera — una bandiera dice il paese, non
+   la lingua, e sbaglia con tutti quelli che la parlano altrove. */
+.menu-langs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.menu-lang {
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.menu-lang.is-on {
+  background: #fff;
+  color: var(--accent);
+  border-color: #fff;
+}
+
+/* ── Il filtro ─────────────────────────────────────────────────── */
+.menu-filter {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px 6px;
+}
+.menu-filter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.menu-filter-hint {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9e9e9e;
+}
+.menu-filter-count {
+  margin: 0;
+  font-size: 10px;
+  color: #9e9e9e;
+  font-variant-numeric: tabular-nums;
+}
+.menu-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+/* Il bottone sta fuori dalla fila che scorre: da sinistra non se ne va mai */
+.menu-filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+.menu-filter-badge {
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.menu-pills {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  /* le pastiglie escono dal bordo destro: una fila che si ferma prima del
+     margine sembra finita anche quando non lo è */
+  margin-right: -16px;
+  padding-right: 16px;
+  scrollbar-width: none;
+}
+.menu-pills::-webkit-scrollbar { display: none; }
+.menu-pills.is-wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+  margin-right: 0;
+  padding-right: 0;
+}
+.menu-pill {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.menu-pill[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+/* L'unica riga che parla a nome nostro, e sta attaccata al filtro perché il
+   filtro è l'unica cosa nostra in questa pagina. Non è un disclaimer in
+   fondo: dice da dove viene il dato su cui il filtro lavora. */
+.menu-declared {
+  margin: 5px 0 0;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #b0b0b0;
+}
+
+/* ── Il menù ───────────────────────────────────────────────────── */
+.menu-main {
+  background: var(--bg);
+  padding: 14px 16px 24px;
+  min-height: 40vh;
+}
+.menu-empty {
+  padding: 40px 0;
+  text-align: center;
+  color: #9e9e9e;
+  font-size: 14px;
+}
+.menu-section { margin-bottom: 18px; }
+.menu-section-title {
+  margin: 0 0 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.menu-section-desc {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
+.menu-note {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-alt);
+}
+.menu-note-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.menu-note-text {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
+
+.menu-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.menu-item.is-highlighted {
+  margin-inline: -6px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: #fffbeb;
+}
+/* Il piatto che il filtro esclude NON sparisce: sbiadisce e scende in fondo
+   alla sua sezione, col motivo scritto sotto. */
+.menu-item.is-off { opacity: 0.45; }
+
+.menu-item-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+/* Un piatto senza foto tiene comunque lo spazio: senza, le righe fotografate
+   e quelle no partirebbero da punti diversi e la carta sembrerebbe storta */
+.menu-thumb {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+.menu-thumb-empty { background: var(--bg-alt); }
+.menu-item-body {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+.menu-item-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.menu-star { color: #f59e0b; flex-shrink: 0; }
+.menu-info { color: #bdbdbd; flex-shrink: 0; }
+.menu-item-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.menu-price {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.menu-item-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #b45309;
+}
+.menu-item-allergens,
+.menu-item-reason {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #9e9e9e;
+}
+.menu-item-allergens:empty { display: none; }
+/* display:block qui sopra è più forte della regola predefinita del browser
+   per [hidden]: senza questa riga, la riga degli allergeni resterebbe visibile
+   sotto al motivo dell'esclusione, dicendo due volte la stessa cosa. */
+.menu-item-allergens[hidden],
+.menu-item-reason[hidden] { display: none; }
+.menu-item-reason {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Il fondo è del ristoratore: coperto, servizio, pagamenti */
+.menu-conditions {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
+
+/* ── Il marchio: piccolo, in coda, e non sopra il menù ─────────── */
+.menu-brand {
+  padding: 14px 16px 18px;
+  text-align: center;
+}
+.menu-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.menu-brand-logo { width: 18px; height: 18px; }
+
+/* ── I fogli che salgono dal basso ─────────────────────────────── */
+.menu-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+.menu-sheet[hidden] { display: none; }
+.menu-sheet-panel {
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  padding-bottom: 20px;
+  animation: menu-sheet-up 0.18s ease-out;
+}
+@keyframes menu-sheet-up {
+  from { transform: translateY(12px); opacity: 0.6; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-sheet-panel { animation: none; }
+}
+.menu-sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 6px;
+  background: var(--bg);
+}
+.menu-sheet-head.is-plain { display: flex; justify-content: center; }
+.menu-sheet-grip {
+  grid-column: 2;
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.menu-sheet-title {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.menu-sheet-reset {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
+  border: 0;
+  background: none;
+  padding: 4px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.menu-sheet-body { padding: 6px 16px 0; }
+.menu-sheet-label {
+  margin: 12px 0 6px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9e9e9e;
+}
+
+.menu-detail-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+.menu-detail-photo-empty { background: var(--bg-alt); }
+.menu-detail-body { padding: 12px 16px 0; }
+.menu-detail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.menu-detail-head h3 { margin: 0; font-size: 17px; line-height: 1.3; }
+.menu-detail-price { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.menu-detail-desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.menu-detail-label {
+  margin: 16px 0 6px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9e9e9e;
+}
+.menu-detail-none { margin: 0; font-size: 14px; color: var(--text-secondary); }
+.menu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.menu-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+/* L'allergene che il cliente ha appena escluso, dentro il dettaglio: si vede
+   subito qual è quello che lo riguarda, senza rileggere tutta la lista */
+.menu-chip.is-hit {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.menu-chip.is-diet {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+.menu-detail-photo-note {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.4;
+  color: #b0b0b0;
+}
+
+/* Il piede del sito (privacy, termini, contatti) è condiviso con /r/ e /u/,
+   ma il suo stile vive in restaurant-page.css: qui si ripete il minimo invece
+   di tirarsi dentro un foglio intero fatto per un'altra pagina. Al tavolo
+   deve restare sottovoce — è nostro, non del ristorante. */
+.restaurant-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding: 18px 16px 26px;
+  background: var(--bg-alt);
+}
+.footer-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #9e9e9e;
+}
+.footer-inner a { color: #9e9e9e; text-decoration: none; }
+
+/* Su schermo largo il menù resta una colonna, con la pagina attorno */
+@media (min-width: 720px) {
+  .menu-body { padding-bottom: 8px; }
+}
