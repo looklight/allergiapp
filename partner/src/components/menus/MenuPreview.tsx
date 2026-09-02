@@ -39,7 +39,7 @@ import {
   type MenuSection,
 } from '@/lib/menus';
 import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
-import { DEFAULT_LOGO, accentHex, type MenuBrand } from '@/lib/menuBrand';
+import { accentHex, type MenuBrand } from '@/lib/menuBrand';
 import DishDetailSheet from './DishDetailSheet';
 import FilterSheet from './FilterSheet';
 
@@ -178,15 +178,21 @@ export default function MenuPreview({
           contrasto lasciata al ristoratore, che il Tema 8 non concede. */}
       <div className="shrink-0 px-4 pb-3 pt-4 text-white" style={{ backgroundColor: accent }}>
         <div className="flex items-center gap-2.5">
-          {/* Il logo c'è sempre: senza uno caricato compare quello di
-              AllergiApp (v. DEFAULT_LOGO). Un'intestazione col solo nome
-              scritto sembra una pagina non finita. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={brand.logoUrl || DEFAULT_LOGO}
-            alt=""
-            className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
-          />
+          {/* SENZA LOGO NON C'È NESSUN LOGO, e prima invece compariva quello
+              di AllergiApp (2026-09-02, deciso dall'utente). Sembrava una
+              buona idea — "un'intestazione col solo nome sembra una pagina non
+              finita" — ma al tavolo il piattino di AllergiApp accanto al nome
+              del ristorante si legge come SE FOSSE il marchio del ristorante,
+              e noi qui siamo ospiti: il menù è suo. Un nome da solo, ben
+              spaziato, è un'intestazione perfettamente finita. */}
+          {brand.logoUrl !== '' && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={brand.logoUrl}
+              alt=""
+              className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
+            />
+          )}
           <p className="min-w-0 flex-1 text-lg font-semibold leading-snug">{venueName}</p>
         </div>
 

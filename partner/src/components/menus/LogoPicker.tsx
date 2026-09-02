@@ -15,7 +15,6 @@
 // non usciva niente dal browser.
 import { useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { DEFAULT_LOGO } from '@/lib/menuBrand';
 import { MAX_FILE_BYTES, PhotoError, uploadLogo, type Crop } from '@/lib/photos';
 import PhotoCropDialog from '../PhotoCropDialog';
 
@@ -82,17 +81,26 @@ export default function LogoPicker({
         />
       )}
     <div className="group relative inline-block">
-      {/* Si mostra quello che comparirà davvero, non un segnaposto
-          tratteggiato: senza logo proprio è quello di AllergiApp, e vederlo
-          qui è come si scopre che c'è */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={logoUrl || DEFAULT_LOGO}
-        alt={d.menuEditor.logoAlt}
-        className={`block h-14 w-14 rounded-full border object-cover ${
-          logoUrl === '' ? 'border-dashed border-gray-300' : 'border-gray-200'
-        }`}
-      />
+      {/* Si mostra quello che comparirà DAVVERO. Senza logo il cliente non
+          vedrà niente (v. MenuPreview), quindi qui non si mette il piattino di
+          AllergiApp: sarebbe una promessa che il menù non mantiene. Resta un
+          cerchio tratteggiato con un'icona, che è un invito a caricarne uno. */}
+      {logoUrl !== '' ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt={d.menuEditor.logoAlt}
+          className="block h-14 w-14 rounded-full border border-gray-200 object-cover"
+        />
+      ) : (
+        <span className="flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50 text-gray-400">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="9" cy="9" r="1.6" />
+            <path d="M21 15l-5-5-9 9" />
+          </svg>
+        </span>
+      )}
       {/* Mentre il file sale, il cerchio lo dice: senza, si resta davanti al
           logo di prima senza sapere se il clic è servito a qualcosa */}
       {caricamento && (
