@@ -331,6 +331,9 @@ const it = {
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     brandHint:
       'Come lo vedono i tuoi clienti al tavolo. Vale per il menù di questo locale.',
+    summaryPhotosOn: 'con foto',
+    summaryPhotosOff: 'senza foto',
+    summaryDescOn: 'con descrizioni',
     sectionStyle: 'Titoli delle sezioni',
     sectionStyles: { underline: 'Filetto', banner: 'Fascia', plain: 'Solo testo' },
     showPhotos: 'Mostra le foto dei piatti',

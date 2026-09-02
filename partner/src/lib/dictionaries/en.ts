@@ -301,6 +301,9 @@ const en: typeof it = {
     venueNamePlaceholder: 'Venue name (your guests read it)',
     brandHint:
       'How your guests see it at the table. It applies to this venue’s menu.',
+    summaryPhotosOn: 'with photos',
+    summaryPhotosOff: 'no photos',
+    summaryDescOn: 'with descriptions',
     sectionStyle: 'Section headings',
     sectionStyles: { underline: 'Rule', banner: 'Banner', plain: 'Plain' },
     showPhotos: 'Show dish photos',

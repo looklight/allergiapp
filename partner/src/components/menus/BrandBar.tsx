@@ -44,10 +44,50 @@ export default function BrandBar({
 }) {
   const { d, locale } = useI18n();
 
+  // Il riassunto sulla riga chiusa: chi non apre deve sapere lo stesso come
+  // sta messo. Senza, sarebbe una scatola misteriosa proprio sopra al menù.
+  const riassunto = [
+    d.menuEditor.sectionStyles[sectionStyle],
+    showPhotos ? d.menuEditor.summaryPhotosOn : d.menuEditor.summaryPhotosOff,
+    showDescriptions ? d.menuEditor.summaryDescOn : null,
+  ]
+    .filter((pezzo): pezzo is string => pezzo !== null)
+    .join(' · ');
+
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</h2>
-      <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.brandHint}</p>
+    // <details> e non un interruttore fatto da noi: apre e chiude da solo,
+    // funziona da tastiera e i lettori di schermo lo annunciano senza che
+    // dobbiamo scrivere niente. CHIUSA di partenza: l'aspetto si sceglie una
+    // volta, il menù si tocca ogni giorno — e il riassunto sulla riga evita
+    // di doverla aprire per sapere com'è messa.
+    <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+        <span
+          className="h-4 w-4 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+          style={{ backgroundColor: accentHex(accent) }}
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-gray-900">
+            {d.menuEditor.brandTitle}
+          </span>
+          <span className="block truncate text-xs text-gray-500">{riassunto}</span>
+        </span>
+        <svg
+          className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-180"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </summary>
+
+      <div className="border-t border-gray-100 p-4">
+      <p className="text-xs text-gray-500">{d.menuEditor.brandHint}</p>
 
       <div className="mt-3 flex items-center gap-2">
         <span className="text-xs text-gray-500">{d.menuEditor.accent}</span>
@@ -122,7 +162,8 @@ export default function BrandBar({
           onChange={onShowDescriptions}
         />
       </div>
-    </div>
+      </div>
+    </details>
   );
 }
 
