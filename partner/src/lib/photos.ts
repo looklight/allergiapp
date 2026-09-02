@@ -129,9 +129,29 @@ function estensione(blob: Blob) {
   return blob.type === 'image/webp' ? 'webp' : 'jpg';
 }
 
+// Un anno, in secondi. È il bigliettino che parte insieme al file e dice a
+// chi lo riceve — il browser del cliente, e soprattutto la rete di
+// distribuzione in mezzo — per quanto può tenersi la copia senza richiederla.
+//
+// Il valore predefinito di Supabase è un'ora, e sarebbe un'ora sprecata: qui
+// il file a quell'indirizzo NON PUÒ cambiare. Il nome è casuale, non si
+// sovrascrive mai (upsert: false qui sotto), e una foto nuova prende un nome
+// nuovo — quindi non esiste il rischio classico della cache lunga, vedere una
+// versione vecchia. Un'ora vorrebbe solo dire rispedire la stessa immagine
+// trecentosessantacinque volte l'anno a ogni nodo della rete, che è il costo
+// dei menù pubblici quando saranno mille (DIGITAL_MENU.md, Tema 11: sul
+// gratuito il costo è quasi tutto foto).
+//
+// ⚠️ Non si copia questo valore sulle foto delle RECENSIONI nell'app: là il
+// percorso è fisso (`<reviewId>_<indice>.webp`) e la sostituzione riscrive lo
+// stesso file, quindi una cache lunga mostrerebbe la foto vecchia. Se un
+// giorno si volesse allungare anche là, si cambia il NOME, non la durata.
+const UN_ANNO = 60 * 60 * 24 * 365;
+
 async function upload(path: string, blob: Blob): Promise<string> {
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
     contentType: blob.type,
+    cacheControl: String(UN_ANNO),
     // I file non si sovrascrivono mai (il nome è casuale): se il percorso
     // esiste è successo qualcosa che va visto, non nascosto.
     upsert: false,
