@@ -272,7 +272,7 @@ export default function MenuEditorPage() {
           l'avviso sugli allergeni non pubblicati non può scorrere via mentre
           si lavora su un menù lungo (v. PublishBar). */}
       <div className="sticky top-0 z-30 -mx-4 flex items-center gap-x-4 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
-        <span className="shrink-0"><BackLink /></span>
+        <BackLink />
         {locale && <PublishBar venueId={locale.id} />}
       </div>
 
@@ -751,7 +751,11 @@ function BackLink() {
   return (
     <Link
       href="/menu"
-      className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-900"
+      // shrink-0 sul link stesso e non su un involucro: un <span> attorno
+      // sarebbe un elemento in linea usato come colonna, e la sua riga di
+      // testo aggiungerebbe qualche pixel sotto — abbastanza da far sembrare
+      // "Tutti i menù" disallineato rispetto al resto della riga.
+      className="inline-flex shrink-0 items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-900"
     >
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M15 18l-6-6 6-6" />
