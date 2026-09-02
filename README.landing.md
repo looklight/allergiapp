@@ -15,8 +15,36 @@ landing/
 ├── i18n-site.js        # Sistema traduzioni IT/EN
 ├── translations.json   # Testi tradotti per tutte le pagine
 ├── vercel.json         # Configurazione deploy Vercel
+├── menu-page.css       # Stili del menù al tavolo (/menu/[slug])
+├── menu-page.js        # Filtro allergeni e fogli del menù al tavolo
+├── lib/                # Render server-side delle pagine pubbliche
 └── images/             # Immagini del sito
 ```
+
+### Il menù al tavolo — `/menu/[slug]` (in costruzione)
+
+La pagina che il cliente apre col QR sul tavolo. **Non è ancora collegata**:
+non c'è la rotta in `vercel.json` né la funzione in `api/`, e i dati vengono
+da `lib/menu-sample.js` — un menù finto che serve anche da **contratto**, cioè
+la forma esatta che `get_public_menu(slug)` restituirà (migration 708
+nell'altro repo). Per guardarla:
+
+```bash
+node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js');require('fs').writeFileSync('_preview-menu.html',renderMenuPage(require('./lib/menu-sample.js'),'it',createT('it')))"
+python3 -m http.server 8099   # poi apri /_preview-menu.html
+```
+
+Tre cose da non disfare:
+
+- **Il filtro riordina, non nasconde.** I piatti esclusi sbiadiscono, scendono
+  in fondo alla loro sezione e dicono perché. Farli sparire direbbe che quel
+  che resta è stato *verificato*, e il dato lo dichiara il ristorante.
+- **Niente disclaimer in fondo**: al tavolo è il ristorante che porge il suo
+  menù. Resta una riga minuscola attaccata al **filtro**, che è l'unica cosa
+  nostra in quella pagina. Il fondo è del ristoratore (coperto, servizio).
+- **`lib/menu-order.js` è una copia a mano** della graduatoria delle pastiglie
+  che sta in `partner/src/lib/menuFilters.ts`: se divergono, il ristoratore
+  vede nell'anteprima un ordine e il suo cliente ne trova un altro.
 
 ## 🚀 Deployment su Vercel
 

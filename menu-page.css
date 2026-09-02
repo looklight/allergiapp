@@ -306,6 +306,13 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+.menu-item-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
 .menu-item-note {
   display: block;
   margin-top: 2px;
