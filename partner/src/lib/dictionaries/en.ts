@@ -30,18 +30,19 @@ const en: typeof it = {
     account: 'Account',
   },
   login: {
-    title: 'AllergiApp Partner',
     subtitle: 'The portal for restaurateurs',
+    signInTitle: 'Sign in to the portal',
     signUpSubtitle: 'Create your partner profile',
     signUpIntro:
-      'A partner profile is separate from the account used in the AllergiApp app: you can use the same email, but they are two distinct journeys.',
+      'A partner profile is separate from your AllergiApp app account: you can use the same email.',
     firstName: 'First name',
     lastName: 'Last name',
     email: 'Email',
     password: 'Password',
     passwordHint: 'At least 8 characters.',
+    passwordRule: 'at least 8 characters',
     passwordTooShort: 'The password must be at least 8 characters long.',
-    terms: 'I accept the portal’s terms of use and privacy notice.',
+    terms: 'I accept the terms of use and privacy notice.',
     marketing: 'I’d like to receive updates about AllergiApp Partner.',
     termsRequired: 'You must accept the terms to create a partner profile.',
     existingPassword: 'Your AllergiApp account password',
@@ -57,6 +58,20 @@ const en: typeof it = {
     forgotNeedsEmail: 'Type your email above, then press again.',
     forgotSent:
       'If this email has an account, a message with a link to get back in is on its way. You will pick a new password from there.',
+  },
+  pitch: {
+    titleLead: 'The digital menu for your venue,',
+    titleTail: 'the way {someone with an allergy} needs to read it.',
+    subtitle:
+      'This is the portal for restaurateurs: here you build your venue’s digital menu and publish it with an address and a QR code of your own.',
+    createTitle: 'You build it, free',
+    createText: 'Sections, dishes, prices and allergens. Change it whenever you like.',
+    qrTitle: 'The QR code on the table',
+    qrText: 'Guests scan it and read it on their phone. No app to download.',
+    filterTitle: 'The allergen filter',
+    filterText: 'A guest picks their allergy: the dishes they can eat come first.',
+    appTitle: 'And it links up with AllergiApp',
+    appText: 'Your venue’s card inside the app, where people look for somewhere to eat. Coming soon.',
   },
   authErrors: {
     alreadyRegistered:

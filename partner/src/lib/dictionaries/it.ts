@@ -30,18 +30,23 @@ const it = {
     account: 'Account',
   },
   login: {
-    title: 'AllergiApp Partner',
     subtitle: 'Il portale per i ristoratori',
+    // Il titolo sopra il modulo: dice cosa si sta per fare. Il nome del
+    // portale lo porta già il marchio in cima alla pagina.
+    signInTitle: 'Entra nel portale',
     signUpSubtitle: 'Crea il tuo profilo partner',
     signUpIntro:
-      'Il profilo partner è una cosa diversa dall’account con cui si usa l’app AllergiApp: puoi usare la stessa email, ma sono due percorsi separati.',
+      'Il profilo partner è separato dall’account dell’app AllergiApp: puoi usare la stessa email.',
     firstName: 'Nome',
     lastName: 'Cognome',
     email: 'Email',
     password: 'Password',
     passwordHint: 'Almeno 8 caratteri.',
+    // La stessa regola dentro l'etichetta del campo: minuscola e senza punto
+    // perché segue "Password ·", non apre una frase. /account usa l'altra.
+    passwordRule: 'almeno 8 caratteri',
     passwordTooShort: 'La password deve avere almeno 8 caratteri.',
-    terms: 'Accetto le condizioni d’uso e l’informativa privacy del portale.',
+    terms: 'Accetto le condizioni d’uso e l’informativa privacy.',
     marketing: 'Voglio ricevere aggiornamenti su AllergiApp Partner.',
     termsRequired: 'Per creare il profilo partner devi accettare le condizioni.',
     existingPassword: 'Password del tuo account AllergiApp',
@@ -60,6 +65,36 @@ const it = {
     forgotNeedsEmail: 'Scrivi la tua email qui sopra, poi premi di nuovo.',
     forgotSent:
       'Se questa email ha un account, ti è arrivato un messaggio col link per rientrare. Da lì potrai scegliere la password nuova.',
+  },
+  // La presentazione del prodotto sulla pagina di accesso (LoginPitch): il
+  // portale non ha una pagina pubblica che la faccia, e chi arriva senza
+  // sessione altrimenti legge solo "Email" e "Password".
+  //
+  // Ogni riga dev'essere vera oggi: il filtro RIORDINA e non nasconde, e non
+  // si promette nessuna traduzione dei piatti (i nomi restano quelli scritti
+  // dal ristoratore).
+  pitch: {
+    // Il titolo è spezzato dove lo spezzerebbe chi lo legge ad alta voce:
+    // una riga per la cosa, una riga per chi ne ha bisogno. Lasciato a una
+    // stringa sola, il ritorno a capo cadeva in mezzo a "che si / adatta".
+    titleLead: 'Il menù digitale per il tuo locale,',
+    titleTail: 'che si adatta a {chi ha un’allergia}.',
+    subtitle:
+      'Questo è il portale dei ristoratori: qui prepari il menù digitale del tuo locale e lo pubblichi con un indirizzo e un QR tuoi.',
+    createTitle: 'Lo crei tu, gratis',
+    createText: 'Sezioni, piatti, prezzi e allergeni. Lo cambi quando vuoi.',
+    qrTitle: 'Il QR sul tavolo',
+    qrText: 'Il cliente inquadra e legge dal suo telefono. Nessuna app da scaricare.',
+    filterTitle: 'Il filtro allergeni',
+    filterText:
+      'Chi ha un’allergia sceglie la sua: il menù mette per primi i piatti che può mangiare.',
+    // L'associazione al ristorante NON è ancora attiva (/abbonamenti è un
+    // tappo): qui si dice al futuro, o sarebbe una promessa che il portale
+    // oggi non mantiene. E si ripete che il menù non dipende da questo —
+    // sono due cose indipendenti (DIGITAL_MENU.md, Temi 10 e 16).
+    appTitle: 'E si associa ad AllergiApp',
+    appText:
+      'La scheda del tuo locale dentro l’app, dove si cerca dove mangiare. In arrivo.',
   },
   authErrors: {
     alreadyRegistered:
