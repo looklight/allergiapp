@@ -23,6 +23,11 @@ import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
 import { slugOccupato, type Venue } from '@/lib/venues';
 import MenuQr from './MenuQr';
 
+// L'ancora a cui punta il "Modifica" del riquadro sotto l'anteprima
+// (LiveBox): il posto in cui si cambia l'indirizzo e si scaricano i file per
+// la stampa è uno solo, e ci si arriva scorrendo invece di ripeterlo.
+export const ANCORA_INDIRIZZO = 'indirizzo-del-menu';
+
 // Cosa sappiamo del testo che c'è nel campo adesso. "ignoto" non è "libero":
 // il controllo può non essere riuscito, e le due cose non vanno confuse.
 type Stato = 'fermo' | 'controllo' | 'libero' | 'occupato' | 'ignoto' | 'malformato';
@@ -47,6 +52,20 @@ export default function MenuAddress({
   const [stato, setStato] = useState<Stato>('fermo');
   const [salvato, setSalvato] = useState(false);
   const [fallito, setFallito] = useState(false);
+  const scatola = useRef<HTMLDivElement>(null);
+
+  // QUANDO L'INDIRIZZO NASCE, il riquadro si allunga di colpo: sotto al campo
+  // compaiono il QR, il link e i tre bottoni per scaricarlo. Se la pagina non
+  // si muove, tutto questo nasce sotto il bordo dello schermo e il
+  // ristoratore vede solo un bottone che si spegne — quindi la si porta lì.
+  // Solo alla PRIMA volta (da vuoto a qualcosa): sui cambi successivi il
+  // riquadro c'è già e spostare la pagina sarebbe uno strattone senza motivo.
+  const primoIndirizzo = useRef(venue.slug !== '');
+  useEffect(() => {
+    if (venue.slug === '' || primoIndirizzo.current) return;
+    primoIndirizzo.current = true;
+    scatola.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [venue.slug]);
 
   const pulita = bozza.trim().toLowerCase();
   const suo = pulita === venue.slug && venue.slug !== '';
@@ -134,7 +153,9 @@ export default function MenuAddress({
     // colore quando il menù è davvero online — verde quando risponde,
     // tratteggiata finché è una bozza, come una cosa non ancora finita.
     <div
-      className={`mt-4 rounded-2xl border p-4 ${
+      id={ANCORA_INDIRIZZO}
+      ref={scatola}
+      className={`mt-4 scroll-mt-16 rounded-2xl border p-4 ${
         online
           ? 'border-emerald-200 bg-emerald-50/60'
           : 'border-dashed border-gray-300 bg-gray-100/70'
