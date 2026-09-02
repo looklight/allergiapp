@@ -42,9 +42,13 @@ Tre cose da non disfare:
 - **Niente disclaimer in fondo**: al tavolo è il ristorante che porge il suo
   menù. Resta una riga minuscola attaccata al **filtro**, che è l'unica cosa
   nostra in quella pagina. Il fondo è del ristoratore (coperto, servizio).
-- **`lib/menu-order.js` è una copia a mano** della graduatoria delle pastiglie
-  che sta in `partner/src/lib/menuFilters.ts`: se divergono, il ristoratore
-  vede nell'anteprima un ordine e il suo cliente ne trova un altro.
+- **Due copie a mano dal portale**, e vanno tenute allineate o il ristoratore
+  vede nell'anteprima una cosa e il suo cliente ne trova un'altra:
+  `lib/menu-order.js` (la graduatoria delle pastiglie, da
+  `partner/src/lib/menuFilters.ts`) e la tavolozza `ACCENTI` dentro
+  `lib/render-menu.js` (da `menuBrand.ts`) — il database tiene il **codice**
+  del colore, qui serve la tinta. Aggiungendo un colore di là e non qui, quel
+  locale finisce col colore di ripiego **senza nessun errore**.
 
 ## 🚀 Deployment su Vercel
 
