@@ -21,27 +21,23 @@ landing/
 └── images/             # Immagini del sito
 ```
 
-### Il menù al tavolo — `/menu/[slug]` (in costruzione)
+### Il menù al tavolo — `/menu/[slug]`
 
-La pagina che il cliente apre col QR sul tavolo. **Non è ancora collegata**:
-non c'è la rotta in `vercel.json` né la funzione in `api/`, e i dati vengono
-da `lib/menu-sample.js` — un menù finto che serve anche da **contratto**, cioè
-la forma esatta che `get_public_menu(slug)` restituirà (migration 708
-nell'altro repo). Per guardarla:
+La pagina che il cliente apre col QR sul tavolo, **online dal 2026-09-02**:
+rotta in `vercel.json`, funzione in `api/menu/[slug].js`, resa in
+`lib/render-menu.js`. Legge `get_public_menu` (migration 708/709), cioè
+**solo lo scatto pubblicato** dal ristoratore: la bozza non esce mai di lì.
+`/menu/<slug>/<lingua>` esiste per la condivisione e l'indicizzazione, e
+l'indirizzo canonico resta senza lingua.
+
+Per guardarla **senza database**, con i dati finti di `lib/menu-sample.js`
+(che serve anche da contratto: è, campo per campo, quello che la funzione
+restituisce):
 
 ```bash
 node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js');require('fs').writeFileSync('_preview-menu.html',renderMenuPage(require('./lib/menu-sample.js'),'it',createT('it')))"
 python3 -m http.server 8099   # poi apri /_preview-menu.html
 ```
-
-**La cache è di un minuto** (non i cinque di `/r/` e `/u/`) con
-`stale-while-revalidate` lungo: questa è l'unica pagina che qualcuno
-*pubblica*, e il ristoratore va al tavolo a controllare subito dopo. La
-risposta porta già l'etichetta `Vercel-Cache-Tag: menu-<slug>`, che oggi non
-serve a niente: il giorno in cui i locali saranno tanti si allunga la durata e
-si invalida quell'etichetta alla pubblicazione (serve un segreto lato server,
-quindi non è gratis). Soglia per farlo: quando le letture del menù cominciano
-a vedersi nel traffico di Supabase.
 
 Tre cose da non disfare:
 
