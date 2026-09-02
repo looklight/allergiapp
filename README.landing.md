@@ -34,6 +34,15 @@ node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require
 python3 -m http.server 8099   # poi apri /_preview-menu.html
 ```
 
+**La cache è di un minuto** (non i cinque di `/r/` e `/u/`) con
+`stale-while-revalidate` lungo: questa è l'unica pagina che qualcuno
+*pubblica*, e il ristoratore va al tavolo a controllare subito dopo. La
+risposta porta già l'etichetta `Vercel-Cache-Tag: menu-<slug>`, che oggi non
+serve a niente: il giorno in cui i locali saranno tanti si allunga la durata e
+si invalida quell'etichetta alla pubblicazione (serve un segreto lato server,
+quindi non è gratis). Soglia per farlo: quando le letture del menù cominciano
+a vedersi nel traffico di Supabase.
+
 Tre cose da non disfare:
 
 - **Il filtro riordina, non nasconde.** I piatti esclusi sbiadiscono, scendono

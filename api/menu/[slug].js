@@ -51,13 +51,28 @@ module.exports = async function handler(req, res) {
   const html = renderMenuPage(dati, locale, t);
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  // Cinque minuti al bordo, come /r/ e /u/. Il menù cambia di rado e viene
-  // letto di continuo: così le scansioni dei clienti non arrivano quasi mai
-  // fino a Supabase, che è la promessa del Tema 11. stale-while-revalidate
-  // serve al caso vero di questa pagina — mezzogiorno, venti tavoli che
-  // inquadrano il QR insieme: la prima richiesta scaduta rinfresca la cache
-  // mentre tutte le altre leggono comunque qualcosa.
-  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
+
+  // UN MINUTO, e non i cinque di /r/ e /u/: quelle pagine nessuno le
+  // "pubblica", questa sì. Il ristoratore preme Pubblica, si alza, va al
+  // tavolo e inquadra il QR per controllare: se gli mostriamo ancora la carta
+  // di prima conclude che non ha funzionato. Un minuto è passato prima che
+  // arrivi al tavolo.
+  //
+  // stale-while-revalidate lungo perché il caso vero di questa pagina è
+  // mezzogiorno con venti tavoli che inquadrano insieme: chi arriva sulla
+  // copia appena scaduta riceve comunque una risposta immediata, e il
+  // rinfresco avviene dietro. Nessun cliente aspetta mai il database.
+  //
+  // L'ETICHETTA non serve ancora a niente, e si mette adesso perché non costa
+  // niente: il giorno in cui i locali saranno tanti, si allunga la durata e si
+  // svuota questa etichetta al momento della pubblicazione — un locale alla
+  // volta, senza toccare la pagina. Serve però un segreto lato server (il
+  // portale gira nel browser e non può custodirlo), ed è la ragione per cui
+  // oggi non si fa: infrastruttura vera per un risparmio che a questa scala è
+  // invisibile. La soglia per farlo: quando le letture del menù cominciano a
+  // vedersi nel traffico di Supabase.
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=86400');
+  res.setHeader('Vercel-Cache-Tag', `menu-${slug}`);
   return res.status(200).send(html);
 };
 
