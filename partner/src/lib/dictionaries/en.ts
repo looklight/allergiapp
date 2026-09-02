@@ -293,11 +293,11 @@ const en: typeof it = {
     fullPreviewNotice: 'Private preview — this is not the menu’s public address yet.',
     fullPreviewBack: 'Back to the editor',
     previewEmpty: 'Add dishes to see the menu.',
-    brandTitle: 'Colour',
+    brandTitle: 'Menu appearance',
     venueNameLabel: 'Venue name',
     venueNamePlaceholder: 'Venue name (your guests read it)',
     brandHint:
-      'Applies to every menu of this venue: at the table it is one page, and the menus are the tabs at the top.',
+      'How your guests see it at the table. It applies to this venue’s menu.',
     showPhotos: 'Show dish photos',
     showPhotosHint: 'Off, the table menu is text only. Photos stay on the dishes and on the AllergiApp card.',
     showDescriptions: 'Show descriptions under each dish',
@@ -396,7 +396,7 @@ const en: typeof it = {
     pickerAllIn: 'Every dish in your catalogue is already in this menu.',
     conditionsTitle: 'Table conditions',
     conditionsHint:
-      'At the bottom of every menu for this venue: cover charge, service, payments. They apply to all tabs, so you write them once.',
+      'At the bottom of the menu: cover charge, service, payments. Written once, they apply to the whole menu.',
     conditionsPlaceholder: 'Cover charge €2.00. Service not included…',
   },
   // Strings the GUEST reads at the table, not the restaurateur. Kept apart

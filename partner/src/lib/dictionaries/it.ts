@@ -319,11 +319,15 @@ const it = {
     fullPreviewNotice: 'Anteprima privata — non è ancora l’indirizzo pubblico del menù.',
     fullPreviewBack: 'Torna all’editor',
     previewEmpty: 'Aggiungi i piatti per vedere il menù.',
-    brandTitle: 'Colore',
+    // "Aspetto" e non più "Colore": la scatola tiene anche i due
+    // interruttori (foto, descrizioni). E niente "linguette" nelle
+    // spiegazioni finché i menù multipli sono spenti (MULTI_MENU): erano
+    // rimaste a parlare di una cosa che a schermo non esiste.
+    brandTitle: 'Aspetto del menù',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     brandHint:
-      'Vale per tutti i menù di questo locale: al tavolo è una pagina sola, e i menù sono le linguette in alto.',
+      'Come lo vedono i tuoi clienti al tavolo. Vale per il menù di questo locale.',
     showPhotos: 'Mostra le foto dei piatti',
     // Si dice cosa succede spegnendo, non cosa sono le foto: chi legge sta
     // decidendo, e la domanda che ha in testa è "e se le tolgo?"
@@ -441,7 +445,7 @@ const it = {
     pickerAllIn: 'Tutti i piatti del catalogo sono già in questo menù.',
     conditionsTitle: 'Condizioni al tavolo',
     conditionsHint:
-      'In fondo a ogni menù di questo locale: coperto, servizio, pagamenti. Valgono per tutte le linguette, quindi si scrivono una volta sola.',
+      'In fondo al menù: coperto, servizio, pagamenti. Si scrivono una volta sola e valgono per tutto il menù.',
     conditionsPlaceholder: 'Coperto 2,00 €. Servizio non incluso…',
   },
   // Le stringhe che legge il CLIENTE al tavolo, non il ristoratore. Stanno
