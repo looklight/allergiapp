@@ -136,6 +136,23 @@
   background: var(--bg-alt);
   color: var(--text);
   -webkit-text-size-adjust: 100%;
+  /* LA GRANDEZZA DEI TESTI (DIGITAL_MENU, Tema 27): un moltiplicatore solo,
+     scritto sulla radice dalla pagina (`--ms` nello style di <body>) e letto
+     da ogni misura del contenuto qui sotto. 1 = Normale; Compatta e Ampia
+     arrivano da lì. Se l'attributo non c'è — uno scatto preso prima che la
+     manopola esistesse — vale questo 1 e la pagina è quella di sempre.
+
+     Scala il CONTENUTO, cioè quello che si legge: nome del locale, sezioni,
+     piatti, prezzi, descrizioni, condizioni. NON scalano i comandi — lingue,
+     filtro, pastiglie, foglio dei filtri, marchio in coda: sono bersagli da
+     toccare, e un dito non rimpicciolisce con la carta.
+
+     ⚠️ IL PAVIMENTO: la riga degli allergeni e il motivo dell'esclusione
+     usano max(), quindi Compatta NON li rimpicciolisce — crescono con Ampia
+     e basta. Quella riga la legge una persona con un'allergia, in una sala
+     poco illuminata, mentre qualcuno le chiede cosa ordina. Chi toglie il
+     max() si tiene la responsabilità di quella riga. */
+  --ms: 1;
 }
 
 .menu-header,
@@ -180,7 +197,7 @@
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-size: 20px;
+  font-size: calc(20px * var(--ms, 1));
   font-weight: 600;
   line-height: 1.25;
 }
@@ -188,7 +205,7 @@
 
 .menu-intro {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--ms, 1));
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.85);
   white-space: pre-line;
@@ -292,12 +309,13 @@
 .font-classic .menu-item-reason,
 .font-light .menu-item-allergens,
 .font-light .menu-item-reason {
-  font-size: 11px;
+  /* il pavimento qui è il punto in più della compensazione, non i 10px */
+  font-size: max(11px, calc(11px * var(--ms, 1)));
   color: #6b6b6b;
 }
 .font-classic .menu-item-desc,
 .font-light .menu-item-desc {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--ms, 1));
 }
 
 /* ── Il filtro ─────────────────────────────────────────────────── */
@@ -419,7 +437,7 @@
 .menu-section { margin-bottom: 18px; }
 .menu-section-title {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: calc(13px * var(--ms, 1));
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -443,14 +461,14 @@
    tre che non usa la tinta del locale. */
 .menu-section-title.is-plain {
   margin-bottom: 6px;
-  font-size: 16px;
+  font-size: calc(16px * var(--ms, 1));
   letter-spacing: 0;
   text-transform: none;
   color: var(--text);
 }
 .menu-section-desc {
   margin: 0 0 10px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ms, 1));
   line-height: 1.4;
   color: var(--text-secondary);
   white-space: pre-line;
@@ -463,13 +481,13 @@
 }
 .menu-note-title {
   margin: 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--ms, 1));
   font-weight: 600;
   line-height: 1.35;
 }
 .menu-note-text {
   margin: 2px 0 0;
-  font-size: 11px;
+  font-size: calc(11px * var(--ms, 1));
   line-height: 1.45;
   color: var(--text-secondary);
   white-space: pre-line;
@@ -531,7 +549,7 @@
 .menu-item-name {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--ms, 1));
   font-weight: 500;
   line-height: 1.3;
   overflow: hidden;
@@ -540,21 +558,21 @@
 }
 .menu-price {
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--ms, 1));
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .menu-item-desc {
   display: block;
   margin-top: 2px;
-  font-size: 12px;
+  font-size: calc(12px * var(--ms, 1));
   line-height: 1.4;
   color: var(--text-secondary);
 }
 .menu-item-note {
   display: block;
   margin-top: 2px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ms, 1));
   font-weight: 500;
   color: #b45309;
 }
@@ -562,7 +580,8 @@
 .menu-item-reason {
   display: block;
   margin-top: 3px;
-  font-size: 10px;
+  /* max() e non calc(): Compatta non scende sotto i 10px (v. .menu-body) */
+  font-size: max(10px, calc(10px * var(--ms, 1)));
   line-height: 1.35;
   color: #9e9e9e;
 }
@@ -582,7 +601,9 @@
   margin: 16px 0 0;
   padding-top: 12px;
   border-top: 1px solid var(--border);
-  font-size: 10px;
+  /* Contenuto del ristoratore, e dice cosa può garantire su una
+     contaminazione: cresce con Ampia, non scende con Compatta. */
+  font-size: max(10px, calc(10px * var(--ms, 1)));
   line-height: 1.5;
   color: var(--text-secondary);
   white-space: pre-line;
@@ -695,11 +716,11 @@
   justify-content: space-between;
   gap: 12px;
 }
-.menu-detail-head h3 { margin: 0; font-size: 17px; line-height: 1.3; }
-.menu-detail-price { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.menu-detail-head h3 { margin: 0; font-size: calc(17px * var(--ms, 1)); line-height: 1.3; }
+.menu-detail-price { font-size: calc(16px * var(--ms, 1)); font-weight: 600; font-variant-numeric: tabular-nums; }
 .menu-detail-desc {
   margin: 6px 0 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--ms, 1));
   line-height: 1.45;
   color: var(--text-secondary);
 }
@@ -711,13 +732,13 @@
   text-transform: uppercase;
   color: #9e9e9e;
 }
-.menu-detail-none { margin: 0; font-size: 14px; color: var(--text-secondary); }
+.menu-detail-none { margin: 0; font-size: calc(14px * var(--ms, 1)); color: var(--text-secondary); }
 .menu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .menu-chip {
   padding: 4px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  font-size: 12px;
+  font-size: calc(12px * var(--ms, 1));
   font-weight: 500;
   color: var(--text-secondary);
 }

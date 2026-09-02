@@ -53,7 +53,24 @@ Tre cose da non disfare:
   `partner/src/lib/menuFilters.ts`) e la tavolozza `ACCENTI` dentro
   `lib/render-menu.js` (da `menuBrand.ts`) — il database tiene il **codice**
   del colore, qui serve la tinta. Aggiungendo un colore di là e non qui, quel
-  locale finisce col colore di ripiego **senza nessun errore**.
+  locale finisce col colore di ripiego **senza nessun errore**. La terza copia
+  sono i **fattori della grandezza dei testi** (`textScale` in
+  `render-menu.js`, da `TEXT_SCALE_FACTORS` in `partner/src/lib/venues.ts`).
+
+**La grandezza dei testi** non è una classe ma un numero: `--ms` nello style
+di `<body>`, e ogni misura del contenuto in `menu-page.css` è
+`calc(Npx * var(--ms, 1))`. Così una manopola sola muove tutta la carta e non
+c'è un secondo elenco di misure da tenere allineato.
+
+⚠️ **La riga degli allergeni ha un pavimento**: usa `max()`, quindi la carta
+Compatta non la rimpicciolisce — cresce con Ampia e basta. La legge una
+persona con un'allergia, in una sala poco illuminata, mentre qualcuno le
+chiede cosa ordina. Chi toglie il `max()` si tiene quella riga. Per vedere le
+tre grandezze una accanto all'altra:
+
+```bash
+node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js'),s=require('./lib/menu-sample.js'),fs=require('fs');for(const g of ['compact','normal','roomy'])fs.writeFileSync('_preview-scala-'+g+'.html',renderMenuPage({...s,textScale:g},'it',createT('it')))"
+```
 
 ## 🚀 Deployment su Vercel
 
