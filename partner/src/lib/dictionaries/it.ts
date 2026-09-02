@@ -147,25 +147,31 @@ const it = {
   dashboard: {
     greeting: 'Ciao {name}',
     greetingPlain: 'Ciao',
-    intro:
-      'Le due cose che puoi accendere: il menù che i clienti aprono al tavolo e la tua scheda dentro AllergiApp. Sono indipendenti — puoi farne anche una sola.',
+    // Una riga sola, e dice cosa si FA qui: è il pannello del ristoratore, non
+    // l'indice di cosa esiste nel portale. Prima elencava le due cose ("il
+    // menù e la scheda") — e per giunta come gemelle, che non lo sono più
+    // (v. page.tsx): il menù si fa stasera, la scheda aspetta l'associazione.
+    intro: 'Da qui prepari il menù digitale del tuo locale, lo pubblichi e lo cambi quando vuoi.',
     switchLabel: 'Locale',
     addVenue: 'Aggiungi un altro locale',
-    menusTitle: 'Menù al tavolo',
-    menusHint: 'Quello che i clienti aprono al tavolo. Non ha bisogno dell’app.',
+    // Il nome della COSA, non del gesto: la card c'è anche a menù fatto e
+    // pubblicato, e "crea" lì sarebbe falso (il gesto sta nel bottone sotto).
+    // Il dove — al tavolo — lo dice la riga qui sotto.
+    menusTitle: 'Menù digitale',
+    menusHint: 'I clienti lo aprono al tavolo col QR, senza scaricare niente.',
     menusEmpty: 'Non ancora creato',
     menusOpen: 'Apri l’editor',
     menusCreate: 'Crea il menù',
     menusAll: 'Tutti i menù',
     cardTitle: 'Scheda AllergiApp',
-    cardHint:
-      'La tua pagina dentro l’app: link, contatti e i piatti che scegli. Diventa visibile quando associ il locale a un ristorante già presente su AllergiApp.',
+    cardHint: 'La tua pagina dentro l’app: compare quando associ il locale a un ristorante.',
     cardEmpty: 'Ancora niente dentro',
     cardLink: 'Associa il locale',
     cardOpen: 'Apri la scheda',
     dishesChosen: 'piatti scelti',
     dishChosen: 'piatto scelto',
     quickDish: 'Nuovo piatto',
+    dishUnnamed: 'Piatto senza nome',
     quickLinks: 'Link e contatti',
     // Lo stato del menù non è quanti piatti ha dentro: è cosa leggono i
     // clienti al tavolo adesso (v. page.tsx).
@@ -175,8 +181,8 @@ const it = {
     sectionOne: 'sezione',
     sectionOther: 'sezioni',
     catalogTitle: 'Catalogo piatti',
-    catalogHint: 'I piatti sono tuoi, non del singolo locale: gli stessi finiscono nei menù e sulla scheda.',
-    catalogOpen: 'Gestisci',
+    catalogHint: 'I piatti sono tuoi: gli stessi vanno nel menù e sulla scheda.',
+    catalogOpen: 'Vedi tutti',
     statusReady: 'pronto',
     statusDraft: 'da finire',
     statusTodo: 'da fare',
@@ -269,7 +275,7 @@ const it = {
   dishes: {
     title: 'I tuoi piatti',
     intro:
-      'Il catalogo del tuo ristorante: qui crei e correggi i piatti, poi li accendi sulla scheda AllergiApp e li componi nei menù.',
+      'Il catalogo del tuo ristorante: qui crei e correggi i piatti, poi li scegli per la scheda AllergiApp e li componi nei menù.',
     create: 'Nuovo piatto',
     newTitle: 'Nuovo piatto',
     editTitle: 'Modifica piatto',
@@ -290,13 +296,13 @@ const it = {
     listingCount: 'schede',
     onNoListing: 'Su nessuna scheda',
     empty: 'Non hai ancora nessun piatto.',
-    emptyHint: 'Creane uno: potrai accenderlo sulle tue schede quando vuoi.',
+    emptyHint: 'Creane uno: potrai sceglierlo per le tue schede quando vuoi.',
     noResults: 'Nessun piatto corrisponde alla ricerca.',
     listingsLabel: 'Sulle schede',
-    // Senza claim non esiste nessuna scheda su cui accendere: i comandi
+    // Senza claim non esiste nessuna scheda su cui mostrarli: i comandi
     // spariscono e questa riga dice perché (v. Tema 16)
     needsCard:
-      'Per accendere un piatto serve la scheda AllergiApp: si ottiene associando il locale a un ristorante già presente nell’app.',
+      'Per mostrare i piatti serve la scheda AllergiApp: si ottiene associando il locale a un ristorante già presente nell’app.',
     listingsHint: 'Su quali schede AllergiApp appare questo piatto. Puoi cambiarlo anche dal locale.',
     noVenues: 'Non hai ancora locali: creane uno per mostrare i tuoi piatti.',
     deleteTitle: 'Eliminare questo piatto?',
@@ -449,7 +455,7 @@ const it = {
     addressTurnOn: 'Rimetti il menù in sala',
     addressTurnOff: 'Togli il menù dalla sala',
     addressHintOffline:
-      'Il link e il QR esistono ma non mostrano il menù: chi li apre legge che non è al momento disponibile. Riaccendi quando vuoi.',
+      'Il link e il QR esistono ma non mostrano il menù: chi li apre legge che non è al momento disponibile. Puoi rimetterlo in sala quando vuoi.',
     addressHintLive:
       'Questo è l’indirizzo che i tuoi clienti aprono col QR. Cambiandolo, i QR già stampati smettono di funzionare.',
     addressHint:

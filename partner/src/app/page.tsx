@@ -15,19 +15,34 @@
 // database restano appesi al locale, perché domani serviranno anche al menù
 // pubblico: è il posto in cui si modificano che è uno solo.
 //
+// MA LE DUE COSE NON SONO PARI, e affiancate uguali lo dicevano. Il menù è il
+// prodotto: si fa, si pubblica, sta sul tavolo stasera. La scheda dentro l'app
+// aspetta l'associazione al ristorante, che ancora non si può fare
+// (/abbonamenti è un tappo). Due card gemelle davano al ristoratore due
+// compiti, e uno dei due non lo può svolgere. Perciò: il menù è un blocco
+// grande, la scheda una riga sotto.
+//
+// E LO STATO DEL MENÙ NON È PIÙ "quanti piatti ci sono dentro". Da quando lo
+// scatto pubblicato esiste (Tema 24), pieno e pubblicato sono due cose: questa
+// home leggeva la prima e taceva la seconda, cioè taceva l'unica che può fare
+// del male — allergeni corretti nella bozza e non ancora arrivati in sala.
+//
 // NON è un percorso a tappe numerato: le due cose sono indipendenti e c'è chi
 // farà solo il menù senza mai voler entrare nell'app (Temi 10 e 16).
 import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
-import { MULTI_MENU } from '@/lib/features';
 import { useVenues, useVenueChoice, currentVenue, countLinks, type Venue } from '@/lib/venues';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
-import { useDishes } from '@/lib/dishes';
+import { dishThumb, useDishes, type Dish } from '@/lib/dishes';
+import { usePublishState } from '@/lib/publish';
 import { usePartnerProfile } from '@/lib/partnerProfile';
 import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
 import UndoToast from '@/components/UndoToast';
+import LiveBox from '@/components/menus/LiveBox';
+import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
 
 type Stato = 'ready' | 'draft' | 'todo';
 
@@ -44,34 +59,47 @@ function StatusPill({ stato, label }: { stato: Stato; label: string }) {
   );
 }
 
-// Una delle due cose: titolo con lo stato a destra, una riga che dice come sta
-// messa, una riga che spiega a cosa serve, e i comandi in fondo. Le card sono
-// alte uguale (flex + mt-auto sui comandi) perché affiancate si guardano.
-function ThingCard({
-  title,
-  stato,
-  statusLabel,
-  detail,
-  hint,
-  children,
-}: {
-  title: string;
-  stato: Stato;
-  statusLabel: string;
-  detail: string;
-  hint: string;
-  children: React.ReactNode;
-}) {
+// La pallina di un piatto: la foto ritagliata in tondo, come le mostra l'app,
+// col nome sotto su due righe. Senza foto resta l'iniziale — un cerchio vuoto
+// sembrerebbe un'immagine che non è arrivata, e queste palline servono proprio
+// a far riconoscere il catalogo a colpo d'occhio.
+//
+// Si preme e si apre la maschera del piatto, in /piatti: la matita che compare
+// sopra la foto dice che si va a correggere, non a guardare. La maschera resta
+// una sola, là dove i piatti si gestiscono — qui c'è solo l'indirizzo per
+// aprirla (?piatto=<id>).
+function DishBubble({ dish }: { dish: Dish }) {
+  const { d } = useI18n();
+  const foto = dishThumb(dish);
+  const nome = dish.name.trim();
   return (
-    <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">{title}</h2>
-        <StatusPill stato={stato} label={statusLabel} />
-      </div>
-      <p className="mt-1.5 text-sm text-gray-900">{detail}</p>
-      <p className="mt-0.5 text-xs text-gray-500">{hint}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-3">{children}</div>
-    </div>
+    <Link
+      href={`/piatti?piatto=${dish.id}`}
+      title={nome}
+      className="group flex w-20 shrink-0 flex-col items-center gap-1.5"
+    >
+      <span className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-white">
+        {foto !== '' ? (
+          // eslint-disable-next-line @next/next/no-img-element -- foto del partner (o data-URL sulle righe vecchie): next/image non le ottimizzerebbe
+          <img src={foto} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <span className="text-lg font-medium text-gray-400">
+            {nome === '' ? '·' : nome.charAt(0).toUpperCase()}
+          </span>
+        )}
+        {/* Il velo con la matita: compare anche col fuoco da tastiera, o chi
+            non usa il mouse non saprebbe mai che quella pallina si preme */}
+        <span className="absolute inset-0 flex items-center justify-center bg-gray-900/45 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
+          </svg>
+        </span>
+      </span>
+      <span className="line-clamp-2 text-center text-xs leading-tight text-gray-600 transition-colors group-hover:text-gray-900">
+        {nome === '' ? d.dashboard.dishUnnamed : nome}
+      </span>
+    </Link>
   );
 }
 
@@ -93,35 +121,6 @@ function SecondaryLink({ href, children }: { href: string; children: React.React
       className="text-sm font-medium text-gray-600 underline transition-colors hover:text-gray-900"
     >
       {children}
-    </Link>
-  );
-}
-
-// Le azioni rapide: quello che si fa spesso, a portata di clic dalla home e
-// non da cercare dentro una pagina. Portano dove la cosa SUCCEDE — la
-// maschera già aperta — non alla pagina che la contiene.
-function QuickAction({
-  href,
-  label,
-  crea = true,
-}: {
-  href: string;
-  label: string;
-  // il "+" vale solo per chi crea qualcosa: su "Link e contatti" prometterebbe
-  // una cosa nuova mentre si va a correggere quelle che ci sono
-  crea?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900"
-    >
-      {crea && (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      )}
-      {label}
     </Link>
   );
 }
@@ -154,6 +153,11 @@ export default function HomePage() {
   const addButton = useRef<HTMLButtonElement>(null);
 
   const venue = currentVenue(venues ?? null, venueId);
+  const router = useRouter();
+  // Se quello che i clienti leggono al tavolo è aggiornato. Lo stesso gancio
+  // dell'editor: la home non deve avere una seconda idea di cosa sia
+  // pubblicato — sarebbe la prima a dire una cosa e il menù un'altra.
+  const { stato: pubblicazione, online } = usePublishState(venue?.id ?? null);
 
   function cambiaLocale(id: string) {
     scegli(id);
@@ -237,10 +241,48 @@ export default function HomePage() {
   const links = countLinks(venue.links);
   const inScheda = venue.dishIds.length;
 
-  // MENÙ: fatto quando c'è almeno un piatto dentro. Un menù creato e vuoto
-  // non è "pronto" — è la carta bianca che il cliente si troverebbe davanti.
+  // MENÙ. Prima lo stato era "c'è almeno un piatto dentro": vero ma
+  // insufficiente, perché un menù pieno può non essere mai uscito dalla bozza,
+  // e uno online può avere in sospeso proprio la correzione di un allergene.
+  // Quindi si guarda prima se il menù esiste ed è pieno (cosa che dipende solo
+  // da questa pagina), poi cosa dice la pubblicazione (che arriva dopo, e
+  // finché non arriva NON si inventa niente: si resta sul conto dei piatti).
+  const menuVuoto = suoiMenu.length > 0 && piattiNeiMenu === 0;
+  const inSospeso = online && pubblicazione?.hasChanges === true;
+  const allergeniInSospeso = inSospeso && pubblicazione?.allergensChanged === true;
+  // "mai pubblicato" si dice solo quando la risposta è arrivata davvero
+  const maiPubblicato = pubblicazione !== null && pubblicazione.publishedAt === null;
+
   const statoMenu: Stato =
-    suoiMenu.length === 0 ? 'todo' : piattiNeiMenu === 0 ? 'draft' : 'ready';
+    suoiMenu.length === 0 || menuVuoto ? 'todo' : inSospeso || maiPubblicato ? 'draft' : 'ready';
+  const etichettaMenu =
+    suoiMenu.length === 0
+      ? d.dashboard.statusTodo
+      : menuVuoto
+        ? d.dashboard.statusDraft
+        : inSospeso
+          ? d.dashboard.livePending
+          : maiPubblicato
+            ? d.dashboard.liveNever
+            : online
+              ? d.dashboard.liveOn
+              : d.dashboard.statusReady;
+
+  // La frase per esteso sotto il titolo: la stessa che il ristoratore legge in
+  // cima all'editor (PublishBar), perché è la stessa notizia. Quella degli
+  // allergeni si vede in ambra: è l'unica riga di questa schermata che, se
+  // ignorata, arriva addosso a un cliente.
+  const avvisoMenu =
+    suoiMenu.length === 0 || menuVuoto
+      ? null
+      : allergeniInSospeso
+        ? d.menuEditor.publishAllergens
+        : inSospeso
+          ? d.menuEditor.publishPending
+          : maiPubblicato
+            ? d.menuEditor.publishNever
+            : null;
+
   // I nomi dei menù solo quando sono più d'uno: il nome di un menù serve a
   // distinguerlo dagli altri, e da solo, sotto una card che si chiama già
   // "Menù al tavolo", direbbe soltanto "Menù senza nome".
@@ -248,10 +290,19 @@ export default function HomePage() {
     suoiMenu.length > 1
       ? `${suoiMenu.map((menu) => menu.name.trim() || d.menus.unnamed).join(' · ')} — `
       : '';
+  // Le palline del catalogo: gli ULTIMI arrivati, il più recente per primo.
+  // La lista scende ordinata per sort_order e poi per data di creazione, e
+  // sort_order oggi nessuno lo scrive: quindi la coda è davvero l'ultimo che
+  // il ristoratore ha aggiunto. Se un giorno i piatti si riordineranno a mano,
+  // questa riga andrà rifatta guardando la data.
+  const ultimiPiatti = dishes.slice(-6).reverse();
+  const sezioni = suoiMenu.reduce((tot, menu) => tot + menu.sections.length, 0);
+  const pezziMenu = [
+    sezioni > 0 ? `${sezioni} ${sezioni === 1 ? d.dashboard.sectionOne : d.dashboard.sectionOther}` : null,
+    `${piattiNeiMenu} ${piattiNeiMenu === 1 ? d.home.dishOne : d.home.dishOther}`,
+  ].filter((pezzo): pezzo is string => pezzo !== null);
   const dettaglioMenu =
-    suoiMenu.length === 0
-      ? d.dashboard.menusEmpty
-      : `${nomiMenu}${piattiNeiMenu} ${piattiNeiMenu === 1 ? d.home.dishOne : d.home.dishOther}`;
+    suoiMenu.length === 0 ? d.dashboard.menusEmpty : `${nomiMenu}${pezziMenu.join(' · ')}`;
 
   // SCHEDA: si dice cosa c'è già dentro. Lo stato invece è l'unica cosa che
   // il ristoratore non decide da solo — senza claim la scheda non è nell'app.
@@ -270,7 +321,13 @@ export default function HomePage() {
 
       {/* Di quale locale parla tutto quello che c'è sotto. Il nome si corregge
           da qui: è quello che i clienti leggono in cima al menù, non
-          un'etichetta interna, e non deve costare una schermata. */}
+          un'etichetta interna, e non deve costare una schermata.
+
+          CON PIÙ LOCALI SONO CAPITOLI, non una tendina. La tendina nasconde
+          quanti locali ci sono e come si chiamano finché non la si apre, e per
+          cambiare chiede due gesti; i capitoli dicono tutto stando fermi e ne
+          chiedono uno. Il nome del locale aperto non si ripete sotto: il
+          capitolo acceso è già il titolo, e la matita corregge quello. */}
       <div className="mb-3 mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-gray-200 pb-3">
         {renaming ? (
           <input
@@ -286,6 +343,44 @@ export default function HomePage() {
             placeholder={d.editor.venueNamePlaceholder}
             className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium focus:border-gray-900 focus:outline-none"
           />
+        ) : venues.length > 1 ? (
+          <>
+            {/* Non è una fila di linguette da tastiera (role=tablist): sono
+                bottoni che scelgono, e aria-pressed dice quale è acceso. */}
+            <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label={d.dashboard.switchLabel} role="group">
+              {venues.map((v) => {
+                const acceso = v.id === venue.id;
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => cambiaLocale(v.id)}
+                    aria-pressed={acceso}
+                    className={`max-w-[14rem] truncate rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                      acceso
+                        ? 'bg-gray-900 text-white'
+                        : 'border border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-900'
+                    }`}
+                  >
+                    {v.venueName.trim() || d.home.unnamed}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => {
+                setNameDraft(venue.venueName);
+                setRenaming(true);
+              }}
+              aria-label={d.home.rename}
+              title={d.home.rename}
+              className="shrink-0 text-gray-300 transition-colors hover:text-gray-700"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
+              </svg>
+            </button>
+          </>
         ) : (
           <>
             <h2 className="min-w-0 truncate text-base font-semibold text-gray-900">
@@ -307,44 +402,38 @@ export default function HomePage() {
             </button>
           </>
         )}
-
-        {/* La tendina compare solo se c'è davvero una scelta da fare */}
-        {venues.length > 1 && (
-          <select
-            value={venue.id}
-            onChange={(e) => cambiaLocale(e.target.value)}
-            aria-label={d.dashboard.switchLabel}
-            className="ml-auto max-w-[12rem] rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
-          >
-            {venues.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.venueName.trim() || d.home.unnamed}
-              </option>
-            ))}
-          </select>
-        )}
       </div>
 
-      {/* Le due cose, affiancate: sono pari, e una sopra l'altra sembrerebbero
-          un ordine da seguire */}
-      <div className="grid gap-3 md:grid-cols-2">
-        <ThingCard
-          title={d.dashboard.menusTitle}
-          stato={statoMenu}
-          statusLabel={
-            statoMenu === 'ready'
-              ? d.dashboard.statusReady
-              : statoMenu === 'draft'
-                ? d.dashboard.statusDraft
-                : d.dashboard.statusTodo
-          }
-          detail={dettaglioMenu}
-          hint={d.dashboard.menusHint}
-        >
-          {suoiMenu.length === 0 ? (
+      {/* IL MENÙ, in grande: è quello che si fa stasera. Dentro, in ordine:
+          come sta messo, cosa manca perché arrivi in sala, e — se in sala c'è
+          davvero — l'indirizzo, il codice e la pagina da aprire. */}
+      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
+            {d.dashboard.menusTitle}
+          </h2>
+          <StatusPill stato={statoMenu} label={etichettaMenu} />
+        </div>
+        <p className="mt-1.5 text-sm text-gray-900">{dettaglioMenu}</p>
+        <p className="mt-0.5 text-xs text-gray-500">{d.dashboard.menusHint}</p>
+
+        {avvisoMenu !== null && (
+          <p
+            className={`mt-3 text-xs leading-snug ${
+              allergeniInSospeso ? 'font-medium text-amber-800' : 'text-gray-600'
+            }`}
+          >
+            {avvisoMenu}
+          </p>
+        )}
+
+        {suoiMenu.length === 0 ? (
+          <div className="mt-4">
             <PrimaryLink href={`/menu?nuovo=${venue.id}`}>{d.dashboard.menusCreate}</PrimaryLink>
-          ) : (
-            <>
+          </div>
+        ) : (
+          <>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
               <SecondaryLink href={`/menu/${suoiMenu[0].id}/anteprima`}>
                 {d.menuEditor.previewTitle}
@@ -352,59 +441,124 @@ export default function HomePage() {
               {suoiMenu.length > 1 && (
                 <SecondaryLink href="/menu">{d.dashboard.menusAll}</SecondaryLink>
               )}
-            </>
-          )}
-        </ThingCard>
+            </div>
+            {/* Lo stesso riquadro che sta sotto l'anteprima nell'editor, e non
+                una sua imitazione: dice da sé le tre situazioni (nessun
+                indirizzo, indirizzo scelto ma non pubblicato, online) e non
+                offre mai da copiare o stampare un link che non risponde.
+                Largo quanto lì: a tutta pagina il suo corpo minuto sembrerebbe
+                un errore. "Modifica" porta nella sezione dell'indirizzo. */}
+            <div className="max-w-md">
+              <LiveBox
+                slug={venue.slug}
+                online={online}
+                onEdit={() => router.push(`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`)}
+              />
+            </div>
+          </>
+        )}
+      </section>
 
-        <ThingCard
-          title={d.dashboard.cardTitle}
-          stato={venue.cardId === null ? 'todo' : 'ready'}
-          statusLabel={venue.cardId === null ? d.dashboard.statusOff : d.dashboard.statusOn}
-          detail={dettaglioScheda}
-          hint={d.dashboard.cardHint}
-        >
-          <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
-          {venue.cardId === null && (
-            <SecondaryLink href="/abbonamenti">{d.dashboard.cardLink}</SecondaryLink>
-          )}
-        </ThingCard>
-      </div>
-
-      <div className="mt-8">
-        <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-400">
-          {d.dashboard.quickTitle}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <QuickAction href="/piatti?nuovo" label={d.dashboard.quickDish} />
-          {/* col locale in coda: da qui è già scelto, e la finestra non deve
-              richiederlo (con un menù già fatto chiederà solo il nome).
-              Sparisce quando non c'è nessun menù da fare: con i menù multipli
-              spenti (features.ts) un locale che ce l'ha già non può averne un
-              altro, e la card qui sopra ha già "Apri". */}
-          {(MULTI_MENU || suoiMenu.length === 0) && (
-            <QuickAction href={`/menu?nuovo=${venue.id}`} label={d.dashboard.quickMenu} />
-          )}
-          <QuickAction href={`/locale/${venue.id}#link`} label={d.dashboard.quickLinks} crea={false} />
+      {/* LA SCHEDA, in una riga: c'è, si prepara, ma finché non si può
+          associare il locale a un ristorante non è una cosa che si "fa" —
+          quindi non prende lo spazio di una cosa da fare. I link e i contatti
+          stanno qui perché è qui che si vanno a scrivere. */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-sm font-medium text-gray-900">{d.dashboard.cardTitle}</p>
+            <StatusPill
+              stato={venue.cardId === null ? 'todo' : 'ready'}
+              label={venue.cardId === null ? d.dashboard.statusOff : d.dashboard.statusOn}
+            />
+          </div>
+          <p className="mt-0.5 text-xs text-gray-500">
+            {dettaglioScheda} — {d.dashboard.cardHint}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <Link
+            href={`/locale/${venue.id}`}
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            {d.dashboard.cardOpen}
+          </Link>
+          <SecondaryLink href={`/locale/${venue.id}#link`}>{d.dashboard.quickLinks}</SecondaryLink>
         </div>
       </div>
 
       {/* Il catalogo sta FUORI dalle due: è il substrato, non una terza cosa
-          da accendere, ed è del partner — lo stesso piatto vale per tutti i
-          suoi locali. Perciò riga più leggera e staccata. */}
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-gray-900">
-            {d.dashboard.catalogTitle} — {dishes.length}{' '}
-            {dishes.length === 1 ? d.home.dishOne : d.home.dishOther}
-          </p>
-          <p className="mt-0.5 text-xs text-gray-500">{d.dashboard.catalogHint}</p>
+          da fare, ed è del partner — lo stesso piatto vale per tutti i suoi
+          locali. Perciò riga più leggera e staccata.
+
+          LE PALLINE sono lì per far riconoscere il catalogo senza aprirlo: si
+          vede a colpo d'occhio se c'è dentro il proprio lavoro, e quali sono
+          gli ultimi piatti aggiunti. Sono un'anteprima, non comandi: non si
+          può aprire un piatto dal suo indirizzo (in /piatti la maschera è un
+          pannello, non una pagina), e una pallina che porta a un elenco
+          generico prometterebbe una cosa e ne farebbe un'altra.
+
+          "NUOVO PIATTO" è diventato l'ultima pallina, col più: sta dove
+          finisce la fila di quelle che ci sono, che è il posto in cui uno
+          pensa "ne manca uno". Da bottone in fila con "Vedi tutti" erano due
+          comandi accanto, e il più importante dei due era il meno frequente. */}
+      <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            {/* Anche il titolo porta al catalogo: è la prima cosa che si prova
+                a premere, e un titolo che non fa niente costringe a cercare il
+                comando che invece c'è già in fondo alla riga. */}
+            <Link
+              href="/piatti"
+              className="group inline-flex items-center gap-1 text-sm font-medium text-gray-900"
+            >
+              <span>
+                {d.dashboard.catalogTitle} — {dishes.length}{' '}
+                {dishes.length === 1 ? d.home.dishOne : d.home.dishOther}
+              </span>
+              <svg
+                className="h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </Link>
+            <p className="mt-0.5 text-xs text-gray-500">{d.dashboard.catalogHint}</p>
+          </div>
+          {/* "Vedi tutti" solo se c'è qualcosa da vedere: a catalogo vuoto
+              porterebbe a una pagina che dice soltanto che è vuota, e la
+              pallina col più lì accanto è già la cosa giusta da premere. */}
+          {dishes.length > 0 && (
+            <SecondaryLink href="/piatti">{d.dashboard.catalogOpen}</SecondaryLink>
+          )}
         </div>
-        <Link
-          href="/piatti"
-          className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          {d.dashboard.catalogOpen}
-        </Link>
+
+        <div className="mt-4 flex flex-wrap items-start gap-3">
+          {ultimiPiatti.map((dish) => (
+            <DishBubble key={dish.id} dish={dish} />
+          ))}
+          {/* Stessa forma delle altre — cerchio e nome sotto — perché è una
+              della fila: il posto del piatto che non c'è ancora. */}
+          <Link
+            href="/piatti?nuovo"
+            className="group flex w-20 shrink-0 flex-col items-center gap-1.5"
+          >
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-300 bg-white text-gray-400 transition-colors group-hover:border-gray-400 group-hover:text-gray-900">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </span>
+            <span className="line-clamp-2 text-center text-xs leading-tight text-gray-500 transition-colors group-hover:text-gray-900">
+              {d.dashboard.quickDish}
+            </span>
+          </Link>
+        </div>
       </div>
 
       {/* In fondo e sottovoce: aggiungere un locale è raro, eliminarlo di più */}

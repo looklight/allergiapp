@@ -74,25 +74,36 @@ export default function DishesPage() {
   // 'new' = pannello aperto su un piatto da creare; un id = su quello
   const [editing, setEditing] = useState<'new' | string | null>(null);
 
-  // La home ha un'azione rapida che porta qui con la maschera GIÀ APERTA: una
-  // scorciatoia che ti lascia davanti alla pagina, a cercare il bottone, non è
-  // una scorciatoia. Si legge l'indirizzo invece di useSearchParams, che
-  // obbligherebbe a incartare la pagina in un <Suspense> per la generazione
-  // statica — molto rumore per un parametro.
+  // La home porta qui con la maschera GIÀ APERTA: una scorciatoia che ti
+  // lascia davanti alla pagina, a cercare il bottone, non è una scorciatoia.
+  // Due indirizzi: `?nuovo` per crearne uno, `?piatto=<id>` per correggere
+  // quello — è l'indirizzo che le palline del catalogo sulla home premono, e
+  // l'unico modo di aprire quella maschera da fuori senza duplicarla.
+  //
+  // Si legge l'indirizzo invece di useSearchParams, che obbligherebbe a
+  // incartare la pagina in un <Suspense> per la generazione statica — molto
+  // rumore per un parametro.
   //
   // Si aspetta che i DATI ci siano, e non basta il montaggio: aprendola subito
   // la finestra nasceva con le liste ancora vuote e proponeva di creare un
-  // locale nuovo a chi ce l'aveva già. Una volta sola, o riaprirebbe la
-  // maschera a ogni ricarica delle liste.
-  const nuovoChiesto = useRef(false);
+  // locale nuovo a chi ce l'aveva già. Serve anche a sapere se il piatto
+  // chiesto esiste davvero — un id vecchio (piatto eliminato da un'altra
+  // scheda, indirizzo tenuto nei preferiti) non deve aprire niente. Una volta
+  // sola, o riaprirebbe la maschera a ogni ricarica delle liste.
+  const aperturaChiesta = useRef(false);
   useEffect(() => {
-    if (nuovoChiesto.current || !dishes || !venues) return;
-    nuovoChiesto.current = true;
-    if (new URLSearchParams(window.location.search).has('nuovo')) {
-      // consumato subito: tornando indietro dall'editor la maschera non deve
-      // riaprirsi da sola
-      window.history.replaceState(null, '', '/piatti');
+    if (aperturaChiesta.current || !dishes || !venues) return;
+    aperturaChiesta.current = true;
+    const parametri = new URLSearchParams(window.location.search);
+    const piatto = parametri.get('piatto');
+    if (!parametri.has('nuovo') && piatto === null) return;
+    // consumato subito: tornando indietro dall'editor la maschera non deve
+    // riaprirsi da sola
+    window.history.replaceState(null, '', '/piatti');
+    if (parametri.has('nuovo')) {
       setEditing('new');
+    } else if (piatto !== null && dishes.some((dish) => dish.id === piatto)) {
+      setEditing(piatto);
     }
   }, [dishes, venues]);
   const [deleting, setDeleting] = useState<Dish | null>(null);

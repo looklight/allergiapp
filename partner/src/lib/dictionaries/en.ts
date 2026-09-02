@@ -120,25 +120,24 @@ const en: typeof it = {
   dashboard: {
     greeting: 'Hi {name}',
     greetingPlain: 'Hi',
-    intro:
-      'The two things you can switch on: the menu your guests open at the table, and your listing inside AllergiApp. They are independent — one alone is fine.',
+    intro: 'From here you build your venue’s digital menu, publish it and change it whenever you like.',
     switchLabel: 'Venue',
     addVenue: 'Add another venue',
-    menusTitle: 'Menu at the table',
-    menusHint: 'What your guests open at the table. It needs no app.',
+    menusTitle: 'Digital menu',
+    menusHint: 'Guests open it at the table with the QR code, nothing to install.',
     menusEmpty: 'Not created yet',
     menusOpen: 'Open the editor',
     menusCreate: 'Create the menu',
     menusAll: 'All menus',
     cardTitle: 'AllergiApp listing',
-    cardHint:
-      'Your page inside the app: links, contacts and the dishes you choose. It goes live when you link the venue to a restaurant already on AllergiApp.',
+    cardHint: 'Your page inside the app: it appears once the venue is linked to a restaurant.',
     cardEmpty: 'Nothing in it yet',
     cardLink: 'Link the venue',
     cardOpen: 'Open the listing',
     dishesChosen: 'dishes chosen',
     dishChosen: 'dish chosen',
     quickDish: 'New dish',
+    dishUnnamed: 'Untitled dish',
     quickLinks: 'Links and contacts',
     liveOn: 'live and up to date',
     livePending: 'changes to publish',
@@ -146,8 +145,8 @@ const en: typeof it = {
     sectionOne: 'section',
     sectionOther: 'sections',
     catalogTitle: 'Dish catalogue',
-    catalogHint: 'The dishes are yours, not a single venue’s: the same ones go into the menus and onto the listing.',
-    catalogOpen: 'Manage',
+    catalogHint: 'The dishes are yours: the same ones go into the menu and onto the listing.',
+    catalogOpen: 'See all',
     statusReady: 'ready',
     statusDraft: 'unfinished',
     statusTodo: 'to do',
@@ -239,7 +238,7 @@ const en: typeof it = {
   dishes: {
     title: 'Your dishes',
     intro:
-      'Your restaurant’s catalogue: create and edit dishes here, then switch them on for your AllergiApp listing and lay them out in your menus.',
+      'Your restaurant’s catalogue: create and edit dishes here, then pick the ones for your AllergiApp listing and lay them out in your menus.',
     create: 'New dish',
     newTitle: 'New dish',
     editTitle: 'Edit dish',
@@ -260,11 +259,11 @@ const en: typeof it = {
     listingCount: 'listings',
     onNoListing: 'On no listing',
     empty: 'You have no dishes yet.',
-    emptyHint: 'Create one: you can switch it on for your listings whenever you like.',
+    emptyHint: 'Create one: you can pick it for your listings whenever you like.',
     noResults: 'No dish matches your search.',
     listingsLabel: 'On listings',
     needsCard:
-      'Switching a dish on needs the AllergiApp listing: you get one by linking the venue to a restaurant already in the app.',
+      'Showing dishes needs the AllergiApp listing: you get one by linking the venue to a restaurant already in the app.',
     listingsHint: 'Which AllergiApp listings show this dish. You can change it from the venue too.',
     noVenues: 'No venues yet: create one to put your dishes on show.',
     deleteTitle: 'Delete this dish?',
@@ -368,7 +367,7 @@ const en: typeof it = {
     addressTurnOn: 'Put the menu back online',
     addressTurnOff: 'Take the menu offline',
     addressHintOffline:
-      'The link and QR code exist but show no menu: whoever opens them reads that it is not available right now. Turn it back on any time.',
+      'The link and QR code exist but show no menu: whoever opens them reads that it is not available right now. You can put it back in the room any time.',
     addressHintLive:
       'This is the address your guests open with the QR code. If you change it, printed QR codes stop working.',
     addressHint:
