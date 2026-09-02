@@ -297,6 +297,10 @@ const en: typeof it = {
     venueNamePlaceholder: 'Venue name (your guests read it)',
     brandHint:
       'Applies to every menu of this venue: at the table it is one page, and the menus are the tabs at the top.',
+    showPhotos: 'Show dish photos',
+    showPhotosHint: 'Off, the table menu is text only. Photos stay on the dishes and on the AllergiApp card.',
+    showDescriptions: 'Show descriptions under each dish',
+    showDescriptionsHint: 'Off, they are read by tapping the dish. On, the menu is taller but says more.',
     logoAdd: 'Upload logo',
     logoReplace: 'Replace',
     logoRemove: 'Remove',

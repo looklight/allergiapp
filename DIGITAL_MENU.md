@@ -34,6 +34,16 @@ nel modello dati e nel codice, ma è **spento** da `MULTI_MENU` in `partner/src/
 è una voce del futuro premium, e finché non si vende complicava la creazione per tutti. Nessuna
 migration, nessun vincolo sul database.
 
+**Aggiornamento 2026-09-02: la pagina pubblica esiste, con dati finti.** Vive sul branch
+`landing` (`lib/render-menu.js`, `menu-page.css`, `menu-page.js`) e riusa la ricetta già in piedi
+per `/r/` e `/u/`: una funzione che rende HTML dal server, niente framework, lingua dedotta dal
+browser. **Non è ancora collegata**: nessuna rotta, nessuna lettura dal database — i dati vengono
+da `lib/menu-sample.js`, che serve anche da contratto. La **migration 708 è scritta e DA
+APPLICARE**: stato di pubblicazione (Tema 20), le due manopole dell'aspetto (Tema 23) e
+`get_public_menu(slug, lingua)`, che è l'unico punto da cui i dati del menù escono verso il mondo.
+L'ordine è stato deciso dall'utente: *"la migration la faccio quando la UI è definita, che magari
+dobbiamo aggiungere altro"* — ed è servito, perché guardando la pagina sono nate le due manopole.
+
 **Cosa NON c'è ancora, ed è tutta la fase 2**: nessuno slug, nessun QR, nessuna pagina pubblica.
 L'anteprima a tutta pagina sta dentro il portale, dietro l'autenticazione, e lo dichiara con una
 fascia in cima — la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
@@ -737,6 +747,54 @@ forma (minuscolo, `a-z0-9-`, 3–60 caratteri), indice unico globale, e la funzi
 portale, in fondo all'editor del menù, la card **"Indirizzo del menù"**: proposta ricavata dal nome
 del locale, controllo di disponibilità mentre si scrive, e la pastiglia **"Non ancora attivo"** —
 la pagina pubblica non esiste, e la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
+
+---
+
+### 2026-09-02 — Tema 23: L'aspetto del menù, e le manopole che non ci saranno
+
+**Decisione**: la scatola "Colore" nell'editor diventa **"Aspetto del menù"**, e accanto al colore
+ci stanno due interruttori: **foto dei piatti** e **descrizioni sotto ai piatti**. Vivono sul
+LOCALE come il logo e il colore — al tavolo è una pagina sola.
+
+**Da dove nasce**: dall'osservazione dell'utente che *"molti ristoranti non hanno le foto dei
+piatti e mettere il box con il placement neutro non sta bene: è meglio non vedere niente"*. Quel
+caso — nessuna foto in tutto il menù — è stato risolto **in automatico** lo stesso giorno: la
+colonna sparisce da sé, e non serve chiedere niente al ristoratore. L'interruttore risponde al caso
+diverso, che resta: **qualche** foto c'è, ma lui una carta di solo testo la preferisce. Il primo lo
+decide il contenuto, il secondo è un gusto, e i gusti non si indovinano.
+
+**LA FOTO STA SUL PIATTO, e si carica una volta sola.** Precisazione dell'utente, ed è la parte
+importante del modello: *"la sorgente di verità sono i piatti che vengono caricati, che possono
+avere la foto o meno"*. Non esistono foto "del menù" e foto "della scheda": esiste la foto del
+piatto nel catalogo, e ogni superficie decide se mostrarla.
+
+- **Scheda AllergiApp in app**: le foto ci sono comunque. Là siamo NOI a presentare un ristorante a
+  chi lo sta scegliendo da lontano, e la foto è quello che convince a entrare.
+- **Menù al tavolo**: lo decide il ristoratore. Chi è già seduto la usa meno.
+
+**Spente vuol dire spente ovunque**, dettaglio del piatto compreso. L'eccezione ("in lista no,
+aprendo il piatto sì") era la prima idea ed è stata scartata: è una regola in più da spiegare, e
+chi nasconde le foto perché sono disomogenee non le vuole nemmeno lì. Un interruttore, un
+significato.
+
+**Le descrizioni** sono lo stesso asse: quanto è densa la carta. Spente (com'è sempre stato) sotto
+il nome c'è solo una "i" e il testo si legge aprendo il piatto — giusto per una carta fitta,
+stretto per chi ha dieci piatti e li vuole raccontare.
+
+**⚠️ LE MANOPOLE CHE NON CI SARANNO**, ed è la parte da non perdere quando questa scatola verrà
+ampliata (e verrà ampliata, l'utente l'ha già detto):
+
+- **Nascondere gli allergeni sotto ai piatti, o il filtro.** Sono la ragione per cui questo menù
+  non è come gli altri menù col QR (Tema 2). Il primo ristoratore che li spegnesse ci toglierebbe
+  il prodotto dalle mani, e sarebbe anche quello con più motivi per farlo.
+- **La scelta libera del carattere e dei colori.** Il Tema 8 vale ancora: le tinte le scegliamo
+  noi, tutte scure abbastanza da reggere il testo. Un menù venduto come leggibile da chi ha
+  un'allergia non può lasciar scegliere beige su panna.
+
+**Sul database** (migration 708, insieme al resto della pagina pubblica): `show_dish_photos` e
+`show_dish_descriptions` su `partner_venues`, coi valori di default uguali al comportamento di
+oggi — acceso il primo, spento il secondo. Nessuna colonna nuova per le foto: quelle stanno dove
+sono sempre state.
 
 ## Prossimo passo
 

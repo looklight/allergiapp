@@ -102,6 +102,8 @@ export default function FullPreviewPage() {
             brand={brand}
             venueName={brand.name.trim() || d.preview.venueName}
             tableConditions={locale?.tableConditions ?? ''}
+            showPhotos={locale?.showDishPhotos ?? true}
+            showDescriptions={locale?.showDishDescriptions ?? false}
             needs={needs}
             onToggleNeed={toggleNeed}
           />

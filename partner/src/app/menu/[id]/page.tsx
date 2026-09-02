@@ -178,6 +178,8 @@ export default function MenuEditorPage() {
       brand={brand}
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
+      showPhotos={locale?.showDishPhotos ?? true}
+      showDescriptions={locale?.showDishDescriptions ?? false}
       needs={needs}
       onToggleNeed={toggleNeed}
     />
@@ -311,7 +313,16 @@ export default function MenuEditorPage() {
       />
 
       <div className="mb-4">
-        <BrandBar accent={brand.accent} onChange={(accent) => setBrand({ accent })} />
+        <BrandBar
+          accent={brand.accent}
+          showPhotos={locale?.showDishPhotos ?? true}
+          showDescriptions={locale?.showDishDescriptions ?? false}
+          onAccent={(accent) => setBrand({ accent })}
+          onShowPhotos={(showDishPhotos) => locale && setIdentity(locale.id, { showDishPhotos })}
+          onShowDescriptions={(showDishDescriptions) =>
+            locale && setIdentity(locale.id, { showDishDescriptions })
+          }
+        />
       </div>
 
       {vuoto ? (

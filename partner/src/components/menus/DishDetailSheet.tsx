@@ -26,12 +26,18 @@ import type { ViewerNeeds } from './MenuPreview';
 export default function DishDetailSheet({
   item,
   dish,
+  showPhoto,
   currency,
   needs,
   onClose,
 }: {
   item: MenuItem;
   dish: Dish;
+  // Il ristoratore ha spento le foto sul menù al tavolo: spente vuol dire
+  // spente anche qui. Un'eccezione ("in lista no, nel dettaglio sì") sarebbe
+  // una regola in più da spiegare, e chi le nasconde perché sono disomogenee
+  // non le vuole nemmeno aprendo il piatto.
+  showPhoto: boolean;
   currency: string;
   needs: ViewerNeeds;
   onClose: () => void;
@@ -66,11 +72,9 @@ export default function DishDetailSheet({
             object-cover ne avrebbe tagliato sopra e sotto — qui invece
             l'aspect ratio del box è la stessa della foto, quindi si vede
             intera. */}
-        {dish.photoUrl !== '' ? (
+        {showPhoto && dish.photoUrl !== '' && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dish.photoUrl} alt="" className="aspect-square w-full object-cover" />
-        ) : (
-          <div className="aspect-square w-full bg-gray-100" />
         )}
 
         <div className="px-4 pt-3">
@@ -137,7 +141,7 @@ export default function DishDetailSheet({
               immagine e titolo. Un avviso diverso da quello sugli
               allergeni — qui si dice che la foto è indicativa, non che gli
               ingredienti non sono verificati. */}
-          {dish.photoUrl !== '' && (
+          {showPhoto && dish.photoUrl !== '' && (
             <p className="mt-4 border-t border-gray-100 pt-3 text-[10px] leading-snug text-gray-400">
               {d.menuPublic.dishDetailPhotoDisclaimer}
             </p>

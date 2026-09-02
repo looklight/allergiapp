@@ -330,6 +330,16 @@ Tre cose da non disfare per sbaglio:
   Scambiarli vuol dire far riscrivere il coperto in carta, pranzo e bevande —
   e poi correggerlo in tutte e tre.
 
+**La scatola "Aspetto del menù"** (`BrandBar`) tiene il colore e due
+interruttori: **foto dei piatti** e **descrizioni in lista**. Stanno sul
+locale (migration 708) perché al tavolo è una pagina sola, e l'anteprima
+accanto li rispetta — se non lo facesse, il ristoratore sceglierebbe alla
+cieca. Foto spente = niente foto in tutto il menù, dettaglio compreso; e
+resta vero che se nessun piatto ha una foto la colonna sparisce da sé.
+⚠️ Chi amplia questa scatola non ci metta la possibilità di **nascondere gli
+allergeni o il filtro**: sono la ragione per cui il menù esiste (DIGITAL_MENU
+Tema 23).
+
 Dall'editor di un menù si cambiano anche cose del **locale** — nome, logo,
 colore, condizioni al tavolo — perché è lì che se ne vede l'effetto. Passano
 per `venues.ts` e valgono per tutti i menù di quel locale: quello che si

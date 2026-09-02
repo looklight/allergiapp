@@ -77,6 +77,8 @@ export default function MenuPreview({
   brand,
   venueName,
   tableConditions,
+  showPhotos,
+  showDescriptions,
   needs,
   onToggleNeed,
 }: {
@@ -89,6 +91,10 @@ export default function MenuPreview({
   // Coperto, servizio, pagamenti: sono del LOCALE, quindi identiche sotto
   // ogni linguetta. Vuote = non si mostra niente.
   tableConditions: string;
+  // Le due manopole dell'aspetto (BrandBar): stanno sul LOCALE, e questa
+  // anteprima deve rispettarle o il ristoratore sceglie alla cieca.
+  showPhotos: boolean;
+  showDescriptions: boolean;
   needs: ViewerNeeds;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
@@ -144,7 +150,10 @@ export default function MenuPreview({
   // da due punti diversi. Ma se non ce l'ha NESSUNO non c'è niente da
   // allineare, e resta una colonna di quadrati grigi lunga tutto il menù —
   // che è il caso della maggior parte dei menù veri.
-  const conFoto = nelMenu.some((dish) => dishThumb(dish) !== '');
+  // Due condizioni, e sono diverse: il ristoratore può SPEGNERLE (showPhotos)
+  // e comunque non ci sono se non le ha caricate nessuno. La prima è una
+  // scelta, la seconda è il contenuto.
+  const conFoto = showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
 
   const scelte = accese.length;
   const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
@@ -334,6 +343,7 @@ export default function MenuPreview({
                       item={item}
                       dish={dishById(item.dishId)}
                       conFoto={conFoto}
+                      conDescrizioni={showDescriptions}
                       currency={menu.currency}
                       locale={locale}
                       needs={needs}
@@ -373,6 +383,7 @@ export default function MenuPreview({
         <DishDetailSheet
           item={detail.item}
           dish={detail.dish}
+          showPhoto={showPhotos}
           currency={menu.currency}
           needs={needs}
           onClose={() => setDetail(null)}
@@ -411,6 +422,7 @@ function Riga({
   item,
   dish,
   conFoto,
+  conDescrizioni,
   currency,
   locale,
   needs,
@@ -418,9 +430,11 @@ function Riga({
 }: {
   item: MenuItem;
   dish: Dish | undefined;
-  // almeno un piatto di questo menù ha una foto: solo allora si tiene lo
-  // spazio anche a chi non ce l'ha
+  // almeno un piatto di questo menù ha una foto (e il ristoratore non le ha
+  // spente): solo allora si tiene lo spazio anche a chi non ce l'ha
   conFoto: boolean;
+  // le descrizioni si leggono in lista invece che aprendo il piatto
+  conDescrizioni: boolean;
   currency: string;
   locale: 'it' | 'en';
   needs: ViewerNeeds;
@@ -453,7 +467,7 @@ function Riga({
             qualcuno la foto ce l'ha: fra righe fotografate e righe no, il
             testo partirebbe da punti diversi e la carta sembrerebbe storta.
             Se non ce l'ha nessuno non c'è niente da allineare (v. conFoto). */}
-        {dishThumb(dish) !== '' ? (
+        {conFoto && dishThumb(dish) !== '' ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dishThumb(dish)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
         ) : conFoto ? (
@@ -481,7 +495,7 @@ function Riga({
                   uniforme fra una riga e l'altra scorrendola. Questa "i" dice
                   che c'è, senza costare lo spazio — il testo intero si legge
                   aprendo il dettaglio. */}
-              {dish.description.trim() !== '' && (
+              {dish.description.trim() !== '' && !conDescrizioni && (
                 <svg
                   className="h-3 w-3 shrink-0 text-gray-400"
                   viewBox="0 0 24 24"
@@ -504,6 +518,12 @@ function Riga({
               <p className="shrink-0 text-[13px] font-semibold tabular-nums text-gray-900">{prezzo}</p>
             )}
           </div>
+          {/* La descrizione in lista, quando il ristoratore l'ha accesa: al
+              suo posto, sopra, sparisce la "i" che diceva soltanto che
+              c'era. */}
+          {conDescrizioni && dish.description.trim() !== '' && (
+            <p className="mt-0.5 text-[11px] leading-snug text-gray-500">{dish.description}</p>
+          )}
           {item.highlighted && item.highlightNote.trim() !== '' && (
             <p className="mt-0.5 text-[11px] font-medium leading-snug text-amber-700">
               {item.highlightNote}

@@ -323,6 +323,12 @@ const it = {
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     brandHint:
       'Vale per tutti i menù di questo locale: al tavolo è una pagina sola, e i menù sono le linguette in alto.',
+    showPhotos: 'Mostra le foto dei piatti',
+    // Si dice cosa succede spegnendo, non cosa sono le foto: chi legge sta
+    // decidendo, e la domanda che ha in testa è "e se le tolgo?"
+    showPhotosHint: 'Spente, il menù al tavolo è di solo testo. Le foto restano sui piatti e sulla scheda AllergiApp.',
+    showDescriptions: 'Mostra le descrizioni sotto ai piatti',
+    showDescriptionsHint: 'Spente, si leggono toccando il piatto. Accese, la carta è più alta ma racconta di più.',
     logoAdd: 'Carica il logo',
     logoReplace: 'Sostituisci',
     logoRemove: 'Togli',

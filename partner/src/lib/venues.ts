@@ -76,6 +76,17 @@ export interface Venue extends VenueDraft {
   // La scheda AllergiApp di questo locale, se esiste. null = nessun
   // ristorante associato, quindi nessun posto dove accendere i piatti.
   cardId: string | null;
+  // COME SI VEDE IL MENÙ AL TAVOLO. Sta sul locale e non sul menù come il
+  // logo e il colore: al tavolo è UNA pagina sola (Tema 13).
+  //
+  // Le foto stanno sul PIATTO nel catalogo e si caricano una volta sola: qui
+  // si decide soltanto se QUESTA superficie le mostra. La scheda AllergiApp
+  // in app continua a mostrarle comunque — là siamo noi a presentare un
+  // ristorante a chi lo sceglie da lontano.
+  showDishPhotos: boolean;
+  // Le descrizioni sotto il nome, in lista. Spente = si leggono aprendo il
+  // piatto, che è il comportamento di sempre.
+  showDishDescriptions: boolean;
   // L'indirizzo pubblico del menù: allergiapp.com/menu/<slug>. Vuoto = non
   // ancora scelto, ed è lo stato di tutti i locali che esistono oggi. Ne
   // esiste UNO alla volta e cambiandolo il precedente torna libero
@@ -164,7 +175,10 @@ async function loadVenues(): Promise<Venue[]> {
   // sul ristorante), quindi si prende la prima e basta.
   const { data, error } = await supabase
     .from('partner_venues')
-    .select('id, name, slug, logo_url, accent, table_conditions, partner_links(*), partner_cards(id, partner_card_dishes(dish_id))')
+    .select(
+      'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, show_dish_descriptions, ' +
+        'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
+    )
     .order('created_at', { ascending: true });
   reportError('lettura locali', error);
 
@@ -177,6 +191,8 @@ async function loadVenues(): Promise<Venue[]> {
       accent: row.accent ?? 'charcoal',
       tableConditions: row.table_conditions ?? '',
       slug: row.slug ?? '',
+      showDishPhotos: row.show_dish_photos ?? true,
+      showDishDescriptions: row.show_dish_descriptions ?? false,
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
@@ -304,6 +320,8 @@ export function useVenues() {
       accent: 'charcoal',
       tableConditions: '',
       slug: '',
+      showDishPhotos: true,
+      showDishDescriptions: false,
       cardId: null,
       dishIds: [],
       links: emptyLinks(),
@@ -329,6 +347,8 @@ export function useVenues() {
             accent: s.accent,
             tableConditions: s.tableConditions,
             slug: s.slug,
+            showDishPhotos: s.showDishPhotos,
+            showDishDescriptions: s.showDishDescriptions,
           }
         : s
     );
@@ -350,7 +370,10 @@ export function useVenues() {
   // Scrittura immediata e non ritardata — sono gesti singoli (scegli un
   // colore, carichi un logo), non una battitura continua. Il nome invece
   // passa da rename(), che la pausa ce l'ha già.
-  function setIdentity(id: string, next: Partial<Pick<Venue, 'logoUrl' | 'accent'>>) {
+  function setIdentity(
+    id: string,
+    next: Partial<Pick<Venue, 'logoUrl' | 'accent' | 'showDishPhotos' | 'showDishDescriptions'>>
+  ) {
     // Il logo che c'era prima, letto PRIMA di sovrascrivere la lista: se la
     // scrittura riesce, quel file non è più di nessuno e va portato via.
     const precedente = (venues ?? []).find((s) => s.id === id)?.logoUrl ?? '';
@@ -358,6 +381,8 @@ export function useVenues() {
     const riga: Record<string, unknown> = {};
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
     if (next.accent !== undefined) riga.accent = next.accent;
+    if (next.showDishPhotos !== undefined) riga.show_dish_photos = next.showDishPhotos;
+    if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     void write(
       'salvataggio aspetto del locale',
       () => supabase.from('partner_venues').update(riga).eq('id', id),
@@ -430,6 +455,8 @@ export function useVenues() {
           // di un locale che torna con un indirizzo diverso da quello che
           // aveva.
           slug: venue.slug || null,
+          show_dish_photos: venue.showDishPhotos,
+          show_dish_descriptions: venue.showDishDescriptions,
         })
     );
     const righe = fromLinks(venue.id, venue.links);
