@@ -327,6 +327,22 @@ Nota: le statistiche degli scan ("il 22% di chi ha aperto il tuo menù cercava s
 l'unica voce di quell'elenco che dà un motivo per pagare **ogni mese**. Il logo lo carichi una
 volta e non ci pensi più.
 
+**Una foto di copertina al posto del colore pieno** (chiesto il 2026-09-02, rimandato lo stesso
+giorno). La colonna non è il problema — `cover_url` è una riga, e non c'è niente di irreversibile
+da decidere adesso. Le tre condizioni da risolvere prima, che sono il lavoro vero:
+
+1. **La leggibilità**, su cui il Tema 8 non concede niente. Oggi il nome è bianco su un colore
+   scelto da noi apposta perché regga il testo; su una foto chiara sparisce. Serve una velatura
+   scura sempre, non facoltativa, e va guardata a schermo — non data per scontata.
+2. **Il ritaglio non sa fare i rettangoli.** `PhotoCropDialog` ritaglia quadrati ed è quadrato di
+   proposito; una copertina è larga e bassa. Va insegnata alla stessa finestra una proporzione
+   diversa (la strada giusta), non fatta una seconda finestra.
+3. **Il peso.** È l'immagine più grande della pagina e la prima a caricarsi: è esattamente la voce
+   che il Tema 11 indica come il costo dell'intera fase gratuita.
+
+E una ragione di ordine: si valuta molto meglio guardando la pagina **vera**, col menù di un
+ristorante vero dentro, che sui dati finti.
+
 **Cosa serve davvero a un menù, oltre al catalogo.** Prezzi, sezioni, bevande, varianti (porzione
 piccola e grande), menù del giorno. Il modello oggi non ha niente di tutto questo, e non per
 dimenticanza: ad AllergiApp servivano nome e allergeni.
