@@ -38,7 +38,13 @@ export function usePublishState(venueId: string | null) {
     // Fallita: lo stato NON si tocca. L'errore lo mostra la barra di stato
     // con il suo "Riprova"; qui dire "pubblicato" sarebbe una bugia.
     if (quando === null) return;
-    setStato({ publishedAt: quando, hasChanges: false, allergensChanged: false });
+    setStato({
+      publishedAt: quando,
+      hasChanges: false,
+      contentChanged: false,
+      appearanceChanged: false,
+      allergensChanged: false,
+    });
   }, [venueId]);
 
   // Il ritiro rimette lo stato a "mai pubblicato" per quello che si vede a
@@ -51,7 +57,16 @@ export function usePublishState(venueId: string | null) {
     const fatto = await unpublishMenu(venueId);
     setInCorso(false);
     if (!fatto) return;
-    setStato({ publishedAt: null, hasChanges: true, allergensChanged: false });
+    // Senza uno scatto in sala non esiste un "prima" a cui tornare: quello
+    // che c'era in sospeso diventa tutto contenuto da pubblicare, come per un
+    // menù mai pubblicato (v. migration 710).
+    setStato({
+      publishedAt: null,
+      hasChanges: true,
+      contentChanged: true,
+      appearanceChanged: false,
+      allergensChanged: false,
+    });
   }, [venueId]);
 
   return { stato, pubblica, ritira, inCorso, online: stato?.publishedAt != null };

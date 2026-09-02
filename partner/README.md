@@ -399,9 +399,42 @@ in sala la bozza di adesso e non lo scatto di sei mesi fa.
 ⚠️ Due presidi che non vanno smontati: l'avviso dice se le modifiche non
 pubblicate toccano gli **allergeni** (`menu_publish_state`), perché un
 allergene corretto e mai pubblicato resta vecchio sul tavolo e dal portale
-non si vede; e `deleteDishPhoto` **non cancella** una foto che è dentro un
-menù già pubblicato (`photo_in_published_menu`), o in sala resterebbe
+non si vede; e le foto **non si cancellano** finché sono dentro un menù già
+pubblicato (`photo_in_published_menu`, chiamata da `deleteDishPhoto` e — dal
+2026-09-02, dove mancava — da `deleteLogo`), o in sala resterebbe
 un'immagine rotta mentre nel portale si vede quella nuova.
+
+**Contenuto e aspetto sono due generi di modifica** (Tema 27,
+migration 710): `menu_publish_state()` risponde `contentChanged` (piatti,
+prezzi, sezioni, nome del locale, condizioni al tavolo) e
+`appearanceChanged` (colore, logo, copertina, carattere, stile delle sezioni,
+le due manopole), oltre a `hasChanges` che è la somma. L'aspetto si confronta
+**campo per campo contro lo scatto**, non sulle date: `updated_at` del locale
+si muove per qualunque cosa, e con le date "ho scelto un colore" e "ho
+corretto le condizioni" sarebbero la stessa notizia.
+
+L'elenco dei campi d'aspetto sta in **un posto solo**, `venue_appearance()`:
+lo leggono lo scatto (`build_public_menu`), il confronto e l'annullamento.
+Aggiungere una manopola d'aspetto = una colonna, una riga lì, una riga in
+`venue_appearance_defaults()`, una nell'UPDATE di `revert_appearance()`, una
+in `VenueAppearance` (`src/lib/venues.ts`) — e lo scatto e il confronto si
+adeguano da sé.
+
+`partner_venues.text_scale` (`normal` / `compact` / `roomy`) **esiste già dalla
+710 ma non ha ancora interfaccia**: la colonna è entrata con la migration
+aperta, come `cover_url` nella 709, così la scatola nel portale arriverà senza
+toccare il database. ⚠️ Quando si disegna: la riga degli allergeni ha un
+pavimento che `compact` non sfonda.
+
+**"Rimetti com'è in sala"** (`revert_appearance`) sta in fondo alla scatola
+Aspetto in `BrandBar`, e compare solo se c'è qualcosa da annullare. ⚠️ Vale
+**solo per l'aspetto** e non va "completato" con l'annullamento del
+contenuto: i fatti dei piatti stanno nel catalogo, condiviso con la scheda
+AllergiApp, e riportarli indietro vorrebbe dire disfare una correzione di
+allergeni. Quando l'aspetto diventerà premium, il muro va in
+`build_public_menu()` e non sul bottone Pubblica — altrimenti un allergene
+corretto resta fermo perché qualcuno ha provato un carattere che non ha
+pagato.
 
 **L'indirizzo del menù c'è dal 2026-09-01** (migration 707, applicata il
 02/09), ma **non è

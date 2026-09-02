@@ -969,6 +969,75 @@ perdona parecchio sulla compressione.
 **Nel portale si sceglie guardandola già velata**, col nome sopra: sceglierla pulita e ritrovarla
 scurita nel menù sarebbe una sorpresa, e al ristoratore sembrerebbe un difetto nostro.
 
+---
+
+### 2026-09-02 — Tema 27: Il contenuto e l'aspetto sono due generi di modifica
+
+**Domanda dell'utente**: *"col premium pubblicare non sarà immediato, ci sarà un gate — pensavo a
+un pulsante annulla. Possiamo differenziare le modifiche dei piatti da quelle dell'aspetto?"*
+
+**Decisione**: sì, e la distinzione vive nel database, non nell'interfaccia. `menu_publish_state()`
+adesso risponde `contentChanged` e `appearanceChanged` invece del solo `hasChanges` (che resta,
+come somma dei due, perché il portale lo legge in tre punti).
+
+**Come si confrontano, e perché non con le date.** L'aspetto si confronta **campo per campo contro
+lo scatto pubblicato**: `partner_venues.updated_at` si muove per qualunque cosa succeda su quella
+riga, quindi con le date "ho scelto un colore" e "ho corretto le condizioni al tavolo" sarebbero
+indistinguibili — ed era anche il motivo per cui, fino a ieri, cambiare tinta accendeva l'avviso
+esattamente come cambiare un prezzo, e un link modificato lo accendeva senza che al tavolo
+cambiasse niente. Il contenuto resta sulle date dove bastano (menù, sezioni, righe, piatti) e passa
+al confronto sui valori per le tre voci che stanno sul locale: nome, slug, condizioni.
+
+**⚠️ Il nome, lo slug e le condizioni al tavolo NON sono aspetto**, per quanto stiano sulla stessa
+riga di database: sono testo che il cliente legge, e le condizioni dicono cosa il locale può
+garantire su una contaminazione. Stanno nel contenuto, che non si venderà mai (Tema 23).
+
+**L'elenco dei campi d'aspetto sta in un posto solo**, `venue_appearance()` (migration 710), e da
+lì lo leggono lo scatto, il confronto e l'annullamento. La manopola successiva è già annunciata —
+la **grandezza dei testi**, a pacchetti come i caratteri e con lo stesso pavimento sotto la riga
+degli allergeni — e senza un elenco unico ogni aggiunta sarebbe tre modifiche in tre punti: la
+seconda volta che qualcuno se ne dimentica una, il confronto comincia a mentire in silenzio.
+
+**La colonna della grandezza dei testi entra con questa migration**, prima della sua interfaccia:
+stesso ragionamento con cui la 709 aveva aggiunto `cover_url` — costa una riga mentre la migration
+è aperta, e con l'aspetto letto da un elenco solo la scatola nel portale arriverà senza toccare il
+database. `text_scale` è un CODICE e non una misura — `normal`, `compact`, `roomy` — pochi e
+decisi da noi come i caratteri: un cursore libero finirebbe usato per far stare la carta in una
+schermata, e la prima riga a diventare illeggibile sarebbe quella degli allergeni. ⚠️ Quella riga
+ha un **pavimento** che `compact` non sfonda: è la stessa compensazione già in piedi per i
+pacchetti Classico e Sottile, scritta prima invece che dopo.
+
+**Cosa NON è stato infilato qui dentro, pur avendo la migration aperta**: le traduzioni delle
+condizioni al tavolo e dei blocchi di testo (voce 1 del prossimo passo). Vogliono una tabella con
+le sue RLS, una forma da decidere — a mano come i piatti, o assistita — e una modifica a
+`get_public_menu`: è la prossima migration vera, non un'aggiunta di sfuggita. Le statistiche degli
+scan, ancora prima, non hanno un disegno.
+
+**L'annulla è SOLO dell'aspetto**, e sta in fondo alla scatola "Aspetto", non accanto a "Pubblica
+le modifiche" — lassù sembrerebbe annullare anche i piatti e i prezzi.
+
+**Perché il contenuto non si annulla**, e non è una fase successiva da completare: i fatti dei
+piatti — nome, allergeni, foto — stanno nel **catalogo**, condiviso con la scheda AllergiApp e con
+gli altri menù. Un annulla che li toccasse riporterebbe indietro una correzione di allergeni, cioè
+esattamente il danno che tutta la pubblicazione (Tema 24) è costruita per evitare. Al massimo si
+sarebbe potuta ripristinare la struttura (righe, prezzi, ordine), ma è una ricostruzione vera: le
+righe rinascerebbero con id nuovi, e quegli id sono ciò su cui lo scatto confronta gli allergeni.
+
+**Dove starà il muro del premium, quando ci sarà: in `build_public_menu()`, non sul bottone.** Un
+gate sul bottone terrebbe fermo **tutto** — compreso un allergene corretto — perché il ristoratore
+ha provato un carattere che non ha pagato. La forma giusta è che lo scatto, per un piano che non
+copre l'aspetto, prenda le voci d'aspetto **dallo scatto precedente**: il contenuto nuovo va in
+sala lo stesso, l'aspetto no. Non è stato costruito adesso: oggi non esiste niente da leggere per
+sapere che piano ha un locale, e scriverlo in previsione sarebbe infrastruttura per un cliente che
+non c'è.
+
+**Un bug trovato per strada, ed era in produzione**: `deleteLogo` (e quindi `deleteCover`) non
+passava da `photo_in_published_menu`, mentre il commento in `setIdentity` dava il controllo per
+fatto. Chi sostituiva logo o copertina si portava via il file che lo scatto in sala stava ancora
+mostrando — **immagine rotta al tavolo**, invisibile dal portale dove si vede quella nuova. Adesso
+il controllo c'è davvero, ed era anche il presupposto dell'annulla: senza, rimettere il logo dello
+scatto lo rimetterebbe puntando a un file già distrutto.
+
 ## Prossimo passo
 
 **Aggiornato il 2026-09-02, fine giornata.** La fase 2 è fatta e in produzione: il menù al tavolo

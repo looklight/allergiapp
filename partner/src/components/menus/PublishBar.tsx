@@ -56,11 +56,17 @@ export default function PublishBar({
   }
 
   const allarme = stato.allergensChanged;
+  // Tre frasi, in ordine di gravità (migration 710). Quella dell'aspetto vale
+  // solo quando NON c'è nient'altro in sospeso: se sono cambiati anche i
+  // piatti, dire "modifiche all'aspetto" nasconderebbe la metà che pesa.
+  const soloAspetto = stato.appearanceChanged && !stato.contentChanged;
   const messaggio = mai
     ? d.menuEditor.publishNever
     : allarme
       ? d.menuEditor.publishAllergens
-      : d.menuEditor.publishPending;
+      : soloAspetto
+        ? d.menuEditor.publishAppearance
+        : d.menuEditor.publishPending;
 
   return (
     // Il messaggio va a capo su DUE righe invece di accorciarsi con i

@@ -55,7 +55,14 @@ export default function MenuEditorPage() {
   const { dishes, create: createDish, update: updateDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
-  const { venues, update: updateVenue, setIdentity, setTableConditions, setSlug } = useVenues();
+  const {
+    venues,
+    update: updateVenue,
+    revertIdentity,
+    setIdentity,
+    setTableConditions,
+    setSlug,
+  } = useVenues();
   // Lo stato della messa online, letto UNA volta per tutta la schermata: lo
   // leggono la riga in cima, la sezione dell'indirizzo e il collegamento
   // sotto l'anteprima. Il locale non si sa finché il menù non è arrivato, e
@@ -65,6 +72,10 @@ export default function MenuEditorPage() {
   // null per le righe fuori sezione. 'chiuso' perché null è già un valore.
   const [adding, setAdding] = useState<{ sectionId: string | null } | null>(null);
   const [deletingSection, setDeletingSection] = useState<string | null>(null);
+  // La conferma prima di rimettere l'aspetto com'è in sala: si buttano via
+  // scelte fatte a mano — e una copertina caricata poco fa — quindi si
+  // chiede, come per l'eliminazione di una sezione.
+  const [revertingBrand, setRevertingBrand] = useState(false);
   // Maschera di un piatto NUOVO aperta dal menù: si ricorda in quale sezione
   // stava andando, perché è lì che deve comparire appena salvato.
   const [creatingDish, setCreatingDish] = useState<{ sectionId: string | null } | null>(null);
@@ -342,6 +353,8 @@ export default function MenuEditorPage() {
           sectionStyle={locale?.sectionStyle ?? 'underline'}
           headingFont={locale?.headingFont ?? 'modern'}
           coverUrl={locale?.coverUrl ?? ''}
+          changed={pubblicazione.stato?.appearanceChanged ?? false}
+          onRevert={() => setRevertingBrand(true)}
           onAccent={(accent) => setBrand({ accent })}
           onShowPhotos={(showDishPhotos) => locale && setIdentity(locale.id, { showDishPhotos })}
           onShowDescriptions={(showDishDescriptions) =>
@@ -761,6 +774,22 @@ export default function MenuEditorPage() {
           onConfirm={() => {
             save(removeSection(menu, sezioneInEliminazione.id));
             setDeletingSection(null);
+          }}
+        />
+      )}
+
+      {revertingBrand && locale && (
+        <ConfirmDialog
+          title={d.menuEditor.appearanceRevertTitle}
+          // Il corpo dice sia cosa torna indietro sia cosa NON si tocca: la
+          // seconda metà è quella che serve davvero, perché "annulla le
+          // modifiche" in un editor di menù si legge come "annulla tutto".
+          body={d.menuEditor.appearanceRevertBody}
+          confirmLabel={d.menuEditor.appearanceRevertConfirm}
+          onCancel={() => setRevertingBrand(false)}
+          onConfirm={() => {
+            void revertIdentity(locale.id);
+            setRevertingBrand(false);
           }}
         />
       )}

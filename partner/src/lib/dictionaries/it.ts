@@ -374,8 +374,22 @@ const it = {
     // fatta mezz'ora prima. Il neutro puro non va bene: sarebbe tornare a non
     // dire mai che in ballo c'è un allergene.
     publishAllergens: 'Modifiche non pubblicate, allergeni compresi: al tavolo c’è ancora la versione precedente.',
+    // Solo l'aspetto è cambiato. Vale la pena dirlo invece di dire
+    // genericamente "modifiche": chi ha scelto un colore mezz'ora fa e legge
+    // "modifiche non pubblicate" si mette a cercare cos'altro ha toccato.
+    publishAppearance:
+      'Modifiche all’aspetto non pubblicate: al tavolo si vede ancora quello di prima.',
     publishNever: 'Questo menù non è ancora pubblicato.',
     publishedOn: 'Pubblicato il {date}',
+    // ANNULLARE L'ASPETTO. "Com'è in sala" e non "annulla tutto": quello che
+    // torna indietro è solo questa scatola, e il menù non si tocca. Il
+    // bottone sta QUI dentro e non accanto a Pubblica, dove sembrerebbe
+    // annullare anche i piatti e i prezzi.
+    appearanceRevert: 'Rimetti com’è in sala',
+    appearanceRevertTitle: 'Rimettere l’aspetto com’è in sala?',
+    appearanceRevertBody:
+      'Colore, copertina, logo e stili tornano come si vedono adesso al tavolo. Il menù, i piatti e i prezzi non si toccano.',
+    appearanceRevertConfirm: 'Rimetti com’era',
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni
     // occasione utile: la cosa da non far succedere è che qualcuno lo stampi
     // su una locandina prima che la pagina esista.

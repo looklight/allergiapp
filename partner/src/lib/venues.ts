@@ -33,6 +33,27 @@ export type SectionStyle = (typeof SECTION_STYLES)[number];
 export const HEADING_FONTS = ['modern', 'classic', 'bold', 'light'] as const;
 export type HeadingFont = (typeof HEADING_FONTS)[number];
 
+// L'ASPETTO DEL MENÙ: i campi che decidono come si vede, e che non dicono
+// niente su cosa c'è dentro un piatto. È lo stesso elenco di
+// venue_appearance() nel database (migration 710), e i due vanno tenuti
+// insieme: quando nasce una manopola nuova — la grandezza dei testi è la
+// prossima — si aggiunge di là e di qua, e da lì in poi lo scatto, il
+// confronto "cosa non è ancora in sala" e l'annullamento la trattano da soli.
+//
+// ⚠️ NON SONO ASPETTO il nome del locale, lo slug e le condizioni al tavolo,
+// che pure stanno sulla stessa riga: sono testo che il cliente legge, quindi
+// contenuto. L'annullamento dell'aspetto non deve poterli toccare.
+export type VenueAppearance = Pick<
+  Venue,
+  | 'logoUrl'
+  | 'accent'
+  | 'coverUrl'
+  | 'headingFont'
+  | 'sectionStyle'
+  | 'showDishPhotos'
+  | 'showDishDescriptions'
+>;
+
 export interface MenuLink {
   language: string; // codice lingua; '' = predefinito (fallback)
   url: string;
@@ -332,6 +353,13 @@ export interface PublishState {
   publishedAt: string | null;
   // la bozza è più avanti dello scatto pubblicato
   hasChanges: boolean;
+  // …e di che GENERE sono le modifiche in sospeso (migration 710). Due,
+  // perché sono due cose diverse da dire e da rimediare: il contenuto —
+  // piatti, prezzi, sezioni, nome, condizioni al tavolo — non si annulla e
+  // non si venderà mai; l'aspetto si annulla con un gesto solo, ed è la parte
+  // che un domani potrà stare dietro un abbonamento.
+  contentChanged: boolean;
+  appearanceChanged: boolean;
   // …e fra le modifiche ci sono ALLERGENI. È la ragione per cui questo campo
   // esiste: un allergene corretto e mai pubblicato resta vecchio sul tavolo, e
   // dal portale non si vede — lì la correzione c'è. L'avviso deve poter
@@ -358,6 +386,32 @@ export async function publishMenu(venueId: string): Promise<string | null> {
   );
   if (error) return null;
   return (data as string) ?? null;
+}
+
+// L'ASPETTO SI RIMETTE COM'È IN SALA (migration 710). Colore, logo,
+// copertina, carattere, stile delle sezioni e le due manopole tornano ai
+// valori dello scatto pubblicato; il contenuto non lo tocca nessuno — i fatti
+// dei piatti stanno nel catalogo, condiviso con la scheda AllergiApp, e
+// rimetterli indietro vorrebbe dire disfare una correzione di allergeni.
+//
+// Restituisce l'aspetto ripristinato, così la schermata si riallinea senza
+// rileggere il locale; null se non è andata o se non c'è uno scatto a cui
+// tornare.
+export async function revertAppearance(venueId: string): Promise<VenueAppearance | null> {
+  const { data, error } = await write('ripristino aspetto', () =>
+    supabase.rpc('revert_appearance', { p_venue_id: venueId })
+  );
+  if (error || !data) return null;
+  const scatto = data as Record<string, unknown>;
+  return {
+    logoUrl: String(scatto.logoUrl ?? ''),
+    accent: String(scatto.accent ?? 'charcoal'),
+    coverUrl: String(scatto.coverUrl ?? ''),
+    headingFont: (scatto.headingFont ?? 'modern') as HeadingFont,
+    sectionStyle: (scatto.sectionStyle ?? 'underline') as SectionStyle,
+    showDishPhotos: scatto.showPhotos !== false,
+    showDishDescriptions: scatto.showDescriptions === true,
+  };
 }
 
 // Stacca il menù dalla sala (migration 709). Non cancella niente: chi
@@ -452,21 +506,7 @@ export function useVenues() {
   // Scrittura immediata e non ritardata — sono gesti singoli (scegli un
   // colore, carichi un logo), non una battitura continua. Il nome invece
   // passa da rename(), che la pausa ce l'ha già.
-  function setIdentity(
-    id: string,
-    next: Partial<
-      Pick<
-        Venue,
-        | 'logoUrl'
-        | 'accent'
-        | 'showDishPhotos'
-        | 'showDishDescriptions'
-        | 'sectionStyle'
-        | 'headingFont'
-        | 'coverUrl'
-      >
-    >
-  ) {
+  function setIdentity(id: string, next: Partial<VenueAppearance>) {
     // Il logo che c'era prima, letto PRIMA di sovrascrivere la lista: se la
     // scrittura riesce, quel file non è più di nessuno e va portato via.
     const precedente = (venues ?? []).find((s) => s.id === id)?.logoUrl ?? '';
@@ -646,6 +686,24 @@ export function useVenues() {
     }
   }
 
+  // RIMETTE L'ASPETTO COM'È IN SALA. La scrittura la fa il database in un
+  // colpo solo (revert_appearance, 710): da qui si aggiorna la lista con
+  // quello che torna indietro, che è l'aspetto vero dopo il ripristino —
+  // ricostruirlo a mano vorrebbe dire tenere in due posti la regola di cosa
+  // si ripristina.
+  //
+  // Non passa da setIdentity apposta: la scrittura l'ha già fatta il
+  // database, e da qui sarebbe la seconda. Il logo o la copertina di bozza
+  // che si scartano restano sullo Storage come file orfani — qualche decina
+  // di KB, e la regola della casa è che un file di troppo costa meno di
+  // un'immagine che sparisce (v. deleteLogo).
+  async function revertIdentity(id: string): Promise<boolean> {
+    const aspetto = await revertAppearance(id);
+    if (!aspetto) return false;
+    setList((venues ?? []).map((s) => (s.id === id ? { ...s, ...aspetto } : s)));
+    return true;
+  }
+
   return {
     venues,
     create,
@@ -653,6 +711,7 @@ export function useVenues() {
     rename,
     remove,
     restore,
+    revertIdentity,
     setDishOn,
     setIdentity,
     setSlug,

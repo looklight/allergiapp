@@ -31,6 +31,10 @@ export default function BrandBar({
   sectionStyle,
   headingFont,
   coverUrl,
+  // Se l'aspetto di adesso è diverso da quello in sala, e c'è una sala a cui
+  // tornare: fuori di qui è appearanceChanged di menu_publish_state (710).
+  changed,
+  onRevert,
   onAccent,
   onShowPhotos,
   onShowDescriptions,
@@ -44,6 +48,8 @@ export default function BrandBar({
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
   coverUrl: string;
+  changed: boolean;
+  onRevert: () => void;
   onAccent: (accent: string) => void;
   onShowPhotos: (value: boolean) => void;
   onShowDescriptions: (value: boolean) => void;
@@ -207,6 +213,29 @@ export default function BrandBar({
           onChange={onShowDescriptions}
         />
       </div>
+
+      {/* TORNARE INDIETRO, e solo da qui dentro.
+
+          Compare solo se c'è qualcosa da annullare, cioè se una di queste
+          manopole è diversa da come si vede adesso al tavolo. Sta in fondo
+          alla scatola dell'aspetto e NON accanto a "Pubblica le modifiche":
+          lassù sembrerebbe annullare anche i piatti e i prezzi, che è
+          l'unica cosa che questo bottone non deve mai poter fare — i fatti
+          dei piatti stanno nel catalogo, e disfarli vorrebbe dire riportare
+          indietro una correzione di allergeni.
+
+          Testo grigio e non un bottone pieno: è la via d'uscita di chi ha
+          provato qualcosa, non una delle scelte da fare qui. */}
+      {changed && (
+        <div className="mt-4 flex justify-end border-t border-gray-100 pt-3">
+          <button
+            onClick={onRevert}
+            className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+          >
+            {d.menuEditor.appearanceRevert}
+          </button>
+        </div>
+      )}
       </div>
     </details>
   );
