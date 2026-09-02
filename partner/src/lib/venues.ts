@@ -498,8 +498,9 @@ export function useVenues() {
         void deleteLogo(precedente);
       }
       // Stessa regola per la copertina: si porta via la vecchia solo dopo che
-      // la riga è stata scritta, e mai se è dentro un menù già pubblicato —
-      // se ne occupa deleteCover, che passa dallo stesso controllo del logo.
+      // la riga è stata scritta. Che non si tocchi un file ancora dentro un
+      // menù pubblicato lo garantisce deleteLogo, dove il controllo sta
+      // davvero — questo commento lo dava per fatto quando non lo era.
       if (
         next.coverUrl !== undefined &&
         copertinaPrecedente !== '' &&

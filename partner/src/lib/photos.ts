@@ -392,9 +392,31 @@ export async function deleteCover(url: string): Promise<void> {
 
 // Porta via un file che non è più di nessuno. Vale per il logo e per la
 // copertina: sono tutti e due un file solo nello stesso bucket.
+//
+// ⚠️ TRANNE SE È NELLO SCATTO PUBBLICATO, esattamente come per le foto dei
+// piatti qui sopra. Il commento in setIdentity diceva che questo controllo
+// c'era già: non c'era, e per un giorno sostituire il logo o la copertina ha
+// voluto dire portarsi via il file che il menù in sala stava ancora
+// mostrando — un'immagine rotta al tavolo, invisibile dal portale dove si
+// vede quella nuova. Il file resta finché quel locale non pubblica di nuovo,
+// e da lì è un orfano di qualche decina di KB.
+//
+// Serve anche a un'altra cosa, da qui in avanti: l'annullamento delle
+// modifiche all'aspetto rimette il logo dello scatto, e senza questo
+// controllo lo rimetterebbe puntando a un file che avevamo già distrutto.
 export async function deleteLogo(url: string): Promise<void> {
   const path = bucketPath(url);
   if (path === null) return;
+  const { data: inSala, error: erroreControllo } = await supabase.rpc('photo_in_published_menu', {
+    p_url: url,
+  });
+  // Come per i piatti: se il controllo non riesce NON si cancella. Nel dubbio
+  // si tiene un file di troppo, che è il lato dell'errore che non si vede al
+  // tavolo.
+  if (erroreControllo || inSala === true) {
+    reportError('controllo logo pubblicato', erroreControllo);
+    return;
+  }
   const { error } = await supabase.storage.from(BUCKET).remove([path]);
   reportError('cancellazione logo', error);
 }
