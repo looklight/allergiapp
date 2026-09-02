@@ -14,7 +14,6 @@
 //  * "non è stato salvato" è un guasto. Prende la fascia in cima, resta lì
 //    finché non si risolve, e porta con sé il modo di risolverlo.
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { retryFailed, useSaveState } from '@/lib/saveState';
 
@@ -31,12 +30,9 @@ const DURATA_SALVATO_MS = 2500;
 // tre volte per ogni pausa di battitura.
 const ATTESA_PRIMA_DI_SALVATO_MS = 400;
 
-// La CRONACA del salvataggio, senza il posto in cui mostrarla: 'salvando',
-// 'salvato', o niente. Sta in un hook perché la stessa notizia si legge in due
-// posti diversi — la pill in un angolo su tutte le schermate, e la riga di
-// servizio dell'editor del menù, dove sta accanto allo stato di pubblicazione
-// (v. PublishBar). Le tempistiche restano scritte una volta sola.
-export function useSaveChronicle(): 'niente' | 'salvando' | 'salvato' {
+// La CRONACA del salvataggio: 'salvando', 'salvato', o niente. In un hook per
+// tenere le due tempistiche in un posto solo, lontano dal markup.
+function useSaveChronicle(): 'niente' | 'salvando' | 'salvato' {
   const { saving, savedAt } = useSaveState();
   const [mostra, setMostra] = useState<'niente' | 'salvando' | 'salvato'>('niente');
 
@@ -59,19 +55,10 @@ export function useSaveChronicle(): 'niente' | 'salvando' | 'salvato' {
   return mostra;
 }
 
-// Dove la pill NON deve comparire, perché quella schermata la ospita già da
-// sé: l'editor di un menù (/menu/<id>, non /menu e non /menu/<id>/anteprima).
-// Là la cronaca sta nella riga di servizio, accanto allo stato di
-// pubblicazione — due passi dello stesso percorso, letti insieme.
-function ospitataAltrove(pathname: string): boolean {
-  return /^\/menu\/[^/]+$/.test(pathname);
-}
-
 export default function SaveStatus() {
   const { d } = useI18n();
   const { failed } = useSaveState();
   const mostra = useSaveChronicle();
-  const pathname = usePathname();
   const [riprovando, setRiprovando] = useState(false);
 
   // Chiudere la scheda con qualcosa di non salvato è il modo in cui il lavoro
@@ -112,17 +99,21 @@ export default function SaveStatus() {
     );
   }
 
-  // Il guasto invece si mostra SEMPRE e ovunque, anche dove la cronaca è
-  // ospitata dalla pagina: è l'unico avviso che chiede di fare qualcosa.
-  if (mostra === 'niente' || ospitataAltrove(pathname)) return null;
+  if (mostra === 'niente') return null;
 
   return (
     // aria-live e non role=status: è cronaca, e chi usa un lettore di schermo
     // non dev'essere interrotto a metà di quello che sta scrivendo
+    // IN BASSO a destra, e non in alto: in cima all'editor del menù c'è la
+    // riga di servizio con lo stato di pubblicazione e il suo bottone, e la
+    // pill le finiva addosso proprio mentre si scrive — cioè quando compare.
+    // In basso non c'è niente con cui scontrarsi, e resta ugualmente in vista.
+    // L'altezza tiene conto della barra di navigazione da telefono, che sta
+    // lì sotto, e del bordo tondo degli schermi.
     <div
       aria-live="polite"
-      className="pointer-events-none fixed right-3 top-3 z-40 rounded-full border border-gray-200 bg-white/90 px-3 py-1 text-xs text-gray-500 shadow-sm backdrop-blur"
-      style={{ top: 'calc(0.75rem + env(safe-area-inset-top))' }}
+      className="pointer-events-none fixed bottom-3 right-3 z-40 rounded-full border border-gray-200 bg-white/90 px-3 py-1 text-xs text-gray-500 shadow-sm backdrop-blur"
+      style={{ bottom: 'calc(0.75rem + env(safe-area-inset-bottom) + var(--nav-bottom, 0px))' }}
     >
       {mostra === 'salvando' ? d.saving.inProgress : d.saving.done}
     </div>

@@ -20,6 +20,19 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Quanto spazio occupa la barra di navigazione in fondo: c'è solo da
+   telefono, e serve alla pill del salvataggio per non finirle sopra
+   (v. SaveStatus). Da tablet in su la barra è a sinistra e la variabile
+   torna a zero. */
+:root {
+  --nav-bottom: 4rem;
+}
+@media (min-width: 768px) {
+  :root {
+    --nav-bottom: 0px;
+  }
+}
+
 /* Colonna anteprima: su schermi bassi si riduce in scala invece di
    tagliarsi o scorrere internamente */
 .preview-column {

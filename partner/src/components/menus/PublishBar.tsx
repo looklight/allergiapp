@@ -14,16 +14,15 @@
 // corretto non è ancora arrivato in sala. Un avviso del genere non può
 // scorrere via mentre si lavora sul menù, che è lungo.
 //
-// LA CRONACA DEL SALVATAGGIO STA QUI DENTRO, su questa riga e non nella pill
-// in un angolo che il portale mostra altrove (SaveStatus si spegne su questa
-// schermata). Messe una accanto all'altra, "Salvato" e "Pubblicato" si leggono
-// come due passi dello stesso percorso invece che come due avvisi scollegati —
-// ed è la distinzione che questa schermata deve insegnare: il lavoro è al
-// sicuro (salvato) ma non è ancora in sala (pubblicato).
+// QUI NON C'È il "Salvato": c'era, ed è tornato nella sua pill (in basso a
+// destra, v. SaveStatus). Su questa riga rubava larghezza proprio alla frase
+// che deve leggersi per intera — quella che dice che al tavolo c'è ancora la
+// versione precedente — e la mandava sotto i puntini. La parentela fra le due
+// notizie si può insegnare in altro modo; togliere spazio a un avviso sugli
+// allergeni no.
 import { useEffect, useState } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
 import { useSaveState } from '@/lib/saveState';
-import { useSaveChronicle } from '@/components/SaveStatus';
 import { menuPublishState, publishMenu, type PublishState } from '@/lib/venues';
 
 export default function PublishBar({ venueId }: { venueId: string }) {
@@ -32,7 +31,6 @@ export default function PublishBar({ venueId }: { venueId: string }) {
   // mossa, e quindi che lo stato di pubblicazione va richiesto di nuovo. Il
   // salvataggio ha già la sua pausa, quindi qui non se ne aggiunge un'altra.
   const { savedAt } = useSaveState();
-  const cronaca = useSaveChronicle();
   const [stato, setStato] = useState<PublishState | null>(null);
   const [inCorso, setInCorso] = useState(false);
 
@@ -56,19 +54,7 @@ export default function PublishBar({ venueId }: { venueId: string }) {
     setStato({ publishedAt: quando, hasChanges: false, allergensChanged: false });
   }
 
-  // "Salvataggio…" / "Salvato": cronaca, quindi grigia e in disparte, e se ne
-  // va da sola. aria-live e non role=status: chi usa un lettore di schermo non
-  // dev'essere interrotto a metà di quello che sta scrivendo.
-  const salvataggio =
-    cronaca === 'niente' ? null : (
-      <span aria-live="polite" className="text-xs text-gray-400">
-        {cronaca === 'salvando' ? d.saving.inProgress : d.saving.done}
-      </span>
-    );
-
-  // Lo stato di pubblicazione non è ancora arrivato: la cronaca però sì, e
-  // toglierla lascerebbe la riga vuota proprio mentre si sta scrivendo.
-  if (stato === null) return salvataggio;
+  if (stato === null) return null;
 
   const mai = stato.publishedAt === null;
   const daPubblicare = mai || stato.hasChanges;
@@ -79,7 +65,6 @@ export default function PublishBar({ venueId }: { venueId: string }) {
   if (!daPubblicare) {
     return (
       <div className="flex min-w-0 flex-1 items-center justify-end gap-x-3">
-        {salvataggio}
         <p className="min-w-0 truncate text-xs text-gray-400">
           {fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })}
         </p>
@@ -104,7 +89,6 @@ export default function PublishBar({ venueId }: { venueId: string }) {
         allarme ? 'text-amber-800' : 'text-gray-600'
       }`}
     >
-      {salvataggio}
       <p className="min-w-0 truncate text-xs leading-snug" title={messaggio}>
         {messaggio}
       </p>
