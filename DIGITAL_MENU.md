@@ -34,22 +34,26 @@ nel modello dati e nel codice, ma è **spento** da `MULTI_MENU` in `partner/src/
 è una voce del futuro premium, e finché non si vende complicava la creazione per tutti. Nessuna
 migration, nessun vincolo sul database.
 
-**Aggiornamento 2026-09-02: la pagina pubblica esiste, con dati finti.** Vive sul branch
-`landing` (`lib/render-menu.js`, `menu-page.css`, `menu-page.js`) e riusa la ricetta già in piedi
-per `/r/` e `/u/`: una funzione che rende HTML dal server, niente framework, lingua dedotta dal
-browser. **È collegata** (rotta in `vercel.json` + `api/menu/[slug].js`) e legge `get_public_menu`, cioè
-solo lo scatto pubblicato: la **migration 708 è APPLICATA** — stato di pubblicazione (Tema 20), lo
-scatto e "Pubblica le modifiche" (Tema 24), le due manopole dell'aspetto (Tema 23). Il 2 settembre
-un menù vero è stato pubblicato e riletto da fuori con la chiave pubblica: esce quello che deve, e
-non esce nient'altro. `lib/menu-sample.js` resta come contratto e per guardare la pagina senza
-database. **Manca il deploy**: finché il branch `landing` non è pushato, l'indirizzo non risponde a
-nessuno.
-L'ordine è stato deciso dall'utente: *"la migration la faccio quando la UI è definita, che magari
-dobbiamo aggiungere altro"* — ed è servito, perché guardando la pagina sono nate le due manopole.
+**Aggiornamento 2026-09-02: LA FASE 2 È FATTA E IL MENÙ È ONLINE.** `allergiapp.com/menu/<slug>`
+risponde davvero. Vive sul branch `landing` (`api/menu/[slug].js`, `lib/render-menu.js`) e riusa la
+ricetta già in piedi per `/r/` e `/u/`: una funzione che rende HTML dal server, niente framework —
+**non è servito un progetto Vercel nuovo**, come invece diceva il Tema 13. Migrations **707, 708 e
+709 APPLICATE**: slug sul locale; pubblicazione, scatto e manopole d'aspetto; ritiro dalla sala,
+copertina, carattere, stile delle sezioni.
 
-**Cosa NON c'è ancora, ed è tutta la fase 2**: nessuno slug, nessun QR, nessuna pagina pubblica.
-L'anteprima a tutta pagina sta dentro il portale, dietro l'autenticazione, e lo dichiara con una
-fascia in cima — la cosa da non far succedere è che qualcuno ci stampi sopra un QR.
+Quello che c'è, in breve: **indirizzo e QR** (PNG e vettoriale, con l'avviso "non stamparlo" finché
+il menù non è pubblicato), **bozza e pubblicato** coi due presidi (avviso quando le modifiche non
+pubblicate toccano gli allergeni; foto protette dalla cancellazione finché uno scatto le
+referenzia), **pastiglia Attivo/Inattivo** per ritirare il menù dalla sala, e tutte le manopole
+d'aspetto — pacchetti di stile, stile delle sezioni, copertina, foto e descrizioni. Il 2 settembre
+un menù vero è stato pubblicato e riletto da fuori con la chiave pubblica: esce quello che deve, e
+non esce nient'altro.
+
+`lib/menu-sample.js` resta come contratto e per guardare la pagina senza database.
+
+**Cosa NON c'è ancora**: le traduzioni delle condizioni al tavolo e dei blocchi di testo (Tema 18),
+le statistiche degli scan (Tema 10), il rimando reciproco fra `/menu/` e `/r/` (Tema 13), e lo
+svuotamento della cache alla pubblicazione. L'elenco in ordine sta in fondo, in "Prossimo passo".
 
 **Due debiti aperti**, entrambi visibili a schermo e scritti in `partner/README.md`: la rinomina
 "vetrina" → "Scheda AllergiApp" non è stata fatta (tenuta fuori di proposito dal giro in cui il
