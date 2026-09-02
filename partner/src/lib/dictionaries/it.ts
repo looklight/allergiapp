@@ -334,7 +334,7 @@ const it = {
     summaryPhotosOn: 'con foto',
     summaryPhotosOff: 'senza foto',
     summaryDescOn: 'con descrizioni',
-    headingFont: 'Carattere dei titoli',
+    headingFont: 'Stile dei testi',
     headingFonts: { modern: 'Moderno', classic: 'Classico', bold: 'Marcato', light: 'Sottile' },
     sectionStyle: 'Titoli delle sezioni',
     sectionStyles: { underline: 'Filetto', banner: 'Fascia', plain: 'Solo testo' },

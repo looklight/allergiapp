@@ -186,7 +186,11 @@ export default function MenuPreview({
     // deve coprire SOLO lo schermo simulato e non la pagina del portale
     // intorno — dentro il telefono mockup o dentro l'anteprima a tutta
     // pagina, mai oltre.
-    <div className="relative flex h-full flex-col bg-white">
+    <div
+      className={`relative flex h-full flex-col bg-white${
+        headingFont === 'modern' ? '' : ` menu-font-${headingFont}`
+      }`}
+    >
       {/* Intestazione: la fascia colorata è l'unico posto in cui il colore
           scelto fa da fondo. Sul testo dei piatti resterebbe una scelta di
           contrasto lasciata al ristoratore, che il Tema 8 non concede. */}
@@ -619,7 +623,7 @@ function Riga({
               chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
               piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
           {fuori ? (
-            <p className="mt-1 text-[10px] font-medium leading-snug text-gray-500">
+            <p className="riga-minuta mt-1 text-[10px] font-medium leading-snug text-gray-500">
               {perche.contiene.length > 0 &&
                 fill(d.menuPublic.excludedContains, {
                   list: perche.contiene.map((c) => allergenName(c, locale).toLowerCase()).join(', '),
@@ -632,7 +636,7 @@ function Riga({
             </p>
           ) : (
             dish.allergens.length > 0 && (
-              <p className="mt-1 text-[10px] leading-snug text-gray-400">
+              <p className="riga-minuta mt-1 text-[10px] leading-snug text-gray-400">
                 {d.preview.contains}{' '}
                 {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
               </p>

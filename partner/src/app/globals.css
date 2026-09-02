@@ -147,27 +147,46 @@ body {
   }
 }
 
-/* IL CARATTERE VALE SUI TESTI PRINCIPALI — nome del locale, titoli delle
-   sezioni, nomi dei piatti e prezzi. NON su descrizioni, note e soprattutto
-   sulla riga degli ALLERGENI, che restano di sistema: quella riga la legge
-   una persona con un'allergia, in una sala poco illuminata, mentre le
-   chiedono cosa ordina (DIGITAL_MENU, Tema 25). Chi estende queste classi ai
-   testi secondari le sta usando contro il prodotto.
+/* I PACCHETTI DI STILE del menù al tavolo (DIGITAL_MENU, Tema 25).
+   Stessa struttura del sito (landing/menu-page.css): un pacchetto decide
+   TUTTA la tipografia, non solo i titoli — metà pagina in un carattere e metà
+   in un altro sembra un errore, non una scelta. La famiglia si mette sulla
+   radice dell'anteprima, i pesi si aggiustano per ruolo.
 
-   Tre classi per famiglia e non una, perché il PESO cambia col ruolo: un
-   nome di piatto in Archivo 700 sarebbe un muro di grassetto, e un titolo in
-   Jost 400 non sarebbe un titolo. Scriverlo qui evita anche il grassetto
-   finto — il browser che ingrassa da solo un carattere di cui ha un peso
-   solo, che a queste dimensioni si vede. */
-.heading-classic { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 600; }
-.name-classic { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 400; }
-.price-classic { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 600; }
-.heading-bold { font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; }
-.name-bold { font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 500; }
-.price-bold { font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; }
-.heading-light { font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 300; }
-.name-light { font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 400; }
-.price-light { font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 400; }
+   ⚠️ DOVE IL CARATTERE COSTA LEGGIBILITÀ SI COMPENSA, invece di fare
+   un'eccezione: le righe minute che portano informazione — allergeni e motivo
+   dell'esclusione — crescono di un punto e si scuriscono nei pacchetti serif
+   e leggero. Quella riga la legge una persona con un'allergia in una sala
+   poco illuminata. Chi toglie la compensazione si tenga la responsabilità di
+   quella riga.
+
+   Le due copie (qui e sul sito) vanno tenute allineate: se divergono, il
+   ristoratore sceglie guardando una cosa e il suo cliente ne vede un'altra. */
+.menu-font-classic {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+}
+.menu-font-bold {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.menu-font-light {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.heading-classic { font-weight: 600; }
+.name-classic { font-weight: 400; }
+.price-classic { font-weight: 600; }
+.heading-bold { font-weight: 700; }
+.name-bold { font-weight: 500; }
+.price-bold { font-weight: 700; }
+.heading-light { font-weight: 300; letter-spacing: 0.02em; }
+.name-light { font-weight: 400; }
+.price-light { font-weight: 400; }
+
+.menu-font-classic .riga-minuta,
+.menu-font-light .riga-minuta {
+  font-size: 11px;
+  color: #6b6b6b;
+}
 
 /* Colonna anteprima: su schermi bassi si riduce in scala invece di
    tagliarsi o scorrere internamente */

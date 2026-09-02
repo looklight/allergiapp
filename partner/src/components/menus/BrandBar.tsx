@@ -149,11 +149,16 @@ export default function BrandBar({
         </div>
       </div>
 
-      {/* IL CARATTERE, e si sceglie leggendolo: ogni scelta scrive il nome
-          dello stile CON quel carattere. Un elenco di nomi ("Fraunces",
-          "Jost") non direbbe niente a un ristoratore, e nemmeno a molti di
-          noi. Vale solo sulle intestazioni — sotto, il menù resta di
-          sistema. */}
+      {/* IL PACCHETTO DI STILE, e si sceglie leggendolo: ogni scelta scrive
+          il proprio nome CON quel carattere. Un elenco di nomi ("Fraunces",
+          "Jost") non direbbe niente a un ristoratore, e a essere onesti
+          nemmeno a molti di noi.
+
+          Un pacchetto decide tutta la tipografia del menù, non solo i
+          titoli: metà pagina in un carattere e metà in un altro sembra un
+          errore, non una scelta. Dove il carattere costa leggibilità — le
+          righe minute degli allergeni — il pacchetto compensa da sé, un
+          punto in più e un grigio più scuro. */}
       <div className="mt-4 border-t border-gray-100 pt-3">
         <p className="text-xs text-gray-500">{d.menuEditor.headingFont}</p>
         <div className="mt-2 flex flex-wrap gap-2">
