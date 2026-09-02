@@ -347,7 +347,14 @@ const it = {
     publishPending: 'Modifiche non pubblicate: al tavolo c’è ancora la versione precedente.',
     // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
     // grigia: è la mitigazione della scelta di avere una bozza (Tema 24).
-    publishAllergens: 'Allergeni cambiati: al tavolo c’è ancora la versione precedente.',
+    //
+    // AGGIUNGE, non sostituisce: dice "modifiche non pubblicate" come l'altro
+    // e poi che fra quelle ci sono degli allergeni. Prima diceva solo la
+    // seconda cosa, e chi aveva appena cambiato una foto leggeva una frase
+    // che sembrava parlare d'altro — mentre invece era vera, per una modifica
+    // fatta mezz'ora prima. Il neutro puro non va bene: sarebbe tornare a non
+    // dire mai che in ballo c'è un allergene.
+    publishAllergens: 'Modifiche non pubblicate, allergeni compresi: al tavolo c’è ancora la versione precedente.',
     publishNever: 'Questo menù non è ancora pubblicato.',
     publishedOn: 'Pubblicato il {date}',
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni

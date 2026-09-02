@@ -315,7 +315,7 @@ const en: typeof it = {
     publishFirst: 'Publish the menu',
     publishing: 'Publishing…',
     publishPending: 'Unpublished changes: the table still shows the previous version.',
-    publishAllergens: 'Allergens changed: the table still shows the previous version.',
+    publishAllergens: 'Unpublished changes, allergens among them: the table still shows the previous version.',
     publishNever: 'This menu is not published yet.',
     publishedOn: 'Published on {date}',
     addressTitle: 'Menu address',
