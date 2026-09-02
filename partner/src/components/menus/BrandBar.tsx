@@ -21,32 +21,37 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
-import { SECTION_STYLES, type SectionStyle } from '@/lib/venues';
+import { HEADING_FONTS, SECTION_STYLES, type HeadingFont, type SectionStyle } from '@/lib/venues';
 
 export default function BrandBar({
   accent,
   showPhotos,
   showDescriptions,
   sectionStyle,
+  headingFont,
   onAccent,
   onShowPhotos,
   onShowDescriptions,
   onSectionStyle,
+  onHeadingFont,
 }: {
   accent: string;
   showPhotos: boolean;
   showDescriptions: boolean;
   sectionStyle: SectionStyle;
+  headingFont: HeadingFont;
   onAccent: (accent: string) => void;
   onShowPhotos: (value: boolean) => void;
   onShowDescriptions: (value: boolean) => void;
   onSectionStyle: (value: SectionStyle) => void;
+  onHeadingFont: (value: HeadingFont) => void;
 }) {
   const { d, locale } = useI18n();
 
   // Il riassunto sulla riga chiusa: chi non apre deve sapere lo stesso come
   // sta messo. Senza, sarebbe una scatola misteriosa proprio sopra al menù.
   const riassunto = [
+    d.menuEditor.headingFonts[headingFont],
     d.menuEditor.sectionStyles[sectionStyle],
     showPhotos ? d.menuEditor.summaryPhotosOn : d.menuEditor.summaryPhotosOff,
     showDescriptions ? d.menuEditor.summaryDescOn : null,
@@ -138,6 +143,34 @@ export default function BrandBar({
                 <span className="mt-1.5 block text-[10px] text-gray-500">
                   {d.menuEditor.sectionStyles[stile]}
                 </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* IL CARATTERE, e si sceglie leggendolo: ogni scelta scrive il nome
+          dello stile CON quel carattere. Un elenco di nomi ("Fraunces",
+          "Jost") non direbbe niente a un ristoratore, e nemmeno a molti di
+          noi. Vale solo sulle intestazioni — sotto, il menù resta di
+          sistema. */}
+      <div className="mt-4 border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-500">{d.menuEditor.headingFont}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {HEADING_FONTS.map((carattere) => {
+            const scelto = headingFont === carattere;
+            return (
+              <button
+                key={carattere}
+                onClick={() => onHeadingFont(carattere)}
+                aria-pressed={scelto}
+                className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+                  carattere === 'modern' ? '' : `heading-${carattere}`
+                } ${
+                  scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                {d.menuEditor.headingFonts[carattere]}
               </button>
             );
           })}

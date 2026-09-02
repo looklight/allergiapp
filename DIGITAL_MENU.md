@@ -914,10 +914,18 @@ senza che nessuno gliel'abbia chiesto. In Europa è un problema reale, e va nell
 a quella già presa con Firebase. Qualche decina di kilobyte per carattere, caricati solo dai locali
 che lo usano.
 
-**Sul database** (migration 709, aggiunta mentre era aperta): `heading_font` su `partner_venues`,
-un CODICE e non il nome di un file — il file lo decide chi rende la pagina, e cambiarlo domani non
-tocca il database. Esce già nello scatto pubblicato (`headingFont`). **Manca tutta la funzione**:
-i file, il selettore nella scatola "Aspetto", l'anteprima e la pagina pubblica.
+**Sul database** (migration 709): `heading_font` su `partner_venues`, un CODICE e non il nome di un
+file — il file lo decide chi rende la pagina, e cambiarlo domani non tocca il database. Esce anche
+nello scatto pubblicato (`headingFont`).
+
+**FATTO il 2026-09-02.** I tre caratteri scelti sono **Fraunces 600** (classico), **Archivo 700**
+(marcato) e **Jost 300** (sottile), tutti con licenza SIL OFL. Ospitati con noi — `landing/fonts/`
+e `partner/public/fonts/` — nei soli sottoinsiemi latino e latino esteso, un peso per famiglia:
+Jost 15 KB, Archivo 26 KB, Fraunces 65 KB. Il browser scarica **solo la famiglia che quel locale
+usa**, e chi resta su *Moderno* non scarica niente. `font-display: swap`, così il nome del locale
+si legge subito col carattere di sistema. La licenza sta accanto ai file in `OFL.txt`, come la OFL
+richiede: non si sposta e non si cancella. Nel portale la scelta si fa **leggendola** — ogni
+bottone scrive il nome dello stile con quel carattere.
 
 **È un candidato premium**, come la copertina e il logo: cose che un ristoratore vede e riconosce
 come "il mio menù". La regola del Tema 23 resta ferma — quello che il cliente al tavolo usa (il

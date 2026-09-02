@@ -39,7 +39,7 @@ import {
   type MenuSection,
 } from '@/lib/menus';
 import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
-import type { SectionStyle } from '@/lib/venues';
+import type { HeadingFont, SectionStyle } from '@/lib/venues';
 import { accentHex, type MenuBrand } from '@/lib/menuBrand';
 import DishDetailSheet from './DishDetailSheet';
 import FilterSheet from './FilterSheet';
@@ -81,6 +81,7 @@ export default function MenuPreview({
   showPhotos,
   showDescriptions,
   sectionStyle,
+  headingFont,
   needs,
   onToggleNeed,
 }: {
@@ -99,6 +100,7 @@ export default function MenuPreview({
   showDescriptions: boolean;
   // Come si vede il titolo di una sezione: filetto, fascia o solo testo
   sectionStyle: SectionStyle;
+  headingFont: HeadingFont;
   needs: ViewerNeeds;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
@@ -158,6 +160,9 @@ export default function MenuPreview({
   // e comunque non ci sono se non le ha caricate nessuno. La prima è una
   // scelta, la seconda è il contenuto.
   const conFoto = showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
+  // 'modern' è il carattere di sistema e non ha classe: è il ripiego, ed è
+  // anche l'unico che non fa scaricare niente al cliente.
+  const carattere = headingFont === 'modern' ? '' : ` heading-${headingFont}`;
 
   const scelte = accese.length;
   const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
@@ -197,7 +202,9 @@ export default function MenuPreview({
               className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
             />
           )}
-          <p className="min-w-0 flex-1 text-lg font-semibold leading-snug">{venueName}</p>
+          <p className={`min-w-0 flex-1 text-lg font-semibold leading-snug${carattere}`}>
+            {venueName}
+          </p>
         </div>
 
         {/* Descrizione del menù: facoltativa, quello che il ristoratore ha
@@ -334,7 +341,7 @@ export default function MenuPreview({
             return (
               <section key={gruppo.id} className="mb-4">
                 {gruppo.name.trim() !== '' && (
-                  <TitoloSezione stile={sectionStyle} accent={accent}>
+                  <TitoloSezione stile={sectionStyle} accent={accent} carattere={carattere}>
                     {gruppo.name}
                   </TitoloSezione>
                 )}
@@ -418,16 +425,19 @@ export default function MenuPreview({
 function TitoloSezione({
   stile,
   accent,
+  carattere,
   children,
 }: {
   stile: SectionStyle;
   accent: string;
+  // già nella forma " heading-classic", vuoto per il carattere di sistema
+  carattere: string;
   children: React.ReactNode;
 }) {
   if (stile === 'banner') {
     return (
       <h3
-        className="-mx-4 mb-2 px-4 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-white"
+        className={`-mx-4 mb-2 px-4 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-white${carattere}`}
         style={{ backgroundColor: accent }}
       >
         {children}
@@ -435,11 +445,13 @@ function TitoloSezione({
     );
   }
   if (stile === 'plain') {
-    return <h3 className="mb-1.5 text-[15px] font-semibold text-gray-900">{children}</h3>;
+    return (
+      <h3 className={`mb-1.5 text-[15px] font-semibold text-gray-900${carattere}`}>{children}</h3>
+    );
   }
   return (
     <h3
-      className="mb-1 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide"
+      className={`mb-1 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide${carattere}`}
       style={{ color: accent, borderColor: `${accent}33` }}
     >
       {children}

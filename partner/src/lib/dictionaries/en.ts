@@ -304,6 +304,8 @@ const en: typeof it = {
     summaryPhotosOn: 'with photos',
     summaryPhotosOff: 'no photos',
     summaryDescOn: 'with descriptions',
+    headingFont: 'Heading typeface',
+    headingFonts: { modern: 'Modern', classic: 'Classic', bold: 'Bold', light: 'Light' },
     sectionStyle: 'Section headings',
     sectionStyles: { underline: 'Rule', banner: 'Banner', plain: 'Plain' },
     showPhotos: 'Show dish photos',

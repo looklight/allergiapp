@@ -16,6 +16,69 @@ body {
   }
 }
 
+/* I CARATTERI DELLE INTESTAZIONI del menù al tavolo (DIGITAL_MENU, Tema 25).
+   Stanno anche qui, e non solo sul sito, perché l'anteprima nel portale deve
+   mostrare quello che il cliente vedrà davvero — e i campioncini nella
+   scatola "Aspetto" si scelgono guardandoli.
+
+   Ospitati con noi (public/fonts) e mai presi da Google Fonts: quella scelta
+   riguarda la pagina pubblica, dove il file arriverebbe dai server di Google
+   a ogni scansione del QR. Tenerli in due posti diversi vorrebbe dire due
+   comportamenti diversi fra anteprima e sala.
+
+   La licenza (OFL) sta in public/fonts/OFL.txt: chiede di accompagnare i
+   file, quindi non si sposta e non si cancella. */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/jost-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/jost-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 .bottom-nav-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -31,6 +94,26 @@ body {
   :root {
     --nav-bottom: 0px;
   }
+}
+
+/* IL CARATTERE VALE SOLO SULLE INTESTAZIONI — nome del locale e titoli delle
+   sezioni. Nome del piatto, prezzo, descrizione e soprattutto la riga degli
+   ALLERGENI restano di sistema: quella riga la legge una persona con
+   un'allergia, in una sala poco illuminata, mentre le chiedono cosa ordina.
+   Chi estende queste classi al corpo del menù le sta usando contro il
+   prodotto (Tema 25). */
+.heading-classic {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+}
+.heading-bold {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+}
+.heading-light {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.02em;
 }
 
 /* Colonna anteprima: su schermi bassi si riduce in scala invece di
