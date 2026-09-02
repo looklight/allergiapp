@@ -317,6 +317,13 @@ const en: typeof it = {
     addressChange: 'Change address',
     addressSaved: 'Address saved.',
     addressFailed: 'Not saved: someone may have taken it just now.',
+    qrAlt: 'Your menu QR code',
+    qrCopy: 'Copy the link',
+    qrCopied: 'Copied',
+    qrPng: 'Download the QR code',
+    qrSvg: 'Print version',
+    qrWarning:
+      'Do not print it yet: the address is not live, and the QR code would lead to a page that does not exist.',
     descriptionPlaceholder: 'Add a description (optional): hours, a note…',
     currency: 'Currency',
     loose: 'No section',

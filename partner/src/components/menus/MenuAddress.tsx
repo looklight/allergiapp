@@ -21,6 +21,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
 import { slugOccupato, type Venue } from '@/lib/venues';
+import MenuQr from './MenuQr';
 
 // Cosa sappiamo del testo che c'è nel campo adesso. "ignoto" non è "libero":
 // il controllo può non essere riuscito, e le due cose non vanno confuse.
@@ -177,6 +178,11 @@ export default function MenuAddress({
               {venue.slug === '' ? d.menuEditor.addressChoose : d.menuEditor.addressChange}
             </button>
           </div>
+
+          {/* Il link e il QR ci sono solo quando un indirizzo è stato scelto
+              davvero: sulla bozza che si sta scrivendo sarebbero un QR che
+              cambia sotto le dita, buono da scaricare per sbaglio. */}
+          {venue.slug !== '' && <MenuQr slug={venue.slug} />}
         </>
       )}
     </div>

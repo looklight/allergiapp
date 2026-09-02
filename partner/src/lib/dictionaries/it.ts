@@ -346,6 +346,16 @@ const it = {
     addressChange: 'Cambia indirizzo',
     addressSaved: 'Indirizzo salvato.',
     addressFailed: 'Non è stato salvato: qualcuno potrebbe averlo preso in questo momento.',
+    // IL QR. Prima versione: l'indirizzo non è ancora attivo, e l'avviso sta
+    // attaccato ai bottoni di scarico perché è lì che si sbaglia — un QR
+    // stampato non si corregge da remoto.
+    qrAlt: 'Il QR del tuo menù',
+    qrCopy: 'Copia il link',
+    qrCopied: 'Copiato',
+    qrPng: 'Scarica il QR',
+    qrSvg: 'Versione per la stampa',
+    qrWarning:
+      'Non stamparlo ancora: l’indirizzo non è attivo e il QR porterebbe a una pagina che non esiste.',
     descriptionPlaceholder: 'Aggiungi una descrizione (facoltativa): orari, un avviso…',
     currency: 'Valuta',
     loose: 'Fuori sezione',
