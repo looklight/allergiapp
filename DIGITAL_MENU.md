@@ -1048,8 +1048,15 @@ i due presidi (avviso sugli allergeni non pubblicati, foto protette dalla cancel
 dalla sala con la pastiglia Attivo/Inattivo, e tutte le manopole d'aspetto — pacchetti di stile,
 stile delle sezioni, foto e descrizioni, copertina.
 
+**Aggiunto il 2026-09-02 (sera)**: contenuto e aspetto sono due generi di modifica distinti (Tema 27,
+migration 710 applicata), con l'annulla dell'aspetto e la colonna `text_scale` che aspetta la sua
+interfaccia. E l'editor è stato rifatto per il telefono a 375px, dove veniva usato peggio di quanto
+sembrasse.
+
 **Cosa resta, in ordine:**
 
+0. **La scatola per la grandezza dei testi** (colonna già in piedi dalla 710, nessuna migration da
+   fare): pacchetti Compatta/Normale/Ampia, col pavimento sotto la riga degli allergeni.
 1. **Le traduzioni di condizioni al tavolo e blocchi di testo** (aperto dal Tema 18). Al primo
    cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. È l'ultimo buco visibile
    della pagina pubblica.
