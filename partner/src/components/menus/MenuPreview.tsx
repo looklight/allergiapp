@@ -39,6 +39,7 @@ import {
   type MenuSection,
 } from '@/lib/menus';
 import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
+import type { SectionStyle } from '@/lib/venues';
 import { accentHex, type MenuBrand } from '@/lib/menuBrand';
 import DishDetailSheet from './DishDetailSheet';
 import FilterSheet from './FilterSheet';
@@ -79,6 +80,7 @@ export default function MenuPreview({
   tableConditions,
   showPhotos,
   showDescriptions,
+  sectionStyle,
   needs,
   onToggleNeed,
 }: {
@@ -95,6 +97,8 @@ export default function MenuPreview({
   // anteprima deve rispettarle o il ristoratore sceglie alla cieca.
   showPhotos: boolean;
   showDescriptions: boolean;
+  // Come si vede il titolo di una sezione: filetto, fascia o solo testo
+  sectionStyle: SectionStyle;
   needs: ViewerNeeds;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
@@ -330,12 +334,9 @@ export default function MenuPreview({
             return (
               <section key={gruppo.id} className="mb-4">
                 {gruppo.name.trim() !== '' && (
-                  <h3
-                    className="mb-1 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide"
-                    style={{ color: accent, borderColor: `${accent}33` }}
-                  >
+                  <TitoloSezione stile={sectionStyle} accent={accent}>
                     {gruppo.name}
-                  </h3>
+                  </TitoloSezione>
                 )}
                 {gruppo.description.trim() !== '' && (
                   <p className="mb-3 whitespace-pre-line text-[11px] leading-snug text-gray-500">
@@ -396,6 +397,53 @@ export default function MenuPreview({
         />
       )}
     </div>
+  );
+}
+
+// I TRE MODI DI ANNUNCIARE UNA SEZIONE. Sono la struttura del menù, ed è la
+// cosa che si vede di più scorrendo: per questo il ristoratore può sceglierli.
+//
+//   filetto     maiuscoletto piccolo nel colore del locale, riga sotto.
+//               Quello di sempre: sobrio, da carta stampata.
+//   fascia      titolo su fondo pieno, testo bianco. Si TROVA scorrendo, che
+//               su un menù lungo è quello che serve davvero. Regge solo
+//               perché le tinte le scegliamo noi, tutte scure abbastanza da
+//               tenere il bianco sopra (Tema 8).
+//   solo testo  niente colore e niente filetto, ma più grande. Il più
+//               moderno, e l'unico che non usa il colore del locale.
+//
+// ⚠️ La fascia esce dai margini della colonna (-mx-4 px-4): dentro il
+// riquadro del telefono deve toccare i bordi, o non è una fascia — è un
+// rettangolo con due bordi bianchi ai lati.
+function TitoloSezione({
+  stile,
+  accent,
+  children,
+}: {
+  stile: SectionStyle;
+  accent: string;
+  children: React.ReactNode;
+}) {
+  if (stile === 'banner') {
+    return (
+      <h3
+        className="-mx-4 mb-2 px-4 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-white"
+        style={{ backgroundColor: accent }}
+      >
+        {children}
+      </h3>
+    );
+  }
+  if (stile === 'plain') {
+    return <h3 className="mb-1.5 text-[15px] font-semibold text-gray-900">{children}</h3>;
+  }
+  return (
+    <h3
+      className="mb-1 border-b pb-1 text-[13px] font-semibold uppercase tracking-wide"
+      style={{ color: accent, borderColor: `${accent}33` }}
+    >
+      {children}
+    </h3>
   );
 }
 

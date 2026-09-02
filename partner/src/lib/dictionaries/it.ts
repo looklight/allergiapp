@@ -331,6 +331,8 @@ const it = {
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     brandHint:
       'Come lo vedono i tuoi clienti al tavolo. Vale per il menù di questo locale.',
+    sectionStyle: 'Titoli delle sezioni',
+    sectionStyles: { underline: 'Filetto', banner: 'Fascia', plain: 'Solo testo' },
     showPhotos: 'Mostra le foto dei piatti',
     // Si dice cosa succede spegnendo, non cosa sono le foto: chi legge sta
     // decidendo, e la domanda che ha in testa è "e se le tolgo?"

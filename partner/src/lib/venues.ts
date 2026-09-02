@@ -21,6 +21,11 @@ import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList }
 import { deleteLogo } from './photos';
 import { write } from './saveState';
 
+// I tre stili dei titoli di sezione. Sono un elenco chiuso anche nel
+// database (CHECK della 709): aggiungerne uno vuol dire toccare tutte e due.
+export const SECTION_STYLES = ['underline', 'banner', 'plain'] as const;
+export type SectionStyle = (typeof SECTION_STYLES)[number];
+
 export interface MenuLink {
   language: string; // codice lingua; '' = predefinito (fallback)
   url: string;
@@ -87,6 +92,9 @@ export interface Venue extends VenueDraft {
   // Le descrizioni sotto il nome, in lista. Spente = si leggono aprendo il
   // piatto, che è il comportamento di sempre.
   showDishDescriptions: boolean;
+  // Come si vedono i titoli delle sezioni nel menù al tavolo (migration 709).
+  // 'underline' è quello di sempre.
+  sectionStyle: SectionStyle;
   // L'indirizzo pubblico del menù: allergiapp.com/menu/<slug>. Vuoto = non
   // ancora scelto, ed è lo stato di tutti i locali che esistono oggi. Ne
   // esiste UNO alla volta e cambiandolo il precedente torna libero
@@ -176,7 +184,8 @@ async function loadVenues(): Promise<Venue[]> {
   const { data, error } = await supabase
     .from('partner_venues')
     .select(
-      'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, show_dish_descriptions, ' +
+      'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, ' +
+        'show_dish_descriptions, section_style, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
     )
     .order('created_at', { ascending: true });
@@ -193,6 +202,7 @@ async function loadVenues(): Promise<Venue[]> {
       slug: row.slug ?? '',
       showDishPhotos: row.show_dish_photos ?? true,
       showDishDescriptions: row.show_dish_descriptions ?? false,
+      sectionStyle: (row.section_style ?? 'underline') as SectionStyle,
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
@@ -374,6 +384,7 @@ export function useVenues() {
       slug: '',
       showDishPhotos: true,
       showDishDescriptions: false,
+      sectionStyle: 'underline',
       cardId: null,
       dishIds: [],
       links: emptyLinks(),
@@ -401,6 +412,7 @@ export function useVenues() {
             slug: s.slug,
             showDishPhotos: s.showDishPhotos,
             showDishDescriptions: s.showDishDescriptions,
+            sectionStyle: s.sectionStyle,
           }
         : s
     );
@@ -424,7 +436,9 @@ export function useVenues() {
   // passa da rename(), che la pausa ce l'ha già.
   function setIdentity(
     id: string,
-    next: Partial<Pick<Venue, 'logoUrl' | 'accent' | 'showDishPhotos' | 'showDishDescriptions'>>
+    next: Partial<
+      Pick<Venue, 'logoUrl' | 'accent' | 'showDishPhotos' | 'showDishDescriptions' | 'sectionStyle'>
+    >
   ) {
     // Il logo che c'era prima, letto PRIMA di sovrascrivere la lista: se la
     // scrittura riesce, quel file non è più di nessuno e va portato via.
@@ -435,6 +449,7 @@ export function useVenues() {
     if (next.accent !== undefined) riga.accent = next.accent;
     if (next.showDishPhotos !== undefined) riga.show_dish_photos = next.showDishPhotos;
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
+    if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     void write(
       'salvataggio aspetto del locale',
       () => supabase.from('partner_venues').update(riga).eq('id', id),
@@ -509,6 +524,7 @@ export function useVenues() {
           slug: venue.slug || null,
           show_dish_photos: venue.showDishPhotos,
           show_dish_descriptions: venue.showDishDescriptions,
+          section_style: venue.sectionStyle,
         })
     );
     const righe = fromLinks(venue.id, venue.links);

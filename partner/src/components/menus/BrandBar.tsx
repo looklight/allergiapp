@@ -21,21 +21,26 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
+import { SECTION_STYLES, type SectionStyle } from '@/lib/venues';
 
 export default function BrandBar({
   accent,
   showPhotos,
   showDescriptions,
+  sectionStyle,
   onAccent,
   onShowPhotos,
   onShowDescriptions,
+  onSectionStyle,
 }: {
   accent: string;
   showPhotos: boolean;
   showDescriptions: boolean;
+  sectionStyle: SectionStyle;
   onAccent: (accent: string) => void;
   onShowPhotos: (value: boolean) => void;
   onShowDescriptions: (value: boolean) => void;
+  onSectionStyle: (value: SectionStyle) => void;
 }) {
   const { d, locale } = useI18n();
 
@@ -69,6 +74,36 @@ export default function BrandBar({
         </div>
       </div>
 
+      {/* I TITOLI DELLE SEZIONI si scelgono guardandoli, non leggendo tre
+          nomi: ogni scelta mostra la parola "Antipasti" com'è, in piccolo.
+          Un elenco a tendina con scritto "filetto / fascia / solo testo"
+          costringerebbe a immaginarsi il risultato e poi a controllarlo
+          nell'anteprima — due passaggi per una scelta che è tutta visiva. */}
+      <div className="mt-4 border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-500">{d.menuEditor.sectionStyle}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {SECTION_STYLES.map((stile) => {
+            const scelto = sectionStyle === stile;
+            return (
+              <button
+                key={stile}
+                onClick={() => onSectionStyle(stile)}
+                aria-pressed={scelto}
+                title={d.menuEditor.sectionStyles[stile]}
+                className={`w-[104px] overflow-hidden rounded-lg border bg-white p-1.5 text-left transition-colors ${
+                  scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                <Assaggio stile={stile} accent={accentHex(accent)} />
+                <span className="mt-1.5 block text-[10px] text-gray-500">
+                  {d.menuEditor.sectionStyles[stile]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Gli interruttori sotto al colore, staccati da una riga: il colore è
           identità, questi due sono impaginazione. L'effetto si vede
           nell'anteprima accanto, quindi non serve spiegarli a parole più di
@@ -88,6 +123,35 @@ export default function BrandBar({
         />
       </div>
     </div>
+  );
+}
+
+// Il campioncino dentro ogni scelta: la stessa parola disegnata nei tre
+// modi, in miniatura. Non è un'anteprima fedele — è un promemoria visivo, e
+// quella fedele è il telefono che sta accanto.
+function Assaggio({ stile, accent }: { stile: SectionStyle; accent: string }) {
+  if (stile === 'banner') {
+    return (
+      <span
+        className="block rounded-sm px-1 py-0.5 text-[7px] font-semibold uppercase tracking-wide text-white"
+        style={{ backgroundColor: accent }}
+      >
+        Antipasti
+      </span>
+    );
+  }
+  if (stile === 'plain') {
+    return (
+      <span className="block px-0.5 py-0.5 text-[9px] font-semibold text-gray-900">Antipasti</span>
+    );
+  }
+  return (
+    <span
+      className="block border-b px-0.5 pb-0.5 text-[7px] font-semibold uppercase tracking-wide"
+      style={{ color: accent, borderColor: `${accent}33` }}
+    >
+      Antipasti
+    </span>
   );
 }
 

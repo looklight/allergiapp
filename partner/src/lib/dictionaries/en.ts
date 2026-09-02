@@ -301,6 +301,8 @@ const en: typeof it = {
     venueNamePlaceholder: 'Venue name (your guests read it)',
     brandHint:
       'How your guests see it at the table. It applies to this venue’s menu.',
+    sectionStyle: 'Section headings',
+    sectionStyles: { underline: 'Rule', banner: 'Banner', plain: 'Plain' },
     showPhotos: 'Show dish photos',
     showPhotosHint: 'Off, the table menu is text only. Photos stay on the dishes and on the AllergiApp card.',
     showDescriptions: 'Show descriptions under each dish',

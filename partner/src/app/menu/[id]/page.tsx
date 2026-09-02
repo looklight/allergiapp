@@ -188,6 +188,7 @@ export default function MenuEditorPage() {
       tableConditions={locale?.tableConditions ?? ''}
       showPhotos={locale?.showDishPhotos ?? true}
       showDescriptions={locale?.showDishDescriptions ?? false}
+      sectionStyle={locale?.sectionStyle ?? 'underline'}
       needs={needs}
       onToggleNeed={toggleNeed}
     />
@@ -336,11 +337,13 @@ export default function MenuEditorPage() {
           accent={brand.accent}
           showPhotos={locale?.showDishPhotos ?? true}
           showDescriptions={locale?.showDishDescriptions ?? false}
+          sectionStyle={locale?.sectionStyle ?? 'underline'}
           onAccent={(accent) => setBrand({ accent })}
           onShowPhotos={(showDishPhotos) => locale && setIdentity(locale.id, { showDishPhotos })}
           onShowDescriptions={(showDishDescriptions) =>
             locale && setIdentity(locale.id, { showDishDescriptions })
           }
+          onSectionStyle={(sectionStyle) => locale && setIdentity(locale.id, { sectionStyle })}
         />
       </div>
 
