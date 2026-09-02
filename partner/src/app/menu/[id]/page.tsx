@@ -445,7 +445,10 @@ export default function MenuEditorPage() {
               )}
               <div className="mb-2 flex items-center gap-2">
                 {/* Maniglia della sezione: stessa idea di quella delle righe,
-                    e le frecce qui accanto restano per il dito e la tastiera */}
+                    e le frecce qui accanto restano per il dito e la tastiera.
+                    Nascosta sotto `sm` come quella delle righe: sul touch il
+                    trascinamento non parte, e prometterlo è peggio che non
+                    offrirlo. */}
                 <span
                   draggable
                   aria-hidden="true"
@@ -455,7 +458,7 @@ export default function MenuEditorPage() {
                     setDrag({ kind: 'section', id: section.id });
                   }}
                   onDragEnd={endDrag}
-                  className="shrink-0 cursor-grab text-gray-300 transition-colors hover:text-gray-600 active:cursor-grabbing"
+                  className="hidden shrink-0 cursor-grab text-gray-300 transition-colors hover:text-gray-600 active:cursor-grabbing sm:block"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="9" cy="6" r="1.6" />
@@ -486,7 +489,7 @@ export default function MenuEditorPage() {
                   onClick={() => save(moveSection(menu, section.id, -1))}
                   disabled={i === 0}
                   aria-label={d.menuEditor.moveUp}
-                  className="shrink-0 text-gray-300 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-300"
+                  className="-my-1.5 shrink-0 p-1.5 text-gray-300 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-300"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 15l6-6 6 6" />
@@ -496,7 +499,7 @@ export default function MenuEditorPage() {
                   onClick={() => save(moveSection(menu, section.id, 1))}
                   disabled={i === menu.sections.length - 1}
                   aria-label={d.menuEditor.moveDown}
-                  className="shrink-0 text-gray-300 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-300"
+                  className="-my-1.5 shrink-0 p-1.5 text-gray-300 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-300"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 9l6 6 6-6" />
@@ -506,7 +509,7 @@ export default function MenuEditorPage() {
                   onClick={() => setDeletingSection(section.id)}
                   aria-label={d.common.delete}
                   title={d.common.delete}
-                  className="shrink-0 text-gray-300 transition-colors hover:text-red-600"
+                  className="-my-1.5 shrink-0 p-1.5 text-gray-300 transition-colors hover:text-red-600"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 7h16M9 7V5h6v2M6.5 7l1 12h9l1-12" />

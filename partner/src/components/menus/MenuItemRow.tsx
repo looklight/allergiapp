@@ -106,7 +106,11 @@ export default function MenuItemRow({
             trascinabile il contenitore, selezionare il testo dentro al campo
             del prezzo comincerebbe un trascinamento invece di selezionare.
             Non prende il fuoco da tastiera (le frecce lo fanno già) e resta
-            nascosta a chi legge con lo screen reader. */}
+            nascosta a chi legge con lo screen reader.
+
+            NASCOSTA sotto `sm`: il trascinamento HTML5 sul touch non parte,
+            quindi lì era un ornamento che rubava spazio al nome e prometteva
+            un gesto che non funziona. Su telefono si ordina con le frecce. */}
         <span
           draggable
           aria-hidden="true"
@@ -121,7 +125,7 @@ export default function MenuItemRow({
             onDragStart();
           }}
           onDragEnd={onDragEnd}
-          className="mb-0.5 cursor-grab text-gray-300 transition-colors hover:text-gray-600 active:cursor-grabbing"
+          className="mb-0.5 hidden cursor-grab text-gray-300 transition-colors hover:text-gray-600 active:cursor-grabbing sm:block"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="9" cy="6" r="1.6" />
@@ -136,7 +140,7 @@ export default function MenuItemRow({
           onClick={() => onMove(-1)}
           disabled={isFirst}
           aria-label={d.menuEditor.moveUp}
-          className="text-gray-400 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-400"
+          className="px-2 py-1.5 text-gray-400 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-400 sm:px-0 sm:py-0"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 15l6-6 6 6" />
@@ -146,7 +150,7 @@ export default function MenuItemRow({
           onClick={() => onMove(1)}
           disabled={isLast}
           aria-label={d.menuEditor.moveDown}
-          className="text-gray-400 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-400"
+          className="px-2 py-1.5 text-gray-400 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-400 sm:px-0 sm:py-0"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 9l6 6 6-6" />
@@ -173,7 +177,7 @@ export default function MenuItemRow({
             onClick={() => onEdit(dish)}
             aria-label={fill(d.menuEditor.editDish, { dish: nome })}
             title={fill(d.menuEditor.editDish, { dish: nome })}
-            className="shrink-0 text-gray-300 opacity-100 transition-opacity hover:text-gray-900 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+            className="-my-2 shrink-0 p-2 text-gray-300 opacity-100 transition-opacity hover:text-gray-900 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" />
@@ -203,19 +207,25 @@ export default function MenuItemRow({
           seconda riga, allineati a destra, invece di spingere il nome fuori
           dalla riga. Sopra `sm` il gruppo non esiste più (w-auto) e i suoi
           pezzi tornano in fila come prima. */}
-      <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+      <div className="flex w-full flex-wrap items-center justify-end gap-x-3 gap-y-1 sm:w-auto sm:flex-nowrap">
       {/* Con una destinazione sola non c'è niente da scegliere.
           Come le frecce, si scopre al passaggio: a riposo una riga deve dire
           il piatto e il prezzo, che sono le due cose che si guardano
           scorrendo una carta di quaranta righe. La tendina mostra la sezione
           in cui la riga sta già, quindi ferma non è nemmeno un'informazione
-          nuova — è la stessa che c'è scritta in cima al riquadro. */}
+          nuova — è la stessa che c'è scritta in cima al riquadro.
+
+          ⚠️ SU TELEFONO È L'UNICA STRADA, quindi non si nasconde: era
+          `hidden sm:block`, e siccome le frecce muovono solo dentro la
+          sezione e il trascinamento sul touch non parte, spostare un piatto
+          in un'altra sezione da telefono voleva dire toglierlo e rimetterlo.
+          Adesso sta sul secondo livello della riga, dove lo spazio c'è. */}
       {sections.length > 1 && (
         <select
           value={sectionId ?? ''}
           aria-label={d.menuEditor.moveToLabel}
           onChange={(e) => onMoveToSection(e.target.value === '' ? null : e.target.value)}
-          className="hidden max-w-[9rem] shrink-0 truncate rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-600 transition-opacity focus:border-gray-900 focus:outline-none sm:block md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+          className="max-w-[9rem] shrink-0 truncate rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-600 transition-opacity focus:border-gray-900 focus:outline-none md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
         >
           {sections.map((s) => (
             <option key={s.id ?? 'loose'} value={s.id ?? ''}>
@@ -233,7 +243,17 @@ export default function MenuItemRow({
         aria-pressed={item.highlighted}
         aria-label={item.highlighted ? d.menuEditor.highlightOff : d.menuEditor.highlightOn}
         title={item.highlighted ? d.menuEditor.highlightOff : d.menuEditor.highlightOn}
-        className={`shrink-0 transition-colors ${
+        // L'area che il dito colpisce diventa 32px: sedici pixel nudi,
+        // accanto al campo del prezzo, erano un invito a sbagliare bersaglio
+        // — e qui vicino c'è la croce che toglie il piatto.
+        //
+        // Il margine negativo è solo VERTICALE. In orizzontale l'area cresce
+        // per davvero e allontana i vicini: riprendendosi anche quello spazio
+        // (-mx-2), l'area della stella finirebbe sotto il bordo del campo del
+        // prezzo, e chi tocca lì per correggere 12,00 accenderebbe l'evidenza.
+        // Aree sensibili sovrapposte sono il problema che questo cambio
+        // dovrebbe togliere, non spostare.
+        className={`-my-2 shrink-0 p-2 transition-colors ${
           item.highlighted ? 'text-amber-500 hover:text-amber-600' : 'text-gray-300 hover:text-gray-600'
         }`}
       >
@@ -255,7 +275,7 @@ export default function MenuItemRow({
         onClick={onRemove}
         aria-label={d.menuEditor.removeItem}
         title={d.menuEditor.removeItem}
-        className="shrink-0 text-gray-300 transition-colors hover:text-red-600"
+        className="-my-2 shrink-0 p-2 text-gray-300 transition-colors hover:text-red-600"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M6 6l12 12M18 6L6 18" />

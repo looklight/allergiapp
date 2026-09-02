@@ -296,6 +296,23 @@ nome libero, prezzi, riordino trascinando (con le frecce accanto, che restano
 perché il trascinamento HTML5 col dito non funziona e questo portale si usa
 dal telefono). L'anteprima a lato mostra la pagina che legge il cliente.
 
+**Sotto `sm` l'editor cambia forma** (rivisto il 2026-09-02 facendo i conti a
+375px, dove il portale si usa davvero):
+
+- la riga del piatto sta su **due livelli** — nome sopra, comandi sotto — o al
+  nome restano ~54px, sei caratteri per l'unica cosa che si legge scorrendo;
+- la riga sticky in cima **va a capo** e l'avviso si prende tutta la
+  larghezza: fra il link e il bottone Pubblica si troncava a "Modifiche…",
+  cioè proprio la frase che nomina gli allergeni non pubblicati;
+- le **maniglie di trascinamento spariscono** (righe e sezioni): sul touch il
+  gesto non parte, e prometterlo è peggio che non offrirlo;
+- ⚠️ la tendina **"Sposta in" non si nasconde più**: era `hidden sm:block`, e
+  siccome le frecce muovono solo dentro la sezione, da telefono un piatto si
+  spostava solo togliendolo e rimettendolo;
+- i comandi hanno un'area da 28-32px, con margine negativo **solo verticale**:
+  riprendendosi anche l'orizzontale, l'area della stella finirebbe sotto il
+  campo del prezzo.
+
 Tre cose da non disfare per sbaglio:
 
 - **Il filtro allergeni riordina, non nasconde.** I piatti esclusi restano
