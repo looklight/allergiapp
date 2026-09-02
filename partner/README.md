@@ -332,7 +332,8 @@ Tre cose da non disfare per sbaglio:
 
 **La scatola "Aspetto del menù"** (`BrandBar`) tiene il colore e due
 interruttori: **foto dei piatti** e **descrizioni in lista**. Stanno sul
-locale (migration 708) perché al tavolo è una pagina sola, e l'anteprima
+locale (migration 708, applicata il 02/09) perché al tavolo è una pagina
+sola, e l'anteprima
 accanto li rispetta — se non lo facesse, il ristoratore sceglierebbe alla
 cieca. Foto spente = niente foto in tutto il menù, dettaglio compreso; e
 resta vero che se nessun piatto ha una foto la colonna sparisce da sé.
@@ -362,7 +363,8 @@ già più d'uno li tiene e può aprirli. **Chi tocca questa parte non aggiunga u
 `UNIQUE (venue_id)`**: descriverebbe lo stesso stato di oggi e sarebbe la cosa
 difficile da togliere quando più menù si venderà.
 
-**Dal 2026-09-02 la bozza e il pubblicato sono due cose** (Tema 24): le
+**Dal 2026-09-02 la bozza e il pubblicato sono due cose** (Tema 24,
+migration 708 applicata il 02/09): le
 tabelle del menù sono la bozza e continuano a salvarsi da sole, mentre
 quello che il cliente legge al tavolo cambia solo premendo **"Pubblica le
 modifiche"** (`PublishBar`, in cima all'editor e **sticky**). Sotto,
