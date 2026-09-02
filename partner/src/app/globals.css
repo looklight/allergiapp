@@ -79,6 +79,57 @@ body {
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fraunces-corpo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fraunces-corpo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/archivo-corpo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/archivo-corpo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jost-corpo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jost-corpo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 .bottom-nav-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -96,25 +147,27 @@ body {
   }
 }
 
-/* IL CARATTERE VALE SOLO SULLE INTESTAZIONI — nome del locale e titoli delle
-   sezioni. Nome del piatto, prezzo, descrizione e soprattutto la riga degli
-   ALLERGENI restano di sistema: quella riga la legge una persona con
-   un'allergia, in una sala poco illuminata, mentre le chiedono cosa ordina.
-   Chi estende queste classi al corpo del menù le sta usando contro il
-   prodotto (Tema 25). */
-.heading-classic {
-  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
-  font-weight: 600;
-}
-.heading-bold {
-  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 700;
-}
-.heading-light {
-  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-}
+/* IL CARATTERE VALE SUI TESTI PRINCIPALI — nome del locale, titoli delle
+   sezioni, nomi dei piatti e prezzi. NON su descrizioni, note e soprattutto
+   sulla riga degli ALLERGENI, che restano di sistema: quella riga la legge
+   una persona con un'allergia, in una sala poco illuminata, mentre le
+   chiedono cosa ordina (DIGITAL_MENU, Tema 25). Chi estende queste classi ai
+   testi secondari le sta usando contro il prodotto.
+
+   Tre classi per famiglia e non una, perché il PESO cambia col ruolo: un
+   nome di piatto in Archivo 700 sarebbe un muro di grassetto, e un titolo in
+   Jost 400 non sarebbe un titolo. Scriverlo qui evita anche il grassetto
+   finto — il browser che ingrassa da solo un carattere di cui ha un peso
+   solo, che a queste dimensioni si vede. */
+.heading-classic { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 600; }
+.name-classic { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 400; }
+.price-classic { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 600; }
+.heading-bold { font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; }
+.name-bold { font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 500; }
+.price-bold { font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; }
+.heading-light { font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 300; }
+.name-light { font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 400; }
+.price-light { font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 400; }
 
 /* Colonna anteprima: su schermi bassi si riduce in scala invece di
    tagliarsi o scorrere internamente */

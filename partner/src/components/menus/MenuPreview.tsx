@@ -163,6 +163,11 @@ export default function MenuPreview({
   // 'modern' è il carattere di sistema e non ha classe: è il ripiego, ed è
   // anche l'unico che non fa scaricare niente al cliente.
   const carattere = headingFont === 'modern' ? '' : ` heading-${headingFont}`;
+  // Nomi dei piatti e prezzi seguono lo stesso carattere ma con il PESO del
+  // loro ruolo (v. globals.css): sono testi principali quanto le
+  // intestazioni. Quello che NON lo segue è tutto il resto — descrizioni,
+  // note, e la riga degli allergeni.
+  const suffisso = headingFont === 'modern' ? '' : `-${headingFont}`;
 
   const scelte = accese.length;
   const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
@@ -358,6 +363,7 @@ export default function MenuPreview({
                       dish={dishById(item.dishId)}
                       conFoto={conFoto}
                       conDescrizioni={showDescriptions}
+                      suffisso={suffisso}
                       currency={menu.currency}
                       locale={locale}
                       needs={needs}
@@ -397,6 +403,7 @@ export default function MenuPreview({
         <DishDetailSheet
           item={detail.item}
           dish={detail.dish}
+          suffisso={suffisso}
           showPhoto={showPhotos}
           currency={menu.currency}
           needs={needs}
@@ -489,6 +496,7 @@ function Riga({
   dish,
   conFoto,
   conDescrizioni,
+  suffisso,
   currency,
   locale,
   needs,
@@ -501,6 +509,8 @@ function Riga({
   conFoto: boolean;
   // le descrizioni si leggono in lista invece che aprendo il piatto
   conDescrizioni: boolean;
+  // '' col carattere di sistema, altrimenti '-classic' e simili
+  suffisso: string;
   currency: string;
   locale: 'it' | 'en';
   needs: ViewerNeeds;
@@ -553,7 +563,11 @@ function Riga({
                 raggruppamento l'icona finiva spinta accanto al prezzo,
                 sembrando un'informazione sul prezzo invece che sul piatto. */}
             <span className="flex min-w-0 flex-1 items-baseline gap-1">
-              <p className="min-w-0 truncate text-[13px] font-medium leading-snug text-gray-900">
+              <p
+                className={`min-w-0 truncate text-[13px] font-medium leading-snug text-gray-900${
+                  suffisso === '' ? '' : ` name${suffisso}`
+                }`}
+              >
                 {dish.name}
               </p>
               {/* La descrizione NON sta più qui: occupava una riga in più solo
@@ -581,7 +595,13 @@ function Riga({
             {/* Un piatto senza prezzo non mostra niente: una riga vuota o uno
                 zero al tavolo sono peggio del silenzio */}
             {prezzo !== '' && (
-              <p className="shrink-0 text-[13px] font-semibold tabular-nums text-gray-900">{prezzo}</p>
+              <p
+                className={`shrink-0 text-[13px] font-semibold tabular-nums text-gray-900${
+                  suffisso === '' ? '' : ` price${suffisso}`
+                }`}
+              >
+                {prezzo}
+              </p>
             )}
           </div>
           {/* La descrizione in lista, quando il ristoratore l'ha accesa: al

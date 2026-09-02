@@ -26,6 +26,7 @@ import type { ViewerNeeds } from './MenuPreview';
 export default function DishDetailSheet({
   item,
   dish,
+  suffisso,
   showPhoto,
   currency,
   needs,
@@ -33,6 +34,8 @@ export default function DishDetailSheet({
 }: {
   item: MenuItem;
   dish: Dish;
+  // il carattere scelto per i testi principali: '' se è quello di sistema
+  suffisso: string;
   // Il ristoratore ha spento le foto sul menù al tavolo: spente vuol dire
   // spente anche qui. Un'eccezione ("in lista no, nel dettaglio sì") sarebbe
   // una regola in più da spiegare, e chi le nasconde perché sono disomogenee
@@ -79,9 +82,21 @@ export default function DishDetailSheet({
 
         <div className="px-4 pt-3">
           <div className="flex items-baseline justify-between gap-3">
-            <h3 className="text-base font-semibold leading-snug text-gray-900">{dish.name}</h3>
+            <h3
+              className={`text-base font-semibold leading-snug text-gray-900${
+                suffisso === '' ? '' : ` name${suffisso}`
+              }`}
+            >
+              {dish.name}
+            </h3>
             {prezzo !== '' && (
-              <p className="shrink-0 text-base font-semibold tabular-nums text-gray-900">{prezzo}</p>
+              <p
+                className={`shrink-0 text-base font-semibold tabular-nums text-gray-900${
+                  suffisso === '' ? '' : ` price${suffisso}`
+                }`}
+              >
+                {prezzo}
+              </p>
             )}
           </div>
 
