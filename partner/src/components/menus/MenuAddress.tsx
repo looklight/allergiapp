@@ -29,9 +29,13 @@ type Stato = 'fermo' | 'controllo' | 'libero' | 'occupato' | 'ignoto' | 'malform
 
 export default function MenuAddress({
   venue,
+  online,
   onSave,
 }: {
   venue: Venue;
+  // il menù è già stato pubblicato almeno una volta: l'indirizzo risponde
+  // davvero, e da quel momento il QR si può stampare
+  online: boolean;
   onSave: (slug: string) => Promise<boolean>;
 }) {
   const { d } = useI18n();
@@ -124,17 +128,35 @@ export default function MenuAddress({
                 : null;
 
   return (
-    <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    // SI VEDE CHE NON È UNA SEZIONE COME LE ALTRE, ed è voluto: qui dentro
+    // non si scrive il menù, si decide se e come va in sala. Le altre schede
+    // dell'editor sono bianche su grigio; questa ha un fondo suo, e cambia
+    // colore quando il menù è davvero online — verde quando risponde,
+    // tratteggiata finché è una bozza, come una cosa non ancora finita.
+    <div
+      className={`mt-4 rounded-2xl border p-4 ${
+        online
+          ? 'border-emerald-200 bg-emerald-50/60'
+          : 'border-dashed border-gray-300 bg-gray-100/70'
+      }`}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-medium text-gray-900">{d.menuEditor.addressTitle}</h2>
-        {/* Che non sia ancora attivo si dice qui, accanto al titolo, e non in
-            fondo: è la prima cosa da sapere prima di stamparlo da qualche
-            parte. */}
-        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-          {d.menuEditor.addressNotLive}
+        <h2 className="text-sm font-semibold text-gray-900">
+          {online ? d.menuEditor.addressTitleLive : d.menuEditor.addressTitle}
+        </h2>
+        {/* Lo stato accanto al titolo e non in fondo: è la prima cosa da
+            sapere prima di stampare l'indirizzo da qualche parte. */}
+        <span
+          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+            online ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+          }`}
+        >
+          {online ? d.menuEditor.addressLive : d.menuEditor.addressNotLive}
         </span>
       </div>
-      <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.addressHint}</p>
+      <p className="mt-0.5 text-xs text-gray-500">
+        {online ? d.menuEditor.addressHintLive : d.menuEditor.addressHint}
+      </p>
 
       {senzaNome ? (
         <p className="mt-3 text-sm text-gray-500">{d.menuEditor.addressNeedName}</p>
@@ -143,7 +165,7 @@ export default function MenuAddress({
           {/* Il dominio è testo, non un campo: si modifica solo la propria
               parte, e vederla attaccata al resto è l'unico modo di capire com'è
               fatto l'indirizzo per intero. */}
-          <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg border border-gray-300 px-2 py-1.5 focus-within:border-gray-900">
+          <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 focus-within:border-gray-900">
             <span className="shrink-0 text-sm text-gray-400">{MENU_DOMINIO}</span>
             <input
               id={campo}
@@ -182,7 +204,7 @@ export default function MenuAddress({
           {/* Il link e il QR ci sono solo quando un indirizzo è stato scelto
               davvero: sulla bozza che si sta scrivendo sarebbero un QR che
               cambia sotto le dita, buono da scaricare per sbaglio. */}
-          {venue.slug !== '' && <MenuQr slug={venue.slug} />}
+          {venue.slug !== '' && <MenuQr slug={venue.slug} online={online} />}
         </>
       )}
     </div>

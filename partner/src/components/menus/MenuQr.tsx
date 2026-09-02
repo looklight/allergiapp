@@ -2,12 +2,12 @@
 
 // Il link e il QR dell'indirizzo del menù.
 //
-// ⚠️ PRIMA VERSIONE, DICHIARATA COME TALE (2026-09-02). L'indirizzo non è
-// ancora attivo: la pagina pubblica è la fase 2. Questo QR si può guardare,
-// scaricare e provare, ma se lo si stampa adesso porta a una pagina che non
-// esiste — e un QR stampato è un oggetto fisico che non si corregge da
-// remoto. Perciò l'avviso sta ATTACCATO ai bottoni di scarico e non in fondo
-// alla card: è lì che si compie il gesto sbagliato.
+// L'AVVISO "non stamparlo ancora" c'è SOLO finché il menù non è stato
+// pubblicato: da lì in poi quell'indirizzo risponde davvero e la frase
+// diventerebbe falsa — peggio che inutile, perché un avviso che mente
+// insegna a non leggere gli avvisi. Sta attaccato ai bottoni di scarico e non
+// in fondo alla card, perché è lì che si compie il gesto sbagliato: un QR
+// stampato è un oggetto fisico che non si corregge da remoto.
 //
 // Due formati perché servono due mestieri diversi: il PNG è quello che si
 // incolla in una mail o si guarda a schermo, il vettoriale è quello che vuole
@@ -38,7 +38,7 @@ function scarica(contenuto: Blob | string, nome: string) {
   if (typeof contenuto !== 'string') URL.revokeObjectURL(url);
 }
 
-export default function MenuQr({ slug }: { slug: string }) {
+export default function MenuQr({ slug, online }: { slug: string; online: boolean }) {
   const { d } = useI18n();
   const indirizzo = `https://${MENU_DOMINIO}${slug}`;
   // L'anteprima a schermo: piccola, serve solo a far vedere che il QR esiste
@@ -122,7 +122,7 @@ export default function MenuQr({ slug }: { slug: string }) {
 
         {/* Attaccato ai bottoni, non in fondo alla card: è qui che qualcuno
             sta per portare un file in tipografia. */}
-        <p className="mt-2 text-xs text-amber-700">{d.menuEditor.qrWarning}</p>
+        {!online && <p className="mt-2 text-xs text-amber-700">{d.menuEditor.qrWarning}</p>}
       </div>
     </div>
   );

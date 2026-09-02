@@ -289,6 +289,7 @@ const en: typeof it = {
     previewTitle: 'Preview',
     previewCaption: 'What your guests see at the table.',
     fullPreview: 'Open full page',
+    openLive: 'Open the live menu',
     fullPreviewNotice: 'Private preview — this is not the menu’s public address yet.',
     fullPreviewBack: 'Back to the editor',
     previewEmpty: 'Add dishes to see the menu.',
@@ -320,6 +321,10 @@ const en: typeof it = {
     publishedOn: 'Published on {date}',
     addressTitle: 'Menu address',
     addressNotLive: 'Not live yet',
+    addressTitleLive: 'The menu is live',
+    addressLive: 'Live',
+    addressHintLive:
+      'This is the address your guests open with the QR code. If you change it, printed QR codes stop working.',
     addressHint:
       'This is the address that will end up on the table QR code. Choosing it now reserves it: the public page comes later.',
     addressNeedName: 'Write the venue name first: the address is suggested from it.',

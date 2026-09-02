@@ -45,6 +45,8 @@ import LogoPicker from '@/components/menus/LogoPicker';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
 import MenuAddress from '@/components/menus/MenuAddress';
 import PublishBar from '@/components/menus/PublishBar';
+import { usePublishState } from '@/lib/publish';
+import { MENU_DOMINIO } from '@/lib/slug';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 
 export default function MenuEditorPage() {
@@ -54,6 +56,11 @@ export default function MenuEditorPage() {
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
   const { venues, update: updateVenue, setIdentity, setTableConditions, setSlug } = useVenues();
+  // Lo stato della messa online, letto UNA volta per tutta la schermata: lo
+  // leggono la riga in cima, la sezione dell'indirizzo e il collegamento
+  // sotto l'anteprima. Il locale non si sa finché il menù non è arrivato, e
+  // gli hook non possono aspettare: si passa null e parte da sé.
+  const pubblicazione = usePublishState(menu?.venueId ?? null);
   // La sezione a cui il pannello dei piatti sta aggiungendo: un id, oppure
   // null per le righe fuori sezione. 'chiuso' perché null è già un valore.
   const [adding, setAdding] = useState<{ sectionId: string | null } | null>(null);
@@ -273,7 +280,11 @@ export default function MenuEditorPage() {
           si lavora su un menù lungo (v. PublishBar). */}
       <div className="sticky top-0 z-30 -mx-4 flex items-center gap-x-4 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
         <BackLink />
-        {locale && <PublishBar venueId={locale.id} />}
+        <PublishBar
+          stato={pubblicazione.stato}
+          pubblica={() => void pubblicazione.pubblica()}
+          inCorso={pubblicazione.inCorso}
+        />
       </div>
 
       {/* Il titolo della pagina è il NOME DEL LOCALE, non un'etichetta
@@ -570,7 +581,11 @@ export default function MenuEditorPage() {
           Non è ancora attivo, e la card lo dichiara: qui si sceglie il nome e
           lo si mette al sicuro prima che lo prenda qualcun altro. */}
       {locale && (
-        <MenuAddress venue={locale} onSave={(slug) => setSlug(locale.id, slug)} />
+        <MenuAddress
+          venue={locale}
+          online={pubblicazione.online}
+          onSave={(slug) => setSlug(locale.id, slug)}
+        />
       )}
 
       </div>
@@ -601,6 +616,24 @@ export default function MenuEditorPage() {
             {d.menuEditor.previewCaption}
           </p>
           <PhoneFrame>{anteprima}</PhoneFrame>
+          {/* IL MENÙ VERO, quello che aprono i clienti: sotto l'anteprima
+              perché è lì che si guarda il telefono e viene naturale chiedersi
+              "e quello vero com'è?". Compare solo quando il menù è online —
+              prima quell'indirizzo non risponde a nessuno — ed è l'unico
+              posto della schermata da cui si esce verso il mondo, quindi si
+              distingue dal collegamento all'anteprima privata qui sotto. */}
+          {pubblicazione.online && locale?.slug && (
+            <a
+              href={`https://${MENU_DOMINIO}${locale.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-auto mt-2 flex w-fit items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-white/90" />
+              {d.menuEditor.openLive}
+            </a>
+          )}
+
           {/* In una scheda a parte, non al posto dell'editor: serve a
               guardarla grande e a tenerla aperta accanto mentre si lavora.
               rel noopener perché è pur sempre un target _blank. */}

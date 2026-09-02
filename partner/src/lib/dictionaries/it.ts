@@ -315,6 +315,7 @@ const it = {
     previewTitle: 'Anteprima',
     previewCaption: 'Come lo vedono i tuoi clienti al tavolo.',
     fullPreview: 'Apri a tutta pagina',
+    openLive: 'Apri il menù online',
     fullPreviewNotice: 'Anteprima privata — non è ancora l’indirizzo pubblico del menù.',
     fullPreviewBack: 'Torna all’editor',
     previewEmpty: 'Aggiungi i piatti per vedere il menù.',
@@ -362,6 +363,10 @@ const it = {
     // su una locandina prima che la pagina esista.
     addressTitle: 'Indirizzo del menù',
     addressNotLive: 'Non ancora attivo',
+    addressTitleLive: 'Il menù è online',
+    addressLive: 'Attivo',
+    addressHintLive:
+      'Questo è l’indirizzo che i tuoi clienti aprono col QR. Cambiandolo, i QR già stampati smettono di funzionare.',
     addressHint:
       'È l’indirizzo che finirà sul QR del tavolo. Scegliendolo adesso lo metti al sicuro: la pagina pubblica arriva più avanti.',
     addressNeedName: 'Scrivi prima il nome del locale: l’indirizzo si propone da lì.',

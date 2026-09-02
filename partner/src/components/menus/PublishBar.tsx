@@ -20,39 +20,22 @@
 // versione precedente — e la mandava sotto i puntini. La parentela fra le due
 // notizie si può insegnare in altro modo; togliere spazio a un avviso sugli
 // allergeni no.
-import { useEffect, useState } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
-import { useSaveState } from '@/lib/saveState';
-import { menuPublishState, publishMenu, type PublishState } from '@/lib/venues';
+import type { PublishState } from '@/lib/venues';
 
-export default function PublishBar({ venueId }: { venueId: string }) {
+export default function PublishBar({
+  stato,
+  pubblica,
+  inCorso,
+}: {
+  // null = non ancora saputo. Lo stato lo tiene la pagina (usePublishState),
+  // perché in questa schermata lo leggono in tre: questa riga, la sezione
+  // della messa online e il collegamento sotto l'anteprima.
+  stato: PublishState | null;
+  pubblica: () => void;
+  inCorso: boolean;
+}) {
   const { d, locale } = useI18n();
-  // savedAt cambia a ogni scrittura riuscita: è il segnale che la bozza si è
-  // mossa, e quindi che lo stato di pubblicazione va richiesto di nuovo. Il
-  // salvataggio ha già la sua pausa, quindi qui non se ne aggiunge un'altra.
-  const { savedAt } = useSaveState();
-  const [stato, setStato] = useState<PublishState | null>(null);
-  const [inCorso, setInCorso] = useState(false);
-
-  useEffect(() => {
-    let vivo = true;
-    void menuPublishState(venueId).then((s) => {
-      if (vivo && s) setStato(s);
-    });
-    return () => {
-      vivo = false;
-    };
-  }, [venueId, savedAt]);
-
-  async function pubblica() {
-    setInCorso(true);
-    const quando = await publishMenu(venueId);
-    setInCorso(false);
-    // Fallita: lo stato NON si tocca. L'errore lo mostra la barra di stato
-    // con il suo "Riprova"; qui dire "pubblicato" sarebbe una bugia.
-    if (quando === null) return;
-    setStato({ publishedAt: quando, hasChanges: false, allergensChanged: false });
-  }
 
   if (stato === null) return null;
 
@@ -93,7 +76,7 @@ export default function PublishBar({ venueId }: { venueId: string }) {
         {messaggio}
       </p>
       <button
-        onClick={() => void pubblica()}
+        onClick={pubblica}
         disabled={inCorso}
         className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
           allarme ? 'bg-amber-700 hover:bg-amber-800' : 'bg-gray-900 hover:bg-gray-700'
