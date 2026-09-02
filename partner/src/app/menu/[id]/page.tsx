@@ -616,39 +616,47 @@ export default function MenuEditorPage() {
             {d.menuEditor.previewCaption}
           </p>
           <PhoneFrame>{anteprima}</PhoneFrame>
-          {/* IL MENÙ VERO, quello che aprono i clienti: sotto l'anteprima
-              perché è lì che si guarda il telefono e viene naturale chiedersi
-              "e quello vero com'è?". Compare solo quando il menù è online —
-              prima quell'indirizzo non risponde a nessuno — ed è l'unico
-              posto della schermata da cui si esce verso il mondo, quindi si
-              distingue dal collegamento all'anteprima privata qui sotto. */}
-          {pubblicazione.online && locale?.slug && (
+          {/* I due collegamenti SULLA STESSA RIGA, e non uno sotto l'altro:
+              la colonna è alta quanto la finestra e taglia quello che avanza
+              (overflow-hidden, perché su schermi bassi il telefono è ridotto
+              in scala). Impilati, il secondo finiva fuori dal taglio — cioè
+              invisibile, senza nessun errore da nessuna parte.
+
+              A sinistra il MENÙ VERO, quello che aprono i clienti: sta qui
+              perché è guardando il telefono che viene da chiedersi "e quello
+              vero com'è?". Compare solo a menù online — prima quell'indirizzo
+              non risponde a nessuno — ed è l'unico punto della schermata da
+              cui si esce verso il mondo. A destra l'anteprima privata, che è
+              un'altra cosa e resta sempre. */}
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+            {pubblicazione.online && locale?.slug && (
+              <a
+                href={`https://${MENU_DOMINIO}${locale.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-white/90" />
+                {d.menuEditor.openLive}
+              </a>
+            )}
+
+            {/* In una scheda a parte, non al posto dell'editor: serve a
+                guardarla grande e a tenerla aperta accanto mentre si lavora.
+                rel noopener perché è pur sempre un target _blank. */}
             <a
-              href={`https://${MENU_DOMINIO}${locale.slug}`}
+              href={`/menu/${menu.id}/anteprima`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mx-auto mt-2 flex w-fit items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-900"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-white/90" />
-              {d.menuEditor.openLive}
+              {d.menuEditor.fullPreview}
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 4h6v6M20 4l-8 8" />
+                <path d="M18 14v5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 014 19V8a1.5 1.5 0 011.5-1.5H10" />
+              </svg>
             </a>
-          )}
-
-          {/* In una scheda a parte, non al posto dell'editor: serve a
-              guardarla grande e a tenerla aperta accanto mentre si lavora.
-              rel noopener perché è pur sempre un target _blank. */}
-          <a
-            href={`/menu/${menu.id}/anteprima`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mx-auto mt-2 flex w-fit items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-900"
-          >
-            {d.menuEditor.fullPreview}
-            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 4h6v6M20 4l-8 8" />
-              <path d="M18 14v5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 014 19V8a1.5 1.5 0 011.5-1.5H10" />
-            </svg>
-          </a>
+          </div>
         </div>
       </div>
 
