@@ -585,6 +585,7 @@ export default function MenuEditorPage() {
           venue={locale}
           online={pubblicazione.online}
           onSave={(slug) => setSlug(locale.id, slug)}
+          onUnpublish={() => void pubblicazione.ritira()}
         />
       )}
 

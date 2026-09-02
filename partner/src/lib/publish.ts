@@ -9,7 +9,7 @@
 // raccontare tre cose diverse per un istante.
 import { useCallback, useEffect, useState } from 'react';
 import { useSaveState } from './saveState';
-import { menuPublishState, publishMenu, type PublishState } from './venues';
+import { menuPublishState, publishMenu, unpublishMenu, type PublishState } from './venues';
 
 export function usePublishState(venueId: string | null) {
   // savedAt cambia a ogni scrittura riuscita: è il segnale che la bozza si è
@@ -41,5 +41,18 @@ export function usePublishState(venueId: string | null) {
     setStato({ publishedAt: quando, hasChanges: false, allergensChanged: false });
   }, [venueId]);
 
-  return { stato, pubblica, inCorso, online: stato?.publishedAt != null };
+  // Il ritiro rimette lo stato a "mai pubblicato" per quello che si vede a
+  // schermo: l'indirizzo non risponde più, quindi il riquadro sotto
+  // l'anteprima e la sezione in fondo tornano quelli di una bozza. Le
+  // modifiche in sospeso restano tali — non è stato pubblicato niente.
+  const ritira = useCallback(async () => {
+    if (venueId === null) return;
+    setInCorso(true);
+    const fatto = await unpublishMenu(venueId);
+    setInCorso(false);
+    if (!fatto) return;
+    setStato({ publishedAt: null, hasChanges: true, allergensChanged: false });
+  }, [venueId]);
+
+  return { stato, pubblica, ritira, inCorso, online: stato?.publishedAt != null };
 }

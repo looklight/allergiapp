@@ -679,6 +679,19 @@ o smette di usarci, la pagina **resta e lo dice** ("il menù non è al momento d
 davanti a un cliente al tavolo è meglio di un errore del browser. Chi lo implementa non lo faccia
 diventare un 404.
 
+> **Fatta il 2026-09-02** (migration 709, chiesta dall'utente: *"manca la possibilità di
+> disattivare il link"*). `unpublish_menu()` rimette `published_at` a NULL e **lascia lo scatto
+> dov'è**, per due motivi: le foto dei piatti sono protette dalla cancellazione finché uno scatto
+> le referenzia (`photo_in_published_menu`, 708) — buttandolo via, la prima sostituzione di una
+> foto porterebbe via il file e riattivando resterebbero immagini rotte — e così si sa sempre cosa
+> c'era in sala l'ultima volta. **Riattivare passa da `publish_menu()`**, non dal rimettere la
+> data: nel frattempo la bozza è andata avanti, e tornare in sala con lo scatto di sei mesi prima
+> vorrebbe dire pubblicare prezzi vecchi senza che nessuno l'abbia chiesto.
+>
+> Il comando sta **in fondo alla sezione dell'indirizzo e sottovoce**, lontano dal "Pubblica" che
+> si preme tutti i giorni, e la conferma non chiede "sei sicuro?" ma dice **cosa succede ai QR già
+> in giro** — l'unica cosa che il ristoratore non può vedere da solo.
+
 **Nota su cosa NON è questo**: l'acceso/spento vero serve alla **scheda in app**, dove siamo noi a
 mostrare il ristorante a chi lo cerca da lontano — ed è già governato dal claim e
 dall'abbonamento. Il menù al tavolo è del ristoratore, e lì la domanda è un'altra.

@@ -336,6 +336,18 @@ export async function publishMenu(venueId: string): Promise<string | null> {
   return (data as string) ?? null;
 }
 
+// Stacca il menù dalla sala (migration 709). Non cancella niente: chi
+// inquadra il QR da quel momento legge che il menù non è al momento
+// disponibile, e riattivare si fa ripubblicando — con lo scatto nuovo, non
+// con quello di sei mesi fa.
+export async function unpublishMenu(venueId: string): Promise<boolean> {
+  const { data, error } = await write('ritiro del menù', () =>
+    supabase.rpc('unpublish_menu', { p_venue_id: venueId })
+  );
+  if (error) return false;
+  return data === true;
+}
+
 // venues è null finché la prima lettura non è tornata
 export function useVenues() {
   const { list: venues, setList, reload } = useRemoteList('locali', loadVenues);

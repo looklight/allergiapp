@@ -371,6 +371,13 @@ modifiche"** (`PublishBar`, in cima all'editor e **sticky**). Sotto,
 `publish_menu()` prende uno scatto in `partner_venues.published_menu` e la
 pagina pubblica legge solo quello.
 
+**Ritirare il menù dalla sala** si fa dalla sezione dell'indirizzo, in fondo
+e sottovoce (migration 709): `published_at` torna NULL, lo **scatto resta**.
+Chi inquadra un QR già stampato legge che il menù non è al momento
+disponibile — ⚠️ mai un errore del browser: chi tocca la pagina pubblica non
+la trasformi in un 404 secco. Riattivare si fa **ripubblicando**, così torna
+in sala la bozza di adesso e non lo scatto di sei mesi fa.
+
 ⚠️ Due presidi che non vanno smontati: l'avviso dice se le modifiche non
 pubblicate toccano gli **allergeni** (`menu_publish_state`), perché un
 allergene corretto e mai pubblicato resta vecchio sul tavolo e dal portale

@@ -22,6 +22,7 @@ import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
 import { slugOccupato, type Venue } from '@/lib/venues';
 import MenuQr from './MenuQr';
+import ConfirmDialog from './ConfirmDialog';
 
 // L'ancora a cui punta il "Modifica" del riquadro sotto l'anteprima
 // (LiveBox): il posto in cui si cambia l'indirizzo e si scaricano i file per
@@ -36,12 +37,17 @@ export default function MenuAddress({
   venue,
   online,
   onSave,
+  onUnpublish,
 }: {
   venue: Venue;
   // il menù è già stato pubblicato almeno una volta: l'indirizzo risponde
   // davvero, e da quel momento il QR si può stampare
   online: boolean;
   onSave: (slug: string) => Promise<boolean>;
+  // Stacca il menù dalla sala. Sta qui e non in cima con "Pubblica": ritirare
+  // è raro e non deve stare accanto al gesto che si fa tutti i giorni, o
+  // prima o poi qualcuno lo preme al posto suo.
+  onUnpublish: () => void;
 }) {
   const { d } = useI18n();
   const campo = useId();
@@ -52,6 +58,7 @@ export default function MenuAddress({
   const [stato, setStato] = useState<Stato>('fermo');
   const [salvato, setSalvato] = useState(false);
   const [fallito, setFallito] = useState(false);
+  const [ritirando, setRitirando] = useState(false);
   const scatola = useRef<HTMLDivElement>(null);
 
   // QUANDO L'INDIRIZZO NASCE, il riquadro si allunga di colpo: sotto al campo
@@ -226,7 +233,36 @@ export default function MenuAddress({
               davvero: sulla bozza che si sta scrivendo sarebbero un QR che
               cambia sotto le dita, buono da scaricare per sbaglio. */}
           {venue.slug !== '' && <MenuQr slug={venue.slug} online={online} />}
+
+          {/* IL RITIRO, in fondo e sottovoce: è raro, e sta lontano dal
+              bottone "Pubblica" che si preme tutti i giorni. La conferma non
+              chiede "sei sicuro?" ma dice cosa succede ai QR già in giro —
+              che è l'unica cosa che il ristoratore non può vedere da solo. */}
+          {online && (
+            <div className="mt-3 border-t border-emerald-200/70 pt-2.5">
+              <button
+                onClick={() => setRitirando(true)}
+                className="text-xs font-medium text-gray-500 transition-colors hover:text-red-700"
+              >
+                {d.menuEditor.unpublish}
+              </button>
+            </div>
+          )}
         </>
+      )}
+
+      {ritirando && (
+        <ConfirmDialog
+          title={d.menuEditor.unpublishTitle}
+          body={d.menuEditor.unpublishBody}
+          subject={`${MENU_DOMINIO}${venue.slug}`}
+          confirmLabel={d.menuEditor.unpublish}
+          onCancel={() => setRitirando(false)}
+          onConfirm={() => {
+            setRitirando(false);
+            onUnpublish();
+          }}
+        />
       )}
     </div>
   );
