@@ -923,6 +923,18 @@ i file, il selettore nella scatola "Aspetto", l'anteprima e la pagina pubblica.
 come "il mio menù". La regola del Tema 23 resta ferma — quello che il cliente al tavolo usa (il
 filtro, gli allergeni) non si vende e non si spegne.
 
+**Insieme al carattere è arrivato lo STILE DELLE SEZIONI** (stessa migration, stesso ragionamento):
+`underline` (maiuscoletto col filetto, quello di oggi), `banner` (fascia piena col colore del
+locale, testo bianco) e `plain` (solo testo, più grande). La fascia colorata **si può offrire solo
+perché le tinte le scegliamo noi**: sono tutte scure abbastanza da reggere il bianco sopra. Chi un
+domani aprisse la scelta libera del colore renderebbe illeggibile questo stile, e se ne
+accorgerebbe dai clienti — non dal portale.
+
+> ⚠️ **Tre manopole decise e nessuna costruita** (copertina, carattere, sezioni): la 709 comincia a
+> essere una lista della spesa. Sono colonne che nessuno scrive e che nessuno ha ancora visto a
+> schermo, quindi ognuna è una decisione presa senza guardare. Prima di aggiungerne una quarta
+> conviene costruirne almeno una e vedere se il ragionamento regge davanti agli occhi.
+
 ## Prossimo passo
 
 **Non scrivere codice.** Parlare con tre o quattro ristoratori mostrando la pagina `/piatti` così

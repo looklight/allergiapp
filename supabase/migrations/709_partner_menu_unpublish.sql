@@ -1,4 +1,4 @@
--- Migration 709: ritirare il menù dalla sala, la copertina, il carattere
+-- Migration 709: ritirare il menù dalla sala, e tre manopole d'aspetto
 --
 -- STATO: DA APPLICARE via SQL editor, DOPO la 708 (il tracking locale è
 -- fermo alla 045: questa, come tutte le 046+, va eseguita a mano — MAI
@@ -97,6 +97,30 @@ alter table partner_venues
 comment on column partner_venues.heading_font is
   'Carattere delle INTESTAZIONI del menù (nome del locale, titoli delle sezioni). Il corpo e la riga degli allergeni restano di sistema. Candidato premium.';
 
+-- ------------------------------------------------------------
+-- LO STILE DELLE SEZIONI
+-- Come si vede il titolo di una sezione dentro il menù:
+--
+--   underline   maiuscoletto piccolo nel colore del locale, con il
+--               filetto sotto. È quello di oggi: sobrio, da carta.
+--   banner      fascia piena col colore scelto, testo bianco.
+--               Forte, e soprattutto si TROVA scorrendo: su un menù
+--               lungo è quello che aiuta di più a orientarsi.
+--   plain       solo testo, più grande e scuro. Niente colore,
+--               niente filetto.
+--
+-- La fascia si può offrire SOLO perché le tinte le scegliamo noi
+-- (Tema 8): sono tutte scure abbastanza da reggere il bianco
+-- sopra. Chi un domani aprisse la scelta del colore renderebbe
+-- illeggibile questo stile, e se ne accorgerebbe dai clienti —
+-- non da qui.
+alter table partner_venues
+  add column section_style text not null default 'underline'
+    check (section_style in ('underline', 'banner', 'plain'));
+
+comment on column partner_venues.section_style is
+  'Come si vedono i titoli delle sezioni nel menù al tavolo. La fascia colorata regge perché le tinte sono scelte da noi (Tema 8). Candidato premium.';
+
 -- Esce anche nello scatto pubblicato, altrimenti la copertina
 -- resterebbe una cosa che si vede solo nell'anteprima del
 -- portale. Le pagine già pubblicate non ce l'hanno dentro: chi
@@ -109,7 +133,8 @@ stable
 as $$
   with locale as (
     select v.id, v.name, v.slug, v.logo_url, v.accent, v.cover_url, v.heading_font,
-           v.table_conditions, v.show_dish_photos, v.show_dish_descriptions
+           v.section_style, v.table_conditions, v.show_dish_photos,
+           v.show_dish_descriptions
       from partner_venues v
      where v.id = p_venue_id
   ),
@@ -187,6 +212,7 @@ as $$
       'accent', (select accent from locale),
       'coverUrl', coalesce((select cover_url from locale), ''),
       'headingFont', (select heading_font from locale),
+      'sectionStyle', (select section_style from locale),
       'tableConditions', coalesce((select table_conditions from locale), ''),
       'showPhotos', (select show_dish_photos from locale),
       'showDescriptions', (select show_dish_descriptions from locale),
