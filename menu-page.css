@@ -152,6 +152,17 @@
   color: #fff;
   padding: 18px 16px 14px;
 }
+/* Con la copertina il colore resta SOTTO l'immagine: se la foto non arriva —
+   rete lenta, file sparito — l'intestazione non diventa bianca col nome
+   bianco sopra. La velatura scura sta nel gradiente ed è obbligatoria (Tema
+   25): senza, il nome su una foto chiara sparisce. */
+.menu-header.has-cover {
+  background-size: cover;
+  background-position: center;
+  background-color: var(--accent);
+  padding-top: 22px;
+  padding-bottom: 18px;
+}
 .menu-header-top {
   display: flex;
   align-items: center;
