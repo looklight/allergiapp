@@ -1,7 +1,7 @@
 -- Migration 710: che GENERE di modifiche non sono ancora in sala
 --                (e la colonna della grandezza dei testi)
 --
--- STATO: DA APPLICARE a mano nel SQL editor, dopo la 709 (il
+-- STATO: APPLICATA il 2026-09-02 via SQL editor, dopo la 709 (il
 -- tracking locale è fermo alla 045: questa, come tutte le 046+, va
 -- eseguita a mano — MAI db push).
 --

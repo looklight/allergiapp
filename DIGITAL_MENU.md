@@ -1041,7 +1041,7 @@ scatto lo rimetterebbe puntando a un file già distrutto.
 ## Prossimo passo
 
 **Aggiornato il 2026-09-02, fine giornata.** La fase 2 è fatta e in produzione: il menù al tavolo
-si apre da `allergiapp.com/menu/<slug>`. Migrations 707, 708 e 709 applicate.
+si apre da `allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate.
 
 **Fatto oggi**: indirizzo e QR (PNG + vettoriale), pagina pubblica collegata, bozza/pubblicato con
 i due presidi (avviso sugli allergeni non pubblicati, foto protette dalla cancellazione), ritiro
