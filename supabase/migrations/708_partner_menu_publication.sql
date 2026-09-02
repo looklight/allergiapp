@@ -1,8 +1,10 @@
 -- Migration 708: la pagina pubblica del menù — pubblicazione, aspetto, lettura
 --
--- STATO: DA APPLICARE via SQL editor, DOPO la 707 (il tracking locale è
--- fermo alla 045: questa, come tutte le 046+, va eseguita a mano — MAI
--- db push).
+-- STATO: APPLICATA il 2026-09-02 via SQL editor, dopo la 707 (il
+-- tracking locale è fermo alla 045: questa, come tutte le 046+, va
+-- eseguita a mano — MAI db push). Verificata lo stesso giorno leggendo
+-- get_public_menu dall'esterno con la chiave pubblica: esce lo scatto
+-- pubblicato, con dentro quello che deve e nient'altro.
 --
 -- Le cose che servono alla pagina che il cliente apre col QR
 -- (DIGITAL_MENU.md, fase 2):
