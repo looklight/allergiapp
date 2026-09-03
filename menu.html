@@ -53,108 +53,131 @@
         </div>
     </nav>
 
-    <!-- IL BLOCCO DI TESTA. Due colonne su schermo largo: a sinistra si dice
-         cosa è e si danno le manopole, a destra c'è la cosa. Su telefono
-         diventa una colonna sola e il telefono si infila IN MEZZO — prima le
-         manopole si sarebbero toccate senza vedere cosa cambiano. -->
+    <!-- LA TESTATA. Dice cosa si fa e basta: la cosa da toccare sta nel
+         riquadro qui sotto, che si annuncia da sé. -->
     <section class="ml-hero">
-        <div class="container ml-split">
-            <div class="ml-pitch">
-                <p class="ml-eyebrow" data-i18n="menuLanding.eyebrow">Hai un'attività ricettiva?</p>
-                <h1 class="ml-title">
-                    <span data-i18n="menuLanding.title1">Crea il menù digitale</span><br>
-                    <span class="gradient-text" data-i18n="menuLanding.title2">che si adatta ai tuoi clienti.</span>
-                </h1>
-                <p class="ml-subtitle" data-i18n="menuLanding.subtitle">Basterà inquadrare un QR e potranno vedere tutti i piatti del menù, e filtrarli in base agli allergeni dichiarati.</p>
-                <div class="ml-cta-row">
-                    <p class="ml-cta-lead" data-i18n="menuLanding.ctaLead">Crea il tuo menù digitale gratuitamente</p>
-                    <a href="https://partner.allergiapp.com" class="ml-cta" data-i18n="menuLanding.ctaPrimary">Inizia gratis</a>
-                    <p class="ml-cta-note" data-i18n="menuLanding.ctaNote">Menù completo, piatti illimitati, filtro allergeni e QR: non si pagano.</p>
+        <div class="container ml-pitch">
+            <p class="ml-eyebrow" data-i18n="menuLanding.eyebrow">Hai un'attività ricettiva?</p>
+            <h1 class="ml-title">
+                <span data-i18n="menuLanding.title1">Crea il menù digitale</span><br>
+                <span class="gradient-text" data-i18n="menuLanding.title2">che si adatta ai tuoi clienti.</span>
+            </h1>
+            <p class="ml-subtitle" data-i18n="menuLanding.subtitle">Basterà inquadrare un QR e potranno vedere tutti i piatti del menù, e filtrarli in base agli allergeni dichiarati.</p>
+            <div class="ml-cta-row">
+                <p class="ml-cta-lead" data-i18n="menuLanding.ctaLead">Crea il tuo menù digitale gratuitamente</p>
+                <a href="https://partner.allergiapp.com" class="ml-cta" data-i18n="menuLanding.ctaPrimary">Inizia gratis</a>
+                <p class="ml-cta-note" data-i18n="menuLanding.ctaNote">Menù completo, piatti illimitati, filtro allergeni e QR: non si pagano.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- LA PROVA, DENTRO UN RIQUADRO. Chiuso e su fondo suo perché si capisca
+         a colpo d'occhio che è una cosa a parte e che si tocca. Dentro: a
+         sinistra quello che decide il ristoratore, a destra la cosa. Su
+         schermo stretto il telefono si infila IN MEZZO — prima le manopole si
+         sarebbero toccate senza vedere cosa cambiano. -->
+    <section class="ml-try">
+        <div class="container">
+            <div class="ml-try-box">
+                <div class="ml-try-head">
+                    <h2 class="ml-knobs-title" data-i18n="menuLanding.demoTitle">Provalo adesso</h2>
+                    <p class="ml-knobs-intro" data-i18n="menuLanding.demoText" data-i18n-html>Puoi aggiungere i piatti e personalizzare il menù del tuo locale come preferisci, grazie all'editor dedicato.</p>
+                </div>
+
+                <div class="ml-preview" id="prova">
+                    <div class="ml-phone">
+                        <div class="ml-phone-screen">
+                            <iframe id="ml-demo-frame" src="/menu-demo" title="Menù di prova" data-i18n="menuLanding.frameTitle" data-i18n-attr="title" loading="eager"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ml-knobs" id="ml-knobs">
+                    <div class="ml-knobs-grid">
+                    <div class="ml-knob" role="group" aria-labelledby="ml-knob-accent">
+                        <span class="ml-knob-label" id="ml-knob-accent" data-i18n="menuLanding.knobColor">Colore</span>
+                        <div class="ml-swatches" data-knob="accent">
+                            <button type="button" class="ml-swatch" data-value="#333333" style="--c:#333333" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorCharcoal">Antracite</span></button>
+                            <button type="button" class="ml-swatch is-on" data-value="#2E6B4F" style="--c:#2E6B4F" aria-pressed="true"><span class="visually-hidden" data-i18n="menuLanding.colorForest">Verde bosco</span></button>
+                            <button type="button" class="ml-swatch" data-value="#1F4E79" style="--c:#1F4E79" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorNavy">Blu notte</span></button>
+                            <button type="button" class="ml-swatch" data-value="#8C3A2B" style="--c:#8C3A2B" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorBrick">Mattone</span></button>
+                            <button type="button" class="ml-swatch" data-value="#6B3F6E" style="--c:#6B3F6E" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorPlum">Prugna</span></button>
+                            <button type="button" class="ml-swatch" data-value="#7A5C1E" style="--c:#7A5C1E" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorBrass">Ottone</span></button>
+                        </div>
+                    </div>
+
+                    <div class="ml-knob" role="group" aria-labelledby="ml-knob-font">
+                        <span class="ml-knob-label" id="ml-knob-font" data-i18n="menuLanding.knobFont">Carattere dei titoli</span>
+                        <div class="ml-choices" data-knob="font">
+                            <button type="button" class="ml-choice is-on" data-value="modern" aria-pressed="true" data-i18n="menuLanding.fontModern">Moderno</button>
+                            <button type="button" class="ml-choice" data-value="classic" aria-pressed="false" data-i18n="menuLanding.fontClassic">Classico</button>
+                            <button type="button" class="ml-choice" data-value="bold" aria-pressed="false" data-i18n="menuLanding.fontBold">Marcato</button>
+                            <button type="button" class="ml-choice" data-value="light" aria-pressed="false" data-i18n="menuLanding.fontLight">Sottile</button>
+                        </div>
+                    </div>
+
+                    <div class="ml-knob" role="group" aria-labelledby="ml-knob-scale">
+                        <span class="ml-knob-label" id="ml-knob-scale" data-i18n="menuLanding.knobScale">Grandezza dei testi</span>
+                        <div class="ml-choices" data-knob="scale">
+                            <button type="button" class="ml-choice" data-value="0.92" aria-pressed="false" data-i18n="menuLanding.scaleCompact">Compatta</button>
+                            <button type="button" class="ml-choice is-on" data-value="1" aria-pressed="true" data-i18n="menuLanding.scaleNormal">Normale</button>
+                            <button type="button" class="ml-choice" data-value="1.12" aria-pressed="false" data-i18n="menuLanding.scaleRoomy">Ampia</button>
+                        </div>
+                    </div>
+
+                    <div class="ml-knob" role="group" aria-labelledby="ml-knob-sections">
+                        <span class="ml-knob-label" id="ml-knob-sections" data-i18n="menuLanding.moreSections">Titoli delle sezioni</span>
+                        <div class="ml-choices" data-knob="section">
+                            <button type="button" class="ml-choice is-on" data-value="underline" aria-pressed="true" data-i18n="menuLanding.moreSectionsRule">Filetto</button>
+                            <button type="button" class="ml-choice" data-value="banner" aria-pressed="false" data-i18n="menuLanding.moreSectionsBanner">Fascia</button>
+                            <button type="button" class="ml-choice" data-value="plain" aria-pressed="false" data-i18n="menuLanding.moreSectionsPlain">Solo testo</button>
+                        </div>
+                    </div>
+
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="ml-preview" id="prova">
-                <div class="ml-phone">
-                    <div class="ml-phone-screen">
-                        <iframe id="ml-demo-frame" src="/menu-demo" title="Menù di prova" data-i18n="menuLanding.frameTitle" data-i18n-attr="title" loading="eager"></iframe>
-                    </div>
-                </div>
-            </div>
+    <!-- LE PERSONALIZZAZIONI CHE QUI NON SI TOCCANO. Ci sono tutte nel
+         portale, e sono gratuite come le altre: si spengono perché la prova è
+         il menù di una trattoria che non esiste — non c'è un logo da
+         caricarci. Stanno in una sezione loro e non più in coda al pannello,
+         dove allungavano la colonna al doppio del telefono. Sono SOLO quelle
+         che esistono davvero oggi. -->
+    <section class="ml-custom">
+        <div class="container">
+            <h2 class="ml-custom-title" data-i18n="menuLanding.moreLabel">Personalizza ogni dettaglio</h2>
+            <p class="ml-custom-intro" data-i18n="menuLanding.moreIntro">Nel portale decidi com'è fatto il tuo menù: chiaro e semplice da leggere al tavolo, con lo stile che si addice al tuo locale.</p>
 
-            <div class="ml-knobs" id="ml-knobs">
-                <h2 class="ml-knobs-title" data-i18n="menuLanding.demoTitle">Provalo adesso</h2>
-                <p class="ml-knobs-intro" data-i18n="menuLanding.demoText" data-i18n-html>Questo non è uno screenshot: è esattamente la pagina che si apre col QR. Le scelte qui sotto sono le tue; il filtro degli allergeni, invece, è del cliente e sta dentro il telefono — <strong>toccalo</strong> e guarda cosa succede quando al tavolo si siede un celiaco.</p>
-
-                <div class="ml-knob" role="group" aria-labelledby="ml-knob-accent">
-                    <span class="ml-knob-label" id="ml-knob-accent" data-i18n="menuLanding.knobColor">Colore</span>
-                    <div class="ml-swatches" data-knob="accent">
-                        <button type="button" class="ml-swatch" data-value="#333333" style="--c:#333333" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorCharcoal">Antracite</span></button>
-                        <button type="button" class="ml-swatch is-on" data-value="#2E6B4F" style="--c:#2E6B4F" aria-pressed="true"><span class="visually-hidden" data-i18n="menuLanding.colorForest">Verde bosco</span></button>
-                        <button type="button" class="ml-swatch" data-value="#1F4E79" style="--c:#1F4E79" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorNavy">Blu notte</span></button>
-                        <button type="button" class="ml-swatch" data-value="#8C3A2B" style="--c:#8C3A2B" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorBrick">Mattone</span></button>
-                        <button type="button" class="ml-swatch" data-value="#6B3F6E" style="--c:#6B3F6E" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorPlum">Prugna</span></button>
-                        <button type="button" class="ml-swatch" data-value="#7A5C1E" style="--c:#7A5C1E" aria-pressed="false"><span class="visually-hidden" data-i18n="menuLanding.colorBrass">Ottone</span></button>
-                    </div>
-                </div>
-
-                <div class="ml-knob" role="group" aria-labelledby="ml-knob-font">
-                    <span class="ml-knob-label" id="ml-knob-font" data-i18n="menuLanding.knobFont">Carattere dei titoli</span>
-                    <div class="ml-choices" data-knob="font">
-                        <button type="button" class="ml-choice is-on" data-value="modern" aria-pressed="true" data-i18n="menuLanding.fontModern">Moderno</button>
-                        <button type="button" class="ml-choice" data-value="classic" aria-pressed="false" data-i18n="menuLanding.fontClassic">Classico</button>
-                        <button type="button" class="ml-choice" data-value="bold" aria-pressed="false" data-i18n="menuLanding.fontBold">Marcato</button>
-                        <button type="button" class="ml-choice" data-value="light" aria-pressed="false" data-i18n="menuLanding.fontLight">Sottile</button>
-                    </div>
-                </div>
-
-                <div class="ml-knob" role="group" aria-labelledby="ml-knob-scale">
-                    <span class="ml-knob-label" id="ml-knob-scale" data-i18n="menuLanding.knobScale">Grandezza dei testi</span>
-                    <div class="ml-choices" data-knob="scale">
-                        <button type="button" class="ml-choice" data-value="0.92" aria-pressed="false" data-i18n="menuLanding.scaleCompact">Compatta</button>
-                        <button type="button" class="ml-choice is-on" data-value="1" aria-pressed="true" data-i18n="menuLanding.scaleNormal">Normale</button>
-                        <button type="button" class="ml-choice" data-value="1.12" aria-pressed="false" data-i18n="menuLanding.scaleRoomy">Ampia</button>
-                    </div>
-                </div>
-
-                <div class="ml-knob" role="group" aria-labelledby="ml-knob-sections">
-                    <span class="ml-knob-label" id="ml-knob-sections" data-i18n="menuLanding.moreSections">Titoli delle sezioni</span>
-                    <div class="ml-choices" data-knob="section">
-                        <button type="button" class="ml-choice is-on" data-value="underline" aria-pressed="true" data-i18n="menuLanding.moreSectionsRule">Filetto</button>
-                        <button type="button" class="ml-choice" data-value="banner" aria-pressed="false" data-i18n="menuLanding.moreSectionsBanner">Fascia</button>
-                        <button type="button" class="ml-choice" data-value="plain" aria-pressed="false" data-i18n="menuLanding.moreSectionsPlain">Solo testo</button>
-                    </div>
-                </div>
-
-                <!-- LE MANOPOLE CHE NON SI TOCCANO QUI. Ci sono tutte nel
-                     portale, e sono gratuite come le altre: si spengono
-                     perché la prova è il menù di una trattoria che non
-                     esiste — non c'è un logo da caricarci. Mostrarle è il
-                     modo migliore di dire cosa si ottiene aprendo un
-                     profilo. Sono SOLO quelle che esistono davvero oggi. -->
-                <div class="ml-locked">
-                    <h3 class="ml-knobs-title" data-i18n="menuLanding.moreLabel">Personalizza ogni dettaglio</h3>
-                    <p class="ml-knobs-intro" data-i18n="menuLanding.moreIntro">Nel portale decidi com'è fatto il tuo menù: chiaro e semplice da leggere al tavolo, con lo stile che si addice al tuo locale.</p>
-
+            <div class="ml-custom-grid">
+                <div class="ml-custom-item">
+                    <span class="ml-locked-name" data-i18n="menuLanding.moreBrand">Logo e copertina</span>
                     <div class="ml-locked-row">
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreLogo">Il tuo logo</button>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreCover">La tua copertina</button>
                     </div>
+                </div>
 
+                <div class="ml-custom-item">
+                    <span class="ml-locked-name" data-i18n="menuLanding.morePhotos">Foto dei piatti</span>
                     <div class="ml-locked-row">
-                        <span class="ml-locked-name" data-i18n="menuLanding.morePhotos">Foto dei piatti</span>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.morePhotosOn">Con foto</button>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.morePhotosOff">Senza</button>
                     </div>
+                </div>
 
+                <div class="ml-custom-item">
+                    <span class="ml-locked-name" data-i18n="menuLanding.moreDesc">Descrizioni</span>
                     <div class="ml-locked-row">
-                        <span class="ml-locked-name" data-i18n="menuLanding.moreDesc">Descrizioni</span>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreDescUnder">Sotto il nome</button>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreDescDetail">Solo nel dettaglio</button>
                     </div>
-
-                    <p class="ml-knobs-note" data-i18n="menuLanding.knobsNote" data-i18n-html>Ci sono tutte, e non si pagano. <a href="https://partner.allergiapp.com">Crea un profilo</a> per costruire il tuo menù e personalizzarlo come vuoi.</p>
                 </div>
             </div>
+
+            <p class="ml-custom-note" data-i18n="menuLanding.knobsNote" data-i18n-html><a href="https://partner.allergiapp.com">Crea un profilo</a> per costruire il tuo menù e sceglierle una a una.</p>
         </div>
     </section>
 

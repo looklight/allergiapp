@@ -22,32 +22,17 @@
     border: 0;
 }
 
-/* ── IL BLOCCO DI TESTA ─────────────────────────────────────────────── */
-/* Su schermo largo sono due colonne: il discorso e le manopole a sinistra,
- * il telefono a destra. Le tre parti sono TRE FRATELLI nel documento, e non
- * un testo con dentro un telefono, perché su schermo stretto devono
- * ricomporsi in un ordine diverso — discorso, telefono, manopole — e con le
- * aree della griglia si dice senza spostare niente nel documento. */
+/* ── LA TESTATA ─────────────────────────────────────────────────────── */
 
 .ml-hero {
-    padding: 118px 0 64px;
-    background: linear-gradient(180deg, #F4FAF5 0%, var(--bg) 100%);
+    padding: 122px 0 52px;
+    background: linear-gradient(180deg, #F4FAF5 0%, #EAF4EC 100%);
 }
 
-.ml-split {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-        "pitch preview"
-        "knobs preview";
-    column-gap: 64px;
-    row-gap: 44px;
-    align-items: start;
+.ml-pitch {
+    max-width: 46em;
+    text-align: center;
 }
-
-.ml-pitch { grid-area: pitch; }
-.ml-knobs { grid-area: knobs; }
-.ml-preview { grid-area: preview; }
 
 .ml-eyebrow {
     font-size: 14px;
@@ -62,19 +47,17 @@
 }
 
 .ml-title {
-    font-size: clamp(29px, 3.4vw, 42px);
+    font-size: clamp(29px, 3.9vw, 46px);
     line-height: 1.14;
-    /* Il titolo è lungo e va a capo da solo anche prima del <br>: senza
-     * questo spezzava «per il tuo / locale,» lasciando una riga con una
-     * parola. Dove non è capito si torna al comportamento di prima. */
-    text-wrap: balance;
     font-weight: 800;
     letter-spacing: -0.02em;
     margin-bottom: 20px;
+    text-wrap: balance;
 }
 
 .ml-subtitle {
-    max-width: 30em;
+    max-width: 34em;
+    margin: 0 auto;
     font-size: 18px;
     color: var(--text-secondary);
 }
@@ -113,10 +96,59 @@
  * dentro: sul bottone ci va la promessa corta, e la promessa corta senza il
  * dettaglio è una promessa che non sappiamo mantenere. */
 .ml-cta-note {
-    margin-top: 14px;
+    margin: 14px auto 0;
     max-width: 34em;
     font-size: 14px;
     color: var(--text-secondary);
+}
+
+/* ── LA PROVA, DENTRO UN RIQUADRO ───────────────────────────────────── */
+/* Il riquadro serve a dire che quella è una cosa a parte e che si TOCCA. Le
+ * tre parti sono tre fratelli e si dispongono con le aree della griglia,
+ * perché su schermo stretto l'ordine dev'essere un altro: cappello, TELEFONO,
+ * manopole. */
+
+/* Il fondo continua quello della testata e sfuma nel bianco: è lì che il
+ * riquadro bianco si stacca. Su fondo bianco sarebbe un bordo e basta. */
+.ml-try {
+    padding: 0 0 70px;
+    background: linear-gradient(180deg, #EAF4EC 0%, var(--bg) 62%);
+}
+
+.ml-try-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 40px 44px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "head preview"
+        "knobs preview";
+    column-gap: 56px;
+    row-gap: 22px;
+}
+
+/* Il cappello scende in fondo alla sua riga e le manopole partono in cima
+ * alla loro: si incontrano a metà, e la colonna di sinistra risulta centrata
+ * contro il telefono senza doverne conoscere l'altezza. */
+.ml-try-head {
+    grid-area: head;
+    align-self: end;
+    max-width: 32em;
+}
+
+.ml-knobs {
+    grid-area: knobs;
+    align-self: start;
+    max-width: 32em;
+}
+
+.ml-preview {
+    grid-area: preview;
+    justify-self: end;
+    align-self: center;
 }
 
 /* ── IL TELEFONO ────────────────────────────────────────────────────── */
@@ -223,6 +255,11 @@
     transform-origin: top left;
 }
 
+/* Lo schermo non è più appeso all'altezza della finestra ma a quella del
+ * riquadro, che è una cosa sola con la colonna accanto: resta il tetto della
+ * finestra perché su un portatile basso il riquadro non diventi più alto
+ * dello schermo. */
+
 /* ── LE MANOPOLE ────────────────────────────────────────────────────── */
 
 .ml-knobs {
@@ -246,8 +283,9 @@
     color: var(--text);
 }
 
-.ml-knob {
-    margin-bottom: 24px;
+.ml-knobs-grid {
+    display: grid;
+    gap: 22px;
 }
 
 .ml-knob-label {
@@ -333,17 +371,52 @@
  * niente lucchetti né avvisi di pagamento, solo il tono più basso di una
  * cosa che qui non c'è. */
 
-.ml-locked {
-    margin-top: 32px;
-    padding-top: 26px;
-    border-top: 1px solid var(--border);
+/* Non è più una coda del pannello: è una sezione, e dice cosa si può fare
+ * invece di cosa qui manca. In coda al pannello allungava la colonna al
+ * doppio del telefono, e sotto la cornice restavano seicento pixel di
+ * niente. */
+.ml-custom {
+    padding: 8px 0 72px;
+    text-align: center;
 }
 
-/* Qui il blocco non dice più «ecco cosa manca», dice cosa si può fare: il
- * titolo pesa come quello delle manopole vive, e sotto c'è l'intenzione —
- * un menù chiaro, e con la faccia del locale. */
-.ml-locked .ml-knobs-intro {
-    margin-bottom: 4px;
+.ml-custom-title {
+    line-height: 1.15;
+    font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.ml-custom-intro {
+    max-width: 40em;
+    margin: 0 auto 36px;
+    color: var(--text-secondary);
+}
+
+.ml-custom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    max-width: 60em;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.ml-custom-item {
+    background: var(--bg-alt);
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+
+.ml-custom-note {
+    margin-top: 30px;
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+.ml-custom-note a {
+    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+    font-weight: 600;
 }
 
 .ml-locked-row {
@@ -351,13 +424,16 @@
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: 12px;
 }
 
 .ml-locked-name {
-    font-size: 14px;
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--text-secondary);
-    margin-right: 2px;
+    margin-bottom: 10px;
 }
 
 /* Non `opacity` sull'intera riga: sbiadirebbe anche il nome della manopola,
@@ -374,16 +450,7 @@
     border-color: #D8D8D8;
 }
 
-.ml-knobs-note {
-    margin-top: 18px;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
 
-.ml-knobs-note a {
-    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
-    font-weight: 600;
-}
 
 /* ── IL LEGAME CON L'APP ────────────────────────────────────────────── */
 
@@ -510,43 +577,38 @@
 }
 
 /* ── TELEFONO VERO ──────────────────────────────────────────────────── */
-/* Sotto i 900px il telefono va sopra e le manopole sotto: chi legge da un
- * telefono ha già in mano la cosa che stiamo mostrando, e la cornice si
- * assottiglia per non rubargli larghezza. */
-
 @media (max-width: 1040px) {
-    /* Una colonna sola, e il telefono IN MEZZO: si guarda quello che si sta
-     * per cambiare, non lo si cambia alla cieca. */
-    .ml-split {
-        /* minmax(0, …) e non 1fr: `1fr` non scende sotto il contenuto più
-         * stretto della colonna, e il telefono è largo 375px fissi — la
-         * colonna restava larga come lui e usciva dallo schermo. */
+    /* Nel riquadro una colonna sola, e il telefono IN MEZZO: si guarda quello
+     * che si sta per cambiare, non lo si cambia alla cieca. `minmax(0, …)` e
+     * non `1fr`, o la colonna resterebbe larga quanto il telefono e uscirebbe
+     * dallo schermo. */
+    .ml-try-box {
+        padding: 30px 24px;
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
-            "pitch"
+            "head"
             "preview"
             "knobs";
-        row-gap: 40px;
+        row-gap: 30px;
     }
 
-    /* `justify-self: center` da solo lascerebbe la cornice larga quanto il
-     * suo contenuto — 399px — anche in una colonna più stretta, e il telefono
-     * uscirebbe dallo schermo. Occupa la colonna e centra dentro di sé. */
+    .ml-try-head,
+    .ml-knobs {
+        align-self: auto;
+        max-width: 46em;
+    }
+
+    /* `justify-self: end` lascerebbe la cornice a destra e larga quanto il suo
+     * contenuto: qui occupa la colonna e centra dentro di sé. */
     .ml-preview {
         justify-self: stretch;
+        align-self: auto;
         display: flex;
         justify-content: center;
-        position: static;
     }
 
-    .ml-knobs {
-        max-width: 460px;
-    }
-
-    /* Fuori dalle due colonne il telefono non deve più stare accanto a
-       niente: può prendersi l'altezza vera del suo formato. */
-    /* In colonna sola il telefono non deve più stare accanto a niente:
-       prende la larghezza che la colonna concede, fino alle misure vere. */
+    /* In colonna sola il telefono non deve più stare accanto a niente: prende
+       la larghezza che la colonna concede, fino alle misure vere. */
     .ml-phone {
         width: 100%;
         max-width: 413px;
@@ -567,6 +629,11 @@
         padding-top: 104px;
     }
 
+    .ml-try-box {
+        padding: 26px 18px;
+        border-radius: 22px;
+    }
+
     /* Su un telefono vero la cornice si assottiglia ancora: quello che deve
        restare largo è la carta dentro. Raggi e isola scendono con lei, o si
        vedrebbe una cornice di plastica intorno a uno schermo squadrato. */
@@ -584,8 +651,4 @@
         border-radius: 35px;
     }
 
-    .ml-phone-screen::after {
-        top: 7px;
-        height: 18px;
-    }
 }
