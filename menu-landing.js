@@ -46,10 +46,55 @@
     if (stato.font !== 'modern') doc.body.classList.add('font-' + stato.font);
   }
 
+  // ── I CARATTERI, PRIMA CHE SERVANO ────────────────────────────────────
+  // I tre caratteri si scaricano solo quando qualcosa li usa. Al primo clic
+  // su «Classico» la carta si ridisegnava una volta col ripiego di sistema e
+  // una seconda col carattere vero appena arrivato: uno scatto, e per giunta
+  // proprio nel momento in cui si sta guardando l'effetto.
+  //
+  // Qui si chiedono tutti e sei i tagli (due pesi per famiglia: il marcato
+  // dei titoli e quello del corpo) appena il browser è libero, così al clic
+  // sono già in casa e il cambio è netto. Il carattere di sistema — quello di
+  // partenza — non si scarica, quindi non c'è niente da scaldare.
+  var TAGLI = [
+    '600 1em Fraunces', '400 1em Fraunces',
+    '700 1em Archivo', '500 1em Archivo',
+    '300 1em Jost', '400 1em Jost',
+  ];
+
+  function scaldaCaratteri() {
+    var doc;
+    try {
+      doc = frame.contentDocument;
+    } catch (e) {
+      return;
+    }
+    if (!doc || !doc.fonts || !doc.fonts.load) return;
+    TAGLI.forEach(function (taglio) {
+      // Le lettere accentate servono a chiedere il sottoinsieme GIUSTO: i
+      // file sono divisi per intervalli di caratteri, e senza un esempio si
+      // scalderebbe quello sbagliato.
+      try {
+        doc.fonts.load(taglio, 'Antipasti àèìòù').catch(function () {});
+      } catch (e) {
+        /* browser senza FontFace: pazienza, si torna allo scatto di prima */
+      }
+    });
+  }
+
+  function appenaLibero(cosa) {
+    if (window.requestIdleCallback) window.requestIdleCallback(cosa, { timeout: 3000 });
+    else setTimeout(cosa, 1500);
+  }
+
   // Il menù dentro la cornice si ridisegna solo quando cambia la lingua: a
   // ogni arrivo le scelte fatte finora vanno rimesse, o tornerebbe grigio.
-  frame.addEventListener('load', applica);
+  frame.addEventListener('load', function () {
+    applica();
+    appenaLibero(scaldaCaratteri);
+  });
   applica();
+  appenaLibero(scaldaCaratteri);
 
   pannello.addEventListener('click', function (e) {
     var bottone = e.target.closest('button[data-value]');
