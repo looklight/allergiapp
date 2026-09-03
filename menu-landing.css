@@ -334,9 +334,16 @@
  * cosa che qui non c'è. */
 
 .ml-locked {
-    margin-top: 28px;
-    padding-top: 22px;
+    margin-top: 32px;
+    padding-top: 26px;
     border-top: 1px solid var(--border);
+}
+
+/* Qui il blocco non dice più «ecco cosa manca», dice cosa si può fare: il
+ * titolo pesa come quello delle manopole vive, e sotto c'è l'intenzione —
+ * un menù chiaro, e con la faccia del locale. */
+.ml-locked .ml-knobs-intro {
+    margin-bottom: 4px;
 }
 
 .ml-locked-row {
