@@ -133,13 +133,11 @@
 
 .ml-phone {
     position: relative;
-    /* 384 di SCHERMO più i 10 di bordo per lato: la carta dentro si vede alla
-     * larghezza a cui la vedrà un cliente vero, ed è la misura su cui il
-     * ristoratore giudica la sua impaginazione. */
-    width: 404px;
+    /* La cornice si stringe intorno allo schermo: è quello a decidere le
+     * misure, non un numero scritto qui. */
+    width: fit-content;
     max-width: 100%;
-    /* La cornice dei telefoni di oggi è SOTTILE e uguale su tutti e quattro i
-     * lati. Dodici pixel facevano un apparecchio di qualche anno fa. */
+    /* La cornice dei telefoni di oggi è SOTTILE e uguale sui quattro lati. */
     padding: 10px;
     /* Il bordo non è nero piatto: è un profilo metallico che prende luce sui
      * fianchi. Due lampi chiari agli angoli bastano a farlo sembrare un
@@ -165,27 +163,28 @@
 /* Volume, a sinistra */
 .ml-phone::before {
     left: -2px;
-    top: 148px;
-    height: 104px;
+    top: 17%;
+    height: 15%;
 }
 
 /* Accensione, a destra: più in basso e più corto, come sui telefoni veri */
 .ml-phone::after {
     right: -2px;
-    top: 186px;
-    height: 76px;
+    top: 22%;
+    height: 11%;
 }
 
+/* LO SCHERMO. Il formato è quello di un telefono di oggi e NON SI PIEGA: se
+ * l'altezza disponibile non basta, a stringersi è la larghezza. Tenere fissa
+ * la larghezza e lasciar tagliare l'altezza — come si faceva prima — dava un
+ * apparecchio tozzo, largo come un telefono e alto come non lo è nessuno.
+ *
+ * 393 × 852 sono le misure vere di un telefono recente; 393/852 = 0,4613 è
+ * quanto sta in larghezza per ogni pixel di altezza concesso. */
 .ml-phone-screen {
     position: relative;
-    /* PROPORZIONI DI OGGI: 19,5:9. L'altezza piena la prende solo se lo
-     * schermo di chi guarda la concede; sotto, si accorcia invece di
-     * stringersi, perché la LARGHEZZA dev'essere quella vera — è la misura
-     * su cui il ristoratore giudica la sua carta. */
-    /* 384 × 2,17 = 832: il formato pieno di un telefono di oggi. Lo
-     * raggiunge solo su schermi alti; sotto, la finestra lo accorcia. */
-    height: min(832px, calc(100vh - 168px));
-    min-height: 460px;
+    width: min(393px, calc((100vh - 176px) * 0.4613));
+    aspect-ratio: 393 / 852;
     /* Concentrico con la cornice: 54 fuori meno 10 di bordo. */
     border-radius: 44px;
     overflow: hidden;
@@ -195,25 +194,33 @@
 /* L'isola in alto. Sta SOPRA la pagina, come su un telefono vero, e cade
  * nella fascia vuota dell'intestazione del menù: sotto ci passa il nome del
  * locale, mai coperto. */
+/* Le sue misure scendono con la carta, non con lo schermo: la fascia vuota
+ * in cui deve stare è dentro la pagina, e anche lei si rimpicciolisce. */
 .ml-phone-screen::after {
     content: '';
     position: absolute;
-    top: 9px;
+    top: calc(9px * var(--ml-scala, 1));
     left: 50%;
     transform: translateX(-50%);
-    width: 21%;
-    max-width: 82px;
-    height: 21px;
+    width: calc(92px * var(--ml-scala, 1));
+    height: calc(20px * var(--ml-scala, 1));
     border-radius: 999px;
     background: #0b0b0c;
     pointer-events: none;
 }
 
+/* LA CARTA È DISEGNATA A 393 E POI RIMPICCIOLITA, non compressa in uno
+ * schermo più stretto. È la differenza fra una fotografia di un telefono e un
+ * telefono deformato: i testi, i margini e le pastiglie stanno fra loro
+ * esattamente come staranno al tavolo, solo più piccoli. Il fattore lo scrive
+ * menu-landing.js, perché il CSS non sa dividere due misure. */
 .ml-phone-screen iframe {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: 393px;
+    height: 852px;
     border: 0;
+    transform: scale(var(--ml-scala, 1));
+    transform-origin: top left;
 }
 
 /* ── LE MANOPOLE ────────────────────────────────────────────────────── */
@@ -533,13 +540,15 @@
 
     /* Fuori dalle due colonne il telefono non deve più stare accanto a
        niente: può prendersi l'altezza vera del suo formato. */
-    /* Qui la larghezza non è più fissa: la detta la colonna. Quindi
-       l'altezza si ricava dal FORMATO invece che da un numero, o a 320px lo
-       schermo diventava un rettangolo lungo il doppio del dovuto. */
+    /* In colonna sola il telefono non deve più stare accanto a niente:
+       prende la larghezza che la colonna concede, fino alle misure vere. */
+    .ml-phone {
+        width: 100%;
+        max-width: 413px;
+    }
+
     .ml-phone-screen {
-        aspect-ratio: 9 / 19.5;
-        height: auto;
-        max-height: min(780px, 82vh);
+        width: 100%;
     }
 
     .ml-filter-inner {
@@ -566,7 +575,6 @@
     }
 
     .ml-phone-screen {
-        max-height: 76vh;
         border-radius: 35px;
     }
 

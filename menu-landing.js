@@ -24,9 +24,10 @@
 
   // I valori di partenza sono quelli con cui il server ha già disegnato il
   // menù: il pannello parte d'accordo con quello che si vede.
-  var stato = { accent: '#2E6B4F', font: 'modern', scale: '1' };
+  var stato = { accent: '#2E6B4F', font: 'modern', scale: '1', section: 'underline' };
 
   var CARATTERI = ['classic', 'bold', 'light'];
+  var STILI_SEZIONE = ['underline', 'banner', 'plain'];
 
   function applica() {
     var doc;
@@ -44,7 +45,37 @@
       doc.body.classList.remove('font-' + c);
     });
     if (stato.font !== 'modern') doc.body.classList.add('font-' + stato.font);
+
+    // I titoli di sezione portano lo stile addosso, uno per uno: nel menù è
+    // già così, quindi qui non si inventa niente — si riscrive la stessa
+    // classe che scriverebbe il server.
+    var titoli = doc.querySelectorAll('.menu-section-title');
+    for (var i = 0; i < titoli.length; i++) {
+      STILI_SEZIONE.forEach(function (st) {
+        titoli[i].classList.remove('is-' + st);
+      });
+      titoli[i].classList.add('is-' + stato.section);
+    }
   }
+
+  // ── QUANTO SI RIMPICCIOLISCE LA CARTA ────────────────────────────────
+  // Il menù dentro la cornice è disegnato alle misure vere di un telefono —
+  // 393 per 852 — e poi RIMPICCIOLITO fino a stare nello schermo che il
+  // formato concede. Così testi, margini e pastiglie restano fra loro come
+  // staranno al tavolo: è una fotografia del telefono, non un telefono
+  // schiacciato. Il conto lo fa qui e non nel CSS perché è una divisione fra
+  // due misure, e il CSS non la sa fare.
+  var LARGHEZZA_VERA = 393;
+  var schermo = frame.parentElement;
+
+  function ridimensiona() {
+    var largo = schermo.clientWidth;
+    if (!largo) return;
+    schermo.style.setProperty('--ml-scala', largo / LARGHEZZA_VERA);
+  }
+
+  ridimensiona();
+  window.addEventListener('resize', ridimensiona);
 
   // ── I CARATTERI, PRIMA CHE SERVANO ────────────────────────────────────
   // I tre caratteri si scaricano solo quando qualcosa li usa. Al primo clic

@@ -62,7 +62,7 @@
             <div class="ml-pitch">
                 <p class="ml-eyebrow" data-i18n="menuLanding.eyebrow">Hai un'attività ricettiva?</p>
                 <h1 class="ml-title">
-                    <span data-i18n="menuLanding.title1">Crea il menù digitale per il tuo locale,</span><br>
+                    <span data-i18n="menuLanding.title1">Crea il menù digitale</span><br>
                     <span class="gradient-text" data-i18n="menuLanding.title2">che si adatta ai tuoi clienti.</span>
                 </h1>
                 <p class="ml-subtitle" data-i18n="menuLanding.subtitle">Basterà inquadrare un QR e potranno vedere tutti i piatti del menù, e filtrarli in base agli allergeni dichiarati.</p>
@@ -116,6 +116,15 @@
                     </div>
                 </div>
 
+                <div class="ml-knob" role="group" aria-labelledby="ml-knob-sections">
+                    <span class="ml-knob-label" id="ml-knob-sections" data-i18n="menuLanding.moreSections">Titoli delle sezioni</span>
+                    <div class="ml-choices" data-knob="section">
+                        <button type="button" class="ml-choice is-on" data-value="underline" aria-pressed="true" data-i18n="menuLanding.moreSectionsRule">Filetto</button>
+                        <button type="button" class="ml-choice" data-value="banner" aria-pressed="false" data-i18n="menuLanding.moreSectionsBanner">Fascia</button>
+                        <button type="button" class="ml-choice" data-value="plain" aria-pressed="false" data-i18n="menuLanding.moreSectionsPlain">Solo testo</button>
+                    </div>
+                </div>
+
                 <!-- LE MANOPOLE CHE NON SI TOCCANO QUI. Ci sono tutte nel
                      portale, e sono gratuite come le altre: si spengono
                      perché la prova è il menù di una trattoria che non
@@ -140,13 +149,6 @@
                         <span class="ml-locked-name" data-i18n="menuLanding.moreDesc">Descrizioni</span>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreDescUnder">Sotto il nome</button>
                         <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreDescDetail">Solo nel dettaglio</button>
-                    </div>
-
-                    <div class="ml-locked-row">
-                        <span class="ml-locked-name" data-i18n="menuLanding.moreSections">Titoli delle sezioni</span>
-                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreSectionsRule">Filetto</button>
-                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreSectionsBanner">Fascia</button>
-                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreSectionsPlain">Solo testo</button>
                     </div>
 
                     <p class="ml-knobs-note" data-i18n="menuLanding.knobsNote" data-i18n-html>Ci sono tutte, e non si pagano. <a href="https://partner.allergiapp.com">Crea un profilo</a> per costruire il tuo menù e personalizzarlo come vuoi.</p>
