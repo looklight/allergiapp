@@ -174,8 +174,14 @@ export default function MenuAddress({
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-gray-900">
-          {online ? d.menuEditor.addressTitleLive : d.menuEditor.addressTitle}
+        {/* L'INTESTAZIONE DELL'AREA, uguale a quella dell'aspetto e del
+            contenuto: parola sola in maiuscoletto grigio. Prima cambiava —
+            "Indirizzo web del menù" diventava "Il menù è online" — ed è la
+            sola cosa che questa sistemazione perde: adesso che il menù
+            risponda lo dicono l'interruttore qui accanto e il colore del
+            riquadro, che è verde solo quando risponde davvero. */}
+        <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          {d.menuEditor.addressTitle}
         </h2>
         {/* L'INTERRUTTORE, e adesso si vede che lo è. Prima qui c'era una
             pastiglia che scriveva "Attivo" o "Inattivo": diceva lo stato e lo
@@ -229,7 +235,7 @@ export default function MenuAddress({
               autoCapitalize="off"
               autoCorrect="off"
               maxLength={SLUG_MAX}
-              aria-label={d.menuEditor.addressTitle}
+              aria-label={d.menuEditor.addressField}
               onChange={(e) => {
                 setSalvato(false);
                 setFallito(false);

@@ -323,7 +323,7 @@ const en: typeof it = {
       { name: 'Seafood salad', description: 'Octopus, squid and prawns, celery and lemon.' },
       { name: 'Tiramisu', description: 'Ladyfingers, mascarpone and coffee.' },
     ],
-    brandTitle: 'Menu appearance',
+    brandTitle: 'Look',
     venueNameLabel: 'Venue name',
     venueNamePlaceholder: 'Venue name (your guests read it)',
     brandHint:
@@ -386,8 +386,8 @@ const en: typeof it = {
     appearanceRevertBody:
       'Colour, cover, logo and styles go back to what your customers see right now. The menu, the dishes and the prices are left alone.',
     appearanceRevertConfirm: 'Restore it',
-    addressTitle: 'Menu web address',
-    addressTitleLive: 'The menu is live',
+    addressTitle: 'Online',
+    addressField: 'Menu web address',
     addressActive: 'Live',
     addressTurnOn: 'Put the menu back online',
     addressTurnOff: 'Take the menu offline',

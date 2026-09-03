@@ -410,7 +410,12 @@ const it = {
     // interruttori (foto, descrizioni). E niente "linguette" nelle
     // spiegazioni finché i menù multipli sono spenti (MULTI_MENU): erano
     // rimaste a parlare di una cosa che a schermo non esiste.
-    brandTitle: 'Aspetto del menù',
+    // LE TRE AREE DELLA PAGINA, una parola ciascuna e la stessa riga: la
+    // coerenza sta nell'intestazione, la distinzione in cosa hanno sotto —
+    // l'aspetto si apre e si chiude, il contenuto è una pila di schede,
+    // l'online è un riquadro che cambia colore quando il menù risponde.
+    // "Del menù" non si dice più: siamo dentro l'editor di un menù.
+    brandTitle: 'Aspetto',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     // Dice cosa si FA qui dentro, non solo cosa si guarda: è la riga in cima
@@ -524,8 +529,14 @@ const it = {
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni
     // occasione utile: la cosa da non far succedere è che qualcuno lo stampi
     // su una locandina prima che la pagina esista.
-    addressTitle: 'Indirizzo web del menù',
-    addressTitleLive: 'Il menù è online',
+    // Una parola sola come le altre due aree. Che il menù risponda o no lo
+    // dicono l'interruttore e il colore del riquadro, non più un titolo che
+    // cambia — che era l'unica cosa che si perde in questa sistemazione.
+    addressTitle: 'Online',
+    // Il nome del CAMPO per chi usa un lettore di schermo. Prima era il titolo
+    // dell'area, che diceva "Indirizzo web del menù" e funzionava; adesso che
+    // il titolo è "Online" servirebbe una parola che non dice cos'è il campo.
+    addressField: 'Indirizzo web del menù',
     // UN'ETICHETTA SOLA, e lo stato lo dice l'interruttore accanto. Prima la
     // pastiglia scriveva "Attivo" o "Inattivo" a seconda dei casi: leggeva
     // come un'etichetta di stato, non come una cosa da premere — e infatti

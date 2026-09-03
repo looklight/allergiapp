@@ -406,7 +406,10 @@ export default function MenuEditorPage() {
           titolo suo che cambia da solo e perfino un colore suo, verde quando
           il menù risponde e tratteggiato finché è una bozza. Un'etichetta
           sopra sarebbe un titolo sopra un titolo. */}
-      <div className="mt-6">
+      {/* La stessa riga delle altre due aree: parola sola, maiuscoletto
+          grigio. Qui a destra non c'è niente da dire — non si apre e non si
+          accende — quindi la riga sotto spiega cosa ci sta dentro. */}
+      <div className="mt-6 px-4">
         <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
           {d.menuEditor.contentLabel}
         </p>

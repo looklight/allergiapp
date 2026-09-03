@@ -154,11 +154,16 @@ export default function BrandBar({
           className="h-4 w-4 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
           style={{ backgroundColor: accentHex(accent) }}
         />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-gray-900">
-            {d.menuEditor.brandTitle}
-          </span>
-          <span className="block truncate text-xs text-gray-500">{riassunto}</span>
+        {/* L'INTESTAZIONE DELL'AREA, nella stessa riga delle altre due
+            (v. il commento sulle tre aree in menu/[id]/page.tsx): parola
+            sola in maiuscoletto grigio, e a destra quello che quest'area ha
+            da dire — qui il riassunto di com'è messa, così chi non la apre lo
+            sa comunque. */}
+        <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-400">
+          {d.menuEditor.brandTitle}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-right text-xs text-gray-500">
+          {riassunto}
         </span>
         <svg
           className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-180"
