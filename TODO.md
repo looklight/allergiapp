@@ -5,7 +5,14 @@
 ## Priorità a breve (app live)
 
 ### Azioni manuali Supabase
+- [ ] **Migration 711 — le manopole dell'aspetto del menù** (`supabase/migrations/711_partner_menu_appearance.sql`, scritta il 2026-09-03). Quattro colonne su `partner_venues`: `dish_photo_shape`, `line_height`, `menu_layout`, `dish_separator`. L'utente la applicherà insieme ad altre modifiche.
+  - **Ordine delle mosse**: prima la migration dal SQL editor, POI `APPEARANCE_711 = true` in `partner/src/lib/features.ts`, poi il rilascio. Al contrario il portale resta senza locali — PostgREST, davanti a una colonna che non esiste, rifiuta l'interrogazione intera.
+  - **Subito dopo**: aprire il portale e accendere ogni manopola una volta. Sono quattro pezzi di codice mai eseguiti che diventano veri insieme.
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
+
+### Menù al tavolo — da guardare con gli occhi (2026-09-03)
+- [ ] **Le sei anteprime**: `cd landing && python3 -m http.server 8099`, poi `_preview-{row,block}-{none,rule,ornament}.html`. Niente di quella giornata è mai stato aperto in un browser (estensione Chrome non collegata): tipi, regole, build e HTML generato non dicono se una carta si legge. **L'impaginazione a blocco poggia su `display: contents` + `order`**, scritto in due copie senza vederlo rendere — è il punto più esposto.
+- [ ] **La UI della scatola "Aspetto"**: l'utente ha detto che la sistemeremo (03/09). Ha ormai nove voci.
 
 ### Legale / GDPR (revisione 2026-07-14/15, contesto in memoria `project_legal_gdpr_review.md`)
 - [ ] **Registro dei trattamenti (art. 30 GDPR)** — documento interno mancante (unico gap sostanziale rimasto dalla revisione). L'esenzione per le piccole realtà non si applica: trattiamo dati salute (art. 9) in modo non occasionale. Serve una tabella con: trattamenti, finalità, categorie di dati/interessati/destinatari, trasferimenti extra-UE, tempi di conservazione, misure di sicurezza. Non è pubblico: va solo tenuto pronto in caso di richiesta del Garante. Lavoro: ~1h.
@@ -255,6 +262,19 @@ Gli utenti più attivi e contributivi dovrebbero essere riconoscibili e "premiat
 - **Connessione con la galleria avatar esistente** — il sistema di rarità (common/rare/epic/legendary) e sblocco per recensioni/ristoranti è già una base, può evolvere in questo senso
 
 **Da valutare:** soglie di attività, come mostrarlo in UI, se esporre il livello pubblicamente nelle recensioni
+
+### Traduzioni del menù al tavolo — DIREZIONE DECISA 2026-09-03, non costruita
+
+Contesto completo in memoria `project_menu_translations.md`.
+
+**Esiste già e arriva al tavolo**: nome e descrizione dei piatti (`partner_dish_translations`, chiavate sul PIATTO — il catalogo è la sorgente di verità, condivisa con la scheda AllergiApp). `get_public_menu(slug, lingua)` sostituisce campo per campo con ripiego sull'originale: traducendo solo la descrizione, "Carbonara" resta "Carbonara" — che è anche la parola che serve al cliente per dirla al cameriere.
+
+**Il confine, deciso con l'utente**: se una stringa è uguale per tutti i ristoranti del mondo è **nostra** (i 15 allergeni, le esigenze, ogni parola d'interfaccia); se dice qualcosa di *quel* locale è **sua** (piatti, sezioni, blocchi, condizioni). Le traduzioni del ristoratore sono **a mano, mai automatiche**: una macchina sposterebbe la responsabilità su di noi, e tutto il prodotto è "il ristorante dichiara, noi non verifichiamo". Gli allergeni sono codici e non testo, quindi non passano mai da una traduzione scritta a mano.
+
+- [ ] **1. Le lingue del locale** — ⚠️ **da fare per primo**: oggi la pagina al tavolo offre solo IT ed EN, fisso nel codice (`LINGUE` in `landing/lib/render-menu.js`, `SUPPORTED` in `landing/lib/i18n.js`). Chi traduce in tedesco produce lavoro che nessuno può leggere. Senza questo, tutto il resto è uno strumento per riempire un cassetto.
+- [ ] **2. La lente**: pill delle lingue in cima all'editor del menù. È una **vista, non un secondo editor** — toccando un piatto si apre la solita maschera del catalogo, o il posto in cui si modifica un piatto diventa due. Tre stati e non due (tradotto / da tradurre / **volutamente uguale**), o il contatore non arriva mai a "18 su 18" e dopo due giorni nessuno lo guarda più. Costa zero migration: basta che la riga di traduzione esista a significare "questa lingua l'ho guardata" (oggi `compilate()` in `dishes.ts` scarta le righe vuote). Contatore sui piatti di QUESTO menù, non del catalogo. E **"da rivedere"** quando l'originale è più recente della traduzione: `partner_dishes.updated_at` contro `partner_dish_translations.updated_at`, colonne che esistono già.
+- [ ] **3. Traduzioni della carta** — il pezzo grosso, serve una tabella: nomi e descrizioni delle sezioni, descrizione del menù, blocchi di testo e **condizioni al tavolo** (la riga che dice cosa il locale garantisce sulla contaminazione: la peggiore da lasciare in italiano davanti a un cliente straniero).
+- [ ] **4. I nostri testi nelle lingue nuove** — decide quante lingue si possono davvero offrire; tenerle poche all'inizio (3-4). 💡 Costa meno del previsto: i 15 allergeni sono **già tradotti in 15 lingue** in `constants/allergens.ts`, mentre il sito ne ha due in una copia a mano (`landing/lib/labels.js`, che si dichiara "subset"). Restano ~20 stringhe di pagina per lingua.
 
 ### Traduzione recensioni in lingua app
 **Priorità: bassa — da pianificare, decisione ancora aperta**

@@ -1081,9 +1081,35 @@ circa due punti su tutte le misure del contenuto (nome del locale 20→22, nomi 
 prezzi uguale, titoli di sezione e descrizioni a seguire), e **il pavimento della riga degli
 allergeni sale da 10 a 11px**: era la riga più piccola della pagina proprio dove serviva leggerla
 meglio. Le tre grandezze (Compatta/Normale/Ampia) restano quelle e continuano a moltiplicare da lì.
+
 ⚠️ Le misure sono in **due copie gemelle** — `landing/menu-page.css` e l'anteprima del portale — e
-l'anteprima resta un punto sotto perché la cornice del telefono è larga 360 contro i ~390 di un
-telefono vero.
+nella stessa giornata si è scoperto che **divergevano da mesi**: l'anteprima stava "un punto sotto"
+per via della cornice del telefono (360px contro i ~390 di un iPhone recente), ma lo sconto non era
+uguale per tutti i ruoli. Nel portale il nome del piatto stava a un punto dal titolo di sezione, al
+tavolo a due — cioè il ristoratore giudicava proporzioni che il suo cliente non avrebbe visto.
+**Adesso i numeri sono identici**, e la cornice è semplicemente un telefono stretto (360 sta fra un
+SE e un 15), che è una bugia molto più piccola. Da lì è nato `npm run gemelle` (in `partner/`), che
+mette le due copie una accanto all'altra: fattori, tavolozza, regole CSS condivise, misure ruolo
+per ruolo.
+
+**3b. L'interlinea, accanto alla grandezza dei testi** (`line_height`: `tight` / `normal` / `airy`,
+migration 711). Sono la stessa domanda vista da due parti — quanto è fitta la carta — e per questo
+nel portale stanno sulla **stessa riga**: la grandezza cambia quanto sono grandi le lettere,
+l'interlinea quanta aria c'è fra una riga e l'altra, e su un menù di una pagina sola la seconda si
+nota più della prima. Separarle in due blocchi sovrapposti avrebbe fatto cercare in due punti la
+stessa decisione.
+
+Tre valori e non un cursore, per la stessa ragione dei caratteri (Tema 25): un cursore finirebbe
+schiacciato per far stare la carta in una schermata, e le prime righe a impastarsi sarebbero le più
+lunghe — descrizioni e allergeni. Ogni scelta si scrive con la propria interlinea **su due righe**,
+perché fra due righe è l'unico posto in cui l'interlinea si vede.
+
+Stessa ricetta della grandezza: **un moltiplicatore solo** sulla radice (`--lh`) e ogni interlinea
+del contenuto è `calc(N * var(--lh, 1))`, di qua e sul sito. ⚠️ E **lo stesso pavimento, sulle
+stesse righe**: allergeni, motivo dell'esclusione e condizioni al tavolo usano `max()`, quindi
+"Stretta" avvicina la carta ma non impasta la riga che una persona con un'allergia legge in una
+sala poco illuminata. I comandi — pastiglie, filtro, linguette — non si toccano: sono bersagli da
+toccare, e un dito non si stringe con la carta.
 
 **Le foto adesso sono tre risposte a una domanda sola: nessuna, quadrate, tonde** (migration 711).
 Nel portale è una scelta unica, con i tre campioncini in fila come per i titoli di sezione:

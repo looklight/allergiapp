@@ -402,6 +402,28 @@ filetto sta bene anche nella carta a riga. Legarlo al blocco avrebbe aggiunto
 una seconda voce che compare e sparisce, e il pregio di questa strada è che ne
 dipende **una sola**.
 
+⚠️ **UNA MARCATURA SOLA PER LE DUE IMPAGINAZIONI, e il CSS che la piega vive
+in `globals.css` come copia fedele di `landing/menu-page.css`.** `MenuPreview`
+non ha un ramo per impaginazione: rende sempre lo stesso markup, con i nomi di
+classe del sito (`menu-item`, `menu-item-row`, `menu-item-line`,
+`menu-item-title`, `menu-item-name`, `menu-price`, `menu-item-desc`,
+`menu-item-note`, `menu-item-allergens`, `menu-item-reason`), e il blocco lo
+ottiene `display: contents` sulla riga più `order` sui figli — che è
+esattamente come è scritto sul sito.
+
+Prima c'erano **due meccanismi per la stessa immagine** (un `if` in React di
+qua, il CSS di là): il modo più affidabile di far divergere due copie senza
+accorgersene, perché bastava correggere una spaziatura da una parte sola. Per
+la stessa ragione il segno fra i piatti lo fa il **selettore fratello**
+(`.menu-item + .menu-item`), che sa da sé qual è la prima riga, e non un prop
+calcolato da chi rende la lista.
+
+⚠️ Queste regole stanno **fuori dai layer di Tailwind**, quindi vincono sulle
+utility scritte in linea: è voluto, ed è quello che permette a
+`.layout-block .menu-price` di spostare il prezzo che il markup mette accanto
+al nome. Chi aggiunge un nome di classe condiviso lo aggiunga anche a `RUOLI`
+in `scripts/gemelle.mjs`.
+
 ⚠️ **La valuta non è aspetto**, sta lì solo perché è lì che si va a sistemare
 come si legge il menù: vive sul MENÙ e non sul locale, quindi conta come
 modifica di **contenuto** — "Rimetti com'è in sala" non la tocca, e cambiarla
@@ -495,6 +517,17 @@ adeguano da sé.
 **La grandezza dei testi** (`partner_venues.text_scale`: `compact` / `normal`
 / `roomy`, migration 710) è **fatta dal 2026-09-02**, senza nessuna migration
 nuova — la colonna era entrata in anticipo, come `cover_url` nella 709.
+
+**E l'interlinea accanto a lei** (`line_height`: `tight` / `normal` / `airy`,
+migration 711). Nel portale stanno **sulla stessa riga**, e non è
+impaginazione: sono la stessa domanda vista da due parti — quanto è fitta la
+carta. La grandezza cambia quanto sono grandi le lettere, l'interlinea quanta
+aria c'è fra una riga e l'altra, e su un menù di una pagina sola la seconda si
+nota più della prima. Ogni scelta si scrive **su due righe** con la propria
+interlinea, perché fra due righe è l'unico posto in cui si vede. Stessa
+ricetta della grandezza (`--lh`, `LINE_HEIGHT_FACTORS`, copia gemella sul
+sito) e **stesso pavimento sulle stesse righe**: "Stretta" avvicina la carta,
+non impasta la riga degli allergeni.
 
 Non è una classe per grandezza ma **un numero solo**: `--ms` sulla radice
 (`TEXT_SCALE_FACTORS` in `venues.ts` → `style` in `MenuPreview`, e lo `style`
