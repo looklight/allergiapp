@@ -1350,6 +1350,14 @@ scrivendola:
   parlerebbe al RISTORATORE che vede il menù di un collega — è l'anello di acquisizione più
   naturale che abbiamo, ma cambia a chi serve il marchio, e non è una decisione da prendere di
   passaggio.
+- **Le manopole che nella prova non si toccano, però si vedono** (03/09, sera). Logo, copertina,
+  foto sì/no, descrizioni e stile dei titoli compaiono nel pannello **in chiaro e spente**, col
+  bordo tratteggiato, e sotto una riga che dice «Ci sono tutte, e non si pagano» col collegamento
+  al portale. ⚠️ **Non è il muro del premium** — quelle scelte sono gratuite — e infatti niente
+  lucchetti né avvisi di pagamento: qui sono spente perché la prova è il menù di una trattoria che
+  non esiste, e un logo non c'è da caricare. Vale sempre il vincolo di sopra: si mostra **solo ciò
+  che esiste oggi nel portale**, quindi impaginazione, separatore, interlinea e forma delle foto
+  restano fuori finché non si applica la 711.
 - **Un bug del sito trovato per strada**: `i18n-site.js` riscriveva titolo e descrizione con quelli
   della homepage su OGNI pagina, appena applicava le traduzioni. Adesso una pagina può dichiarare
   i suoi con `data-i18n-meta` sul tag `<html>`; senza l'attributo non cambia niente per le altre
