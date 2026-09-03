@@ -195,8 +195,8 @@ export default function MenuPreview({
   // miniatura la riporterebbe a essere una lista. Il valore del ristoratore
   // non si tocca — tornando "a riga" le foto ricompaiono com'erano — e la
   // scatola Aspetto lo dice a parole invece di lasciarglielo scoprire.
-  const aBlocco = layout === 'block';
-  const conFoto = !aBlocco && showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
+  const conFoto =
+    layout === 'row' && showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
   // 'modern' è il carattere di sistema e non ha classe: è il ripiego, ed è
   // anche l'unico che non fa scaricare niente al cliente.
   const carattere = headingFont === 'modern' ? '' : ` heading-${headingFont}`;
@@ -772,7 +772,7 @@ function Riga({
               chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
               piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
           {fuori ? (
-            <p className="menu-item-minute riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
+            <p className="menu-item-reason riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
               {perche.contiene.length > 0 &&
                 fill(d.menuPublic.excludedContains, {
                   list: perche.contiene.map((c) => allergenName(c, locale).toLowerCase()).join(', '),
@@ -785,7 +785,7 @@ function Riga({
             </p>
           ) : (
             dish.allergens.length > 0 && (
-              <p className="menu-item-minute riga-minuta mt-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
+              <p className="menu-item-allergens riga-minuta mt-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
                 {d.preview.contains}{' '}
                 {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
               </p>

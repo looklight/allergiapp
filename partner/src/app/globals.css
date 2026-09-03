@@ -405,7 +405,8 @@ body {
   font-size: calc(14px * var(--ms, 1));
 }
 .layout-block .menu-item-note { order: 4; }
-.layout-block .menu-item-minute { order: 5; }
+.layout-block .menu-item-allergens,
+.layout-block .menu-item-reason { order: 5; }
 
 /* ── IL SEGNO FRA UN PIATTO E L'ALTRO ──────────────────────────────
    Vale in tutt'e due le impaginazioni: il filetto sta bene anche nella carta

@@ -117,6 +117,31 @@ for (const sel of condivise) {
   }
 }
 
+// ⚠️ E LE REGOLE CHE ESISTONO DA UNA PARTE SOLA, che è il buco in cui questo
+// script è già caduto una volta: le righe minute si chiamavano
+// `.menu-item-minute` qui e `.menu-item-allergens` / `.menu-item-reason` là.
+// Stessa regola, due nomi — e confrontando solo i selettori comuni non se ne
+// accorgeva nessuno, perché non c'era niente da confrontare.
+//
+// Si guardano SOLO le famiglie duplicate apposta: ogni foglio ha anche roba
+// sua, e segnalarla tutta vorrebbe dire un elenco che nessuno legge.
+const DUPLICATE = /^(\.layout-block |\.sep-(rule|ornament) |\.menu-items$)/;
+for (const [dove, mie, altrui] of [
+  ['solo nel portale', rPortale, rSito],
+  ['solo sul sito', rSito, rPortale],
+]) {
+  for (const sel of Object.keys(mie)) {
+    if (!DUPLICATE.test(sel) || sel in altrui) continue;
+    // Un selettore multiplo (".a, .b") è la stessa regola scritta insieme:
+    // si considera presente se ogni sua parte lo è dall'altra parte.
+    const pezzi = sel.split(',').map((x) => x.trim());
+    const coperto = pezzi.every((pezzo) =>
+      Object.keys(altrui).some((k) => k.split(',').map((x) => x.trim()).includes(pezzo))
+    );
+    if (!coperto) nota(`Regola «${sel}»`, dove);
+  }
+}
+
 // ── 4. Le misure di base, RUOLO PER RUOLO ────────────────────────
 // Devono essere le stesse: la cornice del telefono è un po' più stretta di un
 // telefono vero, ma uno sconto diverso per ogni ruolo faceva giudicare al
