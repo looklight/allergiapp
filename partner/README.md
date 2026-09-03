@@ -178,6 +178,7 @@ cd partner
 npm install
 npm run dev     # http://localhost:3001 (porta diversa dall'admin)
 npm run check   # tipi + regole — si può lanciare col dev acceso
+npm run gemelle # confronta l'anteprima del menù con la pagina vera sul sito
 ```
 
 Env in `.env.local` (stesso progetto Supabase di app e admin):
@@ -515,6 +516,20 @@ anche gli allergeni e chi ci tiene non la toccherebbe mai. I fattori
 (0.92 / 1 / 1.12) hanno una **copia gemella** sul sito in
 `landing/lib/render-menu.js`: se divergono, il ristoratore sceglie guardando
 una cosa e il suo cliente al tavolo ne vede un'altra.
+
+**`npm run gemelle` mette le due copie una accanto all'altra** e dice dove
+divergono: i fattori di grandezza e interlinea, la tavolozza dei colori, le
+regole CSS che condividono alla lettera e le misure dei ruoli della riga del
+piatto. Vuole i due checkout affiancati (`allergiapp/` e `landing/`); se
+`landing` non c'è — su Vercel, o su una macchina che ha solo questo repo —
+esce senza fallire: è uno strumento per chi sviluppa, non un cancello. Le
+differenze **volute** si scrivono in `ATTESE` dentro lo script, con la loro
+ragione, così restano visibili invece di diventare rumore.
+
+⚠️ Quello che **non** guarda, e va tenuto a mente: le intestazioni, il
+dettaglio del piatto e ogni comportamento (il popup, le freccine, il filtro).
+Il confronto ruolo per ruolo funziona sui nomi di classe che le due copie
+condividono; chi ne aggiunge uno, lo aggiunga a `RUOLI` nello script.
 
 ⚠️ **Anche le misure di BASE sono una copia gemella** — i `calc(Npx*var(--ms))`
 di `MenuPreview`/`DishDetailSheet` contro quelli di `landing/menu-page.css` —

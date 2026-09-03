@@ -336,3 +336,107 @@ body {
     font-size: 16px;
   }
 }
+
+/* ── LA CARTA: le classi che l'anteprima CONDIVIDE col sito ────────
+ *
+ * Qui sotto ci sono le regole che disegnano la lista dei piatti, e sono una
+ * copia fedele di quelle in `landing/menu-page.css` — stessi selettori,
+ * stessi numeri. Non è duplicazione per pigrizia: sono due progetti che si
+ * rilasciano separatamente, e l'unico modo di accorgersi che divergono è che
+ * si somiglino abbastanza da poterle mettere una accanto all'altra.
+ *
+ * ⚠️ PERCHÉ NON SONO CLASSI TAILWIND. L'impaginazione a blocco si ottiene
+ * cambiando `display` e `order` sulla STESSA marcatura della riga: è una cosa
+ * che si dice in CSS e non con le utility, e soprattutto è così che è scritta
+ * sul sito. Prima l'anteprima aveva un ramo React tutto suo — stessa
+ * immagine, due meccanismi diversi — che è il modo più affidabile di far
+ * divergere due copie senza che nessuno se ne accorga.
+ *
+ * Queste regole stanno FUORI dai layer di Tailwind, quindi vincono sulle
+ * utility scritte in linea sui componenti: è voluto, ed è quello che permette
+ * a `.layout-block .menu-price` di spostare il prezzo che il markup mette
+ * accanto al nome.
+ */
+.menu-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+/* ── L'IMPAGINAZIONE A BLOCCO ──────────────────────────────────────
+   La carta dei ristoranti che non mettono fotografie: nome, descrizione e
+   prezzo incolonnati e centrati (DIGITAL_MENU, Tema 29).
+
+   Il trucco è `display: contents` sulla riga: i suoi figli (nome e prezzo)
+   diventano figli del corpo, e da lì `order` mette il prezzo sotto la
+   descrizione. Senza, il prezzo resterebbe incollato al nome perché gli sta
+   dentro.
+
+   ⚠️ È UNO STILE, NON UN PRESET: non tocca colore, carattere, grandezza né
+   interlinea, che restano quelli scelti dal ristoratore. */
+.layout-block .menu-item-row {
+  display: block;
+  text-align: center;
+}
+.layout-block .menu-item-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.layout-block .menu-item-line { display: contents; }
+.layout-block .menu-item-title {
+  flex: 0 1 auto;
+  order: 1;
+  justify-content: center;
+}
+.layout-block .menu-item-desc {
+  order: 2;
+  margin-top: 4px;
+  /* Il corsivo è quello delle carte stampate: distingue la descrizione dal
+     nome senza rimpicciolirla ancora. */
+  font-style: italic;
+}
+.layout-block .menu-price {
+  order: 3;
+  margin-top: 6px;
+  font-size: calc(14px * var(--ms, 1));
+}
+.layout-block .menu-item-note { order: 4; }
+.layout-block .menu-item-minute { order: 5; }
+
+/* ── IL SEGNO FRA UN PIATTO E L'ALTRO ──────────────────────────────
+   Vale in tutt'e due le impaginazioni: il filetto sta bene anche nella carta
+   a riga, e legarlo al blocco avrebbe aggiunto una seconda voce che compare e
+   sparisce. Sta SOPRA la riga (+ .menu-item) e non sotto, così l'ultimo
+   piatto di una sezione non si porta dietro un segno che sembra l'inizio di
+   qualcos'altro — e sul primo non c'è, dove sarebbe una seconda linea sotto
+   il titolo della sezione.
+
+   È CSS e non un prop passato riga per riga: il selettore fratello sa da sé
+   qual è la prima, mentre un prop costringeva chi rende la lista a
+   calcolarlo — e a ricordarsene il giorno che le righe si riordinano. */
+.sep-rule .menu-items,
+.sep-ornament .menu-items { gap: 0; }
+.sep-rule .menu-item + .menu-item {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid #eee;
+}
+.sep-ornament .menu-item + .menu-item {
+  position: relative;
+  margin-top: 15px;
+  padding-top: 17px;
+}
+.sep-ornament .menu-item + .menu-item::before {
+  content: "\25C6";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  line-height: 1;
+  color: var(--accent);
+}

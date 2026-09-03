@@ -6,6 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "check": "tsc --noEmit && eslint .",
+    "gemelle": "node scripts/gemelle.mjs",
     "start": "next start -p 3001",
     "lint": "eslint ."
   },
