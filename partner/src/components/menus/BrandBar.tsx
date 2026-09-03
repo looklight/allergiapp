@@ -57,6 +57,7 @@ export default function BrandBar({
   // Se l'aspetto di adesso è diverso da quello in sala, e c'è una sala a cui
   // tornare: fuori di qui è appearanceChanged di menu_publish_state (710).
   changed,
+  esempio,
   onRevert,
   onCurrency,
   onLayout,
@@ -91,6 +92,11 @@ export default function BrandBar({
   lineHeight: LineHeight;
   coverUrl: string;
   changed: boolean;
+  // Il comando dei tre piatti finti nell'anteprima, che sta QUI perché è qui
+  // che si sceglie l'aspetto: il bottone va dove si decide, non dove si
+  // guarda. null quando il menù ha già dei piatti dentro — allora valgono i
+  // suoi e non c'è niente da dimostrare.
+  esempio: { acceso: boolean; cambia: () => void } | null;
   onRevert: () => void;
   onCurrency: (value: string) => void;
   onLayout: (value: MenuLayout) => void;
@@ -169,7 +175,20 @@ export default function BrandBar({
       </summary>
 
       <div className="border-t border-gray-100 p-4">
-      <p className="text-xs text-gray-500">{d.menuEditor.brandHint}</p>
+      {/* La riga che dice cosa si fa qui, e accanto il modo di vederlo
+          succedere: con un menù ancora vuoto l'anteprima è uno schermo
+          bianco, e ogni scelta di questa scatola si farebbe alla cieca. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <p className="min-w-0 flex-1 text-xs text-gray-500">{d.menuEditor.brandHint}</p>
+        {esempio && (
+          <button
+            onClick={esempio.cambia}
+            className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+          >
+            {esempio.acceso ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
+          </button>
+        )}
+      </div>
 
       {/* L'IMPAGINAZIONE È LA PRIMA VOCE, perché è la struttura: decide come
           è disposto un piatto, e tutto quello che c'è sotto la decora.

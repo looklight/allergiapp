@@ -364,6 +364,7 @@ export default function MenuEditorPage() {
           lineHeight={locale?.lineHeight ?? 'normal'}
           coverUrl={locale?.coverUrl ?? ''}
           changed={pubblicazione.stato?.appearanceChanged ?? false}
+          esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
           onRevert={() => setRevertingBrand(true)}
           onCurrency={(valuta) => save(setMenuCurrency(menu, valuta))}
           onLayout={(menuLayout) => locale && setIdentity(locale.id, { menuLayout })}
@@ -702,11 +703,6 @@ export default function MenuEditorPage() {
           <p className="mx-auto mb-2 max-w-[340px] text-center text-xs text-gray-500">
             {esempio ? d.menuEditor.previewSampleCaption : d.menuEditor.previewCaption}
           </p>
-          {/* Solo a menù vuoto: con dei piatti dentro non c'è niente da
-              dimostrare, e l'esempio non comparirebbe comunque. */}
-          {vuoto && (
-            <BottoneEsempio acceso={esempio} onClick={() => setEsempio(!esempio)} />
-          )}
           <PhoneFrame>{anteprima}</PhoneFrame>
           {/* ATTACCATO AL TELEFONO, perché parla del telefono: è lo stesso
               schermo, guardato più grande. In una scheda a parte e non al
@@ -772,12 +768,7 @@ export default function MenuEditorPage() {
       </button>
 
       {previewOpen && (
-        <MobilePreview
-          onClose={() => setPreviewOpen(false)}
-          esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
-        >
-          {anteprima}
-        </MobilePreview>
+        <MobilePreview onClose={() => setPreviewOpen(false)}>{anteprima}</MobilePreview>
       )}
 
       {adding && (
@@ -881,18 +872,7 @@ export default function MenuEditorPage() {
 // L'anteprima da telefono, a tutto schermo: sotto lg non c'è spazio per
 // tenerla accanto all'editor. Usa useModal come tutte le finestre, così Esc
 // la chiude e il fuoco non se ne va per la pagina dietro.
-function MobilePreview({
-  onClose,
-  esempio,
-  children,
-}: {
-  onClose: () => void;
-  // null quando non c'è niente da dimostrare (il menù ha già dei piatti).
-  // Da telefono questa è l'unica via per accendere l'esempio: la colonna
-  // dell'anteprima, col suo bottone, sotto lg non c'è.
-  esempio: { acceso: boolean; cambia: () => void } | null;
-  children: React.ReactNode;
-}) {
+function MobilePreview({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   const { d } = useI18n();
   const panel = useModal<HTMLDivElement>(onClose);
 
@@ -908,22 +888,12 @@ function MobilePreview({
       <div className="max-h-full origin-center scale-[0.85] overflow-visible sm:scale-100">
         <PhoneFrame>{children}</PhoneFrame>
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-        {esempio && (
-          <button
-            onClick={esempio.cambia}
-            className="rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-white"
-          >
-            {esempio.acceso ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
-          </button>
-        )}
-        <button
-          onClick={onClose}
-          className="rounded-full bg-white px-5 py-2 text-sm font-medium text-gray-900 shadow-lg"
-        >
-          {d.common.close}
-        </button>
-      </div>
+      <button
+        onClick={onClose}
+        className="mt-3 rounded-full bg-white px-5 py-2 text-sm font-medium text-gray-900 shadow-lg"
+      >
+        {d.common.close}
+      </button>
     </div>
   );
 }
@@ -966,16 +936,3 @@ function AddDishesButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-// Il comando che accende i tre piatti finti. Grigio e minuto: è un aiuto per
-// decidere l'aspetto, non una delle cose che si fanno in questa pagina.
-function BottoneEsempio({ acceso, onClick }: { acceso: boolean; onClick: () => void }) {
-  const { d } = useI18n();
-  return (
-    <button
-      onClick={onClick}
-      className="mx-auto mb-2 block rounded-lg px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-    >
-      {acceso ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
-    </button>
-  );
-}

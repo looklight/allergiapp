@@ -383,7 +383,11 @@ const it = {
     // Dev'essere INEQUIVOCABILMENTE finto, o qualcuno crede di avere già
     // qualcosa dentro: lo dice la riga sopra il telefono, e questi nomi sono
     // gli stessi che il portale usa già come esempio altrove.
-    previewEmpty: 'Aggiungi i piatti per vedere il menù.',
+    // INVITA e dice il guadagno, invece di constatare una mancanza:
+    // "aggiungi i piatti per vedere il menù" spiegava perché lo schermo è
+    // bianco, non cosa ci si guadagna a riempirlo. "Mentre" è la cosa vera
+    // dell'anteprima: si aggiorna sotto le dita.
+    previewEmpty: 'Comincia a comporre il menù: lo vedrai qui mentre lo scrivi.',
     previewSampleCaption: 'Esempio: così si vedranno i tuoi piatti.',
     // A COMANDO e non da sé (decisione dell'utente): tre piatti che compaiono
     // senza che nessuno li abbia chiesti si leggono come piatti veri, e chi
@@ -409,8 +413,11 @@ const it = {
     brandTitle: 'Aspetto del menù',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
+    // Dice cosa si FA qui dentro, non solo cosa si guarda: è la riga in cima
+    // alla scatola aperta, e chi l'ha appena aperta vuole sapere se è il
+    // posto giusto.
     brandHint:
-      'Come lo vedono i tuoi clienti al tavolo. Vale per il menù di questo locale.',
+      'Personalizza come si vede il menù al tavolo. Vale per il menù di questo locale.',
     summaryPhotosOff: 'senza foto',
     summaryPhotosSquare: 'foto quadrate',
     summaryPhotosRound: 'foto tonde',

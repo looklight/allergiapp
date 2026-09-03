@@ -313,7 +313,7 @@ const en: typeof it = {
     liveChoose: 'Choose the address',
     fullPreviewNotice: 'Private preview — this is not the menu’s public address yet.',
     fullPreviewBack: 'Back to the editor',
-    previewEmpty: 'Add dishes to see the menu.',
+    previewEmpty: 'Start building your menu: you’ll see it here as you write it.',
     previewSampleCaption: 'Example: this is how your dishes will look.',
     previewSampleShow: 'See an example',
     previewSampleHide: 'Hide the example',
@@ -327,7 +327,7 @@ const en: typeof it = {
     venueNameLabel: 'Venue name',
     venueNamePlaceholder: 'Venue name (your guests read it)',
     brandHint:
-      'How your guests see it at the table. It applies to this venue’s menu.',
+      'Customise how the menu looks at the table. It applies to this venue’s menu.',
     summaryPhotosOff: 'no photos',
     summaryPhotosSquare: 'square photos',
     summaryPhotosRound: 'round photos',
