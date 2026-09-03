@@ -1338,6 +1338,18 @@ scrivendola:
   separatore erano nell'elenco di sopra perché sono già CSS, ma **aspettano la 711**: offrirle qui
   vorrebbe dire promettere una scelta che il ristoratore, registrandosi, non troverebbe. Si
   accendono insieme ad `APPEARANCE_711`.
+- **Il marchio in coda ha cambiato parole, e sui menù veri.** Diceva «Menù con filtro allergeni di
+  AllergiApp», che è esattamente quello che il Tema 18 dice di non fare: sembrava che il menù fosse
+  nostro. Adesso dice **«Realizzato con AllergiApp»** / «Made with AllergiApp» — quello che è
+  successo, non di chi è la carta — e le due frasi stanno nel dizionario come tutto il resto invece
+  che scritte a mano nel codice. **Nella prova il marchio non c'è**, e con lui il piè di pagina del
+  sito: sono le cose che rendono una pagina *pubblicata*, e la prova non lo è — stessa regola del
+  canonico e delle lingue, cioè l'assenza di indirizzo. In più, dentro la cornice quei collegamenti
+  portavano il telefono su /privacy.
+  ⚠️ **Aperto**: il marchio punta alla home, cioè parla al CLIENTE al tavolo. Puntarlo a `/menu`
+  parlerebbe al RISTORATORE che vede il menù di un collega — è l'anello di acquisizione più
+  naturale che abbiamo, ma cambia a chi serve il marchio, e non è una decisione da prendere di
+  passaggio.
 - **Un bug del sito trovato per strada**: `i18n-site.js` riscriveva titolo e descrizione con quelli
   della homepage su OGNI pagina, appena applicava le traduzioni. Adesso una pagina può dichiarare
   i suoi con `data-i18n-meta` sul tag `<html>`; senza l'attributo non cambia niente per le altre
