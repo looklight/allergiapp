@@ -42,6 +42,16 @@
         <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/restaurants?lang=en" />
     </url>
 
+    <!-- Menù digitale per ristoratori -->
+    <url>
+        <loc>https://allergiapp.com/menu</loc>
+        <lastmod>2026-09-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+        <xhtml:link rel="alternate" hreflang="it" href="https://allergiapp.com/menu" />
+        <xhtml:link rel="alternate" hreflang="en" href="https://allergiapp.com/menu?lang=en" />
+    </url>
+
     <!-- Terms of Service -->
     <url>
         <loc>https://allergiapp.com/terms</loc>

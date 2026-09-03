@@ -1,0 +1,401 @@
+/* La pagina /menu: il racconto del menù digitale per i ristoratori.
+ *
+ * Sta accanto a styles.css e non dentro, come restaurants.css: qui ci sono
+ * solo le cose di questa pagina, e i colori e i caratteri restano quelli del
+ * sito.
+ *
+ * ⚠️ IL MENÙ DI PROVA NON È STILATO DA QUI. Vive dentro una cornice
+ * (l'iframe di /menu-demo) e porta con sé menu-page.css, esattamente quello
+ * dei menù veri: è la ragione per cui la prova non può divergere da ciò che
+ * il cliente vedrà al tavolo. Da questo foglio si disegna il TELEFONO, mai
+ * quello che ci sta dentro. */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── HERO ───────────────────────────────────────────────────────────── */
+
+.ml-hero {
+    padding: 130px 0 40px;
+    text-align: center;
+    background: linear-gradient(180deg, #F4FAF5 0%, var(--bg) 100%);
+}
+
+.ml-eyebrow {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    /* Non --primary-dark: su questo fondo verdino sta a 3,9:1, e questa riga
+     * è testo piccolo. Il verde più scuro della stessa famiglia arriva a
+     * 4,8:1 senza cambiare il tono della pagina. */
+    color: #2E7D32;
+    margin-bottom: 14px;
+}
+
+.ml-title {
+    font-size: clamp(32px, 5.5vw, 52px);
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+}
+
+.ml-subtitle {
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+.ml-cta-row {
+    margin-top: 32px;
+}
+
+.ml-cta {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 15px 38px;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.32);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.ml-cta:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(76, 175, 80, 0.38);
+}
+
+/* La riga che dice cosa comprende «gratis». Sta SOTTO il bottone e non
+ * dentro: sul bottone ci va la promessa corta, e la promessa corta senza il
+ * dettaglio è una promessa che non sappiamo mantenere. */
+.ml-cta-note {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ── LA PROVA ───────────────────────────────────────────────────────── */
+
+.ml-demo {
+    padding: 20px 0 70px;
+}
+
+.ml-demo-title {
+    font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.ml-demo-text {
+    max-width: 620px;
+    margin: 0 auto 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.ml-demo-text strong {
+    color: var(--text);
+}
+
+/* Il telefono e le manopole stanno affiancati, e non è un vezzo grafico:
+ * dentro il telefono c'è quello che vede il CLIENTE, fuori quello che decide
+ * il RISTORATORE. Mescolarli in un pannello solo confonde i due filtri
+ * (DIGITAL_MENU.md, Tema 31). */
+.ml-stage {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 56px;
+    flex-wrap: wrap;
+}
+
+.ml-phone {
+    flex: 0 0 auto;
+    width: 375px;
+    max-width: 100%;
+    padding: 12px;
+    background: #1c1c1e;
+    border-radius: 44px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.ml-phone-screen {
+    position: relative;
+    height: 720px;
+    max-height: 72vh;
+    border-radius: 32px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.ml-phone-screen iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.ml-knobs {
+    flex: 1 1 300px;
+    max-width: 380px;
+    text-align: left;
+}
+
+.ml-knobs-intro {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+}
+
+.ml-knob {
+    margin-bottom: 26px;
+}
+
+.ml-knob-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.ml-swatches {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ml-swatch {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: var(--c);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: inset 0 0 0 2px #fff;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.ml-swatch:hover {
+    transform: scale(1.08);
+}
+
+.ml-swatch:focus-visible,
+.ml-choice:focus-visible,
+.ml-cta:focus-visible {
+    outline: 3px solid #1F4E79;
+    outline-offset: 3px;
+}
+
+.ml-swatch.is-on {
+    border-color: var(--text);
+}
+
+.ml-choices {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ml-choice {
+    font: inherit;
+    font-size: 14px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.ml-choice:hover {
+    border-color: var(--primary);
+}
+
+.ml-choice.is-on {
+    background: var(--text);
+    border-color: var(--text);
+    color: #fff;
+}
+
+.ml-knobs-note {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ── COME SI FA ─────────────────────────────────────────────────────── */
+
+.ml-how {
+    padding: 70px 0;
+    background: var(--bg-alt);
+}
+
+.ml-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px;
+    margin-top: 44px;
+}
+
+.ml-step {
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px 26px;
+    box-shadow: 0 2px 14px var(--shadow);
+}
+
+.ml-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    /* Il verde di marca sul verde chiaro sta a 3,1:1: qui dentro c'è un
+     * numero, ed è testo. */
+    color: #1B5E20;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.ml-step-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ml-step-text {
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+/* ── IL FILTRO ──────────────────────────────────────────────────────── */
+
+.ml-filter {
+    padding: 70px 0;
+}
+
+.ml-filter-inner {
+    max-width: 720px;
+}
+
+.ml-filter-title {
+    font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.ml-filter-text p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.ml-filter-text strong {
+    color: var(--text);
+}
+
+.ml-filter-claim {
+    border-left: 3px solid var(--primary);
+    padding-left: 16px;
+    color: var(--text) !important;
+}
+
+/* ── CHIUSURA ───────────────────────────────────────────────────────── */
+
+.ml-end {
+    padding: 70px 0 90px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg) 0%, #F4FAF5 100%);
+}
+
+.ml-end-title {
+    font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.ml-end-text {
+    max-width: 540px;
+    margin: 0 auto 30px;
+    color: var(--text-secondary);
+}
+
+.ml-end-note {
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.ml-end-note a {
+    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ml-swatch,
+    .ml-choice,
+    .ml-cta {
+        transition: none;
+    }
+
+    .ml-swatch:hover,
+    .ml-cta:hover {
+        transform: none;
+    }
+}
+
+/* ── TELEFONO VERO ──────────────────────────────────────────────────── */
+/* Sotto i 900px il telefono va sopra e le manopole sotto: chi legge da un
+ * telefono ha già in mano la cosa che stiamo mostrando, e la cornice si
+ * assottiglia per non rubargli larghezza. */
+
+@media (max-width: 900px) {
+    .ml-stage {
+        gap: 32px;
+    }
+
+    .ml-knobs {
+        max-width: 420px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .ml-hero {
+        padding-top: 110px;
+    }
+
+    .ml-phone {
+        padding: 8px;
+        border-radius: 32px;
+    }
+
+    .ml-phone-screen {
+        height: 620px;
+        max-height: 78vh;
+        border-radius: 24px;
+    }
+}
