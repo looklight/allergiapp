@@ -1244,6 +1244,109 @@ arrivare al tavolo, e un menù pubblicato senza QR è un menù che nessuno può 
 per cui il filtro non si vende.
 
 
+### 2026-09-03 — Tema 31: La prova senza account, e cosa si vende
+
+**La domanda di partenza**: far comporre menù e piatti anche a chi non è loggato, chiedendo
+l'accesso solo per salvare o pubblicare. La risposta è **no all'editor aperto, sì alla prova** — e
+la differenza vale la conversazione intera.
+
+**Perché non l'editor.** Il login del portale è email, password e quattro campi: un minuto. Quello
+che costa non è entrare, è **riempire il menù** — quaranta piatti con gli allergeni, uno per uno. Far
+fare quel lavoro a chi non ha un account significa appoggiarlo in un posto fragile: chiude la
+scheda, cambia computer, e ha perso un'ora invece di trenta secondi. Il pezzo che convince, poi,
+non è l'aver digitato i propri piatti: è **vedere la carta riordinarsi per un celiaco**. E quello si
+mostra senza far scrivere niente a nessuno.
+
+**Scartate esplicitamente**, per non riproporle: la **sessione anonima** di Supabase (funziona e non
+duplicherebbe niente, ma è lavoro vero per un problema che non abbiamo ancora) e il ritorno al
+**localStorage** come prima del 30/08, che vorrebbe dire tenere in piedi due mondi paralleli e
+scrivere il trasloco fra loro.
+
+**Cosa si fa invece: `allergiapp.com/menu`**, una pagina di vendita sul sito — non nel portale — che
+spiega la cosa e mostra subito il menù da personalizzare. L'indirizzo l'ha scelto l'utente: funziona
+anche in inglese. Non si scontra con `/menu/<slug>`, che resta i menù veri dei clienti al tavolo,
+perché quella riscrittura pretende un segmento in più.
+
+**La prova è un'anteprima nel browser, non un menù pubblicato**: niente slug da riservare, niente
+riga sul database, niente da indicizzare come se fosse la carta di un ristorante. È un pezzo della
+pagina di vendita, e questo fa cadere da solo il problema del riciclo degli slug (Tema 17).
+
+**I piatti non si inventano**: `landing/lib/menu-sample.js` è già la Trattoria da Mario — Antipasti,
+Primi, Secondi, Dolci, undici piatti con prezzi, allergeni e un blocco di testo in mezzo — ed è già,
+campo per campo, la forma dei menù veri.
+
+**Le manopole che si muovono, e quelle no.** Divisione netta, e non è un'opinione: colore, carattere
+dei titoli, grandezza del testo, interlinea e separatore vivono nel CSS (`--accent`, `--ms`, `--lh`,
+le classi `font-*` e `sep-*` sulla radice), quindi cambiano **all'istante senza rifare la pagina**.
+Foto sì/no, descrizioni sotto il nome, riga contro blocco rifanno il contenuto: fuori dalla prima
+versione. Le cinque gratuite sono anche le più spettacolari — il colore che cambia tutta la carta è
+il momento in cui uno capisce che quel menù può essere **suo**.
+
+**Il menù sta dentro una cornice**, non incastrato nella pagina. La funzione che disegna il menù
+produce un documento intero: spezzarla vorrebbe dire mettere le mani su ciò che serve i menù veri
+dei clienti. La cornice evita quel rischio, dà gratis la forma giusta (un telefono in mezzo alla
+pagina), e tiene separati gli stili del sito e quelli del menù. Le manopole restano vive: la pagina
+di fuori raggiunge il menù dentro e gli cambia colore e misure.
+
+**I due filtri non si mescolano**: quello degli allergeni è del **cliente** e sta dentro il telefono,
+dov'è davvero; le manopole dell'aspetto sono del **ristoratore** e stanno fuori, intorno. Messi nello
+stesso pannello si confondono, e si perde proprio la scena che convince.
+
+**Niente lucchetti sulle manopole a pagamento**, e non per gentilezza: il muro del premium non sta
+sul bottone ma sullo scatto della pubblicazione (Tema 27), quindi le manopole si toccano **sempre** —
+nella prova come nel portale. Quello che un piano senza aspetto non fa è portarlo al tavolo. Chi si
+logga non trova niente di spento, e non c'è nessuna delusione da gestire. Serve solo che il pulsante
+non prometta troppo: **«Inizia gratis»**, e sotto una riga con cosa comprende davvero — menù
+completo, piatti illimitati, filtro allergeni, QR.
+
+**La direzione del premium, come tendenza e non come decisione presa**: si pagano **solo le
+personalizzazioni**. ⚠️ Da sciogliere in `MONETIZATION.md`, perché stringe il confine scritto sopra
+("Il confine del freemium") e ne eredita il problema: logo e colori si pagano **una volta sola** e poi
+non ci si pensa più, mentre le statistiche erano l'unica voce che dava un motivo per pagare **ogni
+mese**.
+
+**Constatato per strada, ed è il buco più grosso**: oggi su `allergiapp.com` non esiste **nessuna
+pagina per i ristoratori** e **nessun collegamento** a `partner.allergiapp.com`. Dal sito al portale
+non si arriva in nessun modo. La prova è un pezzo di quella pagina mancante, non il contrario.
+
+**Cosa si riusa senza scrivere niente**: il disegno del menù (`lib/render-menu.js`, tutte le manopole
+già dentro), il menù finto, il filtro allergeni (`menu-page.js` e `menu-page.css`, già autonomi e
+senza rete), testata e piè di pagina condivisi con `/r/` e `/u/` (`lib/render-shell.js`), il
+riconoscimento della lingua. Da scrivere restano il testo di vendita, il pannello delle manopole, la
+cornice e il pulsante.
+
+**Una duplicazione da sapere, non da risolvere adesso**: i sei colori del menù esistono in due copie,
+una nel portale e una nel sito. Era già così; la prova usa quella del sito e non ne aggiunge una
+terza. Il giorno che se ne aggiunge un settimo, i posti da toccare sono due.
+
+#### Costruita il 2026-09-03 (stessa giornata)
+
+`landing/menu.html` + `menu-landing.css` + `menu-landing.js`, il telefono su `api/menu-demo.js`
+(riscritture `/menu` e `/menu-demo` in `vercel.json`), testi in `translations.json` sotto
+`menuLanding` e `menuLandingMeta`, `/menu` in `sitemap.xml`. Quattro cose che si sono decise
+scrivendola:
+
+- **Il disegno del menù sa stare senza indirizzo.** `renderMenuPage` con `slug: null` toglie da sé
+  canonico, `hreflang`, `og:url` e il cambio lingua nell'intestazione, e mette `noindex`. È tutta
+  la modifica al codice che serve i menù veri: nessuno spezzettamento, e per un menù pubblicato non
+  cambia niente. La prova non ha bisogno di altro per non essere una pagina.
+- **Nella prova le foto sono spente.** Nel menù finto un solo piatto ha l'immagine, e basta quello
+  ad accendere la colonna delle miniature su tutte le righe (l'allineamento del Tema 28): il resto
+  della carta diventava una fila di quadrati grigi vuoti, che al ristoratore vero è giusto e su una
+  pagina di vendita si legge come una pagina rotta. Le foto restano nominate sotto le manopole.
+- **Tre manopole, non cinque.** Colore, carattere dei titoli, grandezza dei testi. Interlinea e
+  separatore erano nell'elenco di sopra perché sono già CSS, ma **aspettano la 711**: offrirle qui
+  vorrebbe dire promettere una scelta che il ristoratore, registrandosi, non troverebbe. Si
+  accendono insieme ad `APPEARANCE_711`.
+- **Un bug del sito trovato per strada**: `i18n-site.js` riscriveva titolo e descrizione con quelli
+  della homepage su OGNI pagina, appena applicava le traduzioni. Adesso una pagina può dichiarare
+  i suoi con `data-i18n-meta` sul tag `<html>`; senza l'attributo non cambia niente per le altre
+  pagine, che restano da sistemare una a una.
+
+**Resta da decidere**: dal sito a `/menu` non si arriva ancora — la pagina esiste, ma nessun'altra
+pagina la nomina. Dove va il collegamento (barra in alto, piè di pagina, o entrambi) è una scelta
+di navigazione del sito, non del menù.
+
 ## Prossimo passo
 
 **Aggiornato il 2026-09-03.** La fase 2 è fatta e in produzione: il menù al tavolo si apre da
@@ -1297,6 +1400,10 @@ copie — portale e sito — e sotto le tre scelte il portale lo dice anche al r
 4. **Svuotare la cache alla pubblicazione**, quando le letture del menù cominceranno a vedersi nel
    traffico di Supabase: l'etichetta `Vercel-Cache-Tag` è già sulle risposte, manca il segreto
    lato server. Fino ad allora la cache è di un minuto.
+5. ~~**La pagina `/menu` sul sito**~~ **FATTA il 2026-09-03** (Tema 31): il racconto per i
+   ristoratori col menù di prova da personalizzare e «Inizia gratis». Sul branch `landing`, non
+   ancora rilasciata. ⚠️ **Nessuna pagina del sito la collega**: dove mettere il rimando è una
+   scelta di navigazione da fare.
 
 **E la cosa che questo diario chiede da agosto**: mostrarlo a due o tre ristoratori. Adesso c'è un
 menù vero, online, con un QR che funziona — è una conversazione diversa da quella di ieri.
