@@ -353,9 +353,15 @@ export default function MenuPreview({
               l'unica scritta della fila a non essere una scelta; il nome
               resta per chi non vede l'icona (aria-label, title).
 
-              Le pastiglie escono dal bordo destro (-mr-4 pr-4): una fila che
-              si ferma prima del margine sembra finita anche quando non lo è. */}
-          <div className="-mr-4 mt-1.5 flex items-center gap-1.5 overflow-x-auto pb-0.5 pr-4">
+              La fila sborda da TUTT'E DUE i lati (-mx-4 px-4), e i due
+              margini fanno due mestieri: il negativo porta il contenitore al
+              bordo dello schermo — una fila che si ferma prima del margine
+              sembra finita anche quando non lo è, e una pastiglia che esce
+              dev'essere tagliata dal bordo vero, non svanire prima — mentre
+              il padding uguale e contrario rimette il contenuto sul margine
+              della pagina quando la fila è ferma ai suoi capi. Solo a destra
+              (com'era) voleva dire due regole diverse per lo stesso gesto. */}
+          <div className="-mx-4 mt-1.5 flex items-center gap-1.5 overflow-x-auto px-4 pb-0.5">
             <button
               onClick={() => setFilterOpen(true)}
               aria-label={d.menuPublic.filterButton}
