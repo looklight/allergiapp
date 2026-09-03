@@ -48,7 +48,10 @@ Quattro cose da non disfare:
   menù. Resta una riga minuscola attaccata al **filtro**, che è l'unica cosa
   nostra in quella pagina. Il fondo è del ristoratore (coperto, servizio).
 - **Due copie a mano dal portale**, e vanno tenute allineate o il ristoratore
-  vede nell'anteprima una cosa e il suo cliente ne trova un'altra:
+  vede nell'anteprima una cosa e il suo cliente ne trova un'altra. Dal
+  2026-09-03 c'è un modo di accorgersene: `npm run gemelle` dentro
+  `allergiapp/partner` confronta le due copie e dice dove divergono (vuole i
+  due checkout affiancati). Le voci:
   `lib/menu-order.js` (la graduatoria delle pastiglie, da
   `partner/src/lib/menuFilters.ts`) e la tavolozza `ACCENTI` dentro
   `lib/render-menu.js` (da `menuBrand.ts`) — il database tiene il **codice**
