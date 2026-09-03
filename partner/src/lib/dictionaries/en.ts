@@ -372,8 +372,8 @@ const en: typeof it = {
     publishAppearance: 'Unpublished look changes: the table still shows the previous one.',
     publishNever: 'This menu is not published yet.',
     publishedOn: 'Published on {date}',
-    appearanceRevert: 'Restore what is on the table',
-    appearanceRevertTitle: 'Restore the look that is on the table?',
+    appearanceRevert: 'Restore the published look',
+    appearanceRevertTitle: 'Restore the published look?',
     appearanceRevertBody:
       'Colour, cover, logo and styles go back to what your customers see right now. The menu, the dishes and the prices are left alone.',
     appearanceRevertConfirm: 'Restore it',

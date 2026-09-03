@@ -467,12 +467,17 @@ export default function MenuPreview({
             return (
               <section key={gruppo.id} className="mb-4">
                 {gruppo.name.trim() !== '' && (
-                  <TitoloSezione stile={sectionStyle} accent={accent} carattere={carattere}>
+                  <TitoloSezione
+                    stile={sectionStyle}
+                    accent={accent}
+                    carattere={carattere}
+                    conDescrizione={gruppo.description.trim() !== ''}
+                  >
                     {gruppo.name}
                   </TitoloSezione>
                 )}
                 {gruppo.description.trim() !== '' && (
-                  <p className="mb-3 whitespace-pre-line text-[calc(12px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">
+                  <p className="menu-section-desc mb-2.5 whitespace-pre-line text-[calc(12px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">
                     {gruppo.description}
                   </p>
                 )}
@@ -560,18 +565,29 @@ function TitoloSezione({
   stile,
   accent,
   carattere,
+  conDescrizione,
   children,
 }: {
   stile: SectionStyle;
   accent: string;
   // già nella forma " heading-classic", vuoto per il carattere di sistema
   carattere: string;
+  // Con la descrizione sotto, il titolo le sta VICINO: la didascalia è del
+  // titolo, non della lista, e lo spazio grande sta fra la descrizione e i
+  // piatti — ce l'ha già lei. La regola è in globals.css, identica a quella
+  // del sito, e la classe la mette chi rende (non un `:has()`) così le due
+  // copie restano confrontabili.
+  conDescrizione: boolean;
   children: React.ReactNode;
 }) {
+  // ⚠️ mb-2.5 = 10px, e non può essere meno dello spazio fra i piatti (13px):
+  // a 4px il filetto sembrava appoggiato sopra la prima riga. Stessa misura
+  // del sito (.menu-section-title in menu-page.css).
+  const sotto = conDescrizione ? 'menu-section-title has-desc mb-2.5' : 'mb-2.5';
   if (stile === 'banner') {
     return (
       <h3
-        className={`-mx-4 mb-2 px-4 py-1.5 text-[calc(14px*var(--ms))] font-semibold uppercase tracking-wide text-white${carattere}`}
+        className={`-mx-4 ${sotto} px-4 py-1.5 text-[calc(14px*var(--ms))] font-semibold uppercase tracking-wide text-white${carattere}`}
         style={{ backgroundColor: accent }}
       >
         {children}
@@ -580,12 +596,12 @@ function TitoloSezione({
   }
   if (stile === 'plain') {
     return (
-      <h3 className={`mb-1.5 text-[calc(18px*var(--ms))] font-semibold text-gray-900${carattere}`}>{children}</h3>
+      <h3 className={`${sotto} text-[calc(18px*var(--ms))] font-semibold text-gray-900${carattere}`}>{children}</h3>
     );
   }
   return (
     <h3
-      className={`mb-1 border-b pb-1 text-[calc(14px*var(--ms))] font-semibold uppercase tracking-wide${carattere}`}
+      className={`${sotto} border-b pb-1 text-[calc(14px*var(--ms))] font-semibold uppercase tracking-wide${carattere}`}
       style={{ color: accent, borderColor: `${accent}33` }}
     >
       {children}

@@ -179,7 +179,7 @@ const it = {
     quickLinks: 'Link e contatti',
     // Lo stato del menù non è quanti piatti ha dentro: è cosa leggono i
     // clienti al tavolo adesso (v. page.tsx).
-    liveOn: 'in sala, aggiornato',
+    liveOn: 'pubblicato e aggiornato',
     livePending: 'da pubblicare',
     liveNever: 'non pubblicato',
     sectionOne: 'sezione',
@@ -473,12 +473,17 @@ const it = {
       'Modifiche all’aspetto non pubblicate: al tavolo si vede ancora quello di prima.',
     publishNever: 'Questo menù non è ancora pubblicato.',
     publishedOn: 'Pubblicato il {date}',
-    // ANNULLARE L'ASPETTO. "Com'è in sala" e non "annulla tutto": quello che
-    // torna indietro è solo questa scatola, e il menù non si tocca. Il
-    // bottone sta QUI dentro e non accanto a Pubblica, dove sembrerebbe
-    // annullare anche i piatti e i prezzi.
-    appearanceRevert: 'Rimetti com’è in sala',
-    appearanceRevertTitle: 'Rimettere l’aspetto com’è in sala?',
+    // ANNULLARE L'ASPETTO. "L'aspetto pubblicato" e non "annulla tutto":
+    // quello che torna indietro è solo questa scatola, e il menù non si
+    // tocca. Il bottone sta QUI dentro e non accanto a Pubblica, dove
+    // sembrerebbe annullare anche i piatti e i prezzi.
+    //
+    // Diceva "com'è in sala", e "sala" è ambiguo: in un ristorante è la
+    // stanza dove si mangia, non l'ultima versione pubblicata. "Pubblicato"
+    // è la parola che il ristoratore ha già davanti sul bottone Pubblica e
+    // nell'avviso delle modifiche — una parola sola per una cosa sola.
+    appearanceRevert: 'Torna all’aspetto pubblicato',
+    appearanceRevertTitle: 'Tornare all’aspetto pubblicato?',
     appearanceRevertBody:
       'Colore, copertina, logo e stili tornano come si vedono adesso al tavolo. Il menù, i piatti e i prezzi non si toccano.',
     appearanceRevertConfirm: 'Rimetti com’era',
@@ -492,10 +497,13 @@ const it = {
     // come un'etichetta di stato, non come una cosa da premere — e infatti
     // nessuno la premeva.
     addressActive: 'Attivo',
-    addressTurnOn: 'Rimetti il menù in sala',
-    addressTurnOff: 'Togli il menù dalla sala',
+    // Dicono la CONSEGUENZA e non il posto: "sala" in un ristorante è la
+    // stanza dove si mangia, e chi legge non deve tradurre una metafora
+    // nostra per capire cosa fa premendo.
+    addressTurnOn: 'Rendi il menù visibile ai clienti',
+    addressTurnOff: 'Nascondi il menù ai clienti',
     addressHintOffline:
-      'Il link e il QR esistono ma non mostrano il menù: chi li apre legge che non è al momento disponibile. Puoi rimetterlo in sala quando vuoi.',
+      'Il link e il QR esistono ma non mostrano il menù: chi li apre legge che non è al momento disponibile. Puoi rimetterlo online quando vuoi.',
     addressHintLive:
       'Questo è l’indirizzo che i tuoi clienti aprono col QR. Cambiandolo, i QR già stampati smettono di funzionare.',
     addressHint:

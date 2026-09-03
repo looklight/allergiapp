@@ -357,6 +357,14 @@ body {
  * a `.layout-block .menu-price` di spostare il prezzo che il markup mette
  * accanto al nome.
  */
+/* CON LA DESCRIZIONE SOTTO, il titolo le sta VICINO: la didascalia è del
+   titolo, non della lista, e lo spazio grande sta fra la descrizione e i
+   piatti — ce l'ha già lei. La classe la mette chi rende, in tutt'e due le
+   copie, invece di `:has()`: così la regola è identica di qua e di là e
+   `npm run gemelle` la può confrontare.
+   Sta DOPO le tre varianti apposta: stessa specificità, vince l'ultima. */
+.menu-section-title.has-desc { margin-bottom: 5px; }
+
 .menu-items {
   list-style: none;
   margin: 0;
