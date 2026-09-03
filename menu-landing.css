@@ -132,23 +132,81 @@
 }
 
 .ml-phone {
-    width: 375px;
+    position: relative;
+    /* 384 di SCHERMO più i 10 di bordo per lato: la carta dentro si vede alla
+     * larghezza a cui la vedrà un cliente vero, ed è la misura su cui il
+     * ristoratore giudica la sua impaginazione. */
+    width: 404px;
     max-width: 100%;
-    padding: 12px;
-    background: #1c1c1e;
-    border-radius: 44px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    /* La cornice dei telefoni di oggi è SOTTILE e uguale su tutti e quattro i
+     * lati. Dodici pixel facevano un apparecchio di qualche anno fa. */
+    padding: 10px;
+    /* Il bordo non è nero piatto: è un profilo metallico che prende luce sui
+     * fianchi. Due lampi chiari agli angoli bastano a farlo sembrare un
+     * oggetto invece di un rettangolo. */
+    background: linear-gradient(150deg, #4a4a4e 0%, #1b1b1d 22%, #131315 50%, #1b1b1d 78%, #4a4a4e 100%);
+    border-radius: 54px;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+        0 28px 64px rgba(0, 0, 0, 0.26);
+}
+
+/* I TASTI sul fianco. Non si toccano e non si vedono quasi: servono a dire
+ * che è un telefono e non una finestra col bordo tondo. */
+.ml-phone::before,
+.ml-phone::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #4a4a4e, #232326);
+}
+
+/* Volume, a sinistra */
+.ml-phone::before {
+    left: -2px;
+    top: 148px;
+    height: 104px;
+}
+
+/* Accensione, a destra: più in basso e più corto, come sui telefoni veri */
+.ml-phone::after {
+    right: -2px;
+    top: 186px;
+    height: 76px;
 }
 
 .ml-phone-screen {
     position: relative;
-    /* Non un'altezza fissa: su un portatile basso il telefono uscirebbe dallo
-     * schermo e la colonna di sinistra si allungherebbe per stargli dietro. */
-    height: min(720px, calc(100vh - 190px));
+    /* PROPORZIONI DI OGGI: 19,5:9. L'altezza piena la prende solo se lo
+     * schermo di chi guarda la concede; sotto, si accorcia invece di
+     * stringersi, perché la LARGHEZZA dev'essere quella vera — è la misura
+     * su cui il ristoratore giudica la sua carta. */
+    /* 384 × 2,17 = 832: il formato pieno di un telefono di oggi. Lo
+     * raggiunge solo su schermi alti; sotto, la finestra lo accorcia. */
+    height: min(832px, calc(100vh - 168px));
     min-height: 460px;
-    border-radius: 32px;
+    /* Concentrico con la cornice: 54 fuori meno 10 di bordo. */
+    border-radius: 44px;
     overflow: hidden;
     background: #fff;
+}
+
+/* L'isola in alto. Sta SOPRA la pagina, come su un telefono vero, e cade
+ * nella fascia vuota dell'intestazione del menù: sotto ci passa il nome del
+ * locale, mai coperto. */
+.ml-phone-screen::after {
+    content: '';
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 21%;
+    max-width: 82px;
+    height: 21px;
+    border-radius: 999px;
+    background: #0b0b0c;
+    pointer-events: none;
 }
 
 .ml-phone-screen iframe {
@@ -473,8 +531,15 @@
         max-width: 460px;
     }
 
+    /* Fuori dalle due colonne il telefono non deve più stare accanto a
+       niente: può prendersi l'altezza vera del suo formato. */
+    /* Qui la larghezza non è più fissa: la detta la colonna. Quindi
+       l'altezza si ricava dal FORMATO invece che da un numero, o a 320px lo
+       schermo diventava un rettangolo lungo il doppio del dovuto. */
     .ml-phone-screen {
-        height: 660px;
+        aspect-ratio: 9 / 19.5;
+        height: auto;
+        max-height: min(780px, 82vh);
     }
 
     .ml-filter-inner {
@@ -487,13 +552,26 @@
         padding-top: 104px;
     }
 
+    /* Su un telefono vero la cornice si assottiglia ancora: quello che deve
+       restare largo è la carta dentro. Raggi e isola scendono con lei, o si
+       vedrebbe una cornice di plastica intorno a uno schermo squadrato. */
     .ml-phone {
-        padding: 8px;
-        border-radius: 32px;
+        padding: 7px;
+        border-radius: 42px;
+    }
+
+    .ml-phone::before,
+    .ml-phone::after {
+        display: none;
     }
 
     .ml-phone-screen {
-        height: min(620px, 78vh);
-        border-radius: 24px;
+        max-height: 76vh;
+        border-radius: 35px;
+    }
+
+    .ml-phone-screen::after {
+        top: 7px;
+        height: 18px;
     }
 }
