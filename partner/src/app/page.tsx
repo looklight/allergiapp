@@ -30,6 +30,7 @@
 // NON è un percorso a tappe numerato: le due cose sono indipendenti e c'è chi
 // farà solo il menù senza mai voler entrare nell'app (Temi 10 e 16).
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
@@ -100,6 +101,32 @@ function DishBubble({ dish }: { dish: Dish }) {
         {nome === '' ? d.dashboard.dishUnnamed : nome}
       </span>
     </Link>
+  );
+}
+
+// IL SALUTO, col marchio accanto. Il logo non è decorazione: da telefono il
+// portale non ha nessuna testata — c'è solo la barra in fondo con le icone —
+// e questa è l'unica schermata che può dire di chi è il sito che si sta
+// usando. Su desktop ripete quello che la barra laterale dice già, e va bene
+// così: è la prima cosa che si vede aprendo, e costa una riga.
+function Saluto({ saluto, intro }: { saluto: string; intro: string }) {
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <Image
+          src="/icons/icon-192.png"
+          alt=""
+          width={40}
+          height={40}
+          priority
+          className="h-10 w-10 shrink-0 rounded-2xl shadow-sm ring-1 ring-black/5"
+        />
+        <h1 className="min-w-0 text-xl font-semibold md:text-2xl">{saluto}</h1>
+      </div>
+      {/* Sotto e non accanto: è una frase lunga, e in colonna accanto al logo
+          si spezzerebbe in tre righe strette su telefono. */}
+      <p className="mt-2 text-balance text-sm text-gray-600">{intro}</p>
+    </>
   );
 }
 
@@ -213,9 +240,8 @@ export default function HomePage() {
   if (!venue) {
     return (
       <div>
-        <h1 className="mb-2 text-xl font-semibold md:text-2xl">{saluto}</h1>
-        <p className="mb-8 text-balance text-sm text-gray-600">{d.dashboard.intro}</p>
-        <div className="max-w-xl rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        <Saluto saluto={saluto} intro={d.dashboard.intro} />
+        <div className="mt-8 max-w-xl rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
           <p className="text-sm font-medium text-gray-900">{d.dashboard.emptyTitle}</p>
           <p className="mt-1 text-sm text-gray-500">{d.dashboard.emptyHint}</p>
           <button
@@ -316,8 +342,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold md:text-2xl">{saluto}</h1>
-      <p className="mt-2 text-balance text-sm text-gray-600">{d.dashboard.intro}</p>
+      <Saluto saluto={saluto} intro={d.dashboard.intro} />
 
       {/* Di quale locale parla tutto quello che c'è sotto. Il nome si corregge
           da qui: è quello che i clienti leggono in cima al menù, non

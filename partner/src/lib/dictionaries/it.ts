@@ -151,7 +151,11 @@ const it = {
     // l'indice di cosa esiste nel portale. Prima elencava le due cose ("il
     // menù e la scheda") — e per giunta come gemelle, che non lo sono più
     // (v. page.tsx): il menù si fa stasera, la scheda aspetta l'associazione.
-    intro: 'Da qui prepari il menù digitale del tuo locale, lo pubblichi e lo cambi quando vuoi.',
+    // Comincia col dire DOVE si è: il portale è una cosa a parte dall'app, e
+    // chi entra la prima volta si è appena registrato da un link — la prima
+    // riga che legge deve dirgli che è nel posto giusto. Poi cosa ci si fa.
+    intro:
+      'Benvenuto nel portale dedicato ai partner di AllergiApp. Da qui prepari il menù digitale del tuo locale, lo pubblichi e lo cambi quando vuoi.',
     switchLabel: 'Locale',
     addVenue: 'Aggiungi un altro locale',
     // Il nome della COSA, non del gesto: la card c'è anche a menù fatto e
@@ -362,7 +366,10 @@ const it = {
     previewCaption: 'Come lo vedono i tuoi clienti al tavolo.',
     fullPreview: 'Apri a tutta pagina',
     openLive: 'Apri il menù online',
-    liveNoAddress: 'Questo menù non ha ancora un indirizzo.',
+    // "Indirizzo web" e non "indirizzo": questa riga si legge anche dalla
+    // home, lontana dal campo che mostra allergiapp.com/menu/…, e lì
+    // "indirizzo" da solo si legge come la via del ristorante.
+    liveNoAddress: 'Questo menù non ha ancora un indirizzo web: è il link che si apre col QR.',
     liveNotYet: 'Non ancora pubblicato: questo indirizzo non risponde a nessuno.',
     liveChoose: 'Scegli l’indirizzo',
     fullPreviewNotice: 'Anteprima privata — non è ancora l’indirizzo pubblico del menù.',
@@ -377,8 +384,9 @@ const it = {
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     brandHint:
       'Come lo vedono i tuoi clienti al tavolo. Vale per il menù di questo locale.',
-    summaryPhotosOn: 'con foto',
     summaryPhotosOff: 'senza foto',
+    summaryPhotosSquare: 'foto quadrate',
+    summaryPhotosRound: 'foto tonde',
     summaryDescOn: 'con descrizioni',
     cover: 'Copertina',
     coverAdd: 'Aggiungi una copertina',
@@ -396,10 +404,14 @@ const it = {
     // Sta sotto le tre scelte, e non è un dettaglio tecnico: è la ragione per
     // cui Compatta non rimpicciolisce tutto.
     textScaleFloor: 'La riga degli allergeni non rimpicciolisce: resta leggibile anche con la carta più fitta.',
-    showPhotos: 'Mostra le foto dei piatti',
-    // Si dice cosa succede spegnendo, non cosa sono le foto: chi legge sta
+    // LE FOTO: una scelta sola con tre risposte (migration 711). "Nessuna"
+    // non è il contrario delle altre due, è la prima delle tre — e messa in
+    // fila si sceglie guardando, come i titoli delle sezioni.
+    photos: 'Foto dei piatti',
+    photoShapes: { none: 'Nessuna', square: 'Quadrate', round: 'Tonde' },
+    // Si dice cosa succede spegnendole, non cosa sono le foto: chi legge sta
     // decidendo, e la domanda che ha in testa è "e se le tolgo?"
-    showPhotosHint: 'Spente, il menù al tavolo è di solo testo. Le foto restano sui piatti e sulla scheda AllergiApp.',
+    photosHint: 'Senza foto il menù al tavolo è di solo testo. Le foto restano sui piatti e sulla scheda AllergiApp.',
     showDescriptions: 'Mostra le descrizioni sotto ai piatti',
     showDescriptionsHint: 'Spente, si leggono toccando il piatto. Accese, la carta è più alta ma racconta di più.',
     logoAdd: 'Carica il logo',
@@ -447,11 +459,13 @@ const it = {
     // L'INDIRIZZO PUBBLICO. Che non sia ancora attivo va detto in ogni
     // occasione utile: la cosa da non far succedere è che qualcuno lo stampi
     // su una locandina prima che la pagina esista.
-    addressTitle: 'Indirizzo del menù',
-    addressNotLive: 'Non ancora attivo',
+    addressTitle: 'Indirizzo web del menù',
     addressTitleLive: 'Il menù è online',
-    addressLive: 'Attivo',
-    addressOffline: 'Inattivo',
+    // UN'ETICHETTA SOLA, e lo stato lo dice l'interruttore accanto. Prima la
+    // pastiglia scriveva "Attivo" o "Inattivo" a seconda dei casi: leggeva
+    // come un'etichetta di stato, non come una cosa da premere — e infatti
+    // nessuno la premeva.
+    addressActive: 'Attivo',
     addressTurnOn: 'Rimetti il menù in sala',
     addressTurnOff: 'Togli il menù dalla sala',
     addressHintOffline:
@@ -554,6 +568,8 @@ const it = {
     excludedContains: 'Contiene {list}',
     excludedNotFor: 'Non indicato per {list}',
     dishDetailOpen: 'Vedi {dish}',
+    dishDetailPrev: 'Piatto precedente',
+    dishDetailNext: 'Piatto successivo',
     dishDetailPhotoDisclaimer: 'L’immagine è indicativa: la presentazione può variare.',
     dishDetailAllergensTitle: 'Allergeni dichiarati',
     dishDetailNoAllergens: 'Nessun allergene dichiarato dal ristorante.',

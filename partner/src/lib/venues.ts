@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
+import { DISH_PHOTO_SHAPE } from './features';
 import { deleteCover, deleteLogo } from './photos';
 import { write } from './saveState';
 
@@ -42,6 +43,21 @@ export type HeadingFont = (typeof HEADING_FONTS)[number];
 // L'ordine è quello in cui si mostrano: dalla più fitta alla più ariosa.
 export const TEXT_SCALES = ['compact', 'normal', 'roomy'] as const;
 export type TextScale = (typeof TEXT_SCALES)[number];
+
+// COME SI VEDONO LE MINIATURE dei piatti nel menù al tavolo (migration 711).
+// Elenco chiuso anche nel database (CHECK della 711).
+//
+// Nel portale la scelta si presenta come UNA sola con tre risposte — nessuna
+// foto, quadrate, tonde — ma sotto restano due campi: showDishPhotos, che
+// esiste dalla 705 e che gli scatti già pubblicati contengono, e questa
+// forma. Spegnere le foto e riaccenderle riporta così la forma che si era
+// scelta, invece di ricominciare da capo.
+//
+// Vale per la LISTA e non per la foto grande del piatto: un cerchio al posto
+// di una foto dentro il popup non è una scelta di stile, è un ritaglio in
+// meno.
+export const DISH_PHOTO_SHAPES = ['square', 'round'] as const;
+export type DishPhotoShape = (typeof DISH_PHOTO_SHAPES)[number];
 
 // DI QUANTO. Un moltiplicatore solo: nell'anteprima e sul sito ogni misura
 // del contenuto è calc(Npx * var(--ms)), quindi questi tre numeri muovono
@@ -79,6 +95,7 @@ export type VenueAppearance = Pick<
   | 'headingFont'
   | 'sectionStyle'
   | 'showDishPhotos'
+  | 'dishPhotoShape'
   | 'showDishDescriptions'
   | 'textScale'
 >;
@@ -146,6 +163,10 @@ export interface Venue extends VenueDraft {
   // in app continua a mostrarle comunque — là siamo noi a presentare un
   // ristorante a chi lo sceglie da lontano.
   showDishPhotos: boolean;
+  // Tonde o squadrate, quando ci sono (migration 711). 'square' è quello di
+  // sempre. Insieme a showDishPhotos fa le tre risposte che il portale
+  // mostra come una scelta sola.
+  dishPhotoShape: DishPhotoShape;
   // Le descrizioni sotto il nome, in lista. Spente = si leggono aprendo il
   // piatto, che è il comportamento di sempre.
   showDishDescriptions: boolean;
@@ -251,7 +272,13 @@ async function loadVenues(): Promise<Venue[]> {
     .from('partner_venues')
     .select(
       'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, ' +
-        'show_dish_descriptions, section_style, heading_font, text_scale, cover_url, ' +
+        // ⚠️ La colonna si NOMINA solo quando esiste davvero (v.
+        // DISH_PHOTO_SHAPE): PostgREST, davanti a una colonna che non c'è,
+        // rifiuta tutta l'interrogazione — nessun locale, non un locale con
+        // un campo in meno.
+        (DISH_PHOTO_SHAPE ? 'dish_photo_shape, ' : '') +
+        'show_dish_descriptions, section_style, heading_font, ' +
+        'text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
     )
     .order('created_at', { ascending: true });
@@ -267,6 +294,7 @@ async function loadVenues(): Promise<Venue[]> {
       tableConditions: row.table_conditions ?? '',
       slug: row.slug ?? '',
       showDishPhotos: row.show_dish_photos ?? true,
+      dishPhotoShape: (row.dish_photo_shape ?? 'square') as DishPhotoShape,
       showDishDescriptions: row.show_dish_descriptions ?? false,
       sectionStyle: (row.section_style ?? 'underline') as SectionStyle,
       headingFont: (row.heading_font ?? 'modern') as HeadingFont,
@@ -445,6 +473,7 @@ export async function revertAppearance(venueId: string): Promise<VenueAppearance
     sectionStyle: (scatto.sectionStyle ?? 'underline') as SectionStyle,
     textScale: (scatto.textScale ?? 'normal') as TextScale,
     showDishPhotos: scatto.showPhotos !== false,
+    dishPhotoShape: (scatto.dishPhotoShape ?? 'square') as DishPhotoShape,
     showDishDescriptions: scatto.showDescriptions === true,
   };
 }
@@ -486,6 +515,7 @@ export function useVenues() {
       tableConditions: '',
       slug: '',
       showDishPhotos: true,
+      dishPhotoShape: 'square',
       showDishDescriptions: false,
       sectionStyle: 'underline',
       headingFont: 'modern',
@@ -517,6 +547,7 @@ export function useVenues() {
             tableConditions: s.tableConditions,
             slug: s.slug,
             showDishPhotos: s.showDishPhotos,
+            dishPhotoShape: s.dishPhotoShape,
             showDishDescriptions: s.showDishDescriptions,
             sectionStyle: s.sectionStyle,
             headingFont: s.headingFont,
@@ -553,6 +584,9 @@ export function useVenues() {
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
     if (next.accent !== undefined) riga.accent = next.accent;
     if (next.showDishPhotos !== undefined) riga.show_dish_photos = next.showDishPhotos;
+    if (DISH_PHOTO_SHAPE && next.dishPhotoShape !== undefined) {
+      riga.dish_photo_shape = next.dishPhotoShape;
+    }
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     if (next.headingFont !== undefined) riga.heading_font = next.headingFont;
@@ -648,6 +682,7 @@ export function useVenues() {
           // aveva.
           slug: venue.slug || null,
           show_dish_photos: venue.showDishPhotos,
+          ...(DISH_PHOTO_SHAPE ? { dish_photo_shape: venue.dishPhotoShape } : {}),
           show_dish_descriptions: venue.showDishDescriptions,
           section_style: venue.sectionStyle,
           heading_font: venue.headingFont,

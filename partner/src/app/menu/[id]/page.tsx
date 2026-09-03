@@ -4,7 +4,7 @@
 // Tutta la logica di struttura sta in menus.ts come funzioni pure: qui si
 // compone la modifica e si passa il risultato a save(), così non c'è uno
 // stato locale che possa divergere da quello mostrato.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
@@ -13,7 +13,6 @@ import { useDishes, type Dish } from '@/lib/dishes';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
 import { useVenues } from '@/lib/venues';
 import {
-  CURRENCIES,
   addDishes,
   addNote,
   addSection,
@@ -34,6 +33,7 @@ import {
   setSectionDescription,
   useMenu,
   useMenus,
+  type Menu,
   type MenuItem as Riga,
 } from '@/lib/menus';
 import MenuItemRow from '@/components/menus/MenuItemRow';
@@ -96,6 +96,32 @@ export default function MenuEditorPage() {
   const [drag, setDrag] = useState<{ kind: 'item' | 'section'; id: string } | null>(null);
   const [dropItem, setDropItem] = useState<{ sectionId: string | null; beforeId: string | null } | null>(null);
   const [dropSection, setDropSection] = useState<{ beforeId: string | null } | null>(null);
+  // La sezione (o il blocco) appena creata, per portarcela davanti. Nasce in
+  // FONDO all'elenco — sopra i due bottoni che l'hanno creata — e su un menù
+  // di media lunghezza questo vuol dire fuori dallo schermo: si preme
+  // "Nuova sezione" e non si vede succedere niente. Su telefono è la
+  // differenza fra un bottone che funziona e uno che sembra rotto.
+  const [appenaCreata, setAppenaCreata] = useState<string | null>(null);
+
+  // Si aspetta che la sezione sia RESA, non solo salvata: `save` cambia lo
+  // stato e la nuova scheda compare al giro dopo. Se il nodo non c'è ancora
+  // non si azzera niente e ci si riprova quando il menù cambia.
+  useEffect(() => {
+    if (appenaCreata === null) return;
+    const nodo = document.getElementById(`sezione-${appenaCreata}`);
+    if (nodo === null) return;
+    setAppenaCreata(null);
+    nodo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [appenaCreata, menu]);
+
+  // Crea e ci porta: le due cose insieme, in un posto solo, perché i bottoni
+  // che creano una sezione sono due (l'elenco in fondo e il menù vuoto) e un
+  // giorno saranno tre.
+  function creaGruppo(prossimo: Menu) {
+    save(prossimo);
+    const nato = prossimo.sections[prossimo.sections.length - 1];
+    if (nato) setAppenaCreata(nato.id);
+  }
 
   function endDrag() {
     setDrag(null);
@@ -199,6 +225,7 @@ export default function MenuEditorPage() {
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
       showPhotos={locale?.showDishPhotos ?? true}
+      photoShape={locale?.dishPhotoShape ?? 'square'}
       showDescriptions={locale?.showDishDescriptions ?? false}
       sectionStyle={locale?.sectionStyle ?? 'underline'}
       headingFont={locale?.headingFont ?? 'modern'}
@@ -288,7 +315,7 @@ export default function MenuEditorPage() {
     // scorre. Sotto lg l'anteprima non ci sta accanto e diventa un bottone
     // flottante: stessa scelta dell'editor del locale, stesso gesto.
     <div className="lg:flex lg:items-start lg:gap-8">
-      <div className="min-w-0 flex-1 lg:max-w-3xl">
+      <div className="min-w-0 flex-1 pb-32 lg:max-w-3xl lg:pb-0">
       {/* La riga di servizio in cima: da dove si torna indietro e — a destra
           — se quello che si sta guardando è già in sala. Sticky, perché
           l'avviso sugli allergeni non pubblicati non può scorrere via mentre
@@ -323,20 +350,6 @@ export default function MenuEditorPage() {
           aria-label={d.menuEditor.venueNameLabel}
           className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
         />
-        <label className="flex shrink-0 items-center gap-2 text-xs text-gray-500">
-          {d.menuEditor.currency}
-          <select
-            value={menu.currency}
-            onChange={(e) => save(setMenuCurrency(menu, e.target.value))}
-            className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-gray-900 focus:outline-none"
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.code} {c.symbol}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
 
       {/* Descrizione del menù: facoltativa, sotto il titolo. Stesso stile
@@ -354,7 +367,9 @@ export default function MenuEditorPage() {
       <div className="mb-4">
         <BrandBar
           accent={brand.accent}
+          currency={menu.currency}
           showPhotos={locale?.showDishPhotos ?? true}
+          photoShape={locale?.dishPhotoShape ?? 'square'}
           showDescriptions={locale?.showDishDescriptions ?? false}
           sectionStyle={locale?.sectionStyle ?? 'underline'}
           headingFont={locale?.headingFont ?? 'modern'}
@@ -362,8 +377,12 @@ export default function MenuEditorPage() {
           coverUrl={locale?.coverUrl ?? ''}
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           onRevert={() => setRevertingBrand(true)}
+          onCurrency={(valuta) => save(setMenuCurrency(menu, valuta))}
           onAccent={(accent) => setBrand({ accent })}
-          onShowPhotos={(showDishPhotos) => locale && setIdentity(locale.id, { showDishPhotos })}
+          onPhotos={({ showPhotos, photoShape }) =>
+            locale &&
+            setIdentity(locale.id, { showDishPhotos: showPhotos, dishPhotoShape: photoShape })
+          }
           onShowDescriptions={(showDishDescriptions) =>
             locale && setIdentity(locale.id, { showDishDescriptions })
           }
@@ -386,7 +405,7 @@ export default function MenuEditorPage() {
               {d.menuEditor.addDishes}
             </button>
             <button
-              onClick={() => save(addSection(menu, d.menuEditor.newSectionName))}
+              onClick={() => creaGruppo(addSection(menu, d.menuEditor.newSectionName))}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               {d.menuEditor.addSection}
@@ -415,6 +434,10 @@ export default function MenuEditorPage() {
           {menu.sections.map((section, i) => (
             <section
               key={section.id}
+              // Il bersaglio dell'autoscroll dopo "Nuova sezione" o "Blocco di
+              // testo" (v. appenaCreata). scroll-mt tiene conto della riga di
+              // servizio, che è ferma là sopra e coprirebbe il titolo.
+              id={`sezione-${section.id}`}
               onDragOver={(e) => {
                 if (drag?.kind !== 'section') return;
                 e.preventDefault();
@@ -430,7 +453,7 @@ export default function MenuEditorPage() {
                 save(moveSectionBefore(menu, drag.id, dropSection.beforeId));
                 endDrag();
               }}
-              className={`relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${
+              className={`relative scroll-mt-20 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${
                 drag?.kind === 'section' && drag.id === section.id ? 'opacity-40' : ''
               }`}
             >
@@ -566,7 +589,7 @@ export default function MenuEditorPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => save(addSection(menu, d.menuEditor.newSectionName))}
+              onClick={() => creaGruppo(addSection(menu, d.menuEditor.newSectionName))}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -578,7 +601,7 @@ export default function MenuEditorPage() {
                 dove serve: sono nella stessa fila, quindi si spostano con lo
                 stesso gesto. */}
             <button
-              onClick={() => save(addNote(menu))}
+              onClick={() => creaGruppo(addNote(menu))}
               title={d.menuEditor.noteHint}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
@@ -694,10 +717,23 @@ export default function MenuEditorPage() {
         </div>
       </div>
 
-      {/* Anteprima da telefono: bottone flottante e sovrapposizione */}
+      {/* Anteprima da telefono: bottone flottante e sovrapposizione.
+
+          STACCATO DALLA BARRA DI NAVIGAZIONE, non appoggiato sopra: a
+          sedici pixel dalla barra i due sembravano una cosa sola, e in mezzo
+          ci passava anche la pill del salvataggio (SaveStatus, che sta a
+          dodici pixel dalla barra e dallo stesso lato). Adesso la misura è
+          scritta con la stessa ricetta di quella pill — la barra c'è solo da
+          telefono (--nav-bottom) e sotto c'è il bordo tondo dello schermo —
+          e le due cose non si toccano più.
+
+          Il respiro in fondo alla colonna dell'editor (pb-32) è l'altra metà:
+          senza, scorrendo fino in fondo l'ultima scheda finiva sotto questo
+          bottone. */}
       <button
         onClick={() => setPreviewOpen(true)}
-        className="fixed bottom-20 right-4 z-30 flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg lg:hidden"
+        style={{ bottom: 'calc(3rem + env(safe-area-inset-bottom) + var(--nav-bottom, 0px))' }}
+        className="fixed right-4 z-30 flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg lg:hidden"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <rect x="7" y="2" width="10" height="20" rx="2.5" />
@@ -846,7 +882,11 @@ function BackLink() {
       // sarebbe un elemento in linea usato come colonna, e la sua riga di
       // testo aggiungerebbe qualche pixel sotto — abbastanza da far sembrare
       // "Tutti i menù" disallineato rispetto al resto della riga.
-      className="inline-flex shrink-0 items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-900"
+      //
+      // py-1.5 lo rende alto quanto il bottone "Pubblica" che gli compare
+      // accanto: così la prima riga è alta uguale anche quando il bottone non
+      // c'è, e alla prima modifica il menù sotto non scende (v. PublishBar).
+      className="inline-flex shrink-0 items-center gap-1.5 py-1.5 text-sm text-gray-500 transition-colors hover:text-gray-900"
     >
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M15 18l-6-6 6-6" />

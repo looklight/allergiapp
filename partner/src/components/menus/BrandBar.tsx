@@ -21,10 +21,13 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
+import { DISH_PHOTO_SHAPE } from '@/lib/features';
+import { CURRENCIES } from '@/lib/menus';
 import {
   HEADING_FONTS,
   SECTION_STYLES,
   TEXT_SCALES,
+  type DishPhotoShape,
   type HeadingFont,
   type SectionStyle,
   type TextScale,
@@ -33,7 +36,9 @@ import CoverPicker from './CoverPicker';
 
 export default function BrandBar({
   accent,
+  currency,
   showPhotos,
+  photoShape,
   showDescriptions,
   sectionStyle,
   headingFont,
@@ -43,8 +48,9 @@ export default function BrandBar({
   // tornare: fuori di qui è appearanceChanged di menu_publish_state (710).
   changed,
   onRevert,
+  onCurrency,
   onAccent,
-  onShowPhotos,
+  onPhotos,
   onShowDescriptions,
   onSectionStyle,
   onHeadingFont,
@@ -52,7 +58,15 @@ export default function BrandBar({
   onCover,
 }: {
   accent: string;
+  // ⚠️ LA VALUTA NON È ASPETTO, sta qui solo perché è qui che si va a
+  // sistemare come si legge il menù. Vive sul MENÙ (le altre manopole sono
+  // del locale), quindi conta come modifica di CONTENUTO — "Rimetti com'è in
+  // sala" non la tocca, e cambiarla accende l'avviso "modifiche non
+  // pubblicate" come cambiare un prezzo. È giusto così: al tavolo cambia
+  // quello che il cliente legge accanto a ogni piatto.
+  currency: string;
   showPhotos: boolean;
+  photoShape: DishPhotoShape;
   showDescriptions: boolean;
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
@@ -60,8 +74,12 @@ export default function BrandBar({
   coverUrl: string;
   changed: boolean;
   onRevert: () => void;
+  onCurrency: (value: string) => void;
   onAccent: (accent: string) => void;
-  onShowPhotos: (value: boolean) => void;
+  // Una scelta sola con tre risposte, due campi sotto (v. migration 711):
+  // spegnendo le foto la forma NON si azzera, così riaccendendole si ritrova
+  // quella che si era scelta.
+  onPhotos: (next: { showPhotos: boolean; photoShape: DishPhotoShape }) => void;
   onShowDescriptions: (value: boolean) => void;
   onSectionStyle: (value: SectionStyle) => void;
   onHeadingFont: (value: HeadingFont) => void;
@@ -73,12 +91,19 @@ export default function BrandBar({
   // Il riassunto sulla riga chiusa: chi non apre deve sapere lo stesso come
   // sta messo. Senza, sarebbe una scatola misteriosa proprio sopra al menù.
   const riassunto = [
+    // La valuta apre la fila: da quando il suo comando sta qui dentro, senza
+    // questa parola una scatola chiusa la nasconderebbe del tutto.
+    currency,
     d.menuEditor.headingFonts[headingFont],
     d.menuEditor.sectionStyles[sectionStyle],
     // 'Normale' non si scrive: sarebbe una parola in più su ogni riga chiusa
     // per dire che non è stato cambiato niente.
     textScale === 'normal' ? null : d.menuEditor.textScales[textScale],
-    showPhotos ? d.menuEditor.summaryPhotosOn : d.menuEditor.summaryPhotosOff,
+    !showPhotos
+      ? d.menuEditor.summaryPhotosOff
+      : photoShape === 'round'
+        ? d.menuEditor.summaryPhotosRound
+        : d.menuEditor.summaryPhotosSquare,
     showDescriptions ? d.menuEditor.summaryDescOn : null,
   ]
     .filter((pezzo): pezzo is string => pezzo !== null)
@@ -119,7 +144,27 @@ export default function BrandBar({
       <div className="border-t border-gray-100 p-4">
       <p className="text-xs text-gray-500">{d.menuEditor.brandHint}</p>
 
+      {/* La valuta prima del colore: è quella che decide come si legge ogni
+          riga del menù, mentre il colore decide come si vede. Era in cima
+          all'editor, accanto al nome del locale, dove sembrava una proprietà
+          del ristorante invece che del suo listino. */}
       <div className="mt-3 flex items-center gap-2">
+        <span className="text-xs text-gray-500">{d.menuEditor.currency}</span>
+        <select
+          value={currency}
+          onChange={(e) => onCurrency(e.target.value)}
+          aria-label={d.menuEditor.currency}
+          className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-gray-900 focus:outline-none"
+        >
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.code} {c.symbol}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3">
         <span className="text-xs text-gray-500">{d.menuEditor.accent}</span>
         <div className="flex gap-1.5">
           {MENU_ACCENTS.map((colore) => {
@@ -256,13 +301,45 @@ export default function BrandBar({
           identità, questi due sono impaginazione. L'effetto si vede
           nell'anteprima accanto, quindi non serve spiegarli a parole più di
           una riga. */}
+      {/* LE FOTO: tre risposte a una domanda sola, e si scelgono guardandole
+          come i titoli delle sezioni. "Nessuna" sta in fila con le altre due
+          e non è un interruttore a parte: per chi decide sono tre modi di
+          fare la stessa cosa — che aspetto ha la carta — non un sì/no più
+          un'opzione nascosta dentro il sì. */}
+      <div className="mt-4 border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-500">{d.menuEditor.photos}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <SceltaFoto
+            scelto={!showPhotos}
+            label={d.menuEditor.photoShapes.none}
+            onClick={() => onPhotos({ showPhotos: false, photoShape })}
+          >
+            <span className="h-7 w-7 rounded-md border border-dashed border-gray-300" />
+          </SceltaFoto>
+          <SceltaFoto
+            scelto={showPhotos && photoShape === 'square'}
+            label={d.menuEditor.photoShapes.square}
+            onClick={() => onPhotos({ showPhotos: true, photoShape: 'square' })}
+          >
+            <span className="h-7 w-7 rounded-md bg-gray-200" />
+          </SceltaFoto>
+          {/* Le tonde compaiono col loro interruttore: la colonna che le
+              tiene (migration 711) non esiste ancora, e un bottone che non
+              salva niente è peggio di un bottone che non c'è. */}
+          {DISH_PHOTO_SHAPE && (
+            <SceltaFoto
+              scelto={showPhotos && photoShape === 'round'}
+              label={d.menuEditor.photoShapes.round}
+              onClick={() => onPhotos({ showPhotos: true, photoShape: 'round' })}
+            >
+              <span className="h-7 w-7 rounded-full bg-gray-200" />
+            </SceltaFoto>
+          )}
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-gray-400">{d.menuEditor.photosHint}</p>
+      </div>
+
       <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-3">
-        <Interruttore
-          label={d.menuEditor.showPhotos}
-          hint={d.menuEditor.showPhotosHint}
-          value={showPhotos}
-          onChange={onShowPhotos}
-        />
         <Interruttore
           label={d.menuEditor.showDescriptions}
           hint={d.menuEditor.showDescriptionsHint}
@@ -324,6 +401,35 @@ function Assaggio({ stile, accent }: { stile: SectionStyle; accent: string }) {
     >
       Antipasti
     </span>
+  );
+}
+
+// Una delle tre risposte sulle foto: il campioncino sopra, il nome sotto.
+// Stessa forma delle scelte sui titoli di sezione, perché è la stessa cosa —
+// si decide guardando, non leggendo un nome.
+function SceltaFoto({
+  scelto,
+  label,
+  onClick,
+  children,
+}: {
+  scelto: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={scelto}
+      title={label}
+      className={`flex w-[84px] flex-col items-center gap-1.5 rounded-lg border bg-white px-2 py-2 transition-colors ${
+        scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+      }`}
+    >
+      {children}
+      <span className="text-[10px] text-gray-500">{label}</span>
+    </button>
   );
 }
 

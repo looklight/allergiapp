@@ -21,6 +21,16 @@
 // perché occupa il posto di quello vero. Sopra `sm` la riga resta una sola,
 // dove lo spazio c'è davvero.
 //
+// ⚠️ E LO SPAZIO DI QUELLA SECONDA RIGA È SEMPRE OCCUPATO, anche quando non
+// c'è niente da dire. Scrivendo nell'editor la frase cambia — da "Pubblicato
+// il…" a "Modifiche non pubblicate…" — e col bottone che nasce insieme la
+// riga in cima cresceva di una cinquantina di pixel: tutto il menù scendeva
+// mentre ci si stava scrivendo dentro, alla prima lettera battuta. Quindi il
+// posto se lo prende da fermo (min-h di due righe minute, e il link del
+// ritorno alto quanto il bottone che può comparirgli accanto) e niente si
+// muove più. È il motivo per cui questo componente rende un paragrafo anche
+// quando non sa ancora niente: lo spazio dev'esserci già.
+//
 // QUI NON C'È il "Salvato": c'era, ed è tornato nella sua pill (in basso a
 // destra, v. SaveStatus). Su questa riga rubava larghezza proprio alla frase
 // che deve leggersi per intera — quella che dice che al tavolo c'è ancora la
@@ -44,36 +54,36 @@ export default function PublishBar({
 }) {
   const { d, locale } = useI18n();
 
-  if (stato === null) return null;
+  // Lo spazio della frase è sempre lo stesso: due righe minute su telefono,
+  // riservate anche prima di sapere cosa scriverci. Senza questo paragrafo
+  // vuoto, la riga in cima nascerebbe bassa e crescerebbe appena lo stato
+  // arriva — cioè un attimo dopo che si è aperto il menù.
+  const spazio =
+    'order-last line-clamp-2 min-h-[2.5em] w-full text-balance text-[11px] leading-tight ' +
+    'sm:order-none sm:min-h-0 sm:w-auto sm:min-w-0 sm:flex-1 sm:text-right sm:text-xs';
+
+  if (stato === null) return <p className={spazio} aria-hidden="true" />;
 
   const mai = stato.publishedAt === null;
   const daPubblicare = mai || stato.hasChanges;
-
-  // Pubblicato e senza modifiche: una riga grigia che dice da quando. Non è
-  // rumore — è la risposta alla domanda "ma quello che vedono i clienti è
-  // questo?", che senza una data scritta da qualche parte non ha risposta.
-  if (!daPubblicare) {
-    // Questa resta in linea anche su telefono: sono quattro parole e una
-    // data, e mandarle a capo da sole farebbe crescere la riga per niente.
-    return (
-      <p className="line-clamp-2 min-w-0 flex-1 text-right text-xs leading-tight text-gray-400">
-        {fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })}
-      </p>
-    );
-  }
-
-  const allarme = stato.allergensChanged;
+  const allarme = daPubblicare && stato.allergensChanged;
   // Tre frasi, in ordine di gravità (migration 710). Quella dell'aspetto vale
   // solo quando NON c'è nient'altro in sospeso: se sono cambiati anche i
   // piatti, dire "modifiche all'aspetto" nasconderebbe la metà che pesa.
+  //
+  // Pubblicato e senza modifiche: una riga grigia che dice da quando. Non è
+  // rumore — è la risposta alla domanda "ma quello che vedono i clienti è
+  // questo?", che senza una data scritta da qualche parte non ha risposta.
   const soloAspetto = stato.appearanceChanged && !stato.contentChanged;
-  const messaggio = mai
-    ? d.menuEditor.publishNever
-    : allarme
-      ? d.menuEditor.publishAllergens
-      : soloAspetto
-        ? d.menuEditor.publishAppearance
-        : d.menuEditor.publishPending;
+  const messaggio = !daPubblicare
+    ? fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })
+    : mai
+      ? d.menuEditor.publishNever
+      : allarme
+        ? d.menuEditor.publishAllergens
+        : soloAspetto
+          ? d.menuEditor.publishAppearance
+          : d.menuEditor.publishPending;
 
   // Due figli diretti della riga sticky e non un involucro: è la riga stessa
   // che va a capo (flex-wrap), e solo così su telefono l'avviso può prendersi
@@ -86,24 +96,26 @@ export default function PublishBar({
   return (
     <>
       <p
-        className={`line-clamp-2 order-last w-full text-balance text-xs leading-tight sm:order-none sm:min-w-0 sm:flex-1 sm:text-right ${
-          allarme ? 'text-amber-800' : 'text-gray-600'
+        className={`${spazio} ${
+          !daPubblicare ? 'text-gray-400' : allarme ? 'text-amber-800' : 'text-gray-600'
         }`}
         title={messaggio}
       >
         {messaggio}
       </p>
-      <button
-        onClick={pubblica}
-        disabled={inCorso}
-        // ml-auto perché su telefono il bottone è solo, in fondo alla prima
-        // riga: senza, resterebbe appiccicato al link del ritorno.
-        className={`ml-auto shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
-          allarme ? 'bg-amber-700 hover:bg-amber-800' : 'bg-gray-900 hover:bg-gray-700'
-        }`}
-      >
-        {inCorso ? d.menuEditor.publishing : mai ? d.menuEditor.publishFirst : d.menuEditor.publish}
-      </button>
+      {daPubblicare && (
+        <button
+          onClick={pubblica}
+          disabled={inCorso}
+          // ml-auto perché su telefono il bottone è solo, in fondo alla prima
+          // riga: senza, resterebbe appiccicato al link del ritorno.
+          className={`ml-auto shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+            allarme ? 'bg-amber-700 hover:bg-amber-800' : 'bg-gray-900 hover:bg-gray-700'
+          }`}
+        >
+          {inCorso ? d.menuEditor.publishing : mai ? d.menuEditor.publishFirst : d.menuEditor.publish}
+        </button>
+      )}
     </>
   );
 }

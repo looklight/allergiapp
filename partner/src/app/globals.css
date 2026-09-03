@@ -190,7 +190,9 @@ body {
    ⚠️ QUI C'È IL PAVIMENTO. Le righe minute che portano informazione — gli
    allergeni, il motivo dell'esclusione, le condizioni al tavolo — usano
    max(), quindi la carta Compatta NON le rimpicciolisce: crescono con Ampia e
-   basta. Quella riga la legge una persona con un'allergia, in una sala poco
+   basta. Il pavimento è a 11px come sul sito (menu-page.css): a 10 la riga
+   degli allergeni era la più piccola della pagina proprio dove serviva
+   leggerla meglio. Quella riga la legge una persona con un'allergia, in una sala poco
    illuminata, mentre qualcuno le chiede cosa ordina. Chi toglie il max() si
    tiene la responsabilità di quella riga.
 
@@ -198,12 +200,12 @@ body {
    variabile non fosse stata scritta il calc() sarebbe invalido e la riga
    perderebbe la propria misura del tutto. */
 .riga-minuta {
-  font-size: max(10px, calc(10px * var(--ms, 1)));
+  font-size: max(11px, calc(11px * var(--ms, 1)));
 }
 .menu-font-classic .riga-minuta,
 .menu-font-light .riga-minuta {
-  /* il pavimento qui è il punto in più della compensazione, non i 10px */
-  font-size: max(11px, calc(11px * var(--ms, 1)));
+  /* il pavimento qui è il punto in più della compensazione, non gli 11px */
+  font-size: max(12px, calc(12px * var(--ms, 1)));
   color: #6b6b6b;
 }
 

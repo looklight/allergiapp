@@ -104,6 +104,7 @@ export default function FullPreviewPage() {
             venueName={brand.name.trim() || d.preview.venueName}
             tableConditions={locale?.tableConditions ?? ''}
             showPhotos={locale?.showDishPhotos ?? true}
+            photoShape={locale?.dishPhotoShape ?? 'square'}
             showDescriptions={locale?.showDishDescriptions ?? false}
             sectionStyle={locale?.sectionStyle ?? 'underline'}
             headingFont={locale?.headingFont ?? 'modern'}

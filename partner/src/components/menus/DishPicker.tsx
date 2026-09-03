@@ -156,7 +156,36 @@ export default function DishPicker({
                         <div className="h-9 w-9 shrink-0 rounded-lg bg-gray-100" />
                       )}
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm text-gray-900">{dish.name}</span>
+                        {/* La "i" accanto al nome dice che quel piatto ha una
+                            descrizione, ed è la stessa che il cliente vedrà al
+                            tavolo: chi compone la carta riconosce da qui quali
+                            piatti hanno già il loro racconto e quali no, senza
+                            aprirli uno per uno. Il testo si legge passandoci
+                            sopra — nel pannello non c'è spazio per stenderlo,
+                            e il posto in cui si scrive resta la maschera del
+                            piatto. */}
+                        <span
+                          className="flex min-w-0 items-center gap-1"
+                          title={dish.description.trim() || undefined}
+                        >
+                          <span className="min-w-0 truncate text-sm text-gray-900">{dish.name}</span>
+                          {dish.description.trim() !== '' && (
+                            <svg
+                              className="h-3 w-3 shrink-0 text-gray-400"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <line x1="12" y1="16" x2="12" y2="12" />
+                              <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                          )}
+                        </span>
                         {dentro && (
                           <span className="block text-xs text-gray-400">
                             {d.menuEditor.pickerAlreadyIn}

@@ -37,6 +37,22 @@ export default function MenusPage() {
   const [undoable, setUndoable] = useState<Menu | null>(null);
   // il locale a cui si sta aggiungendo un menù; null = nessuna finestra aperta
   const [creating, setCreating] = useState(false);
+  // QUESTA PAGINA È DI PASSAGGIO, e allora non si mostra.
+  //
+  // Due strade portano dritte all'editor senza fermarsi qui: la scorciatoia
+  // della home (?nuovo=…) e il bottone "Nuovo menù" appena la finestra si
+  // chiude. In tutt'e due, fra la partenza e l'arrivo c'è la creazione sul
+  // server — mezzo secondo in cui questa pagina restava lì con l'elenco di
+  // tutti i menù, cioè un lampo che racconta un passaggio che non esiste.
+  //
+  // Si legge l'indirizzo SUBITO, nell'inizializzatore: è già alla seconda
+  // resa — quella in cui i dati arrivano — che l'elenco comparirebbe. Sul
+  // server `window` non c'è, ma lì la pagina è comunque quella d'attesa
+  // (i dati non sono ancora arrivati), quindi non c'è niente da idratare
+  // in modo diverso.
+  const [diPassaggio, setDiPassaggio] = useState(
+    () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('nuovo')
+  );
   // Il locale già deciso da chi ci ha mandati qui: la finestra non lo chiede
   const [fissato, setFissato] = useState<Venue | null>(null);
 
@@ -67,6 +83,9 @@ export default function MenusPage() {
     // si conosce già la risposta, è solo un clic in mezzo.
     const locale = chiesto === '' ? null : (venues.find((v) => v.id === chiesto) ?? null);
     if (locale === null) {
+      // Qui non si va da nessuna parte: la finestra chiede il locale e
+      // l'elenco è quello che ci sta dietro. La pagina torna a vedersi.
+      setDiPassaggio(false);
       setCreating(true);
       return;
     }
@@ -82,6 +101,7 @@ export default function MenusPage() {
       void handleCreate(locale.id, locale.venueName, '');
       return;
     }
+    setDiPassaggio(false);
     setFissato(locale);
     setCreating(true);
     // handleCreate e d sono stabili quanto basta: la guardia qui sopra fa
@@ -104,15 +124,26 @@ export default function MenusPage() {
   ) {
     setCreating(false);
     setFissato(null);
+    // Da qui in poi si finisce nell'editor: l'elenco non si mostra mentre il
+    // menù nasce sul server (v. diPassaggio). Se qualcosa va storto si resta
+    // qui, e allora la pagina torna a vedersi.
+    setDiPassaggio(true);
     if (battezza) await rename(battezza.id, battezza.name);
     let id = venueId;
     if (id === null) {
       const locale = await createVenue(venueName);
-      if (!locale) return;
+      if (!locale) {
+        setDiPassaggio(false);
+        return;
+      }
       id = locale.id;
     }
     const creato = await create(id, menuName);
-    if (creato) router.push(`/menu/${creato.id}`);
+    if (!creato) {
+      setDiPassaggio(false);
+      return;
+    }
+    router.push(`/menu/${creato.id}`);
   }
 
   const loading = !venues || !dishes || !menus;
@@ -141,6 +172,12 @@ export default function MenusPage() {
       {d.menus.create}
     </button>
   );
+
+  // Di passaggio: solo l'attesa, senza titolo e senza elenco. Il titolo di
+  // una pagina che si sta lasciando è un'altra cosa che lampeggia.
+  if (diPassaggio) {
+    return <p className="text-sm text-gray-500">{d.common.loading}</p>;
+  }
 
   return (
     <div>

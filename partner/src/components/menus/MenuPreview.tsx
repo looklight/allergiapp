@@ -39,7 +39,13 @@ import {
   type MenuSection,
 } from '@/lib/menus';
 import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
-import { TEXT_SCALE_FACTORS, type HeadingFont, type SectionStyle, type TextScale } from '@/lib/venues';
+import {
+  TEXT_SCALE_FACTORS,
+  type DishPhotoShape,
+  type HeadingFont,
+  type SectionStyle,
+  type TextScale,
+} from '@/lib/venues';
 import { accentHex, type MenuBrand } from '@/lib/menuBrand';
 import DishDetailSheet from './DishDetailSheet';
 import FilterSheet from './FilterSheet';
@@ -80,6 +86,7 @@ export default function MenuPreview({
   venueName,
   tableConditions,
   showPhotos,
+  photoShape,
   showDescriptions,
   sectionStyle,
   headingFont,
@@ -102,6 +109,9 @@ export default function MenuPreview({
   // Le due manopole dell'aspetto (BrandBar): stanno sul LOCALE, e questa
   // anteprima deve rispettarle o il ristoratore sceglie alla cieca.
   showPhotos: boolean;
+  // Tonde o squadrate (migration 711). Vale per la lista: la foto grande del
+  // dettaglio resta rettangolare.
+  photoShape: DishPhotoShape;
   showDescriptions: boolean;
   // Come si vede il titolo di una sezione: filetto, fascia o solo testo
   sectionStyle: SectionStyle;
@@ -185,7 +195,39 @@ export default function MenuPreview({
   const gruppi: MenuSection[] = [
     { id: 'loose', kind: 'section' as const, name: '', description: '', items: menu.loose },
     ...menu.sections,
-  ].filter((g) => (g.kind === 'note' ? hasNoteText(g) : g.items.length > 0));
+  ]
+    .filter((g) => (g.kind === 'note' ? hasNoteText(g) : g.items.length > 0))
+    // "La carta si riordina", non si accorcia (Tema 2). I piatti che non
+    // vanno bene restano leggibili in fondo alla loro sezione, col motivo
+    // scritto: nasconderli darebbe l'impressione che il ristorante non abbia
+    // altro, e su un dato DICHIARATO e non verificato una sparizione è una
+    // promessa che non possiamo fare.
+    //
+    // Il riordino si fa QUI e non dentro la resa, perché non serve solo a
+    // disegnare: è anche l'ordine in cui le freccine del dettaglio passano da
+    // un piatto all'altro, e devono seguire quello che si ha davanti.
+    .map((gruppo) => {
+      if (gruppo.kind === 'note') return gruppo;
+      const righe = [...gruppo.items].sort((a, b) => {
+        const da = dishById(a.dishId);
+        const db = dishById(b.dishId);
+        const ea = da ? esclusa(esclusione(da, needs)) : false;
+        const eb = db ? esclusa(esclusione(db, needs)) : false;
+        return Number(ea) - Number(eb);
+      });
+      return { ...gruppo, items: righe };
+    });
+
+  // La carta stesa in una fila sola, nell'ordine in cui si legge: da qui le
+  // freccine del dettaglio sanno qual è il piatto prima e quello dopo.
+  const inFila = gruppi
+    .filter((g) => g.kind === 'section')
+    .flatMap((g) => g.items)
+    .map((item) => ({ item, dish: dishById(item.dishId) }))
+    .filter((x): x is { item: MenuItem; dish: Dish } => x.dish !== undefined);
+  const dove = detail === null ? -1 : inFila.findIndex((x) => x.item.id === detail.item.id);
+  const primaDi = dove > 0 ? inFila[dove - 1] : null;
+  const dopoDi = dove >= 0 && dove < inFila.length - 1 ? inFila[dove + 1] : null;
 
   return (
     // relative: è l'ancora del foglio di dettaglio (absolute inset-0), che
@@ -197,7 +239,17 @@ export default function MenuPreview({
         headingFont === 'modern' ? '' : ` menu-font-${headingFont}`
       }`}
       // La grandezza dei testi come sul sito: un moltiplicatore solo sulla
-      // radice, e ogni misura del contenuto è calc(Npx * var(--ms)). Le due
+      // radice, e ogni misura del contenuto è calc(Npx * var(--ms)).
+      //
+      // ⚠️ LE MISURE DI BASE SONO LE STESSE DEL SITO, numero per numero
+      // (menu-page.css). Prima erano "un punto sotto" per via della cornice
+      // del telefono, larga 360 contro i 390 di un iPhone recente — ma lo
+      // sconto non era uguale per tutti i ruoli, e il risultato era che nel
+      // portale il nome del piatto stava a un punto dal titolo di sezione
+      // mentre al tavolo ne stava a due: il ristoratore giudicava
+      // proporzioni che il suo cliente non avrebbe visto. Con i numeri
+      // identici l'anteprima è semplicemente un telefono stretto (360 sta
+      // fra un iPhone SE e un 15), che è una bugia molto più piccola. Le due
       // copie vanno tenute allineate (v. lib/render-menu.js), o il
       // ristoratore sceglie guardando una cosa e il cliente ne vede un'altra.
       style={{ '--ms': TEXT_SCALE_FACTORS[textScale] } as React.CSSProperties}
@@ -212,7 +264,10 @@ export default function MenuPreview({
           (Tema 8). Il colore resta come fondo sotto l'immagine: se la foto
           non arriva, l'intestazione non diventa bianca. */}
       <div
-        className="shrink-0 bg-cover bg-center px-4 pb-3 pt-4 text-white"
+        // Il respiro sopra e sotto il nome è quello del sito (menu-page.css,
+        // .menu-header): stretta com'era, la fascia sembrava una barra di
+        // servizio invece dell'intestazione del ristorante.
+        className="shrink-0 bg-cover bg-center px-4 pb-5 pt-6 text-white"
         style={
           coverUrl === ''
             ? { backgroundColor: accent }
@@ -238,7 +293,7 @@ export default function MenuPreview({
               className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
             />
           )}
-          <p className={`min-w-0 flex-1 text-[calc(18px*var(--ms))] font-semibold leading-snug${carattere}`}>
+          <p className={`min-w-0 flex-1 text-[calc(22px*var(--ms))] font-semibold leading-snug${carattere}`}>
             {venueName}
           </p>
         </div>
@@ -246,7 +301,7 @@ export default function MenuPreview({
         {/* Descrizione del menù: facoltativa, quello che il ristoratore ha
             scritto sotto il titolo nell'editor (orari, un avviso). */}
         {menu.description.trim() !== '' && (
-          <p className="mt-1.5 whitespace-pre-line text-[calc(12px*var(--ms))] leading-snug text-white/85">
+          <p className="mt-2 whitespace-pre-line text-[calc(14px*var(--ms))] leading-snug text-white/85">
             {menu.description}
           </p>
         )}
@@ -292,37 +347,39 @@ export default function MenuPreview({
             )}
           </div>
 
-          {/* Il bottone sta FUORI dalla parte che scorre, non in coda: da
-              sinistra non se ne va mai, e la fila gli scorre accanto. Le
-              pastiglie escono dal bordo destro (-mr-4 pr-4) perché una fila
-              che si ferma prima del margine sembra finita anche quando non
-              lo è. */}
-          <div className="mt-1.5 flex items-center gap-1.5">
+          {/* UNA FILA SOLA: il bottone dei filtri scorre insieme alle
+              pastiglie ed è solo l'icona (2026-09-03, come sul sito). La
+              parola "Filtri" ripeteva quello che l'icona già dice, ed era
+              l'unica scritta della fila a non essere una scelta; il nome
+              resta per chi non vede l'icona (aria-label, title).
+
+              Le pastiglie escono dal bordo destro (-mr-4 pr-4): una fila che
+              si ferma prima del margine sembra finita anche quando non lo è. */}
+          <div className="-mr-4 mt-1.5 flex items-center gap-1.5 overflow-x-auto pb-0.5 pr-4">
             <button
               onClick={() => setFilterOpen(true)}
-              className="flex shrink-0 items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700"
+              aria-label={d.menuPublic.filterButton}
+              title={d.menuPublic.filterButton}
+              className="flex shrink-0 items-center gap-0.5 rounded-full border border-gray-300 bg-white px-2 py-1 text-[11px] font-medium text-gray-700"
             >
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M4 7h16M7 12h10M10 17h4" />
               </svg>
-              {d.menuPublic.filterButton}
               {scelte > 0 && (
                 <span className="tabular-nums font-semibold" style={{ color: accent }}>
                   {scelte}
                 </span>
               )}
             </button>
-            <div className="-mr-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 pr-4">
-              {fila.map((pill) => (
-                <Pastiglia
-                  key={`${pill.kind}-${pill.code}`}
-                  label={filterLabel(pill, locale, d.preview.withoutPrefix)}
-                  selected={needs[pill.kind].includes(pill.code)}
-                  accent={accent}
-                  onClick={() => onToggleNeed(pill.kind, pill.code)}
-                />
-              ))}
-            </div>
+            {fila.map((pill) => (
+              <Pastiglia
+                key={`${pill.kind}-${pill.code}`}
+                label={filterLabel(pill, locale, d.preview.withoutPrefix)}
+                selected={needs[pill.kind].includes(pill.code)}
+                accent={accent}
+                onClick={() => onToggleNeed(pill.kind, pill.code)}
+              />
+            ))}
           </div>
 
           {/* L'UNICA riga che parla a nome nostro, ed è attaccata al filtro
@@ -349,12 +406,12 @@ export default function MenuPreview({
               return (
                 <div key={gruppo.id} className="mb-4 rounded-xl bg-gray-50 px-3 py-2.5">
                   {gruppo.name.trim() !== '' && (
-                    <p className="text-[calc(12px*var(--ms))] font-semibold leading-snug text-gray-900">
+                    <p className="text-[calc(13px*var(--ms))] font-semibold leading-snug text-gray-900">
                       {gruppo.name}
                     </p>
                   )}
                   {gruppo.description.trim() !== '' && (
-                    <p className="mt-0.5 whitespace-pre-line text-[calc(11px*var(--ms))] leading-snug text-gray-600">
+                    <p className="mt-0.5 whitespace-pre-line text-[calc(12px*var(--ms))] leading-snug text-gray-600">
                       {gruppo.description}
                     </p>
                   )}
@@ -362,18 +419,10 @@ export default function MenuPreview({
               );
             }
 
-            // "La carta si riordina", non si accorcia (Tema 2). I piatti che
-            // non vanno bene restano leggibili in fondo alla loro sezione,
-            // col motivo scritto: nasconderli darebbe l'impressione che il
-            // ristorante non abbia altro, e su un dato DICHIARATO e non
-            // verificato una sparizione è una promessa che non possiamo fare.
-            const righe = [...gruppo.items].sort((a, b) => {
-              const da = dishById(a.dishId);
-              const db = dishById(b.dishId);
-              const ea = da ? esclusa(esclusione(da, needs)) : false;
-              const eb = db ? esclusa(esclusione(db, needs)) : false;
-              return Number(ea) - Number(eb);
-            });
+            // Le righe arrivano già riordinate (v. gruppi): il filtro le ha
+            // messe in fondo alla loro sezione, e la fila che le freccine
+            // percorrono è la stessa.
+            const righe = gruppo.items;
             return (
               <section key={gruppo.id} className="mb-4">
                 {gruppo.name.trim() !== '' && (
@@ -382,17 +431,18 @@ export default function MenuPreview({
                   </TitoloSezione>
                 )}
                 {gruppo.description.trim() !== '' && (
-                  <p className="mb-3 whitespace-pre-line text-[calc(11px*var(--ms))] leading-snug text-gray-500">
+                  <p className="mb-3 whitespace-pre-line text-[calc(12px*var(--ms))] leading-snug text-gray-500">
                     {gruppo.description}
                   </p>
                 )}
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {righe.map((item) => (
                     <Riga
                       key={item.id}
                       item={item}
                       dish={dishById(item.dishId)}
                       conFoto={conFoto}
+                      formaFoto={photoShape}
                       conDescrizioni={showDescriptions}
                       suffisso={suffisso}
                       currency={menu.currency}
@@ -438,6 +488,8 @@ export default function MenuPreview({
           showPhoto={showPhotos}
           currency={menu.currency}
           needs={needs}
+          onPrev={primaDi === null ? null : () => setDetail(primaDi)}
+          onNext={dopoDi === null ? null : () => setDetail(dopoDi)}
           onClose={() => setDetail(null)}
         />
       )}
@@ -475,7 +527,7 @@ function TitoloSezione({
   if (stile === 'banner') {
     return (
       <h3
-        className={`-mx-4 mb-2 px-4 py-1.5 text-[calc(13px*var(--ms))] font-semibold uppercase tracking-wide text-white${carattere}`}
+        className={`-mx-4 mb-2 px-4 py-1.5 text-[calc(14px*var(--ms))] font-semibold uppercase tracking-wide text-white${carattere}`}
         style={{ backgroundColor: accent }}
       >
         {children}
@@ -484,12 +536,12 @@ function TitoloSezione({
   }
   if (stile === 'plain') {
     return (
-      <h3 className={`mb-1.5 text-[calc(15px*var(--ms))] font-semibold text-gray-900${carattere}`}>{children}</h3>
+      <h3 className={`mb-1.5 text-[calc(18px*var(--ms))] font-semibold text-gray-900${carattere}`}>{children}</h3>
     );
   }
   return (
     <h3
-      className={`mb-1 border-b pb-1 text-[calc(13px*var(--ms))] font-semibold uppercase tracking-wide${carattere}`}
+      className={`mb-1 border-b pb-1 text-[calc(14px*var(--ms))] font-semibold uppercase tracking-wide${carattere}`}
       style={{ color: accent, borderColor: `${accent}33` }}
     >
       {children}
@@ -526,6 +578,7 @@ function Riga({
   item,
   dish,
   conFoto,
+  formaFoto,
   conDescrizioni,
   suffisso,
   currency,
@@ -538,6 +591,7 @@ function Riga({
   // almeno un piatto di questo menù ha una foto (e il ristoratore non le ha
   // spente): solo allora si tiene lo spazio anche a chi non ce l'ha
   conFoto: boolean;
+  formaFoto: DishPhotoShape;
   // le descrizioni si leggono in lista invece che aprendo il piatto
   conDescrizioni: boolean;
   // '' col carattere di sistema, altrimenti '-classic' e simili
@@ -553,6 +607,7 @@ function Riga({
   const prezzo = displayPrice(item.priceCents, currency, locale);
   const perche = esclusione(dish, needs);
   const fuori = esclusa(perche);
+  const tondo = formaFoto === 'round';
 
   return (
     <li
@@ -576,9 +631,13 @@ function Riga({
             Se non ce l'ha nessuno non c'è niente da allineare (v. conFoto). */}
         {conFoto && dishThumb(dish) !== '' ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={dishThumb(dish)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+          <img
+            src={dishThumb(dish)}
+            alt=""
+            className={`h-12 w-12 shrink-0 object-cover ${tondo ? 'rounded-full' : 'rounded-lg'}`}
+          />
         ) : conFoto ? (
-          <div className="h-11 w-11 shrink-0 rounded-lg bg-gray-100" />
+          <div className={`h-12 w-12 shrink-0 bg-gray-100 ${tondo ? 'rounded-full' : 'rounded-lg'}`} />
         ) : null}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5">
@@ -594,8 +653,14 @@ function Riga({
                 raggruppamento l'icona finiva spinta accanto al prezzo,
                 sembrando un'informazione sul prezzo invece che sul piatto. */}
             <span className="flex min-w-0 flex-1 items-baseline gap-1">
+              {/* Va a capo, non si tronca: con i puntini un piatto dal nome
+                  lungo diventava "Tagliatelle al ragù di cingh…", che al
+                  tavolo è la riga che non si può leggere. Le righe perdono un
+                  po' di altezza uniforme, e va bene — l'uniformità serve a
+                  scorrere, il nome serve a ordinare. Stessa scelta sul sito
+                  (.menu-item-name in menu-page.css). */}
               <p
-                className={`min-w-0 truncate text-[calc(13px*var(--ms))] font-medium leading-snug text-gray-900${
+                className={`min-w-0 break-words text-[calc(16px*var(--ms))] font-medium leading-snug text-gray-900${
                   suffisso === '' ? '' : ` name${suffisso}`
                 }`}
               >
@@ -627,7 +692,7 @@ function Riga({
                 zero al tavolo sono peggio del silenzio */}
             {prezzo !== '' && (
               <p
-                className={`shrink-0 text-[calc(13px*var(--ms))] font-semibold tabular-nums text-gray-900${
+                className={`shrink-0 text-[calc(16px*var(--ms))] font-semibold tabular-nums text-gray-900${
                   suffisso === '' ? '' : ` price${suffisso}`
                 }`}
               >
@@ -639,10 +704,10 @@ function Riga({
               suo posto, sopra, sparisce la "i" che diceva soltanto che
               c'era. */}
           {conDescrizioni && dish.description.trim() !== '' && (
-            <p className="mt-0.5 text-[calc(11px*var(--ms))] leading-snug text-gray-500">{dish.description}</p>
+            <p className="mt-1 text-[calc(13px*var(--ms))] leading-snug text-gray-500">{dish.description}</p>
           )}
           {item.highlighted && item.highlightNote.trim() !== '' && (
-            <p className="mt-0.5 text-[calc(11px*var(--ms))] font-medium leading-snug text-amber-700">
+            <p className="mt-1 text-[calc(12px*var(--ms))] font-medium leading-snug text-amber-700">
               {item.highlightNote}
             </p>
           )}

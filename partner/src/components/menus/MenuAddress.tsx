@@ -169,38 +169,32 @@ export default function MenuAddress({
           : 'border-dashed border-gray-300 bg-gray-100/70'
       }`}
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-900">
           {online ? d.menuEditor.addressTitleLive : d.menuEditor.addressTitle}
         </h2>
-        {/* Lo stato accanto al titolo e non in fondo: è la prima cosa da
-            sapere prima di stampare l'indirizzo da qualche parte. */}
-        {/* LA PASTIGLIA È L'INTERRUTTORE: diceva già lo stato, adesso lo
-            cambia anche. Un comando in meno e nessun oggetto nuovo da
-            imparare — e la cosa che si tocca è esattamente quella che si
-            stava leggendo.
+        {/* L'INTERRUTTORE, e adesso si vede che lo è. Prima qui c'era una
+            pastiglia che scriveva "Attivo" o "Inattivo": diceva lo stato e lo
+            cambiava anche, ma letta com'era — una parola sola su fondo
+            colorato — sembrava un'etichetta, e nessuno la premeva. Adesso
+            l'etichetta è una sola e ferma ("Attivo"), e accanto c'è la cosa
+            che tutti riconoscono come premibile, accesa o spenta.
 
-            Spenta finché non c'è un indirizzo: non si mette in sala un menù
-            che non ha un posto dove stare. */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={online}
-          disabled={venue.slug === '' || inCorso}
-          onClick={() => onOnline(!online)}
-          title={venue.slug === '' ? undefined : online ? d.menuEditor.addressTurnOff : d.menuEditor.addressTurnOn}
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors disabled:cursor-default disabled:opacity-70 ${
-            online
-              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-          }`}
-        >
-          {venue.slug === ''
-            ? d.menuEditor.addressNotLive
-            : online
-              ? d.menuEditor.addressLive
-              : d.menuEditor.addressOffline}
-        </button>
+            Spento e bloccato finché non c'è un indirizzo: non si mette in
+            sala un menù che non ha un posto dove stare. */}
+        <Interruttore
+          acceso={online}
+          disabilitato={venue.slug === '' || inCorso}
+          etichetta={d.menuEditor.addressActive}
+          titolo={
+            venue.slug === ''
+              ? undefined
+              : online
+                ? d.menuEditor.addressTurnOff
+                : d.menuEditor.addressTurnOn
+          }
+          onChange={() => onOnline(!online)}
+        />
       </div>
       {/* Il sottotesto dice COSA VEDE CHI APRE il link e il QR, sempre e non
           solo nel momento in cui si tocca l'interruttore: è l'unica cosa che
@@ -266,5 +260,52 @@ export default function MenuAddress({
       )}
 
     </div>
+  );
+}
+
+// L'interruttore della messa in sala: etichetta ferma a sinistra, binario a
+// destra. È un <button role="switch"> e non una casella di spunta perché il
+// gesto non è "spuntare una condizione" ma accendere e spegnere una cosa che
+// sta fuori di qui — il menù sul tavolo dei clienti.
+//
+// Il colore non è l'unico segnale: la pallina si sposta, e chi non distingue
+// il verde dal grigio vede comunque da che parte sta.
+function Interruttore({
+  acceso,
+  disabilitato,
+  etichetta,
+  titolo,
+  onChange,
+}: {
+  acceso: boolean;
+  disabilitato: boolean;
+  etichetta: string;
+  titolo?: string;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={acceso}
+      disabled={disabilitato}
+      onClick={onChange}
+      title={titolo}
+      className="group flex shrink-0 items-center gap-2 text-xs font-medium text-gray-600 disabled:cursor-default disabled:opacity-50"
+    >
+      {etichetta}
+      <span
+        aria-hidden="true"
+        className={`relative h-5 w-9 rounded-full transition-colors ${
+          acceso ? 'bg-emerald-600' : 'bg-gray-300 group-hover:bg-gray-400 group-disabled:group-hover:bg-gray-300'
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all ${
+            acceso ? 'left-[1.125rem]' : 'left-0.5'
+          }`}
+        />
+      </span>
+    </button>
   );
 }
