@@ -43,8 +43,10 @@ import {
   LINE_HEIGHT_FACTORS,
   TEXT_SCALE_FACTORS,
   type DishPhotoShape,
+  type DishSeparator,
   type HeadingFont,
   type LineHeight,
+  type MenuLayout,
   type SectionStyle,
   type TextScale,
 } from '@/lib/venues';
@@ -87,6 +89,8 @@ export default function MenuPreview({
   coverUrl,
   venueName,
   tableConditions,
+  layout,
+  separator,
   showPhotos,
   photoShape,
   showDescriptions,
@@ -109,7 +113,13 @@ export default function MenuPreview({
   // Coperto, servizio, pagamenti: sono del LOCALE, quindi identiche sotto
   // ogni linguetta. Vuote = non si mostra niente.
   tableConditions: string;
-  // Le due manopole dell'aspetto (BrandBar): stanno sul LOCALE, e questa
+  // L'IMPAGINAZIONE: com'è disposto un piatto (migration 711). 'row' è quella
+  // di sempre — foto, nome e prezzo affiancati; 'block' incolonna nome,
+  // descrizione e prezzo al centro e non mostra le foto.
+  layout: MenuLayout;
+  // Il segno fra un piatto e l'altro, in tutt'e due le impaginazioni.
+  separator: DishSeparator;
+  // Le manopole dell'aspetto (BrandBar): stanno sul LOCALE, e questa
   // anteprima deve rispettarle o il ristoratore sceglie alla cieca.
   showPhotos: boolean;
   // Tonde o squadrate (migration 711). Vale per la lista: la foto grande del
@@ -180,7 +190,13 @@ export default function MenuPreview({
   // Due condizioni, e sono diverse: il ristoratore può SPEGNERLE (showPhotos)
   // e comunque non ci sono se non le ha caricate nessuno. La prima è una
   // scelta, la seconda è il contenuto.
-  const conFoto = showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
+  // ⚠️ A BLOCCO LE FOTO NON CI SONO. Non è una dimenticanza: quell'impaginazione
+  // è la carta dei ristoranti che non mettono fotografie, e infilarci una
+  // miniatura la riporterebbe a essere una lista. Il valore del ristoratore
+  // non si tocca — tornando "a riga" le foto ricompaiono com'erano — e la
+  // scatola Aspetto lo dice a parole invece di lasciarglielo scoprire.
+  const aBlocco = layout === 'block';
+  const conFoto = !aBlocco && showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
   // 'modern' è il carattere di sistema e non ha classe: è il ripiego, ed è
   // anche l'unico che non fa scaricare niente al cliente.
   const carattere = headingFont === 'modern' ? '' : ` heading-${headingFont}`;
@@ -451,12 +467,16 @@ export default function MenuPreview({
                     {gruppo.description}
                   </p>
                 )}
-                <ul className="space-y-3">
-                  {righe.map((item) => (
+                {/* Il segno fra un piatto e l'altro (v. separator): il
+                    filetto e l'ornamento stanno bene in tutt'e due le
+                    impaginazioni, e "niente" è come è sempre stato. */}
+                <ul className={separator === 'none' ? 'space-y-3' : 'space-y-0'}>
+                  {righe.map((item, i) => (
                     <Riga
                       key={item.id}
                       item={item}
                       dish={dishById(item.dishId)}
+                      aBlocco={aBlocco}
                       conFoto={conFoto}
                       formaFoto={photoShape}
                       conDescrizioni={showDescriptions}
@@ -465,6 +485,8 @@ export default function MenuPreview({
                       locale={locale}
                       needs={needs}
                       onOpen={(dish) => setDetail({ item, dish })}
+                      separatore={i === 0 ? 'none' : separator}
+                      accent={accent}
                     />
                   ))}
                 </ul>
@@ -593,6 +615,7 @@ function Pastiglia({
 function Riga({
   item,
   dish,
+  aBlocco,
   conFoto,
   formaFoto,
   conDescrizioni,
@@ -601,9 +624,13 @@ function Riga({
   locale,
   needs,
   onOpen,
+  separatore,
+  accent,
 }: {
   item: MenuItem;
   dish: Dish | undefined;
+  // incolonnata e centrata invece che in riga (v. MENU_LAYOUTS)
+  aBlocco: boolean;
   // almeno un piatto di questo menù ha una foto (e il ristoratore non le ha
   // spente): solo allora si tiene lo spazio anche a chi non ce l'ha
   conFoto: boolean;
@@ -616,6 +643,10 @@ function Riga({
   locale: 'it' | 'en';
   needs: ViewerNeeds;
   onOpen: (dish: Dish) => void;
+  // Il segno sopra questa riga: 'none' sulla prima di ogni sezione, dove un
+  // filetto sarebbe una seconda linea sotto il titolo.
+  separatore: DishSeparator;
+  accent: string;
 }) {
   const { d } = useI18n();
   if (!dish) return null;
@@ -624,6 +655,72 @@ function Riga({
   const perche = esclusione(dish, needs);
   const fuori = esclusa(perche);
   const tondo = formaFoto === 'round';
+  const conDescrizione = dish.description.trim() !== '';
+
+  // Le due righe minute in fondo sono IDENTICHE nelle due impaginazioni, e
+  // non è un risparmio di codice: è la promessa del prodotto. Cambiando
+  // impaginazione cambia come si dispone un piatto, mai cosa dichiara.
+  const minute = (
+    <>
+      {/* Col filtro acceso il motivo prende il posto dell'elenco intero: chi
+          ha appena toccato "senza glutine" vuole sapere perché QUESTO piatto
+          è finito in fondo, non rileggere tutti i suoi allergeni. */}
+      {fuori ? (
+        <p className="riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
+          {perche.contiene.length > 0 &&
+            fill(d.menuPublic.excludedContains, {
+              list: perche.contiene.map((c) => allergenName(c, locale).toLowerCase()).join(', '),
+            })}
+          {perche.contiene.length > 0 && perche.nonPer.length > 0 && ' · '}
+          {perche.nonPer.length > 0 &&
+            fill(d.menuPublic.excludedNotFor, {
+              list: perche.nonPer.map((c) => dietNeedName(c, locale).toLowerCase()).join(', '),
+            })}
+        </p>
+      ) : (
+        dish.allergens.length > 0 && (
+          <p className="riga-minuta mt-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
+            {d.preview.contains}{' '}
+            {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
+          </p>
+        )
+      )}
+    </>
+  );
+
+  const nome = (
+    <p
+      className={`min-w-0 break-words text-[calc(16px*var(--ms))] font-medium leading-[calc(1.3*var(--lh,1))] text-gray-900${
+        suffisso === '' ? '' : ` name${suffisso}`
+      }`}
+    >
+      {dish.name}
+    </p>
+  );
+
+  // La "i" dice che una descrizione c'è, senza costare la riga che occuperebbe
+  const iconaInfo = conDescrizione && !conDescrizioni && (
+    <svg
+      className="h-3 w-3 shrink-0 text-gray-400"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  );
+
+  const stella = item.highlighted && (
+    <svg className="h-3 w-3 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 3.5l2.55 5.6 6.05.58-4.55 4.06 1.3 5.94L12 16.75l-5.35 2.93 1.3-5.94-4.55-4.06 6.05-.58L12 3.5z" />
+    </svg>
+  );
 
   return (
     <li
@@ -631,127 +728,123 @@ function Riga({
         item.highlighted ? '-mx-1.5 rounded-lg bg-amber-50 px-1.5 py-1' : ''
       }`}
     >
+      <Separatore tipo={separatore} accent={accent} />
       {/* Tutta la riga si tocca, non solo il nome: sul telefono un bersaglio
-          piccolo è un bersaglio mancato. Apre il dettaglio — foto grande,
-          descrizione intera, tutti gli allergeni — che qui non c'è spazio
-          per mostrare per intero. */}
+          piccolo è un bersaglio mancato. Apre il dettaglio — descrizione
+          intera e tutti gli allergeni — che qui non c'è spazio per mostrare. */}
       <button
         type="button"
         onClick={() => onOpen(dish)}
         aria-label={fill(d.menuPublic.dishDetailOpen, { dish: dish.name })}
-        className="flex w-full gap-2.5 text-left"
+        className={aBlocco ? 'block w-full text-center' : 'flex w-full gap-2.5 text-left'}
       >
-        {/* Un piatto senza foto tiene lo spazio SOLO se in questo menù
-            qualcuno la foto ce l'ha: fra righe fotografate e righe no, il
-            testo partirebbe da punti diversi e la carta sembrerebbe storta.
-            Se non ce l'ha nessuno non c'è niente da allineare (v. conFoto). */}
-        {conFoto && dishThumb(dish) !== '' ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={dishThumb(dish)}
-            alt=""
-            className={`h-12 w-12 shrink-0 object-cover ${tondo ? 'rounded-full' : 'rounded-lg'}`}
-          />
-        ) : conFoto ? (
-          <div className={`h-12 w-12 shrink-0 bg-gray-100 ${tondo ? 'rounded-full' : 'rounded-lg'}`} />
-        ) : null}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-1.5">
-            {/* La stella qui è solo un segno, non un bottone: nell'anteprima
-                (come nella pagina pubblica) il cliente non evidenzia niente,
-                legge quello che il ristoratore ha già deciso. */}
-            {item.highlighted && (
-              <svg className="h-3 w-3 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 3.5l2.55 5.6 6.05.58-4.55 4.06 1.3 5.94L12 16.75l-5.35 2.93 1.3-5.94-4.55-4.06 6.05-.58L12 3.5z" />
-              </svg>
-            )}
-            {/* Nome e "i" insieme, non nome-flex-1-poi-i: senza questo
-                raggruppamento l'icona finiva spinta accanto al prezzo,
-                sembrando un'informazione sul prezzo invece che sul piatto. */}
-            <span className="flex min-w-0 flex-1 items-baseline gap-1">
-              {/* Va a capo, non si tronca: con i puntini un piatto dal nome
-                  lungo diventava "Tagliatelle al ragù di cingh…", che al
-                  tavolo è la riga che non si può leggere. Le righe perdono un
-                  po' di altezza uniforme, e va bene — l'uniformità serve a
-                  scorrere, il nome serve a ordinare. Stessa scelta sul sito
-                  (.menu-item-name in menu-page.css). */}
-              <p
-                className={`min-w-0 break-words text-[calc(16px*var(--ms))] font-medium leading-[calc(1.3*var(--lh,1))] text-gray-900${
-                  suffisso === '' ? '' : ` name${suffisso}`
-                }`}
-              >
-                {dish.name}
-              </p>
-              {/* La descrizione NON sta più qui: occupava una riga in più solo
-                  sui piatti che ce l'hanno, e la carta perdeva l'altezza
-                  uniforme fra una riga e l'altra scorrendola. Questa "i" dice
-                  che c'è, senza costare lo spazio — il testo intero si legge
-                  aprendo il dettaglio. */}
-              {dish.description.trim() !== '' && !conDescrizioni && (
-                <svg
-                  className="h-3 w-3 shrink-0 text-gray-400"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
-                </svg>
-              )}
+        {aBlocco ? (
+          // A BLOCCO: nome, descrizione, prezzo incolonnati e centrati. La
+          // descrizione qui NON è un di più — è la riga di mezzo che regge
+          // l'impaginazione, e senza restano nome e prezzo uno sopra l'altro
+          // (che è il look "essenziale", legittimo ma spoglio). La scatola
+          // Aspetto lo dice prima di scegliere, non dopo.
+          <>
+            <span className="flex items-center justify-center gap-1.5">
+              {stella}
+              {nome}
+              {iconaInfo}
             </span>
-            {/* Un piatto senza prezzo non mostra niente: una riga vuota o uno
-                zero al tavolo sono peggio del silenzio */}
+            {conDescrizioni && conDescrizione && (
+              <p className="mt-1 text-[calc(13px*var(--ms))] italic leading-[calc(1.5*var(--lh,1))] text-gray-500">
+                {dish.description}
+              </p>
+            )}
             {prezzo !== '' && (
               <p
-                className={`shrink-0 text-[calc(16px*var(--ms))] font-semibold tabular-nums text-gray-900${
+                className={`mt-1.5 text-[calc(14px*var(--ms))] font-semibold tabular-nums text-gray-900${
                   suffisso === '' ? '' : ` price${suffisso}`
                 }`}
               >
                 {prezzo}
               </p>
             )}
-          </div>
-          {/* La descrizione in lista, quando il ristoratore l'ha accesa: al
-              suo posto, sopra, sparisce la "i" che diceva soltanto che
-              c'era. */}
-          {conDescrizioni && dish.description.trim() !== '' && (
-            <p className="mt-1 text-[calc(13px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">{dish.description}</p>
-          )}
-          {item.highlighted && item.highlightNote.trim() !== '' && (
-            <p className="mt-1 text-[calc(12px*var(--ms))] font-medium leading-[calc(1.4*var(--lh,1))] text-amber-700">
-              {item.highlightNote}
-            </p>
-          )}
-          {/* Col filtro acceso il motivo prende il posto dell'elenco intero:
-              chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
-              piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
-          {fuori ? (
-            <p className="riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
-              {perche.contiene.length > 0 &&
-                fill(d.menuPublic.excludedContains, {
-                  list: perche.contiene.map((c) => allergenName(c, locale).toLowerCase()).join(', '),
-                })}
-              {perche.contiene.length > 0 && perche.nonPer.length > 0 && ' · '}
-              {perche.nonPer.length > 0 &&
-                fill(d.menuPublic.excludedNotFor, {
-                  list: perche.nonPer.map((c) => dietNeedName(c, locale).toLowerCase()).join(', '),
-                })}
-            </p>
-          ) : (
-            dish.allergens.length > 0 && (
-              <p className="riga-minuta mt-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
-                {d.preview.contains}{' '}
-                {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
+            {item.highlighted && item.highlightNote.trim() !== '' && (
+              <p className="mt-1 text-[calc(12px*var(--ms))] font-medium leading-[calc(1.4*var(--lh,1))] text-amber-700">
+                {item.highlightNote}
               </p>
-            )
-          )}
-        </div>
+            )}
+            {minute}
+          </>
+        ) : (
+          <>
+            {/* Un piatto senza foto tiene lo spazio SOLO se in questo menù
+                qualcuno la foto ce l'ha: fra righe fotografate e righe no, il
+                testo partirebbe da punti diversi e la carta sembrerebbe
+                storta. Se non ce l'ha nessuno non c'è niente da allineare. */}
+            {conFoto && dishThumb(dish) !== '' ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={dishThumb(dish)}
+                alt=""
+                className={`h-12 w-12 shrink-0 object-cover ${tondo ? 'rounded-full' : 'rounded-lg'}`}
+              />
+            ) : conFoto ? (
+              <div className={`h-12 w-12 shrink-0 bg-gray-100 ${tondo ? 'rounded-full' : 'rounded-lg'}`} />
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-1.5">
+                {stella}
+                {/* Nome e "i" insieme, non nome-flex-1-poi-i: senza questo
+                    raggruppamento l'icona finiva spinta accanto al prezzo,
+                    sembrando un'informazione sul prezzo invece che sul
+                    piatto. */}
+                <span className="flex min-w-0 flex-1 items-baseline gap-1">
+                  {nome}
+                  {iconaInfo}
+                </span>
+                {/* Un piatto senza prezzo non mostra niente: una riga vuota o
+                    uno zero al tavolo sono peggio del silenzio */}
+                {prezzo !== '' && (
+                  <p
+                    className={`shrink-0 text-[calc(16px*var(--ms))] font-semibold tabular-nums text-gray-900${
+                      suffisso === '' ? '' : ` price${suffisso}`
+                    }`}
+                  >
+                    {prezzo}
+                  </p>
+                )}
+              </div>
+              {conDescrizioni && conDescrizione && (
+                <p className="mt-1 text-[calc(13px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">
+                  {dish.description}
+                </p>
+              )}
+              {item.highlighted && item.highlightNote.trim() !== '' && (
+                <p className="mt-1 text-[calc(12px*var(--ms))] font-medium leading-[calc(1.4*var(--lh,1))] text-amber-700">
+                  {item.highlightNote}
+                </p>
+              )}
+              {minute}
+            </div>
+          </>
+        )}
       </button>
     </li>
   );
+}
+
+// IL SEGNO FRA UN PIATTO E L'ALTRO. Sta SOPRA la riga e non sotto, così
+// l'ultimo piatto di una sezione non si porta dietro un filetto che
+// sembrerebbe l'inizio di qualcos'altro; sulla prima riga non c'è (chi la
+// rende passa 'none') perché lì sarebbe una seconda linea sotto il titolo.
+//
+// Vale in tutt'e due le impaginazioni: il filetto sta bene anche nella carta
+// a riga, e legarlo al verticale avrebbe aggiunto una seconda manopola che
+// compare e sparisce.
+function Separatore({ tipo, accent }: { tipo: DishSeparator; accent: string }) {
+  if (tipo === 'none') return null;
+  if (tipo === 'ornament') {
+    return (
+      <p aria-hidden="true" className="py-2.5 text-center text-[8px] leading-none" style={{ color: accent }}>
+        ◆
+      </p>
+    );
+  }
+  return <span aria-hidden="true" className="my-3 block border-t border-gray-100" />;
 }

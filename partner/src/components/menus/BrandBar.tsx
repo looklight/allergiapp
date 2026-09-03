@@ -24,14 +24,18 @@ import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
 import { APPEARANCE_711 } from '@/lib/features';
 import { CURRENCIES } from '@/lib/menus';
 import {
+  DISH_SEPARATORS,
   HEADING_FONTS,
   LINE_HEIGHTS,
   SECTION_STYLES,
   LINE_HEIGHT_FACTORS,
+  MENU_LAYOUTS,
   TEXT_SCALES,
   type DishPhotoShape,
+  type DishSeparator,
   type HeadingFont,
   type LineHeight,
+  type MenuLayout,
   type SectionStyle,
   type TextScale,
 } from '@/lib/venues';
@@ -40,6 +44,8 @@ import CoverPicker from './CoverPicker';
 export default function BrandBar({
   accent,
   currency,
+  layout,
+  separator,
   showPhotos,
   photoShape,
   showDescriptions,
@@ -53,6 +59,8 @@ export default function BrandBar({
   changed,
   onRevert,
   onCurrency,
+  onLayout,
+  onSeparator,
   onAccent,
   onPhotos,
   onShowDescriptions,
@@ -70,6 +78,10 @@ export default function BrandBar({
   // pubblicate" come cambiare un prezzo. È giusto così: al tavolo cambia
   // quello che il cliente legge accanto a ogni piatto.
   currency: string;
+  // La STRUTTURA, non un preset: decide come è disposto un piatto e non
+  // riscrive nessuna delle voci qui sotto (v. MENU_LAYOUTS).
+  layout: MenuLayout;
+  separator: DishSeparator;
   showPhotos: boolean;
   photoShape: DishPhotoShape;
   showDescriptions: boolean;
@@ -81,6 +93,8 @@ export default function BrandBar({
   changed: boolean;
   onRevert: () => void;
   onCurrency: (value: string) => void;
+  onLayout: (value: MenuLayout) => void;
+  onSeparator: (value: DishSeparator) => void;
   onAccent: (accent: string) => void;
   // Una scelta sola con tre risposte, due campi sotto (v. migration 711):
   // spegnendo le foto la forma NON si azzera, così riaccendendole si ritrova
@@ -98,8 +112,11 @@ export default function BrandBar({
   // Il riassunto sulla riga chiusa: chi non apre deve sapere lo stesso come
   // sta messo. Senza, sarebbe una scatola misteriosa proprio sopra al menù.
   const riassunto = [
-    // La valuta apre la fila: da quando il suo comando sta qui dentro, senza
-    // questa parola una scatola chiusa la nasconderebbe del tutto.
+    // L'impaginazione apre la fila perché è la cosa che si vede per prima
+    // guardando il menù: tutto il resto la decora.
+    APPEARANCE_711 && layout === 'block' ? d.menuEditor.layouts.block : null,
+    // La valuta: da quando il suo comando sta qui dentro, senza questa parola
+    // una scatola chiusa la nasconderebbe del tutto.
     currency,
     d.menuEditor.headingFonts[headingFont],
     d.menuEditor.sectionStyles[sectionStyle],
@@ -154,11 +171,62 @@ export default function BrandBar({
       <div className="border-t border-gray-100 p-4">
       <p className="text-xs text-gray-500">{d.menuEditor.brandHint}</p>
 
+      {/* L'IMPAGINAZIONE È LA PRIMA VOCE, perché è la struttura: decide come
+          è disposto un piatto, e tutto quello che c'è sotto la decora.
+
+          ⚠️ È UNO STILE, NON UN PRESET (decisione dell'utente): scegliendola
+          non si riscrive nessuna delle manopole qui sotto — colore,
+          carattere, grandezza restano come il ristoratore li ha messi. Un
+          preset che li impostasse tutti insieme cancellerebbe scelte già
+          fatte, e chi ha passato dieci minuti sul colore non se lo aspetta.
+
+          L'unica conseguenza è che "a blocco" non mostra le foto, quindi la
+          manopola della loro forma sparisce — e sotto c'è scritto perché e
+          che non si perde niente. */}
+      {APPEARANCE_711 && (
+        <div className="mt-3">
+          <p className="text-xs text-gray-500">{d.menuEditor.layout}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {MENU_LAYOUTS.map((impaginazione) => {
+              const scelto = layout === impaginazione;
+              return (
+                <button
+                  key={impaginazione}
+                  onClick={() => onLayout(impaginazione)}
+                  aria-pressed={scelto}
+                  className={`w-[132px] overflow-hidden rounded-lg border bg-white p-2 text-left transition-colors ${
+                    scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  <AssaggioImpaginazione tipo={impaginazione} />
+                  <span className="mt-1.5 block text-[11px] font-medium text-gray-900">
+                    {d.menuEditor.layouts[impaginazione]}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] leading-snug text-gray-500">
+                    {d.menuEditor.layoutHints[impaginazione]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {layout === 'block' && (
+            <div className="mt-2 space-y-1">
+              <p className="text-xs leading-relaxed text-gray-400">
+                {d.menuEditor.layoutNoPhotos}
+              </p>
+              <p className="text-xs leading-relaxed text-gray-400">
+                {d.menuEditor.layoutWantsDescriptions}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* La valuta prima del colore: è quella che decide come si legge ogni
           riga del menù, mentre il colore decide come si vede. Era in cima
           all'editor, accanto al nome del locale, dove sembrava una proprietà
           del ristorante invece che del suo listino. */}
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3">
         <span className="text-xs text-gray-500">{d.menuEditor.currency}</span>
         <select
           value={currency}
@@ -228,6 +296,38 @@ export default function BrandBar({
           })}
         </div>
       </div>
+
+      {/* FRA UN PIATTO E L'ALTRO. Sta qui, subito sotto i titoli di sezione,
+          perché è la stessa materia: come si separano le cose. E vale in
+          TUTT'E DUE le impaginazioni — legarlo a "a blocco" avrebbe aggiunto
+          una seconda manopola che compare e sparisce, mentre il pregio di
+          questa strada è che ne dipende una sola. */}
+      {APPEARANCE_711 && (
+        <div className="mt-4 border-t border-gray-100 pt-3">
+          <p className="text-xs text-gray-500">{d.menuEditor.separator}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {DISH_SEPARATORS.map((segno) => {
+              const scelto = separator === segno;
+              return (
+                <button
+                  key={segno}
+                  onClick={() => onSeparator(segno)}
+                  aria-pressed={scelto}
+                  title={d.menuEditor.separators[segno]}
+                  className={`w-[104px] overflow-hidden rounded-lg border bg-white p-1.5 text-left transition-colors ${
+                    scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  <AssaggioSeparatore tipo={segno} accent={accentHex(accent)} />
+                  <span className="mt-1.5 block text-[10px] text-gray-500">
+                    {d.menuEditor.separators[segno]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* IL PACCHETTO DI STILE, e si sceglie leggendolo: ogni scelta scrive
           il proprio nome CON quel carattere. Un elenco di nomi ("Fraunces",
@@ -429,6 +529,51 @@ export default function BrandBar({
       )}
       </div>
     </details>
+  );
+}
+
+// Il campioncino dell'impaginazione: non parole ma la FORMA di un piatto,
+// disegnata con dei rettangolini. È l'unico modo di far vedere in venti
+// pixel la differenza fra "in riga" e "incolonnato" — leggere due nomi
+// costringerebbe a immaginarsi il risultato e poi a controllarlo
+// nell'anteprima.
+function AssaggioImpaginazione({ tipo }: { tipo: MenuLayout }) {
+  if (tipo === 'block') {
+    return (
+      <span className="flex h-9 flex-col items-center justify-center gap-1 rounded bg-gray-50 px-2">
+        <span className="block h-1 w-10 rounded-sm bg-gray-300" />
+        <span className="block h-1 w-16 rounded-sm bg-gray-200" />
+        <span className="block h-1 w-6 rounded-sm bg-gray-300" />
+      </span>
+    );
+  }
+  return (
+    <span className="flex h-9 items-center gap-1.5 rounded bg-gray-50 px-2">
+      <span className="block h-5 w-5 shrink-0 rounded-sm bg-gray-300" />
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="block h-1 w-full rounded-sm bg-gray-300" />
+        <span className="block h-1 w-2/3 rounded-sm bg-gray-200" />
+      </span>
+      <span className="block h-1 w-3 shrink-0 rounded-sm bg-gray-300" />
+    </span>
+  );
+}
+
+// Il campioncino del separatore: due piatti finti e in mezzo il segno.
+// Serve il "fra", non il segno da solo — un filetto isolato non dice dove va.
+function AssaggioSeparatore({ tipo, accent }: { tipo: DishSeparator; accent: string }) {
+  return (
+    <span className="flex h-9 flex-col justify-center gap-1 rounded bg-gray-50 px-1.5">
+      <span className="block h-1 w-full rounded-sm bg-gray-300" />
+      {tipo === 'rule' && <span className="block h-px w-full bg-gray-400" />}
+      {tipo === 'ornament' && (
+        <span className="block text-center text-[7px] leading-none" style={{ color: accent }}>
+          ◆
+        </span>
+      )}
+      {tipo === 'none' && <span className="block h-px w-full" />}
+      <span className="block h-1 w-2/3 rounded-sm bg-gray-300" />
+    </span>
   );
 }
 

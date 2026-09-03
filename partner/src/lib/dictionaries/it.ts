@@ -394,6 +394,25 @@ const it = {
     coverFailed: 'La copertina non è stata caricata. Riprova.',
     headingFont: 'Stile dei testi',
     headingFonts: { modern: 'Moderno', classic: 'Classico', bold: 'Marcato', light: 'Sottile' },
+    // L'IMPAGINAZIONE, prima voce della scatola: è la struttura, e tutto
+    // quello che c'è sotto la decora. Non riscrive niente (v. MENU_LAYOUTS).
+    layout: 'Impaginazione',
+    layouts: { row: 'A riga', block: 'A blocco' },
+    layoutHints: {
+      row: 'Foto, nome e prezzo sulla stessa riga.',
+      block: 'Nome, descrizione e prezzo incolonnati, senza foto.',
+    },
+    // Detto QUI e non scoperto dopo: passando a "a blocco" le foto spariscono
+    // dal menù al tavolo, e senza una riga che lo dica sembra che il portale
+    // se le sia mangiate. La seconda metà è quella che tranquillizza: non si
+    // perde niente.
+    layoutNoPhotos:
+      'Questa impaginazione non mostra le foto. Restano caricate: tornando “A riga” ricompaiono come le avevi lasciate.',
+    // L'altra cosa da sapere prima di sceglierla, non dopo averla scelta.
+    layoutWantsDescriptions:
+      'Dà il meglio con le descrizioni dei piatti: senza, resta il nome col prezzo sotto.',
+    separator: 'Fra i piatti',
+    separators: { none: 'Niente', rule: 'Filetto', ornament: 'Ornamento' },
     sectionStyle: 'Titoli delle sezioni',
     sectionStyles: { underline: 'Filetto', banner: 'Fascia', plain: 'Solo testo' },
     // Pacchetti e non un cursore: v. TEXT_SCALES in venues.ts. I nomi dicono

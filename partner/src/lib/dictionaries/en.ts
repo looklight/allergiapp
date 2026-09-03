@@ -329,6 +329,18 @@ const en: typeof it = {
     coverFailed: 'The cover was not uploaded. Try again.',
     headingFont: 'Text style',
     headingFonts: { modern: 'Modern', classic: 'Classic', bold: 'Bold', light: 'Light' },
+    layout: 'Layout',
+    layouts: { row: 'In a row', block: 'Stacked' },
+    layoutHints: {
+      row: 'Photo, name and price on the same line.',
+      block: 'Name, description and price stacked, no photos.',
+    },
+    layoutNoPhotos:
+      'This layout does not show photos. They stay uploaded: switch back to “In a row” and they come back as you left them.',
+    layoutWantsDescriptions:
+      'At its best with dish descriptions: without them you get the name with the price below.',
+    separator: 'Between dishes',
+    separators: { none: 'None', rule: 'Rule', ornament: 'Ornament' },
     sectionStyle: 'Section headings',
     sectionStyles: { underline: 'Rule', banner: 'Banner', plain: 'Plain' },
     textScale: 'Text size',

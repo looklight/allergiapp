@@ -1107,11 +1107,66 @@ vuoto anche prima di sapere cosa scriverci — senza, alla prima lettera battuta
 scendeva di cinquanta pixel.
 
 
+### 2026-09-03 — Tema 29: L'impaginazione è uno stile, non un preset
+
+Il Tema 25 aveva dato al ristoratore il carattere, i titoli di sezione e la copertina: tutte cose
+che **decorano** una struttura sola — foto, nome e prezzo sulla stessa riga, allergeni sotto. È
+l'impaginazione da trattoria, e va benissimo per la maggior parte dei locali. Non va bene per i
+ristoranti che una carta con le fotografie non la vogliono: lì il piatto si legge **incolonnato** —
+nome, descrizione, prezzo — e centrato.
+
+Quindi `menu_layout`: `row` (quella di sempre) e `block`.
+
+**La distinzione che tiene in piedi tutto il tema, ed è dell'utente: uno stile decide una
+STRUTTURA, un preset imposta dei VALORI.** La prima idea era pacchetti alla "Trattoria / Bistrot /
+Ristorante" che con un clic scrivevano colore, carattere, grandezza e interlinea. Scartata, e per
+una ragione che vale la pena tenere: **avrebbe riscritto scelte già fatte**. Chi ha passato dieci
+minuti sul colore e poi prova un pacchetto se lo vede cambiare, e a quel punto ha perso qualcosa
+per aver guardato. L'impaginazione invece non tocca nessuna altra voce: si sceglie la struttura, e
+tutto quello che c'è sotto continua a decorarla.
+
+**L'unica conseguenza, e va detta prima e non scoperta dopo: "a blocco" non mostra le foto.** Quella
+carta è dei ristoranti che non le mettono, e infilarci una miniatura la riporterebbe a essere una
+lista. Perciò nel portale la manopola della forma delle foto **sparisce** — una manopola che non
+decide niente è peggio di una che non c'è — ma **il valore resta scritto**: tornando "a riga" le
+foto ricompaiono tonde o quadrate com'erano. È la stessa doppia colonna del Tema 28. Sotto la
+scelta ci sono due righe che lo dicono, insieme all'altra cosa che conviene sapere prima: **a
+blocco un piatto senza descrizione è nome e prezzo incolonnati**, cioè spoglio. Non lo si impedisce
+— con le descrizioni spente è il look "essenziale", che è legittimo — lo si dice.
+
+**Il segno fra un piatto e l'altro** (`dish_separator`: niente / filetto / ornamento) è nato dentro
+questo tema ma **non gli appartiene**: vale in tutt'e due le impaginazioni, perché il filetto sta
+bene anche nella carta a riga. Legarlo al blocco avrebbe aggiunto una **seconda** voce che compare
+e sparisce, e il pregio di questa strada è esattamente che ne dipende **una sola**. Sta sopra la
+riga e non sotto — così l'ultimo piatto di una sezione non si porta dietro un segno che sembra
+l'inizio di qualcos'altro — e sul primo non c'è, dove sarebbe una seconda linea sotto il titolo.
+Di partenza è "niente": i menù che esistono non cambiano di un pixel finché nessuno la tocca.
+
+**Una marcatura sola per due impaginazioni.** Sul sito il blocco è tutto nel CSS (`.layout-block`),
+sulla stessa marcatura della riga: `display: contents` sulla riga scioglie nome e prezzo dentro il
+corpo, e `order` porta il prezzo sotto la descrizione. Due marcature avrebbero voluto dire due
+dettagli da tenere allineati — e uno di quei dettagli è **la riga degli allergeni**, che in nessuna
+impaginazione può cambiare. Nell'anteprima del portale le due rese sono due rami dello stesso
+componente, con le righe minute costruite una volta sola per la stessa ragione.
+
+**Non sono edit dedicati.** L'utente aveva chiesto "in base allo stile, abilitare o disabilitare
+alcune regolazioni": è esattamente quello che succede, e nient'altro. I dati di un piatto restano
+gli stessi — nome, descrizione, prezzo, allergeni, foto — perché se ogni stile si portasse dietro
+campi suoi, cambiare stile diventerebbe una migrazione di dati invece di un clic, e il catalogo
+condiviso con la scheda AllergiApp si spaccherebbe in due. **Un modello, due rese.**
+
+Migration **711**, insieme alle altre tre manopole chieste nella stessa giornata (forma delle foto,
+interlinea): non era ancora applicata, e aprirne una per ciascuna avrebbe voluto dire quattro
+esecuzioni a mano al posto di una. Il file si chiama adesso `711_partner_menu_appearance.sql`.
+
+
 ## Prossimo passo
 
 **Aggiornato il 2026-09-03.** La fase 2 è fatta e in produzione: il menù al tavolo si apre da
-`allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate; la **711 (forma delle foto)
-è scritta e DA APPLICARE** a mano dal SQL editor.
+`allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate; la **711 (`711_partner_menu_appearance.sql`: forma delle
+foto, interlinea, impaginazione, separatore) è scritta e DA APPLICARE** a mano dal SQL editor.
+Finché non lo è, quelle quattro manopole restano spente da `APPEARANCE_711`
+(`partner/src/lib/features.ts`) e il portale non nomina le colonne nemmeno nella select.
 
 **Fatto oggi**: indirizzo e QR (PNG + vettoriale), pagina pubblica collegata, bozza/pubblicato con
 i due presidi (avviso sugli allergeni non pubblicati, foto protette dalla cancellazione), ritiro

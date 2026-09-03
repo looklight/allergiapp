@@ -224,6 +224,8 @@ export default function MenuEditorPage() {
       coverUrl={locale?.coverUrl ?? ''}
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
+      layout={locale?.menuLayout ?? 'row'}
+      separator={locale?.dishSeparator ?? 'none'}
       showPhotos={locale?.showDishPhotos ?? true}
       photoShape={locale?.dishPhotoShape ?? 'square'}
       showDescriptions={locale?.showDishDescriptions ?? false}
@@ -369,6 +371,8 @@ export default function MenuEditorPage() {
         <BrandBar
           accent={brand.accent}
           currency={menu.currency}
+          layout={locale?.menuLayout ?? 'row'}
+          separator={locale?.dishSeparator ?? 'none'}
           showPhotos={locale?.showDishPhotos ?? true}
           photoShape={locale?.dishPhotoShape ?? 'square'}
           showDescriptions={locale?.showDishDescriptions ?? false}
@@ -380,6 +384,8 @@ export default function MenuEditorPage() {
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           onRevert={() => setRevertingBrand(true)}
           onCurrency={(valuta) => save(setMenuCurrency(menu, valuta))}
+          onLayout={(menuLayout) => locale && setIdentity(locale.id, { menuLayout })}
+          onSeparator={(dishSeparator) => locale && setIdentity(locale.id, { dishSeparator })}
           onAccent={(accent) => setBrand({ accent })}
           onPhotos={({ showPhotos, photoShape }) =>
             locale &&

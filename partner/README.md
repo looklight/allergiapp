@@ -370,11 +370,36 @@ Tre cose da non disfare per sbaglio:
 
 **La scatola "Aspetto del menù"** (`BrandBar`) è **comprimibile** e chiusa di
 partenza — l'aspetto si sceglie una volta, il menù si tocca ogni giorno — con
-un riassunto sulla riga ("EUR · Moderno · Filetto · foto quadrate") per non
-doverla aprire. Dentro: **valuta**, colore, **pacchetto di stile** dei testi,
+un riassunto sulla riga ("A blocco · EUR · Moderno · Filetto") per non
+doverla aprire. Dentro, nell'ordine: **impaginazione**, **valuta**, colore, **pacchetto di stile** dei testi,
 **grandezza dei testi**, **stile dei titoli di sezione**, **copertina**, le
-**foto dei piatti** (tre scelte: nessuna / quadrate / tonde) e l'interruttore
-delle **descrizioni in lista**.
+**foto dei piatti** (tre scelte: nessuna / quadrate / tonde), il **segno fra
+un piatto e l'altro** e l'interruttore delle **descrizioni in lista**.
+
+**L'impaginazione è la prima voce perché è la STRUTTURA** (`menu_layout`:
+`row` / `block`, migration 711): decide come è disposto un piatto — foto,
+nome e prezzo affiancati, oppure nome, descrizione e prezzo incolonnati e
+centrati — e tutto il resto della scatola la decora.
+
+⚠️ **È uno stile, non un preset**, ed è la distinzione che regge il Tema 29:
+uno stile decide una struttura, un preset imposta dei valori. Scegliendo
+l'impaginazione **non si riscrive nessuna** delle altre voci — colore,
+carattere, grandezza, interlinea restano come il ristoratore li ha messi. La
+prima idea erano pacchetti ("Trattoria", "Bistrot") che li impostavano tutti:
+scartata perché avrebbe cancellato scelte già fatte.
+
+L'unica conseguenza è che **"a blocco" non mostra le foto**: la manopola della
+loro forma sparisce (una manopola che non decide niente è peggio di una che
+non c'è) ma **il valore resta scritto**, e tornando "a riga" le foto
+ricompaiono com'erano. Sotto la scelta due righe lo dicono, insieme all'altra
+cosa da sapere prima: a blocco un piatto **senza descrizione** è nome e prezzo
+incolonnati, cioè spoglio.
+
+**Il segno fra i piatti** (`dish_separator`: `none` / `rule` / `ornament`) è
+nato lì ma **non dipende dall'impaginazione**: vale in tutt'e due, perché il
+filetto sta bene anche nella carta a riga. Legarlo al blocco avrebbe aggiunto
+una seconda voce che compare e sparisce, e il pregio di questa strada è che ne
+dipende **una sola**.
 
 ⚠️ **La valuta non è aspetto**, sta lì solo perché è lì che si va a sistemare
 come si legge il menù: vive sul MENÙ e non sul locale, quindi conta come

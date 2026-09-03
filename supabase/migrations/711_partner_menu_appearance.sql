@@ -1,4 +1,6 @@
--- Migration 711: le foto dei piatti (tonde o squadrate) e l'interlinea
+-- Migration 711: le manopole dell'aspetto del menù al tavolo
+--                (foto tonde o squadrate, interlinea, impaginazione,
+--                 separatore fra i piatti)
 --
 -- STATO: DA APPLICARE a mano via SQL editor, dopo la 710 (il
 -- tracking locale è fermo alla 045: questa, come tutte le 046+,
@@ -32,9 +34,11 @@
 -- stessa voce va in VenueAppearance (partner/src/lib/venues.ts).
 --
 -- ------------------------------------------------------------
--- E L'INTERLINEA, che viaggia con la stessa migration perché non
--- era ancora stata applicata quando è stata chiesta. Sono due
--- manopole indipendenti e nessuna delle due sa dell'altra: stanno
+-- QUATTRO MANOPOLE IN UNA MIGRATION SOLA, e non è pigrizia: sono
+-- state chieste una dopo l'altra mentre questa migration era già
+-- scritta e non ancora applicata. Aprirne una nuova per ognuna
+-- avrebbe voluto dire quattro esecuzioni a mano al posto di una.
+-- Sono indipendenti fra loro e nessuna sa delle altre: stanno
 -- insieme solo perché si applicano insieme.
 BEGIN;
 
@@ -71,8 +75,47 @@ alter table partner_venues
 comment on column partner_venues.line_height is
   'Quanta aria fra le righe del menù al tavolo: tight, normal, airy. Elenco chiuso come text_scale. La riga degli allergeni ha un pavimento che tight non sfonda.';
 
+-- L'IMPAGINAZIONE: com'è disposto un piatto nella carta.
+--
+--   row     foto, nome e prezzo sulla stessa riga, allergeni
+--           sotto. È quella di sempre: densa, si scorre in fretta,
+--           regge le foto.
+--   block   nome, descrizione e prezzo incolonnati e centrati,
+--           senza foto. È la carta dei ristoranti che non mettono
+--           fotografie, e la ragione per cui questa colonna esiste.
+--
+-- ⚠️ È UNO STILE, NON UN PRESET (decisione dell'utente, 2026-09-03).
+-- La differenza non è una parola: un preset imposterebbe anche il
+-- colore, il carattere, la grandezza — cioè riscriverebbe scelte
+-- già fatte dal ristoratore. Questa colonna decide una STRUTTURA e
+-- non tocca nessun altro valore. L'unica conseguenza è che 'block'
+-- non mostra le foto, e quindi nel portale la manopola della loro
+-- forma sparisce: il valore però resta scritto qui sotto, e
+-- tornando a 'row' le foto ricompaiono come erano.
+alter table partner_venues
+  add column menu_layout text not null default 'row'
+  check (menu_layout in ('row', 'block'));
+
+comment on column partner_venues.menu_layout is
+  'Come è disposto un piatto nel menù al tavolo: row (foto+nome+prezzo in riga) o block (nome, descrizione, prezzo incolonnati, senza foto). È uno stile, non un preset: non riscrive nessuna altra voce d''aspetto.';
+
+-- IL SEGNO FRA UN PIATTO E L'ALTRO. Non è una manopola
+-- dell'impaginazione verticale e non deve diventarlo: il filetto
+-- sta bene anche nella carta a riga, e legarlo a 'block'
+-- aggiungerebbe una SECONDA voce che compare e sparisce — mentre
+-- il pregio di questa strada è che ne dipende una sola.
+--
+-- 'none' di partenza: i menù che esistono adesso non cambiano di
+-- un pixel finché nessuno la tocca.
+alter table partner_venues
+  add column dish_separator text not null default 'none'
+  check (dish_separator in ('none', 'rule', 'ornament'));
+
+comment on column partner_venues.dish_separator is
+  'Cosa separa un piatto dall''altro nel menù al tavolo: none, rule (filetto), ornament. Vale in tutt''e due le impaginazioni.';
+
 -- ------------------------------------------------------------
--- 1. L'ASPETTO, con due voci in più
+-- 1. L'ASPETTO, con quattro voci in più
 -- Le chiavi restano PIATTE come nello scatto (v. 710): questa si
 -- chiama 'dishPhotoShape' e sta accanto a 'showPhotos', che è il
 -- campo con cui lavora in coppia.
@@ -91,7 +134,9 @@ as $$
            'dishPhotoShape', v.dish_photo_shape,
            'showDescriptions', v.show_dish_descriptions,
            'textScale', v.text_scale,
-           'lineHeight', v.line_height
+           'lineHeight', v.line_height,
+           'menuLayout', v.menu_layout,
+           'dishSeparator', v.dish_separator
          )
     from partner_venues v
    where v.id = p_venue_id;
@@ -120,7 +165,9 @@ as $$
            'dishPhotoShape', 'square',
            'showDescriptions', false,
            'textScale', 'normal',
-           'lineHeight', 'normal'
+           'lineHeight', 'normal',
+           'menuLayout', 'row',
+           'dishSeparator', 'none'
          );
 $$;
 
@@ -166,7 +213,9 @@ begin
          dish_photo_shape = in_sala->>'dishPhotoShape',
          show_dish_descriptions = (in_sala->>'showDescriptions')::boolean,
          text_scale = in_sala->>'textScale',
-         line_height = in_sala->>'lineHeight'
+         line_height = in_sala->>'lineHeight',
+         menu_layout = in_sala->>'menuLayout',
+         dish_separator = in_sala->>'dishSeparator'
    where id = p_venue_id
      and owner_user_id = auth.uid();
 

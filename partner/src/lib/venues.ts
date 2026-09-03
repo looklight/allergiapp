@@ -105,6 +105,32 @@ export const LINE_HEIGHT_FACTORS: Record<LineHeight, number> = {
   airy: 1.15,
 };
 
+// L'IMPAGINAZIONE: com'è disposto un piatto nella carta (migration 711).
+//
+//   row     foto, nome e prezzo sulla stessa riga, allergeni sotto. Quella di
+//           sempre: densa, si scorre in fretta, regge le foto.
+//   block   nome, descrizione e prezzo incolonnati e centrati, senza foto.
+//           La carta dei ristoranti che non mettono fotografie.
+//
+// ⚠️ È UNO STILE, NON UN PRESET (decisione dell'utente, 2026-09-03), e la
+// differenza non è una parola: un preset imposterebbe anche colore, carattere
+// e grandezza, cioè riscriverebbe scelte già fatte. Questa voce decide una
+// STRUTTURA e non tocca nessun altro valore. L'unica conseguenza è che
+// 'block' non mostra le foto — quindi la manopola della loro forma sparisce,
+// ma il valore resta scritto e tornando a 'row' le foto ricompaiono com'erano.
+export const MENU_LAYOUTS = ['row', 'block'] as const;
+export type MenuLayout = (typeof MENU_LAYOUTS)[number];
+
+// COSA SEPARA UN PIATTO DALL'ALTRO. Non è una manopola dell'impaginazione
+// verticale e non deve diventarlo: il filetto sta bene anche nella carta a
+// riga, e legarlo a 'block' aggiungerebbe una SECONDA voce che compare e
+// sparisce — mentre il pregio di questa strada è che ne dipende una sola.
+//
+// 'none' di partenza: i menù che esistono adesso non cambiano di un pixel
+// finché nessuno la tocca.
+export const DISH_SEPARATORS = ['none', 'rule', 'ornament'] as const;
+export type DishSeparator = (typeof DISH_SEPARATORS)[number];
+
 // L'ASPETTO DEL MENÙ: i campi che decidono come si vede, e che non dicono
 // niente su cosa c'è dentro un piatto. È lo stesso elenco di
 // venue_appearance() nel database (migration 710), e i due vanno tenuti
@@ -127,6 +153,8 @@ export type VenueAppearance = Pick<
   | 'showDishDescriptions'
   | 'textScale'
   | 'lineHeight'
+  | 'menuLayout'
+  | 'dishSeparator'
 >;
 
 export interface MenuLink {
@@ -211,6 +239,10 @@ export interface Venue extends VenueDraft {
   // sta accanto a textScale perché è la stessa domanda vista dall'altra
   // parte. ⚠️ Anche qui la riga degli allergeni ha il suo pavimento.
   lineHeight: LineHeight;
+  // Come è disposto un piatto (migration 711). 'row' è quella di sempre.
+  menuLayout: MenuLayout;
+  // Il segno fra un piatto e l'altro, in tutt'e due le impaginazioni.
+  dishSeparator: DishSeparator;
   // L'immagine dietro l'intestazione del menù, al posto del colore pieno.
   // Vuota = resta il colore. Sotto ci va SEMPRE una velatura scura, o il nome
   // del locale sopra una foto chiara sparisce (DIGITAL_MENU, Tema 25).
@@ -309,7 +341,7 @@ async function loadVenues(): Promise<Venue[]> {
         // (v. APPEARANCE_711): PostgREST, davanti a una colonna che non c'è,
         // rifiuta tutta l'interrogazione — nessun locale, non un locale con
         // un campo in meno.
-        (APPEARANCE_711 ? 'dish_photo_shape, line_height, ' : '') +
+        (APPEARANCE_711 ? 'dish_photo_shape, line_height, menu_layout, dish_separator, ' : '') +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
@@ -333,6 +365,8 @@ async function loadVenues(): Promise<Venue[]> {
       headingFont: (row.heading_font ?? 'modern') as HeadingFont,
       textScale: (row.text_scale ?? 'normal') as TextScale,
       lineHeight: (row.line_height ?? 'normal') as LineHeight,
+      menuLayout: (row.menu_layout ?? 'row') as MenuLayout,
+      dishSeparator: (row.dish_separator ?? 'none') as DishSeparator,
       coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
@@ -507,6 +541,8 @@ export async function revertAppearance(venueId: string): Promise<VenueAppearance
     sectionStyle: (scatto.sectionStyle ?? 'underline') as SectionStyle,
     textScale: (scatto.textScale ?? 'normal') as TextScale,
     lineHeight: (scatto.lineHeight ?? 'normal') as LineHeight,
+    menuLayout: (scatto.menuLayout ?? 'row') as MenuLayout,
+    dishSeparator: (scatto.dishSeparator ?? 'none') as DishSeparator,
     showDishPhotos: scatto.showPhotos !== false,
     dishPhotoShape: (scatto.dishPhotoShape ?? 'square') as DishPhotoShape,
     showDishDescriptions: scatto.showDescriptions === true,
@@ -556,6 +592,8 @@ export function useVenues() {
       headingFont: 'modern',
       textScale: 'normal',
       lineHeight: 'normal',
+      menuLayout: 'row',
+      dishSeparator: 'none',
       coverUrl: '',
       cardId: null,
       dishIds: [],
@@ -589,6 +627,8 @@ export function useVenues() {
             headingFont: s.headingFont,
             textScale: s.textScale,
             lineHeight: s.lineHeight,
+            menuLayout: s.menuLayout,
+            dishSeparator: s.dishSeparator,
             coverUrl: s.coverUrl,
           }
         : s
@@ -625,6 +665,10 @@ export function useVenues() {
       riga.dish_photo_shape = next.dishPhotoShape;
     }
     if (APPEARANCE_711 && next.lineHeight !== undefined) riga.line_height = next.lineHeight;
+    if (APPEARANCE_711 && next.menuLayout !== undefined) riga.menu_layout = next.menuLayout;
+    if (APPEARANCE_711 && next.dishSeparator !== undefined) {
+      riga.dish_separator = next.dishSeparator;
+    }
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     if (next.headingFont !== undefined) riga.heading_font = next.headingFont;
@@ -721,7 +765,12 @@ export function useVenues() {
           slug: venue.slug || null,
           show_dish_photos: venue.showDishPhotos,
           ...(APPEARANCE_711
-            ? { dish_photo_shape: venue.dishPhotoShape, line_height: venue.lineHeight }
+            ? {
+                dish_photo_shape: venue.dishPhotoShape,
+                line_height: venue.lineHeight,
+                menu_layout: venue.menuLayout,
+                dish_separator: venue.dishSeparator,
+              }
             : {}),
           show_dish_descriptions: venue.showDishDescriptions,
           section_style: venue.sectionStyle,
