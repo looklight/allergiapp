@@ -176,6 +176,33 @@ export default function MenuPreview({
     .map((item) => dishById(item.dishId))
     .filter((dish): dish is Dish => dish !== undefined);
 
+  // I TRE PIATTI FINTI, e da qui in giù la carta è una sola: quella mostrata.
+  // Si costruiscono prima di tutto il resto perché da loro nascono anche LE
+  // PASTIGLIE DEL FILTRO — che è la cosa che si vuole far vedere. Il filtro è
+  // gratis e non sarà mai premium (è la dimostrazione del prodotto), quindi
+  // mostrarlo su un menù ancora vuoto è esattamente il suo mestiere: si tocca
+  // "senza glutine" e si vede la carta riordinarsi, prima ancora di aver
+  // scritto un piatto.
+  const piattiEsempio: Dish[] = d.menuEditor.previewSampleDishes.map((p, i) => ({
+    id: `esempio-${i}`,
+    name: p.name,
+    description: p.description,
+    category: '',
+    photoUrl: '',
+    photoThumbUrl: '',
+    allergens: ESEMPIO[i].allergens,
+    dietTags: ESEMPIO[i].diets,
+    translations: [],
+  }));
+  // Vuoto = non c'è nessun piatto e nessun blocco con del testo. Scritto qui
+  // e non su `gruppi` (che si calcola più sotto) perché serve prima.
+  const vuoto =
+    mostraEsempio &&
+    nelMenu.length === 0 &&
+    !menu.sections.some((g) => g.kind === 'note' && hasNoteText(g));
+  // La carta di cui si parla da qui in giù: la sua, o quella di esempio.
+  const mostrati = vuoto ? piattiEsempio : nelMenu;
+
   // Si offrono SOLO gli allergeni che qualche piatto dichiara e le esigenze
   // che qualche piatto soddisfa: una pastiglia che non toglie niente è un
   // bottone che non fa niente, e una che svuota il menù è peggio.
@@ -192,12 +219,12 @@ export default function MenuPreview({
   // (landing, lib/render-menu.js): se divergono, il ristoratore vede
   // un'anteprima che non è quella che vedrà il suo cliente.
   const disponibili: FilterPill[] = [
-    ...ALLERGENS.filter((a) => nelMenu.some((dish) => dish.allergens.includes(a.code))).map((a) => ({
+    ...ALLERGENS.filter((a) => mostrati.some((dish) => dish.allergens.includes(a.code))).map((a) => ({
       kind: 'allergens' as const,
       code: a.code,
     })),
     ...DIETS.filter(
-      (t) => t.code !== 'gluten_free' && nelMenu.some((dish) => dish.dietTags.includes(t.code))
+      (t) => t.code !== 'gluten_free' && mostrati.some((dish) => dish.dietTags.includes(t.code))
     ).map((t) => ({
       kind: 'diets' as const,
       code: t.code,
@@ -224,7 +251,7 @@ export default function MenuPreview({
   // non si tocca — tornando "a riga" le foto ricompaiono com'erano — e la
   // scatola Aspetto lo dice a parole invece di lasciarglielo scoprire.
   const conFoto =
-    layout === 'row' && showPhotos && nelMenu.some((dish) => dishThumb(dish) !== '');
+    layout === 'row' && showPhotos && mostrati.some((dish) => dishThumb(dish) !== '');
   // 'modern' è il carattere di sistema e non ha classe: è il ripiego, ed è
   // anche l'unico che non fa scaricare niente al cliente.
   const carattere = headingFont === 'modern' ? '' : ` heading-${headingFont}`;
@@ -235,7 +262,7 @@ export default function MenuPreview({
   const suffisso = headingFont === 'modern' ? '' : `-${headingFont}`;
 
   const scelte = accese.length;
-  const adatti = nelMenu.filter((dish) => !esclusa(esclusione(dish, needs))).length;
+  const adatti = mostrati.filter((dish) => !esclusa(esclusione(dish, needs))).length;
 
   // Sezioni e BLOCCHI DI TESTO nella stessa fila, perché nel menù occupano
   // lo stesso posto. Si mostra una sezione se ha piatti, e un blocco se ha
@@ -273,18 +300,6 @@ export default function MenuPreview({
   // L'esempio si mostra solo se è stato chiesto E se non c'è niente da
   // mostrare al suo posto: con dei piatti dentro non compare mai, qualunque
   // cosa dica chi ci usa.
-  const vuoto = mostraEsempio && gruppi.length === 0;
-  const piattiEsempio: Dish[] = d.menuEditor.previewSampleDishes.map((p, i) => ({
-    id: `esempio-${i}`,
-    name: p.name,
-    description: p.description,
-    category: '',
-    photoUrl: '',
-    photoThumbUrl: '',
-    allergens: ESEMPIO[i].allergens,
-    dietTags: ESEMPIO[i].diets,
-    translations: [],
-  }));
   const gruppiResi: MenuSection[] = vuoto
     ? [
         {
@@ -444,7 +459,7 @@ export default function MenuPreview({
               <span className="text-[10px] tabular-nums text-gray-400">
                 {fill(adatti === 1 ? d.menuPublic.filterSummaryOne : d.menuPublic.filterSummary, {
                   matching: adatti,
-                  total: nelMenu.length,
+                  total: mostrati.length,
                 })}
               </span>
             )}
