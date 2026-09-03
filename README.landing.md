@@ -67,6 +67,14 @@ Quattro cose da non disfare:
   pacchetti serif e leggero (`.font-classic .menu-item-desc`, 13.5px): c'è
   qui e non nell'anteprima, e mezzo pixel non vale una classe in più da
   tenere allineata.
+- **Una marcatura sola per due impaginazioni.** L'impaginazione a blocco
+  (`.layout-block`, DIGITAL_MENU Tema 29) è tutta nel CSS, sulla stessa
+  marcatura della riga: `display: contents` su `.menu-item-line` scioglie nome
+  e prezzo dentro il corpo, e `order` porta il prezzo sotto la descrizione.
+  Due marcature avrebbero voluto dire due dettagli da tenere allineati, e uno
+  di quei dettagli è **la riga degli allergeni** — che in nessuna
+  impaginazione cambia. A blocco le miniature non si rendono affatto; la foto
+  grande del dettaglio invece resta.
 - **La scheda del piatto è un popup, e il filtro non è agganciato**
   (2026-09-03, DIGITAL_MENU Tema 28). Il popup sta al centro con la sua X, si
   chiude toccando fuori e ha le **freccine** che scorrono la carta
@@ -93,6 +101,12 @@ tre grandezze una accanto all'altra:
 ```bash
 node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js'),s=require('./lib/menu-sample.js'),fs=require('fs');for(const g of ['compact','normal','roomy'])fs.writeFileSync('_preview-scala-'+g+'.html',renderMenuPage({...s,textScale:g},'it',createT('it')))"
 node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js'),s=require('./lib/menu-sample.js'),fs=require('fs');for(const g of ['tight','normal','airy'])fs.writeFileSync('_preview-interlinea-'+g+'.html',renderMenuPage({...s,lineHeight:g},'it',createT('it')))"
+```
+
+Le due impaginazioni e i separatori:
+
+```bash
+node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js'),s=require('./lib/menu-sample.js'),fs=require('fs');for(const l of ['row','block'])for(const sep of ['none','rule','ornament'])fs.writeFileSync('_preview-'+l+'-'+sep+'.html',renderMenuPage({...s,menuLayout:l,dishSeparator:sep,showDescriptions:l==='block'},'it',createT('it')))"
 ```
 
 ## 🚀 Deployment su Vercel
