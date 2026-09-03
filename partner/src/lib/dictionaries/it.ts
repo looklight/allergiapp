@@ -401,6 +401,13 @@ const it = {
     // "più fitta" o "più ariosa", non "92%".
     textScale: 'Grandezza dei testi',
     textScales: { compact: 'Compatta', normal: 'Normale', roomy: 'Ampia' },
+    // L'altra metà della stessa domanda: quanto è fitta la carta. I nomi
+    // dicono com'è il RISULTATO, non di quanto cambia il numero.
+    lineHeight: 'Interlinea',
+    lineHeights: { tight: 'Stretta', normal: 'Normale', airy: 'Ariosa' },
+    // La seconda riga del campioncino: l'interlinea si vede solo fra DUE
+    // righe, e una parola sola non mostrerebbe niente.
+    lineHeightSample: 'due righe',
     // Sta sotto le tre scelte, e non è un dettaglio tecnico: è la ragione per
     // cui Compatta non rimpicciolisce tutto.
     textScaleFloor: 'La riga degli allergeni non rimpicciolisce: resta leggibile anche con la carta più fitta.',

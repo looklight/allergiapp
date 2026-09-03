@@ -121,7 +121,7 @@ export default function DishDetailSheet({
         <div className="px-4 pt-3">
           <div className="flex items-baseline justify-between gap-3">
             <h3
-              className={`text-[calc(19px*var(--ms))] font-semibold leading-snug text-gray-900${
+              className={`text-[calc(19px*var(--ms))] font-semibold leading-[calc(1.3*var(--lh,1))] text-gray-900${
                 suffisso === '' ? '' : ` name${suffisso}`
               }`}
             >
@@ -139,7 +139,7 @@ export default function DishDetailSheet({
           </div>
 
           {dish.description.trim() !== '' && (
-            <p className="mt-1.5 text-[calc(15px*var(--ms))] leading-snug text-gray-600">{dish.description}</p>
+            <p className="mt-1.5 text-[calc(15px*var(--ms))] leading-[calc(1.45*var(--lh,1))] text-gray-600">{dish.description}</p>
           )}
 
           <div className="mt-3">

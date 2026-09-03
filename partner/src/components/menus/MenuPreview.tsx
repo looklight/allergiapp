@@ -40,9 +40,11 @@ import {
 } from '@/lib/menus';
 import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
 import {
+  LINE_HEIGHT_FACTORS,
   TEXT_SCALE_FACTORS,
   type DishPhotoShape,
   type HeadingFont,
+  type LineHeight,
   type SectionStyle,
   type TextScale,
 } from '@/lib/venues';
@@ -91,6 +93,7 @@ export default function MenuPreview({
   sectionStyle,
   headingFont,
   textScale,
+  lineHeight,
   needs,
   onToggleNeed,
 }: {
@@ -117,6 +120,8 @@ export default function MenuPreview({
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
   textScale: TextScale;
+  // Quanta aria fra le righe: un moltiplicatore solo, come la grandezza.
+  lineHeight: LineHeight;
   needs: ViewerNeeds;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
@@ -252,7 +257,12 @@ export default function MenuPreview({
       // fra un iPhone SE e un 15), che è una bugia molto più piccola. Le due
       // copie vanno tenute allineate (v. lib/render-menu.js), o il
       // ristoratore sceglie guardando una cosa e il cliente ne vede un'altra.
-      style={{ '--ms': TEXT_SCALE_FACTORS[textScale] } as React.CSSProperties}
+      style={
+        {
+          '--ms': TEXT_SCALE_FACTORS[textScale],
+          '--lh': LINE_HEIGHT_FACTORS[lineHeight],
+        } as React.CSSProperties
+      }
     >
       {/* Intestazione: la fascia colorata è l'unico posto in cui il colore
           scelto fa da fondo. Sul testo dei piatti resterebbe una scelta di
@@ -293,7 +303,7 @@ export default function MenuPreview({
               className="h-9 w-9 shrink-0 rounded-full bg-white object-cover"
             />
           )}
-          <p className={`min-w-0 flex-1 text-[calc(22px*var(--ms))] font-semibold leading-snug${carattere}`}>
+          <p className={`min-w-0 flex-1 text-[calc(22px*var(--ms))] font-semibold leading-[calc(1.375*var(--lh,1))]${carattere}`}>
             {venueName}
           </p>
         </div>
@@ -301,7 +311,7 @@ export default function MenuPreview({
         {/* Descrizione del menù: facoltativa, quello che il ristoratore ha
             scritto sotto il titolo nell'editor (orari, un avviso). */}
         {menu.description.trim() !== '' && (
-          <p className="mt-2 whitespace-pre-line text-[calc(14px*var(--ms))] leading-snug text-white/85">
+          <p className="mt-2 whitespace-pre-line text-[calc(14px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-white/85">
             {menu.description}
           </p>
         )}
@@ -412,12 +422,12 @@ export default function MenuPreview({
               return (
                 <div key={gruppo.id} className="mb-4 rounded-xl bg-gray-50 px-3 py-2.5">
                   {gruppo.name.trim() !== '' && (
-                    <p className="text-[calc(13px*var(--ms))] font-semibold leading-snug text-gray-900">
+                    <p className="text-[calc(13px*var(--ms))] font-semibold leading-[calc(1.375*var(--lh,1))] text-gray-900">
                       {gruppo.name}
                     </p>
                   )}
                   {gruppo.description.trim() !== '' && (
-                    <p className="mt-0.5 whitespace-pre-line text-[calc(12px*var(--ms))] leading-snug text-gray-600">
+                    <p className="mt-0.5 whitespace-pre-line text-[calc(12px*var(--ms))] leading-[calc(1.45*var(--lh,1))] text-gray-600">
                       {gruppo.description}
                     </p>
                   )}
@@ -437,7 +447,7 @@ export default function MenuPreview({
                   </TitoloSezione>
                 )}
                 {gruppo.description.trim() !== '' && (
-                  <p className="mb-3 whitespace-pre-line text-[calc(12px*var(--ms))] leading-snug text-gray-500">
+                  <p className="mb-3 whitespace-pre-line text-[calc(12px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">
                     {gruppo.description}
                   </p>
                 )}
@@ -467,7 +477,7 @@ export default function MenuPreview({
             pagamenti. Su un menù vuoto non compare — sarebbe il coperto di
             una carta che non c'è. */}
         {gruppi.length > 0 && tableConditions.trim() !== '' && (
-          <p className="riga-minuta mt-2 whitespace-pre-line border-t border-gray-100 pt-3 leading-snug text-gray-500">
+          <p className="riga-minuta mt-2 whitespace-pre-line border-t border-gray-100 pt-3 leading-[max(1.4,calc(1.5*var(--lh,1)))] text-gray-500">
             {tableConditions}
           </p>
         )}
@@ -666,7 +676,7 @@ function Riga({
                   scorrere, il nome serve a ordinare. Stessa scelta sul sito
                   (.menu-item-name in menu-page.css). */}
               <p
-                className={`min-w-0 break-words text-[calc(16px*var(--ms))] font-medium leading-snug text-gray-900${
+                className={`min-w-0 break-words text-[calc(16px*var(--ms))] font-medium leading-[calc(1.3*var(--lh,1))] text-gray-900${
                   suffisso === '' ? '' : ` name${suffisso}`
                 }`}
               >
@@ -710,10 +720,10 @@ function Riga({
               suo posto, sopra, sparisce la "i" che diceva soltanto che
               c'era. */}
           {conDescrizioni && dish.description.trim() !== '' && (
-            <p className="mt-1 text-[calc(13px*var(--ms))] leading-snug text-gray-500">{dish.description}</p>
+            <p className="mt-1 text-[calc(13px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">{dish.description}</p>
           )}
           {item.highlighted && item.highlightNote.trim() !== '' && (
-            <p className="mt-1 text-[calc(12px*var(--ms))] font-medium leading-snug text-amber-700">
+            <p className="mt-1 text-[calc(12px*var(--ms))] font-medium leading-[calc(1.4*var(--lh,1))] text-amber-700">
               {item.highlightNote}
             </p>
           )}
@@ -721,7 +731,7 @@ function Riga({
               chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
               piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
           {fuori ? (
-            <p className="riga-minuta mt-1 font-medium leading-snug text-gray-500">
+            <p className="riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
               {perche.contiene.length > 0 &&
                 fill(d.menuPublic.excludedContains, {
                   list: perche.contiene.map((c) => allergenName(c, locale).toLowerCase()).join(', '),
@@ -734,7 +744,7 @@ function Riga({
             </p>
           ) : (
             dish.allergens.length > 0 && (
-              <p className="riga-minuta mt-1 leading-snug text-gray-400">
+              <p className="riga-minuta mt-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
                 {d.preview.contains}{' '}
                 {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
               </p>

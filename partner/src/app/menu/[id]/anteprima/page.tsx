@@ -109,6 +109,7 @@ export default function FullPreviewPage() {
             sectionStyle={locale?.sectionStyle ?? 'underline'}
             headingFont={locale?.headingFont ?? 'modern'}
             textScale={locale?.textScale ?? 'normal'}
+            lineHeight={locale?.lineHeight ?? 'normal'}
             needs={needs}
             onToggleNeed={toggleNeed}
           />

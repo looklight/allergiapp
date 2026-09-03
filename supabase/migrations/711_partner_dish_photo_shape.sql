@@ -1,4 +1,4 @@
--- Migration 711: le foto dei piatti, tonde o squadrate
+-- Migration 711: le foto dei piatti (tonde o squadrate) e l'interlinea
 --
 -- STATO: DA APPLICARE a mano via SQL editor, dopo la 710 (il
 -- tracking locale è fermo alla 045: questa, come tutte le 046+,
@@ -30,6 +30,12 @@
 -- lo scatto pubblicato, il confronto "cosa non è ancora in sala" e
 -- "rimetti com'è in sala" se ne occupano da soli. Nel portale la
 -- stessa voce va in VenueAppearance (partner/src/lib/venues.ts).
+--
+-- ------------------------------------------------------------
+-- E L'INTERLINEA, che viaggia con la stessa migration perché non
+-- era ancora stata applicata quando è stata chiesta. Sono due
+-- manopole indipendenti e nessuna delle due sa dell'altra: stanno
+-- insieme solo perché si applicano insieme.
 BEGIN;
 
 -- UN CODICE, non un numero di pixel: 'square' (quello di oggi) e
@@ -44,8 +50,29 @@ alter table partner_venues
 comment on column partner_venues.dish_photo_shape is
   'Come si vedono le miniature dei piatti nel menù al tavolo: square o round. Vale solo per la lista; la foto grande del popup resta rettangolare.';
 
+-- L'INTERLINEA. Sta accanto alla grandezza dei testi ed è l'altra
+-- metà della stessa domanda: quanto è fitta la carta. La
+-- grandezza cambia quanto sono grandi le lettere, l'interlinea
+-- quanta aria c'è fra una riga e l'altra — e su un menù di una
+-- pagina sola la seconda si nota più della prima.
+--
+-- Tre valori decisi da noi come per il resto (Tema 25): un
+-- cursore libero finirebbe schiacciato per far stare la carta in
+-- una schermata, e le prime righe a impastarsi sarebbero quelle
+-- lunghe — le descrizioni e gli allergeni.
+--
+-- ⚠️ QUANDO SI IMPLEMENTA vale il pavimento di sempre: la riga
+-- degli allergeni non si stringe sotto il leggibile nemmeno con
+-- 'tight'. È la stessa promessa che regge text_scale.
+alter table partner_venues
+  add column line_height text not null default 'normal'
+  check (line_height in ('tight', 'normal', 'airy'));
+
+comment on column partner_venues.line_height is
+  'Quanta aria fra le righe del menù al tavolo: tight, normal, airy. Elenco chiuso come text_scale. La riga degli allergeni ha un pavimento che tight non sfonda.';
+
 -- ------------------------------------------------------------
--- 1. L'ASPETTO, con una voce in più
+-- 1. L'ASPETTO, con due voci in più
 -- Le chiavi restano PIATTE come nello scatto (v. 710): questa si
 -- chiama 'dishPhotoShape' e sta accanto a 'showPhotos', che è il
 -- campo con cui lavora in coppia.
@@ -63,7 +90,8 @@ as $$
            'showPhotos', v.show_dish_photos,
            'dishPhotoShape', v.dish_photo_shape,
            'showDescriptions', v.show_dish_descriptions,
-           'textScale', v.text_scale
+           'textScale', v.text_scale,
+           'lineHeight', v.line_height
          )
     from partner_venues v
    where v.id = p_venue_id;
@@ -91,7 +119,8 @@ as $$
            'showPhotos', true,
            'dishPhotoShape', 'square',
            'showDescriptions', false,
-           'textScale', 'normal'
+           'textScale', 'normal',
+           'lineHeight', 'normal'
          );
 $$;
 
@@ -136,7 +165,8 @@ begin
          show_dish_photos = (in_sala->>'showPhotos')::boolean,
          dish_photo_shape = in_sala->>'dishPhotoShape',
          show_dish_descriptions = (in_sala->>'showDescriptions')::boolean,
-         text_scale = in_sala->>'textScale'
+         text_scale = in_sala->>'textScale',
+         line_height = in_sala->>'lineHeight'
    where id = p_venue_id
      and owner_user_id = auth.uid();
 

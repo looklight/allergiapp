@@ -202,6 +202,19 @@ body {
 .riga-minuta {
   font-size: max(11px, calc(11px * var(--ms, 1)));
 }
+
+/* L'INTERLINEA (migration 711), stessa ricetta della grandezza: un
+   moltiplicatore solo sulla radice (`--lh`, v. MenuPreview) e ogni interlinea
+   del contenuto è calc(N * var(--lh, 1)). Le scrivono le classi Tailwind
+   `leading-[…]` sui singoli testi, come le misure.
+
+   ⚠️ Anche qui c'è il PAVIMENTO, e sulle stesse righe: allergeni, motivo
+   dell'esclusione e condizioni al tavolo usano max(), quindi 'Stretta'
+   avvicina la carta ma non impasta la riga che una persona con un'allergia
+   deve leggere in una sala poco illuminata.
+
+   NON scalano i comandi — pastiglie, filtro, linguette: sono bersagli da
+   toccare, e un dito non si stringe con la carta. */
 .menu-font-classic .riga-minuta,
 .menu-font-light .riga-minuta {
   /* il pavimento qui è il punto in più della compensazione, non gli 11px */

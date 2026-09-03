@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
-import { DISH_PHOTO_SHAPE } from './features';
+import { APPEARANCE_711 } from './features';
 import { deleteCover, deleteLogo } from './photos';
 import { write } from './saveState';
 
@@ -77,6 +77,34 @@ export const TEXT_SCALE_FACTORS: Record<TextScale, number> = {
   roomy: 1.12,
 };
 
+// QUANTA ARIA FRA LE RIGHE (migration 711). È l'altra metà della stessa
+// domanda della grandezza — quanto è fitta la carta — e per questo nel
+// portale sta sulla stessa riga: la grandezza cambia quanto sono grandi le
+// lettere, l'interlinea quanto respirano fra loro, e su un menù di una
+// pagina sola la seconda si nota più della prima.
+//
+// Tre valori e non un cursore, per la stessa ragione dei caratteri: un
+// cursore finirebbe schiacciato per far stare la carta in una schermata, e le
+// prime righe a impastarsi sarebbero le più lunghe — descrizioni e allergeni.
+export const LINE_HEIGHTS = ['tight', 'normal', 'airy'] as const;
+export type LineHeight = (typeof LINE_HEIGHTS)[number];
+
+// Un moltiplicatore solo, come per la grandezza: `--lh` sulla radice, e ogni
+// interlinea del contenuto è calc(N * var(--lh, 1)).
+//
+// ⚠️ Copia gemella sul sito (landing/lib/render-menu.js), come i fattori
+// della grandezza. E come lì, la riga degli allergeni ha un pavimento: si
+// stringe fin dove resta leggibile e non oltre.
+//
+// Perché non più larghi: sotto 0.88 le descrizioni su due righe cominciano a
+// toccarsi, sopra 1.2 un piatto e il successivo non sembrano più due voci
+// della stessa lista.
+export const LINE_HEIGHT_FACTORS: Record<LineHeight, number> = {
+  tight: 0.9,
+  normal: 1,
+  airy: 1.15,
+};
+
 // L'ASPETTO DEL MENÙ: i campi che decidono come si vede, e che non dicono
 // niente su cosa c'è dentro un piatto. È lo stesso elenco di
 // venue_appearance() nel database (migration 710), e i due vanno tenuti
@@ -98,6 +126,7 @@ export type VenueAppearance = Pick<
   | 'dishPhotoShape'
   | 'showDishDescriptions'
   | 'textScale'
+  | 'lineHeight'
 >;
 
 export interface MenuLink {
@@ -178,6 +207,10 @@ export interface Venue extends VenueDraft {
   // di sempre. ⚠️ La riga degli allergeni ha un pavimento che 'compact' non
   // sfonda: sta nel CSS, di qua e sul sito (v. .menu-body in menu-page.css).
   textScale: TextScale;
+  // Quanta aria fra le righe (migration 711). 'normal' è quello di sempre, e
+  // sta accanto a textScale perché è la stessa domanda vista dall'altra
+  // parte. ⚠️ Anche qui la riga degli allergeni ha il suo pavimento.
+  lineHeight: LineHeight;
   // L'immagine dietro l'intestazione del menù, al posto del colore pieno.
   // Vuota = resta il colore. Sotto ci va SEMPRE una velatura scura, o il nome
   // del locale sopra una foto chiara sparisce (DIGITAL_MENU, Tema 25).
@@ -272,11 +305,11 @@ async function loadVenues(): Promise<Venue[]> {
     .from('partner_venues')
     .select(
       'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, ' +
-        // ⚠️ La colonna si NOMINA solo quando esiste davvero (v.
-        // DISH_PHOTO_SHAPE): PostgREST, davanti a una colonna che non c'è,
+        // ⚠️ Le colonne della 711 si NOMINANO solo quando esistono davvero
+        // (v. APPEARANCE_711): PostgREST, davanti a una colonna che non c'è,
         // rifiuta tutta l'interrogazione — nessun locale, non un locale con
         // un campo in meno.
-        (DISH_PHOTO_SHAPE ? 'dish_photo_shape, ' : '') +
+        (APPEARANCE_711 ? 'dish_photo_shape, line_height, ' : '') +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
@@ -299,6 +332,7 @@ async function loadVenues(): Promise<Venue[]> {
       sectionStyle: (row.section_style ?? 'underline') as SectionStyle,
       headingFont: (row.heading_font ?? 'modern') as HeadingFont,
       textScale: (row.text_scale ?? 'normal') as TextScale,
+      lineHeight: (row.line_height ?? 'normal') as LineHeight,
       coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
@@ -472,6 +506,7 @@ export async function revertAppearance(venueId: string): Promise<VenueAppearance
     headingFont: (scatto.headingFont ?? 'modern') as HeadingFont,
     sectionStyle: (scatto.sectionStyle ?? 'underline') as SectionStyle,
     textScale: (scatto.textScale ?? 'normal') as TextScale,
+    lineHeight: (scatto.lineHeight ?? 'normal') as LineHeight,
     showDishPhotos: scatto.showPhotos !== false,
     dishPhotoShape: (scatto.dishPhotoShape ?? 'square') as DishPhotoShape,
     showDishDescriptions: scatto.showDescriptions === true,
@@ -520,6 +555,7 @@ export function useVenues() {
       sectionStyle: 'underline',
       headingFont: 'modern',
       textScale: 'normal',
+      lineHeight: 'normal',
       coverUrl: '',
       cardId: null,
       dishIds: [],
@@ -552,6 +588,7 @@ export function useVenues() {
             sectionStyle: s.sectionStyle,
             headingFont: s.headingFont,
             textScale: s.textScale,
+            lineHeight: s.lineHeight,
             coverUrl: s.coverUrl,
           }
         : s
@@ -584,9 +621,10 @@ export function useVenues() {
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
     if (next.accent !== undefined) riga.accent = next.accent;
     if (next.showDishPhotos !== undefined) riga.show_dish_photos = next.showDishPhotos;
-    if (DISH_PHOTO_SHAPE && next.dishPhotoShape !== undefined) {
+    if (APPEARANCE_711 && next.dishPhotoShape !== undefined) {
       riga.dish_photo_shape = next.dishPhotoShape;
     }
+    if (APPEARANCE_711 && next.lineHeight !== undefined) riga.line_height = next.lineHeight;
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     if (next.headingFont !== undefined) riga.heading_font = next.headingFont;
@@ -682,7 +720,9 @@ export function useVenues() {
           // aveva.
           slug: venue.slug || null,
           show_dish_photos: venue.showDishPhotos,
-          ...(DISH_PHOTO_SHAPE ? { dish_photo_shape: venue.dishPhotoShape } : {}),
+          ...(APPEARANCE_711
+            ? { dish_photo_shape: venue.dishPhotoShape, line_height: venue.lineHeight }
+            : {}),
           show_dish_descriptions: venue.showDishDescriptions,
           section_style: venue.sectionStyle,
           heading_font: venue.headingFont,

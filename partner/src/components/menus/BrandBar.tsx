@@ -21,14 +21,17 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
-import { DISH_PHOTO_SHAPE } from '@/lib/features';
+import { APPEARANCE_711 } from '@/lib/features';
 import { CURRENCIES } from '@/lib/menus';
 import {
   HEADING_FONTS,
+  LINE_HEIGHTS,
   SECTION_STYLES,
+  LINE_HEIGHT_FACTORS,
   TEXT_SCALES,
   type DishPhotoShape,
   type HeadingFont,
+  type LineHeight,
   type SectionStyle,
   type TextScale,
 } from '@/lib/venues';
@@ -43,6 +46,7 @@ export default function BrandBar({
   sectionStyle,
   headingFont,
   textScale,
+  lineHeight,
   coverUrl,
   // Se l'aspetto di adesso è diverso da quello in sala, e c'è una sala a cui
   // tornare: fuori di qui è appearanceChanged di menu_publish_state (710).
@@ -55,6 +59,7 @@ export default function BrandBar({
   onSectionStyle,
   onHeadingFont,
   onTextScale,
+  onLineHeight,
   onCover,
 }: {
   accent: string;
@@ -71,6 +76,7 @@ export default function BrandBar({
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
   textScale: TextScale;
+  lineHeight: LineHeight;
   coverUrl: string;
   changed: boolean;
   onRevert: () => void;
@@ -84,6 +90,7 @@ export default function BrandBar({
   onSectionStyle: (value: SectionStyle) => void;
   onHeadingFont: (value: HeadingFont) => void;
   onTextScale: (value: TextScale) => void;
+  onLineHeight: (value: LineHeight) => void;
   onCover: (value: string) => void;
 }) {
   const { d, locale } = useI18n();
@@ -99,6 +106,9 @@ export default function BrandBar({
     // 'Normale' non si scrive: sarebbe una parola in più su ogni riga chiusa
     // per dire che non è stato cambiato niente.
     textScale === 'normal' ? null : d.menuEditor.textScales[textScale],
+    lineHeight === 'normal' || !APPEARANCE_711
+      ? null
+      : d.menuEditor.lineHeights[lineHeight],
     !showPhotos
       ? d.menuEditor.summaryPhotosOff
       : photoShape === 'round'
@@ -264,7 +274,15 @@ export default function BrandBar({
           Ogni scelta si scrive con la propria grandezza, come i pacchetti si
           scrivono col proprio carattere: si sceglie guardando, non leggendo
           un nome. */}
-      <div className="mt-4 border-t border-gray-100 pt-3">
+      <div className="mt-4 flex flex-wrap gap-x-8 gap-y-4 border-t border-gray-100 pt-3">
+        {/* GRANDEZZA E INTERLINEA SULLA STESSA RIGA: sono la stessa domanda
+            vista da due parti — quanto è fitta la carta. La grandezza cambia
+            quanto sono grandi le lettere, l'interlinea quanto respirano fra
+            loro, e su un menù di una pagina sola la seconda si nota più della
+            prima. Separarle in due blocchi sovrapposti avrebbe fatto cercare
+            in due punti la stessa decisione. Su schermo stretto vanno a capo
+            da sé. */}
+        <div>
         <p className="text-xs text-gray-500">{d.menuEditor.textScale}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {TEXT_SCALES.map((grandezza) => {
@@ -289,10 +307,49 @@ export default function BrandBar({
             );
           })}
         </div>
+        </div>
+
+        {/* L'interlinea aspetta la sua colonna (v. APPEARANCE_711). Ogni
+            scelta si scrive con la propria interlinea su due righe: una
+            parola sola non mostrerebbe niente, ed è l'unica cosa che
+            l'interlinea fa. */}
+        {APPEARANCE_711 && (
+          <div>
+            <p className="text-xs text-gray-500">{d.menuEditor.lineHeight}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {LINE_HEIGHTS.map((aria) => {
+                const scelto = lineHeight === aria;
+                return (
+                  <button
+                    key={aria}
+                    onClick={() => onLineHeight(aria)}
+                    aria-pressed={scelto}
+                    className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                      scelto
+                        ? 'border-gray-900 ring-1 ring-gray-900'
+                        : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <span
+                      className="block max-w-[86px] text-left"
+                      style={{ lineHeight: LINE_HEIGHT_FACTORS[aria] * 1.35 }}
+                    >
+                      {d.menuEditor.lineHeights[aria]}
+                      <br />
+                      {d.menuEditor.lineHeightSample}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Il pavimento, detto a chi sceglie: senza questa riga "Compatta"
             sembra rimpicciolire tutto, allergeni compresi, e chi ci tiene non
-            la toccherebbe mai. */}
-        <p className="mt-2 text-xs leading-relaxed text-gray-400">{d.menuEditor.textScaleFloor}</p>
+            la toccherebbe mai. Vale per tutt'e due le manopole di questa
+            riga. */}
+        <p className="w-full text-xs leading-relaxed text-gray-400">{d.menuEditor.textScaleFloor}</p>
       </div>
 
       <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />
@@ -326,7 +383,7 @@ export default function BrandBar({
           {/* Le tonde compaiono col loro interruttore: la colonna che le
               tiene (migration 711) non esiste ancora, e un bottone che non
               salva niente è peggio di un bottone che non c'è. */}
-          {DISH_PHOTO_SHAPE && (
+          {APPEARANCE_711 && (
             <SceltaFoto
               scelto={showPhotos && photoShape === 'round'}
               label={d.menuEditor.photoShapes.round}

@@ -230,6 +230,7 @@ export default function MenuEditorPage() {
       sectionStyle={locale?.sectionStyle ?? 'underline'}
       headingFont={locale?.headingFont ?? 'modern'}
       textScale={locale?.textScale ?? 'normal'}
+      lineHeight={locale?.lineHeight ?? 'normal'}
       needs={needs}
       onToggleNeed={toggleNeed}
     />
@@ -374,6 +375,7 @@ export default function MenuEditorPage() {
           sectionStyle={locale?.sectionStyle ?? 'underline'}
           headingFont={locale?.headingFont ?? 'modern'}
           textScale={locale?.textScale ?? 'normal'}
+          lineHeight={locale?.lineHeight ?? 'normal'}
           coverUrl={locale?.coverUrl ?? ''}
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           onRevert={() => setRevertingBrand(true)}
@@ -389,6 +391,7 @@ export default function MenuEditorPage() {
           onSectionStyle={(sectionStyle) => locale && setIdentity(locale.id, { sectionStyle })}
           onHeadingFont={(headingFont) => locale && setIdentity(locale.id, { headingFont })}
           onTextScale={(textScale) => locale && setIdentity(locale.id, { textScale })}
+          onLineHeight={(lineHeight) => locale && setIdentity(locale.id, { lineHeight })}
           onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
         />
       </div>
