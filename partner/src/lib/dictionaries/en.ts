@@ -314,6 +314,13 @@ const en: typeof it = {
     fullPreviewNotice: 'Private preview — this is not the menu’s public address yet.',
     fullPreviewBack: 'Back to the editor',
     previewEmpty: 'Add dishes to see the menu.',
+    previewSampleCaption: 'Example: this is how your dishes will look.',
+    previewSampleSection: 'Starters',
+    previewSampleDishes: [
+      { name: 'Spaghetti carbonara', description: 'Guanciale, egg yolk, pecorino romano and black pepper.' },
+      { name: 'Seafood salad', description: 'Octopus, squid and prawns, celery and lemon.' },
+      { name: 'Tiramisu', description: 'Ladyfingers, mascarpone and coffee.' },
+    ],
     brandTitle: 'Menu appearance',
     venueNameLabel: 'Venue name',
     venueNamePlaceholder: 'Venue name (your guests read it)',

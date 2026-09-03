@@ -374,7 +374,29 @@ const it = {
     liveChoose: 'Scegli l’indirizzo',
     fullPreviewNotice: 'Anteprima privata — non è ancora l’indirizzo pubblico del menù.',
     fullPreviewBack: 'Torna all’editor',
+    // IL MENÙ DI ESEMPIO. Finché il menù è vuoto l'anteprima mostrava una
+    // riga di scuse, e l'aspetto si sceglieva alla cieca: colore, carattere,
+    // impaginazione e interlinea si giudicano su dei piatti, non su uno
+    // schermo bianco. Adesso ci sono tre piatti finti, che spariscono al
+    // primo piatto vero.
+    //
+    // Dev'essere INEQUIVOCABILMENTE finto, o qualcuno crede di avere già
+    // qualcosa dentro: lo dice la riga sopra il telefono, e questi nomi sono
+    // gli stessi che il portale usa già come esempio altrove.
     previewEmpty: 'Aggiungi i piatti per vedere il menù.',
+    previewSampleCaption: 'Esempio: così si vedranno i tuoi piatti.',
+    previewSampleSection: 'Antipasti',
+    previewSampleDishes: [
+      {
+        name: 'Spaghetti alla carbonara',
+        description: 'Guanciale, tuorlo, pecorino romano e pepe nero.',
+      },
+      {
+        name: 'Insalata di mare',
+        description: 'Polpo, calamari e gamberi, sedano e limone.',
+      },
+      { name: 'Tiramisù', description: 'Savoiardi, mascarpone e caffè.' },
+    ],
     // "Aspetto" e non più "Colore": la scatola tiene anche i due
     // interruttori (foto, descrizioni). E niente "linguette" nelle
     // spiegazioni finché i menù multipli sono spenti (MULTI_MENU): erano

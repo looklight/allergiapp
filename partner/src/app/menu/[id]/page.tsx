@@ -684,8 +684,14 @@ export default function MenuEditorPage() {
           <p className="mb-0.5 text-center text-sm font-medium text-gray-900">
             {d.menuEditor.previewTitle}
           </p>
+          {/* ⚠️ Con il menù ancora vuoto l'anteprima mostra tre piatti FINTI
+              (v. MenuPreview), e questa riga è l'unico posto che lo dice:
+              `vuoto` è la stessa identica condizione che lì dentro accende
+              l'esempio, e le due non devono divergere — o si vedrebbero
+              piatti di esempio con scritto sopra "come lo vedono i tuoi
+              clienti". */}
           <p className="mx-auto mb-2 max-w-[340px] text-center text-xs text-gray-500">
-            {d.menuEditor.previewCaption}
+            {vuoto ? d.menuEditor.previewSampleCaption : d.menuEditor.previewCaption}
           </p>
           <PhoneFrame>{anteprima}</PhoneFrame>
           {/* ATTACCATO AL TELEFONO, perché parla del telefono: è lo stesso

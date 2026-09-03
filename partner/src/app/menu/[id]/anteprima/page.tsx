@@ -75,7 +75,14 @@ export default function FullPreviewPage() {
           altrimenti prima o poi qualcuno lo copia e lo manda a un cliente.
           Sulla pagina pubblica vera non ci sarà. */}
       <div className="flex items-center justify-between gap-3 bg-gray-900 px-4 py-1.5 text-[11px] text-white">
-        <span>{d.menuEditor.fullPreviewNotice}</span>
+        {/* Col menù ancora vuoto qui sotto ci sono tre piatti finti
+            (v. MenuPreview): la fascia è l'unico posto che può dirlo, e la
+            condizione è la stessa che accende l'esempio. */}
+        <span>
+          {menu.sections.length === 0 && menu.loose.length === 0
+            ? `${d.menuEditor.previewSampleCaption} ${d.menuEditor.fullPreviewNotice}`
+            : d.menuEditor.fullPreviewNotice}
+        </span>
         <Link href={`/menu/${menu.id}`} className="shrink-0 underline underline-offset-2">
           {d.menuEditor.fullPreviewBack}
         </Link>

@@ -61,6 +61,28 @@ export interface ViewerNeeds {
 
 export const NO_NEEDS: ViewerNeeds = { allergens: [], diets: [] };
 
+// IL MENÙ DI ESEMPIO, per quando il menù è ancora vuoto.
+//
+// L'aspetto — colore, carattere, impaginazione, interlinea, stile dei titoli
+// — si giudica su dei piatti, non su uno schermo bianco: finché non c'è
+// niente dentro, il ristoratore sceglieva alla cieca e doveva scrivere
+// mezza carta prima di vedere cosa aveva scelto.
+//
+// I piatti finti passano per LA STESSA RESA di quelli veri (stessa <Riga>,
+// stessa sezione, stesso filetto): se così non fosse mostrerebbero un aspetto
+// che non è quello che si sta scegliendo, cioè l'unica cosa che non devono
+// fare. Spariscono al primo piatto vero.
+//
+// Gli allergeni sono quelli dei nomi corrispondenti, come già fa la finestra
+// del locale nuovo (v. SAMPLE_ALLERGENS in NewVenueDialog): servono a far
+// vedere com'è fatta la riga minuta sotto al piatto, che è la ragione per cui
+// questo menù esiste.
+const ESEMPIO: { allergens: string[]; diets: string[]; priceCents: number }[] = [
+  { allergens: ['gluten', 'eggs'], diets: [], priceCents: 1200 },
+  { allergens: ['crustaceans', 'mollusks'], diets: ['gluten_free'], priceCents: 1600 },
+  { allergens: ['milk', 'eggs', 'gluten'], diets: ['vegetarian'], priceCents: 600 },
+];
+
 // Perché una riga è stata messa in fondo. Vuoto = va bene per chi guarda.
 interface Esclusione {
   contiene: string[]; // allergeni scelti che il piatto dichiara di contenere
@@ -239,12 +261,56 @@ export default function MenuPreview({
       return { ...gruppo, items: righe };
     });
 
+  // MENÙ VUOTO: al suo posto l'esempio. Si costruisce qui, dopo `gruppi`,
+  // perché è esattamente la stessa forma — una sezione con dentro delle
+  // righe — e da qui in giù nessuno sa più se i piatti sono veri.
+  // ⚠️ L'esempio compare solo quando NON C'È PROPRIO NIENTE, e la condizione è
+  // scritta come quella dell'editor (`vuoto` in menu/[id]/page.tsx): è la
+  // stessa che decide la riga sopra il telefono, e se le due divergessero si
+  // vedrebbero piatti finti con scritto sopra "come lo vedono i tuoi
+  // clienti". Un menù che ha già una sezione, ma vuota, non è "niente": lì
+  // resta la riga di prima, perché il ristoratore ha cominciato e la sezione
+  // che ha creato non deve sparire sotto tre piatti che non sono suoi.
+  const vuoto = menu.sections.length === 0 && menu.loose.length === 0;
+  const piattiEsempio: Dish[] = d.menuEditor.previewSampleDishes.map((p, i) => ({
+    id: `esempio-${i}`,
+    name: p.name,
+    description: p.description,
+    category: '',
+    photoUrl: '',
+    photoThumbUrl: '',
+    allergens: ESEMPIO[i].allergens,
+    dietTags: ESEMPIO[i].diets,
+    translations: [],
+  }));
+  const gruppiResi: MenuSection[] = vuoto
+    ? [
+        {
+          id: 'esempio',
+          kind: 'section',
+          name: d.menuEditor.previewSampleSection,
+          description: '',
+          items: piattiEsempio.map((piatto, i) => ({
+            id: `esempio-riga-${i}`,
+            dishId: piatto.id,
+            priceCents: ESEMPIO[i].priceCents,
+            highlighted: false,
+            highlightNote: '',
+          })),
+        },
+      ]
+    : gruppi;
+  // Il piatto di una riga, vero o finto che sia: da qui in giù la differenza
+  // non esiste più.
+  const piattoDiRiga = (id: string) =>
+    dishById(id) ?? piattiEsempio.find((piatto) => piatto.id === id);
+
   // La carta stesa in una fila sola, nell'ordine in cui si legge: da qui le
   // freccine del dettaglio sanno qual è il piatto prima e quello dopo.
-  const inFila = gruppi
+  const inFila = gruppiResi
     .filter((g) => g.kind === 'section')
     .flatMap((g) => g.items)
-    .map((item) => ({ item, dish: dishById(item.dishId) }))
+    .map((item) => ({ item, dish: piattoDiRiga(item.dishId) }))
     .filter((x): x is { item: MenuItem; dish: Dish } => x.dish !== undefined);
   const dove = detail === null ? -1 : inFila.findIndex((x) => x.item.id === detail.item.id);
   const primaDi = dove > 0 ? inFila[dove - 1] : null;
@@ -434,10 +500,10 @@ export default function MenuPreview({
       )}
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6 pt-3">
-        {gruppi.length === 0 ? (
+        {gruppi.length === 0 && !vuoto ? (
           <p className="pt-10 text-center text-sm text-gray-400">{d.menuEditor.previewEmpty}</p>
-        ) : (
-          gruppi.map((gruppo) => {
+        ) : null}
+        {gruppiResi.map((gruppo) => {
             // Un blocco di testo non è una sezione con dentro niente: non ha
             // intestazione col colore del locale (quella annuncia dei piatti
             // che qui non arrivano mai) e non partecipa al filtro — non c'è
@@ -489,7 +555,7 @@ export default function MenuPreview({
                     <Riga
                       key={item.id}
                       item={item}
-                      dish={dishById(item.dishId)}
+                      dish={piattoDiRiga(item.dishId)}
                       conFoto={conFoto}
                       formaFoto={photoShape}
                       conDescrizioni={showDescriptions}
@@ -503,13 +569,12 @@ export default function MenuPreview({
                 </ul>
               </section>
             );
-          })
-        )}
+        })}
 
         {/* Il fondo del menù è del RISTORATORE: coperto, servizio,
             pagamenti. Su un menù vuoto non compare — sarebbe il coperto di
             una carta che non c'è. */}
-        {gruppi.length > 0 && tableConditions.trim() !== '' && (
+        {gruppiResi.length > 0 && tableConditions.trim() !== '' && (
           <p className="riga-minuta mt-2 whitespace-pre-line border-t border-gray-100 pt-3 leading-[max(1.4,calc(1.5*var(--lh,1)))] text-gray-500">
             {tableConditions}
           </p>
