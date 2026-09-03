@@ -1334,10 +1334,17 @@ scrivendola:
   ad accendere la colonna delle miniature su tutte le righe (l'allineamento del Tema 28): il resto
   della carta diventava una fila di quadrati grigi vuoti, che al ristoratore vero è giusto e su una
   pagina di vendita si legge come una pagina rotta. Le foto restano nominate sotto le manopole.
-- **Tre manopole, non cinque.** Colore, carattere dei titoli, grandezza dei testi. Interlinea e
-  separatore erano nell'elenco di sopra perché sono già CSS, ma **aspettano la 711**: offrirle qui
-  vorrebbe dire promettere una scelta che il ristoratore, registrandosi, non troverebbe. Si
-  accendono insieme ad `APPEARANCE_711`.
+- **Quattro manopole, non sei.** Colore, carattere dei titoli, grandezza dei testi e **stile dei
+  titoli di sezione** (aggiunto il 04/09: nel menù è già una classe sul titolo — `is-underline`,
+  `is-banner`, `is-plain` — quindi la pagina di fuori riscrive la stessa che scriverebbe il
+  server). Interlinea e separatore erano nell'elenco di sopra perché sono già CSS, ma **aspettano
+  la 711**: offrirle qui vorrebbe dire promettere una scelta che il ristoratore, registrandosi, non
+  troverebbe. Si accendono insieme ad `APPEARANCE_711`.
+- **La cornice è un telefono vero** (04/09). Il formato 19,5:9 NON si piega: dove l'altezza non
+  basta, a stringersi è la larghezza. E la carta dentro è disegnata a **393px e poi rimpicciolita**
+  con `transform: scale()` invece che compressa in uno schermo più stretto — testi, margini e
+  pastiglie restano fra loro come staranno al tavolo. È la fotografia di un telefono, non un
+  telefono deformato.
 - **Il marchio in coda ha cambiato parole, e sui menù veri.** Diceva «Menù con filtro allergeni di
   AllergiApp», che è esattamente quello che il Tema 18 dice di non fare: sembrava che il menù fosse
   nostro. Adesso dice **«Realizzato con AllergiApp»** / «Made with AllergiApp» — quello che è
