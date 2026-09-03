@@ -75,10 +75,13 @@ Quattro cose da non disfare:
   passarle dietro. Chi la rimette sticky si ricordi che sotto ci passano le
   fasce colorate delle sezioni.
 
-**La grandezza dei testi** non è una classe ma un numero: `--ms` nello style
-di `<body>`, e ogni misura del contenuto in `menu-page.css` è
-`calc(Npx * var(--ms, 1))`. Così una manopola sola muove tutta la carta e non
-c'è un secondo elenco di misure da tenere allineato.
+**La grandezza dei testi e l'interlinea** non sono classi ma due numeri:
+`--ms` e `--lh` nello style di `<body>`, e in `menu-page.css` ogni misura del
+contenuto è `calc(Npx * var(--ms, 1))` e ogni interlinea
+`calc(N * var(--lh, 1))`. Così due manopole muovono tutta la carta e non c'è
+un secondo elenco da tenere allineato. Sono indipendenti: la grandezza cambia
+quanto sono grandi le lettere, l'interlinea quanto respirano fra loro — e su
+un menù di una pagina sola la seconda si nota più della prima.
 
 ⚠️ **La riga degli allergeni ha un pavimento** (11px dal 2026-09-03, era 10):
 usa `max()`, quindi la carta Compatta non la rimpicciolisce — cresce con Ampia
@@ -89,6 +92,7 @@ tre grandezze una accanto all'altra:
 
 ```bash
 node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js'),s=require('./lib/menu-sample.js'),fs=require('fs');for(const g of ['compact','normal','roomy'])fs.writeFileSync('_preview-scala-'+g+'.html',renderMenuPage({...s,textScale:g},'it',createT('it')))"
+node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require('./lib/i18n.js'),s=require('./lib/menu-sample.js'),fs=require('fs');for(const g of ['tight','normal','airy'])fs.writeFileSync('_preview-interlinea-'+g+'.html',renderMenuPage({...s,lineHeight:g},'it',createT('it')))"
 ```
 
 ## 🚀 Deployment su Vercel

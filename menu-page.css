@@ -153,6 +153,18 @@
      poco illuminata, mentre qualcuno le chiede cosa ordina. Chi toglie il
      max() si tiene la responsabilità di quella riga. */
   --ms: 1;
+  /* L'INTERLINEA (migration 711), stessa ricetta: un moltiplicatore solo,
+     scritto sulla radice dalla pagina, e ogni interlinea del contenuto è
+     calc(N * var(--lh, 1)). Sono due manopole indipendenti — la grandezza
+     cambia quanto sono grandi le lettere, l'interlinea quanto respirano fra
+     loro — e su un menù di una pagina sola la seconda si nota più della
+     prima.
+
+     ⚠️ Stesso pavimento e sulle stesse righe: allergeni, motivo
+     dell'esclusione e condizioni al tavolo usano max(), quindi 'Stretta'
+     avvicina la carta ma non impasta la riga che si legge con un'allergia.
+     E come sopra, i comandi non si toccano. */
+  --lh: 1;
 }
 
 .menu-header,
@@ -206,14 +218,14 @@
   margin: 0;
   font-size: calc(22px * var(--ms, 1));
   font-weight: 600;
-  line-height: 1.25;
+  line-height: calc(1.25 * var(--lh, 1));
 }
 
 
 .menu-intro {
   margin: 10px 0 0;
   font-size: calc(14px * var(--ms, 1));
-  line-height: 1.4;
+  line-height: calc(1.4 * var(--lh, 1));
   color: rgba(255, 255, 255, 0.85);
   white-space: pre-line;
 }
@@ -490,7 +502,7 @@
 .menu-section-desc {
   margin: 0 0 10px;
   font-size: calc(12px * var(--ms, 1));
-  line-height: 1.4;
+  line-height: calc(1.4 * var(--lh, 1));
   color: var(--text-secondary);
   white-space: pre-line;
 }
@@ -504,12 +516,12 @@
   margin: 0;
   font-size: calc(13px * var(--ms, 1));
   font-weight: 600;
-  line-height: 1.35;
+  line-height: calc(1.35 * var(--lh, 1));
 }
 .menu-note-text {
   margin: 2px 0 0;
   font-size: calc(12px * var(--ms, 1));
-  line-height: 1.45;
+  line-height: calc(1.45 * var(--lh, 1));
   color: var(--text-secondary);
   white-space: pre-line;
 }
@@ -593,7 +605,7 @@
   min-width: 0;
   font-size: calc(16px * var(--ms, 1));
   font-weight: 500;
-  line-height: 1.3;
+  line-height: calc(1.3 * var(--lh, 1));
   overflow-wrap: anywhere;
 }
 .menu-price {
@@ -606,7 +618,7 @@
   display: block;
   margin-top: 3px;
   font-size: calc(13px * var(--ms, 1));
-  line-height: 1.4;
+  line-height: calc(1.4 * var(--lh, 1));
   color: var(--text-secondary);
 }
 .menu-item-note {
@@ -622,7 +634,7 @@
   margin-top: 3px;
   /* max() e non calc(): Compatta non scende sotto gli 11px (v. .menu-body) */
   font-size: max(11px, calc(11px * var(--ms, 1)));
-  line-height: 1.35;
+  line-height: max(1.3, calc(1.35 * var(--lh, 1)));
   color: #9e9e9e;
 }
 .menu-item-allergens:empty { display: none; }
@@ -644,7 +656,7 @@
   /* Contenuto del ristoratore, e dice cosa può garantire su una
      contaminazione: cresce con Ampia, non scende con Compatta. */
   font-size: max(11px, calc(11px * var(--ms, 1)));
-  line-height: 1.5;
+  line-height: max(1.4, calc(1.5 * var(--lh, 1)));
   color: var(--text-secondary);
   white-space: pre-line;
 }
@@ -824,12 +836,12 @@
   justify-content: space-between;
   gap: 12px;
 }
-.menu-detail-head h3 { margin: 0; font-size: calc(19px * var(--ms, 1)); line-height: 1.3; }
+.menu-detail-head h3 { margin: 0; font-size: calc(19px * var(--ms, 1)); line-height: calc(1.3 * var(--lh, 1)); }
 .menu-detail-price { font-size: calc(18px * var(--ms, 1)); font-weight: 600; font-variant-numeric: tabular-nums; }
 .menu-detail-desc {
   margin: 6px 0 0;
   font-size: calc(15px * var(--ms, 1));
-  line-height: 1.45;
+  line-height: calc(1.45 * var(--lh, 1));
   color: var(--text-secondary);
 }
 .menu-detail-label {
