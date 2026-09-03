@@ -115,7 +115,41 @@
                     </div>
                 </div>
 
-                <p class="ml-knobs-note" data-i18n="menuLanding.knobsNote">Nel portale c'è anche il resto: il tuo logo, la copertina, le foto dei piatti, lo stile dei titoli.</p>
+                <!-- LE MANOPOLE CHE NON SI TOCCANO QUI. Ci sono tutte nel
+                     portale, e sono gratuite come le altre: si spengono
+                     perché la prova è il menù di una trattoria che non
+                     esiste — non c'è un logo da caricarci. Mostrarle è il
+                     modo migliore di dire cosa si ottiene aprendo un
+                     profilo. Sono SOLO quelle che esistono davvero oggi. -->
+                <div class="ml-locked">
+                    <span class="ml-knob-label" data-i18n="menuLanding.moreLabel">Nel portale c'è anche</span>
+
+                    <div class="ml-locked-row">
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreLogo">Il tuo logo</button>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreCover">La tua copertina</button>
+                    </div>
+
+                    <div class="ml-locked-row">
+                        <span class="ml-locked-name" data-i18n="menuLanding.morePhotos">Foto dei piatti</span>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.morePhotosOn">Con foto</button>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.morePhotosOff">Senza</button>
+                    </div>
+
+                    <div class="ml-locked-row">
+                        <span class="ml-locked-name" data-i18n="menuLanding.moreDesc">Descrizioni</span>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreDescUnder">Sotto il nome</button>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreDescDetail">Solo nel dettaglio</button>
+                    </div>
+
+                    <div class="ml-locked-row">
+                        <span class="ml-locked-name" data-i18n="menuLanding.moreSections">Titoli delle sezioni</span>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreSectionsRule">Filetto</button>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreSectionsBanner">Fascia</button>
+                        <button type="button" class="ml-choice is-locked" disabled data-i18n="menuLanding.moreSectionsPlain">Solo testo</button>
+                    </div>
+
+                    <p class="ml-knobs-note" data-i18n="menuLanding.knobsNote" data-i18n-html>Ci sono tutte, e non si pagano. <a href="https://partner.allergiapp.com">Crea un profilo</a> per costruire il tuo menù e personalizzarlo come vuoi.</p>
+                </div>
             </div>
         </div>
     </section>

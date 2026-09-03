@@ -241,12 +241,56 @@
     color: #fff;
 }
 
-.ml-knobs-note {
-    margin-top: 26px;
-    padding-top: 18px;
+/* ── QUELLO CHE QUI NON SI TOCCA ────────────────────────────────────── */
+/* Le manopole che esistono nel portale ma non nella prova. Si vedono, in
+ * chiaro, e non si premono: servono a far capire cosa si ottiene aprendo un
+ * profilo. NON sono un muro del premium — sono gratuite anche loro — quindi
+ * niente lucchetti né avvisi di pagamento, solo il tono più basso di una
+ * cosa che qui non c'è. */
+
+.ml-locked {
+    margin-top: 28px;
+    padding-top: 22px;
     border-top: 1px solid var(--border);
+}
+
+.ml-locked-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.ml-locked-name {
     font-size: 14px;
     color: var(--text-secondary);
+    margin-right: 2px;
+}
+
+/* Non `opacity` sull'intera riga: sbiadirebbe anche il nome della manopola,
+ * che invece deve restare leggibile — è quello che si sta promettendo. */
+.ml-choice.is-locked {
+    border-style: dashed;
+    border-color: #D8D8D8;
+    background: transparent;
+    color: #9A9A9A;
+    cursor: default;
+}
+
+.ml-choice.is-locked:hover {
+    border-color: #D8D8D8;
+}
+
+.ml-knobs-note {
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.ml-knobs-note a {
+    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+    font-weight: 600;
 }
 
 /* ── COME SI FA ─────────────────────────────────────────────────────── */
