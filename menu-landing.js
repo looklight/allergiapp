@@ -24,7 +24,7 @@
 
   // I valori di partenza sono quelli con cui il server ha già disegnato il
   // menù: il pannello parte d'accordo con quello che si vede.
-  var stato = { accent: '#333333', font: 'modern', scale: '1' };
+  var stato = { accent: '#2E6B4F', font: 'modern', scale: '1' };
 
   var CARATTERI = ['classic', 'bold', 'light'];
 

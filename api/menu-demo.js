@@ -36,7 +36,14 @@ module.exports = function handler(req, res) {
   // le righe restano allineate mentre carica le sue foto — ma su una pagina
   // di vendita si legge come una pagina rotta. Le foto restano scritte fra
   // le cose che ci sono, sotto le manopole.
-  const html = renderMenuPage({ ...sample, slug: null, showPhotos: false }, locale, createT(locale));
+  // IL VERDE È IL COLORE DI PARTENZA, e deve arrivare già dal server: se lo
+  // mettesse la pagina di fuori a telefono caricato, si vedrebbe la carta
+  // grigia diventare verde a ogni apertura.
+  const html = renderMenuPage(
+    { ...sample, slug: null, showPhotos: false, accent: '#2E6B4F' },
+    locale,
+    createT(locale)
+  );
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', 'noindex');
