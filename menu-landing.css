@@ -22,13 +22,32 @@
     border: 0;
 }
 
-/* ── HERO ───────────────────────────────────────────────────────────── */
+/* ── IL BLOCCO DI TESTA ─────────────────────────────────────────────── */
+/* Su schermo largo sono due colonne: il discorso e le manopole a sinistra,
+ * il telefono a destra. Le tre parti sono TRE FRATELLI nel documento, e non
+ * un testo con dentro un telefono, perché su schermo stretto devono
+ * ricomporsi in un ordine diverso — discorso, telefono, manopole — e con le
+ * aree della griglia si dice senza spostare niente nel documento. */
 
 .ml-hero {
-    padding: 130px 0 40px;
-    text-align: center;
+    padding: 118px 0 64px;
     background: linear-gradient(180deg, #F4FAF5 0%, var(--bg) 100%);
 }
+
+.ml-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "pitch preview"
+        "knobs preview";
+    column-gap: 64px;
+    row-gap: 44px;
+    align-items: start;
+}
+
+.ml-pitch { grid-area: pitch; }
+.ml-knobs { grid-area: knobs; }
+.ml-preview { grid-area: preview; }
 
 .ml-eyebrow {
     font-size: 14px;
@@ -43,22 +62,21 @@
 }
 
 .ml-title {
-    font-size: clamp(32px, 5.5vw, 52px);
-    line-height: 1.15;
+    font-size: clamp(31px, 3.9vw, 48px);
+    line-height: 1.14;
     font-weight: 800;
     letter-spacing: -0.02em;
     margin-bottom: 20px;
 }
 
 .ml-subtitle {
-    max-width: 640px;
-    margin: 0 auto;
+    max-width: 30em;
     font-size: 18px;
     color: var(--text-secondary);
 }
 
 .ml-cta-row {
-    margin-top: 32px;
+    margin-top: 30px;
 }
 
 .ml-cta {
@@ -85,48 +103,24 @@
  * dettaglio è una promessa che non sappiamo mantenere. */
 .ml-cta-note {
     margin-top: 14px;
+    max-width: 34em;
     font-size: 14px;
     color: var(--text-secondary);
 }
 
-/* ── LA PROVA ───────────────────────────────────────────────────────── */
+/* ── IL TELEFONO ────────────────────────────────────────────────────── */
 
-.ml-demo {
-    padding: 20px 0 70px;
-}
-
-.ml-demo-title {
-    font-size: clamp(26px, 3.5vw, 34px);
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 12px;
-}
-
-.ml-demo-text {
-    max-width: 620px;
-    margin: 0 auto 40px;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.ml-demo-text strong {
-    color: var(--text);
-}
-
-/* Il telefono e le manopole stanno affiancati, e non è un vezzo grafico:
- * dentro il telefono c'è quello che vede il CLIENTE, fuori quello che decide
- * il RISTORATORE. Mescolarli in un pannello solo confonde i due filtri
- * (DIGITAL_MENU.md, Tema 31). */
-.ml-stage {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 56px;
-    flex-wrap: wrap;
+/* Il telefono resta fermo mentre si scorrono le manopole: la colonna di
+ * sinistra è più alta di lui, e senza questo si finirebbe a cambiare colore
+ * con la cosa da guardare già uscita dallo schermo. La sua area di griglia
+ * copre tutte e due le righe, quindi ha spazio per scorrere dentro. */
+.ml-preview {
+    justify-self: end;
+    position: sticky;
+    top: 96px;
 }
 
 .ml-phone {
-    flex: 0 0 auto;
     width: 375px;
     max-width: 100%;
     padding: 12px;
@@ -137,8 +131,10 @@
 
 .ml-phone-screen {
     position: relative;
-    height: 720px;
-    max-height: 72vh;
+    /* Non un'altezza fissa: su un portatile basso il telefono uscirebbe dallo
+     * schermo e la colonna di sinistra si allungherebbe per stargli dietro. */
+    height: min(720px, calc(100vh - 190px));
+    min-height: 460px;
     border-radius: 32px;
     overflow: hidden;
     background: #fff;
@@ -151,20 +147,31 @@
     border: 0;
 }
 
+/* ── LE MANOPOLE ────────────────────────────────────────────────────── */
+
 .ml-knobs {
-    flex: 1 1 300px;
-    max-width: 380px;
-    text-align: left;
+    max-width: 34em;
+}
+
+.ml-knobs-title {
+    line-height: 1.25;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 10px;
 }
 
 .ml-knobs-intro {
     font-size: 15px;
     color: var(--text-secondary);
-    margin-bottom: 28px;
+    margin-bottom: 26px;
+}
+
+.ml-knobs-intro strong {
+    color: var(--text);
 }
 
 .ml-knob {
-    margin-bottom: 26px;
+    margin-bottom: 24px;
 }
 
 .ml-knob-label {
@@ -206,10 +213,6 @@
     outline-offset: 3px;
 }
 
-.ml-swatch.is-on {
-    border-color: var(--text);
-}
-
 .ml-choices {
     display: flex;
     gap: 8px;
@@ -239,8 +242,8 @@
 }
 
 .ml-knobs-note {
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 26px;
+    padding-top: 18px;
     border-top: 1px solid var(--border);
     font-size: 14px;
     color: var(--text-secondary);
@@ -300,13 +303,17 @@
 }
 
 .ml-filter-inner {
-    max-width: 720px;
+    display: grid;
+    grid-template-columns: minmax(0, 22em) minmax(0, 34em);
+    gap: 24px 64px;
+    justify-content: center;
 }
 
 .ml-filter-title {
+    line-height: 1.15;
     font-size: clamp(26px, 3.5vw, 34px);
     font-weight: 800;
-    margin-bottom: 20px;
+    margin: 0;
 }
 
 .ml-filter-text p {
@@ -333,6 +340,7 @@
 }
 
 .ml-end-title {
+    line-height: 1.15;
     font-size: clamp(26px, 3.5vw, 34px);
     font-weight: 800;
     margin-bottom: 14px;
@@ -372,20 +380,47 @@
  * telefono ha già in mano la cosa che stiamo mostrando, e la cornice si
  * assottiglia per non rubargli larghezza. */
 
-@media (max-width: 900px) {
-    .ml-stage {
-        gap: 32px;
+@media (max-width: 1040px) {
+    /* Una colonna sola, e il telefono IN MEZZO: si guarda quello che si sta
+     * per cambiare, non lo si cambia alla cieca. */
+    .ml-split {
+        /* minmax(0, …) e non 1fr: `1fr` non scende sotto il contenuto più
+         * stretto della colonna, e il telefono è largo 375px fissi — la
+         * colonna restava larga come lui e usciva dallo schermo. */
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "pitch"
+            "preview"
+            "knobs";
+        row-gap: 40px;
+    }
+
+    /* `justify-self: center` da solo lascerebbe la cornice larga quanto il
+     * suo contenuto — 399px — anche in una colonna più stretta, e il telefono
+     * uscirebbe dallo schermo. Occupa la colonna e centra dentro di sé. */
+    .ml-preview {
+        justify-self: stretch;
+        display: flex;
+        justify-content: center;
+        position: static;
     }
 
     .ml-knobs {
-        max-width: 420px;
-        margin: 0 auto;
+        max-width: 460px;
+    }
+
+    .ml-phone-screen {
+        height: 660px;
+    }
+
+    .ml-filter-inner {
+        grid-template-columns: minmax(0, 34em);
     }
 }
 
 @media (max-width: 480px) {
     .ml-hero {
-        padding-top: 110px;
+        padding-top: 104px;
     }
 
     .ml-phone {
@@ -394,8 +429,7 @@
     }
 
     .ml-phone-screen {
-        height: 620px;
-        max-height: 78vh;
+        height: min(620px, 78vh);
         border-radius: 24px;
     }
 }
