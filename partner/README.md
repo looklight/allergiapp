@@ -318,6 +318,71 @@ nome libero, prezzi, riordino trascinando (con le frecce accanto, che restano
 perché il trascinamento HTML5 col dito non funziona e questo portale si usa
 dal telefono). L'anteprima a lato mostra la pagina che legge il cliente.
 
+### L'editor ha TRE AREE (2026-09-03)
+
+```
+← Tutti i menù                              [Pubblica]
+●  ASPETTO         EUR · Moderno · Filetto · foto quadrate  ⌄
+   CONTENUTO       nome del locale, descrizione, sezioni,
+                   piatti, blocchi di testo, condizioni al tavolo
+   ONLINE                                        Attivo ●
+```
+
+L'ordine era già questo; quello che mancava è che **niente diceva che i
+quattro blocchi in mezzo sono una cosa sola**. Tre scelte, tutte per non
+appesantire:
+
+- **"Contenuto" non è una parola nuova**: è la metà di una coppia che il
+  ristoratore incontra già negli avvisi in cima ("Modifiche all'**aspetto**
+  non pubblicate") e che il database distingue dalla migration 710
+  (`contentChanged` / `appearanceChanged`). Le due aree si chiamano come la
+  distinzione che gli spieghiamo già altrove.
+- **Un'etichetta e non una scatola** sul contenuto: le sezioni sono già schede
+  bianche su grigio, e una scheda attorno a delle schede è annidare. E **non
+  comprimibile**: l'aspetto si sceglie una volta e si chiude, il contenuto è
+  il lavoro.
+- **Le tre intestazioni sono la stessa riga** (stessa classe identica nei tre
+  punti: `BrandBar`, `menu/[id]/page.tsx`, `MenuAddress`) e a destra ognuna
+  mette quello che ha da dire — riassunto e freccia, niente, interruttore. La
+  coerenza sta nell'intestazione, **la distinzione nei corpi**: uno si apre e
+  si chiude, uno è una pila di schede, uno è un riquadro che resta **verde
+  quando il menù risponde** e tratteggiato finché è una bozza.
+
+⚠️ **Il nome del ristorante non è più il titolo della pagina** ma la prima
+riga del contenuto: è quello che il cliente legge in cima al menù, quindi è
+contenuto. ⚠️ **Il titolo dell'indirizzo non cambia più** in "Il menù è
+online": lo dicono l'interruttore e il verde del riquadro — ed è per questo
+che il campo dell'indirizzo ha un nome accessibile suo (`addressField`).
+
+⚠️ **L'utente NON è soddisfatto di come si vedono queste tre intestazioni** e
+le rifaremo: la struttura è concordata, la resa no. Non c'è logica in mezzo —
+tre stringhe e la tipografia della riga. V. `../TODO.md`.
+
+### Il menù di esempio (2026-09-03)
+
+Finché il menù è vuoto l'anteprima può mostrare **tre piatti finti** con
+prezzi, allergeni, descrizioni — **e il filtro allergeni funzionante**.
+L'aspetto si giudica su dei piatti, non su uno schermo bianco: prima, per
+vedere l'effetto di una scelta, bisognava scrivere mezza carta.
+
+- **Si accende a mano**, con un bottoncino accanto alla riga in cima alla
+  scatola Aspetto (decisione dell'utente: tre piatti che compaiono da soli si
+  leggono come piatti veri). Il comando sta **dove si sceglie**, non dove si
+  guarda. C'è anche nella fascia dell'anteprima a tutta pagina, che è una
+  scheda a sé con uno stato suo.
+- **Compare solo a menù vuoto**: con dei piatti dentro valgono i suoi.
+- **Passa per la stessa resa** dei piatti veri — stessa `<Riga>`, stessa
+  sezione, stesso separatore — o mostrerebbe un aspetto diverso da quello che
+  si sta scegliendo, cioè l'unica cosa che non deve fare.
+- **C'è anche il filtro**, e non è un di più: le pastiglie nascono dai piatti
+  *mostrati* (`mostrati` in `MenuPreview`), quindi si tocca "senza glutine" e
+  si vede la carta riordinarsi prima ancora di aver scritto un piatto. Il
+  filtro è gratis e non sarà mai premium (Tema 2): mostrarlo lì è il suo
+  mestiere.
+- **Effetto collaterale voluto**: le **condizioni al tavolo** si vedono sopra
+  l'esempio. Sono vere — le ha scritte lui — e prima non c'era modo di
+  guardarle finché il menù non aveva almeno un piatto.
+
 **Sotto `sm` l'editor cambia forma** (rivisto il 2026-09-02 facendo i conti a
 375px, dove il portale si usa davvero):
 
@@ -369,7 +434,7 @@ Tre cose da non disfare per sbaglio:
   Scambiarli vuol dire far riscrivere il coperto in carta, pranzo e bevande —
   e poi correggerlo in tutte e tre.
 
-**La scatola "Aspetto del menù"** (`BrandBar`) è **comprimibile** e chiusa di
+**La scatola "Aspetto"** (`BrandBar`) è **comprimibile** e chiusa di
 partenza — l'aspetto si sceglie una volta, il menù si tocca ogni giorno — con
 un riassunto sulla riga ("A blocco · EUR · Moderno · Filetto") per non
 doverla aprire. Dentro, nell'ordine: **impaginazione**, **valuta**, colore, **pacchetto di stile** dei testi,
@@ -426,7 +491,7 @@ in `scripts/gemelle.mjs`.
 
 ⚠️ **La valuta non è aspetto**, sta lì solo perché è lì che si va a sistemare
 come si legge il menù: vive sul MENÙ e non sul locale, quindi conta come
-modifica di **contenuto** — "Rimetti com'è in sala" non la tocca, e cambiarla
+modifica di **contenuto** — "Torna all'aspetto pubblicato" non la tocca, e cambiarla
 accende l'avviso di pubblicazione come cambiare un prezzo. Era in cima
 all'editor accanto al nome del locale, dove sembrava una proprietà del
 ristorante invece che del suo listino.
@@ -593,7 +658,7 @@ scelta. La forma vale per le **miniature in lista** (`.menu-thumb.is-round`
 sul sito, `rounded-full` nell'anteprima): la foto grande del popup del piatto
 resta rettangolare.
 
-**"Rimetti com'è in sala"** (`revert_appearance`) sta in fondo alla scatola
+**"Torna all'aspetto pubblicato"** (`revert_appearance`) sta in fondo alla scatola
 Aspetto in `BrandBar`, e compare solo se c'è qualcosa da annullare. ⚠️ Vale
 **solo per l'aspetto** e non va "completato" con l'annullamento del
 contenuto: i fatti dei piatti stanno nel catalogo, condiviso con la scheda

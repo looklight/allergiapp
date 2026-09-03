@@ -1186,6 +1186,64 @@ interlinea): non era ancora applicata, e aprirne una per ciascuna avrebbe voluto
 esecuzioni a mano al posto di una. Il file si chiama adesso `711_partner_menu_appearance.sql`.
 
 
+### 2026-09-03 — Tema 30: Guardare prima di scrivere, e chiamare le cose col nome che già usiamo
+
+Tre decisioni della stessa giornata, tutte sull'editor e non sul menù al tavolo.
+
+**1. Il menù di esempio, e dentro c'è il filtro.** L'aspetto — colore, carattere, impaginazione,
+interlinea — si giudica su dei piatti, non su uno schermo bianco: finché il menù era vuoto
+l'anteprima diceva «Aggiungi i piatti per vedere il menù», e per vedere l'effetto di una scelta
+bisognava prima scrivere mezza carta. Adesso si possono mostrare **tre piatti finti**, che passano
+per la stessa resa di quelli veri — se ne avessero una loro mostrerebbero un aspetto diverso da
+quello che si sta scegliendo, cioè l'unica cosa che non devono fare.
+
+**E c'è anche il filtro**, che è la parte che conta: le pastiglie nascono dai piatti *mostrati*,
+quindi su un menù ancora vuoto si tocca «senza glutine» e si vede la carta riordinarsi. Il filtro è
+gratis e non sarà mai premium (Tema 2), quindi farlo vedere lì è esattamente il suo mestiere: la
+prima cosa che il ristoratore incontra è la ragione per cui questo menù non è come gli altri col QR.
+
+**Si accende a mano** (correzione dell'utente): tre piatti che compaiono da soli si leggono come
+piatti veri, e chi apre il menù la prima volta si chiede di chi siano. Il comando sta **dove si
+sceglie** — accanto alla riga in cima alla scatola Aspetto — e non dove si guarda. La correzione ha
+tolto anche un pezzo di fragilità appena nato: con l'esempio automatico la condizione che lo
+accendeva era scritta in **due punti che dovevano restare d'accordo**; a comando decide chi usa
+l'anteprima, e basta.
+
+**2. L'editor ha tre aree: Aspetto, Contenuto, Online.** L'ordine era già quello, ma niente diceva
+che i quattro blocchi in mezzo — nome del locale, descrizione, sezioni coi piatti, condizioni al
+tavolo — sono **una cosa sola**. **«Contenuto» non è una parola nuova**: è la metà di una coppia che
+il ristoratore incontra già negli avvisi in cima («Modifiche all'**aspetto** non pubblicate») e che
+il database distingue dalla migration 710. Le due aree si chiamano come la distinzione che gli
+spieghiamo già altrove, invece di aggiungergli un terzo vocabolario.
+
+La coerenza sta nell'**intestazione** (la stessa riga per tutte e tre), la distinzione nei **corpi**:
+uno si apre e si chiude, uno è una pila di schede, uno è un riquadro che resta verde quando il menù
+risponde. ⚠️ Il prezzo, accettato: il nome del ristorante non è più il titolo della pagina ma la
+prima riga del contenuto, e il titolo dell'indirizzo non cambia più in «Il menù è online».
+⚠️ **L'utente non è soddisfatto di come si vedono quelle intestazioni e le rifaremo** — la struttura
+è concordata, la resa no. È scritto in `TODO.md` con quello che non va rimesso per sbaglio.
+
+**3. «In sala» sparisce dai testi a schermo.** Era una metafora nostra per dire «l'ultima versione
+pubblicata», e in un ristorante la sala è la stanza dove si mangia: chi legge doveva tradurla. Il
+bottone dell'annulla diventa **«Torna all'aspetto pubblicato»** — parola che il ristoratore ha già
+davanti due righe sopra, sul bottone Pubblica e nell'avviso delle modifiche — e con lui lo stato
+sulla home e i due suggerimenti dell'interruttore, che adesso dicono la **conseguenza** invece del
+posto: «Rendi il menù visibile ai clienti» / «Nascondi il menù ai clienti». Segnale che era un
+residuo e non una scelta: la traduzione inglese la metafora della sala non l'aveva mai seguita.
+
+**Valutate e scartate nella stessa giornata**, per non riproporle: un **«salva bozza»** (creerebbe
+il dubbio che dice di risolvere — la bozza si salva da sé, e un bottone Salva fa chiedere «e se non
+lo premo?»); un **annulla del contenuto** (riporterebbe indietro una correzione di allergeni, v.
+Tema 27); e **nominare i piatti** con allergeni diversi da quelli pubblicati nell'avviso in cima
+(«Carbonara ha allergeni diversi…»), scartata dall'utente per poco valore aggiunto rispetto
+all'avviso che c'è già.
+
+**Il QR personalizzabile è un candidato premium** (note tecniche in `TODO.md`): il logo del
+ristorante dentro il codice è cosmetico, quindi si vende. ⚠️ **Il QR in sé no**: è la strada per
+arrivare al tavolo, e un menù pubblicato senza QR è un menù che nessuno può aprire — stessa ragione
+per cui il filtro non si vende.
+
+
 ## Prossimo passo
 
 **Aggiornato il 2026-09-03.** La fase 2 è fatta e in produzione: il menù al tavolo si apre da
