@@ -176,17 +176,32 @@ un'eliminazione porta via del lavoro, l'annulla non è un lusso.
 ```bash
 cd partner
 npm install
-npm run dev   # http://localhost:3001 (porta diversa dall'admin)
+npm run dev     # http://localhost:3001 (porta diversa dall'admin)
+npm run check   # tipi + regole — si può lanciare col dev acceso
 ```
 
 Env in `.env.local` (stesso progetto Supabase di app e admin):
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
-⚠️ **Non lanciare `npm run build` mentre `npm run dev` sta girando**:
-scrivono nella stessa cartella `.next` e la build di produzione sovrascrive
-i file che il server ha in uso. Il portale resta piantato su `Caricamento…`
-con i chunk a 404, e sembra un errore del codice. Si rimedia fermando il
-server, `rm -rf .next`, e riavviando.
+⚠️ **Mentre il `dev` gira, si verifica con `npm run check`** (`tsc --noEmit`
++ `eslint`), che non scrive niente. **`npm run build` va lanciato solo col
+server fermo**: build e dev usano la stessa cartella `.next`, e la build la
+svuota sotto i piedi al server — il portale risponde 500 con
+`Cannot find module ./vendor-chunks/@supabase.js`, oppure resta piantato su
+`Caricamento…` coi chunk a 404, e sembra un errore del codice. Si rimedia
+fermando il server, `rm -rf .next` e riavviando.
+
+Questo avviso c'era già scritto, e il 2026-09-03 ci siamo cascati lo stesso:
+il rimedio è avere sotto mano un comando che *non può* fare danno.
+`check` prende quasi tutto (tipi, regole, import); quello che gli sfugge è
+solo ciò che si rompe in fase di build vera, quindi prima di un rilascio si
+ferma il `dev` e si lancia `build`.
+
+Una via che sembrava migliore ed è stata **provata e scartata** lo stesso
+giorno: dare a `check` una `distDir` sua (`NEXT_DIST_DIR`). Funzionava, ma
+Next a ogni build riscrive `next-env.d.ts` e `tsconfig.json` puntandoli a
+quella cartella — cioè lasciava due file modificati in git a ogni verifica,
+e in `next-env.d.ts` un percorso che su Vercel non esiste.
 
 ## Convenzioni
 
@@ -355,10 +370,18 @@ Tre cose da non disfare per sbaglio:
 
 **La scatola "Aspetto del menù"** (`BrandBar`) è **comprimibile** e chiusa di
 partenza — l'aspetto si sceglie una volta, il menù si tocca ogni giorno — con
-un riassunto sulla riga ("Moderno · Filetto · con foto") per non doverla
-aprire. Dentro: colore, **pacchetto di stile** dei testi, **grandezza dei
-testi**, **stile dei titoli di sezione**, **copertina**, e due interruttori —
-**foto dei piatti** e **descrizioni in lista**.
+un riassunto sulla riga ("EUR · Moderno · Filetto · foto quadrate") per non
+doverla aprire. Dentro: **valuta**, colore, **pacchetto di stile** dei testi,
+**grandezza dei testi**, **stile dei titoli di sezione**, **copertina**, le
+**foto dei piatti** (tre scelte: nessuna / quadrate / tonde) e l'interruttore
+delle **descrizioni in lista**.
+
+⚠️ **La valuta non è aspetto**, sta lì solo perché è lì che si va a sistemare
+come si legge il menù: vive sul MENÙ e non sul locale, quindi conta come
+modifica di **contenuto** — "Rimetti com'è in sala" non la tocca, e cambiarla
+accende l'avviso di pubblicazione come cambiare un prezzo. Era in cima
+all'editor accanto al nome del locale, dove sembrava una proprietà del
+ristorante invece che del suo listino.
 
 Tre regole di quella scatola, tutte per lo stesso motivo:
 
@@ -457,14 +480,45 @@ condizioni; **non** i comandi (lingue, filtro, pastiglie): sono bersagli da
 toccare, e un dito non rimpicciolisce con la carta.
 
 ⚠️ **La riga degli allergeni ha un pavimento** e `compact` non lo sfonda: sta
-nel CSS, `font-size: max(10px, calc(10px * var(--ms, 1)))` sulla classe
-`riga-minuta` (e `max(11px, …)` nei pacchetti serif e leggero, dove il
-pavimento è il punto in più della compensazione). Sotto le tre scelte, nel
+nel CSS, `font-size: max(11px, calc(11px * var(--ms, 1)))` sulla classe
+`riga-minuta` (e `max(12px, …)` nei pacchetti serif e leggero, dove il
+pavimento è il punto in più della compensazione). Il pavimento è salito da 10
+a 11 il 2026-09-03 insieme a tutte le altre misure di base (Tema 28): era la
+riga più piccola della pagina proprio dove serviva leggerla meglio. Sotto le tre scelte, nel
 portale, c'è scritto anche al ristoratore — o "Compatta" sembra rimpicciolire
 anche gli allergeni e chi ci tiene non la toccherebbe mai. I fattori
 (0.92 / 1 / 1.12) hanno una **copia gemella** sul sito in
 `landing/lib/render-menu.js`: se divergono, il ristoratore sceglie guardando
 una cosa e il suo cliente al tavolo ne vede un'altra.
+
+⚠️ **Anche le misure di BASE sono una copia gemella** — i `calc(Npx*var(--ms))`
+di `MenuPreview`/`DishDetailSheet` contro quelli di `landing/menu-page.css` —
+e dal 2026-09-03 sono **identiche numero per numero**. Prima l'anteprima
+stava "un punto sotto" per via della cornice del telefono (360px contro i 390
+di un iPhone recente), ma lo sconto non era uguale per tutti i ruoli: nel
+portale il nome del piatto stava a un punto dal titolo di sezione, al tavolo a
+due. Con i numeri uguali l'anteprima è semplicemente un telefono stretto —
+360 sta fra un SE e un 15 — che è una bugia molto più piccola. L'unica
+differenza voluta che resta è la compensazione di mezzo punto sulle
+descrizioni nei pacchetti serif e leggero, che vive solo sul sito.
+
+**La forma delle foto** (`partner_venues.dish_photo_shape`: `square` /
+`round`, **migration 711 — DA APPLICARE**) è la terza voce passata per quella
+strada.
+
+> ⚠️ **La 711 va applicata PRIMA di pushare.** `loadVenues()` chiede
+> `dish_photo_shape` nella select: senza la colonna, PostgREST rifiuta tutta
+> l'interrogazione e il portale resta senza locali — in locale e, appena il
+> push arriva su `main`, anche su `partner.allergiapp.com`. Vale per lo
+> sviluppo di ogni giorno allo stesso modo: il portale locale parla col
+> database di produzione. Nel portale è **una scelta sola con tre risposte** (nessuna, quadrate,
+tonde), ma sotto restano **due campi**: `show_dish_photos` esiste dalla 705 e
+gli scatti pubblicati lo contengono da mesi, quindi trasformarlo in un codice
+a tre valori avrebbe voluto dire rileggere scatti già in sala — e con due
+campi, spegnere le foto per poi riaccenderle riporta la forma che si era
+scelta. La forma vale per le **miniature in lista** (`.menu-thumb.is-round`
+sul sito, `rounded-full` nell'anteprima): la foto grande del popup del piatto
+resta rettangolare.
 
 **"Rimetti com'è in sala"** (`revert_appearance`) sta in fondo alla scatola
 Aspetto in `BrandBar`, e compare solo se c'è qualcosa da annullare. ⚠️ Vale
