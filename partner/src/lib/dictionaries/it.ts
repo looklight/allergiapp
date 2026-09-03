@@ -612,6 +612,13 @@ const it = {
     pickerCatalogEmpty: 'Il tuo catalogo è vuoto.',
     pickerCatalogEmptyHint: 'Crea i piatti dalla pagina Piatti, poi torna qui a comporre il menù.',
     pickerAllIn: 'Tutti i piatti del catalogo sono già in questo menù.',
+    // L'ETICHETTA CHE LEGA il nome, la descrizione, le sezioni, i piatti e le
+    // condizioni: sono una cosa sola e la pagina non lo diceva. "Contenuto"
+    // non è una parola nuova — è la metà di una coppia che il ristoratore
+    // incontra già negli avvisi di pubblicazione ("modifiche all'ASPETTO non
+    // pubblicate"), e che il database distingue dalla migration 710.
+    contentLabel: 'Contenuto',
+    contentHint: 'Quello che i tuoi clienti leggono, in cima e nella carta.',
     conditionsTitle: 'Condizioni al tavolo',
     conditionsHint:
       'In fondo al menù: coperto, servizio, pagamenti. Si scrivono una volta sola e valgono per tutto il menù.',

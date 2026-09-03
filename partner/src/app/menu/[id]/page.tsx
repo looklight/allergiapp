@@ -385,13 +385,45 @@ export default function MenuEditorPage() {
         />
       </div>
 
-      {/* Il titolo della pagina è il NOME DEL LOCALE, non un'etichetta
-          generica: è l'unica cosa che il cliente legge per forza, in cima a
-          ogni menù di questo ristorante (vale per tutti, come logo e
-          colore — da qui e non più da "Aspetto"). Il logo viene prima del
-          nome per restare coerente con l'intestazione dell'anteprima, che lo
-          mostra nello stesso ordine. */}
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      {/* IL CONTENUTO, da qui alle condizioni al tavolo: il nome del locale, la
+          descrizione, le sezioni, i piatti, i blocchi di testo e il fondo del
+          menù sono UNA COSA SOLA — quello che il cliente legge — e la pagina
+          non lo diceva: si leggeva come sei riquadri senza parentela.
+
+          "Contenuto" non è una parola nuova: è la metà di una coppia che il
+          ristoratore incontra già negli avvisi in cima ("modifiche
+          all'ASPETTO non pubblicate") e che il database distingue dalla
+          migration 710. Chiamare le due aree Aspetto e Contenuto fa
+          combaciare quello che si vede con quello che gli spieghiamo altrove.
+
+          ⚠️ UN'ETICHETTA E NON UNA SCATOLA, e non è pigrizia: le sezioni sono
+          già schede bianche su grigio, e una scheda attorno a delle schede è
+          annidare. Né comprimibile: l'aspetto si sceglie una volta e si
+          chiude, il contenuto è il lavoro — una scatola richiudibile attorno
+          a quello che stai scrivendo è un clic in più per sempre.
+
+          Al terzo blocco (l'indirizzo) l'etichetta non serve: ha già un
+          titolo suo che cambia da solo e perfino un colore suo, verde quando
+          il menù risponde e tratteggiato finché è una bozza. Un'etichetta
+          sopra sarebbe un titolo sopra un titolo. */}
+      <div className="mt-6">
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          {d.menuEditor.contentLabel}
+        </p>
+        <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.contentHint}</p>
+      </div>
+
+      {/* Il nome del LOCALE apre il contenuto: è la prima cosa che il cliente
+          legge, in cima a ogni menù di questo ristorante (vale per tutti, come
+          logo e colore — si scrive da qui e non da "Aspetto"). Il logo viene
+          prima del nome per restare coerente con l'intestazione
+          dell'anteprima, che lo mostra nello stesso ordine.
+
+          Non è più il titolo della pagina, ed è il prezzo di questa
+          sistemazione (scelta dell'utente, 03/09): il nome è quello che il
+          cliente legge, quindi è contenuto. Resta grande e si corregge sul
+          posto. */}
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <LogoPicker logoUrl={brand.logoUrl} onChange={(logoUrl) => setBrand({ logoUrl })} />
         <input
           type="text"
@@ -640,8 +672,11 @@ export default function MenuEditorPage() {
           nel menù. Sono del LOCALE come il logo e il colore — si scrivono da
           qui perché è qui che se ne vede l'effetto, e la riga sotto il titolo
           dice che valgono per tutte le linguette. */}
+      {/* mt-4 e non mt-8: le condizioni sono DENTRO il contenuto (v.
+          l'etichetta più sopra), quindi stanno vicine alle sezioni. Lo stacco
+          grande va dopo, prima dell'indirizzo, che è l'altra area. */}
       {locale && (
-        <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <h2 className="text-sm font-medium text-gray-900">{d.menuEditor.conditionsTitle}</h2>
           <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.conditionsHint}</p>
           <textarea

@@ -163,7 +163,11 @@ export default function MenuAddress({
     <div
       id={ANCORA_INDIRIZZO}
       ref={scatola}
-      className={`mt-4 scroll-mt-16 rounded-2xl border p-4 ${
+      // mt-8: qui comincia la TERZA area della pagina — l'aspetto, il
+      // contenuto, e questa. Lo stacco grande dice che non è l'ultimo pezzo
+      // del menù ma un'altra cosa, ed è il motivo per cui le condizioni al
+      // tavolo, che invece sono contenuto, stanno a mt-4.
+      className={`mt-8 scroll-mt-16 rounded-2xl border p-4 ${
         online
           ? 'border-emerald-200 bg-emerald-50/60'
           : 'border-dashed border-gray-300 bg-gray-100/70'

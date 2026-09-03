@@ -464,6 +464,8 @@ const en: typeof it = {
     pickerCatalogEmpty: 'Your catalogue is empty.',
     pickerCatalogEmptyHint: 'Create dishes from the Dishes page, then come back to compose the menu.',
     pickerAllIn: 'Every dish in your catalogue is already in this menu.',
+    contentLabel: 'Content',
+    contentHint: 'What your guests read, at the top and in the menu itself.',
     conditionsTitle: 'Table conditions',
     conditionsHint:
       'At the bottom of the menu: cover charge, service, payments. Written once, they apply to the whole menu.',
