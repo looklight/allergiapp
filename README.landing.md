@@ -39,7 +39,7 @@ node -e "const{renderMenuPage}=require('./lib/render-menu.js'),{createT}=require
 python3 -m http.server 8099   # poi apri /_preview-menu.html
 ```
 
-Tre cose da non disfare:
+Quattro cose da non disfare:
 
 - **Il filtro riordina, non nasconde.** I piatti esclusi sbiadiscono, scendono
   in fondo alla loro sezione e dicono perché. Farli sparire direbbe che quel
@@ -56,14 +56,33 @@ Tre cose da non disfare:
   locale finisce col colore di ripiego **senza nessun errore**. La terza copia
   sono i **fattori della grandezza dei testi** (`textScale` in
   `render-menu.js`, da `TEXT_SCALE_FACTORS` in `partner/src/lib/venues.ts`).
+  La quarta sono le **misure di base** del contenuto: i `calc(Npx * var(--ms))`
+  di `menu-page.css` e quelli dell'anteprima (`MenuPreview`,
+  `DishDetailSheet`). Dal 2026-09-03 i numeri sono **identici**, non più "uno
+  sotto per via della cornice del telefono": lo sconto non era uguale per
+  tutti i ruoli, e nel portale il nome del piatto stava a un punto dal titolo
+  di sezione mentre al tavolo ne stava a due — cioè il ristoratore giudicava
+  proporzioni che il suo cliente non avrebbe visto. **L'unica differenza
+  voluta che resta** è la compensazione di mezzo punto sulle descrizioni nei
+  pacchetti serif e leggero (`.font-classic .menu-item-desc`, 13.5px): c'è
+  qui e non nell'anteprima, e mezzo pixel non vale una classe in più da
+  tenere allineata.
+- **La scheda del piatto è un popup, e il filtro non è agganciato**
+  (2026-09-03, DIGITAL_MENU Tema 28). Il popup sta al centro con la sua X, si
+  chiude toccando fuori e ha le **freccine** che scorrono la carta
+  nell'ordine in cui si vede — col filtro acceso è già riordinata. La fascia
+  dei filtri **non è più `sticky`**: ferma in cima, la carta sembrava
+  passarle dietro. Chi la rimette sticky si ricordi che sotto ci passano le
+  fasce colorate delle sezioni.
 
 **La grandezza dei testi** non è una classe ma un numero: `--ms` nello style
 di `<body>`, e ogni misura del contenuto in `menu-page.css` è
 `calc(Npx * var(--ms, 1))`. Così una manopola sola muove tutta la carta e non
 c'è un secondo elenco di misure da tenere allineato.
 
-⚠️ **La riga degli allergeni ha un pavimento**: usa `max()`, quindi la carta
-Compatta non la rimpicciolisce — cresce con Ampia e basta. La legge una
+⚠️ **La riga degli allergeni ha un pavimento** (11px dal 2026-09-03, era 10):
+usa `max()`, quindi la carta Compatta non la rimpicciolisce — cresce con Ampia
+e basta. La legge una
 persona con un'allergia, in una sala poco illuminata, mentre qualcuno le
 chiede cosa ordina. Chi toglie il `max()` si tiene quella riga. Per vedere le
 tre grandezze una accanto all'altra:

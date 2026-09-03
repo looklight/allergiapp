@@ -164,10 +164,15 @@
 }
 
 /* ── Intestazione ──────────────────────────────────────────────── */
+/* Il respiro sopra e sotto il nome è quello che fa sembrare la fascia
+   un'intestazione e non una barra di servizio: stretta com'era, il nome del
+   ristorante stava schiacciato fra il bordo dello schermo e il filtro. È la
+   prima cosa che si vede dopo aver inquadrato il QR, e nei menù di carta il
+   nome del locale ha sempre aria intorno. */
 .menu-header {
   background: var(--accent);
   color: #fff;
-  padding: 18px 16px 14px;
+  padding: 28px 16px 24px;
 }
 /* Con la copertina il colore resta SOTTO l'immagine: se la foto non arriva —
    rete lenta, file sparito — l'intestazione non diventa bianca col nome
@@ -177,8 +182,10 @@
   background-size: cover;
   background-position: center;
   background-color: var(--accent);
-  padding-top: 22px;
-  padding-bottom: 18px;
+  /* Con la copertina serve ancora più aria: il nome sta sopra un'immagine, e
+     appiccicato al bordo sembra una didascalia incollata sopra la foto. */
+  padding-top: 34px;
+  padding-bottom: 30px;
 }
 .menu-header-top {
   display: flex;
@@ -197,15 +204,15 @@
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-size: calc(20px * var(--ms, 1));
+  font-size: calc(22px * var(--ms, 1));
   font-weight: 600;
   line-height: 1.25;
 }
 
 
 .menu-intro {
-  margin: 8px 0 0;
-  font-size: calc(13px * var(--ms, 1));
+  margin: 10px 0 0;
+  font-size: calc(14px * var(--ms, 1));
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.85);
   white-space: pre-line;
@@ -309,23 +316,26 @@
 .font-classic .menu-item-reason,
 .font-light .menu-item-allergens,
 .font-light .menu-item-reason {
-  /* il pavimento qui è il punto in più della compensazione, non i 10px */
-  font-size: max(11px, calc(11px * var(--ms, 1)));
+  /* il pavimento qui è il punto in più della compensazione, non gli 11px */
+  font-size: max(12px, calc(12px * var(--ms, 1)));
   color: #6b6b6b;
 }
 .font-classic .menu-item-desc,
 .font-light .menu-item-desc {
-  font-size: calc(12.5px * var(--ms, 1));
+  font-size: calc(13.5px * var(--ms, 1));
 }
 
 /* ── Il filtro ─────────────────────────────────────────────────── */
+/* NON È AGGANCIATO IN CIMA, e prima lo era. Restando fermo mentre il menù
+   gli scorreva sotto, la carta sembrava passargli dietro — un effetto da
+   pagina rotta più che da comando sempre a portata. Sta in alto e basta:
+   il cliente lo incontra appena apre, lo tocca, e da lì in poi legge il
+   menù senza una barra che gli mangia lo schermo. Chi lo rimette sticky si
+   ricordi che sotto ci passano le fasce colorate delle sezioni. */
 .menu-filter {
-  position: sticky;
-  top: 0;
-  z-index: 20;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  padding: 8px 16px 6px;
+  padding: 10px 16px 8px;
 }
 .menu-filter-head {
   display: flex;
@@ -347,19 +357,19 @@
   color: #9e9e9e;
   font-variant-numeric: tabular-nums;
 }
-.menu-filter-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-/* Il bottone sta fuori dalla fila che scorre: da sinistra non se ne va mai */
+/* IL BOTTONE DEI FILTRI STA NELLA FILA e scorre con le pastiglie
+   (2026-09-03): una fila sola invece di un elemento fermo più una che
+   scorre. Solo l'icona — la parola "Filtri" ripeteva quello che l'icona già
+   dice, e in una fila di pastiglie che si leggono era l'unica scritta che
+   non era una scelta. Il nome resta in aria-label e title.
+   Non è una .menu-pill: è quello che lo tiene primo quando il filtro
+   riordina la fila (v. menu-page.js). */
 .menu-filter-button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
-  padding: 5px 10px;
+  padding: 5px 9px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--bg);
@@ -376,9 +386,10 @@
 }
 .menu-pills {
   display: flex;
+  align-items: center;
   gap: 6px;
   min-width: 0;
-  flex: 1;
+  margin-top: 6px;
   overflow-x: auto;
   padding-bottom: 2px;
   /* le pastiglie escono dal bordo destro: una fila che si ferma prima del
@@ -391,6 +402,7 @@
 .menu-pills.is-wrap {
   flex-wrap: wrap;
   overflow: visible;
+  margin-top: 0;
   margin-right: 0;
   padding-right: 0;
 }
@@ -434,10 +446,10 @@
   color: #9e9e9e;
   font-size: 14px;
 }
-.menu-section { margin-bottom: 18px; }
+.menu-section { margin-bottom: 22px; }
 .menu-section-title {
-  margin: 0 0 4px;
-  font-size: calc(13px * var(--ms, 1));
+  margin: 0 0 5px;
+  font-size: calc(14px * var(--ms, 1));
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -461,14 +473,14 @@
    tre che non usa la tinta del locale. */
 .menu-section-title.is-plain {
   margin-bottom: 6px;
-  font-size: calc(16px * var(--ms, 1));
+  font-size: calc(18px * var(--ms, 1));
   letter-spacing: 0;
   text-transform: none;
   color: var(--text);
 }
 .menu-section-desc {
   margin: 0 0 10px;
-  font-size: calc(11px * var(--ms, 1));
+  font-size: calc(12px * var(--ms, 1));
   line-height: 1.4;
   color: var(--text-secondary);
   white-space: pre-line;
@@ -481,13 +493,13 @@
 }
 .menu-note-title {
   margin: 0;
-  font-size: calc(12px * var(--ms, 1));
+  font-size: calc(13px * var(--ms, 1));
   font-weight: 600;
   line-height: 1.35;
 }
 .menu-note-text {
   margin: 2px 0 0;
-  font-size: calc(11px * var(--ms, 1));
+  font-size: calc(12px * var(--ms, 1));
   line-height: 1.45;
   color: var(--text-secondary);
   white-space: pre-line;
@@ -499,7 +511,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 13px;
 }
 .menu-item.is-highlighted {
   margin-inline: -6px;
@@ -526,14 +538,18 @@
 /* Un piatto senza foto tiene comunque lo spazio: senza, le righe fotografate
    e quelle no partirebbero da punti diversi e la carta sembrerebbe storta */
 .menu-thumb {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   border-radius: 8px;
   object-fit: cover;
   display: block;
 }
 .menu-thumb-empty { background: var(--bg-alt); }
+/* Tonde, se il ristoratore le vuole così (migration 711). Vale per la LISTA:
+   la foto grande dentro il popup del piatto resta rettangolare — un cerchio
+   al posto di una foto non è una scelta di stile, è un ritaglio in meno. */
+.menu-thumb.is-round { border-radius: 50%; }
 .menu-item-body {
   flex: 1;
   min-width: 0;
@@ -546,33 +562,48 @@
 }
 .menu-star { color: #f59e0b; flex-shrink: 0; }
 .menu-info { color: #bdbdbd; flex-shrink: 0; }
-.menu-item-name {
+/* IL NOME E LA "i" SONO UNA COSA SOLA, e prima non lo erano: il nome si
+   prendeva tutto lo spazio disponibile e l'icona finiva spinta contro il
+   prezzo, dove si legge come un'informazione SUL PREZZO. Adesso è questo
+   involucro a prendersi lo spazio, e la "i" resta attaccata al nome del
+   piatto — che è la cosa di cui parla. Stessa forma dell'anteprima nel
+   portale (MenuPreview), che era già stata sistemata così. */
+.menu-item-title {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
   flex: 1;
   min-width: 0;
-  font-size: calc(14px * var(--ms, 1));
+}
+/* IL NOME VA A CAPO, non si tronca. Con i puntini un piatto dal nome lungo
+   diventava "Tagliatelle al ragù di cingh…", che al tavolo è esattamente la
+   riga che non si può leggere — e crescendo i testi (Tema 28) sarebbe
+   successo più spesso, non meno. Le righe perdono un po' di altezza uniforme,
+   e va bene: l'uniformità serviva a scorrere, il nome serve a ordinare. */
+.menu-item-name {
+  min-width: 0;
+  font-size: calc(16px * var(--ms, 1));
   font-weight: 500;
   line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .menu-price {
   flex-shrink: 0;
-  font-size: calc(14px * var(--ms, 1));
+  font-size: calc(16px * var(--ms, 1));
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .menu-item-desc {
   display: block;
-  margin-top: 2px;
-  font-size: calc(12px * var(--ms, 1));
+  margin-top: 3px;
+  font-size: calc(13px * var(--ms, 1));
   line-height: 1.4;
   color: var(--text-secondary);
 }
 .menu-item-note {
   display: block;
-  margin-top: 2px;
-  font-size: calc(11px * var(--ms, 1));
+  margin-top: 3px;
+  font-size: calc(12px * var(--ms, 1));
   font-weight: 500;
   color: #b45309;
 }
@@ -580,8 +611,8 @@
 .menu-item-reason {
   display: block;
   margin-top: 3px;
-  /* max() e non calc(): Compatta non scende sotto i 10px (v. .menu-body) */
-  font-size: max(10px, calc(10px * var(--ms, 1)));
+  /* max() e non calc(): Compatta non scende sotto gli 11px (v. .menu-body) */
+  font-size: max(11px, calc(11px * var(--ms, 1)));
   line-height: 1.35;
   color: #9e9e9e;
 }
@@ -603,7 +634,7 @@
   border-top: 1px solid var(--border);
   /* Contenuto del ristoratore, e dice cosa può garantire su una
      contaminazione: cresce con Ampia, non scende con Compatta. */
-  font-size: max(10px, calc(10px * var(--ms, 1)));
+  font-size: max(11px, calc(11px * var(--ms, 1)));
   line-height: 1.5;
   color: var(--text-secondary);
   white-space: pre-line;
@@ -624,7 +655,13 @@
 }
 .menu-brand-logo { width: 18px; height: 18px; }
 
-/* ── I fogli che salgono dal basso ─────────────────────────────── */
+/* ── Il foglio dei filtri, e il popup del piatto ───────────────── */
+/* Sono due cose diverse e si comportano da cose diverse. Il FOGLIO dei filtri
+   sale dal basso: è un comando, sta sotto il pollice e si chiude tornando al
+   menù. Il POPUP del piatto (.is-dialog) sta al centro e ha la sua X: è
+   contenuto da leggere, non un comando, e prima — incollato al bordo
+   inferiore senza un modo evidente di chiuderlo — sembrava rotto, soprattutto
+   da computer. */
 .menu-sheet {
   position: fixed;
   inset: 0;
@@ -663,7 +700,6 @@
   padding: 8px 14px 6px;
   background: var(--bg);
 }
-.menu-sheet-head.is-plain { display: flex; justify-content: center; }
 .menu-sheet-grip {
   grid-column: 2;
   width: 38px;
@@ -693,6 +729,64 @@
   cursor: pointer;
 }
 .menu-sheet-body { padding: 6px 16px 0; }
+
+/* ── Il popup del piatto ───────────────────────────────────────── */
+.menu-sheet.is-dialog {
+  align-items: center;
+  padding: 16px;
+}
+.menu-sheet-panel.is-dialog {
+  /* Più stretto della colonna del menù: è una scheda, non una pagina. E più
+     basso dello schermo, così si vede che sotto e sopra c'è dell'altro. */
+  max-width: 380px;
+  max-height: 82vh;
+  border-radius: 18px;
+  padding-bottom: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  animation: menu-dialog-in 0.16s ease-out;
+}
+@keyframes menu-dialog-in {
+  from { transform: scale(0.97); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-sheet-panel.is-dialog { animation: none; }
+}
+/* La barra dei comandi resta in vista mentre si scorre la scheda: la X di un
+   popup che se ne va in cima è la X che non si trova più. */
+.menu-dialog-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 4px;
+  background: var(--bg);
+}
+.menu-dialog-nav,
+.menu-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+/* Ai capi della carta la freccia si SPEGNE e non sparisce: sparendo,
+   sposterebbe l'altra sotto il dito proprio mentre lo si sta usando. */
+.menu-dialog-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.menu-dialog-close {
+  margin-left: auto;
+}
 .menu-sheet-label {
   margin: 12px 0 6px;
   font-size: 10px;
@@ -702,43 +796,48 @@
   color: #9e9e9e;
 }
 
+/* La foto arriva quadrata (il portale la ritaglia così), ma dentro un popup
+   un quadrato a tutta larghezza si mangiava la finestra e spingeva gli
+   allergeni sotto il bordo — cioè la cosa per cui il piatto si apre. Qui si
+   guarda 4:3: si perde un quarto dell'altezza al centro, e si vede il piatto
+   INSIEME a quello che c'è scritto sotto. */
 .menu-detail-photo {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   display: block;
+  border-radius: 10px;
 }
-.menu-detail-photo-empty { background: var(--bg-alt); }
-.menu-detail-body { padding: 12px 16px 0; }
+.menu-detail-body { padding: 10px 16px 0; }
 .menu-detail-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
-.menu-detail-head h3 { margin: 0; font-size: calc(17px * var(--ms, 1)); line-height: 1.3; }
-.menu-detail-price { font-size: calc(16px * var(--ms, 1)); font-weight: 600; font-variant-numeric: tabular-nums; }
+.menu-detail-head h3 { margin: 0; font-size: calc(19px * var(--ms, 1)); line-height: 1.3; }
+.menu-detail-price { font-size: calc(18px * var(--ms, 1)); font-weight: 600; font-variant-numeric: tabular-nums; }
 .menu-detail-desc {
   margin: 6px 0 0;
-  font-size: calc(14px * var(--ms, 1));
+  font-size: calc(15px * var(--ms, 1));
   line-height: 1.45;
   color: var(--text-secondary);
 }
 .menu-detail-label {
-  margin: 16px 0 6px;
+  margin: 12px 0 6px;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #9e9e9e;
 }
-.menu-detail-none { margin: 0; font-size: calc(14px * var(--ms, 1)); color: var(--text-secondary); }
+.menu-detail-none { margin: 0; font-size: calc(15px * var(--ms, 1)); color: var(--text-secondary); }
 .menu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .menu-chip {
   padding: 4px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  font-size: calc(12px * var(--ms, 1));
+  font-size: calc(13px * var(--ms, 1));
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -755,8 +854,8 @@
   color: #15803d;
 }
 .menu-detail-photo-note {
-  margin: 16px 0 0;
-  padding-top: 12px;
+  margin: 12px 0 0;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
   font-size: 10px;
   line-height: 1.4;

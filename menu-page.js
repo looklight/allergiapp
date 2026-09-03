@@ -1,4 +1,5 @@
-// Il comportamento del menù al tavolo: il filtro e i due fogli.
+// Il comportamento del menù al tavolo: il filtro, il suo foglio e il popup
+// del piatto.
 //
 // La pagina arriva INTERA dal server, dettagli dei piatti compresi: qui non si
 // costruisce niente, si accende, si spegne e si sposta. È la ragione per cui
@@ -113,9 +114,12 @@
     // insieme il pannello e la fila: senza, si sceglie dal pannello, si
     // chiude, il menù si riordina sotto gli occhi e il motivo è fuori schermo
     // a destra — un effetto senza la sua causa.
+    // ⚠️ Si riordinano SOLO le .menu-pill: nella stessa fila, per primo, c'è
+    // anche il bottone dei filtri, che non è una pastiglia e non deve
+    // muoversi. Rimettendo in coda soltanto le pastiglie, lui resta dov'è.
     var fila = document.getElementById('menu-pills');
     if (fila) {
-      var pastiglie = Array.prototype.slice.call(fila.children);
+      var pastiglie = Array.prototype.slice.call(fila.querySelectorAll('.menu-pill'));
       var accese = pastiglie.filter(function (p) { return p.getAttribute('aria-pressed') === 'true'; });
       var spente = pastiglie.filter(function (p) { return p.getAttribute('aria-pressed') !== 'true'; });
       accese.concat(spente).forEach(function (p) { fila.appendChild(p); });
@@ -171,21 +175,96 @@
     });
   }
 
-  // Il dettaglio del piatto: il contenuto sta già dentro la riga, nascosto in
-  // un <template>. Qui si copia nel foglio, segnando in rosso gli allergeni
-  // che il cliente ha escluso — così sa subito qual è quello che lo riguarda.
-  document.addEventListener('click', function (e) {
-    var row = e.target.closest ? e.target.closest('.menu-item-row') : null;
-    if (!row || !foglioPiatto || !corpoPiatto) return;
-    var item = row.closest('.menu-item');
+  // IL DETTAGLIO DEL PIATTO. Il contenuto sta già dentro la riga, nascosto in
+  // un <template>: aprirlo non chiede niente alla rete. Qui si copia nel
+  // popup, segnando in rosso gli allergeni che il cliente ha escluso — così
+  // sa subito qual è quello che lo riguarda.
+  //
+  // Si tiene da parte la RIGA aperta, non il suo contenuto: è da lì che le
+  // freccine ripartono per trovare la precedente e la successiva.
+  var apertoOra = null;
+
+  function mostra(item) {
     var modello = item ? item.querySelector('template.menu-detail') : null;
-    if (!modello) return;
+    if (!modello || !foglioPiatto || !corpoPiatto) return;
+    apertoOra = item;
     corpoPiatto.innerHTML = '';
     corpoPiatto.appendChild(modello.content.cloneNode(true));
     corpoPiatto.querySelectorAll('.menu-chip[data-kind="allergens"]').forEach(function (chip) {
       if (scelte.allergens.indexOf(chip.dataset.code) >= 0) chip.classList.add('is-hit');
     });
+    // Il nome del piatto è il nome della finestra: un lettore di schermo
+    // annuncia "Carbonara", non "finestra".
+    var titolo = corpoPiatto.querySelector('h3');
+    var pannello = document.getElementById('menu-dish-panel');
+    if (pannello && titolo) pannello.setAttribute('aria-label', titolo.textContent || '');
+    corpoPiatto.scrollTop = 0;
+    if (corpoPiatto.parentNode) corpoPiatto.parentNode.scrollTop = 0;
     foglioPiatto.hidden = false;
+    aggiornaFreccine();
+  }
+
+  // I piatti NELL'ORDINE IN CUI SI VEDONO: col filtro acceso la lista è già
+  // stata riordinata (gli esclusi in fondo), e le freccine devono seguire
+  // quello che il cliente ha davanti — non l'ordine con cui la carta è
+  // scritta. Si rilegge a ogni passo, che costa niente e non può andare
+  // fuori sincrono.
+  function tuttiIPiatti() {
+    return Array.prototype.slice.call(document.querySelectorAll('.menu-item'));
+  }
+
+  function vicino(passo) {
+    if (!apertoOra) return null;
+    var lista = tuttiIPiatti();
+    var i = lista.indexOf(apertoOra);
+    if (i < 0) return null;
+    return lista[i + passo] || null;
+  }
+
+  // Ai capi della carta la freccia si spegne invece di sparire: un bottone
+  // che se ne va sposta l'altro sotto il dito appena si arriva in fondo.
+  function aggiornaFreccine() {
+    var prima = document.getElementById('menu-dish-prev');
+    var dopo = document.getElementById('menu-dish-next');
+    if (prima) prima.disabled = vicino(-1) === null;
+    if (dopo) dopo.disabled = vicino(1) === null;
+  }
+
+  document.addEventListener('click', function (e) {
+    var row = e.target.closest ? e.target.closest('.menu-item-row') : null;
+    if (!row) return;
+    mostra(row.closest('.menu-item'));
+  });
+
+  var precedente = document.getElementById('menu-dish-prev');
+  if (precedente) {
+    precedente.addEventListener('click', function () {
+      var altro = vicino(-1);
+      if (altro) mostra(altro);
+    });
+  }
+  var successivo = document.getElementById('menu-dish-next');
+  if (successivo) {
+    successivo.addEventListener('click', function () {
+      var altro = vicino(1);
+      if (altro) mostra(altro);
+    });
+  }
+  var chiudi = document.getElementById('menu-dish-close');
+  if (chiudi && foglioPiatto) {
+    chiudi.addEventListener('click', function () { foglioPiatto.hidden = true; });
+  }
+
+  // Le frecce della tastiera fanno quello che fanno le freccine: chi apre il
+  // menù da un computer se le aspetta, e costa tre righe.
+  document.addEventListener('keydown', function (e) {
+    if (!foglioPiatto || foglioPiatto.hidden) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    var altro = vicino(e.key === 'ArrowLeft' ? -1 : 1);
+    if (altro) {
+      e.preventDefault();
+      mostra(altro);
+    }
   });
 
   // Chiudere: il tocco fuori dal pannello, e Esc per chi è su un computer.
