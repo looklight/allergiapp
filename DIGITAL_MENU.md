@@ -26,7 +26,7 @@ disclaimer non compare più in fondo al menù al tavolo — resta una riga minus
 filtro, che è l'unica cosa nostra in quella pagina — e al suo posto ci sono le **condizioni al
 tavolo** del locale (coperto, servizio, pagamenti); nell'editor si aggiungono **blocchi di solo
 testo** che si trascinano fra le sezioni; le pastiglie del filtro hanno una **graduatoria fissa**
-(glutine, vegetariano, vegano, latte, uova…) con un bottone **Filtri** ancorato che apre l'elenco
+(glutine, vegetariano, vegano, latte, uova…) con un bottone **Filtri** che apre l'elenco
 intero. La ricerca nel menù è stata valutata e **scartata**, per la ragione scritta nel Tema 18.
 
 **Aggiornamento 2026-09-01: un menù per locale (Tema 19).** Più menù per lo stesso locale resta
@@ -575,9 +575,13 @@ costanti: prima tutti e quindici gli allergeni, poi le esigenze, su una riga sol
   sua. **È fissa, non calcolata sul menù**: chi ha un'allergia cerca la sua parola e la trova
   sempre nello stesso punto, in ogni ristorante. Una graduatoria che cambia di locale in locale
   risparmierebbe mezzo dito di scorrimento e costerebbe l'abitudine.
-- **Un bottone "Filtri" ancorato a sinistra**, fuori dalla parte che scorre, che apre l'elenco
-  intero. È lì, e non nella fila, che ha senso separare esigenze e allergeni: in un elenco due
-  titoletti aiutano a scorrere, in una fila da sette sarebbero una barriera in mezzo.
+- **Un bottone "Filtri"** che apre l'elenco intero. È lì, e non nella fila, che ha senso separare
+  esigenze e allergeni: in un elenco due titoletti aiutano a scorrere, in una fila da sette
+  sarebbero una barriera in mezzo. ⚠️ *Rivisto il 2026-09-03 (Tema 28)*: era **ancorato a
+  sinistra**, fuori dalla parte che scorre — «da lì non se ne va mai». Adesso **scorre con le
+  pastiglie ed è solo l'icona**: la parola ripeteva quello che l'icona già dice ed era l'unica
+  scritta della fila a non essere una scelta, e un elemento fermo accanto a uno che scorre sono due
+  cose da capire dove ne basta una. Il nome resta in `aria-label`/`title`.
 - **Le pastiglie accese risalgono sempre in testa alla fila.** È la regola che tiene insieme le due
   cose: senza, si sceglie dal pannello, si chiude, il menù si riordina sotto gli occhi e il motivo
   è fuori schermo a destra — il cliente vede un effetto senza vederne la causa.
@@ -1038,10 +1042,76 @@ mostrando — **immagine rotta al tavolo**, invisibile dal portale dove si vede 
 il controllo c'è davvero, ed era anche il presupposto dell'annulla: senza, rimettere il logo dello
 scatto lo rimetterebbe puntando a un file già distrutto.
 
+### 2026-09-03 — Tema 28: La rifinitura, e le tre cose che si vedono al tavolo
+
+Un giro di limatura chiesto dall'utente, quattordici punti in una volta. La maggior parte sono
+correzioni di attrito e non decisioni — vivono nel codice, coi loro commenti — ma tre cambiano
+davvero il menù che il cliente ha in mano, e vanno scritte qui.
+
+**1. La scheda del piatto è un POPUP, non un foglio che sale dal basso.** Il foglio dal basso è il
+gesto del telefono: si trascina giù per chiuderlo. Quel trascinamento però non c'è mai stato —
+restava una scheda incollata al bordo inferiore, senza un modo evidente di chiuderla, e da computer
+sembrava proprio rotta. Adesso sta al centro, ha la sua X, si chiude toccando fuori, ed è più
+bassa: la foto si guarda **4:3** invece che quadrata, così il piatto e i suoi allergeni stanno
+nella stessa schermata — che è la cosa per cui la scheda si apre. **Una sola forma per telefono e
+computer** (decisione dell'utente: «quasi nessuno lo vedrà da desktop»), invece di due
+comportamenti da tenere allineati.
+
+E ci sono **le freccine**: chi legge un menù confronta due o tre piatti, e senza di loro ogni
+confronto costa chiudi-scorri-riapri. Scorrono la carta **nell'ordine in cui si vede** — col filtro
+acceso è già stata riordinata, gli esclusi in fondo — quindi seguono quello che il cliente ha
+davanti, non l'ordine con cui il ristoratore l'ha scritta. Ai capi si spengono invece di sparire, o
+l'altra si sposterebbe sotto il dito proprio mentre lo si sta usando.
+
+**2a. Il bottone "Filtri" scorre con le pastiglie, ed è solo l'icona.** Una fila sola invece di un
+elemento fermo più una che scorre; la parola ripeteva quello che l'icona già dice, ed era l'unica
+scritta della fila a non essere una scelta (il nome resta in `aria-label` e `title`). ⚠️ Il bottone
+sta *dentro* la fila ma non è una pastiglia, ed è quello che lo tiene sempre per primo: il riordino
+rimette in coda solo gli elementi con la classe `menu-pill`. Rovescia una scelta del Tema 18 —
+scritta lì, dove qualcuno andrà a cercarla.
+
+**2b. La fascia dei filtri NON è più agganciata in cima.** Restando ferma mentre il menù le scorreva
+sotto, la carta sembrava passarle dietro: un effetto da pagina rotta più che da comando sempre a
+portata. Il filtro sta in alto e basta — lo si incontra aprendo, lo si tocca, e da lì in poi si
+legge il menù senza una barra che mangia lo schermo. Chi volesse rimetterlo sticky si ricordi che
+sotto ci passano le fasce colorate delle sezioni.
+
+**3. I testi erano troppo piccoli, e non era una questione di gusto.** La carta di base cresce di
+circa due punti su tutte le misure del contenuto (nome del locale 20→22, nomi dei piatti 14→16,
+prezzi uguale, titoli di sezione e descrizioni a seguire), e **il pavimento della riga degli
+allergeni sale da 10 a 11px**: era la riga più piccola della pagina proprio dove serviva leggerla
+meglio. Le tre grandezze (Compatta/Normale/Ampia) restano quelle e continuano a moltiplicare da lì.
+⚠️ Le misure sono in **due copie gemelle** — `landing/menu-page.css` e l'anteprima del portale — e
+l'anteprima resta un punto sotto perché la cornice del telefono è larga 360 contro i ~390 di un
+telefono vero.
+
+**Le foto adesso sono tre risposte a una domanda sola: nessuna, quadrate, tonde** (migration 711).
+Nel portale è una scelta unica, con i tre campioncini in fila come per i titoli di sezione:
+«nessuna» non è un interruttore a parte con dentro un'opzione nascosta — per chi decide sono tre
+modi di fare la stessa cosa. Sotto restano **due campi**, `show_dish_photos` (che c'è dalla 705 e
+che gli scatti pubblicati contengono da mesi) e `dish_photo_shape`: così gli scatti in sala non
+vanno riletti, e spegnere le foto per poi riaccenderle riporta la forma che si era scelta. La forma
+vale per le **miniature in lista**; la foto grande del popup resta rettangolare, perché un cerchio
+al posto di una foto non è una scelta di stile, è un ritaglio in meno.
+
+Terza voce della strada tracciata dal Tema 27: colonna, una riga in `venue_appearance()`, una nei
+default, una nell'annulla. Nient'altro.
+
+**Nel portale**, per memoria: la valuta si è spostata **dentro la scatola Aspetto** — è lì che si
+va a sistemare come si legge il menù — pur restando una modifica di **contenuto** (vive sul menù,
+l'annulla dell'aspetto non la tocca, cambiarla accende l'avviso come cambiare un prezzo); la
+pastiglia «Attivo/Inattivo» dell'indirizzo è diventata **un'etichetta ferma più un interruttore**,
+perché letta com'era sembrava uno stato e nessuno la premeva; e la riga di pubblicazione in cima
+all'editor adesso **tiene il suo spazio da ferma**, che è la ragione per cui rende un paragrafo
+vuoto anche prima di sapere cosa scriverci — senza, alla prima lettera battuta tutto il menù
+scendeva di cinquanta pixel.
+
+
 ## Prossimo passo
 
-**Aggiornato il 2026-09-02, fine giornata.** La fase 2 è fatta e in produzione: il menù al tavolo
-si apre da `allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate.
+**Aggiornato il 2026-09-03.** La fase 2 è fatta e in produzione: il menù al tavolo si apre da
+`allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate; la **711 (forma delle foto)
+è scritta e DA APPLICARE** a mano dal SQL editor.
 
 **Fatto oggi**: indirizzo e QR (PNG + vettoriale), pagina pubblica collegata, bozza/pubblicato con
 i due presidi (avviso sugli allergeni non pubblicati, foto protette dalla cancellazione), ritiro
