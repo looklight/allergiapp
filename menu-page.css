@@ -468,8 +468,14 @@
   font-size: 14px;
 }
 .menu-section { margin-bottom: 22px; }
+/* ⚠️ LO SPAZIO SOTTO NON PUÒ ESSERE MINORE DI QUELLO FRA I PIATTI (13px, v.
+   .menu-items): era 5, e il filetto sembrava appoggiato sopra la prima riga —
+   il titolo stava più vicino al primo piatto di quanto i piatti stessero fra
+   loro. La regola è che sotto un'intestazione vada MENO spazio che sopra (così
+   si lega a quello che annuncia) ma non meno dello spazio interno della lista,
+   o ci sbatte contro. Sopra la sezione ce ne sono 22. */
 .menu-section-title {
-  margin: 0 0 5px;
+  margin: 0 0 10px;
   font-size: calc(14px * var(--ms, 1));
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -485,7 +491,7 @@
    rettangolo con due strisce bianche ai lati. Il bianco sopra regge perché
    le tinte le scegliamo noi (DIGITAL_MENU, Temi 8 e 25). */
 .menu-section-title.is-banner {
-  margin: 0 -16px 8px;
+  margin: 0 -16px 10px;
   padding: 5px 16px;
   background: var(--accent);
   color: #fff;
@@ -493,12 +499,20 @@
 /* Solo testo: più grande, scuro, senza colore e senza filetto. L'unico dei
    tre che non usa la tinta del locale. */
 .menu-section-title.is-plain {
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   font-size: calc(18px * var(--ms, 1));
   letter-spacing: 0;
   text-transform: none;
   color: var(--text);
 }
+/* CON LA DESCRIZIONE SOTTO, il titolo le sta VICINO: la didascalia è del
+   titolo, non della lista, e lo spazio grande sta fra la descrizione e i
+   piatti — ce l'ha già lei. La classe la mette chi rende, in tutt'e due le
+   copie, invece di `:has()`: così la regola è identica di qua e di là e
+   `npm run gemelle` la può confrontare.
+   Sta DOPO le tre varianti apposta: stessa specificità, vince l'ultima. */
+.menu-section-title.has-desc { margin-bottom: 5px; }
+
 .menu-section-desc {
   margin: 0 0 10px;
   font-size: calc(12px * var(--ms, 1));
