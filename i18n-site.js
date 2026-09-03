@@ -112,12 +112,20 @@ function applyTranslations(lang) {
  * Aggiorna i meta tag per SEO
  */
 function updateMetaTags(lang) {
+  // I meta si traducono SOLO se la pagina dichiara le sue chiavi con
+  // data-i18n-meta sul tag <html> (la homepage dice "meta", /menu dice
+  // "menuLandingMeta"). Prima si riscrivevano sempre con quelli della
+  // homepage: ogni pagina del sito, appena applicava le traduzioni, si
+  // ritrovava titolo e descrizione di un'altra pagina. Senza l'attributo
+  // adesso restano quelli scritti nel file, che sono giusti.
+  const ns = document.documentElement.dataset.i18nMeta;
+  if (!ns) return;
   const metas = {
-    description: getTranslation('meta.description', lang),
-    keywords: getTranslation('meta.keywords', lang),
-    ogTitle: getTranslation('meta.ogTitle', lang),
-    ogDescription: getTranslation('meta.ogDescription', lang),
-    title: getTranslation('meta.title', lang)
+    description: getTranslation(ns + '.description', lang),
+    keywords: getTranslation(ns + '.keywords', lang),
+    ogTitle: getTranslation(ns + '.ogTitle', lang),
+    ogDescription: getTranslation(ns + '.ogDescription', lang),
+    title: getTranslation(ns + '.title', lang)
   };
 
   // Title

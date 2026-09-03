@@ -1,8 +1,13 @@
 // Smooth scroll for navigation
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const href = this.getAttribute('href');
+        // Un href="#" da solo non punta a niente: sono i bottoni della lingua
+        // in fondo alla pagina, che hanno un loro comportamento. Passarlo a
+        // querySelector sollevava un'eccezione a ogni cambio di lingua, su
+        // tutte le pagine del sito.
+        if (!href || href === '#') return;
+        e.preventDefault();
         const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({
