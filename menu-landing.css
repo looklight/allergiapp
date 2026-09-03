@@ -385,51 +385,49 @@
     font-weight: 600;
 }
 
-/* ── COME SI FA ─────────────────────────────────────────────────────── */
+/* ── IL LEGAME CON L'APP ────────────────────────────────────────────── */
 
-.ml-how {
+.ml-app {
     padding: 70px 0;
     background: var(--bg-alt);
 }
 
-.ml-steps {
+.ml-app-inner {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 28px;
-    margin-top: 44px;
-}
-
-.ml-step {
-    background: #fff;
-    border-radius: 18px;
-    padding: 28px 26px;
-    box-shadow: 0 2px 14px var(--shadow);
-}
-
-.ml-step-num {
-    display: inline-flex;
-    align-items: center;
+    grid-template-columns: minmax(0, 22em) minmax(0, 34em);
+    gap: 24px 64px;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--primary-light);
-    /* Il verde di marca sul verde chiaro sta a 3,1:1: qui dentro c'è un
-     * numero, ed è testo. */
-    color: #1B5E20;
+}
+
+.ml-app-title {
+    line-height: 1.15;
+    font-size: clamp(26px, 3.5vw, 34px);
     font-weight: 800;
-    margin-bottom: 14px;
+    margin: 0;
 }
 
-.ml-step-title {
-    font-size: 19px;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
-
-.ml-step-text {
+.ml-app-text p {
     color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.ml-app-text a {
+    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
+/* Il pezzo che non c'è ancora sta in un riquadro suo: non deve poter essere
+ * letto di sfuggita come se fosse fra le cose che si possono avere oggi. */
+.ml-app-soon {
+    margin-top: 4px;
+    padding: 14px 16px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: #fff;
     font-size: 15px;
+}
+
+.ml-app-soon strong {
+    color: var(--text);
 }
 
 /* ── IL FILTRO ──────────────────────────────────────────────────────── */
@@ -558,7 +556,8 @@
         width: 100%;
     }
 
-    .ml-filter-inner {
+    .ml-filter-inner,
+    .ml-app-inner {
         grid-template-columns: minmax(0, 34em);
     }
 }
