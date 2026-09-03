@@ -153,6 +153,21 @@ Risolto in light mode su EAS Android (build 1.1.0). Aggiunto hardening night-mod
 
 ## Feature roadmap
 
+### QR del menù personalizzabile — candidato premium (deciso 2026-09-03)
+
+Il logo del ristorante dentro il codice QR del menù al tavolo. **Cosmetico**, quindi si vende senza rompere niente: chi non paga ha lo stesso QR che funziona identico.
+
+⚠️ **Il QR in sé NON si mette a pagamento**: è la strada per arrivare al tavolo, e un menù pubblicato senza QR è un menù che nessuno può aprire. Stessa ragione per cui il filtro allergeni non si vende.
+
+Non fatto ora perché nel portale non esiste ancora niente che sappia se un locale è premium: sarebbero tre pezzi (il logo, il muro, la lettura del piano) per un cliente che non c'è. Le note tecniche raccolte, così non si rifà la ricerca:
+
+- Nessuno "inserisce" il logo nel QR: lo **copre**. Il QR nasce ridondante, e il livello di correzione decide quanto può perdere — L ~7%, **M ~15% (quello che usiamo oggi)**, Q ~25%, H ~30%.
+- Quindi: generare a **`H`** per i codici col logo, poi disegnarci sopra l'immagine (PNG su canvas, SVG incorporata). Tutto in `partner/src/lib/qr.ts`, che è già l'unico posto da cui passa il QR.
+- Regola pratica: logo **centrato, sotto il 20-25% del lato**, con un bordino bianco attorno.
+- ⚠️ A `H` il codice è **più fitto** a parità di indirizzo: il file per la tipografia regge, un adesivo piccolo va provato. **Un QR sul tavolo non si corregge da remoto** — non si tocca il file da stampare senza averlo provato stampato.
+- I "QR strani" (puntini tondi, angoli sagomati, gradienti) sono un'altra cosa: la libreria `qrcode` disegna solo quadratini, servirebbe cambiarla. E costano leggibilità nella stessa direzione del logo: farli insieme è la ricetta per un QR che funziona sul tuo telefono e non su quello di un cliente.
+- Voce a sé, se si vuole il nostro ritorno prima del premium: una riga **sotto** il codice nel file da stampare («Menù con filtro allergeni di AllergiApp»), che il premium toglie insieme al logo e non mangia correzione d'errore. Non decisa.
+
 ### Ristoranti Premium (certificati)
 **Priorità: media — da pianificare dopo la stabilizzazione del lancio**
 
