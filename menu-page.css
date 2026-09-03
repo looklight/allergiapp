@@ -392,10 +392,19 @@
   margin-top: 6px;
   overflow-x: auto;
   padding-bottom: 2px;
-  /* le pastiglie escono dal bordo destro: una fila che si ferma prima del
-     margine sembra finita anche quando non lo è */
-  margin-right: -16px;
-  padding-right: 16px;
+  /* LA FILA SBORDA DA TUTT'E DUE I LATI, e i due margini fanno due mestieri
+     diversi. Il margine negativo porta il contenitore fino al bordo dello
+     schermo: una fila che si ferma prima del margine sembra finita anche
+     quando non lo è, e una pastiglia che esce dev'essere tagliata dal bordo
+     vero — non svanire due centimetri prima, come se qualcosa la coprisse.
+     Il padding uguale e contrario rimette il contenuto sul margine della
+     pagina quando la fila è ferma ai suoi capi, così da fermi le pastiglie
+     sono allineate a tutto il resto.
+     ⚠️ Vanno insieme e sono simmetrici: solo a destra (com'era fino al
+     2026-09-03) vuol dire che le pastiglie entrano dal bordo dello schermo e
+     spariscono al margine, cioè due regole diverse per lo stesso gesto. */
+  margin-inline: -16px;
+  padding-inline: 16px;
   scrollbar-width: none;
 }
 .menu-pills::-webkit-scrollbar { display: none; }
@@ -403,8 +412,8 @@
   flex-wrap: wrap;
   overflow: visible;
   margin-top: 0;
-  margin-right: 0;
-  padding-right: 0;
+  margin-inline: 0;
+  padding-inline: 0;
 }
 .menu-pill {
   flex-shrink: 0;
