@@ -28,6 +28,10 @@ export default function FullPreviewPage() {
   const { venues } = useVenues();
   const { menu, loading } = useMenu(id);
   const [needs, setNeeds] = useState<ViewerNeeds>(NO_NEEDS);
+  // I tre piatti finti, a comando come nell'editor. Questa pagina si apre in
+  // una scheda a parte e non condivide niente con quella: lo stato è suo, e
+  // parte spento.
+  const [esempio, setEsempio] = useState(false);
 
   function toggleNeed(kind: 'allergens' | 'diets', code: string) {
     setNeeds((prev) => ({
@@ -75,17 +79,26 @@ export default function FullPreviewPage() {
           altrimenti prima o poi qualcuno lo copia e lo manda a un cliente.
           Sulla pagina pubblica vera non ci sarà. */}
       <div className="flex items-center justify-between gap-3 bg-gray-900 px-4 py-1.5 text-[11px] text-white">
-        {/* Col menù ancora vuoto qui sotto ci sono tre piatti finti
-            (v. MenuPreview): la fascia è l'unico posto che può dirlo, e la
-            condizione è la stessa che accende l'esempio. */}
+        {/* Con l'esempio acceso la fascia lo dice: è l'unico posto che può
+            farlo, perché dentro lo schermo simulato c'è solo quello che
+            vedrebbe un cliente. */}
         <span>
-          {menu.sections.length === 0 && menu.loose.length === 0
+          {esempio
             ? `${d.menuEditor.previewSampleCaption} ${d.menuEditor.fullPreviewNotice}`
             : d.menuEditor.fullPreviewNotice}
         </span>
-        <Link href={`/menu/${menu.id}`} className="shrink-0 underline underline-offset-2">
-          {d.menuEditor.fullPreviewBack}
-        </Link>
+        <div className="flex shrink-0 items-center gap-3">
+          {/* Solo a menù vuoto: con dei piatti dentro non c'è niente da
+              dimostrare. */}
+          {menu.sections.length === 0 && menu.loose.length === 0 && (
+            <button onClick={() => setEsempio(!esempio)} className="underline underline-offset-2">
+              {esempio ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
+            </button>
+          )}
+          <Link href={`/menu/${menu.id}`} className="underline underline-offset-2">
+            {d.menuEditor.fullPreviewBack}
+          </Link>
+        </div>
       </div>
 
       {/* La colonna resta stretta come un telefono anche su un monitor: il
@@ -119,6 +132,7 @@ export default function FullPreviewPage() {
             headingFont={locale?.headingFont ?? 'modern'}
             textScale={locale?.textScale ?? 'normal'}
             lineHeight={locale?.lineHeight ?? 'normal'}
+            mostraEsempio={esempio}
             needs={needs}
             onToggleNeed={toggleNeed}
           />

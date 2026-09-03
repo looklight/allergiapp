@@ -121,6 +121,7 @@ export default function MenuPreview({
   textScale,
   lineHeight,
   needs,
+  mostraEsempio,
   onToggleNeed,
 }: {
   menu: Menu;
@@ -155,6 +156,11 @@ export default function MenuPreview({
   // Quanta aria fra le righe: un moltiplicatore solo, come la grandezza.
   lineHeight: LineHeight;
   needs: ViewerNeeds;
+  // I tre piatti finti per giudicare l'aspetto quando il menù è ancora vuoto.
+  // Lo accende CHI USA l'anteprima, non lei: comparendo da sé si leggevano
+  // come piatti veri. Qui si controlla solo che ci sia davvero posto — con
+  // dei piatti dentro l'esempio non si mostra comunque.
+  mostraEsempio: boolean;
   onToggleNeed: (kind: 'allergens' | 'diets', code: string) => void;
 }) {
   const { d, locale } = useI18n();
@@ -264,14 +270,10 @@ export default function MenuPreview({
   // MENÙ VUOTO: al suo posto l'esempio. Si costruisce qui, dopo `gruppi`,
   // perché è esattamente la stessa forma — una sezione con dentro delle
   // righe — e da qui in giù nessuno sa più se i piatti sono veri.
-  // ⚠️ L'esempio compare solo quando NON C'È PROPRIO NIENTE, e la condizione è
-  // scritta come quella dell'editor (`vuoto` in menu/[id]/page.tsx): è la
-  // stessa che decide la riga sopra il telefono, e se le due divergessero si
-  // vedrebbero piatti finti con scritto sopra "come lo vedono i tuoi
-  // clienti". Un menù che ha già una sezione, ma vuota, non è "niente": lì
-  // resta la riga di prima, perché il ristoratore ha cominciato e la sezione
-  // che ha creato non deve sparire sotto tre piatti che non sono suoi.
-  const vuoto = menu.sections.length === 0 && menu.loose.length === 0;
+  // L'esempio si mostra solo se è stato chiesto E se non c'è niente da
+  // mostrare al suo posto: con dei piatti dentro non compare mai, qualunque
+  // cosa dica chi ci usa.
+  const vuoto = mostraEsempio && gruppi.length === 0;
   const piattiEsempio: Dish[] = d.menuEditor.previewSampleDishes.map((p, i) => ({
     id: `esempio-${i}`,
     name: p.name,

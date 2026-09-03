@@ -385,6 +385,11 @@ const it = {
     // gli stessi che il portale usa già come esempio altrove.
     previewEmpty: 'Aggiungi i piatti per vedere il menù.',
     previewSampleCaption: 'Esempio: così si vedranno i tuoi piatti.',
+    // A COMANDO e non da sé (decisione dell'utente): tre piatti che compaiono
+    // senza che nessuno li abbia chiesti si leggono come piatti veri, e chi
+    // apre il menù per la prima volta si chiede di chi siano.
+    previewSampleShow: 'Vedi un esempio',
+    previewSampleHide: 'Nascondi l’esempio',
     previewSampleSection: 'Antipasti',
     previewSampleDishes: [
       {

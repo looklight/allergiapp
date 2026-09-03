@@ -315,6 +315,8 @@ const en: typeof it = {
     fullPreviewBack: 'Back to the editor',
     previewEmpty: 'Add dishes to see the menu.',
     previewSampleCaption: 'Example: this is how your dishes will look.',
+    previewSampleShow: 'See an example',
+    previewSampleHide: 'Hide the example',
     previewSampleSection: 'Starters',
     previewSampleDishes: [
       { name: 'Spaghetti carbonara', description: 'Guanciale, egg yolk, pecorino romano and black pepper.' },

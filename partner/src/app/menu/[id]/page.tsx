@@ -90,6 +90,11 @@ export default function MenuEditorPage() {
   // telefono — e sono la stessa prova: aprendo la seconda, il ristoratore
   // deve ritrovare le pastiglie che aveva appena toccato nella prima.
   const [needs, setNeeds] = useState<ViewerNeeds>(NO_NEEDS);
+  // I tre piatti finti nell'anteprima, a comando. Stanno QUI e non dentro
+  // l'anteprima per la stessa ragione delle esigenze: le anteprime sono due —
+  // quella a lato e quella a tutto schermo da telefono — e devono raccontare
+  // la stessa cosa.
+  const [esempio, setEsempio] = useState(false);
   // Il trascinamento. Cosa si sta muovendo (una riga o una sezione) e dove
   // andrebbe a finire: sono due cose separate perché il bersaglio cambia a
   // ogni pixel mentre l'oggetto trascinato resta lo stesso.
@@ -234,6 +239,7 @@ export default function MenuEditorPage() {
       textScale={locale?.textScale ?? 'normal'}
       lineHeight={locale?.lineHeight ?? 'normal'}
       needs={needs}
+      mostraEsempio={esempio}
       onToggleNeed={toggleNeed}
     />
   );
@@ -337,37 +343,13 @@ export default function MenuEditorPage() {
         />
       </div>
 
-      {/* Il titolo della pagina è il NOME DEL LOCALE, non un'etichetta
-          generica: è l'unica cosa che il cliente legge per forza, in cima a
-          ogni menù di questo ristorante (vale per tutti, come logo e
-          colore — da qui e non più da "Aspetto"). Il logo viene prima del
-          nome per restare coerente con l'intestazione dell'anteprima, che lo
-          mostra nello stesso ordine. */}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <LogoPicker logoUrl={brand.logoUrl} onChange={(logoUrl) => setBrand({ logoUrl })} />
-        <input
-          type="text"
-          value={brand.name}
-          onChange={(e) => setBrand({ name: e.target.value })}
-          placeholder={d.menuEditor.venueNamePlaceholder}
-          aria-label={d.menuEditor.venueNameLabel}
-          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
-        />
-      </div>
-
-      {/* Descrizione del menù: facoltativa, sotto il titolo. Stesso stile
-          "invisibile finché non ci si passa sopra" del titolo, per non
-          aggiungere un riquadro a un editor che finora non ne aveva. */}
-      <textarea
-        value={menu.description}
-        onChange={(e) => save(setMenuDescription(menu, e.target.value))}
-        placeholder={d.menuEditor.descriptionPlaceholder}
-        aria-label={d.menuEditor.descriptionPlaceholder}
-        rows={2}
-        className="mb-6 mt-1 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-sm text-gray-600 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
-      />
-
-      <div className="mb-4">
+      {/* L'ASPETTO PRIMA DEL NOME (scelta dell'utente, 03/09): il flusso è
+          "decido come si vede, poi lo riempio", e la scatola stava in mezzo
+          fra il titolo e i piatti — cioè dopo che il ristoratore aveva già
+          cominciato a comporre. Chiusa è una riga sola, quindi in cima non
+          ruba niente a nessuno; e col menù ancora vuoto adesso c'è un esempio
+          da guardare mentre si sceglie (v. previewSampleShow). */}
+      <div className="mt-4">
         <BrandBar
           accent={brand.accent}
           currency={menu.currency}
@@ -401,6 +383,36 @@ export default function MenuEditorPage() {
           onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
         />
       </div>
+
+      {/* Il titolo della pagina è il NOME DEL LOCALE, non un'etichetta
+          generica: è l'unica cosa che il cliente legge per forza, in cima a
+          ogni menù di questo ristorante (vale per tutti, come logo e
+          colore — da qui e non più da "Aspetto"). Il logo viene prima del
+          nome per restare coerente con l'intestazione dell'anteprima, che lo
+          mostra nello stesso ordine. */}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <LogoPicker logoUrl={brand.logoUrl} onChange={(logoUrl) => setBrand({ logoUrl })} />
+        <input
+          type="text"
+          value={brand.name}
+          onChange={(e) => setBrand({ name: e.target.value })}
+          placeholder={d.menuEditor.venueNamePlaceholder}
+          aria-label={d.menuEditor.venueNameLabel}
+          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
+        />
+      </div>
+
+      {/* Descrizione del menù: facoltativa, sotto il titolo. Stesso stile
+          "invisibile finché non ci si passa sopra" del titolo, per non
+          aggiungere un riquadro a un editor che finora non ne aveva. */}
+      <textarea
+        value={menu.description}
+        onChange={(e) => save(setMenuDescription(menu, e.target.value))}
+        placeholder={d.menuEditor.descriptionPlaceholder}
+        aria-label={d.menuEditor.descriptionPlaceholder}
+        rows={2}
+        className="mb-6 mt-1 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-sm text-gray-600 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
+      />
 
       {vuoto ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
@@ -684,15 +696,17 @@ export default function MenuEditorPage() {
           <p className="mb-0.5 text-center text-sm font-medium text-gray-900">
             {d.menuEditor.previewTitle}
           </p>
-          {/* ⚠️ Con il menù ancora vuoto l'anteprima mostra tre piatti FINTI
-              (v. MenuPreview), e questa riga è l'unico posto che lo dice:
-              `vuoto` è la stessa identica condizione che lì dentro accende
-              l'esempio, e le due non devono divergere — o si vedrebbero
-              piatti di esempio con scritto sopra "come lo vedono i tuoi
-              clienti". */}
+          {/* Con l'esempio acceso questa riga dice che i piatti non sono suoi:
+              è l'unico posto che può dirlo, ed è il motivo per cui l'esempio
+              si accende da qui e non da dentro l'anteprima. */}
           <p className="mx-auto mb-2 max-w-[340px] text-center text-xs text-gray-500">
-            {vuoto ? d.menuEditor.previewSampleCaption : d.menuEditor.previewCaption}
+            {esempio ? d.menuEditor.previewSampleCaption : d.menuEditor.previewCaption}
           </p>
+          {/* Solo a menù vuoto: con dei piatti dentro non c'è niente da
+              dimostrare, e l'esempio non comparirebbe comunque. */}
+          {vuoto && (
+            <BottoneEsempio acceso={esempio} onClick={() => setEsempio(!esempio)} />
+          )}
           <PhoneFrame>{anteprima}</PhoneFrame>
           {/* ATTACCATO AL TELEFONO, perché parla del telefono: è lo stesso
               schermo, guardato più grande. In una scheda a parte e non al
@@ -758,7 +772,12 @@ export default function MenuEditorPage() {
       </button>
 
       {previewOpen && (
-        <MobilePreview onClose={() => setPreviewOpen(false)}>{anteprima}</MobilePreview>
+        <MobilePreview
+          onClose={() => setPreviewOpen(false)}
+          esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
+        >
+          {anteprima}
+        </MobilePreview>
       )}
 
       {adding && (
@@ -862,7 +881,18 @@ export default function MenuEditorPage() {
 // L'anteprima da telefono, a tutto schermo: sotto lg non c'è spazio per
 // tenerla accanto all'editor. Usa useModal come tutte le finestre, così Esc
 // la chiude e il fuoco non se ne va per la pagina dietro.
-function MobilePreview({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+function MobilePreview({
+  onClose,
+  esempio,
+  children,
+}: {
+  onClose: () => void;
+  // null quando non c'è niente da dimostrare (il menù ha già dei piatti).
+  // Da telefono questa è l'unica via per accendere l'esempio: la colonna
+  // dell'anteprima, col suo bottone, sotto lg non c'è.
+  esempio: { acceso: boolean; cambia: () => void } | null;
+  children: React.ReactNode;
+}) {
   const { d } = useI18n();
   const panel = useModal<HTMLDivElement>(onClose);
 
@@ -878,12 +908,22 @@ function MobilePreview({ onClose, children }: { onClose: () => void; children: R
       <div className="max-h-full origin-center scale-[0.85] overflow-visible sm:scale-100">
         <PhoneFrame>{children}</PhoneFrame>
       </div>
-      <button
-        onClick={onClose}
-        className="mt-3 rounded-full bg-white px-5 py-2 text-sm font-medium text-gray-900 shadow-lg"
-      >
-        {d.common.close}
-      </button>
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+        {esempio && (
+          <button
+            onClick={esempio.cambia}
+            className="rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-white"
+          >
+            {esempio.acceso ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
+          </button>
+        )}
+        <button
+          onClick={onClose}
+          className="rounded-full bg-white px-5 py-2 text-sm font-medium text-gray-900 shadow-lg"
+        >
+          {d.common.close}
+        </button>
+      </div>
     </div>
   );
 }
@@ -922,6 +962,20 @@ function AddDishesButton({ onClick }: { onClick: () => void }) {
         <path d="M12 5v14M5 12h14" />
       </svg>
       {d.menuEditor.addDishes}
+    </button>
+  );
+}
+
+// Il comando che accende i tre piatti finti. Grigio e minuto: è un aiuto per
+// decidere l'aspetto, non una delle cose che si fanno in questa pagina.
+function BottoneEsempio({ acceso, onClick }: { acceso: boolean; onClick: () => void }) {
+  const { d } = useI18n();
+  return (
+    <button
+      onClick={onClick}
+      className="mx-auto mb-2 block rounded-lg px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+    >
+      {acceso ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
     </button>
   );
 }
