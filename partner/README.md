@@ -269,9 +269,10 @@ e in `next-env.d.ts` un percorso che su Vercel non esiste.
   vegano, latte, uova…) invece di "prima tutti gli allergeni, poi tutte le
   esigenze". ⚠️ È **fissa e non calcolata sul menù**: chi ha un'allergia cerca
   la sua parola e la trova sempre nello stesso punto, in ogni ristorante.
-  Qui dentro c'è anche la regola che le pastiglie **accese risalgono in
-  testa** alla fila — senza, si sceglie dal pannello "Filtri", si chiude, il
-  menù si riordina e il motivo è fuori schermo a destra.
+  ⚠️ Qui c'era anche la regola che le pastiglie accese risalissero in testa
+  alla fila: **tolta il 04/09**, perché la fila cambiava sotto il dito.
+  Restano dove sono e si accendono soltanto; che qualcosa sia acceso lo
+  dicono il numero sul bottone dei filtri e la riga «x di y adatti».
 - `src/lib/menuBrand.ts` — solo costanti: i sei colori (scelti da noi, tutti
   scuri abbastanza da reggere il testo). La riduzione del logo se n'è andata
   il 02/09: adesso il logo è un file su Storage e passa da `photos.ts`

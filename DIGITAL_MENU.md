@@ -582,9 +582,13 @@ costanti: prima tutti e quindici gli allergeni, poi le esigenze, su una riga sol
   pastiglie ed è solo l'icona**: la parola ripeteva quello che l'icona già dice ed era l'unica
   scritta della fila a non essere una scelta, e un elemento fermo accanto a uno che scorre sono due
   cose da capire dove ne basta una. Il nome resta in `aria-label`/`title`.
-- **Le pastiglie accese risalgono sempre in testa alla fila.** È la regola che tiene insieme le due
-  cose: senza, si sceglie dal pannello, si chiude, il menù si riordina sotto gli occhi e il motivo
-  è fuori schermo a destra — il cliente vede un effetto senza vederne la causa.
+- ~~**Le pastiglie accese risalgono sempre in testa alla fila.**~~ ⚠️ *Tolta il 2026-09-04.* La
+  regola faceva due cose in un gesto solo — la scelta E lo spostamento — e la fila cambiava sotto
+  il dito: chi ne accendeva due si ritrovava la seconda dove un attimo prima c'era la prima, e la
+  parola cercata andava ritrovata ogni volta. **Adesso ognuna resta al suo posto in graduatoria e
+  si accende soltanto**: la fila è una mappa ferma, e la si impara. Il motivo, quando si sceglie
+  dal pannello, resta comunque visibile senza scorrere: il **numero sul bottone dei filtri** e la
+  riga **«x di y adatti»** stanno all'inizio e non scorrono via.
 
 Resta valida la regola del Tema 2: si offrono solo le pastiglie che questo menù usa davvero,
 quindi il pannello non è mai un muro di quindici voci.
@@ -1065,10 +1069,17 @@ l'altra si sposterebbe sotto il dito proprio mentre lo si sta usando.
 
 **2a. Il bottone "Filtri" scorre con le pastiglie, ed è solo l'icona.** Una fila sola invece di un
 elemento fermo più una che scorre; la parola ripeteva quello che l'icona già dice, ed era l'unica
-scritta della fila a non essere una scelta (il nome resta in `aria-label` e `title`). ⚠️ Il bottone
-sta *dentro* la fila ma non è una pastiglia, ed è quello che lo tiene sempre per primo: il riordino
-rimette in coda solo gli elementi con la classe `menu-pill`. Rovescia una scelta del Tema 18 —
+scritta della fila a non essere una scelta (il nome resta in `aria-label` e `title`). Il bottone
+sta *dentro* la fila ma non è una pastiglia, e sta per primo. Rovescia una scelta del Tema 18 —
 scritta lì, dove qualcuno andrà a cercarla.
+
+⚠️ *Ripreso il 2026-09-04, e sono due cose.* **La fila non si riordina più**: le pastiglie accese
+restano dove sono e si accendono soltanto (v. Tema 18, dove la regola era scritta). E **il numero
+delle scelte prende il posto dell'icona invece di mettersi accanto**: affiancato allargava il
+bottone di mezzo dito, e siccome il bottone è il primo della fila spingeva tutte le pastiglie a
+ogni scelta — la parola che si stava per toccare si spostava sotto il dito. Icona e numero stanno
+nella stessa casella e si danno il cambio; la casella è larga quanto serve a due cifre, o con
+tante esigenze accese il bottone tornerebbe a ballare.
 
 **2b. La fascia dei filtri NON è più agganciata in cima.** Restando ferma mentre il menù le scorreva
 sotto, la carta sembrava passarle dietro: un effetto da pagina rotta più che da comando sempre a

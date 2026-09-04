@@ -38,7 +38,7 @@ import {
   type MenuItem,
   type MenuSection,
 } from '@/lib/menus';
-import { filaPastiglie, filterLabel, type FilterPill } from '@/lib/menuFilters';
+import { inOrdine, filterLabel, type FilterPill } from '@/lib/menuFilters';
 import {
   LINE_HEIGHT_FACTORS,
   TEXT_SCALE_FACTORS,
@@ -234,8 +234,9 @@ export default function MenuPreview({
     ...needs.allergens.map((code) => ({ kind: 'allergens' as const, code })),
     ...needs.diets.map((code) => ({ kind: 'diets' as const, code })),
   ].filter((p) => disponibili.some((x) => x.kind === p.kind && x.code === p.code));
-  // La fila: le accese in testa, poi la graduatoria (v. menuFilters.ts)
-  const fila = filaPastiglie(disponibili, accese);
+  // La fila è la graduatoria e basta: le accese NON risalgono in testa
+  // (2026-09-04, v. menuFilters.ts). Si accendono dove sono.
+  const fila = inOrdine(disponibili);
 
   // Lo spazio della foto si tiene per ALLINEARE le righe fra loro: senza, in
   // un menù dove alcuni piatti hanno la foto e altri no, il testo partirebbe
@@ -484,16 +485,24 @@ export default function MenuPreview({
               onClick={() => setFilterOpen(true)}
               aria-label={d.menuPublic.filterButton}
               title={d.menuPublic.filterButton}
-              className="flex shrink-0 items-center gap-0.5 rounded-full border border-gray-300 bg-white px-2 py-1 text-[11px] font-medium text-gray-700"
+              className="flex shrink-0 items-center rounded-full border border-gray-300 bg-white px-2 py-1 text-[11px] font-medium text-gray-700"
             >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M4 7h16M7 12h10M10 17h4" />
-              </svg>
-              {scelte > 0 && (
-                <span className="tabular-nums font-semibold" style={{ color: accent }}>
-                  {scelte}
-                </span>
-              )}
+              {/* IL NUMERO PRENDE IL POSTO DELL'ICONA, non le si affianca:
+                  affiancato allargava il bottone, e siccome è il primo della
+                  fila spingeva tutte le pastiglie a ogni scelta. La casella è
+                  larga 16 e non 14 come l'icona, che è quanto serve a due
+                  cifre (le stesse misure di landing/menu-page.css). */}
+              <span className="grid h-3.5 w-4 place-items-center">
+                {scelte > 0 ? (
+                  <span className="font-semibold tabular-nums leading-none" style={{ color: accent }}>
+                    {scelte}
+                  </span>
+                ) : (
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M4 7h16M7 12h10M10 17h4" />
+                  </svg>
+                )}
+              </span>
             </button>
             {fila.map((pill) => (
               <Pastiglia

@@ -66,17 +66,9 @@ export function inOrdine(pills: FilterPill[]): FilterPill[] {
   return [...pills].sort((a, b) => posizione(a) - posizione(b));
 }
 
-// La fila che si vede in cima al menù: le pastiglie ACCESE per prime, sempre.
-// È la regola che tiene insieme il pannello e la fila — altrimenti si sceglie
-// "senza glutine" dal pannello, si chiude, il menù si riordina sotto gli occhi
-// e il motivo è fuori schermo a destra, cioè il cliente vede un effetto senza
-// vederne la causa. Fra loro le accese restano in graduatoria: non nell'ordine
-// in cui sono state toccate, che cambierebbe la fila a ogni tocco.
-export function filaPastiglie(disponibili: FilterPill[], accese: FilterPill[]): FilterPill[] {
-  const isAccesa = (p: FilterPill) => accese.some((s) => s.kind === p.kind && s.code === p.code);
-  const ordinate = inOrdine(disponibili);
-  return [...ordinate.filter(isAccesa), ...ordinate.filter((p) => !isAccesa(p))];
-}
+// ⚠️ QUI C'ERA `filaPastiglie`, che portava in testa le pastiglie accese:
+// tolta il 2026-09-04, perché la fila cambiava sotto il dito. La graduatoria
+// è la stessa sempre, accese o spente (DIGITAL_MENU.md, Temi 18 e 28).
 
 // L'etichetta che si legge sulla pastiglia. Il prefisso arriva da fuori
 // perché è testo tradotto ("Senza" / "Without") e i dizionari stanno nelle
