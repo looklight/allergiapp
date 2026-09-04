@@ -706,6 +706,18 @@
 .layout-block .menu-item-allergens,
 .layout-block .menu-item-reason { order: 5; }
 
+/* A BLOCCO ANCHE I TITOLI DI SEZIONE STANNO AL CENTRO. Un titolo a sinistra
+   sopra dei piatti incolonnati al centro spezza la simmetria proprio dove la
+   carta la promette: a blocco tutto è centrato, e la sezione è la prima cosa
+   che si legge. Vale per tutti e tre gli stili — il filetto e la fascia
+   restano larghi quanto la colonna, cambia solo dove sta il testo dentro.
+   La descrizione della sezione segue il titolo: staccarla sarebbe peggio che
+   lasciarle tutt\x27e due a sinistra. */
+.layout-block .menu-section-title,
+.layout-block .menu-section-desc {
+  text-align: center;
+}
+
 /* ── IL SEGNO FRA UN PIATTO E L'ALTRO ──────────────────────────────
    Vale in tutt'e due le impaginazioni: il filetto sta bene anche nella carta
    a riga, e legarlo al blocco avrebbe aggiunto una seconda voce che compare e
