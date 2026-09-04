@@ -49,6 +49,19 @@
        barra in alto quando si chiude: sono la stessa superficie, e un solo
        numero è l'unico modo perché restino tali. */
     --ml-fondo: #F4FAF5;
+    /* QUANTO È LARGO LO SCHERMO DEL TELEFONO FINTO, scritto una volta sola e
+     * per tutta la pagina. Da questo numero scendono anche il bordo, i raggi,
+     * i tasti e l'ombra della cornice (v. `.ml-phone`): è l'unico modo perché
+     * la cornice si rimpicciolisca INSIEME allo schermo invece di restare
+     * spessa come a grandezza piena.
+     *
+     * Il formato è quello di un telefono di oggi e NON SI PIEGA: se l'altezza
+     * disponibile non basta, a stringersi è la larghezza. Tenere fissa la
+     * larghezza e lasciar tagliare l'altezza dava un apparecchio tozzo, largo
+     * come un telefono e alto come non lo è nessuno. 393 × 852 sono le misure
+     * vere; 393/852 = 0,4613 è quanta larghezza spetta a ogni punto di
+     * altezza concesso. A schermo stretto il valore cambia (v. in fondo). */
+    --ml-telefono: min(393px, calc((100vh - 176px) * 0.4613));
 }
 
 .ml-split {
@@ -187,16 +200,39 @@
      * misure, non un numero scritto qui. */
     width: fit-content;
     max-width: 100%;
+
+    /* ⚠️ TUTTE LE MISURE DELLA CORNICE SONO IN PROPORZIONE ALLO SCHERMO, mai
+     * numeri fissi. A grandezza piena danno esattamente i valori di prima —
+     * 10 di bordo, 54 di raggio, l'ombra a 28/64 — ma quando lo schermo si
+     * rimpicciolisce (telefono, o computer portatile basso) scendono con lui.
+     * Con numeri fissi si otteneva una saponetta: schermo largo la metà e
+     * cornice spessa uguale, cioè in proporzione il doppio di bordo e angoli
+     * tondi il doppio di un telefono vero.
+     *
+     * Le frazioni si leggono «tanto ogni 393», che è la larghezza vera dello
+     * schermo di un telefono di oggi. */
+    --ml-bordo: max(4px, calc(var(--ml-largo) * 10 / 393));
+    --ml-raggio-schermo: calc(var(--ml-largo) * 44 / 393);
+    /* Quale schermo contiene questa cornice. Le due cornici della pagina ne
+     * contengono uno diverso, e ognuna corregge questa riga. */
+    --ml-largo: var(--ml-telefono);
+
     /* La cornice dei telefoni di oggi è SOTTILE e uguale sui quattro lati. */
-    padding: 10px;
+    padding: var(--ml-bordo);
     /* Il bordo non è nero piatto: è un profilo metallico che prende luce sui
      * fianchi. Due lampi chiari agli angoli bastano a farlo sembrare un
      * oggetto invece di un rettangolo. */
     background: linear-gradient(150deg, #4a4a4e 0%, #1b1b1d 22%, #131315 50%, #1b1b1d 78%, #4a4a4e 100%);
-    border-radius: 54px;
+    /* CONCENTRICO PER COSTRUZIONE: il raggio di fuori È quello dello schermo
+     * più lo spessore del bordo. Erano due numeri scritti a mano (54 e 44) e
+     * bastava ritoccarne uno perché la cornice smettesse di correre parallela
+     * allo schermo. */
+    border-radius: calc(var(--ml-raggio-schermo) + var(--ml-bordo));
+    /* Anche l'ombra è di un oggetto piccolo quando l'oggetto è piccolo: una
+     * caduta da 64 sotto un telefono alto un palmo lo fa sembrare pesante. */
     box-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.10),
-        0 28px 64px rgba(0, 0, 0, 0.26);
+        0 calc(var(--ml-largo) * 28 / 393) calc(var(--ml-largo) * 64 / 393) rgba(0, 0, 0, 0.26);
 }
 
 /* I TASTI sul fianco. Non si toccano e non si vedono quasi: servono a dire
@@ -205,38 +241,40 @@
 .ml-phone::after {
     content: '';
     position: absolute;
-    width: 3px;
+    /* Anche loro in proporzione: 3 punti di tasto ogni 393 di schermo. Su una
+     * cornice sottile un tasto da 3 punti pieni non è più un tasto, è un
+     * granello. */
+    width: calc(var(--ml-largo) * 3 / 393);
     border-radius: 3px;
     background: linear-gradient(180deg, #4a4a4e, #232326);
 }
 
 /* Volume, a sinistra */
 .ml-phone::before {
-    left: -2px;
+    left: calc(var(--ml-largo) * -2 / 393);
     top: 17%;
     height: 15%;
 }
 
 /* Accensione, a destra: più in basso e più corto, come sui telefoni veri */
 .ml-phone::after {
-    right: -2px;
+    right: calc(var(--ml-largo) * -2 / 393);
     top: 22%;
     height: 11%;
 }
 
-/* LO SCHERMO. Il formato è quello di un telefono di oggi e NON SI PIEGA: se
- * l'altezza disponibile non basta, a stringersi è la larghezza. Tenere fissa
- * la larghezza e lasciar tagliare l'altezza — come si faceva prima — dava un
- * apparecchio tozzo, largo come un telefono e alto come non lo è nessuno.
+/* LO SCHERMO. La larghezza è quella decisa una volta sola in cima al foglio
+ * (`--ml-telefono`), che è anche la misura da cui la cornice ricava le sue.
  *
- * 393 × 852 sono le misure vere di un telefono recente; 393/852 = 0,4613 è
- * quanto sta in larghezza per ogni pixel di altezza concesso. */
+ * ⚠️ NIENTE PERCENTUALI QUI. `min(100%, …)` dentro una cornice larga
+ * `fit-content` è un giro vizioso — la percentuale si misura sul genitore e
+ * il genitore si misura sul figlio — e il browser lo scioglie come gli pare:
+ * la cornice veniva fuori larga e la carta dentro ingrandita. */
 .ml-phone-screen {
     position: relative;
-    width: min(393px, calc((100vh - 176px) * 0.4613));
+    width: var(--ml-largo);
     aspect-ratio: 393 / 852;
-    /* Concentrico con la cornice: 54 fuori meno 10 di bordo. */
-    border-radius: 44px;
+    border-radius: var(--ml-raggio-schermo);
     overflow: hidden;
     background: #fff;
 }
@@ -989,17 +1027,18 @@
 
 .ml-phone.is-scheda {
     justify-self: end;
-    border-radius: 46px;
+    /* L'unica cosa che cambia rispetto all'anteprima: lo schermo che contiene.
+     * Bordo, raggi, tasti e ombra li ricalcola da sé la cornice. */
+    --ml-largo: var(--ml-scheda-larga, 300px);
 }
 
 .ml-phone-screen.is-scheda {
     --ml-scala: 0.76;
-    /* ⚠️ 300 E NON MENO: la scheda qui dentro è marcatura vera, disegnata per
-       questa larghezza — non una carta che si rimpicciolisce con `--ml-scala`
-       come nell'anteprima del menù. Stringendo lo schermo il contenuto non si
-       scala: viene TAGLIATO, e il telefono sembra deformato. */
-    width: 300px;
-    border-radius: 36px;
+    /* ⚠️ 300 E NON MENO (v. `--ml-scheda-larga`): la scheda qui dentro è
+       marcatura vera, disegnata per questa larghezza — non una carta che si
+       rimpicciolisce con `--ml-scala` come nell'anteprima del menù.
+       Stringendo lo schermo il contenuto non si scala: viene TAGLIATO, e il
+       telefono sembra deformato. */
     background: #fff;
     font-family: -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, system-ui, sans-serif;
     color: #333;
@@ -1442,12 +1481,23 @@
      * perché un elemento di griglia si può appiccicare solo dentro la sua
      * riga, e qui il telefono deve restare fermo mentre gli scorrono sotto
      * TUTTI i comandi. */
-    /* QUANTO È LARGO IL TELEFONO, scritto una volta sola. Lo usano la cornice
-     * e la formula dell'annotazione qui sotto, che devono partire dallo stesso
-     * numero: erano due copie, una diceva 46vh e l'altra 50vh, e l'annotazione
-     * si calcolava lo spazio su un telefono più grande di quello vero. */
+    /* QUANTO È LARGO IL TELEFONO. È la stessa variabile di cima al foglio —
+     * qui cambia solo il valore, perché appiccicato in alto lo schermo ha meno
+     * altezza da spendere. La leggono lo schermo, tutte le misure della
+     * cornice e la formula dell'annotazione qui sotto, che devono partire
+     * dallo stesso numero: erano copie separate, una diceva 46vh e l'altra
+     * 50vh, e l'annotazione si calcolava lo spazio su un telefono più grande
+     * di quello vero. */
     .ml-page {
         --ml-telefono: min(calc(100vw - 64px), calc(46vh * 0.4613));
+    }
+
+    /* I TASTI SUL FIANCO SPARISCONO. Da qui in giù il telefono è alto un
+     * palmo: due trattini larghi meno di un punto non dicono più «è un
+     * telefono», si leggono come sporco sul bordo. */
+    .ml-page .ml-phone::before,
+    .ml-page .ml-phone::after {
+        display: none;
     }
 
     .ml-page .ml-split {
@@ -1512,20 +1562,6 @@
         margin-right: auto;
     }
 
-    /* ⚠️ NIENTE PERCENTUALI QUI. `min(100%, …)` dentro una cornice larga
-     * `fit-content` è un giro vizioso — la percentuale si misura sul genitore
-     * e il genitore si misura sul figlio — e il browser lo scioglie come gli
-     * pare: la cornice veniva fuori larga e la carta dentro ingrandita. I due
-     * limiti si scrivono in misure vere: quanta larghezza concede la finestra
-     * (meno i margini della colonna e il bordo della cornice) e quanta ne
-     * concede l'altezza. */
-    /* ⚠️ SOLO L'ANTEPRIMA DEL MENÙ. La scheda in app porta la stessa classe
-     * ma è un'altra cosa: dentro ha marcatura vera, che stringendo il
-     * contenitore non si rimpicciolisce — si taglia. */
-    .ml-page .ml-phone-screen:not(.is-scheda) {
-        width: var(--ml-telefono);
-    }
-
     /* LA SCHEDA SI RIMPICCIOLISCE INTERA, non si stringe. Dentro ha marcatura
      * vera disegnata per 300 punti: stringendo il contenitore si taglia (v.
      * sopra), mentre riducendola in scala resta identica, solo più piccola —
@@ -1539,10 +1575,6 @@
     .ml-page {
         --ml-scheda-larga: min(300px, calc(100vw - 76px));
         --ml-scheda-scala: 0.8;
-    }
-
-    .ml-page .ml-phone-screen.is-scheda {
-        width: var(--ml-scheda-larga);
     }
 
     .ml-page .ml-phone.is-scheda {
@@ -1608,9 +1640,15 @@
     /* LO SPAZIO CHE AVANZA A UN FIANCO, tolto quello che serve a non toccare
      * né la cornice né il bordo dello schermo: mezza finestra meno mezzo
      * telefono (col suo bordo), meno i 6 di stacco e i 10 di respiro al bordo.
-     * Su un telefono da 390 punti fanno 79 di scritta con 10 di aria fuori. */
+     * Su un telefono da 390 punti fanno una ottantina di punti di scritta con
+     * una decina di aria fuori.
+     *
+     * 413 OGNI 393 è il telefono INTERO: lo schermo più i due bordi, che ormai
+     * sono in proporzione anche loro (v. `.ml-phone`). Prima erano 20 punti
+     * fissi, e su schermo piccolo l'annotazione si toglieva più spazio di
+     * quanto la cornice ne occupasse davvero. */
     .ml-page .ml-hint {
-        max-width: calc((100vw - var(--ml-telefono) - 20px) / 2 - 16px);
+        max-width: calc((100vw - var(--ml-telefono) * 413 / 393) / 2 - 16px);
         margin-right: 6px;
         font-size: 20px;
         line-height: 1.1;
@@ -1708,23 +1746,6 @@
     .ml-custom {
         padding: 24px 18px;
         border-radius: 20px;
-    }
-
-    /* Su un telefono vero la cornice si assottiglia ancora: quello che deve
-       restare largo è la carta dentro. Raggi e isola scendono con lei, o si
-       vedrebbe una cornice di plastica intorno a uno schermo squadrato. */
-    .ml-phone {
-        padding: 7px;
-        border-radius: 42px;
-    }
-
-    .ml-phone::before,
-    .ml-phone::after {
-        display: none;
-    }
-
-    .ml-phone-screen {
-        border-radius: 35px;
     }
 
 }
