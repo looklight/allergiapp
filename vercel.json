@@ -19,6 +19,7 @@
     { "source": "/r/:slug", "destination": "/api/r/:slug" },
     { "source": "/menu", "destination": "/menu.html" },
     { "source": "/menu-demo", "destination": "/api/menu-demo" },
+    { "source": "/menu-demo/:lang", "destination": "/api/menu-demo?lang=:lang" },
     { "source": "/menu/:slug", "destination": "/api/menu/:slug" },
     { "source": "/menu/:slug/:lang", "destination": "/api/menu/:slug?lang=:lang" },
     { "source": "/u/:username", "destination": "/api/u/:username" }
