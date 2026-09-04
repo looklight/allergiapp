@@ -58,10 +58,11 @@
      * l'annotazione se ne stava dentro il campo della colonna sinistra,
      * sovrapponendosi ai riquadri: da lì il senso di schiacciato. Adesso ha
      * una corsia sua, e le tre bande — testo, annotazione, telefono — sono
-     * ciascuna piena di quello che le compete. La corsia è larga quanto la
-     * frase più lunga più i suoi margini: accorciando le frasi si stringe, e
-     * quello che avanza va al testo. */
-    column-gap: 176px;
+     * ciascuna piena di quello che le compete. La corsia è larga ESATTAMENTE
+     * quanto il riquadro dell'annotazione più il suo stacco dal telefono:
+     * 146 + 8 = 154. Se si tocca una delle due misure va toccata anche
+     * questa, o l'annotazione sborda sul testo. */
+    column-gap: 154px;
     row-gap: 24px;
     align-items: start;
 }
@@ -316,17 +317,30 @@
 .ml-hint {
     position: absolute;
     right: 100%;
-    margin: 0 14px 0 0;
+    /* Lo stacco dal telefono: più è stretto, più le scritte stanno vicine a
+       quello che indicano — e la corsia qui sopra si stringe con lui, quindi
+       quei punti tornano al testo. Sotto i sei o sette la scritta comincia a
+       toccare la cornice. */
+    margin: 0 8px 0 0;
     top: 4%;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    /* Larga quanto la riga più lunga delle tre, non un numero tondo: gli a
-       capo li decidono le frasi (un <br> dentro il testo), e la corsia qui
-       accanto si restringe di conseguenza — spazio orizzontale che torna al
-       testo. */
-    width: max-content;
-    max-width: 200px;
+    align-items: center;
+    /* ⚠️ LARGHEZZA FISSA, e non «quanto la frase»: il riquadro è agganciato
+       col bordo destro al telefono, quindi se cambia larghezza a ogni frase è
+       il suo bordo SINISTRO a spostarsi. Le tre scritte, centrate dentro
+       riquadri di misure diverse, sembravano allineate una in un modo e una
+       nell'altro — «Prova i filtri», che è corta, finiva schiacciata contro
+       la cornice. Con una misura sola si centrano tutte sullo stesso asse.
+
+       STRETTA DI PROPOSITO: le righe si spezzano più spesso e l'annotazione
+       cresce in altezza, che qui non costa niente — è fuori dal flusso e le
+       sta sopra solo aria. In cambio la corsia si stringe e quei punti vanno
+       al testo. Una nota scritta a mano a margine è fatta di righe corte e
+       irregolari: è il suo aspetto giusto, non un ripiego.
+       ⚠️ 146 + 8 di stacco = la corsia qui sopra: le tre misure sono una cosa
+       sola. */
+    width: 146px;
     /* L'inchiostro: un colore che NON è quello del sito, o l'annotazione
        sembrerebbe un pezzo della pagina invece di una cosa aggiunta sopra.
        Scuro abbastanza da stare a 5:1 sul fondo verdino. */
@@ -335,7 +349,13 @@
     font-weight: 600;
     font-size: 22px;
     line-height: 1.15;
-    text-align: right;
+    /* SU SCHERMO LARGO IL TESTO STA AL CENTRO della sua corsia: le righe sono
+       corte e di lunghezza diversa, e centrate si tengono su come una nota
+       scritta a mano invece di appoggiarsi a un margine che non c'è. LA
+       FRECCIA no: quella resta a destra, attaccata al telefono, o
+       indicherebbe il nulla. (Su schermo stretto è diverso — lì la corsia è
+       il bordo dello schermo e il testo ci si appoggia.) */
+    text-align: center;
     /* Appena storta: una riga perfettamente orizzontale non l'ha scritta
        nessuno a mano. */
     transform: rotate(-2.5deg);
@@ -363,31 +383,72 @@
 }
 
 .ml-hint-testo {
-    display: grid;
+    display: block;
 }
 
+/* ⚠️ LA FRECCIA STA A DESTRA anche quando il testo è centrato: è l'unico
+   pezzo che deve toccare il telefono. Senza questa riga eredita il centraggio
+   del contenitore e finisce in mezzo, a indicare il vuoto. */
 .ml-hint-freccia {
     display: block;
     margin: 2px 6px 0 0;
+    align-self: flex-end;
 }
 
-/* Ognuna all'altezza di quello che nomina. */
+/* Ognuna all'altezza di quello che nomina: il nome del locale, la riga dei
+   filtri, i piatti.
+
+   ⚠️ QUESTE PERCENTUALI SI MISURANO SULLA CORNICE, non sullo schermo, e la
+   cornice ha dieci punti di bordo per lato: valgono un punto e mezzo in meno
+   di quello che sembrano. Il conto per la seconda: le pastiglie del filtro
+   stanno fra il 16% e il 20% dello schermo, il loro centro al 18,1%; la punta
+   della freccia cade sette punti sotto l'inizio del blocco, cioè un punto più
+   in basso. Il 18% la metteva al 18,1%, cioè in mezzo alle pastiglie, e a
+   occhio era ancora alta: la punta di una freccia si legge come il vertice di
+   un triangolo, e vuole stare sotto il bersaglio, non dentro. Il 21% la porta
+   al 21,1%, appena sotto il bordo inferiore. */
 .ml-hint.is-1 { top: 4%; }
-.ml-hint.is-2 { top: 22%; }
+.ml-hint.is-2 { top: 21%; }
 .ml-hint.is-3 { top: 44%; }
 
-/* Tutte nella stessa cella della griglia: si sovrappongono, e l'annotazione
-   prende la misura della più lunga. */
+/* LA PRIMA HA LA GOBBA IN GIÙ: specchiata sull'orizzontale, non ridisegnata —
+   la punta continua a guardare a destra, cambia solo da che parte si incurva.
+   E sta un dito più staccata dal testo, perché incurvandosi in giù le sue due
+   righe si toccherebbero. */
+.ml-hint.is-1 .ml-hint-freccia {
+    margin-top: 8px;
+    transform: scaleY(-1);
+}
+
+/* LA SECONDA HA LA FRECCIA SOPRA LA SCRITTA. È l'unica delle tre che indica
+   una cosa piccola e precisa — la riga dei filtri — e il capo della freccia è
+   il punto che davvero indica: messo in alto cade all'altezza delle pastiglie,
+   e la scritta la segue invece di precederla. Sotto, con una riga di testo
+   sola, restava per aria. */
+.ml-hint.is-2 .ml-hint-freccia {
+    order: -1;
+    margin: 0 6px 4px 0;
+}
+
+/* SI VEDE SOLO QUELLA ACCESA, e le altre non occupano posto. Prima stavano
+   sovrapposte nella stessa cella di una griglia, così l'annotazione non
+   cambiava misura mentre il testo cambiava — ma il blocco restava alto quanto
+   la frase più lunga, e sotto una frase di una riga sola restava una riga
+   vuota fra testo e freccia. Il motivo per cui le tenevo ferme non c'era
+   nemmeno: l'annotazione è fuori dal flusso, quindi cambiando altezza non
+   sposta niente sulla pagina. */
 .ml-hint-voce {
-    grid-area: 1 / 1;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.22s ease;
+    display: none;
 }
 
 .ml-hint-voce.is-on {
-    opacity: 1;
-    visibility: visible;
+    display: block;
+    animation: ml-comparsa 0.22s ease both;
+}
+
+@keyframes ml-comparsa {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* ── LE MANOPOLE ────────────────────────────────────────────────────── */
@@ -1186,9 +1247,12 @@
 @media (prefers-reduced-motion: reduce) {
     .ml-swatch,
     .ml-choice,
-    .ml-cta,
-    .ml-hint-voce {
+    .ml-cta {
         transition: none;
+    }
+
+    .ml-hint-voce.is-on {
+        animation: none;
     }
 
     .ml-swatch:hover,
@@ -1437,10 +1501,18 @@
 
     /* Guarda dall'altra parte: si ribalta e basta, ed è giusto perché è
        orizzontale — una freccia obliqua, specchiata, punterebbe altrove. */
+    /* Sopra la scritta anche qui, e ribaltata perché l'annotazione sta a
+       destra del telefono: la punta deve guardare a sinistra. */
     .ml-page .ml-hint.is-2 .ml-hint-freccia {
-        margin: 2px 0 0 3px;
+        order: -1;
+        margin: 0 0 4px 3px;
         align-self: flex-start;
         transform: scaleX(-1);
+    }
+
+    .ml-page .ml-hint.is-1 .ml-hint-freccia {
+        margin-top: 6px;
+        align-self: flex-end;
     }
 
     .ml-page .ml-knobs-title {
