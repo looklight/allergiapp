@@ -1526,11 +1526,31 @@
         width: var(--ml-telefono);
     }
 
-    /* La scheda si stringe solo quanto basta a stare nella colonna, e non
-     * oltre: sotto i 300 punti per cui è disegnata comincia a perdere il
-     * bordo destro del carosello. */
+    /* LA SCHEDA SI RIMPICCIOLISCE INTERA, non si stringe. Dentro ha marcatura
+     * vera disegnata per 300 punti: stringendo il contenitore si taglia (v.
+     * sopra), mentre riducendola in scala resta identica, solo più piccola —
+     * e su un telefono un apparecchio finto a grandezza quasi naturale
+     * riempie tutto lo schermo e non si capisce più cos'è.
+     *
+     * Il ridimensionamento non occupa spazio nel flusso, quindi il posto che
+     * la cornice si era già preso va restituito a mano: è quello che fa il
+     * margine negativo, calcolato sulle stesse due misure — se si cambia la
+     * riduzione, il margine la segue. */
+    .ml-page {
+        --ml-scheda-larga: min(300px, calc(100vw - 76px));
+        --ml-scheda-scala: 0.8;
+    }
+
     .ml-page .ml-phone-screen.is-scheda {
-        width: min(300px, calc(100vw - 76px));
+        width: var(--ml-scheda-larga);
+    }
+
+    .ml-page .ml-phone.is-scheda {
+        transform: scale(var(--ml-scheda-scala));
+        transform-origin: top center;
+        margin-bottom: calc(
+            (var(--ml-scheda-scala) - 1) * (var(--ml-scheda-larga) * 2.168 + 20px)
+        );
     }
 
     /* I COMANDI PIÙ FITTI: appiccicato il telefono, quello che resta sotto è
