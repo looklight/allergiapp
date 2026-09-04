@@ -22,17 +22,61 @@
     border: 0;
 }
 
-/* ── LA TESTATA ─────────────────────────────────────────────────────── */
+/* ── IL BLOCCO DI TESTA ─────────────────────────────────────────────── */
+/* Su schermo largo sono due colonne: il discorso e i comandi a sinistra, il
+ * telefono a destra e visibile senza scorrere. Le tre parti sono TRE FRATELLI
+ * nel documento, perché su schermo stretto devono ricomporsi in un ordine
+ * diverso — discorso, telefono, comandi — e con le aree della griglia si dice
+ * senza spostare niente nel documento. */
 
 .ml-hero {
-    padding: 122px 0 52px;
-    background: linear-gradient(180deg, #F4FAF5 0%, #EAF4EC 100%);
+    padding: 118px 0 70px;
+    /* UN COLORE SOLO, e lo stesso su ogni schermo. Era una sfumatura, ma la
+     * fascia del telefono che resta ferma su schermo stretto ha per forza un
+     * colore solo: sopra una sfumatura si sarebbe vista come un rettangolo,
+     * e per evitarlo avevo reso piatta la testata solo lì — col risultato che
+     * telefono e computer mostravano due verdi diversi. Il tono è quello
+     * chiaro da cui la sfumatura partiva. */
+    background: var(--ml-fondo);
 }
 
+.ml-page {
+    /* Il verdino della testata. Lo usano anche la fascia del telefono e la
+       barra in alto quando si chiude: sono la stessa superficie, e un solo
+       numero è l'unico modo perché restino tali. */
+    --ml-fondo: #F4FAF5;
+}
+
+.ml-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "pitch preview"
+        "knobs preview"
+        "custom preview";
+    /* LA FASCIA DI MEZZO È L'ANNOTAZIONE. Prima era una fessura di 56 punti e
+     * l'annotazione se ne stava dentro il campo della colonna sinistra,
+     * sovrapponendosi ai riquadri: da lì il senso di schiacciato. Adesso ha
+     * una corsia sua, e le tre bande — testo, annotazione, telefono — sono
+     * ciascuna piena di quello che le compete. La corsia è larga quanto la
+     * frase più lunga più i suoi margini: accorciando le frasi si stringe, e
+     * quello che avanza va al testo. */
+    column-gap: 176px;
+    row-gap: 24px;
+    align-items: start;
+}
+
+/* TUTTO IL DISCORSO AL CENTRO della sua colonna. Con l'invito già centrato,
+ * lasciare titolo e sottotitolo a sinistra faceva due allineamenti nello
+ * stesso respiro: uno solo si legge come una scelta, due come una svista. */
 .ml-pitch {
-    max-width: 46em;
+    grid-area: pitch;
+    margin-bottom: 16px;
     text-align: center;
 }
+.ml-try-text { grid-area: knobs; }
+.ml-custom { grid-area: custom; }
+.ml-preview { grid-area: preview; }
 
 .ml-eyebrow {
     font-size: 14px;
@@ -47,7 +91,7 @@
 }
 
 .ml-title {
-    font-size: clamp(29px, 3.9vw, 46px);
+    font-size: clamp(29px, 3.7vw, 44px);
     line-height: 1.14;
     font-weight: 800;
     letter-spacing: -0.02em;
@@ -56,14 +100,18 @@
 }
 
 .ml-subtitle {
-    max-width: 34em;
+    max-width: 30em;
     margin: 0 auto;
     font-size: 18px;
     color: var(--text-secondary);
 }
 
+/* IL BLOCCO DELL'INVITO STA AL CENTRO della sua colonna, mentre quello che
+ * c'è sopra resta allineato a sinistra: è un'isola, e si legge come una cosa
+ * a sé invece che come l'ultima riga del discorso. */
 .ml-cta-row {
-    margin-top: 30px;
+    margin-top: 32px;
+    text-align: center;
 }
 
 .ml-cta-lead {
@@ -92,63 +140,28 @@
     box-shadow: 0 10px 26px rgba(76, 175, 80, 0.38);
 }
 
-/* La riga che dice cosa comprende «gratis». Sta SOTTO il bottone e non
- * dentro: sul bottone ci va la promessa corta, e la promessa corta senza il
- * dettaglio è una promessa che non sappiamo mantenere. */
+/* La riga che dice cosa si porta a casa. Sta SOTTO il bottone e non dentro:
+ * sul bottone ci va la promessa corta. */
 .ml-cta-note {
     margin: 14px auto 0;
-    max-width: 34em;
+    max-width: 32em;
     font-size: 14px;
     color: var(--text-secondary);
 }
 
-/* ── LA PROVA, DENTRO UN RIQUADRO ───────────────────────────────────── */
-/* Il riquadro serve a dire che quella è una cosa a parte e che si TOCCA. Le
- * tre parti sono tre fratelli e si dispongono con le aree della griglia,
- * perché su schermo stretto l'ordine dev'essere un altro: cappello, TELEFONO,
- * manopole. */
-
-/* Il fondo continua quello della testata e sfuma nel bianco: è lì che il
- * riquadro bianco si stacca. Su fondo bianco sarebbe un bordo e basta. */
-.ml-try {
-    padding: 0 0 70px;
-    background: linear-gradient(180deg, #EAF4EC 0%, var(--bg) 62%);
-}
-
-.ml-try-box {
+/* IL RIQUADRO È SOLO INTORNO AI COMANDI. Il telefono resta fuori, appoggiato
+ * sulla pagina: chiuderlo in una scatola dentro un'altra lo faceva sembrare
+ * un'illustrazione invece della cosa vera. */
+.ml-try-text {
     background: #fff;
     border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 40px 44px;
+    border-radius: 24px;
+    padding: 30px 32px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-        "head preview"
-        "knobs preview";
-    column-gap: 56px;
-    row-gap: 22px;
 }
 
-/* Il cappello scende in fondo alla sua riga e le manopole partono in cima
- * alla loro: si incontrano a metà, e la colonna di sinistra risulta centrata
- * contro il telefono senza doverne conoscere l'altezza. */
 .ml-try-head {
-    grid-area: head;
-    align-self: end;
-    max-width: 32em;
-}
-
-.ml-knobs {
-    grid-area: knobs;
-    align-self: start;
-    max-width: 32em;
-}
-
-.ml-preview {
-    grid-area: preview;
-    justify-self: end;
-    align-self: center;
+    margin-bottom: 24px;
 }
 
 /* ── IL TELEFONO ────────────────────────────────────────────────────── */
@@ -259,6 +272,123 @@
  * riquadro, che è una cosa sola con la colonna accanto: resta il tetto della
  * finestra perché su un portatile basso il riquadro non diventi più alto
  * dello schermo. */
+
+/* ── LE ANNOTAZIONI ─────────────────────────────────────────────────── */
+/* Scritte a pennarello sopra la fotografia, con la freccia disegnata. Non
+ * sono interfaccia: sono la mano di qualcuno che indica. Per questo niente
+ * riquadro, niente ombra e niente carattere del sito — un fumetto squadrato
+ * si legge come un avviso del programma, e un avviso del programma lo si
+ * salta.
+ *
+ * Stanno AL FIANCO del telefono, nello spazio che avanza — a sinistra su
+ * schermo largo, ai due lati su quello stretto — invece di aggiungere altezza
+ * sotto, che su un telefono è proprio quello che non c'è. E DENTRO la
+ * cornice, non nella fascia: la fascia su schermo stretto è larga tutta la
+ * pagina e non saprebbe dire dov'è il bordo dell'apparecchio.
+ *
+ * Le tre frasi stanno tutte nel documento sovrapposte: si accende quella
+ * giusta e le altre restano lì, invisibili ma ingombranti quanto serve, così
+ * l'annotazione non cambia misura mentre il testo cambia. E ognuna si mette
+ * all'altezza di quello che nomina — il nome del locale, la riga dei filtri,
+ * la carta che continua. */
+
+/* Caveat, ospitata con noi come le altre tre (licenza in fonts/OFL.txt): un
+   carattere preso da un servizio esterno vorrebbe dire l'indirizzo di chi
+   legge spedito a quel servizio a ogni visita. */
+@font-face {
+    font-family: 'Caveat';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/fonts/caveat-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Caveat';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/fonts/caveat-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+.ml-hint {
+    position: absolute;
+    right: 100%;
+    margin: 0 14px 0 0;
+    top: 4%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Larga quanto la riga più lunga delle tre, non un numero tondo: gli a
+       capo li decidono le frasi (un <br> dentro il testo), e la corsia qui
+       accanto si restringe di conseguenza — spazio orizzontale che torna al
+       testo. */
+    width: max-content;
+    max-width: 200px;
+    /* L'inchiostro: un colore che NON è quello del sito, o l'annotazione
+       sembrerebbe un pezzo della pagina invece di una cosa aggiunta sopra.
+       Scuro abbastanza da stare a 5:1 sul fondo verdino. */
+    color: #A8461F;
+    font-family: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.15;
+    text-align: right;
+    /* Appena storta: una riga perfettamente orizzontale non l'ha scritta
+       nessuno a mano. */
+    transform: rotate(-2.5deg);
+    transform-origin: right center;
+    pointer-events: none;
+}
+
+/* ARRIVA IN RITARDO. La pagina si apre, si vede il telefono, e un attimo dopo
+ * compare la scritta: è quello che fa sembrare una mano che annota invece di
+ * un'etichetta stampata insieme al resto. Un secondo scarso — abbastanza da
+ * accorgersene, non tanto da dimenticarsene.
+ *
+ * Ferma per chi ha chiesto meno movimento: fuori dal blocco qui sotto
+ * l'annotazione è semplicemente visibile, e la classe che il codice aggiunge
+ * non cambia niente. */
+@media (prefers-reduced-motion: no-preference) {
+    .ml-hint {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .ml-hint.is-pronta {
+        opacity: 1;
+    }
+}
+
+.ml-hint-testo {
+    display: grid;
+}
+
+.ml-hint-freccia {
+    display: block;
+    margin: 2px 6px 0 0;
+}
+
+/* Ognuna all'altezza di quello che nomina. */
+.ml-hint.is-1 { top: 4%; }
+.ml-hint.is-2 { top: 22%; }
+.ml-hint.is-3 { top: 44%; }
+
+/* Tutte nella stessa cella della griglia: si sovrappongono, e l'annotazione
+   prende la misura della più lunga. */
+.ml-hint-voce {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.22s ease;
+}
+
+.ml-hint-voce.is-on {
+    opacity: 1;
+    visibility: visible;
+}
 
 /* ── LE MANOPOLE ────────────────────────────────────────────────────── */
 
@@ -371,46 +501,40 @@
  * niente lucchetti né avvisi di pagamento, solo il tono più basso di una
  * cosa che qui non c'è. */
 
-/* Non è più una coda del pannello: è una sezione, e dice cosa si può fare
- * invece di cosa qui manca. In coda al pannello allungava la colonna al
- * doppio del telefono, e sotto la cornice restavano seicento pixel di
- * niente. */
+/* Il SECONDO riquadro della colonna: dice cosa si può fare, non cosa qui
+ * manca. Sta sotto i comandi perché è la loro continuazione — le stesse
+ * scelte, ma da fare nel portale. */
 .ml-custom {
-    padding: 8px 0 72px;
-    text-align: center;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 26px 32px 28px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
 }
 
 .ml-custom-title {
-    line-height: 1.15;
-    font-size: clamp(26px, 3.5vw, 34px);
+    line-height: 1.25;
+    font-size: 22px;
     font-weight: 800;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .ml-custom-intro {
-    max-width: 40em;
-    margin: 0 auto 36px;
+    font-size: 15px;
     color: var(--text-secondary);
+    margin-bottom: 22px;
 }
 
 .ml-custom-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-    max-width: 60em;
-    margin: 0 auto;
-    text-align: left;
-}
-
-.ml-custom-item {
-    background: var(--bg-alt);
-    border-radius: 16px;
-    padding: 20px 22px;
+    gap: 18px;
 }
 
 .ml-custom-note {
-    margin-top: 30px;
-    font-size: 15px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
     color: var(--text-secondary);
 }
 
@@ -452,7 +576,136 @@
 
 
 
-/* ── IL LEGAME CON L'APP ────────────────────────────────────────────── */
+/* ── COME FUNZIONA ──────────────────────────────────────────────────── */
+/* Due corsie, e non un elenco solo: da una parte il lavoro del ristoratore,
+ * che si fa una volta; dall'altra quello del cliente, che si fa ogni volta
+ * che si siede. Separarle dice da sé dove sta la fatica — tre passi contro
+ * due — senza doverlo scrivere. */
+
+.ml-how {
+    padding: 66px 0 60px;
+}
+
+.ml-how-title {
+    line-height: 1.15;
+    font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.ml-how-lanes {
+    display: grid;
+    /* Tre passi per parte: due corsie uguali. Il lavoro non è più tutto da un
+       lato, ed è giusto che si veda — quello che il cliente fa in più è il
+       filtro, cioè la ragione per cui questo menù esiste. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 62em;
+    margin: 0 auto;
+}
+
+.ml-how-lane {
+    border-radius: 18px;
+    padding: 22px 24px 24px;
+}
+
+/* La corsia di chi legge è quella colorata: è il suo lavoro, ed è quello che
+   stiamo vendendo. Quella del cliente resta neutra. */
+.ml-how-lane.is-tua {
+    background: var(--primary-light);
+}
+
+.ml-how-lane.is-cliente {
+    background: var(--bg-alt);
+}
+
+.ml-how-who {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.ml-how-lane.is-tua .ml-how-who {
+    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
+.ml-how-lane.is-cliente .ml-how-who {
+    color: var(--text-secondary);
+}
+
+.ml-how-steps {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ml-how-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 0;
+    max-width: 9em;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.ml-how-icona {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--text);
+}
+
+.ml-how-lane.is-tua .ml-how-icona {
+    color: #1B5E20;
+}
+
+.ml-how-lane.is-cliente .ml-how-icona {
+    color: var(--text-secondary);
+}
+
+/* La freccia sta all'altezza dei tondi, non del testo. */
+.ml-how-verso {
+    flex: 0 0 auto;
+    margin-top: 17px;
+    color: rgba(0, 0, 0, 0.28);
+}
+
+/* L'asterisco sta ATTACCATO alla parola, non a capo: dentro l'etichetta e
+   non accanto, o in una colonna diventa una riga sua. */
+.ml-how-star {
+    color: #A8461F; /* l'inchiostro delle annotazioni: è un richiamo, non un errore */
+    font-weight: 700;
+    line-height: 0;
+}
+
+.ml-how-note {
+    max-width: 46em;
+    margin: 28px auto 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ── IL LEGAME CON L'APP ───────────────────────────────────────────── */
+/* A sinistra il perché — tre vantaggi, non tre funzioni: quello che il
+ * ristoratore compra è che il cliente arrivi, scelga e sappia già. A destra
+ * la scheda in app, DISEGNATA QUI e non fotografata: è fatta degli stessi
+ * pezzi che il cliente vedrà, senza voti né numeri di recensioni, che su un
+ * locale inventato sarebbero dati inventati. */
 
 .ml-app {
     padding: 70px 0;
@@ -461,40 +714,407 @@
 
 .ml-app-inner {
     display: grid;
-    grid-template-columns: minmax(0, 22em) minmax(0, 34em);
+    grid-template-columns: minmax(0, 1fr) 320px;
     gap: 24px 64px;
-    justify-content: center;
+    align-items: center;
+    max-width: 62em;
+}
+
+.ml-app-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+    margin: 0 0 12px;
+}
+
+.ml-app-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 22%;
 }
 
 .ml-app-title {
     line-height: 1.15;
     font-size: clamp(26px, 3.5vw, 34px);
     font-weight: 800;
-    margin: 0;
+    margin-bottom: 14px;
 }
 
-.ml-app-text p {
+.ml-app-intro {
+    max-width: 34em;
     color: var(--text-secondary);
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 }
 
-.ml-app-text a {
-    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+/* I TRE FATTI: fatti di prodotto, non numeri di crescita. Stanno in fila
+ * sopra i vantaggi perché rispondono alla domanda che viene per prima —
+ * «e chi c'è, dentro quest'app?» — e a quella si risponde con cose che si
+ * possono verificare, non con cifre scritte a memoria. */
+.ml-app-fatti {
+    list-style: none;
+    margin: 0 0 28px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    max-width: 34em;
 }
 
-/* Il pezzo che non c'è ancora sta in un riquadro suo: non deve poter essere
- * letto di sfuggita come se fosse fra le cose che si possono avere oggi. */
-.ml-app-soon {
-    margin-top: 4px;
-    padding: 14px 16px;
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    background: #fff;
+.ml-app-fatto-forte {
+    display: block;
+    font-size: 17px;
+    font-weight: 800;
+    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+    margin-bottom: 4px;
+}
+
+.ml-app-fatto-testo {
+    display: block;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--text-secondary);
+}
+
+.ml-app-vantaggi {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+    max-width: 34em;
+}
+
+/* Il segno davanti al vantaggio è una spunta disegnata col bordo, non un
+   carattere: un simbolo di sistema cambia faccia da un apparecchio all'altro. */
+.ml-app-vantaggi li {
+    position: relative;
+    padding-left: 30px;
+}
+
+.ml-app-vantaggi li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 4px;
+    width: 12px;
+    height: 7px;
+    border-left: 2.4px solid #2E7D32;
+    border-bottom: 2.4px solid #2E7D32;
+    transform: rotate(-45deg);
+}
+
+.ml-app-vantaggio-titolo {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.ml-app-vantaggio-testo {
+    display: block;
     font-size: 15px;
+    color: var(--text-secondary);
 }
 
-.ml-app-soon strong {
-    color: var(--text);
+/* ── LA SCHEDA IN APP, FACSIMILE STATICO ───────────────────────────── */
+/* Rifatta con i numeri della replica che sta nel portale
+ * (partner/src/components/preview/SchedaPreview.tsx, token da theme.ts
+ * dell'app). ⚠️ È UNA TERZA COPIA e non la controlla nessuno script: se là
+ * cambiano le misure, qui va rifatta a mano. Statica di proposito — deve
+ * mostrare com'è fatta, non farla funzionare.
+ *
+ * LA CORNICE È LA STESSA DELL'ANTEPRIMA: stesse classi, stesso profilo
+ * metallico, stessi tasti, stessa isola. Due telefoni disegnati in due modi
+ * diversi, sulla stessa pagina, si vedono — e uno dei due sembra finto.
+ * Cambia solo la misura, e con lei l'isola: `--ml-scala` è già il numero che
+ * la rimpicciolisce, qui lo si scrive a mano perché dentro non c'è una carta
+ * da scalare ma marcatura vera. */
+
+.ml-phone.is-scheda {
+    justify-self: end;
+    border-radius: 46px;
+}
+
+.ml-phone-screen.is-scheda {
+    --ml-scala: 0.76;
+    width: 300px;
+    border-radius: 36px;
+    background: #fff;
+    font-family: -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, system-ui, sans-serif;
+    color: #333;
+}
+
+/* L'ora a sinistra, le tacche a destra, e in mezzo passa l'isola: è così che
+   sta su un telefono vero, e per questo la fascia è alta quanto lei. */
+.ml-scheda-stato {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    padding: 4px 20px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.ml-scheda-stato-icone {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #333;
+}
+
+.ml-scheda-corpo {
+    padding-bottom: 14px;
+}
+
+.ml-scheda-testa {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+}
+
+.ml-scheda-nome {
+    flex: 1;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 25px;
+}
+
+.ml-scheda-azioni {
+    display: flex;
+    gap: 9px;
+    padding-top: 2px;
+}
+
+.ml-scheda-riga-voto {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 14px 5px;
+}
+
+.ml-scheda-stelle {
+    display: flex;
+    gap: 1px;
+}
+
+.ml-scheda-voto {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #666;
+}
+
+.ml-scheda-recensioni {
+    flex: 1;
+    font-size: 12px;
+    color: #666;
+}
+
+.ml-scheda-indicazioni {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid #E0E0E0;
+    border-radius: 14px;
+    padding: 4px 9px;
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+.ml-scheda-indirizzo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.ml-scheda-cucina {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 14px 4px;
+}
+
+.ml-scheda-cucina-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid #E0E0E0;
+    border-radius: 20px;
+    padding: 3px 4px 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ml-scheda-conta {
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: #F5F5F5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+    padding: 0 4px;
+}
+
+/* La fascia verde: dice «compatibile secondo quello che il locale dichiara»,
+   e infatti è un rimando, non un punteggio. */
+.ml-scheda-compat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 8px;
+    background: #E8F5E9;
+    padding: 8px 10px;
+    margin: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #2E7D32;
+}
+
+.ml-scheda-compat span {
+    flex: 1;
+}
+
+/* LE PILL DEI LINK. Colori da partner/src/lib/linkKinds.tsx: tinta chiara e
+   testo pieno, in stile Material, per distinguerle dai chip neutri della
+   scheda e fra loro. Sono quelle che il ristoratore accende nell'editor. */
+.ml-scheda-link-riga {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 14px 12px;
+}
+
+.ml-scheda-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 14px;
+    padding: 5px 10px;
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+.ml-scheda-link.is-booking { background: #E3F2FD; color: #1976D2; }
+.ml-scheda-link.is-delivery { background: #FFF3E0; color: #E65100; }
+.ml-scheda-link.is-menu { background: #E8F5E9; color: #2E7D32; }
+.ml-scheda-link.is-website { background: #F3E5F5; color: #7B1FA2; }
+
+.ml-scheda-separatore {
+    height: 8px;
+    background: #F5F5F5;
+    margin-top: 4px;
+}
+
+.ml-scheda-menu-testa {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px 0;
+}
+
+.ml-scheda-menu-titolo {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.ml-scheda-vedi {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #4CAF50;
+}
+
+.ml-scheda-disclaimer {
+    padding: 4px 14px 0;
+    font-size: 11px;
+    color: #999;
+}
+
+/* Il carosello dei piatti: nell'app scorre, qui è fermo e si intravede il
+   terzo — è il modo in cui una scheda dice «continua» senza scriverlo. */
+.ml-scheda-piatti {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 10px 14px 4px;
+    overflow: hidden;
+}
+
+.ml-scheda-piatto {
+    flex: 0 0 110px;
+    display: grid;
+    gap: 3px;
+}
+
+/* TONDE, come nell'app: le foto dei piatti del ristoratore si distinguono
+   così da quelle quadrate della community. Senza foto caricata resta il posto
+   con dentro un disegno — non una fotografia di repertorio, che su un menù
+   prometterebbe qualcosa che nessuno ha cucinato. Tinte e disegni diversi fra
+   loro: tre tondi grigi uguali si leggono come tre volte la stessa cosa. */
+.ml-scheda-foto {
+    display: grid;
+    place-items: center;
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 3px;
+    border-radius: 50%;
+}
+
+.ml-scheda-foto.is-pasta { background: #FFF4E0; color: #B26A00; }
+.ml-scheda-foto.is-carne { background: #FBEAE6; color: #A8461F; }
+.ml-scheda-foto.is-verdure { background: #E8F3EA; color: #2E7D32; }
+
+.ml-scheda-piatto-nome {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+}
+
+/* La riga degli allergeni: minuta e grigia, la stessa forma che ha nel menù
+   al tavolo. Le due anteprime della pagina devono dire la stessa cosa nello
+   stesso modo, o sembrano due prodotti diversi. */
+.ml-scheda-piatto-riga {
+    font-size: 10.5px;
+    color: #999;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.ml-scheda-piatto-riga.is-nessuno {
+    font-style: italic;
+}
+
+/* L'unico accento: una dieta dichiarata dal ristoratore. È un'informazione
+   diversa dagli allergeni, non lo stesso dato ricolorato. */
+.ml-scheda-pill {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-top: 3px;
+    font-size: 10.5px;
+    font-weight: 500;
+}
+
+.ml-scheda-pill.is-verde {
+    background: #E8F5E9;
+    color: #2E7D32;
 }
 
 /* ── IL FILTRO ──────────────────────────────────────────────────────── */
@@ -566,7 +1186,8 @@
 @media (prefers-reduced-motion: reduce) {
     .ml-swatch,
     .ml-choice,
-    .ml-cta {
+    .ml-cta,
+    .ml-hint-voce {
         transition: none;
     }
 
@@ -577,61 +1198,309 @@
 }
 
 /* ── TELEFONO VERO ──────────────────────────────────────────────────── */
-@media (max-width: 1040px) {
-    /* Nel riquadro una colonna sola, e il telefono IN MEZZO: si guarda quello
-     * che si sta per cambiare, non lo si cambia alla cieca. `minmax(0, …)` e
-     * non `1fr`, o la colonna resterebbe larga quanto il telefono e uscirebbe
-     * dallo schermo. */
-    .ml-try-box {
-        padding: 30px 24px;
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-areas:
-            "head"
-            "preview"
-            "knobs";
-        row-gap: 30px;
+
+/* LA BARRA IN ALTO SPARISCE, su questa pagina soltanto: restano il logo — che
+ * porta a casa — e «Inizia gratis», appoggiati sulla pagina senza fondo né
+ * filetto. Le altre voci parlano dell'app agli utenti, e qui davanti c'è un
+ * ristoratore.
+ *
+ * Non è una ripulita estetica: ogni pixel tolto qui è un pixel dato al
+ * telefono, che poco sotto ci si aggancia. Da 70 punti di fascia bianca a 48
+ * di niente, e l'aggancio scende con lei — è un numero solo, `--ml-barra`. */
+/* ── LA BARRA IN ALTO, SU SCHERMO STRETTO ───────────────────────────── */
+/* ⚠️ SOLO SU SCHERMO STRETTO. Da computer la barra del sito va bene com'è:
+ * c'è spazio, le voci ci stanno, e cambiarla mentre si scorre sarebbe
+ * movimento senza motivo. Il problema è il telefono, dove ogni punto tolto
+ * qui è un punto dato all'anteprima, che poco sotto ci si aggancia.
+ *
+ * DUE STATI, ed è il contrario di quello che verrebbe da fare. Ferma, in
+ * cima: invisibile — dietro c'è la testata e basta, non c'è niente da
+ * coprire, e una fascia sopra un fondo colorato è solo un gradino. Appena si
+ * scorre: torna una superficie, e PIENA — trasparente, il testo che le passa
+ * sotto si legge attraverso il logo e il bottone. È lo stesso colore della
+ * fascia del telefono, che le sta appiccicata sotto: le due superfici
+ * diventano una sola, senza cucitura.
+ *
+ * La classe la mette menu-landing.js dopo i primi quaranta punti. */
+
+.ml-nav-cta-short {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .ml-page .nav {
+        background: transparent;
+        backdrop-filter: none;
+        border-bottom: 0;
+        /* L'ombra allo scorrimento la mette script.js in linea, per tutte le
+           pagine del sito: qui disegnerebbe il bordo di una fascia che non
+           c'è. */
+        box-shadow: none !important;
+        transition: background 0.18s ease;
     }
 
-    .ml-try-head,
-    .ml-knobs {
-        align-self: auto;
-        max-width: 46em;
+    .ml-page .nav-content {
+        padding: 10px 16px;
     }
 
-    /* `justify-self: end` lascerebbe la cornice a destra e larga quanto il suo
-     * contenuto: qui occupa la colonna e centra dentro di sé. */
-    .ml-preview {
-        justify-self: stretch;
+    .ml-page .nav-links .nav-about {
+        display: none;
+    }
+
+    .ml-page {
+        --ml-barra: 56px;
+    }
+
+    .ml-page.is-scrolled .nav {
+        background: var(--ml-fondo);
+    }
+
+    .ml-page.is-scrolled .nav-content {
+        padding: 8px 16px;
+    }
+
+    .ml-page.is-scrolled {
+        --ml-barra: 50px;
+    }
+
+    .ml-page.is-scrolled .ml-nav-cta-full {
+        display: none;
+    }
+
+    .ml-page.is-scrolled .ml-nav-cta-short {
+        display: inline;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SCHERMO STRETTO
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+    /* NIENTE GRIGLIA: le quattro parti si incolonnano nell'ordine in cui
+     * stanno nel documento — discorso, telefono, comandi, personalizzazioni —
+     * ed è già quello giusto. Serve che sia flusso normale e non griglia,
+     * perché un elemento di griglia si può appiccicare solo dentro la sua
+     * riga, e qui il telefono deve restare fermo mentre gli scorrono sotto
+     * TUTTI i comandi. */
+    .ml-page .ml-split {
+        display: block;
+    }
+
+    /* FONDO PIATTO, non più una sfumatura: la fascia del telefono resta ferma
+     * mentre la pagina le scorre sotto, e su una sfumatura avrebbe un colore
+     * suo che si stacca. Con un colore solo il telefono galleggia senza
+     * cornice attorno. */
+    .ml-page .ml-hero {
+        padding-bottom: 44px;
+    }
+
+    .ml-page .ml-pitch {
+        margin-bottom: 26px;
+    }
+
+    .ml-page .ml-try-text,
+    .ml-page .ml-custom {
+        padding: 24px 20px;
+        max-width: none;
+        margin-top: 20px;
+    }
+
+    /* IL TELEFONO RESTA IN ALTO finché non è passata tutta la parte dei
+     * comandi: si tocca una manopola e si vede subito cosa succede, invece di
+     * cambiare qualcosa che è già uscito dallo schermo.
+     *
+     * ⚠️ Le tre righe che annullano la griglia servono davvero: fuori dalla
+     * griglia `justify-self` non fa niente, ma lasciarlo scritto vuol dire
+     * che basta un ordine sbagliato di fogli per ritrovarsi il telefono
+     * incollato a destra. Qui si dice cosa deve fare, non cosa non fa. */
+    .ml-page .ml-preview {
+        grid-area: auto;
+        justify-self: auto;
         align-self: auto;
+        /* Colonna: prima l'annotazione, poi il telefono. */
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        position: sticky;
+        top: var(--ml-barra, 84px);
+        z-index: 2;
+        /* Lo stesso identico colore del fondo, e larga da bordo a bordo: i
+         * margini della colonna sono l'unico posto da cui i riquadri
+         * potrebbero passarle di fianco mentre scorrono. */
+        background: var(--ml-fondo);
+        margin-left: -24px;
+        margin-right: -24px;
+        padding: 8px 24px 12px;
+        box-shadow: 0 12px 14px -12px rgba(0, 0, 0, 0.16);
     }
 
-    /* In colonna sola il telefono non deve più stare accanto a niente: prende
-       la larghezza che la colonna concede, fino alle misure vere. */
-    .ml-phone {
-        width: 100%;
-        max-width: 413px;
+    /* AL CENTRO, e con due margini automatici invece che con l'allineamento
+     * di un contenitore: è la cornice stessa a centrarsi, quindi non c'è
+     * nessun genitore che possa dimenticarsene. */
+    .ml-page .ml-phone {
+        width: fit-content;
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    .ml-phone-screen {
-        width: 100%;
+    /* ⚠️ NIENTE PERCENTUALI QUI. `min(100%, …)` dentro una cornice larga
+     * `fit-content` è un giro vizioso — la percentuale si misura sul genitore
+     * e il genitore si misura sul figlio — e il browser lo scioglie come gli
+     * pare: la cornice veniva fuori larga e la carta dentro ingrandita. I due
+     * limiti si scrivono in misure vere: quanta larghezza concede la finestra
+     * (meno i margini della colonna e il bordo della cornice) e quanta ne
+     * concede l'altezza. */
+    .ml-page .ml-phone-screen {
+        width: min(calc(100vw - 64px), calc(46vh * 0.4613));
     }
 
-    .ml-filter-inner,
-    .ml-app-inner {
+    /* I COMANDI PIÙ FITTI: appiccicato il telefono, quello che resta sotto è
+     * poco, e vale più mostrare quattro manopole che quattro etichette
+     * spaziose. Si stringe l'aria, non i bersagli da toccare. */
+    .ml-page .ml-knobs-grid {
+        gap: 16px;
+    }
+
+    .ml-page .ml-knob-label {
+        font-size: 12px;
+        margin-bottom: 7px;
+    }
+
+    .ml-page .ml-choices,
+    .ml-page .ml-locked-row {
+        gap: 6px;
+    }
+
+    .ml-page .ml-choice {
+        font-size: 13px;
+        padding: 7px 13px;
+    }
+
+    .ml-page .ml-swatches {
+        gap: 12px;
+    }
+
+    .ml-page .ml-swatch {
+        width: 32px;
+        height: 32px;
+    }
+
+    .ml-page .ml-try-head {
+        margin-bottom: 18px;
+    }
+
+    /* Lo spazio ai fianchi è quello che è: la pastiglia si stringe e va a
+     * capo più volte, come una scritta a margine. I lati si alternano, così
+     * si usano tutti e due invece di ammassare tutto da una parte.
+     *
+     * LA LARGHEZZA non è un numero deciso a mano: è quella che avanza davvero
+     * — mezza finestra meno mezzo telefono, meno un dito di stacco — così non
+     * invade mai la cornice, su nessuno schermo.
+     *
+     * IL TESTO SI APPOGGIA AL BORDO DELLO SCHERMO, non al telefono: in una
+     * colonna larga ottanta punti le righe si spezzano spesso, e allineate
+     * dalla parte del vuoto sembrano scritte di fretta contro la cornice;
+     * dalla parte del bordo diventano una nota a margine, che è quello che
+     * sono. LA FRECCIA no: quella resta dal lato del telefono, o indicherebbe
+     * il nulla.
+     *
+     * VENTI PUNTI di scrittura: sotto, a mano, sembra un appunto scritto
+     * stretto. Il prezzo è che le righe si spezzano più spesso, e va bene. */
+    .ml-page .ml-hint {
+        max-width: calc((100vw - min(100vw - 64px, 50vh * 0.4613) - 20px) / 2 - 8px);
+        margin-right: 6px;
+        font-size: 20px;
+        line-height: 1.1;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .ml-page .ml-hint-freccia {
+        width: 34px;
+        height: 13px;
+        margin: 2px 3px 0 0;
+        align-self: flex-end;
+    }
+
+    .ml-page .ml-hint.is-2 {
+        right: auto;
+        left: 100%;
+        margin-right: 0;
+        margin-left: 8px;
+        align-items: flex-end;
+        text-align: right;
+        transform: rotate(2.5deg);
+        transform-origin: left center;
+    }
+
+    /* Guarda dall'altra parte: si ribalta e basta, ed è giusto perché è
+       orizzontale — una freccia obliqua, specchiata, punterebbe altrove. */
+    .ml-page .ml-hint.is-2 .ml-hint-freccia {
+        margin: 2px 0 0 3px;
+        align-self: flex-start;
+        transform: scaleX(-1);
+    }
+
+    .ml-page .ml-knobs-title {
+        font-size: 20px;
+    }
+
+    .ml-page .ml-knobs-intro {
+        font-size: 14px;
+    }
+
+    .ml-page .ml-filter-inner {
         grid-template-columns: minmax(0, 34em);
+    }
+
+    .ml-page .ml-app-inner {
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 34em;
+        gap: 32px;
+    }
+
+    .ml-page .ml-app-fatti {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .ml-page .ml-phone.is-scheda {
+        justify-self: center;
+        margin: 0 auto;
+    }
+
+    /* Le due corsie una sotto l'altra: affiancate, su schermo stretto,
+       ridurrebbero i passi a francobolli. */
+    .ml-page .ml-how-lanes {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .ml-page .ml-how-lane {
+        padding: 20px 16px 22px;
+    }
+
+    .ml-page .ml-how-step {
+        font-size: 13px;
+    }
+
+    .ml-page .ml-how-icona {
+        width: 42px;
+        height: 42px;
     }
 }
 
 @media (max-width: 480px) {
     .ml-hero {
-        padding-top: 104px;
+        padding-top: 76px;
     }
 
-    .ml-try-box {
-        padding: 26px 18px;
-        border-radius: 22px;
+    .ml-try-text,
+    .ml-custom {
+        padding: 24px 18px;
+        border-radius: 20px;
     }
 
     /* Su un telefono vero la cornice si assottiglia ancora: quello che deve

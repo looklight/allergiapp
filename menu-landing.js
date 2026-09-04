@@ -24,7 +24,7 @@
 
   // I valori di partenza sono quelli con cui il server ha già disegnato il
   // menù: il pannello parte d'accordo con quello che si vede.
-  var stato = { accent: '#2E6B4F', font: 'modern', scale: '1', section: 'underline' };
+  var stato = { accent: '#2E6B4F', font: 'modern', scale: '1', section: 'underline', layout: 'row' };
 
   var CARATTERI = ['classic', 'bold', 'light'];
   var STILI_SEZIONE = ['underline', 'banner', 'plain'];
@@ -46,6 +46,11 @@
     });
     if (stato.font !== 'modern') doc.body.classList.add('font-' + stato.font);
 
+    // L'impaginazione a blocco è tutta nel CSS: incolonna e centra quello che
+    // a riga sta su una riga sola. Anche qui si riscrive la stessa classe che
+    // scriverebbe il server.
+    doc.body.classList.toggle('layout-block', stato.layout === 'block');
+
     // I titoli di sezione portano lo stile addosso, uno per uno: nel menù è
     // già così, quindi qui non si inventa niente — si riscrive la stessa
     // classe che scriverebbe il server.
@@ -57,6 +62,69 @@
       titoli[i].classList.add('is-' + stato.section);
     }
   }
+
+  // ── LA BARRA IN ALTO, DOPO IL PRIMO DITO ──────────────────────────────
+  // Ferma dice tutto: chi è, cosa offre, dove si comincia. Appena si scorre
+  // non serve più a presentarsi — serve a non perdere il filo — quindi resta
+  // il logo, che riporta a casa, e un bottone corto: «Accedi». Le voci di
+  // mezzo parlano dell'app agli utenti, e qui davanti c'è un ristoratore.
+  //
+  // Quaranta punti e non zero: un dito che sfiora non deve far cambiare la
+  // pagina sotto gli occhi.
+  var SOGLIA = 40;
+  var pagina = document.body;
+  var scorsa = null;
+
+  function guardaLoScorrimento() {
+    var giu = window.scrollY > SOGLIA;
+    if (giu === scorsa) return;
+    scorsa = giu;
+    pagina.classList.toggle('is-scrolled', giu);
+  }
+
+  guardaLoScorrimento();
+  window.addEventListener('scroll', guardaLoScorrimento, { passive: true });
+
+  // ── LE ANNOTAZIONI ────────────────────────────────────────────────────
+  // Chi arriva qui non sa ancora cosa sta guardando. Le tre frasi lo
+  // accompagnano nell'ordine in cui gli servono: prima cos'è quella cosa, poi
+  // che si tocca, poi che continua sotto. Cambiano man mano che il blocco
+  // scorre, perché è scorrendo che uno arriva ai comandi.
+  var pastiglia = document.getElementById('ml-hint');
+  var voci = pastiglia ? pastiglia.querySelectorAll('.ml-hint-voce') : [];
+  var blocco = frame.closest('.ml-split');
+  var voceAccesa = 0;
+
+  if (pastiglia) {
+    pastiglia.classList.add('is-1');
+    // Comparsa in ritardo: prima si vede il telefono, poi qualcuno ci scrive
+    // sopra. Se nel frattempo si è già scorso non cambia niente — la scritta
+    // giusta l'ha già scelta `annota()`, questa accende solo l'inchiostro.
+    setTimeout(function () {
+      pastiglia.classList.add('is-pronta');
+    }, 1100);
+  }
+
+  function annota() {
+    if (!voci.length || !blocco) return;
+    var b = blocco.getBoundingClientRect();
+    // Quanto del blocco è già passato sopra la metà dello schermo: zero
+    // quando ci si arriva, uno quando lo si è finito.
+    var percorso = (window.innerHeight / 2 - b.top) / Math.max(b.height, 1);
+    var quale = percorso < 0.22 ? 0 : percorso < 0.55 ? 1 : 2;
+    if (quale === voceAccesa) return;
+    voci[voceAccesa].classList.remove('is-on');
+    voci[quale].classList.add('is-on');
+    // La pastiglia si sposta all'altezza di quello che nomina, e su schermo
+    // stretto cambia anche lato: le due classi le legge il foglio di stile.
+    pastiglia.classList.remove('is-1', 'is-2', 'is-3');
+    pastiglia.classList.add('is-' + (quale + 1));
+    voceAccesa = quale;
+  }
+
+  annota();
+  window.addEventListener('scroll', annota, { passive: true });
+  window.addEventListener('resize', annota);
 
   // ── QUANTO SI RIMPICCIOLISCE LA CARTA ────────────────────────────────
   // Il menù dentro la cornice è disegnato alle misure vere di un telefono —
@@ -165,7 +233,7 @@
   }
 
   function mostraIn(lang) {
-    var voluto = lang === 'en' ? '/menu-demo?lang=en' : '/menu-demo';
+    var voluto = lang === 'en' ? '/menu-demo/en' : '/menu-demo';
     // Confronto sul percorso e non sull'intero indirizzo: `frame.src` torna
     // assoluto, e ricaricare il telefono a vuoto lo farebbe lampeggiare.
     if (frame.getAttribute('src') === voluto) return;
