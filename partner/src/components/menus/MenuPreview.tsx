@@ -850,14 +850,18 @@ function Riga({
             )}
           </div>
 
-          {conDescrizioni && conDescrizione && (
-            <p className="menu-item-desc mt-1 text-[calc(13px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">
-              {dish.description}
-            </p>
-          )}
+          {/* LA NOTA STA SOPRA LA DESCRIZIONE, attaccata al nome: «il piatto
+              del mese» dice perché quel piatto è lì, e vale prima di sapere
+              com'è fatto. Sotto alla descrizione si leggeva come una postilla.
+              Stesso ordine sul sito (lib/render-menu.js). */}
           {item.highlighted && item.highlightNote.trim() !== '' && (
             <p className="menu-item-note mt-1 text-[calc(12px*var(--ms))] font-medium leading-[calc(1.4*var(--lh,1))] text-amber-700">
               {item.highlightNote}
+            </p>
+          )}
+          {conDescrizioni && conDescrizione && (
+            <p className="menu-item-desc mt-1 text-[calc(13px*var(--ms))] leading-[calc(1.4*var(--lh,1))] text-gray-500">
+              {dish.description}
             </p>
           )}
 
