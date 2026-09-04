@@ -85,6 +85,30 @@
   guardaLoScorrimento();
   window.addEventListener('scroll', guardaLoScorrimento, { passive: true });
 
+  // ── LE COMPARSE ───────────────────────────────────────────────────────
+  // Gli elementi marcati `anim-ready` si accendono quando entrano in vista, e
+  // poi non si osservano più: una comparsa che si ripete a ogni passaggio
+  // diventa un tic. Stessa ricetta della pagina Ristoranti (restaurants.js),
+  // stessa soglia.
+  if ('IntersectionObserver' in window) {
+    var osservatore = new IntersectionObserver(function (voci) {
+      voci.forEach(function (voce) {
+        if (!voce.isIntersecting) return;
+        voce.target.classList.add('anim-done');
+        osservatore.unobserve(voce.target);
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.anim-ready').forEach(function (el) {
+      osservatore.observe(el);
+    });
+  } else {
+    // Senza osservatore niente comparsa: meglio tutto visibile che tutto
+    // invisibile.
+    document.querySelectorAll('.anim-ready').forEach(function (el) {
+      el.classList.add('anim-done');
+    });
+  }
+
   // ── LE ANNOTAZIONI ────────────────────────────────────────────────────
   // Chi arriva qui non sa ancora cosa sta guardando. Le tre frasi lo
   // accompagnano nell'ordine in cui gli servono: prima cos'è quella cosa, poi

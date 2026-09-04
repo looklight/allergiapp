@@ -41,6 +41,10 @@
 }
 
 .ml-page {
+    /* La misura dei titoli di sezione, scritta una volta: erano quattro clamp
+       identici copiati, e bastava ritoccarne uno perché una sezione pesasse
+       diversamente dalle altre senza che fosse voluto. */
+    --ml-titolo-sezione: clamp(29px, 4vw, 38px);
     /* Il verdino della testata. Lo usano anche la fascia del telefono e la
        barra in alto quando si chiude: sono la stessa superficie, e un solo
        numero è l'unico modo perché restino tali. */
@@ -637,6 +641,48 @@
 
 
 
+/* ── LE COMPARSE ────────────────────────────────────────────────────── */
+/* Stesso meccanismo della pagina Ristoranti — `anim-ready` che diventa
+ * `anim-done` quando l'elemento entra in vista — con gli stessi nomi e gli
+ * stessi numeri, così le due pagine si muovono uguali. Lì sta in
+ * restaurants.css/js, qui in questi due file: sono pagine che non si caricano
+ * mai insieme, e riscriverlo in comune vorrebbe dire toccare i fogli di tutto
+ * il sito per una sezione sola. */
+
+.anim-ready {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.anim-ready.anim-done {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.anim-d1 { transition-delay: 130ms; }
+
+/* I passi entrano in fila, uno dopo l'altro, e le frecce con loro: è la
+   sequenza stessa a raccontarsi. Il ritardo lo dà la posizione nella fila,
+   non una classe scritta a mano su ogni riga. */
+.ml-how-steps .anim-ready {
+    transform: translateY(16px);
+}
+
+.ml-how-steps .anim-ready:nth-child(1) { transition-delay: 60ms; }
+.ml-how-steps .anim-ready:nth-child(2) { transition-delay: 150ms; }
+.ml-how-steps .anim-ready:nth-child(3) { transition-delay: 240ms; }
+.ml-how-steps .anim-ready:nth-child(4) { transition-delay: 330ms; }
+.ml-how-steps .anim-ready:nth-child(5) { transition-delay: 420ms; }
+
+/* Nella corsia del cliente la fila parte dopo quella del ristoratore. */
+.ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(1) { transition-delay: 190ms; }
+.ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(2) { transition-delay: 280ms; }
+.ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(3) { transition-delay: 370ms; }
+.ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(4) { transition-delay: 460ms; }
+.ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(5) { transition-delay: 550ms; }
+
 /* ── COME FUNZIONA ──────────────────────────────────────────────────── */
 /* Due corsie, e non un elenco solo: da una parte il lavoro del ristoratore,
  * che si fa una volta; dall'altra quello del cliente, che si fa ogni volta
@@ -649,10 +695,10 @@
 
 .ml-how-title {
     line-height: 1.15;
-    font-size: clamp(26px, 3.5vw, 34px);
+    font-size: var(--ml-titolo-sezione);
     font-weight: 800;
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 44px;
 }
 
 .ml-how-lanes {
@@ -747,6 +793,42 @@
 
 /* L'asterisco sta ATTACCATO alla parola, non a capo: dentro l'etichetta e
    non accanto, o in una colonna diventa una riga sua. */
+/* IL TERZO TEMPO. Le due corsie qui sopra dicono cosa si fa una volta, questo
+   cosa resta per sempre — ed è metà del valore, perché la paura di chi sente
+   «menù digitale» è dover ristampare a ogni cambio.
+   Un gradino sotto le corsie e uno sopra la nota: ha un fondo e un titolo suo,
+   ma il fondo è quello neutro e il titolo non ha il peso di quelli di sezione.
+   Le corsie restano la cosa principale. */
+.ml-how-dopo {
+    max-width: 46em;
+    margin: 24px auto 0;
+    padding: 18px 24px 20px;
+    border-radius: 16px;
+    /* Solo il contorno: una campitura grigia pesa quanto un riquadro pieno e
+       qui basta dire «questo è un blocco a sé». A tenere su il testo ci
+       pensano le due parole chiave. */
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.ml-how-dopo-titolo {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+}
+
+.ml-how-dopo-testo {
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+/* Le due parole che uno deve portarsi via da questa riga. */
+.ml-chiave {
+    font-weight: 700;
+    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
 .ml-how-star {
     color: #A8461F; /* l'inchiostro delle annotazioni: è un richiamo, non un errore */
     font-weight: 700;
@@ -781,26 +863,47 @@
     max-width: 62em;
 }
 
-.ml-app-eyebrow {
+/* IL MARCHIO IN CIMA. Logo grande e i due simboli dei sistemi: a chi legge
+   deve arrivare subito che di là c'è un'APP, non un'altra pagina web — è la
+   differenza fra «un altro posto dove mettere il menù» e «il posto dove la
+   gente cerca dove mangiare». */
+.ml-app-marchio {
     display: flex;
     align-items: center;
-    gap: 9px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
-    margin: 0 0 12px;
+    gap: 14px;
+    margin-bottom: 18px;
 }
 
 .ml-app-logo {
-    width: 30px;
-    height: 30px;
+    width: 56px;
+    height: 56px;
     border-radius: 22%;
+    flex-shrink: 0;
+}
+
+.ml-app-marchio-testo {
+    display: grid;
+    gap: 2px;
+}
+
+.ml-app-nome {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.ml-app-store {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
 }
 
 .ml-app-title {
     line-height: 1.15;
-    font-size: clamp(26px, 3.5vw, 34px);
+    font-size: var(--ml-titolo-sezione);
     font-weight: 800;
     margin-bottom: 14px;
 }
@@ -808,38 +911,7 @@
 .ml-app-intro {
     max-width: 34em;
     color: var(--text-secondary);
-    margin-bottom: 24px;
-}
-
-/* I TRE FATTI: fatti di prodotto, non numeri di crescita. Stanno in fila
- * sopra i vantaggi perché rispondono alla domanda che viene per prima —
- * «e chi c'è, dentro quest'app?» — e a quella si risponde con cose che si
- * possono verificare, non con cifre scritte a memoria. */
-.ml-app-fatti {
-    list-style: none;
-    margin: 0 0 28px;
-    padding: 20px 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-    max-width: 34em;
-}
-
-.ml-app-fatto-forte {
-    display: block;
-    font-size: 17px;
-    font-weight: 800;
-    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
-    margin-bottom: 4px;
-}
-
-.ml-app-fatto-testo {
-    display: block;
-    font-size: 13px;
-    line-height: 1.35;
-    color: var(--text-secondary);
+    margin-bottom: 28px;
 }
 
 .ml-app-vantaggi {
@@ -847,33 +919,52 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 18px;
+    gap: 24px;
     max-width: 34em;
 }
 
-/* Il segno davanti al vantaggio è una spunta disegnata col bordo, non un
-   carattere: un simbolo di sistema cambia faccia da un apparecchio all'altro. */
+/* LA SPUNTA È UN TONDO PIENO, non un segno appoggiato al testo: questi sono i
+   PRO, e un elenco di pro si riconosce dal bollo prima ancora di leggerlo. È
+   disegnata e non un carattere, perché un simbolo di sistema cambia faccia da
+   un apparecchio all'altro. */
+/* ⚠️ TRE FIGLI, DUE COLONNE: spunta, titolo e testo. Senza dire dove va
+   ciascuno, il terzo finisce nella colonna della spunta — larga 26 punti — e
+   il testo va a capo a ogni parola. Il bollo occupa la prima colonna su
+   entrambe le righe, titolo e testo la seconda. */
 .ml-app-vantaggi li {
-    position: relative;
-    padding-left: 30px;
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 3px;
+    align-items: start;
 }
 
-.ml-app-vantaggi li::before {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 4px;
-    width: 12px;
-    height: 7px;
-    border-left: 2.4px solid #2E7D32;
-    border-bottom: 2.4px solid #2E7D32;
-    transform: rotate(-45deg);
+.ml-app-spunta {
+    /* La prima colonna, su tutte e due le righe: il bollo sta accanto al
+       titolo e al testo insieme, non solo al titolo. */
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    margin-top: 1px;
+}
+
+.ml-app-vantaggio-titolo,
+.ml-app-vantaggio-testo {
+    grid-column: 2;
 }
 
 .ml-app-vantaggio-titolo {
     display: block;
+    font-size: 17px;
     font-weight: 700;
-    margin-bottom: 2px;
+    line-height: 1.3;
+    margin-bottom: 4px;
 }
 
 .ml-app-vantaggio-testo {
@@ -903,6 +994,10 @@
 
 .ml-phone-screen.is-scheda {
     --ml-scala: 0.76;
+    /* ⚠️ 300 E NON MENO: la scheda qui dentro è marcatura vera, disegnata per
+       questa larghezza — non una carta che si rimpicciolisce con `--ml-scala`
+       come nell'anteprima del menù. Stringendo lo schermo il contenuto non si
+       scala: viene TAGLIATO, e il telefono sembra deformato. */
     width: 300px;
     border-radius: 36px;
     background: #fff;
@@ -1193,7 +1288,7 @@
 
 .ml-filter-title {
     line-height: 1.15;
-    font-size: clamp(26px, 3.5vw, 34px);
+    font-size: var(--ml-titolo-sezione);
     font-weight: 800;
     margin: 0;
 }
@@ -1223,7 +1318,7 @@
 
 .ml-end-title {
     line-height: 1.15;
-    font-size: clamp(26px, 3.5vw, 34px);
+    font-size: var(--ml-titolo-sezione);
     font-weight: 800;
     margin-bottom: 14px;
 }
@@ -1255,6 +1350,14 @@
         animation: none;
     }
 
+    /* Chi ha chiesto meno movimento vede la sezione già a posto. */
+    .anim-ready,
+    .anim-ready.anim-done {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
     .ml-swatch:hover,
     .ml-cta:hover {
         transform: none;
@@ -1277,8 +1380,12 @@
  * movimento senza motivo. Il problema è il telefono, dove ogni punto tolto
  * qui è un punto dato all'anteprima, che poco sotto ci si aggancia.
  *
- * DUE STATI, ed è il contrario di quello che verrebbe da fare. Ferma, in
- * cima: invisibile — dietro c'è la testata e basta, non c'è niente da
+ * IL BOTTONE dice sempre «Accedi»: il portale è uno solo, e chi non ha ancora
+ * un profilo lo apre da lì — cambiargli nome a metà pagina faceva pensare a
+ * due porte diverse. A dire che si comincia gratis ci pensa la testata.
+ *
+ * LA FASCIA HA DUE STATI, ed è il contrario di quello che verrebbe da fare.
+ * Ferma, in cima: invisibile — dietro c'è la testata e basta, non c'è niente da
  * coprire, e una fascia sopra un fondo colorato è solo un gradino. Appena si
  * scorre: torna una superficie, e PIENA — trasparente, il testo che le passa
  * sotto si legge attraverso il logo e il bottone. È lo stesso colore della
@@ -1286,10 +1393,6 @@
  * diventano una sola, senza cucitura.
  *
  * La classe la mette menu-landing.js dopo i primi quaranta punti. */
-
-.ml-nav-cta-short {
-    display: none;
-}
 
 @media (max-width: 768px) {
     .ml-page .nav {
@@ -1326,14 +1429,6 @@
     .ml-page.is-scrolled {
         --ml-barra: 50px;
     }
-
-    .ml-page.is-scrolled .ml-nav-cta-full {
-        display: none;
-    }
-
-    .ml-page.is-scrolled .ml-nav-cta-short {
-        display: inline;
-    }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1347,6 +1442,14 @@
      * perché un elemento di griglia si può appiccicare solo dentro la sua
      * riga, e qui il telefono deve restare fermo mentre gli scorrono sotto
      * TUTTI i comandi. */
+    /* QUANTO È LARGO IL TELEFONO, scritto una volta sola. Lo usano la cornice
+     * e la formula dell'annotazione qui sotto, che devono partire dallo stesso
+     * numero: erano due copie, una diceva 46vh e l'altra 50vh, e l'annotazione
+     * si calcolava lo spazio su un telefono più grande di quello vero. */
+    .ml-page {
+        --ml-telefono: min(calc(100vw - 64px), calc(46vh * 0.4613));
+    }
+
     .ml-page .ml-split {
         display: block;
     }
@@ -1416,8 +1519,18 @@
      * limiti si scrivono in misure vere: quanta larghezza concede la finestra
      * (meno i margini della colonna e il bordo della cornice) e quanta ne
      * concede l'altezza. */
-    .ml-page .ml-phone-screen {
-        width: min(calc(100vw - 64px), calc(46vh * 0.4613));
+    /* ⚠️ SOLO L'ANTEPRIMA DEL MENÙ. La scheda in app porta la stessa classe
+     * ma è un'altra cosa: dentro ha marcatura vera, che stringendo il
+     * contenitore non si rimpicciolisce — si taglia. */
+    .ml-page .ml-phone-screen:not(.is-scheda) {
+        width: var(--ml-telefono);
+    }
+
+    /* La scheda si stringe solo quanto basta a stare nella colonna, e non
+     * oltre: sotto i 300 punti per cui è disegnata comincia a perdere il
+     * bordo destro del carosello. */
+    .ml-page .ml-phone-screen.is-scheda {
+        width: min(300px, calc(100vw - 76px));
     }
 
     /* I COMANDI PIÙ FITTI: appiccicato il telefono, quello che resta sotto è
@@ -1472,8 +1585,12 @@
      *
      * VENTI PUNTI di scrittura: sotto, a mano, sembra un appunto scritto
      * stretto. Il prezzo è che le righe si spezzano più spesso, e va bene. */
+    /* LO SPAZIO CHE AVANZA A UN FIANCO, tolto quello che serve a non toccare
+     * né la cornice né il bordo dello schermo: mezza finestra meno mezzo
+     * telefono (col suo bordo), meno i 6 di stacco e i 10 di respiro al bordo.
+     * Su un telefono da 390 punti fanno 79 di scritta con 10 di aria fuori. */
     .ml-page .ml-hint {
-        max-width: calc((100vw - min(100vw - 64px, 50vh * 0.4613) - 20px) / 2 - 8px);
+        max-width: calc((100vw - var(--ml-telefono) - 20px) / 2 - 16px);
         margin-right: 6px;
         font-size: 20px;
         line-height: 1.1;
@@ -1492,7 +1609,9 @@
         right: auto;
         left: 100%;
         margin-right: 0;
-        margin-left: 8px;
+        /* Lo stesso stacco dell'altro lato: erano 8 contro 6, e le due
+           annotazioni stavano a distanze diverse dalla stessa cornice. */
+        margin-left: 6px;
         align-items: flex-end;
         text-align: right;
         transform: rotate(2.5deg);
@@ -1533,11 +1652,6 @@
         gap: 32px;
     }
 
-    .ml-page .ml-app-fatti {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 14px;
-    }
-
     .ml-page .ml-phone.is-scheda {
         justify-self: center;
         margin: 0 auto;
@@ -1562,6 +1676,7 @@
         width: 42px;
         height: 42px;
     }
+
 }
 
 @media (max-width: 480px) {
