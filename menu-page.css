@@ -690,21 +690,38 @@
   order: 1;
   justify-content: center;
 }
-.layout-block .menu-item-desc {
+/* LA STELLINA NON ENTRA NEL CONTO DEL CENTRAGGIO. Con lei dentro, quello che
+   si centra è «stella + nome», e il nome finisce spostato a destra di metà del
+   suo ingombro — 9 punti, che su un nome corto si vedono benissimo. Il margine
+   negativo vale esattamente quanto occupa (13 di stella più 5 di stacco):
+   il nome torna al centro vero e la stella gli resta appesa a sinistra, che è
+   quello che è — un'aggiunta al nome, non parte del nome. */
+.layout-block .menu-star {
+  margin-left: calc(-13px - 5px);
+}
+/* L'ORDINE A BLOCCO: nome, perché è lì, com'è fatto, cosa contiene, quanto
+   costa. Il prezzo scende in fondo perché a blocco è l'ultima cosa che si
+   guarda — a riga sta accanto al nome perché lì si scorre una colonna di
+   cifre. La nota sale sotto il nome: la sua posizione è la stessa nelle due
+   impaginazioni, ed è nella marcatura, non qui. */
+.layout-block .menu-item-note {
   order: 2;
+  margin-top: 4px;
+}
+.layout-block .menu-item-desc {
+  order: 3;
   margin-top: 4px;
   /* Il corsivo è quello delle carte stampate: distingue la descrizione dal
      nome senza rimpicciolirla ancora. */
   font-style: italic;
 }
+.layout-block .menu-item-allergens,
+.layout-block .menu-item-reason { order: 4; }
 .layout-block .menu-price {
-  order: 3;
+  order: 5;
   margin-top: 6px;
   font-size: calc(14px * var(--ms, 1));
 }
-.layout-block .menu-item-note { order: 4; }
-.layout-block .menu-item-allergens,
-.layout-block .menu-item-reason { order: 5; }
 
 /* A BLOCCO ANCHE I TITOLI DI SEZIONE STANNO AL CENTRO. Un titolo a sinistra
    sopra dei piatti incolonnati al centro spezza la simmetria proprio dove la
