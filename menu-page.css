@@ -374,12 +374,10 @@
    scorre. Solo l'icona — la parola "Filtri" ripeteva quello che l'icona già
    dice, e in una fila di pastiglie che si leggono era l'unica scritta che
    non era una scelta. Il nome resta in aria-label e title.
-   Non è una .menu-pill: è quello che lo tiene primo quando il filtro
-   riordina la fila (v. menu-page.js). */
+   Non è una .menu-pill, e sta per primo nella fila. */
 .menu-filter-button {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
   flex-shrink: 0;
   padding: 5px 9px;
   border: 1px solid var(--border);
@@ -391,10 +389,29 @@
   color: var(--text);
   cursor: pointer;
 }
+/* UNA CASELLA SOLA PER DUE COSE: dentro ci sta l'icona, oppure il numero
+   delle scelte, e non si vedono mai insieme. Il numero ACCANTO all'icona
+   allargava il bottone di mezzo dito, e siccome il bottone è il primo della
+   fila spingeva tutte le pastiglie a ogni scelta: la parola che si stava per
+   toccare si spostava sotto il dito.
+   LARGA 16 E NON 14 COME L'ICONA: è quanto serve a due cifre. Con dieci
+   esigenze accese il numero sborderebbe, e il bottone tornerebbe a cambiare
+   misura proprio quando se ne accendono tante. Due punti in più a riposo non
+   si vedono; un bottone che balla sì. */
+.menu-filter-slot {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 14px;
+}
+.menu-filter-button.is-count .menu-filter-icon {
+  display: none;
+}
 .menu-filter-badge {
   font-weight: 700;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 .menu-pills {
   display: flex;

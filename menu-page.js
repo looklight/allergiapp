@@ -18,6 +18,7 @@
   var filtro = document.getElementById('menu-filter');
   var contatore = document.getElementById('menu-filter-count');
   var pastiglia = document.getElementById('menu-filter-badge');
+  var bottoneFiltri = document.getElementById('menu-filter-open');
   var pannello = document.getElementById('menu-filter-sheet');
   var foglioPiatto = document.getElementById('menu-dish-sheet');
   var corpoPiatto = document.getElementById('menu-dish-body');
@@ -110,25 +111,20 @@
       if (!uguale) voluto.forEach(function (el) { lista.appendChild(el); });
     });
 
-    // Le pastiglie accese risalgono in testa alla fila. È la regola che tiene
-    // insieme il pannello e la fila: senza, si sceglie dal pannello, si
-    // chiude, il menù si riordina sotto gli occhi e il motivo è fuori schermo
-    // a destra — un effetto senza la sua causa.
-    // ⚠️ Si riordinano SOLO le .menu-pill: nella stessa fila, per primo, c'è
-    // anche il bottone dei filtri, che non è una pastiglia e non deve
-    // muoversi. Rimettendo in coda soltanto le pastiglie, lui resta dov'è.
-    var fila = document.getElementById('menu-pills');
-    if (fila) {
-      var pastiglie = Array.prototype.slice.call(fila.querySelectorAll('.menu-pill'));
-      var accese = pastiglie.filter(function (p) { return p.getAttribute('aria-pressed') === 'true'; });
-      var spente = pastiglie.filter(function (p) { return p.getAttribute('aria-pressed') !== 'true'; });
-      accese.concat(spente).forEach(function (p) { fila.appendChild(p); });
-    }
+    // ⚠️ LA FILA DELLE PASTIGLIE NON SI TOCCA (2026-09-04): qui c'era il
+    // riordino che portava in testa quelle accese. Il perché sta sopra
+    // renderFiltro, in lib/render-menu.js.
 
+    // Il numero e l'icona si danno il cambio nella stessa casella: uno dei
+    // due si nasconde e la casella resta com'è, o il bottone spingerebbe la
+    // fila a ogni scelta.
+    // ⚠️ L'icona si spegne con una classe e non con `hidden`: `hidden` è una
+    // proprietà degli elementi HTML, e questa è una <svg>.
     if (pastiglia) {
       pastiglia.textContent = scelti > 0 ? String(scelti) : '';
       pastiglia.hidden = scelti === 0;
     }
+    if (bottoneFiltri) bottoneFiltri.classList.toggle('is-count', scelti > 0);
     if (contatore) {
       contatore.hidden = scelti === 0;
       if (scelti > 0) {
@@ -162,9 +158,8 @@
     aggiorna();
   });
 
-  var apri = document.getElementById('menu-filter-open');
-  if (apri && pannello) {
-    apri.addEventListener('click', function () { pannello.hidden = false; });
+  if (bottoneFiltri && pannello) {
+    bottoneFiltri.addEventListener('click', function () { pannello.hidden = false; });
   }
   var azzera = document.getElementById('menu-filter-reset');
   if (azzera) {
