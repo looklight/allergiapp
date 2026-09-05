@@ -72,7 +72,19 @@ AS $$
     r.offers_lodging,
     r.lodging_type,
     COALESCE(ROUND(rev.avg_r, 1), 0) AS average_rating,
-    COALESCE(r.is_premium, false)    AS is_premium
+    -- NON `r.is_premium` nudo: quella colonna è l'INTENTO, non la verità. Niente
+    -- la fa tornare falsa quando l'abbonamento scade, quindi da sola darebbe
+    -- visibilità a vita a chi ha smesso di pagare — sbagliato di suo e in
+    -- contrasto col P2B, dove la priorità si vende per il periodo pagato.
+    -- Scadenza NULL = premium senza scadenza (attivazione manuale): resta valido.
+    -- APERTO: se gli abbonamenti avranno una macchina a stati vera, qui va
+    -- aggiunto anche `r.subscription_status`. Non l'ho messo perché indovinare
+    -- significherebbe accendere o spegnere la visibilità a chi paga.
+    COALESCE(
+      r.is_premium
+      AND (r.subscription_expires_at IS NULL OR r.subscription_expires_at > now()),
+      false
+    ) AS is_premium
   FROM restaurants r
   LEFT JOIN (
     SELECT restaurant_id, AVG(rating)::numeric AS avg_r
@@ -81,6 +93,7 @@ AS $$
   WHERE r.location IS NOT NULL
     AND r.location && ST_MakeEnvelope(min_lng, min_lat, max_lng, max_lat, 4326)::geography
     AND (CASE WHEN lodging_mode THEN r.offers_lodging ELSE r.serves_food END)
-  ORDER BY r.is_premium DESC
+  ORDER BY (r.is_premium
+            AND (r.subscription_expires_at IS NULL OR r.subscription_expires_at > now())) DESC
   LIMIT lim;
 $$;
