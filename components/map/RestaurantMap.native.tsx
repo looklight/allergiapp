@@ -44,6 +44,7 @@ import {
   DOT_LARGE_THRESHOLD,
   MAX_FULL_PINS,
   THINNING_ENABLED,
+  PIN_CULL_MARGIN,
   DOT_VIEWPORT_MARGIN,
   MAX_DOTS,
   gridCellDeg,
@@ -258,7 +259,15 @@ export default function RestaurantMap({
   // Vista del regime pallini (regione + livello di zoom quantizzato): decide COSA
   // si renderizza e quanto è larga l'areola. Separato da pinViewport, che vive
   // solo sotto la soglia dei pin.
-  const [dotView, setDotView] = useState<DotView | null>(null);
+  //
+  // Inizializzata da DEFAULT_REGION per la stessa ragione di isDotZoom sopra:
+  // con `initialRegion` il primo onRegionChangeComplete NON scatta al mount, ma
+  // solo al primo gesto. Partendo da null il diradamento sarebbe spento proprio
+  // all'avvio — e l'avvio senza posizione, con l'intera cache montata in un
+  // commit, è il caso peggiore che questo lavoro esiste per curare.
+  const [dotView, setDotView] = useState<DotView | null>(
+    () => nextDotView(null, DEFAULT_REGION),
+  );
 
   // ---- Stable refs for prop callbacks ----
   const onRegionChangeCompleteRef = useRef(onRegionChangeComplete);
@@ -558,6 +567,13 @@ export default function RestaurantMap({
   const thinningActive =
     THINNING_ENABLED && isDotZoom && dotView != null && (allPins?.length ?? 0) > 0;
 
+  // Stessa guardia per il regime pin: lì non si dirada (da vicino li vuoi tutti)
+  // ma si monta solo ciò che è vicino allo schermo. Senza questo il costo tornava
+  // proporzionale alla cache appena si entrava in città — cioè il difetto di
+  // partenza, spostato di zoom.
+  const cullingActive =
+    THINNING_ENABLED && !isDotZoom && pinViewport != null && (allPins?.length ?? 0) > 0;
+
   // Gli id da renderizzare nel regime pallini: un rappresentante per areola,
   // dentro il viewport allargato, più i salvati/preferiti che non si diradano
   // mai. null = nessun diradamento (regime pin, o mappa senza allPins).
@@ -575,7 +591,18 @@ export default function RestaurantMap({
   // vince solo a parità, cioè quasi sempre quando non ci sono filtri attivi
   // (coperture tutte uguali) e mai quando costerebbe un colore.
   // Oggi è inerte: zero premium in tabella (v. mig 084).
-  const dotIds = useMemo(() => {
+  const renderIds = useMemo(() => {
+    // Regime pin: solo taglio per vicinanza, nessun diradamento — da vicino i
+    // locali si vogliono tutti, sono solo quelli lontani a non dover esistere.
+    if (cullingActive && pinViewport) {
+      const ids = new Set<string>();
+      const pins = allPins ?? [];
+      for (const p of pins) {
+        if (alwaysIndividualIds.has(p.id) ||
+            withinViewport(pinViewport, p.latitude, p.longitude, PIN_CULL_MARGIN)) ids.add(p.id);
+      }
+      return ids;
+    }
     if (!thinningActive || !dotView) return null;
     const vp = dotView.region;
     const pins = allPins ?? [];
@@ -599,11 +626,10 @@ export default function RestaurantMap({
       if (ca !== cb) return ca > cb;
       return !!a.is_premium && !b.is_premium;
     };
-    for (const p of nearestToCenter(thinPins(candidates, gridCellDeg(dotView.zoom), better), vp, MAX_DOTS)) {
-      ids.add(p.id);
-    }
+    const thinned = thinPins(candidates, gridCellDeg(dotView.zoom), better);
+    for (const p of nearestToCenter(thinned, vp, MAX_DOTS)) ids.add(p.id);
     return ids;
-  }, [thinningActive, dotView, allPins, alwaysIndividualIds, showMatchInfo, userAllergens, userDiets]);
+  }, [thinningActive, cullingActive, pinViewport, dotView, allPins, alwaysIndividualIds, showMatchInfo, userAllergens, userDiets]);
 
   const markerElements = useMemo(() => {
     // A zoom largo (regime dot) renderizziamo i cluster (clusteredElements), non i
@@ -632,7 +658,7 @@ export default function RestaurantMap({
       // rientrare dal giro su `restaurants` qui sotto, che è lo stesso locale da
       // un'altra sorgente. Senza questo, il diradamento non diraderebbe nulla.
       seen.add(p.id);
-      if (dotIds && !dotIds.has(p.id)) continue;
+      if (renderIds && !renderIds.has(p.id)) continue;
       const restaurant = restaurantById.get(p.id);
       elements.push(
         <MapPin
@@ -667,8 +693,8 @@ export default function RestaurantMap({
       // La cache dettagliata arriva a 1000 (useRestaurantGeo la riempie da
       // restaurantCache, non dal tetto per-fetch di 200): a zoom largo va
       // diradata come i pin, o restano montati proprio i marker che stiamo
-      // togliendo. Su `dotIds` null (mini-mappe profilo) non tocca niente.
-      if (dotIds && !dotIds.has(r.id)) continue;
+      // togliendo. Su `renderIds` null (mini-mappe profilo) non tocca niente.
+      if (renderIds && !renderIds.has(r.id)) continue;
       elements.push(
         <MapPin
           key={r.id}
@@ -737,7 +763,7 @@ export default function RestaurantMap({
 
     return elements;
     // selectedId serve solo al ramo Android dello skip (su iOS skip è costante '').
-  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, fullPinIds, pinViewport, dotIds, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
+  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, fullPinIds, pinViewport, renderIds, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   // --- Cluster elements (regime dot / zoom largo) -----------------------------
   // Pin GENERICI dati al clustering (allPins meno salvati/preferiti). Il
