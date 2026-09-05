@@ -282,6 +282,12 @@ export default function RestaurantMap({
   onRestaurantPressRef.current = onRestaurantPress;
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  // Servono al tocco sui pallini (v. handleMarkerPress): tenuti in ref per non
+  // cambiare l'identità del callback, che rimonterebbe tutti i marker.
+  const allPinsRef = useRef(allPins);
+  allPinsRef.current = allPins;
+  const thinningActiveRef = useRef(false);
+  const alwaysIndividualIdsRef = useRef<Set<string>>(new Set());
 
   // ---- Segnale "mappa pronta" ----
   // onMapReady (SDK nativo inizializzato) e onLayout (primo layout) possono
@@ -485,6 +491,26 @@ export default function RestaurantMap({
   // Callback stabile per i marker: non incluso nelle dipendenze di markerElements,
   // così il cambio di onRestaurantPress nel parent non causa mass-remount di tutti i pin.
   const handleMarkerPress = useCallback((id: string) => {
+    // A zoom largo un pallino NON è un locale: è il rappresentante della sua
+    // areola, e accanto a lui ce ne sono altri che non stai vedendo. Aprire la
+    // sua scheda vorrebbe dire scegliere per l'utente fra vicini invisibili,
+    // quindi il tocco AVVICINA e basta — "se ingrandisci qui, c'è qualcosa".
+    // Sotto la soglia, dove ogni pallino è di nuovo un locale solo, si apre la
+    // scheda come sempre.
+    // Salvati e preferiti fanno eccezione a qualunque zoom: non sono mai
+    // rappresentanti di nessuno, sono sempre e solo loro stessi.
+    if (thinningActiveRef.current && !alwaysIndividualIdsRef.current.has(id)) {
+      const p = allPinsRef.current?.find(x => x.id === id);
+      if (p) {
+        const cur = currentRegion.current;
+        const delta = cur ? Math.max(cur.latitudeDelta / 2.5, MIN_FIT_DELTA) : 1;
+        mapRef.current?.animateToRegion(
+          { latitude: p.latitude, longitude: p.longitude, latitudeDelta: delta, longitudeDelta: delta },
+          350,
+        );
+        return;
+      }
+    }
     onRestaurantPressRef.current?.(id);
   }, []);
 
@@ -573,6 +599,8 @@ export default function RestaurantMap({
   // partenza, spostato di zoom.
   const cullingActive =
     THINNING_ENABLED && !isDotZoom && pinViewport != null && (allPins?.length ?? 0) > 0;
+  thinningActiveRef.current = thinningActive;
+  alwaysIndividualIdsRef.current = alwaysIndividualIds;
 
   // Gli id da renderizzare nel regime pallini: un rappresentante per areola,
   // dentro il viewport allargato, più i salvati/preferiti che non si diradano
