@@ -133,10 +133,18 @@ viaggia nel payload dei pin e nel client vive solo nel tipo TS (conferma
   premium avrebbe peggiorato il segnale di compatibilità, che il vincolo di
   prodotto vieta. Nel disegno celle il problema non si pone perché il colore
   viene dall'**unione**.
-  **Soluzione scelta: colore dall'unione dell'areola, identità dal premium.**
-  Colore e prominenza non si toccano mai, ed è la stessa semantica della futura
-  RPC a celle → il passo B diventa un drop-in. (Alternativa più semplice se
-  serve: ordine a due chiavi, prima la copertura poi il premium.)
+  **Soluzione scelta — CORRETTA scrivendo il codice (2026-09-05): ordine a due
+  chiavi, PRIMA la copertura POI il premium.** L'unione era la proposta
+  iniziale ed è stata scartata: nel passo A il rappresentante è un *ristorante
+  vero*, e l'unione può dire verde quando nessun singolo locale copre l'utente
+  (uno copre il glutine, l'altro il lattosio → unione verde, ma non esiste un
+  posto dove mangiare). Col miglior-copertura il verde è invece un locale verde
+  che si apre toccandolo: più onesto e più semplice (nessun array di unione da
+  costruire per cella). Sulle celle server la sfumatura dell'unione resta
+  accettata perché lì la cella NON è un locale → §0 punto 1 non cambia, cambia
+  solo il passo A. Con le due chiavi il premium vince a parità di copertura —
+  cioè quasi sempre a filtri spenti, dove le coperture sono tutte uguali — e
+  non può mai far diventare grigia un'areola dove c'è un verde.
 - **Cambio di tempistica rispetto a §0-bis 4-ter.** Lì la metà client era "alla
   build successiva al primo contratto". Ma **con le OTA bloccate la metà client
   è vincolata alla build**, e le build sono rare → la visibilità premium
@@ -144,9 +152,13 @@ viaggia nel payload dei pin e nel client vive solo nel tipo TS (conferma
   ora, inerti** (con 0 premium non cambia un pixel); al primo contratto basta
   un UPDATE su una riga. Resta fuori l'**evidenza visiva** (aspetto del pin
   premium): quella non si disegna al buio, come già deciso.
-- Invariato: `ORDER BY is_premium DESC` + `is_premium` nel payload di
-  `get_pins_in_bounds` sono additivi, via SQL editor, senza build (pattern 073)
-  — si possono fare quando si vuole.
+- **Migration 084 SCRITTA il 2026-09-05, DA APPLICARE**
+  (`supabase/migrations/084_pins_is_premium.sql`): `is_premium` nel payload di
+  `get_pins_in_bounds` + `ORDER BY r.is_premium DESC`. Additiva, via SQL editor,
+  senza build (pattern 073); i client vecchi la ignorano. Il client la consuma
+  già (`RestaurantPin.is_premium`, mapper, seconda chiave del diradamento):
+  finché non è applicata il campo arriva `undefined` → falsy → tutto si
+  comporta come se non ci fosse.
 - Invariato e non negoziabile: **il colore verde/ambra non si vende MAI**.
 
 ### Ordine dei lavori deciso

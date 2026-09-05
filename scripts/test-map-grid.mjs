@@ -65,24 +65,42 @@ const pins = [
   { id: 'z', latitude: 48.00, longitude: 9.00 },
 ];
 const ids = ps => ps.map(p => p.id).sort();
-check('celle diverse sopravvivono entrambe', ids(thinPins(pins, 1, () => 0)), ['a', 'z']);
-check('a parita di rango vince l id piu piccolo', ids(thinPins(pins, 1, () => 0)), ['a', 'z']);
-check('il rango batte l id', ids(thinPins(pins, 1, p => (p.id === 'c' ? 5 : 0))), ['c', 'z']);
+const pari = () => false;
+check('celle diverse sopravvivono entrambe', ids(thinPins(pins, 1, pari)), ['a', 'z']);
+check('a parita vince l id piu piccolo', ids(thinPins(pins, 1, pari)), ['a', 'z']);
+check('il criterio batte l id', ids(thinPins(pins, 1, a => a.id === 'c')), ['c', 'z']);
 // L'ordine di iterazione della pinCache cambia a ogni merge di fetch: il
 // risultato non deve dipenderne, o i marker si scambiano di posto tra render.
 check('ordine di ingresso irrilevante',
-  ids(thinPins([...pins].reverse(), 1, () => 0)), ids(thinPins(pins, 1, () => 0)));
-check('cella piccola non dirada nulla', thinPins(pins, 0.001, () => 0).length, 4);
-check('cellDeg non valido = nessun diradamento', thinPins(pins, 0, () => 0).length, 4);
+  ids(thinPins([...pins].reverse(), 1, pari)), ids(thinPins(pins, 1, pari)));
+check('cella piccola non dirada nulla', thinPins(pins, 0.001, pari).length, 4);
+check('cellDeg non valido = nessun diradamento', thinPins(pins, 0, pari).length, 4);
 check('coordinate non valide scartate',
-  thinPins([{ id: 'x', latitude: NaN, longitude: 9 }], 1, () => 0).length, 0);
+  thinPins([{ id: 'x', latitude: NaN, longitude: 9 }], 1, pari).length, 0);
 // La griglia e' agganciata al mondo: due punti a cavallo del confine di cella
 // restano separati comunque li si guardi.
 check('griglia ancorata al mondo, non allo schermo',
   ids(thinPins([
     { id: 'p', latitude: 0.9, longitude: 0.5 },
     { id: 'q', latitude: 1.1, longitude: 0.5 },
-  ], 1, () => 0)), ['p', 'q']);
+  ], 1, pari)), ['p', 'q']);
+
+// --- le due chiavi: copertura, POI premium (vincolo di prodotto) ---
+// Il premium compra visibilita', mai colore: non deve MAI poter nascondere un
+// locale piu' compatibile di lui, o l'areola diventerebbe grigia coprendo un
+// verde. Se questo caso si rompe, si e' rotto il vincolo, non un dettaglio.
+const cell = [
+  { id: 'verde',   latitude: 45.0, longitude: 9.0, cov: 1.0, premium: false },
+  { id: 'premium', latitude: 45.1, longitude: 9.1, cov: 0.5, premium: true },
+  { id: 'grigio',  latitude: 45.2, longitude: 9.2, cov: 0.5, premium: false },
+];
+const better = (a, b) => (a.cov !== b.cov ? a.cov > b.cov : !!a.premium && !b.premium);
+check('il premium NON batte una copertura migliore',
+  ids(thinPins(cell, 1, better)), ['verde']);
+check('a parita di copertura vince il premium',
+  ids(thinPins(cell.filter(p => p.cov === 0.5), 1, better)), ['premium']);
+check('senza filtri (coperture pari) vince il premium',
+  ids(thinPins(cell.map(p => ({ ...p, cov: 0 })), 1, better)), ['premium']);
 
 // --- tetto: i piu vicini al centro, con pareggio deterministico ---
 const many = Array.from({ length: 10 }, (_, i) => ({ id: `p${i}`, latitude: 45 + i, longitude: 9 }));

@@ -16,6 +16,10 @@ export type RestaurantPin = {
   lodging_type?: string | null;
   /** Voto medio (mig 073) — 0 se assente o su DB pre-migration */
   average_rating?: number;
+  /** Locale premium (mig 084) — false se assente o su DB pre-migration.
+   *  Serve al diradamento pallini come criterio SECONDARIO dopo la copertura:
+   *  compra visibilità, mai colore (MAP_SCALING.md §0-ter). */
+  is_premium?: boolean;
 };
 
 /** Mappa una riga pin-shaped delle RPC (get_pins_in_bounds, get_followed_pins)
@@ -30,6 +34,7 @@ export function mapPinRow(row: any): RestaurantPin {
     cuisine_types: (row.cuisine_types ?? []) as string[],
     offers_lodging: (row.offers_lodging ?? false) as boolean,
     average_rating: Number(row.average_rating ?? 0),
+    is_premium: (row.is_premium ?? false) as boolean,
     lodging_type: (row.lodging_type ?? null) as string | null,
   };
 }

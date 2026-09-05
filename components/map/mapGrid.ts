@@ -121,10 +121,15 @@ export type ThinnablePin = { id: string; latitude: number; longitude: number };
 
 /** Un rappresentante per cella di griglia.
  *
- *  `rank` più alto vince; a parità decide l'id (confronto stabile) — così il
- *  risultato NON dipende dall'ordine di iterazione della pinCache, che cambia
- *  a ogni merge di fetch. Determinismo = nessun marker che si scambia di posto
- *  tra due render con gli stessi dati.
+ *  `better(a, b)` dice se `a` batte `b`. Quando nessuno dei due batte l'altro
+ *  decide l'id: così il risultato NON dipende dall'ordine di iterazione della
+ *  pinCache, che cambia a ogni merge di fetch. Determinismo = nessun marker
+ *  che si scambia di posto tra due render con gli stessi dati.
+ *
+ *  Il confronto è una funzione e non un punteggio numerico apposta: i criteri
+ *  sono a più chiavi (copertura, poi premium) e schiacciarli in un numero solo
+ *  richiede scale arbitrarie che si rompono in silenzio quando una chiave
+ *  cambia intervallo. `better` non ha scale da azzeccare.
  *
  *  La cella si ricava dividendo le coordinate assolute per `cellDeg`: la
  *  griglia è agganciata al meridiano/parallelo zero, non allo schermo, quindi
@@ -132,19 +137,18 @@ export type ThinnablePin = { id: string; latitude: number; longitude: number };
 export function thinPins<T extends ThinnablePin>(
   pins: readonly T[],
   cellDeg: number,
-  rank: (pin: T) => number,
+  better: (a: T, b: T) => boolean,
 ): T[] {
   if (!(cellDeg > 0)) return pins.slice();
-  const best = new Map<string, { pin: T; r: number }>();
+  const best = new Map<string, T>();
   for (const p of pins) {
     if (!isValidCoord(p.latitude, p.longitude)) continue;
     const key = `${Math.floor(p.latitude / cellDeg)}:${Math.floor(p.longitude / cellDeg)}`;
-    const r = rank(p);
     const cur = best.get(key);
-    if (!cur || r > cur.r || (r === cur.r && p.id < cur.pin.id)) best.set(key, { pin: p, r });
+    if (!cur || better(p, cur) || (!better(cur, p) && p.id < cur.id)) best.set(key, p);
   }
   const out: T[] = [];
-  for (const { pin } of best.values()) out.push(pin);
+  for (const pin of best.values()) out.push(pin);
   return out;
 }
 

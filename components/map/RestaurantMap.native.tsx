@@ -557,11 +557,19 @@ export default function RestaurantMap({
   // dentro il viewport allargato, più i salvati/preferiti che non si diradano
   // mai. null = nessun diradamento (regime pin, o mappa senza allPins).
   //
-  // Il rango è la copertura del locale rispetto alle esigenze attive: il pallino
-  // dell'areola è il MIGLIORE che c'è lì, quindi verde vuol dire "qui c'è un
-  // posto verde, e toccandolo lo apri". Onesto in un modo che l'unione delle
-  // coperture non sarebbe (unire due locali a metà darebbe verde senza che
-  // esista un posto dove mangiare). A parità decide l'id, dentro thinPins.
+  // Chi rappresenta l'areola: PRIMA la copertura rispetto alle esigenze attive,
+  // POI il premium. Il pallino è quindi il MIGLIORE che c'è lì, e verde vuol
+  // dire "qui c'è un posto verde, e toccandolo lo apri" — onesto in un modo che
+  // l'unione delle coperture non sarebbe (unire due locali a metà darebbe verde
+  // senza che esista un posto dove mangiare).
+  //
+  // L'ordine delle due chiavi non è negoziabile: col premium davanti, un'areola
+  // con un premium poco compatibile diventerebbe grigia nascondendo un verde —
+  // il premium avrebbe peggiorato un'informazione di sicurezza, che è
+  // esattamente ciò che il vincolo di prodotto vieta. Così invece il premium
+  // vince solo a parità, cioè quasi sempre quando non ci sono filtri attivi
+  // (coperture tutte uguali) e mai quando costerebbe un colore.
+  // Oggi è inerte: zero premium in tabella (v. mig 084).
   const dotIds = useMemo(() => {
     if (!thinningActive || !dotView) return null;
     const vp = dotView.region;
@@ -574,15 +582,19 @@ export default function RestaurantMap({
       if (alwaysIndividualIds.has(p.id)) { ids.add(p.id); continue; }
       if (withinViewport(vp, p.latitude, p.longitude, DOT_VIEWPORT_MARGIN)) candidates.push(p);
     }
-    const rank = showMatchInfo
-      ? (p: RestaurantPin) => {
-          const { covered, total } = clientCoverage(
-            p.supported_allergens, p.supported_diets, userAllergens, userDiets,
-          );
-          return total > 0 ? covered / total : 0;
-        }
-      : () => 0;
-    for (const p of nearestToCenter(thinPins(candidates, gridCellDeg(dotView.zoom), rank), vp, MAX_DOTS)) {
+    const coverage = (p: RestaurantPin) => {
+      if (!showMatchInfo) return 0;
+      const { covered, total } = clientCoverage(
+        p.supported_allergens, p.supported_diets, userAllergens, userDiets,
+      );
+      return total > 0 ? covered / total : 0;
+    };
+    const better = (a: RestaurantPin, b: RestaurantPin) => {
+      const ca = coverage(a), cb = coverage(b);
+      if (ca !== cb) return ca > cb;
+      return !!a.is_premium && !b.is_premium;
+    };
+    for (const p of nearestToCenter(thinPins(candidates, gridCellDeg(dotView.zoom), better), vp, MAX_DOTS)) {
       ids.add(p.id);
     }
     return ids;
