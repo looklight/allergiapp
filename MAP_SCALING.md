@@ -5,7 +5,10 @@ completa e la strategia decisa, per riprenderla quando si aprirà il lavoro.
 Integra (non sostituisce) la sezione "SCALABILITÀ PIN — gerarchia dei limiti" in
 `TODO.md`, che resta la fonte per i task operativi.
 
-**Stato: LAVORO APERTO dal 2026-09-05. Piano operativo corrente: §0-ter.**
+**Stato: passo A SCRITTO e provato su simulatore (2026-09-05), branch
+`feature/map-thinning` — manca il collaudo sul telefono fisico, che è il gate
+del merge. Piano operativo corrente: §0-ter, e in particolare il suo "Diario
+dell'implementazione", che è la parte da leggere per prima.**
 Fase 1 è in main (merge 2026-07-09, viewport-gating 2026-07-10). §0-ter apre il
 passo A (diradamento client) dopo le segnalazioni di lag e l'analisi del
 2026-09-05; §0-bis resta la mappa dei trigger e del lavoro server; la Revisione
@@ -204,6 +207,124 @@ e la build resta rilasciabile lo stesso.
   catture bitmap in un frame (è il "non fluidissimo" che l'utente nota).
 - Il commento fuorviante su `restaurants.tsx:274` (parla di un culling che non
   esiste più) va corretto contestualmente.
+
+### Diario dell'implementazione (2026-09-05, branch `feature/map-thinning`)
+
+Il passo A è **scritto e provato su simulatore iOS** (dev build, mai Expo Go).
+Cinque commit: griglia + test, diradamento in mappa, premium seconda chiave,
+pulizia, taratura; più i due buchi trovati a fine giornata. Quello che segue è
+ciò che il piano non prevedeva.
+
+**Le decisioni corrette strada facendo.**
+- **Colore dal miglior-copertura, non dall'unione** (v. sopra, punto premium).
+- **Il criterio del rappresentante è un CONFRONTO, non un punteggio.** Due
+  chiavi (copertura, poi premium) schiacciate in un numero solo richiedono
+  scale arbitrarie che si rompono in silenzio quando una chiave cambia
+  intervallo. `thinPins` prende `better(a, b)`.
+- **Il quadretto va largo quanto il pallino, non di più.** Tre tarature
+  (`DOTS_PER_SCREEN_HEIGHT` 22 → 40 → 90 → 120) sbagliate per la stessa
+  ragione: sceglievo la distanza che fa *respirare* i pallini invece di quella
+  che li fa *combaciare*. Ma la premessa di §0 dice l'opposto, ed è ciò che
+  rende il diradamento invisibile: con celle 2-3 volte il pallino la mappa
+  diventa ordinata e **mente** (a mondo intero l'Italia con 2881 locali
+  riceveva 12 pallini, la Norvegia con 13 ne riceveva 4). Il primo errore (22)
+  era di aritmetica: la costante divide l'ALTEZZA della schermata, e il nome
+  diceva larghezza — per questo ora si chiama `DOTS_PER_SCREEN_HEIGHT`.
+
+**I due buchi trovati rileggendo il codice** (non ragionandoci: entrambi sono
+sfuggiti all'analisi ed erano nei *confini* di attivazione, non nella
+matematica — che invece ha 33 casi di prova).
+1. **Il diradamento era spento all'avvio.** Con `initialRegion` il primo
+   `onRegionChangeComplete` NON scatta al mount: `dotView` restava null e fino
+   al primo gesto si montava tutta la cache. L'avvio senza posizione — il caso
+   peggiore, quello da cui siamo partiti — era l'unico scoperto. Il file lo
+   diceva già per `isDotZoom` dieci righe sopra.
+2. **Nessun taglio sotto la soglia dei pin.** In città si montavano ~2900
+   marker dove ne bastano ~100: il difetto di partenza, spostato di zoom, e
+   proprio nella fascia in cui gli utenti segnalavano il lag. Ora si taglia
+   (non si dirada: da vicino li vuoi tutti) a `PIN_CULL_MARGIN = 3.0`, il
+   doppio del confine dei pin pieni, così si passa da pin a pallino a niente e
+   mai da pin a niente, sempre fuori campo.
+
+**Misure sul simulatore (cache 2500-3000 pin, iPhone 17 Pro).**
+
+| zoom | montati | note |
+|---|---|---|
+| mondo (Δ158) | 165-189 | griglia |
+| continente (Δ100) | 248-337 | griglia |
+| Europa (Δ50) | 337-437 | griglia |
+| **z=4..z=8** | **500** | **tetto: la griglia ne vorrebbe 512-1059** |
+| città (Δ0.11) | 198 | regime pin, taglio |
+| città stretta (Δ0.027) | 102 | regime pin, taglio |
+
+Proprietà confermate sul campo: **33% di zoom in più → 3 pallini di
+differenza** (banda morta); **cache +1 pin → +1 marker** (griglia ancorata al
+mondo); due letture della stessa vista → numero identico (determinismo).
+
+**`MAX_DOTS` è il vincolo dominante da z=4 a z=8, ed è una stima non una
+misura.** È il PRIMO numero da rifare sulla dev build del telefono fisico: se
+regge di più si alza e la densità percepita sale subito; se scatta si abbassa.
+Finché non è misurato, il guadagno del passo fine resta imbottigliato lì.
+
+**Due strade misurate e SCARTATE** (non riproporle):
+- *Stringere `DOT_VIEWPORT_MARGIN`* per spendere il budget vicino allo schermo:
+  non libera posti dove il tetto morde (a 0.8 la griglia ne vuole ancora 583 e
+  697) e dove non morde toglie e basta (z=8: 427 → 230). I dati stanno addosso
+  al centro, quindi restringendo si taglia periferia vuota. Margine resta 1.5.
+- *Contare su una griglia più fine* per la densità a zoom medio: da z=4 a z=8
+  decide il tetto, non la griglia. Il passo fine serve solo a z≤3.
+
+**Difetto vecchio trovato per strada: rettangolo di ricerca > ~200° di
+longitudine.** Castato a geography, PostGIS lo legge come "tutto il resto del
+globo": 270° → 113 righe, 300° → 6, 355° → 0, senza errori. Telefono in
+verticale non ci arriva (~110° max), **iPad in orizzontale sì** e la mappa si
+svuoterebbe di colpo. Corretto in `useRestaurantGeo` con
+`MAX_LNG_HALF_SPAN = 90`.
+
+**La Norvegia: la prova che il passo B non è rimandabile.** L'utente ha notato
+che a zoom largo la Scandinavia non compare. Non è il diradamento: dei 33
+locali nordici ne **arrivano 9**, perché il taglio a 1000 righe è senza
+ordinamento e in pratica italiano. Una richiesta mirata ne restituisce 33 su
+33. Oggi arriva il 24% dell'archivio; con un ordine di grandezza in più sarà il
+2,4% → **più cresci, più la mappa sembra vuota**. Nessuna manopola client lo
+tocca: il client può diradare solo ciò che è arrivato.
+
+**Egress, misurato** (gzip, che è ciò che viaggia davvero): pin a zoom largo
+48 KB per 1000 righe, città 5,6 KB per 118; **fetch dettagliato 33,5 KB per 200
+righe, cioè 167 B/riga contro i 48 dei pallini**. Sessione tipo 300-500 KB →
+~12.000 sessioni/mese nei 5 GB del piano gratuito. **L'egress NON cresce con i
+ristoranti** (entrambe le richieste sono cappate): scala con gli utenti. Il
+lavoro di oggi non l'ha cambiato di un byte — è tutto lato disegno.
+
+**Proposta a verbale, non fatta:** `subscription_status` e
+`subscription_expires_at` viaggiano in `get_nearby_restaurants` e il client non
+li usa da nessuna parte (0 occorrenze) — 7,4% del payload più un'esposizione di
+dati di business verso chiunque apra l'app. Toglierli è una migration senza
+build. `added_by` / `google_place_id` / `created_at` pesano di più ma servono
+sulla scheda: lasciarli.
+
+**Decisioni chiuse oggi:**
+- **Tocco sul pallino a zoom largo = AVVICINA**, non apre la scheda (il pallino
+  rappresenta un'areola, aprirlo sceglierebbe per l'utente fra vicini
+  invisibili). Sotto la soglia si apre come sempre. Salvati/preferiti aprono
+  sempre: non rappresentano mai nessun altro. Coerente con §0 per le celle.
+- **Il premium scaduto smette di comprare visibilità**: la 084 non usa più
+  `is_premium` nudo (è l'intento, non la verità — niente lo fa scadere) ma il
+  booleano già risolto con la scadenza. APERTO: se gli abbonamenti avranno una
+  macchina a stati, aggiungere `subscription_status` al predicato — da decidere,
+  non da indovinare.
+
+**Cosa resta prima del merge:**
+1. **Dev build sul telefono fisico vecchio**, iOS e Android — gate non
+   saltabile: il crash da churn si manifesta solo in Debug. Prima misura:
+   quanto regge `MAX_DOTS`.
+2. Beta TestFlight per la fluidità reale.
+3. `THINNING_ENABLED` è l'uscita di sicurezza: se il churn si rivelasse peggio
+   del lag si spegne e la build resta rilasciabile.
+
+**Non toccato di proposito:** i salvati/preferiti non vengono mai tagliati a
+nessuno zoom (giusto come principio, ma è l'unico percorso senza tetto: un
+utente con 800 preferiti monterebbe 800 marker sempre — irrilevante oggi).
 
 ---
 
