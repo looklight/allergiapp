@@ -286,6 +286,11 @@ export default function RestaurantMap({
   // cambiare l'identità del callback, che rimonterebbe tutti i marker.
   const allPinsRef = useRef(allPins);
   allPinsRef.current = allPins;
+  // Livello di griglia effettivamente usato l'ultima volta: serve all'isteresi
+  // dell'allargamento (v. renderIds), perché il livello dipende da quanti
+  // locali ci sono in vista e senza banda morta sbatterebbe avanti e indietro
+  // pannando lungo un confine di densità.
+  const dotLevelRef = useRef<number | null>(null);
   const thinningActiveRef = useRef(false);
   const alwaysIndividualIdsRef = useRef<Set<string>>(new Set());
 
@@ -488,6 +493,28 @@ export default function RestaurantMap({
     onDeselectRef.current?.();
   }, []);
 
+  /** Avvicina la mappa verso un punto. Due cose che sembrano dettagli e non lo sono.
+   *
+   *  1. La regione richiesta deve avere la FORMA dello schermo. Chiedendone una
+   *     quadrata, per farci stare la larghezza la mappa allarga l'altezza e lo
+   *     zoom esce ~40% più debole di quello chiesto (misurato: chiesto Δ63,
+   *     ottenuto Δ104). Il rapporto lo prendiamo dalla regione corrente, che la
+   *     mappa ci ha già consegnato con l'aspetto giusto: si auto-calibra su
+   *     qualunque schermo, telefono o tablet.
+   *  2. Il passo dev'essere abbastanza deciso da portare da qualche parte. A
+   *     ÷2.5 (e col difetto sopra, ÷1.5 reale) da mondo intero servivano dieci
+   *     tocchi per arrivare in città: il gesto sembrava non funzionare. A ÷6 ne
+   *     bastano quattro, e ogni tocco si sente. */
+  const zoomToward = useCallback((latitude: number, longitude: number) => {
+    const cur = currentRegion.current;
+    const ratio = cur && cur.latitudeDelta > 0 ? cur.longitudeDelta / cur.latitudeDelta : 0.5;
+    const latitudeDelta = Math.max((cur?.latitudeDelta ?? 1) / 6, MIN_FIT_DELTA);
+    mapRef.current?.animateToRegion(
+      { latitude, longitude, latitudeDelta, longitudeDelta: latitudeDelta * ratio },
+      350,
+    );
+  }, []);
+
   // Callback stabile per i marker: non incluso nelle dipendenze di markerElements,
   // così il cambio di onRestaurantPress nel parent non causa mass-remount di tutti i pin.
   const handleMarkerPress = useCallback((id: string) => {
@@ -502,34 +529,19 @@ export default function RestaurantMap({
     if (thinningActiveRef.current && !alwaysIndividualIdsRef.current.has(id)) {
       const p = allPinsRef.current?.find(x => x.id === id);
       if (p) {
-        const cur = currentRegion.current;
-        const delta = cur ? Math.max(cur.latitudeDelta / 2.5, MIN_FIT_DELTA) : 1;
-        mapRef.current?.animateToRegion(
-          { latitude: p.latitude, longitude: p.longitude, latitudeDelta: delta, longitudeDelta: delta },
-          350,
-        );
+        zoomToward(p.latitude, p.longitude);
         return;
       }
     }
     onRestaurantPressRef.current?.(id);
-  }, []);
+  }, [zoomToward]);
 
   // Tap su una bolla → zoom-in verso il cluster, che si apre nei suoi componenti.
   // Mezza delta corrente (clampata a MIN_FIT_DELTA) è l'approccio standard, senza
   // dover mappare il clusterId all'expansion zoom.
   const handleClusterPress = useCallback((cluster: MapCluster) => {
-    const cur = currentRegion.current;
-    const delta = cur ? Math.max(cur.latitudeDelta / 2.5, MIN_FIT_DELTA) : 1;
-    mapRef.current?.animateToRegion(
-      {
-        latitude: cluster.latitude,
-        longitude: cluster.longitude,
-        latitudeDelta: delta,
-        longitudeDelta: delta,
-      },
-      350,
-    );
-  }, []);
+    zoomToward(cluster.latitude, cluster.longitude);
+  }, [zoomToward]);
 
   const handleLayout = useCallback(() => {
     laidOutRef.current = true;
@@ -623,16 +635,29 @@ export default function RestaurantMap({
     // Regime pin: solo taglio per vicinanza, nessun diradamento — da vicino i
     // locali si vogliono tutti, sono solo quelli lontani a non dover esistere.
     if (cullingActive && pinViewport) {
+      // Stessa ragione del ramo sotto: si ritaglia su dove la mappa è davvero.
+      const vp = currentRegion.current ?? pinViewport;
       const ids = new Set<string>();
       const pins = allPins ?? [];
       for (const p of pins) {
         if (alwaysIndividualIds.has(p.id) ||
-            withinViewport(pinViewport, p.latitude, p.longitude, PIN_CULL_MARGIN)) ids.add(p.id);
+            withinViewport(vp, p.latitude, p.longitude, PIN_CULL_MARGIN)) ids.add(p.id);
       }
       return ids;
     }
     if (!thinningActive || !dotView) return null;
-    const vp = dotView.region;
+    // Il RITAGLIO usa la posizione VERA della mappa quando c'è; il livello di
+    // zoom (cioè la grandezza dell'areola) continua a venire da dotView, che ha
+    // la banda morta anti-sfarfallio. Sono due cose diverse e vanno prese da due
+    // posti diversi: la cella deve restare ferma, il ritaglio no.
+    //
+    // Senza questo, se lo stato React e la mappa nativa divergono si taglia
+    // rispetto a un posto dove l'utente non è e la mappa SI SVUOTA. Succede a
+    // ogni ricarica a caldo di Metro (React azzera lo stato ai valori iniziali,
+    // la mappa nativa resta dov'era) — e un modo di sbagliare che cancella tutto
+    // invece di degradare non va lasciato in piedi, anche se in produzione
+    // `initialRegion` rende il caso improbabile.
+    const vp = currentRegion.current ?? dotView.region;
     const pins = allPins ?? [];
     const candidates: RestaurantPin[] = [];
     const ids = new Set<string>();
@@ -654,7 +679,35 @@ export default function RestaurantMap({
       if (ca !== cb) return ca > cb;
       return !!a.is_premium && !b.is_premium;
     };
-    const thinned = thinPins(candidates, gridCellDeg(dotView.zoom), better);
+    // Quando le celle superano il tetto NON si taglia: si allarga il quadretto.
+    //
+    // Tagliare teneva le MAX_DOTS più vicine al centro, e con dati ammassati
+    // sulle città quel "più vicine" è un cerchietto molto più piccolo dello
+    // schermo: la mappa si svuotava tutt'intorno, e pannando i pallini già
+    // visti sparivano perché il centro si spostava. Allargare invece toglie
+    // densità ovunque in modo uniforme — meno pallini, ma distribuiti — che è
+    // la stessa equità geografica che la griglia garantisce a ogni altro zoom.
+    //
+    // Il livello scende di uno alla volta: ogni passo quadruplica l'area della
+    // cella, quindi bastano una o due iterazioni. La banda morta (si torna più
+    // fini solo sotto il 75% del tetto) evita di sbattere fra due livelli
+    // pannando lungo un confine di densità.
+    let level = dotView.zoom;
+    const prev = dotLevelRef.current;
+    if (prev != null && prev < level) {
+      const fine = thinPins(candidates, gridCellDeg(level), better).length;
+      if (fine > MAX_DOTS * 0.75) level = prev;
+    }
+    let thinned = thinPins(candidates, gridCellDeg(level), better);
+    while (thinned.length > MAX_DOTS && level > 0) {
+      level -= 1;
+      thinned = thinPins(candidates, gridCellDeg(level), better);
+    }
+    dotLevelRef.current = level;
+    // Rete di sicurezza: l'allargamento si ferma al livello 0 (mondo intero in
+    // celle da 3°), e in teoria anche lì si potrebbe sforare. Se succede si
+    // torna a tagliare per distanza — peggio, ma il tetto dev'essere una
+    // garanzia, non una speranza. In pratica non ci si arriva mai.
     for (const p of nearestToCenter(thinned, vp, MAX_DOTS)) ids.add(p.id);
     return ids;
   }, [thinningActive, cullingActive, pinViewport, dotView, allPins, alwaysIndividualIds, showMatchInfo, userAllergens, userDiets]);

@@ -78,8 +78,15 @@ export const DOTS_PER_SCREEN_HEIGHT = 120;
  *
  *  Il numero è la stima di quanti marker un telefono vecchio regge senza
  *  scattare, ed è la cosa da rimisurare per prima sulla dev build del telefono
- *  fisico: se regge, si può alzare; se scatta, si abbassa. */
-export const MAX_DOTS = 500;
+ *  fisico: se regge, si può alzare; se scatta, si abbassa.
+ *
+ *  Alzato da 500 a 1000 il 2026-09-05 sulla base delle richieste misurate della
+ *  griglia (z=4..z=8 chiedevano 539-1059): a 500 il tetto mordeva su cinque
+ *  livelli di zoom, a 1000 quasi mai. ⚠️ Il SIMULATORE NON PUÒ VALIDARE QUESTO
+ *  NUMERO — gira su un Mac. Vale solo come verifica di quanto la mappa risulti
+ *  piena; la tenuta va misurata sul telefono fisico vecchio, ed è lì che questo
+ *  valore va confermato o abbassato. */
+export const MAX_DOTS = 1000;
 
 /** Mezzo-span del viewport di RENDER nel regime pallini, in multipli del delta
  *  regione: mezzo schermo visibile più uno intero di margine per lato, così i
