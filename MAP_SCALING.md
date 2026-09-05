@@ -326,6 +326,62 @@ sulla scheda: lasciarli.
 nessuno zoom (giusto come principio, ma è l'unico percorso senza tetto: un
 utente con 800 preferiti monterebbe 800 marker sempre — irrilevante oggi).
 
+### ⚠️ APERTO — "alcuni pallini spariscono" (caccia del 2026-09-06, NON risolto)
+
+**Sintomo:** su dispositivo fisico (iPhone, iOS 26.2), con il branch
+`feature/map-thinning`, alcuni pallini non compaiono o spariscono muovendo la
+mappa. Più evidente su un locale isolato (Las Vegas) ma **riguarda molti
+pallini**, non solo quelli isolati.
+
+**Il solo fatto solido, e va usato come punto di partenza:**
+**su `main` i pallini restano, sul branch no.** Verificato scambiando ramo e
+ricaricando (il binario nativo non cambia: il JS arriva da Metro). Quindi è una
+delle modifiche del branch, non un difetto preesistente.
+
+**Ipotesi ESCLUSE con prove — non rifarle:**
+- *Pallino "recesso" (grigio, 7pt, 60%)*: il locale di prova copre `gluten`,
+  quindi con 3 esigenze è **ambra a piena opacità**. Verificato sui dati e sui
+  pixel dei PNG.
+- *PNG mancanti o rotti*: tutti e 60 gli asset sono validi, ambra incluso
+  (80 pixel visibili, come il verde).
+- *zIndex negativi su iOS* (`IOS_MARKER_Z_STRATEGY`): messo a `'native'`,
+  nessun cambiamento. Rimesso a `'below-user'`.
+- *Tetto che tagliava per distanza dal centro*: era un difetto vero (svuotava
+  la mappa attorno al centro) ed è stato corretto, ma NON è questo.
+- *Cache che si svuota*: cresce regolarmente (log: 48 → 500 → 1371 → 3508).
+- *Asset scaricati via HTTP in dev e abbandonati*: c'è davvero un
+  `WARN Task orphaned` su `dot-green-light@3x.png`, ma il difetto si presenta
+  **anche in build Release**, dove gli asset sono dentro l'app.
+- *Churn dei marker (smontati e rimontati)*: con `THINNING_ENABLED = false` il
+  difetto resta. ⚠️ Questa prova è però **debole**: il primo tentativo non
+  arrivò mai al telefono (Metro ucciso per memoria), il secondo sì. Da
+  riverificare se si torna su questa pista.
+
+**Difetti VERI trovati e corretti lungo la caccia** (nessuno risolutivo da solo):
+1. `pinById` messo dietro `clusteringActive` mentre serve anche a
+   `SelectedMarkerOverlay` → `selectedPin` sempre `null`.
+2. Isteresi dell'allargamento che confrontava livelli di zoom **diversi** → la
+   mappa si svuotava proprio mentre si ingrandiva.
+3. Il rappresentante di un'areola veniva **scalzato** da un pin appena
+   scaricato → pallini che se ne vanno durante il pan. Curato con la
+   stickiness ("quello che è comparso resta").
+
+**PROSSIMO PASSO, deciso: bisezione, non altre ipotesi.**
+Partire da `main` e riapplicare i 9 commit del branch **uno alla volta**,
+ricaricando e provando ogni volta (il JS arriva da Metro: bastano secondi, non
+serve ricompilare). Quattro prove al massimo per dimezzamento. Le ipotesi hanno
+già consumato una giornata e ne sono cadute sei.
+
+**Da raccogliere alla prossima prova, mai fatto finora:** di che **colore** sono
+i pallini che spariscono. Se fossero solo i verdi, il `Task orphaned` su
+`dot-green-light@3x.png` smette di essere un dettaglio.
+
+**Ambiente già pronto:** iPhone registrato sul team `F327489U5B`
+(`DEVELOPMENT_TEAM` corretto in `ios/`, che è generato e ignorato da git);
+build Debug installabile senza ricompilare con
+`npx expo run:ios --device 00008140-0004059914F9801C --binary ios/build/Build/Products/Debug-iphoneos/AllergiApp.app`.
+⚠️ Il Mac ha ucciso Metro due volte per memoria: tenere spento il simulatore.
+
 ---
 
 ## 0-bis. PIANO 2026-07-18 — dopo Fase 1 + viewport-gating
