@@ -43,6 +43,16 @@ import {
   ZOOM_PIN_THRESHOLD,
   DOT_LARGE_THRESHOLD,
   MAX_FULL_PINS,
+  THINNING_ENABLED,
+  DOT_VIEWPORT_MARGIN,
+  MAX_DOTS,
+  gridCellDeg,
+  nextDotView,
+  thinPins,
+  nearestToCenter,
+  withinViewport,
+  clientCoverage,
+  type DotView,
   DEFAULT_REGION,
   FIT_EDGE_PADDING,
   MIN_FIT_DELTA,
@@ -240,6 +250,10 @@ export default function RestaurantMap({
   // restano coerenti; quantizzato in nextPinViewport per non ricalcolare
   // markerElements sui micro-pan.
   const [pinViewport, setPinViewport] = useState<Region | null>(null);
+  // Vista del regime pallini (regione + livello di zoom quantizzato): decide COSA
+  // si renderizza e quanto è larga l'areola. Separato da pinViewport, che vive
+  // solo sotto la soglia dei pin.
+  const [dotView, setDotView] = useState<DotView | null>(null);
 
   // ---- Stable refs for prop callbacks ----
   const onRegionChangeCompleteRef = useRef(onRegionChangeComplete);
@@ -442,6 +456,7 @@ export default function RestaurantMap({
       return prev;
     });
     setPinViewport(prev => nextPinViewport(prev, region));
+    setDotView(prev => nextDotView(prev, region));
   }, []);
 
   // Cleanup del timer di debounce cluster all'unmount.
@@ -495,6 +510,14 @@ export default function RestaurantMap({
   // `restaurants`), coerente con iOS dove il clustering è già spento.
   const clusteringActive = CLUSTERING_ENABLED && (allPins?.length ?? 0) > 0;
 
+  // Salvati/preferiti: SEMPRE individuali, mai diradati e mai clusterizzati —
+  // sono pochi e "sempre visibili" è una promessa di design, non un'ottimizzazione.
+  const alwaysIndividualIds = useMemo(() => {
+    const s = new Set<string>(favIds);
+    if (customSymbols) for (const id of customSymbols.keys()) s.add(id);
+    return s;
+  }, [favIds, customSymbols]);
+
   // Pin di allPins che nel regime pin vanno renderizzati COMPLETI (nel viewport
   // allargato). null = regime pallini, il gate non si applica. Oltre
   // MAX_FULL_PINS (aree densissime) diventano pin i più vicini al centro: il
@@ -522,6 +545,49 @@ export default function RestaurantMap({
     return ids;
   }, [allPins, pinViewport]);
 
+  // Il diradamento è attivo solo sulla mappa home, dove esiste un set `allPins`
+  // da diradare. Le mini-mappe dei profili passano i pin via `restaurants` senza
+  // `allPins`: lì non c'è niente da diradare, e culling/tetto ragionati sul
+  // viewport della mappa grande sarebbero sbagliati. Stessa guardia di
+  // `clusteringActive`, stessa ragione.
+  const thinningActive =
+    THINNING_ENABLED && isDotZoom && dotView != null && (allPins?.length ?? 0) > 0;
+
+  // Gli id da renderizzare nel regime pallini: un rappresentante per areola,
+  // dentro il viewport allargato, più i salvati/preferiti che non si diradano
+  // mai. null = nessun diradamento (regime pin, o mappa senza allPins).
+  //
+  // Il rango è la copertura del locale rispetto alle esigenze attive: il pallino
+  // dell'areola è il MIGLIORE che c'è lì, quindi verde vuol dire "qui c'è un
+  // posto verde, e toccandolo lo apri". Onesto in un modo che l'unione delle
+  // coperture non sarebbe (unire due locali a metà darebbe verde senza che
+  // esista un posto dove mangiare). A parità decide l'id, dentro thinPins.
+  const dotIds = useMemo(() => {
+    if (!thinningActive || !dotView) return null;
+    const vp = dotView.region;
+    const pins = allPins ?? [];
+    const candidates: RestaurantPin[] = [];
+    const ids = new Set<string>();
+    for (const p of pins) {
+      // Salvati/preferiti fuori dal diradamento, e visibili anche fuori
+      // viewport: è il comportamento di sempre, non lo tocchiamo.
+      if (alwaysIndividualIds.has(p.id)) { ids.add(p.id); continue; }
+      if (withinViewport(vp, p.latitude, p.longitude, DOT_VIEWPORT_MARGIN)) candidates.push(p);
+    }
+    const rank = showMatchInfo
+      ? (p: RestaurantPin) => {
+          const { covered, total } = clientCoverage(
+            p.supported_allergens, p.supported_diets, userAllergens, userDiets,
+          );
+          return total > 0 ? covered / total : 0;
+        }
+      : () => 0;
+    for (const p of nearestToCenter(thinPins(candidates, gridCellDeg(dotView.zoom), rank), vp, MAX_DOTS)) {
+      ids.add(p.id);
+    }
+    return ids;
+  }, [thinningActive, dotView, allPins, alwaysIndividualIds, showMatchInfo, userAllergens, userDiets]);
+
   const markerElements = useMemo(() => {
     // A zoom largo (regime dot) renderizziamo i cluster (clusteredElements), non i
     // pin individuali: short-circuit per non costruire centinaia di elementi inutili.
@@ -545,8 +611,12 @@ export default function RestaurantMap({
     // allPins first (lightweight, covers the whole viewport)
     for (const p of pins) {
       if (p.id === skip || seen.has(p.id) || !isValidCoord(p.latitude, p.longitude)) continue;
-      const restaurant = restaurantById.get(p.id);
+      // Segnato come visto PRIMA del taglio: un pin diradato via non deve
+      // rientrare dal giro su `restaurants` qui sotto, che è lo stesso locale da
+      // un'altra sorgente. Senza questo, il diradamento non diraderebbe nulla.
       seen.add(p.id);
+      if (dotIds && !dotIds.has(p.id)) continue;
+      const restaurant = restaurantById.get(p.id);
       elements.push(
         <MapPin
           key={p.id}
@@ -577,6 +647,11 @@ export default function RestaurantMap({
     for (const r of restaurants) {
       if (r.id === skip || !r.location || seen.has(r.id) || !isValidCoord(r.location.latitude, r.location.longitude)) continue;
       seen.add(r.id);
+      // La cache dettagliata arriva a 1000 (useRestaurantGeo la riempie da
+      // restaurantCache, non dal tetto per-fetch di 200): a zoom largo va
+      // diradata come i pin, o restano montati proprio i marker che stiamo
+      // togliendo. Su `dotIds` null (mini-mappe profilo) non tocca niente.
+      if (dotIds && !dotIds.has(r.id)) continue;
       elements.push(
         <MapPin
           key={r.id}
@@ -645,17 +720,9 @@ export default function RestaurantMap({
 
     return elements;
     // selectedId serve solo al ramo Android dello skip (su iOS skip è costante '').
-  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, fullPinIds, pinViewport, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
+  }, [restaurants, allPins, favoriteRestaurants, savedRestaurants, customSymbols, favIds, isDotZoom, isFarDotZoom, fullPinIds, pinViewport, dotIds, clusteringActive, showMatchInfo, handleMarkerPress, restaurantById, selectedId, userAllergens, userDiets]);
 
   // --- Cluster elements (regime dot / zoom largo) -----------------------------
-  // Salvati/preferiti SEMPRE individuali e sopra le bolle (esclusi dal cluster):
-  // sono pochi, nessun costo perf, e così resta il comportamento "sempre visibili".
-  const alwaysIndividualIds = useMemo(() => {
-    const s = new Set<string>(favIds);
-    if (customSymbols) for (const id of customSymbols.keys()) s.add(id);
-    return s;
-  }, [favIds, customSymbols]);
-
   // Pin GENERICI dati al clustering (allPins meno salvati/preferiti). Il
   // selezionato NON è escluso qui (indice stabile sulla selezione) ma viene
   // saltato a render: lo disegna SelectedMarkerOverlay.

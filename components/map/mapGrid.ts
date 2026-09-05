@@ -48,10 +48,18 @@ export const DOTS_ACROSS_SCREEN = 22;
 export const MAX_DOTS = 500;
 
 /** Mezzo-span del viewport di RENDER nel regime pallini, in multipli del delta
- *  regione. Più largo del margine dei pin (PIN_VIEWPORT_MARGIN) perché qui il
- *  singolo marker costa poco e un margine generoso rende il pan silenzioso:
- *  i marker entrano ed escono ben lontano dal bordo visibile. */
-export const DOT_VIEWPORT_MARGIN = 2.5;
+ *  regione: mezzo schermo visibile più uno intero di margine per lato, così i
+ *  marker entrano ed escono fuori campo durante il pan.
+ *
+ *  Tarato sui dati veri (set di prova: la cache dopo un giro Milano→Europa,
+ *  1680 pin). A 2.5 si montano marker su un'area 25 volte lo schermo e a zoom
+ *  regionale si sbatte contro MAX_DOTS: a decidere chi resta diventa la
+ *  distanza dal centro invece della griglia, e si perde l'equità geografica.
+ *  A 1.5 la griglia è sempre lei a decidere (max 479 marker su tutte le viste
+ *  provate) e il tetto torna a essere la sola assicurazione che deve essere.
+ *  Coincide col margine dei pin, ma resta una manopola separata: i due regimi
+ *  hanno costi per-marker diversi e possono divergere. */
+export const DOT_VIEWPORT_MARGIN = 1.5;
 
 /** Stato del regime pallini: la regione che delimita cosa si renderizza, più
  *  il livello di zoom QUANTIZZATO che decide il passo della griglia. I due
