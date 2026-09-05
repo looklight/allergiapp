@@ -791,9 +791,15 @@
     color: var(--text-secondary);
 }
 
+/* ⚠️ `stretch` E NON `flex-start`: le etichette non sono tutte della stessa
+   lunghezza — «Crei il menù» sta in una riga, «Inserisci i piatti» in due — e
+   allineate in cima lasciavano il blocco sfilacciato, con i passi corti che
+   finivano più in alto degli altri. Stirati, tutti i passi sono alti uguale e
+   l’etichetta si centra nel suo spazio (v. `.ml-how-label`): la riga si legge
+   come una fila, che vada a capo o no. */
 .ml-how-steps {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
     gap: 10px;
     list-style: none;
@@ -812,6 +818,16 @@
     font-size: 14px;
     font-weight: 600;
     line-height: 1.3;
+}
+
+/* L’etichetta prende tutto lo spazio che avanza sotto il tondo e ci centra
+   dentro le sue righe: è questo che fa stare allineate fra loro le etichette
+   di una riga e quelle di due. */
+.ml-how-label {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
 }
 
 .ml-how-icona {
@@ -835,6 +851,9 @@
 /* La freccia sta all'altezza dei tondi, non del testo. */
 .ml-how-verso {
     flex: 0 0 auto;
+    /* Con i passi stirati, senza questa riga la freccia si allungherebbe per
+       tutta l’altezza e il suo disegno finirebbe a mezz’aria. */
+    align-self: flex-start;
     margin-top: 17px;
     color: rgba(0, 0, 0, 0.28);
 }
@@ -899,7 +918,7 @@
  * locale inventato sarebbero dati inventati. */
 
 .ml-app {
-    padding: 70px 0;
+    padding: 88px 0;
     background: var(--bg-alt);
 }
 
@@ -911,55 +930,278 @@
     max-width: 62em;
 }
 
-/* IL MARCHIO IN CIMA. Logo grande e i due simboli dei sistemi: a chi legge
-   deve arrivare subito che di là c'è un'APP, non un'altra pagina web — è la
-   differenza fra «un altro posto dove mettere il menù» e «il posto dove la
-   gente cerca dove mangiare». */
-.ml-app-marchio {
+/* IL DISTINTIVO, IN CALCE. Icona, nome e numero su una riga; sotto, più
+ * piccoli, i due negozi.
+ *
+ * SOBRIO DI PROPOSITO. Prima era una pastiglia bianca bordata, col numero in
+ * verde e due pulsanti neri pieni: pesava quanto il titolo della sezione e
+ * tirava l’occhio prima dei tre punti, che sono la ragione per cui uno
+ * dovrebbe volerci stare. Adesso non ha né riquadro né fondo, il numero è
+ * dello stesso grigio del resto e i due negozi sono contornati e non pieni.
+ * È una firma in calce: si vede se la si cerca, non prima.
+ *
+ * ⚠️ IL NUMERO È UN’AFFERMAZIONE PUBBLICITARIA. Sta in `appBadgeCount`, una
+ * chiave sola per tutte le lingue: si cambia lì e in nessun altro posto. */
+.ml-app-badge {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 18px;
+    gap: 11px;
+    margin-top: 34px;
 }
 
-.ml-app-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 22%;
+.ml-app-badge-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 28%;
     flex-shrink: 0;
+    /* Un filo spenta: è un logo dentro una nota, non un’insegna. */
+    opacity: 0.9;
 }
 
-.ml-app-marchio-testo {
-    display: grid;
-    gap: 2px;
-}
-
-.ml-app-nome {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-}
-
-.ml-app-store {
+.ml-app-badge-testo {
     display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ml-app-badge-riga1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.ml-app-badge-nome {
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Il trattino verticale fra il nome e il numero: divide due informazioni
+   sulla stessa riga senza spendere una parola. */
+.ml-app-badge-stacco {
+    width: 1px;
+    height: 12px;
+    background: var(--border);
+}
+
+/* NIENTE VERDE E NIENTE GRASSETTO SPINTO: il numero è un dato riportato, non
+   un annuncio. Resta leggibile perché è l’unica cosa scura della riga. */
+.ml-app-badge-numero {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.ml-app-badge-negozi {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
+}
+
+/* I DUE NEGOZI. Stessa forma dei pulsanti di download.html — simbolo,
+ * occhiello, nome — ma contornati invece che pieni: neri pieni, a quella
+ * misura, erano due macchie scure in fondo a una sezione chiara e si
+ * prendevano tutta l’attenzione. Qui dicono la provenienza e stanno al loro
+ * posto. */
+.ml-store {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
     color: var(--text-secondary);
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.ml-store:hover {
+    border-color: var(--text-secondary);
+    color: var(--text);
+}
+
+.ml-store-testo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    text-align: left;
+}
+
+.ml-store-occhiello {
+    font-size: 8px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.ml-store-nome {
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .ml-app-title {
     line-height: 1.15;
     font-size: var(--ml-titolo-sezione);
     font-weight: 800;
-    margin-bottom: 14px;
+    /* Sotto il titolo adesso c’è la spiegazione, non l’elenco: bastano
+       dodici punti, e i due si leggono come una cosa sola. */
+    margin-bottom: 12px;
 }
 
+/* LA SPIEGAZIONE. Larga quanto l’elenco qui sotto, e dello stesso grigio del
+   resto dei testi di servizio: dice che cos’è, non lo vende — a venderlo ci
+   pensano il fumetto sopra e i quattro punti sotto. */
 .ml-app-intro {
     max-width: 34em;
+    margin-bottom: 26px;
     color: var(--text-secondary);
-    margin-bottom: 28px;
+}
+
+/* ── IL PIATTO CHE PARLA ────────────────────────────────────────────── */
+/* Prende il posto del paragrafo di presentazione, e ne tiene le misure: la
+ * stessa larghezza dell’elenco qui sotto (34em) e lo stesso stacco (28), o la
+ * sezione si scomporrebbe attorno a lui.
+ *
+ * ⚠️ IN QUESTA COLONNA CI SONO DUE PIATTI: l’icona dell’app in cima — quadrata,
+ * con gli allergeni intorno — e questo, ritagliato e senza cornice. Sono
+ * diversi apposta: quella è l’insegna, questo è il personaggio che esce a
+ * parlare. Se un giorno sembrassero un doppione, si toglie l’icona dal marchio
+ * in cima, non il piatto da qui — è lui il motivo per cui questa sezione ha
+ * una voce. */
+
+.ml-dialogo {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    /* Più largo dell’elenco qui sotto (34em): sono due righe sole e una
+       misura da paragrafo le spezzerebbe in quattro. Cresciuto insieme al
+       corpo del testo — a 40em, a diciotto punti, la frase andava a capo tre
+       volte e il riquadro si allungava. */
+    max-width: 46em;
+    /* L’aria che lo stacca dal titolo: è chi parla, non l’occhiello del
+       titolo. */
+    margin-bottom: 30px;
+}
+
+/* PIÙ GRANDE DELL’ICONA in cima alla colonna, che è 56: sono due piatti a
+   poca distanza e devono leggersi per quello che sono — questo è il
+   personaggio che parla, quella è l’insegna dell’app. La differenza di
+   misura, insieme al fatto che questo è ritagliato e quella sta in un
+   quadrato, basta a non farli sembrare un doppione.
+   Un filo più in basso del bordo del fumetto: così gli occhi cadono
+   all’altezza della prima riga e il piatto guarda chi legge. */
+.ml-dialogo-piatto {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    /* Scende con la misura: gli occhi devono restare all’altezza della prima
+       riga del fumetto, non sopra il suo bordo. */
+    margin-top: 6px;
+}
+
+.ml-fumetto {
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 13px 17px;
+    /* Appena staccato dal fondo della sezione, che è grigino: senza, il
+       fumetto sembra un riquadro disegnato e non una cosa che sta sopra. */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* LA CODA. Un quadrato girato di 45 gradi con due lati soli: gli altri due
+   finiscono sotto il fumetto e sparirebbero comunque. Sta in alto e non in
+   mezzo — parte dalla bocca, cioè dall’altezza della prima riga. */
+.ml-fumetto::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    background: var(--bg);
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0 0 0 3px;
+    transform: rotate(45deg);
+}
+
+/* LA SCENA. Le due battute stanno nella stessa cella: il riquadro prende la
+   misura della più lunga e non si muove più, come la casella di dialogo di un
+   gioco, che è alta uguale sia che dica una parola sia che ne dica venti. */
+.ml-fumetto-scena {
+    display: grid;
+}
+
+.ml-fumetto-scena > .ml-battuta {
+    grid-area: 1 / 1;
+}
+
+/* PIÙ GRANDE DEL TESTO NORMALE DELLA PAGINA: è una voce che parla, non una
+   didascalia, e il fumetto è l’unica cosa in vista quando compare. */
+.ml-battuta {
+    font-size: 18px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+/* IL NOME, DENTRO LA FRASE. Lo stesso verde scuro dell’occhiello in cima alla
+   pagina — scelto lì per stare a 4,8:1 sul fondo chiaro — e non il verde del
+   marchio, che a questa misura non staccherebbe abbastanza. */
+.ml-accento {
+    color: #2E7D32;
+}
+
+/* LA PRIMA È UN RICHIAMO, non una frase: sta in tondo pieno e più grande, e
+   dura il tempo di farsi leggere. */
+.ml-battuta-1 {
+    color: var(--text);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+/* IL RITMO. Il piatto, poi il riquadro, poi il richiamo; il richiamo se ne va
+ * e al suo posto arriva la frase, che resta.
+ *
+ * Le due animazioni partono insieme, alla comparsa del fumetto, e si
+ * alternano coi ritardi: nessuna delle due sa dell’altra, e non c’è niente da
+ * tenere in ordine nel codice. `both` serve a due cose — prima di partire
+ * tengono lo stato del primo fotogramma (invisibili), dopo quello
+ * dell’ultimo, così la seconda battuta resta lì per sempre invece di
+ * riscomparire alla fine dell’animazione.
+ *
+ * Fuori da questo blocco — cioè per chi ha chiesto meno movimento — non
+ * succede niente di tutto questo: la prima battuta non c’è e la seconda è
+ * semplicemente scritta. Vedi in fondo al foglio. */
+@media (prefers-reduced-motion: no-preference) {
+    .ml-battuta {
+        opacity: 0;
+    }
+
+    .ml-fumetto.anim-done .ml-battuta-1 {
+        animation: ml-battuta-passa 1.8s ease 0.4s both;
+    }
+
+    .ml-fumetto.anim-done .ml-battuta-2 {
+        animation: ml-battuta-resta 0.5s ease 2.05s both;
+    }
+}
+
+/* Entra, si ferma un secondo abbondante, esce. Le percentuali sono i tempi:
+   in vista dopo tre decimi, ferma fino a un secondo e tre, via entro un
+   secondo e sei. */
+@keyframes ml-battuta-passa {
+    0% { opacity: 0; }
+    17% { opacity: 1; }
+    72% { opacity: 1; }
+    89% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+@keyframes ml-battuta-resta {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .ml-app-vantaggi {
@@ -967,35 +1209,33 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 24px;
+    gap: 20px;
     max-width: 34em;
 }
 
 /* LA SPUNTA È UN TONDO PIENO, non un segno appoggiato al testo: questi sono i
    PRO, e un elenco di pro si riconosce dal bollo prima ancora di leggerlo. È
    disegnata e non un carattere, perché un simbolo di sistema cambia faccia da
-   un apparecchio all'altro. */
-/* ⚠️ TRE FIGLI, DUE COLONNE: spunta, titolo e testo. Senza dire dove va
-   ciascuno, il terzo finisce nella colonna della spunta — larga 26 punti — e
-   il testo va a capo a ogni parola. Il bollo occupa la prima colonna su
-   entrambe le righe, titolo e testo la seconda. */
+   un apparecchio all’altro.
+   ⚠️ TRE FIGLI, DUE COLONNE: spunta, titolo e riga di sotto. Senza dire dove
+   va ciascuno, il terzo finisce nella colonna della spunta — larga 24 punti —
+   e va a capo a ogni parola. Il bollo tiene la prima colonna su tutte e due le
+   righe. */
 .ml-app-vantaggi li {
     display: grid;
-    grid-template-columns: 26px minmax(0, 1fr);
+    grid-template-columns: 24px minmax(0, 1fr);
     column-gap: 12px;
-    row-gap: 3px;
+    row-gap: 2px;
     align-items: start;
 }
 
 .ml-app-spunta {
-    /* La prima colonna, su tutte e due le righe: il bollo sta accanto al
-       titolo e al testo insieme, non solo al titolo. */
     grid-column: 1;
     grid-row: 1 / span 2;
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: var(--primary);
     color: #fff;
@@ -1009,16 +1249,85 @@
 
 .ml-app-vantaggio-titolo {
     display: block;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     line-height: 1.3;
-    margin-bottom: 4px;
 }
 
+/* Una riga sola e corta: dice il come, non ripete il cosa. */
 .ml-app-vantaggio-testo {
     display: block;
-    font-size: 15px;
+    font-size: 14.5px;
     color: var(--text-secondary);
+}
+
+/* ── COME SI MONTA LA SEZIONE ───────────────────────────────────────── */
+/* Un pezzo dopo l’altro, nell’ordine in cui si leggono: il piatto, il suo
+ * riquadro, e poi — SOLO QUANDO IL PIATTO HA FINITO DI PARLARE — il telefono,
+ * il titolo, i quattro punti in fila, il distintivo. I ritardi stanno qui e
+ * non nel codice, come per i passi di «Come funziona».
+ *
+ * ⚠️ I DUE SECONDI E DUE DI ATTESA NON SONO UN REFUSO. Il fumetto dice due
+ * battute: il richiamo dai quattro decimi ai due secondi, e la frase vera da
+ * lì in poi. Tutto quello che compariva prima rubava l’occhio proprio mentre
+ * si stava leggendo, e la frase — che è il motivo per cui questa sezione
+ * esiste — passava inosservata. Chi scorre veloce trova la sezione ancora da
+ * montare: è il prezzo, ed è voluto. Se un giorno si accorcia il dialogo,
+ * questi numeri vanno accorciati con lui.
+ *
+ * ⚠️ IL TELEFONO SALE CON `translate`, NON CON `transform`. Su schermo
+ * stretto la scheda è rimpicciolita con un `transform: scale()` sullo STESSO
+ * elemento: la salita di `anim-ready`, che passa per `transform`, azzererebbe
+ * la scala — e il margine negativo che le restituisce lo spazio resterebbe lì
+ * a mangiarsi mezza sezione. `translate` è una proprietà a sé, e le due si
+ * compongono da sole: prima lo spostamento, poi la scala. Perciò qui il
+ * `transform` comune si spegne (questa riga pesa più di quella di tutti, e
+ * quanto quella della scala, che però sta più in basso e vince dov’è
+ * attiva) e il movimento viaggia sull’altra proprietà, che nessuno tocca.
+ *
+ * La transizione va riscritta per lo stesso motivo: quella comune sa di
+ * `opacity` e `transform`, e di `translate` non saprebbe niente. */
+.ml-phone.is-scheda.anim-ready {
+    transform: none;
+    /* Cinquanta punti: il telefono è alto sei volte tanto, e una salita corta
+       su un oggetto grande si legge come un assestamento invece che come un
+       arrivo. */
+    translate: 0 50px;
+    transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                translate 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: 2200ms;
+}
+
+.ml-phone.is-scheda.anim-ready.anim-done {
+    translate: 0 0;
+}
+
+.ml-app-title.anim-ready {
+    transition-delay: 2300ms;
+}
+
+.ml-app-intro.anim-ready {
+    transition-delay: 2390ms;
+}
+
+/* Stessa coppia dei passi di «Come funziona», e per lo stesso motivo: la
+   partenza più corta va con l’arrivo ridichiarato, o i punti non risalgono
+   mai (v. l’avviso lassù). */
+.ml-app-vantaggi .anim-ready {
+    transform: translateY(16px);
+}
+
+.ml-app-vantaggi .anim-ready.anim-done {
+    transform: translateY(0);
+}
+
+.ml-app-vantaggi .anim-ready:nth-child(1) { transition-delay: 2510ms; }
+.ml-app-vantaggi .anim-ready:nth-child(2) { transition-delay: 2620ms; }
+.ml-app-vantaggi .anim-ready:nth-child(3) { transition-delay: 2730ms; }
+.ml-app-vantaggi .anim-ready:nth-child(4) { transition-delay: 2840ms; }
+
+.ml-app-badge.anim-ready {
+    transition-delay: 2990ms;
 }
 
 /* ── LA SCHEDA IN APP, FACSIMILE STATICO ───────────────────────────── */
@@ -1399,6 +1708,25 @@
         animation: none;
     }
 
+    /* La regola comune qui sotto spegne `transform`, ma la salita del
+       telefono viaggia su `translate`: va spenta a parte, o resterebbe
+       l’unico movimento della pagina proprio per chi ha chiesto di non
+       averne. */
+    .ml-phone.is-scheda.anim-ready {
+        translate: none;
+    }
+
+    /* Niente avvicendamento nel fumetto: il richiamo sparisce del tutto e
+       resta la frase che dice la cosa. Sono nella stessa cella della griglia,
+       quindi lasciarli tutti e due visibili li sovrapporrebbe. */
+    .ml-battuta-1 {
+        display: none;
+    }
+
+    .ml-battuta-2 {
+        opacity: 1;
+    }
+
     /* Chi ha chiesto meno movimento vede la sezione già a posto. */
     .anim-ready,
     .anim-ready.anim-done {
@@ -1725,6 +2053,70 @@
         margin: 0 auto;
     }
 
+    /* ⚠️ IL TELEFONO NON ASPETTA PIÙ IL DIALOGO. Su schermo largo sta a
+     * fianco del fumetto e comparire subito gli avrebbe rubato l’occhio: da
+     * lì i 2,2 secondi. Incolonnato sta invece SOTTO tutto il resto, e quando
+     * entra in vista il messaggio è già stato letto da un pezzo: la stessa
+     * attesa diventa un buco grigio in fondo alla sezione. Due decimi, il
+     * tempo di non apparire di scatto. */
+    .ml-page .ml-phone.is-scheda.anim-ready {
+        transition-delay: 200ms;
+    }
+
+    /* ── SU UNA COLONNA SOLA, TUTTO AL CENTRO ──────────────────────────
+     * Su schermo largo la sezione ha un bordo a cui appoggiarsi: la colonna
+     * di sinistra sta contro il testo, il telefono contro il suo lato.
+     * Incolonnata quel bordo non c'è più, e i pezzi allineati a sinistra
+     * sotto un telefono centrato sembrano scivolati. Al centro si tengono. */
+    .ml-page .ml-app-inner {
+        text-align: center;
+    }
+
+    /* IL PIATTO RESTA A FIANCO DEL FUMETTO anche qui, non sopra: è lui che
+     * parla, e sopra il riquadro diventerebbe un’illustrazione appoggiata a
+     * un testo. La coda continua a guardare verso di lui, quindi non c’è
+     * niente da rigirare — cambia solo che la coppia si centra invece di
+     * appoggiarsi al margine sinistro.
+     * Il prezzo è che al fumetto resta meno corsia e la frase va a capo più
+     * volte: il riquadro cresce in altezza, che qui non costa niente. */
+    .ml-page .ml-dialogo {
+        justify-content: center;
+        max-width: none;
+    }
+
+    .ml-page .ml-app-intro,
+    .ml-page .ml-app-vantaggi {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* ⚠️ I PUNTI RESTANO ALLINEATI A SINISTRA anche qui, unica cosa della
+     * sezione che non si centra: quattro righe centrate con la spiegazione
+     * sotto facevano quattro blocchi di larghezza diversa, uno sfalsato
+     * rispetto all’altro, e l’elenco smetteva di leggersi come un elenco.
+     *
+     * A NON FARLI TOCCARE IL BORDO ci pensa `fit-content`: il blocco è largo
+     * quanto il punto più lungo e i margini automatici lo centrano, quindi
+     * l’aria ai lati si distribuisce da sé — senza scrivere un rientro a
+     * mano, che su uno schermo più stretto sarebbe diventato una gabbia. */
+    .ml-page .ml-app-vantaggi {
+        width: fit-content;
+        max-width: 100%;
+        text-align: left;
+    }
+
+    .ml-page .ml-app-badge {
+        justify-content: center;
+    }
+
+    .ml-page .ml-app-badge-testo {
+        align-items: center;
+    }
+
+    .ml-page .ml-app-badge-negozi {
+        justify-content: center;
+    }
+
     /* Le due corsie una sotto l'altra: affiancate, su schermo stretto,
        ridurrebbero i passi a francobolli. */
     .ml-page .ml-how-lanes {
@@ -1748,6 +2140,31 @@
 }
 
 @media (max-width: 480px) {
+    /* IL PIATTO SI RIMPICCIOLISCE, perché a fianco al fumetto gli toglie
+       corsia: a trecentoventi punti di schermo, tolti margini e imbottitura,
+       al testo ne restavano centoquaranta — due parole per riga. Resta
+       accanto, come deve: cala solo di misura. */
+    .ml-page .ml-dialogo-piatto {
+        width: 60px;
+        height: 60px;
+    }
+
+    .ml-page .ml-dialogo {
+        gap: 10px;
+    }
+
+    .ml-page .ml-fumetto {
+        padding: 12px 14px;
+    }
+
+    .ml-page .ml-battuta {
+        font-size: 16.5px;
+    }
+
+    .ml-page .ml-battuta-1 {
+        font-size: 19px;
+    }
+
     .ml-hero {
         padding-top: 76px;
     }

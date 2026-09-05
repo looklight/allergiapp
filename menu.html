@@ -302,40 +302,168 @@
     <section class="ml-app">
         <div class="container ml-app-inner">
             <div class="ml-app-text">
-                <div class="ml-app-marchio">
-                    <img src="images/logo_app.webp" alt="" class="ml-app-logo" width="56" height="56" loading="lazy">
-                    <div class="ml-app-marchio-testo">
-                        <span class="ml-app-nome">AllergiApp</span>
-                        <span class="ml-app-store" aria-hidden="true">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09997 22C7.78997 22.05 6.79997 20.68 5.95997 19.47C4.24997 17 2.93997 12.45 4.69997 9.39C5.56997 7.87 7.12997 6.91 8.81997 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
-                            <span data-i18n="menuLanding.appStores">iPhone e Android</span>
+                <!-- IL PIATTO CHE PARLA. La prima cosa della sezione, prima
+                     del marchio e del titolo: chi scorre deve capire in una riga
+                     che oltre al menù c’è un’altra strada — stare dentro l’app —
+                     e deve capirlo prima di decidere se questa parte lo riguarda.
+                     Il paragrafo che stava sotto il titolo diceva la stessa cosa
+                     in mezza pagina più in basso, cioè dopo che aveva già deciso.
+
+                     ⚠️ STA DENTRO LA COLONNA DI SINISTRA, in cima, non a
+                     cavallo delle due. A cavallo l’ho provato: la griglia
+                     centra la colonna di testo accanto al telefono, che è
+                     molto più alto, e fra il fumetto e il titolo si apriva un
+                     vuoto di quasi duecento punti — pieno a destra dal
+                     telefono, deserto a sinistra. Da dentro la colonna, il
+                     blocco di sinistra arriva a cinquecento punti e i due
+                     lati si tengono compagnia.
+
+                     ⚠️ ACCANTO AL TELEFONO, IN CIMA ALLA PAGINA, C’È GIÀ UNA VOCE
+                     che parla al visitatore: la nota a pennarello con la freccia.
+                     Sono due registri diversi — una mano che annota e un
+                     personaggio che parla — e non devono vedersi insieme. Qui non
+                     si vedono: questa sezione comincia molto sotto la prima
+                     schermata. Se un giorno si vorrà il piatto anche più in alto,
+                     l’annotazione va tolta, non affiancata.
+
+                     LE DUE RIGHE STANNO NEL DOCUMENTO e l’animazione tocca solo
+                     l’opacità. Questa pagina deve farsi leggere dai motori di
+                     ricerca: parole scritte dal codice lì non arrivano, e chi usa
+                     un lettore di schermo sentirebbe una frase a metà. Per lo
+                     stesso motivo niente macchina da scrivere lettera per lettera
+                     — spezzerebbe il testo tradotto. Le due righe arrivano una
+                     dopo l’altra: il ritmo del dialogo si sente lo stesso.
+
+                     Le comparse sono quelle di tutta la pagina (`anim-ready`,
+                     acceso dall’osservatore in menu-landing.js), quindi chi ha
+                     chiesto meno movimento trova già tutto fermo e a posto senza
+                     una riga in più. -->
+                <div class="ml-dialogo">
+                    <img src="images/happyplate.webp" alt="" class="ml-dialogo-piatto anim-ready" width="64" height="64" loading="lazy">
+                    <div class="ml-fumetto anim-ready anim-d1">
+                        <!-- DUE BATTUTE, NON DUE RIGHE: la prima chiama,
+                             sparisce, e al suo posto arriva quella che dice la
+                             cosa. Stanno SOVRAPPOSTE nella stessa cella di una
+                             griglia, e il riquadro è alto quanto la più lunga
+                             delle due: se si alternassero una sotto l’altra il
+                             fumetto si gonfierebbe e si sgonfierebbe a metà
+                             discorso, e il titolo qui sotto ballerebbe con lui.
+
+                             L’avvicendamento è tutto nel foglio di stile — due
+                             animazioni con ritardi diversi, accese dalla
+                             classe che l’osservatore mette sul fumetto quando
+                             entra in vista. Nessun contatore nel codice: una
+                             cosa che succede una volta sola non ha bisogno di
+                             essere governata a mano.
+
+                             Tutte e due le frasi stanno nel documento e non
+                             spariscono mai davvero — cambia solo l’opacità —
+                             così i motori di ricerca le leggono e chi ascolta
+                             la pagina le sente per intero, nell’ordine
+                             giusto. -->
+                        <span class="ml-fumetto-scena">
+                            <span class="ml-battuta ml-battuta-1" data-i18n="menuLanding.appSay1">Ma attenzione!</span>
+                            <span class="ml-battuta ml-battuta-2" data-i18n="menuLanding.appSay2" data-i18n-html>Oltre a creare il tuo menù digitale <strong>puoi inserirlo anche dentro <span class="ml-accento">AllergiApp</span></strong>!</span>
                         </span>
                     </div>
                 </div>
-                <h2 class="ml-app-title" data-i18n="menuLanding.appTitle">Fatti trovare dentro AllergiApp</h2>
-                <p class="ml-app-intro" data-i18n="menuLanding.appIntro">Aggiungi una sezione dedicata alla scheda del tuo locale su AllergiApp.</p>
+                <h2 class="ml-app-title anim-ready" data-i18n="menuLanding.appTitle">Fatti trovare dentro AllergiApp</h2>
 
+                <!-- COSA SIA, in due righe, subito sotto il titolo. Il fumetto
+                     dice che si PUÒ fare, il titolo dice cosa si ottiene: qui
+                     si dice che cos’è la cosa, e cioè una scheda che il
+                     ristoratore compone lui. È la parte che il fumetto non può
+                     portare senza diventare un discorso. -->
+                <p class="ml-app-intro anim-ready" data-i18n="menuLanding.appIntro">Il tuo locale ha una sua scheda dentro l’app, e la componi tu: i piatti che vuoi mostrare, gli allergeni, i link e i contatti. La cambi quando vuoi, e chi ti cerca vede sempre l’ultima versione.</p>
+                <!-- TRE RIGHE, NON TRE PARAGRAFI. Prima ogni punto aveva un
+                     titolo e sotto una frase che lo spiegava: sei righe di
+                     testo che, dopo il fumetto e prima del distintivo, nessuno
+                     legge tutte. Qui il punto è uno solo per riga e si legge
+                     scorrendo — la spiegazione, se serve, la dà la pagina
+                     intorno.
+                     E IL PRIMO PUNTO PARLA DI GENTE, non di funzioni: quello
+                     che il ristoratore compra è un pubblico che sta già
+                     cercando dove mangiare, e il numero in fondo lo conferma. -->
                 <ul class="ml-app-vantaggi">
-                    <li>
+                    <li class="anim-ready">
                         <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen1Title">Ti trovano prima di uscire di casa</span>
-                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen1Text">Chi ha un&rsquo;allergia sceglie il locale prima di mettersi il cappotto, non davanti alla porta.</span>
+                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen1">Migliaia di persone che cercano dove mangiare</span>
+                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen1Sub">Chi ha un’allergia apre l’app prima di scegliere il locale.</span>
                     </li>
-                    <li>
+                    <li class="anim-ready">
                         <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen2Title">Sceglie sapendo cosa può mangiare</span>
-                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen2Text">Con i piatti e gli allergeni sulla scheda non deve telefonare per chiedere, e non rinuncia per il dubbio.</span>
+                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen2">Una comunità che si passa i consigli</span>
+                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen2Sub">Recensioni e liste di chi ha le stesse esigenze.</span>
                     </li>
-                    <li>
+                    <li class="anim-ready">
                         <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen3Title">In sala arriva già informato</span>
-                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen3Text">Meno domande al tavolo, meno errori, e il personale che risponde una volta sola.</span>
+                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen3">Ti trovano prima di uscire di casa</span>
+                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen3Sub">Non davanti alla porta, col menù in mano.</span>
+                    </li>
+                    <li class="anim-ready">
+                        <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
+                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appBen4">Arrivano al tavolo già informati</span>
+                        <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen4Sub">Meno domande in sala, meno errori.</span>
                     </li>
                 </ul>
+                <!-- LA REFERENZA, IN FONDO E NON IN CIMA. Prima il marchio
+                     apriva la sezione: presentava l’app a chi non sapeva
+                     ancora perché avrebbe dovuto interessarsene. Dopo i tre
+                     vantaggi risponde invece a una domanda che a quel punto
+                     uno se l’è fatta — «e quanta gente c’è, là dentro?» — ed
+                     è la firma in calce a un discorso, non l’intestazione.
+
+                     ⚠️ IL NUMERO È UN’AFFERMAZIONE PUBBLICITARIA: va tenuto
+                     allineato a quello che dicono App Store Connect e Play
+                     Console, e arrotondato per difetto. Sta in una chiave di
+                     traduzione sola — `appBadgeCount` — così si cambia in un
+                     posto e in tutte le lingue.
+
+                     I due simboli dentro i pulsanti sono decorativi
+                     (`aria-hidden`): il nome del negozio è già scritto
+                     accanto, e letti anche loro chi ascolta la pagina
+                     sentirebbe due volte la stessa cosa. -->
+                <p class="ml-app-badge anim-ready">
+                    <img src="images/logo_app.webp" alt="" class="ml-app-badge-logo" width="40" height="40" loading="lazy">
+                    <span class="ml-app-badge-testo">
+                        <span class="ml-app-badge-riga1">
+                            <span class="ml-app-badge-nome">AllergiApp</span>
+                            <span class="ml-app-badge-stacco" aria-hidden="true"></span>
+                            <span class="ml-app-badge-numero" data-i18n="menuLanding.appBadgeCount">+30.000 download</span>
+                        </span>
+                        <!-- I DUE NEGOZI, GLI STESSI PULSANTI DI download.html
+                             rimpiccioliti e girati allo scuro: lì stanno su un
+                             fondo colorato e sono bianchi, qui il fondo è
+                             chiaro. Stessa impronta, stesso simbolo, stessa
+                             coppia di righe — chi ha già visto quella pagina
+                             riconosce la stessa cosa.
+                             ⚠️ NON SONO LE IMMAGINI UFFICIALI di Apple e
+                             Google: sono ridisegnati, come già in
+                             download.html. Se un giorno si vorranno le
+                             ufficiali si scaricano dai due programmi per
+                             sviluppatori e si sostituiscono qui e là insieme,
+                             o il sito parlerà con due voci. -->
+                        <span class="ml-app-badge-negozi">
+                            <a href="https://apps.apple.com/app/allergiapp/id6758859853" class="ml-store" target="_blank" rel="noopener noreferrer">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
+                                <span class="ml-store-testo">
+                                    <span class="ml-store-occhiello" data-i18n="menuLanding.storeAppleLead">Scaricala su</span>
+                                    <span class="ml-store-nome">App Store</span>
+                                </span>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.allergiapp.mobile" class="ml-store" target="_blank" rel="noopener noreferrer">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+                                <span class="ml-store-testo">
+                                    <span class="ml-store-occhiello" data-i18n="menuLanding.storePlayLead">Disponibile su</span>
+                                    <span class="ml-store-nome">Google Play</span>
+                                </span>
+                            </a>
+                        </span>
+                    </span>
+                </p>
             </div>
 
-            <div class="ml-phone is-scheda" aria-hidden="true">
+            <div class="ml-phone is-scheda anim-ready" aria-hidden="true">
                 <div class="ml-phone-screen is-scheda">
                     <div class="ml-scheda-stato">
                         <span>9:41</span>
