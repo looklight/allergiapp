@@ -45,6 +45,10 @@ const PIN_FETCH_CAP = 3000;
  *  più basso del vero resta corretto, solo più conservativo). */
 const PIN_RESPONSE_CAP = 1000;
 
+/** Mezzo-span massimo di longitudine richiedibile alla RPC pin (v. la nota nel
+ *  calcolo dei bounds): oltre ~100° per lato il rettangolo geography si rovescia. */
+const MAX_LNG_HALF_SPAN = 90;
+
 type PinBounds = { minLat: number; minLng: number; maxLat: number; maxLng: number };
 
 export function useRestaurantGeo(params: FilterParams) {
@@ -388,8 +392,17 @@ export function useRestaurantGeo(params: FilterParams) {
     const margin = Math.min(latDelta * 0.3, 10);
     const minLat = Math.max(-90, region.latitude - latDelta / 2 - margin);
     const maxLat = Math.min(90, region.latitude + latDelta / 2 + margin);
-    const minLng = Math.max(-180, region.longitude - lngDelta / 2 - margin);
-    const maxLng = Math.min(180, region.longitude + lngDelta / 2 + margin);
+    // PostGIS: un rettangolo più largo di ~200° di longitudine, castato a
+    // geography, viene letto come "tutto il resto del globo" e la RPC torna
+    // quasi vuota — misurato il 2026-09-05: 270° → 113 righe, 300° → 6,
+    // 355° → 0, senza alcun errore. Su telefono in verticale non ci si arriva
+    // (al massimo ~110°), ma su tablet in orizzontale sì, e la mappa si
+    // svuoterebbe di colpo a zoom largo senza che nulla lo segnali.
+    // Chiediamo al massimo mezzo globo: a quella scala comanda comunque il
+    // tetto delle 1000 righe, quindi non si perde nulla che si sarebbe avuto.
+    const halfLng = Math.min(lngDelta / 2 + margin, MAX_LNG_HALF_SPAN);
+    const minLng = Math.max(-180, region.longitude - halfLng);
+    const maxLng = Math.min(180, region.longitude + halfLng);
 
     // Skip su zoom-in/pan interno: se i bounds richiesti sono contenuti in
     // un'area già fetchata per intero (risposta sotto il cap → nessun pin
