@@ -2,17 +2,13 @@ import { Platform } from 'react-native';
 import type { AppTheme } from '../../constants/theme';
 import type { Restaurant, RestaurantPin } from '../../services/restaurantService';
 import { getExpandedCoverage } from '../../constants/restrictionImplications';
+import { withinViewport, ZOOM_PIN_THRESHOLD, type Region } from './mapGrid';
 
-// ---------------------------------------------------------------------------
-// Region type
-// ---------------------------------------------------------------------------
-
-export type Region = {
-  latitude: number;
-  longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
-};
+// La geometria pura del diradamento vive in `mapGrid.ts` (nessuna dipendenza da
+// react-native, così è caricabile da uno script node per i test). Qui si
+// ri-esporta ciò che il resto della mappa importava già da mapConstants, per
+// non toccare una dozzina di import.
+export * from './mapGrid';
 
 // ---------------------------------------------------------------------------
 // Props shared across the map sub-tree
@@ -60,8 +56,7 @@ export type RestaurantMapProps = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** latitudeDelta above which markers render as dots instead of pins */
-export const ZOOM_PIN_THRESHOLD = 0.2;
+
 
 /** Rampa di taglia dei pallini: sotto questo latitudeDelta (ma sopra
  *  ZOOM_PIN_THRESHOLD) i pallini usano il PNG grande (14pt vs 10pt), così il
@@ -147,16 +142,9 @@ export function markerZProps(logicalZ: number): { zIndex?: number } {
 // Helpers
 // ---------------------------------------------------------------------------
 
-export function isValidCoord(lat: number, lng: number): boolean {
-  return Number.isFinite(lat) && Number.isFinite(lng);
-}
-
 /** True se la coordinata cade nel viewport allargato (v. PIN_VIEWPORT_MARGIN). */
 export function withinPinViewport(vp: Region, lat: number, lng: number): boolean {
-  return (
-    Math.abs(lat - vp.latitude) <= vp.latitudeDelta * PIN_VIEWPORT_MARGIN &&
-    Math.abs(lng - vp.longitude) <= vp.longitudeDelta * PIN_VIEWPORT_MARGIN
-  );
+  return withinViewport(vp, lat, lng, PIN_VIEWPORT_MARGIN);
 }
 
 /** Prossimo valore dello stato pinViewport (la regione che delimita quali
