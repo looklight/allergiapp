@@ -96,6 +96,11 @@ function clusterSize(count: number): number {
 // server-side, lavoro pianificato a parte. Riattivare = `Platform.OS === 'android'`.
 const CLUSTERING_ENABLED = false;
 
+// Identità stabili per il percorso cluster spento: restituire `[]`/`new Map()`
+// a ogni render rifarebbe scattare i memo a valle, che è ciò che vogliamo evitare.
+const NO_PINS: RestaurantPin[] = [];
+const NO_PIN_BY_ID = new Map<string, RestaurantPin>();
+
 type MapStyles = ReturnType<typeof makeStyles>;
 
 /** Bolla-cluster: cerchio col conteggio. tracksViewChanges=false (statica),
@@ -738,17 +743,23 @@ export default function RestaurantMap({
   // Pin GENERICI dati al clustering (allPins meno salvati/preferiti). Il
   // selezionato NON è escluso qui (indice stabile sulla selezione) ma viene
   // saltato a render: lo disegna SelectedMarkerOverlay.
+  // Entrambe le strutture qui sotto servono SOLO al percorso cluster, che è
+  // spento. Costruirle comunque voleva dire scorrere tutta la pinCache (oltre
+  // 1600 pin) a ogni fetch — cioè proprio nell'istante in cui arrivano dati
+  // nuovi e il thread ha già da fare. Con la guardia costano zero finché il
+  // clustering resta spento, e tornano identiche se lo si riaccende.
   const genericPins = useMemo(
-    () => (allPins ?? []).filter(p => !alwaysIndividualIds.has(p.id)),
-    [allPins, alwaysIndividualIds],
+    () => (clusteringActive ? (allPins ?? []).filter(p => !alwaysIndividualIds.has(p.id)) : NO_PINS),
+    [clusteringActive, allPins, alwaysIndividualIds],
   );
 
   // Lookup pin→dati grezzi per passare supported_* ai MapPin singoli.
   const pinById = useMemo(() => {
+    if (!clusteringActive) return NO_PIN_BY_ID;
     const m = new Map<string, RestaurantPin>();
     for (const p of (allPins ?? [])) m.set(p.id, p);
     return m;
-  }, [allPins]);
+  }, [clusteringActive, allPins]);
 
   const clusterResults = useMapClusters(
     genericPins,

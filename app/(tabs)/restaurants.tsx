@@ -270,9 +270,12 @@ export default function RestaurantsScreen() {
   const canUseFollowedFilter =
     followedFilter || followedIds.size > 0 || (followingCount ?? 0) > 0;
 
-  // allPins accumula pin da tutti i viewport visitati (max 3000, gestito in useRestaurantGeo).
-  // SuperCluster gestisce internamente la viewport culling: riceve tutti i pin ma renderizza
-  // solo i cluster visibili. Il limite di 3000 pin nella cache è il guardrail sufficiente.
+  // allPins accumula pin da tutti i viewport visitati (gestito in useRestaurantGeo).
+  // Il culling lo fa la mappa: a zoom largo RestaurantMap monta solo un
+  // rappresentante per areola dentro il viewport (MAP_SCALING.md §0-ter). Fino al
+  // 2026-09-05 qui c'era scritto che se ne occupava SuperCluster — che è spento
+  // da giugno: nessuno tagliava niente, e ogni pin della cache era un marker
+  // montato. È la causa delle segnalazioni di lag.
   // — forMyNeeds NON restringe allPins: i pin non compatibili compaiono grigi (non coperti).
   // — Il filtro cucina (activeFilters) usa cuisine_types direttamente dal pin (campo restituito
   //   da get_pins_in_bounds), evitando la dipendenza da geo.restaurants che contiene al max 50
