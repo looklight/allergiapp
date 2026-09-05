@@ -5,7 +5,12 @@ completa e la strategia decisa, per riprenderla quando si aprirà il lavoro.
 Integra (non sostituisce) la sezione "SCALABILITÀ PIN — gerarchia dei limiti" in
 `TODO.md`, che resta la fonte per i task operativi.
 
-**Stato: LAVORO APERTO dal 2026-09-05. Piano operativo corrente: §0-ter.**
+**Stato (2026-09-05): leggere §0-quater PRIMA di tutto il resto.** Il passo A
+(diradamento client) è stato scritto sul branch `feature/map-thinning` e poi
+**abbandonato**; al suo posto è stata applicata in produzione la **migration 085**
+(equità geografica nel taglio a 1000 righe). §0-ter resta valido come *analisi* —
+i numeri e la diagnosi del buco del culling — ma il suo piano operativo è
+superato da §0-quater, che contiene anche i difetti veri ancora presenti su main.
 Fase 1 è in main (merge 2026-07-09, viewport-gating 2026-07-10). §0-ter apre il
 passo A (diradamento client) dopo le segnalazioni di lag e l'analisi del
 2026-09-05; §0-bis resta la mappa dei trigger e del lavoro server; la Revisione
@@ -192,6 +197,150 @@ e la build resta rilasciabile lo stesso.
   catture bitmap in un frame (è il "non fluidissimo" che l'utente nota).
 - Il commento fuorviante su `restaurants.tsx:274` (parla di un culling che non
   esiste più) va corretto contestualmente.
+
+---
+
+## 0-quater. ESITO 2026-09-05 — la 085 in produzione, il branch abbandonato
+
+Questa sezione **sostituisce operativamente il piano di §0-ter**: il passo A
+(diradamento client) è stato scritto, provato e **abbandonato**; il problema che
+faceva più male si è rivelato essere altrove ed è stato curato sul server.
+
+### Cosa è cambiato davvero: migration 085, applicata
+
+`get_pins_in_bounds` divide ora il rettangolo richiesto in una griglia 31×31,
+serve **prima un locale per ogni quadretto abitato** e **poi il resto per
+densità**. La scelta di 31 non è una taratura: 31×31 = 961 < 1000, quindi il
+primo gruppo non può mai essere troncato dal tetto delle 1000 righe → **ogni
+quadretto abitato ha sempre almeno un rappresentante, a qualunque zoom**.
+
+Nessuna modifica al client, nessuna build: agisce sulla 1.3.1 già negli store.
+
+Misurato con le due versioni **una accanto all'altra nello stesso istante**,
+rettangolo Europa (35,-10 → 70,30), 1000 righe:
+
+| | prima (073) | dopo (085) |
+|---|---|---|
+| nordici | 16 | **23** |
+| italiani | 778 | **725** |
+| paesi distinti | 27 | **35** |
+
+Circa 60 pallini su 1000 si spostano dall'ammasso italiano al resto d'Europa.
+A occhio si nota poco: **il valore è la garanzia strutturale**, che non si
+degrada mentre l'archivio cresce, mentre prima la quota di archivio mostrata
+calava a ogni locale aggiunto.
+
+**Stato del database**: viva la 085; la 073 resta parcheggiata come
+`get_pins_in_bounds_073` ed **è** il rollback (due `ALTER FUNCTION … RENAME` al
+contrario). Entrambe da ripulire solo a scelta definitiva.
+
+⚠️ **Esiste una migration 084 solo sul branch abbandonato `feature/map-thinning`.
+Non eseguirla mai**: sovrascriverebbe la 085. Quel che portava (`is_premium` nel
+payload) è già dentro la 085, con il premium protetto meglio — vince dentro il
+suo quadretto invece che nell'ordinamento globale, quindi non può sottrarre
+righe ad altre zone della mappa.
+
+### Le lezioni di metodo, pagate care
+
+1. **`DROP` + `CREATE` dentro `BEGIN`/`COMMIT` nel SQL editor di Supabase ha
+   risposto "success" senza installare niente.** La verifica successiva mostrava
+   ancora la 073. Il corpo era valido: creato con un altro nome è passato al
+   primo colpo. Causa non accertata, sospetto la transazione esplicita.
+   **Procedura da usare d'ora in poi per ogni migration su funzione** — è anche
+   più sicura, senza `DROP` e senza finestra scoperta:
+   creare con un nome nuovo → misurarla accanto alla viva → scambiare con due
+   `ALTER FUNCTION … RENAME` → **confermare sempre** con
+   `SELECT pg_get_functiondef(p.oid) LIKE '%…%' FROM pg_proc p …`.
+2. **Per due giri si è misurata una funzione che non era cambiata**, credendo a
+   un miglioramento inesistente. Un prima/dopo vale solo se è **la stessa query
+   nello stesso istante**: confrontare una misura del diario con una presa su un
+   rettangolo diverso non dimostra niente.
+3. **Le simulazioni su distribuzione uniforme sovrastimano l'effetto.**
+   Prevedevano 28 nordici e 477 italiani. I locali veri sono ammassati nelle
+   città → i quadretti abitati sono **~200 su 961**, quindi la copertura costa
+   poco budget e la gran parte delle 1000 righe resta alla densità, cioè
+   all'Italia.
+
+### Misurato e da NON riprovare
+
+- **La forma dei quadretti non conta.** Provate 31×31, 40×24, 44×22, 50×19,
+  60×16: nordici 23-24 in tutte. Inseguire celle quadrate sullo schermo non
+  serve — a decidere è il rapporto fra i due gruppi, non la griglia. La manopola
+  è il `2` in `LEAST(rn, 2)`: alzarlo compra copertura e costa densità.
+- **Alzare il tetto max-rows di Supabase**: scartato per scelta dell'utente.
+
+### Perché il branch `feature/map-thinning` è stato abbandonato
+
+Il branch resta nel repo, non cancellato: dentro c'è `mapGrid.ts` con la
+geometria pura e 33 casi di prova, riusabili se un giorno servisse. Ma **non è
+la base da cui ripartire**, per tre ragioni:
+
+1. **Aveva una regressione aperta e non capita** — "alcuni pallini spariscono" su
+   dispositivo fisico, sei ipotesi escluse con prove e nessuna causa trovata
+   (dettaglio nel diario del branch). Ripartire da lì significa ereditare un
+   difetto che nessuno sa spiegare.
+2. **Curava il problema sbagliato per primo.** Il diradamento a zoom largo non
+   toglie un pallino dal vuoto: quello era un problema di dati, ed è la 085.
+3. **La griglia client diventa in gran parte ridondante.** Se è il server a
+   scegliere un rappresentante per quadretto, al client non resta granché da
+   diradare. Vale ancora di più col passo B (tile).
+
+**Verificato il 2026-09-05, dopo la 085**: il branch è stato ricaricato sul
+telefono con la migration già viva, e **i pallini spariscono ancora**. Elimina il
+cambio di distribuzione dei dati dai possibili fattori — debolmente, perché la
+085 sposta solo ~60 pallini su 1000, ma è una casella in meno. Il difetto resta
+dove indicava l'unico fatto solido: nel disegno lato client, non nei dati.
+
+**Ipotesi mai provata, se qualcuno ci tornasse**: il tetto `MAX_DOTS` tagliava
+per distanza dal centro (`nearestToCenter`). Il commento assumeva che "quel che
+cade è già fuori campo", ma vale solo con dati distribuiti uniformemente nel
+ritaglio — e non lo sono, sono ammassati al centro. Quando le celle superano il
+tetto, la soglia di taglio può cadere **dentro** lo schermo, facendo sparire per
+primi i pallini periferici. Coerente col sintomo (un locale isolato lontano dal
+centro, che va e viene pannando) e con l'unico fatto solido (su `main` non c'è
+tetto, quindi non sparisce niente). Prova da trenta secondi: alzare `MAX_DOTS` a
+un valore enorme e ricaricare.
+
+### Difetti VERI trovati sul branch e ANCORA PRESENTI SU MAIN
+
+Non sono stati portati qui insieme al resto: se si toccherà la mappa, vanno
+rifatti.
+
+1. **Rettangolo più largo di ~200° di longitudine → la mappa si svuota.**
+   Castato a geography, PostGIS legge l'envelope come "tutto il resto del
+   globo": misurato 270° → 113 righe, 300° → 6, 355° → 0, **senza alcun
+   errore**. Telefono in verticale non ci arriva (~110° max), **iPad in
+   orizzontale sì**. Cura: clampare il mezzo-span a 90° nel calcolo dei bounds
+   di `useRestaurantGeo`.
+2. **Non esiste viewport culling dei marker** (già in §0-ter, qui si conferma):
+   `RestaurantMap.native.tsx` monta un `<Marker>` per OGNI pin della cache a
+   qualunque zoom. In città si montano ~2900 marker dove ne bastano ~100.
+   Il commento su `restaurants.tsx:274` che attribuisce il culling a SuperCluster
+   è **falso** — il clustering è spento da giugno.
+3. **`pinById` NON va messo dietro `clusteringActive`** (contrariamente a quanto
+   suggerito fra i micro-sprechi di §0-ter): serve anche a
+   `SelectedMarkerOverlay`, e gatarlo rende `selectedPin` sempre `null`.
+   `genericPins` invece sì, quello serve solo al percorso cluster.
+
+### Il taglio fuori schermo: upgrade o downgrade?
+
+**Upgrade sulle prestazioni, senza rovesci visivi** — con un margine generoso
+(tre schermate) non sparisce niente che fosse visibile, e i marker esistono già
+prima di entrare in vista. **Ma ha un rischio reale sulla stabilità**: togliere
+marker significa smontarli, e lo smontaggio è la causa del crash iOS (coperto
+dalla patch) e dello sfarfallio Android. Oggi su `main` l'insieme dei marker
+**solo cresce** → zero smontaggi → zero rischio. Introdurlo va fatto da base
+pulita e collaudato su telefono fisico, non recuperato dal branch.
+
+### Cosa resta aperto, in ordine
+
+1. **I tile** (passo B, §0-bis punto 4): l'unica cosa che toglie davvero il tetto
+   delle 1000 righe e che regge se l'archivio decuplica. Richiede una build.
+   Nota: con i tile il client riceverebbe molti più dati, e a quel punto il
+   culling diventa necessario, non opzionale.
+2. **Il culling**, da rifare pulito quando si aprirà una finestra sulla mappa.
+3. **Il lag**, che la 085 non ha toccato di un millisecondo: i marker montati
+   sono esattamente gli stessi di prima.
 
 ---
 
