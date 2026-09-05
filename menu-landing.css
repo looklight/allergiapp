@@ -704,8 +704,18 @@
 /* I passi entrano in fila, uno dopo l'altro, e le frecce con loro: è la
    sequenza stessa a raccontarsi. Il ritardo lo dà la posizione nella fila,
    non una classe scritta a mano su ogni riga. */
+/* ⚠️ QUESTA RIGA PESA QUANTO `.anim-ready.anim-done` E STA PIÙ IN BASSO,
+   quindi la batte: senza la regola qui sotto i passi restavano per sempre
+   sedici punti più giù del loro posto — comparivano in dissolvenza ma non
+   salivano mai. Nella corsia si vedeva così: trentaquattro punti d’aria fra
+   l’occhiello e i tondi, sei sotto le etichette. La coppia va tenuta insieme:
+   chi cambia la partenza deve ridichiarare l’arrivo. */
 .ml-how-steps .anim-ready {
     transform: translateY(16px);
+}
+
+.ml-how-steps .anim-ready.anim-done {
+    transform: translateY(0);
 }
 
 .ml-how-steps .anim-ready:nth-child(1) { transition-delay: 60ms; }
