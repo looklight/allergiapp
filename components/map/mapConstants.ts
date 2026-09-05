@@ -70,12 +70,6 @@ export const DOT_LARGE_THRESHOLD = 0.7;
  *  pallino→pin avvenga fuori schermo durante il pan, non sotto gli occhi. */
 export const PIN_VIEWPORT_MARGIN = 1.5;
 
-/** Mezzo-span oltre il quale, nel regime pin, un marker NON viene proprio
- *  montato. Deliberatamente il doppio di PIN_VIEWPORT_MARGIN: fra il confine
- *  dei pin pieni (1.5) e questo c'è una fascia di pallini, così pannando si
- *  passa da pin a pallino a niente, e mai da pin a niente. Le due transizioni
- *  avvengono entrambe fuori campo. */
-export const PIN_CULL_MARGIN = 3.0;
 
 /** Tetto di pin completi renderizzabili insieme (regime pin). I pin completi
  *  sono view-marker con cattura bitmap: il costo dev'essere proporzionale allo

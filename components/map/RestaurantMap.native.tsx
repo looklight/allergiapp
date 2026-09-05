@@ -44,14 +44,11 @@ import {
   DOT_LARGE_THRESHOLD,
   MAX_FULL_PINS,
   THINNING_ENABLED,
-  PIN_CULL_MARGIN,
+  selectDots,
+  quantizedZoom,
   DOT_VIEWPORT_MARGIN,
   MAX_DOTS,
-  gridCellDeg,
   nextDotView,
-  thinPins,
-  nearestToCenter,
-  withinViewport,
   clientCoverage,
   type DotView,
   DEFAULT_REGION,
@@ -97,10 +94,9 @@ function clusterSize(count: number): number {
 // server-side, lavoro pianificato a parte. Riattivare = `Platform.OS === 'android'`.
 const CLUSTERING_ENABLED = false;
 
-// Identità stabili per il percorso cluster spento: restituire `[]`/`new Map()`
-// a ogni render rifarebbe scattare i memo a valle, che è ciò che vogliamo evitare.
+// Identità stabile per il percorso cluster spento: restituire `[]` a ogni render
+// rifarebbe scattare i memo a valle, che è ciò che vogliamo evitare.
 const NO_PINS: RestaurantPin[] = [];
-const NO_PIN_BY_ID = new Map<string, RestaurantPin>();
 
 type MapStyles = ReturnType<typeof makeStyles>;
 
@@ -265,8 +261,8 @@ export default function RestaurantMap({
   // solo al primo gesto. Partendo da null il diradamento sarebbe spento proprio
   // all'avvio — e l'avvio senza posizione, con l'intera cache montata in un
   // commit, è il caso peggiore che questo lavoro esiste per curare.
-  const [dotView, setDotView] = useState<DotView | null>(
-    () => nextDotView(null, DEFAULT_REGION),
+  const [dotView, setDotView] = useState<DotView>(
+    () => ({ region: DEFAULT_REGION, zoom: quantizedZoom(DEFAULT_REGION.latitudeDelta, null) }),
   );
 
   // ---- Stable refs for prop callbacks ----
@@ -284,14 +280,10 @@ export default function RestaurantMap({
   onReadyRef.current = onReady;
   // Servono al tocco sui pallini (v. handleMarkerPress): tenuti in ref per non
   // cambiare l'identità del callback, che rimonterebbe tutti i marker.
+  // Chi è già disegnato, per la regola "quello che è comparso resta".
+  const stickyRef = useRef<{ ids: Set<string>; zoom: number; criterio: string } | null>(null);
   const allPinsRef = useRef(allPins);
   allPinsRef.current = allPins;
-  // Livello di griglia effettivamente usato l'ultima volta: serve all'isteresi
-  // dell'allargamento (v. renderIds), perché il livello dipende da quanti
-  // locali ci sono in vista e senza banda morta sbatterebbe avanti e indietro
-  // pannando lungo un confine di densità.
-  const dotLevelRef = useRef<number | null>(null);
-  const thinningActiveRef = useRef(false);
   const alwaysIndividualIdsRef = useRef<Set<string>>(new Set());
 
   // ---- Segnale "mappa pronta" ----
@@ -526,7 +518,7 @@ export default function RestaurantMap({
     // scheda come sempre.
     // Salvati e preferiti fanno eccezione a qualunque zoom: non sono mai
     // rappresentanti di nessuno, sono sempre e solo loro stessi.
-    if (thinningActiveRef.current && !alwaysIndividualIdsRef.current.has(id)) {
+    if (!alwaysIndividualIdsRef.current.has(id)) {
       const p = allPinsRef.current?.find(x => x.id === id);
       if (p) {
         zoomToward(p.latitude, p.longitude);
@@ -602,71 +594,30 @@ export default function RestaurantMap({
   // `allPins`: lì non c'è niente da diradare, e culling/tetto ragionati sul
   // viewport della mappa grande sarebbero sbagliati. Stessa guardia di
   // `clusteringActive`, stessa ragione.
-  const thinningActive =
-    THINNING_ENABLED && isDotZoom && dotView != null && (allPins?.length ?? 0) > 0;
-
-  // Stessa guardia per il regime pin: lì non si dirada (da vicino li vuoi tutti)
-  // ma si monta solo ciò che è vicino allo schermo. Senza questo il costo tornava
-  // proporzionale alla cache appena si entrava in città — cioè il difetto di
-  // partenza, spostato di zoom.
-  const cullingActive =
-    THINNING_ENABLED && !isDotZoom && pinViewport != null && (allPins?.length ?? 0) > 0;
-  thinningActiveRef.current = thinningActive;
-  alwaysIndividualIdsRef.current = alwaysIndividualIds;
-
-  // Gli id da renderizzare nel regime pallini: un rappresentante per areola,
-  // dentro il viewport allargato, più i salvati/preferiti che non si diradano
-  // mai. null = nessun diradamento (regime pin, o mappa senza allPins).
+  // Cosa disegnare. Una chiamata sola a una funzione pura: la decisione vive in
+  // `mapGrid.selectDots`, dove i test la raggiungono. Qui restano solo i dati.
   //
-  // Chi rappresenta l'areola: PRIMA la copertura rispetto alle esigenze attive,
-  // POI il premium. Il pallino è quindi il MIGLIORE che c'è lì, e verde vuol
-  // dire "qui c'è un posto verde, e toccandolo lo apri" — onesto in un modo che
-  // l'unione delle coperture non sarebbe (unire due locali a metà darebbe verde
-  // senza che esista un posto dove mangiare).
+  // Il criterio del rappresentante: PRIMA la copertura rispetto alle esigenze,
+  // POI il premium. L'ordine non è negoziabile — col premium davanti, un'areola
+  // con un premium poco compatibile diventerebbe grigia nascondendo un verde,
+  // cioè il premium avrebbe peggiorato un'informazione di sicurezza. Così invece
+  // vince solo a parità: quasi sempre a filtri spenti, mai quando costa un
+  // colore. Oggi inerte, zero premium in tabella (v. mig 084).
   //
-  // L'ordine delle due chiavi non è negoziabile: col premium davanti, un'areola
-  // con un premium poco compatibile diventerebbe grigia nascondendo un verde —
-  // il premium avrebbe peggiorato un'informazione di sicurezza, che è
-  // esattamente ciò che il vincolo di prodotto vieta. Così invece il premium
-  // vince solo a parità, cioè quasi sempre quando non ci sono filtri attivi
-  // (coperture tutte uguali) e mai quando costerebbe un colore.
-  // Oggi è inerte: zero premium in tabella (v. mig 084).
+  // Il RITAGLIO usa la posizione vera della mappa quando c'è; la GRANDEZZA
+  // dell'areola viene da `dotView`, che ha la banda morta. Sono due cose diverse
+  // e vengono da due posti diversi: la cella deve stare ferma, il ritaglio no.
   const renderIds = useMemo(() => {
-    // Regime pin: solo taglio per vicinanza, nessun diradamento — da vicino i
-    // locali si vogliono tutti, sono solo quelli lontani a non dover esistere.
-    if (cullingActive && pinViewport) {
-      // Stessa ragione del ramo sotto: si ritaglia su dove la mappa è davvero.
-      const vp = currentRegion.current ?? pinViewport;
-      const ids = new Set<string>();
-      const pins = allPins ?? [];
-      for (const p of pins) {
-        if (alwaysIndividualIds.has(p.id) ||
-            withinViewport(vp, p.latitude, p.longitude, PIN_CULL_MARGIN)) ids.add(p.id);
-      }
-      return ids;
-    }
-    if (!thinningActive || !dotView) return null;
-    // Il RITAGLIO usa la posizione VERA della mappa quando c'è; il livello di
-    // zoom (cioè la grandezza dell'areola) continua a venire da dotView, che ha
-    // la banda morta anti-sfarfallio. Sono due cose diverse e vanno prese da due
-    // posti diversi: la cella deve restare ferma, il ritaglio no.
-    //
-    // Senza questo, se lo stato React e la mappa nativa divergono si taglia
-    // rispetto a un posto dove l'utente non è e la mappa SI SVUOTA. Succede a
-    // ogni ricarica a caldo di Metro (React azzera lo stato ai valori iniziali,
-    // la mappa nativa resta dov'era) — e un modo di sbagliare che cancella tutto
-    // invece di degradare non va lasciato in piedi, anche se in produzione
-    // `initialRegion` rende il caso improbabile.
-    const vp = currentRegion.current ?? dotView.region;
     const pins = allPins ?? [];
-    const candidates: RestaurantPin[] = [];
-    const ids = new Set<string>();
-    for (const p of pins) {
-      // Salvati/preferiti fuori dal diradamento, e visibili anche fuori
-      // viewport: è il comportamento di sempre, non lo tocchiamo.
-      if (alwaysIndividualIds.has(p.id)) { ids.add(p.id); continue; }
-      if (withinViewport(vp, p.latitude, p.longitude, DOT_VIEWPORT_MARGIN)) candidates.push(p);
-    }
+    if (!THINNING_ENABLED || pins.length === 0) return null;
+    // "Quello che è comparso resta": si azzera solo quando l'insieme cambia
+    // natura per davvero — allargando (le areole si fondono) o al cambio delle
+    // esigenze (cambia il criterio). Entrando o pannando, chi c'è resta.
+    const prev = stickyRef.current;
+    const criterio = `${showMatchInfo}|${userAllergens?.join() ?? ''}|${userDiets?.join() ?? ''}`;
+    const sticky = (prev && prev.zoom <= dotView.zoom && prev.criterio === criterio)
+      ? prev.ids
+      : undefined;
     const coverage = (p: RestaurantPin) => {
       if (!showMatchInfo) return 0;
       const { covered, total } = clientCoverage(
@@ -674,43 +625,22 @@ export default function RestaurantMap({
       );
       return total > 0 ? covered / total : 0;
     };
-    const better = (a: RestaurantPin, b: RestaurantPin) => {
-      const ca = coverage(a), cb = coverage(b);
-      if (ca !== cb) return ca > cb;
-      return !!a.is_premium && !b.is_premium;
-    };
-    // Quando le celle superano il tetto NON si taglia: si allarga il quadretto.
-    //
-    // Tagliare teneva le MAX_DOTS più vicine al centro, e con dati ammassati
-    // sulle città quel "più vicine" è un cerchietto molto più piccolo dello
-    // schermo: la mappa si svuotava tutt'intorno, e pannando i pallini già
-    // visti sparivano perché il centro si spostava. Allargare invece toglie
-    // densità ovunque in modo uniforme — meno pallini, ma distribuiti — che è
-    // la stessa equità geografica che la griglia garantisce a ogni altro zoom.
-    //
-    // Il livello scende di uno alla volta: ogni passo quadruplica l'area della
-    // cella, quindi bastano una o due iterazioni. La banda morta (si torna più
-    // fini solo sotto il 75% del tetto) evita di sbattere fra due livelli
-    // pannando lungo un confine di densità.
-    let level = dotView.zoom;
-    const prev = dotLevelRef.current;
-    if (prev != null && prev < level) {
-      const fine = thinPins(candidates, gridCellDeg(level), better).length;
-      if (fine > MAX_DOTS * 0.75) level = prev;
-    }
-    let thinned = thinPins(candidates, gridCellDeg(level), better);
-    while (thinned.length > MAX_DOTS && level > 0) {
-      level -= 1;
-      thinned = thinPins(candidates, gridCellDeg(level), better);
-    }
-    dotLevelRef.current = level;
-    // Rete di sicurezza: l'allargamento si ferma al livello 0 (mondo intero in
-    // celle da 3°), e in teoria anche lì si potrebbe sforare. Se succede si
-    // torna a tagliare per distanza — peggio, ma il tetto dev'essere una
-    // garanzia, non una speranza. In pratica non ci si arriva mai.
-    for (const p of nearestToCenter(thinned, vp, MAX_DOTS)) ids.add(p.id);
+    const ids = selectDots<RestaurantPin>({
+      pins,
+      view: { region: currentRegion.current ?? dotView.region, zoom: dotView.zoom },
+      margin: DOT_VIEWPORT_MARGIN,
+      maxDots: MAX_DOTS,
+      better: (a, b) => {
+        const ca = coverage(a), cb = coverage(b);
+        if (ca !== cb) return ca > cb;
+        return !!a.is_premium && !b.is_premium;
+      },
+      alwaysShow: p => alwaysIndividualIds.has(p.id),
+      sticky,
+    });
+    stickyRef.current = { ids, zoom: dotView.zoom, criterio };
     return ids;
-  }, [thinningActive, cullingActive, pinViewport, dotView, allPins, alwaysIndividualIds, showMatchInfo, userAllergens, userDiets]);
+  }, [allPins, dotView, alwaysIndividualIds, showMatchInfo, userAllergens, userDiets]);
 
   const markerElements = useMemo(() => {
     // A zoom largo (regime dot) renderizziamo i cluster (clusteredElements), non i
@@ -860,13 +790,15 @@ export default function RestaurantMap({
     [clusteringActive, allPins, alwaysIndividualIds],
   );
 
-  // Lookup pin→dati grezzi per passare supported_* ai MapPin singoli.
+  // Lookup pin→dati grezzi. NON va messo dietro `clusteringActive`: oltre al
+  // percorso cluster serve a SelectedMarkerOverlay (prop `selectedPin`), che è
+  // sempre attivo. Gating: introdotto per errore il 2026-09-05 e tolto subito —
+  // rendeva `selectedPin` sempre null.
   const pinById = useMemo(() => {
-    if (!clusteringActive) return NO_PIN_BY_ID;
     const m = new Map<string, RestaurantPin>();
     for (const p of (allPins ?? [])) m.set(p.id, p);
     return m;
-  }, [clusteringActive, allPins]);
+  }, [allPins]);
 
   const clusterResults = useMapClusters(
     genericPins,

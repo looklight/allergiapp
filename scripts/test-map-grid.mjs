@@ -12,6 +12,7 @@
  * che compare = il churn che aveva affossato supercluster.
  */
 import {
+  selectDots,
   quantizedZoom,
   gridCellDeg,
   nextDotView,
@@ -49,9 +50,14 @@ check('un livello in piu = cella meta', gridCellDeg(5) * 2 === gridCellDeg(4), t
 
 // --- nextDotView: sotto soglia siamo nel regime pin ---
 const R = (lat, lng, d) => ({ latitude: lat, longitude: lng, latitudeDelta: d, longitudeDelta: d });
-check('regime pin -> null', nextDotView(null, R(45, 9, 0.1)), null);
-const v0 = nextDotView(null, R(45, 9, 22));
-check('primo ingresso costruisce la vista', v0.zoom, 4);
+// Un solo percorso a ogni zoom: sotto la soglia dei pin non si spegne piu'
+// niente, la cella diventa cosi' piccola che il diradamento non toglie nulla
+// da se'. Un ramo in meno, e con lui la giuntura che ospitava un difetto.
+const seme = { region: R(42, 12.5, 22), zoom: quantizedZoom(22, null) };
+check('lo zoom del seme', seme.zoom, 4);
+const v0 = nextDotView(seme, R(45, 9, 22));
+check('stessa scala: la vista non cambia livello', v0.zoom, 4);
+check('in citta la vista resta valida', nextDotView(seme, R(45, 9, 0.1)).zoom, 12);
 check('pan piccolo NON cambia la vista', nextDotView(v0, R(45.5, 9.5, 22)) === v0, true);
 check('zoom dentro la banda NON cambia la vista', nextDotView(v0, R(45, 9, 20)) === v0, true);
 check('pan grande cambia la vista', nextDotView(v0, R(52, 9, 22)) !== v0, true);
@@ -112,6 +118,58 @@ check('tiene i piu vicini al centro', ids(nearestToCenter(many, R(45, 9, 10), 3)
 check('dentro il margine', withinViewport(R(45, 9, 2), 45.5, 9.5, 1), true);
 check('fuori dal margine', withinViewport(R(45, 9, 2), 55, 9, 1), false);
 check('margine piu largo include di piu', withinViewport(R(45, 9, 2), 48, 9, 2.5), true);
+
+// --- gli invarianti detti a parole dall'utente, fissati qui ---
+// Questi tre sono la ragione per cui la selezione e' stata portata dentro una
+// funzione pura il 2026-09-05: prima viveva nel componente, dove nessun test la
+// raggiungeva, ed e' esattamente li che si erano infilati tre difetti di fila.
+
+// Un pugno di locali sparsi, con un "migliore" deterministico.
+const mondo = [];
+for (let i = 0; i < 400; i++) {
+  mondo.push({
+    id: `r${String(i).padStart(3, '0')}`,
+    // distribuzione volutamente disomogenea: grappoli, come le citta' vere
+    latitude: 45 + (i % 20) * 0.11 + (i % 3) * 0.01,
+    longitude: 9 + Math.floor(i / 20) * 0.13 + (i % 5) * 0.01,
+  });
+}
+const sel = (lat, lng, dLat, zoom, max = 1000) => selectDots({
+  pins: mondo,
+  view: { region: R(lat, lng, dLat), zoom },
+  margin: 1.5,
+  maxDots: max,
+  better: () => false,
+});
+const inVista = (id, lat, lng, dLat) => {
+  const p = mondo.find(x => x.id === id);
+  return withinViewport(R(lat, lng, dLat), p.latitude, p.longitude, 1.5);
+};
+
+// 1. INGRANDENDO SI AGGIUNGE, MAI SI TOGLIE.
+let persi = [];
+for (let z = 4; z < 12; z++) {
+  const largo = sel(45.9, 10, 3, z);
+  const stretto = sel(45.9, 10, 3, z + 1);
+  for (const id of largo) if (!stretto.has(id) && inVista(id, 45.9, 10, 3)) persi.push(`z${z}:${id}`);
+}
+check('ingrandendo nessun pallino sparisce', persi, []);
+
+// 2. ALLARGANDO RESTANO I RAPPRESENTANTI (l'insieme si restringe, non cambia natura).
+// z=3 ha celle da 0.375 gradi, piu' larghe della spaziatura dei locali finti
+// (0.11): li' la fusione avviene davvero. A z=9 ognuno sta nella sua cella.
+const dentro = sel(45.9, 10, 3, 9);
+const fuori = sel(45.9, 10, 3, 3);
+check('allargando l insieme e un sottoinsieme', [...fuori].every(id => dentro.has(id)), true);
+check('allargando ce ne sono meno', fuori.size < dentro.size, true);
+
+// 3. STABILITA': la stessa vista da sempre lo stesso risultato.
+check('due letture identiche coincidono',
+  [...sel(45.9, 10, 3, 8)].sort(), [...sel(45.9, 10, 3, 8)].sort());
+
+// Il tetto non deve poter rompere l'invariante 1 nel campo visibile.
+check('sotto il tetto si taglia solo lontano dal centro',
+  sel(45.9, 10, 3, 10, 50).size, 50);
 
 console.log(failed === 0 ? '\nTutti i casi passano.' : `\n${failed} casi FALLITI.`);
 process.exit(failed === 0 ? 0 : 1);

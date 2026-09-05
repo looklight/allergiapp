@@ -143,11 +143,9 @@ export function withinViewport(vp: Region, lat: number, lng: number, margin: num
  *  spostamento è sotto 1/4 del delta: nessun re-render, nessun marker che si
  *  muove. Con la griglia ancorata al mondo, anche un pan grande non cambia i
  *  rappresentanti — cambia solo quali celle sono a schermo. */
-export function nextDotView(prev: DotView | null, region: Region): DotView | null {
-  // Stessa banda d'isteresi di isDotZoom: sotto la soglia siamo nel regime pin.
-  if (region.latitudeDelta < ZOOM_PIN_THRESHOLD - 0.05) return null;
-  const zoom = quantizedZoom(region.latitudeDelta, prev?.zoom ?? null);
-  if (prev && prev.zoom === zoom) {
+export function nextDotView(prev: DotView, region: Region): DotView {
+  const zoom = quantizedZoom(region.latitudeDelta, prev.zoom);
+  if (prev.zoom === zoom) {
     const grid = prev.region.latitudeDelta / 4;
     if (
       Math.abs(region.latitude - prev.region.latitude) < grid &&
@@ -208,4 +206,77 @@ export function nearestToCenter<T extends ThinnablePin>(pins: T[], vp: Region, m
   scored.sort((a, b) => (a.d - b.d) || (a.p.id < b.p.id ? -1 : 1));
   scored.length = max;
   return scored.map(s => s.p);
+}
+
+// ---------------------------------------------------------------------------
+// La selezione, in un posto solo
+// ---------------------------------------------------------------------------
+
+/** Cosa disegnare, dato dove si sta guardando. È l'UNICA decisione del sistema
+ *  ed è tutta qui dentro, pura e testabile: il componente non fa che chiamarla.
+ *
+ *  Prima questa scelta era sparsa fra due regimi, tre isteresi e qualche ref nel
+ *  componente, cioè fuori dalla portata dei test — ed è esattamente lì che sono
+ *  finiti tutti i difetti del 2026-09-05, mentre la matematica della griglia non
+ *  ha mai sbagliato. Riportarla qui è la lezione di quella giornata.
+ *
+ *  Tre proprietà, che sono i requisiti detti a parole e sono fissate dai test:
+ *
+ *  1. INGRANDENDO SI AGGIUNGE, MAI SI TOGLIE. Non è codice: è una conseguenza
+ *     della griglia. Dimezzando il lato, ogni cella si divide in quattro, e il
+ *     rappresentante della cella grande resta il migliore anche della piccola in
+ *     cui si trova — quindi sopravvive. Vale finché il criterio non cambia (le
+ *     esigenze dell'utente lo cambiano, ed è giusto che sia così).
+ *  2. ALLARGANDO RESTANO I RAPPRESENTANTI. Stessa formula al contrario: quattro
+ *     celle diventano una e vince il migliore dei quattro.
+ *  3. UN SOLO PERCORSO A OGNI ZOOM. Da vicino il quadretto vale poche centinaia
+ *     di metri, quindi il diradamento non toglie nulla da sé: il caso "in città
+ *     mostrali tutti" non va scritto, viene gratis. Un ramo in meno, e con lui
+ *     la giuntura in cui si era infilato un bug. */
+export function selectDots<T extends ThinnablePin>(opts: {
+  pins: readonly T[];
+  view: DotView;
+  /** Quanto tenere oltre il bordo, in mezzi-delta: cuscinetto anti pop-in. */
+  margin: number;
+  /** Tetto di marker montati. Con la griglia si sfora di rado. */
+  maxDots: number;
+  /** `a` batte `b`? A parità decide l'id (v. thinPins). */
+  better: (a: T, b: T) => boolean;
+  /** Mai diradati né tagliati: salvati, preferiti, e in futuro i premium. */
+  alwaysShow?: (pin: T) => boolean;
+  /** Chi è GIÀ disegnato. Chi c'è resta: a parità di areola un pallino già
+   *  visibile batte un nuovo arrivato, qualunque cosa dica il criterio.
+   *
+   *  Senza questo, ogni risposta del server che porta pin nuovi può far
+   *  cambiare il rappresentante di un'areola: per l'utente un pallino sparisce
+   *  e ne compare un altro poco distante, proprio mentre sta pannando. È
+   *  deterministico, ma è comunque un pallino che se ne va — e "quello che è
+   *  comparso resta" è un requisito, non un dettaglio.
+   *
+   *  Chi lo passa deve azzerarlo quando l'insieme cambia natura per davvero:
+   *  allargando lo zoom (le areole si fondono, è giusto che se ne vadano) o al
+   *  cambio delle esigenze (cambia il criterio, quindi cambia chi merita). */
+  sticky?: ReadonlySet<string>;
+}): Set<string> {
+  const { pins, view, margin, maxDots, alwaysShow, sticky } = opts;
+  const better = sticky
+    ? (a: T, b: T) => {
+        const sa = sticky.has(a.id), sb = sticky.has(b.id);
+        if (sa !== sb) return sa;
+        return opts.better(a, b);
+      }
+    : opts.better;
+  const ids = new Set<string>();
+  const candidates: T[] = [];
+  for (const p of pins) {
+    if (alwaysShow?.(p)) { ids.add(p.id); continue; }
+    if (withinViewport(view.region, p.latitude, p.longitude, margin)) candidates.push(p);
+  }
+  const thinned = thinPins(candidates, gridCellDeg(view.zoom), better);
+  // Il tetto taglia per distanza dal centro: peggio della griglia, ma col
+  // margine stretto morde di rado e quel che cade è già fuori campo. Un
+  // allargamento adattivo del quadretto è stato provato il 2026-09-05 e
+  // SCARTATO: aggiungeva stato e una terza isteresi, e rompeva la proprietà 1.
+  for (const p of nearestToCenter(thinned, view.region, maxDots)) ids.add(p.id);
+  return ids;
 }
