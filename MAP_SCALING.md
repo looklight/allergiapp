@@ -5,17 +5,193 @@ completa e la strategia decisa, per riprenderla quando si aprirà il lavoro.
 Integra (non sostituisce) la sezione "SCALABILITÀ PIN — gerarchia dei limiti" in
 `TODO.md`, che resta la fonte per i task operativi.
 
-**Stato: Fase 1 COMPLETATA e in main (merge 2026-07-09, viewport-gating 2026-07-10). Piano operativo corrente: §0-bis.**
-La Revisione §0 (2026-07-09) resta il riferimento per design e decisioni;
-§0-bis la aggiorna con lo stato post-merge e i trigger del prossimo lavoro.
+**Stato: LAVORO APERTO dal 2026-09-05. Piano operativo corrente: §0-ter.**
+Fase 1 è in main (merge 2026-07-09, viewport-gating 2026-07-10). §0-ter apre il
+passo A (diradamento client) dopo le segnalazioni di lag e l'analisi del
+2026-09-05; §0-bis resta la mappa dei trigger e del lavoro server; la Revisione
+§0 (2026-07-09) resta il riferimento per design e decisioni di fondo.
 
-**⚠️ Il lavoro restante NON è in programma (confermato 2026-07-19):** si parte
-solo quando scatta uno dei trigger numerici di §0-bis — fino ad allora nessuna
-implementazione, solo occhiata occasionale ai conteggi in admin. Il degrado è
-morbido (latenza/tagli silenziosi, mai rotture o dati persi), quindi aspettare
-è a basso rischio. Gli interventi pesanti (celle, colonne precomputate) sono
-solo server-side → spedibili in qualunque momento via SQL editor, senza build:
-anticiparli non compra nulla.
+**Cosa è cambiato rispetto al fermo di luglio.** La nota "il lavoro restante NON
+è in programma (2026-07-19)" **è superata**: sono arrivate segnalazioni utente
+di lag, il trigger del punto 4 è raggiunto (Italia 2881) e — soprattutto —
+l'analisi ha trovato una causa che nel piano di luglio non era censita: **manca
+del tutto il viewport culling dei marker** (§0-ter). Non è un trigger numerico
+che scatta, è un buco. Resta vero che gli interventi *server* (celle, colonne
+precomputate) sono spedibili in qualunque momento via SQL editor senza build.
+
+---
+
+## 0-ter. ANALISI 2026-09-05 — segnalazioni di lag, il buco del culling, diradamento client
+
+**Origine:** utenti segnalano lag sulla mappa "quando compaiono molti pin".
+L'utente non lo riproduce (è geolocalizzato in una città); ipotizza che
+colpisca chi parte da un'area vuota e si sposta su una piena. Ipotesi
+**confermata nel meccanismo**, con una causa più generale di quella supposta.
+
+### Numeri nuovi (rilevati 2026-09-05 via REST, count=exact)
+
+| | 09/07 | 05/09 |
+|---|---|---|
+| ristoranti totali | 2316 | **4105** |
+| Italia (`country_code=IT`) | 1595 | **2881** |
+| Europa (somma country_code UE+CH+GB+NO) | ~2100 | **3692** |
+| Milano / Roma | 85 / – | **104 / 103** |
+| recensioni | – | **5430** |
+
+Conseguenze sui trigger di §0-bis:
+- **punto 4 (celle) — trigger RAGGIUNTO**: "bbox Italia verso ~3000" → 2881.
+  A zoom Europa la RPC restituisce 1000 righe su 3692 → **~2700 locali non
+  arrivano mai**, tagliati senza ranking (erano ~600 a luglio).
+- **punto 3 (Opzione B) — non raggiunto**: città più densa 104, soglia ~200.
+- **punto 4-bis (aggregato full-table reviews) — lontano**: 5430 su ~50k.
+
+### La causa vera: non esiste viewport culling dei marker
+
+`app/(tabs)/restaurants.tsx:274` afferma che *"SuperCluster gestisce
+internamente la viewport culling"*. Ma il clustering è spento da giugno
+(`CLUSTERING_ENABLED = false`, `RestaurantMap.native.tsx:88`) → **quel culling
+non lo fa nessuno**. `markerElements` monta un `<Marker>` per OGNI pin della
+pinCache, a qualunque zoom; l'unico short-circuit è `clusteringActive &&
+isDotZoom`, che è sempre falso.
+
+Il viewport-gating della 1.3.0 (`MAX_FULL_PINS=300`) governa solo `asDot`,
+cioè *quanto costa* un marker (cattura bitmap sì/no), **non quanti marker
+esistono**. Quindi il costo React/RN resta proporzionale alla cache, non allo
+schermo — che è esattamente ciò che Fase 1 doveva chiudere. È il buco.
+
+### Misure sui tre scenari (fetch reali su `get_pins_in_bounds`)
+
+```
+avvio senza GPS (DEFAULT_REGION Europa)   → 1000 marker in UN commit
+Groenlandia → Islanda → UK                → 80 … poi 1063 in UN commit
+Milano → Lombardia → Italia → Europa      → 137 → 774 → 1530 → 1680
+```
+
+Il caso peggiore **non richiede la Groenlandia**: basta negare la posizione
+all'avvio. Chi è geolocalizzato in città parte da ~137 e cresce gradualmente,
+mai un salto secco → per questo l'utente non lo vedeva.
+
+Nota: il taglio a 1000 righe restituisce quasi sempre le STESSE righe tra bbox
+diversi (ordine fisico), quindi la cache converge verso ~1200-1700 e non
+raggiunge il trim a 4500. Il problema non è il valore assoluto ma **il salto in
+un singolo commit** dopo un gesto di pan.
+
+### Decisione: diradamento client PRIMA, celle server DOPO
+
+L'idea dell'utente ("a zoom out mostrare un rappresentante ogni tot raggio") è
+esattamente il grid-dots già disegnato al punto 4. Ma il lag è **client-side**,
+quindi la RPC a celle non serve per toglierlo. Si spezza in due:
+
+- **Passo A — client, piccolo (questo lavoro).** Nel regime pallini: renderizza
+  solo i pin nel viewport allargato **e**, sopra un tetto, diradali su griglia.
+  Marker montati ≤ ~500 a qualunque zoom, qualunque sia la cache. Tocca solo
+  `RestaurantMap.native.tsx` + `mapConstants.ts`: niente migration, niente
+  cambio payload. **L'invariante §6 (pinCache filter-independent) resta
+  intatta**: il diradamento è una scelta di *render*, non di cache.
+- **Passo B — server, dopo.** La RPC a celle serve per la **completezza dei
+  dati** (i ~2700 europei che oggi non arrivano), non per la fluidità. Resta il
+  punto 4 con le sue due decisioni aperte (filtro cucina, filtro seguiti).
+
+### Perché non è "clustering con un altro nome"
+
+I due fallimenti del clustering (giugno) erano cose diverse:
+
+1. **Bolle "a spicchio"** = cattura bitmap di una view custom su rn-maps 1.20.1
+   / New Arch. **Sparisce per costruzione**: il diradamento non disegna niente
+   di nuovo, i rappresentanti sono gli stessi PNG statici (`image` prop) già in
+   produzione dalla Fase 1. Nessuna bolla, nessun numero, nessuna view custom.
+2. **Churn dei marker** (flicker Android + `SIGABRT` iOS). **NON sparisce da
+   solo, va progettato.** Oggi il set di marker solo cresce (cache
+   accumulativa) → zero unmount; diradare reintroduce rimozioni.
+   Ridimensionamenti verificati: (a) la patch rn-maps copre entrambe le cause
+   del crash; (b) la memoria registra che **Release/TestFlight non ha mai
+   crashato, solo le dev build in Debug** → il rischio reale è flicker, non
+   crash; (c) il churn di massa **avviene già oggi in produzione** — ogni
+   toggle di un filtro cucina fa `filteredAllPins.filter()` e smonta centinaia
+   di marker a zoom Europa.
+
+**La differenza strutturale con supercluster:** supercluster ricalcolava a ogni
+region change su celle ancorate allo schermo → churn continuo durante il pan.
+Qui la griglia va **ancorata al mondo** (snap-to-grid in coordinate assolute),
+**quantizzata a livelli di zoom discreti con isteresi**, con **rappresentante
+deterministico**. Conseguenza: pan a zoom costante → l'insieme dei marker non
+cambia affatto; cambia solo attraversando un gradino di zoom. Stesso contratto
+della soglia pallino↔pin che oggi funziona.
+
+### Premium: agganciare ORA la logica, inerte
+
+Verificato 2026-09-05: `is_premium` esiste sulla tabella, **0 attivi**, ma NON
+viaggia nel payload dei pin e nel client vive solo nel tipo TS (conferma
+§0-bis punto 4-ter).
+
+- **Forma scelta: il premium è ESENTE dal diradamento**, come già lo sono
+  preferiti, liste salvate e il selezionato. Nessun meccanismo nuovo: si
+  aggiunge alla lista di esenzioni che esiste. Costo limitato per costruzione.
+- **Trappola che nel disegno server non esiste ma qui sì:** se il pallino
+  dell'areola prende il colore del suo rappresentante, mettere il premium
+  davanti può rendere **grigia** un'areola dove c'era un verde nascosto → il
+  premium avrebbe peggiorato il segnale di compatibilità, che il vincolo di
+  prodotto vieta. Nel disegno celle il problema non si pone perché il colore
+  viene dall'**unione**.
+  **Soluzione scelta: colore dall'unione dell'areola, identità dal premium.**
+  Colore e prominenza non si toccano mai, ed è la stessa semantica della futura
+  RPC a celle → il passo B diventa un drop-in. (Alternativa più semplice se
+  serve: ordine a due chiavi, prima la copertura poi il premium.)
+- **Cambio di tempistica rispetto a §0-bis 4-ter.** Lì la metà client era "alla
+  build successiva al primo contratto". Ma **con le OTA bloccate la metà client
+  è vincolata alla build**, e le build sono rare → la visibilità premium
+  arriverebbe mesi dopo la firma. Quindi: **ordinamento ed esenzione entrano
+  ora, inerti** (con 0 premium non cambia un pixel); al primo contratto basta
+  un UPDATE su una riga. Resta fuori l'**evidenza visiva** (aspetto del pin
+  premium): quella non si disegna al buio, come già deciso.
+- Invariato: `ORDER BY is_premium DESC` + `is_premium` nel payload di
+  `get_pins_in_bounds` sono additivi, via SQL editor, senza build (pattern 073)
+  — si possono fare quando si vuole.
+- Invariato e non negoziabile: **il colore verde/ambra non si vende MAI**.
+
+### Ordine dei lavori deciso
+
+1. **[FATTO 2026-09-05] Fossilizzare lo status quo prima di toccare la mappa.**
+   1.3.1 (24) risulta live su entrambi gli store. Bump a **1.3.2 (25 / vc 35)**,
+   commit `b8578b6`, build EAS production lanciate su entrambe le piattaforme.
+   Delta app vs 1.3.1 = **solo il gate versione**, dormiente e fail-open (tutti
+   gli altri ~210 commit dal 07/08 sono `partner/` e docs, non entrano nella
+   build). Motivo dell'ordine: così la build SUCCESSIVA ha come unica
+   differenza sensata la mappa — se qualcosa va storto in TestFlight si sa dove
+   guardare.
+2. **Branch parallelo per il passo A.**
+3. **Dev build locale sul telefono fisico vecchio PRIMA di TestFlight** — non
+   saltabile: il crash da churn si manifesta *solo* in Debug, su TestFlight non
+   si vedrebbe mai.
+4. **Beta su TestFlight** (canale beta / env preview) per giudicare la fluidità
+   reale su iOS e Android.
+5. **Merge su main + build production.** ⚠️ La build beta NON si promuove: si
+   ricompila con profilo production (canale/env sbagliati).
+
+**Requisito di sicurezza:** una costante di spegnimento tipo
+`CLUSTERING_ENABLED` per il diradamento, così se in mano non convince si spegne
+e la build resta rilasciabile lo stesso.
+
+### Aperto — da decidere all'inizio del passo A
+
+- **Cella ancorata al mondo o allo schermo?** (fissa in gradi legata al
+  `latitudeDelta`, oppure fissa in pixel). Il ragionamento sul churn spinge
+  verso il mondo + gradini di zoom, ma va chiuso esplicitamente.
+- **Tocco su un pallino rappresentante a zoom largo:** apre quella scheda
+  (oggi) o avvicina la mappa? §0 per le celle aveva deciso zoom-in. È l'unico
+  cambiamento di comportamento davvero visibile.
+- **Tetto marker** (~500?) e taglia della cella rispetto all'ingombro del
+  pallino.
+
+### Micro-sprechi censiti (stessa finestra, costo quasi nullo)
+
+- `genericPins` e `pinById` (`RestaurantMap.native.tsx:660-672`) ricostruiscono
+  array e Map su TUTTA la cache a ogni fetch **anche a clustering spento** —
+  cioè proprio nell'istante del merge. Da mettere dietro `clusteringActive`.
+- `MAX_FULL_PINS` 300→~200: alla soglia pallino→pin oggi si pagano ~100-150
+  catture bitmap in un frame (è il "non fluidissimo" che l'utente nota).
+- Il commento fuorviante su `restaurants.tsx:274` (parla di un culling che non
+  esiste più) va corretto contestualmente.
 
 ---
 
