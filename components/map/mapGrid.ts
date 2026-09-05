@@ -35,16 +35,50 @@ export function isValidCoord(lat: number, lng: number): boolean {
  *  senza dover rifare la build. Stesso ruolo di CLUSTERING_ENABLED. */
 export const THINNING_ENABLED = true;
 
-/** Quanti pallini stanno in larghezza di schermata a regime diradato: da qui
- *  esce il passo della griglia. A 22 il passo vale ~18pt su un telefono da
- *  390pt, contro i 10-14pt del PNG del pallino → i pallini si sfiorano senza
- *  impastarsi, e la mappa non si svuota. */
-export const DOTS_ACROSS_SCREEN = 22;
+/** Quante celle stanno nell'ALTEZZA della schermata: da qui esce il passo della
+ *  griglia. Il nome dice altezza e non larghezza apposta — `latitudeDelta` è
+ *  l'estensione verticale, e la prima taratura (22) sbagliava proprio lì.
+ *
+ *  Il valore giusto NON è quello che fa respirare i pallini: è quello che li fa
+ *  combaciare. È la premessa di §0 — "una cella grande come l'ingombro del
+ *  pallino è indistinguibile da N pallini sovrapposti" — ed è ciò che rende il
+ *  diradamento invisibile invece che vistoso. Con celle 2-3 volte il pallino
+ *  (la taratura a 40) la mappa diventa ordinata ma MENTE: a mondo intero
+ *  l'Italia con 2881 locali riceveva 12 pallini e la Norvegia con 13 ne
+ *  riceveva 4, cioè si somigliavano.
+ *
+ *  A 120 il passo vale ~8pt contro i 10pt del PNG piccolo: i pallini si
+ *  SOVRAPPONGONO, quindi una zona densa si legge come una massa continua e non
+ *  come una griglia ordinata. È voluto — l'ordine, qui, è ciò che fa sembrare
+ *  vuoto un archivio pieno. Le zone rade restano rade, perché a saturare è lo
+ *  SCHERMO e non il dataset: il costo non cresce con l'archivio.
+ *
+ *  (A 90 i pallini si toccavano appena: già onesto, ma ancora "ordinato".
+ *  A 40 respiravano, e l'Italia con 2881 locali sembrava la Norvegia con 13.)
+ *
+ *  Conseguenza voluta: a zoom medio (Italia, regionale) la griglia supera
+ *  MAX_DOTS e il tetto entra in funzione. Non è un ripiego — con un margine di
+ *  1.5 le celle tagliate per prime stanno fuori campo, quindi il taglio non si
+ *  vede. Vedi la nota su MAX_DOTS.
+ *
+ *  Resta una manopola da girare guardando la mappa: alzarla satura di più,
+ *  abbassarla ordina di più e informa di meno. */
+export const DOTS_PER_SCREEN_HEIGHT = 120;
 
-/** Tetto di marker montati nel regime pallini, dopo il diradamento. La griglia
- *  da sola già limita (~DOTS_ACROSS_SCREEN², cioè ~480 celle a schermo), questo
- *  è la cintura per le forme di viewport anomale (schermi molto allungati,
- *  mini-mappe). Oltre il tetto sopravvivono i più vicini al centro. */
+/** Tetto di marker montati nel regime pallini, dopo il diradamento.
+ *
+ *  Con la griglia tarata per far combaciare i pallini, alle fasce di zoom medie
+ *  (Italia, regionale) le celle popolate superano il tetto e questo diventa il
+ *  vincolo che decide davvero — non più solo una cintura.
+ *
+ *  Va bene, perché a quel punto si taglia dove non si vede: il diradamento
+ *  lavora su un'area 1.5 volte il viewport per lato, quindi le celle più
+ *  lontane dal centro — le prime a cadere — sono già fuori campo. In pratica
+ *  l'utente vede la griglia piena e il tetto lavora nel margine.
+ *
+ *  Il numero è la stima di quanti marker un telefono vecchio regge senza
+ *  scattare, ed è la cosa da rimisurare per prima sulla dev build del telefono
+ *  fisico: se regge, si può alzare; se scatta, si abbassa. */
 export const MAX_DOTS = 500;
 
 /** Mezzo-span del viewport di RENDER nel regime pallini, in multipli del delta
@@ -86,7 +120,7 @@ export function quantizedZoom(latitudeDelta: number, prev: number | null): numbe
  *  dal livello, mai dal delta corrente: è ciò che rende la griglia ancorata al
  *  mondo e non allo schermo. */
 export function gridCellDeg(zoom: number): number {
-  return 360 / Math.pow(2, zoom) / DOTS_ACROSS_SCREEN;
+  return 360 / Math.pow(2, zoom) / DOTS_PER_SCREEN_HEIGHT;
 }
 
 /** True se la coordinata cade nel viewport allargato di `margin` mezzi-delta. */

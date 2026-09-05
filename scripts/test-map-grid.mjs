@@ -18,7 +18,7 @@ import {
   thinPins,
   nearestToCenter,
   withinViewport,
-  DOTS_ACROSS_SCREEN,
+  DOTS_PER_SCREEN_HEIGHT,
 } from '../components/map/mapGrid.ts';
 
 let failed = 0;
@@ -44,7 +44,7 @@ check('salto di due livelli', quantizedZoom(2.7, 4), 7);
 check('delta zero non esplode', Number.isFinite(quantizedZoom(0, null)), true);
 
 // --- cella: dipende SOLO dal livello, mai dal delta corrente ---
-check('cella al livello 4', gridCellDeg(4) === 360 / 16 / DOTS_ACROSS_SCREEN, true);
+check('cella al livello 4', gridCellDeg(4) === 360 / 16 / DOTS_PER_SCREEN_HEIGHT, true);
 check('un livello in piu = cella meta', gridCellDeg(5) * 2 === gridCellDeg(4), true);
 
 // --- nextDotView: sotto soglia siamo nel regime pin ---
