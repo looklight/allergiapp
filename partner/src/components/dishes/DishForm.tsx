@@ -9,7 +9,10 @@ import { catalogLanguages, useDishes, type Dish, type DishTranslation } from '@/
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
-import { DISH_CATEGORIES } from '@/lib/categories';
+import { DISH_CATEGORIES, categoryName, visibleCategories } from '@/lib/categories';
+import { DISH_NOTES, noteName } from '@/lib/dishNotes';
+import { usePartnerProfile, useUpdatePartnerProfile, setHiddenCategories } from '@/lib/partnerProfile';
+import { currentUserId } from '@/lib/storage';
 import PhotoCropDialog from '../PhotoCropDialog';
 import {
   deleteDishPhoto,
@@ -72,6 +75,14 @@ export default function DishForm({
   const [daRitagliare, setDaRitagliare] = useState<File | null>(null);
   const [allergens, setAllergens] = useState<string[]>(initial?.allergens ?? []);
   const [dietTags, setDietTags] = useState<string[]>(initial?.dietTags ?? []);
+  const [notes, setNotes] = useState<string[]>(initial?.notes ?? []);
+  // La tendina delle categorie e il pannello per governarla: si apre da qui
+  // perché è qui che ci si accorge che una categoria manca o è di troppo,
+  // non in una pagina di impostazioni dove nessuno andrebbe mai.
+  const profile = usePartnerProfile();
+  const aggiornaProfilo = useUpdatePartnerProfile();
+  const [gestisci, setGestisci] = useState(false);
+  const nascoste = profile?.hiddenCategories ?? [];
   const [photoError, setPhotoError] = useState<'read' | 'size' | 'upload' | null>(null);
   // Le traduzioni si aggiungono qui, piatto per piatto: quasi tutti i
   // ristoratori scriveranno solo in italiano, e chi ne vuole un'altra la
@@ -166,7 +177,7 @@ export default function DishForm({
           così si vedono tutte insieme senza doverne cercare una fuori campo.
           Ritoccare la pill accesa la spegne = nessuna categoria. */}
       <div className="flex flex-wrap gap-1.5">
-        {DISH_CATEGORIES.map((cat) => {
+        {visibleCategories(nascoste, category === '' ? [] : [category]).map((cat) => {
           const selected = category === cat.code;
           return (
             <button
@@ -179,11 +190,68 @@ export default function DishForm({
                   : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
               }`}
             >
-              {cat[locale]}
+              {categoryName(cat.code, locale)}
             </button>
           );
         })}
+        <button
+          type="button"
+          onClick={() => setGestisci((v) => !v)}
+          className="shrink-0 rounded-full border border-dashed border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
+        >
+          {d.editor.manageCategories}
+        </button>
       </div>
+
+      {/* IL PANNELLO. Spuntare toglie dalla tendina, non dal mondo: la
+          categoria resta con lo stesso codice di tutti gli altri ristoranti,
+          e il giorno che serve si rimette. Una in uso su un piatto non si può
+          togliere di mezzo — sparirebbe sotto gli occhi di chi l'ha usata. */}
+      {gestisci && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <p className="mb-2 text-xs text-gray-500">{d.editor.manageCategoriesHint}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {DISH_CATEGORIES.map((cat) => {
+              const visibile = !nascoste.includes(cat.code);
+              return (
+                <button
+                  key={cat.code}
+                  type="button"
+                  onClick={async () => {
+                    const dopo = visibile
+                      ? [...nascoste, cat.code]
+                      : nascoste.filter((c) => c !== cat.code);
+                    // ottimista come tutto il resto del portale: la riga si
+                    // scrive dietro, la tendina cambia subito
+                    if (profile) aggiornaProfilo({ ...profile, hiddenCategories: dopo });
+                    const userId = await currentUserId();
+                    if (userId) await setHiddenCategories(userId, dopo);
+                  }}
+                  className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    visibile
+                      ? 'border-gray-400 bg-white text-gray-700'
+                      : 'border-gray-200 bg-gray-100 text-gray-400 line-through'
+                  }`}
+                >
+                  {categoryName(cat.code, locale)}
+                </button>
+              );
+            })}
+          </div>
+          {/* Quella che manca si chiede a noi: la traduciamo in quindici
+              lingue e ce l'hanno tutti. Un campo di testo libero qui avrebbe
+              dato al ristoratore una parola che al tavolo resta in italiano. */}
+          <p className="mt-2.5 text-xs text-gray-500">
+            {d.editor.missingCategory}{' '}
+            <a
+              href={`mailto:info@allergiapp.com?subject=${encodeURIComponent(d.editor.missingCategorySubject)}`}
+              className="underline underline-offset-2 hover:text-gray-900"
+            >
+              info@allergiapp.com
+            </a>
+          </p>
+        </div>
+      )}
 
       {/* Foto tonda in linea col nome, come una foto profilo */}
       <div className="flex items-center gap-3">
@@ -420,6 +488,55 @@ export default function DishForm({
         </div>
       </div>
 
+      {/* Le note: un asse diverso dalle compatibilità qui sopra. Quelle dicono
+          a chi va bene il piatto, queste dicono un fatto sul prodotto — e le
+          prime tre il ristoratore è tenuto a dirle comunque. Due gruppi, non
+          una fila sola: mescolare «devo dirlo» e «fa piacere saperlo» è il
+          modo per farsi spuntare una casella di legge per distrazione. */}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {d.editor.dishNotes}
+        </label>
+        <p className="mb-2 text-xs text-gray-500">{d.editor.dishNotesHint}</p>
+        {[true, false].map((legal) => (
+          <div key={String(legal)} className="mb-2 last:mb-0">
+            <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-gray-400">
+              {legal ? d.editor.dishNotesLegal : d.editor.dishNotesUseful}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {DISH_NOTES.filter((note) => note.legal === legal).map((note) => {
+                const selected = notes.includes(note.code);
+                return (
+                  <button
+                    key={note.code}
+                    type="button"
+                    onClick={() => toggle(notes, setNotes, note.code)}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      selected
+                        ? 'border-gray-900 bg-gray-900 text-white'
+                        : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4 shrink-0"
+                      aria-hidden
+                      dangerouslySetInnerHTML={{ __html: note.icon }}
+                    />
+                    {noteName(note.code, locale)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {children}
 
       </div>
@@ -456,6 +573,7 @@ export default function DishForm({
                 photoThumbUrl: photo.thumbUrl,
                 allergens,
                 dietTags,
+                notes,
                 // un blocco aperto e lasciato senza lingua non è una traduzione
                 translations: translations
                   .filter((t) => t.language !== '')

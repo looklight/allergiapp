@@ -28,6 +28,7 @@
 import { useState } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
 import { ALLERGENS, allergenName } from '@/lib/allergens';
+import { DISH_NOTES, noteName } from '@/lib/dishNotes';
 import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
@@ -79,11 +80,45 @@ export const NO_NEEDS: ViewerNeeds = { allergens: [], diets: [] };
 // del locale nuovo (v. SAMPLE_ALLERGENS in NewVenueDialog): servono a far
 // vedere com'è fatta la riga minuta sotto al piatto, che è la ragione per cui
 // questo menù esiste.
-const ESEMPIO: { allergens: string[]; diets: string[]; priceCents: number }[] = [
-  { allergens: ['gluten', 'eggs'], diets: [], priceCents: 1200 },
-  { allergens: ['crustaceans', 'mollusks'], diets: ['gluten_free'], priceCents: 1600 },
-  { allergens: ['milk', 'eggs', 'gluten'], diets: ['vegetarian'], priceCents: 600 },
+const ESEMPIO: { allergens: string[]; diets: string[]; notes: string[]; priceCents: number }[] = [
+  { allergens: ['gluten', 'eggs'], diets: [], notes: [], priceCents: 1200 },
+  // l'insalata di mare porta le due note che un piatto di pesce crudo ha
+  // davvero addosso: si vedono in scala prima di aver scritto un piatto
+  { allergens: ['crustaceans', 'mollusks'], diets: ['gluten_free'], notes: ['blast_frozen'], priceCents: 1600 },
+  { allergens: ['milk', 'eggs', 'gluten'], diets: ['vegetarian'], notes: ['raw'], priceCents: 600 },
 ];
+
+// Le note del piatto: icona E parola, mai la sola icona (v. la gemella in
+// landing/lib/render-menu.js). Un simbolo da solo, davanti a un cliente
+// straniero, è un indovinello; la parola è già tradotta e non costa niente.
+function NotePiatto({ codes, locale }: { codes: string[]; locale: string }) {
+  const note = DISH_NOTES.filter((n) => codes.includes(n.code));
+  if (note.length === 0) return null;
+  return (
+    <p className="menu-item-notes riga-minuta mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
+      {note.map((n) => (
+        <span key={n.code} className="inline-flex items-center gap-1">
+          <svg
+            // misura fissa: l'icona non cresce con la grandezza del testo, o
+            // su Ampia diventa un bollino
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0"
+            aria-hidden
+            dangerouslySetInnerHTML={{ __html: n.icon }}
+          />
+          {noteName(n.code, locale)}
+        </span>
+      ))}
+    </p>
+  );
+}
 
 // Perché una riga è stata messa in fondo. Vuoto = va bene per chi guarda.
 interface Esclusione {
@@ -201,6 +236,7 @@ export default function MenuPreview({
     photoThumbUrl: '',
     allergens: ESEMPIO[i].allergens,
     dietTags: ESEMPIO[i].diets,
+    notes: ESEMPIO[i].notes,
     translations: [],
   }));
   // Vuoto = non c'è nessun piatto e nessun blocco con del testo. Scritto qui
@@ -968,6 +1004,10 @@ function Riga({
               Col filtro acceso il motivo prende il posto dell'elenco intero:
               chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
               piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
+          {/* Le note stanno SOPRA la riga degli allergeni e non spariscono col
+              filtro acceso: «surgelato» va detto anche al piatto che il
+              cliente ha appena escluso, perché potrebbe rimetterlo dentro. */}
+          <NotePiatto codes={dish.notes} locale={locale} />
           {fuori ? (
             <p className="menu-item-reason riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
               {perche.contiene.length > 0 &&

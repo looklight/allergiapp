@@ -38,6 +38,8 @@ const renderSito = leggi(sito, 'lib/render-menu.js');
 const cssPortale = leggi(portale, 'src/app/globals.css');
 const venues = leggi(portale, 'src/lib/venues.ts');
 const brand = leggi(portale, 'src/lib/menuBrand.ts');
+const noteSito = existsSync(join(sito, 'lib/dish-notes.js')) ? leggi(sito, 'lib/dish-notes.js') : null;
+const notePortale = leggi(portale, 'src/lib/dishNotes.ts');
 const anteprima =
   leggi(portale, 'src/components/menus/MenuPreview.tsx') +
   leggi(portale, 'src/components/menus/DishDetailSheet.tsx');
@@ -204,12 +206,49 @@ for (const classe of RUOLI) {
   }
 }
 
+// ── 5. Le note del piatto: codici, disegni e quindici lingue ──────
+// Queste divergono in modo peggiore delle misure: il ristoratore spunta
+// «Abbattuto» nella maschera e al tavolo il cliente legge un'altra parola —
+// o niente, se il codice di là non esiste. Si confrontano i codici, il
+// disegno dell'icona e OGNI lingua, perché una traduzione aggiunta solo di
+// qua non si vedrebbe mai in sala.
+function noteDa(testo) {
+  const fuori = {};
+  // ogni voce comincia da `code: '…'` e finisce all'icona
+  const blocchi = testo.matchAll(/code: '([a-z_]+)',[\s\S]*?names: \{([\s\S]*?)\},[\s\S]*?icon: '([^']*)'/g);
+  for (const [, code, nomi, icon] of blocchi) {
+    const lingue = {};
+    for (const [, l, v] of nomi.matchAll(/(\w+): '((?:[^'\\]|\\.)*)'/g)) lingue[l] = v;
+    fuori[code] = { lingue, icon };
+  }
+  return fuori;
+}
+if (noteSito === null) {
+  nota('Note del piatto', 'landing/lib/dish-notes.js non esiste: al tavolo le note non si vedono');
+} else {
+  const a = noteDa(notePortale);
+  const b = noteDa(noteSito);
+  for (const code of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (!a[code] || !b[code]) {
+      nota('Note del piatto', `${code}: presente solo ${a[code] ? 'nel portale' : 'sul sito'}`);
+      continue;
+    }
+    if (a[code].icon !== b[code].icon) nota(`Icona di «${code}»`, 'i due disegni non coincidono');
+    for (const l of new Set([...Object.keys(a[code].lingue), ...Object.keys(b[code].lingue)])) {
+      if (a[code].lingue[l] !== b[code].lingue[l]) {
+        nota(`Nota «${code}» in ${l}`, `portale ${a[code].lingue[l] ?? '—'} · sito ${b[code].lingue[l] ?? '—'}`);
+      }
+    }
+  }
+}
+
 // ── L'esito ───────────────────────────────────────────────────────
 const guardato = [
   'i fattori di grandezza e interlinea',
   'la tavolozza dei colori',
   `${condivise.length} regole CSS condivise`,
   `le misure di ${RUOLI.length} ruoli della riga del piatto`,
+  'le note del piatto (codici, disegni, quindici lingue)',
 ].join(', ');
 
 if (problemi.length === 0) {

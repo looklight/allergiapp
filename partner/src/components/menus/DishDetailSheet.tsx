@@ -34,6 +34,7 @@ import { ALLERGENS } from '@/lib/allergens';
 import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
 import type { AllergenDisplay } from '@/lib/venues';
 import { dietNeedName } from '@/lib/diets';
+import { DISH_NOTES, noteName } from '@/lib/dishNotes';
 import { displayPrice, type MenuItem } from '@/lib/menus';
 import type { Dish } from '@/lib/dishes';
 import type { ViewerNeeds } from './MenuPreview';
@@ -199,6 +200,40 @@ export default function DishDetailSheet({
               </div>
             )}
           </div>
+
+          {/* Le note PRIMA delle compatibilità, e neutre invece che verdi: il
+              verde dice «va bene per te», e «contiene alcol» non è una buona
+              notizia per nessuno — è solo una cosa da sapere. */}
+          {DISH_NOTES.some((n) => dish.notes.includes(n.code)) && (
+            <div className="mt-3">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                {d.menuPublic.dishDetailNotesTitle}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {DISH_NOTES.filter((n) => dish.notes.includes(n.code)).map((n) => (
+                  <span
+                    key={n.code}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[calc(13px*var(--ms))] font-medium text-gray-600"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="shrink-0"
+                      aria-hidden
+                      dangerouslySetInnerHTML={{ __html: n.icon }}
+                    />
+                    {noteName(n.code, locale)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {dish.dietTags.length > 0 && (
             <div className="mt-3">

@@ -8,6 +8,7 @@ import { supabase } from './supabase';
 import { currentUserId, reportError, useRemoteList } from './storage';
 import { write } from './saveState';
 import { deleteDishPhoto } from './photos';
+import { sortNotes } from './dishNotes';
 import type { Venue, VenueDraft } from './venues';
 
 export interface DishTranslation {
@@ -25,6 +26,7 @@ export interface Dish {
   photoThumbUrl: string; // miniatura per le liste; vuota sulle foto vecchie
   allergens: string[]; // codici da allergens.code (presenti nel piatto)
   dietTags: string[]; // codici da DIETS (compatibilità dichiarate)
+  notes: string[]; // codici da DISH_NOTES: fatti sul piatto, non compatibilità
   translations: DishTranslation[];
 }
 
@@ -43,6 +45,7 @@ function toDish(row: any): Dish {
     photoThumbUrl: row.photo_thumb_url ?? '',
     allergens: row.declared_allergens ?? [],
     dietTags: row.diet_tags ?? [],
+    notes: sortNotes(row.notes ?? []),
     translations: (row.partner_dish_translations ?? []).map((t: any) => ({
       language: t.language,
       name: t.name ?? '',
@@ -62,6 +65,7 @@ function fromDish(data: Omit<Dish, 'id'>) {
     photo_thumb_url: data.photoThumbUrl || null,
     declared_allergens: data.allergens,
     diet_tags: data.dietTags,
+    notes: sortNotes(data.notes),
   };
 }
 
