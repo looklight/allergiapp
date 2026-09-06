@@ -460,7 +460,7 @@ const it = {
     // punto in cui è scritto che le icone dicono cosa il piatto CONTIENE e
     // non di cosa è privo — e la spiga sbarrata, in mezzo mondo, vuol dire
     // l'opposto. Non accorciarla in «Cosa vogliono dire».
-    allergenLegendTitle: 'Le icone dicono cosa contiene ogni piatto',
+    allergenLegendTitle: 'Cosa vogliono dire le icone',
     summaryAllergenIcons: 'allergeni a icone',
     groupIdentity: 'L’identità',
     groupText: 'Il testo',

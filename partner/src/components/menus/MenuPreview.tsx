@@ -91,13 +91,32 @@ const ESEMPIO: { allergens: string[]; diets: string[]; notes: string[]; priceCen
 // Le note del piatto: icona E parola, mai la sola icona (v. la gemella in
 // landing/lib/render-menu.js). Un simbolo da solo, davanti a un cliente
 // straniero, è un indovinello; la parola è già tradotta e non costa niente.
-function NotePiatto({ codes, locale }: { codes: string[]; locale: string }) {
+function NotePiatto({
+  codes,
+  locale,
+  display,
+}: {
+  codes: string[];
+  locale: string;
+  display: AllergenDisplay;
+}) {
   const note = DISH_NOTES.filter((n) => codes.includes(n.code));
   if (note.length === 0) return null;
+  // A ICONE le note seguono gli allergeni: se il ristoratore ha scelto quella
+  // modalità per la sua carta, una riga mezza a simboli e mezza a parole
+  // sarebbe la peggiore delle due. Il nome resta per chi ascolta la pagina, e
+  // per tutti c'è la legenda in fondo.
+  const soloIcona = display === 'icon';
   return (
     <p className="menu-item-notes riga-minuta mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
       {note.map((n) => (
-        <span key={n.code} className="inline-flex items-center gap-1">
+        <span
+          key={n.code}
+          className="inline-flex items-center gap-1"
+          {...(soloIcona
+            ? { role: 'img', 'aria-label': noteName(n.code, locale) }
+            : {})}
+        >
           <svg
             // misura fissa: l'icona non cresce con la grandezza del testo, o
             // su Ampia diventa un bollino
@@ -113,7 +132,7 @@ function NotePiatto({ codes, locale }: { codes: string[]; locale: string }) {
             aria-hidden
             dangerouslySetInnerHTML={{ __html: n.icon }}
           />
-          {noteName(n.code, locale)}
+          {soloIcona ? '' : noteName(n.code, locale)}
         </span>
       ))}
     </p>
@@ -210,6 +229,11 @@ export default function MenuPreview({
   // conosce un simbolo la apre quando gli serve.
   const [legenda, setLegenda] = useState(false);
   const dishById = (id: string) => dishes.find((dish) => dish.id === id);
+  // Le note usate DAVVERO in questa carta: la legenda ne elenca sei sempre
+  // sarebbe un muro in un menù che ne dichiara una (stessa regola degli
+  // allergeni, Tema 2).
+  const noteInCarta = (mostrati: Dish[]) =>
+    DISH_NOTES.filter((n) => mostrati.some((dish) => dish.notes.includes(n.code)));
   // Il piatto aperto nel foglio di dettaglio: sta qui e non nella pagina che
   // usa MenuPreview, perché è uno stato di QUESTA schermata (il telefono
   // simulato), non dell'editor che le sta intorno.
@@ -655,7 +679,7 @@ export default function MenuPreview({
             Elenca SOLO gli allergeni che questo menù usa davvero, come le
             pastiglie del filtro (Tema 2): una legenda di quindici voci in un
             menù che ne dichiara tre è un muro. */}
-        {allergenDisplay === 'icon' && codiciInCarta.length > 0 && (
+        {allergenDisplay === 'icon' && (codiciInCarta.length > 0 || noteInCarta(mostrati).length > 0) && (
           <div className="mt-2 border-t border-gray-100 pt-3">
             <button
               onClick={() => setLegenda((v) => !v)}
@@ -672,6 +696,28 @@ export default function MenuPreview({
                       <IconaAllergene code={code} nome={allergenName(code, locale)} decorativa />
                     )}
                     <span className="min-w-0 truncate">{allergenName(code, locale)}</span>
+                  </li>
+                ))}
+                {/* Le note DOPO gli allergeni e nella stessa lista: al tavolo
+                    il cliente non cerca «la legenda delle note», cerca cosa
+                    vuol dire quel simbolo. Due elenchi separati sarebbero due
+                    posti in cui guardare. */}
+                {noteInCarta(mostrati).map((n) => (
+                  <li key={n.code} className="riga-minuta flex items-center gap-1.5 text-gray-500">
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="shrink-0"
+                      aria-hidden
+                      dangerouslySetInnerHTML={{ __html: n.icon }}
+                    />
+                    <span className="min-w-0 truncate">{noteName(n.code, locale)}</span>
                   </li>
                 ))}
               </ul>
@@ -1007,7 +1053,7 @@ function Riga({
           {/* Le note stanno SOPRA la riga degli allergeni e non spariscono col
               filtro acceso: «surgelato» va detto anche al piatto che il
               cliente ha appena escluso, perché potrebbe rimetterlo dentro. */}
-          <NotePiatto codes={dish.notes} locale={locale} />
+          <NotePiatto codes={dish.notes} locale={locale} display={allergenDisplay} />
           {fuori ? (
             <p className="menu-item-reason riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
               {perche.contiene.length > 0 &&

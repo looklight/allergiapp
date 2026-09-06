@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { allergenName } from '@/lib/allergens';
+import { DISH_NOTES, noteName } from '@/lib/dishNotes';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { dietName, dietNeedName } from '@/lib/diets';
 import { deliveryProviderName } from '@/lib/providers';
@@ -249,6 +250,42 @@ function GrayPill({ text }: { text: string }) {
   );
 }
 
+// LE NOTE DEL PIATTO, e stanno IN FONDO. Non sono compatibilità — non dicono
+// a chi va bene il piatto — e non sono allergeni: sono un fatto sul prodotto,
+// quindi vengono dopo tutto il resto invece di mescolarsi.
+// Grigie e non verdi: il verde dice «va bene per te», e «contiene alcol» non
+// è una buona notizia per nessuno.
+function NotePill({ code }: { code: string }) {
+  const { locale } = useI18n();
+  const nota = DISH_NOTES.find((n) => n.code === code);
+  if (!nota) return null;
+  return (
+    <span
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 12,
+        backgroundColor: '#F5F5F5', border: '1px solid #E0E0E0', padding: '2px 8px',
+      }}
+    >
+      <svg
+        width={12}
+        height={12}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#616161"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ flexShrink: 0 }}
+        aria-hidden
+        dangerouslySetInnerHTML={{ __html: nota.icon }}
+      />
+      <span style={{ fontSize: 11, fontWeight: 500, color: '#616161' }}>
+        {noteName(code, locale)}
+      </span>
+    </span>
+  );
+}
+
 // Le pill sotto un piatto. Senza visitatore simulato: "Contiene: …" +
 // tag compatibilità dichiarati. Con visitatore: ambra se contiene le sue
 // allergie, verde "Senza …" se no, e per ogni sua dieta verde (dichiarata)
@@ -274,6 +311,9 @@ function DishPills({ dish, viewer }: { dish: Dish; viewer: ViewerNeeds }) {
         )}
         {dish.dietTags.map((code) => (
           <GreenPill key={code} text={dietName(code, locale)} />
+        ))}
+        {dish.notes.map((code) => (
+          <NotePill key={code} code={code} />
         ))}
       </>
     );
@@ -304,6 +344,11 @@ function DishPills({ dish, viewer }: { dish: Dish; viewer: ViewerNeeds }) {
           <GrayPill key={code} text={`${dietNeedName(code, locale)}: ${d.preview.notDeclared}`} />
         )
       )}
+      {/* Anche col visitatore acceso: «surgelato» vale per chiunque, non è
+          una risposta a un'esigenza dichiarata. */}
+      {dish.notes.map((code) => (
+        <NotePill key={code} code={code} />
+      ))}
     </>
   );
 }

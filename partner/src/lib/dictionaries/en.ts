@@ -352,7 +352,7 @@ const en: typeof it = {
     allergenDisplays: { text: 'In words', icon: 'As icons' },
     allergenDisplayHint:
       'The key sits at the foot of the card. Open a dish and they are always spelled out.',
-    allergenLegendTitle: 'The icons show what each dish contains',
+    allergenLegendTitle: 'What the icons mean',
     summaryAllergenIcons: 'allergens as icons',
     groupIdentity: 'Identity',
     groupText: 'Type',
