@@ -40,6 +40,8 @@ const venues = leggi(portale, 'src/lib/venues.ts');
 const brand = leggi(portale, 'src/lib/menuBrand.ts');
 const noteSito = existsSync(join(sito, 'lib/dish-notes.js')) ? leggi(sito, 'lib/dish-notes.js') : null;
 const notePortale = leggi(portale, 'src/lib/dishNotes.ts');
+const iconeSito = existsSync(join(sito, 'lib/allergen-icons.js')) ? leggi(sito, 'lib/allergen-icons.js') : null;
+const iconePortale = leggi(portale, 'src/lib/allergenIcons.ts');
 const anteprima =
   leggi(portale, 'src/components/menus/MenuPreview.tsx') +
   leggi(portale, 'src/components/menus/DishDetailSheet.tsx');
@@ -242,6 +244,30 @@ if (noteSito === null) {
   }
 }
 
+// ── 6. I pittogrammi degli allergeni ─────────────────────────────
+// Da quando il dettaglio del piatto li mostra SEMPRE (non solo in modalità a
+// icone), questi disegni li vede ogni cliente che apre un piatto: se
+// divergessero, il ristoratore approverebbe una spiga e al tavolo ne
+// comparirebbe un'altra.
+function disegniDa(testo) {
+  const fuori = {};
+  for (const [, code, d] of testo.matchAll(/(\w+):\s*\n?\s*'((?:[^'\\]|\\.)*)'/g)) {
+    if (d.includes('<path') || d.includes('<circle')) fuori[code] = d.replace(/\\'/g, "'");
+  }
+  return fuori;
+}
+if (iconeSito === null) {
+  nota('Icone degli allergeni', 'landing/lib/allergen-icons.js non esiste: al tavolo le pastiglie restano senza disegno');
+} else {
+  const a = disegniDa(iconePortale);
+  const b = disegniDa(iconeSito);
+  for (const code of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (a[code] !== b[code]) {
+      nota(`Icona dell'allergene «${code}»`, !a[code] ? 'solo sul sito' : !b[code] ? 'solo nel portale' : 'i due disegni non coincidono');
+    }
+  }
+}
+
 // ── L'esito ───────────────────────────────────────────────────────
 const guardato = [
   'i fattori di grandezza e interlinea',
@@ -249,6 +275,7 @@ const guardato = [
   `${condivise.length} regole CSS condivise`,
   `le misure di ${RUOLI.length} ruoli della riga del piatto`,
   'le note del piatto (codici, disegni, quindici lingue)',
+  'i pittogrammi dei 15 allergeni',
 ].join(', ');
 
 if (problemi.length === 0) {

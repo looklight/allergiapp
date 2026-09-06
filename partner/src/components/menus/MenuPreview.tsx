@@ -780,7 +780,6 @@ export default function MenuPreview({
           dish={detail.dish}
           suffisso={suffisso}
           showPhoto={showPhotos}
-          allergenDisplay={allergenDisplay}
           currency={menu.currency}
           needs={needs}
           onPrev={primaDi === null ? null : () => setDetail(primaDi)}
@@ -1123,11 +1122,16 @@ function Riga({
                     )
                   : dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
                 {noteInLinea && dish.allergens.length > 0 && (
-                  // Il trattino separa le due famiglie. Serve solo a icone: a
-                  // parole le separano già le parole.
-                  <span aria-hidden className="px-0.5 text-gray-300">
-                    –
-                  </span>
+                  // IL TRATTINO È DISEGNATO, non scritto. Un trattino
+                  // tipografico segue la linea di base del carattere — e il
+                  // carattere qui lo sceglie il ristoratore fra quattro — così
+                  // finiva più in alto del centro delle icone e più sottile
+                  // del loro tratto. Un filo centrato dal flex sta sempre in
+                  // mezzo e pesa quanto quello che separa.
+                  <span
+                    aria-hidden
+                    className="mx-1 h-[1.5px] w-2.5 shrink-0 rounded-full bg-gray-300"
+                  />
                 )}
                 {noteInLinea && <IconeNote codes={dish.notes} locale={locale} />}
               </p>

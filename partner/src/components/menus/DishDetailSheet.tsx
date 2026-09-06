@@ -44,7 +44,6 @@ export default function DishDetailSheet({
   dish,
   suffisso,
   showPhoto,
-  allergenDisplay,
   currency,
   needs,
   onPrev,
@@ -60,13 +59,6 @@ export default function DishDetailSheet({
   // una regola in più da spiegare, e chi le nasconde perché sono disomogenee
   // non le vuole nemmeno aprendo il piatto.
   showPhoto: boolean;
-  // Come si legge la riga degli allergeni in LISTA. Qui il nome c'è sempre —
-  // il dettaglio è la superficie della precisione — ma se al tavolo la carta
-  // parla per simboli, accanto al nome ci va anche il suo: aprendo un piatto
-  // si impara cosa vuol dire quel disegno, ed è il posto in cui uno lo
-  // cerca. In modalità «a parole» non compare: introdurrebbe simboli che in
-  // quel menù non esistono.
-  allergenDisplay: AllergenDisplay;
   currency: string;
   needs: ViewerNeeds;
   // I due vicini nella carta, o null ai capi. Le freccine non spariscono mai:
@@ -175,7 +167,13 @@ export default function DishDetailSheet({
                           : 'border-gray-200 bg-gray-50 text-gray-600'
                       }`}
                     >
-                      {allergenDisplay === 'icon' && hasAllergenIcon(a.code) && (
+                      {/* L'ICONA C'È SEMPRE, non solo in modalità a icone: qui
+                          accanto c'è il nome scritto, quindi il pittogramma
+                          non deve dire la cosa da solo — aiuta a
+                          riconoscerla, e mette queste pastiglie sullo stesso
+                          piede di quelle delle note, che l'icona ce l'avevano
+                          già (scelta dell'utente, 2026-09-06). */}
+                      {hasAllergenIcon(a.code) && (
                         <svg
                           // decorativa: il nome è scritto qui accanto, e
                           // annunciarlo due volte a chi ascolta la pagina è
