@@ -1,6 +1,7 @@
 -- Migration 711: le manopole dell'aspetto del menù al tavolo
 --                (foto tonde o squadrate, interlinea, impaginazione,
---                 separatore fra i piatti)
+--                 separatore fra i piatti, allergeni a parole o a icone)
+--                 + il passeggero: 'social' fra i kind di partner_links
 --
 -- STATO: DA APPLICARE a mano via SQL editor, dopo la 710 (il
 -- tracking locale è fermo alla 045: questa, come tutte le 046+,
@@ -34,10 +35,10 @@
 -- stessa voce va in VenueAppearance (partner/src/lib/venues.ts).
 --
 -- ------------------------------------------------------------
--- QUATTRO MANOPOLE IN UNA MIGRATION SOLA, e non è pigrizia: sono
+-- CINQUE MANOPOLE IN UNA MIGRATION SOLA, e non è pigrizia: sono
 -- state chieste una dopo l'altra mentre questa migration era già
 -- scritta e non ancora applicata. Aprirne una nuova per ognuna
--- avrebbe voluto dire quattro esecuzioni a mano al posto di una.
+-- avrebbe voluto dire cinque esecuzioni a mano al posto di una.
 -- Sono indipendenti fra loro e nessuna sa delle altre: stanno
 -- insieme solo perché si applicano insieme.
 BEGIN;
@@ -114,8 +115,127 @@ alter table partner_venues
 comment on column partner_venues.dish_separator is
   'Cosa separa un piatto dall''altro nel menù al tavolo: none, rule (filetto), ornament. Vale in tutt''e due le impaginazioni.';
 
+-- GLI ALLERGENI A PAROLE O A ICONE. È la riga «Contiene: glutine,
+-- uova» sotto ogni piatto, e le icone al posto dell'elenco sono
+-- prassi comune nelle carte dei ristoranti.
+--
+-- ⚠️ IL DATABASE NON SA NIENTE DEI DISEGNI: qui c'è solo un codice.
+-- I pittogrammi sono SVG nel repo (app, portale, sito) e si possono
+-- ridisegnare, sostituire o rifare da capo senza nessuna migration.
+-- Quello che questa colonna fissa è il VOCABOLARIO — 'text' e
+-- 'icon' — e un terzo modo, il giorno che servisse, costerebbe un
+-- ALTER del vincolo, cioè un'altra esecuzione a mano.
+--
+-- ⚠️ TRE CONDIZIONI, da rispettare QUANDO SI COSTRUISCE LA RESA.
+-- Sono la ragione per cui questa manopola è ammessa mentre
+-- «nascondere gli allergeni» non lo sarà mai (Tema 23): cambia come
+-- si legge la riga, non se c'è.
+--
+--   1. LA POLARITÀ VA DETTA. Un simbolo da solo non dice se il piatto
+--      contiene o è SENZA — la spiga è usata da moltissimi menù,
+--      sbarrata, proprio per «senza glutine».
+--      ⚠️ AGGIORNATO IL 2026-09-06, a migration già applicata: la
+--      parola «Contiene» su OGNI riga è stata tolta (scelta
+--      dell'utente: a icone la riga resta pulita). Il problema che
+--      risolveva resta vero, e la risposta adesso è dirlo UNA VOLTA
+--      in fondo alla carta — «Le icone dicono cosa contiene ogni
+--      piatto», che è anche il comando che apre la legenda. Se un
+--      giorno quella riga sparisce, la parola torna sulle righe.
+--   2. LA LEGENDA È PARTE DELLA MODALITÀ, non una voce a parte da
+--      accendere: con 'icon' la pagina al tavolo deve poterla
+--      aprire (premendo le icone o la riga). E ogni icona porta il
+--      suo nome come testo alternativo, o chi legge lo schermo con
+--      la voce perde la riga per intero. I 15 nomi ci sono già in
+--      due lingue (landing/lib/labels.js, partner/src/lib/allergens.ts).
+--   3. NEL POPUP DEL PIATTO gli allergeni restano A PAROLE. La
+--      lista è la superficie della densità, il dettaglio quella
+--      della precisione: chi apre un piatto ha già deciso di
+--      leggere. Vale anche per la riga del MOTIVO col filtro acceso
+--      («escluso perché contiene…»): è una frase, non un elenco, e
+--      una frase non si scrive a icone.
+--
+-- Vale il pavimento di sempre: con 'compact' le icone non scendono
+-- sotto il leggibile, esattamente come il testo che sostituiscono.
+alter table partner_venues
+  add column allergen_display text not null default 'text'
+  check (allergen_display in ('text', 'icon'));
+
+comment on column partner_venues.allergen_display is
+  'Come si legge la riga degli allergeni nel menù al tavolo: text (elenco di parole, com''è sempre stato) o icon (pittogrammi con legenda apribile). Il prefisso «Contiene» resta in tutt''e due, e nel dettaglio del piatto gli allergeni sono sempre a parole.';
+
 -- ------------------------------------------------------------
--- 1. L'ASPETTO, con quattro voci in più
+-- UN PASSEGGERO CHE NON È UNA MANOPOLA D'ASPETTO: I LINK SOCIAL
+--
+-- `partner_links.kind` ammette booking, delivery, menu, website e
+-- other, ma non 'social' — e i social sono l'unico link che ha
+-- senso in fondo al menù al tavolo (chi è seduto non prenota e non
+-- ordina su Glovo). Non c'entra niente con l'aspetto: viaggia qui
+-- solo perché questa migration non è ancora applicata, e un ALTER
+-- di un vincolo da solo non vale un'esecuzione a mano nel SQL
+-- editor. Se un giorno le due cose si separassero, questa riga si
+-- sposta senza conseguenze: nessun'altra la guarda.
+--
+-- Nessuna colonna nuova: 'social' riusa `provider` (il codice del
+-- servizio — instagram, facebook, tiktok, tripadvisor — che è già
+-- quello con cui il delivery sceglie il logo da mostrare) e
+-- `label` per il nome scritto a mano. Il vincolo
+-- partner_links_has_target vale anche per lui: senza indirizzo la
+-- riga non ha motivo di esistere.
+--
+-- ⚠️ IL PORTALE E IL SITO NON LO SANNO ANCORA. Ammettere un valore
+-- non costruisce niente: finché la fila non è disegnata, righe
+-- 'social' non ne scrive nessuno. E quando si disegnerà, il
+-- controllo dello SCHEMA dell'indirizzo esce insieme alla fila e
+-- non dopo — normalizeUrl completa lo schema quando manca ma
+-- lascia passare quello che c'è, 'javascript:' compreso, e in una
+-- pagina servita a chiunque inquadri il QR quello diventa un href
+-- scritto dal ristoratore (v. TODO.md).
+-- ⚠️ IL VINCOLO SI CERCA, NON SI CHIAMA PER NOME. Nella 700 è nato
+-- inline sulla colonna, quindi il nome gliel'ha dato Postgres
+-- (`partner_links_kind_check`, per convenzione). Un `drop
+-- constraint if exists` col nome sbagliato NON fallisce: non
+-- trova niente, tira dritto, e il vincolo vecchio resta a
+-- rifiutare 'social' — lo stesso genere di successo apparente
+-- costato due giorni sulla 085. Qui il nome si legge da pg_constraint
+-- (la colonna, non la parola) e se non si trova nulla la
+-- migration si ferma.
+do $$
+declare
+  nome text;
+begin
+  select con.conname
+    into nome
+    from pg_constraint con
+    join pg_class rel on rel.oid = con.conrelid
+    join pg_namespace nsp on nsp.oid = rel.relnamespace
+   where nsp.nspname = 'public'
+     and rel.relname = 'partner_links'
+     and con.contype = 'c'
+     -- SOLO la colonna kind, e sola: `partner_links_has_target`
+     -- nomina anche lui `kind` (dice che una prenotazione può
+     -- avere il telefono al posto dell'indirizzo), ma guarda tre
+     -- colonne. Cercare la parola avrebbe potuto sganciare quello.
+     and con.conkey = array[
+           (select att.attnum
+              from pg_attribute att
+             where att.attrelid = rel.oid
+               and att.attname = 'kind')
+         ]::smallint[];
+
+  if nome is null then
+    raise exception 'partner_links: vincolo su kind non trovato, la 711 si ferma';
+  end if;
+
+  execute format('alter table partner_links drop constraint %I', nome);
+end;
+$$;
+
+alter table partner_links
+  add constraint partner_links_kind_check
+  check (kind in ('booking', 'delivery', 'menu', 'website', 'other', 'social'));
+
+-- ------------------------------------------------------------
+-- 1. L'ASPETTO, con cinque voci in più
 -- Le chiavi restano PIATTE come nello scatto (v. 710): questa si
 -- chiama 'dishPhotoShape' e sta accanto a 'showPhotos', che è il
 -- campo con cui lavora in coppia.
@@ -136,7 +256,8 @@ as $$
            'textScale', v.text_scale,
            'lineHeight', v.line_height,
            'menuLayout', v.menu_layout,
-           'dishSeparator', v.dish_separator
+           'dishSeparator', v.dish_separator,
+           'allergenDisplay', v.allergen_display
          )
     from partner_venues v
    where v.id = p_venue_id;
@@ -167,7 +288,8 @@ as $$
            'textScale', 'normal',
            'lineHeight', 'normal',
            'menuLayout', 'row',
-           'dishSeparator', 'none'
+           'dishSeparator', 'none',
+           'allergenDisplay', 'text'
          );
 $$;
 
@@ -215,7 +337,8 @@ begin
          text_scale = in_sala->>'textScale',
          line_height = in_sala->>'lineHeight',
          menu_layout = in_sala->>'menuLayout',
-         dish_separator = in_sala->>'dishSeparator'
+         dish_separator = in_sala->>'dishSeparator',
+         allergen_display = in_sala->>'allergenDisplay'
    where id = p_venue_id
      and owner_user_id = auth.uid();
 
@@ -227,3 +350,40 @@ revoke all on function revert_appearance(uuid) from public;
 grant execute on function revert_appearance(uuid) to authenticated;
 
 COMMIT;
+
+-- ------------------------------------------------------------
+-- DOPO L'ESECUZIONE, VERIFICARE. Non è pignoleria: il 2026-09-05,
+-- sulla 085, l'editor SQL ha risposto "success" due volte senza
+-- installare niente, e per due giri si è misurata una funzione mai
+-- cambiata. Qui le funzioni si sostituiscono con CREATE OR REPLACE
+-- e non con DROP+CREATE — che è il caso in cui il guasto è stato
+-- visto — ma il costo di guardare è una query.
+--
+--   -- le cinque colonne ci sono?
+--   select column_name, column_default
+--     from information_schema.columns
+--    where table_name = 'partner_venues'
+--      and column_name in ('dish_photo_shape', 'line_height',
+--                          'menu_layout', 'dish_separator',
+--                          'allergen_display');
+--
+--   -- il vincolo ammette 'social'?
+--   select pg_get_constraintdef(con.oid)
+--     from pg_constraint con
+--     join pg_class rel on rel.oid = con.conrelid
+--    where rel.relname = 'partner_links' and con.contype = 'c';
+--
+--   -- le funzioni sono DAVVERO quelle nuove?
+--   select venue_appearance_defaults() ? 'allergenDisplay';   -- t
+--   select pg_get_functiondef(p.oid) like '%allergenDisplay%'
+--     from pg_proc p
+--     join pg_namespace n on n.oid = p.pronamespace
+--    where n.nspname = 'public'
+--      and p.proname in ('venue_appearance', 'revert_appearance');  -- t, t
+--
+-- E SUBITO DOPO, nel portale: `APPEARANCE_711 = true` in
+-- partner/src/lib/features.ts, rilascio, e ogni manopola accesa
+-- una volta — sono pezzi di codice mai eseguiti che diventano veri
+-- insieme. `allergen_display` e 'social' invece non hanno ancora
+-- nessuna interfaccia: restano colonne dormienti, come cover_url
+-- nella 709.
