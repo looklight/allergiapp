@@ -12,16 +12,22 @@
 // PIÙ MENÙ PER LO STESSO LOCALE (carta, pranzo, bevande: al tavolo sono le
 // linguette in cima alla pagina).
 //
-// Spento il 2026-09-01: in questa fase un locale ha UN menù. Il modello dati
-// resta multiplo — `partner_menus` ha una riga per menù e nessun vincolo che
-// lo impedisca — perché più menù è una delle voci che si pagheranno
-// (DIGITAL_MENU.md, "Il confine del freemium"): un vincolo sul database
-// sarebbe stato la cosa difficile da togliere.
+// ⚠️ RIACCESO il 2026-09-06, insieme alla migration 714 che porta in sala
+// tutte le carte attive (prima build_public_menu ne prendeva una sola, quindi
+// questo interruttore da solo non avrebbe cambiato niente al tavolo).
 //
-// Con l'interruttore spento non si può CREARE un secondo menù, ma quelli che
-// esistono già restano visibili e apribili: spegnere una funzione non è
-// nascondere il lavoro di chi l'aveva usata.
-export const MULTI_MENU: boolean = false;
+// Era spento dal 01/09 non per una ragione tecnica ma di listino: più menù è
+// una delle voci che si sarebbero pagate (DIGITAL_MENU.md, "Il confine del
+// freemium"). Decisione dell'utente: si accende per tutti adesso e la
+// divisione free/premium si disegna dopo, con i ristoratori davanti.
+// ⚠️ Chi ci tornerà sopra sappia che togliere una cosa già data costa più che
+// non averla mai data: se il confine tornerà qui, serve un piano per chi nel
+// frattempo si è fatto due carte.
+//
+// L'indirizzo resta UNO: il QR è incollato al tavolo e non cambia a
+// mezzogiorno, quindi le carte sono linguette dentro la stessa pagina, non
+// pagine diverse (Tema 13).
+export const MULTI_MENU: boolean = true;
 
 // LE QUATTRO MANOPOLE DELLA MIGRATION 711: forma delle miniature dei piatti
 // (tonde o squadrate), interlinea, impaginazione (a riga / a blocco) e segno

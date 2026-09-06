@@ -20,7 +20,7 @@ export default function MenusPage() {
   const { d } = useI18n();
   const router = useRouter();
   const { dishes } = useDishes();
-  const { menus, create, remove, rename, restore } = useMenus();
+  const { menus, create, remove, rename, setActive, restore } = useMenus();
   const { venues, create: createVenue } = useVenues();
   const [deleting, setDeleting] = useState<Menu | null>(null);
   // Menù appena eliminato: finché il toast è in piedi si può rimettere.
@@ -206,9 +206,9 @@ export default function MenusPage() {
                 {venue.venueName.trim() || d.home.unnamed}
               </h2>
 
-              {menus
-                .filter((menu) => menu.venueId === venue.id)
-                .map((menu) => {
+              {(() => {
+                const delloStessoLocale = menus.filter((menu) => menu.venueId === venue.id);
+                return delloStessoLocale.map((menu) => {
                   const piatti = menuItems(menu).length;
                   const sezioni = menu.sections.length;
                   return (
@@ -230,6 +230,25 @@ export default function MenusPage() {
                           · {menu.currency}
                         </p>
                       </div>
+                      {/* IN SALA O DA PARTE. Si vede solo da due carte in su:
+                          con una sola, spegnerla vorrebbe dire togliere il menù
+                          dal tavolo — e per quello c'è il ritiro, che è un
+                          gesto diverso e sta nell'editor.
+                          Il menù spento resta apribile e modificabile: è il
+                          menù dell'inverno che aspetta ottobre. */}
+                      {delloStessoLocale.length > 1 && (
+                        <button
+                          onClick={() => setActive(menu.id, !menu.active)}
+                          className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                            menu.active
+                              ? 'border-[#C8E6C9] bg-[#E8F5E9] text-[#2E7D32]'
+                              : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
+                          }`}
+                          title={menu.active ? d.menus.activeHint : d.menus.parkedHint}
+                        >
+                          {menu.active ? d.menus.active : d.menus.parked}
+                        </button>
+                      )}
                       <Link
                         href={`/menu/${menu.id}`}
                         className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
@@ -244,7 +263,8 @@ export default function MenusPage() {
                       </button>
                     </div>
                   );
-                })}
+                });
+              })()}
             </div>
           ))}
 

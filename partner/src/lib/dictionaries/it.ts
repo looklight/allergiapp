@@ -344,6 +344,10 @@ const it = {
     // è un'etichetta del portale, e sul tavolo suonerebbe come un difetto.
     // Serve solo se resta un menù senza nome accanto a uno che ce l'ha.
     genericTab: 'Menù',
+    active: 'In sala',
+    parked: 'Da parte',
+    activeHint: 'Il cliente lo vede fra le linguette. Tocca per metterlo da parte.',
+    parkedHint: 'Esiste solo qui: al tavolo non compare. Tocca per rimetterlo in sala.',
     forVenue: 'Di quale locale?',
     newVenue: '+ Un altro locale',
     venueNameLabel: 'Nome del locale',

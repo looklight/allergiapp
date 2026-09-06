@@ -63,6 +63,10 @@ export interface Menu {
   name: string; // "Carta", "Pranzo", "Bevande"
   description: string; // sotto il titolo: orari, avvisi, due righe di presentazione
   currency: string; // ISO 4217, sul MENÙ e non sulla riga
+  // Falso = il menù esiste qui ma non è una linguetta al tavolo (713... 714).
+  // È il menù stagionale messo da parte: si spegne invece di riscriverlo a
+  // marzo. Solo gli attivi entrano nello scatto.
+  active: boolean;
   // Le righe fuori sezione stanno in cima, come i piatti senza categoria nel
   // catalogo: chi butta dentro dieci piatti prima di pensare agli intertitoli
   // non va fermato da un campo obbligatorio.
@@ -189,6 +193,7 @@ function toMenu(row: any): Menu {
     name: row.name ?? '',
     description: row.description ?? '',
     currency: row.currency ?? 'EUR',
+    active: row.active ?? true,
     loose: righe.filter((r: any) => r.section_id === null).map(item),
     sections: [...(row.partner_menu_sections ?? [])].sort(perOrdine).map((s: any) => ({
       id: s.id,
@@ -206,7 +211,7 @@ async function loadMenus(): Promise<Menu[]> {
   const { data, error } = await supabase
     .from('partner_menus')
     .select(
-      'id, venue_id, name, description, currency, sort_order, ' +
+      'id, venue_id, name, description, currency, active, sort_order, ' +
         'partner_menu_sections(id, kind, name, description, sort_order), ' +
         'partner_menu_items(id, dish_id, section_id, price_cents, highlighted, highlight_note, sort_order)'
     )
@@ -233,7 +238,12 @@ async function saveMenu(menu: Menu) {
     () =>
       supabase
         .from('partner_menus')
-        .update({ name: menu.name, description: menu.description, currency: menu.currency })
+        .update({
+          name: menu.name,
+          description: menu.description,
+          currency: menu.currency,
+          active: menu.active,
+        })
         .eq('id', menu.id),
     `menu:${menu.id}`
   );
@@ -332,6 +342,9 @@ export function useMenus() {
         name,
         description: '',
         currency: 'EUR',
+        // un menù nasce in sala: crearlo e poi doverlo accendere sarebbe un
+        // secondo passo per la cosa che si è appena chiesta
+        active: true,
         loose: [],
         sections: [],
       };
@@ -421,7 +434,22 @@ export function useMenus() {
     [menus, setList]
   );
 
-  return { menus, create, remove, rename, forgetVenue, restore };
+  // IN SALA O DA PARTE. Scrive solo la colonna, come la rinomina: passare da
+  // saveMenu riscriverebbe sezioni e righe di un menù che non si sta
+  // modificando, per cambiare un booleano.
+  const setActive = useCallback(
+    async (id: string, active: boolean) => {
+      setList((menus ?? []).map((menu) => (menu.id === id ? { ...menu, active } : menu)));
+      await write(
+        'menù in sala',
+        () => supabase.from('partner_menus').update({ active }).eq('id', id),
+        `menu-attivo:${id}`
+      );
+    },
+    [menus, setList]
+  );
+
+  return { menus, create, remove, rename, setActive, forgetVenue, restore };
 }
 
 export function useMenu(id: string) {

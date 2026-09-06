@@ -117,7 +117,9 @@ export default function FullPreviewPage() {
         <div className="flex h-[calc(100dvh-1.75rem)] flex-col">
           <MenuPreview
             menu={menu}
-            siblings={(menus ?? []).filter((m) => m.venueId === menu.venueId)}
+            siblings={(menus ?? []).filter(
+              (m) => m.venueId === menu.venueId && (m.active || m.id === menu.id)
+            )}
             dishes={dishes ?? []}
             brand={brand}
             coverUrl={locale?.coverUrl ?? ''}

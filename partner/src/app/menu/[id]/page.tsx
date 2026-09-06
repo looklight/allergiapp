@@ -242,7 +242,12 @@ export default function MenuEditorPage() {
   // Gli altri menù dello stesso locale: nell'anteprima sono le linguette in
   // alto, che è il modo in cui il cliente al tavolo passa dalla carta alle
   // bevande senza cambiare QR.
-  const fratelli = (menus ?? []).filter((m) => m.venueId === menu.venueId);
+  // SOLO LE ATTIVE: le linguette sono quello che vede il cliente, e un menù
+  // messo da parte al tavolo non c'è. Se è quello aperto adesso resta nella
+  // fila, o l'anteprima mostrerebbe una carta senza la sua linguetta.
+  const fratelli = (menus ?? []).filter(
+    (m) => m.venueId === menu.venueId && (m.active || m.id === menu.id)
+  );
   const anteprima = (
     <MenuPreview
       menu={menu}
