@@ -92,7 +92,11 @@ const tinteSito = tinteDa(renderSito, /^\s+(\w+):\s*'(#[0-9A-Fa-f]{6})'/gm);
 // che nessuno l'abbia toccato. Costa una riga e copre gli scatti che non
 // abbiamo guardato.
 const SOLO_SITO = new Set([
-  'brass', // ritirato il 2026-09-06, sostituito dal grigio
+  // Ritirate dalla SCELTA il 2026-09-06, quando la tavolozza è tornata a sei.
+  // Il sito deve continuare a saperle disegnare: chi ha pubblicato in petrolio
+  // resta in petrolio finché non sceglie un'altra tinta.
+  'slate', 'grey', 'cocoa', 'sand', 'olive', 'grass', 'pine',
+  'teal', 'ink', 'indigo', 'mulberry', 'wine', 'rose',
 ]);
 
 for (const k of new Set([...Object.keys(tintePortale), ...Object.keys(tinteSito)])) {

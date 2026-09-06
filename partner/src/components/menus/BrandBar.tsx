@@ -20,7 +20,7 @@
 // Il logo e il nome del locale non sono qui: il nome è il titolo in cima alla
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
-import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
+import { accentiSceglibili, accentHex } from '@/lib/menuBrand';
 import { APPEARANCE_711 } from '@/lib/features';
 import { CURRENCIES } from '@/lib/menus';
 import {
@@ -464,7 +464,7 @@ export default function BrandBar({
               intorno uno spazio che non è di nessuno. */}
           <p className="text-xs text-gray-500">{d.menuEditor.accent}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {MENU_ACCENTS.map((colore) => {
+            {accentiSceglibili(accent).map((colore) => {
               const scelto = accent === colore.code;
               return (
                 <button

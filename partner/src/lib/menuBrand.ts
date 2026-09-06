@@ -96,30 +96,26 @@ export interface MenuBrand {
 // (703), l'elenco chiuso vive qui.
 // ------------------------------------------------------------------
 export const MENU_ACCENTS = [
-  // ⚠️ L'ORDINE: prima i due NEUTRI, poi la ruota dei colori dal rosso al
-  // rosa passando per giallo, verde, blu e viola. Non l'ordine di arrivo:
-  // una fila ordinata per tinta si scorre come uno spettro, e le coppie
-  // vicine (bosco/pino, blu/inchiostro) si leggono come famiglie invece che
-  // come doppioni sparsi. Il carbone resta PRIMO: DEFAULT_ACCENT legge la
-  // posizione 0.
-  { code: 'charcoal', hex: '#333333', it: 'Carbone', en: 'Charcoal' },      // neutro
-  { code: 'slate', hex: '#3F4A5A', it: 'Ardesia', en: 'Slate' },            // neutro freddo
-  { code: 'grey', hex: '#5A5A5A', it: 'Grigio', en: 'Grey' },               // neutro medio
-  { code: 'brick', hex: '#8C3A2B', it: 'Mattone', en: 'Brick' },            //   9°
-  { code: 'cocoa', hex: '#5A3A2E', it: 'Cacao', en: 'Cocoa' },              //  16°
-  { code: 'sand', hex: '#6B5A3C', it: 'Sabbia', en: 'Sand' },               //  40°, più spenta
-  { code: 'olive', hex: '#4A5D23', it: 'Verde oliva', en: 'Olive' },        //  80°
-  { code: 'grass', hex: '#2F5E28', it: 'Verde prato', en: 'Grass green' },  // 112°
-  { code: 'pine', hex: '#1E3B2A', it: 'Verde pino', en: 'Pine' },           // 145°, profondo
-  { code: 'forest', hex: '#2E6B4F', it: 'Verde bosco', en: 'Forest green' },// 152°
-  { code: 'teal', hex: '#1F5F5B', it: 'Petrolio', en: 'Teal' },             // 176°
-  { code: 'navy', hex: '#1F4E79', it: 'Blu notte', en: 'Navy' },            // 209°
-  { code: 'ink', hex: '#1A2340', it: 'Inchiostro', en: 'Ink' },             // 227°, profondo
-  { code: 'indigo', hex: '#443A78', it: 'Indaco', en: 'Indigo' },           // 250°
-  { code: 'plum', hex: '#6B3F6E', it: 'Prugna', en: 'Plum' },               // 296°
-  { code: 'mulberry', hex: '#78325E', it: 'Mora', en: 'Mulberry' },         // 322°
-  { code: 'wine', hex: '#6E2438', it: 'Bordeaux', en: 'Wine' },             // 344°
-  { code: 'rose', hex: '#8C4A57', it: 'Rosa antico', en: 'Dusty rose' },    // 348°, più chiara
+  // ⚠️ SEI, ED È UN RITORNO: dal 05/09 erano diciotto, ordinate per tinta.
+  // Rimesse a sei il 2026-09-06 — «creano più confusione che utilità»: davanti
+  // a diciotto pastiglie una scelta che si fa una volta sola diventa un
+  // esercizio di gusto, e nessuna delle dodici in mezzo faceva qualcosa che
+  // queste sei non facciano.
+  //
+  // ⚠️ LE ALTRE TREDICI RESTANO DISEGNABILI dal sito (ACCENTI in
+  // landing/lib/render-menu.js). Un colore ritirato sparisce dalla SCELTA, non
+  // dalla resa: uno scatto pubblicato conserva il codice con cui è nato, e se
+  // il sito non lo conoscesse più quel menù cambierebbe colore da solo, in
+  // sala, senza che nessuno l'abbia toccato. La differenza è dichiarata in
+  // SOLO_SITO dentro scripts/gemelle.mjs.
+  //
+  // Il carbone resta PRIMO: DEFAULT_ACCENT legge la posizione 0.
+  { code: 'charcoal', hex: '#333333', it: 'Carbone', en: 'Charcoal' },
+  { code: 'forest', hex: '#2E6B4F', it: 'Verde bosco', en: 'Forest green' },
+  { code: 'navy', hex: '#1F4E79', it: 'Blu notte', en: 'Navy' },
+  { code: 'brick', hex: '#8C3A2B', it: 'Mattone', en: 'Brick' },
+  { code: 'plum', hex: '#6B3F6E', it: 'Prugna', en: 'Plum' },
+  { code: 'brass', hex: '#7A5C1E', it: 'Ottone', en: 'Brass' },
 ] as const;
 
 export const DEFAULT_ACCENT = MENU_ACCENTS[0].code;
@@ -137,8 +133,47 @@ export const DEFAULT_ACCENT = MENU_ACCENTS[0].code;
 //      l'icona dell'app.
 export const DEFAULT_LOGO = '/icons/icon-192.png';
 
+// LE TINTE RITIRATE, che il portale deve ancora saper DISEGNARE anche se non
+// le offre più. Senza, un locale rimasto su «verde prato» si vedrebbe carbone
+// nell'editor mentre al tavolo resta verde: il ristoratore crederebbe di aver
+// perso il suo colore, e cambiandolo lo perderebbe davvero.
+//
+// ⚠️ Sono le stesse tredici dichiarate in SOLO_SITO dentro scripts/gemelle.mjs
+// e ancora presenti in ACCENTI su landing/lib/render-menu.js.
+const ACCENTI_RITIRATI: Record<string, string> = {
+  slate: '#3F4A5A',
+  grey: '#5A5A5A',
+  cocoa: '#5A3A2E',
+  sand: '#6B5A3C',
+  olive: '#4A5D23',
+  grass: '#2F5E28',
+  pine: '#1E3B2A',
+  teal: '#1F5F5B',
+  ink: '#1A2340',
+  indigo: '#443A78',
+  mulberry: '#78325E',
+  wine: '#6E2438',
+  rose: '#8C4A57',
+};
+
 export function accentHex(code: string): string {
-  return MENU_ACCENTS.find((a) => a.code === code)?.hex ?? MENU_ACCENTS[0].hex;
+  return (
+    MENU_ACCENTS.find((a) => a.code === code)?.hex ??
+    ACCENTI_RITIRATI[code] ??
+    MENU_ACCENTS[0].hex
+  );
+}
+
+// Una tinta ritirata ma ANCORA IN USO resta nella fila, in coda: toglierla
+// sotto gli occhi di chi ce l'ha vorrebbe dire fargli sparire il suo colore
+// senza spiegazioni. Stessa regola delle categorie nascoste che restano
+// visibili quando un piatto le usa.
+export function accentiSceglibili(inUso: string) {
+  const offerte = MENU_ACCENTS.map((a) => ({ ...a }));
+  if (offerte.some((a) => a.code === inUso)) return offerte;
+  const hex = ACCENTI_RITIRATI[inUso];
+  if (!hex) return offerte;
+  return [...offerte, { code: inUso, hex, it: 'Tinta ritirata', en: 'Retired colour' }];
 }
 
 // ------------------------------------------------------------------
