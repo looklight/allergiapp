@@ -24,13 +24,14 @@ import { MENU_ACCENTS, accentHex } from '@/lib/menuBrand';
 import { APPEARANCE_711 } from '@/lib/features';
 import { CURRENCIES } from '@/lib/menus';
 import {
+  ALLERGEN_DISPLAYS,
   DISH_SEPARATORS,
   HEADING_FONTS,
   LINE_HEIGHTS,
   SECTION_STYLES,
-  LINE_HEIGHT_FACTORS,
   MENU_LAYOUTS,
   TEXT_SCALES,
+  type AllergenDisplay,
   type DishPhotoShape,
   type DishSeparator,
   type HeadingFont,
@@ -49,6 +50,8 @@ export default function BrandBar({
   showPhotos,
   photoShape,
   showDescriptions,
+  allergenDisplay,
+  haSezioni,
   sectionStyle,
   headingFont,
   textScale,
@@ -65,6 +68,7 @@ export default function BrandBar({
   onAccent,
   onPhotos,
   onShowDescriptions,
+  onAllergenDisplay,
   onSectionStyle,
   onHeadingFont,
   onTextScale,
@@ -86,6 +90,15 @@ export default function BrandBar({
   showPhotos: boolean;
   photoShape: DishPhotoShape;
   showDescriptions: boolean;
+  // Come si legge la riga degli allergeni al tavolo: a parole o a icone.
+  // ⚠️ Non è un interruttore per nasconderli (Tema 23).
+  allergenDisplay: AllergenDisplay;
+  // Questo menù ha almeno una sezione CON UN NOME, cioè un titolo che al
+  // tavolo si vede. Se non ce n'è, la voce «Titoli delle sezioni» non compare
+  // (stessa regola delle foto con «a blocco»): non c'è niente da vedere
+  // cambiare. ⚠️ I blocchi di testo NON contano — hanno un aspetto loro e
+  // non passano da section_style.
+  haSezioni: boolean;
   sectionStyle: SectionStyle;
   headingFont: HeadingFont;
   textScale: TextScale;
@@ -107,6 +120,7 @@ export default function BrandBar({
   // quella che si era scelta.
   onPhotos: (next: { showPhotos: boolean; photoShape: DishPhotoShape }) => void;
   onShowDescriptions: (value: boolean) => void;
+  onAllergenDisplay: (value: AllergenDisplay) => void;
   onSectionStyle: (value: SectionStyle) => void;
   onHeadingFont: (value: HeadingFont) => void;
   onTextScale: (value: TextScale) => void;
@@ -132,12 +146,20 @@ export default function BrandBar({
     lineHeight === 'normal' || !APPEARANCE_711
       ? null
       : d.menuEditor.lineHeights[lineHeight],
-    !showPhotos
-      ? d.menuEditor.summaryPhotosOff
-      : photoShape === 'round'
-        ? d.menuEditor.summaryPhotosRound
-        : d.menuEditor.summaryPhotosSquare,
+    // Le foto si nominano solo se al tavolo si vedono: «a blocco» non le
+    // mostra, e il riassunto di una scatola chiusa non deve dire una cosa
+    // che nel menù non c'è.
+    APPEARANCE_711 && layout === 'block'
+      ? null
+      : !showPhotos
+        ? d.menuEditor.summaryPhotosOff
+        : photoShape === 'round'
+          ? d.menuEditor.summaryPhotosRound
+          : d.menuEditor.summaryPhotosSquare,
     showDescriptions ? d.menuEditor.summaryDescOn : null,
+    // Solo quando è cambiato: 'a parole' è com'è sempre stato, e scriverlo
+    // su ogni riga chiusa vorrebbe dire una parola in più per dire niente.
+    allergenDisplay === 'icon' ? d.menuEditor.summaryAllergenIcons : null,
   ]
     .filter((pezzo): pezzo is string => pezzo !== null)
     .join(' · ');
@@ -179,7 +201,7 @@ export default function BrandBar({
         </svg>
       </summary>
 
-      <div className="border-t border-gray-100 p-4">
+      <div className="@container border-t border-gray-100 p-4">
       {/* La riga che dice cosa si fa qui, e accanto il modo di vederlo
           succedere: con un menù ancora vuoto l'anteprima è uno schermo
           bianco, e ogni scelta di questa scatola si farebbe alla cieca. */}
@@ -195,6 +217,32 @@ export default function BrandBar({
         )}
       </div>
 
+      {/* TRE GRUPPI E NON DODICI GRADINI. Prima ogni voce aveva la stessa
+          etichettina grigia e lo stesso filetto sopra: dodici righe di pari
+          peso, in cui niente diceva che colore e copertina sono la stessa
+          domanda. I gruppi rispondono alle tre domande che uno si fa
+          guardando una carta — com'è disposta, di chi è, come si legge — e
+          il titolo di ognuno è quello dei blocchi dell'editor (text-sm
+          font-medium), non l'ennesimo maiuscoletto: quello è dell'AREA, e
+          due maiuscoletti annidati sarebbero due gradi dello stesso rango.
+
+          LA DISPOSIZIONE (rivista il 2026-09-06 su indicazione dell'utente):
+          i gruppi stanno UNO SOTTO L'ALTRO e prendono tutta la larghezza —
+          così le pastiglie del Testo si distendono sui ~640px invece di
+          stringersi in una colonna da 305. Ad affiancarsi sono due VOCI
+          dentro L'identità (colore e copertina), non i gruppi fra loro.
+
+          Provata prima l'altra strada — «La carta» larga e i due gruppi
+          piccoli affiancati — e scartata: due colonne piene fanno 322px, ma
+          le file da TRE schede (titoli delle sezioni, fra i piatti) ne
+          vogliono 328, quindi lì le colonne non ci stavano comunque.
+
+          Le soglie sono del CONTENITORE (@container) e non della finestra:
+          questa scatola cambia larghezza quando compare l'anteprima del
+          telefono, e una soglia sulla finestra l'avrebbe spezzata proprio
+          dove sta larga. Sotto, colonna sola: il telefono a 375px era già
+          stato curato e non si disfa. */}
+      <div className="mt-4 space-y-5">
       {/* L'IMPAGINAZIONE È LA PRIMA VOCE, perché è la struttura: decide come
           è disposto un piatto, e tutto quello che c'è sotto la decora.
 
@@ -208,7 +256,7 @@ export default function BrandBar({
           manopola della loro forma sparisce — e sotto c'è scritto perché e
           che non si perde niente. */}
       {APPEARANCE_711 && (
-        <div className="mt-3">
+        <div>
           <p className="text-xs text-gray-500">{d.menuEditor.layout}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {MENU_LAYOUTS.map((impaginazione) => {
@@ -218,85 +266,49 @@ export default function BrandBar({
                   key={impaginazione}
                   onClick={() => onLayout(impaginazione)}
                   aria-pressed={scelto}
+                  title={d.menuEditor.layoutHints[impaginazione]}
                   className={`w-[132px] overflow-hidden rounded-lg border bg-white p-2 text-left transition-colors ${
-                    scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                    scelto ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
                   }`}
                 >
                   <AssaggioImpaginazione tipo={impaginazione} />
-                  <span className="mt-1.5 block text-[11px] font-medium text-gray-900">
+                  {/* Solo il nome, e più deciso: la didascalia sotto ogni
+                      scheda diceva a parole quello che il campione disegnato
+                      mostra già, e quello che l'anteprima accanto fa vedere
+                      per davvero. Resta come titolo del bottone, per chi la
+                      pagina la ascolta invece di guardarla. */}
+                  <span className="mt-1.5 block text-sm font-medium text-gray-900">
                     {d.menuEditor.layouts[impaginazione]}
-                  </span>
-                  <span className="mt-0.5 block text-[10px] leading-snug text-gray-500">
-                    {d.menuEditor.layoutHints[impaginazione]}
                   </span>
                 </button>
               );
             })}
           </div>
           {layout === 'block' && (
-            <div className="mt-2 space-y-1">
-              <p className="text-xs leading-relaxed text-gray-400">
-                {d.menuEditor.layoutNoPhotos}
-              </p>
-              <p className="text-xs leading-relaxed text-gray-400">
-                {d.menuEditor.layoutWantsDescriptions}
-              </p>
-            </div>
+            <p className="mt-2 text-xs leading-relaxed text-gray-400">
+              {d.menuEditor.layoutNoPhotos} {d.menuEditor.layoutWantsDescriptions}
+            </p>
           )}
         </div>
       )}
 
-      {/* La valuta prima del colore: è quella che decide come si legge ogni
-          riga del menù, mentre il colore decide come si vede. Era in cima
-          all'editor, accanto al nome del locale, dove sembrava una proprietà
-          del ristorante invece che del suo listino. */}
-      <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3">
-        <span className="text-xs text-gray-500">{d.menuEditor.currency}</span>
-        <select
-          value={currency}
-          onChange={(e) => onCurrency(e.target.value)}
-          aria-label={d.menuEditor.currency}
-          className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-gray-900 focus:outline-none"
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.code} {c.symbol}
-            </option>
-          ))}
-        </select>
-      </div>
 
-      <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3">
-        <span className="text-xs text-gray-500">{d.menuEditor.accent}</span>
-        <div className="flex gap-1.5">
-          {MENU_ACCENTS.map((colore) => {
-            const scelto = accent === colore.code;
-            return (
-              <button
-                key={colore.code}
-                onClick={() => onAccent(colore.code)}
-                aria-label={colore[locale]}
-                title={colore[locale]}
-                aria-pressed={scelto}
-                // L'anello sta FUORI dalla pastiglia (offset) e non dentro:
-                // un bordo bianco interno mangerebbe il colore proprio nella
-                // pastiglia scelta, cioè quella che si sta guardando
-                className={`h-7 w-7 rounded-full transition-shadow ${
-                  scelto ? 'ring-2 ring-gray-900 ring-offset-2' : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2'
-                }`}
-                style={{ backgroundColor: accentHex(colore.code) }}
-              />
-            );
-          })}
-        </div>
-      </div>
+      {/* LA VOCE C'È SOLO SE C'È UN TITOLO DA VEDERE (2026-09-06, stessa
+          regola delle foto con «a blocco»): un menù senza sezioni con un nome
+          non mostra nessun titolo, quindi qui non ci sarebbe niente da
+          scegliere. Col menù di esempio acceso invece si mostra: è lì apposta
+          per giudicare l'aspetto prima di aver scritto un piatto, e le sue
+          sezioni un titolo ce l'hanno.
 
-      {/* I TITOLI DELLE SEZIONI si scelgono guardandoli, non leggendo tre
-          nomi: ogni scelta mostra la parola "Antipasti" com'è, in piccolo.
-          Un elenco a tendina con scritto "filetto / fascia / solo testo"
-          costringerebbe a immaginarsi il risultato e poi a controllarlo
-          nell'anteprima — due passaggi per una scelta che è tutta visiva. */}
-      <div className="mt-4 border-t border-gray-100 pt-3">
+          I TITOLI DELLE SEZIONI, e il segno fra i piatti, e le foto: erano
+          schede con un campione disegnato, «si sceglie guardando invece di
+          leggere tre nomi». PASTIGLIE dal 2026-09-06, su osservazione
+          dell'utente che supera quella ragione: il campione è largo un
+          centimetro, l'anteprima accanto è grande come un telefono e mostra
+          il risultato vero. Due modi di far vedere la stessa cosa, e uno dei
+          due è migliore. */}
+      {(haSezioni || esempio?.acceso) && (
+      <div>
         <p className="text-xs text-gray-500">{d.menuEditor.sectionStyle}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {SECTION_STYLES.map((stile) => {
@@ -306,28 +318,27 @@ export default function BrandBar({
                 key={stile}
                 onClick={() => onSectionStyle(stile)}
                 aria-pressed={scelto}
-                title={d.menuEditor.sectionStyles[stile]}
-                className={`w-[104px] overflow-hidden rounded-lg border bg-white p-1.5 text-left transition-colors ${
-                  scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  scelto
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                 }`}
               >
-                <Assaggio stile={stile} accent={accentHex(accent)} />
-                <span className="mt-1.5 block text-[10px] text-gray-500">
-                  {d.menuEditor.sectionStyles[stile]}
-                </span>
+                {d.menuEditor.sectionStyles[stile]}
               </button>
             );
           })}
         </div>
       </div>
+      )}
 
-      {/* FRA UN PIATTO E L'ALTRO. Sta qui, subito sotto i titoli di sezione,
-          perché è la stessa materia: come si separano le cose. E vale in
-          TUTT'E DUE le impaginazioni — legarlo a "a blocco" avrebbe aggiunto
-          una seconda manopola che compare e sparisce, mentre il pregio di
-          questa strada è che ne dipende una sola. */}
+
+      {/* Il segno fra un piatto e l'altro. Vale in TUTT'E DUE le
+          impaginazioni: legarlo a «a blocco» avrebbe aggiunto una manopola
+          che compare e sparisce, e il pregio di questa strada è che ne
+          dipende una sola. */}
       {APPEARANCE_711 && (
-        <div className="mt-4 border-t border-gray-100 pt-3">
+        <div>
           <p className="text-xs text-gray-500">{d.menuEditor.separator}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {DISH_SEPARATORS.map((segno) => {
@@ -337,21 +348,150 @@ export default function BrandBar({
                   key={segno}
                   onClick={() => onSeparator(segno)}
                   aria-pressed={scelto}
-                  title={d.menuEditor.separators[segno]}
-                  className={`w-[104px] overflow-hidden rounded-lg border bg-white p-1.5 text-left transition-colors ${
-                    scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
-                  }`}
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  scelto
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                }`}
                 >
-                  <AssaggioSeparatore tipo={segno} accent={accentHex(accent)} />
-                  <span className="mt-1.5 block text-[10px] text-gray-500">
-                    {d.menuEditor.separators[segno]}
-                  </span>
+                  {d.menuEditor.separators[segno]}
                 </button>
               );
             })}
           </div>
         </div>
       )}
+
+
+      {/* LE FOTO SPARISCONO CON «A BLOCCO» (2026-09-06, scelta dell'utente):
+          quell'impaginazione non le mostra, quindi qui non c'è niente da
+          scegliere. Il valore resta scritto sul locale, e tornando «A riga»
+          si ritrova la forma di prima: sparisce il comando, non la scelta.
+          Prima spariva solo la manopola della FORMA e restava «nessuna /
+          quadrate / tonde», cioè un comando che al tavolo non cambiava
+          niente. */}
+      {(!APPEARANCE_711 || layout !== 'block') && (
+        <div>
+          <p className="text-xs text-gray-500">{d.menuEditor.photos}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[
+              { chiave: 'none' as const, scelto: !showPhotos, next: { showPhotos: false, photoShape } },
+              {
+                chiave: 'square' as const,
+                scelto: showPhotos && photoShape === 'square',
+                next: { showPhotos: true, photoShape: 'square' as DishPhotoShape },
+              },
+              // Le tonde hanno bisogno della colonna della 711.
+              ...(APPEARANCE_711
+                ? [
+                    {
+                      chiave: 'round' as const,
+                      scelto: showPhotos && photoShape === 'round',
+                      next: { showPhotos: true, photoShape: 'round' as DishPhotoShape },
+                    },
+                  ]
+                : []),
+            ].map(({ chiave, scelto, next }) => (
+              <button
+                key={chiave}
+                onClick={() => onPhotos(next)}
+                aria-pressed={scelto}
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  scelto
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                {d.menuEditor.photoShapes[chiave]}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-gray-400">{d.menuEditor.photosHint}</p>
+        </div>
+      )}
+
+      {/* COME SI LEGGONO GLI ALLERGENI, sopra le descrizioni: sono le due
+          voci che decidono quanto racconta ogni riga, e questa pesa di più.
+
+          ⚠️ NON nasconde niente (Tema 23): sono due modi di leggere la stessa
+          riga. A icone la parola «Contiene» sparisce dalle righe e la
+          polarità la dice la legenda in fondo alla carta; nel dettaglio del
+          piatto gli allergeni restano sempre scritti. */}
+      <div>
+        <p className="text-xs text-gray-500">{d.menuEditor.allergenDisplay}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {ALLERGEN_DISPLAYS.map((modo) => {
+            const scelto = allergenDisplay === modo;
+            return (
+              <button
+                key={modo}
+                onClick={() => onAllergenDisplay(modo)}
+                aria-pressed={scelto}
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  scelto
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                {d.menuEditor.allergenDisplays[modo]}
+              </button>
+            );
+          })}
+        </div>
+        {allergenDisplay === 'icon' && (
+          <p className="mt-2 text-xs leading-relaxed text-gray-400">
+            {d.menuEditor.allergenDisplayHint}
+          </p>
+        )}
+      </div>
+
+      <Interruttore
+        label={d.menuEditor.showDescriptions}
+        hint={d.menuEditor.showDescriptionsHint}
+        value={showDescriptions}
+        onChange={onShowDescriptions}
+      />
+
+      <div className="border-t border-gray-100" />
+
+      {/* Colore e copertina AFFIANCATI: il colore è una fila di sei
+          pastiglie e la copertina un riquadro, e uno sopra l'altro
+          lasciavano mezza riga vuota per ognuno. */}
+      <div className="grid gap-x-8 gap-y-4 @[600px]:grid-cols-2 @[600px]:items-start">
+        <div>
+          {/* L'etichetta SOPRA e non accanto: da dieci tinte in su la fila va
+              a capo, e una riga che si sdoppia accanto a una parola le lascia
+              intorno uno spazio che non è di nessuno. */}
+          <p className="text-xs text-gray-500">{d.menuEditor.accent}</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {MENU_ACCENTS.map((colore) => {
+              const scelto = accent === colore.code;
+              return (
+                <button
+                  key={colore.code}
+                  onClick={() => onAccent(colore.code)}
+                  aria-label={colore[locale]}
+                  title={colore[locale]}
+                  aria-pressed={scelto}
+                  // L'anello sta FUORI dalla pastiglia (offset) e non dentro:
+                  // un bordo bianco interno mangerebbe il colore proprio
+                  // nella pastiglia scelta, cioè quella che si sta guardando
+                  className={`h-7 w-7 rounded-full transition-shadow ${
+                    scelto
+                      ? 'ring-2 ring-gray-900 ring-offset-2'
+                      : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2'
+                  }`}
+                  style={{ backgroundColor: accentHex(colore.code) }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />
+      </div>
+
+      <div className="border-t border-gray-100" />
 
       {/* IL PACCHETTO DI STILE, e si sceglie leggendolo: ogni scelta scrive
           il proprio nome CON quel carattere. Un elenco di nomi ("Fraunces",
@@ -363,7 +503,7 @@ export default function BrandBar({
           errore, non una scelta. Dove il carattere costa leggibilità — le
           righe minute degli allergeni — il pacchetto compensa da sé, un
           punto in più e un grigio più scuro. */}
-      <div className="mt-4 border-t border-gray-100 pt-3">
+      <div>
         <p className="text-xs text-gray-500">{d.menuEditor.headingFont}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {HEADING_FONTS.map((carattere) => {
@@ -373,10 +513,12 @@ export default function BrandBar({
                 key={carattere}
                 onClick={() => onHeadingFont(carattere)}
                 aria-pressed={scelto}
-                className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                   carattere === 'modern' ? '' : `heading-${carattere}`
                 } ${
-                  scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                  scelto
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                 }`}
               >
                 {d.menuEditor.headingFonts[carattere]}
@@ -385,6 +527,7 @@ export default function BrandBar({
           })}
         </div>
       </div>
+
 
       {/* LA GRANDEZZA DEI TESTI, subito sotto al pacchetto: sono la stessa
           materia — come sono fatte le lettere — e separarli manderebbe a
@@ -398,7 +541,7 @@ export default function BrandBar({
           Ogni scelta si scrive con la propria grandezza, come i pacchetti si
           scrivono col proprio carattere: si sceglie guardando, non leggendo
           un nome. */}
-      <div className="mt-4 flex flex-wrap gap-x-8 gap-y-4 border-t border-gray-100 pt-3">
+      <div className="flex flex-wrap gap-x-8 gap-y-4">
         {/* GRANDEZZA E INTERLINEA SULLA STESSA RIGA: sono la stessa domanda
             vista da due parti — quanto è fitta la carta. La grandezza cambia
             quanto sono grandi le lettere, l'interlinea quanto respirano fra
@@ -416,14 +559,16 @@ export default function BrandBar({
                 key={grandezza}
                 onClick={() => onTextScale(grandezza)}
                 aria-pressed={scelto}
-                className={`rounded-lg border px-3 py-1.5 transition-colors ${
+                className={`rounded-full border px-3 py-1.5 transition-colors ${
                   grandezza === 'compact'
                     ? 'text-xs'
                     : grandezza === 'roomy'
                     ? 'text-base'
                     : 'text-sm'
                 } ${
-                  scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                  scelto
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                 }`}
               >
                 {d.menuEditor.textScales[grandezza]}
@@ -433,10 +578,15 @@ export default function BrandBar({
         </div>
         </div>
 
-        {/* L'interlinea aspetta la sua colonna (v. APPEARANCE_711). Ogni
-            scelta si scrive con la propria interlinea su due righe: una
-            parola sola non mostrerebbe niente, ed è l'unica cosa che
-            l'interlinea fa. */}
+        {/* L'INTERLINEA come pastiglia semplice. Ogni scelta si scriveva su
+            DUE righe («Stretta / due righe») perché l'interlinea si vede solo
+            fra due righe, ed era l'unico modo di mostrarla dentro il bottone.
+            Tolto il 2026-09-06 su richiesta dell'utente, e vale la stessa
+            ragione delle pastiglie: l'interlinea vera si vede nell'anteprima
+            accanto, mentre qui il campione raddoppiava l'altezza di tre
+            bottoni per un accenno. La stringa `lineHeightSample` («due
+            righe») è stata tolta dai dizionari insieme al campione: non la
+            usava nessun altro. */}
         {APPEARANCE_711 && (
           <div>
             <p className="text-xs text-gray-500">{d.menuEditor.lineHeight}</p>
@@ -448,20 +598,13 @@ export default function BrandBar({
                     key={aria}
                     onClick={() => onLineHeight(aria)}
                     aria-pressed={scelto}
-                    className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                       scelto
-                        ? 'border-gray-900 ring-1 ring-gray-900'
-                        : 'border-gray-200 hover:border-gray-400'
+                        ? 'border-gray-900 bg-gray-900 text-white'
+                        : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                     }`}
                   >
-                    <span
-                      className="block max-w-[86px] text-left"
-                      style={{ lineHeight: LINE_HEIGHT_FACTORS[aria] * 1.35 }}
-                    >
-                      {d.menuEditor.lineHeights[aria]}
-                      <br />
-                      {d.menuEditor.lineHeightSample}
-                    </span>
+                    {d.menuEditor.lineHeights[aria]}
                   </button>
                 );
               })}
@@ -475,58 +618,29 @@ export default function BrandBar({
             riga. */}
         <p className="w-full text-xs leading-relaxed text-gray-400">{d.menuEditor.textScaleFloor}</p>
       </div>
-
-      <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />
-
-      {/* Gli interruttori sotto al colore, staccati da una riga: il colore è
-          identità, questi due sono impaginazione. L'effetto si vede
-          nell'anteprima accanto, quindi non serve spiegarli a parole più di
-          una riga. */}
-      {/* LE FOTO: tre risposte a una domanda sola, e si scelgono guardandole
-          come i titoli delle sezioni. "Nessuna" sta in fila con le altre due
-          e non è un interruttore a parte: per chi decide sono tre modi di
-          fare la stessa cosa — che aspetto ha la carta — non un sì/no più
-          un'opzione nascosta dentro il sì. */}
-      <div className="mt-4 border-t border-gray-100 pt-3">
-        <p className="text-xs text-gray-500">{d.menuEditor.photos}</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <SceltaFoto
-            scelto={!showPhotos}
-            label={d.menuEditor.photoShapes.none}
-            onClick={() => onPhotos({ showPhotos: false, photoShape })}
-          >
-            <span className="h-7 w-7 rounded-md border border-dashed border-gray-300" />
-          </SceltaFoto>
-          <SceltaFoto
-            scelto={showPhotos && photoShape === 'square'}
-            label={d.menuEditor.photoShapes.square}
-            onClick={() => onPhotos({ showPhotos: true, photoShape: 'square' })}
-          >
-            <span className="h-7 w-7 rounded-md bg-gray-200" />
-          </SceltaFoto>
-          {/* Le tonde compaiono col loro interruttore: la colonna che le
-              tiene (migration 711) non esiste ancora, e un bottone che non
-              salva niente è peggio di un bottone che non c'è. */}
-          {APPEARANCE_711 && (
-            <SceltaFoto
-              scelto={showPhotos && photoShape === 'round'}
-              label={d.menuEditor.photoShapes.round}
-              onClick={() => onPhotos({ showPhotos: true, photoShape: 'round' })}
-            >
-              <span className="h-7 w-7 rounded-full bg-gray-200" />
-            </SceltaFoto>
-          )}
-        </div>
-        <p className="mt-2 text-xs leading-relaxed text-gray-400">{d.menuEditor.photosHint}</p>
       </div>
 
-      <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-3">
-        <Interruttore
-          label={d.menuEditor.showDescriptions}
-          hint={d.menuEditor.showDescriptionsHint}
-          value={showDescriptions}
-          onChange={onShowDescriptions}
-        />
+      {/* LA VALUTA NON È IN NESSUNO DEI TRE GRUPPI, ed è deliberato: non è
+          aspetto. Vive sul MENÙ e non sul locale, conta come modifica di
+          contenuto e "Rimetti com'è in sala" non la tocca. Sta qui sotto,
+          staccata, finché non si sposta nell'area Contenuto accanto al nome
+          del menù — che è il suo posto vero. */}
+      <div className="mt-6 border-t border-gray-100 pt-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-500">{d.menuEditor.currency}</span>
+        <select
+          value={currency}
+          onChange={(e) => onCurrency(e.target.value)}
+          aria-label={d.menuEditor.currency}
+          className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-gray-900 focus:outline-none"
+        >
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.code} {c.symbol}
+            </option>
+          ))}
+        </select>
+      </div>
       </div>
 
       {/* TORNARE INDIETRO, e solo da qui dentro.
@@ -584,80 +698,12 @@ function AssaggioImpaginazione({ tipo }: { tipo: MenuLayout }) {
 }
 
 // Il campioncino del separatore: due piatti finti e in mezzo il segno.
-// Serve il "fra", non il segno da solo — un filetto isolato non dice dove va.
-function AssaggioSeparatore({ tipo, accent }: { tipo: DishSeparator; accent: string }) {
-  return (
-    <span className="flex h-9 flex-col justify-center gap-1 rounded bg-gray-50 px-1.5">
-      <span className="block h-1 w-full rounded-sm bg-gray-300" />
-      {tipo === 'rule' && <span className="block h-px w-full bg-gray-400" />}
-      {tipo === 'ornament' && (
-        <span className="block text-center text-[7px] leading-none" style={{ color: accent }}>
-          ◆
-        </span>
-      )}
-      {tipo === 'none' && <span className="block h-px w-full" />}
-      <span className="block h-1 w-2/3 rounded-sm bg-gray-300" />
-    </span>
-  );
-}
 
 // Il campioncino dentro ogni scelta: la stessa parola disegnata nei tre
 // modi, in miniatura. Non è un'anteprima fedele — è un promemoria visivo, e
-// quella fedele è il telefono che sta accanto.
-function Assaggio({ stile, accent }: { stile: SectionStyle; accent: string }) {
-  if (stile === 'banner') {
-    return (
-      <span
-        className="block rounded-sm px-1 py-0.5 text-[7px] font-semibold uppercase tracking-wide text-white"
-        style={{ backgroundColor: accent }}
-      >
-        Antipasti
-      </span>
-    );
-  }
-  if (stile === 'plain') {
-    return (
-      <span className="block px-0.5 py-0.5 text-[9px] font-semibold text-gray-900">Antipasti</span>
-    );
-  }
-  return (
-    <span
-      className="block border-b px-0.5 pb-0.5 text-[7px] font-semibold uppercase tracking-wide"
-      style={{ color: accent, borderColor: `${accent}33` }}
-    >
-      Antipasti
-    </span>
-  );
-}
 
 // Una delle tre risposte sulle foto: il campioncino sopra, il nome sotto.
 // Stessa forma delle scelte sui titoli di sezione, perché è la stessa cosa —
-// si decide guardando, non leggendo un nome.
-function SceltaFoto({
-  scelto,
-  label,
-  onClick,
-  children,
-}: {
-  scelto: boolean;
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={scelto}
-      title={label}
-      className={`flex w-[84px] flex-col items-center gap-1.5 rounded-lg border bg-white px-2 py-2 transition-colors ${
-        scelto ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
-      }`}
-    >
-      {children}
-      <span className="text-[10px] text-gray-500">{label}</span>
-    </button>
-  );
-}
 
 // Una casella di spunta vera e non un cursore: dice sì/no, si tocca su tutta
 // la riga, e da tastiera funziona senza che dobbiamo scrivere niente.

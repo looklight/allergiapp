@@ -64,8 +64,12 @@ export default function CoverPicker({
           ? d.menuEditor.coverFailed
           : null;
 
+  // Niente filetto né margine in cima: dal 2026-09-06 la copertina sta DENTRO
+  // il gruppo «L'identità», affiancata al colore, e a separare i blocchi sono
+  // i gruppi. Il filetto che c'era qui tagliava mezza riga e non divideva più
+  // niente.
   return (
-    <div className="mt-4 border-t border-gray-100 pt-3">
+    <div>
       <p className="text-xs text-gray-500">{d.menuEditor.cover}</p>
 
       {daRitagliare !== null && (

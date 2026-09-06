@@ -42,11 +42,12 @@ export default function LiveBox({
   useEffect(() => {
     if (!online || slug === '') return;
     let vivo = true;
-    // Leggero: qui il codice è largo settanta pixel e serve a farsi
-    // riconoscere, non a essere inquadrato da un tavolo. Quello che si
-    // SCARICA è invece l'altro, identico a quello della sezione in fondo
-    // (v. lib/qr.ts).
-    void qrDataUrl(indirizzo, 160, true).then((url) => {
+    // Qui il codice serve a farsi riconoscere, non a essere inquadrato da un
+    // tavolo — ma dal 2026-09-06 è largo 96px invece di 56, quindi si genera
+    // a 240 e non a 160: sotto, sullo schermo denso del portatile, i moduli
+    // si impastavano. Quello che si SCARICA resta un altro, identico a quello
+    // della sezione in fondo (v. lib/qr.ts).
+    void qrDataUrl(indirizzo, 240, true).then((url) => {
       if (vivo) setQr(url);
     });
     return () => {
@@ -74,13 +75,13 @@ export default function LiveBox({
   // ancora finite, e un solo comando che porta dov'è la risposta.
   if (!online || slug === '') {
     return (
-      <div className="mt-4 flex items-center justify-between gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-100/70 p-2.5">
-        <p className="min-w-0 text-[11px] leading-snug text-gray-500">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-gray-300 bg-white p-4 shadow-sm">
+        <p className="min-w-0 flex-1 text-xs leading-relaxed text-gray-500">
           {slug === '' ? d.menuEditor.liveNoAddress : d.menuEditor.liveNotYet}
         </p>
         <button
           onClick={onEdit}
-          className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-1 text-[11px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
         >
           {slug === '' ? d.menuEditor.liveChoose : d.common.edit}
         </button>
@@ -89,66 +90,86 @@ export default function LiveBox({
   }
 
   return (
-    <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/60 p-2.5">
-      {qr !== '' && (
-        // eslint-disable-next-line @next/next/no-img-element -- data-URL generata qui, non un file da ottimizzare
-        <img src={qr} alt={d.menuEditor.qrAlt} className="h-14 w-14 shrink-0 rounded bg-white" />
-      )}
-      <div className="min-w-0 flex-1">
+    // ⚠️ LA FORMA È QUELLA DELLE ALTRE SCATOLE DELLA PAGINA (rounded-2xl,
+    // p-4, shadow-sm, testo text-sm/text-xs): prima era un riquadro di misure
+    // tutte sue — testo da 11px, bottoni da 4px di respiro — e in fondo a una
+    // colonna fatta di schede grandi si leggeva come un residuo. Resta il
+    // VERDE, che qui è il segnale «è in sala» e non una decorazione: è quello
+    // che dice, senza scriverlo, che il menù risponde davvero (v. la nota su
+    // MenuAddress in TODO.md).
+    <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-sm">
+      {/* ⚠️ I COMANDI STANNO SOTTO, non a fianco del codice: la colonna
+          dell'anteprima è larga 304px e col QR a 96 ne restavano 160 per tre
+          bottoni, che andavano a capo uno per riga. Sotto ne hanno 272 e la
+          fila regge. */}
+      {/* Centrato sull'altezza del codice: l'indirizzo è una riga o due
+          accanto a un quadrato di 96, e allineandolo in alto lasciava sotto
+          un vuoto alto quanto il QR. */}
+      <div className="flex items-center gap-4">
+        {qr !== '' && (
+          // eslint-disable-next-line @next/next/no-img-element -- data-URL generata qui, non un file da ottimizzare
+          <img
+            src={qr}
+            alt={d.menuEditor.qrAlt}
+            className="h-24 w-24 shrink-0 rounded-lg border border-emerald-200 bg-white p-1"
+          />
+        )}
         {/* L'indirizzo per intero e selezionabile: è quello che si detta al
-            telefono. Su una colonna da 380 pixel va a capo invece di essere
-            tagliato — un indirizzo troncato non si può leggere ad alta voce. */}
-        {/* Copiare è un gesto minuto e ovvio: sta come icona ATTACCATA al
+            telefono. Su una colonna stretta va a capo invece di essere
+            tagliato — un indirizzo troncato non si può leggere ad alta voce.
+
+            Copiare è un gesto minuto e ovvio: sta come icona ATTACCATA al
             link, dove il link è, invece di prendersi un bottone in fila con
             gli altri. Il posto in fila lo merita quello che il ristoratore
             deve poter trovare — scaricare il codice da mettere sul tavolo. */}
-        <p className="flex items-start gap-1 break-all text-[11px] leading-snug text-gray-600">
+        <p className="flex min-w-0 flex-1 items-start gap-1.5 break-all text-xs leading-relaxed text-gray-600">
           <span className="min-w-0">{indirizzo}</span>
           <button
             onClick={() => void copia()}
             aria-label={d.menuEditor.qrCopy}
             title={copiato ? d.menuEditor.qrCopied : d.menuEditor.qrCopy}
-            className={`mt-px shrink-0 transition-colors ${
+            className={`mt-0.5 shrink-0 transition-colors ${
               copiato ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-900'
             }`}
           >
             {copiato ? (
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
             ) : (
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="9" y="9" width="11" height="11" rx="2" />
                 <path d="M5 15V5a2 2 0 012-2h10" />
               </svg>
             )}
           </button>
         </p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          <button
-            onClick={() => void scaricaQrPng(indirizzo, slug)}
-            className="rounded-lg border border-emerald-300 bg-white px-2 py-1 text-[11px] font-medium text-emerald-800 transition-colors hover:bg-emerald-50"
-          >
-            {d.menuEditor.qrPng}
-          </button>
-          <a
-            href={indirizzo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-emerald-600 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-700"
-          >
-            {d.menuEditor.openLive}
-          </a>
-          {/* Non ripete i comandi della sezione in fondo: ci porta. Così il
-              posto in cui si cambia l'indirizzo e si scaricano i file resta
-              uno solo. */}
-          <button
-            onClick={onEdit}
-            className="rounded-lg px-2 py-1 text-[11px] font-medium text-gray-500 transition-colors hover:text-gray-900"
-          >
-            {d.common.edit}
-          </button>
-        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => void scaricaQrPng(indirizzo, slug)}
+          className="rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-50"
+        >
+          {d.menuEditor.qrPng}
+        </button>
+        <a
+          href={indirizzo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+        >
+          {d.menuEditor.openLive}
+        </a>
+        {/* Non ripete i comandi della sezione in fondo: ci porta. Così il
+            posto in cui si cambia l'indirizzo e si scaricano i file resta
+            uno solo. */}
+        <button
+          onClick={onEdit}
+          className="rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+        >
+          {d.common.edit}
+        </button>
       </div>
     </div>
   );

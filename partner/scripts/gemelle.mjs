@@ -78,7 +78,21 @@ function tinteDa(testo, regex) {
 // Di qua è una fila di oggetti ({ code, hex, … }), di là una mappa codice→tinta.
 const tintePortale = tinteDa(brand, /code:\s*'(\w+)',\s*hex:\s*'(#[0-9A-Fa-f]{6})'/g);
 const tinteSito = tinteDa(renderSito, /^\s+(\w+):\s*'(#[0-9A-Fa-f]{6})'/gm);
+// ATTESE — le differenze VOLUTE, che qui vanno dichiarate o tornano a
+// suonare come dimenticanze.
+//
+// SOLO_SITO: codici che il portale non offre più ma che il renderer deve
+// ancora saper disegnare. Un colore ritirato sparisce dalla SCELTA, non dalla
+// resa: uno scatto pubblicato conserva il codice con cui è nato, e se il sito
+// non lo conoscesse più quel menù cambierebbe colore da solo, in sala, senza
+// che nessuno l'abbia toccato. Costa una riga e copre gli scatti che non
+// abbiamo guardato.
+const SOLO_SITO = new Set([
+  'brass', // ritirato il 2026-09-06, sostituito dal grigio
+]);
+
 for (const k of new Set([...Object.keys(tintePortale), ...Object.keys(tinteSito)])) {
+  if (SOLO_SITO.has(k) && tintePortale[k] === undefined && tinteSito[k]) continue;
   if (tintePortale[k] !== tinteSito[k]) {
     nota('Tavolozza dei colori', `${k}: portale ${tintePortale[k]} · sito ${tinteSito[k]}`);
   }

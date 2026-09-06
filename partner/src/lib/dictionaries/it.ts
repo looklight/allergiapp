@@ -423,6 +423,26 @@ const it = {
     // posto giusto.
     brandHint:
       'Personalizza come si vede il menù al tavolo. Vale per il menù di questo locale.',
+    // I TRE GRUPPI della scatola. Non sono categorie nostre: sono le tre
+    // domande che un ristoratore si fa guardando una carta — com'è disposta,
+    // di chi è, come si legge. La valuta non sta in nessuno dei tre perché
+    // non è aspetto (v. il commento in BrandBar).
+    groupCard: 'La carta',
+    // ⚠️ L'etichetta dice COME SI LEGGONO, non «Allergeni». In una scatola
+    // dove ogni voce si può spegnere, una voce chiamata «Allergeni» si legge
+    // come «puoi toglierli» — l'unica cosa che il Tema 23 vieta.
+    allergenDisplay: 'Come si leggono gli allergeni',
+    allergenDisplays: { text: 'A parole', icon: 'A icone' },
+    allergenDisplayHint: 'La legenda sta in fondo alla carta. Aprendo un piatto sono sempre scritti.',
+    // ⚠️ QUESTA RIGA PORTA LA POLARITÀ di tutta la carta. Senza la parola
+    // «Contiene» su ogni piatto (scelta dell'utente, 2026-09-06), è l'unico
+    // punto in cui è scritto che le icone dicono cosa il piatto CONTIENE e
+    // non di cosa è privo — e la spiga sbarrata, in mezzo mondo, vuol dire
+    // l'opposto. Non accorciarla in «Cosa vogliono dire».
+    allergenLegendTitle: 'Le icone dicono cosa contiene ogni piatto',
+    summaryAllergenIcons: 'allergeni a icone',
+    groupIdentity: 'L’identità',
+    groupText: 'Il testo',
     summaryPhotosOff: 'senza foto',
     summaryPhotosSquare: 'foto quadrate',
     summaryPhotosRound: 'foto tonde',
@@ -437,6 +457,11 @@ const it = {
     // quello che c'è sotto la decora. Non riscrive niente (v. MENU_LAYOUTS).
     layout: 'Impaginazione',
     layouts: { row: 'A riga', block: 'A blocco' },
+    // ⚠️ Le didascalie sotto «A riga» e «A blocco» sono state TOLTE dalla
+    // scatola il 2026-09-06 (scelta dell'utente: il campione disegnato le
+    // dice già, e l'anteprima accanto mostra il risultato). Restano qui come
+    // testo accessibile del bottone — un campione grafico, per chi ascolta
+    // la pagina, non dice niente.
     layoutHints: {
       row: 'Foto, nome e prezzo sulla stessa riga.',
       block: 'Nome, descrizione e prezzo incolonnati, senza foto.',
@@ -445,11 +470,9 @@ const it = {
     // dal menù al tavolo, e senza una riga che lo dica sembra che il portale
     // se le sia mangiate. La seconda metà è quella che tranquillizza: non si
     // perde niente.
-    layoutNoPhotos:
-      'Questa impaginazione non mostra le foto. Restano caricate: tornando “A riga” ricompaiono come le avevi lasciate.',
+    layoutNoPhotos: 'Senza foto. Restano caricate: tornando “A riga” ricompaiono.',
     // L'altra cosa da sapere prima di sceglierla, non dopo averla scelta.
-    layoutWantsDescriptions:
-      'Dà il meglio con le descrizioni dei piatti: senza, resta il nome col prezzo sotto.',
+    layoutWantsDescriptions: 'Dà il meglio con le descrizioni accese.',
     separator: 'Fra i piatti',
     separators: { none: 'Niente', rule: 'Filetto', ornament: 'Ornamento' },
     sectionStyle: 'Titoli delle sezioni',
@@ -463,12 +486,9 @@ const it = {
     // dicono com'è il RISULTATO, non di quanto cambia il numero.
     lineHeight: 'Interlinea',
     lineHeights: { tight: 'Stretta', normal: 'Normale', airy: 'Ariosa' },
-    // La seconda riga del campioncino: l'interlinea si vede solo fra DUE
-    // righe, e una parola sola non mostrerebbe niente.
-    lineHeightSample: 'due righe',
     // Sta sotto le tre scelte, e non è un dettaglio tecnico: è la ragione per
     // cui Compatta non rimpicciolisce tutto.
-    textScaleFloor: 'La riga degli allergeni non rimpicciolisce: resta leggibile anche con la carta più fitta.',
+    textScaleFloor: 'La riga degli allergeni non rimpicciolisce mai.',
     // LE FOTO: una scelta sola con tre risposte (migration 711). "Nessuna"
     // non è il contrario delle altre due, è la prima delle tre — e messa in
     // fila si sceglie guardando, come i titoli delle sezioni.
@@ -476,9 +496,9 @@ const it = {
     photoShapes: { none: 'Nessuna', square: 'Quadrate', round: 'Tonde' },
     // Si dice cosa succede spegnendole, non cosa sono le foto: chi legge sta
     // decidendo, e la domanda che ha in testa è "e se le tolgo?"
-    photosHint: 'Senza foto il menù al tavolo è di solo testo. Le foto restano sui piatti e sulla scheda AllergiApp.',
+    photosHint: 'Le foto restano sui piatti e sulla scheda AllergiApp.',
     showDescriptions: 'Mostra le descrizioni sotto ai piatti',
-    showDescriptionsHint: 'Spente, si leggono toccando il piatto. Accese, la carta è più alta ma racconta di più.',
+    showDescriptionsHint: 'Spente, si leggono toccando il piatto.',
     logoAdd: 'Carica il logo',
     logoReplace: 'Sostituisci',
     logoRemove: 'Togli',

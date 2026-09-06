@@ -23,26 +23,22 @@
 // nascondere il lavoro di chi l'aveva usata.
 export const MULTI_MENU: boolean = false;
 
-// LE MANOPOLE CHE ASPETTANO LA MIGRATION 711: la forma delle miniature dei
-// piatti (tonde o squadrate) e l'interlinea.
+// LE QUATTRO MANOPOLE DELLA MIGRATION 711: forma delle miniature dei piatti
+// (tonde o squadrate), interlinea, impaginazione (a riga / a blocco) e segno
+// fra un piatto e l'altro.
 //
-// Spento per una ragione diversa da MULTI_MENU: non è una scelta di prodotto,
-// è che le COLONNE NON CI SONO ANCORA. La 711 è scritta ma l'utente la
-// applicherà più avanti, insieme ad altre modifiche.
+// ⚠️ ACCESO dal 2026-09-06, il giorno in cui la 711 è stata applicata e
+// verificata sul database di produzione (colonne, vincolo, pg_get_functiondef).
+// Prima era spento per una ragione diversa da MULTI_MENU: non una scelta di
+// prodotto, ma il fatto che LE COLONNE NON C'ERANO — e PostgREST, davanti a
+// una colonna che non esiste, rifiuta l'interrogazione INTERA: non un locale
+// con un campo in meno, nessun locale.
 //
-// Un interruttore solo per due manopole, e non due: sono spente per lo stesso
-// identico motivo e si accendono nello stesso identico momento. Due
-// interruttori da ricordarsi di girare insieme sono un modo di dimenticarne
-// uno.
-//
-// Finché è `false` il portale non NOMINA mai `dish_photo_shape` né
-// `line_height` — non le chiede nella select dei locali e non le scrive —
-// perché PostgREST, davanti a una colonna che non esiste, rifiuta
-// l'interrogazione INTERA: non tornerebbe un locale con un campo in meno,
-// non tornerebbe nessun locale. I valori restano quelli di sempre
-// ('square' e 'normal') e le scelte che non si possono salvare non si
-// mostrano: offrirle vorrebbe dire un bottone che non fa niente.
-//
-// COME SI ACCENDE: si applica la 711 dal SQL editor, si mette `true` qui, si
-// rilascia. Non c'è altro da fare — il resto del codice è già scritto.
-export const APPEARANCE_711: boolean = false;
+// A cosa serve adesso: è la leva per tornare indietro senza revert, se una di
+// quelle quattro si rivelasse rotta in produzione. ⚠️ Va tolto — lui e le
+// guardie `APPEARANCE_711 &&` sparse in BrandBar e venues.ts — quando le
+// manopole saranno state usate da qualcuno per qualche giorno. Finché resta,
+// spegnerlo NON è una rollback completa: `allergen_display` e il kind
+// 'social', arrivati con la stessa migration, non passano di qui perché le
+// loro colonne esistono già.
+export const APPEARANCE_711: boolean = true;
