@@ -22,6 +22,15 @@ export interface PartnerProfileFields {
 
 export interface PartnerProfile extends PartnerProfileFields {
   phone: string | null;
+  // Codici categoria che questo ristoratore non vuole più vedere nelle
+  // tendine. Preferenza di interfaccia, non un dato sui piatti: quelli già
+  // classificati con una categoria nascosta restano com'erano.
+  //
+  // Fuori da PartnerProfileFields di proposito: l'iscrizione non ne sa niente
+  // e non deve — nasce vuota dal default della colonna (713), e chiederla al
+  // momento della registrazione sarebbe una domanda su un'interfaccia che il
+  // ristoratore non ha ancora visto.
+  hiddenCategories: string[];
 }
 
 // Un solo posto in cui si decide cosa compone il profilo: lo usano sia la
@@ -62,7 +71,7 @@ export async function createPartnerProfile(
 export async function loadPartnerProfile(userId: string): Promise<PartnerProfile | null> {
   const { data } = await supabase
     .from('partner_accounts')
-    .select('first_name, last_name, phone, marketing_consent')
+    .select('first_name, last_name, phone, marketing_consent, hidden_dish_categories')
     .eq('user_id', userId)
     .maybeSingle();
   if (!data) return null;
@@ -71,6 +80,7 @@ export async function loadPartnerProfile(userId: string): Promise<PartnerProfile
     lastName: data.last_name,
     phone: data.phone,
     marketing: data.marketing_consent,
+    hiddenCategories: data.hidden_dish_categories ?? [],
   };
 }
 
@@ -128,6 +138,22 @@ export async function setMarketingConsent(userId: string, consent: boolean): Pro
         })
         .eq('user_id', userId),
     `consenso:${userId}`
+  );
+}
+
+// Le categorie nascoste: una preferenza, non un dato. Si salva subito e
+// senza conferma, come l'interruttore del consenso — è una scelta che si
+// disfa spuntando di nuovo la stessa casella, quindi chiedere «sei sicuro»
+// sarebbe attrito senza rischio.
+export async function setHiddenCategories(userId: string, hidden: string[]): Promise<void> {
+  await write(
+    'salvataggio categorie nascoste',
+    () =>
+      supabase
+        .from('partner_accounts')
+        .update({ hidden_dish_categories: hidden })
+        .eq('user_id', userId),
+    `categorie:${userId}`
   );
 }
 

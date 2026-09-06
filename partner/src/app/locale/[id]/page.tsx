@@ -9,7 +9,7 @@ import { dishThumb, venueDishes, useDishes } from '@/lib/dishes';
 import { hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
-import { DISH_CATEGORIES } from '@/lib/categories';
+import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
@@ -814,7 +814,7 @@ export default function VenueEditorPage() {
                       <div key={cat?.code ?? 'none'}>
                         {cat && (
                           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                            {cat[locale]}
+                            {categoryName(cat.code, locale)}
                           </p>
                         )}
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-3">

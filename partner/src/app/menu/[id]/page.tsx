@@ -48,10 +48,11 @@ import LiveBox from '@/components/menus/LiveBox';
 import PublishBar from '@/components/menus/PublishBar';
 import { usePublishState } from '@/lib/publish';
 import PhoneFrame from '@/components/preview/PhoneFrame';
+import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 
 export default function MenuEditorPage() {
   const { id } = useParams<{ id: string }>();
-  const { d } = useI18n();
+  const { d, locale: lingua } = useI18n();
   const { dishes, create: createDish, update: updateDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
@@ -122,6 +123,28 @@ export default function MenuEditorPage() {
   // Crea e ci porta: le due cose insieme, in un posto solo, perché i bottoni
   // che creano una sezione sono due (l'elenco in fondo e il menù vuoto) e un
   // giorno saranno tre.
+  // IL NOME PROPOSTO PER UNA SEZIONE NUOVA.
+  //
+  // Se in catalogo ci sono sei primi e il menù non ha ancora una sezione che
+  // si chiami «Primi», è quello che il ristoratore sta per scrivere: glielo
+  // scriviamo noi, e resta selezionato perché la sezione nasce in modifica.
+  //
+  // ⚠️ È UNA COPIA, non un legame. Rinominare la sezione «I nostri fritti»
+  // non tocca la categoria «Fritti» — e non perché ci stiamo attenti, ma
+  // perché fra le due non esiste nessun riferimento: la sezione è testo
+  // libero e vive su partner_menu_sections. Una classificazione e un indice
+  // non sono la stessa cosa (v. migration 700).
+  function nomeSezioneProposto(): string {
+    const gia = new Set(
+      (menu?.sections ?? []).map((s) => s.name.trim().toLowerCase()).filter((n) => n !== '')
+    );
+    const conPiatti = DISH_CATEGORIES.filter((cat) =>
+      catalogo.some((dish) => dish.category === cat.code)
+    );
+    const libera = conPiatti.find((cat) => !gia.has(categoryName(cat.code, lingua).toLowerCase()));
+    return libera ? categoryName(libera.code, lingua) : d.menuEditor.newSectionName;
+  }
+
   function creaGruppo(prossimo: Menu) {
     save(prossimo);
     const nato = prossimo.sections[prossimo.sections.length - 1];
@@ -473,7 +496,7 @@ export default function MenuEditorPage() {
               {d.menuEditor.addDishes}
             </button>
             <button
-              onClick={() => creaGruppo(addSection(menu, d.menuEditor.newSectionName))}
+              onClick={() => creaGruppo(addSection(menu, nomeSezioneProposto()))}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               {d.menuEditor.addSection}
@@ -657,7 +680,7 @@ export default function MenuEditorPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => creaGruppo(addSection(menu, d.menuEditor.newSectionName))}
+              onClick={() => creaGruppo(addSection(menu, nomeSezioneProposto()))}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

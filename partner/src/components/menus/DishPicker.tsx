@@ -12,6 +12,7 @@ import { useId, useState } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import { dishThumb, type Dish } from '@/lib/dishes';
+import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 
 // Sotto questa soglia il catalogo si guarda tutto con un colpo d'occhio e la
 // ricerca sarebbe un ingombro. Stessa soglia dell'editor del locale.
@@ -36,7 +37,7 @@ export default function DishPicker({
   onCreateNew: () => void;
   onClose: () => void;
 }) {
-  const { d } = useI18n();
+  const { d, locale } = useI18n();
   const panel = useModal<HTMLDivElement>(onClose);
   const titleId = useId();
   const [query, setQuery] = useState('');
@@ -50,6 +51,35 @@ export default function DishPicker({
 
   function toggle(id: string) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  // RAGGRUPPATI PER CATEGORIA, e con un «tutti» per gruppo. È la ragione per
+  // cui le categorie esistono: comporre una carta vuol dire quasi sempre
+  // «metti dentro i miei sei antipasti», e farlo a sei tocchi invece che a uno
+  // è l'attrito che fa tornare al PDF (DIGITAL_MENU.md, Tema 7).
+  //
+  // Senza categoria PER PRIMI, come nel catalogo: chi non ha mai classificato
+  // niente deve ritrovare i suoi piatti dov'erano, non in fondo.
+  const gruppi = [
+    { code: '', name: d.menuEditor.pickerUncategorized, dishes: visibili.filter((x) => x.category === '') },
+    ...DISH_CATEGORIES.map((cat) => ({
+      code: cat.code,
+      name: categoryName(cat.code, locale),
+      dishes: visibili.filter((x) => x.category === cat.code),
+    })),
+  ].filter((g) => g.dishes.length > 0);
+  // Un gruppo solo non è un raggruppamento: l'intestazione sarebbe un titolo
+  // sopra tutta la lista, cioè rumore.
+  const raggruppa = gruppi.length > 1;
+
+  function tuttiDelGruppo(dishes: Dish[]) {
+    const pescabili = dishes.filter((x) => !alreadyIn.includes(x.id)).map((x) => x.id);
+    const giaTutti = pescabili.every((id) => selected.includes(id));
+    setSelected((prev) =>
+      giaTutti
+        ? prev.filter((id) => !pescabili.includes(id))
+        : [...prev, ...pescabili.filter((id) => !prev.includes(id))]
+    );
   }
 
   return (
@@ -127,8 +157,26 @@ export default function DishPicker({
           ) : visibili.length === 0 ? (
             <p className="py-6 text-center text-sm text-gray-500">{d.menuEditor.pickerNoResults}</p>
           ) : (
+            gruppi.map((gruppo) => (
+            <div key={gruppo.code} className="mb-3 last:mb-0">
+              {raggruppa && (
+                <div className="mb-1 flex items-baseline justify-between gap-3 px-2">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                    {gruppo.name}
+                  </p>
+                  {gruppo.dishes.some((x) => !alreadyIn.includes(x.id)) && (
+                    <button
+                      type="button"
+                      onClick={() => tuttiDelGruppo(gruppo.dishes)}
+                      className="shrink-0 text-xs font-medium text-gray-500 underline underline-offset-2 transition-colors hover:text-gray-900"
+                    >
+                      {d.menuEditor.pickerSelectGroup}
+                    </button>
+                  )}
+                </div>
+              )}
             <ul className="space-y-1">
-              {visibili.map((dish) => {
+              {gruppo.dishes.map((dish) => {
                 const dentro = alreadyIn.includes(dish.id);
                 const scelto = selected.includes(dish.id);
                 return (
@@ -197,6 +245,8 @@ export default function DishPicker({
                 );
               })}
             </ul>
+            </div>
+            ))
           )}
         </div>
 

@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { setDishVenues, venuesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useVenues } from '@/lib/venues';
 import { deleteDishPhoto } from '@/lib/photos';
-import { DISH_CATEGORIES } from '@/lib/categories';
+import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import DishRow from '@/components/dishes/DishRow';
@@ -193,7 +193,7 @@ export default function DishesPage() {
       ? [{ code: '', label: d.dishes.noCategory }]
       : []),
     ...DISH_CATEGORIES.filter((cat) => (dishes ?? []).some((dish) => dish.category === cat.code)).map(
-      (cat) => ({ code: cat.code, label: cat[locale] })
+      (cat) => ({ code: cat.code, label: categoryName(cat.code, locale) })
     ),
   ];
   // Eliminando l'ultimo piatto di una categoria la sua pill sparisce: se era
