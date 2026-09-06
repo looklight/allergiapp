@@ -59,6 +59,17 @@ export type TextScale = (typeof TEXT_SCALES)[number];
 export const DISH_PHOTO_SHAPES = ['square', 'round'] as const;
 export type DishPhotoShape = (typeof DISH_PHOTO_SHAPES)[number];
 
+// COME SI LEGGE LA RIGA DEGLI ALLERGENI al tavolo (migration 711):
+// «Contiene: glutine, uova» oppure gli stessi allergeni a pittogrammi.
+// Elenco chiuso anche nel database (CHECK della 711).
+//
+// ⚠️ NON è un interruttore per NASCONDERLI (Tema 23): cambia come si legge
+// la riga, non se c'è. La parola «Contiene» resta in tutt'e due — una spiga
+// da sola non dice se il piatto la contiene o ne è privo — e nel dettaglio
+// del piatto gli allergeni sono sempre a parole.
+export const ALLERGEN_DISPLAYS = ['text', 'icon'] as const;
+export type AllergenDisplay = (typeof ALLERGEN_DISPLAYS)[number];
+
 // DI QUANTO. Un moltiplicatore solo: nell'anteprima e sul sito ogni misura
 // del contenuto è calc(Npx * var(--ms)), quindi questi tre numeri muovono
 // tutta la carta e non c'è un secondo elenco di misure da tenere allineato
@@ -155,6 +166,7 @@ export type VenueAppearance = Pick<
   | 'lineHeight'
   | 'menuLayout'
   | 'dishSeparator'
+  | 'allergenDisplay'
 >;
 
 export interface MenuLink {
@@ -243,6 +255,9 @@ export interface Venue extends VenueDraft {
   menuLayout: MenuLayout;
   // Il segno fra un piatto e l'altro, in tutt'e due le impaginazioni.
   dishSeparator: DishSeparator;
+  // Come si legge la riga degli allergeni: a parole o a icone (migration
+  // 711). 'text' è quella di sempre.
+  allergenDisplay: AllergenDisplay;
   // L'immagine dietro l'intestazione del menù, al posto del colore pieno.
   // Vuota = resta il colore. Sotto ci va SEMPRE una velatura scura, o il nome
   // del locale sopra una foto chiara sparisce (DIGITAL_MENU, Tema 25).
@@ -342,6 +357,10 @@ async function loadVenues(): Promise<Venue[]> {
         // rifiuta tutta l'interrogazione — nessun locale, non un locale con
         // un campo in meno.
         (APPEARANCE_711 ? 'dish_photo_shape, line_height, menu_layout, dish_separator, ' : '') +
+        // allergen_display non passa da APPEARANCE_711: la 711 è applicata,
+        // la colonna c'è, e il cancello serviva solo a non nominare colonne
+        // inesistenti.
+        'allergen_display, ' +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
@@ -367,6 +386,7 @@ async function loadVenues(): Promise<Venue[]> {
       lineHeight: (row.line_height ?? 'normal') as LineHeight,
       menuLayout: (row.menu_layout ?? 'row') as MenuLayout,
       dishSeparator: (row.dish_separator ?? 'none') as DishSeparator,
+      allergenDisplay: (row.allergen_display ?? 'text') as AllergenDisplay,
       coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
       dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
@@ -543,6 +563,7 @@ export async function revertAppearance(venueId: string): Promise<VenueAppearance
     lineHeight: (scatto.lineHeight ?? 'normal') as LineHeight,
     menuLayout: (scatto.menuLayout ?? 'row') as MenuLayout,
     dishSeparator: (scatto.dishSeparator ?? 'none') as DishSeparator,
+    allergenDisplay: (scatto.allergenDisplay ?? 'text') as AllergenDisplay,
     showDishPhotos: scatto.showPhotos !== false,
     dishPhotoShape: (scatto.dishPhotoShape ?? 'square') as DishPhotoShape,
     showDishDescriptions: scatto.showDescriptions === true,
@@ -573,7 +594,17 @@ export function useVenues() {
     const { data } = await write('creazione locale', () =>
       supabase
         .from('partner_venues')
-        .insert({ owner_user_id: ownerId, name: venueName })
+        // LE DESCRIZIONI NASCONO ACCESE (2026-09-06, scelta dell'utente): un
+        // ristoratore che ha scritto la descrizione di un piatto se l'aspetta
+        // sul menù, e trovarla nascosta dietro un tocco sembra un difetto.
+        //
+        // ⚠️ SI SCRIVE QUI E NON COME DEFAULT DELLA COLONNA (708, `false`), che
+        // resta com'è: quel valore è agganciato a venue_appearance_defaults(),
+        // cioè a quello che la pagina al tavolo rende quando la chiave manca da
+        // uno scatto vecchio. Spostarlo là direbbe «hai cambiato le
+        // descrizioni» a chi ha pubblicato mesi fa e non ha toccato niente.
+        // Qui invece vale solo per i locali che nascono da adesso.
+        .insert({ owner_user_id: ownerId, name: venueName, show_dish_descriptions: true })
         .select('id')
         .single()
     );
@@ -587,13 +618,15 @@ export function useVenues() {
       slug: '',
       showDishPhotos: true,
       dishPhotoShape: 'square',
-      showDishDescriptions: false,
+      // acceso come nell'insert qui sopra
+      showDishDescriptions: true,
       sectionStyle: 'underline',
       headingFont: 'modern',
       textScale: 'normal',
       lineHeight: 'normal',
       menuLayout: 'row',
       dishSeparator: 'none',
+      allergenDisplay: 'text',
       coverUrl: '',
       cardId: null,
       dishIds: [],
@@ -629,6 +662,7 @@ export function useVenues() {
             lineHeight: s.lineHeight,
             menuLayout: s.menuLayout,
             dishSeparator: s.dishSeparator,
+            allergenDisplay: s.allergenDisplay,
             coverUrl: s.coverUrl,
           }
         : s
@@ -669,6 +703,7 @@ export function useVenues() {
     if (APPEARANCE_711 && next.dishSeparator !== undefined) {
       riga.dish_separator = next.dishSeparator;
     }
+    if (next.allergenDisplay !== undefined) riga.allergen_display = next.allergenDisplay;
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
     if (next.headingFont !== undefined) riga.heading_font = next.headingFont;
@@ -772,6 +807,7 @@ export function useVenues() {
                 dish_separator: venue.dishSeparator,
               }
             : {}),
+          allergen_display: venue.allergenDisplay,
           show_dish_descriptions: venue.showDishDescriptions,
           section_style: venue.sectionStyle,
           heading_font: venue.headingFont,

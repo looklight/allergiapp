@@ -31,6 +31,8 @@
 import { useI18n } from '@/lib/i18n';
 import { useEscape } from '@/lib/useModal';
 import { ALLERGENS } from '@/lib/allergens';
+import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
+import type { AllergenDisplay } from '@/lib/venues';
 import { dietNeedName } from '@/lib/diets';
 import { displayPrice, type MenuItem } from '@/lib/menus';
 import type { Dish } from '@/lib/dishes';
@@ -41,6 +43,7 @@ export default function DishDetailSheet({
   dish,
   suffisso,
   showPhoto,
+  allergenDisplay,
   currency,
   needs,
   onPrev,
@@ -56,6 +59,13 @@ export default function DishDetailSheet({
   // una regola in più da spiegare, e chi le nasconde perché sono disomogenee
   // non le vuole nemmeno aprendo il piatto.
   showPhoto: boolean;
+  // Come si legge la riga degli allergeni in LISTA. Qui il nome c'è sempre —
+  // il dettaglio è la superficie della precisione — ma se al tavolo la carta
+  // parla per simboli, accanto al nome ci va anche il suo: aprendo un piatto
+  // si impara cosa vuol dire quel disegno, ed è il posto in cui uno lo
+  // cerca. In modalità «a parole» non compare: introdurrebbe simboli che in
+  // quel menù non esistono.
+  allergenDisplay: AllergenDisplay;
   currency: string;
   needs: ViewerNeeds;
   // I due vicini nella carta, o null ai capi. Le freccine non spariscono mai:
@@ -164,6 +174,24 @@ export default function DishDetailSheet({
                           : 'border-gray-200 bg-gray-50 text-gray-600'
                       }`}
                     >
+                      {allergenDisplay === 'icon' && hasAllergenIcon(a.code) && (
+                        <svg
+                          // decorativa: il nome è scritto qui accanto, e
+                          // annunciarlo due volte a chi ascolta la pagina è
+                          // rumore
+                          aria-hidden
+                          width="calc(15px * var(--ms, 1))"
+                          height="calc(15px * var(--ms, 1))"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="-ml-0.5 mr-1 inline-block shrink-0 align-[-0.18em]"
+                          dangerouslySetInnerHTML={{ __html: ALLERGEN_ICON_PATHS[a.code] }}
+                        />
+                      )}
                       {a[locale]}
                     </span>
                   );

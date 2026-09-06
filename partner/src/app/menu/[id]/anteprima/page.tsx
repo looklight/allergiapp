@@ -132,6 +132,7 @@ export default function FullPreviewPage() {
             headingFont={locale?.headingFont ?? 'modern'}
             textScale={locale?.textScale ?? 'normal'}
             lineHeight={locale?.lineHeight ?? 'normal'}
+            allergenDisplay={locale?.allergenDisplay ?? 'text'}
             mostraEsempio={esempio}
             needs={needs}
             onToggleNeed={toggleNeed}

@@ -28,6 +28,7 @@
 import { useState } from 'react';
 import { fill, useI18n } from '@/lib/i18n';
 import { ALLERGENS, allergenName } from '@/lib/allergens';
+import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
 import {
@@ -42,6 +43,7 @@ import { inOrdine, filterLabel, type FilterPill } from '@/lib/menuFilters';
 import {
   LINE_HEIGHT_FACTORS,
   TEXT_SCALE_FACTORS,
+  type AllergenDisplay,
   type DishPhotoShape,
   type DishSeparator,
   type HeadingFont,
@@ -120,6 +122,7 @@ export default function MenuPreview({
   headingFont,
   textScale,
   lineHeight,
+  allergenDisplay,
   needs,
   mostraEsempio,
   onToggleNeed,
@@ -155,6 +158,9 @@ export default function MenuPreview({
   textScale: TextScale;
   // Quanta aria fra le righe: un moltiplicatore solo, come la grandezza.
   lineHeight: LineHeight;
+  // A parole o a icone. ⚠️ Non nasconde niente: la riga c'è in tutt'e due, e
+  // la parola «Contiene» pure.
+  allergenDisplay: AllergenDisplay;
   needs: ViewerNeeds;
   // I tre piatti finti per giudicare l'aspetto quando il menù è ancora vuoto.
   // Lo accende CHI USA l'anteprima, non lei: comparendo da sé si leggevano
@@ -165,6 +171,9 @@ export default function MenuPreview({
 }) {
   const { d, locale } = useI18n();
   const accent = accentHex(brand.accent);
+  // La legenda parte chiusa: al tavolo si guardano i piatti, e chi non
+  // conosce un simbolo la apre quando gli serve.
+  const [legenda, setLegenda] = useState(false);
   const dishById = (id: string) => dishes.find((dish) => dish.id === id);
   // Il piatto aperto nel foglio di dettaglio: sta qui e non nella pagina che
   // usa MenuPreview, perché è uno stato di QUESTA schermata (il telefono
@@ -230,6 +239,10 @@ export default function MenuPreview({
       code: t.code,
     })),
   ];
+  // Gli allergeni che questa carta dichiara davvero: è la stessa lista con
+  // cui si costruiscono le pastiglie del filtro, quindi la legenda non può
+  // scollarsi da quello che il cliente vede scritto sui piatti.
+  const codiciInCarta = disponibili.filter((p) => p.kind === 'allergens').map((p) => p.code);
   const accese: FilterPill[] = [
     ...needs.allergens.map((code) => ({ kind: 'allergens' as const, code })),
     ...needs.diets.map((code) => ({ kind: 'diets' as const, code })),
@@ -584,6 +597,7 @@ export default function MenuPreview({
                       dish={piattoDiRiga(item.dishId)}
                       conFoto={conFoto}
                       formaFoto={photoShape}
+                      allergenDisplay={allergenDisplay}
                       conDescrizioni={showDescriptions}
                       suffisso={suffisso}
                       currency={menu.currency}
@@ -596,6 +610,38 @@ export default function MenuPreview({
               </section>
             );
         })}
+
+        {/* LA LEGENDA È PARTE DELLA MODALITÀ, non una voce da accendere: con
+            le icone, la pagina al tavolo deve poter dire cosa vogliono dire.
+            Sta qui in fondo e si apre premendo — e non attaccata a ogni riga,
+            che sarebbe un bottone dentro il bottone del piatto.
+
+            Elenca SOLO gli allergeni che questo menù usa davvero, come le
+            pastiglie del filtro (Tema 2): una legenda di quindici voci in un
+            menù che ne dichiara tre è un muro. */}
+        {allergenDisplay === 'icon' && codiciInCarta.length > 0 && (
+          <div className="mt-2 border-t border-gray-100 pt-3">
+            <button
+              onClick={() => setLegenda((v) => !v)}
+              aria-expanded={legenda}
+              className="riga-minuta text-gray-500 underline underline-offset-2"
+            >
+              {d.menuEditor.allergenLegendTitle}
+            </button>
+            {legenda && (
+              <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                {codiciInCarta.map((code) => (
+                  <li key={code} className="riga-minuta flex items-center gap-1.5 text-gray-500">
+                    {hasAllergenIcon(code) && (
+                      <IconaAllergene code={code} nome={allergenName(code, locale)} decorativa />
+                    )}
+                    <span className="min-w-0 truncate">{allergenName(code, locale)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Il fondo del menù è del RISTORATORE: coperto, servizio,
             pagamenti. Su un menù vuoto non compare — sarebbe il coperto di
@@ -626,6 +672,7 @@ export default function MenuPreview({
           dish={detail.dish}
           suffisso={suffisso}
           showPhoto={showPhotos}
+          allergenDisplay={allergenDisplay}
           currency={menu.currency}
           needs={needs}
           onPrev={primaDi === null ? null : () => setDetail(primaDi)}
@@ -725,11 +772,49 @@ function Pastiglia({
   );
 }
 
+// UN PITTOGRAMMA, e il suo nome dentro: <title> è quello che i lettori di
+// schermo annunciano, quindi la riga resta leggibile a voce anche quando a
+// vederla sono solo dei disegni. Il disegno si scala col resto della carta
+// (--ms) ma parte da 16px e non da 11 come il testo che sostituisce: sotto,
+// una linea da 2 su griglia 24 diventa mezzo pixel e impasta.
+// `decorativa` = il nome è già scritto accanto (la legenda): lì l'icona non
+// deve avere un nome suo, o il lettore di schermo dice «Glutine glutine».
+function IconaAllergene({
+  code,
+  nome,
+  decorativa = false,
+}: {
+  code: string;
+  nome: string;
+  decorativa?: boolean;
+}) {
+  return (
+    <svg
+      role={decorativa ? undefined : 'img'}
+      aria-hidden={decorativa || undefined}
+      aria-label={decorativa ? undefined : nome}
+      width="calc(16px * var(--ms, 1))"
+      height="calc(16px * var(--ms, 1))"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
+    >
+      {!decorativa && <title>{nome}</title>}
+      <g dangerouslySetInnerHTML={{ __html: ALLERGEN_ICON_PATHS[code] }} />
+    </svg>
+  );
+}
+
 function Riga({
   item,
   dish,
   conFoto,
   formaFoto,
+  allergenDisplay,
   conDescrizioni,
   suffisso,
   currency,
@@ -743,6 +828,7 @@ function Riga({
   // spente): solo allora si tiene lo spazio anche a chi non ce l'ha
   conFoto: boolean;
   formaFoto: DishPhotoShape;
+  allergenDisplay: AllergenDisplay;
   // le descrizioni si leggono in lista invece che aprendo il piatto
   conDescrizioni: boolean;
   // '' col carattere di sistema, altrimenti '-classic' e simili
@@ -896,9 +982,28 @@ function Riga({
             </p>
           ) : (
             dish.allergens.length > 0 && (
-              <p className="menu-item-allergens riga-minuta mt-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
-                {d.preview.contains}{' '}
-                {dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
+              <p className="menu-item-allergens riga-minuta mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
+                {/* ⚠️ LA PAROLA «CONTIENE» C'È SOLO A PAROLE (scelta
+                    dell'utente, 2026-09-06). Il problema che risolveva resta
+                    vero — un simbolo da solo non dice se il piatto lo
+                    contiene o ne è privo, e la spiga sbarrata in mezzo mondo
+                    vuol dire «senza glutine» — ma la risposta adesso è
+                    un'altra: la polarità è scritta UNA VOLTA in fondo alla
+                    carta (allergenLegendTitle), invece che su ogni riga.
+                    ⚠️ Se un giorno si toglie quella riga in fondo, questa
+                    parola va rimessa qui. */}
+                {allergenDisplay === 'text' && <span>{d.preview.contains}</span>}
+                {allergenDisplay === 'icon'
+                  ? dish.allergens.map((code) =>
+                      // Un allergene senza pittogramma non sparisce: resta la
+                      // sua parola, in mezzo alle icone.
+                      hasAllergenIcon(code) ? (
+                        <IconaAllergene key={code} code={code} nome={allergenName(code, locale)} />
+                      ) : (
+                        <span key={code}>{allergenName(code, locale)}</span>
+                      )
+                    )
+                  : dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
               </p>
             )
           )}

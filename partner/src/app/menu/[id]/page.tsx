@@ -238,6 +238,7 @@ export default function MenuEditorPage() {
       headingFont={locale?.headingFont ?? 'modern'}
       textScale={locale?.textScale ?? 'normal'}
       lineHeight={locale?.lineHeight ?? 'normal'}
+      allergenDisplay={locale?.allergenDisplay ?? 'text'}
       needs={needs}
       mostraEsempio={esempio}
       onToggleNeed={toggleNeed}
@@ -362,6 +363,13 @@ export default function MenuEditorPage() {
           headingFont={locale?.headingFont ?? 'modern'}
           textScale={locale?.textScale ?? 'normal'}
           lineHeight={locale?.lineHeight ?? 'normal'}
+          allergenDisplay={locale?.allergenDisplay ?? 'text'}
+          // Una sezione senza nome al tavolo non mostra nessun titolo, e i
+          // blocchi di testo hanno un aspetto loro: né gli uni né le altre
+          // fanno comparire la voce «Titoli delle sezioni».
+          haSezioni={menu.sections.some(
+            (s) => s.kind === 'section' && s.name.trim() !== ''
+          )}
           coverUrl={locale?.coverUrl ?? ''}
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
@@ -381,6 +389,9 @@ export default function MenuEditorPage() {
           onHeadingFont={(headingFont) => locale && setIdentity(locale.id, { headingFont })}
           onTextScale={(textScale) => locale && setIdentity(locale.id, { textScale })}
           onLineHeight={(lineHeight) => locale && setIdentity(locale.id, { lineHeight })}
+          onAllergenDisplay={(allergenDisplay) =>
+            locale && setIdentity(locale.id, { allergenDisplay })
+          }
           onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
         />
       </div>
