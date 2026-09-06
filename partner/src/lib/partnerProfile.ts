@@ -12,6 +12,7 @@
 import { createContext, useContext } from 'react';
 import { supabase } from './supabase';
 import { write } from './saveState';
+import { TERMS_VERSION } from './legal';
 
 export interface PartnerProfileFields {
   firstName: string;
@@ -38,6 +39,8 @@ export async function createPartnerProfile(
     last_name: fields.lastName.trim(),
     preferred_language: language,
     terms_accepted_at: now,
+    // la data da sola non prova niente: serve sapere QUALE testo (art. 7 §1)
+    terms_version: TERMS_VERSION,
     marketing_consent: fields.marketing,
     // la data del consenso ha senso solo se il consenso c'è
     marketing_consent_at: fields.marketing ? now : null,
