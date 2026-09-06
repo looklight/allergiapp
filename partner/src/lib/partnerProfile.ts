@@ -13,6 +13,7 @@ import { createContext, useContext } from 'react';
 import { supabase } from './supabase';
 import { write } from './saveState';
 import { TERMS_VERSION } from './legal';
+import { DEFAULT_HIDDEN_CATEGORIES } from './categories';
 
 export interface PartnerProfileFields {
   firstName: string;
@@ -50,6 +51,11 @@ export async function createPartnerProfile(
     terms_accepted_at: now,
     // la data da sola non prova niente: serve sapere QUALE testo (art. 7 §1)
     terms_version: TERMS_VERSION,
+    // Si parte leggeri: le otto classiche nelle tendine, le altre dieci a un
+    // tocco dal pannello. Scritto qui e non lasciato al default della colonna
+    // perché dopo comanda il ristoratore: un array vuoto deve voler dire
+    // «non nascondo niente», non «non ho ancora scelto».
+    hidden_dish_categories: DEFAULT_HIDDEN_CATEGORIES,
     marketing_consent: fields.marketing,
     // la data del consenso ha senso solo se il consenso c'è
     marketing_consent_at: fields.marketing ? now : null,

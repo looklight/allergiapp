@@ -119,6 +119,20 @@ export function categoryName(code: string, locale: string): string {
   return found.names[lang];
 }
 
+// QUELLE CHE UN RISTORATORE NUOVO NON VEDE. Le diciotto sono un muro di tre
+// righe in cima alla maschera del piatto, prima ancora del nome: si parte
+// dalle otto della cucina italiana classica — quelle che c'erano fino al
+// 06/09 — e le altre si accendono in un tocco dal pannello «Gestisci…».
+//
+// È una PREFERENZA, non una gerarchia: nessuna categoria vale meno di
+// un'altra, e una pizzeria toglierà «Primi» per aggiungere «Fritti». Sta qui
+// e non nel database perché è un valore di partenza, non un dato: si scrive
+// sull'account alla registrazione e da lì in poi comanda il ristoratore.
+export const DEFAULT_HIDDEN_CATEGORIES: string[] = [
+  'breakfast', 'platters', 'fried', 'sandwiches', 'burgers',
+  'salads', 'sushi', 'wines', 'beers', 'cocktails',
+];
+
 // Le categorie da mostrare nelle tendine: tutte meno quelle nascoste.
 //
 // UNA CATEGORIA NASCOSTA MA ANCORA IN USO RESTA VISIBILE. Senza questa
