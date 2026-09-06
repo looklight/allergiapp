@@ -91,6 +91,32 @@ const ESEMPIO: { allergens: string[]; diets: string[]; notes: string[]; priceCen
 // Le note del piatto: icona E parola, mai la sola icona (v. la gemella in
 // landing/lib/render-menu.js). Un simbolo da solo, davanti a un cliente
 // straniero, è un indovinello; la parola è già tradotta e non costa niente.
+// Le sole icone delle note, senza contenitore: servono anche DENTRO la riga
+// degli allergeni, quando si legge tutto a icone.
+function IconeNote({ codes, locale }: { codes: string[]; locale: string }) {
+  return (
+    <>
+      {DISH_NOTES.filter((n) => codes.includes(n.code)).map((n) => (
+        <span key={n.code} role="img" aria-label={noteName(n.code, locale)}>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0"
+            aria-hidden
+            dangerouslySetInnerHTML={{ __html: n.icon }}
+          />
+        </span>
+      ))}
+    </>
+  );
+}
+
 function NotePiatto({
   codes,
   locale,
@@ -926,6 +952,16 @@ function Riga({
   const prezzo = displayPrice(item.priceCents, currency, locale);
   const perche = esclusione(dish, needs);
   const fuori = esclusa(perche);
+  // A ICONE LE NOTE STANNO SULLA STESSA RIGA degli allergeni, separate da un
+  // trattino (scelta dell'utente, 2026-09-06). Due file di simboli una sotto
+  // l'altra si leggono come un blocco solo: il cliente vede nove segni e non
+  // ha modo di capire dove finisce «cosa c'è dentro» e comincia «com'è fatto».
+  // A parole non serve: le parole si separano da sé.
+  //
+  // NON quando il piatto è escluso dal filtro: lì al posto degli allergeni c'è
+  // il MOTIVO, scritto a parole, e appendergli delle icone dopo un trattino
+  // farebbe una riga che comincia in una lingua e finisce in un'altra.
+  const noteInLinea = allergenDisplay === 'icon' && !fuori && dish.notes.length > 0;
   const tondo = formaFoto === 'round';
   const conDescrizione = dish.description.trim() !== '';
 
@@ -1063,7 +1099,7 @@ function Riga({
                 })}
             </p>
           ) : (
-            dish.allergens.length > 0 && (
+            (dish.allergens.length > 0 || noteInLinea) && (
               <p className="menu-item-allergens riga-minuta mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
                 {/* ⚠️ LA PAROLA «CONTIENE» C'È SOLO A PAROLE (scelta
                     dell'utente, 2026-09-06). Il problema che risolveva resta
@@ -1086,6 +1122,14 @@ function Riga({
                       )
                     )
                   : dish.allergens.map((code) => allergenName(code, locale)).join(', ')}
+                {noteInLinea && dish.allergens.length > 0 && (
+                  // Il trattino separa le due famiglie. Serve solo a icone: a
+                  // parole le separano già le parole.
+                  <span aria-hidden className="px-0.5 text-gray-300">
+                    –
+                  </span>
+                )}
+                {noteInLinea && <IconeNote codes={dish.notes} locale={locale} />}
               </p>
             )
           )}
@@ -1095,7 +1139,9 @@ function Riga({
               fatto. Restano anche sul piatto escluso dal filtro: «surgelato»
               va detto comunque, e quel piatto il cliente potrebbe rimetterlo
               dentro. */}
-          <NotePiatto codes={dish.notes} locale={locale} display={allergenDisplay} />
+          {!noteInLinea && (
+            <NotePiatto codes={dish.notes} locale={locale} display={allergenDisplay} />
+          )}
         </div>
       </button>
     </li>
