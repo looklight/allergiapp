@@ -22,7 +22,14 @@
   var pannello = document.getElementById('menu-filter-sheet');
   var foglioPiatto = document.getElementById('menu-dish-sheet');
   var corpoPiatto = document.getElementById('menu-dish-body');
-  var totale = filtro ? Number(filtro.dataset.total || 0) : 0;
+  // LA CARTA APERTA. Con più menù la pagina ne contiene diverse e ne mostra
+  // una: filtro, conteggio e freccine del dettaglio devono guardare SOLO
+  // quella. Senza questo, toccando "senza glutine" il conteggio sommerebbe i
+  // piatti dei vini a quelli della carta, e le freccine passerebbero da un
+  // menù all'altro senza che il cliente capisca dov'è finito.
+  function cartaAperta() {
+    return document.querySelector('.menu-carta:not([hidden])') || document;
+  }
 
   // I testi arrivano dal server già tradotti: qui non c'è nessun dizionario,
   // e la lingua della pagina non può divergere da quella dei messaggi.
@@ -61,8 +68,12 @@
   function aggiorna() {
     var scelti = scelte.allergens.length + scelte.diets.length;
     var adatti = 0;
+    var carta = cartaAperta();
+    // Il totale è quello della carta aperta, non della pagina: "3 di 12
+    // adatti" deve parlare del menù che si ha davanti.
+    var totale = carta.querySelectorAll('.menu-item').length;
 
-    document.querySelectorAll('.menu-section').forEach(function (sezione) {
+    carta.querySelectorAll('.menu-section').forEach(function (sezione) {
       var lista = sezione.querySelector('.menu-items');
       if (!lista) return;
       var dentro = [];
@@ -205,7 +216,7 @@
   // scritta. Si rilegge a ogni passo, che costa niente e non può andare
   // fuori sincrono.
   function tuttiIPiatti() {
-    return Array.prototype.slice.call(document.querySelectorAll('.menu-item'));
+    return Array.prototype.slice.call(cartaAperta().querySelectorAll('.menu-item'));
   }
 
   function vicino(passo) {
@@ -274,4 +285,35 @@
     if (e.key !== 'Escape') return;
     document.querySelectorAll('.menu-sheet').forEach(function (foglio) { foglio.hidden = true; });
   });
+
+  // ── LE LINGUETTE ────────────────────────────────────────────────
+  // Cambiare carta non chiede NIENTE alla rete: sono tutte già nel documento
+  // (v. render-menu.js). In una sala interrata con due tacche, passare ai
+  // vini deve costare quanto scorrere.
+  //
+  // Il filtro NON si azzera cambiando linguetta: chi è allergico alle noci lo
+  // resta anche fra i dolci. Si ricalcola, perché il conteggio parla della
+  // carta che si ha davanti.
+  var linguette = document.querySelectorAll('.menu-tab');
+  if (linguette.length > 1) {
+    linguette.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var quale = tab.dataset.carta;
+        document.querySelectorAll('.menu-carta').forEach(function (carta) {
+          carta.hidden = carta.dataset.carta !== quale;
+        });
+        linguette.forEach(function (altra) {
+          var accesa = altra === tab;
+          altra.classList.toggle('is-on', accesa);
+          altra.setAttribute('aria-selected', accesa ? 'true' : 'false');
+        });
+        // Si torna in cima, e di scatto: la carta nuova comincia dal suo primo
+        // piatto, non dall'altezza a cui si era arrivati scorrendo quella di
+        // prima. Senza animazione — è un cambio di contenuto, non un
+        // viaggio dentro la stessa pagina.
+        window.scrollTo(0, 0);
+        aggiorna();
+      });
+    });
+  }
 })();

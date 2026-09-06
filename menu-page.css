@@ -821,6 +821,43 @@
   white-space: pre-line;
 }
 
+/* ── Le linguette dei menù ─────────────────────────────────────── */
+/* Stanno DENTRO l'intestazione colorata, sotto il nome del locale: sono i
+   menù DI quel ristorante, e staccarle dalla fascia le farebbe sembrare una
+   barra di navigazione nostra. Quella aperta è piena e prende il colore del
+   locale; le altre restano leggibili sul colore, non spente.
+   Scorrono in orizzontale senza barra: cinque menù su un telefono stretto
+   non devono mandare a capo l'intestazione. */
+.menu-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 12px -16px 0;
+  padding: 2px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.menu-tabs::-webkit-scrollbar { display: none; }
+.menu-tab {
+  flex: none;
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font: inherit;
+  font-size: calc(13px * var(--ms, 1));
+  font-weight: 500;
+  cursor: pointer;
+}
+.menu-tab.is-on {
+  background: #fff;
+  color: var(--accent);
+}
+.menu-tab:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 /* ── Il marchio: piccolo, in coda, e non sopra il menù ─────────── */
 .menu-brand {
   padding: 14px 16px 18px;
