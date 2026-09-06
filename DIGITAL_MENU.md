@@ -1385,11 +1385,178 @@ scrivendola:
 pagina la nomina. Dove va il collegamento (barra in alto, piè di pagina, o entrambi) è una scelta
 di navigazione del sito, non del menù.
 
+### 2026-09-06 — Tema 32: Gli allergeni a icone, e perché la legenda non è un di più
+
+**Idea dell'utente**: la riga sotto ogni piatto — «Contiene: glutine, uova» — può diventare una
+fila di pittogrammi, e chi personalizza il menù sceglie. È prassi comune nelle carte, e la
+proposta include una **legenda che si apre premendo**.
+
+**Ammessa, e non contraddice il Tema 23.** Là si è deciso che nascondere gli allergeni o il filtro
+non sarà mai una manopola: sono la ragione per cui questo menù non è come gli altri menù col QR.
+Questa cambia **come si legge** la riga, non **se c'è** — è la stessa famiglia del carattere e
+della grandezza dei testi.
+
+**Icona + parola: proposto e scartato dall'utente.** L'obiezione era che un simbolo obbliga a
+decodificare proprio chi ha più bisogno di quella riga; la risposta — «le icone sole sono prassi
+comune, e c'è la legenda» — regge, ed è la legenda a farla reggere. Quindi la legenda **non è una
+voce da accendere: è parte della modalità**. Con `icon` la pagina al tavolo la deve poter aprire,
+sempre.
+
+**Le tre condizioni**, scritte anche nel commento della migration perché sopravvivano a chi
+costruirà la resa fra un mese:
+
+1. **La polarità va detta.** Una spiga da sola non dice se il piatto la contiene o ne è privo —
+   moltissimi menù usano la stessa spiga, sbarrata, per «senza glutine».
+   ⚠️ **Rivisto lo stesso giorno, costruendolo**: la prima risposta era tenere la parola
+   «Contiene» su ogni riga; l'utente ha chiesto di toglierla («quando ci sono le icone possiamo
+   anche non scrivere contiene») e ha ragione sul fatto che su ogni riga è rumore. La risposta
+   definitiva è **dirlo una volta sola in fondo alla carta**: la riga che apre la legenda non si
+   chiama «Cosa vogliono dire» ma **«Le icone dicono cosa contiene ogni piatto»**. Le righe
+   restano pulite e la polarità è scritta comunque. ⚠️ Quella riga non è decorativa: se sparisce,
+   la parola torna sui piatti.
+2. **Ogni icona porta il suo nome come testo alternativo**, o chi ascolta la pagina con la voce
+   perde l'unica riga che non può perdere. I 15 nomi esistono già in due lingue.
+3. **Nel dettaglio del piatto gli allergeni restano a parole**, e così la riga del motivo col
+   filtro acceso («escluso perché contiene…»): la lista è la superficie della densità, il
+   dettaglio quella della precisione, e una frase non si scrive a icone.
+
+**Sul database: la colonna sì, i disegni no.** `partner_venues.allergen_display` (`text` di
+partenza, `icon`) è entrata nella **711 mentre era ancora da applicare** — è il momento in cui una
+colonna costa una riga invece di un'esecuzione a mano, come `cover_url` nella 709 e `text_scale`
+nella 710. I pittogrammi sono file nel repo: si ridisegnano quando si vuole senza toccare il
+database. L'unica cosa che la migration fissa è il **vocabolario** dei valori.
+
+⚠️ **Le icone non esistono ancora**: i 15 allergeni EU hanno oggi delle **emoji**
+(`constants/allergens.ts`), che al tavolo sono da escludere — le disegna il telefono del cliente,
+e la 🌰 di iPhone non è quella di Android. Servono 15 SVG nostre, leggibili a 12-14px e con
+`compact` acceso, che distinguano a colpo d'occhio le coppie che si confondono (frutta a guscio /
+arachidi, crostacei / molluschi). Sono anche l'unico pezzo di questo lavoro che **paga in tre
+posti**: menù al tavolo, scheda in app, portale.
+
+---
+
+### 2026-09-06 — Tema 33: La scatola dell'aspetto in tre gruppi, e cosa insegna una misura
+
+**Innesco**: la 711 applicata portava la scatola «Aspetto» da nove a dodici voci, e l'utente aveva
+già detto il 03/09 che andava sistemata.
+
+**Il difetto non era la lunghezza, era il rango.** Dodici blocchi, ognuno con la stessa etichettina
+grigia da 12px e lo stesso filetto sopra: una scala di gradini uguali in cui niente diceva che
+colore e copertina sono la stessa domanda, o che «foto dei piatti» dipende dall'impaginazione
+scelta due schermate più su. L'anteprima invece è `sticky` e resta ferma — quindi il problema non
+era **vedere** l'effetto, era **trovare** la manopola.
+
+**Tre gruppi, che sono le tre domande che uno si fa guardando una carta**: com'è disposta
+(impaginazione, titoli delle sezioni, fra i piatti, foto, allergeni, descrizioni), di chi è
+(colore, copertina), come si legge (carattere, grandezza, interlinea). Dentro un gruppo i filetti
+fra le voci sono spariti: erano loro a fare la scala.
+
+⚠️ **I gruppi non hanno un NOME**, e non è una svista. Nella prima versione si chiamavano *La
+carta*, *L'identità*, *Il testo*; l'utente li ha fatti togliere lo stesso giorno, guardandoli, e
+il criterio è buono: dicevano a parole quello che le voci dicono da sé, e in una scatola che si
+apre per fare **una** modifica erano tre fermate in più. A raggruppare basta **una riga leggera**.
+Il raggruppamento resta — è l'ordine delle voci — ma non si annuncia.
+
+**E le scelte sono diventate PASTIGLIE.** Titoli delle sezioni, fra i piatti e foto erano schede
+con un campione disegnato, con la motivazione «si sceglie guardando invece di leggere tre nomi».
+L'utente l'ha superata con un argomento migliore: **il campione è largo un centimetro, l'anteprima
+accanto è grande come un telefono e mostra il risultato vero**. Due modi di far vedere la stessa
+cosa, e uno dei due è più preciso. Restano schede le due **impaginazioni**, dove il campione mostra
+una struttura che una parola non descrive — ma senza didascalia sotto il nome.
+
+⚠️ **Con «a blocco» la voce delle foto sparisce del tutto** (prima spariva solo la forma e restava
+«nessuna / quadrate / tonde»: un comando che al tavolo non cambiava niente). Il valore resta
+scritto, tornando «a riga» si ritrova: sparisce il comando, non la scelta. E il riassunto sulla
+riga chiusa non nomina le foto quando l'impaginazione è a blocco, o direbbe «foto quadrate» di una
+carta che foto non ne ha.
+
+**La tavolozza è stata riordinata e allargata**, e il metodo conta più delle tre tinte nuove.
+L'utente ha chiesto «ampliamo la gamma cromatica anziché usare quelli simili a quelli che abbiamo».
+Misurate le tinte presenti sulla ruota, i buchi veri erano **tre** — fra oliva e bosco, fra blu e
+prugna (il più largo), fra prugna e bordeaux — e sono diventati **prato, indaco e mora**. Scartati
+ink, moss, aubergine, rust e azure: passavano il contrasto ma erano vicini di qualcuno. Tre criteri
+scritti in `menuBrand.ts` perché sopravvivano: **contrasto col bianco ≥ 6.2** (non il 4.5 di legge:
+è quanto tiene l'ottone, la più debole delle sei originali — «terracotta» è stata provata e
+scartata a 5.62); **saturazione fra 0.43 e 0.75**, perché le stesse posizioni a saturazione piena
+sono colori da segnaletica e non da carta di ristorante; e **un codice non si toglie mai**, perché
+`partner_venues.accent` conserva quello scelto e cancellarlo farebbe ricadere quel locale su
+carbone senza che nessuno l'abbia deciso. L'elenco ora è **in ordine di tinta** e non di arrivo: si
+scorre come uno spettro. Nessuna migration (la colonna è testo libero), ma la copia gemella sul
+sito sì.
+
+**E poi cinque ancora, con una scoperta.** Chiesto di riempire le due righe, la ricerca della tinta
+«più lontana da tutte» (distanza CIELAB, punto più lontano) ha risposto spingendo la saturazione al
+massimo: cioè, dentro il carattere della tavolozza, **la ruota non ha più posto**. Quindi le cinque
+non sono tinte nuove ma **profondità e neutri**: pino sotto bosco, inchiostro sotto blu, ardesia
+come secondo neutro, sabbia e rosa antico come tinte spente. Diciotto in tutto, due righe da nove.
+Il metro della somiglianza è diventato numerico: **ΔE ≥ 11.6**, la distanza della coppia più vicina
+che già convive (oliva/prato). Scartate per quel metro talpa, pietra, espresso e senape.
+
+**Ritirare un colore è diverso da aggiungerlo** (ottone → grigio, stessa sera). Un codice si
+toglie dall'**offerta**, mai dalla **resa**: il portale smette di proporlo, il renderer del sito
+continua a saperlo disegnare, e prima si verifica sul database che nessuno lo usi — guardando sia
+la colonna `accent` sia `published_menu->>'accent'`, perché lo scatto conserva il codice con cui è
+nato e un menù già in sala cambierebbe colore da solo. La differenza voluta fra le due copie va
+dichiarata in `SOLO_SITO` dentro `gemelle.mjs`, che altrimenti la segnala — ed è giusto così.
+Effetto collaterale utile: tolto l'ottone, che era il gradino più basso, **l'asticella del
+contrasto è salita da sé da 6.22 a 6.30**.
+
+**Nella scheda del piatto l'icona sta accanto al nome dell'allergene**, ma **solo quando la carta
+è a icone**: lì il nome c'è sempre — il dettaglio è la superficie della precisione — e affiancargli
+il simbolo fa del piatto la legenda naturale, nel posto in cui uno la cerca. In modalità «a parole»
+non compare: introdurrebbe simboli che in quel menù non esistono.
+
+**Due voci spariscono quando non cambierebbero niente**: le foto con «a blocco», e i titoli delle
+sezioni se il menù non ha sezioni con un nome. È la stessa regola del bottone che non fa niente.
+
+**Le descrizioni nascono ACCESE** per i locali creati da adesso (prima erano spente). ⚠️ Scritto
+nell'insert del portale e **non** come default della colonna: quel valore è agganciato a
+`venue_appearance_defaults()`, cioè a quello che la pagina al tavolo rende quando la chiave manca
+da uno scatto vecchio, e spostarlo direbbe «hai cambiato le descrizioni» a chi ha pubblicato mesi
+fa e non ha toccato niente.
+
+**Le righe di spiegazione sono state accorciate tutte**, su richiesta dell'utente: dicono il fatto
+e si fermano. «Senza foto. Restano caricate: tornando "A riga" ricompaiono.» al posto di due righe
+e mezzo.
+
+**La disposizione l'ha decisa una misura, non l'occhio.** Il primo tentativo affiancava i due
+gruppi piccoli: due colonne piene fanno 322px l'una, ma le file da tre schede ne vogliono 328 —
+sarebbero andate a capo 2+1, peggio di una colonna sola, quindi «La carta» teneva tutta la
+larghezza. **Corretto dall'utente guardandolo**: i gruppi stanno tutti a tutta larghezza e ad
+affiancarsi sono **due voci dentro L'identità** (colore e copertina), che da sole lasciavano mezza
+riga vuota ciascuna. Così le pastiglie del Testo si distendono sui ~640px invece di stringersi in
+una colonna da 305. **Nessuna scheda rimpicciolita per far quadrare una griglia**, in nessuna delle
+due versioni. Le soglie sono del **contenitore** e non della finestra (`@container`), perché la
+scatola si stringe quando compare l'anteprima del telefono: una soglia sulla finestra l'avrebbe
+spezzata proprio dove sta larga.
+
+**Il guadagno è di gerarchia, non di lunghezza**: 1250 → 1196px. Accorciare davvero vorrebbe dire
+due voci per riga anche dentro «La carta» (570 → ~330), e non è stato fatto: due griglie di schede
+affiancate rischiano di leggersi come un muro di miniature, ed è una cosa da guardare, non da
+calcolare.
+
+**La valuta è uscita dai gruppi** e sta in fondo, staccata: non è aspetto. Il suo posto è l'area
+Contenuto, accanto al nome del menù — spostamento rimandato perché tocca anche l'editor.
+
+**Due posti già assegnati a cose che non esistono ancora**, e scritti nel codice come commenti:
+«Come si leggono gli allergeni» (a parole / a icone, colonna `allergen_display`) va **ultima voce
+de La carta** — è l'anatomia della riga di un piatto, non la tipografia della pagina; i **link del
+ristoratore** vanno **fuori di qui**, nell'area Contenuto sotto le condizioni al tavolo, perché un
+link è contenuto.
+
+⚠️ **Cautela di parole per quando si costruirà la voce degli allergeni**: l'etichetta deve dire
+«Come si leggono gli allergeni», mai «Allergeni» da solo. In una scatola dove ogni voce si può
+spegnere, una voce chiamata «Allergeni» si legge come *puoi toglierli* — l'unica cosa che il Tema
+23 vieta.
+
+---
+
 ## Prossimo passo
 
 **Aggiornato il 2026-09-03.** La fase 2 è fatta e in produzione: il menù al tavolo si apre da
 `allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate; la **711 (`711_partner_menu_appearance.sql`: forma delle
-foto, interlinea, impaginazione, separatore) è scritta e DA APPLICARE** a mano dal SQL editor.
+foto, interlinea, impaginazione, separatore e — dal 2026-09-06 — allergeni a parole o a icone) è
+scritta e DA APPLICARE** a mano dal SQL editor.
 Finché non lo è, quelle quattro manopole restano spente da `APPEARANCE_711`
 (`partner/src/lib/features.ts`) e il portale non nomina le colonne nemmeno nella select.
 

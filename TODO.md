@@ -5,9 +5,8 @@
 ## Priorità a breve (app live)
 
 ### Azioni manuali Supabase
-- [ ] **Migration 711 — le manopole dell'aspetto del menù** (`supabase/migrations/711_partner_menu_appearance.sql`, scritta il 2026-09-03). Quattro colonne su `partner_venues`: `dish_photo_shape`, `line_height`, `menu_layout`, `dish_separator`. L'utente la applicherà insieme ad altre modifiche.
-  - **Ordine delle mosse**: prima la migration dal SQL editor, POI `APPEARANCE_711 = true` in `partner/src/lib/features.ts`, poi il rilascio. Al contrario il portale resta senza locali — PostgREST, davanti a una colonna che non esiste, rifiuta l'interrogazione intera.
-  - **Subito dopo**: aprire il portale e accendere ogni manopola una volta. Sono quattro pezzi di codice mai eseguiti che diventano veri insieme.
+- [x] ~~**Migration 711 — le manopole dell'aspetto del menù**~~ — **APPLICATA il 2026-09-06** e verificata contro il database di produzione (Management API): cinque colonne su `partner_venues` (`dish_photo_shape`, `line_height`, `menu_layout`, `dish_separator`, `allergen_display`), `partner_links.kind` ammette `social`, e `pg_get_functiondef` conferma che `venue_appearance`, `venue_appearance_defaults` e `revert_appearance` sono davvero le nuove. Controllato anche che nessuna delle manopole nuove accenda da sola l'avviso «non ancora in sala»: le uniche differenze sono modifiche vere non pubblicate (MMm: colore e stile sezioni; Trattoria da Maria: grandezza testi).
+- [x] ~~**`APPEARANCE_711 = true`**~~ — acceso il 2026-09-06 (le quattro manopole sono state accese una per una nel browser mentre si rifaceva la scatola). ⚠️ **Resta da TOGLIERE l'interruttore** e le guardie `APPEARANCE_711 &&` in `BrandBar` e `venues.ts`, quando le manopole saranno state usate per qualche giorno: finché c'è, è la leva per tornare indietro senza revert. Spegnerlo non è una rollback completa — `allergen_display` e il kind `social` non passano di lì.
 - [ ] **Ripulire le funzioni parcheggiate della 085** (non urgente, solo a scelta definitiva). Dopo lo scambio restano nel DB `get_pins_in_bounds_073` (la versione precedente, che È il rollback) e nessun'altra. Toglierla solo quando si è certi di non tornare indietro: `DROP FUNCTION get_pins_in_bounds_073(double precision, double precision, double precision, double precision, integer, boolean);`
 - ⚠️ **NON eseguire MAI la migration 084** (`084_pins_is_premium.sql`, esiste solo sul branch abbandonato `feature/map-thinning`): è un DROP+CREATE della stessa funzione e sovrascriverebbe la 085. Quello che portava è già dentro la 085, col premium protetto meglio.
 - ⚠️ **Come si applicano le migration su FUNZIONE** (scoperto a caro prezzo il 2026-09-05): `DROP` + `CREATE` dentro `BEGIN`/`COMMIT` nel SQL editor di Supabase **risponde "success" senza installare niente** — successo due volte, e per due giri si è misurata una funzione non cambiata credendo a un miglioramento inesistente. Procedura corretta, e più sicura comunque (nessun DROP, nessuna finestra in cui la funzione non esiste, rollback per rinomina): creare con un **nome nuovo** → misurarla accanto alla viva → scambiare con due `ALTER FUNCTION … RENAME` → **confermare sempre** con `SELECT pg_get_functiondef(p.oid) LIKE '%…%' FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname='public' AND p.proname='…'`.
@@ -15,10 +14,107 @@
 
 ### Menù al tavolo — da guardare con gli occhi (2026-09-03)
 - [ ] **Le sei anteprime**: `cd landing && python3 -m http.server 8099`, poi `_preview-{row,block}-{none,rule,ornament}.html`. Niente di quella giornata è mai stato aperto in un browser (estensione Chrome non collegata): tipi, regole, build e HTML generato non dicono se una carta si legge. **L'impaginazione a blocco poggia su `display: contents` + `order`**, scritto in due copie senza vederlo rendere — è il punto più esposto.
-- [ ] **La UI della scatola "Aspetto"**: l'utente ha detto che la sistemeremo (03/09). Ha ormai nove voci.
+- [x] ~~**La UI della scatola "Aspetto"**~~ — RIFATTA il 2026-09-06 in **tre gruppi** (La carta · L'identità · Il testo), con «La carta» a tutta larghezza e i due gruppi piccoli affiancati sotto. Diario: Tema 33; tecnica in `partner/README.md`. La valuta è uscita dai gruppi (non è aspetto) e sta in fondo staccata.
+  - [ ] **Spostare la valuta nell'area Contenuto**, accanto al nome del menù: è il suo posto vero. Passo a sé perché tocca anche `menu/[id]/page.tsx`.
+  - [ ] **Eventuale secondo giro**: due voci per riga anche dentro «La carta» (570 → ~330px, scatola sotto i mille). NON fatto di proposito: due griglie di schede affiancate rischiano di leggersi come un muro di miniature. Da guardare, non da calcolare.
 - [ ] **Le intestazioni delle tre aree dell'editor NON convincono** (03/09, `884aeaf`). Le tre aree — Aspetto, Contenuto, Online — si presentano con la stessa riga in maiuscoletto grigio: la struttura è quella concordata, ma **l'utente non è soddisfatto del risultato visivo** e la rifaremo. Non c'è logica in mezzo: sono tre stringhe (`brandTitle`, `contentLabel`, `addressTitle`) e la tipografia della riga, identica nei tre punti (`BrandBar`, `menu/[id]/page.tsx`, `MenuAddress`).
   - ⚠️ Cosa NON rimettere per sbaglio riaprendola: il titolo dell'indirizzo che cambiava in "Il menù è online" (adesso lo dicono l'interruttore e il verde del riquadro), e il nome accessibile del campo, che ha una stringa sua (`addressField`) proprio perché il titolo non lo dice più.
   - Nota di metodo: un mockup ASCII trasmette la STRUTTURA, non il peso visivo. Su decisioni di sola tipografia conviene guardare prima di convergere.
+
+### Allergeni a icone nel menù al tavolo (deciso 2026-09-06, colonna nella 711)
+
+La riga «Contiene: glutine, uova» sotto ogni piatto può diventare una fila di pittogrammi, come in
+molte carte di ristorante. **Scelta del ristoratore**, colonna `partner_venues.allergen_display`
+(`text` di partenza / `icon`), già dentro la 711 insieme alle righe in `venue_appearance()`,
+`venue_appearance_defaults()` e `revert_appearance`. Le icone **sole**, con legenda: valutato
+icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'ambiguità.
+
+- [x] ~~**Il comando nel portale**~~ — FATTO 2026-09-06: «Come si leggono gli allergeni» (A parole / A icone), ultima voce de «La carta», con `allergenDisplay` cablato end-to-end in `venues.ts` (lettura, salvataggio, annulla dell'aspetto, ripristino del locale) e reso dall'anteprima. La legenda sta in fondo alla carta, elenca **solo gli allergeni che quella carta dichiara** (stessa lista delle pastiglie del filtro) e si apre premendo.
+- [x] ~~**Le 15 icone, prima stesura**~~ — in `partner/src/lib/allergenIcons.ts`, a tratto su griglia 24 e tratto 2, disegnate a 16px (non a 11 come il testo: **le icone in quella riga non fanno risparmiare spazio, ne chiedono**).
+- [ ] ⚠️ **AL TAVOLO NON SI VEDONO ANCORA**: manca la copia gemella sul sito (`landing/lib/allergen-icons.js` + la resa in `render-menu.js` + il controllo in `npm run gemelle`). Finché non c'è, pubblicando il cliente legge le parole come sempre — nessun danno, ma il comando cambia solo l'anteprima.
+- [ ] **Le icone da rivedere** (l'utente le ha approvate come punto di partenza, «nel caso le cambieremo in seguito»). I difetti già visti a misura vera: **latte e uova si somigliano troppo** (due macchie chiuse quasi identiche); **soia, lupini e fave** sono tre baccelle simili fra loro; la **frutta a guscio** resta la più debole — non ha un profilo distintivo. Reggono bene chiocciola (molluschi), arachide, pesce, sedano e calice (solfiti).
+- [ ] **Il vecchio elenco dei pittogrammi**, tenuto per memoria del metodo: ⚠️ **Primo giro fatto il 2026-09-06** («poi le rivedremo meglio»). Quello che si è imparato, per non ripartire da zero:
+  - **Stile deciso: a TRATTO sottile**, non a silhouette piena. Provate tutt'e due, l'utente preferisce il tratto. Conseguenza tecnica: a 12px una linea da 1,5 su griglia 24 diventa mezzo pixel e impasta — servono **tratto ~2, poche linee interne, e l'icona un filo più grande del testo** (14-16px contro un testo da 11). ⚠️ **Le icone non fanno risparmiare spazio nella riga: ne chiedono.**
+  - **Funzionano**: **chiocciola** per i molluschi (leggibile a 12px e non somiglia a nient'altro) e **arachide** (due lobi con due punti).
+  - **Vicoli ciechi già battuti**: gambero a tratto = scarabocchio ondulato; granchio = maschera/insetto a ogni misura; nocciola col cappello = anfora; mezza noce e noce intera = emblema vegetale; mandorla = oliva o uno zero barrato; conchiglia a ventaglio = blob scuro con due fessure.
+  - **La regola emersa**: a 12-14px conta **la sagoma**, non il dettaglio interno. La chiocciola vince perché il suo profilo È il suo nome. Un allergene senza un profilo distintivo (frutta a guscio) probabilmente non ha un pittogramma buono e va risolto in un altro modo. Oggi NON esistono: i 15 allergeni EU hanno **emoji** in
+  `constants/allergens.ts` (🌾 🥛 🥚) e le 23 SVG in `assets/icons/food/` sono le intolleranze
+  extra (lupini, pistacchi, semi di lino). Le emoji al tavolo sono escluse: le disegna il telefono
+  del cliente — la 🌰 di iPhone non è quella di Android — ed è la regola "niente emoji nella UI".
+  Servono SVG nostre, leggibili a 12-14px e con `compact` acceso. ⚠️ Vanno distinte a colpo
+  d'occhio le coppie che si confondono: frutta a guscio / arachidi, crostacei / molluschi,
+  pesce / molluschi.
+  - 💡 **Paga in tre posti**: le stesse SVG servono alla scheda in app (dove toglierebbero le
+    emoji) e al portale, non solo al menù al tavolo.
+- [ ] **La resa al tavolo**, nelle DUE copie gemelle (`landing/lib/render-menu.js` e
+  `partner/src/components/menus/MenuPreview.tsx`, poi `npm run gemelle`). Tre condizioni scritte
+  nel commento della migration e da non perdere: **la polarità va detta** — una spiga da sola non
+  dice se il piatto la contiene o ne è privo, sbarrata vuol dire l'opposto — e dal 2026-09-06 non
+  si dice più su ogni riga («Contiene» tolto su richiesta dell'utente) ma **una volta in fondo alla
+  carta**, con la riga che apre la legenda: «Le icone dicono cosa contiene ogni piatto». ⚠️ Quella
+  riga non è decorativa: se sparisce, la parola torna sui piatti. Poi: ogni icona porta il suo nome
+  come testo alternativo (nella legenda invece è decorativa, o il lettore di schermo dice «Glutine
+  glutine»); nel **popup del piatto** e nella riga del **motivo col filtro acceso** gli allergeni
+  restano **a parole**.
+- [ ] **La manopola nel portale**: scatola Aspetto (che è già da rifare, nove voci) + campo in
+  `VenueAppearance` (`partner/src/lib/venues.ts`). Dopo l'applicazione della 711.
+
+### I link del ristoratore in fondo al menù al tavolo (voluta 2026-09-06, da costruire)
+
+Una fila di link — **social e sito** — in fondo alla pagina che si apre col QR, sotto le condizioni
+al tavolo. Lo spazio esiste già: il Tema 18 ha liberato il fondo del menù togliendo il disclaimer,
+e `partner_links` sta sul locale dal 700.
+
+**Non si riusa l'insieme dei link della scheda**: prenotazione, delivery e "menù esterno" sono
+stati pensati per chi sceglie un ristorante da lontano, e al tavolo sono sbagliati — chi è seduto
+non prenota, non ordina su Glovo (con la commissione a carico del locale), e il menù esterno è la
+pagina che sta leggendo. ⚠️ **Decisione ancora aperta**: se al tavolo debba comparire anche la
+prenotazione, che con l'asporto cambia senso. E se la fila sia gratis o premium (sta nella famiglia
+del logo: identità del locale, non valore nostro — orientamento: gratis).
+
+- [x] ~~**`kind = 'social'` su `partner_links`**~~ — messo nella **711** il 2026-09-06, che non era
+  ancora applicata (un `ALTER` di un vincolo da solo non vale un'esecuzione a mano). Nessuna colonna
+  nuova: riusa `provider` — lo stesso campo con cui il delivery sceglie il logo — e `label`.
+  ⚠️ Lo scambio del vincolo cerca quello vecchio **per colonna e non per nome** e si ferma con un
+  errore se non lo trova: `partner_links_has_target` nomina anche lui `kind`, e un `drop constraint
+  if exists` col nome sbagliato sarebbe riuscito per finta lasciando il vincolo vecchio a rifiutare
+  'social'.
+- [ ] **L'icona si DEDUCE dall'indirizzo, non si chiede** (deciso 2026-09-06). Incollato
+  `instagram.com/...` la fila mostra l'icona di Instagram: nessuna tendina, perché la risposta è già
+  nel link. Non è il clic risparmiato — **così l'icona non può mentire**, e il controllo del dominio
+  qui sopra resta necessario solo per il **delivery**, dove il servizio si sceglie a mano.
+  - Il **dominio sconosciuto non è un errore**: Linktree, un blog, un Mastodon → icona generica
+    (globo) e il link funziona. Se il ristoratore deve indovinare quali indirizzi accettiamo, la
+    fila diventa un modulo.
+  - Il provider si **ricalcola a ogni salvataggio** e non si conserva a parte: `fromLinks` riscrive
+    già tutte le righe del locale, quindi un indirizzo corretto non lascia dietro l'icona di prima.
+  - Il **nome del servizio come testo alternativo** ("Instagram"), o la fila è muta per chi ascolta
+    la pagina con la voce.
+  - ⚠️ Queste icone, a differenza di quelle degli allergeni, **non le disegniamo noi**: sono marchi,
+    si usano i glifi ufficiali secondo le regole di ciascuno (monocromatico sì, ridisegnarli no).
+- [ ] **I link nello scatto**: `build_public_menu` oggi non li legge. Va nella migration che esce
+  **insieme alla resa**, perché dipende da come si disegna la fila. ⚠️ Nello scatto solo l'URL,
+  **mai il telefono** della prenotazione: lo scatto è leggibile da chiunque inquadri il QR (Tema 6).
+- [ ] ⚠️ **Il controllo dello schema esce INSIEME ai link, non dopo** (deciso 2026-09-06; il resto
+  della validazione è stato consapevolmente rimandato). `normalizeUrl` (`partner/src/lib/venues.ts:888`)
+  completa lo schema quando manca ma **lascia passare quello che c'è**, `javascript:` compreso, e
+  l'escape del sito non lo ferma (`escapeAttr` è un alias di `escapeHtml`, cioè escape di entità).
+  Oggi non è un buco — nessun `href` del sito prende dati del partner — lo diventa il giorno che la
+  fila esce. Sono cinque righe nella stessa funzione che disegna la fila: il modo di non pagarlo mai
+  è che nascano insieme. Vale per **tutti** i tipi di link, sito e `other` compresi.
+- [ ] **Il controllo del dominio — RIMANDATO per scelta (2026-09-06), si interviene se serve.** Il
+  disegno, quando lo si farà: un trigger su `partner_links` (la difesa vera: dal portale si può
+  scrivere su PostgREST col proprio token) che rifiuta l'indirizzo fuori dominio **solo se il
+  provider è uno di quelli noti**, con **elenco di suffissi e non una stringa** (`deliveroo.it` e
+  `deliveroo.co.uk`, `justeat.it` e `just-eat.dk`, `instagr.am`) — un falso errore su un link giusto
+  è il modo di bloccare il ristoratore su un dato che è suo, ed è la ragione per cui la 700 non
+  valida il telefono. `provider = 'other'` e `website` non sono controllabili e non devono diventare
+  un muro. ⚠️ **Non** scartare le righe in silenzio dentro `build_public_menu`: il link si vedrebbe
+  nell'editor e non al tavolo. Il valore quotidiano non è il phishing, è che **l'icona non menta**
+  (link Facebook sotto il logo di Instagram: l'errore normale, senza cattive intenzioni).
+- [ ] **Dove**: in fondo, sotto `menu-conditions`, fila di icone. Mai in cima né fra le sezioni —
+  al tavolo si viene per il cibo (Tema 7). Etichette nostre («Seguici»), quindi tradotte gratis.
+  Copia gemella e `npm run gemelle` come sempre.
 
 ### Legale / GDPR (revisione 2026-07-14/15, contesto in memoria `project_legal_gdpr_review.md`)
 - [ ] **Registro dei trattamenti (art. 30 GDPR)** — documento interno mancante (unico gap sostanziale rimasto dalla revisione). L'esenzione per le piccole realtà non si applica: trattiamo dati salute (art. 9) in modo non occasionale. Serve una tabella con: trattamenti, finalità, categorie di dati/interessati/destinatari, trasferimenti extra-UE, tempi di conservazione, misure di sicurezza. Non è pubblico: va solo tenuto pronto in caso di richiesta del Garante. Lavoro: ~1h.

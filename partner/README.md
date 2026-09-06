@@ -435,13 +435,97 @@ Tre cose da non disfare per sbaglio:
   Scambiarli vuol dire far riscrivere il coperto in carta, pranzo e bevande —
   e poi correggerlo in tutte e tre.
 
+**Il riquadro sotto l'anteprima** (`LiveBox`) — codice QR, indirizzo, i tre
+comandi — parla lo **stesso vocabolario delle altre schede della pagina** dal
+2026-09-06: `rounded-2xl`, `p-4`, `shadow-sm`, testo `text-sm`/`text-xs`,
+bottoni `px-3 py-1.5`. Prima aveva misure tutte sue (testo da 11px, bottoni da
+4px di respiro, QR da 56) e in fondo a una colonna di schede grandi si leggeva
+come un residuo.
+- Il **verde resta**: lì non è decorazione, è il segnale «è in sala» — quello
+  che dice senza scriverlo che il menù risponde davvero.
+- ⚠️ **I comandi stanno SOTTO il codice, non a fianco**: la colonna
+  dell'anteprima è larga 304px e col QR a 96 ne restavano 160 per tre bottoni,
+  che andavano a capo uno per riga. Sotto ne hanno 272 e la fila regge.
+- ⚠️ Il QR si genera a **240px** e non più a 160: a 96 sullo schermo, i moduli
+  generati a 160 si impastavano. Quello che si **scarica** resta un altro file
+  (`lib/qr.ts`), identico a quello della sezione in fondo.
+
 **La scatola "Aspetto"** (`BrandBar`) è **comprimibile** e chiusa di
 partenza — l'aspetto si sceglie una volta, il menù si tocca ogni giorno — con
 un riassunto sulla riga ("A blocco · EUR · Moderno · Filetto") per non
-doverla aprire. Dentro, nell'ordine: **impaginazione**, **valuta**, colore, **pacchetto di stile** dei testi,
-**grandezza dei testi**, **stile dei titoli di sezione**, **copertina**, le
-**foto dei piatti** (tre scelte: nessuna / quadrate / tonde), il **segno fra
-un piatto e l'altro** e l'interruttore delle **descrizioni in lista**.
+doverla aprire.
+
+**Dentro non ha titoli di sezione**: le voci stanno nell'ordine in cui uno
+guarda una carta, e a raggrupparle è **una riga leggera** ogni tanto. I nomi
+c'erano (La carta · L'identità · Il testo) e sono stati tolti il 2026-09-06:
+dicevano a parole quello che le voci dicono da sé, e in una scatola che si
+apre per fare una modifica sola erano tre fermate in più.
+
+L'ordine, dall'alto: **impaginazione** · titoli delle sezioni · fra i piatti ·
+foto dei piatti · **come si leggono gli allergeni** · descrizioni in lista —
+riga — **colore e copertina**, affiancati — riga — **stile dei testi**,
+grandezza, interlinea — riga — **valuta**, che non è aspetto (v. sotto).
+
+**Le scelte sono PASTIGLIE, non schede con un campione.** Titoli delle
+sezioni, fra i piatti e foto erano schede con un disegnino, con la
+motivazione «si sceglie guardando invece di leggere tre nomi». Superata
+dall'utente il 2026-09-06, e aveva ragione: il campione è largo un
+centimetro, mentre **l'anteprima accanto è grande come un telefono e mostra
+il risultato vero** — due modi di far vedere la stessa cosa, e uno dei due è
+migliore. Restano schede solo le **due impaginazioni**, dove il campione
+mostra una STRUTTURA che una parola non descrive; e anche lì la didascalia
+sotto il nome è stata tolta (resta come `title` del bottone, per chi la pagina
+la ascolta).
+
+⚠️ **Una voce che non cambierebbe niente non si mostra.** Vale in due punti,
+ed è la stessa regola: **le foto** spariscono con l'impaginazione «a blocco»
+(che non le mostra), e **«Titoli delle sezioni»** sparisce se il menù non ha
+nessuna sezione con un nome — col menù di esempio acceso invece si vede,
+perché quelle sezioni un titolo ce l'hanno. I blocchi di testo NON contano:
+hanno un aspetto loro e non passano da `section_style`.
+
+**La tavolozza è la ruota dei colori, in ordine di tinta**: 18 tinte su due
+righe da nove — tre neutri in testa (il carbone per primo, perché
+`DEFAULT_ACCENT` legge la posizione 0), poi dal rosso al rosa antico. I criteri
+per aggiungerne — misurati, non a occhio — stanno in `menuBrand.ts`:
+contrasto col bianco **≥ 6.3** (non il 4.5 di WCAG: è quanto tiene il verde
+bosco, la più debole della fila), saturazione dentro **0.43–0.75** (a
+saturazione piena sono colori da segnaletica), distanza percettiva **ΔE ≥
+11.6** in CIELAB da ognuna delle altre (è la distanza della coppia più vicina
+che già convive, oliva/prato), e **si riempiono i buchi della ruota invece di
+aggiungere vicini**. ⚠️ Quando la ruota è piena — e lo è — non si aggiungono
+tinte ma **profondità**: pino sotto bosco, inchiostro sotto blu, più un neutro
+freddo e due tinte spente. ⚠️ **Un codice si ritira dall'OFFERTA, non dalla RESA**: il portale smette di
+proporlo, `ACCENTI` sul sito continua a saperlo disegnare, e prima si verifica
+sul database che nessuno lo usi — guardando sia `accent` sia
+`published_menu->>'accent'`, o un menù già in sala cambierebbe colore da solo.
+Così è stato ritirato l'ottone il 2026-09-06, sostituito dal grigio. La
+differenza voluta fra le due copie è dichiarata in `SOLO_SITO` dentro
+`scripts/gemelle.mjs`, o il controllo la segnalerebbe come dimenticanza. Nessuna migration — la colonna è testo libero di proposito (703) —
+ma **la copia gemella sul sito sì**: `ACCENTI` in `landing/lib/render-menu.js`,
+che `npm run gemelle` confronta.
+
+⚠️ **Con «a blocco» la voce delle foto non compare affatto.** Quella
+impaginazione non le mostra: prima spariva solo la manopola della forma e
+restava «nessuna / quadrate / tonde», cioè un comando che al tavolo non
+cambiava niente. Il valore resta scritto sul locale e tornando «a riga» si
+ritrova la forma di prima — sparisce il comando, non la scelta. Per la stessa
+ragione il riassunto sulla riga chiusa **non nomina le foto** quando
+l'impaginazione è a blocco.
+
+**Il selezionato è una pastiglia piena nera** (`border-gray-900 bg-gray-900
+text-white`), lo stesso idioma degli allergeni in `DishForm`: vale per le
+scelte di solo testo — carattere, grandezza, interlinea, come si leggono gli
+allergeni. Sulle schede con l'assaggio (impaginazione, titoli, separatore,
+foto) il nero pieno cancellerebbe il campione che si sta guardando, quindi lì
+il selezionato è **solo il bordo scuro**: prima erano bordo *più* anello, due
+segni per la stessa cosa.
+
+⚠️ **La valuta è fuori dai tre gruppi**, in fondo e staccata: non è aspetto —
+vive sul MENÙ e non sul locale, conta come modifica di contenuto e «Rimetti
+com'è in sala» non la tocca. Il suo posto vero è l'area Contenuto, accanto al
+nome del menù; lo spostamento è un passo a sé perché tocca anche
+`menu/[id]/page.tsx`.
 
 **L'impaginazione è la prima voce perché è la STRUTTURA** (`menu_layout`:
 `row` / `block`, migration 711): decide come è disposto un piatto — foto,
