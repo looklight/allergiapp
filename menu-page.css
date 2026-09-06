@@ -809,6 +809,14 @@
   text-decoration: none;
 }
 .menu-brand-logo { width: 18px; height: 18px; }
+/* Sottovoce quanto il marchio, ma su una riga propria: non è una firma,
+   è una risposta alla domanda che il cliente si fa inquadrando un QR. */
+.menu-privacy-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
 
 /* ── Il foglio dei filtri, e il popup del piatto ───────────────── */
 /* Sono due cose diverse e si comportano da cose diverse. Il FOGLIO dei filtri
