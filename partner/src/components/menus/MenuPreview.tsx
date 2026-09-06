@@ -779,6 +779,7 @@ export default function MenuPreview({
           item={detail.item}
           dish={detail.dish}
           suffisso={suffisso}
+          allergenDisplay={allergenDisplay}
           showPhoto={showPhotos}
           currency={menu.currency}
           needs={needs}

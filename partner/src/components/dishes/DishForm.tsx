@@ -11,6 +11,7 @@ import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { DISH_CATEGORIES, categoryName, visibleCategories } from '@/lib/categories';
 import { DISH_NOTES, noteName } from '@/lib/dishNotes';
+import { ALLERGEN_ICON_PATHS } from '@/lib/allergenIcons';
 import { usePartnerProfile, useUpdatePartnerProfile, setHiddenCategories } from '@/lib/partnerProfile';
 import { currentUserId } from '@/lib/storage';
 import PhotoCropDialog from '../PhotoCropDialog';
@@ -455,12 +456,32 @@ export default function DishForm({
                 key={a.code}
                 type="button"
                 onClick={() => toggle(allergens, setAllergens, a.code)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                   selected
                     ? 'border-[#FFE082] bg-[#FFF8E1] text-[#8D6E00]'
                     : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                 }`}
               >
+                {/* IL PITTOGRAMMA QUI SEMPRE, e non è la manopola del menù:
+                    questa è la maschera del ristoratore, non la carta del
+                    cliente. Le note qui accanto l'icona ce l'hanno, e due
+                    famiglie di caselle trattate in modo diverso nella stessa
+                    schermata non hanno una ragione. È anche il posto in cui il
+                    ristoratore impara che disegno gli toccherà, se un giorno
+                    sceglierà di leggere la carta a simboli. */}
+                {ALLERGEN_ICON_PATHS[a.code] && (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden
+                    dangerouslySetInnerHTML={{ __html: ALLERGEN_ICON_PATHS[a.code] }}
+                  />
+                )}
                 {a[locale]}
               </button>
             );
