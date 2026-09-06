@@ -200,6 +200,7 @@ const en: typeof it = {
     dishNotesUseful: 'Useful at the table',
     manageCategories: 'Manage…',
     manageCategoriesHint: 'Remove the ones you don’t use from the list. They stay available: no dish changes.',
+    manageCategoriesDone: 'Done',
     missingCategory: 'A category missing? Write to us at',
     missingCategorySubject: 'Missing category in the portal',
     declarationNotice:

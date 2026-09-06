@@ -176,6 +176,62 @@ export default function DishForm({
       {/* Categoria a scelta singola: le pill vanno a capo invece di scorrere,
           così si vedono tutte insieme senza doverne cercare una fuori campo.
           Ritoccare la pill accesa la spegne = nessuna categoria. */}
+      {gestisci ? (
+      /* IL PANNELLO PRENDE IL POSTO della fila, non le si mette sotto. Con
+         tutt'e due aperte erano trentasei pastiglie quasi identiche e non si
+         capiva quale riga scegliesse la categoria del piatto e quale la
+         togliesse dalla tendina. Visto solo aprendo la maschera. */
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <p className="mb-2 text-xs text-gray-500">{d.editor.manageCategoriesHint}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {DISH_CATEGORIES.map((cat) => {
+            const visibile = !nascoste.includes(cat.code);
+            return (
+              <button
+                key={cat.code}
+                type="button"
+                onClick={async () => {
+                  const dopo = visibile
+                    ? [...nascoste, cat.code]
+                    : nascoste.filter((c) => c !== cat.code);
+                  // ottimista come tutto il resto del portale: la riga si
+                  // scrive dietro, la tendina cambia subito
+                  if (profile) aggiornaProfilo({ ...profile, hiddenCategories: dopo });
+                  const userId = await currentUserId();
+                  if (userId) await setHiddenCategories(userId, dopo);
+                }}
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  visibile
+                    ? 'border-gray-400 bg-white text-gray-700'
+                    : 'border-gray-200 bg-gray-100 text-gray-400 line-through'
+                }`}
+              >
+                {categoryName(cat.code, locale)}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setGestisci(false)}
+            className="shrink-0 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+          >
+            {d.editor.manageCategoriesDone}
+          </button>
+        </div>
+        {/* Quella che manca si chiede a noi: la traduciamo in quindici lingue
+            e ce l'hanno tutti. Un campo di testo libero qui avrebbe dato al
+            ristoratore una parola che al tavolo resta in italiano. */}
+        <p className="mt-2.5 text-xs text-gray-500">
+          {d.editor.missingCategory}{' '}
+          <a
+            href={`mailto:info@allergiapp.com?subject=${encodeURIComponent(d.editor.missingCategorySubject)}`}
+            className="underline underline-offset-2 hover:text-gray-900"
+          >
+            info@allergiapp.com
+          </a>
+        </p>
+      </div>
+      ) : (
       <div className="flex flex-wrap gap-1.5">
         {visibleCategories(nascoste, category === '' ? [] : [category]).map((cat) => {
           const selected = category === cat.code;
@@ -196,61 +252,12 @@ export default function DishForm({
         })}
         <button
           type="button"
-          onClick={() => setGestisci((v) => !v)}
+          onClick={() => setGestisci(true)}
           className="shrink-0 rounded-full border border-dashed border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
         >
           {d.editor.manageCategories}
         </button>
       </div>
-
-      {/* IL PANNELLO. Spuntare toglie dalla tendina, non dal mondo: la
-          categoria resta con lo stesso codice di tutti gli altri ristoranti,
-          e il giorno che serve si rimette. Una in uso su un piatto non si può
-          togliere di mezzo — sparirebbe sotto gli occhi di chi l'ha usata. */}
-      {gestisci && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-          <p className="mb-2 text-xs text-gray-500">{d.editor.manageCategoriesHint}</p>
-          <div className="flex flex-wrap gap-1.5">
-            {DISH_CATEGORIES.map((cat) => {
-              const visibile = !nascoste.includes(cat.code);
-              return (
-                <button
-                  key={cat.code}
-                  type="button"
-                  onClick={async () => {
-                    const dopo = visibile
-                      ? [...nascoste, cat.code]
-                      : nascoste.filter((c) => c !== cat.code);
-                    // ottimista come tutto il resto del portale: la riga si
-                    // scrive dietro, la tendina cambia subito
-                    if (profile) aggiornaProfilo({ ...profile, hiddenCategories: dopo });
-                    const userId = await currentUserId();
-                    if (userId) await setHiddenCategories(userId, dopo);
-                  }}
-                  className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                    visibile
-                      ? 'border-gray-400 bg-white text-gray-700'
-                      : 'border-gray-200 bg-gray-100 text-gray-400 line-through'
-                  }`}
-                >
-                  {categoryName(cat.code, locale)}
-                </button>
-              );
-            })}
-          </div>
-          {/* Quella che manca si chiede a noi: la traduciamo in quindici
-              lingue e ce l'hanno tutti. Un campo di testo libero qui avrebbe
-              dato al ristoratore una parola che al tavolo resta in italiano. */}
-          <p className="mt-2.5 text-xs text-gray-500">
-            {d.editor.missingCategory}{' '}
-            <a
-              href={`mailto:info@allergiapp.com?subject=${encodeURIComponent(d.editor.missingCategorySubject)}`}
-              className="underline underline-offset-2 hover:text-gray-900"
-            >
-              info@allergiapp.com
-            </a>
-          </p>
-        </div>
       )}
 
       {/* Foto tonda in linea col nome, come una foto profilo */}

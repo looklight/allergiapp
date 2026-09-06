@@ -242,6 +242,7 @@ const it = {
     dishNotesUseful: 'Utili al tavolo',
     manageCategories: 'Gestisci…',
     manageCategoriesHint: 'Togli dalla tendina quelle che non usi. Restano disponibili: nessun piatto cambia.',
+    manageCategoriesDone: 'Fatto',
     missingCategory: 'Manca una categoria? Scrivici a',
     missingCategorySubject: 'Categoria mancante nel portale',
     declarationNotice:
