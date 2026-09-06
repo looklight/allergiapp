@@ -1087,13 +1087,24 @@
   background: #fef2f2;
   color: #b91c1c;
 }
+/* Le pastiglie del dettaglio portano l'icona: allergeni e note allo stesso
+   modo. Il disegno sta dentro la pastiglia, quindi la misura è fissa come
+   nella riga — non deve crescere con la grandezza dei testi. */
+.menu-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.menu-chip-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
 /* La nota nel dettaglio: neutra, non verde come le compatibilità. Il verde
    dice «va bene per te», e «contiene alcol» non è una buona notizia per
    nessuno — è solo un'informazione. */
 .menu-chip.is-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   border-color: var(--border);
   background: var(--bg-alt, #fafafa);
   color: var(--text-secondary);
