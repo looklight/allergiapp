@@ -669,6 +669,32 @@
   color: #9e9e9e;
 }
 .menu-item-allergens:empty { display: none; }
+
+/* LE NOTE DEL PIATTO: stessa famiglia delle righe minute, ma un gradino più
+   scure degli allergeni. Non è una gerarchia inventata — «surgelato» il
+   ristoratore è tenuto a dirlo, e una nota di legge stinta come una postilla
+   sarebbe il modo elegante di non dirla. */
+.menu-item-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  margin-top: 4px;
+}
+.menu-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: max(11px, calc(11px * var(--ms, 1)));
+  line-height: max(1.3, calc(1.35 * var(--lh, 1)));
+  color: var(--text-secondary);
+}
+/* Misura FISSA e non in em: l'icona deve restare la stessa in tutt'e tre le
+   grandezze del testo, altrimenti su Ampia diventa un bollino. */
+.menu-note-icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
 /* display:block qui sopra è più forte della regola predefinita del browser
    per [hidden]: senza questa riga, la riga degli allergeni resterebbe visibile
    sotto al motivo dell'esclusione, dicendo due volte la stessa cosa. */
@@ -1010,6 +1036,17 @@
   border-color: #fca5a5;
   background: #fef2f2;
   color: #b91c1c;
+}
+/* La nota nel dettaglio: neutra, non verde come le compatibilità. Il verde
+   dice «va bene per te», e «contiene alcol» non è una buona notizia per
+   nessuno — è solo un'informazione. */
+.menu-chip.is-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-color: var(--border);
+  background: var(--bg-alt, #fafafa);
+  color: var(--text-secondary);
 }
 .menu-chip.is-diet {
   border-color: #bbf7d0;
