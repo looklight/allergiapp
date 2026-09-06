@@ -201,9 +201,29 @@ export default function DishDetailSheet({
             )}
           </div>
 
-          {/* Le note PRIMA delle compatibilità, e neutre invece che verdi: il
-              verde dice «va bene per te», e «contiene alcol» non è una buona
-              notizia per nessuno — è solo una cosa da sapere. */}
+          {dish.dietTags.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                {d.menuPublic.dishDetailDietsTitle}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {dish.dietTags.map((code) => (
+                  <span
+                    key={code}
+                    className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[calc(13px*var(--ms))] font-medium text-green-700"
+                  >
+                    {dietNeedName(code, locale)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Le note ULTIME, dopo le compatibilità (scelta dell'utente,
+              2026-09-06): si legge prima a chi va bene il piatto, poi com'è
+              fatto. Neutre e non verdi — il verde dice «va bene per te», e
+              «contiene alcol» non è una buona notizia per nessuno.
+              ⚠️ Stesso ordine nella gemella: landing/lib/render-menu.js. */}
           {DISH_NOTES.some((n) => dish.notes.includes(n.code)) && (
             <div className="mt-3">
               <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
@@ -235,23 +255,6 @@ export default function DishDetailSheet({
             </div>
           )}
 
-          {dish.dietTags.length > 0 && (
-            <div className="mt-3">
-              <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                {d.menuPublic.dishDetailDietsTitle}
-              </p>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {dish.dietTags.map((code) => (
-                  <span
-                    key={code}
-                    className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[calc(13px*var(--ms))] font-medium text-green-700"
-                  >
-                    {dietNeedName(code, locale)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* In fondo e non sotto la foto: lì rompeva le proporzioni fra
               immagine e titolo. Un avviso diverso da quello sugli
