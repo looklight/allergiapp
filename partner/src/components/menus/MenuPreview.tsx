@@ -1050,10 +1050,6 @@ function Riga({
               Col filtro acceso il motivo prende il posto dell'elenco intero:
               chi ha appena toccato "senza glutine" vuole sapere perché QUESTO
               piatto è finito in fondo, non rileggere tutti i suoi allergeni. */}
-          {/* Le note stanno SOPRA la riga degli allergeni e non spariscono col
-              filtro acceso: «surgelato» va detto anche al piatto che il
-              cliente ha appena escluso, perché potrebbe rimetterlo dentro. */}
-          <NotePiatto codes={dish.notes} locale={locale} display={allergenDisplay} />
           {fuori ? (
             <p className="menu-item-reason riga-minuta mt-1 font-medium leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-500">
               {perche.contiene.length > 0 &&
@@ -1093,6 +1089,13 @@ function Riga({
               </p>
             )
           )}
+
+          {/* PRIMA GLI ALLERGENI, POI LE NOTE (scelta dell'utente): stesso
+              ordine del dettaglio del piatto — cosa c'è dentro, poi com'è
+              fatto. Restano anche sul piatto escluso dal filtro: «surgelato»
+              va detto comunque, e quel piatto il cliente potrebbe rimetterlo
+              dentro. */}
+          <NotePiatto codes={dish.notes} locale={locale} display={allergenDisplay} />
         </div>
       </button>
     </li>
