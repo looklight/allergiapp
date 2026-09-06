@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import { authErrorMessage } from '@/lib/authErrors';
 import { createPartnerProfile } from '@/lib/partnerProfile';
 import type { Session } from '@supabase/supabase-js';
+import TermsConsentText from '@/components/TermsConsentText';
 
 // Creazione del profilo partner per chi è già autenticato: serve a chi ha
 // una credenziale AllergiApp (stessa email, un solo auth.users) e non può
@@ -98,7 +99,6 @@ export default function PartnerOnboarding({
               />
             </div>
 
-            {/* TODO: link a condizioni e informativa quando le pagine esisteranno */}
             <div className="space-y-3 pt-1">
               <label className="flex gap-2.5 text-sm text-gray-700">
                 <input
@@ -107,7 +107,7 @@ export default function PartnerOnboarding({
                   onChange={(e) => setTerms(e.target.checked)}
                   className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
                 />
-                <span>{d.login.terms}</span>
+                <TermsConsentText />
               </label>
               <label className="flex gap-2.5 text-sm text-gray-700">
                 <input

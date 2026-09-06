@@ -46,7 +46,15 @@ const it = {
     // perché segue "Password ·", non apre una frase. /account usa l'altra.
     passwordRule: 'almeno 8 caratteri',
     passwordTooShort: 'La password deve avere almeno 8 caratteri.',
-    terms: 'Accetto le condizioni d’uso e l’informativa privacy.',
+    // Cinque pezzi e non una frase sola: due di essi sono link, e chi
+    // accetta deve poter leggere quello che accetta senza perdere il modulo.
+    terms: {
+      pre: 'Accetto le ',
+      termsLink: 'condizioni d’uso',
+      mid: ' e l’',
+      privacyLink: 'informativa privacy',
+      end: '.',
+    },
     marketing: 'Voglio ricevere aggiornamenti su AllergiApp Partner.',
     termsRequired: 'Per creare il profilo partner devi accettare le condizioni.',
     existingPassword: 'Password del tuo account AllergiApp',

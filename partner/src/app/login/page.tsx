@@ -10,6 +10,7 @@ import { createPartnerProfile } from '@/lib/partnerProfile';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Image from 'next/image';
 import LoginPitch from '@/components/LoginPitch';
+import TermsConsentText from '@/components/TermsConsentText';
 
 const inputClass =
   'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none';
@@ -318,9 +319,6 @@ export default function LoginPage() {
                   </div>
 
                   {isSignUp && (
-                    // TODO: condizioni e informativa diventano link quando le
-                    // pagine esisteranno (lavoro legale prima del lancio vero).
-                    //
                     // In corpo minore: sono le condizioni, non il modulo. La
                     // casella resta della misura di prima, che quella è il
                     // bersaglio del dito.
@@ -332,7 +330,7 @@ export default function LoginPage() {
                           onChange={(e) => setTerms(e.target.checked)}
                           className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
                         />
-                        <span>{d.login.terms}</span>
+                        <TermsConsentText />
                       </label>
                       <label className="flex gap-2.5 text-xs leading-relaxed text-gray-600">
                         <input
