@@ -427,8 +427,16 @@ body {
 }
 .layout-block .menu-item-allergens,
 .layout-block .menu-item-reason { order: 4; }
-.layout-block .menu-price {
+/* ⚠️ LE NOTE DEL PIATTO VOGLIONO IL LORO NUMERO. Senza, cadono sull'order 0
+   predefinito e a blocco finiscono SOPRA IL NOME — mentre a riga stanno in
+   fondo. L'impaginazione decide come si dispone un piatto, mai in che ordine
+   dichiara le sue cose: dopo gli allergeni di qua come di là. */
+.layout-block .menu-item-notes {
   order: 5;
+  justify-content: center;
+}
+.layout-block .menu-price {
+  order: 6;
   margin-top: 6px;
   font-size: calc(14px * var(--ms, 1));
 }
