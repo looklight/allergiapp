@@ -21,7 +21,7 @@ Marta Di Muro (AllergiApp) — contatto: info@allergiapp.com
 Le tue allergie, restrizioni e preferenze lingua sono salvate solo sul tuo dispositivo. Non vengono inviate a nessun server.
 
 ### Account (opzionale)
-Se crei un account per recensire o aggiungere ristoranti raccogliamo la tua email, il nickname e i contenuti che pubblichi (recensioni, voti, foto, preferiti). Il nickname può essere anonimo: è l'unico identificativo visibile agli altri utenti. L'email serve solo per accedere e non viene mai mostrata pubblicamente né condivisa. L'app funziona senza account: la card allergeni e le traduzioni non lo richiedono.
+Se crei un account per recensire o aggiungere ristoranti raccogliamo la tua email, il nickname e i contenuti che pubblichi (recensioni, voti, foto, preferiti). Il nickname può essere anonimo: è l'unico identificativo visibile agli altri utenti. L'email serve per accedere e per eventuali comunicazioni di servizio sul tuo account o sui tuoi contenuti. Non viene mai mostrata pubblicamente, condivisa con terzi, né usata per promozioni senza il tuo consenso. L'app funziona senza account: la card allergeni e le traduzioni non lo richiedono.
 
 Registriamo inoltre la data di ultimo utilizzo dell'app, usata solo per statistiche di servizio e moderazione: non è visibile agli altri utenti.
 
@@ -168,7 +168,7 @@ Marta Di Muro (AllergiApp) — contact: info@allergiapp.com
 Your allergies, restrictions, and language preferences are saved only on your device. Not sent to any server.
 
 ### Account (optional)
-If you create an account to review or add restaurants we collect your email, nickname, and the content you post (reviews, votes, photos, favorites). Your nickname can be anonymous: it's the only identifier visible to other users. Your email is used only for sign-in and is never shown publicly or shared. The app works without an account: the allergen card and translations don't require one.
+If you create an account to review or add restaurants we collect your email, nickname, and the content you post (reviews, votes, photos, favorites). Your nickname can be anonymous: it's the only identifier visible to other users. Your email is used for sign-in and for any service messages about your account or your content. It's never shown publicly, shared with third parties, or used for promotions without your consent. The app works without an account: the allergen card and translations don't require one.
 
 We also record the date you last used the app, used only for service statistics and moderation: it is not visible to other users.
 
