@@ -673,14 +673,19 @@
 /* LE NOTE DEL PIATTO: stessa famiglia delle righe minute, ma un gradino più
    scure degli allergeni. Non è una gerarchia inventata — «surgelato» il
    ristoratore è tenuto a dirlo, e una nota di legge stinta come una postilla
-   sarebbe il modo elegante di non dirla. */
+   sarebbe il modo elegante di non dirla.
+
+   ⚠️ SI CHIAMANO `menu-dish-note` e non `menu-note`: quel nome è già il
+   RIQUADRO dei blocchi di testo qui sopra (fondo grigio, imbottitura, raggio),
+   e le note del piatto se lo prendevano tutto — sembravano pastiglie. Visto
+   solo aprendo la pagina in un browser. */
 .menu-item-notes {
   display: flex;
   flex-wrap: wrap;
   gap: 3px 10px;
   margin-top: 4px;
 }
-.menu-note {
+.menu-dish-note {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -690,7 +695,7 @@
 }
 /* Misura FISSA e non in em: l'icona deve restare la stessa in tutt'e tre le
    grandezze del testo, altrimenti su Ampia diventa un bollino. */
-.menu-note-icon {
+.menu-dish-note-icon {
   width: 14px;
   height: 14px;
   flex: none;
