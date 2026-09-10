@@ -942,16 +942,25 @@
  *
  * ⚠️ IL NUMERO È UN’AFFERMAZIONE PUBBLICITARIA. Sta in `appBadgeCount`, una
  * chiave sola per tutte le lingue: si cambia lì e in nessun altro posto. */
+/* AL CENTRO DELLA COLONNA, come i due elenchi qui sopra — `justify-content`
+   e non `fit-content`, perché qui il contenuto è già una riga sola (flex):
+   logo a sinistra del testo esattamente come prima, è la riga nel suo
+   insieme a spostarsi in mezzo. */
 .ml-app-badge {
     display: flex;
     align-items: center;
-    gap: 11px;
+    justify-content: center;
+    gap: 13px;
     margin-top: 34px;
 }
 
+/* ALTO QUANTO LE DUE RIGHE ACCANTO — nome+numero sopra, i due negozi sotto
+   — così il logo riempie la fascia invece di galleggiarci dentro piccolo.
+   48px è la misura di quelle due righe insieme (v. `.ml-app-badge-testo`):
+   se cambia il loro contenuto, questo numero va riguardato con loro. */
 .ml-app-badge-logo {
-    width: 32px;
-    height: 32px;
+    width: 48px;
+    height: 48px;
     border-radius: 28%;
     flex-shrink: 0;
     /* Un filo spenta: è un logo dentro una nota, non un’insegna. */
@@ -1053,8 +1062,98 @@
    pensano il fumetto sopra e i quattro punti sotto. */
 .ml-app-intro {
     max-width: 34em;
-    margin-bottom: 26px;
+    margin-bottom: 18px;
     color: var(--text-secondary);
+}
+
+/* LA SCHEDA CHE C’È GIÀ, IN UNA RIGA SOLA. Prima erano tre paragrafi e un
+   elenco a parte — un blocco che si leggeva come un documento invece che
+   come una pagina. Adesso è una frase, e i quattro punti che sbloccava
+   sono entrati nell'elenco dei vantaggi qui sotto (variante `--compact`,
+   stessa spunta, senza la riga di spiegazione): un linguaggio visivo solo
+   per tutto quello che elenca qualcosa in questa sezione. */
+.ml-app-claim-lead {
+    max-width: 34em;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
+
+.ml-app-claim-lead strong {
+    color: var(--text);
+}
+
+/* Righe più strette e senza la seconda riga di spiegazione — sono quattro
+   funzioni sbloccate dal riscatto, non i quattro motivi per cui conviene
+   esserci: non hanno bisogno dello stesso spazio. */
+/* AL CENTRO DELLA COLONNA, come il riquadro dei vantaggi qui sotto — il
+   testo di ogni riga resta allineato a sinistra, `fit-content` stringe il
+   blocco intorno alle righe e lo mette in mezzo.
+   ⚠️ DOPPIA CLASSE E NON UNA: la regola base `.ml-app-vantaggi` (più giù nel
+   foglio) scrive `margin: 0`, stessa specificità di una classe sola — a
+   parità vince chi sta dopo nel file, e il margine che centra spariva.
+   `.ml-app-vantaggi.ml-app-vantaggi--compact` pesa il doppio e vince
+   sempre, indipendentemente da dove sta la regola base. */
+.ml-app-vantaggi.ml-app-vantaggi--compact {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 22px;
+    text-align: left;
+    gap: 10px;
+}
+
+.ml-app-vantaggi--compact .ml-app-spunta {
+    grid-row: 1;
+}
+
+/* LA NOTA IN PICCOLO: rassicura e basta, non deve pesare quanto una riga
+   dell'elenco sopra. */
+.ml-app-claim-note {
+    max-width: 34em;
+    margin-bottom: 26px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* PIÙ PESO CHE UNA SPIEGAZIONE DI SERVIZIO: è il titolo del riquadro, non
+   un'etichetta come `.ml-app-claim-lead` qui sopra — sedici punti e
+   l'ottocento gli danno la stessa presenza degli altri titoli di sezione,
+   in scala più piccola perché resta dentro la colonna. L'icona dell'app
+   accanto firma il riquadro invece di lasciarlo anonimo. */
+.ml-app-vantaggi-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 18px;
+}
+
+.ml-app-vantaggi-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 28%; /* v. .ml-app-badge-logo: stessa icona, stesso taglio */
+    flex-shrink: 0;
+}
+
+/* IL RIQUADRO, SOBRIO: bordo sottile e fondo bianco come `.ml-try-text`
+   più su, ma senza la sua ombra — qui non deve chiamare l'occhio, deve
+   solo isolare i quattro vantaggi dal resto della colonna. `fit-content`
+   lo stringe intorno al suo contenuto e lo mette al centro della colonna:
+   il titolo e le righe dentro restano allineati a sinistra, è il
+   riquadro nel suo insieme a stare in mezzo. */
+.ml-app-vantaggi-box {
+    box-sizing: border-box;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    /* Esplicito e non ereditato: su schermo stretto la colonna intorno
+       diventa `text-align: center` (v. `.ml-page .ml-app-inner` più giù), e
+       senza questo il testo dentro il riquadro ci finirebbe in mezzo. */
+    text-align: left;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 28px;
+    background: var(--bg);
 }
 
 /* ── IL PIATTO CHE PARLA ────────────────────────────────────────────── */
@@ -1310,6 +1409,27 @@
     transition-delay: 2390ms;
 }
 
+.ml-app-claim-lead.anim-ready {
+    transition-delay: 2460ms;
+}
+
+.ml-app-claim-note.anim-ready {
+    transition-delay: 2820ms;
+}
+
+/* IL RIQUADRO ARRIVA CON IL TITOLO, non prima: senza questo il bordo e il
+   fondo comparivano appena la sezione entrava in vista, e il titolo — che
+   aspetta il suo posto in fila, quasi tre secondi dopo — ci arrivava dentro
+   con un salto. Un filo prima del titolo, così il riquadro c'è già quando
+   lui appare. */
+.ml-app-vantaggi-box.anim-ready {
+    transition-delay: 2860ms;
+}
+
+.ml-app-vantaggi-title.anim-ready {
+    transition-delay: 2890ms;
+}
+
 /* Stessa coppia dei passi di «Come funziona», e per lo stesso motivo: la
    partenza più corta va con l’arrivo ridichiarato, o i punti non risalgono
    mai (v. l’avviso lassù). */
@@ -1321,13 +1441,28 @@
     transform: translateY(0);
 }
 
-.ml-app-vantaggi .anim-ready:nth-child(1) { transition-delay: 2510ms; }
-.ml-app-vantaggi .anim-ready:nth-child(2) { transition-delay: 2620ms; }
-.ml-app-vantaggi .anim-ready:nth-child(3) { transition-delay: 2730ms; }
-.ml-app-vantaggi .anim-ready:nth-child(4) { transition-delay: 2840ms; }
+/* ⚠️ DUE ELENCHI, DUE TEMPI. `--compact` (i quattro sblocchi del riscatto)
+   arriva subito dopo la frase che lo introduce; l'elenco pieno (i quattro
+   vantaggi) arriva dopo il suo titolo, più in basso — `:not()` tiene i due
+   `nth-child` separati, o condividendo il selettore i quattro sblocchi e i
+   quattro vantaggi comparirebbero insieme anche quando non sono vicini. */
+.ml-app-vantaggi--compact .anim-ready:nth-child(1) { transition-delay: 2540ms; }
+.ml-app-vantaggi--compact .anim-ready:nth-child(2) { transition-delay: 2610ms; }
+.ml-app-vantaggi--compact .anim-ready:nth-child(3) { transition-delay: 2680ms; }
+.ml-app-vantaggi--compact .anim-ready:nth-child(4) { transition-delay: 2750ms; }
+
+.ml-app-vantaggi:not(.ml-app-vantaggi--compact) .anim-ready:nth-child(1) { transition-delay: 2960ms; }
+.ml-app-vantaggi:not(.ml-app-vantaggi--compact) .anim-ready:nth-child(2) { transition-delay: 3030ms; }
+.ml-app-vantaggi:not(.ml-app-vantaggi--compact) .anim-ready:nth-child(3) { transition-delay: 3100ms; }
+.ml-app-vantaggi:not(.ml-app-vantaggi--compact) .anim-ready:nth-child(4) { transition-delay: 3170ms; }
 
 .ml-app-badge.anim-ready {
-    transition-delay: 2990ms;
+    transition-delay: 3240ms;
+}
+
+/* Sotto il telefono, dopo di lui: arriva quando il telefono è già fermo. */
+.ml-phone-caption.anim-ready {
+    transition-delay: 2350ms;
 }
 
 /* ── LA SCHEDA IN APP, FACSIMILE STATICO ───────────────────────────── */
@@ -1344,11 +1479,28 @@
  * la rimpicciolisce, qui lo si scrive a mano perché dentro non c'è una carta
  * da scalare ma marcatura vera. */
 
-.ml-phone.is-scheda {
+/* IL TELEFONO E LA SUA DIDASCALIA, insieme nella cella di destra della
+   griglia: `justify-self` sta sul contenitore e non più sul telefono, che
+   resta largo quanto lo schermo che contiene (`fit-content`, v. `.ml-phone`)
+   — la didascalia sotto eredita la stessa larghezza e si centra sotto di
+   lui, non sotto tutta la colonna. */
+.ml-phone-col {
     justify-self: end;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.ml-phone.is-scheda {
     /* L'unica cosa che cambia rispetto all'anteprima: lo schermo che contiene.
      * Bordo, raggi, tasti e ombra li ricalcola da sé la cornice. */
     --ml-largo: var(--ml-scheda-larga, 300px);
+}
+
+.ml-phone-caption {
+    margin: 14px 0 0;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    text-align: center;
 }
 
 .ml-phone-screen.is-scheda {
@@ -1631,39 +1783,103 @@
     color: #2E7D32;
 }
 
-/* ── IL FILTRO ──────────────────────────────────────────────────────── */
+/* ── PRIMA E DOPO ───────────────────────────────────────────────────── */
+/* Stessa grammatica visiva di «Come funziona» qui sopra — due corsie, una
+ * colorata e una neutra — ma qui il colore non segna «di chi è il lavoro»,
+ * segna «con o senza»: la corsia grigia è la sala oggi, quella verde è la
+ * sala con AllergiApp. Chi arriva qui l'ha già vista più su, e la
+ * riconosce prima ancora di leggere il testo. Sta dopo la sezione
+ * dell'app e non prima di «Come funziona» — non prepara più il discorso,
+ * lo riassume appena prima del bottone finale. */
 
-.ml-filter {
-    padding: 70px 0;
+.ml-friction {
+    padding: 50px 0 60px;
 }
 
-.ml-filter-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 22em) minmax(0, 34em);
-    gap: 24px 64px;
-    justify-content: center;
-}
-
-.ml-filter-title {
+.ml-friction-title {
     line-height: 1.15;
     font-size: var(--ml-titolo-sezione);
     font-weight: 800;
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.ml-friction-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 62em;
+    margin: 0 auto;
+}
+
+.ml-friction-card {
+    border-radius: 18px;
+    padding: 22px 24px 24px;
+}
+
+.ml-friction-card ul {
     margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
 }
 
-.ml-filter-text p {
+.ml-friction-card li {
+    padding-left: 20px;
+    position: relative;
+}
+
+.ml-friction-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+}
+
+/* «SENZA»: grigio e una crocetta minuta — non un rosso d'allarme, è
+   fastidio quotidiano, non un errore. */
+.ml-friction-card.is-prima {
+    background: var(--bg-alt);
+}
+
+.ml-friction-card.is-prima .ml-friction-label {
     color: var(--text-secondary);
-    margin-bottom: 16px;
 }
 
-.ml-filter-text strong {
+.ml-friction-card.is-prima li {
+    color: var(--text-secondary);
+}
+
+.ml-friction-card.is-prima li::before {
+    content: '×';
+    position: absolute;
+    left: 0;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+/* «CON»: lo stesso verde della corsia «tua» di «Come funziona» — è la
+   stessa promessa, ripetuta con lo stesso colore. */
+.ml-friction-card.is-dopo {
+    background: var(--primary-light);
+}
+
+.ml-friction-card.is-dopo .ml-friction-label {
+    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
+.ml-friction-card.is-dopo li {
     color: var(--text);
 }
 
-.ml-filter-claim {
-    border-left: 3px solid var(--primary);
-    padding-left: 16px;
-    color: var(--text) !important;
+.ml-friction-card.is-dopo li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #1B5E20;
+    font-weight: 700;
 }
 
 /* ── CHIUSURA ───────────────────────────────────────────────────────── */
@@ -1672,6 +1888,16 @@
     padding: 70px 0 90px;
     text-align: center;
     background: linear-gradient(180deg, var(--bg) 0%, #F4FAF5 100%);
+}
+
+/* STESSO TRATTAMENTO DELL'EYEBROW in cima alla pagina: un occhiello piccolo
+   sopra il titolo, non un'altra frase dello stesso peso — qui torna
+   l'argomento «non un PDF», tolto dalla sezione che lo diceva per esteso. */
+.ml-end-lead {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+    margin-bottom: 10px;
 }
 
 .ml-end-title {
@@ -1695,6 +1921,77 @@
 
 .ml-end-note a {
     color: #2E7D32; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
+/* ── FAQ ────────────────────────────────────────────────────────────── */
+/* <details>/<summary> nativi: aperto e chiuso li gestisce il browser, e chi
+   ascolta la pagina lo sente da solo — niente da scrivere in JavaScript. */
+
+.ml-faq {
+    padding: 70px 0 90px;
+}
+
+.ml-faq-inner {
+    max-width: 44em;
+}
+
+.ml-faq-title {
+    line-height: 1.15;
+    font-size: var(--ml-titolo-sezione);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.ml-faq-list {
+    display: grid;
+    gap: 10px;
+}
+
+.ml-faq-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 20px;
+    background: var(--bg);
+}
+
+.ml-faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+
+.ml-faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+/* La freccetta è disegnata col bordo di un quadrato, girata: un'unica
+   proprietà (`transform`) la porta da «chiuso» ad «aperto», così l'unica
+   cosa che cambia all'apertura è quella, non due icone diverse. */
+.ml-faq-item summary::after {
+    content: '';
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--text-secondary);
+    border-bottom: 2px solid var(--text-secondary);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+}
+
+.ml-faq-item[open] summary::after {
+    transform: rotate(-135deg);
+}
+
+.ml-faq-item p {
+    margin: 0 0 18px;
+    padding-top: 2px;
+    color: var(--text-secondary);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2038,17 +2335,13 @@
         font-size: 14px;
     }
 
-    .ml-page .ml-filter-inner {
-        grid-template-columns: minmax(0, 34em);
-    }
-
     .ml-page .ml-app-inner {
         grid-template-columns: minmax(0, 1fr);
         max-width: 34em;
         gap: 32px;
     }
 
-    .ml-page .ml-phone.is-scheda {
+    .ml-page .ml-phone-col {
         justify-self: center;
         margin: 0 auto;
     }
@@ -2085,6 +2378,8 @@
     }
 
     .ml-page .ml-app-intro,
+    .ml-page .ml-app-claim-lead,
+    .ml-page .ml-app-claim-note,
     .ml-page .ml-app-vantaggi {
         margin-left: auto;
         margin-right: auto;
@@ -2094,15 +2389,22 @@
      * sezione che non si centra: quattro righe centrate con la spiegazione
      * sotto facevano quattro blocchi di larghezza diversa, uno sfalsato
      * rispetto all’altro, e l’elenco smetteva di leggersi come un elenco.
+     * Vale per tutti e due gli elenchi della sezione, stessa ragione.
      *
      * A NON FARLI TOCCARE IL BORDO ci pensa `fit-content`: il blocco è largo
      * quanto il punto più lungo e i margini automatici lo centrano, quindi
      * l’aria ai lati si distribuisce da sé — senza scrivere un rientro a
      * mano, che su uno schermo più stretto sarebbe diventato una gabbia. */
-    .ml-page .ml-app-vantaggi {
+    .ml-page .ml-app-vantaggi,
+    .ml-page .ml-app-vantaggi-title {
         width: fit-content;
         max-width: 100%;
         text-align: left;
+    }
+
+    .ml-page .ml-app-vantaggi-title {
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .ml-page .ml-app-badge {
@@ -2115,6 +2417,17 @@
 
     .ml-page .ml-app-badge-negozi {
         justify-content: center;
+    }
+
+    /* Le due carte una sotto l'altra, stessa ragione delle corsie di «Come
+       funziona» qui sotto. */
+    .ml-page .ml-friction-cards {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .ml-page .ml-friction-card {
+        padding: 20px 16px 22px;
     }
 
     /* Le due corsie una sotto l'altra: affiancate, su schermo stretto,
