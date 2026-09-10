@@ -26,7 +26,7 @@ export default function AddAllergyScreen() {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedOtherFoods: savedOtherFoods, setSelectedOtherFoods: saveOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel, settings, activeCardId } = useAppContext();
+  const { selectedAllergens: savedAllergens, setSelectedAllergens: saveAllergens, selectedOtherFoods: savedOtherFoods, setSelectedOtherFoods: saveOtherFoods, selectedRestrictions, activeDietModes, vegetarianLevel } = useAppContext();
   const activeModeConfigs = DIET_MODES.filter(m => activeDietModes.includes(m.id)).sort((a, b) => a.toggleOrder - b.toggleOrder);
   const hasActiveModes = activeModeConfigs.length > 0;
   // Count only manually-selected restrictions (not auto-selected by active diet modes)
@@ -91,35 +91,15 @@ export default function AddAllergyScreen() {
   };
 
   const handleSave = async () => {
-    // Traccia allergie aggiunte e rimosse
-    const added = selectedAllergens.filter((id) => !savedAllergens.includes(id));
-    const removed = savedAllergens.filter((id) => !selectedAllergens.includes(id));
-
-    // Log eventi individuali per allergie aggiunte/rimosse
-    for (const allergen of added) {
-      await Analytics.logAllergyAdded(allergen);
-    }
-    for (const allergen of removed) {
-      await Analytics.logAllergyRemoved(allergen);
-    }
-
-    // Log evento aggregato del salvataggio
+    // Solo conteggi verso Firebase: quali allergeni ha una persona e' dato
+    // sanitario (art. 9) e non esce dall'Europa. Gli eventi per singolo
+    // allergene sono stati rimossi del tutto; il dettaglio arriva dai contatori
+    // anonimi all'apertura della card (mig 086).
     await Analytics.logAllergiesSaved(
       selectedAllergens,
       savedAllergens.length,
       selectedAllergens.length
     );
-
-    // Traccia other foods aggiunti e rimossi
-    const addedFoods = selectedOtherFoods.filter((id) => !savedOtherFoods.includes(id));
-    const removedFoods = savedOtherFoods.filter((id) => !selectedOtherFoods.includes(id));
-
-    for (const food of addedFoods) {
-      await Analytics.logOtherFoodAdded(food);
-    }
-    for (const food of removedFoods) {
-      await Analytics.logOtherFoodRemoved(food);
-    }
 
     await Analytics.logOtherFoodsSaved(
       selectedOtherFoods,
@@ -129,18 +109,6 @@ export default function AddAllergyScreen() {
 
     await saveAllergens(selectedAllergens);
     await saveOtherFoods(selectedOtherFoods);
-
-    // Update user properties for segmentation — only for the personal profile.
-    // Edits on a user card are local "presentation" data, not user attributes.
-    if (!activeCardId) {
-      Analytics.updateUserProperties({
-        allergenCount: selectedAllergens.length + selectedOtherFoods.length,
-        allergenIds: selectedAllergens,
-        otherFoodIds: selectedOtherFoods,
-        dietModes: activeDietModes,
-        cardLanguage: settings.cardLanguage,
-      });
-    }
 
     router.back();
   };

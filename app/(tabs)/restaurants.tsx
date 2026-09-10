@@ -382,10 +382,17 @@ export default function RestaurantsScreen() {
       if (newFollowed) SupabaseAnalytics.track('followed_filter_enabled');
     }
 
-    // Esigenze usate nel filtro: un "Applica" con esigenze attive = un uso
-    // (letto da get_top_filtered_needs sulla dashboard admin, mig 503).
+    // Esigenze usate nel filtro: un "Applica" con esigenze attive = un uso.
+    // L'evento resta (dice quanto si usa il filtro) ma NON porta piu' l'elenco
+    // delle esigenze: era un dato sanitario legato all'id dell'utente dentro
+    // analytics_events. Il dettaglio va nei contatori anonimi (mig 086), che
+    // contano una chiave per esigenza e non sanno chi.
+    // ⚠️ get_top_filtered_needs (mig 503, admin-prod) legge ancora l'elenco
+    // dall'evento: va ripuntata su daily_dimension_counters, o il widget resta
+    // fermo ai dati storici.
     if (newFmn && (allergens.length > 0 || diets.length > 0)) {
-      SupabaseAnalytics.track('filter_applied', { needs: [...allergens, ...diets] });
+      SupabaseAnalytics.track('filter_applied');
+      SupabaseAnalytics.bumpDimensions('filter_need', [...allergens, ...diets]);
     }
 
     const fmnChanged = newFmn !== forMyNeeds;

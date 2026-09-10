@@ -125,7 +125,7 @@ const ONBOARDING_PATHS = ['/auth/onboarding-nickname', '/auth/onboarding-dietary
 function AppContent() {
   const activeTheme = useTheme();
   const { isDark } = useThemePreference();
-  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, profileAllergens, profileOtherFoods, profileActiveDietModes, profileVegetarianLevel, profileRestrictions, settings } = useAppContext();
+  const { isReady, needsLegalConsent, hasAcceptedLegalTerms, trackingConsent, settings } = useAppContext();
   const { needsOnboarding, isLoading: authLoading } = useAuth();
   const versionGate = useVersionGate();
   const router = useRouter();
@@ -160,24 +160,17 @@ function AppContent() {
         // questo ramo), indipendente dall'ATT — che resta a governare solo
         // analytics/tracking pubblicitario. Vedi consent.tsx per la stessa scelta.
         Crashlytics.setCollectionEnabled(true);
+        // Solo cosa serve a riprodurre un crash. Le esigenze alimentari NON
+        // stanno qui: sono dati sanitari (art. 9) e Crashlytics porta con se'
+        // l'id dell'account (AuthContext), quindi non sarebbero nemmeno
+        // pseudonimi — e gira anche per chi ha rifiutato il tracciamento ATT.
+        // Un crash non si risolve sapendo che l'utente e' celiaco.
         Crashlytics.setAttributes({
           app_version: Constants.expoConfig?.version,
           card_language: settings.cardLanguage,
           app_language: settings.appLanguage,
-          allergen_count: profileAllergens.length + profileOtherFoods.length,
-          restriction_count: profileRestrictions.length,
-          diet_modes: profileActiveDietModes.join(',') || 'none',
         });
         Analytics.logAppOpened();
-        Analytics.updateUserProperties({
-          allergenCount: profileAllergens.length + profileOtherFoods.length,
-          allergenIds: profileAllergens,
-          otherFoodIds: profileOtherFoods,
-          dietModes: profileActiveDietModes,
-          cardLanguage: settings.cardLanguage,
-          vegetarianLevel: profileActiveDietModes.includes('vegetarian') ? profileVegetarianLevel : undefined,
-          restrictionCount: profileRestrictions.length,
-        });
       }
     }
   }, [isReady, hasAcceptedLegalTerms, trackingConsent]);

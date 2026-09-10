@@ -33,8 +33,10 @@ export type EventName =
 
 type EventProperties = Record<string, string | number | boolean | null | string[]>;
 
-// Contatori anonimi (mig 082): nomi ammessi dalla whitelist di bump_daily_counter.
-export type DailyCounterName = 'card_opened';
+// Contatori anonimi con una dimensione (mig 086): nomi ammessi dalla whitelist
+// di bump_daily_dimensions. Una chiave per esigenza, MAI la combinazione — vedi
+// il commento in testa alla migration.
+export type DimensionName = 'card_need' | 'card_language' | 'filter_need';
 
 let isTrackingAuthorized = false;
 
@@ -77,23 +79,43 @@ export const SupabaseAnalytics = {
   },
 
   /**
-   * Contatori ANONIMI (mig 082): incrementano un aggregato (nome, giorno)
+   * Contatori con una dimensione (mig 086): incrementano (nome, giorno, chiave)
    * senza alcun dato personale, quindi NON passano dal gate del consenso —
-   * contano tutti gli utenti. Fire-and-forget come track().
+   * contano tutti gli utenti. Una sola chiamata per tutte le chiavi; i
+   * duplicati li scarta la RPC.
    */
-  bumpDailyCounter(name: DailyCounterName): void {
+  bumpDimensions(name: DimensionName, keys: string[]): void {
+    if (keys.length === 0) return;
     if (__DEV__) {
-      console.log('[SupabaseAnalytics] bumpDailyCounter', name);
+      console.log('[SupabaseAnalytics] bumpDimensions', name, keys);
       return;
     }
     supabase
-      .rpc('bump_daily_counter', { p_name: name })
+      .rpc('bump_daily_dimensions', { p_name: name, p_keys: keys })
       .then(() => undefined, (err) => {
-        if (__DEV__) console.warn('[SupabaseAnalytics] bump failed', name, err);
+        if (__DEV__) console.warn('[SupabaseAnalytics] bumpDimensions failed', name, err);
       });
   },
 
-  /** Aperture scheda per ristorante, anch'esse anonime (vedi bumpDailyCounter). */
+  /**
+   * Apertura della card (mig 086): totale + esigenze + lingua in UN round trip.
+   * Incrementa anche daily_counters 'card_opened' lato server, quindi il widget
+   * storico continua a funzionare: non aggiungere una seconda chiamata per il
+   * totale, o conterebbe due volte. Anonima come sopra.
+   */
+  bumpCardOpen(needs: string[], language: string): void {
+    if (__DEV__) {
+      console.log('[SupabaseAnalytics] bumpCardOpen', language, needs);
+      return;
+    }
+    supabase
+      .rpc('bump_card_open', { p_needs: needs, p_language: language })
+      .then(() => undefined, (err) => {
+        if (__DEV__) console.warn('[SupabaseAnalytics] bumpCardOpen failed', err);
+      });
+  },
+
+  /** Aperture scheda per ristorante, anch'esse anonime (vedi bumpDimensions). */
   bumpRestaurantView(restaurantId: string): void {
     if (__DEV__) {
       console.log('[SupabaseAnalytics] bumpRestaurantView', restaurantId);

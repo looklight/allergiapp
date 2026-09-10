@@ -98,10 +98,6 @@ export default function OtherRestrictionsScreen() {
     setActiveDietModes: saveDietModes,
     vegetarianLevel: savedVegetarianLevel,
     setVegetarianLevel: saveVegetarianLevel,
-    selectedAllergens,
-    selectedOtherFoods,
-    settings,
-    activeCardId,
   } = useAppContext();
   const [selectedRestrictions, setSelectedRestrictions] = useState<RestrictionItemId[]>(savedRestrictions);
   const [localDietModes, setLocalDietModes] = useState<DietModeId[]>(savedDietModes);
@@ -137,7 +133,6 @@ export default function OtherRestrictionsScreen() {
   const isModeActive = (modeId: DietModeId) => localDietModes.includes(modeId);
 
   const handleDietModeToggle = (mode: DietMode, enabled: boolean) => {
-    Analytics.logDietModeToggled(mode.id, enabled);
     let newModes = [...localDietModes];
 
     if (enabled) {
@@ -172,42 +167,15 @@ export default function OtherRestrictionsScreen() {
   };
 
   const handleSave = async () => {
-    // Traccia restrizioni aggiunte e rimosse
-    const addedRestrictions = selectedRestrictions.filter((id) => !savedRestrictions.includes(id));
-    const removedRestrictions = savedRestrictions.filter((id) => !selectedRestrictions.includes(id));
-
-    for (const restriction of addedRestrictions) {
-      await Analytics.logRestrictionAdded(restriction);
-    }
-    for (const restriction of removedRestrictions) {
-      await Analytics.logRestrictionRemoved(restriction);
-    }
-
-    // Log vegetarian level change
-    if (localVegetarianLevel !== savedVegetarianLevel) {
-      Analytics.logVegetarianLevelChanged(localVegetarianLevel);
-    }
-
-    // Log aggregate save event
-    await Analytics.logRestrictionsSaved(selectedRestrictions, localDietModes, localVegetarianLevel);
+    // Solo conteggi verso Firebase: diabete, gravidanza, nichel e istamina sono
+    // dati sanitari (art. 9) e non escono dall'Europa. Gli eventi per singola
+    // restrizione e la modalita' dieta toccata sono stati rimossi; il dettaglio
+    // arriva dai contatori anonimi all'apertura della card (mig 086).
+    await Analytics.logRestrictionsSaved(selectedRestrictions, localDietModes);
 
     await saveRestrictions(selectedRestrictions);
     await saveDietModes(localDietModes);
     await saveVegetarianLevel(localVegetarianLevel);
-
-    // Update user properties — only for the personal profile. Card edits are
-    // local "presentation" data, not user attributes.
-    if (!activeCardId) {
-      Analytics.updateUserProperties({
-        allergenCount: selectedAllergens.length + selectedOtherFoods.length,
-        allergenIds: selectedAllergens,
-        otherFoodIds: selectedOtherFoods,
-        dietModes: localDietModes,
-        cardLanguage: settings.cardLanguage,
-        vegetarianLevel: localDietModes.includes('vegetarian') ? localVegetarianLevel : undefined,
-        restrictionCount: selectedRestrictions.length,
-      });
-    }
 
     router.back();
   };

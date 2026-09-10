@@ -57,10 +57,16 @@ export default function CardScreen() {
 
   useEffect(() => {
     ScreenOrientation.unlockAsync();
-    Analytics.logCardViewed(cardLanguage, selectedAllergens.length, selectedAllergens, isDownloadedLanguage);
-    // Contatore anonimo (mig 082): conta anche gli utenti senza consenso
+    Analytics.logCardViewed(cardLanguage, selectedAllergens.length, isDownloadedLanguage);
+    // Contatori anonimi (mig 086): totale + esigenze + lingua in una sola
+    // chiamata, senza sapere chi. Contano anche gli utenti senza consenso
     // tracking. Fire-and-forget: la card offline resta non contata.
-    SupabaseAnalytics.bumpDailyCounter('card_opened');
+    // Le esigenze vengono da activeCard se c'e' una card secondaria attiva:
+    // conta quello che e' stato davvero mostrato, non quello che sta nel profilo.
+    SupabaseAnalytics.bumpCardOpen(
+      [...selectedAllergens, ...selectedOtherFoods, ...selectedRestrictions, ...activeDietModes],
+      cardLanguage,
+    );
     return () => { ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
   }, []);
 

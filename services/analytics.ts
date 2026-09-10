@@ -6,13 +6,11 @@ import { OtherFoodId } from '../constants/otherFoods';
 type FirebaseAnalyticsInstance = object;
 type LogEventFn = (analytics: FirebaseAnalyticsInstance, name: string, params?: Record<string, unknown>) => Promise<void>;
 type SetCollectionFn = (analytics: FirebaseAnalyticsInstance, enabled: boolean) => Promise<void>;
-type SetPropertyFn = (analytics: FirebaseAnalyticsInstance, name: string, value: string) => Promise<void>;
 
 // Initialized via dynamic require — only used after canSendAnalytics() guard
 let firebaseAnalytics: FirebaseAnalyticsInstance = null!;
 let logEvent: LogEventFn = null!;
 let setAnalyticsCollectionEnabled: SetCollectionFn = null!;
-let setUserProperty: SetPropertyFn = null!;
 let isFirebaseAvailable = false;
 
 try {
@@ -22,7 +20,6 @@ try {
   firebaseAnalytics = getAnalytics();
   logEvent = analyticsModule.logEvent;
   setAnalyticsCollectionEnabled = analyticsModule.setAnalyticsCollectionEnabled;
-  setUserProperty = analyticsModule.setUserProperty;
   isFirebaseAvailable = true;
   if (__DEV__) console.log('[Analytics] Firebase Analytics disponibile (modular API)');
 } catch (error) {
@@ -84,30 +81,9 @@ export const Analytics = {
   },
 
   /**
-   * Eventi allergie
+   * Eventi allergie e alimenti (solo conteggi: QUALI vive nei contatori
+   * anonimi UE, mig 086)
    */
-  async logAllergyAdded(allergyId: AllergenId) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'allergy_added', {
-        allergen_id: allergyId,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging allergy_added:', error);
-    }
-  },
-
-  async logAllergyRemoved(allergyId: AllergenId) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'allergy_removed', {
-        allergen_id: allergyId,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging allergy_removed:', error);
-    }
-  },
-
   async logAllergiesSaved(allergenIds: AllergenId[], previousCount: number, newCount: number) {
     if (!canSendAnalytics()) return;
     try {
@@ -115,35 +91,9 @@ export const Analytics = {
         allergen_count: allergenIds.length,
         previous_count: previousCount,
         new_count: newCount,
-        allergens: allergenIds.join(',').slice(0, 100),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging allergies_saved:', error);
-    }
-  },
-
-  /**
-   * Eventi other foods
-   */
-  async logOtherFoodAdded(foodId: OtherFoodId) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'other_food_added', {
-        food_id: foodId,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging other_food_added:', error);
-    }
-  },
-
-  async logOtherFoodRemoved(foodId: OtherFoodId) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'other_food_removed', {
-        food_id: foodId,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging other_food_removed:', error);
     }
   },
 
@@ -154,7 +104,6 @@ export const Analytics = {
         food_count: foodIds.length,
         previous_count: previousCount,
         new_count: newCount,
-        foods: foodIds.join(',').slice(0, 100),
       });
     } catch (error) {
       console.warn('[Analytics] Error logging other_foods_saved:', error);
@@ -215,10 +164,13 @@ export const Analytics = {
   /**
    * Eventi card
    */
+  // Niente elenco allergeni: quale allergene sta su una card e' dato sanitario
+  // (art. 9) e non esce piu' verso Google. Il conteggio resta perche' da solo
+  // non dice quale condizione. Il dettaglio vive nei contatori anonimi UE
+  // (mig 086, SupabaseAnalytics.bumpCardOpen).
   async logCardViewed(
     cardLanguage: AllLanguageCode,
     allergenCount: number,
-    allergenIds: AllergenId[],
     isDownloadedLanguage: boolean
   ) {
     if (!canSendAnalytics()) return;
@@ -226,7 +178,6 @@ export const Analytics = {
       await logEvent(firebaseAnalytics, 'card_viewed', {
         card_language: cardLanguage,
         allergen_count: allergenCount,
-        allergens: allergenIds.join(',').slice(0, 100),
         is_downloaded_language: isDownloadedLanguage,
       });
     } catch (error) {
@@ -296,112 +247,18 @@ export const Analytics = {
   },
 
   /**
-   * Eventi restrizioni e diete
+   * Eventi restrizioni e diete (solo conteggi, vedi sopra)
    */
-  async logRestrictionAdded(restrictionId: string) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'restriction_added', {
-        restriction_id: restrictionId,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging restriction_added:', error);
-    }
-  },
-
-  async logRestrictionRemoved(restrictionId: string) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'restriction_removed', {
-        restriction_id: restrictionId,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging restriction_removed:', error);
-    }
-  },
-
-  async logVegetarianLevelChanged(level: string) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'vegetarian_level_changed', {
-        level: level,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging vegetarian_level_changed:', error);
-    }
-  },
-
-  async logRestrictionsSaved(restrictionIds: string[], dietModes: DietModeId[], vegetarianLevel: string) {
+  async logRestrictionsSaved(restrictionIds: string[], dietModes: DietModeId[]) {
     if (!canSendAnalytics()) return;
     try {
       await logEvent(firebaseAnalytics, 'restrictions_saved', {
         restriction_count: restrictionIds.length,
-        restrictions: restrictionIds.join(',').slice(0, 100),
         diet_mode_count: dietModes.length,
-        diet_modes: dietModes.join(',').slice(0, 100),
-        vegetarian_level: vegetarianLevel,
       });
     } catch (error) {
       console.warn('[Analytics] Error logging restrictions_saved:', error);
     }
   },
 
-  async logDietModeToggled(modeId: DietModeId, enabled: boolean) {
-    if (!canSendAnalytics()) return;
-    try {
-      await logEvent(firebaseAnalytics, 'diet_mode_toggled', {
-        mode_id: modeId,
-        enabled: enabled,
-      });
-    } catch (error) {
-      console.warn('[Analytics] Error logging diet_mode_toggled:', error);
-    }
-  },
-
-  /**
-   * User properties (informazioni demografiche aggregate)
-   */
-  async setUserPropertyValue(property: string, value: string) {
-    if (!canSendAnalytics()) return;
-    try {
-      await setUserProperty(firebaseAnalytics, property, value);
-    } catch (error) {
-      console.warn('[Analytics] Error setting user property:', error);
-    }
-  },
-
-  async updateUserProperties(props: {
-    allergenCount: number;
-    allergenIds: AllergenId[];
-    otherFoodIds: OtherFoodId[];
-    dietModes: DietModeId[];
-    cardLanguage: AllLanguageCode;
-    vegetarianLevel?: string;
-    restrictionCount?: number;
-  }) {
-    if (!canSendAnalytics()) return;
-    try {
-      // User property values limited to 36 chars by Firebase
-      await setUserProperty(firebaseAnalytics, 'allergen_count', String(props.allergenCount));
-      // Truncate CSV to 36 chars (Firebase user property limit)
-      const allergensCsv = props.allergenIds.join(',') || 'none';
-      await setUserProperty(firebaseAnalytics, 'allergens', allergensCsv.slice(0, 36));
-      const otherFoodsCsv = props.otherFoodIds.join(',') || 'none';
-      await setUserProperty(firebaseAnalytics, 'other_foods', otherFoodsCsv.slice(0, 36));
-      await setUserProperty(firebaseAnalytics, 'other_food_count', String(props.otherFoodIds.length));
-      // Abbreviate diet mode IDs to fit 36-char limit (preg,veg,nick,hist,diab)
-      const modeAbbrev: Record<string, string> = { pregnancy: 'preg', vegetarian: 'veg', nickel: 'nick', histamine: 'hist', diabetes: 'diab' };
-      const modes = props.dietModes.map(m => modeAbbrev[m] || m).join(',');
-      await setUserProperty(firebaseAnalytics, 'diet_modes', modes || 'none');
-      await setUserProperty(firebaseAnalytics, 'card_language', props.cardLanguage);
-      if (props.vegetarianLevel !== undefined) {
-        await setUserProperty(firebaseAnalytics, 'vegetarian_level', props.vegetarianLevel);
-      }
-      if (props.restrictionCount !== undefined) {
-        await setUserProperty(firebaseAnalytics, 'restriction_count', String(props.restrictionCount));
-      }
-    } catch (error) {
-      console.warn('[Analytics] Error updating user properties:', error);
-    }
-  },
 };
