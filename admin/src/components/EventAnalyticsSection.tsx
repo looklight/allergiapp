@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { safeQuery, safeCount } from '@/lib/safeQuery';
-import { labelAllergen, labelDiet } from '@/lib/dietaryLabels';
+import { labelNeed } from '@/lib/dietaryLabels';
 import InfoHint from '@/components/InfoHint';
 
 // Etichette italiane per gli eventi del catalogo (vedi services/supabaseAnalytics.ts).
@@ -45,16 +45,6 @@ const EVENT_HINTS: Record<string, string> = {
 };
 
 const HINT_FALLBACK = 'Numero di volte che l’azione è stata tracciata. Conta solo chi ha dato il consenso analytics.';
-
-// Etichetta per un codice esigenza: allergeni/diete note, altrimenti
-// snake_case → "Snake Case" (cibi extra tipo pine_nuts non mappati in dietaryLabels).
-function needLabel(code: string): string {
-  const known = labelAllergen(code);
-  if (known !== code) return known;
-  const diet = labelDiet(code);
-  if (diet !== code) return diet;
-  return code.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 interface EventCount {
   event_name: string;
@@ -99,7 +89,8 @@ interface NeedCount {
 
 interface FilteredNeed {
   code: string;
-  use_count: number;
+  use_count: number;   // evento filter_applied: solo chi ha dato il consenso
+  anon_count?: number; // contatore anonimo (mig 086): tutti, ma parte da zero
 }
 
 interface TopSaved {
@@ -127,6 +118,10 @@ export default function EventAnalyticsSection() {
   const [viewMode, setViewMode] = useState<'restaurants' | 'cities'>('restaurants');
   const [needsDistribution, setNeedsDistribution] = useState<NeedCount[]>([]);
   const [filteredNeeds, setFilteredNeeds] = useState<FilteredNeed[]>([]);
+  // Periodo proprio: è l'unico riquadro con due sorgenti che si muovono a
+  // velocità diverse, quindi poterle confrontare su finestre diverse dice se una
+  // esigenza sta crescendo o se è solo il totale che si accumula.
+  const [needsRange, setNeedsRange] = useState<7 | 30 | 90>(30);
   const [topSaved, setTopSaved] = useState<TopSaved[]>([]);
   const [topCities, setTopCities] = useState<TopCity[]>([]);
   // Recensioni reali (righe tabella reviews) per il box omonimo: numero esatto,
@@ -138,13 +133,12 @@ export default function EventAnalyticsSection() {
     async function load() {
       const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const [c7, c30, top, topRest, needs, filtered, saved, cities, rv7, rv30] = await Promise.all([
+      const [c7, c30, top, topRest, needs, saved, cities, rv7, rv30] = await Promise.all([
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 7 }), 'Event counts 7g'),
         safeQuery(() => supabase.rpc('get_event_counts', { p_days: 30 }), 'Event counts 30g'),
         safeQuery(() => supabase.rpc('get_top_search_queries', { p_days: 30, p_limit: 10 }), 'Top ricerche'),
         safeQuery(() => supabase.rpc('get_top_viewed_restaurants', { p_days: 30, p_limit: 1000 }), 'Ristoranti più aperti'),
         safeQuery(() => supabase.rpc('get_needs_distribution', { p_limit: 10 }), 'Esigenze più diffuse'),
-        safeQuery(() => supabase.rpc('get_top_filtered_needs', { p_days: 30, p_limit: 10 }), 'Esigenze filtrate'),
         safeQuery(() => supabase.rpc('get_top_saved_restaurants', { p_limit: 10 }), 'Ristoranti più salvati'),
         safeQuery(() => supabase.rpc('get_top_cities', { p_days: 30, p_limit: 10 }), 'Città più attive'),
         safeCount(() => supabase.from('reviews').select('*', { count: 'exact', head: true }).gte('created_at', since7d)),
@@ -156,13 +150,23 @@ export default function EventAnalyticsSection() {
       setTopQueries((top as TopQuery[]) ?? []);
       setViewedRestaurants((topRest as TopRestaurant[]) ?? []);
       setNeedsDistribution((needs as NeedCount[]) ?? []);
-      setFilteredNeeds((filtered as FilteredNeed[]) ?? []);
       setTopSaved((saved as TopSaved[]) ?? []);
       setTopCities((cities as TopCity[]) ?? []);
       setLoading(false);
     }
     load();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    safeQuery(
+      () => supabase.rpc('get_top_filtered_needs', { p_days: needsRange, p_limit: 10 }),
+      'Esigenze filtrate',
+    ).then((data) => {
+      if (!cancelled) setFilteredNeeds((data as FilteredNeed[]) ?? []);
+    });
+    return () => { cancelled = true; };
+  }, [needsRange]);
 
   // Valore su cui ordinare i box (30g): per review_created il conteggio reale
   // dalla tabella, per gli altri il conteggio dell'evento.
@@ -426,7 +430,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {needsDistribution.map((n) => (
                     <tr key={n.code} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">{needLabel(n.code)}</td>
+                      <td className="py-2 truncate max-w-[220px]">{labelNeed(n.code)}</td>
                       <td className="py-2 text-right font-medium">{n.user_count}</td>
                     </tr>
                   ))}
@@ -438,13 +442,22 @@ export default function EventAnalyticsSection() {
 
         {/* Esigenze più usate nei filtri */}
         <div className="bg-card rounded-lg shadow p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <h3 className="font-semibold">Esigenze più filtrate (30g)</h3>
-            <InfoHint align="start" text="Esigenze più usate nei filtri della mappa (30g). Solo chi ha dato il consenso analytics." />
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            <span className="flex items-center gap-1.5">
+              <h3 className="font-semibold">Esigenze più filtrate</h3>
+              <InfoHint align="start" text="Esigenze più usate nei filtri della mappa, nel periodo scelto — non un totale che si accumula: cambiando finestra si vede se un'esigenza sta crescendo o solo sommando. Due misure della stessa cosa, mai da sommare fra loro: la «i» su ogni colonna dice quale. In entrambe si contano le presenze, non le persone: chi filtra su tre esigenze pesa una volta per ognuna." />
+            </span>
+            <div className="flex gap-1">
+              {([7, 30, 90] as const).map((d) => (
+                <button key={d} onClick={() => setNeedsRange(d)} className={toggleCls(needsRange === d)}>
+                  {d}g
+                </button>
+              ))}
+            </div>
           </div>
           {filteredNeeds.length === 0 ? (
             <p className="text-sm text-faint">
-              Nessun dato: l&apos;evento arriva con le build dalla 1.3.0 in poi.
+              Nessun dato in questo periodo.
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -452,14 +465,30 @@ export default function EventAnalyticsSection() {
                 <thead>
                   <tr className="text-left text-xs text-faint uppercase">
                     <th className="py-1 font-normal">Esigenza</th>
-                    <th className="py-1 font-normal text-right">Usi</th>
+                    <th className="py-1 font-normal text-right">
+                      <span className="inline-flex items-center gap-1">
+                        Consenzienti
+                        <InfoHint align="end" text="Solo chi ha accettato gli analytics. È la serie storica: c'è da sempre e continua a crescere. Sottostima l'uso reale di quanto pesa chi ha rifiutato." />
+                      </span>
+                    </th>
+                    <th className="py-1 font-normal text-right">
+                      <span className="inline-flex items-center gap-1">
+                        Tutti
+                        <InfoHint align="end" text="Tutti gli utenti, consenso o no, senza sapere chi è chi. È il numero vero, ma parte da zero: lo scrivono solo le app aggiornate, quindi cresce mentre le persone installano la nuova versione. Finché è più basso dell'altro non è un calo, è una migrazione a metà." />
+                      </span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredNeeds.map((n) => (
                     <tr key={n.code} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">{needLabel(n.code)}</td>
+                      <td className="py-2 truncate max-w-[220px]">{labelNeed(n.code)}</td>
                       <td className="py-2 text-right font-medium">{n.use_count}</td>
+                      {/* '—' e non '0' finché il contatore anonimo non ha dati:
+                          uno zero sembrerebbe una misura, questo dice "non ancora". */}
+                      <td className="py-2 text-right font-medium">
+                        {n.anon_count ? n.anon_count : <span className="text-faint font-normal">—</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
