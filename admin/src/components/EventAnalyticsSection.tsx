@@ -445,7 +445,7 @@ export default function EventAnalyticsSection() {
           <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
             <span className="flex items-center gap-1.5">
               <h3 className="font-semibold">Esigenze più filtrate</h3>
-              <InfoHint align="start" text="Esigenze più usate nei filtri della mappa, nel periodo scelto — non un totale che si accumula: cambiando finestra si vede se un'esigenza sta crescendo o solo sommando. Due misure della stessa cosa, mai da sommare fra loro: la «i» su ogni colonna dice quale. In entrambe si contano le presenze, non le persone: chi filtra su tre esigenze pesa una volta per ognuna." />
+              <InfoHint align="start" text="Esigenze più usate nei filtri della mappa, nel periodo scelto — non un totale che si accumula: cambiando finestra si vede se un'esigenza sta crescendo o solo sommando. Le due colonne sono la stessa misura da due fonti che si stanno dando il cambio, mai da sommare fra loro: la «i» su ognuna dice quale. In entrambe si contano le presenze, non le persone: chi filtra su tre esigenze pesa una volta per ognuna." />
             </span>
             <div className="flex gap-1">
               {([7, 30, 90] as const).map((d) => (
@@ -468,13 +468,13 @@ export default function EventAnalyticsSection() {
                     <th className="py-1 font-normal text-right">
                       <span className="inline-flex items-center gap-1">
                         Consenzienti
-                        <InfoHint align="end" text="Solo chi ha accettato gli analytics. È la serie storica: c'è da sempre e continua a crescere. Sottostima l'uso reale di quanto pesa chi ha rifiutato." />
+                        <InfoHint align="end" text="Solo chi ha accettato gli analytics, e sottostima l'uso reale di quanto pesa chi ha rifiutato. È la serie storica, ma è in uscita: dalla build che porta la migration 086 questo dato non viene più raccolto, quindi scende verso zero man mano che i vecchi eventi escono dalla finestra. Non è un calo d'uso, è il passaggio di testimone verso la colonna accanto." />
                       </span>
                     </th>
                     <th className="py-1 font-normal text-right">
                       <span className="inline-flex items-center gap-1">
                         Tutti
-                        <InfoHint align="end" text="Tutti gli utenti, consenso o no, senza sapere chi è chi. È il numero vero, ma parte da zero: lo scrivono solo le app aggiornate, quindi cresce mentre le persone installano la nuova versione. Finché è più basso dell'altro non è un calo, è una migrazione a metà." />
+                        <InfoHint align="end" text="Tutti gli utenti, consenso o no, senza sapere chi è chi. È il numero destinato a restare, ma parte da zero: lo scrivono solo le app aggiornate, quindi cresce mentre le persone installano la nuova versione. Per qualche settimana le due colonne si scambiano il posto — questa sale, l'altra scende — e nel mezzo nessuna delle due racconta il totale." />
                       </span>
                     </th>
                   </tr>
