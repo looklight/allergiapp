@@ -246,7 +246,7 @@ const GOOGLE_TYPE_TO_CUISINE = {
   brunch_restaurant:           'cafe',
   breakfast_restaurant:        'cafe',
   ice_cream_shop:              'ice_cream',
-  dessert_shop:                'ice_cream',
+  dessert_shop:                'bakery',
   gelato_shop:                 'ice_cream',
 };
 

@@ -202,6 +202,7 @@ const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
   candy_store:                'bakery',
   confectionery:              'bakery',
   waffle_shop:                'bakery',
+  dessert_shop:               'bakery',   // crêperie e dolci in genere, quasi mai gelaterie
 
   // Caffè e bar
   cafe:                       'cafe',
@@ -220,7 +221,6 @@ const GOOGLE_TYPE_TO_CUISINE: Record<string, string> = {
 
   // Gelateria
   ice_cream_shop:             'ice_cream',
-  dessert_shop:               'ice_cream',
   gelato_shop:                'ice_cream',
 };
 
