@@ -67,8 +67,18 @@ export default function RestaurantDetailSheet({ restaurantId, onClose, onCloseSt
   // detailId (render condizionale su mappa e profilo), quindi mount = apertura.
   // La mappa e' il canale principale di visualizzazione e prima non era tracciato;
   // la versione full-screen (app/restaurants/[id].tsx) traccia gia' la propria.
+  //
+  // Il contatore anonimo stava SOLO sulla full-screen, che pero' si raggiunge
+  // da un unico punto (il ristorante gia' esistente in fase di aggiunta): il
+  // deep link /r/{slug} rimanda alla mappa e apre questo sheet, come ogni altro
+  // ingresso. Risultato: contava quasi zero. Qui sta nello stesso effetto
+  // dell'evento, con la stessa guardia, cosi' le due sorgenti misurano lo stesso
+  // gesto e sono confrontabili (consenzienti vs tutti, come sulla scheda admin).
   useEffect(() => {
-    if (restaurantId) SupabaseAnalytics.track('restaurant_viewed', { restaurant_id: restaurantId });
+    if (restaurantId) {
+      SupabaseAnalytics.track('restaurant_viewed', { restaurant_id: restaurantId });
+      SupabaseAnalytics.bumpRestaurantView(restaurantId);
+    }
   }, [restaurantId]);
 
   // Android back button closes the sheet
