@@ -24,7 +24,7 @@ const ViewsMap = dynamic(() => import('@/components/map/ViewsMap'), { ssr: false
 // dell'elenco che stai sfogliando. Detto nella "i" accanto al selettore.
 type MapMode = 'locali' | 'aperture';
 
-const VIEWS_INFO = "Dove si concentrano le aperture di scheda — contatore anonimo, che conta tutti e non sa chi, attivo dalla versione 1.3.1 (agosto 2026). L'area del cerchio è proporzionale alle aperture e la scala si ricalcola su quello che stai guardando: al livello del mondo confronti i paesi, dentro una città confronti i ristoranti di quella città. Sono aperture e non persone: chi apre dieci volte la stessa scheda pesa dieci. Questa vista NON segue i filtri della pagina: mostra i 1000 locali più aperti del periodo, ovunque siano.";
+const VIEWS_INFO = "Dove si concentrano le aperture di scheda — contatore anonimo, che conta tutti e non sa chi, attivo dalla versione 1.3.1 (agosto 2026). I locali vicini sullo schermo si sommano in un cerchio solo: da lontano leggi le zone, avvicinandoti i gruppi si sciolgono nei singoli ristoranti (un clic su un gruppo avvicina, su un locale apre la scheda). L'area è proporzionale alle aperture e la scala si ricalcola su quello che stai guardando. Sono aperture e non persone: chi apre dieci volte pesa dieci. ⚠️ Oggi il contatore scatta solo alla scheda aperta a pagina intera, non dal pannello che sale toccando un pin: i numeri sono più bassi dell'uso reale. Questa vista NON segue i filtri della pagina.";
 
 const VIEW_RANGES = [7, 30, 90] as const;
 
