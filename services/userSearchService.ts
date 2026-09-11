@@ -35,7 +35,11 @@ export async function searchUsers(
     review_count: Number(r.review_count ?? 0),
     country_count: Number(r.country_count ?? 0),
   }));
-  SupabaseAnalytics.track('user_search', { query: term, results: results.length });
+  // Niente testo cercato: sarebbe il nome di un'altra persona, legato all'id di
+  // chi cerca e conservato per sempre — e nessuna RPC admin lo legge (la lista
+  // "Top ricerche" guarda solo restaurant_search). Il numero di risultati resta:
+  // dice quante ricerche di persone non trovano nessuno.
+  SupabaseAnalytics.track('user_search', { results: results.length });
   return results;
 }
 
