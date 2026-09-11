@@ -22,6 +22,8 @@ export type OtherFoodId =
   | 'broccoli'
   | 'lettuce'
   | 'potato'
+  | 'artichoke'
+  | 'cauliflower'
   // Frutta
   | 'peach'
   | 'kiwi'
@@ -68,6 +70,9 @@ export type OtherFoodId =
   | 'cinnamon'
   | 'ginger'
   | 'chamomile'
+  | 'basil'
+  | 'sage'
+  | 'mint'
   // Frutta a guscio (singoli, complemento di 'nuts' EU)
   | 'almonds'
   | 'hazelnuts'
@@ -225,6 +230,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'potato', icon: '🥔', category: 'vegetables', translations: {
     it: 'Patata', en: 'Potato', fr: 'Pomme de terre', de: 'Kartoffel', es: 'Patata', pt: 'Batata', nl: 'Aardappel', pl: 'Ziemniak', ru: 'Картофель', sv: 'Potatis', zh: '土豆', ja: 'ジャガイモ', ko: '감자', th: 'มันฝรั่ง', ar: 'بطاطس',
   }},
+  { id: 'artichoke', icon: '🌱', category: 'vegetables', translations: {
+    it: 'Carciofo', en: 'Artichoke', fr: 'Artichaut', de: 'Artischocke', es: 'Alcachofa', pt: 'Alcachofra', nl: 'Artisjok', pl: 'Karczoch', ru: 'Артишок', sv: 'Kronärtskocka', zh: '朝鲜蓟', ja: 'アーティチョーク', ko: '아티초크', th: 'อาร์ติโชค', ar: 'الخرشوف',
+  }},
+  { id: 'cauliflower', icon: '🥦', category: 'vegetables', translations: {
+    it: 'Cavolfiore', en: 'Cauliflower', fr: 'Chou-fleur', de: 'Blumenkohl', es: 'Coliflor', pt: 'Couve-flor', nl: 'Bloemkool', pl: 'Kalafior', ru: 'Цветная капуста', sv: 'Blomkål', zh: '花椰菜', ja: 'カリフラワー', ko: '콜리플라워', th: 'กะหล่ำดอก', ar: 'القرنبيط',
+  }},
   // — Frutta (per frequenza di allergia orale) —
   { id: 'peach', icon: '🍑', category: 'fruits', translations: {
     it: 'Pesca', en: 'Peach', fr: 'Pêche', de: 'Pfirsich', es: 'Melocotón', pt: 'Pêssego', nl: 'Perzik', pl: 'Brzoskwinia', ru: 'Персик', sv: 'Persika', zh: '桃', ja: '桃', ko: '복숭아', th: 'พีช', ar: 'خوخ',
@@ -355,6 +366,15 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'chamomile', icon: '🌼', category: 'legumes_other', translations: {
     it: 'Camomilla', en: 'Chamomile', fr: 'Camomille', de: 'Kamille', es: 'Manzanilla', pt: 'Camomila', nl: 'Kamille', pl: 'Rumianek', ru: 'Ромашка', sv: 'Kamomill', zh: '洋甘菊', ja: 'カモミール', ko: '캐모마일', th: 'คาโมมายล์', ar: 'البابونج',
+  }},
+  { id: 'basil', icon: '🌿', category: 'legumes_other', translations: {
+    it: 'Basilico', en: 'Basil', fr: 'Basilic', de: 'Basilikum', es: 'Albahaca', pt: 'Manjericão', nl: 'Basilicum', pl: 'Bazylia', ru: 'Базилик', sv: 'Basilika', zh: '罗勒', ja: 'バジル', ko: '바질', th: 'โหระพา', ar: 'الريحان',
+  }},
+  { id: 'sage', icon: '🌿', category: 'legumes_other', translations: {
+    it: 'Salvia', en: 'Sage', fr: 'Sauge', de: 'Salbei', es: 'Salvia', pt: 'Sálvia', nl: 'Salie', pl: 'Szałwia', ru: 'Шалфей', sv: 'Salvia', zh: '鼠尾草', ja: 'セージ', ko: '세이지', th: 'เสจ', ar: 'المريمية',
+  }},
+  { id: 'mint', icon: '🌿', category: 'legumes_other', translations: {
+    it: 'Menta', en: 'Mint', fr: 'Menthe', de: 'Minze', es: 'Menta', pt: 'Hortelã', nl: 'Munt', pl: 'Mięta', ru: 'Мята', sv: 'Mynta', zh: '薄荷', ja: 'ミント', ko: '민트', th: 'มินต์', ar: 'النعناع',
   }},
   // — Frutta a guscio singole (complemento dell'allergene EU 'nuts') —
   { id: 'almonds', icon: '🌰', category: 'legumes_other', translations: {

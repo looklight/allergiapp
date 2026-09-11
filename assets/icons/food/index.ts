@@ -32,6 +32,7 @@ import Asparagus from './asparagus.svg';
 import Papaya from './papaya.svg';
 import Chamomile from './chamomile.svg';
 import Chives from './chives.svg';
+import Artichoke from './artichoke.svg';
 
 export type FoodIconId = OtherFoodId | AllergenId;
 
@@ -59,4 +60,5 @@ export const FOOD_SVG_ICONS: Partial<Record<FoodIconId, React.FC<SvgProps>>> = {
   papaya: Papaya,
   chamomile: Chamomile,
   chives: Chives,
+  artichoke: Artichoke,
 };

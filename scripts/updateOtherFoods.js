@@ -38,6 +38,8 @@ const NEW_OTHER_FOODS = {
   broccoli: 'Broccoli',
   lettuce: 'Lettuce',
   potato: 'Potato',
+  artichoke: 'Artichoke',
+  cauliflower: 'Cauliflower',
   // Frutta
   peach: 'Peach',
   kiwi: 'Kiwi',
@@ -84,6 +86,9 @@ const NEW_OTHER_FOODS = {
   cinnamon: 'Cinnamon',
   ginger: 'Ginger',
   chamomile: 'Chamomile',
+  basil: 'Basil',
+  sage: 'Sage',
+  mint: 'Mint',
   // Frutta a guscio singole (complemento dell'allergene EU 'nuts')
   almonds: 'Almonds',
   hazelnuts: 'Hazelnuts',
