@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef, useReducer } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, useReducer, useDeferredValue } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, Keyboard, Image, Pressable, Platform, Linking } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Text } from 'react-native-paper';
@@ -96,6 +96,10 @@ export default function RestaurantsScreen() {
   // --- Filter state ---
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<RestaurantCategoryId[]>([]);
+  // Copia "rimandata" per mappa e lista: pill e pannello leggono activeFilters e
+  // rispondono subito al tocco; il ridisegno dei pin (centinaia di marker) arriva
+  // subito dopo, senza trattenerli.
+  const deferredFilters = useDeferredValue(activeFilters);
   const [forMyNeeds, setForMyNeeds] = useState(false);
   const [filterAllergens, setFilterAllergens] = useState<string[]>([...dietaryNeeds.allergens]);
   const [filterDiets, setFilterDiets] = useState<string[]>([...(dietaryNeeds.diets ?? [])]);
@@ -242,7 +246,7 @@ export default function RestaurantsScreen() {
 
   const { mapRestaurants } = useRestaurantList({
     restaurants: geo.restaurants,
-    activeFilters,
+    activeFilters: deferredFilters,
     minRating,
   });
 
@@ -271,8 +275,8 @@ export default function RestaurantsScreen() {
     followedFilter || followedIds.size > 0 || (followingCount ?? 0) > 0;
 
   // allPins accumula pin da tutti i viewport visitati (max 3000, gestito in useRestaurantGeo).
-  // SuperCluster gestisce internamente la viewport culling: riceve tutti i pin ma renderizza
-  // solo i cluster visibili. Il limite di 3000 pin nella cache è il guardrail sufficiente.
+  // NB: nessuno fa viewport culling dei marker (il clustering è spento da giugno):
+  // la mappa monta un marker per ogni pin della cache. Vedi MAP_SCALING.md §0-quater.
   // — forMyNeeds NON restringe allPins: i pin non compatibili compaiono grigi (non coperti).
   // — Il filtro cucina (activeFilters) usa cuisine_types direttamente dal pin (campo restituito
   //   da get_pins_in_bounds), evitando la dipendenza da geo.restaurants che contiene al max 50
@@ -283,11 +287,11 @@ export default function RestaurantsScreen() {
   //   mai un flash di pin non filtrati.
   const filteredAllPins = useMemo(() => {
     const pins = followedFilter ? followedPins : (geo.allPins ?? []);
-    if (activeFilters.length === 0) return pins;
+    if (deferredFilters.length === 0) return pins;
     return pins.filter(p =>
-      p.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
+      p.cuisine_types?.some(ct => deferredFilters.includes(ct as RestaurantCategoryId))
     );
-  }, [geo.allPins, activeFilters, followedFilter, followedPins]);
+  }, [geo.allPins, deferredFilters, followedFilter, followedPins]);
 
   const { favoriteIds, favoriteRestaurants, loadFavorites, syncFavoriteId } = useRestaurantFavorites(
     user?.uid,
@@ -744,16 +748,16 @@ export default function RestaurantsScreen() {
     if (followedFilter) {
       out = out.filter(r => followedIds.has(r.id));
     }
-    if (activeFilters.length > 0) {
+    if (deferredFilters.length > 0) {
       out = out.filter(r =>
-        r.cuisine_types?.some(ct => activeFilters.includes(ct as RestaurantCategoryId))
+        r.cuisine_types?.some(ct => deferredFilters.includes(ct as RestaurantCategoryId))
       );
     }
     if (minRating !== null) {
       out = out.filter(r => (r.average_rating ?? 0) >= minRating);
     }
     return out;
-  }, [mapSearch.nearbyResults, activeFilters, minRating, followedFilter, followedIds]);
+  }, [mapSearch.nearbyResults, deferredFilters, minRating, followedFilter, followedIds]);
 
   const nearbyCount = filteredNearbyResults.length;
 
@@ -796,6 +800,9 @@ export default function RestaurantsScreen() {
     transform: [{ translateY: bannerProgress.value * 80 }],
   }));
 
+  // Stabile: un oggetto nuovo a ogni render annullerebbe il memo di RestaurantMap.
+  const compassOffset = useMemo(() => ({ x: -12, y: insets.top + 8 }), [insets.top]);
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -821,7 +828,7 @@ export default function RestaurantsScreen() {
           favoriteRestaurants={followedFilter ? EMPTY_RESTAURANT_MAP : favoriteRestaurants}
           customSymbols={savedSymbols}
           savedRestaurants={followedFilter ? EMPTY_RESTAURANT_MAP : savedRestaurants}
-          compassOffset={{ x: -12, y: insets.top + 8 }}
+          compassOffset={compassOffset}
           fullScreenChrome
           userAllergens={filterAllergens}
           userDiets={filterDiets}

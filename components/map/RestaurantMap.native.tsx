@@ -138,7 +138,11 @@ const ClusterBubble = memo(function ClusterBubble({
 // RestaurantMap
 // ---------------------------------------------------------------------------
 
-export default function RestaurantMap({
+// memo: la schermata ristoranti si ridisegna spesso per cose che non toccano la
+// mappa (barra di ricerca, pill, filtri rimandati con useDeferredValue). Senza,
+// ogni volta si rifaceva il diff di tutti i marker. Presuppone props stabili dal
+// parent (callback in useCallback, oggetti in useMemo).
+export default memo(function RestaurantMap({
   restaurants,
   allPins,
   centerOn,
@@ -794,7 +798,7 @@ export default function RestaurantMap({
       )}
     </MapView>
   );
-}
+});
 
 // ---------------------------------------------------------------------------
 // Styles & map config
