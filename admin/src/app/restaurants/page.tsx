@@ -9,11 +9,24 @@ import { getCountryName } from '@/lib/countryName';
 import { fetchAllPages } from '@/lib/fetchAllPages';
 import type { Restaurant } from '@/lib/types';
 import type { MapRestaurant } from '@/components/map/RestaurantMap';
+import type { MapViewPoint } from '@/components/map/ViewsMap';
+import InfoHint from '@/components/InfoHint';
 import StatCard from '@/components/StatCard';
 import { usePagination, PAGE_SIZE } from '@/hooks/usePagination';
 import Link from 'next/link';
 
 const RestaurantMap = dynamic(() => import('@/components/map/RestaurantMap'), { ssr: false });
+const ViewsMap = dynamic(() => import('@/components/map/ViewsMap'), { ssr: false });
+
+// La mappa a schermo intero ha due letture del territorio: dove SONO i locali e
+// dove vengono GUARDATI. La seconda ignora i filtri della pagina (paese,
+// ricerca, ordinamento): è una fotografia delle aperture nel periodo, non
+// dell'elenco che stai sfogliando. Detto nella "i" accanto al selettore.
+type MapMode = 'locali' | 'aperture';
+
+const VIEWS_INFO = "Dove si concentrano le aperture di scheda — contatore anonimo, che conta tutti e non sa chi, attivo dalla versione 1.3.1 (agosto 2026). L'area del cerchio è proporzionale alle aperture e la scala si ricalcola su quello che stai guardando: al livello del mondo confronti i paesi, dentro una città confronti i ristoranti di quella città. Sono aperture e non persone: chi apre dieci volte la stessa scheda pesa dieci. Questa vista NON segue i filtri della pagina: mostra i 1000 locali più aperti del periodo, ovunque siano.";
+
+const VIEW_RANGES = [7, 30, 90] as const;
 
 interface CountryStats {
   restaurant_count: number;
@@ -36,6 +49,9 @@ export default function RestaurantsPage() {
   const [reviewsMenuPos, setReviewsMenuPos] = useState<{ top: number; right: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [mapRestaurants, setMapRestaurants] = useState<MapRestaurant[]>([]);
+  const [mapMode, setMapMode] = useState<MapMode>('locali');
+  const [viewRange, setViewRange] = useState<(typeof VIEW_RANGES)[number]>(30);
+  const [viewPoints, setViewPoints] = useState<MapViewPoint[] | null>(null);
 
   const fetchRestaurants = useCallback(async (pageNum: number) => {
     if (!zeroReviewsOnly) {
@@ -127,6 +143,20 @@ export default function RestaurantsPage() {
     if (showMap) loadMapData();
   }, [countryFilter, search, sortBy, zeroReviewsOnly]);
 
+  // Solo a mappa aperta e in modalità aperture: chi non la guarda non paga il
+  // traffico. Errore ignorato come nelle altre letture dei contatori.
+  useEffect(() => {
+    if (!showMap || mapMode !== 'aperture') return;
+    let cancelled = false;
+    setViewPoints(null);
+    supabase
+      .rpc('get_view_map', { p_days: viewRange, p_limit: 1000 })
+      .then(({ data }) => {
+        if (!cancelled) setViewPoints((data as MapViewPoint[]) ?? []);
+      });
+    return () => { cancelled = true; };
+  }, [showMap, mapMode, viewRange]);
+
   const loadMapData = async () => {
     // RPC restituisce id + lat/lng (leggera)
     const positions = await fetchAllPages<{ id: string; latitude: number; longitude: number }>(
@@ -199,11 +229,55 @@ export default function RestaurantsPage() {
               Chiudi mappa
             </button>
             <h2 className="font-semibold">
-              Mappa ristoranti{countryFilter !== 'all' ? ` — ${countries.find(c => c.code === countryFilter)?.name ?? countryFilter}` : ''}
+              {mapMode === 'locali'
+                ? `Mappa ristoranti${countryFilter !== 'all' ? ` — ${countries.find(c => c.code === countryFilter)?.name ?? countryFilter}` : ''}`
+                : 'Dove si guardano i ristoranti'}
             </h2>
+            <div className="flex gap-1 ml-auto items-center">
+              {mapMode === 'aperture' && (
+                <>
+                  <InfoHint align="end" text={VIEWS_INFO} />
+                  {VIEW_RANGES.map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setViewRange(d)}
+                      className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                        viewRange === d ? 'bg-selected text-selected-foreground' : 'bg-muted text-foreground-secondary hover:bg-muted-hover'
+                      }`}
+                    >
+                      {d}g
+                    </button>
+                  ))}
+                  <span className="w-px h-5 bg-border mx-1" />
+                </>
+              )}
+              {(['locali', 'aperture'] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMapMode(m)}
+                  className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                    mapMode === m ? 'bg-selected text-selected-foreground' : 'bg-card border text-foreground-secondary hover:bg-muted'
+                  }`}
+                >
+                  {m === 'locali' ? 'Locali' : 'Aperture'}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex-1">
-            <RestaurantMap restaurants={mapRestaurants} />
+            {mapMode === 'locali' ? (
+              <RestaurantMap restaurants={mapRestaurants} />
+            ) : viewPoints === null ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-sm text-faint">Caricamento...</p>
+              </div>
+            ) : viewPoints.length === 0 ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-sm text-faint">Nessuna apertura di scheda in questo periodo.</p>
+              </div>
+            ) : (
+              <ViewsMap points={viewPoints} />
+            )}
           </div>
         </div>
       )}
