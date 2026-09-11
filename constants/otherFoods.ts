@@ -24,6 +24,8 @@ export type OtherFoodId =
   | 'potato'
   | 'artichoke'
   | 'cauliflower'
+  | 'leek'
+  | 'cabbage'
   // Frutta
   | 'peach'
   | 'kiwi'
@@ -61,6 +63,8 @@ export type OtherFoodId =
   | 'oats'
   | 'wheat'
   | 'barley'
+  | 'rye'
+  | 'spelt'
   // Spezie, semi e altro
   | 'pepper'
   | 'nutmeg'
@@ -73,6 +77,10 @@ export type OtherFoodId =
   | 'basil'
   | 'sage'
   | 'mint'
+  | 'oregano'
+  | 'rosemary'
+  | 'cumin'
+  | 'paprika'
   // Frutta a guscio (singoli, complemento di 'nuts' EU)
   | 'almonds'
   | 'hazelnuts'
@@ -81,12 +89,18 @@ export type OtherFoodId =
   | 'cashews'
   | 'pine_nuts'
   | 'chestnuts'
+  | 'pecan'
+  | 'brazil_nut'
+  | 'macadamia'
   | 'poppy_seeds'
   | 'sunflower_seeds'
   | 'flax_seeds'
   | 'cacao_chocolate'
   | 'olive_oil'
   | 'honey'
+  // Bevande
+  | 'coffee'
+  | 'tea'
   // Additivi e fermenti
   | 'yeast'
   | 'artificial_colorings'
@@ -236,6 +250,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'cauliflower', icon: '🥦', category: 'vegetables', translations: {
     it: 'Cavolfiore', en: 'Cauliflower', fr: 'Chou-fleur', de: 'Blumenkohl', es: 'Coliflor', pt: 'Couve-flor', nl: 'Bloemkool', pl: 'Kalafior', ru: 'Цветная капуста', sv: 'Blomkål', zh: '花椰菜', ja: 'カリフラワー', ko: '콜리플라워', th: 'กะหล่ำดอก', ar: 'القرنبيط',
   }},
+  { id: 'leek', icon: '🌱', category: 'vegetables', translations: {
+    it: 'Porro', en: 'Leek', fr: 'Poireau', de: 'Lauch', es: 'Puerro', pt: 'Alho-poró', nl: 'Prei', pl: 'Por', ru: 'Лук-порей', sv: 'Purjolök', zh: '韭葱', ja: 'リーキ', ko: '리크', th: 'กระเทียมต้น', ar: 'الكراث',
+  }},
+  { id: 'cabbage', icon: '🥬', category: 'vegetables', translations: {
+    it: 'Cavolo', en: 'Cabbage', fr: 'Chou', de: 'Kohl', es: 'Col', pt: 'Couve', nl: 'Kool', pl: 'Kapusta', ru: 'Капуста', sv: 'Kål', zh: '卷心菜', ja: 'キャベツ', ko: '양배추', th: 'กะหล่ำปลี', ar: 'الملفوف',
+  }},
   // — Frutta (per frequenza di allergia orale) —
   { id: 'peach', icon: '🍑', category: 'fruits', translations: {
     it: 'Pesca', en: 'Peach', fr: 'Pêche', de: 'Pfirsich', es: 'Melocotón', pt: 'Pêssego', nl: 'Perzik', pl: 'Brzoskwinia', ru: 'Персик', sv: 'Persika', zh: '桃', ja: '桃', ko: '복숭아', th: 'พีช', ar: 'خوخ',
@@ -342,6 +362,12 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'barley', icon: '🌾', category: 'legumes_other', translations: {
     it: 'Orzo', en: 'Barley', fr: 'Orge', de: 'Gerste', es: 'Cebada', pt: 'Cevada', nl: 'Gerst', pl: 'Jęczmień', ru: 'Ячмень', sv: 'Korn', zh: '大麦', ja: '大麦', ko: '보리', th: 'ข้าวบาร์เลย์', ar: 'الشعير',
   }},
+  { id: 'rye', icon: '🌾', category: 'legumes_other', translations: {
+    it: 'Segale', en: 'Rye', fr: 'Seigle', de: 'Roggen', es: 'Centeno', pt: 'Centeio', nl: 'Rogge', pl: 'Żyto', ru: 'Рожь', sv: 'Råg', zh: '黑麦', ja: 'ライ麦', ko: '호밀', th: 'ข้าวไรย์', ar: 'الجاودار',
+  }},
+  { id: 'spelt', icon: '🌾', category: 'legumes_other', translations: {
+    it: 'Farro', en: 'Spelt', fr: 'Épeautre', de: 'Dinkel', es: 'Espelta', pt: 'Espelta', nl: 'Spelt', pl: 'Orkisz', ru: 'Полба', sv: 'Spelt', zh: '斯佩尔特小麦', ja: 'スペルト小麦', ko: '스펠트밀', th: 'ข้าวสเปลต์', ar: 'السبلت',
+  }},
   // Spezie, semi e altro
   { id: 'pepper', icon: '🫙', category: 'legumes_other', translations: {
     it: 'Pepe', en: 'Pepper', fr: 'Poivre', de: 'Pfeffer', es: 'Pimienta', pt: 'Pimenta', nl: 'Peper', pl: 'Pieprz', ru: 'Перец', sv: 'Peppar', zh: '胡椒', ja: 'コショウ', ko: '후추', th: 'พริกไทย', ar: 'الفلفل',
@@ -376,6 +402,18 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'mint', icon: '🌿', category: 'legumes_other', translations: {
     it: 'Menta', en: 'Mint', fr: 'Menthe', de: 'Minze', es: 'Menta', pt: 'Hortelã', nl: 'Munt', pl: 'Mięta', ru: 'Мята', sv: 'Mynta', zh: '薄荷', ja: 'ミント', ko: '민트', th: 'มินต์', ar: 'النعناع',
   }},
+  { id: 'oregano', icon: '🌿', category: 'legumes_other', translations: {
+    it: 'Origano', en: 'Oregano', fr: 'Origan', de: 'Oregano', es: 'Orégano', pt: 'Orégano', nl: 'Oregano', pl: 'Oregano', ru: 'Орегано', sv: 'Oregano', zh: '牛至', ja: 'オレガノ', ko: '오레가노', th: 'ออริกาโน', ar: 'الأوريغانو',
+  }},
+  { id: 'rosemary', icon: '🌿', category: 'legumes_other', translations: {
+    it: 'Rosmarino', en: 'Rosemary', fr: 'Romarin', de: 'Rosmarin', es: 'Romero', pt: 'Alecrim', nl: 'Rozemarijn', pl: 'Rozmaryn', ru: 'Розмарин', sv: 'Rosmarin', zh: '迷迭香', ja: 'ローズマリー', ko: '로즈마리', th: 'โรสแมรี', ar: 'إكليل الجبل',
+  }},
+  { id: 'cumin', icon: '🟤', category: 'legumes_other', translations: {
+    it: 'Cumino', en: 'Cumin', fr: 'Cumin', de: 'Kreuzkümmel', es: 'Comino', pt: 'Cominho', nl: 'Komijn', pl: 'Kmin rzymski', ru: 'Тмин', sv: 'Spiskummin', zh: '孜然', ja: 'クミン', ko: '커민', th: 'ยี่หร่า', ar: 'الكمون',
+  }},
+  { id: 'paprika', icon: '🔴', category: 'legumes_other', translations: {
+    it: 'Paprika', en: 'Paprika', fr: 'Paprika', de: 'Paprikapulver', es: 'Pimentón', pt: 'Páprica', nl: 'Paprikapoeder', pl: 'Papryka mielona', ru: 'Паприка', sv: 'Paprikapulver', zh: '红椒粉', ja: 'パプリカパウダー', ko: '파프리카 가루', th: 'ผงปาปริก้า', ar: 'البابريكا',
+  }},
   // — Frutta a guscio singole (complemento dell'allergene EU 'nuts') —
   { id: 'almonds', icon: '🌰', category: 'legumes_other', translations: {
     it: 'Mandorle', en: 'Almonds', fr: 'Amandes', de: 'Mandeln', es: 'Almendras', pt: 'Amêndoas', nl: 'Amandelen', pl: 'Migdały', ru: 'Миндаль', sv: 'Mandlar', zh: '杏仁', ja: 'アーモンド', ko: '아몬드', th: 'อัลมอนด์', ar: 'اللوز',
@@ -398,6 +436,15 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   { id: 'chestnuts', icon: '🌰', category: 'legumes_other', translations: {
     it: 'Castagne', en: 'Chestnuts', fr: 'Châtaignes', de: 'Esskastanien', es: 'Castañas', pt: 'Castanhas', nl: 'Tamme kastanjes', pl: 'Kasztany jadalne', ru: 'Каштаны', sv: 'Kastanjer', zh: '栗子', ja: '栗', ko: '밤', th: 'เกาลัด', ar: 'الكستناء',
   }},
+  { id: 'pecan', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Noce pecan', en: 'Pecan', fr: 'Noix de pécan', de: 'Pekannuss', es: 'Nuez pecana', pt: 'Noz-pecã', nl: 'Pecannoot', pl: 'Orzech pekan', ru: 'Орех пекан', sv: 'Pekannöt', zh: '山核桃', ja: 'ピーカンナッツ', ko: '피칸', th: 'พีแคน', ar: 'جوز البيكان',
+  }},
+  { id: 'brazil_nut', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Noce del Brasile', en: 'Brazil nut', fr: 'Noix du Brésil', de: 'Paranuss', es: 'Nuez de Brasil', pt: 'Castanha-do-pará', nl: 'Paranoot', pl: 'Orzech brazylijski', ru: 'Бразильский орех', sv: 'Paranöt', zh: '巴西坚果', ja: 'ブラジルナッツ', ko: '브라질너트', th: 'บราซิลนัท', ar: 'جوز البرازيل',
+  }},
+  { id: 'macadamia', icon: '🌰', category: 'legumes_other', translations: {
+    it: 'Macadamia', en: 'Macadamia', fr: 'Macadamia', de: 'Macadamia', es: 'Macadamia', pt: 'Macadâmia', nl: 'Macadamia', pl: 'Makadamia', ru: 'Макадамия', sv: 'Macadamia', zh: '澳洲坚果', ja: 'マカダミアナッツ', ko: '마카다미아', th: 'แมคคาเดเมีย', ar: 'المكاداميا',
+  }},
   { id: 'poppy_seeds', icon: '🌸', category: 'legumes_other', translations: {
     it: 'Semi di papavero', en: 'Poppy seeds', fr: 'Graines de pavot', de: 'Mohnsamen', es: 'Semillas de amapola', pt: 'Sementes de papoula', nl: 'Maanzaad', pl: 'Nasiona maku', ru: 'Семена мака', sv: 'Vallmofrön', zh: '罂粟籽', ja: 'ケシの実', ko: '양귀비씨', th: 'เมล็ดฝิ่น', ar: 'بذور الخشخاش',
   }},
@@ -415,6 +462,13 @@ export const OTHER_FOODS: readonly OtherFood[] = [
   }},
   { id: 'olive_oil', icon: '🫒', category: 'legumes_other', translations: {
     it: 'Olio d\'oliva', en: 'Olive oil', fr: 'Huile d\'olive', de: 'Olivenöl', es: 'Aceite de oliva', pt: 'Azeite', nl: 'Olijfolie', pl: 'Oliwa z oliwek', ru: 'Оливковое масло', sv: 'Olivolja', zh: '橄榄油', ja: 'オリーブオイル', ko: '올리브유', th: 'น้ำมันมะกอก', ar: 'زيت الزيتون',
+  }},
+  // — Bevande —
+  { id: 'coffee', icon: '☕', category: 'legumes_other', translations: {
+    it: 'Caffè', en: 'Coffee', fr: 'Café', de: 'Kaffee', es: 'Café', pt: 'Café', nl: 'Koffie', pl: 'Kawa', ru: 'Кофе', sv: 'Kaffe', zh: '咖啡', ja: 'コーヒー', ko: '커피', th: 'กาแฟ', ar: 'القهوة',
+  }},
+  { id: 'tea', icon: '🍵', category: 'legumes_other', translations: {
+    it: 'Tè', en: 'Tea', fr: 'Thé', de: 'Tee', es: 'Té', pt: 'Chá', nl: 'Thee', pl: 'Herbata', ru: 'Чай', sv: 'Te', zh: '茶', ja: '茶', ko: '차', th: 'ชา', ar: 'الشاي',
   }},
   // — Additivi e fermenti —
   { id: 'yeast', icon: '🍞', category: 'legumes_other', translations: {
