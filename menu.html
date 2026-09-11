@@ -69,11 +69,40 @@
                     <span data-i18n="menuLanding.title1">Crea il menù digitale</span><br>
                     <span class="gradient-text" data-i18n="menuLanding.title2">che si adatta ai tuoi clienti.</span>
                 </h1>
-                <p class="ml-subtitle" data-i18n="menuLanding.subtitle">Ti bastano pochi minuti per crearlo, personalizzarlo e condividerlo con un link o un QR Code.</p>
+                <p class="ml-subtitle" data-i18n="menuLanding.subtitle">Aggiungi tutti i piatti che vuoi, i tuoi clienti inquadrano il QR code e vedono subito cosa fa per loro.</p>
                 <div class="ml-cta-row">
                     <p class="ml-cta-lead" data-i18n="menuLanding.ctaLead">Crea il tuo menù digitale gratuitamente</p>
                     <a href="https://partner.allergiapp.com" class="ml-cta" data-i18n="menuLanding.ctaPrimary">Inizia gratis</a>
-                    <p class="ml-cta-note" data-i18n="menuLanding.ctaNote">Grazie all’editor integrato potrai aggiungere i piatti e personalizzare il menù del tuo locale come preferisci, e i tuoi clienti potranno capire subito cosa fa per loro.</p>
+                </div>
+                <!-- LO SPOILER, IN FONDO AL BLOCCO DELL'INVITO. Il piatto della
+                     sezione AllergiApp esce a parlare già qui, perché quello
+                     che ci distingue da ogni altro menù digitale — comparire
+                     dentro l'app — non può aspettare la terza sezione: lì
+                     arriva quando molti hanno già smesso di scorrere. Non è una
+                     sorpresa bruciata, è il motivo per scegliere noi.
+                     Dopo il pulsante e non prima: il pulsante resta in alto, e
+                     questo si legge come il di più. Dopo la nota e non fra
+                     pulsante e nota: la nota spiega cosa si ottiene col
+                     pulsante, e staccata da lui finirebbe a commentare lo
+                     spoiler.
+
+                     SI MONTA UNA VOLTA SOLA, QUANDO ENTRA IN VISTA, come la
+                     casella di dialogo di un videogioco: il piatto entra di
+                     lato, il riquadro si apre dalla sua coda, la frase si scrive
+                     lettera per lettera. Una battuta sola, non due come più giù:
+                     «Spoiler:» in grassetto fa già da richiamo.
+
+                     ⚠️ LA FRASE VERA NON SI TOCCA. La macchina da scrivere
+                     lavora su una COPIA nascosta ai lettori di schermo, messa
+                     sopra; l'originale resta sotto, trasparente ma intero — lo
+                     leggono i motori di ricerca e chi ascolta la pagina, e i18n
+                     può riscriverlo quando vuole (lo fa sempre, all'avvio). V.
+                     menu-landing.js. -->
+                <div class="ml-dialogo ml-dialogo--spoiler">
+                    <img src="images/happyplate.webp" alt="" class="ml-dialogo-piatto" width="80" height="80">
+                    <p class="ml-fumetto">
+                        <span class="ml-battuta" data-i18n="menuLanding.heroSpoiler" data-i18n-html><span class="ml-riga"><strong>Spoiler:</strong> il tuo menù potrà comparire</span> <span class="ml-riga">anche dentro <span class="ml-accento">AllergiApp</span>!</span></span>
+                    </p>
                 </div>
             </div>
 
@@ -109,8 +138,8 @@
                  un'altra lo faceva sembrare un'illustrazione. -->
             <div class="ml-try-text">
                 <div class="ml-try-head">
-                    <h2 class="ml-knobs-title" data-i18n="menuLanding.demoTitle">Questo è quello che otterrai</h2>
-                    <p class="ml-knobs-intro" data-i18n="menuLanding.demoText" data-i18n-html>Il menù che vedi simula quello che potresti creare. Prova a personalizzarlo con alcuni dei comandi che trovi anche nell’editor integrato.</p>
+                    <h2 class="ml-knobs-title" data-i18n="menuLanding.demoTitle">Personalizza il tuo menù digitale</h2>
+                    <p class="ml-knobs-intro" data-i18n="menuLanding.demoText" data-i18n-html>Grazie all’editor integrato potrai aggiungere i piatti e personalizzare il menù del tuo locale come più ti piace. Prova a modificare alcuni parametri e a interagire con l’anteprima per avere un’idea di quello che potrai ottenere.</p>
                 </div>
 
                 <div class="ml-knobs" id="ml-knobs">
@@ -202,7 +231,7 @@
                     </div>
                 </div>
 
-                <p class="ml-custom-note" data-i18n="menuLanding.knobsNote" data-i18n-html><a href="https://partner.allergiapp.com">Crea un profilo</a> per costruire il tuo menù e sceglierle una a una.</p>
+                <p class="ml-custom-note" data-i18n="menuLanding.knobsNote" data-i18n-html>Puoi <a href="https://partner.allergiapp.com">iniziare gratuitamente</a> a creare il tuo menù digitale.</p>
             </div>
         </div>
     </section>
@@ -277,7 +306,7 @@
                  ristampare a ogni cambio. -->
             <div class="ml-how-dopo anim-ready">
                 <p class="ml-how-dopo-titolo" data-i18n="menuLanding.howAfterTitle">Il menù resta tuo</p>
-                <p class="ml-how-dopo-testo" data-i18n="menuLanding.howAfterText" data-i18n-html>Cambi un piatto, un prezzo o un allergene e i clienti vedono sempre <b class="ml-chiave">il menù aggiornato</b>.<br>E il <b class="ml-chiave">QR non cambia mai</b>: si stampa una volta sola.</p>
+                <p class="ml-how-dopo-testo" data-i18n="menuLanding.howAfterText" data-i18n-html>Cambi un piatto, un prezzo o un allergene e i clienti vedono sempre <b class="ml-chiave">il menù aggiornato</b>.<br>Il <b class="ml-chiave">QR rimane lo stesso</b>: potrai stamparlo e mostrarlo ai clienti.</p>
             </div>
 
             <p class="ml-how-note" data-i18n="menuLanding.howNote" data-i18n-html><span class="ml-how-star">*</span> Associando a ogni piatto i suoi allergeni, come previsto dal Reg. UE 1169/2011.</p>
@@ -318,29 +347,28 @@
                      blocco di sinistra arriva a cinquecento punti e i due
                      lati si tengono compagnia.
 
-                     ⚠️ ACCANTO AL TELEFONO, IN CIMA ALLA PAGINA, C’È GIÀ UNA VOCE
-                     che parla al visitatore: la nota a pennarello con la freccia.
-                     Sono due registri diversi — una mano che annota e un
-                     personaggio che parla — e non devono vedersi insieme. Qui non
-                     si vedono: questa sezione comincia molto sotto la prima
-                     schermata. Se un giorno si vorrà il piatto anche più in alto,
-                     l’annotazione va tolta, non affiancata.
+                     ⚠️ LO STESSO PIATTO PARLA GIÀ IN CIMA ALLA PAGINA, sotto il
+                     pulsante, accanto alla nota a pennarello del telefono. Due
+                     voci nella stessa schermata reggono perché non si muovono
+                     insieme: il fumetto lassù si monta una volta sola quando
+                     entra in vista, la nota c’è già da subito (niente comparsa
+                     in ritardo) e cambia solo quando si scorre. Se la nota
+                     torna a comparire da sola, si pestano i piedi.
 
-                     LE DUE RIGHE STANNO NEL DOCUMENTO e l’animazione tocca solo
-                     l’opacità. Questa pagina deve farsi leggere dai motori di
-                     ricerca: parole scritte dal codice lì non arrivano, e chi usa
-                     un lettore di schermo sentirebbe una frase a metà. Per lo
-                     stesso motivo niente macchina da scrivere lettera per lettera
-                     — spezzerebbe il testo tradotto. Le due righe arrivano una
-                     dopo l’altra: il ritmo del dialogo si sente lo stesso.
+                     LE DUE RIGHE STANNO NEL DOCUMENTO, intere. Questa pagina deve
+                     farsi leggere dai motori di ricerca, e chi usa un lettore di
+                     schermo non deve sentire una frase a metà. La macchina da
+                     scrivere — la stessa dello spoiler in cima, per coerenza:
+                     piatto che entra di lato, riquadro che si apre, lettere una
+                     per volta — lavora su una COPIA nascosta ai lettori di
+                     schermo e messa sopra, così non spezza nemmeno il testo che
+                     i18n riscrive. V. menu-landing.js.
 
-                     Le comparse sono quelle di tutta la pagina (`anim-ready`,
-                     acceso dall’osservatore in menu-landing.js), quindi chi ha
-                     chiesto meno movimento trova già tutto fermo e a posto senza
-                     una riga in più. -->
+                     Chi ha chiesto meno movimento trova tutto fermo e a posto:
+                     il codice non recita e il foglio di stile non anima. -->
                 <div class="ml-dialogo">
-                    <img src="images/happyplate.webp" alt="" class="ml-dialogo-piatto anim-ready" width="64" height="64" loading="lazy">
-                    <div class="ml-fumetto anim-ready anim-d1">
+                    <img src="images/happyplate.webp" alt="" class="ml-dialogo-piatto" width="80" height="80" loading="lazy">
+                    <div class="ml-fumetto">
                         <!-- DUE BATTUTE, NON DUE RIGHE: la prima chiama,
                              sparisce, e al suo posto arriva quella che dice la
                              cosa. Stanno SOVRAPPOSTE nella stessa cella di una
@@ -349,12 +377,9 @@
                              fumetto si gonfierebbe e si sgonfierebbe a metà
                              discorso, e il titolo qui sotto ballerebbe con lui.
 
-                             L’avvicendamento è tutto nel foglio di stile — due
-                             animazioni con ritardi diversi, accese dalla
-                             classe che l’osservatore mette sul fumetto quando
-                             entra in vista. Nessun contatore nel codice: una
-                             cosa che succede una volta sola non ha bisogno di
-                             essere governata a mano.
+                             L’avvicendamento lo fa la macchina da scrivere:
+                             scritta la prima, la casella si svuota e si
+                             scrive la seconda, come in un videogioco.
 
                              Tutte e due le frasi stanno nel documento e non
                              spariscono mai davvero — cambia solo l’opacità —
@@ -376,32 +401,42 @@
                      portare senza diventare un discorso. -->
                 <p class="ml-app-intro anim-ready" data-i18n="menuLanding.appIntro">La community di AllergiApp è sempre in crescita, con migliaia di persone che ogni giorno la usano per trovare ristoranti in tutto il mondo.</p>
 
-                <!-- LA SCHEDA CHE C’È GIÀ, in UN elenco solo con i vantaggi
-                     qui sotto — stessa spunta, stessa riga corta — invece di
-                     un blocco a parte con paragrafi e un elenco proprio.
-                     Prima erano sei blocchi di testo diversi prima di
-                     arrivare ai quattro vantaggi: si leggeva come un
-                     documento, non come una pagina. -->
-                <p class="ml-app-claim-lead anim-ready" data-i18n="menuLanding.appClaimLead" data-i18n-html>Se il tuo locale è già su AllergiApp, ha già una sua scheda con le recensioni e le foto della community. <strong>Riscattala e potrai:</strong></p>
-                <ul class="ml-app-vantaggi ml-app-vantaggi--compact">
-                    <li class="anim-ready">
-                        <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim1">Personalizzare la scheda del ristorante</span>
-                    </li>
-                    <li class="anim-ready">
-                        <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim2">Aggiungere link, pulsanti per prenotare e contatti</span>
-                    </li>
-                    <li class="anim-ready">
-                        <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim3">Mostrare i tuoi piatti e le compatibilità</span>
-                    </li>
-                    <li class="anim-ready">
-                        <span class="ml-app-spunta" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-                        <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim4">Rispondere alle recensioni</span>
-                    </li>
-                </ul>
-                <p class="ml-app-claim-note anim-ready" data-i18n="menuLanding.appClaimNote">Le recensioni e le foto della community restano sempre visibili.</p>
+                <!-- LA SCHEDA CHE C’È GIÀ, DENTRO UN RIQUADRO LEGGERO. La
+                     frase, i quattro sblocchi e la nota che li chiude sono una
+                     cosa sola — cosa succede se il locale è già sull’app — e
+                     sciolti nella colonna si leggevano come tre pezzi staccati.
+                     Più leggero di quello dei vantaggi qui sotto (stesso bordo,
+                     nessun fondo): due riquadri pieni uguali si sarebbero fatti
+                     concorrenza.
+
+                     ⚠️ QUI NON CI SONO LE SPUNTE. Sono la firma dell’elenco dei
+                     vantaggi qui sotto: ripetute, facevano sembrare i due
+                     elenchi la stessa cosa detta due volte. Ogni riga porta
+                     invece l’icona di quello che dice — la scheda, un pulsante,
+                     un piatto, un fumetto — disegnata come tutte le altre della
+                     pagina: tratto, non pieno, e nessuna emoji. -->
+                <div class="ml-app-claim-box anim-ready">
+                    <p class="ml-app-claim-lead anim-ready" data-i18n="menuLanding.appClaimLead" data-i18n-html>Se il tuo locale è già su AllergiApp, ha già una sua scheda con le recensioni e le foto della community. <strong>Riscattala</strong> e potrai:</p>
+                    <ul class="ml-app-vantaggi ml-app-vantaggi--compact">
+                        <li class="anim-ready">
+                            <span class="ml-app-icona" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M3 9.5h18M7 13.5h7M7 16.5h4"/></svg></span>
+                            <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim1">Personalizzare la scheda del ristorante</span>
+                        </li>
+                        <li class="anim-ready">
+                            <span class="ml-app-icona" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="14" height="8.5" rx="4.25"/><path d="M12.6 12.4l8 3.4-3.4 1.2-1.2 3.4z"/></svg></span>
+                            <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim2">Aggiungere pulsanti (per prenotare, per delivery, ecc.)</span>
+                        </li>
+                        <li class="anim-ready">
+                            <span class="ml-app-icona" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.8"/></svg></span>
+                            <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim3">Mostrare i tuoi piatti e le compatibilità</span>
+                        </li>
+                        <li class="anim-ready">
+                            <span class="ml-app-icona" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h16a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H10l-5 3.5V16H4a1.5 1.5 0 0 1-1.5-1.5V6A1.5 1.5 0 0 1 4 4.5z"/><path d="M7 8.5h10M7 12h6"/></svg></span>
+                            <span class="ml-app-vantaggio-titolo" data-i18n="menuLanding.appClaim4">Rispondere alle recensioni</span>
+                        </li>
+                    </ul>
+                    <p class="ml-app-claim-note anim-ready" data-i18n="menuLanding.appClaimNote">Le recensioni e le foto della community restano sempre visibili.</p>
+                </div>
 
                 <!-- SCONTORNATO IN UN RIQUADRO SOBRIO: stesso posto, stesso
                      contenuto, solo isolato dal resto della colonna — bordo
@@ -410,7 +445,7 @@
                      un'altra promozione. -->
                 <div class="ml-app-vantaggi-box anim-ready">
                     <h3 class="ml-app-vantaggi-title anim-ready">
-                        <img src="images/logo_app.webp" alt="" class="ml-app-vantaggi-icon" width="24" height="24" loading="lazy">
+                        <img src="images/happyplate.webp" alt="" class="ml-app-vantaggi-icon" width="34" height="34" loading="lazy">
                         <span data-i18n="menuLanding.appVantaggiTitle">I vantaggi di stare su AllergiApp</span>
                     </h3>
                     <!-- TRE RIGHE, NON TRE PARAGRAFI. Prima ogni punto aveva un
@@ -444,62 +479,16 @@
                             <span class="ml-app-vantaggio-testo" data-i18n="menuLanding.appBen4Sub">Ai clienti piace informarsi prima, e arrivano già pronti per ordinare.</span>
                         </li>
                     </ul>
+                    <!-- DOVE FINISCE UNA COSA E COMINCIA L'ALTRA. Tutta la
+                         pagina promette un menù che si apre senza scaricare
+                         niente, e questa sezione parla invece di stare dentro
+                         l'app: senza una riga che lo dica, il lettore può
+                         concludere che anche il menù al tavolo richieda
+                         un'installazione, cioè esattamente il contrario di
+                         quello che gli stiamo vendendo. Piccola e in fondo al
+                         riquadro, perché precisa un confine, non vende. -->
+                    <p class="ml-app-ben-nota anim-ready" data-i18n="menuLanding.appBenNote">Per vedere il profilo del tuo locale su AllergiApp serve scaricare l’app. Per vedere il menù digitale invece basta aprire il QR nel browser, senza installare niente.</p>
                 </div>
-                <!-- LA REFERENZA, IN FONDO E NON IN CIMA. Prima il marchio
-                     apriva la sezione: presentava l’app a chi non sapeva
-                     ancora perché avrebbe dovuto interessarsene. Dopo i tre
-                     vantaggi risponde invece a una domanda che a quel punto
-                     uno se l’è fatta — «e quanta gente c’è, là dentro?» — ed
-                     è la firma in calce a un discorso, non l’intestazione.
-
-                     ⚠️ IL NUMERO È UN’AFFERMAZIONE PUBBLICITARIA: va tenuto
-                     allineato a quello che dicono App Store Connect e Play
-                     Console, e arrotondato per difetto. Sta in una chiave di
-                     traduzione sola — `appBadgeCount` — così si cambia in un
-                     posto e in tutte le lingue.
-
-                     I due simboli dentro i pulsanti sono decorativi
-                     (`aria-hidden`): il nome del negozio è già scritto
-                     accanto, e letti anche loro chi ascolta la pagina
-                     sentirebbe due volte la stessa cosa. -->
-                <p class="ml-app-badge anim-ready">
-                    <img src="images/logo_app.webp" alt="" class="ml-app-badge-logo" width="48" height="48" loading="lazy">
-                    <span class="ml-app-badge-testo">
-                        <span class="ml-app-badge-riga1">
-                            <span class="ml-app-badge-nome">AllergiApp</span>
-                            <span class="ml-app-badge-stacco" aria-hidden="true"></span>
-                            <span class="ml-app-badge-numero" data-i18n="menuLanding.appBadgeCount">+30.000 download</span>
-                        </span>
-                        <!-- I DUE NEGOZI, GLI STESSI PULSANTI DI download.html
-                             rimpiccioliti e girati allo scuro: lì stanno su un
-                             fondo colorato e sono bianchi, qui il fondo è
-                             chiaro. Stessa impronta, stesso simbolo, stessa
-                             coppia di righe — chi ha già visto quella pagina
-                             riconosce la stessa cosa.
-                             ⚠️ NON SONO LE IMMAGINI UFFICIALI di Apple e
-                             Google: sono ridisegnati, come già in
-                             download.html. Se un giorno si vorranno le
-                             ufficiali si scaricano dai due programmi per
-                             sviluppatori e si sostituiscono qui e là insieme,
-                             o il sito parlerà con due voci. -->
-                        <span class="ml-app-badge-negozi">
-                            <a href="https://apps.apple.com/app/allergiapp/id6758859853" class="ml-store" target="_blank" rel="noopener noreferrer">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
-                                <span class="ml-store-testo">
-                                    <span class="ml-store-occhiello" data-i18n="menuLanding.storeAppleLead">Scaricala su</span>
-                                    <span class="ml-store-nome">App Store</span>
-                                </span>
-                            </a>
-                            <a href="https://play.google.com/store/apps/details?id=com.allergiapp.mobile" class="ml-store" target="_blank" rel="noopener noreferrer">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
-                                <span class="ml-store-testo">
-                                    <span class="ml-store-occhiello" data-i18n="menuLanding.storePlayLead">Disponibile su</span>
-                                    <span class="ml-store-nome">Google Play</span>
-                                </span>
-                            </a>
-                        </span>
-                    </span>
-                </p>
             </div>
 
             <div class="ml-phone-col">
@@ -627,6 +616,63 @@
                 </div>
             </div>
             <p class="ml-phone-caption anim-ready" data-i18n="menuLanding.appCardCaption">Esempio di come i clienti vedono la scheda del tuo locale nell’app.</p>
+            <!-- LA REFERENZA, SOTTO IL TELEFONO. Prima il marchio apriva
+                 la sezione: presentava l’app a chi non sapeva ancora perché
+                 avrebbe dovuto interessarsene. Poi è finito in fondo alla
+                 colonna di sinistra, e infine qui: risponde alla domanda che
+                 a quel punto uno si è fatto — «e quanta gente c’è, là
+                 dentro?» — proprio sotto l’apparecchio che gliela mostra, e
+                 riempie la colonna di destra, che finiva col telefono mentre
+                 a sinistra continuavano i testi.
+
+                 ⚠️ IL NUMERO È UN’AFFERMAZIONE PUBBLICITARIA: va tenuto
+                 allineato a quello che dicono App Store Connect e Play
+                 Console, e arrotondato per difetto. Sta in una chiave di
+                 traduzione sola — `appBadgeCount` — così si cambia in un
+                 posto e in tutte le lingue.
+
+                 I due simboli dentro i pulsanti sono decorativi
+                 (`aria-hidden`): il nome del negozio è già scritto
+                 accanto, e letti anche loro chi ascolta la pagina
+                 sentirebbe due volte la stessa cosa. -->
+            <p class="ml-app-badge anim-ready">
+                <img src="images/logo_app.webp" alt="" class="ml-app-badge-logo" width="48" height="48" loading="lazy">
+                <span class="ml-app-badge-testo">
+                    <span class="ml-app-badge-riga1">
+                        <span class="ml-app-badge-nome">AllergiApp</span>
+                        <span class="ml-app-badge-stacco" aria-hidden="true"></span>
+                        <span class="ml-app-badge-numero" data-i18n="menuLanding.appBadgeCount">+30.000 download</span>
+                    </span>
+                    <!-- I DUE NEGOZI, GLI STESSI PULSANTI DI download.html
+                         rimpiccioliti e girati allo scuro: lì stanno su un
+                         fondo colorato e sono bianchi, qui il fondo è
+                         chiaro. Stessa impronta, stesso simbolo, stessa
+                         coppia di righe — chi ha già visto quella pagina
+                         riconosce la stessa cosa.
+                         ⚠️ NON SONO LE IMMAGINI UFFICIALI di Apple e
+                         Google: sono ridisegnati, come già in
+                         download.html. Se un giorno si vorranno le
+                         ufficiali si scaricano dai due programmi per
+                         sviluppatori e si sostituiscono qui e là insieme,
+                         o il sito parlerà con due voci. -->
+                    <span class="ml-app-badge-negozi">
+                        <a href="https://apps.apple.com/app/allergiapp/id6758859853" class="ml-store" target="_blank" rel="noopener noreferrer">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
+                            <span class="ml-store-testo">
+                                <span class="ml-store-occhiello" data-i18n="menuLanding.storeAppleLead">Scaricala su</span>
+                                <span class="ml-store-nome">App Store</span>
+                            </span>
+                        </a>
+                        <a href="https://play.google.com/store/apps/details?id=com.allergiapp.mobile" class="ml-store" target="_blank" rel="noopener noreferrer">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+                            <span class="ml-store-testo">
+                                <span class="ml-store-occhiello" data-i18n="menuLanding.storePlayLead">Disponibile su</span>
+                                <span class="ml-store-nome">Google Play</span>
+                            </span>
+                        </a>
+                    </span>
+                </span>
+            </p>
             </div>
         </div>
     </section>
@@ -643,17 +689,17 @@
                 <div class="ml-friction-card is-prima anim-ready">
                     <p class="ml-friction-label" data-i18n="menuLanding.frictionBeforeLabel">Senza menù digitale</p>
                     <ul>
-                        <li data-i18n="menuLanding.frictionBefore1">Il cameriere va a cercare il quaderno degli allergeni</li>
-                        <li data-i18n="menuLanding.frictionBefore2">Controlla piatto per piatto, e se non è sicuro chiede in cucina</li>
-                        <li data-i18n="menuLanding.frictionBefore3">Deve ricordare a memoria ingredienti che cambiano ogni giorno</li>
+                        <li data-i18n="menuLanding.frictionBefore1">Il menù è su carta: ogni cambio è una ristampa</li>
+                        <li data-i18n="menuLanding.frictionBefore2">Chi ha un’esigenza deve chiedere, e il cameriere va a controllare</li>
+                        <li data-i18n="menuLanding.frictionBefore3">Chi ti cerca online trova un PDF, quando lo trova</li>
                     </ul>
                 </div>
                 <div class="ml-friction-card is-dopo anim-ready anim-d1">
-                    <p class="ml-friction-label" data-i18n="menuLanding.frictionAfterLabel">Con AllergiApp</p>
+                    <p class="ml-friction-label" data-i18n="menuLanding.frictionAfterLabel">Con il menù digitale</p>
                     <ul>
-                        <li data-i18n="menuLanding.frictionAfter1">Il cliente filtra da solo, prima ancora di ordinare</li>
-                        <li data-i18n="menuLanding.frictionAfter2">Vede subito quali piatti vanno bene per lui</li>
-                        <li data-i18n="menuLanding.frictionAfter3">Il cameriere non deve ricordare niente</li>
+                        <li data-i18n="menuLanding.frictionAfter1">Cambi un piatto o un prezzo e il menù è già aggiornato, con lo stesso QR</li>
+                        <li data-i18n="menuLanding.frictionAfter2">Il cliente filtra da solo e vede subito cosa fa per lui</li>
+                        <li data-i18n="menuLanding.frictionAfter3">E il tuo menù potrà comparire anche dentro AllergiApp, davanti a chi sta cercando dove mangiare</li>
                     </ul>
                 </div>
             </div>
@@ -666,9 +712,8 @@
          dove stava la sua versione lunga. -->
     <section class="ml-end">
         <div class="container">
-            <p class="ml-end-lead anim-ready" data-i18n="menuLanding.endLead">Non un PDF sul telefono: il menù che aiuta i tuoi clienti a capire cosa fa per loro.</p>
             <h2 class="ml-end-title" data-i18n="menuLanding.endTitle">Il tuo menù, in mezz'ora</h2>
-            <p class="ml-end-text" data-i18n="menuLanding.endText">Inserisci i tuoi piatti e crea il tuo menù.</p>
+            <p class="ml-end-text" data-i18n="menuLanding.endText">Inserisci i tuoi piatti e crea il tuo menù. Semplice. Veloce.</p>
             <a href="https://partner.allergiapp.com" class="ml-cta" data-i18n="menuLanding.ctaPrimary">Inizia gratis</a>
             <p class="ml-end-note" data-i18n="menuLanding.endNote" data-i18n-html>Hai una domanda prima di provare? <a href="contacts">Scrivici</a>.</p>
         </div>
@@ -693,11 +738,11 @@
                 </details>
                 <details class="ml-faq-item">
                     <summary><span data-i18n="menuLanding.faqQ1">Quanto mi costa avere il mio menù digitale?</span></summary>
-                    <p data-i18n="menuLanding.faqA1">Creare e pubblicare il tuo menù è gratis, e lo sarà sempre. Se vuoi personalizzare l’aspetto in ogni dettaglio o associare la scheda del tuo locale ad AllergiApp, puoi passare a un abbonamento premium.</p>
+                    <p data-i18n="menuLanding.faqA1">Creare e pubblicare il tuo menù è gratis, e lo sarà sempre. Se vuoi personalizzare l’aspetto in ogni dettaglio o associare la scheda del tuo locale ad AllergiApp, puoi passare a un abbonamento Pro.</p>
                 </details>
                 <details class="ml-faq-item">
                     <summary><span data-i18n="menuLanding.faqQ2">Devo far scaricare un’app ai miei clienti?</span></summary>
-                    <p data-i18n="menuLanding.faqA2">No. Il menù si apre nel browser: basta inquadrare il QR o toccare il link, senza installare niente.</p>
+                    <p data-i18n="menuLanding.faqA2">No. Il menù si apre nel browser: basta inquadrare il QR o toccare il link, senza installare niente. E chi ha AllergiApp potrà trovarlo anche nella scheda del tuo locale, dentro l’app.</p>
                 </details>
                 <details class="ml-faq-item">
                     <summary><span data-i18n="menuLanding.faqQ3">Posso modificare il menù dopo averlo pubblicato?</span></summary>

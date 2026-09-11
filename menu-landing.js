@@ -18,6 +18,183 @@
 (function () {
   'use strict';
 
+  // ── I FUMETTI, COME LE CASELLE DI DIALOGO DI UN VIDEOGIOCO ────────────
+  // Tutti e due — lo spoiler in cima e quello della sezione AllergiApp — si
+  // montano allo stesso modo: il piatto entra, il riquadro si apre, le
+  // battute si scrivono lettera per lettera, una dopo l'altra, e la casella
+  // si svuota fra una e l'altra. Una volta sola, quando il fumetto entra in
+  // vista: partire all'apertura voleva dire recitare a nessuno. Piatto e
+  // riquadro li muove il foglio di stile; qui si scrivono le battute. Sta
+  // prima del controllo sul telefono qui sotto perché non ne dipende.
+  //
+  // ⚠️ SI SCRIVE UNA COPIA, NON LA FRASE VERA. i18n riscrive l'originale
+  // all'avvio — sempre, anche in italiano: legge translations.json e rimette
+  // l'innerHTML — e a ogni cambio di lingua: lettere spezzate lì dentro
+  // sparirebbero a metà. L'originale resta intero e trasparente sotto (lo
+  // leggono motori di ricerca e lettori di schermo), e la copia, nascosta a
+  // questi ultimi, gli sta sopra nella stessa cella. Se i18n lo riscrive
+  // mentre si scrive, le copie si rifanno dal testo nuovo e riprendono dal
+  // punto in cui erano: i ritardi si contano dall'entrata in scena, non dalla
+  // nascita della copia. Finito di scrivere, le copie se ne vanno e restano
+  // gli originali.
+  var menoMoto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var INIZIO = 820; // dopo l'entrata del piatto e l'apertura del riquadro (v. CSS)
+  var PASSO = 12;   // una lettera ogni 12 millesimi: veloce, come nei giochi
+  var PAUSA = 120;  // il fiato dopo la punteggiatura
+  var TIENI = 400;  // quanto resta una battuta prima che la casella si svuoti
+
+  function recita(dialogo) {
+    var battute = Array.prototype.slice.call(dialogo.querySelectorAll('.ml-battuta'));
+    if (!battute.length) return;
+    var inScena = 0;
+    var copie = [];
+    var fine = null;
+    var guardia = new MutationObserver(scrivi);
+
+    function scrivi() {
+      var trascorso = performance.now() - inScena;
+      var t = INIZIO;
+
+      copie.forEach(function (c) { c.remove(); });
+      copie = battute.map(function (frase, i) {
+        var copia = document.createElement('span');
+        copia.className = frase.className;
+        copia.classList.remove('is-coperta');
+        copia.classList.add('ml-copia');
+        copia.setAttribute('aria-hidden', 'true');
+
+        // Stessi elementi (grassetto, nome in verde), ma ogni carattere in
+        // una scatola sua con il suo ritardo.
+        (function ricalca(da, a) {
+          Array.prototype.forEach.call(da.childNodes, function (nodo) {
+            if (nodo.nodeType === 1) {
+              var el = nodo.cloneNode(false);
+              a.appendChild(el);
+              ricalca(nodo, el);
+            } else if (nodo.nodeType === 3) {
+              Array.from(nodo.textContent).forEach(function (c) {
+                var lettera = document.createElement('span');
+                lettera.className = 'ml-lettera';
+                lettera.textContent = c;
+                lettera.style.setProperty('--d', Math.round(t - trascorso) + 'ms');
+                a.appendChild(lettera);
+                t += PASSO + (/[:.,!?]/.test(c) ? PAUSA : 0);
+              });
+            }
+          });
+        })(frase, copia);
+
+        // Tutte tranne l'ultima: letta la battuta, la casella si svuota e
+        // un attimo dopo comincia la prossima.
+        if (i < battute.length - 1) {
+          t += TIENI;
+          copia.style.setProperty('--via', Math.round(t - trascorso) + 'ms');
+          copia.classList.add('is-passa');
+          t += 80;
+        }
+
+        frase.parentNode.appendChild(copia);
+        frase.classList.add('is-coperta');
+        return copia;
+      });
+
+      clearTimeout(fine);
+      fine = setTimeout(function () {
+        guardia.disconnect();
+        copie.forEach(function (c) { c.remove(); });
+        copie = [];
+        battute.forEach(function (frase) { frase.classList.remove('is-coperta'); });
+      }, Math.max(0, t - trascorso));
+    }
+
+    function entraInScena() {
+      inScena = performance.now();
+      dialogo.classList.add('is-via');
+      scrivi();
+      battute.forEach(function (frase) {
+        guardia.observe(frase, { childList: true, characterData: true, subtree: true });
+      });
+    }
+
+    dialogo.classList.add('is-attesa');
+    if ('IntersectionObserver' in window) {
+      var vedetta = new IntersectionObserver(function (voci) {
+        if (!voci[0].isIntersecting) return;
+        vedetta.disconnect();
+        entraInScena();
+      }, { threshold: 0.6 });
+      vedetta.observe(dialogo);
+    } else {
+      entraInScena();
+    }
+  }
+
+  if (!menoMoto) {
+    Array.prototype.forEach.call(document.querySelectorAll('.ml-dialogo'), recita);
+  }
+
+  // ── I FUMETTI, STRETTI QUANTO IL TESTO ────────────────────────────────
+  // Un paragrafo che va a capo si prende tutta la larghezza che gli si dà,
+  // anche se le sue righe sono più corte: il riquadro restava con un vuoto a
+  // destra. Qui si misura la riga più lunga delle battute vere e il fumetto
+  // si stringe su di lei. Le righe le ha già bilanciate il foglio di stile
+  // (`text-wrap: balance`), così si stringe su righe pari. Si rimisura quando
+  // cambia la lingua, la finestra, o arriva il carattere vero.
+  //
+  // Le righe partono tutte dal bordo sinistro della battuta (testo a
+  // sinistra): la più lunga è quella che arriva più a destra.
+  //
+  // ⚠️ SI PUÒ MISURARE MENTRE IL RIQUADRO SI APRE, cioè sotto uno `scale()`:
+  // i rettangoli arrivano schiacciati. Si dividono per la scala del momento,
+  // letta confrontando la misura a video con quella d'impaginazione
+  // (`offsetWidth`, che la trasformazione non tocca). E a fine apertura si
+  // rimisura comunque.
+  function abbraccia(fumetto) {
+    var battute = fumetto.querySelectorAll('.ml-battuta:not(.ml-copia)');
+    if (!battute.length) return;
+    fumetto.style.width = '';
+    var scala = fumetto.getBoundingClientRect().width / (fumetto.offsetWidth || 1);
+    if (!scala) return;
+    var riga = 0;
+    Array.prototype.forEach.call(battute, function (b) {
+      var sinistra = b.getBoundingClientRect().left;
+      // Solo i pezzi di testo: un gruppo che va a capo per conto suo
+      // (`.ml-riga`) ha una scatola larga quanto tutto il posto, e misurato
+      // intero terrebbe il riquadro spalancato.
+      var passi = document.createTreeWalker(b, NodeFilter.SHOW_TEXT);
+      var r = document.createRange();
+      while (passi.nextNode()) {
+        r.selectNodeContents(passi.currentNode);
+        Array.prototype.forEach.call(r.getClientRects(), function (q) {
+          riga = Math.max(riga, (q.right - sinistra) / scala);
+        });
+      }
+    });
+    if (!riga) return;
+    // Imbottitura e bordo: la misura va data al riquadro intero
+    // (border-box, v. styles.css).
+    var intorno = fumetto.offsetWidth - battute[0].offsetWidth;
+    fumetto.style.width = Math.ceil(riga + intorno + 1) + 'px';
+  }
+
+  var fumetti = Array.prototype.slice.call(document.querySelectorAll('.ml-dialogo .ml-fumetto'));
+  fumetti.forEach(function (fumetto) {
+    abbraccia(fumetto);
+    var lingua = new MutationObserver(function () { abbraccia(fumetto); });
+    Array.prototype.forEach.call(fumetto.querySelectorAll('.ml-battuta'), function (b) {
+      lingua.observe(b, { childList: true, characterData: true, subtree: true });
+    });
+    // Solo la fine dell'apertura del riquadro: anche le lettere, comparendo,
+    // mandano la loro fine d'animazione fin qui.
+    fumetto.addEventListener('animationend', function (e) {
+      if (e.target === fumetto) abbraccia(fumetto);
+    });
+  });
+  window.addEventListener('resize', function () { fumetti.forEach(abbraccia); });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { fumetti.forEach(abbraccia); });
+  }
+
   var frame = document.getElementById('ml-demo-frame');
   var pannello = document.getElementById('ml-knobs');
   if (!frame || !pannello) return;
@@ -98,7 +275,32 @@
         osservatore.unobserve(voce.target);
       });
     }, { threshold: 0.15 });
+
+    // ⚠️ LA SEZIONE AllergiApp SI MONTA TUTTA INSIEME, non un pezzo alla
+    // volta. I suoi ritardi — due secondi e mezzo abbondanti, nel foglio di
+    // stile — sono scritti per il dialogo del piatto, e contano da quando il
+    // piatto comincia a parlare. Lasciando che ogni pezzo partisse quando
+    // entra in vista lui, in una sezione alta due schermate ognuno contava da
+    // un momento suo: i pezzi arrivavano sconnessi dal dialogo e l'uno
+    // dall'altro, e alcuni tre secondi dopo che li stavi già guardando. Il via
+    // è uno solo, ed è quello del fumetto.
+    var sezione = document.querySelector('.ml-app');
+    var viaSezione = sezione && sezione.querySelector('.ml-dialogo');
+    var pezziSezione = viaSezione
+      ? Array.prototype.slice.call(sezione.querySelectorAll('.anim-ready'))
+      : [];
+
+    if (pezziSezione.length) {
+      var insieme = new IntersectionObserver(function (voci) {
+        if (!voci[0].isIntersecting) return;
+        insieme.disconnect();
+        pezziSezione.forEach(function (el) { el.classList.add('anim-done'); });
+      }, { threshold: 0.6 });
+      insieme.observe(viaSezione);
+    }
+
     document.querySelectorAll('.anim-ready').forEach(function (el) {
+      if (pezziSezione.indexOf(el) !== -1) return;
       osservatore.observe(el);
     });
   } else {
@@ -119,15 +321,10 @@
   var blocco = frame.closest('.ml-split');
   var voceAccesa = 0;
 
-  if (pastiglia) {
-    pastiglia.classList.add('is-1');
-    // Comparsa in ritardo: prima si vede il telefono, poi qualcuno ci scrive
-    // sopra. Se nel frattempo si è già scorso non cambia niente — la scritta
-    // giusta l'ha già scelta `annota()`, questa accende solo l'inchiostro.
-    setTimeout(function () {
-      pastiglia.classList.add('is-pronta');
-    }, 1100);
-  }
+  // Nessuna comparsa in ritardo: nella stessa schermata parla il piatto
+  // dello spoiler, e una scritta che arriva da sola lo disturbava (v. il
+  // foglio di stile, `.ml-hint`).
+  if (pastiglia) pastiglia.classList.add('is-1');
 
   function annota() {
     if (!voci.length || !blocco) return;
