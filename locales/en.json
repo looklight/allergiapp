@@ -437,6 +437,7 @@
       "activeChipLodging": "Hotels & stays",
       "activeChipFollowed": "From people you follow",
       "activeChipRating4Plus": "4★ and up",
+      "activeChipCuisines": "Cuisine · {{count}}",
       "loadingNearby": "Looking for restaurants in {{place}}...",
       "bannerNoneAt": "No restaurants in {{place}}",
       "bannerCountAt": {

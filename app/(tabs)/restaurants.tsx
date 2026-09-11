@@ -347,10 +347,6 @@ export default function RestaurantsScreen() {
   }, [loadSaved]);
 
   // --- Handlers ---
-  const toggleFilter = useCallback((id: RestaurantCategoryId) => {
-    setActiveFilters(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  }, []);
-
   const handleAddPress = () => {
     if (!isAuthenticated) router.push('/auth/login');
     else router.push('/restaurants/add');
@@ -936,12 +932,21 @@ export default function RestaurantsScreen() {
                 <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
               </TouchableOpacity>
             )}
-            {activeFilters.map(id => (
-              <TouchableOpacity key={id} style={styles.activeChip} onPress={() => toggleFilter(id)} activeOpacity={0.7}>
-                <Text style={styles.activeChipText}>{getCuisineLabel(id, lang)}</Text>
-                <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+            {/* Un'unica pill per le cucine: il nome se è una, altrimenti il
+                conteggio. Il corpo riapre il filtro (per vedere quali), la X
+                le toglie tutte. */}
+            {activeFilters.length > 0 && (
+              <TouchableOpacity key="cuisine" style={styles.activeChip} onPress={handleOpenFilterModal} activeOpacity={0.7}>
+                <Text style={styles.activeChipText}>
+                  {activeFilters.length === 1
+                    ? getCuisineLabel(activeFilters[0], lang)
+                    : i18n.t('restaurants.tabs.activeChipCuisines', { count: activeFilters.length })}
+                </Text>
+                <TouchableOpacity onPress={() => setActiveFilters([])} hitSlop={8} activeOpacity={0.6}>
+                  <MaterialCommunityIcons name="close-circle" size={14} color={theme.colors.primary} />
+                </TouchableOpacity>
               </TouchableOpacity>
-            ))}
+            )}
           </ScrollView>
         )}
 
