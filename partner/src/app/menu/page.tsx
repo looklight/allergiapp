@@ -13,6 +13,7 @@ import { useDishes } from '@/lib/dishes';
 import { useVenues, type Venue } from '@/lib/venues';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import ConfirmDialog from '@/components/menus/ConfirmDialog';
+import Interruttore from '@/components/menus/Interruttore';
 import NewMenuDialog from '@/components/menus/NewMenuDialog';
 import UndoToast from '@/components/UndoToast';
 
@@ -208,9 +209,16 @@ export default function MenusPage() {
 
               {(() => {
                 const delloStessoLocale = menus.filter((menu) => menu.venueId === venue.id);
+                // Con tutti spenti, pubblicare non farebbe niente (il
+                // database rifiuta uno scatto vuoto): meglio non farci
+                // arrivare che scoprirlo dopo. Stesso principio del menù
+                // singolo, che il toggle non lo vede proprio (richiesta
+                // dell'utente, 14/09).
+                const attivi = delloStessoLocale.filter((menu) => menu.active).length;
                 return delloStessoLocale.map((menu) => {
                   const piatti = menuItems(menu).length;
                   const sezioni = menu.sections.length;
+                  const ultimoAttivo = menu.active && attivi === 1;
                   return (
                     // L'INTERA RIGA apre l'editor, non solo un bottone "Apri":
                     // è la card a essere il link, come nelle liste moderne
@@ -244,44 +252,43 @@ export default function MenusPage() {
                           · {menu.currency}
                         </p>
                       </div>
-                      {/* ATTIVO/INATTIVO, con un interruttore vero: coppia
-                          di parole vera stavolta ("In sala"/"Da parte" non lo
-                          era), quindi il testo può cambiare insieme al
-                          colore — verde acceso, grigio spento — senza
-                          leggersi come incoerente (richiesta dell'utente,
-                          13/09). Il cursore parte da "left-0.5" esplicito:
-                          senza una posizione di base il browser lo piazzava a
-                          occhio, e usciva dalla pista (bug segnalato
-                          dall'utente, 13/09). Si vede solo da due carte in
-                          su: con una sola, spegnerla vorrebbe dire togliere
-                          il menù dal tavolo — e per quello c'è il ritiro, che
-                          è un gesto diverso e sta nell'editor. Il menù spento
-                          resta apribile e modificabile: è il menù
-                          dell'inverno che aspetta ottobre. */}
+                      {/* ATTIVO, con lo stesso interruttore dell'indirizzo
+                          online nell'editor (componente condiviso, prima
+                          duplicato a mano qui): etichetta FISSA — non più
+                          "Attivo"/"Inattivo" che cambiava — perché lì un
+                          testo che si muove insieme al colore si legge come
+                          un'etichetta di stato e non come una cosa da
+                          premere, e la stessa ragione vale qui (censimento
+                          richiesto dall'utente, 14/09). Si vede solo da due
+                          carte in su: con una sola, spegnerla vorrebbe dire
+                          togliere il menù dal tavolo — e per quello c'è il
+                          ritiro, che è un gesto diverso e sta nell'editor. Il
+                          menù spento resta apribile e modificabile: è il
+                          menù dell'inverno che aspetta ottobre. Lo
+                          stopPropagation sta sul contenitore e non dentro
+                          l'interruttore: qui non arriva l'evento del click,
+                          solo il cambiamento di stato.
+                          BLOCCATO sull'ultimo rimasto acceso: spento anche
+                          quello, pubblicare non farebbe niente (il database
+                          rifiuta uno scatto senza nessuna carta), e la carta
+                          resterebbe con "modifiche non pubblicate" per
+                          sempre, senza modo di risolverle premendo Pubblica
+                          (richiesta dell'utente, 14/09). */}
                       {delloStessoLocale.length > 1 && (
-                        <div className="flex shrink-0 items-center gap-2">
-                          <span className="text-xs font-medium text-gray-600">
-                            {menu.active ? d.menus.activeLabel : d.menus.inactiveLabel}
-                          </span>
-                          <button
-                            role="switch"
-                            aria-checked={menu.active}
-                            aria-label={menu.active ? d.menus.activeLabel : d.menus.inactiveLabel}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActive(menu.id, !menu.active);
-                            }}
-                            title={menu.active ? d.menus.activeHint : d.menus.parkedHint}
-                            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-                              menu.active ? 'bg-[#4CAF50]' : 'bg-gray-300'
-                            }`}
-                          >
-                            <span
-                              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                                menu.active ? 'translate-x-4' : 'translate-x-0'
-                              }`}
-                            />
-                          </button>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Interruttore
+                            acceso={menu.active}
+                            disabilitato={ultimoAttivo}
+                            etichetta={d.menus.activeLabel}
+                            titolo={
+                              ultimoAttivo
+                                ? d.menus.lastActiveHint
+                                : menu.active
+                                  ? d.menus.activeHint
+                                  : d.menus.parkedHint
+                            }
+                            onChange={() => setActive(menu.id, !menu.active)}
+                          />
                         </div>
                       )}
                       {/* Niente più "Apri" (l'intera riga fa il suo lavoro) né

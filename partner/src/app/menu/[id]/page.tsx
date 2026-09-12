@@ -382,6 +382,7 @@ export default function MenuEditorPage() {
           stato={pubblicazione.stato}
           pubblica={() => void pubblicazione.pubblica()}
           inCorso={pubblicazione.inCorso}
+          nessunMenuAttivo={pubblicazione.nessunMenuAttivo}
         />
       </div>
 

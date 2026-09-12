@@ -28,6 +28,7 @@ import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
 import { slugOccupato, type Venue } from '@/lib/venues';
 import ConfirmDialog from './ConfirmDialog';
+import Interruttore from './Interruttore';
 import MenuQr from './MenuQr';
 
 // L'ancora a cui punta il "Modifica" del riquadro sotto l'anteprima
@@ -284,12 +285,17 @@ export default function MenuAddress({
           indirizzo che risponde già. Annullando si torna all'indirizzo
           attuale — non ha senso lasciare nel campo una bozza che si è appena
           deciso di non salvare, o il bottone "Cambia indirizzo" resterebbe lì
-          pronto a riaprire la stessa domanda. */}
+          pronto a riaprire la stessa domanda.
+          NIENTE riquadro con l'indirizzo: era quello attuale (quello che sta
+          per smettere di rispondere), ma un URL da solo in un riquadro sotto
+          "Cambiare l'indirizzo?" si legge come "è questo il nuovo" tanto
+          quanto "è questo il vecchio" — il corpo del messaggio già distingue
+          i due senza bisogno di mostrarne uno (bug segnalato dall'utente,
+          14/09). */}
       {confermaCambio && (
         <ConfirmDialog
           title={d.menuEditor.addressChangeConfirmTitle}
           body={d.menuEditor.addressChangeConfirmBody}
-          subject={`${MENU_DOMINIO}${venue.slug}`}
           confirmLabel={d.menuEditor.addressChange}
           onCancel={() => {
             setConfermaCambio(false);
@@ -303,52 +309,5 @@ export default function MenuAddress({
       )}
 
     </div>
-  );
-}
-
-// L'interruttore della messa in sala: etichetta ferma a sinistra, binario a
-// destra. È un <button role="switch"> e non una casella di spunta perché il
-// gesto non è "spuntare una condizione" ma accendere e spegnere una cosa che
-// sta fuori di qui — il menù sul tavolo dei clienti.
-//
-// Il colore non è l'unico segnale: la pallina si sposta, e chi non distingue
-// il verde dal grigio vede comunque da che parte sta.
-function Interruttore({
-  acceso,
-  disabilitato,
-  etichetta,
-  titolo,
-  onChange,
-}: {
-  acceso: boolean;
-  disabilitato: boolean;
-  etichetta: string;
-  titolo?: string;
-  onChange: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={acceso}
-      disabled={disabilitato}
-      onClick={onChange}
-      title={titolo}
-      className="group flex shrink-0 items-center gap-2 text-xs font-medium text-gray-600 disabled:cursor-default disabled:opacity-50"
-    >
-      {etichetta}
-      <span
-        aria-hidden="true"
-        className={`relative h-5 w-9 rounded-full transition-colors ${
-          acceso ? 'bg-emerald-600' : 'bg-gray-300 group-hover:bg-gray-400 group-disabled:group-hover:bg-gray-300'
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all ${
-            acceso ? 'left-[1.125rem]' : 'left-0.5'
-          }`}
-        />
-      </span>
-    </button>
   );
 }

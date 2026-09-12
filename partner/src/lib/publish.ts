@@ -18,6 +18,14 @@ export function usePublishState(venueId: string | null) {
   const { savedAt } = useSaveState();
   const [stato, setStato] = useState<PublishState | null>(null);
   const [inCorso, setInCorso] = useState(false);
+  // publish_menu() nel database rifiuta silenziosamente (nessun errore
+  // Postgres) quando non c'è nessun menù attivo da mettere nello scatto: per
+  // write() è una scrittura RIUSCITA (data null, error null), quindi la
+  // barra di stato generica avrebbe mostrato "Salvato" mentendo. Qui si
+  // distingue quel caso apposta, per dirlo davvero (bug trovato durante il
+  // censimento richiesto dall'utente, 14/09 — reso comunque quasi
+  // irraggiungibile dal blocco sull'ultimo menù attivo in /menu).
+  const [nessunMenuAttivo, setNessunMenuAttivo] = useState(false);
 
   useEffect(() => {
     if (venueId === null) return;
@@ -30,14 +38,28 @@ export function usePublishState(venueId: string | null) {
     };
   }, [venueId, savedAt]);
 
+  // Ogni scrittura successiva (per esempio riaccendere un menù) azzera
+  // l'avviso: non è detto che valga ancora, e tenerlo finché non si ripreme
+  // Pubblica lo farebbe leggere come un guasto permanente.
+  useEffect(() => {
+    setNessunMenuAttivo(false);
+  }, [savedAt]);
+
   const pubblica = useCallback(async () => {
     if (venueId === null) return;
     setInCorso(true);
+    setNessunMenuAttivo(false);
     const quando = await publishMenu(venueId);
     setInCorso(false);
-    // Fallita: lo stato NON si tocca. L'errore lo mostra la barra di stato
-    // con il suo "Riprova"; qui dire "pubblicato" sarebbe una bugia.
-    if (quando === null) return;
+    // Fallita: lo stato NON si tocca. Qui dire "pubblicato" sarebbe una
+    // bugia — ma NON è detto che sia un guasto di rete o del server (quello
+    // lo mostra già la barra di stato generica, col suo "Riprova"): è
+    // altrettanto spesso "hai spento tutti i menù", che quella barra non
+    // vede affatto (v. il commento sopra). PublishBar lo dice per esteso.
+    if (quando === null) {
+      setNessunMenuAttivo(true);
+      return;
+    }
     setStato({
       publishedAt: quando,
       hasChanges: false,
@@ -69,5 +91,12 @@ export function usePublishState(venueId: string | null) {
     });
   }, [venueId]);
 
-  return { stato, pubblica, ritira, inCorso, online: stato?.publishedAt != null };
+  return {
+    stato,
+    pubblica,
+    ritira,
+    inCorso,
+    nessunMenuAttivo,
+    online: stato?.publishedAt != null,
+  };
 }

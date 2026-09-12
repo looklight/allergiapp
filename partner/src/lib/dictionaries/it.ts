@@ -355,11 +355,14 @@ const it = {
     // cambia nome mentre lo tocchi si legge come incoerente (feedback
     // utente, 13/09). "In sala"/"Da parte" restano solo nel tooltip.
     activeLabel: 'Attivo',
-    inactiveLabel: 'Inattivo',
     active: 'In sala',
     parked: 'Da parte',
     activeHint: 'Il cliente lo vede fra le linguette. Tocca per metterlo da parte.',
     parkedHint: 'Esiste solo qui: al tavolo non compare. Tocca per rimetterlo in sala.',
+    // Spegnendo anche questo, pubblicare non farebbe più niente: il database
+    // rifiuta una carta vuota, e la modifica resterebbe in sospeso per
+    // sempre (richiesta dell'utente, 14/09).
+    lastActiveHint: 'Deve restare acceso almeno un menù.',
     forVenue: 'Di quale locale?',
     newVenue: '+ Un altro locale',
     venueNameLabel: 'Nome del locale',
@@ -549,6 +552,10 @@ const it = {
     publish: 'Pubblica le modifiche',
     publishFirst: 'Pubblica il menù',
     publishing: 'Pubblico…',
+    // Il database rifiuta di pubblicare uno scatto vuoto: qui si dice perché,
+    // così ripremere lo stesso bottone non sembra l'unica cosa da fare
+    // (bug trovato durante il censimento richiesto dall'utente, 14/09).
+    publishNoActive: 'Nessun menù attivo: niente da pubblicare. Riaccendine almeno uno in "Vedi i menù".',
     publishPending: 'Modifiche non pubblicate: gli utenti vedono ancora la versione precedente.',
     // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
     // grigia: è la mitigazione della scelta di avere una bozza (Tema 24).
@@ -595,8 +602,11 @@ const it = {
     // UN'ETICHETTA SOLA, e lo stato lo dice l'interruttore accanto. Prima la
     // pastiglia scriveva "Attivo" o "Inattivo" a seconda dei casi: leggeva
     // come un'etichetta di stato, non come una cosa da premere — e infatti
-    // nessuno la premeva.
-    addressActive: 'Attivo',
+    // nessuno la premeva. "Pubblicato" e non più "Attivo": la stessa parola
+    // in /menu vuol dire un'altra cosa, se un singolo menù entra o no in
+    // quello che si pubblica, e le due notizie mescolate confondevano
+    // (censimento richiesto dall'utente, 14/09).
+    addressActive: 'Pubblicato',
     // Dicono la CONSEGUENZA e non il posto: "sala" in un ristorante è la
     // stanza dove si mangia, e chi legge non deve tradurre una metafora
     // nostra per capire cosa fa premendo.

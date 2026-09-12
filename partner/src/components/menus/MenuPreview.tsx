@@ -829,7 +829,10 @@ function TitoloSezione({
   // ⚠️ mb-2.5 = 10px, e non può essere meno dello spazio fra i piatti (13px):
   // a 4px il filetto sembrava appoggiato sopra la prima riga. Stessa misura
   // del sito (.menu-section-title in menu-page.css).
-  const sotto = conDescrizione ? 'menu-section-title has-desc mb-2.5' : 'mb-2.5';
+  // La classe menu-section-title c'è SEMPRE, non solo con la descrizione: è
+  // anche il gancio della regola che a blocco centra il titolo (globals.css),
+  // e senza, le sezioni senza descrizione restavano a sinistra solo qui.
+  const sotto = conDescrizione ? 'menu-section-title has-desc mb-2.5' : 'menu-section-title mb-2.5';
   if (stile === 'banner') {
     return (
       <h3

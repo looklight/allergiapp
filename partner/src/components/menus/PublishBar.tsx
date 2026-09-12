@@ -44,6 +44,7 @@ export default function PublishBar({
   stato,
   pubblica,
   inCorso,
+  nessunMenuAttivo,
 }: {
   // null = non ancora saputo. Lo stato lo tiene la pagina (usePublishState),
   // perché in questa schermata lo leggono in tre: questa riga, la sezione
@@ -51,6 +52,12 @@ export default function PublishBar({
   stato: PublishState | null;
   pubblica: () => void;
   inCorso: boolean;
+  // L'ultimo tentativo di pubblicare è stato rifiutato perché non c'era
+  // nessun menù attivo. Non è un guasto (la barra di stato generica non lo
+  // vede: v. usePublishState), quindi lo dice questa riga, al posto del
+  // messaggio "modifiche non pubblicate" — che resterebbe vero ma
+  // fuorviante, perché suggerirebbe che basta ripremere lo stesso bottone.
+  nessunMenuAttivo: boolean;
 }) {
   const { d, locale } = useI18n();
 
@@ -75,15 +82,20 @@ export default function PublishBar({
   // rumore — è la risposta alla domanda "ma quello che vedono i clienti è
   // questo?", che senza una data scritta da qualche parte non ha risposta.
   const soloAspetto = stato.appearanceChanged && !stato.contentChanged;
-  const messaggio = !daPubblicare
-    ? fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })
-    : mai
-      ? d.menuEditor.publishNever
-      : allarme
-        ? d.menuEditor.publishAllergens
-        : soloAspetto
-          ? d.menuEditor.publishAppearance
-          : d.menuEditor.publishPending;
+  // Ha la priorità su tutto: se l'ultimo tentativo è stato rifiutato, dire
+  // ancora "modifiche non pubblicate" farebbe credere che ripremere lo
+  // stesso bottone basti.
+  const messaggio = nessunMenuAttivo
+    ? d.menuEditor.publishNoActive
+    : !daPubblicare
+      ? fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })
+      : mai
+        ? d.menuEditor.publishNever
+        : allarme
+          ? d.menuEditor.publishAllergens
+          : soloAspetto
+            ? d.menuEditor.publishAppearance
+            : d.menuEditor.publishPending;
 
   // Due figli diretti della riga sticky e non un involucro: è la riga stessa
   // che va a capo (flex-wrap), e solo così su telefono l'avviso può prendersi
@@ -97,7 +109,7 @@ export default function PublishBar({
     <>
       <p
         className={`${spazio} ${
-          !daPubblicare ? 'text-gray-400' : allarme ? 'text-amber-800' : 'text-gray-600'
+          !daPubblicare ? 'text-gray-400' : allarme || nessunMenuAttivo ? 'text-amber-800' : 'text-gray-600'
         }`}
         title={messaggio}
       >
@@ -110,7 +122,7 @@ export default function PublishBar({
           // ml-auto perché su telefono il bottone è solo, in fondo alla prima
           // riga: senza, resterebbe appiccicato al link del ritorno.
           className={`ml-auto shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
-            allarme ? 'bg-amber-700 hover:bg-amber-800' : 'bg-gray-900 hover:bg-gray-700'
+            allarme || nessunMenuAttivo ? 'bg-amber-700 hover:bg-amber-800' : 'bg-gray-900 hover:bg-gray-700'
           }`}
         >
           {inCorso ? d.menuEditor.publishing : mai ? d.menuEditor.publishFirst : d.menuEditor.publish}
