@@ -431,6 +431,9 @@ const en: typeof it = {
     addressUnknown: 'Could not check right now.',
     addressChoose: 'Choose address',
     addressChange: 'Change address',
+    addressChangeConfirmTitle: 'Change the address?',
+    addressChangeConfirmBody:
+      'QR codes and links already printed with this address will stop working: whoever uses them will hit an error. The new address will work right away.',
     addressSaved: 'Address saved.',
     addressFailed: 'Not saved: someone may have taken it just now.',
     qrAlt: 'Your menu QR code',

@@ -603,6 +603,13 @@ const it = {
     addressUnknown: 'Non è stato possibile controllare adesso.',
     addressChoose: 'Scegli indirizzo',
     addressChange: 'Cambia indirizzo',
+    // LA CONFERMA prima di cambiare un indirizzo che risponde già (v. il
+    // commento in cima a MenuAddress.tsx). Il corpo ripete la conseguenza già
+    // scritta in `addressHintLive`: chi è arrivato fin qui l'ha già letta una
+    // volta, ma ripeterla proprio nell'istante che conta è il punto.
+    addressChangeConfirmTitle: 'Cambiare l’indirizzo?',
+    addressChangeConfirmBody:
+      'I QR e i link già stampati con questo indirizzo smetteranno di funzionare: chi li usa troverà un errore. Il nuovo indirizzo funzionerà da subito.',
     addressSaved: 'Indirizzo salvato.',
     addressFailed: 'Non è stato salvato: qualcuno potrebbe averlo preso in questo momento.',
     // IL QR. Prima versione: l'indirizzo non è ancora attivo, e l'avviso sta

@@ -6,21 +6,28 @@
 // appartiene al LOCALE come il logo e il colore: un locale, un indirizzo
 // (DIGITAL_MENU.md, Temi 13 e 17).
 //
-// ⚠️ NON APRE NIENTE. La pagina pubblica non esiste ancora, e questo campo lo
-// dice a chiare lettere: serve a scegliere il nome e a metterlo al sicuro
-// prima che qualcun altro lo prenda. Chi un domani lo rende cliccabile deve
-// prima assicurarsi che la pagina risponda, o consegna un indirizzo da
-// stampare che porta a un errore.
+// PRIMA DI ESSERE ONLINE NON APRE NIENTE: scegliere l'indirizzo serve solo a
+// metterlo al sicuro prima che qualcun altro lo prenda, e cambiarlo è un
+// gesto senza conseguenze — non c'è niente di stampato.
 //
 // UN INDIRIZZO ALLA VOLTA: cambiandolo, il precedente torna libero e nessuno
-// reindirizza. Finché non esiste la pubblicazione (Tema 20) è un gesto senza
-// conseguenze — non c'è niente di stampato. Il giorno in cui il menù sarà
-// pubblicato, QUI va l'avviso che i QR già in giro smetteranno di funzionare:
-// è l'unico posto in cui il ristoratore può ancora fermarsi.
+// reindirizza. Da quando esiste la pubblicazione (Tema 20) questo NON è più
+// gratis: se il menù è online, il sottotesto sotto l'interruttore (v.
+// `addressHintLive`) avvisa SEMPRE — non solo nell'istante in cui si tocca il
+// campo — che i QR già stampati smetteranno di funzionare.
+//
+// ⚠️ IL SOTTOTESTO NON BASTA A FERMARE NESSUNO: è un avviso passivo, e chi ha
+// fretta lo scavalca senza leggerlo. Il gesto vero e proprio — premere "Cambia
+// indirizzo" mentre il menù è online — passa quindi da una conferma esplicita
+// (v. `confermaCambio` più sotto): l'unica occasione in cui il ristoratore
+// deve leggere la conseguenza PRIMA che diventi irreversibile, non a fianco.
+// Annullando, il campo torna all'indirizzo che c'è già: non ha senso lasciare
+// nel campo una bozza che si è appena deciso di non salvare.
 import { useEffect, useId, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
 import { slugOccupato, type Venue } from '@/lib/venues';
+import ConfirmDialog from './ConfirmDialog';
 import MenuQr from './MenuQr';
 
 // L'ancora a cui punta il "Modifica" del riquadro sotto l'anteprima
@@ -60,6 +67,10 @@ export default function MenuAddress({
   const [stato, setStato] = useState<Stato>('fermo');
   const [salvato, setSalvato] = useState(false);
   const [fallito, setFallito] = useState(false);
+  // La conferma prima di cambiare un indirizzo che risponde già: si apre solo
+  // premendo "Cambia indirizzo" mentre il menù è online (v. il commento in
+  // cima al file). Da vuota non c'è nessuna finestra: il bottone stesso salva.
+  const [confermaCambio, setConfermaCambio] = useState(false);
   const scatola = useRef<HTMLDivElement>(null);
 
   // QUANDO L'INDIRIZZO NASCE, il riquadro si allunga di colpo: sotto al campo
@@ -253,7 +264,7 @@ export default function MenuAddress({
               {messaggio?.testo ?? (venue.slug === '' ? d.menuEditor.addressNotChosen : '')}
             </p>
             <button
-              onClick={() => void conferma()}
+              onClick={() => (online ? setConfermaCambio(true) : void conferma())}
               disabled={!puoSalvare}
               className="shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40 disabled:hover:bg-gray-900"
             >
@@ -267,6 +278,28 @@ export default function MenuAddress({
           {venue.slug !== '' && <MenuQr slug={venue.slug} online={online} />}
 
         </>
+      )}
+
+      {/* LA CONFERMA, solo quando c'è davvero qualcosa da rompere: un
+          indirizzo che risponde già. Annullando si torna all'indirizzo
+          attuale — non ha senso lasciare nel campo una bozza che si è appena
+          deciso di non salvare, o il bottone "Cambia indirizzo" resterebbe lì
+          pronto a riaprire la stessa domanda. */}
+      {confermaCambio && (
+        <ConfirmDialog
+          title={d.menuEditor.addressChangeConfirmTitle}
+          body={d.menuEditor.addressChangeConfirmBody}
+          subject={`${MENU_DOMINIO}${venue.slug}`}
+          confirmLabel={d.menuEditor.addressChange}
+          onCancel={() => {
+            setConfermaCambio(false);
+            setBozza(venue.slug);
+          }}
+          onConfirm={() => {
+            setConfermaCambio(false);
+            void conferma();
+          }}
+        />
       )}
 
     </div>
