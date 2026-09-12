@@ -489,6 +489,12 @@ export default function MenuEditorPage() {
           className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-xl font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none md:text-2xl"
         />
       </div>
+      {/* Da due menù in su (anche quelli messi da parte: il nome vale anche
+          per loro) chi scrive qui dentro la carta del pranzo crederebbe di
+          rinominare quella. Con uno solo non c'è niente da chiarire. */}
+      {(menus ?? []).filter((m) => m.venueId === menu.venueId).length > 1 && (
+        <p className="px-2 text-xs text-gray-500">{d.menuEditor.venueNameShared}</p>
+      )}
 
       {/* Descrizione del menù: facoltativa, sotto il titolo. Stesso stile
           "invisibile finché non ci si passa sopra" del titolo, per non

@@ -168,13 +168,19 @@ const it = {
     addVenue: 'Aggiungi un altro locale',
     // Il nome della COSA, non del gesto: la card c'è anche a menù fatto e
     // pubblicato, e "crea" lì sarebbe falso (il gesto sta nel bottone sotto).
-    // Il dove — al tavolo — lo dice la riga qui sotto.
     menusTitle: 'Menù digitale',
-    menusHint: 'I clienti lo aprono al tavolo col QR, senza scaricare niente.',
-    menusEmpty: 'Non ancora creato',
     menusOpen: 'Apri l’editor',
     menusCreate: 'Crea il menù',
-    menusAll: 'Tutti i menù',
+    menusAll: 'Vedi i menù',
+    menusAddressHint: 'Vai alla sezione indirizzo',
+    menusHint: 'Crea e personalizza il menù digitale che i clienti vedono inquadrando un QR.',
+    // Solo con più di un menù (v. page.tsx): "pubblicato" lì sopra nel
+    // pallino resta per il locale — se il link esiste ed è raggiungibile —
+    // "attivo" qui è un'altra cosa, il singolo menù che entra o no nello
+    // scatto (richiesta dell'utente, 13/09).
+    menusNoneActive: 'Nessun menù attivo al momento.',
+    menusAllActive: 'Hai {count} menù attivi.',
+    menusSomeActive: '{active} di {total} menù attivi.',
     cardTitle: 'Scheda AllergiApp',
     cardHint: 'La tua pagina dentro l’app: compare quando associ il locale a un ristorante.',
     cardEmpty: 'Ancora niente dentro',
@@ -186,16 +192,15 @@ const it = {
     dishUnnamed: 'Piatto senza nome',
     quickLinks: 'Link e contatti',
     // Lo stato del menù non è quanti piatti ha dentro: è cosa leggono i
-    // clienti al tavolo adesso (v. page.tsx).
-    liveOn: 'pubblicato e aggiornato',
-    livePending: 'da pubblicare',
+    // clienti al tavolo adesso (v. page.tsx). Dice SOLO se è live o no — le
+    // modifiche non ancora pubblicate le dice l'avviso sotto (menuEditor.publish*),
+    // mai questa etichetta: le due notizie mescolate insieme si leggevano
+    // come "non è chiaro se è online" (feedback utente, 12/09).
+    liveOn: 'pubblicato',
     liveNever: 'non pubblicato',
-    sectionOne: 'sezione',
-    sectionOther: 'sezioni',
     catalogTitle: 'Catalogo piatti',
     catalogHint: 'I piatti sono tuoi: gli stessi vanno nel menù e sulla scheda.',
     catalogOpen: 'Vedi tutti',
-    statusReady: 'pronto',
     statusDraft: 'da finire',
     statusTodo: 'da fare',
     statusOn: 'attiva',
@@ -345,6 +350,12 @@ const it = {
     // è un'etichetta del portale, e sul tavolo suonerebbe come un difetto.
     // Serve solo se resta un menù senza nome accanto a uno che ce l'ha.
     genericTab: 'Menù',
+    // L'etichetta resta ferma, è l'interruttore che si muove: prima il testo
+    // del bottone cambiava da "In sala" a "Da parte", e un controllo che
+    // cambia nome mentre lo tocchi si legge come incoerente (feedback
+    // utente, 13/09). "In sala"/"Da parte" restano solo nel tooltip.
+    activeLabel: 'Attivo',
+    inactiveLabel: 'Inattivo',
     active: 'In sala',
     parked: 'Da parte',
     activeHint: 'Il cliente lo vede fra le linguette. Tocca per metterlo da parte.',
@@ -439,6 +450,9 @@ const it = {
     brandTitle: 'Aspetto',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
+    // Solo da due menù in su: il nome e il logo sono del locale, e chi sta
+    // scrivendo nella carta del pranzo crederebbe di rinominare quella.
+    venueNameShared: 'Nome e logo valgono per tutti i menù di questo locale.',
     // Dice cosa si FA qui dentro, non solo cosa si guarda: è la riga in cima
     // alla scatola aperta, e chi l'ha appena aperta vuole sapere se è il
     // posto giusto.
@@ -535,7 +549,7 @@ const it = {
     publish: 'Pubblica le modifiche',
     publishFirst: 'Pubblica il menù',
     publishing: 'Pubblico…',
-    publishPending: 'Modifiche non pubblicate: al tavolo c’è ancora la versione precedente.',
+    publishPending: 'Modifiche non pubblicate: gli utenti vedono ancora la versione precedente.',
     // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
     // grigia: è la mitigazione della scelta di avere una bozza (Tema 24).
     //
@@ -545,7 +559,7 @@ const it = {
     // che sembrava parlare d'altro — mentre invece era vera, per una modifica
     // fatta mezz'ora prima. Il neutro puro non va bene: sarebbe tornare a non
     // dire mai che in ballo c'è un allergene.
-    publishAllergens: 'Modifiche non pubblicate, allergeni compresi: al tavolo c’è ancora la versione precedente.',
+    publishAllergens: 'Modifiche non pubblicate, allergeni compresi: gli utenti vedono ancora la versione precedente.',
     // Solo l'aspetto è cambiato. Vale la pena dirlo invece di dire
     // genericamente "modifiche": chi ha scelto un colore mezz'ora fa e legge
     // "modifiche non pubblicate" si mette a cercare cos'altro ha toccato.

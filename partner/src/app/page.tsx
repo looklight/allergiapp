@@ -15,12 +15,12 @@
 // database restano appesi al locale, perché domani serviranno anche al menù
 // pubblico: è il posto in cui si modificano che è uno solo.
 //
-// MA LE DUE COSE NON SONO PARI, e affiancate uguali lo dicevano. Il menù è il
-// prodotto: si fa, si pubblica, sta sul tavolo stasera. La scheda dentro l'app
-// aspetta l'associazione al ristorante, che ancora non si può fare
-// (/abbonamenti è un tappo). Due card gemelle davano al ristoratore due
-// compiti, e uno dei due non lo può svolgere. Perciò: il menù è un blocco
-// grande, la scheda una riga sotto.
+// LE DUE COSE NON SONO PARI NELLA SOSTANZA — il menù è il prodotto che si usa
+// subito, la scheda aspetta ancora l'associazione al ristorante
+// (/abbonamenti è un tappo) — ma da qui in poi condividono la riga IN PARI
+// PESO VISIVO: stessa larghezza, stesso bottone nero (decisione dell'utente,
+// 12/09, dopo aver provato la versione 2/3-1/3 con CTA diseguali). La
+// differenza resta leggibile solo nel pallino di stato e nel testo sotto.
 //
 // E LO STATO DEL MENÙ NON È PIÙ "quanti piatti ci sono dentro". Da quando lo
 // scatto pubblicato esiste (Tema 24), pieno e pubblicato sono due cose: questa
@@ -39,10 +39,11 @@ import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import { dishThumb, useDishes, type Dish } from '@/lib/dishes';
 import { usePublishState } from '@/lib/publish';
 import { usePartnerProfile } from '@/lib/partnerProfile';
+import { MENU_DOMINIO } from '@/lib/slug';
+import { scaricaQrPng } from '@/lib/qr';
 import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
 import UndoToast from '@/components/UndoToast';
-import LiveBox from '@/components/menus/LiveBox';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
 
 type Stato = 'ready' | 'draft' | 'todo';
@@ -266,6 +267,9 @@ export default function HomePage() {
   const piattiNeiMenu = suoiMenu.reduce((tot, menu) => tot + menuItems(menu).length, 0);
   const links = countLinks(venue.links);
   const inScheda = venue.dishIds.length;
+  // Ha senso dirlo solo con più menù: con uno solo il ritiro (v. /menu) non
+  // si può nemmeno fare, quindi "attivo" sarebbe sempre vero e mai una notizia.
+  const menuAttivi = suoiMenu.filter((menu) => menu.active).length;
 
   // MENÙ. Prima lo stato era "c'è almeno un piatto dentro": vero ma
   // insufficiente, perché un menù pieno può non essere mai uscito dalla bozza,
@@ -276,28 +280,27 @@ export default function HomePage() {
   const menuVuoto = suoiMenu.length > 0 && piattiNeiMenu === 0;
   const inSospeso = online && pubblicazione?.hasChanges === true;
   const allergeniInSospeso = inSospeso && pubblicazione?.allergensChanged === true;
-  // "mai pubblicato" si dice solo quando la risposta è arrivata davvero
-  const maiPubblicato = pubblicazione !== null && pubblicazione.publishedAt === null;
 
-  const statoMenu: Stato =
-    suoiMenu.length === 0 || menuVuoto ? 'todo' : inSospeso || maiPubblicato ? 'draft' : 'ready';
+  // Il pallino dice SOLO se è live adesso, mai se ci sono modifiche in sospeso:
+  // le due notizie mescolate ("da pubblicare" quando in realtà è già online)
+  // facevano dubitare se il menù fosse raggiungibile o no (feedback utente,
+  // 12/09). Le modifiche non pubblicate le dice solo l'avviso qui sotto.
+  const statoMenu: Stato = suoiMenu.length === 0 || menuVuoto ? 'todo' : online ? 'ready' : 'draft';
   const etichettaMenu =
     suoiMenu.length === 0
       ? d.dashboard.statusTodo
       : menuVuoto
         ? d.dashboard.statusDraft
-        : inSospeso
-          ? d.dashboard.livePending
-          : maiPubblicato
-            ? d.dashboard.liveNever
-            : online
-              ? d.dashboard.liveOn
-              : d.dashboard.statusReady;
+        : online
+          ? d.dashboard.liveOn
+          : d.dashboard.liveNever;
 
-  // La frase per esteso sotto il titolo: la stessa che il ristoratore legge in
-  // cima all'editor (PublishBar), perché è la stessa notizia. Quella degli
-  // allergeni si vede in ambra: è l'unica riga di questa schermata che, se
-  // ignorata, arriva addosso a un cliente.
+  // La frase per esteso sotto il pallino: SOLO le modifiche in sospeso, mai il
+  // "non è ancora pubblicato" — quello lo dice già il pallino, e ripeterlo qui
+  // sarebbe la stessa notizia due volte. Nessuna modifica in sospeso, niente
+  // riga (richiesta dell'utente, 12/09). Quella degli allergeni si vede in
+  // ambra: è l'unica riga di questa schermata che, se ignorata, arriva
+  // addosso a un cliente.
   const avvisoMenu =
     suoiMenu.length === 0 || menuVuoto
       ? null
@@ -305,30 +308,19 @@ export default function HomePage() {
         ? d.menuEditor.publishAllergens
         : inSospeso
           ? d.menuEditor.publishPending
-          : maiPubblicato
-            ? d.menuEditor.publishNever
-            : null;
+          : null;
 
-  // I nomi dei menù solo quando sono più d'uno: il nome di un menù serve a
-  // distinguerlo dagli altri, e da solo, sotto una card che si chiama già
-  // "Menù al tavolo", direbbe soltanto "Menù senza nome".
-  const nomiMenu =
-    suoiMenu.length > 1
-      ? `${suoiMenu.map((menu) => menu.name.trim() || d.menus.unnamed).join(' · ')} — `
-      : '';
   // Le palline del catalogo: gli ULTIMI arrivati, il più recente per primo.
   // La lista scende ordinata per sort_order e poi per data di creazione, e
   // sort_order oggi nessuno lo scrive: quindi la coda è davvero l'ultimo che
   // il ristoratore ha aggiunto. Se un giorno i piatti si riordineranno a mano,
   // questa riga andrà rifatta guardando la data.
   const ultimiPiatti = dishes.slice(-6).reverse();
-  const sezioni = suoiMenu.reduce((tot, menu) => tot + menu.sections.length, 0);
-  const pezziMenu = [
-    sezioni > 0 ? `${sezioni} ${sezioni === 1 ? d.dashboard.sectionOne : d.dashboard.sectionOther}` : null,
-    `${piattiNeiMenu} ${piattiNeiMenu === 1 ? d.home.dishOne : d.home.dishOther}`,
-  ].filter((pezzo): pezzo is string => pezzo !== null);
-  const dettaglioMenu =
-    suoiMenu.length === 0 ? d.dashboard.menusEmpty : `${nomiMenu}${pezziMenu.join(' · ')}`;
+  // Serve solo qui, per il link "Apri online" e per il QR: la scatola verde
+  // con dentro il codice e l'indirizzo resta nell'editor (LiveBox), dove è
+  // davvero "la cosa di tutti i giorni". Qui, in un riassunto, sarebbe stata
+  // la sezione più vistosa della pagina per l'azione meno frequente.
+  const indirizzoMenu = `https://${MENU_DOMINIO}${venue.slug}`;
 
   // SCHEDA: si dice cosa c'è già dentro. Lo stato invece è l'unica cosa che
   // il ristoratore non decide da solo — senza claim la scheda non è nell'app.
@@ -429,87 +421,170 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* IL MENÙ, in grande: è quello che si fa stasera. Dentro, in ordine:
-          come sta messo, cosa manca perché arrivi in sala, e — se in sala c'è
-          davvero — l'indirizzo, il codice e la pagina da aprire. */}
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
-            {d.dashboard.menusTitle}
-          </h2>
-          <StatusPill stato={statoMenu} label={etichettaMenu} />
-        </div>
-        <p className="mt-1.5 text-sm text-gray-900">{dettaglioMenu}</p>
-        <p className="mt-0.5 text-xs text-gray-500">{d.dashboard.menusHint}</p>
-
-        {avvisoMenu !== null && (
-          <p
-            className={`mt-3 text-xs leading-snug ${
-              allergeniInSospeso ? 'font-medium text-amber-800' : 'text-gray-600'
-            }`}
-          >
-            {avvisoMenu}
-          </p>
-        )}
-
-        {suoiMenu.length === 0 ? (
-          <div className="mt-4">
-            <PrimaryLink href={`/menu?nuovo=${venue.id}`}>{d.dashboard.menusCreate}</PrimaryLink>
-          </div>
-        ) : (
-          <>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
-              <SecondaryLink href={`/menu/${suoiMenu[0].id}/anteprima`}>
-                {d.menuEditor.previewTitle}
-              </SecondaryLink>
+      {/* MENÙ e SCHEDA condividono la riga a pari peso: stessa larghezza,
+          stesso bottone nero. Su schermo stretto tornano una sopra l'altra,
+          nello stesso ordine. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* IL MENÙ: come sta messo, cosa manca perché arrivi in sala, e — se
+            in sala c'è davvero — l'indirizzo, il codice e la pagina da
+            aprire. */}
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
+                {d.dashboard.menusTitle}
+              </h2>
+              {/* Quanti sono, non quali: i nomi si vedono aprendo "Vedi i
+                  menù" qui sotto. */}
               {suoiMenu.length > 1 && (
-                <SecondaryLink href="/menu">{d.dashboard.menusAll}</SecondaryLink>
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                  {suoiMenu.length}
+                </span>
               )}
             </div>
-            {/* Lo stesso riquadro che sta sotto l'anteprima nell'editor, e non
-                una sua imitazione: dice da sé le tre situazioni (nessun
-                indirizzo, indirizzo scelto ma non pubblicato, online) e non
-                offre mai da copiare o stampare un link che non risponde.
-                Largo quanto lì: a tutta pagina il suo corpo minuto sembrerebbe
-                un errore. "Modifica" porta nella sezione dell'indirizzo. */}
-            <div className="max-w-md">
-              <LiveBox
-                slug={venue.slug}
-                online={online}
-                onEdit={() => router.push(`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`)}
-              />
-            </div>
-          </>
-        )}
-      </section>
+            {/* Il pallino è anche un link: porta dritto alla sezione
+                indirizzo nell'editor, dove "pubblicato"/"non pubblicato" si
+                legge e si cambia (richiesta dell'utente, 13/09). Senza un
+                menù non c'è editor da aprire, quindi resta solo testo. */}
+            {suoiMenu.length > 0 ? (
+              <Link
+                href={`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`}
+                title={d.dashboard.menusAddressHint}
+                className="rounded transition-opacity hover:opacity-70"
+              >
+                <StatusPill stato={statoMenu} label={etichettaMenu} />
+              </Link>
+            ) : (
+              <StatusPill stato={statoMenu} label={etichettaMenu} />
+            )}
+          </div>
 
-      {/* LA SCHEDA, in una riga: c'è, si prepara, ma finché non si può
-          associare il locale a un ristorante non è una cosa che si "fa" —
-          quindi non prende lo spazio di una cosa da fare. I link e i contatti
-          stanno qui perché è qui che si vanno a scrivere. */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p className="text-sm font-medium text-gray-900">{d.dashboard.cardTitle}</p>
+          {/* Il posto dov'era il conteggio ("3 sezioni · 5 piatti") e la
+              frase fissa su come i clienti lo aprono. Con più di un menù
+              c'è una notizia vera da dare — quanti sono ATTIVI, che è del
+              singolo menù e non del locale come "pubblicato" nel pallino
+              sopra. Con zero o un menù solo quella notizia non esiste (il
+              ritiro parte da due in su), e uno spazio vuoto lì non diceva a
+              cosa serve il box: resta la frase d'apertura, incisiva apposta
+              per chi il box non l'ha ancora usato (richiesta dell'utente,
+              13/09). */}
+          {suoiMenu.length > 1 ? (
+            <p className="mt-1.5 text-sm text-gray-900">
+              {menuAttivi === 0
+                ? d.dashboard.menusNoneActive
+                : menuAttivi === suoiMenu.length
+                  ? fill(d.dashboard.menusAllActive, { count: menuAttivi })
+                  : fill(d.dashboard.menusSomeActive, {
+                      active: menuAttivi,
+                      total: suoiMenu.length,
+                    })}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-sm text-gray-900">{d.dashboard.menusHint}</p>
+          )}
+
+          {avvisoMenu !== null && (
+            <p
+              className={`mt-3 text-xs leading-snug ${
+                allergeniInSospeso ? 'font-medium text-amber-800' : 'text-gray-600'
+              }`}
+            >
+              {avvisoMenu}
+            </p>
+          )}
+
+          {suoiMenu.length === 0 ? (
+            <div className="mt-4">
+              <PrimaryLink href={`/menu?nuovo=${venue.id}`}>{d.dashboard.menusCreate}</PrimaryLink>
+            </div>
+          ) : (
+            <>
+              {/* Con un solo menù si apre direttamente l'editor; con più di
+                  uno "Apri l'editor" non saprebbe quale scegliere, quindi
+                  diventa "Vedi i menù" e porta all'elenco. Per lo stesso
+                  motivo, con più menù spariscono anche "Anteprima"/"Apri
+                  online" e il download del QR (richiesta dell'utente,
+                  13/09): restano solo col menù singolo, da pubblicato come
+                  link vero — non ha senso un'anteprima di una pagina che si
+                  può aprire per davvero. L'icona del QR accanto sostituisce
+                  la scatola verde di prima: qui basta il gesto rapido di
+                  scaricarlo, il dettaglio (codice grande, link da copiare,
+                  modifica indirizzo) resta nell'editor. */}
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                {suoiMenu.length > 1 ? (
+                  <PrimaryLink href="/menu">{d.dashboard.menusAll}</PrimaryLink>
+                ) : (
+                  <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
+                )}
+                {suoiMenu.length === 1 &&
+                  (online ? (
+                    <a
+                      href={indirizzoMenu}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-gray-600 underline transition-colors hover:text-gray-900"
+                    >
+                      {d.menuEditor.openLive}
+                    </a>
+                  ) : (
+                    <SecondaryLink href={`/menu/${suoiMenu[0].id}/anteprima`}>
+                      {d.menuEditor.previewTitle}
+                    </SecondaryLink>
+                  ))}
+                {suoiMenu.length === 1 && online && (
+                  <button
+                    onClick={() => void scaricaQrPng(indirizzoMenu, venue.slug)}
+                    aria-label={d.menuEditor.qrPng}
+                    title={d.menuEditor.qrPng}
+                    className="shrink-0 text-gray-400 transition-colors hover:text-gray-900"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Le due situazioni d'attesa restano dette, ma in una riga sola
+                  e senza riquadro tratteggiato: qui è un riassunto, non il
+                  posto in cui si agisce davvero. */}
+              {!online && (
+                <p className="mt-3 text-xs leading-relaxed text-gray-500">
+                  {venue.slug === '' ? d.menuEditor.liveNoAddress : d.menuEditor.liveNotYet}{' '}
+                  <button
+                    onClick={() => router.push(`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`)}
+                    className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
+                  >
+                    {venue.slug === '' ? d.menuEditor.liveChoose : d.common.edit}
+                  </button>
+                </p>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* LA SCHEDA: c'è, si prepara, ma finché non si può associare il
+            locale a un ristorante non è una cosa che si "fa" — lo dice il
+            pallino di stato e il testo, non più la forma della card. I link
+            e i contatti stanno qui perché è qui che si vanno a scrivere. */}
+        <section className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
+              {d.dashboard.cardTitle}
+            </h2>
             <StatusPill
               stato={venue.cardId === null ? 'todo' : 'ready'}
               label={venue.cardId === null ? d.dashboard.statusOff : d.dashboard.statusOn}
             />
           </div>
-          <p className="mt-0.5 text-xs text-gray-500">
-            {dettaglioScheda} — {d.dashboard.cardHint}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <Link
-            href={`/locale/${venue.id}`}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            {d.dashboard.cardOpen}
-          </Link>
-          <SecondaryLink href={`/locale/${venue.id}#link`}>{d.dashboard.quickLinks}</SecondaryLink>
-        </div>
+          <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
+          <p className="mt-0.5 text-xs text-gray-500">{d.dashboard.cardHint}</p>
+
+          <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
+            <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
+            <SecondaryLink href={`/locale/${venue.id}#link`}>{d.dashboard.quickLinks}</SecondaryLink>
+          </div>
+        </section>
       </div>
 
       {/* Il catalogo sta FUORI dalle due: è il substrato, non una terza cosa

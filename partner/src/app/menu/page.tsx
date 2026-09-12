@@ -212,14 +212,28 @@ export default function MenusPage() {
                   const piatti = menuItems(menu).length;
                   const sezioni = menu.sections.length;
                   return (
+                    // L'INTERA RIGA apre l'editor, non solo un bottone "Apri":
+                    // è la card a essere il link, come nelle liste moderne
+                    // (richiesta dell'utente, 13/09). Resta un div e non
+                    // un'ancora vera perché dentro ci sono controlli
+                    // interattivi (interruttore, cestino) che un browser non
+                    // annida in un link — i loro onClick fermano la
+                    // propagazione prima che arrivi qui.
                     <div
                       key={menu.id}
-                      className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => router.push(`/menu/${menu.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') router.push(`/menu/${menu.id}`);
+                      }}
+                      className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-gray-300"
                     >
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/menu/${menu.id}`}
-                          className="block truncate text-sm font-medium text-gray-900"
+                          onClick={(e) => e.stopPropagation()}
+                          className="block truncate text-sm font-medium text-gray-900 hover:underline"
                         >
                           {menu.name.trim() || ripiego}
                         </Link>
@@ -230,36 +244,69 @@ export default function MenusPage() {
                           · {menu.currency}
                         </p>
                       </div>
-                      {/* IN SALA O DA PARTE. Si vede solo da due carte in su:
-                          con una sola, spegnerla vorrebbe dire togliere il menù
-                          dal tavolo — e per quello c'è il ritiro, che è un
-                          gesto diverso e sta nell'editor.
-                          Il menù spento resta apribile e modificabile: è il
-                          menù dell'inverno che aspetta ottobre. */}
+                      {/* ATTIVO/INATTIVO, con un interruttore vero: coppia
+                          di parole vera stavolta ("In sala"/"Da parte" non lo
+                          era), quindi il testo può cambiare insieme al
+                          colore — verde acceso, grigio spento — senza
+                          leggersi come incoerente (richiesta dell'utente,
+                          13/09). Il cursore parte da "left-0.5" esplicito:
+                          senza una posizione di base il browser lo piazzava a
+                          occhio, e usciva dalla pista (bug segnalato
+                          dall'utente, 13/09). Si vede solo da due carte in
+                          su: con una sola, spegnerla vorrebbe dire togliere
+                          il menù dal tavolo — e per quello c'è il ritiro, che
+                          è un gesto diverso e sta nell'editor. Il menù spento
+                          resta apribile e modificabile: è il menù
+                          dell'inverno che aspetta ottobre. */}
                       {delloStessoLocale.length > 1 && (
-                        <button
-                          onClick={() => setActive(menu.id, !menu.active)}
-                          className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                            menu.active
-                              ? 'border-[#C8E6C9] bg-[#E8F5E9] text-[#2E7D32]'
-                              : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
-                          }`}
-                          title={menu.active ? d.menus.activeHint : d.menus.parkedHint}
-                        >
-                          {menu.active ? d.menus.active : d.menus.parked}
-                        </button>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <span className="text-xs font-medium text-gray-600">
+                            {menu.active ? d.menus.activeLabel : d.menus.inactiveLabel}
+                          </span>
+                          <button
+                            role="switch"
+                            aria-checked={menu.active}
+                            aria-label={menu.active ? d.menus.activeLabel : d.menus.inactiveLabel}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActive(menu.id, !menu.active);
+                            }}
+                            title={menu.active ? d.menus.activeHint : d.menus.parkedHint}
+                            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+                              menu.active ? 'bg-[#4CAF50]' : 'bg-gray-300'
+                            }`}
+                          >
+                            <span
+                              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                                menu.active ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
                       )}
-                      <Link
-                        href={`/menu/${menu.id}`}
-                        className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                      >
-                        {d.home.open}
-                      </Link>
+                      {/* Niente più "Apri" (l'intera riga fa il suo lavoro) né
+                          "Elimina" scritto per esteso: il cestino, a comparsa
+                          come le altre icone della riga in queste pagine,
+                          basta da solo (richiesta dell'utente, 13/09).
+                          Il blur prima di aprire la finestra è voluto: senza,
+                          useModal la richiude restituendo il fuoco proprio a
+                          questo bottone, e "a fuoco" per il CSS vale come
+                          "sotto il mouse" — restava visibile anche ad
+                          "Annulla" premuto e mouse altrove (bug segnalato
+                          dall'utente, 13/09). */}
                       <button
-                        onClick={() => setDeleting(menu)}
-                        className="shrink-0 text-sm font-medium text-red-600 hover:text-red-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.currentTarget.blur();
+                          setDeleting(menu);
+                        }}
+                        aria-label={d.common.delete}
+                        title={d.common.delete}
+                        className="-my-2 shrink-0 p-2 text-gray-300 opacity-100 transition-opacity hover:text-red-600 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
                       >
-                        {d.common.delete}
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12" />
+                        </svg>
                       </button>
                     </div>
                   );
