@@ -309,7 +309,7 @@ const en: typeof it = {
     existingNameLabel: 'And the one you already have?',
     existingNameHint:
       'There are two menus now: at the table your guests pick from the tabs, so both need a name.',
-    existingNamePlaceholder: 'e.g. À la carte',
+    existingNamePlaceholder: 'e.g. Lunch menu',
     oneEach: 'Each venue has its own menu, and yours already do: this one will belong to a new venue.',
     empty: 'You have no menus yet.',
     emptyHint: 'Create one: the dishes come from your catalogue, no need to type them again.',

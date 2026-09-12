@@ -365,7 +365,7 @@ const it = {
     existingNameLabel: 'E quello che hai già, come si chiama?',
     existingNameHint:
       'Adesso i menù sono due: al tavolo il cliente li sceglie dalle linguette, quindi servono due nomi.',
-    existingNamePlaceholder: 'es. Carta',
+    existingNamePlaceholder: 'es. Menù del pranzo',
     // Tutti i locali hanno già il loro menù: si spiega perché la finestra
     // chiede il nome di un locale invece di quello di un menù
     oneEach: 'Ogni locale ha il suo menù, e i tuoi ce l’hanno già: questo sarà il menù di un nuovo locale.',
