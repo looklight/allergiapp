@@ -102,6 +102,19 @@ export default function MenuEditorPage() {
   const [drag, setDrag] = useState<{ kind: 'item' | 'section'; id: string } | null>(null);
   const [dropItem, setDropItem] = useState<{ sectionId: string | null; beforeId: string | null } | null>(null);
   const [dropSection, setDropSection] = useState<{ beforeId: string | null } | null>(null);
+  // Le sezioni ripiegate: solo per lavorarci più comodi su un menù lungo, non
+  // per nascondere niente ai clienti — non è un contenuto, e infatti non si
+  // salva da nessuna parte. Si riparte sempre con tutto aperto, a ogni giro
+  // su questa pagina e non solo la prima volta.
+  const [sezioniChiuse, setSezioniChiuse] = useState<Set<string>>(() => new Set());
+  function pieghina(id: string) {
+    setSezioniChiuse((prima) => {
+      const dopo = new Set(prima);
+      if (dopo.has(id)) dopo.delete(id);
+      else dopo.add(id);
+      return dopo;
+    });
+  }
   // La sezione (o il blocco) appena creata, per portarcela davanti. Nasce in
   // FONDO all'elenco — sopra i due bottoni che l'hanno creata — e su un menù
   // di media lunghezza questo vuol dire fuori dallo schermo: si preme
@@ -527,7 +540,13 @@ export default function MenuEditorPage() {
             </section>
           )}
 
-          {menu.sections.map((section, i) => (
+          {menu.sections.map((section, i) => {
+            // Solo le sezioni vere si piegano: un blocco di testo non ha
+            // piatti da nascondere, e piegarlo lascerebbe solo il titolo — che
+            // per un blocco è facoltativo, quindi a volte non ci sarebbe
+            // neanche quello.
+            const chiusa = section.kind === 'section' && sezioniChiuse.has(section.id);
+            return (
             <section
               key={section.id}
               // Il bersaglio dell'autoscroll dopo "Nuova sezione" o "Blocco di
@@ -591,6 +610,34 @@ export default function MenuEditorPage() {
                     <circle cx="15" cy="18" r="1.6" />
                   </svg>
                 </span>
+                {/* IL CHEVRON, solo sulle sezioni vere: un blocco di testo non
+                    ha piatti da nascondere sotto. Sobrio e senza rilievo —
+                    stesso grigio spento della maniglia accanto — perché non è
+                    un livello della gerarchia, è solo un modo di lavorarci
+                    più comodi su un menù lungo: non si salva da nessuna
+                    parte, e si riparte sempre con tutto aperto. */}
+                {section.kind === 'section' && (
+                  <button
+                    type="button"
+                    onClick={() => pieghina(section.id)}
+                    aria-expanded={!chiusa}
+                    aria-label={chiusa ? d.menuEditor.sectionExpand : d.menuEditor.sectionCollapse}
+                    title={chiusa ? d.menuEditor.sectionExpand : d.menuEditor.sectionCollapse}
+                    className="-my-1.5 shrink-0 p-1.5 text-gray-300 transition-colors hover:text-gray-600"
+                  >
+                    <svg
+                      className={`h-4 w-4 transition-transform ${chiusa ? '-rotate-90' : ''}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                )}
                 <input
                   type="text"
                   value={section.name}
@@ -607,14 +654,26 @@ export default function MenuEditorPage() {
                   }
                   className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-sm font-semibold text-gray-900 hover:border-gray-300 focus:border-gray-900 focus:outline-none"
                 />
+                {/* Piegata, il numero di piatti resta l'unica cosa che si sa
+                    di lei senza riaprirla. */}
+                {chiusa && (
+                  <span className="shrink-0 text-xs text-gray-400">
+                    {section.items.length} {section.items.length === 1 ? d.home.dishOne : d.home.dishOther}
+                  </span>
+                )}
+                {/* FRECCIA CON STELO, non più un cuneo: da quando la sezione
+                    può anche ripiegarsi, il cuneo da solo era già preso — e
+                    ripetuto tre volte in fila (piega, su, giù) si leggeva come
+                    un unico bottone confuso. Uno stelo più una punta dice
+                    "sposta lungo una linea", non "apri/chiudi". */}
                 <button
                   onClick={() => save(moveSection(menu, section.id, -1))}
                   disabled={i === 0}
                   aria-label={d.menuEditor.moveUp}
                   className="-my-1.5 shrink-0 p-1.5 text-gray-300 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-300"
                 >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 15l6-6 6 6" />
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 19V6M6 11l6-6 6 6" />
                   </svg>
                 </button>
                 <button
@@ -623,8 +682,8 @@ export default function MenuEditorPage() {
                   aria-label={d.menuEditor.moveDown}
                   className="-my-1.5 shrink-0 p-1.5 text-gray-300 transition-colors hover:text-gray-900 disabled:opacity-25 disabled:hover:text-gray-300"
                 >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9l6 6 6-6" />
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v13M6 13l6 6 6-6" />
                   </svg>
                 </button>
                 <button
@@ -639,49 +698,61 @@ export default function MenuEditorPage() {
                 </button>
               </div>
 
-              {/* Lo stesso campo fa due mestieri, e la differenza è tutta
-                  nel peso: sotto una sezione è una didascalia (un rigo,
-                  grigio chiaro), dentro un blocco è IL contenuto — più righe
-                  e testo leggibile, perché è quello che il cliente leggerà. */}
-              <textarea
-                value={section.description}
-                onChange={(e) => save(setSectionDescription(menu, section.id, e.target.value))}
-                placeholder={
-                  section.kind === 'note'
-                    ? d.menuEditor.noteTextPlaceholder
-                    : d.menuEditor.sectionDescriptionPlaceholder
-                }
-                aria-label={
-                  section.kind === 'note'
-                    ? d.menuEditor.noteTextPlaceholder
-                    : d.menuEditor.sectionDescriptionPlaceholder
-                }
-                rows={section.kind === 'note' ? 3 : 1}
-                className={
-                  section.kind === 'note'
-                    ? 'w-full resize-none rounded-lg border border-transparent px-2 py-1 text-sm text-gray-700 hover:border-gray-300 focus:border-gray-900 focus:outline-none'
-                    : 'mb-3 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none'
-                }
-              />
-
-              {/* Un blocco finisce qui: niente piatti, niente zona di rilascio
-                  e nessun "Aggiungi piatti". Il tipo si decide creandolo e non
-                  si cambia — un interruttore sezione/blocco vorrebbe dire
-                  decidere ogni volta che fine fanno i piatti che ci sono
-                  dentro, per una cosa che si fa una volta sola. */}
-              {section.kind === 'section' && (
+              {/* Piegata, di questo non resta niente: né la descrizione né i
+                  piatti, solo il titolo appena visto sopra. Non si piega mai
+                  per un blocco di testo (`chiusa` è sempre false), quindi la
+                  sua descrizione — che è il suo intero contenuto — resta
+                  sempre visibile. */}
+              {!chiusa && (
                 <>
-                  {section.items.length === 0 ? (
-                    <p className="px-2 py-3 text-sm text-gray-400">{d.menuEditor.emptySection}</p>
-                  ) : (
-                    righe(section.items, section.id)
+                  {/* Lo stesso campo fa due mestieri, e la differenza è tutta
+                      nel peso: sotto una sezione è una didascalia (un rigo,
+                      grigio chiaro), dentro un blocco è IL contenuto — più
+                      righe e testo leggibile, perché è quello che il cliente
+                      leggerà. */}
+                  <textarea
+                    value={section.description}
+                    onChange={(e) => save(setSectionDescription(menu, section.id, e.target.value))}
+                    placeholder={
+                      section.kind === 'note'
+                        ? d.menuEditor.noteTextPlaceholder
+                        : d.menuEditor.sectionDescriptionPlaceholder
+                    }
+                    aria-label={
+                      section.kind === 'note'
+                        ? d.menuEditor.noteTextPlaceholder
+                        : d.menuEditor.sectionDescriptionPlaceholder
+                    }
+                    rows={section.kind === 'note' ? 3 : 1}
+                    className={
+                      section.kind === 'note'
+                        ? 'w-full resize-none rounded-lg border border-transparent px-2 py-1 text-sm text-gray-700 hover:border-gray-300 focus:border-gray-900 focus:outline-none'
+                        : 'mb-3 w-full resize-none rounded-lg border border-transparent px-2 py-1 text-xs text-gray-500 hover:border-gray-300 focus:border-gray-900 focus:outline-none'
+                    }
+                  />
+
+                  {/* Un blocco finisce qui: niente piatti, niente zona di
+                      rilascio e nessun "Aggiungi piatti". Il tipo si decide
+                      creandolo e non si cambia — un interruttore
+                      sezione/blocco vorrebbe dire decidere ogni volta che
+                      fine fanno i piatti che ci sono dentro, per una cosa che
+                      si fa una volta sola. */}
+                  {section.kind === 'section' && (
+                    <>
+                      {section.items.length === 0 ? (
+                        <p className="px-2 py-3 text-sm text-gray-400">{d.menuEditor.emptySection}</p>
+                      ) : (
+                        righe(section.items, section.id)
+                      )}
+                      {zonaFine(section.id)}
+                      <AddDishesButton onClick={() => setAdding({ sectionId: section.id })} />
+                    </>
                   )}
-                  {zonaFine(section.id)}
-                  <AddDishesButton onClick={() => setAdding({ sectionId: section.id })} />
                 </>
               )}
             </section>
-          ))}
+            );
+          })}
 
           <div className="flex flex-wrap items-center gap-2">
             <button

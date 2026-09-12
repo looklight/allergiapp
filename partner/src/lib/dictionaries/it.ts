@@ -623,6 +623,11 @@ const it = {
     newSectionName: 'Nuova sezione',
     sectionNamePlaceholder: 'Nome della sezione',
     sectionDescriptionPlaceholder: 'Descrizione della sezione (facoltativa)',
+    // Il chevron che piega la sezione: solo per lavorarci più comodi su un
+    // menù lungo, quindi non si ricorda da una visita all'altra — si riparte
+    // sempre aperte.
+    sectionCollapse: 'Comprimi sezione',
+    sectionExpand: 'Espandi sezione',
     addNote: 'Blocco di testo',
     noteLabel: 'Blocco di testo',
     noteHint: 'Testo libero fra una sezione e l’altra: lo leggono i tuoi clienti.',

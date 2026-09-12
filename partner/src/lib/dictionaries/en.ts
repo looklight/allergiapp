@@ -448,6 +448,8 @@ const en: typeof it = {
     newSectionName: 'New section',
     sectionNamePlaceholder: 'Section name',
     sectionDescriptionPlaceholder: 'Section description (optional)',
+    sectionCollapse: 'Collapse section',
+    sectionExpand: 'Expand section',
     addNote: 'Text block',
     noteLabel: 'Text block',
     noteHint: 'Free text between sections: your guests read it.',
