@@ -38,6 +38,7 @@
 // notizie si può insegnare in altro modo; togliere spazio a un avviso sugli
 // allergeni no.
 import { fill, useI18n } from '@/lib/i18n';
+import { quandoLeggibile } from '@/lib/dates';
 import type { PublishState } from '@/lib/venues';
 
 export default function PublishBar({
@@ -130,19 +131,4 @@ export default function PublishBar({
       )}
     </>
   );
-}
-
-// Data e ora, non "3 minuti fa": il ristoratore la confronta con quello che
-// si ricorda di aver fatto ("ho corretto i prezzi dopo pranzo"), e un tempo
-// relativo lo costringe a fare il conto da solo.
-function quandoLeggibile(iso: string | null, locale: 'it' | 'en'): string {
-  if (iso === null) return '';
-  const quando = new Date(iso);
-  if (Number.isNaN(quando.getTime())) return '';
-  return quando.toLocaleString(locale === 'en' ? 'en-GB' : 'it-IT', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }

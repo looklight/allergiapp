@@ -27,6 +27,17 @@ export function usePublishState(venueId: string | null) {
   // irraggiungibile dal blocco sull'ultimo menù attivo in /menu).
   const [nessunMenuAttivo, setNessunMenuAttivo] = useState(false);
 
+  // Cambiando locale (più locali, più schede) lo stato del PRECEDENTE
+  // resterebbe a schermo finché non arriva la risposta del nuovo — e con più
+  // schede aperte una accanto all'altra si vede: tutto il resto si aggiorna
+  // subito perché viene da dati già in memoria, questo da una richiesta di
+  // rete che ha il suo ritardo. Si azzera SOLO quando cambia il locale, non
+  // a ogni scrittura (quello lo farebbe sfarfallare mentre si lavora sullo
+  // stesso menù) (bug segnalato dall'utente, 14/09).
+  useEffect(() => {
+    setStato(null);
+  }, [venueId]);
+
   useEffect(() => {
     if (venueId === null) return;
     let vivo = true;

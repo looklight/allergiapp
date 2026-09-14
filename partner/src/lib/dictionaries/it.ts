@@ -171,9 +171,12 @@ const it = {
     menusTitle: 'Menù digitale',
     menusOpen: 'Apri l’editor',
     menusCreate: 'Crea il menù',
+    menusEmptyWithDishes: 'Hai già {count} {dishes} nel catalogo, pronti da inserire.',
+    menusEmptyNoDishes: 'Bastano pochi minuti: potrai sempre modificarlo dopo.',
     menusAll: 'Vedi i menù',
     menusAddressHint: 'Vai alla sezione indirizzo',
-    menusHint: 'Crea e personalizza il menù digitale che i clienti vedono inquadrando un QR.',
+    moreActions: 'Altre azioni',
+    menusHint: 'Crea il menù digitale che i clienti vedono inquadrando il QR.',
     // Solo con più di un menù (v. page.tsx): "pubblicato" lì sopra nel
     // pallino resta per il locale — se il link esiste ed è raggiungibile —
     // "attivo" qui è un'altra cosa, il singolo menù che entra o no nello

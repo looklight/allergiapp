@@ -41,8 +41,10 @@ import { usePublishState } from '@/lib/publish';
 import { usePartnerProfile } from '@/lib/partnerProfile';
 import { MENU_DOMINIO } from '@/lib/slug';
 import { scaricaQrPng } from '@/lib/qr';
+import { quandoLeggibile } from '@/lib/dates';
 import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
+import OverflowMenu from '@/components/OverflowMenu';
 import UndoToast from '@/components/UndoToast';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
 
@@ -154,7 +156,7 @@ function SecondaryLink({ href, children }: { href: string; children: React.React
 }
 
 export default function HomePage() {
-  const { d } = useI18n();
+  const { d, locale } = useI18n();
   const profile = usePartnerProfile();
   const { venues, create, rename, remove, restore } = useVenues();
   // I menù servono qui per due motivi, e nessuno dei due è elencarli: dire a
@@ -186,7 +188,6 @@ export default function HomePage() {
   // dell'editor: la home non deve avere una seconda idea di cosa sia
   // pubblicato — sarebbe la prima a dire una cosa e il menù un'altra.
   const { stato: pubblicazione, online } = usePublishState(venue?.id ?? null);
-
   function cambiaLocale(id: string) {
     scegli(id);
     // la rinomina aperta era di un altro locale
@@ -280,7 +281,6 @@ export default function HomePage() {
   const menuVuoto = suoiMenu.length > 0 && piattiNeiMenu === 0;
   const inSospeso = online && pubblicazione?.hasChanges === true;
   const allergeniInSospeso = inSospeso && pubblicazione?.allergensChanged === true;
-
   // Il pallino dice SOLO se è live adesso, mai se ci sono modifiche in sospeso:
   // le due notizie mescolate ("da pubblicare" quando in realtà è già online)
   // facevano dubitare se il menù fosse raggiungibile o no (feedback utente,
@@ -428,7 +428,7 @@ export default function HomePage() {
         {/* IL MENÙ: come sta messo, cosa manca perché arrivi in sala, e — se
             in sala c'è davvero — l'indirizzo, il codice e la pagina da
             aprire. */}
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
@@ -483,83 +483,123 @@ export default function HomePage() {
             <p className="mt-1.5 text-sm text-gray-900">{d.dashboard.menusHint}</p>
           )}
 
-          {avvisoMenu !== null && (
-            <p
-              className={`mt-3 text-xs leading-snug ${
-                allergeniInSospeso ? 'font-medium text-amber-800' : 'text-gray-600'
-              }`}
-            >
-              {avvisoMenu}
-            </p>
-          )}
+          {/* UNO SPAZIO SOLO, sempre della stessa altezza, per l'una o
+              l'altra sottofrase (mai insieme: l'avviso vale solo da
+              pubblicato, l'attesa solo da non pubblicato). Prima l'attesa
+              stava sotto ai pulsanti e appariva/spariva: i pulsanti si
+              spostavano su e giù, e disallineavano questo box da quello
+              della Scheda accanto (richiesta dell'utente, 14/09).
+              line-clamp-2 CON min-h-[2.75em] e non l'uno o l'altro: il minimo
+              non basta da solo, perché un avviso più lungo di due righe
+              (quello degli allergeni, per esempio) cresceva oltre lo spazio
+              riservato e spostava comunque i pulsanti sotto (bug segnalato
+              dall'utente, 14/09) — il clamp taglia, non trabocca mai.
+              2.75em e non 2.5em: sono due righe esatte di leading-snug
+              (1.375 × 2), sennò una frase di una riga veniva 3px più bassa
+              di una di due.
+              Da pubblicato e senza niente in sospeso lo spazio non resta
+              vuoto: dice da quando è in sala, la stessa notizia che
+              PublishBar dà nell'editor per la stessa situazione. */}
+          <div
+            className={`mt-3 line-clamp-2 min-h-[2.75em] text-xs leading-snug ${
+              allergeniInSospeso ? 'font-medium text-amber-800' : 'text-gray-600'
+            }`}
+          >
+            {avvisoMenu !== null ? (
+              avvisoMenu
+            ) : suoiMenu.length === 0 ? (
+              // Non resta vuoto nemmeno qui, prima di "Crea il menù": dice
+              // qualcosa di vero e utile — se il catalogo ha già piatti,
+              // che sono lì pronti; altrimenti che il gesto è breve e non
+              // definitivo (richiesta dell'utente, 14/09).
+              <span className="text-gray-500">
+                {dishes.length > 0
+                  ? fill(d.dashboard.menusEmptyWithDishes, {
+                      count: dishes.length,
+                      dishes: dishes.length === 1 ? d.home.dishOne : d.home.dishOther,
+                    })
+                  : d.dashboard.menusEmptyNoDishes}
+              </span>
+            ) : pubblicazione === null ? (
+              // Ancora non si sa se questo locale è online o no (la
+              // richiesta di rete per LUI non è ancora tornata: v. il
+              // reset in usePublishState). Meglio niente che affermare
+              // "non ancora pubblicato" su un locale che magari lo è già
+              // (bug segnalato dall'utente, 14/09).
+              null
+            ) : suoiMenu.length > 0 && !online ? (
+              <span className="text-gray-500">
+                {venue.slug === '' ? d.menuEditor.liveNoAddress : d.menuEditor.liveNotYet}{' '}
+                <button
+                  onClick={() => router.push(`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`)}
+                  className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
+                >
+                  {venue.slug === '' ? d.menuEditor.liveChoose : d.common.edit}
+                </button>
+              </span>
+            ) : online && pubblicazione?.publishedAt ? (
+              <span className="text-gray-400">
+                {fill(d.menuEditor.publishedOn, {
+                  date: quandoLeggibile(pubblicazione.publishedAt, locale),
+                })}
+              </span>
+            ) : null}
+          </div>
 
+          {/* Il blocco dei pulsanti è sempre l'ULTIMA cosa (mt-auto): con la
+              sottofrase sopra a altezza fissa, resta comunque alla stessa
+              quota da cima a cima; l'mt-auto in più lo incolla anche al
+              fondo del box, alla pari del pulsante della Scheda accanto,
+              qualunque sia l'altezza delle due card affiancate. */}
+          {/* flex anche qui, con un pulsante solo: in un blocco normale il
+              link resta in riga, e il suo padding verticale non conta
+              nell'altezza — il box veniva 16px più basso degli altri stati
+              e il pulsante debordava sopra e sotto il suo spazio. */}
           {suoiMenu.length === 0 ? (
-            <div className="mt-4">
+            <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
               <PrimaryLink href={`/menu?nuovo=${venue.id}`}>{d.dashboard.menusCreate}</PrimaryLink>
             </div>
           ) : (
-            <>
+            <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
               {/* Con un solo menù si apre direttamente l'editor; con più di
                   uno "Apri l'editor" non saprebbe quale scegliere, quindi
-                  diventa "Vedi i menù" e porta all'elenco. Per lo stesso
-                  motivo, con più menù spariscono anche "Anteprima"/"Apri
-                  online" e il download del QR (richiesta dell'utente,
-                  13/09): restano solo col menù singolo, da pubblicato come
-                  link vero — non ha senso un'anteprima di una pagina che si
-                  può aprire per davvero. L'icona del QR accanto sostituisce
-                  la scatola verde di prima: qui basta il gesto rapido di
-                  scaricarlo, il dettaglio (codice grande, link da copiare,
-                  modifica indirizzo) resta nell'editor. */}
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                {suoiMenu.length > 1 ? (
-                  <PrimaryLink href="/menu">{d.dashboard.menusAll}</PrimaryLink>
-                ) : (
-                  <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
-                )}
-                {suoiMenu.length === 1 &&
-                  (online ? (
-                    <a
-                      href={indirizzoMenu}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-gray-600 underline transition-colors hover:text-gray-900"
-                    >
-                      {d.menuEditor.openLive}
-                    </a>
-                  ) : (
-                    <SecondaryLink href={`/menu/${suoiMenu[0].id}/anteprima`}>
-                      {d.menuEditor.previewTitle}
-                    </SecondaryLink>
-                  ))}
-                {suoiMenu.length === 1 && online && (
-                  <button
-                    onClick={() => void scaricaQrPng(indirizzoMenu, venue.slug)}
-                    aria-label={d.menuEditor.qrPng}
-                    title={d.menuEditor.qrPng}
-                    className="shrink-0 text-gray-400 transition-colors hover:text-gray-900"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-
-              {/* Le due situazioni d'attesa restano dette, ma in una riga sola
-                  e senza riquadro tratteggiato: qui è un riassunto, non il
-                  posto in cui si agisce davvero. */}
-              {!online && (
-                <p className="mt-3 text-xs leading-relaxed text-gray-500">
-                  {venue.slug === '' ? d.menuEditor.liveNoAddress : d.menuEditor.liveNotYet}{' '}
-                  <button
-                    onClick={() => router.push(`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`)}
-                    className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
-                  >
-                    {venue.slug === '' ? d.menuEditor.liveChoose : d.common.edit}
-                  </button>
-                </p>
+                  diventa "Vedi i menù" e porta all'elenco (richiesta
+                  dell'utente, 13/09).
+                  "Apri online" e "Scarica QR" invece SONO sempre due, quanti
+                  che siano i menù: aprono la pagina pubblica del locale nel
+                  suo insieme (con tutte le linguette) e il QR che ci porta,
+                  non un singolo menù — non c'è niente da scegliere fra un
+                  menù e l'altro, quell'azione si fa già sulla scheda che
+                  vedono i clienti (richiesta dell'utente, 14/09). Restano
+                  raccolti nel pulsante "···" per non affollare la riga.
+                  "Anteprima" resta invece del solo menù singolo: è
+                  l'anteprima di UN contenuto preciso, prima che sia
+                  pubblicato — con più menù non saprebbe quale mostrare, e da
+                  pubblicato non serve comunque più (si apre la pagina vera). */}
+              {suoiMenu.length > 1 ? (
+                <PrimaryLink href="/menu">{d.dashboard.menusAll}</PrimaryLink>
+              ) : (
+                <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
               )}
-            </>
+              {online ? (
+                <OverflowMenu
+                  etichetta={d.dashboard.moreActions}
+                  voci={[
+                    { label: d.menuEditor.openLive, href: indirizzoMenu },
+                    {
+                      label: d.menuEditor.qrPng,
+                      onSelect: () => void scaricaQrPng(indirizzoMenu, venue.slug),
+                    },
+                  ]}
+                />
+              ) : (
+                suoiMenu.length === 1 && (
+                  <SecondaryLink href={`/menu/${suoiMenu[0].id}/anteprima`}>
+                    {d.menuEditor.previewTitle}
+                  </SecondaryLink>
+                )
+              )}
+            </div>
           )}
         </section>
 
