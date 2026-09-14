@@ -21,6 +21,17 @@
   (paese, denominazione, P.IVA/VAT validata via VIES, sede, email
   fatturazione) + associazione a una scheda dell'app → abbonamento =
   pubblicazione.
+  > ⚠️ **ORDINE CAMBIATO il 2026-09-15 (decisione dell'utente): prima
+  > l'abbonamento, poi l'associazione.** Il pagamento diventa il primo
+  > cancello — chi associa un ristorante ha già carta e fattura intestate —
+  > e la bozza privata resta compilabile prima di entrambi (migration 715:
+  > anche i piatti della scheda stanno sul locale). Il resto di questo
+  > documento descrive ancora l'ordine vecchio (claim → abbonamento) e va
+  > riletto con questa correzione; nel portale l'ordine nuovo si vede in
+  > `/abbonamenti`, mentre la pagina Scheda nomina solo l'associazione, con
+  > garbo, senza un "attiva l'abbonamento" in cima al lavoro. Da decidere quando si
+  > disegna il checkout: l'anagrafica aziendale del punto 3 del claim serve
+  > alla fattura, quindi probabilmente si sposta al pagamento.
 - **Verifica**: identica in ogni paese, nessun documento nel flusso normale;
   i cancelli sono dichiarazione tracciabile + carta + fattura + moderazione a
   valle. Documento+selfie solo in escalation nei casi contesi.

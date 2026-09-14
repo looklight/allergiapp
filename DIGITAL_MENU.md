@@ -1580,6 +1580,18 @@ sotto il dito); ricerca sopra 12; salva a ogni tocco, con scritture idempotenti.
 righe con casella: funzionavano, ma i cerchi si riconoscono meglio. Nessun ordine manuale: in app i
 piatti si riordinano comunque sul filtro allergeni.
 
+**La pagina segue il percorso: link, piatti, associazione.** Due richiami, con compiti diversi. In
+cima, sotto il titolo: *si può preparare adesso, resta salvato, sarà visibile dopo aver associato il
+locale*. In fondo, dopo i piatti, un riquadro col marchio dell'app e il bottone «Associa il
+ristorante»: arriva quando il lavoro è finito e dice cosa farne. Tutti e due spariscono (o dicono
+«fatto») quando il locale è associato.
+
+**L'ordine vero è abbonamento → associazione** (decisione dell'utente, stesso giorno; correzione
+annotata in `MONETIZATION.md`, che aveva l'opposto). Ma nella pagina della scheda **si nomina solo
+l'associazione**: un «attiva l'abbonamento» in cima al lavoro si leggeva come un «paga», e il primo
+tentativo — due passi numerati — è stato scartato per questo. L'ordine lo mostra `/abbonamenti`, dove
+portano entrambi i richiami.
+
 ---
 
 ## Prossimo passo

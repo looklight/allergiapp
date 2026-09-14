@@ -179,8 +179,14 @@ const en: typeof it = {
     draftBadge: 'Private draft',
     intro:
       'The page of {venue} inside the app: links and contacts on one side, the dishes you choose on the other. The preview shows how it will look.',
-    prepareNote: 'Set everything up now: it stays saved and appears in the app once your subscription is active.',
-    subsLink: 'How the subscription works',
+    linkNote:
+      'You can set up the listing right now: it stays saved, and it will be visible in the app once the venue is linked to your restaurant on AllergiApp.',
+    linkNoteCta: 'How it works',
+    linkBoxTitle: 'Your restaurant on AllergiApp',
+    linkBoxText:
+      'Links and dishes ready? Link the venue to your restaurant already in the app: from there the listing becomes visible to people looking for somewhere to eat.',
+    linkBoxDone: 'The venue is linked to your restaurant on AllergiApp.',
+    linkBoxCta: 'Link the restaurant',
     venueNameLabel: 'Venue name',
     venueNamePlaceholder: 'Trattoria da Mario',
     dishesTitle: 'Dishes on the listing',
@@ -561,11 +567,11 @@ const en: typeof it = {
     samplePillAmber: 'Lactose-free',
   },
   subs: {
-    back: 'Account',
+    back: 'Back',
     title: 'Subscriptions',
     intro:
-      'This is where you will link each of your venues to the matching restaurant on AllergiApp, searching for it by name and city, and keep an eye on the subscription that makes its listing visible in the app.',
-    empty: 'No venues yet: create one from the Venues section.',
+      'This is where you will activate the subscription for each of your venues and then link it to the matching restaurant on AllergiApp, searching for it by name and city: together they make its listing visible in the app.',
+    empty: 'No venues yet: create one from Home.',
     notLinked: 'Not linked',
     noSubscription: 'No subscription',
     linkCta: 'Link to the restaurant on AllergiApp',
@@ -578,7 +584,7 @@ const en: typeof it = {
     language: 'Language',
     subsTitle: 'Subscriptions',
     subsHint:
-      'Linking your venues to restaurants on AllergiApp, and the subscription that makes the listing visible.',
+      'Your venues’ subscriptions and their link to restaurants on AllergiApp: together they make the listing visible.',
     subsOpen: 'Open',
     profileTitle: 'Your details',
     profileHint: 'The name we greet you with in here. Your guests never see it.',

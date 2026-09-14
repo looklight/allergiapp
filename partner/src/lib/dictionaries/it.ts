@@ -226,10 +226,17 @@ const it = {
     draftBadge: 'Bozza privata',
     intro:
       'La pagina di {venue} dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
-    // Dal 15/09 (715) la scheda si prepara prima dell'associazione: va detto,
-    // o chi la compila si chiede perché in app non si vede niente
-    prepareNote: 'Prepara tutto adesso: resta salvato e compare nell’app quando attivi l’abbonamento.',
-    subsLink: 'Come funziona l’abbonamento',
+    // Il richiamo sotto il titolo (v. page.tsx): dice che si può lavorare
+    // adesso e cosa serve perché si veda, senza mettere un "paga" in cima
+    linkNote:
+      'Puoi preparare la scheda già adesso: resta salvata, e sarà visibile nell’app dopo aver associato il locale al tuo ristorante su AllergiApp.',
+    linkNoteCta: 'Come funziona',
+    // Il box in fondo alla pagina: l'ultimo passo, dopo link e piatti
+    linkBoxTitle: 'Il tuo ristorante su AllergiApp',
+    linkBoxText:
+      'Link e piatti sono pronti? Associa il locale al tuo ristorante già presente nell’app: da lì la scheda diventa visibile a chi cerca dove mangiare.',
+    linkBoxDone: 'Il locale è associato al tuo ristorante su AllergiApp.',
+    linkBoxCta: 'Associa il ristorante',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Trattoria da Mario',
     dishesTitle: 'Piatti sulla scheda',
@@ -768,11 +775,11 @@ const it = {
     samplePillAmber: 'Senza lattosio',
   },
   subs: {
-    back: 'Account',
+    back: 'Indietro',
     title: 'Abbonamenti',
     intro:
-      'Qui assocerai ogni tuo locale al ristorante corrispondente su AllergiApp, cercandolo per nome e città, e terrai d’occhio l’abbonamento che rende visibile la sua scheda nell’app.',
-    empty: 'Nessun locale ancora: creane uno dalla sezione Locali.',
+      'Qui attiverai l’abbonamento di ogni tuo locale e poi lo assocerai al ristorante corrispondente su AllergiApp, cercandolo per nome e città: insieme rendono visibile la sua scheda nell’app.',
+    empty: 'Nessun locale ancora: creane uno dalla Home.',
     notLinked: 'Non associato',
     noSubscription: 'Nessun abbonamento',
     linkCta: 'Associa al ristorante su AllergiApp',
@@ -785,7 +792,7 @@ const it = {
     language: 'Lingua',
     subsTitle: 'Abbonamenti',
     subsHint:
-      'L’associazione dei tuoi locali ai ristoranti su AllergiApp e l’abbonamento che rende visibile la scheda.',
+      'L’abbonamento dei tuoi locali e la loro associazione ai ristoranti su AllergiApp: insieme rendono visibile la scheda.',
     subsOpen: 'Apri',
     // Dati personali
     profileTitle: 'I tuoi dati',

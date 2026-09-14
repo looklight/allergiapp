@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
@@ -444,22 +445,39 @@ export default function VenueEditorPage() {
             {d.editor.draftBadge}
           </span>
         </div>
-        <PageIntro>
+        {/* Senza il richiamo qui sotto, lo stacco dal contenuto lo dà la frase */}
+        <PageIntro className={venue.cardId === null ? '' : 'mb-10 md:mb-12'}>
           {fraseIntro[0]}
           <span className="font-medium text-gray-900">{venue.venueName.trim() || d.home.unnamed}</span>
           {fraseIntro[1]}
         </PageIntro>
-        {/* Si prepara adesso, si vede con l'abbonamento (715): senza questa
-            riga chi compila la scheda non capisce perché in app non compare */}
-        <p className="mb-10 mt-2 text-sm text-gray-600 md:mb-12">
-          {d.editor.prepareNote}{' '}
-          <Link
-            href="/abbonamenti"
-            className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
-          >
-            {d.editor.subsLink}
-          </Link>
-        </p>
+        {/* IL RICHIAMO ALL'ASSOCIAZIONE, detto con garbo (richiesta
+            dell'utente, 15/09). La scheda si prepara subito e resta salvata
+            (715), ma senza dirlo chi la compila non capisce perché in app non
+            si vede niente. Si nomina solo l'associazione al ristorante: è il
+            passo che il ristoratore capisce ("la mia scheda dev'essere
+            collegata al mio locale"). L'abbonamento, che viene prima, lo
+            spiega la pagina a cui porta il link — qui un "attiva
+            l'abbonamento" suonava come un "paga" messo in cima al lavoro.
+            Una volta associato il locale il richiamo non serve più. */}
+        {venue.cardId === null && (
+          <div className="mb-10 mt-5 flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:mb-12">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <p className="text-sm text-gray-600">
+              {d.editor.linkNote}{' '}
+              <Link
+                href="/abbonamenti"
+                className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
+              >
+                {d.editor.linkNoteCta}
+              </Link>
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4">
           {/* Link. L'id è il bersaglio della panoramica: da lì "Modifica"
@@ -768,6 +786,43 @@ export default function VenueEditorPage() {
                 chosen={draft.dishIds}
                 onChange={(dishIds, on) => setDishesOn(venueId, dishIds, on)}
               />
+            )}
+          </div>
+
+          {/* L'ULTIMO PASSO, IN FONDO AL LAVORO (richiesta dell'utente, 15/09):
+              la pagina si legge nell'ordine in cui la scheda si fa — i link,
+              i piatti, poi il ristorante a cui associarla. Il richiamo in cima
+              dice che si può lavorare adesso; questo, arrivati in fondo, dice
+              cosa fare del lavoro finito, quando la voglia di farlo vedere è
+              più forte. Col marchio dell'app perché è lì che la scheda andrà.
+              Come il richiamo in cima, nomina l'associazione e non il
+              pagamento: l'ordine dei due passi lo spiega /abbonamenti.
+              Associato il locale, il box dice solo che è fatto. */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <Image
+                src="/icons/icon-192.png"
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 rounded-xl shadow-sm ring-1 ring-black/5"
+              />
+              <div className="min-w-0">
+                <h2 className="font-medium text-gray-900">{d.editor.linkBoxTitle}</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  {venue.cardId === null ? d.editor.linkBoxText : d.editor.linkBoxDone}
+                </p>
+              </div>
+            </div>
+            {venue.cardId === null && (
+              <div className="mt-4 flex justify-end">
+                <Link
+                  href="/abbonamenti"
+                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                >
+                  {d.editor.linkBoxCta}
+                </Link>
+              </div>
             )}
           </div>
         </div>
