@@ -185,7 +185,8 @@ const it = {
     menusAllActive: 'Hai {count} menù attivi.',
     menusSomeActive: '{active} di {total} menù attivi.',
     cardTitle: 'Scheda AllergiApp',
-    cardHint: 'La tua pagina dentro l’app: compare quando associ il locale a un ristorante.',
+    cardSubsNone: 'Nessun abbonamento attivo: la scheda non è ancora visibile nell’app.',
+    cardSubsManage: 'Gestisci abbonamento',
     cardEmpty: 'Ancora niente dentro',
     cardLink: 'Associa il locale',
     cardOpen: 'Apri la scheda',
@@ -193,7 +194,6 @@ const it = {
     dishChosen: 'piatto scelto',
     quickDish: 'Nuovo piatto',
     dishUnnamed: 'Piatto senza nome',
-    quickLinks: 'Link e contatti',
     // Lo stato del menù non è quanti piatti ha dentro: è cosa leggono i
     // clienti al tavolo adesso (v. page.tsx). Dice SOLO se è live o no — le
     // modifiche non ancora pubblicate le dice l'avviso sotto (menuEditor.publish*),
@@ -226,7 +226,7 @@ const it = {
     title: 'Scheda AllergiApp',
     draftBadge: 'Bozza privata',
     intro:
-      'La pagina di questo locale dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
+      'La pagina di {venue} dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
     subsLink: 'Come si associa a un ristorante già su AllergiApp',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Trattoria da Mario',

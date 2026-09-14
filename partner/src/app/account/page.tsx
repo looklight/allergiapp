@@ -22,6 +22,7 @@ import {
   useUpdatePartnerProfile,
 } from '@/lib/partnerProfile';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { PageTitle } from '@/components/PageHeading';
 
 const inputClass =
   'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none';
@@ -113,7 +114,7 @@ export default function AccountPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold md:text-2xl">{d.account.title}</h1>
+      <PageTitle className="mb-8 md:mb-10">{d.account.title}</PageTitle>
 
       <div className="max-w-xl space-y-4">
         {/* Chi sei. L'email sta qui dentro e non in un riquadro suo: è un dato

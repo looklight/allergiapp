@@ -45,6 +45,7 @@ import { quandoLeggibile } from '@/lib/dates';
 import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
 import OverflowMenu from '@/components/OverflowMenu';
+import { PageIntro, PageTitle } from '@/components/PageHeading';
 import UndoToast from '@/components/UndoToast';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
 
@@ -124,11 +125,11 @@ function Saluto({ saluto, intro }: { saluto: string; intro: string }) {
           priority
           className="h-10 w-10 shrink-0 rounded-2xl shadow-sm ring-1 ring-black/5"
         />
-        <h1 className="min-w-0 text-xl font-semibold md:text-2xl">{saluto}</h1>
+        <PageTitle className="min-w-0">{saluto}</PageTitle>
       </div>
       {/* Sotto e non accanto: è una frase lunga, e in colonna accanto al logo
           si spezzerebbe in tre righe strette su telefono. */}
-      <p className="mt-2 text-balance text-sm text-gray-600">{intro}</p>
+      <PageIntro>{intro}</PageIntro>
     </>
   );
 }
@@ -250,7 +251,7 @@ export default function HomePage() {
     return (
       <div>
         <Saluto saluto={saluto} intro={d.dashboard.intro} />
-        <div className="mt-8 max-w-xl rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        <div className="mt-10 max-w-xl rounded-2xl border border-dashed md:mt-12 border-gray-300 bg-white p-8 text-center">
           <p className="text-sm font-medium text-gray-900">{d.dashboard.emptyTitle}</p>
           <p className="mt-1 text-sm text-gray-500">{d.dashboard.emptyHint}</p>
           <button
@@ -359,7 +360,7 @@ export default function HomePage() {
           cambiare chiede due gesti; i capitoli dicono tutto stando fermi e ne
           chiedono uno. Il nome del locale aperto non si ripete sotto: il
           capitolo acceso è già il titolo, e la matita corregge quello. */}
-      <div className="mb-3 mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-gray-200 pb-3">
+      <div className="mb-3 mt-10 md:mt-12 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-gray-200 pb-3">
         {renaming ? (
           <input
             type="text"
@@ -432,6 +433,24 @@ export default function HomePage() {
               </svg>
             </button>
           </>
+        )}
+        {/* AGGIUNGERE STA IN CIMA, nella riga dei locali (richiesta
+            dell'utente, 15/09): è la riga dove si sceglie di quale locale
+            parlare, quindi è lì che si cerca "e uno nuovo?" — come il più
+            accanto alle schede di un browser. Prima stava in fondo alla
+            pagina, accanto a "Elimina". Durante la rinomina si toglie: il
+            campo prende tutta la riga. */}
+        {!renaming && (
+          <button
+            ref={addButton}
+            onClick={() => setCreating(true)}
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            {d.dashboard.addVenue}
+          </button>
         )}
       </div>
 
@@ -632,11 +651,24 @@ export default function HomePage() {
             />
           </div>
           <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
-          <p className="mt-0.5 text-xs text-gray-500">{d.dashboard.cardHint}</p>
+
+          {/* L'ABBONAMENTO, nello stesso spazio fisso della sottofrase del
+              menù accanto: le due card restano allineate riga per riga. È
+              lui che rende visibile la scheda nell'app, quindi va ricordato
+              qui e non solo dentro Account. Oggi dice sempre "nessuno": gli
+              abbonamenti non esistono ancora sul database (/abbonamenti è un
+              tappo) — quando esisteranno, questa riga leggerà lo stato vero.
+
+              "Link e contatti" accanto ad "Apri la scheda" non c'è più:
+              portava alla stessa pagina, solo più in basso (richiesta
+              dell'utente, 15/09). */}
+          <p className="mt-3 line-clamp-2 min-h-[2.75em] text-xs leading-snug text-gray-500">
+            {d.dashboard.cardSubsNone}
+          </p>
 
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
             <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
-            <SecondaryLink href={`/locale/${venue.id}#link`}>{d.dashboard.quickLinks}</SecondaryLink>
+            <SecondaryLink href="/abbonamenti">{d.dashboard.cardSubsManage}</SecondaryLink>
           </div>
         </section>
       </div>
@@ -715,18 +747,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* In fondo e sottovoce: aggiungere un locale è raro, eliminarlo di più */}
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4">
-        <button
-          ref={addButton}
-          onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          {d.dashboard.addVenue}
-        </button>
+      {/* In fondo e sottovoce, da solo: eliminare un locale è raro e non
+          deve stare dove si preme tutti i giorni */}
+      <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 pt-4">
         <button
           onClick={() => setDeleting(venue)}
           className="text-sm font-medium text-red-600 transition-colors hover:text-red-700"

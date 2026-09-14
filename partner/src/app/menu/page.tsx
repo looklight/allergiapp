@@ -16,6 +16,7 @@ import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import Interruttore from '@/components/menus/Interruttore';
 import NewMenuDialog from '@/components/menus/NewMenuDialog';
 import UndoToast from '@/components/UndoToast';
+import { PageIntro, PageTitle } from '@/components/PageHeading';
 
 export default function MenusPage() {
   const { d } = useI18n();
@@ -182,8 +183,8 @@ export default function MenusPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold md:text-2xl">{d.menus.title}</h1>
-      <p className="mb-8 text-balance text-sm text-gray-600">{d.menus.intro}</p>
+      <PageTitle>{d.menus.title}</PageTitle>
+      <PageIntro className="mb-10 md:mb-12">{d.menus.intro}</PageIntro>
 
       {loading ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>

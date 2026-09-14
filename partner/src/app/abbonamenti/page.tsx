@@ -5,6 +5,7 @@
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { useVenues } from '@/lib/venues';
+import { PageIntro, PageTitle } from '@/components/PageHeading';
 
 export default function SubscriptionsPage() {
   const { d } = useI18n();
@@ -16,20 +17,20 @@ export default function SubscriptionsPage() {
           del ritorno va detta, o si resta in una pagina senza uscite */}
       <Link
         href="/account"
-        className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900"
+        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M15 6l-6 6 6 6" />
         </svg>
         {d.subs.back}
       </Link>
-      <div className="mb-2 flex items-center gap-3">
-        <h1 className="text-xl font-semibold md:text-2xl">{d.subs.title}</h1>
+      <div className="flex items-center gap-3">
+        <PageTitle>{d.subs.title}</PageTitle>
         <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
           {d.common.comingSoon}
         </span>
       </div>
-      <p className="mb-8 text-balance text-sm text-gray-600">{d.subs.intro}</p>
+      <PageIntro className="mb-10 md:mb-12">{d.subs.intro}</PageIntro>
 
       {!venues ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>

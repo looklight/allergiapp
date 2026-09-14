@@ -39,7 +39,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <div className="flex min-h-screen">
                 <Nav />
                 <main className="flex-1 pb-bottom-nav">
-                  <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
+                  {/* Più aria in cima che in fondo: i titoli attaccati al
+                      bordo sembravano schiacciati (richiesta dell'utente,
+                      15/09) */}
+                  <div className="mx-auto max-w-6xl px-4 pt-8 pb-6 md:px-8 md:pt-14 md:pb-10">
                     {children}
                   </div>
                 </main>

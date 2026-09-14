@@ -16,6 +16,7 @@ import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
+import { PageIntro, PageTitle } from '@/components/PageHeading';
 
 // Sotto questa soglia la griglia si guarda tutta con un colpo d'occhio e un
 // campo di ricerca sarebbe solo un ingombro in più
@@ -434,6 +435,10 @@ export default function VenueEditorPage() {
     }));
   }
 
+  // La frase d'apertura col nome del locale in mezzo, in grassetto: fill()
+  // darebbe solo testo piano, quindi si spezza sul segnaposto
+  const fraseIntro = d.editor.intro.split('{venue}');
+
   const preview = <SchedaPreview draft={draft} dishes={venueDishes(catalog, draft)} viewer={viewer} />;
 
   return (
@@ -442,30 +447,32 @@ export default function VenueEditorPage() {
     <div className="lg:flex lg:items-start lg:gap-8">
       {/* Colonna editor */}
       <div className="min-w-0 flex-1">
-        <Link
-          href="/"
-          className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M15 6l-6 6 6 6" />
-          </svg>
-          {d.home.backToList}
-        </Link>
-        {/* Di CHI è questa scheda, sopra al titolo: il portale ne regge più
-            d'una e "Scheda AllergiApp" da solo non dice di quale locale */}
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-          {venue.venueName.trim() || d.home.unnamed}
-        </p>
-        <div className="mb-2 mt-1 flex items-center gap-3">
-          <h1 className="text-xl font-semibold md:text-2xl">{d.editor.title}</h1>
+        {/* L'INTESTAZIONE COME LE ALTRE PAGINE PRINCIPALI (richiesta
+            dell'utente, 15/09): titolo in cima, frase sotto, poi il lavoro.
+            Prima sopra al titolo c'erano "← Home" e il nome del locale in
+            maiuscoletto, e il titolo partiva più in basso che in Menù e
+            Piatti. "← Home" non serviva: la scheda è una voce della barra
+            laterale, come le altre. Il nome del locale invece serve — il
+            portale regge più schede e "Scheda AllergiApp" da solo non dice
+            di quale — e ora sta DENTRO la frase d'apertura, in grassetto.
+
+            Resta nella colonna dell'editor e non sopra le due: l'anteprima
+            accanto parte dall'alto della pagina, alla pari del titolo
+            (provato a spostarla sopra e scartato dall'utente, 15/09). */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <PageTitle>{d.editor.title}</PageTitle>
           <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
             {d.editor.draftBadge}
           </span>
         </div>
-        <p className="mb-2 text-balance text-sm text-gray-600">{d.editor.intro}</p>
+        <PageIntro>
+          {fraseIntro[0]}
+          <span className="font-medium text-gray-900">{venue.venueName.trim() || d.home.unnamed}</span>
+          {fraseIntro[1]}
+        </PageIntro>
         <Link
           href="/abbonamenti"
-          className="mb-8 inline-block text-sm font-medium text-gray-700 underline hover:text-gray-900"
+          className="mb-10 mt-2 inline-block text-sm font-medium text-gray-600 underline transition-colors hover:text-gray-900 md:mb-12"
         >
           {d.editor.subsLink}
         </Link>

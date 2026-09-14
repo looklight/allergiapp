@@ -15,6 +15,7 @@ import DishRow from '@/components/dishes/DishRow';
 import DishPanel from '@/components/dishes/DishPanel';
 import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
 import UndoToast from '@/components/UndoToast';
+import { PageIntro, PageTitle } from '@/components/PageHeading';
 
 type SortKey = 'name' | 'category' | 'on';
 
@@ -261,8 +262,8 @@ export default function DishesPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold md:text-2xl">{d.dishes.title}</h1>
-      <p className="mb-8 text-balance text-sm text-gray-600">{d.dishes.intro}</p>
+      <PageTitle>{d.dishes.title}</PageTitle>
+      <PageIntro className="mb-10 md:mb-12">{d.dishes.intro}</PageIntro>
 
       {!dishes || !venues ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>
