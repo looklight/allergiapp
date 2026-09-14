@@ -29,7 +29,7 @@
 //
 // NON è un percorso a tappe numerato: le due cose sono indipendenti e c'è chi
 // farà solo il menù senza mai voler entrare nell'app (Temi 10 e 16).
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -37,7 +37,7 @@ import { fill, useI18n } from '@/lib/i18n';
 import { useVenues, useVenueChoice, currentVenue, countLinks, type Venue } from '@/lib/venues';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import { dishThumb, useDishes, type Dish } from '@/lib/dishes';
-import { usePublishState } from '@/lib/publish';
+import { prefetchPublishState, usePublishState } from '@/lib/publish';
 import { usePartnerProfile } from '@/lib/partnerProfile';
 import { MENU_DOMINIO } from '@/lib/slug';
 import { scaricaQrPng } from '@/lib/qr';
@@ -188,6 +188,13 @@ export default function HomePage() {
   // dell'editor: la home non deve avere una seconda idea di cosa sia
   // pubblicato — sarebbe la prima a dire una cosa e il menù un'altra.
   const { stato: pubblicazione, online } = usePublishState(venue?.id ?? null);
+  // Lo stato degli ALTRI locali si chiede subito, non al primo clic sul loro
+  // capitolo: così cambiando locale il riquadro del menù è già giusto, invece
+  // di assestarsi a risposta arrivata.
+  useEffect(() => {
+    if (venues) prefetchPublishState(venues.map((v) => v.id));
+  }, [venues]);
+
   function cambiaLocale(id: string) {
     scegli(id);
     // la rinomina aperta era di un altro locale
@@ -281,6 +288,13 @@ export default function HomePage() {
   const menuVuoto = suoiMenu.length > 0 && piattiNeiMenu === 0;
   const inSospeso = online && pubblicazione?.hasChanges === true;
   const allergeniInSospeso = inSospeso && pubblicazione?.allergensChanged === true;
+  // Il menù c'è ma non si sa ancora se è online (solo al primo caricamento:
+  // poi lo stato è in memoria, v. usePublishState). Finché è così il pallino
+  // e il pulsante accanto — le due cose che dipendono dalla risposta — non
+  // si mostrano: indovinare "non pubblicato" e poi cambiare sotto gli occhi
+  // è peggio che comparire un istante dopo, al posto giusto.
+  const pubblicazioneIgnota = suoiMenu.length > 0 && !menuVuoto && pubblicazione === null;
+
   // Il pallino dice SOLO se è live adesso, mai se ci sono modifiche in sospeso:
   // le due notizie mescolate ("da pubblicare" quando in realtà è già online)
   // facevano dubitare se il menù fosse raggiungibile o no (feedback utente,
@@ -446,7 +460,7 @@ export default function HomePage() {
                 indirizzo nell'editor, dove "pubblicato"/"non pubblicato" si
                 legge e si cambia (richiesta dell'utente, 13/09). Senza un
                 menù non c'è editor da aprire, quindi resta solo testo. */}
-            {suoiMenu.length > 0 ? (
+            {pubblicazioneIgnota ? null : suoiMenu.length > 0 ? (
               <Link
                 href={`/menu/${suoiMenu[0].id}#${ANCORA_INDIRIZZO}`}
                 title={d.dashboard.menusAddressHint}
@@ -522,8 +536,8 @@ export default function HomePage() {
               </span>
             ) : pubblicazione === null ? (
               // Ancora non si sa se questo locale è online o no (la
-              // richiesta di rete per LUI non è ancora tornata: v. il
-              // reset in usePublishState). Meglio niente che affermare
+              // richiesta di rete per LUI non è ancora tornata, e non ce
+              // n'è una precedente in memoria). Meglio niente che affermare
               // "non ancora pubblicato" su un locale che magari lo è già
               // (bug segnalato dall'utente, 14/09).
               null
@@ -581,7 +595,7 @@ export default function HomePage() {
               ) : (
                 <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
               )}
-              {online ? (
+              {pubblicazioneIgnota ? null : online ? (
                 <OverflowMenu
                   etichetta={d.dashboard.moreActions}
                   voci={[

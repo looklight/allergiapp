@@ -11,12 +11,48 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSaveState } from './saveState';
 import { menuPublishState, publishMenu, unpublishMenu, type PublishState } from './venues';
 
+// L'ULTIMO STATO NOTO DI OGNI LOCALE, per tutta la sessione. Passando da un
+// locale all'altro (i capitoli della home) o dall'editor alla home, lo stato
+// c'è già e si vede subito; la richiesta parte lo stesso e lo corregge se nel
+// frattempo è cambiato. Senza, ogni cambio di locale mostrava prima
+// "non ancora pubblicato" e poi, a risposta arrivata, "online": pallino,
+// sottofrase e pulsanti che cambiavano sotto gli occhi (segnalato
+// dall'utente, 14/09).
+const noti = new Map<string, PublishState>();
+
+// Lo chiede la home per TUTTI i locali appena li conosce, così anche il primo
+// passaggio a un locale mai aperto trova lo stato pronto.
+export function prefetchPublishState(venueIds: string[]) {
+  for (const id of venueIds) {
+    if (noti.has(id)) continue;
+    void menuPublishState(id).then((s) => {
+      if (s && !noti.has(id)) noti.set(id, s);
+    });
+  }
+}
+
 export function usePublishState(venueId: string | null) {
   // savedAt cambia a ogni scrittura riuscita: è il segnale che la bozza si è
   // mossa, e quindi che lo stato va richiesto di nuovo. Il salvataggio ha già
   // la sua pausa, quindi qui non se ne aggiunge un'altra.
   const { savedAt } = useSaveState();
-  const [stato, setStato] = useState<PublishState | null>(null);
+  // Lo stato porta con sé il locale a cui si riferisce. Prima c'era solo lo
+  // stato, azzerato da un effetto al cambio di locale: ma l'effetto gira DOPO
+  // il disegno, quindi per un fotogramma il locale nuovo si vedeva con lo
+  // stato del vecchio — e una risposta in ritardo del vecchio poteva
+  // scrivercisi sopra. Così invece uno stato di un altro locale non si
+  // mostra mai, per costruzione.
+  const [voce, setVoce] = useState<{ venueId: string; stato: PublishState } | null>(null);
+  const stato =
+    venueId === null
+      ? null
+      : voce?.venueId === venueId
+        ? voce.stato
+        : (noti.get(venueId) ?? null);
+  const setStato = useCallback((id: string, s: PublishState) => {
+    noti.set(id, s);
+    setVoce({ venueId: id, stato: s });
+  }, []);
   const [inCorso, setInCorso] = useState(false);
   // publish_menu() nel database rifiuta silenziosamente (nessun errore
   // Postgres) quando non c'è nessun menù attivo da mettere nello scatto: per
@@ -27,27 +63,16 @@ export function usePublishState(venueId: string | null) {
   // irraggiungibile dal blocco sull'ultimo menù attivo in /menu).
   const [nessunMenuAttivo, setNessunMenuAttivo] = useState(false);
 
-  // Cambiando locale (più locali, più schede) lo stato del PRECEDENTE
-  // resterebbe a schermo finché non arriva la risposta del nuovo — e con più
-  // schede aperte una accanto all'altra si vede: tutto il resto si aggiorna
-  // subito perché viene da dati già in memoria, questo da una richiesta di
-  // rete che ha il suo ritardo. Si azzera SOLO quando cambia il locale, non
-  // a ogni scrittura (quello lo farebbe sfarfallare mentre si lavora sullo
-  // stesso menù) (bug segnalato dall'utente, 14/09).
-  useEffect(() => {
-    setStato(null);
-  }, [venueId]);
-
   useEffect(() => {
     if (venueId === null) return;
     let vivo = true;
     void menuPublishState(venueId).then((s) => {
-      if (vivo && s) setStato(s);
+      if (vivo && s) setStato(venueId, s);
     });
     return () => {
       vivo = false;
     };
-  }, [venueId, savedAt]);
+  }, [venueId, savedAt, setStato]);
 
   // Ogni scrittura successiva (per esempio riaccendere un menù) azzera
   // l'avviso: non è detto che valga ancora, e tenerlo finché non si ripreme
@@ -71,14 +96,14 @@ export function usePublishState(venueId: string | null) {
       setNessunMenuAttivo(true);
       return;
     }
-    setStato({
+    setStato(venueId, {
       publishedAt: quando,
       hasChanges: false,
       contentChanged: false,
       appearanceChanged: false,
       allergensChanged: false,
     });
-  }, [venueId]);
+  }, [venueId, setStato]);
 
   // Il ritiro rimette lo stato a "mai pubblicato" per quello che si vede a
   // schermo: l'indirizzo non risponde più, quindi il riquadro sotto
@@ -93,14 +118,14 @@ export function usePublishState(venueId: string | null) {
     // Senza uno scatto in sala non esiste un "prima" a cui tornare: quello
     // che c'era in sospeso diventa tutto contenuto da pubblicare, come per un
     // menù mai pubblicato (v. migration 710).
-    setStato({
+    setStato(venueId, {
       publishedAt: null,
       hasChanges: true,
       contentChanged: true,
       appearanceChanged: false,
       allergensChanged: false,
     });
-  }, [venueId]);
+  }, [venueId, setStato]);
 
   return {
     stato,
