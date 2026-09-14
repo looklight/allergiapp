@@ -1,38 +1,30 @@
 'use client';
 
-// Conferma di eliminazione: come per i locali dice QUANTO si perde, e qui
-// quello che conta è dove il piatto era acceso — cancellarlo dal catalogo lo
-// toglie da tutte le schede insieme, e dai menù in cui l'avevi messo.
+// Conferma di eliminazione. Cancellarlo dal catalogo lo toglie anche dai menù
+// e dalle schede in cui compare: lo dice la frase sotto, senza elencarli — il
+// catalogo non tiene il conto di dove i piatti vengono usati (15/09).
 // L'eliminazione resta comunque annullabile dal toast in lista.
 import { useId } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import type { Dish } from '@/lib/dishes';
-import type { Venue } from '@/lib/venues';
+import { categoryName } from '@/lib/categories';
 
 export default function DeleteDishDialog({
   dish,
-  venues,
   onCancel,
   onConfirm,
 }: {
   dish: Dish;
-  // i locali sulla cui scheda il piatto è acceso, non tutti quelli del partner
-  venues: Venue[];
   onCancel: () => void;
   onConfirm: () => void;
 }) {
-  const { d } = useI18n();
+  const { d, locale } = useI18n();
   const panel = useModal<HTMLDivElement>(onCancel);
   const titleId = useId();
 
-  // Con uno o due locali i nomi ci stanno e dicono di più del numero
-  const summary =
-    venues.length === 0
-      ? d.dishes.onNoListing
-      : venues.length <= 2
-        ? venues.map((s) => s.venueName.trim() || d.home.unnamed).join(' · ')
-        : `${venues.length} ${d.dishes.listingCount}`;
+  // Sotto il nome la categoria, per riconoscere il piatto giusto
+  const summary = dish.category === '' ? d.dishes.noCategory : categoryName(dish.category, locale);
 
   return (
     <div

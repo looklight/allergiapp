@@ -1,14 +1,15 @@
 'use client';
 
-// Una riga del gestionale: le colonne che servono a riconoscere un piatto e a
-// capire dove sta. Su telefono le colonne spariscono e i loro dati tornano una
+// Una riga del gestionale: le colonne che servono a riconoscere un piatto.
+// Dove compare (menù, scheda AllergiApp) qui non si dice né si decide: il
+// catalogo è la fonte dei dati, e la scelta la fa chi li usa (15/09). Su
+// telefono le colonne spariscono e i loro dati tornano una
 // riga di testo sotto al nome, perché una tabella a cinque colonne su 380px
 // non si legge.
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { dishThumb } from '@/lib/dishes';
 import type { Dish } from '@/lib/dishes';
-import type { Venue } from '@/lib/venues';
 import { allergenName } from '@/lib/allergens';
 import { dietName } from '@/lib/diets';
 import { categoryName } from '@/lib/categories';
@@ -23,13 +24,9 @@ const CHIP_GAP = 4;
 // Larghezza fissa del contatore: sapendola non serve misurarla, e "+99" ci sta
 const COUNTER_W = 32;
 
-function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
+function PhotoPlaceholder() {
   return (
-    <span
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-gray-300 transition ${
-        dimmed ? 'opacity-50' : ''
-      }`}
-    >
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-gray-300">
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
         <circle cx="12" cy="13" r="3.5" />
@@ -40,19 +37,10 @@ function PhotoPlaceholder({ dimmed }: { dimmed: boolean }) {
 
 export default function DishRow({
   dish,
-  venues,
-  on,
-  onToggle,
   onEdit,
   onDelete,
 }: {
   dish: Dish;
-  // i locali sulla cui scheda il piatto è acceso, non tutti quelli del partner
-  venues: Venue[];
-  // acceso sulla scheda a cui si riferisce la colonna; null = il partner non
-  // ha ancora locali, quindi non c'è niente da accendere e la colonna non c'è
-  on: boolean | null;
-  onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -62,13 +50,6 @@ export default function DishRow({
   // tabella una colonna di paragrafi
   const [allTags, setAllTags] = useState(false);
 
-  // Con un locale solo il nome dice più del numero; da due in su non ci sta
-  const venueLabel =
-    venues.length === 0
-      ? '—'
-      : venues.length === 1
-        ? venues[0].venueName.trim() || d.home.unnamed
-        : `${venues.length} ${d.dishes.listingCount}`;
   const category = dish.category === '' ? '' : categoryName(dish.category, locale);
   // Allergeni contenuti e compatibilità dichiarate, nello stesso ordine in cui
   // stanno nella maschera: prima cosa c'è dentro, poi per chi va bene
@@ -111,54 +92,38 @@ export default function DishRow({
 
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      {/* Spento su questa scheda: la foto si smorza come nella griglia del
-          locale, così scorrendo la tabella si distingue cosa è in scheda
-          senza dover leggere ogni interruttore */}
       {dish.photoUrl !== '' ? (
         <img
           src={dishThumb(dish)}
           loading="lazy"
           alt=""
-          className={`h-11 w-11 shrink-0 rounded-full object-cover transition ${
-            on === false ? 'opacity-40 grayscale' : ''
-          }`}
+          className="h-11 w-11 shrink-0 rounded-full object-cover"
         />
       ) : (
-        <PhotoPlaceholder dimmed={on === false} />
+        <PhotoPlaceholder />
       )}
 
-      {/* Spento: si smorza tutto quello che descrive il piatto, pill comprese.
-          Restano piene solo due cose: l'interruttore, che deve restare
-          leggibile perché è il modo di riaccenderlo, e le azioni, che smorzate
-          sembrerebbero disabilitate mentre funzionano. */}
-      <button
-        onClick={onEdit}
-        className={`min-w-0 flex-[2] text-left transition ${on === false ? 'opacity-50' : ''}`}
-      >
+      <button onClick={onEdit} className="min-w-0 flex-[2] text-left">
         <p className="truncate text-sm font-medium text-gray-900">{dish.name}</p>
         {dish.description.trim() !== '' && (
           <p className="truncate text-xs text-gray-500">{dish.description}</p>
         )}
         <p className="mt-0.5 truncate text-xs text-gray-400 md:hidden">
           {category === '' ? d.dishes.noCategory : category}
-          {' · '}
-          {venues.length === 0 ? d.dishes.onNoListing : venueLabel}
         </p>
       </button>
 
       <span
-        className={`hidden w-24 shrink-0 truncate text-xs text-gray-500 transition md:block ${
-          on === false ? 'opacity-50' : ''
-        }`}
+        className="hidden w-24 shrink-0 truncate text-xs text-gray-500 md:block"
       >
         {category === '' ? '—' : category}
       </span>
 
       <span
         ref={cell}
-        className={`relative hidden min-w-0 flex-[3] flex-wrap gap-1 overflow-hidden transition lg:flex ${
+        className={`relative hidden min-w-0 flex-[3] flex-wrap gap-1 overflow-hidden lg:flex ${
           allTags ? '' : TWO_ROWS
-        } ${on === false ? 'opacity-50' : ''}`}
+        }`}
       >
         {tags.length === 0 ? (
           <span className="text-xs text-gray-400">—</span>
@@ -198,49 +163,6 @@ export default function DishRow({
           </>
         )}
       </span>
-
-      {/* L'interruttore vale per UNA scheda, quella che la pagina indica
-          sopra la tabella: acceso qui non vuol dire acceso ovunque. Dove sta
-          altrove lo dicono la riga sotto al nome e la maschera. */}
-      {on !== null && (
-        <span className="hidden w-20 shrink-0 justify-center md:flex">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={on}
-            aria-label={dish.name}
-            onClick={onToggle}
-            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-              on ? 'bg-[#4CAF50]' : 'bg-gray-300'
-            }`}
-          >
-            <span
-              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                on ? 'translate-x-4' : ''
-              }`}
-            />
-          </button>
-        </span>
-      )}
-
-      {on !== null && (
-        <button
-          type="button"
-          role="switch"
-          aria-checked={on}
-          aria-label={dish.name}
-          onClick={onToggle}
-          className={`relative h-5 w-9 shrink-0 rounded-full transition-colors md:hidden ${
-            on ? 'bg-[#4CAF50]' : 'bg-gray-300'
-          }`}
-        >
-          <span
-            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-              on ? 'translate-x-4' : ''
-            }`}
-          />
-        </button>
-      )}
 
       <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-32 md:justify-end">
         {/* Su telefono "Modifica" sparisce: le due azioni scritte per esteso

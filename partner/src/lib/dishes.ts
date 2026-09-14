@@ -200,39 +200,26 @@ export function useDishes() {
   return { dishes, create, update, remove, restore };
 }
 
-// Accende un piatto esattamente nei locali elencati e lo spegne negli altri:
-// le caselle della maschera ne cambiano più d'uno insieme.
-//
-// Riceve id di LOCALI perché è quello che la maschera mostra, ma i piatti
-// accesi stanno sulle SCHEDE (migration 703): la conversione si fa qui, in un
-// punto solo. Un locale senza scheda non produce nessuna riga — non c'è
-// ancora nessun posto in cui quel piatto potrebbe comparire.
-export async function setDishVenues(dishId: string, venueIds: string[]) {
+// Rimette un piatto sulle schede dei locali elencati, e solo su quelle. Serve
+// SOLO all'annulla dell'eliminazione: la cascata del database porta via le
+// righe, e l'annulla deve rimetterle. La scelta di tutti i giorni la fa la
+// pagina della scheda (setDishesOn), non il catalogo (15/09).
+async function setDishVenues(dishId: string, venueIds: string[]) {
   const ownerId = await currentUserId();
   if (!ownerId) return;
-
-  let cardIds: string[] = [];
-  if (venueIds.length > 0) {
-    const { data, error } = await supabase
-      .from('partner_cards')
-      .select('id')
-      .in('venue_id', venueIds);
-    reportError('lettura schede', error);
-    cardIds = (data ?? []).map((row) => row.id);
-  }
 
   await write(
     'spegnimento piatto sulle schede',
     () => supabase.from('partner_card_dishes').delete().eq('dish_id', dishId),
     `schede-spegni:${dishId}`
   );
-  if (cardIds.length > 0) {
+  if (venueIds.length > 0) {
     await write(
       'accensione piatto sulle schede',
       () =>
         supabase.from('partner_card_dishes').insert(
-          cardIds.map((cardId) => ({
-            card_id: cardId,
+          venueIds.map((venueId) => ({
+            venue_id: venueId,
             dish_id: dishId,
             owner_user_id: ownerId,
           }))

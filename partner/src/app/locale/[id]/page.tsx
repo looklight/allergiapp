@@ -3,24 +3,20 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { fill, useI18n } from '@/lib/i18n';
+import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
-import { dishThumb, venueDishes, useDishes } from '@/lib/dishes';
+import { venueDishes, useDishes } from '@/lib/dishes';
 import { hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
-import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
+import CardDishesSelector from '@/components/CardDishesSelector';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
-
-// Sotto questa soglia la griglia si guarda tutta con un colpo d'occhio e un
-// campo di ricerca sarebbe solo un ingombro in più
-const DISH_SEARCH_FROM = 12;
 
 function ViewerChips({
   viewer,
@@ -230,13 +226,12 @@ function MobilePreview({
 }
 
 export default function VenueEditorPage() {
-  const { d, locale } = useI18n();
+  const { d } = useI18n();
   const params = useParams<{ id: string }>();
-  const { venues, update, setDishOn } = useVenues();
+  const { venues, update, setDishesOn } = useVenues();
   // Il catalogo è del partner: la scheda dice solo quali piatti sono accesi
   const { dishes: catalog } = useDishes();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
-  const [dishQuery, setDishQuery] = useState('');
   const [viewer, setViewer] = useState<ViewerNeeds>(NO_VIEWER);
   const [simOpen, setSimOpen] = useState(false);
   // Link accesi in questa sessione ma ancora vuoti: quelli con contenuto
@@ -410,22 +405,6 @@ export default function VenueEditorPage() {
     setDraft({ ...draft, links: { ...draft.links, ...cleared } });
   }
 
-  // Tutto il catalogo, accesi e spenti: se mostrasse solo gli accesi, una
-  // scheda nuova non avrebbe niente da accendere. Con un catalogo lungo
-  // però trovare un piatto da accendere significa scorrere un muro, e la
-  // ricerca lo riduce a quello che si sta cercando.
-  const dishSearch = dishQuery.trim().toLowerCase();
-  const visibleDishes =
-    dishSearch === '' ? catalog : catalog.filter((dish) => dish.name.toLowerCase().includes(dishSearch));
-  // Senza categoria per primi, poi le categorie nell'ordine del set
-  const dishGroups = [
-    { cat: null, dishes: visibleDishes.filter((dish) => dish.category === '') },
-    ...DISH_CATEGORIES.map((cat) => ({
-      cat: cat as (typeof DISH_CATEGORIES)[number] | null,
-      dishes: visibleDishes.filter((dish) => dish.category === cat.code),
-    })),
-  ].filter((g) => g.dishes.length > 0);
-
   function toggleViewer(kind: 'allergens' | 'diets', code: string) {
     setViewer((prev) => ({
       ...prev,
@@ -470,12 +449,17 @@ export default function VenueEditorPage() {
           <span className="font-medium text-gray-900">{venue.venueName.trim() || d.home.unnamed}</span>
           {fraseIntro[1]}
         </PageIntro>
-        <Link
-          href="/abbonamenti"
-          className="mb-10 mt-2 inline-block text-sm font-medium text-gray-600 underline transition-colors hover:text-gray-900 md:mb-12"
-        >
-          {d.editor.subsLink}
-        </Link>
+        {/* Si prepara adesso, si vede con l'abbonamento (715): senza questa
+            riga chi compila la scheda non capisce perché in app non compare */}
+        <p className="mb-10 mt-2 text-sm text-gray-600 md:mb-12">
+          {d.editor.prepareNote}{' '}
+          <Link
+            href="/abbonamenti"
+            className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
+          >
+            {d.editor.subsLink}
+          </Link>
+        </p>
 
         <div className="space-y-4">
           {/* Link. L'id è il bersaglio della panoramica: da lì "Modifica"
@@ -760,24 +744,11 @@ export default function VenueEditorPage() {
             </div>
             <p className="mb-4 text-xs text-gray-500">{d.editor.dishesHint}</p>
 
-            {/* Senza scheda non c'è nessun posto dove accendere un piatto
-                (Tema 16): la griglia non si mostra spenta, si mostra il
-                motivo e la strada per averla. Prima si spuntavano piatti e
-                non succedeva niente. */}
-            {venue.cardId === null ? (
-              <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
-                <p className="text-sm text-gray-600">{d.dishes.needsCard}</p>
-                {/* Etichetta diversa da quella in cima alla pagina, che porta
-                    allo stesso posto: là si spiega come funziona, qui si va a
-                    farlo. Lo stesso testo due volte sembrerebbe un doppione. */}
-                <Link
-                  href="/abbonamenti"
-                  className="mt-3 inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-                >
-                  {d.dashboard.cardLink}
-                </Link>
-              </div>
-            ) : catalog.length === 0 ? (
+            {/* Si scelgono anche SENZA scheda (715): prima dell'associazione
+                la scelta si prepara e resta salvata, e in app compare solo
+                con l'abbonamento. Fino al 15/09 qui c'era un tappo che
+                mandava ad associare il locale. */}
+            {catalog.length === 0 ? (
               <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
                 <p className="text-sm font-medium text-gray-900">{d.dishes.empty}</p>
                 <p className="mt-1 text-sm text-gray-500">{d.dishes.emptyHint}</p>
@@ -792,103 +763,11 @@ export default function VenueEditorPage() {
                 </Link>
               </div>
             ) : (
-              <>
-                <p className="mb-3 text-xs text-gray-500">
-                  {fill(d.editor.dishesOn, { on: draft.dishIds.length, total: catalog.length })}
-                </p>
-
-                {catalog.length > DISH_SEARCH_FROM && (
-                  <div className="mb-4 flex items-center gap-2 rounded-lg border border-gray-300 px-3 focus-within:border-gray-900">
-                    <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <circle cx="11" cy="11" r="7" />
-                      <path d="M20 20l-3.5-3.5" />
-                    </svg>
-                    <input
-                      type="search"
-                      value={dishQuery}
-                      onChange={(e) => setDishQuery(e.target.value)}
-                      placeholder={d.dishes.searchPlaceholder}
-                      className="w-full bg-transparent py-2 text-sm focus:outline-none"
-                    />
-                  </div>
-                )}
-
-                {dishGroups.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-gray-500">{d.dishes.noResults}</p>
-                ) : (
-                  <div className="space-y-4">
-                    {dishGroups.map(({ cat, dishes }) => (
-                      <div key={cat?.code ?? 'none'}>
-                        {cat && (
-                          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                            {categoryName(cat.code, locale)}
-                          </p>
-                        )}
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-3">
-                          {dishes.map((dish) => {
-                            const on = draft.dishIds.includes(dish.id);
-                            return (
-                              <button
-                                key={dish.id}
-                                type="button"
-                                role="switch"
-                                aria-checked={on}
-                                onClick={() => setDishOn(venueId, dish.id, !on)}
-                                className="flex flex-col items-center gap-1.5"
-                              >
-                                <span className="relative block">
-                                  {/* Spento: foto smorzata e nome grigio. Si legge
-                                      a colpo d'occhio senza etichette da leggere. */}
-                                  {dish.photoUrl !== '' ? (
-                                    <img
-                                      src={dishThumb(dish)}
-                                      loading="lazy"
-                                      alt=""
-                                      className={`h-16 w-16 rounded-full object-cover transition ${
-                                        on ? '' : 'opacity-40 grayscale'
-                                      }`}
-                                    />
-                                  ) : (
-                                    <span
-                                      className={`flex h-16 w-16 items-center justify-center rounded-full border border-dashed text-gray-400 transition ${
-                                        on ? 'border-gray-400' : 'border-gray-300 opacity-50'
-                                      }`}
-                                    >
-                                      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
-                                        <circle cx="12" cy="13" r="3.5" />
-                                      </svg>
-                                    </span>
-                                  )}
-                                  {/* Il segno di stato: acceso pieno, spento un
-                                      cerchio vuoto che dice che si può accendere */}
-                                  <span
-                                    className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white transition-colors ${
-                                      on ? 'bg-[#4CAF50] text-white' : 'bg-gray-200 text-transparent'
-                                    }`}
-                                  >
-                                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M5 12.5l4.5 4.5L19 7" />
-                                    </svg>
-                                  </span>
-                                </span>
-                                <span
-                                  className={`w-full truncate text-center text-xs ${
-                                    on ? 'font-medium text-gray-900' : 'text-gray-400'
-                                  }`}
-                                  title={dish.name}
-                                >
-                                  {dish.name}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
+              <CardDishesSelector
+                catalog={catalog}
+                chosen={draft.dishIds}
+                onChange={(dishIds, on) => setDishesOn(venueId, dishIds, on)}
+              />
             )}
           </div>
         </div>

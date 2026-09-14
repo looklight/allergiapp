@@ -49,14 +49,10 @@ export default function DishForm({
   initial,
   onSave,
   onCancel,
-  children,
 }: {
   initial?: Dish;
   onSave: (dish: Omit<Dish, 'id'>) => void;
   onCancel: () => void;
-  // sezione in coda ai campi, prima della nota legale: il gestionale ci
-  // mette le caselle "Sulle schede"
-  children?: React.ReactNode;
 }) {
   const { d, locale } = useI18n();
   const [name, setName] = useState(initial?.name ?? '');
@@ -564,8 +560,6 @@ export default function DishForm({
           </div>
         ))}
       </div>
-
-      {children}
 
       </div>
 

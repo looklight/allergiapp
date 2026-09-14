@@ -28,6 +28,16 @@ dentro l'app, che esiste **solo dopo il claim**. I link stanno sul locale —
 il numero per prenotare è lo stesso ovunque compaia. Il ragionamento per
 esteso è il Tema 16 di `../DIGITAL_MENU.md`.
 
+**Dal 2026-09-15 (migration 715) anche i piatti scelti per la scheda stanno
+sul locale** (`partner_card_dishes.venue_id`, non più `card_id`): si
+preparano prima del claim e restano salvati, e `partner_cards` decide solo
+*se* compaiono in app (lettura pubblica solo con scheda `published`). Il
+paragrafo qui sotto sul debito chiuso descrive lo stato fra la 703 e la 715,
+ed è superato: i blocchi "prima associa il locale" sono stati tolti, e il
+**catalogo non sa più niente della scheda** — niente colonna "Sulla scheda",
+selettore o caselle in `/piatti` e nel pannello del piatto. La scelta dei
+piatti si fa solo nella pagina della scheda, come il menù sceglie i suoi.
+
 **La parola "vetrina" non esiste più** (rinomina fatta il 2026-08-31, dopo
 lo schema): il tipo è `Venue`, il modulo è `src/lib/venues.ts`, la rotta è
 `/locale/[id]` e le schermate dicono **locale** per il contenitore e

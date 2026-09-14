@@ -1,11 +1,17 @@
 'use client';
 
 // Il gestionale: il catalogo piatti del partner, che vive sopra i singoli
-// locali. Qui si crea e si corregge un piatto; dove appare si decide col
-// toggle sulla scheda o con le caselle in fondo alla maschera.
+// locali. Qui si crea e si corregge un piatto, e basta.
+//
+// DOVE APPARE NON SI DECIDE QUI (decisione dell'utente, 15/09). Il catalogo è
+// la fonte dei dati; i piatti li sceglie chi li usa — il menù nel suo editor,
+// la scheda AllergiApp nella sua pagina. Prima questa tabella aveva la
+// colonna "Sulla scheda" coi suoi interruttori, un selettore "Accendi su" e
+// le caselle nella maschera: tre modi di fare dal catalogo una cosa che è
+// della scheda.
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { setDishVenues, venuesWithDish, useDishes, type Dish } from '@/lib/dishes';
+import { venuesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useVenues } from '@/lib/venues';
 import { deleteDishPhoto } from '@/lib/photos';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
@@ -17,7 +23,7 @@ import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
 import UndoToast from '@/components/UndoToast';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 
-type SortKey = 'name' | 'category' | 'on';
+type SortKey = 'name' | 'category';
 
 // Intestazione che ordina: la freccia compare solo sulla colonna attiva, così
 // si vede a colpo d'occhio da cosa dipende l'ordine che si sta guardando.
@@ -56,7 +62,9 @@ function SortHeader({
 export default function DishesPage() {
   const { d, locale } = useI18n();
   const { dishes, create, update, remove, restore } = useDishes();
-  const { venues, setDishOn } = useVenues();
+  // I locali servono solo all'annulla: eliminando un piatto spariscono per
+  // cascata anche le sue righe sulle schede, e rimettendolo vanno rimesse
+  const { venues } = useVenues();
   const [query, setQuery] = useState('');
   // null = tutte le categorie; '' = i piatti senza categoria
   const [category, setCategory] = useState<string | null>(null);
@@ -65,9 +73,6 @@ export default function DishesPage() {
   const [allergens, setAllergens] = useState<string[]>([]);
   const [diets, setDiets] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  // A quale scheda si riferiscono gli interruttori della tabella. Acceso è
-  // uno stato per scheda, non del piatto: con più locali bisogna dire quale.
-  const [toggleTarget, setToggleTarget] = useState<string | null>(null);
   // null = l'ordine del catalogo, cioè quello in cui il partner li ha creati
   // (ed è anche l'ordine con cui l'app li mostra). Le intestazioni ci tornano
   // al terzo clic, perché è un ordine che si vuole poter recuperare.
@@ -108,7 +113,7 @@ export default function DishesPage() {
     }
   }, [dishes, venues]);
   const [deleting, setDeleting] = useState<Dish | null>(null);
-  // Piatto appena eliminato, con la posizione e le schede su cui era acceso
+  // Piatto appena eliminato, con la posizione e i locali sulla cui scheda era
   const [undoable, setUndoable] = useState<{
     dish: Dish;
     index: number;
@@ -126,25 +131,14 @@ export default function DishesPage() {
     setList(list.includes(code) ? list.filter((c) => c !== code) : [...list, code]);
   }
 
-  async function saveDish(data: Omit<Dish, 'id'>, venueIds: string[]) {
+  async function saveDish(data: Omit<Dish, 'id'>) {
     // Il pannello si chiude subito: la lista è già aggiornata in locale e
     // far aspettare tre giri di rete davanti a un bottone "Salva" che non
     // reagisce è peggio che scriverli in sottofondo.
     const apertoSu = editing;
     setEditing(null);
-    const id = apertoSu === 'new' ? (await create(data))?.id : apertoSu;
-    if (!id) return;
-    if (apertoSu !== 'new') await update(id, data);
-    // Su quali schede sta il piatto si riscrive solo se è cambiato: la
-    // maschera si apre e si salva anche solo per correggere una virgola nella
-    // descrizione, e quello non c'entra niente con dove il piatto appare.
-    // Su un piatto NUOVO si scrive sempre: le caselle nascono già spuntate,
-    // quindi "non è cambiato niente" vorrebbe dire non accenderlo da nessuna
-    // parte proprio quando invece va acceso ovunque.
-    const cambiate =
-      apertoSu === 'new' ||
-      [...editingVenueIds].sort().join() !== [...venueIds].sort().join();
-    if (cambiate) await setDishVenues(id, venueIds);
+    if (apertoSu === 'new') await create(data);
+    else if (apertoSu) await update(apertoSu, data);
   }
 
   function confirmDelete(dish: Dish) {
@@ -229,10 +223,7 @@ export default function DishesPage() {
     if (!sort) return 0;
     const verso = sort.dir === 'asc' ? 1 : -1;
     if (sort.key === 'name') return a.name.localeCompare(b.name, locale) * verso;
-    if (sort.key === 'category') return (categoryRank(a.category) - categoryRank(b.category)) * verso;
-    // acceso prima di spento, e a parità restano nell'ordine del catalogo
-    const on = (dish: Dish) => (targetVenue?.dishIds.includes(dish.id) ? 0 : 1);
-    return (on(a) - on(b)) * verso;
+    return (categoryRank(a.category) - categoryRank(b.category)) * verso;
   }
 
   const rows = sort === null ? filtered : [...filtered].sort(compare);
@@ -244,21 +235,6 @@ export default function DishesPage() {
     );
   }
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
-  // Un piatto si accende sulla SCHEDA, e la scheda esiste solo dopo il claim
-  // (Tema 16): un locale che non ce l'ha non ha nessun interruttore da
-  // mostrare. Il filtro sta qui, in un punto solo, così la colonna, il
-  // selettore e le caselle spariscono insieme e per la stessa ragione —
-  // invece di restare a schermo e non fare niente quando si toccano.
-  const venuesConScheda = (venues ?? []).filter((s) => s.cardId !== null);
-  // Senza schede non c'è niente da accendere; con una sola è quella e basta
-  const targetVenue =
-    venuesConScheda.find((s) => s.id === toggleTarget) ?? venuesConScheda[0] ?? null;
-  // Un piatto nuovo nasce acceso ovunque: chi ha una scheda sola non deve
-  // spuntare niente, chi ne ha di più vede subito le caselle e sceglie
-  const editingVenueIds =
-    editing === 'new'
-      ? venuesConScheda.map((s) => s.id)
-      : venuesWithDish(venues ?? [], editing ?? '').map((s) => s.id);
 
   return (
     <div>
@@ -352,34 +328,6 @@ export default function DishesPage() {
           </div>
           )}
 
-          {/* Locali sì, schede no: la colonna degli interruttori non c'è, e
-              sparire senza spiegazione sembra un guasto */}
-          {venuesConScheda.length === 0 && (venues ?? []).length > 0 && (
-            <p className="mb-4 max-w-2xl text-xs text-gray-500">{d.dishes.needsCard}</p>
-          )}
-
-          {/* Con più schede "acceso" è ambiguo finché non si dice dove: gli
-              interruttori della tabella si riferiscono a questa. */}
-          {venuesConScheda.length > 1 && targetVenue && (
-            <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
-              <label htmlFor="toggle-target" className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-400">
-                {d.dishes.toggleIn}
-              </label>
-              <select
-                id="toggle-target"
-                value={targetVenue.id}
-                onChange={(e) => setToggleTarget(e.target.value)}
-                className="min-w-0 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
-              >
-                {venuesConScheda.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.venueName.trim() || d.home.unnamed}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
           {/* Il pannello dei filtri: chiuso finché non serve, perché venti pill
               sempre aperte sono più ingombro che aiuto */}
           {filtersOpen && (
@@ -463,11 +411,6 @@ export default function DishesPage() {
               <SortHeader label={d.dishes.colCategory} sortKey="category" sort={sort} onClick={toggleSort} />
             </span>
             <span className="hidden min-w-0 flex-[3] lg:block">{d.dishes.colTags}</span>
-            {targetVenue && (
-              <span className="flex w-20 shrink-0 justify-center">
-                <SortHeader label={d.dishes.colOn} sortKey="on" sort={sort} onClick={toggleSort} />
-              </span>
-            )}
             <span className="w-32 shrink-0" />
           </div>
 
@@ -481,12 +424,6 @@ export default function DishesPage() {
                 <DishRow
                   key={dish.id}
                   dish={dish}
-                  venues={venuesWithDish(venues, dish.id)}
-                  on={targetVenue ? targetVenue.dishIds.includes(dish.id) : null}
-                  onToggle={() =>
-                    targetVenue &&
-                    setDishOn(targetVenue.id, dish.id, !targetVenue.dishIds.includes(dish.id))
-                  }
                   onEdit={() => setEditing(dish.id)}
                   onDelete={() => setDeleting(dish)}
                 />
@@ -500,12 +437,10 @@ export default function DishesPage() {
         </>
       )}
 
-      {editing && venues && (
+      {editing && (
         <DishPanel
           key={editing}
           dish={editingDish}
-          venues={venues}
-          initialVenueIds={editingVenueIds}
           onSave={saveDish}
           onClose={() => setEditing(null)}
         />
@@ -514,7 +449,6 @@ export default function DishesPage() {
       {deleting && (
         <DeleteDishDialog
           dish={deleting}
-          venues={venuesWithDish(venues ?? [], deleting.id)}
           onCancel={() => setDeleting(null)}
           onConfirm={() => confirmDelete(deleting)}
         />

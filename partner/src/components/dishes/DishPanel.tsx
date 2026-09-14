@@ -1,41 +1,30 @@
 'use client';
 
-// Il pannello che entra da destra col piatto da creare o correggere. Tiene
-// anche la scelta delle schede, che si applica solo al salvataggio: chiudere
-// senza salvare non deve lasciare in giro un piatto acceso a metà.
+// Il pannello che entra da destra col piatto da creare o correggere.
 //
-// Le schede sono FACOLTATIVE: aprendo la maschera dal menù non c'entrano
-// niente — lì il piatto sta per essere messo in una sezione, non acceso su
-// una scheda — e mostrarle sarebbe una domanda fuori posto a cui rispondere
-// mentre si sta facendo altro.
-import { useId, useState } from 'react';
+// Parla SOLO del piatto. Fino al 15/09 teneva in fondo anche le caselle
+// "Sulle schede", per accenderlo sulle schede AllergiApp dei locali: il
+// catalogo però è la fonte dei dati, e dove un piatto compare lo decide chi
+// lo usa — il menù nel suo editor, la scheda nella sua pagina (decisione
+// dell'utente, 15/09). Un piatto nuovo quindi non finisce su nessuna scheda
+// da solo.
+import { useId } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import type { Dish } from '@/lib/dishes';
-import type { Venue } from '@/lib/venues';
 import DishForm from './DishForm';
 
 export default function DishPanel({
   dish,
-  venues,
-  initialVenueIds,
   onSave,
   onClose,
 }: {
   // assente = piatto nuovo
   dish?: Dish;
-  // tutti i locali del partner, accesi o no; assenti = non si chiedono
-  venues?: Venue[];
-  initialVenueIds?: string[];
-  onSave: (data: Omit<Dish, 'id'>, venueIds: string[]) => void;
+  onSave: (data: Omit<Dish, 'id'>) => void;
   onClose: () => void;
 }) {
   const { d } = useI18n();
-  const [inVenues, setInVenues] = useState<string[]>(initialVenueIds ?? []);
-  // Le caselle sono i posti in cui il piatto può DAVVERO comparire: senza
-  // scheda AllergiApp non c'è niente da spuntare, e una casella che si
-  // spunta senza che succeda nulla è peggio di una casella che non c'è
-  const conScheda = (venues ?? []).filter((s) => s.cardId !== null);
   const panel = useModal<HTMLDivElement>(onClose);
   const titleId = useId();
 
@@ -69,45 +58,7 @@ export default function DishPanel({
           </button>
         </div>
 
-        <DishForm initial={dish} onSave={(data) => onSave(data, inVenues)} onCancel={onClose}>
-          {/* Dove appare il piatto: stesso stato del toggle sulla scheda */}
-          {venues !== undefined && (
-          <div className="border-t border-gray-200 pt-3">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {d.dishes.listingsLabel}
-            </label>
-            {conScheda.length === 0 ? (
-              // Due vuoti diversi, e dirlo sbagliato manda dalla parte
-              // opposta: senza locali se ne crea uno, con locali ma senza
-              // scheda si associa il locale a un ristorante dell'app
-              <p className="text-xs text-gray-500">
-                {venues.length === 0 ? d.dishes.noVenues : d.dishes.needsCard}
-              </p>
-            ) : (
-              <>
-                <p className="mb-2 text-xs text-gray-500">{d.dishes.listingsHint}</p>
-                <div className="space-y-1.5">
-                  {conScheda.map((s) => (
-                    <label key={s.id} className="flex items-center gap-2 text-sm text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={inVenues.includes(s.id)}
-                        onChange={(e) =>
-                          setInVenues((prev) =>
-                            e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id)
-                          )
-                        }
-                        className="h-4 w-4 rounded border-gray-300 accent-[#4CAF50]"
-                      />
-                      <span className="truncate">{s.venueName.trim() || d.home.unnamed}</span>
-                    </label>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-          )}
-        </DishForm>
+        <DishForm initial={dish} onSave={onSave} onCancel={onClose} />
       </div>
     </div>
   );

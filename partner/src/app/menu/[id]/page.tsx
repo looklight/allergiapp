@@ -952,8 +952,6 @@ export default function MenuEditorPage() {
       )}
 
       {creatingDish && (
-        // Senza le caselle "Sulle schede": qui il piatto sta per finire in una
-        // sezione del menù, non acceso su una scheda AllergiApp
         <DishPanel
           onSave={(data) => saveNewDish(data, creatingDish.sectionId)}
           onClose={() => setCreatingDish(null)}
@@ -961,8 +959,6 @@ export default function MenuEditorPage() {
       )}
 
       {editingDish && (
-        // Stessa ragione: si sta correggendo un piatto già in catalogo, non
-        // decidendo su quali schede accenderlo — quella scelta resta a /piatti.
         <DishPanel
           dish={editingDish}
           onSave={saveEditedDish}

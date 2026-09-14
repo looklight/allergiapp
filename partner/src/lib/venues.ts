@@ -11,10 +11,11 @@
 // in due schermate — "Nome della vetrina" nell'editor, "Nome del locale" nel
 // menù — mentre il cliente al tavolo leggeva la seconda (Tema 16).
 //
-// COSA È CAMBIATO SOTTO (703): i piatti accesi non pendono più dal locale ma
-// dalla SCHEDA AllergiApp, che esiste solo dopo aver associato un ristorante.
-// Senza scheda non c'è niente da accendere, e `cardId` è null: le schermate
-// devono spegnere quei comandi invece di far scrivere a vuoto.
+// I PIATTI SCELTI PER LA SCHEDA stanno sul LOCALE (715), come i link. Con la
+// 703 pendevano dalla SCHEDA AllergiApp, che esiste solo dopo aver associato
+// un ristorante: prima del claim non c'era dove salvarli. Adesso si
+// preparano subito, e la scheda — `cardId`, null finché non c'è il claim —
+// decide solo SE compaiono nell'app, non cosa contiene.
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
@@ -200,8 +201,10 @@ export interface VenueDraft {
   // farà mai il claim (Tema 16). Sulla scheda AllergiApp, invece,
   // l'intestazione continua ad arrivare dal ristorante rivendicato.
   venueName: string;
-  // Piatti del catalogo accesi sulla scheda di questo locale. È l'UNICO
-  // stato di disponibilità: spegnerne uno qui non lo tocca sulle altre schede.
+  // Piatti del catalogo scelti per la scheda AllergiApp di questo locale.
+  // Si scelgono anche prima del claim (715): in app compaiono solo quando la
+  // scheda c'è ed è pubblicata. Spegnerne uno qui non lo tocca negli altri
+  // locali.
   dishIds: string[];
   links: DraftLinks;
 }
@@ -222,7 +225,8 @@ export interface Venue extends VenueDraft {
   // Le legge il cliente: qui dentro non va niente di interno.
   tableConditions: string;
   // La scheda AllergiApp di questo locale, se esiste. null = nessun
-  // ristorante associato, quindi nessun posto dove accendere i piatti.
+  // ristorante associato: i piatti si scelgono lo stesso (715), ma in app non
+  // compare niente.
   cardId: string | null;
   // COME SI VEDE IL MENÙ AL TAVOLO. Sta sul locale e non sul menù come il
   // logo e il colore: al tavolo è UNA pagina sola (Tema 13).
@@ -271,10 +275,11 @@ export interface Venue extends VenueDraft {
   slug: string;
 }
 
-// La chiave del piatto acceso su una scheda, condivisa fra accensione e
-// spegnimento (v. setDishOn)
-function acceso(venueId: string, dishId: string) {
-  return `su-scheda:${venueId}:${dishId}`;
+// La chiave di una scelta di piatti sulla scheda, condivisa fra accensione e
+// spegnimento (v. setDishesOn). Ordinata: lo stesso gruppo toccato due volte
+// dà la stessa chiave, in qualunque ordine arrivino gli id.
+function sceltaPiatti(venueId: string, dishIds: string[]) {
+  return `su-scheda:${venueId}:${[...dishIds].sort().join(',')}`;
 }
 
 function emptyLinks(): DraftLinks {
@@ -363,7 +368,7 @@ async function loadVenues(): Promise<Venue[]> {
         'allergen_display, ' +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
-        'partner_links(*), partner_cards(id, partner_card_dishes(dish_id))'
+        'partner_links(*), partner_cards(id), partner_card_dishes(dish_id)'
     )
     .order('created_at', { ascending: true });
   reportError('lettura locali', error);
@@ -389,7 +394,7 @@ async function loadVenues(): Promise<Venue[]> {
       allergenDisplay: (row.allergen_display ?? 'text') as AllergenDisplay,
       coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
-      dishIds: (card?.partner_card_dishes ?? []).map((d: any) => d.dish_id),
+      dishIds: (row.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
     };
   });
@@ -639,7 +644,7 @@ export function useVenues() {
   }
 
   // Contenuto del locale: nome e link. NON tocca i piatti accesi, che
-  // passano da setDishOn — l'editor non li cambia mai per questa strada.
+  // passano da setDishesOn — l'editor non li cambia mai per questa strada.
   function update(id: string, draft: VenueDraft) {
     // cardId non sta nella bozza (l'editor non lo tocca) e va conservato,
     // o salvando il nome si perderebbe la scheda associata
@@ -818,14 +823,13 @@ export function useVenues() {
     if (righe.length > 0) {
       await write('ripristino link', () => supabase.from('partner_links').insert(righe));
     }
-    // I piatti accesi tornano sulla SCHEDA, non sul locale — e solo se la
-    // scheda c'è ancora. Senza, non si perde niente di importante: i piatti
-    // vivono nel catalogo, qui c'era solo dove comparivano.
-    if (venue.cardId !== null && venue.dishIds.length > 0) {
+    // I piatti scelti per la scheda stanno sul locale (715): tornano con lui,
+    // che la scheda ci sia o no
+    if (venue.dishIds.length > 0) {
       await write('ripristino piatti sulla scheda', () =>
         supabase.from('partner_card_dishes').insert(
           venue.dishIds.map((dishId) => ({
-            card_id: venue.cardId,
+            venue_id: venue.id,
             dish_id: dishId,
             owner_user_id: ownerId,
           }))
@@ -835,16 +839,20 @@ export function useVenues() {
     await reload();
   }
 
-  // Accende o spegne un piatto sulla SCHEDA AllergiApp di un locale: una riga
-  // che c'è o non c'è. Accendere e spegnere condividono la chiave, pur essendo
-  // due scritture opposte: sono lo stesso interruttore, e dopo due tocchi
-  // rapidi da rifare c'è solo l'ultimo.
+  // Accende o spegne UNO O PIÙ piatti sulla scheda AllergiApp di un locale:
+  // righe che ci sono o non ci sono. Più d'uno insieme perché la pagina della
+  // scheda ha "Seleziona tutti" e un "tutti" per categoria, e quaranta
+  // scritture per un tocco sarebbero quaranta occasioni di fallirne una.
   //
-  // Senza scheda non si scrive niente e non si finge che sia successo: chi
-  // chiama deve aver già spento il comando (v. `cardId`).
-  async function setDishOn(venueId: string, dishId: string, on: boolean) {
-    const cardId = (venues ?? []).find((s) => s.id === venueId)?.cardId ?? null;
-    if (cardId === null) return;
+  // Le scritture sono IDEMPOTENTI — accendere un piatto già acceso non fa
+  // niente, spegnerne uno spento nemmeno — così un "Riprova" arrivato tardi
+  // o un doppio tocco non rompono niente. La chiave è il locale più l'insieme
+  // dei piatti: due tocchi rapidi sullo stesso interruttore lasciano da rifare
+  // solo l'ultimo.
+  //
+  // Funziona anche senza scheda (715): la scelta si prepara prima del claim.
+  async function setDishesOn(venueId: string, dishIds: string[], on: boolean) {
+    if (dishIds.length === 0) return;
     setList(
       (venues ?? []).map((s) =>
         s.id !== venueId
@@ -852,34 +860,36 @@ export function useVenues() {
           : {
               ...s,
               dishIds: on
-                ? s.dishIds.includes(dishId)
-                  ? s.dishIds
-                  : [...s.dishIds, dishId]
-                : s.dishIds.filter((id) => id !== dishId),
+                ? [...s.dishIds, ...dishIds.filter((id) => !s.dishIds.includes(id))]
+                : s.dishIds.filter((id) => !dishIds.includes(id)),
             }
       )
     );
+    const chiave = sceltaPiatti(venueId, dishIds);
     if (on) {
       const ownerId = await currentUserId();
       if (!ownerId) return;
       await write(
-        'accensione piatto',
+        dishIds.length === 1 ? 'accensione piatto' : 'accensione piatti',
         () =>
           supabase
             .from('partner_card_dishes')
-            .insert({ card_id: cardId, dish_id: dishId, owner_user_id: ownerId }),
-        acceso(venueId, dishId)
+            .upsert(
+              dishIds.map((dishId) => ({ venue_id: venueId, dish_id: dishId, owner_user_id: ownerId })),
+              { onConflict: 'venue_id,dish_id', ignoreDuplicates: true }
+            ),
+        chiave
       );
     } else {
       await write(
-        'spegnimento piatto',
+        dishIds.length === 1 ? 'spegnimento piatto' : 'spegnimento piatti',
         () =>
           supabase
             .from('partner_card_dishes')
             .delete()
-            .eq('card_id', cardId)
-            .eq('dish_id', dishId),
-        acceso(venueId, dishId)
+            .eq('venue_id', venueId)
+            .in('dish_id', dishIds),
+        chiave
       );
     }
   }
@@ -910,7 +920,7 @@ export function useVenues() {
     remove,
     restore,
     revertIdentity,
-    setDishOn,
+    setDishesOn,
     setIdentity,
     setSlug,
     setTableConditions,

@@ -1549,6 +1549,37 @@ link è contenuto.
 spegnere, una voce chiamata «Allergeni» si legge come *puoi toglierli* — l'unica cosa che il Tema
 23 vieta.
 
+### 2026-09-15 — Tema 34: La scheda si prepara prima dell'associazione, e il catalogo non ne sa niente
+
+**Innesco**: l'utente chiedeva di copiare sulla scheda i piatti del menù. Guardando da vicino, la
+sezione piatti della scheda non la poteva usare nessuno: i piatti scelti pendevano dalla scheda
+(`partner_cards`), che nasce solo col claim — e il claim non esiste ancora.
+
+**Decisione 1 — il contenuto della scheda sta sul LOCALE (migration 715).** `partner_card_dishes`
+passa da `card_id` a `venue_id`, come i link dalla 703. Il partner prepara la scheda quando vuole e
+la ritrova salvata; la scheda (claim + abbonamento) decide solo **se** compare in app, non **cosa**
+contiene. È una marcia indietro dichiarata rispetto alla 703, che aveva tolto lo stato «bozza non
+associata»: resta vero che una scheda senza ristorante non esiste, cambia solo dove vive il
+contenuto. La lettura pubblica è la stessa di prima — solo con scheda `published`.
+
+**Decisione 2 — il catalogo è la fonte dei dati, non sceglie dove compaiono.** Via da `/piatti` e
+dal pannello del piatto la colonna «Sulla scheda», il selettore «Accendi su» e le caselle «Sulle
+schede». I piatti li sceglie chi li usa: il menù nel suo editor, la scheda nella sua pagina. Un
+piatto nuovo non finisce su nessuna scheda da solo.
+
+**Decisione 3 — la copia dal menù NON è una sincronizzazione.** Menù e scheda restano indipendenti
+(Tema 16): il menù ha coperto, acqua e caffè che in app non servono, e con più menù una
+sincronizzazione non saprebbe quale seguire. La coerenza che conta — gli allergeni — c'è già,
+perché il piatto è uno solo nel catalogo. Le pill «prendi dal menù» sono **rimandate**: con
+«Seleziona tutti» e il «tutti» per categoria si arriva quasi sempre allo stesso risultato.
+
+**L'interfaccia**: tutto il catalogo come cerchi col nome, raggruppato per categoria nell'ordine
+dell'app; «Seleziona tutti» e una casella a tre stati per categoria; contatore «N di M»; filtro
+«Solo scelti» che fotografa la scelta al momento in cui lo si accende (un cerchio spento non sparisce
+sotto il dito); ricerca sopra 12; salva a ogni tocco, con scritture idempotenti. Provate prima le
+righe con casella: funzionavano, ma i cerchi si riconoscono meglio. Nessun ordine manuale: in app i
+piatti si riordinano comunque sul filtro allergeni.
+
 ---
 
 ## Prossimo passo
