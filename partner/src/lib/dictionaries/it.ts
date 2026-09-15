@@ -410,6 +410,9 @@ const it = {
     previewCaption: 'Come lo vedono i tuoi clienti al tavolo.',
     fullPreview: 'Apri a tutta pagina',
     openLive: 'Apri il menù online',
+    // Le stesse due azioni nel riquadro stretto sotto l'anteprima (LiveBox)
+    liveOpenShort: 'Apri online',
+    liveQrShort: 'Scarica QR',
     // "Indirizzo web" e non "indirizzo": questa riga si legge anche dalla
     // home, lontana dal campo che mostra allergiapp.com/menu/…, e lì
     // "indirizzo" da solo si legge come la via del ristorante.

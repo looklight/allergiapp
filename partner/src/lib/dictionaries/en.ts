@@ -335,6 +335,8 @@ const en: typeof it = {
     previewCaption: 'What your guests see at the table.',
     fullPreview: 'Open full page',
     openLive: 'Open the live menu',
+    liveOpenShort: 'Open online',
+    liveQrShort: 'Download QR',
     liveNoAddress: 'This menu has no web address yet: it is the link the QR opens.',
     liveNotYet: 'Not published yet: this address answers to nobody.',
     liveChoose: 'Choose the address',
