@@ -700,10 +700,48 @@
   height: 14px;
   flex: none;
 }
+/* LA MODALITÀ A ICONE (allergenDisplay 'icon', migration 711). La riga degli
+   allergeni diventa una fila di pittogrammi, con le note in coda dopo un filo.
+   Copia gemella della riga in MenuPreview.tsx. */
+.menu-item-allergens.is-icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+/* Parte da 16px e non da 11 come il testo che sostituisce: sotto, una linea da
+   2 su griglia 24 diventa mezzo pixel e impasta. Scala col resto della carta. */
+.menu-allergen-icon {
+  width: calc(16px * var(--ms, 1));
+  height: calc(16px * var(--ms, 1));
+  flex: none;
+}
+/* Il trattino fra allergeni e note è un filo disegnato, non un carattere: sta
+   sempre al centro delle icone, qualunque carattere abbia scelto il
+   ristoratore, e pesa quanto il loro tratto. */
+.menu-allergen-sep {
+  width: 10px;
+  height: 1.5px;
+  margin: 0 4px;
+  border-radius: 999px;
+  background: #d1d5db;
+  flex: none;
+}
+/* Dichiarata DOPO :empty di sopra, questa riga la batterebbe: senza la regola
+   qui sotto un piatto senza allergeni né note si tiene un rigo vuoto. */
+.menu-item-allergens.is-icons:empty { display: none; }
+.menu-note-icon { display: inline-flex; }
+.menu-item-notes.is-icons { color: var(--text-secondary); }
+/* Le note a sole icone di riserva: solo sul piatto escluso dal filtro, dove la
+   riga degli allergeni (che le conteneva) lascia il posto al motivo. */
+.menu-item-notes.is-fallback { display: none; }
+.menu-item.is-off .menu-item-notes.is-fallback { display: flex; }
+
 /* display:block qui sopra è più forte della regola predefinita del browser
    per [hidden]: senza questa riga, la riga degli allergeni resterebbe visibile
    sotto al motivo dell'esclusione, dicendo due volte la stessa cosa. */
 .menu-item-allergens[hidden],
+.menu-item-allergens.is-icons[hidden],
 .menu-item-reason[hidden] { display: none; }
 .menu-item-reason {
   color: var(--text-secondary);
@@ -765,6 +803,8 @@
 }
 .layout-block .menu-item-allergens,
 .layout-block .menu-item-reason { order: 4; }
+/* A icone la riga va a capo come una fila: centrata anche quando si spezza */
+.layout-block .menu-item-allergens.is-icons { justify-content: center; }
 /* ⚠️ LE NOTE DEL PIATTO VOGLIONO IL LORO NUMERO. Senza, cadono sull'order 0
    predefinito e a blocco finiscono SOPRA IL NOME — mentre a riga stanno in
    fondo. L'impaginazione decide come si dispone un piatto, mai in che ordine
@@ -822,6 +862,47 @@
 }
 
 /* Il fondo è del ristoratore: coperto, servizio, pagamenti */
+/* LA LEGENDA DELLE ICONE, in fondo alla carta e chiusa. Stessa riga minuta e
+   stesso filetto delle condizioni al tavolo, che le stanno sotto. */
+.menu-legend {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: max(11px, calc(11px * var(--ms, 1)));
+  line-height: max(1.3, calc(1.35 * var(--lh, 1)));
+  color: var(--text-secondary);
+}
+.menu-legend summary {
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.menu-legend summary::-webkit-details-marker { display: none; }
+.menu-legend-label {
+  margin: 10px 0 4px;
+  font-weight: 600;
+}
+.menu-legend-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.menu-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.menu-legend-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .menu-conditions {
   margin: 16px 0 0;
   padding-top: 12px;
