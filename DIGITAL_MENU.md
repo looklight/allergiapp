@@ -1652,7 +1652,12 @@ copie — portale e sito — e sotto le tre scelte il portale lo dice anche al r
    lato server. Fino ad allora la cache è di un minuto.
 5. ~~**La pagina `/menu` sul sito**~~ **FATTA il 2026-09-03** (Tema 31) e online: il racconto per
    i ristoratori col menù di prova da personalizzare e «Inizia gratis». ⚠️ **Nessuna pagina del
-   sito la collega**: dove mettere il rimando è una scelta di navigazione da fare.
+   sito la collega, ed è voluto** (decisione dell'utente, 2026-09-15): prima si finalizza tutto,
+   poi si collega e si fa il **lancio**. Proposte già pronte per quel giorno: (A) in fondo a ogni
+   menù pubblico «Crea il menù del tuo locale» al posto di «Realizzato con AllergiApp» che porta
+   alla home; (B) «Per i ristoratori» nella barra della home; (C) la stessa voce nel piè di
+   pagina; (D) sulla pagina `/r/` di un ristorante, scritta senza far pensare al claim. B e C
+   toccano `landing/translations.json`.
 6. ~~**Gli allergeni a icone al tavolo**~~ **FATTI il 2026-09-15**: `render-menu.js` legge
    `allergenDisplay` e disegna icone e legenda. La legenda porta la polarità con due titoletti,
    «Contiene:» e «Da sapere» (allineata anche l'anteprima del portale).
