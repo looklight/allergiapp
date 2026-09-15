@@ -9,11 +9,10 @@ import { catalogLanguages, useDishes, type Dish, type DishTranslation } from '@/
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
-import { DISH_CATEGORIES, categoryName, visibleCategories } from '@/lib/categories';
+import { categoryName, visibleCategories } from '@/lib/categories';
 import { DISH_NOTES, noteName } from '@/lib/dishNotes';
 import { ALLERGEN_ICON_PATHS } from '@/lib/allergenIcons';
-import { usePartnerProfile, useUpdatePartnerProfile, setHiddenCategories } from '@/lib/partnerProfile';
-import { currentUserId } from '@/lib/storage';
+import CategoryManager, { ManageCategoriesButton, useHiddenCategories } from './CategoryManager';
 import PhotoCropDialog from '../PhotoCropDialog';
 import {
   deleteDishPhoto,
@@ -73,13 +72,12 @@ export default function DishForm({
   const [allergens, setAllergens] = useState<string[]>(initial?.allergens ?? []);
   const [dietTags, setDietTags] = useState<string[]>(initial?.dietTags ?? []);
   const [notes, setNotes] = useState<string[]>(initial?.notes ?? []);
-  // La tendina delle categorie e il pannello per governarla: si apre da qui
+  // La fila delle categorie e il pannello per governarla (v. CategoryManager,
+  // condiviso col catalogo): si apre da qui
   // perché è qui che ci si accorge che una categoria manca o è di troppo,
   // non in una pagina di impostazioni dove nessuno andrebbe mai.
-  const profile = usePartnerProfile();
-  const aggiornaProfilo = useUpdatePartnerProfile();
   const [gestisci, setGestisci] = useState(false);
-  const nascoste = profile?.hiddenCategories ?? [];
+  const nascoste = useHiddenCategories();
   const [photoError, setPhotoError] = useState<'read' | 'size' | 'upload' | null>(null);
   // Le traduzioni si aggiungono qui, piatto per piatto: quasi tutti i
   // ristoratori scriveranno solo in italiano, e chi ne vuole un'altra la
@@ -174,60 +172,9 @@ export default function DishForm({
           così si vedono tutte insieme senza doverne cercare una fuori campo.
           Ritoccare la pill accesa la spegne = nessuna categoria. */}
       {gestisci ? (
-      /* IL PANNELLO PRENDE IL POSTO della fila, non le si mette sotto. Con
-         tutt'e due aperte erano trentasei pastiglie quasi identiche e non si
-         capiva quale riga scegliesse la categoria del piatto e quale la
-         togliesse dalla tendina. Visto solo aprendo la maschera. */
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-        <p className="mb-2 text-xs text-gray-500">{d.editor.manageCategoriesHint}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {DISH_CATEGORIES.map((cat) => {
-            const visibile = !nascoste.includes(cat.code);
-            return (
-              <button
-                key={cat.code}
-                type="button"
-                onClick={async () => {
-                  const dopo = visibile
-                    ? [...nascoste, cat.code]
-                    : nascoste.filter((c) => c !== cat.code);
-                  // ottimista come tutto il resto del portale: la riga si
-                  // scrive dietro, la tendina cambia subito
-                  if (profile) aggiornaProfilo({ ...profile, hiddenCategories: dopo });
-                  const userId = await currentUserId();
-                  if (userId) await setHiddenCategories(userId, dopo);
-                }}
-                className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  visibile
-                    ? 'border-gray-400 bg-white text-gray-700'
-                    : 'border-gray-200 bg-gray-100 text-gray-400 line-through'
-                }`}
-              >
-                {categoryName(cat.code, locale)}
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => setGestisci(false)}
-            className="shrink-0 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
-          >
-            {d.editor.manageCategoriesDone}
-          </button>
-        </div>
-        {/* Quella che manca si chiede a noi: la traduciamo in quindici lingue
-            e ce l'hanno tutti. Un campo di testo libero qui avrebbe dato al
-            ristoratore una parola che al tavolo resta in italiano. */}
-        <p className="mt-2.5 text-xs text-gray-500">
-          {d.editor.missingCategory}{' '}
-          <a
-            href={`mailto:info@allergiapp.com?subject=${encodeURIComponent(d.editor.missingCategorySubject)}`}
-            className="underline underline-offset-2 hover:text-gray-900"
-          >
-            info@allergiapp.com
-          </a>
-        </p>
-      </div>
+      /* IL PANNELLO PRENDE IL POSTO della fila, non le si mette sotto
+         (v. CategoryManager, condiviso col catalogo) */
+      <CategoryManager onDone={() => setGestisci(false)} />
       ) : (
       <div className="flex flex-wrap gap-1.5">
         {visibleCategories(nascoste, category === '' ? [] : [category]).map((cat) => {
@@ -247,13 +194,7 @@ export default function DishForm({
             </button>
           );
         })}
-        <button
-          type="button"
-          onClick={() => setGestisci(true)}
-          className="shrink-0 rounded-full border border-dashed border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
-        >
-          {d.editor.manageCategories}
-        </button>
+        <ManageCategoriesButton onClick={() => setGestisci(true)} />
       </div>
       )}
 

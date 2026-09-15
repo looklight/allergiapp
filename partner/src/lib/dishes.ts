@@ -162,42 +162,83 @@ export function useDishes() {
     await saveTranslations(id, data.translations, precedente?.translations ?? []);
   }
 
-  // Il piatto eliminato sparisce anche dalle schede su cui era acceso: se ne
-  // occupa il database con la cascata sull'accostamento.
+  // I piatti eliminati spariscono anche dalle schede su cui erano scelti e
+  // dai menù: se ne occupa il database con la cascata.
   //
-  // La FOTO invece resta, e non è una dimenticanza: per otto secondi
-  // l'eliminazione è annullabile, e un ripristino che riporta il piatto senza
-  // l'immagine sarebbe un annulla che non annulla. La cancella la schermata
+  // LE RIGHE DI MENÙ SI FOTOGRAFANO PRIMA (15/09). La cascata porta via, per
+  // ogni menù in cui il piatto stava, la sua sezione, la posizione e il
+  // PREZZO — il lavoro di un pomeriggio — e l'annulla prima non le rimetteva:
+  // il piatto tornava nel catalogo e sulle schede, ma non nei menù, senza che
+  // niente lo dicesse. Con la selezione multipla un annulla poteva svuotare
+  // mezza carta. Adesso si leggono prima di eliminare e tornano con restore.
+  //
+  // Uno o più insieme: la selezione multipla del catalogo ne elimina tanti
+  // con un tocco, e una scrittura sola vuol dire un esito solo — o spariscono
+  // tutti o nessuno, niente catalogo a metà.
+  //
+  // Le FOTO invece restano, e non è una dimenticanza: per otto secondi
+  // l'eliminazione è annullabile, e un ripristino che riporta i piatti senza
+  // l'immagine sarebbe un annulla che non annulla. Le cancella la schermata
   // quando l'annulla scade (v. /piatti), che è l'unico momento in cui
   // l'eliminazione diventa definitiva.
-  // Restituisce se la riga è sparita davvero: la schermata ci si basa per
-  // decidere se può portare via anche i file della foto.
-  async function remove(id: string): Promise<boolean> {
-    setList((dishes ?? []).filter((dish) => dish.id !== id));
-    const { error } = await write('eliminazione piatto', () =>
-      supabase.from('partner_dishes').delete().eq('id', id)
+  // Restituisce se le righe sono sparite davvero — la schermata ci si basa
+  // per decidere se può portare via anche i file delle foto — e le righe di
+  // menù da rimettere se si annulla.
+  async function remove(ids: string[]): Promise<{ ok: boolean; menuRows: Record<string, unknown>[] }> {
+    if (ids.length === 0) return { ok: true, menuRows: [] };
+    setList((dishes ?? []).filter((dish) => !ids.includes(dish.id)));
+    const { data: menuRows, error: erroreLettura } = await supabase
+      .from('partner_menu_items')
+      .select('*')
+      .in('dish_id', ids);
+    reportError('lettura righe di menù', erroreLettura);
+    const { error } = await write(ids.length === 1 ? 'eliminazione piatto' : 'eliminazione piatti', () =>
+      supabase.from('partner_dishes').delete().in('id', ids)
     );
-    return !error;
+    return { ok: !error, menuRows: menuRows ?? [] };
   }
 
-  // Ripristino dopo l'undo: il piatto torna con lo stesso id e si riaccende
-  // sulle schede su cui era acceso prima.
-  async function restore(dish: Dish, _index: number, venueIds: string[]) {
+  // Ripristino dopo l'undo: i piatti tornano con lo stesso id, si riaccendono
+  // sulle schede su cui erano scelti e rientrano nei menù com'erano (sezione,
+  // posizione, prezzo: v. remove). Le righe dei piatti in una scrittura sola;
+  // traduzioni e schede sono per piatto, e sono poche. Le righe di menù per
+  // ultime: puntano ai piatti, che devono esserci già.
+  async function restore(
+    items: { dish: Dish; venueIds: string[] }[],
+    menuRows: Record<string, unknown>[] = []
+  ) {
+    if (items.length === 0) return;
     const ownerId = await currentUserId();
     if (!ownerId) return;
-    await write('ripristino piatto', () =>
-      supabase.from('partner_dishes').insert({
-        id: dish.id,
-        owner_user_id: ownerId,
-        ...fromDish(dish),
-      })
+    await write(items.length === 1 ? 'ripristino piatto' : 'ripristino piatti', () =>
+      supabase.from('partner_dishes').insert(
+        items.map(({ dish }) => ({ id: dish.id, owner_user_id: ownerId, ...fromDish(dish) }))
+      )
     );
-    await saveTranslations(dish.id, dish.translations);
-    await setDishVenues(dish.id, venueIds);
+    for (const { dish, venueIds } of items) {
+      await saveTranslations(dish.id, dish.translations);
+      await setDishVenues(dish.id, venueIds);
+    }
+    if (menuRows.length > 0) {
+      await write('ripristino piatti nei menù', () => supabase.from('partner_menu_items').insert(menuRows));
+    }
     await reload();
   }
 
-  return { dishes, create, update, remove, restore };
+  // SPOSTA PIÙ PIATTI IN UNA CATEGORIA (selezione multipla del catalogo).
+  // '' = senza categoria. Tocca solo la categoria: il resto del piatto non
+  // passa di qui, quindi non c'è niente da riscrivere né foto da toccare.
+  async function setCategory(ids: string[], category: string) {
+    if (ids.length === 0) return;
+    setList((dishes ?? []).map((dish) => (ids.includes(dish.id) ? { ...dish, category } : dish)));
+    await write(
+      'cambio categoria',
+      () => supabase.from('partner_dishes').update({ category: category || null }).in('id', ids),
+      `categoria:${[...ids].sort().join(',')}`
+    );
+  }
+
+  return { dishes, create, update, remove, restore, setCategory };
 }
 
 // Rimette un piatto sulle schede dei locali elencati, e solo su quelle. Serve

@@ -10,20 +10,23 @@
 // le caselle nella maschera: tre modi di fare dal catalogo una cosa che è
 // della scheda.
 import { useEffect, useRef, useState } from 'react';
-import { useI18n } from '@/lib/i18n';
+import { fill, useI18n } from '@/lib/i18n';
 import { venuesWithDish, useDishes, type Dish } from '@/lib/dishes';
 import { useVenues } from '@/lib/venues';
 import { deleteDishPhoto } from '@/lib/photos';
-import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
+import { DISH_CATEGORIES, categoryName, visibleCategories } from '@/lib/categories';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import DishRow from '@/components/dishes/DishRow';
 import DishPanel from '@/components/dishes/DishPanel';
 import DeleteDishDialog from '@/components/dishes/DeleteDishDialog';
+import ConfirmDialog from '@/components/menus/ConfirmDialog';
+import CategoryManager, { ManageCategoriesButton, useHiddenCategories } from '@/components/dishes/CategoryManager';
 import UndoToast from '@/components/UndoToast';
-import { PageIntro, PageTitle } from '@/components/PageHeading';
+import { CreateButton, PageIntro, PageTitleRow } from '@/components/PageHeading';
 
 type SortKey = 'name' | 'category';
+
 
 // Intestazione che ordina: la freccia compare solo sulla colonna attiva, così
 // si vede a colpo d'occhio da cosa dipende l'ordine che si sta guardando.
@@ -61,7 +64,7 @@ function SortHeader({
 
 export default function DishesPage() {
   const { d, locale } = useI18n();
-  const { dishes, create, update, remove, restore } = useDishes();
+  const { dishes, create, update, remove, restore, setCategory: spostaInCategoria } = useDishes();
   // I locali servono solo all'annulla: eliminando un piatto spariscono per
   // cascata anche le sue righe sulle schede, e rimettendolo vanno rimesse
   const { venues } = useVenues();
@@ -113,15 +116,25 @@ export default function DishesPage() {
     }
   }, [dishes, venues]);
   const [deleting, setDeleting] = useState<Dish | null>(null);
-  // Piatto appena eliminato, con la posizione e i locali sulla cui scheda era
+  // SELEZIONE MULTIPLA (richiesta dell'utente, 15/09): si accende da un
+  // bottone e non è sempre attiva, perché nel caso normale toccare una riga
+  // vuol dire aprire quel piatto. Accesa, le righe si spuntano e in cima
+  // compare la barra delle azioni su tutti gli spuntati insieme.
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [deletingMany, setDeletingMany] = useState(false);
+  // Il pannello "Gestisci…" delle categorie, al posto della fila di pill
+  const [gestisciCategorie, setGestisciCategorie] = useState(false);
+  const nascoste = useHiddenCategories();
+  // Piatti appena eliminati — uno dalla riga, o tanti dalla selezione — coi
+  // locali sulla cui scheda erano: finché il toast è a schermo si rimettono
   const [undoable, setUndoable] = useState<{
-    dish: Dish;
-    index: number;
-    venueIds: string[];
-    // Se la riga è sparita davvero dal database. È una promessa e non un
-    // valore perché l'annulla compare subito, mentre l'esito della scrittura
-    // arriva dopo: quando scade, la risposta c'è già.
-    eliminata: Promise<boolean>;
+    items: { dish: Dish; venueIds: string[] }[];
+    // Se le righe sono sparite davvero dal database, e le righe di menù da
+    // rimettere. È una promessa e non un valore perché l'annulla compare
+    // subito, mentre l'esito della scrittura arriva dopo: quando scade, la
+    // risposta c'è già.
+    eliminata: Promise<{ ok: boolean; menuRows: Record<string, unknown>[] }>;
   } | null>(null);
   // Punto fermo dove torna il fuoco quando il toast se ne va: la riga da cui
   // era partito è stata eliminata
@@ -141,21 +154,31 @@ export default function DishesPage() {
     else if (apertoSu) await update(apertoSu, data);
   }
 
-  function confirmDelete(dish: Dish) {
-    // Eliminandone due di fila, il toast del primo lascia il posto al secondo
-    // e da lì in poi il primo non è più annullabile: è il suo momento di
-    // diventare definitivo, foto compresa.
+  function confirmDelete(daEliminare: Dish[]) {
+    if (daEliminare.length === 0) return;
+    // Eliminandone due volte di fila, il toast della prima lascia il posto
+    // alla seconda e da lì in poi la prima non è più annullabile: è il suo
+    // momento di diventare definitiva, foto comprese.
     purgePhoto();
-    const index = (dishes ?? []).findIndex((item) => item.id === dish.id);
-    const venueIds = venuesWithDish(venues ?? [], dish.id).map((s) => s.id);
-    const eliminata = remove(dish.id);
+    const items = daEliminare.map((dish) => ({
+      dish,
+      venueIds: venuesWithDish(venues ?? [], dish.id).map((s) => s.id),
+    }));
+    const eliminata = remove(daEliminare.map((dish) => dish.id));
     setDeleting(null);
-    setUndoable({ dish, index: index < 0 ? 0 : index, venueIds, eliminata });
+    setDeletingMany(false);
+    setSelected([]);
+    setSelecting(false);
+    setUndoable({ items, eliminata });
   }
 
   function undoDelete() {
     if (!undoable) return;
-    restore(undoable.dish, undoable.index, undoable.venueIds);
+    const { items, eliminata } = undoable;
+    // Si rimette solo DOPO che l'eliminazione è arrivata al database: con un
+    // annulla rapidissimo il ripristino partiva prima, trovava i piatti ancora
+    // lì, falliva — e poi l'eliminazione li portava via lo stesso
+    void eliminata.then(({ menuRows }) => restore(items, menuRows));
     setUndoable(null);
   }
 
@@ -169,9 +192,10 @@ export default function DishesPage() {
   // file di troppo rimasto sullo Storage.
   function purgePhoto() {
     if (!undoable) return;
-    const { dish, eliminata } = undoable;
-    void eliminata.then((ok) => {
-      if (ok) void deleteDishPhoto(dish.photoUrl, dish.photoThumbUrl);
+    const { items, eliminata } = undoable;
+    void eliminata.then(({ ok }) => {
+      if (!ok) return;
+      for (const { dish } of items) void deleteDishPhoto(dish.photoUrl, dish.photoThumbUrl);
     });
   }
 
@@ -236,9 +260,44 @@ export default function DishesPage() {
   }
   const editingDish = editing && editing !== 'new' ? dishes?.find((x) => x.id === editing) : undefined;
 
+  // Gli spuntati che esistono ancora: un piatto eliminato altrove non conta.
+  // "Seleziona tutti" vale per le righe VISIBILI, cioè col filtro e la
+  // ricerca di adesso — come nella scelta dei piatti della scheda.
+  const scelti = (dishes ?? []).filter((dish) => selected.includes(dish.id));
+  const idsVisibili = rows.map((dish) => dish.id);
+  const tuttiVisibiliScelti = idsVisibili.length > 0 && idsVisibili.every((id) => selected.includes(id));
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  function toggleTuttiVisibili() {
+    setSelected((prev) =>
+      tuttiVisibiliScelti
+        ? prev.filter((id) => !idsVisibili.includes(id))
+        : [...prev, ...idsVisibili.filter((id) => !prev.includes(id))]
+    );
+  }
+
+  function esciDallaSelezione() {
+    setSelecting(false);
+    setSelected([]);
+  }
+
   return (
     <div>
-      <PageTitle>{d.dishes.title}</PageTitle>
+      {/* "Nuovo piatto" sulla riga del titolo (v. PageTitleRow). Col catalogo
+          vuoto no: lì c'è già il bottone al centro, con la spiegazione, e due
+          "crea" nella stessa schermata vuota sarebbero uno di troppo. */}
+      <PageTitleRow
+        action={
+          dishes && dishes.length > 0 ? (
+            <CreateButton label={d.dishes.create} onClick={() => setEditing('new')} buttonRef={createButton} />
+          ) : undefined
+        }
+      >
+        {d.dishes.title}
+      </PageTitleRow>
       <PageIntro className="mb-10 md:mb-12">{d.dishes.intro}</PageIntro>
 
       {!dishes || !venues ? (
@@ -260,7 +319,8 @@ export default function DishesPage() {
         </div>
       ) : (
         <>
-          {/* Ricerca e nuovo piatto sulla stessa riga: il primario resta a destra */}
+          {/* Gli strumenti della lista sulla stessa riga: ricerca, filtri,
+              selezione. "Nuovo piatto" non è fra loro: sta col titolo. */}
           <div className="mb-3 flex items-center gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 focus-within:border-gray-900">
               <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -296,23 +356,41 @@ export default function DishesPage() {
                 )}
               </button>
             )}
+            {/* Il bottone della selezione: in contorno come Filtri, perché è
+                un modo di guardare la lista e non un'azione. Acceso diventa
+                "Fine", che è la via d'uscita. */}
             <button
-              ref={createButton}
-              onClick={() => setEditing('new')}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+              onClick={() => (selecting ? esciDallaSelezione() : setSelecting(true))}
+              aria-pressed={selecting}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                selecting
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-gray-300 text-gray-600 hover:border-gray-400'
+              }`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M12 5v14M5 12h14" />
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="4" />
+                <path d="M8 12.5l2.5 2.5L16 9.5" />
               </svg>
-              <span className="hidden sm:inline">{d.dishes.create}</span>
+              <span className="hidden sm:inline">{selecting ? d.dishes.selectDone : d.dishes.select}</span>
             </button>
           </div>
 
-          {/* Categorie: una riga sola, scorre se non ci sta (come nella maschera).
-              Con una categoria sola in uso non c'è niente da scegliere. */}
-          {usedCategories.length > 1 && (
-          <div className="-mx-0.5 mb-4 flex gap-1.5 overflow-x-auto px-0.5 pb-0.5">
-            {[{ code: null as string | null, label: d.dishes.allCategories }, ...usedCategories].map(({ code, label }) => (
+          {/* Categorie: una riga sola, scorre se non ci sta. I filtri solo con
+              almeno due categorie in uso — con una non c'è niente da scegliere.
+
+              IN CODA "GESTISCI…", come nella maschera del piatto (richiesta
+              dell'utente, 15/09): quali categorie si usano si decide anche da
+              qui, dove si guarda il catalogo intero. Il pannello è lo stesso
+              componente e prende il posto della fila, non le si mette sotto. */}
+          {gestisciCategorie ? (
+            <div className="mb-4">
+              <CategoryManager onDone={() => setGestisciCategorie(false)} />
+            </div>
+          ) : (
+          <div className="-mx-0.5 mb-4 flex items-center gap-1.5 overflow-x-auto px-0.5 pb-0.5">
+            {usedCategories.length > 1 &&
+              [{ code: null as string | null, label: d.dishes.allCategories }, ...usedCategories].map(({ code, label }) => (
               <button
                 key={code ?? 'all'}
                 onClick={() => setCategory(code)}
@@ -325,6 +403,7 @@ export default function DishesPage() {
                 {label}
               </button>
             ))}
+            <ManageCategoriesButton onClick={() => setGestisciCategorie(true)} />
           </div>
           )}
 
@@ -403,6 +482,9 @@ export default function DishesPage() {
           {/* Intestazione delle colonne: solo da tablet in su, sotto le righe
               si impilano e i dati tornano una riga di testo sotto al nome */}
           <div className="hidden items-center gap-3 px-4 pb-2 text-xs font-medium uppercase tracking-wide text-gray-400 md:flex">
+            {/* in selezione le righe hanno la casella in testa: lo spazio
+                c'è anche qui, o le colonne scivolano rispetto ai titoli */}
+            {selecting && <span className="w-4 shrink-0" />}
             <span className="w-11 shrink-0" />
             <span className="min-w-0 flex-[2]">
               <SortHeader label={d.dishes.colDish} sortKey="name" sort={sort} onClick={toggleSort} />
@@ -411,8 +493,85 @@ export default function DishesPage() {
               <SortHeader label={d.dishes.colCategory} sortKey="category" sort={sort} onClick={toggleSort} />
             </span>
             <span className="hidden min-w-0 flex-[3] lg:block">{d.dishes.colTags}</span>
-            <span className="w-32 shrink-0" />
+            <span className="w-10 shrink-0" />
           </div>
+
+          {/* LA BARRA DELLE AZIONI SUGLI SPUNTATI, ferma in cima mentre si
+              scorre: con cinquanta piatti si spunta in fondo alla lista e si
+              agisce senza risalire. Le azioni restano visibili anche a zero
+              spuntati, spente — comparire al primo tocco farebbe saltare la
+              lista sotto il dito. */}
+          {selecting && (
+            <div className="sticky top-0 z-20 -mx-1 mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-gray-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={tuttiVisibiliScelti}
+                  ref={(el) => {
+                    if (el) el.indeterminate = !tuttiVisibiliScelti && idsVisibili.some((id) => selected.includes(id));
+                  }}
+                  onChange={toggleTuttiVisibili}
+                  className="h-4 w-4 cursor-pointer rounded border-gray-300 accent-gray-900"
+                />
+                {tuttiVisibiliScelti ? d.dishes.deselectAll : d.dishes.selectAll}
+              </label>
+              <span className="text-sm font-medium text-gray-900">
+                {scelti.length === 1 ? d.dishes.selectedOne : fill(d.dishes.selectedCount, { count: scelti.length })}
+              </span>
+              <div className="ml-auto flex flex-wrap items-center gap-3">
+                {/* Qui il cestino ha anche la parola: è l'azione su tanti piatti
+                    insieme, e un'icona sola in una barra di comandi si
+                    confonderebbe con le altre */}
+                <button
+                  onClick={() => setDeletingMany(true)}
+                  disabled={scelti.length === 0}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 transition-colors hover:text-red-700 disabled:opacity-40"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12" />
+                  </svg>
+                  {d.common.delete}
+                </button>
+              </div>
+
+              {/* SPOSTA IN CATEGORIA, a pill e non a tendina (richiesta
+                  dell'utente, 15/09): si vedono tutte insieme e si sceglie
+                  con un tocco. SOLO LE CATEGORIE ATTIVE — quelle nascoste dal
+                  "Gestisci…" non si propongono, come nella maschera del
+                  piatto — più "Senza categoria". Si applica subito: è
+                  reversibile con un altro tocco, quindi niente conferma.
+                  Accesa la pill della categoria che hanno TUTTI gli
+                  spuntati, così si vede dove sono prima di spostarli. */}
+              <div className="flex w-full flex-wrap items-center gap-1.5 border-t border-gray-100 pt-2.5">
+                <span className="mr-1 text-xs text-gray-500">{d.dishes.bulkCategory}</span>
+                {[
+                  { code: '', label: d.dishes.noCategory },
+                  ...visibleCategories(nascoste).map((cat) => ({
+                    code: cat.code,
+                    label: categoryName(cat.code, locale),
+                  })),
+                ].map(({ code, label }) => {
+                  const diTutti = scelti.length > 0 && scelti.every((dish) => dish.category === code);
+                  return (
+                    <button
+                      key={code || 'none'}
+                      type="button"
+                      disabled={scelti.length === 0}
+                      aria-pressed={diTutti}
+                      onClick={() => void spostaInCategoria(scelti.map((dish) => dish.id), code)}
+                      className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-40 ${
+                        diTutti
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {rows.length === 0 ? (
             <p className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
@@ -426,6 +585,9 @@ export default function DishesPage() {
                   dish={dish}
                   onEdit={() => setEditing(dish.id)}
                   onDelete={() => setDeleting(dish)}
+                  selecting={selecting}
+                  selected={selected.includes(dish.id)}
+                  onSelect={() => toggleSelected(dish.id)}
                 />
               ))}
             </div>
@@ -450,14 +612,31 @@ export default function DishesPage() {
         <DeleteDishDialog
           dish={deleting}
           onCancel={() => setDeleting(null)}
-          onConfirm={() => confirmDelete(deleting)}
+          onConfirm={() => confirmDelete([deleting])}
+        />
+      )}
+
+      {deletingMany && (
+        <ConfirmDialog
+          title={
+            scelti.length === 1 ? d.dishes.deleteTitle : fill(d.dishes.deleteManyTitle, { count: scelti.length })
+          }
+          body={scelti.length === 1 ? d.dishes.deleteBody : d.dishes.deleteManyBody}
+          subject={scelti.length === 1 ? scelti[0].name : undefined}
+          confirmLabel={d.common.delete}
+          onCancel={() => setDeletingMany(false)}
+          onConfirm={() => confirmDelete(scelti)}
         />
       )}
 
       {undoable && (
         <UndoToast
-          key={undoable.dish.id}
-          message={d.dishes.deleted}
+          key={undoable.items.map(({ dish }) => dish.id).join()}
+          message={
+            undoable.items.length === 1
+              ? d.dishes.deleted
+              : fill(d.dishes.deletedMany, { count: undoable.items.length })
+          }
           undoLabel={d.dishes.undo}
           onUndo={undoDelete}
           onExpire={forgetDeleted}

@@ -39,10 +39,19 @@ export default function DishRow({
   dish,
   onEdit,
   onDelete,
+  selecting = false,
+  selected = false,
+  onSelect,
 }: {
   dish: Dish;
   onEdit: () => void;
   onDelete: () => void;
+  // SELEZIONE MULTIPLA (v. /piatti): la riga intera sceglie il piatto invece
+  // di aprirlo, e le azioni del singolo piatto spariscono — con dieci piatti
+  // spuntati, un "Elimina" sulla riga direbbe di eliminarne uno solo
+  selecting?: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
 }) {
   const { d, locale } = useI18n();
   // Le pill in eccesso si aprono per riga: chi sta controllando un piatto
@@ -91,7 +100,40 @@ export default function DishRow({
   }, [tags.length, allTags]);
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    // LA RIGA INTERA APRE IL PIATTO (richiesta dell'utente, 15/09), come nella
+    // lista dei menù: il "Modifica" scritto accanto era un secondo modo di
+    // fare la stessa cosa. In selezione la riga invece spunta. Resta un div
+    // e non un bottone perché dentro ci sono altri comandi (il cestino, il
+    // "+N" delle pill), che un browser non annida in un bottone: i loro clic
+    // si fermano prima di arrivare qui.
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={selecting ? selected : undefined}
+      onClick={selecting ? onSelect : onEdit}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          (selecting ? onSelect : onEdit)?.();
+        }
+      }}
+      className={`group flex cursor-pointer items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-gray-900 ${
+        selected ? 'border-gray-900' : 'border-gray-200 hover:border-gray-300'
+      }`}
+    >
+      {selecting && (
+        <input
+          type="checkbox"
+          checked={selected}
+          aria-label={dish.name}
+          onChange={onSelect}
+          // la riga intera sceglie già: senza, un clic sulla casella
+          // arriverebbe due volte e la spunta tornerebbe com'era
+          onClick={(e) => e.stopPropagation()}
+          className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-gray-900"
+        />
+      )}
       {dish.photoUrl !== '' ? (
         <img
           src={dishThumb(dish)}
@@ -103,15 +145,37 @@ export default function DishRow({
         <PhotoPlaceholder />
       )}
 
-      <button onClick={onEdit} className="min-w-0 flex-[2] text-left">
-        <p className="truncate text-sm font-medium text-gray-900">{dish.name}</p>
+      <div className="min-w-0 flex-[2] text-left">
+        {/* LA MATITA ACCANTO AL NOME, al passaggio del mouse come il cestino
+            (richiesta dell'utente, 15/09): la riga intera apre il piatto, ma
+            senza un segno niente lo diceva. Solo decorativa — il clic è della
+            riga — e solo dove c'è un mouse; in selezione la riga spunta, e la
+            matita direbbe il contrario. */}
+        <p className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-gray-900">
+          <span className="truncate">{dish.name}</span>
+          {!selecting && (
+            <svg
+              className="h-3.5 w-3.5 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
+            </svg>
+          )}
+        </p>
         {dish.description.trim() !== '' && (
           <p className="truncate text-xs text-gray-500">{dish.description}</p>
         )}
         <p className="mt-0.5 truncate text-xs text-gray-400 md:hidden">
           {category === '' ? d.dishes.noCategory : category}
         </p>
-      </button>
+      </div>
 
       <span
         className="hidden w-24 shrink-0 truncate text-xs text-gray-500 md:block"
@@ -145,7 +209,10 @@ export default function DishRow({
                  posto a una pill, e a quel punto ne resterebbe fuori un'altra.
                  Le coordinate però lo mettono dove sarebbe se ci fosse. */
               <button
-                onClick={() => setAllTags(!allTags)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAllTags(!allTags);
+                }}
                 aria-expanded={allTags}
                 aria-label={dish.name}
                 style={
@@ -164,16 +231,40 @@ export default function DishRow({
         )}
       </span>
 
-      <span className="flex w-auto shrink-0 items-center gap-3 text-sm font-medium md:w-32 md:justify-end">
-        {/* Su telefono "Modifica" sparisce: le due azioni scritte per esteso
-            lasciavano al nome del piatto una sessantina di pixel, e qui la
-            modifica si apre già toccando la riga. L'eliminazione invece resta
-            scritta, perché non deve capitare per sbaglio. */}
-        <button onClick={onEdit} className="hidden text-gray-600 hover:text-gray-900 md:inline">
-          {d.common.edit}
-        </button>
-        <button onClick={onDelete} className="text-red-600 hover:text-red-700">
-          {d.common.delete}
+      <span
+        className={`flex w-auto shrink-0 items-center justify-end md:w-10 ${
+          selecting ? 'invisible' : ''
+        }`}
+      >
+        {/* L'eliminazione resta sulla riga, e chiede comunque conferma prima
+            di fare qualcosa.
+
+            IL CESTINO COMPARE AL PASSAGGIO DEL MOUSE (richiesta dell'utente,
+            15/09): un "Elimina" rosso fisso su ogni riga faceva della tabella
+            una colonna di pulsanti pericolosi. Solo dove c'è un mouse
+            ([@media(hover:hover)]): su telefono e tablet resta visibile,
+            o non ci sarebbe modo di trovarlo. Col fuoco da tastiera ricompare.
+            In selezione le azioni restano al loro posto ma invisibili: la
+            riga non cambia larghezza entrando e uscendo. */}
+        {/* Il cestino, come nella lista dei menù e sui link della scheda
+            (richiesta dell'utente, 15/09). Il blur prima di aprire la
+            finestra è lo stesso della lista dei menù: senza, chiusa la
+            conferma il fuoco tornerebbe qui e lo terrebbe visibile anche col
+            mouse altrove. */}
+        <button
+          onClick={(e) => {
+            // la riga intera apre il piatto: il clic si ferma qui
+            e.stopPropagation();
+            e.currentTarget.blur();
+            onDelete();
+          }}
+          aria-label={d.common.delete}
+          title={d.common.delete}
+          className="-my-2 shrink-0 p-2 text-gray-300 transition-opacity hover:text-red-600 focus-visible:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12" />
+          </svg>
         </button>
       </span>
     </div>
