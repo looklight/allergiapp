@@ -415,6 +415,12 @@ scheda app in cornice telefono, dentro il portale):
   (badge scudo verde/ambra/grigio) + "Vedi tutto" → schermata menù dedicata
   a pieno schermo, raggruppata per categorie. È lavoro lato app: viaggia
   con una build store, e di fatto detta quando la vetrina potrà accendersi.
+  **Aggiunta 2026-09-15**: il carosello mostra **al massimo 8 piatti**,
+  poi un'ultima card "+N · Vedi tutto" verso la schermata dedicata — niente
+  scorrimenti lunghi né decine di foto da scaricare dentro la scheda. Con un
+  utente che ha esigenze, nel carosello vengono prima i piatti compatibili
+  (verde, poi grigio, poi ambra): si riordina, non si nasconde. Il modello
+  sta nell'anteprima del portale (`SchedaPreview`, `CAROUSEL_MAX`).
 - **Link**: pill colorate (Prenotazione blu, Delivery arancio, Menù verde,
   Sito viola), nell'app su riga singola scorrevole (pattern
   CollectionPills). **Menù multi-lingua**: più URL etichettati per lingua,

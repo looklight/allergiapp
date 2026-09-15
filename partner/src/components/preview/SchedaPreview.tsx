@@ -143,6 +143,20 @@ export const NO_VIEWER: ViewerNeeds = { allergens: [], diets: [] };
 // visitatore. Livelli: amber = contiene almeno un allergene del
 // visitatore; gray = allergeni ok ma qualche sua dieta non è indicata
 // (assenza di tag ≠ incompatibilità, resta neutro); green = tutto ok.
+// QUANTI PIATTI NEL CAROSELLO DELLA SCHEDA (richiesta dell'utente, 15/09).
+// Oltre, l'ultima card è "Vedi tutto" e porta alla schermata del menù: un
+// carosello di sessanta card è uno scorrimento lungo e pesante (sessanta foto
+// da scaricare) in una scheda che deve restare leggera, e chi vuole tutto ha
+// già la schermata dedicata, raggruppata per categorie. È il modello per
+// l'app, che il carosello non ce l'ha ancora.
+const CAROUSEL_MAX = 8;
+
+// Nel carosello, con un visitatore che ha esigenze, prima i piatti che può
+// mangiare: con otto posti soli, mostrargli per primi quelli che contengono
+// il suo allergene vorrebbe dire sprecarli. Si RIORDINA e non si nasconde,
+// come il filtro del menù al tavolo: i piatti ambra restano, dopo.
+const COMPAT_RANK = { green: 0, gray: 1, amber: 2 } as const;
+
 function dishCompat(dish: Dish, viewer: ViewerNeeds) {
   if (viewer.allergens.length === 0 && viewer.diets.length === 0) return null;
   const contained = viewer.allergens.filter((code) => dish.allergens.includes(code));
@@ -477,6 +491,15 @@ export default function SchedaPreview({
   // proprio quello che si legge in cima (Tema 16).
   // arrivano già filtrati: sono i piatti del catalogo accesi su questa scheda
   const visibleDishes = dishes;
+  // sort è stabile: a parità di compatibilità resta l'ordine della scheda
+  const carouselDishes = [...visibleDishes]
+    .sort(
+      (a, b) =>
+        COMPAT_RANK[dishCompat(a, viewer)?.level ?? 'green'] -
+        COMPAT_RANK[dishCompat(b, viewer)?.level ?? 'green']
+    )
+    .slice(0, CAROUSEL_MAX);
+  const hiddenDishes = visibleDishes.length - carouselDishes.length;
 
   if (screen === 'menu') {
     return (
@@ -642,7 +665,7 @@ export default function SchedaPreview({
                 display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 16px 4px',
               }}
             >
-              {visibleDishes.map((dish) => {
+              {carouselDishes.map((dish) => {
                 const compat = dishCompat(dish, viewer);
                 return (
                   <button
@@ -676,6 +699,36 @@ export default function SchedaPreview({
                   </button>
                 );
               })}
+              {/* L'ultima card, stessa forma delle altre: il cerchio col
+                  numero di quelli che restano fuori, e sotto "Vedi tutto" */}
+              {hiddenDishes > 0 && (
+                <button
+                  onClick={() => setScreen('menu')}
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    width: 110, flexShrink: 0, textAlign: 'center',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 110, height: 110, borderRadius: 55, backgroundColor: '#F5F5F5',
+                      border: '1px solid #E0E0E0', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', fontSize: 22, fontWeight: 600, color: '#666666',
+                    }}
+                  >
+                    +{hiddenDishes}
+                  </span>
+                  <span
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 2, marginTop: 5,
+                      fontSize: 12, fontWeight: 600, color: '#4CAF50', lineHeight: '15px',
+                    }}
+                  >
+                    {d.preview.seeAll}
+                    <Icon size={14} color="#4CAF50">{paths.chevronRight}</Icon>
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </>

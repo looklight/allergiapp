@@ -479,12 +479,16 @@ export default function VenueEditorPage() {
           </div>
         )}
 
-        <div className="space-y-4">
+        {/* TRE AREE, come i tre passi della scheda — i link, i piatti, il
+            ristorante a cui associarla — separate da una riga sottile, lo
+            stesso segno dell'editor del menù fra aspetto, contenuto e
+            pubblicazione (richiesta dell'utente, 15/09). 32px sopra e sotto. */}
+        <div>
           {/* Link. L'id è il bersaglio della panoramica: da lì "Modifica"
               deve arrivare QUI e non in cima alla pagina, o si atterra su una
               schermata lunga senza sapere cosa si era chiesto. */}
           <div id="link" className="scroll-mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-1 font-medium text-gray-900">{d.editor.linksTitle}</h2>
+            <h2 className="mb-1 text-sm font-medium text-gray-900">{d.editor.linksTitle}</h2>
             <p className="mb-4 text-xs text-gray-500">{d.editor.linksHint}</p>
             {activeKinds.length > 0 && (
               <div className="space-y-3">
@@ -505,6 +509,7 @@ export default function VenueEditorPage() {
                         label={LINK_LABELS[kind]}
                         active
                         selected={openKind === kind}
+                        action="edit"
                       />
                     </button>
                   ))}
@@ -739,7 +744,7 @@ export default function VenueEditorPage() {
                       onClick={() => activateLink(kind)}
                       className="rounded-full transition-opacity hover:opacity-70"
                     >
-                      <LinkPill kind={kind} label={LINK_LABELS[kind]} active={false} />
+                      <LinkPill kind={kind} label={LINK_LABELS[kind]} active={false} action="add" />
                     </button>
                   ))}
                 </div>
@@ -747,12 +752,14 @@ export default function VenueEditorPage() {
             )}
           </div>
 
+          <hr className="my-8 border-gray-200" aria-hidden="true" />
+
           {/* Piatti: qui si sceglie solo cosa mostrare su questa scheda.
               Il piatto in sé (foto, allergeni, categoria) si cura nel
               gestionale, che è del partner e non del singolo locale. */}
           <div id="scheda" className="scroll-mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-1 flex items-start justify-between gap-3">
-              <h2 className="font-medium text-gray-900">{d.editor.dishesTitle}</h2>
+              <h2 className="text-sm font-medium text-gray-900">{d.editor.dishesTitle}</h2>
               <Link
                 href="/piatti"
                 className="shrink-0 text-sm font-medium text-gray-700 underline hover:text-gray-900"
@@ -789,6 +796,8 @@ export default function VenueEditorPage() {
             )}
           </div>
 
+          <hr className="my-8 border-gray-200" aria-hidden="true" />
+
           {/* L'ULTIMO PASSO, IN FONDO AL LAVORO (richiesta dell'utente, 15/09):
               la pagina si legge nell'ordine in cui la scheda si fa — i link,
               i piatti, poi il ristorante a cui associarla. Il richiamo in cima
@@ -808,7 +817,7 @@ export default function VenueEditorPage() {
                 className="h-10 w-10 shrink-0 rounded-xl shadow-sm ring-1 ring-black/5"
               />
               <div className="min-w-0">
-                <h2 className="font-medium text-gray-900">{d.editor.linkBoxTitle}</h2>
+                <h2 className="text-sm font-medium text-gray-900">{d.editor.linkBoxTitle}</h2>
                 <p className="mt-1 text-sm text-gray-600">
                   {venue.cardId === null ? d.editor.linkBoxText : d.editor.linkBoxDone}
                 </p>
