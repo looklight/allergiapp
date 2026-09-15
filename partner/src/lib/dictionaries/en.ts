@@ -18,7 +18,6 @@ const en: typeof it = {
     done: 'Saved',
     failed: 'Some changes were not saved.',
     retry: 'Retry',
-    leaveWarning: 'You have unsaved changes.',
   },
   nav: {
     home: 'Home',
@@ -26,7 +25,6 @@ const en: typeof it = {
     menus: 'Menus',
     card: 'AllergiApp listing',
     cardShort: 'Listing',
-    subscriptions: 'Subscriptions',
     account: 'Account',
   },
   login: {
@@ -100,12 +98,8 @@ const en: typeof it = {
     wrongAccount: 'Not the right account?',
   },
   home: {
-    title: 'Your venues',
-    intro:
-      'One venue per restaurant you run. Inside go your links, the dishes shown on its AllergiApp listing, and the menus your guests open at the table.',
     create: 'Add venue',
     unnamed: 'Untitled venue',
-    open: 'Open',
     dishOne: 'dish',
     dishOther: 'dishes',
     linkOne: 'link',
@@ -309,8 +303,6 @@ const en: typeof it = {
     unnamed: 'Untitled menu',
     genericTab: 'Menu',
     activeLabel: 'Active',
-    active: 'Live',
-    parked: 'Set aside',
     activeHint: 'Guests see it among the tabs. Tap to set it aside.',
     parkedHint: 'It only exists here: it doesn’t appear at the table. Tap to put it back.',
     lastActiveHint: 'At least one menu must stay on.',
@@ -367,14 +359,11 @@ const en: typeof it = {
     venueNameShared: 'The name and logo apply to every menu of this venue.',
     brandHint:
       'Customise how the menu looks at the table. It applies to this venue’s menu.',
-    groupCard: 'The card',
     allergenDisplay: 'How allergens read',
     allergenDisplays: { text: 'In words', icon: 'As icons' },
     allergenDisplayHint:
       'The key sits at the foot of the card. Open a dish and they are always spelled out.',
     allergenLegendTitle: 'What the icons mean',
-    groupIdentity: 'Identity',
-    groupText: 'Type',
     cover: 'Cover image',
     coverAdd: 'Add a cover image',
     coverSample: 'The venue name',
@@ -484,7 +473,6 @@ const en: typeof it = {
     emptyMenuHint: 'Add dishes straight away, or create a section first.',
     pricePlaceholder: 'Price',
     priceLabel: 'Price of {dish}',
-    noPrice: 'No price',
     highlightOn: 'Highlight',
     highlightOff: 'Remove highlight',
     highlightNotePlaceholder: 'Optional note: "On offer", "Chef\'s pick"…',
@@ -533,7 +521,6 @@ const en: typeof it = {
     filterSummary: '{matching} of {total} dishes',
     // L'inglese non cambia al singolare: "1 of 2 dishes" è già giusto.
     filterSummaryOne: '{matching} of {total} dishes',
-    filterNone: 'No suitable dish in this section.',
     excludedContains: 'Contains {list}',
     excludedNotFor: 'Not marked for {list}',
     dishDetailOpen: 'View {dish}',

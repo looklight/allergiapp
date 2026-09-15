@@ -16,7 +16,6 @@ const it = {
     done: 'Salvato',
     failed: 'Alcune modifiche non sono state salvate.',
     retry: 'Riprova',
-    leaveWarning: 'Ci sono modifiche non salvate.',
   },
   nav: {
     home: 'Home',
@@ -26,7 +25,6 @@ const it = {
     // "Scheda AllergiApp" verrebbe tagliata a metà parola
     card: 'Scheda AllergiApp',
     cardShort: 'Scheda',
-    subscriptions: 'Abbonamenti',
     account: 'Account',
   },
   login: {
@@ -125,12 +123,8 @@ const it = {
     wrongAccount: 'Non è l’account giusto?',
   },
   home: {
-    title: 'I tuoi locali',
-    intro:
-      'Un locale per ogni ristorante che gestisci. Dentro ci sono i link, i piatti da mostrare sulla scheda AllergiApp e i menù che i clienti aprono al tavolo.',
     create: 'Aggiungi locale',
     unnamed: 'Locale senza nome',
-    open: 'Apri',
     dishOne: 'piatto',
     dishOther: 'piatti',
     linkOne: 'link',
@@ -370,10 +364,8 @@ const it = {
     // L'etichetta resta ferma, è l'interruttore che si muove: prima il testo
     // del bottone cambiava da "In sala" a "Da parte", e un controllo che
     // cambia nome mentre lo tocchi si legge come incoerente (feedback
-    // utente, 13/09). "In sala"/"Da parte" restano solo nel tooltip.
+    // utente, 13/09).
     activeLabel: 'Attivo',
-    active: 'In sala',
-    parked: 'Da parte',
     activeHint: 'Il cliente lo vede fra le linguette. Tocca per metterlo da parte.',
     parkedHint: 'Esiste solo qui: al tavolo non compare. Tocca per rimetterlo in sala.',
     // Spegnendo anche questo, pubblicare non farebbe più niente: il database
@@ -482,11 +474,6 @@ const it = {
     // posto giusto.
     brandHint:
       'Personalizza come si vede il menù al tavolo. Vale per il menù di questo locale.',
-    // I TRE GRUPPI della scatola. Non sono categorie nostre: sono le tre
-    // domande che un ristoratore si fa guardando una carta — com'è disposta,
-    // di chi è, come si legge. La valuta non sta in nessuno dei tre perché
-    // non è aspetto (v. il commento in BrandBar).
-    groupCard: 'La carta',
     // ⚠️ L'etichetta dice COME SI LEGGONO, non «Allergeni». In una scatola
     // dove ogni voce si può spegnere, una voce chiamata «Allergeni» si legge
     // come «puoi toglierli» — l'unica cosa che il Tema 23 vieta.
@@ -499,8 +486,6 @@ const it = {
     // non di cosa è privo — e la spiga sbarrata, in mezzo mondo, vuol dire
     // l'opposto. Non accorciarla in «Cosa vogliono dire».
     allergenLegendTitle: 'Cosa vogliono dire le icone',
-    groupIdentity: 'L’identità',
-    groupText: 'Il testo',
     cover: 'Copertina',
     coverAdd: 'Aggiungi una copertina',
     coverSample: 'Il nome del locale',
@@ -690,7 +675,6 @@ const it = {
     emptyMenuHint: 'Aggiungi i piatti direttamente, oppure crea prima una sezione.',
     pricePlaceholder: 'Prezzo',
     priceLabel: 'Prezzo di {dish}',
-    noPrice: 'Senza prezzo',
     highlightOn: 'Metti in evidenza',
     highlightOff: 'Togli evidenza',
     highlightNotePlaceholder: 'Nota (facoltativa): «In offerta», «Consigliato»…',
@@ -738,7 +722,6 @@ const it = {
     filterReset: 'Azzera',
     filterSummary: '{matching} piatti su {total}',
     filterSummaryOne: '{matching} piatto su {total}',
-    filterNone: 'Nessun piatto adatto in questa sezione.',
     excludedContains: 'Contiene {list}',
     excludedNotFor: 'Non indicato per {list}',
     dishDetailOpen: 'Vedi {dish}',

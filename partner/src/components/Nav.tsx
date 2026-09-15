@@ -59,7 +59,7 @@ export default function Nav() {
   const pathname = usePathname();
   const { d } = useI18n();
   // La scheda è di UN locale: la voce punta a quello che si sta guardando,
-  // lo stesso che sceglie la tendina della home (v. useVenueChoice)
+  // lo stesso che si sceglie dai capitoli della home (v. useVenueChoice)
   const { venues } = useVenues();
   const { venueId } = useVenueChoice();
   const venue = currentVenue(venues ?? null, venueId);
@@ -117,7 +117,7 @@ export default function Nav() {
                 {label}
               </Link>
               {/* Qui c'era il sottomenu con l'elenco dei locali. È sparito con
-                  la panoramica: il locale si cambia dalla tendina in cima a
+                  la panoramica: il locale si cambia dai capitoli in cima a
                   "/", e due modi di cambiarlo che portano in due posti diversi
                   (il sottomenu apriva l'editor) sono un modo di sbagliare. */}
             </div>
