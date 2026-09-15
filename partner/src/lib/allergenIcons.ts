@@ -13,12 +13,13 @@
 //   * a questa misura conta la SAGOMA, non il dettaglio interno. Ogni linea
 //     interna che non cambia il profilo è rumore: toglierla.
 //
-// ⚠️ QUESTE SONO UNA PRIMA STESURA, approvata dall'utente come punto di
-// partenza («nel caso le cambieremo in seguito»). Quelle che alla prova
-// reggono meglio sono la chiocciola dei molluschi, l'arachide e il pesce;
-// le tre baccelle — soia, lupini, fave — si somigliano fra loro ed è il
-// primo posto da rivedere. La frutta a guscio non ha un profilo distintivo e
-// resta la più debole di tutte.
+// ⚠️ PRIMA STESURA DEL 06/09, RIVISTA IL 2026-09-15 guardando le icone a 16px
+// (la misura della riga) una accanto all'altra. Cinque sostituite perché si
+// confondevano: latte (goccia → cartone, era uguale all'uovo), frutta a guscio
+// (noce → ghianda, sembrava il simbolo della pace), sedano (mazzo legato →
+// gambi con foglie, sembrava una forchetta), lupini (spiga di fiori → ciotola
+// di semi) e fave (baccello → seme; soia, lupini e fave erano tre baccelli).
+// Reggono dall'inizio chiocciola, arachide, pesce, granchio e calice.
 //
 // ⚠️ COPIA GEMELLA sul sito (landing/lib/allergen-icons.js): questi disegni
 // li vede il cliente al tavolo, e l'anteprima nel portale deve mostrare la
@@ -33,12 +34,19 @@ export const ALLERGEN_ICON_PATHS: Record<string, string> = {
   // riconoscibile anche quando i chicchi si chiudono.
   gluten:
     '<path d="M12 21V8"/><path d="M12 8c0-2.2 1.3-4.1 3.2-5-.2 2.2-1.4 4.1-3.2 5Zm0 0c0-2.2-1.3-4.1-3.2-5 .2 2.2 1.4 4.1 3.2 5Zm0 4.6c0-2.2 1.3-4.1 3.2-5-.2 2.2-1.4 4.1-3.2 5Zm0 0c0-2.2-1.3-4.1-3.2-5 .2 2.2 1.4 4.1 3.2 5Zm0 4.6c0-2.2 1.3-4.1 3.2-5-.2 2.2-1.4 4.1-3.2 5Zm0 0c0-2.2-1.3-4.1-3.2-5 .2 2.2 1.4 4.1 3.2 5Z"/>',
-  // Goccia: il latte non ha una forma sua, la goccia sì.
-  milk: '<path d="M12 3.4c3.4 4 5.1 6.9 5.1 8.8 0 3-2.3 5.4-5.1 5.4s-5.1-2.4-5.1-5.4c0-1.9 1.7-4.8 5.1-8.8Z"/>',
+  // Cartone del latte, col tetto a capanna (2026-09-15). Prima era una goccia,
+  // e a 16px goccia e uovo erano la stessa macchia chiusa: il cartone è la
+  // sagoma che il latte ha in ogni supermercato, e non somiglia a niente del set.
+  milk:
+    '<path d="M7 9.5 9.5 4h5L17 9.5V20a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V9.5Z"/><path d="M7 9.5h10"/><path d="M12 4v5.5"/>',
   // Uovo: ovale asimmetrico, più largo in basso.
   eggs: '<path d="M12 3.2c3.1 0 5.6 4.4 5.6 8.6 0 4-2.5 6.8-5.6 6.8s-5.6-2.8-5.6-6.8c0-4.2 2.5-8.6 5.6-8.6Z"/>',
-  // Noce: la più debole del set (v. sopra). Guscio tondo con la cucitura.
-  nuts: '<path d="M12 20.7c-4.4-1.1-7.7-4.6-7.7-8.9 0-4.3 3.4-7.8 7.7-7.8s7.7 3.5 7.7 7.8c0 4.3-3.3 7.8-7.7 8.9Z"/><path d="M12 20.7V9.9"/><path d="M12 9.9c-1-1.7-2.6-3-4.4-3.7M12 9.9c1-1.7 2.6-3 4.4-3.7"/>',
+  // Ghianda (2026-09-15): cappello, frutto a punta, picciolo. Prima era una noce
+  // con la cucitura a Y, che a 16px si leggeva come il simbolo della pace. La
+  // ghianda non si mangia, ma è il segno di «frutto col guscio» che si riconosce
+  // ovunque — la frutta a guscio non ha un profilo suo, e questo lo presta.
+  nuts:
+    '<path d="M5.2 10.6c0-3.6 3-6 6.8-6s6.8 2.4 6.8 6H5.2Z"/><path d="M6.8 10.6c.2 5 2.3 9 5.2 10 2.9-1 5-5 5.2-10"/><path d="M12 4.6V2.8"/>',
   // Arachide: due lobi e due semi. Regge bene a 12px.
   peanuts:
     '<path d="M9 3.6c2.6 0 4 1.7 4.4 3.5.3 1.4.7 2 2 2.6 2 .9 3.1 2.7 3.1 4.9 0 3.1-2.3 5.4-5.4 5.4-2.6 0-4.1-1.7-4.5-3.5-.3-1.4-.6-2-1.9-2.5-2-.9-3.2-2.7-3.2-5 0-3.1 2.3-5.4 5.5-5.4Z"/><path d="M8.4 8.2h.01M14.5 15h.01"/>',
@@ -59,20 +67,22 @@ export const ALLERGEN_ICON_PATHS: Record<string, string> = {
   // Barattolo col coperchio: la senape sta in un vasetto, in ogni cucina.
   mustard:
     '<path d="M7.6 9.4h8.8v9.4a1.8 1.8 0 0 1-1.8 1.8H9.4a1.8 1.8 0 0 1-1.8-1.8V9.4Z"/><path d="M6.8 5.6h10.4v3.8H6.8z"/><path d="M10.4 13h3.2"/>',
-  // Gambi legati: il sedano è un mazzo, non uno stelo solo.
+  // Tre gambi con le foglie in cima (2026-09-15). Prima i gambi erano legati in
+  // un mazzo, e a 16px si leggevano come una forchetta.
   celery:
-    '<path d="M8.2 3.6c-.8 3.8-1.1 7.6-.9 11.4M12 3.2c.2 3.9.1 7.8-.4 11.6M15.8 3.6c.9 3.7 1.3 7.5 1.1 11.3"/><path d="M6.6 14.6h10.8l-1 4.5a1.8 1.8 0 0 1-1.8 1.4H9.4a1.8 1.8 0 0 1-1.8-1.4l-1-4.5Z"/>',
+    '<path d="M9.5 21 10.4 11M12 21V10.5M14.5 21l-.9-10"/><path d="M10.4 11c-2.4-.3-4-2-4.2-4.4 2.3-.1 4 1.3 4.6 3.4M12 10.5c-1.6-1.6-1.9-4-.4-6.2 1.9 1.6 2 4.2.4 6.2M13.6 11c.6-2.1 2.3-3.5 4.6-3.4-.2 2.4-1.8 4.1-4.2 4.4"/>',
   // Calice: i solfiti al tavolo sono il vino, ed è così che li si riconosce.
   sulfites:
     '<path d="M6.8 3.6h10.4l-.8 5.2a4.7 4.7 0 0 1-4.4 4 4.7 4.7 0 0 1-4.4-4L6.8 3.6Z"/><path d="M12 12.8v5.6M8.6 20.4h6.8"/>',
-  // Spiga di fiori: il lupino in campo è un fiore alto, e così si distingue
-  // dalle altre due baccelle. ⚠️ Da rivedere insieme a soia e fave.
+  // Ciotola di semi (2026-09-15): i lupini si servono così, e soprattutto è una
+  // sagoma che nessun'altra icona ha. Il fiore a spiga somigliava al glutine,
+  // i semi tondi al sesamo e alle arachidi, il baccello alla soia.
   lupin:
-    '<path d="M12 21v-6.4"/><path d="M12 14.6c-1.6 0-2.9-1.2-2.9-2.6s1.3-2.6 2.9-2.6 2.9 1.2 2.9 2.6-1.3 2.6-2.9 2.6Z"/><path d="M12 9.4c-1.3 0-2.4-1-2.4-2.2s1.1-2.2 2.4-2.2 2.4 1 2.4 2.2-1.1 2.2-2.4 2.2Z"/><path d="M12 5c-.7 0-1.3-.5-1.3-1.2"/>',
-  // Baccello dritto con quattro fave: più largo e più rigido di quello
-  // della soia. ⚠️ La somiglianza resta, è il difetto noto del set.
+    '<path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><circle cx="8.6" cy="9" r="2.2"/><circle cx="13.2" cy="8.2" r="2.2"/><circle cx="16.4" cy="10.6" r="1.6"/>',
+  // Il seme della fava, a rene con l'ilo (2026-09-15). Prima era un baccello
+  // con quattro fave, troppo simile a quello della soia e letto come una pillola.
   fava_beans:
-    '<path d="M9.2 3.4c1.8 0 3.2 1.5 3.2 3.3v10.6c0 1.8-1.4 3.3-3.2 3.3S6 19.1 6 17.3V6.7c0-1.8 1.4-3.3 3.2-3.3Z"/><path d="M9.2 7.4h.01M9.2 10.8h.01M9.2 14.2h.01M9.2 17.6h.01"/><path d="M15.4 5.6c1.4 3.4 1.4 9.4 0 12.8"/>',
+    '<path d="M10 3.6c3.6 0 7.8 2.9 8.2 7.6.4 4.8-2.9 9.2-7.4 9.2-3.2 0-5.4-2.1-5.4-4.8 0-1.6.9-2.6.9-3.8S5.4 9.6 5.4 8.3c0-2.6 2-4.7 4.6-4.7Z"/><path d="M8.4 11.8c.9.5 1.9.5 2.8 0"/>',
 };
 
 // Chi non ce l'ha (nessuno dei 15, oggi) non deve sparire dalla riga: un
