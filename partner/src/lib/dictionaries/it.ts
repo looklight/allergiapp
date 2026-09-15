@@ -165,7 +165,7 @@ const it = {
     intro:
       'Benvenuto nel portale dedicato ai partner di AllergiApp. Da qui prepari il menù digitale del tuo locale, lo pubblichi e lo cambi quando vuoi.',
     switchLabel: 'Locale',
-    addVenue: 'Aggiungi un altro locale',
+    addVenue: 'Aggiungi locale',
     // Il nome della COSA, non del gesto: la card c'è anche a menù fatto e
     // pubblicato, e "crea" lì sarebbe falso (il gesto sta nel bottone sotto).
     menusTitle: 'Menù digitale',
@@ -185,7 +185,7 @@ const it = {
     menusAllActive: 'Hai {count} menù attivi.',
     menusSomeActive: '{active} di {total} menù attivi.',
     cardTitle: 'Scheda AllergiApp',
-    cardSubsNone: 'Nessun abbonamento attivo: la scheda non è ancora visibile nell’app.',
+    cardSubsNone: 'La scheda sarà visibile nell’app dopo aver associato il locale al tuo ristorante.',
     cardSubsManage: 'Gestisci abbonamento',
     cardEmpty: 'Ancora niente dentro',
     cardOpen: 'Apri la scheda',
@@ -456,7 +456,11 @@ const it = {
     // l'aspetto si apre e si chiude, il contenuto è una pila di schede,
     // l'online è un riquadro che cambia colore quando il menù risponde.
     // "Del menù" non si dice più: siamo dentro l'editor di un menù.
-    brandTitle: 'Aspetto',
+    // La riga chiusa della scatola: un invito, non un riassunto (v. BrandBar)
+    brandTitle: 'Aspetto del menù',
+    brandTeaser: 'Logo, colori, copertina e caratteri: fai sembrare il menù davvero tuo.',
+    brandOpen: 'Personalizza',
+    brandClose: 'Chiudi',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',
     // Solo da due menù in su: il nome e il logo sono del locale, e chi sta
@@ -484,13 +488,8 @@ const it = {
     // non di cosa è privo — e la spiga sbarrata, in mezzo mondo, vuol dire
     // l'opposto. Non accorciarla in «Cosa vogliono dire».
     allergenLegendTitle: 'Cosa vogliono dire le icone',
-    summaryAllergenIcons: 'allergeni a icone',
     groupIdentity: 'L’identità',
     groupText: 'Il testo',
-    summaryPhotosOff: 'senza foto',
-    summaryPhotosSquare: 'foto quadrate',
-    summaryPhotosRound: 'foto tonde',
-    summaryDescOn: 'con descrizioni',
     cover: 'Copertina',
     coverAdd: 'Aggiungi una copertina',
     coverSample: 'Il nome del locale',
@@ -708,13 +707,6 @@ const it = {
     pickerCatalogEmpty: 'Il tuo catalogo è vuoto.',
     pickerCatalogEmptyHint: 'Crea i piatti dalla pagina Piatti, poi torna qui a comporre il menù.',
     pickerAllIn: 'Tutti i piatti del catalogo sono già in questo menù.',
-    // L'ETICHETTA CHE LEGA il nome, la descrizione, le sezioni, i piatti e le
-    // condizioni: sono una cosa sola e la pagina non lo diceva. "Contenuto"
-    // non è una parola nuova — è la metà di una coppia che il ristoratore
-    // incontra già negli avvisi di pubblicazione ("modifiche all'ASPETTO non
-    // pubblicate"), e che il database distingue dalla migration 710.
-    contentLabel: 'Contenuto',
-    contentHint: 'Quello che i tuoi clienti leggono, in cima e nella carta.',
     conditionsTitle: 'Condizioni al tavolo',
     conditionsHint:
       'In fondo al menù: coperto, servizio, pagamenti. Si scrivono una volta sola e valgono per tutto il menù.',

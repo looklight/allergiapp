@@ -16,7 +16,9 @@ import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import Interruttore from '@/components/menus/Interruttore';
 import NewMenuDialog from '@/components/menus/NewMenuDialog';
 import UndoToast from '@/components/UndoToast';
-import { PageIntro, PageTitle } from '@/components/PageHeading';
+import { StatusDot } from '@/components/StatusPill';
+import { usePublishStates } from '@/lib/publish';
+import { CreateButton, PageIntro, PageTitleRow } from '@/components/PageHeading';
 
 export default function MenusPage() {
   const { d } = useI18n();
@@ -161,6 +163,8 @@ export default function MenusPage() {
   const conMenu = (venues ?? []).filter((v) =>
     (menus ?? []).some((m) => m.venueId === v.id)
   );
+  // Se ogni locale è online: il pallino accanto al suo nome
+  const pubblicazioni = usePublishStates(conMenu.map((v) => v.id));
 
   const bottoneNuovo = (
     <button
@@ -183,7 +187,18 @@ export default function MenusPage() {
 
   return (
     <div>
-      <PageTitle>{d.menus.title}</PageTitle>
+      {/* "Nuovo menù" sulla riga del titolo, come "Nuovo piatto" (v.
+          PageTitleRow): prima stava in fondo all'elenco. Senza menù resta il
+          bottone al centro dello stato vuoto, e qui non si ripete. */}
+      <PageTitleRow
+        action={
+          !loading && conMenu.length > 0 ? (
+            <CreateButton label={d.menus.create} onClick={() => setCreating(true)} buttonRef={createButton} />
+          ) : undefined
+        }
+      >
+        {d.menus.title}
+      </PageTitleRow>
       <PageIntro className="mb-10 md:mb-12">{d.menus.intro}</PageIntro>
 
       {loading ? (
@@ -204,9 +219,31 @@ export default function MenusPage() {
                   è lui l'intestazione di questi menù, non un'etichetta di
                   servizio. Un menù si chiama "Carta" — ma è la carta DI
                   qualcuno, e senza quel nome sopra non si sa di chi. */}
-              <h2 className="text-sm font-semibold text-gray-900">
-                {venue.venueName.trim() || d.home.unnamed}
-              </h2>
+              {/* IL PALLINO DELLA PUBBLICAZIONE, prima del nome (richiesta
+                  dell'utente, 15/09). Sta sul LOCALE e non sul singolo menù:
+                  si pubblica il locale — un indirizzo, un QR, tutte le
+                  linguette insieme — mentre il menù è "attivo" o no, e quello
+                  lo dice già l'interruttore sulla sua riga (13/09). Stesso
+                  colore e stessa parola del riquadro in home: verde
+                  "pubblicato", ambra "non pubblicato". Finché lo stato non è
+                  arrivato il pallino è uno spazio vuoto e la parola non c'è:
+                  indovinare "non pubblicato" e poi cambiarlo sotto gli occhi è
+                  il difetto già corretto in home (14/09). */}
+              {(() => {
+                const stato = pubblicazioni[venue.id];
+                const online = stato?.publishedAt != null;
+                return (
+                  <h2 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-gray-900">
+                    <StatusDot stato={stato === null ? null : online ? 'ready' : 'draft'} />
+                    <span className="truncate">{venue.venueName.trim() || d.home.unnamed}</span>
+                    {stato !== null && (
+                      <span className="shrink-0 text-xs font-normal text-gray-500">
+                        {online ? d.dashboard.liveOn : d.dashboard.liveNever}
+                      </span>
+                    )}
+                  </h2>
+                );
+              })()}
 
               {(() => {
                 const delloStessoLocale = menus.filter((menu) => menu.venueId === venue.id);
@@ -234,17 +271,42 @@ export default function MenusPage() {
                       tabIndex={0}
                       onClick={() => router.push(`/menu/${menu.id}`)}
                       onKeyDown={(e) => {
+                        // Solo se il fuoco è sulla riga: il tasto sale anche
+                        // dai comandi che ci sono dentro, e un Invio sul
+                        // cestino apriva la conferma E l'editor insieme
+                        if (e.target !== e.currentTarget) return;
                         if (e.key === 'Enter') router.push(`/menu/${menu.id}`);
                       }}
-                      className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-gray-300"
+                      className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-gray-300 focus-visible:outline-2 focus-visible:outline-gray-900"
                     >
                       <div className="min-w-0 flex-1">
+                        {/* LA MATITA ACCANTO AL NOME, al passaggio del mouse,
+                            come nel catalogo dei piatti (richiesta
+                            dell'utente, 15/09): la riga intera apre l'editor,
+                            e la matita è il segno che lo dice. Solo
+                            decorativa, e solo dove c'è un mouse. Via la
+                            sottolineatura al passaggio: con la matita sarebbero
+                            stati due segni per la stessa cosa, e il catalogo
+                            non ce l'ha. */}
                         <Link
                           href={`/menu/${menu.id}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="block truncate text-sm font-medium text-gray-900 hover:underline"
+                          className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-gray-900"
                         >
-                          {menu.name.trim() || ripiego}
+                          <span className="truncate">{menu.name.trim() || ripiego}</span>
+                          <svg
+                            className="h-3.5 w-3.5 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 group-has-[a:focus-visible]:opacity-100"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
+                          </svg>
                         </Link>
                         <p className="mt-0.5 text-xs text-gray-500">
                           {sezioni === 0
@@ -323,9 +385,6 @@ export default function MenusPage() {
             </div>
           ))}
 
-          {/* Uno solo, in fondo: il ristorante si sceglie nella finestra,
-              quindi non serve più un bottone per ognuno */}
-          {bottoneNuovo}
         </div>
       )}
 

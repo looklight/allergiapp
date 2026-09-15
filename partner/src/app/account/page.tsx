@@ -121,7 +121,7 @@ export default function AccountPage() {
             anagrafico come gli altri, solo che non si cambia da qui — cambiarla
             vuol dire cambiare la credenziale, che è un'altra cosa. */}
         <form onSubmit={salvaProfilo} className={cardClass}>
-          <p className="mb-1 text-sm font-medium text-gray-700">{d.account.profileTitle}</p>
+          <p className="mb-1 text-sm font-medium text-gray-900">{d.account.profileTitle}</p>
           <p className="mb-4 text-xs text-gray-500">{d.account.profileHint}</p>
 
           <div className="mb-3">
@@ -204,7 +204,7 @@ export default function AccountPage() {
             e finire col riquadro incollato al bordo superiore non fa capire
             dove si è arrivati. */}
         <form onSubmit={cambiaPassword} id="password" className={`scroll-mt-6 ${cardClass}`}>
-          <p className="mb-1 text-sm font-medium text-gray-700">{d.account.passwordTitle}</p>
+          <p className="mb-1 text-sm font-medium text-gray-900">{d.account.passwordTitle}</p>
           {fromRecovery ? (
             <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
               {d.account.passwordFromRecovery}
@@ -268,7 +268,7 @@ export default function AccountPage() {
         </form>
 
         <div className={cardClass}>
-          <p className="mb-3 text-sm font-medium text-gray-700">{d.account.language}</p>
+          <p className="mb-3 text-sm font-medium text-gray-900">{d.account.language}</p>
           <LanguageSwitcher />
         </div>
 
@@ -276,7 +276,7 @@ export default function AccountPage() {
             modulo da confermare: darlo è costato una casella spuntata, e
             toglierlo non può costare di più. */}
         <div className={cardClass}>
-          <p className="mb-3 text-sm font-medium text-gray-700">{d.account.marketingTitle}</p>
+          <p className="mb-3 text-sm font-medium text-gray-900">{d.account.marketingTitle}</p>
           <label className="flex gap-2.5 text-sm text-gray-700">
             <input
               type="checkbox"
@@ -295,7 +295,7 @@ export default function AccountPage() {
         <div className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-700">{d.account.subsTitle}</p>
+              <p className="text-sm font-medium text-gray-900">{d.account.subsTitle}</p>
               <p className="mt-0.5 text-xs text-gray-500">{d.account.subsHint}</p>
             </div>
             <Link

@@ -438,36 +438,18 @@ export default function MenuEditorPage() {
         />
       </div>
 
-      {/* IL CONTENUTO, da qui alle condizioni al tavolo: il nome del locale, la
-          descrizione, le sezioni, i piatti, i blocchi di testo e il fondo del
-          menù sono UNA COSA SOLA — quello che il cliente legge — e la pagina
-          non lo diceva: si leggeva come sei riquadri senza parentela.
+      {/* LE TRE AREE — aspetto, contenuto, pubblicazione — si separano con
+          una riga sottile e basta (richiesta dell'utente, 15/09). Prima qui
+          c'era un'etichetta "CONTENUTO" con una frase sotto: un titolo in più
+          da leggere per dire una cosa che la pagina dice già da sola, perché
+          l'aspetto è una scatola che si apre e l'indirizzo ha il suo titolo e
+          il suo colore. La riga raggruppa senza chiedere attenzione.
 
-          "Contenuto" non è una parola nuova: è la metà di una coppia che il
-          ristoratore incontra già negli avvisi in cima ("modifiche
-          all'ASPETTO non pubblicate") e che il database distingue dalla
-          migration 710. Chiamare le due aree Aspetto e Contenuto fa
-          combaciare quello che si vede con quello che gli spieghiamo altrove.
-
-          ⚠️ UN'ETICHETTA E NON UNA SCATOLA, e non è pigrizia: le sezioni sono
-          già schede bianche su grigio, e una scheda attorno a delle schede è
-          annidare. Né comprimibile: l'aspetto si sceglie una volta e si
-          chiude, il contenuto è il lavoro — una scatola richiudibile attorno
-          a quello che stai scrivendo è un clic in più per sempre.
-
-          Al terzo blocco (l'indirizzo) l'etichetta non serve: ha già un
-          titolo suo che cambia da solo e perfino un colore suo, verde quando
-          il menù risponde e tratteggiato finché è una bozza. Un'etichetta
-          sopra sarebbe un titolo sopra un titolo. */}
-      {/* La stessa riga delle altre due aree: parola sola, maiuscoletto
-          grigio. Qui a destra non c'è niente da dire — non si apre e non si
-          accende — quindi la riga sotto spiega cosa ci sta dentro. */}
-      <div className="mt-6 px-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-          {d.menuEditor.contentLabel}
-        </p>
-        <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.contentHint}</p>
-      </div>
+          Il contenuto va da qui alle condizioni al tavolo: nome del locale,
+          descrizione, sezioni, piatti, blocchi di testo e fondo del menù. */}
+      {/* mb-6 più il mt-2 del nome: 32px sopra e sotto, come la riga prima
+          dell'indirizzo */}
+      <hr className="mb-6 mt-8 border-gray-200" aria-hidden="true" />
 
       {/* Il nome del LOCALE apre il contenuto: è la prima cosa che il cliente
           legge, in cima a ogni menù di questo ristorante (vale per tutti, come
@@ -792,9 +774,9 @@ export default function MenuEditorPage() {
           nel menù. Sono del LOCALE come il logo e il colore — si scrivono da
           qui perché è qui che se ne vede l'effetto, e la riga sotto il titolo
           dice che valgono per tutte le linguette. */}
-      {/* mt-4 e non mt-8: le condizioni sono DENTRO il contenuto (v.
-          l'etichetta più sopra), quindi stanno vicine alle sezioni. Lo stacco
-          grande va dopo, prima dell'indirizzo, che è l'altra area. */}
+      {/* mt-4 e non mt-8: le condizioni sono DENTRO il contenuto, quindi
+          stanno vicine alle sezioni. Lo stacco grande va dopo, con la riga,
+          prima dell'indirizzo, che è l'altra area. */}
       {locale && (
         <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <h2 className="text-sm font-medium text-gray-900">{d.menuEditor.conditionsTitle}</h2>
@@ -810,9 +792,9 @@ export default function MenuEditorPage() {
         </div>
       )}
 
-      {/* L'INDIRIZZO PUBBLICO, in fondo insieme alle altre cose del locale.
-          Non è ancora attivo, e la card lo dichiara: qui si sceglie il nome e
-          lo si mette al sicuro prima che lo prenda qualcun altro. */}
+      {/* L'INDIRIZZO PUBBLICO, in fondo insieme alle altre cose del locale:
+          la terza area, dopo la riga. */}
+      <hr className="mt-8 border-gray-200" aria-hidden="true" />
       {locale && (
         <MenuAddress
           venue={locale}

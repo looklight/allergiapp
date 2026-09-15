@@ -31,6 +31,33 @@ export function prefetchPublishState(venueIds: string[]) {
   }
 }
 
+// LO STATO DI PIÙ LOCALI INSIEME, per chi li elenca (l'elenco dei menù, col
+// pallino accanto al nome di ogni locale). Solo lettura: pubblicare e ritirare
+// passano dall'editor, con usePublishState. Parte da quello che è già in
+// memoria e lo corregge a risposta arrivata; un locale mai letto resta null
+// finché non si sa — meglio niente che affermare "non pubblicato".
+export function usePublishStates(venueIds: string[]): Record<string, PublishState | null> {
+  // una chiave stabile: l'elenco arriva come array nuovo a ogni disegno
+  const chiave = [...venueIds].sort().join(',');
+  const [letti, setLetti] = useState<Record<string, PublishState>>({});
+
+  useEffect(() => {
+    let vivo = true;
+    for (const id of chiave === '' ? [] : chiave.split(',')) {
+      void menuPublishState(id).then((s) => {
+        if (!s) return;
+        noti.set(id, s);
+        if (vivo) setLetti((prima) => ({ ...prima, [id]: s }));
+      });
+    }
+    return () => {
+      vivo = false;
+    };
+  }, [chiave]);
+
+  return Object.fromEntries(venueIds.map((id) => [id, letti[id] ?? noti.get(id) ?? null]));
+}
+
 export function usePublishState(venueId: string | null) {
   // savedAt cambia a ogni scrittura riuscita: è il segnale che la bozza si è
   // mossa, e quindi che lo stato va richiesto di nuovo. Il salvataggio ha già

@@ -45,24 +45,10 @@ import { quandoLeggibile } from '@/lib/dates';
 import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
 import OverflowMenu from '@/components/OverflowMenu';
+import StatusPill, { type Stato } from '@/components/StatusPill';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import UndoToast from '@/components/UndoToast';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
-
-type Stato = 'ready' | 'draft' | 'todo';
-
-// Il pallino di stato: verde fatto, ambra cominciato, grigio da fare. Il
-// colore da solo non basta — chi non lo distingue legge la parola accanto.
-function StatusPill({ stato, label }: { stato: Stato; label: string }) {
-  const dot =
-    stato === 'ready' ? 'bg-[#4CAF50]' : stato === 'draft' ? 'bg-[#E8A33D]' : 'bg-gray-300';
-  return (
-    <span className="flex shrink-0 items-center gap-1.5 text-xs text-gray-500">
-      <span className={`h-2 w-2 rounded-full ${dot}`} />
-      {label}
-    </span>
-  );
-}
 
 // La pallina di un piatto: la foto ritagliata in tondo, come le mostra l'app,
 // col nome sotto su due righe. Senza foto resta l'iniziale — un cerchio vuoto
@@ -439,14 +425,22 @@ export default function HomePage() {
             parlare, quindi è lì che si cerca "e uno nuovo?" — come il più
             accanto alle schede di un browser. Prima stava in fondo alla
             pagina, accanto a "Elimina". Durante la rinomina si toglie: il
-            campo prende tutta la riga. */}
+            campo prende tutta la riga.
+
+            SOTTOVOCE (richiesta dell'utente, 15/09): aggiungere un locale è
+            raro, e nella riga dei locali non deve pesare quanto i locali
+            stessi. Una via di mezzo fra il primo tentativo (14px, grigio
+            scuro) e il secondo (12px, grigio chiaro), che si leggeva a fatica:
+            13px, grigio medio, nome breve. Stessa misura e stesso peso di
+            "Elimina questo locale" in fondo — sono i due comandi del locale
+            in sé, e si somigliano. */}
         {!renaming && (
           <button
             ref={addButton}
             onClick={() => setCreating(true)}
-            className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-[13px] font-medium text-gray-500 transition-colors hover:text-gray-900"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M12 5v14M5 12h14" />
             </svg>
             {d.dashboard.addVenue}
@@ -652,12 +646,15 @@ export default function HomePage() {
           </div>
           <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
 
-          {/* L'ABBONAMENTO, nello stesso spazio fisso della sottofrase del
-              menù accanto: le due card restano allineate riga per riga. È
-              lui che rende visibile la scheda nell'app, quindi va ricordato
-              qui e non solo dentro Account. Oggi dice sempre "nessuno": gli
-              abbonamenti non esistono ancora sul database (/abbonamenti è un
-              tappo) — quando esisteranno, questa riga leggerà lo stato vero.
+          {/* QUANDO SI VEDE IN APP, nello stesso spazio fisso della
+              sottofrase del menù accanto: le due card restano allineate riga
+              per riga. Nomina l'associazione e non l'abbonamento, con lo
+              stesso garbo dei richiami nella pagina della scheda (15/09): lì
+              "attiva l'abbonamento" suonava come un "paga". Il link resta
+              "Gestisci abbonamento", che è la pagina dove stanno tutti e due
+              i passi, nel loro ordine. Oggi vale per ogni locale: né
+              abbonamenti né associazioni esistono ancora — quando ci
+              saranno, questa riga leggerà lo stato vero.
 
               "Link e contatti" accanto ad "Apri la scheda" non c'è più:
               portava alla stessa pagina, solo più in basso (richiesta
@@ -672,6 +669,14 @@ export default function HomePage() {
           </div>
         </section>
       </div>
+
+      {/* LA RIGA FRA IL LOCALE E IL CATALOGO (richiesta dell'utente, 15/09):
+          menù e scheda sopra sono DEL LOCALE scelto nei capitoli in cima, e
+          cambiano con lui; il catalogo sotto è del partner, lo stesso per
+          tutti i locali. La riga dice dove finisce quello che la pill del
+          locale comanda — lo stesso segno sottile che separa le aree
+          nell'editor del menù e nella scheda, 32px sopra e sotto. */}
+      <hr className="my-8 border-gray-200" aria-hidden="true" />
 
       {/* Il catalogo sta FUORI dalle due: è il substrato, non una terza cosa
           da fare, ed è del partner — lo stesso piatto vale per tutti i suoi
@@ -688,7 +693,7 @@ export default function HomePage() {
           finisce la fila di quelle che ci sono, che è il posto in cui uno
           pensa "ne manca uno". Da bottone in fila con "Vedi tutti" erano due
           comandi accanto, e il più importante dei due era il meno frequente. */}
-      <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4">
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             {/* Anche il titolo porta al catalogo: è la prima cosa che si prova
@@ -750,10 +755,16 @@ export default function HomePage() {
       {/* In fondo e sottovoce, da solo: eliminare un locale è raro e non
           deve stare dove si preme tutti i giorni */}
       <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 pt-4">
+        {/* Uniforme ad "Aggiungi locale" in cima: stessa misura, stesso peso,
+            un'icona davanti — il cestino, come ovunque nel portale. Il rosso
+            resta, ma più tenue: è un comando che si usa di rado. */}
         <button
           onClick={() => setDeleting(venue)}
-          className="text-sm font-medium text-red-600 transition-colors hover:text-red-700"
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-500 transition-colors hover:text-red-700"
         >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12" />
+          </svg>
           {d.dashboard.deleteVenue}
         </button>
       </div>

@@ -129,76 +129,60 @@ export default function BrandBar({
 }) {
   const { d, locale } = useI18n();
 
-  // Il riassunto sulla riga chiusa: chi non apre deve sapere lo stesso come
-  // sta messo. Senza, sarebbe una scatola misteriosa proprio sopra al menù.
-  const riassunto = [
-    // L'impaginazione apre la fila perché è la cosa che si vede per prima
-    // guardando il menù: tutto il resto la decora.
-    APPEARANCE_711 && layout === 'block' ? d.menuEditor.layouts.block : null,
-    // La valuta: da quando il suo comando sta qui dentro, senza questa parola
-    // una scatola chiusa la nasconderebbe del tutto.
-    currency,
-    d.menuEditor.headingFonts[headingFont],
-    d.menuEditor.sectionStyles[sectionStyle],
-    // 'Normale' non si scrive: sarebbe una parola in più su ogni riga chiusa
-    // per dire che non è stato cambiato niente.
-    textScale === 'normal' ? null : d.menuEditor.textScales[textScale],
-    lineHeight === 'normal' || !APPEARANCE_711
-      ? null
-      : d.menuEditor.lineHeights[lineHeight],
-    // Le foto si nominano solo se al tavolo si vedono: «a blocco» non le
-    // mostra, e il riassunto di una scatola chiusa non deve dire una cosa
-    // che nel menù non c'è.
-    APPEARANCE_711 && layout === 'block'
-      ? null
-      : !showPhotos
-        ? d.menuEditor.summaryPhotosOff
-        : photoShape === 'round'
-          ? d.menuEditor.summaryPhotosRound
-          : d.menuEditor.summaryPhotosSquare,
-    showDescriptions ? d.menuEditor.summaryDescOn : null,
-    // Solo quando è cambiato: 'a parole' è com'è sempre stato, e scriverlo
-    // su ogni riga chiusa vorrebbe dire una parola in più per dire niente.
-    allergenDisplay === 'icon' ? d.menuEditor.summaryAllergenIcons : null,
-  ]
-    .filter((pezzo): pezzo is string => pezzo !== null)
-    .join(' · ');
 
   return (
     // <details> e non un interruttore fatto da noi: apre e chiude da solo,
     // funziona da tastiera e i lettori di schermo lo annunciano senza che
     // dobbiamo scrivere niente. CHIUSA di partenza: l'aspetto si sceglie una
-    // volta, il menù si tocca ogni giorno — e il riassunto sulla riga evita
-    // di doverla aprire per sapere com'è messa.
+    // volta, il menù si tocca ogni giorno. Com'è messa lo mostra
+    // l'anteprima accanto, non la riga chiusa (v. sotto).
     <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm">
+      {/* LA RIGA CHIUSA È UN INVITO, NON UN RIASSUNTO (richiesta dell'utente,
+          15/09). Prima elencava le scelte fatte ("€ · Moderno · Sottolineato ·
+          foto quadrate…"): una fila di parole grigie che chi non ha ancora
+          aperto la scatola non sa leggere, e chi l'ha già sistemata non ha
+          bisogno di rileggere — l'anteprima accanto le mostra meglio.
+
+          Ed è una delle porte dell'abbonamento: le personalizzazioni sono la
+          voce premium candidata (Tema 31). Quindi deve farsi notare senza
+          urlare: un'icona nel colore scelto per il menù, un titolo vero, una
+          frase che dice cosa si ottiene, e un bottone "Personalizza". Nessuna
+          etichetta "Premium" finché il listino non è deciso: oggi è gratis
+          per tutti, e dire il contrario sarebbe falso. */}
       <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
         <span
-          className="h-4 w-4 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-inset ring-black/10"
           style={{ backgroundColor: accentHex(accent) }}
-        />
-        {/* L'INTESTAZIONE DELL'AREA, nella stessa riga delle altre due
-            (v. il commento sulle tre aree in menu/[id]/page.tsx): parola
-            sola in maiuscoletto grigio, e a destra quello che quest'area ha
-            da dire — qui il riassunto di com'è messa, così chi non la apre lo
-            sa comunque. */}
-        <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-400">
-          {d.menuEditor.brandTitle}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-right text-xs text-gray-500">
-          {riassunto}
-        </span>
-        <svg
-          className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-180"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+          {/* la tavolozza */}
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3a9 9 0 100 18c.9 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16a5 5 0 005-5c0-4.4-4-7.9-9-7.9z" />
+            <circle cx="7.5" cy="10.5" r="1" fill="currentColor" />
+            <circle cx="10.5" cy="7" r="1" fill="currentColor" />
+            <circle cx="15" cy="7.5" r="1" fill="currentColor" />
+          </svg>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</span>
+          <span className="block text-xs text-gray-500">{d.menuEditor.brandTeaser}</span>
+        </span>
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 transition-colors group-hover:border-gray-400 group-open:border-gray-200 group-open:text-gray-500">
+          <span className="group-open:hidden">{d.menuEditor.brandOpen}</span>
+          <span className="hidden group-open:inline">{d.menuEditor.brandClose}</span>
+          <svg
+            className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
       </summary>
 
       <div className="@container border-t border-gray-100 p-4">
