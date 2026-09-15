@@ -58,13 +58,27 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
   restano **a parole**.
 - [x] ~~**La manopola nel portale**~~ — fatta il 2026-09-06 (v. «Il comando nel portale» qui sopra).
 
+### Abbonamento partner — RIAPERTO il 2026-09-15, piano da scrivere
+
+Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listino attuale»**
+(7,99 €/mese · 60 €/anno, forfettario, Stripe). L'ordine resta **abbonamento → associazione**.
+
+- [ ] **Migration 716** (`partner_subscriptions`, sul locale) — **BOZZA, non applicata** né provata
+  (nessun Postgres locale). Provenienza `stripe` o `manual` (concesso dall'admin, **non** "fondatori").
+- [ ] **Il piano a passi** — orientamento emerso, da confermare: fondamenta web (716 + Stripe test +
+  `/abbonamenti` vero + «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù
+  (l'unica voce che non chiede una build) → due o tre ristoratori con abbonamento regalato →
+  associazione + scheda in app + risposte alle recensioni nella stessa build nativa.
+- [ ] **Prima di incassare davvero**: strumento per la fattura elettronica SdI (Stripe non la
+  invia; da scegliere col commercialista), condizioni d'uso + P2B. La P.IVA c'è già.
+- [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
+  `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. Innocuo oggi (nessuna
+  scheda, l'app non legge le tabelle partner): va chiuso nella migration dell'associazione.
+- [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC dell'app prima del primo abbonamento vero.
+- [ ] **Account Stripe**: da verificare se esiste.
+
 ### Rimandati di proposito il 2026-09-15 (da riaprire coi dati, non dimenticati)
 
-- [ ] **Associazione del locale e abbonamento** — l'ordine è **abbonamento → associazione**
-  (correzione in `MONETIZATION.md`). Dipendenze: Stripe e anagrafica P.IVA, fatturazione SdI,
-  condizioni P2B; l'app che legge la scheda (build nativa); il design del claim (ricerca,
-  contese, admin); neutralizzare `ORDER BY is_premium` negli RPC prima del primo abbonamento.
-  Strada proposta, non ancora scelta: **fondatori** attivati dall'admin senza Stripe.
 - [ ] **Statistiche "piatti più guardati"** in home, dettaglio premium — v. `DIGITAL_MENU.md`,
   Prossimo passo punto 2. Prima: mostrare il menù a due o tre ristoratori.
 - [ ] **Nuove categorie di piatti** (zuppe, bowl e poke, piadine e focacce, gelati, caffetteria,

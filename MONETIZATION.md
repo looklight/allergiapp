@@ -4,6 +4,58 @@
 > Quando decideremo di partire, da qui nascerà il piano operativo a fasi.
 > Nessuna timeline: si accumula qui finché non siamo pronti.
 
+## Listino attuale (2026-09-15)
+
+> Questa sezione **supera** "premium-only al lancio" (27/07) e "il claim
+> resta gratuito": dove il resto del documento dice altro, vale questa.
+
+**Prezzo di partenza**: **7,99 €/mese** oppure **60 €/anno**, un
+abbonamento per locale. Da rivedere coi dati. Regime forfettario: fatture
+senza IVA (con questi importi niente marca da bollo, che scatta sopra
+77,47 €). Pagamenti con Stripe; strumento per la fattura elettronica SdI
+ancora da scegliere.
+
+**Gratis, sempre** — quello che usa il cliente al tavolo non si vende:
+menù completo, piatti illimitati, filtro allergeni, QR, più menù per locale
+(acceso per tutti dal 06/09: rimetterlo a pagamento vorrebbe dire togliere
+una cosa già data).
+
+**A pagamento, deciso:**
+1. **Personalizzazione estetica del menù al tavolo** (logo, colori,
+   caratteri, aspetto). Il muro sta nello scatto di pubblicazione
+   (`build_public_menu`), non sulle manopole.
+2. **La scheda su AllergiApp**: associazione del locale a un ristorante
+   dell'app, con piatti/allergeni e link (prenotazione, delivery) visibili
+   nella scheda. Ordine: **prima l'abbonamento, poi l'associazione**.
+3. **Risposte alle recensioni** del proprio locale.
+
+**Candidati, non decisi:**
+- **Notifiche al gestore** (nuova recensione): naturale insieme alle risposte.
+- **Statistiche** — l'unica voce che dà un motivo per pagare *ogni mese*.
+  Orientamento: il pannello dei filtri gratis, a pagamento i numeri lato
+  AllergiApp. Rimandate (4 nodi in `DIGITAL_MENU.md`).
+- **QR col logo del locale** (il QR normale resta gratis; note in `TODO.md`).
+- **Foto di copertina** della scheda.
+- **Traduzioni automatiche del menù** (rimandate il 15/09).
+- **Dominio proprio** per il menù.
+- **Certificazioni** (fase tarda, delicata sul piano legale).
+
+⚠️ **Il rischio del listino**: l'estetica si paga una volta e poi non ci
+si pensa più. Quello che giustifica un canone mensile è la scheda in app
+(che però l'app oggi non legge: serve una build nativa), le risposte alle
+recensioni e, domani, le statistiche.
+
+**Abbonamento concesso a mano**: l'admin può regalare l'abbonamento a chi
+vuole e quando vuole (provenienza `manual`, con motivo e scadenza
+facoltativa). Non si chiama "fondatori": i fondatori sono solo uno dei
+motivi possibili. Tabella: migration 716 (`partner_subscriptions`, sul
+locale).
+
+**Dove si gestisce**: admin = elenco di tutti + concedi/revoca manuali +
+link al cliente Stripe; portale = pagamento e carta del ristoratore;
+webhook Stripe = funzione Supabase; rimborsi e disdette forzate dalla
+dashboard Stripe.
+
 ## Stato attuale in breve (al 2026-07-27)
 
 - **Portale partner**: progetto Next.js separato su `partner.allergiapp.com`
@@ -437,6 +489,11 @@ scheda app in cornice telefono, dentro il portale):
 
 ## Modello commerciale: premium-only al lancio (deciso 2026-07-27)
 
+> ⚠️ **SUPERATO** dal "Listino attuale (2026-09-15)" in cima: il menù è
+> gratis, l'associazione è a pagamento e viene dopo l'abbonamento. Resta
+> valido il ragionamento sul downgrade morbido e sull'interruttore a
+> quattro motivi.
+
 **Si parte solo col premium a pagamento (abbonamento mensile/annuale);
 nessun livello gratuito di strumenti al lancio.** Un eventuale piano free
 verrà valutato in seguito, sui dati.
@@ -684,7 +741,7 @@ eventuale piano free coi dati della coorte fondatori.
 
 ## Questioni aperte
 
-- Prezzo del premium (riferimento mercato listing locali: ~10–30 €/mese)
+- ~~Prezzo del premium~~ — di partenza 7,99 €/mese o 60 €/anno (15/09), v. "Listino attuale"
 - Criteri per valutare l'eventuale piano free futuro (dati coorte fondatori:
   compilazione menù, conversione a pagamento, abusi)
 - Quali città per i ristoranti fondatori (guardare densità utenti/recensioni)
