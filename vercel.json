@@ -4,6 +4,7 @@
   "installCommand": null,
   "devCommand": null,
   "framework": null,
+  "regions": ["arn1"],
   "git": {
     "deploymentEnabled": {
       "main": false
