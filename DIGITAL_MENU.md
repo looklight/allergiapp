@@ -1625,7 +1625,14 @@ copie — portale e sito — e sotto le tre scelte il portale lo dice anche al r
 
 1. **Le traduzioni di condizioni al tavolo e blocchi di testo** (aperto dal Tema 18). Al primo
    cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. È l'ultimo buco visibile
-   della pagina pubblica.
+   della pagina pubblica. ⚠️ **Riaperto e RIMANDATO il 2026-09-15**: l'utente valuta di tradurre
+   tutto il menù con un traduttore automatico invece che a mano, come l'app fa per le recensioni.
+   Proposta discussa, non scelta: traduzione alla pubblicazione con cache per impronta del testo,
+   bozza automatica che il ristoratore corregge (la correzione vince), "Tradotto automaticamente ·
+   Mostra originale" al tavolo, allergeni mai tradotti dalla macchina (sono codici), condizioni al
+   tavolo con l'originale sempre sotto. Provider proposto: DeepL (UE, 500.000 caratteri al mese
+   gratis); mai Google. Oggi la pagina parla solo IT/EN e sul database non c'è ancora nessuna
+   traduzione, condizione o blocco di testo.
 2. **Le statistiche degli scan** (Tema 10) — **RIMANDATE il 2026-09-02 e di nuovo il 2026-09-15**
    (riproposte come "i piatti più scelti" in home, con i dati di dettaglio premium: il segnale sano
    sarebbe l'apertura della scheda del piatto, contata per piatto e giorno con una chiamata diretta
