@@ -714,39 +714,59 @@ export default function MenuPreview({
             >
               {d.menuEditor.allergenLegendTitle}
             </button>
+            {/* ⚠️ LA POLARITÀ STA QUI (2026-09-15). Senza «Contiene» sui
+                piatti è la legenda a dire che le icone sono cosa il piatto
+                CONTIENE e non di cosa è privo — una spiga, in mezzo mondo, vuol
+                dire «senza glutine». Per questo due elenchi con il loro
+                titoletto, «Contiene:» e «Da sapere», e non uno solo: prima
+                allergeni e note stavano mescolati sotto un titolo che la
+                polarità non la diceva. Copia gemella di renderLegenda in
+                landing/lib/render-menu.js. */}
             {legenda && (
-              <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
-                {codiciInCarta.map((code) => (
-                  <li key={code} className="riga-minuta flex items-center gap-1.5 text-gray-500">
-                    {hasAllergenIcon(code) && (
-                      <IconaAllergene code={code} nome={allergenName(code, locale)} decorativa />
-                    )}
-                    <span className="min-w-0 truncate">{allergenName(code, locale)}</span>
-                  </li>
-                ))}
-                {/* Le note DOPO gli allergeni e nella stessa lista: al tavolo
-                    il cliente non cerca «la legenda delle note», cerca cosa
-                    vuol dire quel simbolo. Due elenchi separati sarebbero due
-                    posti in cui guardare. */}
-                {noteInCarta(mostrati).map((n) => (
-                  <li key={n.code} className="riga-minuta flex items-center gap-1.5 text-gray-500">
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="shrink-0"
-                      aria-hidden
-                      dangerouslySetInnerHTML={{ __html: n.icon }}
-                    />
-                    <span className="min-w-0 truncate">{noteName(n.code, locale)}</span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                {codiciInCarta.length > 0 && (
+                  <>
+                    <p className="riga-minuta mb-1 mt-2.5 font-semibold text-gray-500">{d.preview.contains}</p>
+                    <ul className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                      {codiciInCarta.map((code) => (
+                        <li key={code} className="riga-minuta flex items-center gap-1.5 text-gray-500">
+                          {hasAllergenIcon(code) && (
+                            <IconaAllergene code={code} nome={allergenName(code, locale)} decorativa />
+                          )}
+                          <span className="min-w-0 truncate">{allergenName(code, locale)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {noteInCarta(mostrati).length > 0 && (
+                  <>
+                    <p className="riga-minuta mb-1 mt-2.5 font-semibold text-gray-500">
+                      {d.menuPublic.dishDetailNotesTitle}
+                    </p>
+                    <ul className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                      {noteInCarta(mostrati).map((n) => (
+                        <li key={n.code} className="riga-minuta flex items-center gap-1.5 text-gray-500">
+                          <svg
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="shrink-0"
+                            aria-hidden
+                            dangerouslySetInnerHTML={{ __html: n.icon }}
+                          />
+                          <span className="min-w-0 truncate">{noteName(n.code, locale)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </>
             )}
           </div>
         )}
@@ -1103,7 +1123,11 @@ function Riga({
             </p>
           ) : (
             (dish.allergens.length > 0 || noteInLinea) && (
-              <p className="menu-item-allergens riga-minuta mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400">
+              <p
+                className={`menu-item-allergens riga-minuta mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 leading-[max(1.3,calc(1.35*var(--lh,1)))] text-gray-400${
+                  allergenDisplay === 'icon' ? ' is-icons' : ''
+                }`}
+              >
                 {/* ⚠️ LA PAROLA «CONTIENE» C'È SOLO A PAROLE (scelta
                     dell'utente, 2026-09-06). Il problema che risolveva resta
                     vero — un simbolo da solo non dice se il piatto lo
