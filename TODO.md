@@ -17,7 +17,7 @@
 - [x] ~~**La UI della scatola "Aspetto"**~~ — RIFATTA il 2026-09-06 in **tre gruppi** (La carta · L'identità · Il testo), con «La carta» a tutta larghezza e i due gruppi piccoli affiancati sotto. Diario: Tema 33; tecnica in `partner/README.md`. La valuta è uscita dai gruppi (non è aspetto) e sta in fondo staccata.
   - [ ] **Spostare la valuta nell'area Contenuto**, accanto al nome del menù: è il suo posto vero. Passo a sé perché tocca anche `menu/[id]/page.tsx`.
   - [ ] **Eventuale secondo giro**: due voci per riga anche dentro «La carta» (570 → ~330px, scatola sotto i mille). NON fatto di proposito: due griglie di schede affiancate rischiano di leggersi come un muro di miniature. Da guardare, non da calcolare.
-- [ ] **Le intestazioni delle tre aree dell'editor NON convincono** (03/09, `884aeaf`). Le tre aree — Aspetto, Contenuto, Online — si presentano con la stessa riga in maiuscoletto grigio: la struttura è quella concordata, ma **l'utente non è soddisfatto del risultato visivo** e la rifaremo. Non c'è logica in mezzo: sono tre stringhe (`brandTitle`, `contentLabel`, `addressTitle`) e la tipografia della riga, identica nei tre punti (`BrandBar`, `menu/[id]/page.tsx`, `MenuAddress`).
+- [x] ~~**Le intestazioni delle tre aree dell'editor NON convincono**~~ — RIFATTE il 2026-09-15 (`0301390`): via l'etichetta «Contenuto», le aree si separano con righe sottili, e la scatola dell'aspetto chiusa è un invito («Aspetto del menù» + «Personalizza») invece del riassunto delle scelte. Il testo storico qui sotto resta per le avvertenze. (03/09, `884aeaf`). Le tre aree — Aspetto, Contenuto, Online — si presentano con la stessa riga in maiuscoletto grigio: la struttura è quella concordata, ma **l'utente non è soddisfatto del risultato visivo** e la rifaremo. Non c'è logica in mezzo: sono tre stringhe (`brandTitle`, `contentLabel`, `addressTitle`) e la tipografia della riga, identica nei tre punti (`BrandBar`, `menu/[id]/page.tsx`, `MenuAddress`).
   - ⚠️ Cosa NON rimettere per sbaglio riaprendola: il titolo dell'indirizzo che cambiava in "Il menù è online" (adesso lo dicono l'interruttore e il verde del riquadro), e il nome accessibile del campo, che ha una stringa sua (`addressField`) proprio perché il titolo non lo dice più.
   - Nota di metodo: un mockup ASCII trasmette la STRUTTURA, non il peso visivo. Su decisioni di sola tipografia conviene guardare prima di convergere.
 
@@ -31,7 +31,7 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
 
 - [x] ~~**Il comando nel portale**~~ — FATTO 2026-09-06: «Come si leggono gli allergeni» (A parole / A icone), ultima voce de «La carta», con `allergenDisplay` cablato end-to-end in `venues.ts` (lettura, salvataggio, annulla dell'aspetto, ripristino del locale) e reso dall'anteprima. La legenda sta in fondo alla carta, elenca **solo gli allergeni che quella carta dichiara** (stessa lista delle pastiglie del filtro) e si apre premendo.
 - [x] ~~**Le 15 icone, prima stesura**~~ — in `partner/src/lib/allergenIcons.ts`, a tratto su griglia 24 e tratto 2, disegnate a 16px (non a 11 come il testo: **le icone in quella riga non fanno risparmiare spazio, ne chiedono**).
-- [ ] ⚠️ **AL TAVOLO NON SI VEDONO ANCORA**: manca la copia gemella sul sito (`landing/lib/allergen-icons.js` + la resa in `render-menu.js` + il controllo in `npm run gemelle`). Finché non c'è, pubblicando il cliente legge le parole come sempre — nessun danno, ma il comando cambia solo l'anteprima.
+- [x] ~~**AL TAVOLO NON SI VEDONO ANCORA**~~ — FATTO il 2026-09-15: `render-menu.js` legge `allergenDisplay` dallo scatto e disegna la riga a icone (note in coda dopo un filo, note di riserva a sole icone sul piatto escluso dal filtro) e la **legenda** in fondo alla carta (`<details>`, nessuno script). ⚠️ La legenda ha due titoletti, «Contiene:» e «Da sapere»: è lì che sta la **polarità**, e prima nell'anteprima allergeni e note erano mescolati sotto un titolo che non la diceva — allineata anche l'anteprima. `npm run gemelle` verde. Mai visto in un browser.
 - [ ] **Le icone da rivedere** (l'utente le ha approvate come punto di partenza, «nel caso le cambieremo in seguito»). I difetti già visti a misura vera: **latte e uova si somigliano troppo** (due macchie chiuse quasi identiche); **soia, lupini e fave** sono tre baccelle simili fra loro; la **frutta a guscio** resta la più debole — non ha un profilo distintivo. Reggono bene chiocciola (molluschi), arachide, pesce, sedano e calice (solfiti).
 - [ ] **Il vecchio elenco dei pittogrammi**, tenuto per memoria del metodo: ⚠️ **Primo giro fatto il 2026-09-06** («poi le rivedremo meglio»). Quello che si è imparato, per non ripartire da zero:
   - **Stile deciso: a TRATTO sottile**, non a silhouette piena. Provate tutt'e due, l'utente preferisce il tratto. Conseguenza tecnica: a 12px una linea da 1,5 su griglia 24 diventa mezzo pixel e impasta — servono **tratto ~2, poche linee interne, e l'icona un filo più grande del testo** (14-16px contro un testo da 11). ⚠️ **Le icone non fanno risparmiare spazio nella riga: ne chiedono.**
@@ -46,7 +46,7 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
   pesce / molluschi.
   - 💡 **Paga in tre posti**: le stesse SVG servono alla scheda in app (dove toglierebbero le
     emoji) e al portale, non solo al menù al tavolo.
-- [ ] **La resa al tavolo**, nelle DUE copie gemelle (`landing/lib/render-menu.js` e
+- [x] ~~**La resa al tavolo**~~ (fatta il 2026-09-15, v. sopra), nelle DUE copie gemelle (`landing/lib/render-menu.js` e
   `partner/src/components/menus/MenuPreview.tsx`, poi `npm run gemelle`). Tre condizioni scritte
   nel commento della migration e da non perdere: **la polarità va detta** — una spiga da sola non
   dice se il piatto la contiene o ne è privo, sbarrata vuol dire l'opposto — e dal 2026-09-06 non
@@ -56,10 +56,37 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
   come testo alternativo (nella legenda invece è decorativa, o il lettore di schermo dice «Glutine
   glutine»); nel **popup del piatto** e nella riga del **motivo col filtro acceso** gli allergeni
   restano **a parole**.
-- [ ] **La manopola nel portale**: scatola Aspetto (che è già da rifare, nove voci) + campo in
-  `VenueAppearance` (`partner/src/lib/venues.ts`). Dopo l'applicazione della 711.
+- [x] ~~**La manopola nel portale**~~ — fatta il 2026-09-06 (v. «Il comando nel portale» qui sopra).
+
+### Rimandati di proposito il 2026-09-15 (da riaprire coi dati, non dimenticati)
+
+- [ ] **Associazione del locale e abbonamento** — l'ordine è **abbonamento → associazione**
+  (correzione in `MONETIZATION.md`). Dipendenze: Stripe e anagrafica P.IVA, fatturazione SdI,
+  condizioni P2B; l'app che legge la scheda (build nativa); il design del claim (ricerca,
+  contese, admin); neutralizzare `ORDER BY is_premium` negli RPC prima del primo abbonamento.
+  Strada proposta, non ancora scelta: **fondatori** attivati dall'admin senza Stripe.
+- [ ] **Statistiche "piatti più guardati"** in home, dettaglio premium — v. `DIGITAL_MENU.md`,
+  Prossimo passo punto 2. Prima: mostrare il menù a due o tre ristoratori.
+- [ ] **Nuove categorie di piatti** (zuppe, bowl e poke, piadine e focacce, gelati, caffetteria,
+  distillati e amari, menù bambini). ⚠️ Serve una migration sul vincolo e, per gli account
+  esistenti, aggiungerle fra le nascoste — o compaiono accese a tutti.
+- [ ] **Pill «prendi dal menù»** nella scelta dei piatti della scheda: rimandate perché
+  «Seleziona tutti» e il «tutti» per categoria arrivano quasi sempre allo stesso risultato.
+- [ ] **Scheda e piatti nell'app** (carosello max 8 + «Vedi tutto», regola in `MONETIZATION.md`):
+  lavoro lato app, esce con una build nativa.
+- [ ] **Decisioni aperte sulle icone del piatto**: l'icona «crudo» a 14px; a icone, allergeni e
+  note che diventano un unico blocco di simboli.
 
 ### I link del ristoratore in fondo al menù al tavolo (voluta 2026-09-06, da costruire)
+
+**Stato verificato il 2026-09-15**: sul database c'è **solo** il tipo `social` ammesso da
+`partner_links` (711) — nessun link social salvato. Mancano tutti gli altri pezzi qui sotto: il
+comando nel portale per aggiungere i social, i link nello scatto, la resa al sito col controllo
+dello schema. Nessuna migration nuova è stata scritta.
+
+⚠️ **Deciso dall'utente il 2026-09-15: non si fa una migration solo per questo.** I link nello
+scatto entreranno in una migration **insieme ad altre modifiche**, quando la feature verrà ripresa.
+Punto aperto, non urgente.
 
 Una fila di link — **social e sito** — in fondo alla pagina che si apre col QR, sotto le condizioni
 al tavolo. Lo spazio esiste già: il Tema 18 ha liberato il fondo del menù togliendo il disclaimer,
@@ -118,7 +145,7 @@ del logo: identità del locale, non valore nostro — orientamento: gratis).
 
 ### Legale / GDPR (revisione 2026-07-14/15, contesto in memoria `project_legal_gdpr_review.md`)
 - [x] **Migration 712, 713 e 714 APPLICATE** — verificato sullo schema il 2026-09-11 (`information_schema.columns` su `partner_accounts.terms_version`, `partner_dishes.notes`, `partner_menus.active`: tutte presenti). Erano date per pendenti sia qui sia in memoria, ma il codice partner che le usa era già pushato e live da giorni: il TODO era rimasto indietro. Nessun blocco al push di main da questo lato.
-- [ ] **Regione delle funzioni Vercel su `landing`** — `vercel.json` non ha `regions`, quindi il menù al tavolo è servito dal default (USA) mentre i dati stanno in UE. `"regions": ["fra1"]` sarebbe più coerente con l'informativa e più veloce per i clienti italiani. Lavoro: ~5 min + un rilascio.
+- [x] ~~**Regione delle funzioni Vercel su `landing`**~~ — FATTO il 2026-09-15 (landing `11e1187`): `"regions": ["arn1"]`. Le pagine generate al momento (`/menu`, `/r`, `/u`, `/menu-demo`) giravano a Washington (`x-vercel-id: fra1::iad1`), mentre **Supabase sta a Stoccolma (`eu-north-1`), non a Francoforte**: per questo `arn1` e non `fra1`, come c'era scritto qui. Portale partner e admin sono statici e il browser parla direttamente col database: già in Europa.
 - [ ] **DSA / P2B / ROC — trigger: primo abbonamento partner venduto** (ri-verificato 2026-09-10). Oggi nulla da fare: come microimpresa siamo esenti dagli obblighi della sezione "piattaforme online" del DSA, e la verifica AGCOM di luglio 2026 resta valida. Il quadro cambia il giorno in cui incassi il primo canone da un ristoratore, perché diventiamo intermediario commerciale verso imprese: rifare il check **P2B** (Reg. UE 2019/1150 — condizioni contrattuali, criteri di posizionamento dichiarati, gestione reclami) e **ROC/IES** presso AGCOM (siamo stabiliti in Italia: la sentenza CGUE 2024 riguarda i prestatori esteri e non ci copre). Da valutare nella stessa seduta il passaggio a SRL. Vedi memoria `project_legal_gdpr_review.md`.
   - Collegato: FATTO il 2026-09-10 (landing `a969c50`) — la FAQ del sito diceva "nessun acquisto in-app o abbonamenti" e ora dice che è gratuita *per chi la usa*, con gli strumenti a pagamento per i ristoranti. Sfumata prima di vendere, come serviva.
 - [ ] **Claim "ristoranti sicuri" nelle schede store** (App Store Connect + Play Console) — i claim di sicurezza sono stati rimossi da app e sito a luglio 2026, ma le schede store non sono nel repo e sono rimaste indietro. Azione manuale: sostituire con "segnalati dalla community" / "adatti alle tue esigenze". Lavoro: 10 min, nessun rilascio necessario.

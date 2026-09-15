@@ -46,17 +46,12 @@ stessa riga si chiamava "Nome della vetrina" nell'editor e "Nome del locale"
 nel menù, e il ristoratore scriveva un'etichetta privata dove poi i clienti
 leggevano l'intestazione del menù al tavolo.
 
-**Il debito che questo cambio aveva aperto è chiuso** (verificato il
-2026-09-02): un piatto si accende sulla **scheda**, che senza claim non
-esiste, e prima si spuntavano caselle senza che succedesse niente. Adesso il
-comando non c'è dove non funziona, e al suo posto c'è il motivo
-(`d.dishes.needsCard`) con la strada per averla. Il filtro `cardId !== null`
-sta in tre punti, uno per schermata — `venuesConScheda` in `/piatti` (fa
-sparire insieme colonna, selettore e caselle), `venue.cardId === null`
-nell'editor del locale, `conScheda` in `DishPanel` — e `setDishOn` tiene
-comunque la sua guardia: esce senza scrivere e senza fingere. Se qualcuno
-aggiunge una quarta schermata con quegli interruttori, quella guardia è
-l'ultima rete, non la prima.
+**Storia, superata dalla 715**: fra la 703 e la 715 un piatto si accendeva
+sulla **scheda**, che senza claim non esiste, e tre schermate spegnevano i loro
+comandi con un filtro `cardId !== null` (`venuesConScheda` in `/piatti`,
+`conScheda` in `DishPanel`, il tappo `needsCard` nell'editor del locale). Tutto
+questo non c'è più: la scelta si fa solo nella pagina della scheda
+(`CardDishesSelector`, `setDishesOn`) e funziona anche senza claim.
 
 ## La home è una home (2026-09-01)
 
@@ -68,16 +63,23 @@ l'ultima rete, non la prima.
   contesto (`PartnerProfileProvider`);
 - dice **di quale locale** si sta parlando, col nome correggibile lì per lì —
   è il nome che i clienti leggono in cima al menù, non un'etichetta interna —
-  e una tendina per cambiarlo **solo da due locali in su**, con la scelta
-  ricordata in `localStorage` (`partner-venue`);
+  e, da due locali in su, i **capitoli** (una pill per locale) per cambiarlo,
+  con la scelta ricordata in `localStorage` (`partner-venue`). "Aggiungi
+  locale" sta in cima a destra sulla stessa riga, "Elimina questo locale" in
+  fondo alla pagina;
 - mostra **le due cose** che il ristoratore può accendere, affiancate perché
   sono pari: **menù al tavolo** e **scheda AllergiApp**, ognuna con stato,
   contenuto e un bottone;
-- offre le **azioni rapide** (`/piatti?nuovo`, `/menu?nuovo`, i link della
-  scheda), che portano dove la cosa succede — la maschera già aperta — non
-  alla pagina che la contiene;
-- tiene il **catalogo piatti** fuori dalle due, in una riga più leggera: è il
-  substrato del partner, non una terza cosa da accendere.
+- offre le **azioni rapide** (`/piatti?nuovo`, `/menu?nuovo`), che portano
+  dove la cosa succede — la maschera già aperta — non alla pagina che la
+  contiene;
+- tiene il **catalogo piatti** fuori dalle due, sotto una riga sottile e in un
+  riquadro più leggero: è il substrato del partner, lo stesso per tutti i
+  locali, non una terza cosa da accendere.
+
+(Aggiornato il 2026-09-15: capitoli al posto della tendina, "Link e contatti"
+tolto dal riquadro della scheda perché portava alla stessa pagina di "Apri la
+scheda", riga fra i riquadri del locale e il catalogo.)
 
 **Le cose sono DUE, non tre.** I link e i contatti non sono una cosa a sé:
 si definiscono dentro la **scheda AllergiApp**, che è la pagina `/locale/[id]`
@@ -95,8 +97,8 @@ Dettagli che sembrano arbitrari e non lo sono:
   pronto, è la carta bianca che si troverebbe davanti il cliente.
 - **Il pallino di stato non è mai da solo**: accanto c'è sempre la parola, o
   chi non distingue i colori non legge niente.
-- **Il "+" sulle azioni rapide c'è solo dove si crea qualcosa**: su "Link e
-  contatti" prometterebbe una cosa nuova mentre si va a correggere le esistenti.
+- **Il "+" sulle azioni rapide c'è solo dove si crea qualcosa**: su un
+  comando che corregge prometterebbe una cosa nuova.
 - **`?nuovo` apre la maschera solo quando i dati sono arrivati.** Aprendola al
   montaggio, la finestra del menù nasceva con le liste vuote e proponeva di
   creare un locale nuovo a chi ce l'aveva già — visto nel browser e corretto.
@@ -142,13 +144,13 @@ Dettagli che sembrano arbitrari e non lo sono:
   che nessuno ha fatto. Il nome torna obbligatorio dal **secondo** menù dello
   stesso locale, che è l'unico momento in cui serve davvero.
 - **È sparito il sottomenu dei locali nella barra laterale**: apriva la scheda
-  mentre la tendina della home cambia locale, e due comandi uguali che portano
+  mentre i capitoli della home cambiano locale, e due comandi uguali che portano
   in due posti diversi sono un modo di sbagliare.
 
 **La barra laterale (01/09)**: Home · Piatti · Menù · **Scheda AllergiApp** ·
 Account.
 - La voce **Scheda AllergiApp** punta al locale che si sta guardando, ed è lo
-  stesso che sceglie la tendina della home: la scelta vive in **uno stato
+  stesso che si sceglie dai capitoli della home: la scelta vive in **uno stato
   condiviso** (`useVenueChoice` in `lib/venues.ts`, stesso meccanismo delle
   liste in `storage.ts`). Con due stati separati, cambiando locale dalla home
   la barra avrebbe continuato a puntare al precedente. Senza locali la voce
@@ -329,45 +331,40 @@ nome libero, prezzi, riordino trascinando (con le frecce accanto, che restano
 perché il trascinamento HTML5 col dito non funziona e questo portale si usa
 dal telefono). L'anteprima a lato mostra la pagina che legge il cliente.
 
-### L'editor ha TRE AREE (2026-09-03)
+### L'editor ha TRE AREE (2026-09-03, resa rifatta il 2026-09-15)
 
 ```
-← Tutti i menù                              [Pubblica]
-●  ASPETTO         EUR · Moderno · Filetto · foto quadrate  ⌄
-   CONTENUTO       nome del locale, descrizione, sezioni,
-                   piatti, blocchi di testo, condizioni al tavolo
-   ONLINE                                        Attivo ●
+← Tutti i menù                                        [Pubblica]
+[🎨] Aspetto del menù                              [Personalizza ⌄]
+     Logo, colori, copertina e caratteri…
+──────────────────────────────────────────────────────────────────
+     nome del locale, descrizione, sezioni, piatti, blocchi di
+     testo, condizioni al tavolo
+──────────────────────────────────────────────────────────────────
+     indirizzo e QR                                     Attivo ●
 ```
 
-L'ordine era già questo; quello che mancava è che **niente diceva che i
-quattro blocchi in mezzo sono una cosa sola**. Tre scelte, tutte per non
-appesantire:
+L'ordine è aspetto → contenuto → pubblicazione. Il 03/09 le tre aree avevano
+la stessa intestazione in maiuscoletto grigio ("ASPETTO", "CONTENUTO",
+"ONLINE"); **l'utente non era soddisfatto della resa, e il 15/09 è cambiata**:
 
-- **"Contenuto" non è una parola nuova**: è la metà di una coppia che il
-  ristoratore incontra già negli avvisi in cima ("Modifiche all'**aspetto**
-  non pubblicate") e che il database distingue dalla migration 710
-  (`contentChanged` / `appearanceChanged`). Le due aree si chiamano come la
-  distinzione che gli spieghiamo già altrove.
-- **Un'etichetta e non una scatola** sul contenuto: le sezioni sono già schede
-  bianche su grigio, e una scheda attorno a delle schede è annidare. E **non
-  comprimibile**: l'aspetto si sceglie una volta e si chiude, il contenuto è
-  il lavoro.
-- **Le tre intestazioni sono la stessa riga** (stessa classe identica nei tre
-  punti: `BrandBar`, `menu/[id]/page.tsx`, `MenuAddress`) e a destra ognuna
-  mette quello che ha da dire — riassunto e freccia, niente, interruttore. La
-  coerenza sta nell'intestazione, **la distinzione nei corpi**: uno si apre e
-  si chiude, uno è una pila di schede, uno è un riquadro che resta **verde
-  quando il menù risponde** e tratteggiato finché è una bozza.
+- **Via l'etichetta "Contenuto"** con la sua frase: le aree si separano con
+  **una riga sottile** (`<hr>`, 32px sopra e sotto). Lo stesso segno separa le
+  aree della pagina della scheda e, in home, i riquadri del locale dal catalogo.
+- **La scatola dell'aspetto chiusa è un invito, non un riassunto**: prima
+  elencava le scelte ("EUR · Moderno · Filetto · foto quadrate"), ora ha
+  un'icona nel colore del menù, il titolo "Aspetto del menù", una frase e il
+  bottone "Personalizza". È anche una porta verso l'abbonamento
+  (le personalizzazioni sono la voce premium candidata), ma **nessuna etichetta
+  "Premium"** finché il listino non è deciso.
+- **L'indirizzo** tiene la sua intestazione e il suo colore: verde quando il
+  menù risponde, tratteggiato finché è una bozza.
 
-⚠️ **Il nome del ristorante non è più il titolo della pagina** ma la prima
-riga del contenuto: è quello che il cliente legge in cima al menù, quindi è
-contenuto. ⚠️ **Il titolo dell'indirizzo non cambia più** in "Il menù è
-online": lo dicono l'interruttore e il verde del riquadro — ed è per questo
-che il campo dell'indirizzo ha un nome accessibile suo (`addressField`).
-
-⚠️ **L'utente NON è soddisfatto di come si vedono queste tre intestazioni** e
-le rifaremo: la struttura è concordata, la resa no. Non c'è logica in mezzo —
-tre stringhe e la tipografia della riga. V. `../TODO.md`.
+⚠️ **Il nome del ristorante non è il titolo della pagina** ma la prima riga del
+contenuto: è quello che il cliente legge in cima al menù. ⚠️ **Il titolo
+dell'indirizzo non cambia** in "Il menù è online": lo dicono l'interruttore e il
+verde del riquadro — ed è per questo che il campo dell'indirizzo ha un nome
+accessibile suo (`addressField`).
 
 ### Il menù di esempio (2026-09-03)
 
@@ -624,6 +621,10 @@ menù": il nome del menù è solo l'etichetta della linguetta e si chiede dal
 secondo menù dello stesso locale in poi. Il nome del ristorante invece non ha
 nessun'altra fonte — chi non fa il claim non ce l'ha da nessuna parte.
 
+> ⚠️ **Superato il 2026-09-06**: `MULTI_MENU` è di nuovo `true` e la
+> migration 714 porta in sala tutte le carte attive, come linguette. Il
+> paragrafo qui sotto resta come storia del tappo.
+
 **Dal 2026-09-01 un locale ha UN menù** (Tema 19). Il modello dati non è
 cambiato — `partner_menus` non ha nessun vincolo di unicità, e più menù resta
 una voce del futuro premium — il tappo è l'interruttore `MULTI_MENU` in
@@ -736,10 +737,10 @@ differenza voluta che resta è la compensazione di mezzo punto sulle
 descrizioni nei pacchetti serif e leggero, che vive solo sul sito.
 
 **La forma delle foto** (`partner_venues.dish_photo_shape`: `square` /
-`round`, **migration 711 — DA APPLICARE**) è la terza voce passata per quella
-strada.
+`round`, **migration 711, applicata il 2026-09-06**) è la terza voce passata
+per quella strada.
 
-> ⚠️ **La 711 va applicata PRIMA di pushare.** `loadVenues()` chiede
+> Storia: **la 711 andava applicata PRIMA di pushare.** `loadVenues()` chiede
 > `dish_photo_shape` nella select: senza la colonna, PostgREST rifiuta tutta
 > l'interrogazione e il portale resta senza locali — in locale e, appena il
 > push arriva su `main`, anche su `partner.allergiapp.com`. Vale per lo
@@ -795,6 +796,31 @@ stampato non si corregge da remoto.
 (`/menu/[slug]`): legge `get_public_menu`, cioè solo lo scatto pubblicato.
 Manca il **deploy** — finché il branch non è pushato, quell'indirizzo non
 risponde a nessuno.
+
+## Il catalogo dei piatti (2026-09-15)
+
+`/piatti` è la **fonte dei dati**: nome, allergeni, foto, categoria. Dove un
+piatto compare lo decide chi lo usa — il menù nel suo editor, la scheda nella
+sua pagina — e il catalogo non ne sa niente (v. `../DIGITAL_MENU.md`, Tema 34).
+
+- **"Nuovo piatto" sta sulla riga del titolo** (`PageTitleRow` + `CreateButton`
+  in `components/PageHeading.tsx`), come "Nuovo menù": la riga sotto il titolo
+  tiene solo gli strumenti della lista — ricerca, Filtri, Seleziona.
+- **La riga intera apre il piatto.** Al passaggio del mouse compaiono la
+  matita accanto al nome e il cestino; solo dove c'è un mouse
+  (`[@media(hover:hover)]`, e in Tailwind v4 anche `group-hover` lo è), quindi
+  su telefono il cestino resta visibile e la matita non compare.
+- **Selezione multipla** ("Seleziona"): la riga spunta invece di aprire, e una
+  barra ferma in cima sposta gli spuntati in una categoria (pill delle sole
+  categorie attive) o li elimina insieme.
+- **"Gestisci…" delle categorie è un componente solo** (`CategoryManager`),
+  usato dalla maschera del piatto e dalla fila delle categorie del catalogo:
+  la preferenza è `hidden_dish_categories` sull'account.
+- ⚠️ **L'eliminazione fotografa le righe di menù prima di cancellare**
+  (`useDishes().remove`): la cascata del database porta via, per ogni menù,
+  sezione, posizione e prezzo, e l'annulla le rimette con `restore`. Il
+  ripristino parte **dopo** che l'eliminazione è arrivata al database, o un
+  annulla rapidissimo falliva e i piatti sparivano lo stesso.
 
 ## L'account e l'accesso
 

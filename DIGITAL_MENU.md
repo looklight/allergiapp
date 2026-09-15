@@ -29,8 +29,9 @@ testo** che si trascinano fra le sezioni; le pastiglie del filtro hanno una **gr
 (glutine, vegetariano, vegano, latte, uova…) con un bottone **Filtri** che apre l'elenco
 intero. La ricerca nel menù è stata valutata e **scartata**, per la ragione scritta nel Tema 18.
 
-**Aggiornamento 2026-09-01: un menù per locale (Tema 19).** Più menù per lo stesso locale resta
-nel modello dati e nel codice, ma è **spento** da `MULTI_MENU` in `partner/src/lib/features.ts`:
+**Aggiornamento 2026-09-01: un menù per locale (Tema 19)** — ⚠️ *superato il 2026-09-06: i menù
+multipli sono riaccesi (`MULTI_MENU = true`, migration 714, linguette al tavolo).* Più menù per lo
+stesso locale resta nel modello dati e nel codice, ma è **spento** da `MULTI_MENU` in `partner/src/lib/features.ts`:
 è una voce del futuro premium, e finché non si vende complicava la creazione per tutti. Nessuna
 migration, nessun vincolo sul database.
 
@@ -55,10 +56,10 @@ non esce nient'altro.
 le statistiche degli scan (Tema 10), il rimando reciproco fra `/menu/` e `/r/` (Tema 13), e lo
 svuotamento della cache alla pubblicazione. L'elenco in ordine sta in fondo, in "Prossimo passo".
 
-**Due debiti aperti**, entrambi visibili a schermo e scritti in `partner/README.md`: la rinomina
-"vetrina" → "Scheda AllergiApp" non è stata fatta (tenuta fuori di proposito dal giro in cui il
-codice è stato rimesso in pari col database), e gli interruttori "in vetrina" in `/piatti` non
-fanno più niente — i piatti accesi pendono dalla scheda, che senza claim non esiste.
+**I due debiti di allora sono chiusi**: la rinomina "vetrina" → "Scheda AllergiApp" è fatta dal
+2026-08-31 (in codice e a schermo), e gli interruttori "in vetrina" di `/piatti` non esistono più —
+dal 2026-09-15 il catalogo non sa niente della scheda e i piatti della scheda si scelgono nella sua
+pagina, anche prima del claim (Tema 34, migration 715).
 
 ---
 
@@ -1596,17 +1597,15 @@ portano entrambi i richiami.
 
 ## Prossimo passo
 
-**Aggiornato il 2026-09-03.** La fase 2 è fatta e in produzione: il menù al tavolo si apre da
-`allergiapp.com/menu/<slug>`. Migrations 707, 708, 709 e 710 applicate; la **711 (`711_partner_menu_appearance.sql`: forma delle
-foto, interlinea, impaginazione, separatore e — dal 2026-09-06 — allergeni a parole o a icone) è
-scritta e DA APPLICARE** a mano dal SQL editor.
-Finché non lo è, quelle quattro manopole restano spente da `APPEARANCE_711`
-(`partner/src/lib/features.ts`) e il portale non nomina le colonne nemmeno nella select.
+**Aggiornato il 2026-09-15.** Il menù al tavolo è in produzione da `allergiapp.com/menu/<slug>`.
+Migrations **707-715 tutte APPLICATE** (la 711 il 06/09, la 715 il 15/09): le manopole
+dell'aspetto sono accese, i menù multipli pure. Dal 15/09 le pagine generate del sito girano a
+**Stoccolma** (`arn1`, accanto a Supabase `eu-north-1`), non più a Washington.
 
-**Fatto oggi**: indirizzo e QR (PNG + vettoriale), pagina pubblica collegata, bozza/pubblicato con
-i due presidi (avviso sugli allergeni non pubblicati, foto protette dalla cancellazione), ritiro
-dalla sala con la pastiglia Attivo/Inattivo, e tutte le manopole d'aspetto — pacchetti di stile,
-stile delle sezioni, foto e descrizioni, copertina.
+**Storia del 2026-09-02/03**, per chi cerca da dove arriva quello che c'è: indirizzo e QR (PNG +
+vettoriale), bozza/pubblicato con i due presidi (avviso sugli allergeni non pubblicati, foto
+protette dalla cancellazione), ritiro dalla sala, pacchetti di stile, stile delle sezioni, foto e
+descrizioni, copertina.
 
 **Aggiunto il 2026-09-02 (sera)**: contenuto e aspetto sono due generi di modifica distinti (Tema 27,
 migration 710 applicata), con l'annulla dell'aspetto. E l'editor è stato rifatto per il telefono a
@@ -1627,7 +1626,10 @@ copie — portale e sito — e sotto le tre scelte il portale lo dice anche al r
 1. **Le traduzioni di condizioni al tavolo e blocchi di testo** (aperto dal Tema 18). Al primo
    cliente straniero il menù è tradotto e il "coperto 2 €" è in italiano. È l'ultimo buco visibile
    della pagina pubblica.
-2. **Le statistiche degli scan** (Tema 10) — **RIMANDATE il 2026-09-02, dopo averle discusse**.
+2. **Le statistiche degli scan** (Tema 10) — **RIMANDATE il 2026-09-02 e di nuovo il 2026-09-15**
+   (riproposte come "i piatti più scelti" in home, con i dati di dettaglio premium: il segnale sano
+   sarebbe l'apertura della scheda del piatto, contata per piatto e giorno con una chiamata diretta
+   al database, mai incrociata col filtro).
    Restano l'unica voce del listino che dà un motivo per pagare **ogni mese**, ma quattro cose
    vanno decise prima di scrivere una riga: (a) la pagina è servita dalla **cache al bordo**,
    quindi contare lato server è sbagliato di una quantità ignota — l'unico modo onesto è un
@@ -1648,10 +1650,15 @@ copie — portale e sito — e sotto le tre scelte il portale lo dice anche al r
 4. **Svuotare la cache alla pubblicazione**, quando le letture del menù cominceranno a vedersi nel
    traffico di Supabase: l'etichetta `Vercel-Cache-Tag` è già sulle risposte, manca il segreto
    lato server. Fino ad allora la cache è di un minuto.
-5. ~~**La pagina `/menu` sul sito**~~ **FATTA il 2026-09-03** (Tema 31): il racconto per i
-   ristoratori col menù di prova da personalizzare e «Inizia gratis». Sul branch `landing`, non
-   ancora rilasciata. ⚠️ **Nessuna pagina del sito la collega**: dove mettere il rimando è una
-   scelta di navigazione da fare.
+5. ~~**La pagina `/menu` sul sito**~~ **FATTA il 2026-09-03** (Tema 31) e online: il racconto per
+   i ristoratori col menù di prova da personalizzare e «Inizia gratis». ⚠️ **Nessuna pagina del
+   sito la collega**: dove mettere il rimando è una scelta di navigazione da fare.
+6. ~~**Gli allergeni a icone al tavolo**~~ **FATTI il 2026-09-15**: `render-menu.js` legge
+   `allergenDisplay` e disegna icone e legenda. La legenda porta la polarità con due titoletti,
+   «Contiene:» e «Da sapere» (allineata anche l'anteprima del portale).
+7. **I link del ristoratore in fondo al menù** (social, sito): sul database c'è solo il tipo
+   `social` (711); mancano il comando nel portale, i link nello scatto e la resa. Dettaglio in
+   `TODO.md`.
 
 **E la cosa che questo diario chiede da agosto**: mostrarlo a due o tre ristoratori. Adesso c'è un
 menù vero, online, con un QR che funziona — è una conversazione diversa da quella di ieri.
