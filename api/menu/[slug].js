@@ -58,20 +58,22 @@ module.exports = async function handler(req, res) {
   // di prima conclude che non ha funzionato. Un minuto è passato prima che
   // arrivi al tavolo.
   //
-  // stale-while-revalidate lungo perché il caso vero di questa pagina è
-  // mezzogiorno con venti tavoli che inquadrano insieme: chi arriva sulla
-  // copia appena scaduta riceve comunque una risposta immediata, e il
-  // rinfresco avviene dietro. Nessun cliente aspetta mai il database.
+  // ⚠️ NIENTE stale-while-revalidate (tolto il 2026-09-15). Con
+  // `stale-while-revalidate=86400` il minuto era falso: scaduta la copia, il
+  // PRIMO che arrivava — fino a 24 ore dopo — riceveva comunque quella vecchia,
+  // e la nuova si preparava per il secondo. Su un locale poco visitato voleva
+  // dire che il primo cliente dopo una correzione di allergeni leggeva ancora
+  // gli allergeni di prima: esattamente la persona sbagliata. Adesso, scaduto
+  // il minuto, chi arriva aspetta la pagina nuova (qualche centinaio di
+  // millisecondi in più, e una lettura in più sul database) e non vede mai una
+  // carta più vecchia di un minuto.
   //
-  // L'ETICHETTA non serve ancora a niente, e si mette adesso perché non costa
-  // niente: il giorno in cui i locali saranno tanti, si allunga la durata e si
-  // svuota questa etichetta al momento della pubblicazione — un locale alla
-  // volta, senza toccare la pagina. Serve però un segreto lato server (il
-  // portale gira nel browser e non può custodirlo), ed è la ragione per cui
-  // oggi non si fa: infrastruttura vera per un risparmio che a questa scala è
-  // invisibile. La soglia per farlo: quando le letture del menù cominciano a
-  // vedersi nel traffico di Supabase.
-  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=86400');
+  // L'ETICHETTA serve al passo successivo: il giorno in cui i locali saranno
+  // tanti, si svuota la copia di un locale al momento della pubblicazione e il
+  // minuto sparisce del tutto. Serve però un segreto lato server (il portale
+  // gira nel browser e non può custodirlo): infrastruttura vera, da fare quando
+  // le letture del menù cominciano a vedersi nel traffico di Supabase.
+  res.setHeader('Cache-Control', 's-maxage=60');
   res.setHeader('Vercel-Cache-Tag', `menu-${slug}`);
   return res.status(200).send(html);
 };
