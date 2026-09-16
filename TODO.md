@@ -58,7 +58,7 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
   restano **a parole**.
 - [x] ~~**La manopola nel portale**~~ — fatta il 2026-09-06 (v. «Il comando nel portale» qui sopra).
 
-### Abbonamento partner — RIAPERTO il 2026-09-15, piano da scrivere
+### Abbonamento partner — piano in `MONETIZATION.md`, passi 1 e 2 fatti (17/09)
 
 Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listino attuale»**
 (7,99 €/mese · 60 €/anno, forfettario, Stripe). L'ordine resta **abbonamento → associazione**.
@@ -117,7 +117,7 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   scheda, l'app non legge le tabelle partner): va chiuso nella migration dell'associazione.
 - [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC delle ricerche dell'app prima del primo abbonamento vero. ⚠️ NON quello della mappa (085): lì la precedenza nel quadretto resta, serve solo a non far sparire il locale.
 - [ ] **Contorno del pin per i locali col menù del ristorante** (deciso 16/09, regole in `MONETIZATION.md` «Principio guida»): pallini identici, contorno di altro colore solo sul pin, guidato dalla scheda pubblicata, mai la parola "certificato". Esce con la scheda in app (passo 5), stessa build.
-- [ ] **Account Stripe**: da verificare se esiste.
+- [x] ~~**Account Stripe**: da verificare se esiste~~ — esiste (sandbox `acct_1T8Pk3AWJFZcd82B`); l'attivazione in reale è nella voce «Prima di incassare davvero».
 
 ### Rimandati di proposito il 2026-09-15 (da riaprire coi dati, non dimenticati)
 

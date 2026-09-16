@@ -56,7 +56,7 @@ link al cliente Stripe; portale = pagamento e carta del ristoratore;
 webhook Stripe = funzione Supabase; rimborsi e disdette forzate dalla
 dashboard Stripe.
 
-## Stato attuale in breve (al 2026-07-27)
+## Stato attuale in breve (al 2026-07-27 — per lo stato di oggi v. «Piano operativo dell'abbonamento»)
 
 - **Portale partner**: progetto Next.js separato su `partner.allergiapp.com`
   (cartella `partner/` nel repo, Vercel deploya da `main`). L'admin non si tocca.
@@ -782,9 +782,12 @@ Ricadute tecniche (già riportate nella bozza 700):
 > davvero. Scheda in app e risposte alle recensioni viaggiano insieme, in una
 > build nativa.
 
-**Passo 1 — le fondamenta, tutte lato web** (nessun incasso, nessun obbligo
-nuovo)
-1. Applicare la **716** a mano dal SQL editor e verificarla (tabella, indice
+> **Dove siamo (17/09):** passi 1 e 2 FATTI. Prossimo: passo 3 (fuori dal
+> codice) e, in parallelo, il design dell'associazione del passo 5.
+
+**Passo 1 — le fondamenta, tutte lato web** ✅ FATTO il 16/09 (nessun
+incasso, nessun obbligo nuovo)
+1. ✅ Applicare la **716** a mano dal SQL editor e verificarla (tabella, indice
    parziale, funzione, policy). Tracking fermo alla 045: mai `db push`.
 2. ✅ **FATTO il 16/09** — su Stripe, nella **sandbox** `acct_1T8Pk3AWJFZcd82B`
    (account italiano in euro, non ancora attivato: `charges_enabled` false, ed
@@ -816,12 +819,13 @@ nuovo)
      webhook riversa in `partner_companies`.
    - `stripe-webhook`: scrive `partner_subscriptions` a ogni rinnovo,
      disdetta o pagamento fallito. È l'unico che scrive le righe `stripe`.
-4. `/abbonamenti` nel portale smette di essere un tappo: stato vero, bottone
+4. ✅ `/abbonamenti` nel portale smette di essere un tappo: stato vero, bottone
    che paga, e il portale cliente di Stripe per carta e disdetta.
-5. In admin: elenco degli abbonamenti e **«Concedi abbonamento»** (manuale,
+5. ✅ In admin (migration 717): elenco degli abbonamenti e **«Concedi abbonamento»** (manuale,
    con motivo e scadenza), con riga nell'audit.
 
-**Passo 2 — il primo muro: l'estetica del menù** (migration 717)
+**Passo 2 — il primo muro: l'estetica del menù** ✅ FATTO il 16/09
+(migration 718 e 719; pg_cron acceso per il giro quotidiano)
 Il muro sta in `build_public_menu`, non sul bottone (Tema 27): le manopole si
 toccano sempre, al tavolo arriva l'aspetto di base finché non c'è
 l'abbonamento. Niente lucchetti nel portale, e **niente si perde**: chi paga
