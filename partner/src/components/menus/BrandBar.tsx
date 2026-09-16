@@ -21,7 +21,7 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { accentiSceglibili, accentHex, DEFAULT_ACCENT } from '@/lib/menuBrand';
-import { APPEARANCE_711, APPEARANCE_PREMIUM } from '@/lib/features';
+import { APPEARANCE_PREMIUM } from '@/lib/features';
 import ProTag from '@/components/ProTag';
 import { CURRENCIES } from '@/lib/menus';
 import {
@@ -291,42 +291,40 @@ export default function BrandBar({
           L'unica conseguenza è che "a blocco" non mostra le foto, quindi la
           manopola della loro forma sparisce — e sotto c'è scritto perché e
           che non si perde niente. */}
-      {APPEARANCE_711 && (
-        <div>
-          <p className="text-xs text-gray-500">{d.menuEditor.layout}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {MENU_LAYOUTS.map((impaginazione) => {
-              const scelto = layout === impaginazione;
-              return (
-                <button
-                  key={impaginazione}
-                  onClick={() => onLayout(impaginazione)}
-                  aria-pressed={scelto}
-                  title={d.menuEditor.layoutHints[impaginazione]}
-                  className={`w-[132px] overflow-hidden rounded-lg border bg-white p-2 text-left transition-colors ${
-                    scelto ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
-                  }`}
-                >
-                  <AssaggioImpaginazione tipo={impaginazione} />
-                  {/* Solo il nome, e più deciso: la didascalia sotto ogni
-                      scheda diceva a parole quello che il campione disegnato
-                      mostra già, e quello che l'anteprima accanto fa vedere
-                      per davvero. Resta come titolo del bottone, per chi la
-                      pagina la ascolta invece di guardarla. */}
-                  <span className="mt-1.5 block text-sm font-medium text-gray-900">
-                    {d.menuEditor.layouts[impaginazione]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {layout === 'block' && (
-            <p className="mt-2 text-xs leading-relaxed text-gray-400">
-              {d.menuEditor.layoutNoPhotos} {d.menuEditor.layoutWantsDescriptions}
-            </p>
-          )}
+      <div>
+        <p className="text-xs text-gray-500">{d.menuEditor.layout}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {MENU_LAYOUTS.map((impaginazione) => {
+            const scelto = layout === impaginazione;
+            return (
+              <button
+                key={impaginazione}
+                onClick={() => onLayout(impaginazione)}
+                aria-pressed={scelto}
+                title={d.menuEditor.layoutHints[impaginazione]}
+                className={`w-[132px] overflow-hidden rounded-lg border bg-white p-2 text-left transition-colors ${
+                  scelto ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                <AssaggioImpaginazione tipo={impaginazione} />
+                {/* Solo il nome, e più deciso: la didascalia sotto ogni
+                    scheda diceva a parole quello che il campione disegnato
+                    mostra già, e quello che l'anteprima accanto fa vedere
+                    per davvero. Resta come titolo del bottone, per chi la
+                    pagina la ascolta invece di guardarla. */}
+                <span className="mt-1.5 block text-sm font-medium text-gray-900">
+                  {d.menuEditor.layouts[impaginazione]}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      )}
+        {layout === 'block' && (
+          <p className="mt-2 text-xs leading-relaxed text-gray-400">
+            {d.menuEditor.layoutNoPhotos} {d.menuEditor.layoutWantsDescriptions}
+          </p>
+        )}
+      </div>
 
 
       {/* LA VOCE C'È SOLO SE C'È UN TITOLO DA VEDERE (2026-09-06, stessa
@@ -373,30 +371,28 @@ export default function BrandBar({
           impaginazioni: legarlo a «a blocco» avrebbe aggiunto una manopola
           che compare e sparisce, e il pregio di questa strada è che ne
           dipende una sola. */}
-      {APPEARANCE_711 && (
-        <div>
-          <p className="text-xs text-gray-500">{d.menuEditor.separator}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {DISH_SEPARATORS.map((segno) => {
-              const scelto = separator === segno;
-              return (
-                <button
-                  key={segno}
-                  onClick={() => onSeparator(segno)}
-                  aria-pressed={scelto}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  scelto
-                    ? 'border-gray-900 bg-gray-900 text-white'
-                    : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
-                }`}
-                >
-                  {d.menuEditor.separators[segno]}
-                </button>
-              );
-            })}
-          </div>
+      <div>
+        <p className="text-xs text-gray-500">{d.menuEditor.separator}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {DISH_SEPARATORS.map((segno) => {
+            const scelto = separator === segno;
+            return (
+              <button
+                key={segno}
+                onClick={() => onSeparator(segno)}
+                aria-pressed={scelto}
+              className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                scelto
+                  ? 'border-gray-900 bg-gray-900 text-white'
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+              }`}
+              >
+                {d.menuEditor.separators[segno]}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
 
       {/* LE FOTO SPARISCONO CON «A BLOCCO» (2026-09-06, scelta dell'utente):
@@ -406,7 +402,7 @@ export default function BrandBar({
           Prima spariva solo la manopola della FORMA e restava «nessuna /
           quadrate / tonde», cioè un comando che al tavolo non cambiava
           niente. */}
-      {(!APPEARANCE_711 || layout !== 'block') && (
+      {layout !== 'block' && (
         <div>
           <p className="text-xs text-gray-500">{d.menuEditor.photos}</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -417,16 +413,11 @@ export default function BrandBar({
                 scelto: showPhotos && photoShape === 'square',
                 next: { showPhotos: true, photoShape: 'square' as DishPhotoShape },
               },
-              // Le tonde hanno bisogno della colonna della 711.
-              ...(APPEARANCE_711
-                ? [
-                    {
-                      chiave: 'round' as const,
-                      scelto: showPhotos && photoShape === 'round',
-                      next: { showPhotos: true, photoShape: 'round' as DishPhotoShape },
-                    },
-                  ]
-                : []),
+              {
+                chiave: 'round' as const,
+                scelto: showPhotos && photoShape === 'round',
+                next: { showPhotos: true, photoShape: 'round' as DishPhotoShape },
+              },
             ].map(({ chiave, scelto, next }) => (
               <button
                 key={chiave}
@@ -623,30 +614,28 @@ export default function BrandBar({
             bottoni per un accenno. La stringa `lineHeightSample` («due
             righe») è stata tolta dai dizionari insieme al campione: non la
             usava nessun altro. */}
-        {APPEARANCE_711 && (
-          <div>
-            <p className="text-xs text-gray-500">{d.menuEditor.lineHeight}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {LINE_HEIGHTS.map((aria) => {
-                const scelto = lineHeight === aria;
-                return (
-                  <button
-                    key={aria}
-                    onClick={() => onLineHeight(aria)}
-                    aria-pressed={scelto}
-                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                      scelto
-                        ? 'border-gray-900 bg-gray-900 text-white'
-                        : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
-                    }`}
-                  >
-                    {d.menuEditor.lineHeights[aria]}
-                  </button>
-                );
-              })}
-            </div>
+        <div>
+          <p className="text-xs text-gray-500">{d.menuEditor.lineHeight}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {LINE_HEIGHTS.map((aria) => {
+              const scelto = lineHeight === aria;
+              return (
+                <button
+                  key={aria}
+                  onClick={() => onLineHeight(aria)}
+                  aria-pressed={scelto}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    scelto
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                  }`}
+                >
+                  {d.menuEditor.lineHeights[aria]}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
         {/* ⚠️ QUI C'ERA «La riga degli allergeni non rimpicciolisce mai»,
             tolta il 16/09 su richiesta dell'utente. Il fatto resta vero — il

@@ -19,7 +19,6 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
-import { APPEARANCE_711 } from './features';
 import { DEFAULT_ACCENT } from './menuBrand';
 import { socialProvider } from './socials';
 import { deleteCover, deleteLogo } from './photos';
@@ -387,15 +386,7 @@ async function loadVenues(): Promise<Venue[]> {
     .from('partner_venues')
     .select(
       'id, name, slug, logo_url, accent, table_conditions, show_dish_photos, ' +
-        // ⚠️ Le colonne della 711 si NOMINANO solo quando esistono davvero
-        // (v. APPEARANCE_711): PostgREST, davanti a una colonna che non c'è,
-        // rifiuta tutta l'interrogazione — nessun locale, non un locale con
-        // un campo in meno.
-        (APPEARANCE_711 ? 'dish_photo_shape, line_height, menu_layout, dish_separator, ' : '') +
-        // allergen_display non passa da APPEARANCE_711: la 711 è applicata,
-        // la colonna c'è, e il cancello serviva solo a non nominare colonne
-        // inesistenti.
-        'allergen_display, ' +
+        'dish_photo_shape, line_height, menu_layout, dish_separator, allergen_display, ' +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id), partner_card_dishes(dish_id)'
@@ -738,14 +729,10 @@ export function useVenues() {
     if (next.logoUrl !== undefined) riga.logo_url = next.logoUrl || null;
     if (next.accent !== undefined) riga.accent = next.accent;
     if (next.showDishPhotos !== undefined) riga.show_dish_photos = next.showDishPhotos;
-    if (APPEARANCE_711 && next.dishPhotoShape !== undefined) {
-      riga.dish_photo_shape = next.dishPhotoShape;
-    }
-    if (APPEARANCE_711 && next.lineHeight !== undefined) riga.line_height = next.lineHeight;
-    if (APPEARANCE_711 && next.menuLayout !== undefined) riga.menu_layout = next.menuLayout;
-    if (APPEARANCE_711 && next.dishSeparator !== undefined) {
-      riga.dish_separator = next.dishSeparator;
-    }
+    if (next.dishPhotoShape !== undefined) riga.dish_photo_shape = next.dishPhotoShape;
+    if (next.lineHeight !== undefined) riga.line_height = next.lineHeight;
+    if (next.menuLayout !== undefined) riga.menu_layout = next.menuLayout;
+    if (next.dishSeparator !== undefined) riga.dish_separator = next.dishSeparator;
     if (next.allergenDisplay !== undefined) riga.allergen_display = next.allergenDisplay;
     if (next.showDishDescriptions !== undefined) riga.show_dish_descriptions = next.showDishDescriptions;
     if (next.sectionStyle !== undefined) riga.section_style = next.sectionStyle;
@@ -842,14 +829,10 @@ export function useVenues() {
           // aveva.
           slug: venue.slug || null,
           show_dish_photos: venue.showDishPhotos,
-          ...(APPEARANCE_711
-            ? {
-                dish_photo_shape: venue.dishPhotoShape,
-                line_height: venue.lineHeight,
-                menu_layout: venue.menuLayout,
-                dish_separator: venue.dishSeparator,
-              }
-            : {}),
+          dish_photo_shape: venue.dishPhotoShape,
+          line_height: venue.lineHeight,
+          menu_layout: venue.menuLayout,
+          dish_separator: venue.dishSeparator,
           allergen_display: venue.allergenDisplay,
           show_dish_descriptions: venue.showDishDescriptions,
           section_style: venue.sectionStyle,

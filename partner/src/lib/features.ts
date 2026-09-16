@@ -29,26 +29,6 @@
 // pagine diverse (Tema 13).
 export const MULTI_MENU: boolean = true;
 
-// LE QUATTRO MANOPOLE DELLA MIGRATION 711: forma delle miniature dei piatti
-// (tonde o squadrate), interlinea, impaginazione (a riga / a blocco) e segno
-// fra un piatto e l'altro.
-//
-// ⚠️ ACCESO dal 2026-09-06, il giorno in cui la 711 è stata applicata e
-// verificata sul database di produzione (colonne, vincolo, pg_get_functiondef).
-// Prima era spento per una ragione diversa da MULTI_MENU: non una scelta di
-// prodotto, ma il fatto che LE COLONNE NON C'ERANO — e PostgREST, davanti a
-// una colonna che non esiste, rifiuta l'interrogazione INTERA: non un locale
-// con un campo in meno, nessun locale.
-//
-// A cosa serve adesso: è la leva per tornare indietro senza revert, se una di
-// quelle quattro si rivelasse rotta in produzione. ⚠️ Va tolto — lui e le
-// guardie `APPEARANCE_711 &&` sparse in BrandBar e venues.ts — quando le
-// manopole saranno state usate da qualcuno per qualche giorno. Finché resta,
-// spegnerlo NON è una rollback completa: `allergen_display` e il kind
-// 'social', arrivati con la stessa migration, non passano di qui perché le
-// loro colonne esistono già.
-export const APPEARANCE_711: boolean = true;
-
 // L'ABBONAMENTO: i due bottoni che aprono il pagamento su Stripe.
 //
 // ⚠️ SPENTO fino al passaggio ai pagamenti veri. La catena funziona tutta
