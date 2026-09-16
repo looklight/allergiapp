@@ -1,6 +1,8 @@
 -- ============================================================
 -- 719_appearance_sweep.sql
--- STATO: BOZZA, da applicare a mano dal SQL editor.
+-- STATO: APPLICATA il 2026-09-16 e verificata (indice nuovo al posto del
+-- vecchio, published_appearance_without_premium viva, il giro trova 0 locali
+-- fuori posto — cioè erano già tutti in pari).
 -- Tracking fermo alla 045: a mano, MAI db push.
 --
 -- IL SEGUITO DELLA 718, dopo aver ripercorso tutti i flussi (16/09).

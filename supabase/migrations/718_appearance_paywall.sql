@@ -1,6 +1,10 @@
 -- ============================================================
 -- 718_appearance_paywall.sql
--- STATO: BOZZA, da applicare a mano dal SQL editor.
+-- STATO: APPLICATA il 2026-09-16.
+-- ⚠️ POI CORRETTA DALLA 719 in tre punti (il trigger che leggeva NEW e OLD
+-- insieme, foto e descrizioni riscritte coi valori di adesso, l'indice a un
+-- solo abbonamento per locale): quello che vale oggi è la 719. Questa resta
+-- perché è dove il muro è nato e dove è spiegato.
 -- Tracking fermo alla 045: a mano, MAI db push.
 --
 -- L'ASPETTO DEL MENÙ DIVENTA LA PRIMA COSA A PAGAMENTO.

@@ -83,6 +83,15 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   - [ ] **Il link «Apri su Stripe» in admin punta alla sandbox** (costante `STRIPE_CLIENTI` in
     `admin/src/app/partners/page.tsx`): una riga da cambiare al passaggio in reale.
   - [ ] **Ripulire le prove**: abbonamento di test su «Hugo Bistrot» e cliente finto su Stripe.
+- [x] ~~**Passo 2: il muro dell'aspetto**~~ — FATTO il 16/09. Migration **718 e 719 APPLICATE**:
+  undici manopole su tredici passano dal muro (foto e descrizioni dei piatti restano gratis, sono
+  contenuto), il muro sta nello **scatto di pubblicazione** e non sui comandi, l'aspetto esce dalla
+  sala da solo quando l'abbonamento finisce, e un giro quotidiano copre le scadenze per data.
+  Nel portale: distintivo **Pro** viola sulle funzioni, ambra accanto al nome del locale abbonato,
+  e «Rimetti i valori di partenza» per chi non paga.
+  - [ ] **Accendere pg_cron** (Database → Extensions) e pianificare il giro: il pezzo `cron.schedule`
+    è in fondo alla 719, commentato. Senza, le concessioni scadute per data tengono l'aspetto in
+    sala fino alla pubblicazione successiva o a una revoca.
 - [ ] **Il piano a passi** — scritto il 16/09 in `MONETIZATION.md`, «Piano operativo
   dell'abbonamento»: fondamenta web (716 + Stripe test + due Edge Function + `/abbonamenti` vero +
   «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù, migration 717 (l'unica
