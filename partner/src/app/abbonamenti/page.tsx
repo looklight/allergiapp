@@ -213,6 +213,9 @@ function Abbonamenti() {
                     <span className="text-xs text-gray-500">{d.subs.yearlyHint}</span>
                   </div>
                 )}
+                {!sub && (
+                  <p className="mt-2 text-xs text-gray-500">{d.subs.renewalNote}</p>
+                )}
 
                 {/* L'associazione al ristorante su AllergiApp non è ancora
                     costruita: si dice al futuro invece di promettere un

@@ -580,6 +580,8 @@ const en: typeof it = {
     monthly: '€7.99 per month',
     yearly: '€60 per year',
     yearlyHint: 'Two months free',
+    renewalNote:
+      'It renews on its own, monthly or yearly depending on your choice. You can cancel any time: you stay active until the end of the period you already paid for.',
     manage: 'Manage payment and invoices',
     billingHint:
       'Your company details (VAT number, address) are entered during payment: they go on the invoice.',

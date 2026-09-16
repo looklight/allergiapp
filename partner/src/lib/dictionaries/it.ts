@@ -785,6 +785,11 @@ const it = {
     monthly: '7,99 € al mese',
     yearly: '60 € all’anno',
     yearlyHint: 'Due mesi in regalo',
+    // Va detto PRIMA di pagare, non dopo: il rinnovo automatico scoperto al
+    // secondo addebito è il modo più rapido di perdere un ristoratore, e verso
+    // le imprese la chiarezza su durata e disdetta è anche dovuta (P2B).
+    renewalNote:
+      'Si rinnova da solo, mensile o annuale secondo la scelta. Puoi disdire quando vuoi: resti attivo fino alla fine del periodo già pagato.',
     manage: 'Gestisci pagamento e fatture',
     billingHint:
       'I dati della tua azienda (P.IVA, sede) si inseriscono al pagamento: servono per la fattura.',
