@@ -42,6 +42,11 @@ interface PartnerVenue {
   sub_cancel_at_period_end: boolean | null;
   sub_note: string | null;
   sub_customer_id: string | null;
+  past_subs: number;
+  ex_canceled_at: string | null;
+  ex_source: 'stripe' | 'manual' | null;
+  ex_started_at: string | null;
+  ex_ends_at: string | null;
 }
 
 interface PartnerStats {
@@ -57,6 +62,7 @@ interface PartnerStats {
   new_accounts_30d: number;
   new_subs_30d: number;
   canceled_subs_30d: number;
+  venues_churned: number;
 }
 
 // Il menù pubblico del locale, quello che si apre col QR.
@@ -133,7 +139,9 @@ export default function PartnersPage() {
   // Filtro e ordinamento vivono QUI e non nella funzione del database: le
   // righe sono poche e già scaricate, quindi si riordinano senza un viaggio
   // in più, e aggiungere un modo di guardarle non è una migration.
-  const [filtro, setFiltro] = useState<'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati'>('tutti');
+  const [filtro, setFiltro] = useState<
+    'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati' | 'disdetti'
+  >('tutti');
   // L'ordinamento si comanda dalle intestazioni della tabella, come in ogni
   // tabella che si rispetti: il verso si inverte ripremendo la stessa.
   // Di partenza, i locali più recenti in cima.
@@ -174,6 +182,10 @@ export default function PartnersPage() {
           return r.sub_source === 'manual';
         case 'senza':
           return !r.sub_id;
+        // Ex abbonati: l'abbonamento l'hanno avuto e oggi non ce l'hanno. È
+        // la lista da cui si riparte, non un doppione di "senza abbonamento".
+        case 'disdetti':
+          return !r.sub_id && r.past_subs > 0;
         case 'ritardo':
           return r.sub_status === 'past_due';
         case 'pubblicati':
@@ -227,6 +239,7 @@ export default function PartnersPage() {
     { id: 'paganti', label: 'Paganti' },
     { id: 'offerti', label: 'Offerti' },
     { id: 'senza', label: 'Senza abbonamento' },
+    { id: 'disdetti', label: 'Ex abbonati' },
     { id: 'ritardo', label: 'In ritardo' },
     { id: 'pubblicati', label: 'Menù in sala' },
   ];
@@ -295,8 +308,42 @@ export default function PartnersPage() {
     if (error) console.error('[partner_audit_log]', error.message, error);
   }
 
+  // Quanto è durato l'abbonamento che si è chiuso: dice se quel ristoratore
+  // ha provato una settimana o è stato con noi un anno, cioè quanto vale
+  // riprovare a parlargli.
+  function durataPassata(r: PartnerVenue): string {
+    if (!r.ex_started_at) return '';
+    const fine = new Date(r.ex_ends_at ?? r.ex_canceled_at ?? Date.now()).getTime();
+    const giorni = Math.max(0, Math.floor((fine - new Date(r.ex_started_at).getTime()) / 86400000));
+    if (giorni < 30) return `${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`;
+    const mesi = Math.round(giorni / 30);
+    return `${mesi} ${mesi === 1 ? 'mese' : 'mesi'}`;
+  }
+
   function abbonamento(r: PartnerVenue) {
-    if (!r.sub_id) return <span className="text-faint">Nessuno</span>;
+    if (!r.sub_id) {
+      // Un ex abbonato non è "nessuno": è qualcuno che c'era e se n'è andato.
+      if (r.past_subs > 0) {
+        const durata = durataPassata(r);
+        return (
+          <div>
+            {/* La coppia usata nell'admin per il rosso tenue: il token
+                danger-soft-foreground non esiste. */}
+            <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-danger-soft text-danger-strong">
+              Disdetto
+            </span>
+            {r.ex_canceled_at && (
+              <p className="text-xs text-faint mt-0.5">il {data(r.ex_canceled_at)}</p>
+            )}
+            <p className="text-xs text-faint">
+              {r.ex_source === 'manual' ? 'era offerto' : 'aveva pagato'}
+              {durata && ` · ${durata}`}
+            </p>
+          </div>
+        );
+      }
+      return <span className="text-faint">Nessuno</span>;
+    }
     if (r.sub_status === 'past_due') {
       return (
         <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-warning-soft text-warning-soft-foreground">
@@ -411,6 +458,7 @@ export default function PartnersPage() {
                   f.id === 'paganti' ? r.sub_source === 'stripe'
                   : f.id === 'offerti' ? r.sub_source === 'manual'
                   : f.id === 'senza' ? !r.sub_id
+                  : f.id === 'disdetti' ? !r.sub_id && r.past_subs > 0
                   : f.id === 'ritardo' ? r.sub_status === 'past_due'
                   : r.published_at !== null,
                 ).length}
