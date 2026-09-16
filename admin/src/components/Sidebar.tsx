@@ -10,6 +10,7 @@ const navItems = [
   { href: '/restaurants', label: 'Ristoranti' },
   { href: '/users', label: 'Utenti' },
   { href: '/reviews', label: 'Recensioni' },
+  { href: '/partners', label: 'Partner' },
   { href: '/media', label: 'Media' },
   { href: '/reports', label: 'Segnalazioni' },
   { href: '/announcements', label: 'Annunci' },
