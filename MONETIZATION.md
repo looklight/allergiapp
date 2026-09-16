@@ -777,6 +777,14 @@ l'abbonamento. Niente lucchetti nel portale, e **niente si perde**: chi paga
 ritrova quello che aveva impostato. Da decidere qui: i due locali di prova,
 e se l'estetica già pubblicata oggi resta accesa.
 
+> **Scade, sparisce; ti abboni prima, resta** (16/09). Vale per tutti allo
+> stesso modo, anche per le concessioni nostre: una di tre mesi che arriva a
+> scadenza porta via l'aspetto come una disdetta. Quello che NON si perde
+> sono le scelte — colore, carattere, copertina restano scritte sul locale e
+> l'anteprima le mostra: si riabbona, preme Pubblica, e tornano al tavolo.
+> Le disdette le intercetta un trigger (718); le scadenze per data, che non
+> sono un evento, un giro quotidiano (719).
+
 **Passo 3 — due o tre ristoratori veri**, con abbonamento concesso a mano.
 È la prova chiesta da `DIGITAL_MENU.md` prima delle statistiche, e insieme
 il primo collaudo del passo 1. Si scopre presto se l'estetica da sola regge
