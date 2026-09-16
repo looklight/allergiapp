@@ -21,7 +21,7 @@
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
 import { accentiSceglibili, accentHex } from '@/lib/menuBrand';
-import { APPEARANCE_711 } from '@/lib/features';
+import { APPEARANCE_711, APPEARANCE_PREMIUM } from '@/lib/features';
 import { CURRENCIES } from '@/lib/menus';
 import {
   ALLERGEN_DISPLAYS,
@@ -147,8 +147,13 @@ export default function BrandBar({
           voce premium candidata (Tema 31). Quindi deve farsi notare senza
           urlare: un'icona nel colore scelto per il menù, un titolo vero, una
           frase che dice cosa si ottiene, e un bottone "Personalizza". Nessuna
-          etichetta "Premium" finché il listino non è deciso: oggi è gratis
-          per tutti, e dire il contrario sarebbe falso. */}
+          etichetta "Premium" finché il listino non è deciso.
+
+          ⚠️ AGGIORNATO IL 16/09: il listino c'è (MONETIZATION.md) e l'etichetta
+          arriva, ma dietro APPEARANCE_PREMIUM — cioè solo quando la migration
+          718 rende vero quello che dice. Resta un'etichetta, non un lucchetto:
+          le manopole si toccano tutte, e l'anteprima le mostra. Serve a non
+          far scoprire il confine DOPO mezz'ora di lavoro. */}
       <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
         <span
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-inset ring-black/10"
@@ -164,7 +169,14 @@ export default function BrandBar({
           </svg>
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</span>
+          <span className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</span>
+            {APPEARANCE_PREMIUM && (
+              <span className="shrink-0 rounded-full border border-gray-300 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+                {d.menuEditor.brandPremium}
+              </span>
+            )}
+          </span>
           <span className="block text-xs text-gray-500">{d.menuEditor.brandTeaser}</span>
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 transition-colors group-hover:border-gray-400 group-open:border-gray-200 group-open:text-gray-500">
@@ -189,6 +201,16 @@ export default function BrandBar({
       {/* La riga che dice cosa si fa qui, e accanto il modo di vederlo
           succedere: con un menù ancora vuoto l'anteprima è uno schermo
           bianco, e ogni scelta di questa scatola si farebbe alla cieca. */}
+      {/* Il confine si dice APRENDO la scatola, dove si sta per lavorare, e
+          non solo con l'etichetta sulla riga chiusa: chi arriva qui dentro
+          deve sapere prima di scegliere un colore che al tavolo ci arriva
+          con l'abbonamento — e che foto e descrizioni restano sue comunque. */}
+      {APPEARANCE_PREMIUM && (
+        <p className="mb-3 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
+          {d.menuEditor.brandPremiumNote}
+        </p>
+      )}
+
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="min-w-0 flex-1 text-xs text-gray-500">{d.menuEditor.brandHint}</p>
         {esempio && (

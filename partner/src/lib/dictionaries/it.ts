@@ -470,6 +470,12 @@ const it = {
     brandTitle: 'Aspetto del menù',
     brandTeaser: 'Logo, colori, copertina e caratteri: fai sembrare il menù davvero tuo.',
     brandOpen: 'Personalizza',
+    // L'etichetta è una parola sola e sobria: dice il confine senza vendere
+    // niente. La frase accanto dice le due cose che contano — che si possono
+    // provare subito, e cosa resta gratis comunque.
+    brandPremium: 'Premium',
+    brandPremiumNote:
+      'Provale quando vuoi e guarda l’anteprima: per portarle al tavolo serve l’abbonamento. Le foto e le descrizioni dei piatti restano sempre tue.',
     brandClose: 'Chiudi',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',

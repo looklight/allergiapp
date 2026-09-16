@@ -64,3 +64,16 @@ export const APPEARANCE_711: boolean = true;
 // prezzi sono rifatti in modalità reale, e le condizioni d'uso col P2B sono
 // online (MONETIZATION.md, «Piano operativo dell'abbonamento», passo 4).
 export const SUBSCRIPTIONS: boolean = false;
+
+// L'ASPETTO DEL MENÙ È PREMIUM: l'etichetta e la frase che lo dicono nella
+// scatola «Aspetto del menù».
+//
+// ⚠️ VA TENUTO ALLINEATO ALLA MIGRATION 718, che è dove il muro esiste
+// davvero (nello scatto di pubblicazione, non qui). Acceso senza la 718
+// direbbe una bugia al contrario — «serve l'abbonamento» mentre in sala
+// l'aspetto ci arriva lo stesso.
+//
+// Non è un lucchetto: le manopole restano tutte usabili e l'anteprima le
+// mostra. L'etichetta serve a non far scoprire il confine DOPO aver
+// lavorato mezz'ora (DIGITAL_MENU.md, Tema 27).
+export const APPEARANCE_PREMIUM: boolean = false;
