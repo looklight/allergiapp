@@ -1,6 +1,7 @@
 -- ============================================================
 -- 720_menu_defaults_and_links.sql
--- STATO: BOZZA, da applicare a mano dal SQL editor.
+-- STATO: APPLICATA il 2026-09-16 e verificata (colore forest, filo rule,
+-- venue_public_links, partner_retired_slugs).
 -- Tracking fermo alla 045: a mano, MAI db push.
 --
 -- I VALORI DI PARTENZA DEL MENÙ GRATUITO, I LINK DEL RISTORATORE, E GLI

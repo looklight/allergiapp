@@ -338,6 +338,10 @@ l'aveva se lo riprende se rimette in piedi il locale.
 fondo alla pagina, il servizio dedotto dall'indirizzo, il nome della pagina scritto accanto al
 simbolo. Sono premium come il logo — il locale che si presenta — e passano dallo stesso muro.
 
+Tutto questo sta nella **migration 720**, applicata e verificata il 16/09. Per i locali senza
+abbonamento il menù in sala passa da carbone a verde alla pubblicazione successiva; chi ha già
+`charcoal` salvato sulla riga se lo tiene.
+
 ## Aperto, non deciso
 
 **Il contenuto gratuito entra in AllergiApp?** È il bivio che discende dal Tema 10, e oggi la 700

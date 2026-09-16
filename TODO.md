@@ -126,9 +126,10 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
 - [ ] **Decisioni aperte sulle icone del piatto**: l'icona «crudo» a 14px; a icone, allergeni e
   note che diventano un unico blocco di simboli.
 
-### Menù al tavolo — fatto il 2026-09-16, resta da applicare la 720
+### Menù al tavolo — fatto il 2026-09-16, 720 applicata
 
-- [ ] **Applicare la `720_menu_defaults_and_links.sql`** — una sola esecuzione per tre cose:
+- [x] ~~**Applicare la `720_menu_defaults_and_links.sql`**~~ — APPLICATA e verificata il 16/09
+  (default `forest` + `rule`, `venue_public_links`, `partner_retired_slugs`). Una sola esecuzione per tre cose:
   valori di partenza del menù gratuito (**verde bosco** e **filo fra i piatti**), i **link del
   ristoratore** in fondo alla pagina, e gli **indirizzi ritirati** (v. sotto). Contiene anche il
   rifiuto di costruire uno scatto **senza nemmeno un piatto**: il bottone Pubblica è già nascosto
@@ -149,6 +150,9 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
     dare 404: chi inquadra un QR vecchio deve capire cos'è successo. Lavoro sul sito, non fatto.
 
 ### I link del ristoratore in fondo al menù al tavolo (voluta 2026-09-06, COSTRUITA il 2026-09-16)
+
+⚠️ **Sezione storica**: costruita il 16/09 e applicata con la 720 (v. sopra). Quello che segue è
+lo stato del 15/09, tenuto per le decisioni.
 
 **Stato verificato il 2026-09-15**: sul database c'è **solo** il tipo `social` ammesso da
 `partner_links` (711) — nessun link social salvato. Mancano tutti gli altri pezzi qui sotto: il
