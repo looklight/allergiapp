@@ -304,7 +304,7 @@ const en: typeof it = {
     genericTab: 'Menu',
     activeLabel: 'Active',
     activeHint: 'Guests see it among the tabs. Tap to set it aside.',
-    parkedHint: 'It only exists here: it doesn’t appear at the table. Tap to put it back.',
+    parkedHint: 'It only exists here: it doesn’t appear at the table. Tap to put it back among the tabs.',
     lastActiveHint: 'At least one menu must stay on.',
     forVenue: 'Which venue?',
     newVenue: '+ Another venue',

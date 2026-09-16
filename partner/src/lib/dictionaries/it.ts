@@ -367,7 +367,11 @@ const it = {
     // utente, 13/09).
     activeLabel: 'Attivo',
     activeHint: 'Il cliente lo vede fra le linguette. Tocca per metterlo da parte.',
-    parkedHint: 'Esiste solo qui: al tavolo non compare. Tocca per rimetterlo in sala.',
+    // "Fra le linguette" e non "in sala", che era rimasto l'ultimo posto in
+    // cui il portale usava quella metafora: in un ristorante la sala è la
+    // stanza dove si mangia, e qui si parla di dove sta il menù dentro la
+    // pagina. La frase gemella qui sopra dice già "fra le linguette".
+    parkedHint: 'Esiste solo qui: al tavolo non compare. Tocca per rimetterlo fra le linguette.',
     // Spegnendo anche questo, pubblicare non farebbe più niente: il database
     // rifiuta una carta vuota, e la modifica resterebbe in sospeso per
     // sempre (richiesta dell'utente, 14/09).
