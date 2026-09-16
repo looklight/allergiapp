@@ -22,6 +22,7 @@
 import { useI18n } from '@/lib/i18n';
 import { accentiSceglibili, accentHex } from '@/lib/menuBrand';
 import { APPEARANCE_711, APPEARANCE_PREMIUM } from '@/lib/features';
+import ProTag from '@/components/ProTag';
 import { CURRENCIES } from '@/lib/menus';
 import {
   ALLERGEN_DISPLAYS,
@@ -74,6 +75,7 @@ export default function BrandBar({
   onTextScale,
   onLineHeight,
   onCover,
+  abbonato,
 }: {
   accent: string;
   // ⚠️ LA VALUTA NON È ASPETTO, sta qui solo perché è qui che si va a
@@ -126,6 +128,10 @@ export default function BrandBar({
   onTextScale: (value: TextScale) => void;
   onLineHeight: (value: LineHeight) => void;
   onCover: (value: string) => void;
+  // Il locale ha l'abbonamento? Da abbonato non c'è più niente da sbloccare,
+  // quindi l'etichetta grigia sparisce: il distintivo ambra accanto al nome
+  // del locale, in home, dice già che ce l'ha (v. ProTag).
+  abbonato: boolean;
 }) {
   const { d, locale } = useI18n();
 
@@ -171,11 +177,7 @@ export default function BrandBar({
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</span>
-            {APPEARANCE_PREMIUM && (
-              <span className="shrink-0 rounded-full border border-gray-300 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                {d.menuEditor.brandPremium}
-              </span>
-            )}
+            {APPEARANCE_PREMIUM && !abbonato && <ProTag variant="needed" />}
           </span>
           <span className="block text-xs text-gray-500">{d.menuEditor.brandTeaser}</span>
         </span>
@@ -205,7 +207,7 @@ export default function BrandBar({
           non solo con l'etichetta sulla riga chiusa: chi arriva qui dentro
           deve sapere prima di scegliere un colore che al tavolo ci arriva
           con l'abbonamento — e che foto e descrizioni restano sue comunque. */}
-      {APPEARANCE_PREMIUM && (
+      {APPEARANCE_PREMIUM && !abbonato && (
         <p className="mb-3 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
           {d.menuEditor.brandPremiumNote}
         </p>

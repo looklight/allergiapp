@@ -122,6 +122,15 @@ const it = {
     submitting: 'Creazione…',
     wrongAccount: 'Non è l’account giusto?',
   },
+  // IL DISTINTIVO PRO, una parola sola per tutt'e due le facce: quella che
+  // dice "lo fa l'abbonamento" e quella che dice "questo locale ce l'ha".
+  // Il titolo esteso serve a chi la pagina la ascolta: "Pro" da sola non
+  // direbbe quale delle due.
+  pro: {
+    label: 'Pro',
+    neededTitle: 'Si prova subito; arriva ai clienti con l’abbonamento',
+    activeTitle: 'Questo locale ha l’abbonamento attivo',
+  },
   home: {
     create: 'Aggiungi locale',
     unnamed: 'Locale senza nome',
@@ -484,7 +493,6 @@ const it = {
     // L'etichetta è una parola sola e sobria: dice il confine senza vendere
     // niente. La frase accanto dice le due cose che contano — che si possono
     // provare subito, e cosa resta gratis comunque.
-    brandPremium: 'Premium',
     brandPremiumNote:
       'Provale quando vuoi e guarda l’anteprima: per portarle al tavolo serve l’abbonamento. Le foto e le descrizioni dei piatti restano sempre tue.',
     brandClose: 'Chiudi',

@@ -97,6 +97,11 @@ const en: typeof it = {
     submitting: 'Creating…',
     wrongAccount: 'Not the right account?',
   },
+  pro: {
+    label: 'Pro',
+    neededTitle: 'Try it now; it reaches your guests with a subscription',
+    activeTitle: 'This venue has an active subscription',
+  },
   home: {
     create: 'Add venue',
     unnamed: 'Untitled venue',
@@ -358,7 +363,6 @@ const en: typeof it = {
     brandTitle: 'Menu look',
     brandTeaser: 'Logo, colours, cover and fonts: make the menu feel truly yours.',
     brandOpen: 'Customise',
-    brandPremium: 'Premium',
     brandPremiumNote:
       'Try them whenever you like and watch the preview: taking them to the table needs a subscription. Your dish photos and descriptions always stay yours.',
     brandClose: 'Close',

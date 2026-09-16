@@ -36,6 +36,7 @@ import { useRouter } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useVenues, useVenueChoice, currentVenue, countLinks, type Venue } from '@/lib/venues';
 import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
+import ProTag from '@/components/ProTag';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import { dishThumb, useDishes, type Dish } from '@/lib/dishes';
 import { prefetchPublishState, usePublishState } from '@/lib/publish';
@@ -378,13 +379,19 @@ export default function HomePage() {
                     key={v.id}
                     onClick={() => cambiaLocale(v.id)}
                     aria-pressed={acceso}
-                    className={`max-w-[14rem] truncate rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                    className={`max-w-[16rem] rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                       acceso
                         ? 'bg-gray-900 text-white'
                         : 'border border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-900'
                     }`}
                   >
-                    {v.venueName.trim() || d.home.unnamed}
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="truncate">{v.venueName.trim() || d.home.unnamed}</span>
+                      {/* Dentro la pill del locale, che è il posto dove si
+                          dice DI CHI si sta parlando: il piano appartiene al
+                          locale, non alla schermata. */}
+                      {abbonamentoDi(subs, v.id) !== null && <ProTag variant="active" />}
+                    </span>
                   </button>
                 );
               })}
@@ -406,8 +413,9 @@ export default function HomePage() {
           </>
         ) : (
           <>
-            <h2 className="min-w-0 truncate text-base font-semibold text-gray-900">
-              {venue.venueName.trim() || d.home.unnamed}
+            <h2 className="flex min-w-0 items-center gap-2 text-base font-semibold text-gray-900">
+              <span className="truncate">{venue.venueName.trim() || d.home.unnamed}</span>
+              {abbonato && <ProTag variant="active" />}
             </h2>
             <button
               onClick={() => {

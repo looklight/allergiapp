@@ -8,12 +8,14 @@ import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import { venueDishes, useDishes } from '@/lib/dishes';
 import { hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
+import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
 import { MENU_LANGUAGES } from '@/lib/languages';
 import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
+import ProTag from '@/components/ProTag';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
 import CardDishesSelector from '@/components/CardDishesSelector';
@@ -230,6 +232,9 @@ export default function VenueEditorPage() {
   const { d } = useI18n();
   const params = useParams<{ id: string }>();
   const { venues, update, setDishesOn } = useVenues();
+  // Se il locale è abbonato l'etichetta Pro sparisce: non c'è più niente da
+  // sbloccare, e il distintivo ambra in home dice già che ce l'ha.
+  const { subs } = useSubscriptions();
   // Il catalogo è del partner: la scheda dice solo quali piatti sono accesi
   const { dishes: catalog } = useDishes();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -274,6 +279,7 @@ export default function VenueEditorPage() {
   }, [venues, catalog]);
 
   const venue = venues?.find((s) => s.id === params.id);
+  const abbonato = venue ? abbonamentoDi(subs, venue.id) !== null : false;
 
   // Prima lettura dal database ancora in corso: null vuol dire "non lo so
   // ancora", che è diverso da "non c'è" (v. useRemoteList in storage.ts)
@@ -445,13 +451,12 @@ export default function VenueEditorPage() {
             {d.editor.draftBadge}
           </span>
           {/* Due pastiglie che dicono due cose diverse: dov'è questo lavoro
-              adesso (bozza privata) e cosa servirà perché esca (abbonamento).
-              La seconda è scritta più piano — è una condizione, non lo stato
-              di quello che stai guardando. Non è un lucchetto: la scheda si
+              adesso (bozza privata) e cosa servirà perché esca (Pro). La
+              seconda sparisce per chi è abbonato — non ha più niente da
+              sbloccare, e il distintivo ambra accanto al nome del locale in
+              home dice già che ce l'ha. Non è un lucchetto: la scheda si
               compila tutta e l'anteprima la mostra. */}
-          <span className="rounded-full border border-gray-300 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-            {d.editor.premium}
-          </span>
+          {!abbonato && <ProTag variant="needed" />}
         </div>
         {/* Senza il richiamo qui sotto, lo stacco dal contenuto lo dà la frase */}
         <PageIntro className={venue.cardId === null ? '' : 'mb-10 md:mb-12'}>

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
+import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { useModal } from '@/lib/useModal';
 import { useDishes, type Dish } from '@/lib/dishes';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
@@ -56,6 +57,9 @@ export default function MenuEditorPage() {
   const { dishes, create: createDish, update: updateDish } = useDishes();
   const { menu, loading, save } = useMenu(id);
   const { menus } = useMenus();
+  // ⚠️ Qui in cima con gli altri ganci: più sotto la pagina ha già un return
+  // anticipato, e un gancio dopo di quello non verrebbe chiamato sempre.
+  const { subs } = useSubscriptions();
   const {
     venues,
     update: updateVenue,
@@ -192,6 +196,9 @@ export default function MenuEditorPage() {
   // L'aspetto pende dal LOCALE e non dal menù: si cambia da qui perché è qui
   // che se ne vede l'effetto, ma vale per tutti i menù di quel locale.
   const locale = (venues ?? []).find((v) => v.id === menu.venueId) ?? null;
+  // Se il locale è abbonato, l'aspetto arriva al tavolo e non c'è più niente
+  // da segnalare nella scatola (v. ProTag).
+  const abbonato = abbonamentoDi(subs, menu.venueId) !== null;
   const brand: MenuBrand = {
     name: locale?.venueName ?? '',
     logoUrl: locale?.logoUrl ?? '',
@@ -394,6 +401,7 @@ export default function MenuEditorPage() {
           da guardare mentre si sceglie (v. previewSampleShow). */}
       <div className="mt-4">
         <BrandBar
+          abbonato={abbonato}
           accent={brand.accent}
           currency={menu.currency}
           layout={locale?.menuLayout ?? 'row'}
