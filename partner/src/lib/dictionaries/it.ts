@@ -772,6 +772,25 @@ const it = {
     notLinked: 'Non associato',
     noSubscription: 'Nessun abbonamento',
     linkCta: 'Associa al ristorante su AllergiApp',
+    // Stato dell'abbonamento del locale
+    active: 'Abbonamento attivo',
+    renewsOn: 'Si rinnova il {data}',
+    endsOn: 'Finisce il {data}',
+    noEnd: 'Senza scadenza',
+    pastDue: 'Pagamento in ritardo',
+    pastDueHint: 'Stiamo riprovando con la tua carta. Il menù resta com’è.',
+    granted: 'Offerto da AllergiApp',
+    // ⚠️ I prezzi sono scritti qui E stanno su Stripe: se cambiano, vanno
+    // cambiati in tutt'e due i posti. Il conto vero lo fa sempre Stripe.
+    monthly: '7,99 € al mese',
+    yearly: '60 € all’anno',
+    yearlyHint: 'Due mesi in regalo',
+    manage: 'Gestisci pagamento e fatture',
+    billingHint:
+      'I dati della tua azienda (P.IVA, sede) si inseriscono al pagamento: servono per la fattura.',
+    paidWait: 'Pagamento ricevuto. Stiamo registrando l’abbonamento…',
+    canceledPayment: 'Pagamento annullato: non ti è stato addebitato niente.',
+    openError: 'Non è stato possibile aprire il pagamento. Riprova fra poco.',
     notFoundBridge:
       'Non trovi il tuo ristorante? Aggiungilo dall’app AllergiApp, poi torna qui per associarlo.',
   },
