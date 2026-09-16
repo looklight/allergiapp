@@ -35,6 +35,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useVenues, useVenueChoice, currentVenue, countLinks, type Venue } from '@/lib/venues';
+import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
 import { dishThumb, useDishes, type Dish } from '@/lib/dishes';
 import { prefetchPublishState, usePublishState } from '@/lib/publish';
@@ -171,6 +172,10 @@ export default function HomePage() {
 
   const venue = currentVenue(venues ?? null, venueId);
   const router = useRouter();
+  // L'abbonamento del locale scelto: la home lo dice, invece di lasciarlo
+  // scoprire solo in /abbonamenti.
+  const { subs } = useSubscriptions();
+  const abbonato = venue ? abbonamentoDi(subs, venue.id) !== null : false;
   // Se quello che i clienti leggono al tavolo è aggiornato. Lo stesso gancio
   // dell'editor: la home non deve avere una seconda idea di cosa sia
   // pubblicato — sarebbe la prima a dire una cosa e il menù un'altra.
@@ -659,8 +664,14 @@ export default function HomePage() {
               "Link e contatti" accanto ad "Apri la scheda" non c'è più:
               portava alla stessa pagina, solo più in basso (richiesta
               dell'utente, 15/09). */}
+          {/* ⚠️ AGGIORNATO IL 16/09: adesso gli abbonamenti esistono, e questa
+              riga legge lo stato vero invece di dire a tutti la stessa cosa. */}
           <p className="mt-3 line-clamp-2 min-h-[2.75em] text-xs leading-snug text-gray-500">
-            {d.dashboard.cardSubsNone}
+            {!abbonato
+              ? d.dashboard.cardSubsNone
+              : venue.cardId === null
+                ? d.dashboard.cardSubsActive
+                : d.dashboard.cardSubsActiveLinked}
           </p>
 
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">

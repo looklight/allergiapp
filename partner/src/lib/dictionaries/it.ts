@@ -180,6 +180,12 @@ const it = {
     menusSomeActive: '{active} di {total} menù attivi.',
     cardTitle: 'Scheda AllergiApp',
     cardSubsNone: 'La scheda sarà visibile nell’app dopo aver associato il locale al tuo ristorante.',
+    // Chi ha pagato deve LEGGERLO qui, dove guarda ogni giorno: un abbonamento
+    // che si vede solo nella pagina dei pagamenti si dimentica, e "sto pagando
+    // per cosa?" è la domanda che porta a disdire. Dice anche cosa manca
+    // ancora, o sembrerebbe che la scheda sia già nell'app.
+    cardSubsActive: 'Abbonamento attivo. La scheda comparirà nell’app appena il locale sarà associato al tuo ristorante.',
+    cardSubsActiveLinked: 'Abbonamento attivo: la scheda è visibile nell’app.',
     cardSubsManage: 'Gestisci abbonamento',
     cardEmpty: 'Ancora niente dentro',
     cardOpen: 'Apri la scheda',

@@ -138,6 +138,8 @@ const en: typeof it = {
     menusSomeActive: '{active} of {total} menus active.',
     cardTitle: 'AllergiApp listing',
     cardSubsNone: 'The listing will be visible in the app once the venue is linked to your restaurant.',
+    cardSubsActive: 'Subscription active. Your listing will appear in the app as soon as the venue is linked to your restaurant.',
+    cardSubsActiveLinked: 'Subscription active: your listing is visible in the app.',
     cardSubsManage: 'Manage subscription',
     cardEmpty: 'Nothing in it yet',
     cardOpen: 'Open the listing',
