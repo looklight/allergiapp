@@ -178,7 +178,6 @@ const en: typeof it = {
   editor: {
     title: 'AllergiApp listing',
     draftBadge: 'Private draft',
-    premium: 'Premium',
     intro:
       'The page of {venue} inside the app: links and contacts on one side, the dishes you choose on the other. The preview shows how it will look.',
     linkNote:

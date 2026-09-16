@@ -233,7 +233,6 @@ const it = {
   editor: {
     title: 'Scheda AllergiApp',
     draftBadge: 'Bozza privata',
-    premium: 'Premium',
     intro:
       'La pagina di {venue} dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
     // Il richiamo sotto il titolo (v. page.tsx): dice che si può lavorare
