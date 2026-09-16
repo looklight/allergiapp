@@ -423,9 +423,9 @@ Distinzione tra ristoranti base (aggiunti dalla community) e ristoranti premium 
   - [x] ~~**Home-dashboard del portale**~~ — FATTA 31/08, **rifatta come home vera il 01/09**: saluta per nome, dice di quale locale parla (nome correggibile lì, tendina solo da due locali in su), mostra le **due** cose con stato e bottone (menù al tavolo · scheda AllergiApp), azioni rapide che aprono la maschera già pronta (`?nuovo`), catalogo staccato sotto. La voce di menù è **Home**, non più "Locali"; i link si definiscono dentro la scheda; creando un locale si resta sulla home. Tolto il sottomenu dei locali nella barra laterale
   - [ ] **Statistiche per il ristoratore** — PARCHEGGIATA con un trigger preciso: **non prima della pagina pubblica del menù** (slug + QR). Oggi non c'è niente da contare (l'app non legge le tabelle `partner_*` e nessuno ha il claim) e sarebbe una schermata di zeri. Quando ci sarà, il dato di valore NON sono le visite ma **quali esigenze filtrano i clienti al tavolo** ("il 40% di chi apre il menù cerca senza glutine"): viene gratis dal filtro già costruito, è aggregato, e nessun altro può darlo a un ristoratore. Le aperture per giorno sono il contorno
   - [ ] **Il logo del locale è un data URL dentro la riga**, non un file su Storage: da portare su `photos.ts`, per la stessa ragione scritta nella migration 702
-- **Risposta alle recensioni** — il gestore può rispondere pubblicamente alle recensioni degli utenti
+- **Risposta alle recensioni** — il gestore può rispondere pubblicamente alle recensioni degli utenti. **Design deciso il 2026-09-16**: `MONETIZATION.md`, «Risposte alle recensioni». ⚠️ Prerequisito: il logo del locale su Storage (voce sopra)
 - **Badge "Verificato"** nella lista ristoranti e nella scheda, con tooltip esplicativo
-- **Priorità nell'ordinamento** — già implementata (`ORDER BY is_premium DESC`), da sfruttare esplicitamente
+- ~~**Priorità nell'ordinamento**~~ — SCARTATA il 2026-09-16: nessuna precedenza nelle ricerche (v. `MONETIZATION.md`, «Principio guida»)
 - **Statistiche avanzate** — quanti utenti con allergie X li hanno visitati, andamento recensioni, allergie più cercate per quel locale
 - **Link prenotazione** — integrazione TheFork / OpenTable / URL custom
 - **Foto di copertina** — immagine hero personalizzata nella scheda (attualmente solo foto dalle recensioni)

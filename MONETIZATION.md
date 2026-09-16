@@ -583,6 +583,36 @@ ciò che c'è ("menù dichiarato dal ristoratore"), mai l'assenza come mancanza.
 > col premium; downgrade morbido (piatti oltre cap nascosti, mai cancellati).
 > Resta la candidata naturale se un giorno si introdurrà un piano free.
 
+## Risposte alle recensioni (design 2026-09-16)
+
+Esce nel passo 5 del piano, con associazione e scheda in app: senza
+associazione il portale non sa quali recensioni mostrare.
+
+- **Si scrive solo dal portale**, mai dall'app. Il ristoratore vede solo
+  quello che l'app mostra già a tutti, con lo stesso rispetto di
+  `is_anonymous`: mai altro sull'utente (allergie = art. 9).
+- **Visibile solo con abbonamento attivo**, regola «scade, sparisce; ti
+  riabboni, torna»: la risposta resta salvata, l'app non la riceve. Il filtro
+  sta nel database, non nel client. Conta l'abbonamento, **non** la scheda
+  pubblicata (si risponde anche senza piatti caricati).
+- **In app**: blocco rientrato sotto la recensione, **logo del locale come
+  avatar** + nome del locale + «Risposta del ristorante». Senza logo, icona
+  generica di ristorante (niente iniziali). Non porta a nessun profilo.
+  Niente etichetta «modificata».
+- **Una risposta per recensione**, modificabile e cancellabile, lunghezza
+  limitata; recensione cancellata → risposta cancellata.
+- **Anche alle recensioni vecchie**, di prima dell'abbonamento (deciso 16/09).
+- **L'utente non risponde alla risposta**: nessuna conversazione (deciso 16/09).
+- **L'autore della recensione viene avvisato** della risposta (deciso 16/09;
+  forma da decidere: pallino come i like o notifica push).
+- **Traduzione**: stesso pulsante delle recensioni (mig 074).
+- **Moderazione**: testo libero, quindi può contenere promesse di sicurezza
+  («da noi i celiaci sono al sicuro»). Non si blocca prima: risposta
+  segnalabile come le recensioni, rimozione dall'admin con motivazione (DSA
+  art. 17), divieto esplicito nelle condizioni d'uso del portale.
+- **Prerequisito**: il logo oggi è un data URL dentro `partner_venues`; va
+  portato su Storage prima che l'app lo mostri in ogni lista di recensioni.
+
 ## Certificazioni
 
 L'unica voce che sfiora la promessa di sicurezza (coerenza con la rimozione
