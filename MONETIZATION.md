@@ -603,8 +603,9 @@ associazione il portale non sa quali recensioni mostrare.
   limitata; recensione cancellata → risposta cancellata.
 - **Anche alle recensioni vecchie**, di prima dell'abbonamento (deciso 16/09).
 - **L'utente non risponde alla risposta**: nessuna conversazione (deciso 16/09).
-- **L'autore della recensione viene avvisato** della risposta (deciso 16/09;
-  forma da decidere: pallino come i like o notifica push).
+- **L'autore della recensione viene avvisato** della risposta con un
+  **pallino nell'app**, come per i like (deciso 16/09). La notifica push
+  arriverà quando si costruiscono le notifiche per tutti (passo 6).
 - **Traduzione**: stesso pulsante delle recensioni (mig 074).
 - **Moderazione**: testo libero, quindi può contenere promesse di sicurezza
   («da noi i celiaci sono al sicuro»). Non si blocca prima: risposta
