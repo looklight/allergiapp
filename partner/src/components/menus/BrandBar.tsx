@@ -237,7 +237,10 @@ export default function BrandBar({
         {esempio && (
           <button
             onClick={esempio.cambia}
-            className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+            // Col bordo, come gli altri comandi secondari del portale: senza,
+            // era testo grigio in mezzo ad altro testo grigio e non si capiva
+            // che si potesse premere (richiesta dell'utente, 16/09).
+            className="shrink-0 rounded-lg border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900"
           >
             {esempio.acceso ? d.menuEditor.previewSampleHide : d.menuEditor.previewSampleShow}
           </button>
