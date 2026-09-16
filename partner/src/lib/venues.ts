@@ -21,6 +21,7 @@ import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
 import { APPEARANCE_711 } from './features';
 import { DEFAULT_ACCENT } from './menuBrand';
+import { socialProvider } from './socials';
 import { deleteCover, deleteLogo } from './photos';
 import { write } from './saveState';
 
@@ -194,6 +195,17 @@ export interface DraftLinks {
   website: string;
   deliveries: DeliveryLink[];
   menus: MenuLink[];
+  // I SOCIAL, che vanno in fondo al MENÙ AL TAVOLO e non sulla scheda in app
+  // (Tema 6: chi è seduto non prenota e non ordina su Glovo, ma il profilo
+  // del locale lo cerca). Il servizio non si chiede: si deduce dall'indirizzo
+  // a ogni salvataggio, v. lib/socials.ts.
+  socials: SocialLink[];
+}
+
+export interface SocialLink {
+  url: string;
+  /** Nome scritto a mano, quando il servizio non è fra quelli noti. */
+  label: string;
 }
 
 export interface VenueDraft {
@@ -284,7 +296,7 @@ function sceltaPiatti(venueId: string, dishIds: string[]) {
 }
 
 function emptyLinks(): DraftLinks {
-  return { booking: { url: '', phone: '' }, website: '', deliveries: [], menus: [] };
+  return { booking: { url: '', phone: '' }, website: '', deliveries: [], menus: [], socials: [] };
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -302,6 +314,8 @@ function toLinks(righe: any[]): DraftLinks {
       links.deliveries.push({ provider: r.provider ?? '', label: r.label ?? '', url: r.url ?? '' });
     } else if (r.kind === 'menu') {
       links.menus.push({ language: r.language ?? '', url: r.url ?? '' });
+    } else if (r.kind === 'social') {
+      links.socials.push({ url: r.url ?? '', label: r.label ?? '' });
     }
   }
   return links;
@@ -342,6 +356,21 @@ function fromLinks(venueId: string, links: DraftLinks) {
       kind: 'menu',
       url: menu.url.trim(),
       language: menu.language || null,
+      sort_order: i,
+    });
+  });
+  links.socials.forEach((social, i) => {
+    const url = social.url.trim();
+    if (url === '') return;
+    righe.push({
+      venue_id: venueId,
+      kind: 'social',
+      url,
+      // Il servizio si RICALCOLA qui, a ogni salvataggio, invece di
+      // conservarlo: un indirizzo corretto non deve lasciare dietro
+      // l'etichetta di prima (v. lib/socials.ts).
+      provider: socialProvider(url),
+      label: social.label.trim() || null,
       sort_order: i,
     });
   });

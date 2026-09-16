@@ -489,6 +489,14 @@ const it = {
     brandTitle: 'Aspetto del menù',
     brandTeaser: 'Logo, colori, copertina e caratteri: fai sembrare il menù davvero tuo.',
     brandOpen: 'Personalizza',
+    // I link in fondo al menù al tavolo. Il titolo dice DOVE finiscono, che è
+    // l'unica cosa che il ristoratore non può indovinare: «Social» da solo
+    // farebbe pensare ai suoi profili in generale.
+    socialsTitle: 'Link in fondo al menù',
+    socialsPlaceholder: 'instagram.com/iltuolocale',
+    socialsAdd: 'Aggiungi un link',
+    socialsHint:
+      'Incolla l’indirizzo: riconosciamo noi di che servizio si tratta. Chi è seduto al tavolo li vede in fondo alla pagina.',
     // L'etichetta è una parola sola e sobria: dice il confine senza vendere
     // niente. La frase accanto dice le due cose che contano — che si possono
     // provare subito, e cosa resta gratis comunque.

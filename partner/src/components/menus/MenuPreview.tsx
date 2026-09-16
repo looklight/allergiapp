@@ -32,6 +32,7 @@ import { DISH_NOTES, noteName } from '@/lib/dishNotes';
 import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
+import { socialName } from '@/lib/socials';
 import {
   displayPrice,
   hasNoteText,
@@ -222,6 +223,7 @@ export default function MenuPreview({
   coverUrl,
   venueName,
   tableConditions,
+  socials,
   layout,
   separator,
   showPhotos,
@@ -248,6 +250,8 @@ export default function MenuPreview({
   // Coperto, servizio, pagamenti: sono del LOCALE, quindi identiche sotto
   // ogni linguetta. Vuote = non si mostra niente.
   tableConditions: string;
+  // I link del ristoratore in fondo alla pagina: social e sito.
+  socials: { url: string; label: string }[];
   // L'IMPAGINAZIONE: com'è disposto un piatto (migration 711). 'row' è quella
   // di sempre — foto, nome e prezzo affiancati; 'block' incolonna nome,
   // descrizione e prezzo al centro e non mostra le foto.
@@ -811,6 +815,25 @@ export default function MenuPreview({
           <p className="riga-minuta mt-2 whitespace-pre-line border-t border-gray-100 pt-3 leading-[max(1.4,calc(1.5*var(--lh,1)))] text-gray-500">
             {tableConditions}
           </p>
+        )}
+
+        {/* LA FILA DEI LINK, in fondo e mai altrove: al tavolo si viene per il
+            cibo, e un invito a seguire il locale in cima alla carta è una
+            distrazione messa prima della cosa che serve (Tema 7).
+            Su un menù vuoto non compare, come le condizioni. */}
+        {gruppiResi.length > 0 && socials.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-100 pt-3">
+            {socials.map((social, i) => (
+              <span
+                key={i}
+                className="riga-minuta rounded-full border border-gray-200 px-2.5 py-1 text-gray-600"
+                // Nell'anteprima non si naviga: è il telefono finto, e un
+                // link che porta via da qui perderebbe il lavoro in corso.
+              >
+                {socialName(social.url, social.label)}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 

@@ -362,6 +362,11 @@ const en: typeof it = {
     brandTitle: 'Menu look',
     brandTeaser: 'Logo, colours, cover and fonts: make the menu feel truly yours.',
     brandOpen: 'Customise',
+    socialsTitle: 'Links at the bottom of the menu',
+    socialsPlaceholder: 'instagram.com/yourvenue',
+    socialsAdd: 'Add a link',
+    socialsHint:
+      'Paste the address: we work out which service it is. Guests at the table see these at the bottom of the page.',
     brandPremiumNote:
       'Try them whenever you like and watch the preview: taking them to the table needs a subscription. Your dish photos and descriptions always stay yours.',
     brandClose: 'Close',

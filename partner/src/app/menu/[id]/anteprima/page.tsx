@@ -125,6 +125,7 @@ export default function FullPreviewPage() {
             coverUrl={locale?.coverUrl ?? ''}
             venueName={brand.name.trim() || d.preview.venueName}
             tableConditions={locale?.tableConditions ?? ''}
+            socials={locale?.links.socials ?? []}
             layout={locale?.menuLayout ?? 'row'}
             separator={locale?.dishSeparator ?? 'none'}
             showPhotos={locale?.showDishPhotos ?? true}

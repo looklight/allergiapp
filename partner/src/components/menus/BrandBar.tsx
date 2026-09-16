@@ -39,9 +39,11 @@ import {
   type LineHeight,
   type MenuLayout,
   type SectionStyle,
+  type SocialLink,
   type TextScale,
 } from '@/lib/venues';
 import CoverPicker from './CoverPicker';
+import SocialLinks from './SocialLinks';
 
 export default function BrandBar({
   accent,
@@ -76,6 +78,8 @@ export default function BrandBar({
   onTextScale,
   onLineHeight,
   onCover,
+  socials,
+  onSocials,
   abbonato,
 }: {
   accent: string;
@@ -132,6 +136,8 @@ export default function BrandBar({
   onTextScale: (value: TextScale) => void;
   onLineHeight: (value: LineHeight) => void;
   onCover: (value: string) => void;
+  socials: SocialLink[];
+  onSocials: (next: SocialLink[]) => void;
   // Il locale ha l'abbonamento? Da abbonato non c'è più niente da sbloccare,
   // quindi l'etichetta grigia sparisce: il distintivo ambra accanto al nome
   // del locale, in home, dice già che ce l'ha (v. ProTag).
@@ -519,6 +525,10 @@ export default function BrandBar({
         </div>
 
         <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />
+
+        {/* I link stanno QUI e non in un'area loro: logo, copertina, colore e
+            profili sono la stessa domanda — di chi è questo menù. */}
+        <SocialLinks socials={socials} onChange={onSocials} />
       </div>
 
       <div className="border-t border-gray-100" />

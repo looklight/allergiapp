@@ -278,6 +278,7 @@ export default function MenuEditorPage() {
       coverUrl={locale?.coverUrl ?? ''}
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
+      socials={locale?.links.socials ?? []}
       layout={locale?.menuLayout ?? 'row'}
       separator={locale?.dishSeparator ?? 'none'}
       showPhotos={locale?.showDishPhotos ?? true}
@@ -445,6 +446,12 @@ export default function MenuEditorPage() {
             locale && setIdentity(locale.id, { allergenDisplay })
           }
           onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
+          socials={locale?.links.socials ?? []}
+          // I link non sono aspetto e non passano da setIdentity: sono righe
+          // di partner_links, e si salvano come gli altri link del locale.
+          onSocials={(socials) =>
+            locale && updateVenue(locale.id, { ...locale, links: { ...locale.links, socials } })
+          }
         />
       </div>
 
