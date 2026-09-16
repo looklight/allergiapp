@@ -149,6 +149,12 @@ viaggia nel payload dei pin e nel client vive solo nel tipo TS (conferma
   ora, inerti** (con 0 premium non cambia un pixel); al primo contratto basta
   un UPDATE su una riga. Resta fuori l'**evidenza visiva** (aspetto del pin
   premium): quella non si disegna al buio, come già deciso.
+- **Deciso 2026-09-16** (dettaglio in `MONETIZATION.md`, «Principio guida»):
+  l'esenzione e la precedenza nel quadretto servono SOLO a non far sparire il
+  locale, non a dargli evidenza. **Pallini identici a tutti**; al **pin** un
+  **contorno** di altro colore che significa "c'è il menù dichiarato dal
+  ristorante", guidato dalla scheda pubblicata e non da `is_premium`. Lo
+  sfondo resta la compatibilità.
 - Invariato: `ORDER BY is_premium DESC` + `is_premium` nel payload di
   `get_pins_in_bounds` sono additivi, via SQL editor, senza build (pattern 073)
   — si possono fare quando si vuole.

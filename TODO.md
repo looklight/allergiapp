@@ -115,7 +115,8 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
 - [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
   `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. Innocuo oggi (nessuna
   scheda, l'app non legge le tabelle partner): va chiuso nella migration dell'associazione.
-- [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC dell'app prima del primo abbonamento vero.
+- [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC delle ricerche dell'app prima del primo abbonamento vero. ⚠️ NON quello della mappa (085): lì la precedenza nel quadretto resta, serve solo a non far sparire il locale.
+- [ ] **Contorno del pin per i locali col menù del ristorante** (deciso 16/09, regole in `MONETIZATION.md` «Principio guida»): pallini identici, contorno di altro colore solo sul pin, guidato dalla scheda pubblicata, mai la parola "certificato". Esce con la scheda in app (passo 5), stessa build.
 - [ ] **Account Stripe**: da verificare se esiste.
 
 ### Rimandati di proposito il 2026-09-15 (da riaprire coi dati, non dimenticati)

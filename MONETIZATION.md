@@ -112,6 +112,26 @@ regola fondante:
 > di sicurezza. Nessun effetto su pin, ordinamento, punteggi o matching
 > aggregato. Il colore dei pin resta guidato dalla community.
 
+**Il pin del locale col menù del ristorante (deciso 2026-09-16).** Precisa la
+regola qui sopra, non la smentisce:
+- **Pallini** (zoom largo): identici a tutti gli altri. Il locale col menù non
+  si distingue in nessun modo.
+- **Pin** (zoom vicino): **contorno di un altro colore**. Non dice "migliore"
+  né "più sicuro", dice solo *qui c'è il menù dichiarato dal ristorante, con
+  piatti e allergeni*. È un'informazione, come l'icona della categoria.
+- **Mai lo sfondo**: il riempimento verde/ambra/grigio è la compatibilità con
+  le esigenze di chi guarda, e non si tocca.
+- **Il contorno segue la scheda PUBBLICATA con piatti**, non `is_premium`: se
+  la scheda si spegne, il contorno sparisce anche se l'abbonamento c'è.
+- **Mai la parola "certificato"** nella legenda o altrove: il menù è
+  dichiarato dal ristorante e non verificato da AllergiApp (stesso testo del
+  disclaimer del portale).
+- **Nessuna precedenza nelle ricerche né nelle liste.** L'unica cosa lato mappa
+  è tecnica e invisibile: il locale non viene tagliato quando i pin sono troppi
+  (esenzione dal diradamento, precedenza dentro il suo quadretto della 085),
+  così il contorno compare davvero quando si avvicina lo zoom. A zoom largo
+  resta un pallino come gli altri.
+
 Obiettivo economico realistico della prima fase: **sostenibilità
 dell'infrastruttura** (Supabase Pro, EAS a pagamento → sblocco OTA, costi
 Apple/Google), non profitto.
@@ -797,7 +817,8 @@ persona. Poi Stripe passa in modalità reale.
 
 **Passo 5 — associazione e app, nella stessa build nativa**: design del
 claim, chiusura della falla `partner_cards_owner`, la scheda letta dall'app,
-risposte alle recensioni, `ORDER BY is_premium` neutralizzato.
+risposte alle recensioni, `ORDER BY is_premium` neutralizzato nelle ricerche,
+contorno del pin per i locali con scheda pubblicata (v. «Principio guida»).
 
 **Passo 6 — le voci che danno un motivo per pagare ogni mese**: notifiche al
 gestore e statistiche.
