@@ -35,6 +35,12 @@ RETURNS TABLE (
   signed_up_at timestamptz,
   menus_total bigint,
   published_at timestamptz,
+  -- Il catalogo è dell'ISCRITTO, non del locale (700): con due locali lo
+  -- stesso numero compare su tutt'e due le righe, ed è giusto così.
+  dishes_total bigint,
+  -- I piatti scelti per la scheda AllergiApp di QUESTO locale (715): dicono
+  -- se la scheda è stata davvero preparata, non solo aperta.
+  card_dishes_total bigint,
   card_id uuid,
   sub_id uuid,
   sub_source text,
@@ -42,7 +48,9 @@ RETURNS TABLE (
   sub_plan text,
   sub_ends_at timestamptz,
   sub_cancel_at_period_end boolean,
-  sub_note text
+  sub_note text,
+  -- Serve solo a costruire il link al cliente sulla dashboard di Stripe
+  sub_customer_id text
 )
 LANGUAGE sql
 SECURITY DEFINER
@@ -63,6 +71,8 @@ AS $$
     -- scatto in sala è uno solo e contiene tutte le carte attive. Una data
     -- qui vuol dire che il QR di quel locale è davvero in giro.
     v.published_at,
+    (SELECT count(*) FROM partner_dishes dd WHERE dd.owner_user_id = v.owner_user_id),
+    (SELECT count(*) FROM partner_card_dishes cd WHERE cd.venue_id = v.id),
     (SELECT c.id FROM partner_cards c WHERE c.venue_id = v.id LIMIT 1),
     s.id,
     s.source,
@@ -70,7 +80,8 @@ AS $$
     s.plan,
     s.ends_at,
     s.cancel_at_period_end,
-    s.note
+    s.note,
+    s.stripe_customer_id
   FROM partner_venues v
   JOIN partner_accounts a ON a.user_id = v.owner_user_id
   JOIN auth.users u ON u.id = v.owner_user_id
@@ -118,7 +129,13 @@ RETURNS TABLE (
   -- Ricavo mensile ricorrente in centesimi: l'annuale diviso dodici, o un
   -- mese con molti annuali sembrerebbe un colpo di fortuna.
   mrr_cents bigint,
-  expiring_30d bigint
+  expiring_30d bigint,
+  -- IL MOVIMENTO DEGLI ULTIMI 30 GIORNI. Nella pagina queste tre caselle si
+  -- mostrano solo quando hanno qualcosa da dire: una fila di zeri fissi
+  -- smette di essere letta, e si porta dietro le caselle accanto.
+  new_accounts_30d bigint,
+  new_subs_30d bigint,
+  canceled_subs_30d bigint
 )
 LANGUAGE sql
 SECURITY DEFINER
@@ -143,7 +160,15 @@ AS $$
     -- cambiata anche questa riga, o il conto racconta il passato.
     (SELECT coalesce(sum(CASE WHEN plan = 'yearly' THEN 6000 / 12 ELSE 799 END), 0)
        FROM vive WHERE source = 'stripe'),
-    (SELECT count(*) FROM vive WHERE ends_at IS NOT NULL AND ends_at < now() + interval '30 days')
+    (SELECT count(*) FROM vive WHERE ends_at IS NOT NULL AND ends_at < now() + interval '30 days'),
+    (SELECT count(*) FROM partner_accounts WHERE created_at > now() - interval '30 days'),
+    (SELECT count(*) FROM partner_subscriptions WHERE created_at > now() - interval '30 days'),
+    -- ⚠️ Qui si guardano anche le righe CHIUSE, che `vive` esclude: è l'unico
+    -- posto in cui l'abbonamento finito conta. La disdetta col preavviso
+    -- (cancel_at_period_end) porta canceled_at alla richiesta, non alla fine:
+    -- è il momento in cui il ristoratore ha deciso, che è quello che interessa.
+    (SELECT count(*) FROM partner_subscriptions
+      WHERE canceled_at IS NOT NULL AND canceled_at > now() - interval '30 days')
   WHERE EXISTS (
     SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
   );
