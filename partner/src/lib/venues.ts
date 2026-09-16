@@ -938,10 +938,26 @@ export function useVenues() {
 
 // Indirizzo scritto senza schema (www.osteria.it): l'app non saprebbe
 // aprirlo, quindi lo completiamo noi quando il campo perde il fuoco.
+/**
+ * ⚠️ GLI UNICI DUE SCHEMI AMMESSI. Prima qui passava qualunque cosa avesse
+ * la forma di uno schema, `javascript:` compreso: finché nessun indirizzo
+ * del partner finiva in una pagina pubblica era un difetto senza vittime,
+ * ma il menù al tavolo lo legge chiunque inquadri il QR — e lì un href
+ * scritto dal ristoratore diventa codice che gira sul telefono del cliente.
+ *
+ * Il controllo esce INSIEME ai link in fondo al menù, non dopo: era la
+ * condizione scritta nel TODO, ed è il modo di non pagarlo mai.
+ *
+ * Non è una validazione del dominio: quella è un'altra cosa, rimandata di
+ * proposito (un falso errore su un link giusto blocca il ristoratore su un
+ * dato che è suo). Qui si guarda solo COME comincia l'indirizzo.
+ */
 export function normalizeUrl(value: string): string {
   const trimmed = value.trim();
-  if (trimmed === '' || /^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
-  return `https://${trimmed}`;
+  if (trimmed === '') return '';
+  const conSchema = /^[a-z][a-z0-9+.-]*:/i.test(trimmed);
+  if (!conSchema) return `https://${trimmed}`;
+  return /^https?:/i.test(trimmed) ? trimmed : '';
 }
 
 // La pill Prenota si accende col link, col telefono o con entrambi
