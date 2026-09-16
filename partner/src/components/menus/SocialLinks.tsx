@@ -32,9 +32,9 @@ export default function SocialLinks({
 
   return (
     <div>
-      <p className="text-xs text-gray-500">{d.menuEditor.socialsTitle}</p>
-
-      <div className="mt-2 space-y-2">
+      {/* Nessun titolino qui dentro: lo dice il gruppo che lo contiene, e due
+          titoli uno sopra l'altro sarebbero due gradi dello stesso rango. */}
+      <div className="space-y-2">
         {socials.map((social, i) => {
           const nome = socialName(social.url);
           return (

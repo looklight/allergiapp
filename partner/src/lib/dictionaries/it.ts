@@ -492,7 +492,9 @@ const it = {
     // I link in fondo al menù al tavolo. Il titolo dice DOVE finiscono, che è
     // l'unica cosa che il ristoratore non può indovinare: «Social» da solo
     // farebbe pensare ai suoi profili in generale.
-    socialsTitle: 'Link in fondo al menù',
+    socialsGroup: 'I tuoi link',
+    socialsGroupHint: 'Compaiono in fondo alla pagina che il cliente apre col QR.',
+    socialsTitle: 'Indirizzo',
     socialsPlaceholder: 'instagram.com/iltuolocale',
     socialsAdd: 'Aggiungi un link',
     socialsHint:

@@ -525,10 +525,6 @@ export default function BrandBar({
         </div>
 
         <CoverPicker coverUrl={coverUrl} accent={accentHex(accent)} onChange={onCover} />
-
-        {/* I link stanno QUI e non in un'area loro: logo, copertina, colore e
-            profili sono la stessa domanda — di chi è questo menù. */}
-        <SocialLinks socials={socials} onChange={onSocials} />
       </div>
 
       <div className="border-t border-gray-100" />
@@ -658,6 +654,23 @@ export default function BrandBar({
             riga. */}
         <p className="w-full text-xs leading-relaxed text-gray-400">{d.menuEditor.textScaleFloor}</p>
       </div>
+      </div>
+
+      {/* I LINK IN FONDO AL MENÙ: un gruppo suo, in fondo alla scatola e con
+          il titolo degli altri tre (richiesta dell'utente, 16/09). Stava
+          dentro «L'identità», sotto la copertina: per contenuto ci stava —
+          logo, colore e profili sono la stessa domanda, di chi è questo menù
+          — ma per PESO no. Un campo di testo con un bottone «Aggiungi» non è
+          una manopola come le altre: è una cosa che si compila, e infilata
+          in coda a un gruppo sembrava un ripensamento invece di una voce. */}
+      <div className="border-t border-gray-100" />
+
+      <div>
+        <p className="text-sm font-medium text-gray-900">{d.menuEditor.socialsGroup}</p>
+        <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.socialsGroupHint}</p>
+        <div className="mt-3">
+          <SocialLinks socials={socials} onChange={onSocials} />
+        </div>
       </div>
 
       {/* LA VALUTA NON È IN NESSUNO DEI TRE GRUPPI, ed è deliberato: non è

@@ -362,7 +362,9 @@ const en: typeof it = {
     brandTitle: 'Menu look',
     brandTeaser: 'Logo, colours, cover and fonts: make the menu feel truly yours.',
     brandOpen: 'Customise',
-    socialsTitle: 'Links at the bottom of the menu',
+    socialsGroup: 'Your links',
+    socialsGroupHint: 'They appear at the bottom of the page guests open with the QR code.',
+    socialsTitle: 'Address',
     socialsPlaceholder: 'instagram.com/yourvenue',
     socialsAdd: 'Add a link',
     socialsHint:
