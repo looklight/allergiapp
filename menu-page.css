@@ -917,7 +917,9 @@
 }
 
 .menu-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 12px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -925,6 +927,12 @@
   line-height: 1.4;
   color: var(--text-secondary);
   text-decoration: none;
+}
+
+.menu-link-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .menu-link:hover {
