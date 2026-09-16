@@ -126,7 +126,14 @@ Deno.serve(async (req) => {
       // nostro modulo prima: serve alla fattura, ed è l'unico punto in cui
       // il ristoratore si aspetta di doverla dare (MONETIZATION.md).
       billing_address_collection: "required",
-      tax_id_collection: { enabled: true },
+      // ⚠️ `required` e non solo `enabled`: offerta come campo facoltativo,
+      // la P.IVA si salta — ed è successo alla prima prova vera. L'abbonamento
+      // è riservato alle aziende (MONETIZATION.md: niente acquisto da privati,
+      // o scattano recesso di 14 giorni e IVA OSS), e quel numero serve alla
+      // fattura. Dove Stripe non conosce un identificativo fiscale per il
+      // paese, il campo resta saltabile: è il meglio che si può chiedere senza
+      // bloccare fuori chi ha una partita IVA che noi non sappiamo validare.
+      tax_id_collection: { enabled: true, required: "if_supported" },
       allow_promotion_codes: true,
       client_reference_id: venueId,
       // Il locale viaggia SULL'ABBONAMENTO e non solo sulla sessione: il
