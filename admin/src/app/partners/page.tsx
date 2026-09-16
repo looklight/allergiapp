@@ -168,7 +168,7 @@ export default function PartnersPage() {
   // righe sono poche e già scaricate, quindi si riordinano senza un viaggio
   // in più, e aggiungere un modo di guardarle non è una migration.
   const [filtro, setFiltro] = useState<
-    'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati' | 'disdetti'
+    'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati' | 'nonPubblicati' | 'disdetti'
   >('tutti');
   // L'ordinamento si comanda dalle intestazioni della tabella, come in ogni
   // tabella che si rispetti: il verso si inverte ripremendo la stessa.
@@ -218,6 +218,11 @@ export default function PartnersPage() {
           return r.sub_status === 'past_due';
         case 'pubblicati':
           return r.published_at !== null;
+        // Chi il menù l'ha preparato e non l'ha mai portato al tavolo: è la
+        // lista su cui si può fare qualcosa, più di "non pubblicati" in
+        // generale, che comprende anche chi non ha ancora scritto un piatto.
+        case 'nonPubblicati':
+          return r.published_at === null && r.menus_total > 0;
         default:
           return true;
       }
@@ -270,6 +275,7 @@ export default function PartnersPage() {
     { id: 'disdetti', label: 'Ex abbonati' },
     { id: 'ritardo', label: 'In ritardo' },
     { id: 'pubblicati', label: 'Menù in sala' },
+    { id: 'nonPubblicati', label: 'Menù fermo in bozza' },
   ];
 
   async function concedi() {
@@ -488,6 +494,7 @@ export default function PartnersPage() {
                   : f.id === 'senza' ? !r.sub_id
                   : f.id === 'disdetti' ? !r.sub_id && r.past_subs > 0
                   : f.id === 'ritardo' ? r.sub_status === 'past_due'
+                  : f.id === 'nonPubblicati' ? r.published_at === null && r.menus_total > 0
                   : r.published_at !== null,
                 ).length}
               </span>
