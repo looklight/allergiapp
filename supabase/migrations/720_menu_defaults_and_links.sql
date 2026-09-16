@@ -1,14 +1,92 @@
 -- ============================================================
--- 721_menu_social_links.sql
+-- 720_menu_defaults_and_links.sql
 -- STATO: BOZZA, da applicare a mano dal SQL editor.
 -- Tracking fermo alla 045: a mano, MAI db push.
 --
--- I LINK DEL RISTORATORE IN FONDO AL MENÙ AL TAVOLO.
+-- I VALORI DI PARTENZA DEL MENÙ GRATUITO, E I LINK DEL RISTORATORE.
 --
--- Voluti il 2026-09-06 e rimasti in sospeso perché non valeva una migration
--- da soli: adesso escono insieme al resto (decisione dell'utente, 16/09).
--- Il tipo `social` su partner_links esiste dalla 711, ma nessuno lo leggeva:
--- lo scatto non li portava in sala, quindi non comparivano da nessuna parte.
+-- Due cose decise lo stesso giorno e applicate insieme: quello che si vede
+-- in fondo alla pagina al tavolo e il modo in cui si presenta quella di chi
+-- non paga.
+--
+-- ⚠️ IL NUMERO 720 ERA RIMASTO LIBERO: la 720 di ieri (l'indice per locale e
+-- provenienza) è stata rifusa nella 719 prima che venisse applicata, e il
+-- file è sparito lasciando un buco. Qui si riusa il numero, che non è mai
+-- stato eseguito da nessuna parte.
+--
+-- Perché adesso: con la 718 il colore di partenza ha cambiato mestiere. Non
+-- è più «com'è un menù prima che il ristoratore lo sistemi» — è il colore di
+-- TUTTI i menù senza abbonamento, cioè la faccia più vista del prodotto.
+-- Merita di essere scelto, e la scelta dell'utente (2026-09-16) è il verde.
+--
+-- IL COLORE DIVENTA IL VERDE BOSCO.
+--
+-- ⚠️ TRE POSTI DEVONO DIRE LA STESSA COSA, o il portale mostra un colore e
+-- il tavolo un altro:
+--   1. il default della colonna (chi nasce da adesso)
+--   2. venue_appearance_defaults() (cosa arriva al tavolo senza abbonamento)
+--   3. DEFAULT_ACCENT nel portale (partner/src/lib/menuBrand.ts, dove il
+--      verde è ora in posizione 0)
+--
+-- E IL FILO FRA UN PIATTO E L'ALTRO SI ACCENDE. Su una carta lunga letta a
+-- tavola da un telefono è il segno che impedisce di perdere la riga, e la
+-- scelta di partenza «nessun segno» veniva da quando questi valori erano
+-- solo il punto da cui il ristoratore cominciava a sistemare. Adesso sono
+-- il menù di chi non paga, cioè quasi tutti: meglio che siano leggibili.
+-- Chi vuole la carta nuda toglie il filo in un tocco.
+--
+-- ⚠️ COSA CAMBIA NEI MENÙ GIÀ IN SALA: per i locali SENZA abbonamento
+-- l'aspetto pubblicato è fatto di questi valori, quindi al prossimo giro (o
+-- alla prossima pubblicazione) il loro menù passa da carbone a verde. È
+-- voluto: è il colore dei menù gratuiti, e cambiarlo è il senso di questa
+-- migration. I locali abbonati non si muovono di un pixel.
+--
+-- ⚠️ I LOCALI CHE ESISTONO GIÀ NON SI TOCCANO. Un UPDATE di massa
+-- cambierebbe il colore a chi l'aveva scelto — e anche a chi si era tenuto
+-- il carbone, che è una scelta pure quella. Chi ha `charcoal` scritto in
+-- riga se lo tiene: il default vale per i nuovi, e i nuovi sono tutti quelli
+-- che contano (gli unici locali di oggi sono nostre prove, e spariranno).
+-- ============================================================
+
+BEGIN;
+
+alter table partner_venues
+  alter column accent set default 'forest';
+
+alter table partner_venues
+  alter column dish_separator set default 'rule';
+
+create or replace function venue_appearance_defaults()
+returns jsonb
+language sql
+immutable
+as $$
+  select jsonb_build_object(
+           'logoUrl', '',
+           'accent', 'forest',
+           'coverUrl', '',
+           'headingFont', 'modern',
+           'sectionStyle', 'underline',
+           'showPhotos', true,
+           'dishPhotoShape', 'square',
+           'showDescriptions', false,
+           'textScale', 'normal',
+           'lineHeight', 'normal',
+           'menuLayout', 'row',
+           'dishSeparator', 'rule',
+           'allergenDisplay', 'text'
+         );
+$$;
+
+
+
+-- ============================================================
+-- SECONDA PARTE: I LINK DEL RISTORATORE IN FONDO AL MENÙ
+--
+-- Voluti il 2026-09-06 e rimasti in sospeso perché non valevano una
+-- migration da soli — ed è esattamente il motivo per cui stanno qui: due
+-- file per due cose decise lo stesso giorno sono due esecuzioni a mano, non
+-- due storie diverse.
 --
 -- QUALI: `social` e `website`. NON gli altri, ed è una scelta di merito
 -- (Tema 6): prenotazione, delivery e «menù esterno» sono pensati per chi
@@ -18,17 +96,15 @@
 --
 -- ⚠️ MAI IL TELEFONO. `partner_links.phone` esiste per la prenotazione e
 -- resta fuori dallo scatto: quella pagina la legge chiunque inquadri il QR,
--- e un numero di telefono lì dentro è un numero pubblicato.
+-- e un numero lì dentro è un numero pubblicato.
 --
 -- SONO PREMIUM, come il logo e per la stessa ragione: sono il locale che si
--- presenta, la famiglia dell'identità. Quindi passano dallo stesso muro
--- dell'aspetto — senza abbonamento lo scatto esce senza la fila.
+-- presenta. Passano quindi dallo stesso muro dell'aspetto.
 -- ============================================================
 
-BEGIN;
 
 -- ------------------------------------------------------------
--- 1. LA FILA, COM'È FATTA E CHI HA DIRITTO DI VEDERLA
+-- 3. LA FILA, COM'È FATTA E CHI HA DIRITTO DI VEDERLA
 -- Una funzione a parte e non due righe dentro build_public_menu: la legge
 -- anche il confronto «cosa non è ancora in sala», e le due devono dire la
 -- stessa cosa o il ristoratore vede un avviso che non sparisce.
@@ -75,7 +151,7 @@ comment on function venue_public_links(uuid) is
 
 
 -- ------------------------------------------------------------
--- 2. LO SCATTO SE LI PORTA
+-- 4. LO SCATTO SE LI PORTA
 -- Solo la riga finale cambia rispetto alla 718: una chiave `links` accanto
 -- all'aspetto. La funzione si ricopia intera perché è così che PostgreSQL
 -- sostituisce una funzione.
@@ -187,7 +263,7 @@ $$;
 
 
 -- ------------------------------------------------------------
--- 3. «COSA NON È ANCORA IN SALA» GUARDA ANCHE LA FILA
+-- 5. «COSA NON È ANCORA IN SALA» GUARDA ANCHE LA FILA
 --
 -- ⚠️ SENZA QUESTO PEZZO, aggiungere un social non farebbe comparire nessun
 -- avviso: il ristoratore lo salverebbe, non vedrebbe niente cambiare al
