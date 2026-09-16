@@ -346,7 +346,7 @@ export default function PartnersPage() {
           label="Iscritti al portale"
           value={stats?.accounts ?? 0}
           hint={`· ${stats?.accounts_with_venue ?? 0} con un locale${
-            stats?.new_accounts_30d ? ` · +${stats.new_accounts_30d} in 30gg` : ''
+            stats?.new_accounts_30d ? ` · +${stats.new_accounts_30d} in 30g` : ''
           }`}
         />
         <StatCard
@@ -359,10 +359,18 @@ export default function PartnersPage() {
           label="Abbonati paganti"
           value={stats?.subs_paid ?? 0}
           color="text-success"
+          // Guadagni e perdite in una clausola sola ("+2 −1 in 30g"): sono
+          // la stessa notizia, e separarle con un punto le faceva leggere
+          // come due dati indipendenti.
           hint={`· ${stats?.subs_granted ?? 0} offerti${
-            stats?.new_subs_30d ? ` · +${stats.new_subs_30d}` : ''
-          }${stats?.canceled_subs_30d ? ` · −${stats.canceled_subs_30d}` : ''}${
-            stats?.new_subs_30d || stats?.canceled_subs_30d ? ' in 30gg' : ''
+            stats?.new_subs_30d || stats?.canceled_subs_30d
+              ? ` · ${[
+                  stats.new_subs_30d ? `+${stats.new_subs_30d}` : '',
+                  stats.canceled_subs_30d ? `−${stats.canceled_subs_30d}` : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')} in 30g`
+              : ''
           }`}
         />
         {/* Ricavo mensile ricorrente: l'annuale conta un dodicesimo al mese,
@@ -371,7 +379,7 @@ export default function PartnersPage() {
           label="Ricavo mensile"
           value={euro(stats?.mrr_cents ?? 0)}
           color="text-purple-600"
-          hint={stats?.expiring_30d ? `· ${stats.expiring_30d} in scadenza a 30gg` : undefined}
+          hint={stats?.expiring_30d ? `· ${stats.expiring_30d} in scadenza 30g` : undefined}
         />
       </div>
 
