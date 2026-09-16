@@ -59,6 +59,12 @@ comment on index partner_subscriptions_one_open_per_venue_source is
 -- avrebbe portato al tavolo una modifica al CONTENUTO che non aveva scelto
 -- di pubblicare. Qui invece le due chiavi si rileggono DALLO SCATTO: restano
 -- quelle che i clienti stanno già vedendo.
+--
+-- ⚠️ NON sostituisce venue_appearance_public, che resta giusta dov'è: quella
+-- la usa build_public_menu, cioè la PUBBLICAZIONE — e pubblicare vuol dire
+-- proprio portare al tavolo lo stato di adesso, foto e descrizioni comprese.
+-- Le due funzioni si somigliano e fanno due mestieri opposti: una pubblica
+-- quello che c'è, l'altra toglie senza pubblicare niente.
 -- ------------------------------------------------------------
 create or replace function published_appearance_without_premium(p_venue_id uuid)
 returns jsonb
@@ -79,6 +85,9 @@ as $$
     from partner_venues v
    where v.id = p_venue_id;
 $$;
+
+revoke all on function published_appearance_without_premium(uuid) from public;
+grant execute on function published_appearance_without_premium(uuid) to authenticated;
 
 comment on function published_appearance_without_premium(uuid) is
   'L''aspetto dello scatto ripulito delle personalizzazioni a pagamento, tenendo però foto e descrizioni COM''ERANO NELLO SCATTO: sono contenuto, e toglierle o aggiungerle qui vorrebbe dire pubblicare una modifica che il ristoratore non ha scelto.';
@@ -112,8 +121,15 @@ begin
     return null;
   end if;
 
+  -- ⚠️ IL coalesce NON È PEDANTERIA: in jsonb `scatto || NULL` fa NULL, e
+  -- NULL qui vuol dire lo scatto pubblicato cancellato — il menù al tavolo
+  -- che smette di esistere per una funzione che non ha trovato una riga.
+  -- Costa niente e toglie di mezzo l'unico modo in cui questo trigger
+  -- potrebbe fare un danno grosso.
   update partner_venues v
-     set published_menu = v.published_menu || published_appearance_without_premium(v.id)
+     set published_menu = v.published_menu
+                          || coalesce(published_appearance_without_premium(v.id),
+                                      venue_appearance_defaults())
    where v.id = v_id
      and v.published_menu is not null;
 
@@ -149,7 +165,9 @@ declare
   toccati integer;
 begin
   with fuori_posto as (
-    select v.id, published_appearance_without_premium(v.id) as giusto
+    select v.id,
+           coalesce(published_appearance_without_premium(v.id),
+                    venue_appearance_defaults()) as giusto   -- v. la nota nel trigger
       from partner_venues v
      where v.published_menu is not null
        and not venue_subscription_active(v.id)
