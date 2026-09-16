@@ -76,4 +76,6 @@ export const SUBSCRIPTIONS: boolean = false;
 // Non è un lucchetto: le manopole restano tutte usabili e l'anteprima le
 // mostra. L'etichetta serve a non far scoprire il confine DOPO aver
 // lavorato mezz'ora (DIGITAL_MENU.md, Tema 27).
-export const APPEARANCE_PREMIUM: boolean = false;
+// ⚠️ ACCESO il 2026-09-16, il giorno in cui la 718 è stata applicata: da qui
+// in poi l'etichetta dice il vero, perché il muro nello scatto esiste davvero.
+export const APPEARANCE_PREMIUM: boolean = true;
