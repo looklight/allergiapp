@@ -735,8 +735,16 @@ Ricadute tecniche (già riportate nella bozza 700):
 nuovo)
 1. Applicare la **716** a mano dal SQL editor e verificarla (tabella, indice
    parziale, funzione, policy). Tracking fermo alla 045: mai `db push`.
-2. Su Stripe, in **modalità test**: un prodotto "AllergiApp" con due prezzi
-   ricorrenti (7,99 €/mese, 60 €/anno).
+2. ✅ **FATTO il 16/09** — su Stripe, nella **sandbox** `acct_1T8Pk3AWJFZcd82B`
+   (account italiano in euro, non ancora attivato: `charges_enabled` false, ed
+   è giusto così finché non si vende): prodotto `prod_VGlG0chTtdC9lt`
+   "AllergiApp" con due prezzi ricorrenti — 7,99 €/mese
+   (`price_1UGDk4AWJFZcd82B4ZUDcEsf`) e 60 €/anno
+   (`price_1UGDk5AWJFZcd82BXROJy3Rj`).
+   ⚠️ Il codice li cerca per **lookup key** (`allergiapp_monthly`,
+   `allergiapp_yearly`), mai per id: i prezzi in Stripe non si modificano, si
+   sostituiscono, e in modalità reale gli id saranno altri. Cambiare listino =
+   creare il prezzo nuovo e spostargli l'etichetta.
 3. Due **Edge Function Supabase** accanto a `delete-account` — non route del
    portale: il segreto di Stripe resta in un posto solo, vicino al database.
    - `stripe-checkout`: apre il pagamento per un locale del richiedente.
