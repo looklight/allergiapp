@@ -65,10 +65,12 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
 
 - [ ] **Migration 716** (`partner_subscriptions`, sul locale) — **BOZZA, non applicata** né provata
   (nessun Postgres locale). Provenienza `stripe` o `manual` (concesso dall'admin, **non** "fondatori").
-- [ ] **Il piano a passi** — orientamento emerso, da confermare: fondamenta web (716 + Stripe test +
-  `/abbonamenti` vero + «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù
-  (l'unica voce che non chiede una build) → due o tre ristoratori con abbonamento regalato →
-  associazione + scheda in app + risposte alle recensioni nella stessa build nativa.
+- [ ] **Il piano a passi** — scritto il 16/09 in `MONETIZATION.md`, «Piano operativo
+  dell'abbonamento»: fondamenta web (716 + Stripe test + due Edge Function + `/abbonamenti` vero +
+  «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù, migration 717 (l'unica
+  voce che non chiede una build) → due o tre ristoratori con abbonamento regalato → fatture e P2B →
+  associazione + scheda in app + risposte alle recensioni nella stessa build nativa → notifiche e
+  statistiche.
 - [ ] **Prima di incassare davvero**: strumento per la fattura elettronica SdI (Stripe non la
   invia; da scegliere col commercialista), condizioni d'uso + P2B. La P.IVA c'è già.
 - [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è

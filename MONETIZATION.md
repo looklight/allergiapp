@@ -723,6 +723,56 @@ Ricadute tecniche (già riportate nella bozza 700):
   un profilo partner?" solo con la 700: finché i dati stanno in localStorage
   qualsiasi controllo sarebbe aggirabile.
 
+## Piano operativo dell'abbonamento (2026-09-16)
+
+> Sostituisce le "Fasi (bozza)" qui sotto, che restano come traccia storica.
+> Criterio dell'ordine: **l'estetica del menù è l'unica voce a pagamento che
+> non chiede una versione nuova dell'app**, quindi è la prima che può valere
+> davvero. Scheda in app e risposte alle recensioni viaggiano insieme, in una
+> build nativa.
+
+**Passo 1 — le fondamenta, tutte lato web** (nessun incasso, nessun obbligo
+nuovo)
+1. Applicare la **716** a mano dal SQL editor e verificarla (tabella, indice
+   parziale, funzione, policy). Tracking fermo alla 045: mai `db push`.
+2. Su Stripe, in **modalità test**: un prodotto "AllergiApp" con due prezzi
+   ricorrenti (7,99 €/mese, 60 €/anno).
+3. Due **Edge Function Supabase** accanto a `delete-account` — non route del
+   portale: il segreto di Stripe resta in un posto solo, vicino al database.
+   - `stripe-checkout`: apre il pagamento per un locale del richiedente.
+     Stripe raccoglie al checkout i dati aziendali (P.IVA, sede), che il
+     webhook riversa in `partner_companies`.
+   - `stripe-webhook`: scrive `partner_subscriptions` a ogni rinnovo,
+     disdetta o pagamento fallito. È l'unico che scrive le righe `stripe`.
+4. `/abbonamenti` nel portale smette di essere un tappo: stato vero, bottone
+   che paga, e il portale cliente di Stripe per carta e disdetta.
+5. In admin: elenco degli abbonamenti e **«Concedi abbonamento»** (manuale,
+   con motivo e scadenza), con riga nell'audit.
+
+**Passo 2 — il primo muro: l'estetica del menù** (migration 717)
+Il muro sta in `build_public_menu`, non sul bottone (Tema 27): le manopole si
+toccano sempre, al tavolo arriva l'aspetto di base finché non c'è
+l'abbonamento. Niente lucchetti nel portale, e **niente si perde**: chi paga
+ritrova quello che aveva impostato. Da decidere qui: i due locali di prova,
+e se l'estetica già pubblicata oggi resta accesa.
+
+**Passo 3 — due o tre ristoratori veri**, con abbonamento concesso a mano.
+È la prova chiesta da `DIGITAL_MENU.md` prima delle statistiche, e insieme
+il primo collaudo del passo 1. Si scopre presto se l'estetica da sola regge
+un canone mensile.
+
+**Passo 4 — prima di incassare davvero** (fuori dal codice, col
+commercialista): strumento per la fattura elettronica SdI, condizioni d'uso
++ P2B, controllo che l'account Stripe sia intestato alla P.IVA e non alla
+persona. Poi Stripe passa in modalità reale.
+
+**Passo 5 — associazione e app, nella stessa build nativa**: design del
+claim, chiusura della falla `partner_cards_owner`, la scheda letta dall'app,
+risposte alle recensioni, `ORDER BY is_premium` neutralizzato.
+
+**Passo 6 — le voci che danno un motivo per pagare ogni mese**: notifiche al
+gestore e statistiche.
+
 ## Fasi (bozza, da trasformare in piano quando saremo pronti)
 
 1. Claim self-service + dashboard in anteprima
