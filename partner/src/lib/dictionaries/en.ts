@@ -365,7 +365,7 @@ const en: typeof it = {
     socialsGroup: 'Your links',
     socialsGroupHint: 'They appear at the bottom of the page guests open with the QR code.',
     socialsTitle: 'Address',
-    socialsPlaceholder: 'instagram.com/yourvenue',
+    socialsPlaceholder: 'e.g. instagram.com/yourvenue',
     socialsAdd: 'Add a link',
     socialsHint:
       'Paste the address: we work out which service it is. Guests at the table see these at the bottom of the page.',

@@ -648,11 +648,11 @@ export default function BrandBar({
           </div>
         )}
 
-        {/* Il pavimento, detto a chi sceglie: senza questa riga "Compatta"
-            sembra rimpicciolire tutto, allergeni compresi, e chi ci tiene non
-            la toccherebbe mai. Vale per tutt'e due le manopole di questa
-            riga. */}
-        <p className="w-full text-xs leading-relaxed text-gray-400">{d.menuEditor.textScaleFloor}</p>
+        {/* ⚠️ QUI C'ERA «La riga degli allergeni non rimpicciolisce mai»,
+            tolta il 16/09 su richiesta dell'utente. Il fatto resta vero — il
+            pavimento è nel codice, non nella frase — e se un giorno si
+            volesse ridire, la stringa è ancora in textScaleFloor. */
+        null}
       </div>
       </div>
 

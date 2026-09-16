@@ -64,3 +64,57 @@ function hostDi(url: string): string {
     return '';
   }
 }
+
+// I SIMBOLI, uno per servizio, nella stessa griglia da 24 delle altre icone
+// del portale. Sono FORME SEMPLIFICATE disegnate da noi, non i loghi
+// ufficiali: quelli sono marchi altrui, si prendono dai kit dei rispettivi
+// proprietari e non si ridisegnano a mano. Qui servono a far riconoscere la
+// riga a colpo d'occhio, e accanto resta sempre scritto il nome — che è
+// anche quello che legge chi usa un lettore di schermo.
+//
+// ⚠️ Chi non è riconosciuto NON resta senza simbolo: prende il globo. Un
+// dominio sconosciuto non è un errore (Linktree, un blog, un Mastodon), e
+// una riga senza icona in mezzo ad altre con l'icona sembra rotta.
+export const SOCIAL_ICONS: Record<string, string[]> = {
+  instagram: [
+    'M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z',
+    'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+    'M17.5 6.5h.01',
+  ],
+  facebook: ['M14 8h2V5h-2a4 4 0 0 0-4 4v2H8v3h2v7h3v-7h2.5l.5-3H13v-2a1 1 0 0 1 1-1z'],
+  tiktok: [
+    'M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5',
+    'M14 4c.5 2.5 2 4 4.5 4.2',
+  ],
+  whatsapp: [
+    'M4 20l1.2-3.6A7.5 7.5 0 1 1 8 19.2L4 20z',
+    'M9 9.5c0 3 2.5 5.5 5.5 5.5',
+  ],
+  youtube: [
+    'M3 8.5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z',
+    'M11 10l3.5 2-3.5 2z',
+  ],
+  x: ['M5 5l14 14', 'M19 5L5 19'],
+  linkedin: [
+    'M4 9h3v11H4z',
+    'M5.5 4.5h.01',
+    'M11 20V9h3v1.5A3.5 3.5 0 0 1 20 13v7h-3v-6a2 2 0 0 0-4 0v6z',
+  ],
+  tripadvisor: [
+    'M12 7c4 0 7 2 9 2',
+    'M12 7c-4 0-7 2-9 2',
+    'M7 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+    'M17 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+  ],
+  other: [
+    'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+    'M3.5 9h17',
+    'M3.5 15h17',
+    'M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9S9.5 5.5 12 3z',
+  ],
+};
+
+/** I tracciati del servizio di quell'indirizzo, globo se non lo conosciamo. */
+export function socialIcon(url: string): string[] {
+  return SOCIAL_ICONS[socialProvider(url)] ?? SOCIAL_ICONS.other;
+}

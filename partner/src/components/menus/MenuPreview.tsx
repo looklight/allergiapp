@@ -33,6 +33,7 @@ import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
 import { socialName } from '@/lib/socials';
+import SocialIcon from './SocialIcon';
 import {
   displayPrice,
   hasNoteText,
@@ -826,10 +827,11 @@ export default function MenuPreview({
             {socials.map((social, i) => (
               <span
                 key={i}
-                className="riga-minuta rounded-full border border-gray-200 px-2.5 py-1 text-gray-600"
+                className="riga-minuta inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-gray-600"
                 // Nell'anteprima non si naviga: è il telefono finto, e un
                 // link che porta via da qui perderebbe il lavoro in corso.
               >
+                <SocialIcon url={social.url} className="h-3.5 w-3.5" />
                 {socialName(social.url, social.label)}
               </span>
             ))}

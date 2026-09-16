@@ -495,7 +495,7 @@ const it = {
     socialsGroup: 'I tuoi link',
     socialsGroupHint: 'Compaiono in fondo alla pagina che il cliente apre col QR.',
     socialsTitle: 'Indirizzo',
-    socialsPlaceholder: 'instagram.com/iltuolocale',
+    socialsPlaceholder: 'es. instagram.com/iltuolocale',
     socialsAdd: 'Aggiungi un link',
     socialsHint:
       'Incolla l’indirizzo: riconosciamo noi di che servizio si tratta. Chi è seduto al tavolo li vede in fondo alla pagina.',

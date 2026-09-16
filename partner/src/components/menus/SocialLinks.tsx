@@ -15,6 +15,7 @@
 // sulla scheda AllergiApp, che serve a chi sceglie un ristorante da lontano.
 import { useI18n } from '@/lib/i18n';
 import { socialName } from '@/lib/socials';
+import SocialIcon from './SocialIcon';
 import { normalizeUrl, type SocialLink } from '@/lib/venues';
 
 export default function SocialLinks({
@@ -38,7 +39,13 @@ export default function SocialLinks({
         {socials.map((social, i) => {
           const nome = socialName(social.url);
           return (
-            <div key={i} className="flex items-center gap-2">
+            <div key={i} className="flex items-start gap-2">
+              {/* Il simbolo cambia mentre si scrive: è il modo più rapido di
+                  accorgersi di aver incollato l'indirizzo sbagliato — lo vede
+                  chi lo incolla, non i suoi clienti. */}
+              <span className="mt-2.5 shrink-0 text-gray-400">
+                <SocialIcon url={social.url} />
+              </span>
               <div className="min-w-0 flex-1">
                 <input
                   value={social.url}
