@@ -81,6 +81,7 @@ export default function MenuEditorPage() {
   // scelte fatte a mano — e una copertina caricata poco fa — quindi si
   // chiede, come per l'eliminazione di una sezione.
   const [revertingBrand, setRevertingBrand] = useState(false);
+  const [resettingBrand, setResettingBrand] = useState(false);
   // Maschera di un piatto NUOVO aperta dal menù: si ricorda in quale sezione
   // stava andando, perché è lì che deve comparire appena salvato.
   const [creatingDish, setCreatingDish] = useState<{ sectionId: string | null } | null>(null);
@@ -424,6 +425,7 @@ export default function MenuEditorPage() {
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
           onRevert={() => setRevertingBrand(true)}
+          onReset={() => setResettingBrand(true)}
           onCurrency={(valuta) => save(setMenuCurrency(menu, valuta))}
           onLayout={(menuLayout) => locale && setIdentity(locale.id, { menuLayout })}
           onSeparator={(dishSeparator) => locale && setIdentity(locale.id, { dishSeparator })}
@@ -987,6 +989,34 @@ export default function MenuEditorPage() {
           onConfirm={() => {
             save(removeSection(menu, sezioneInEliminazione.id));
             setDeletingSection(null);
+          }}
+        />
+      )}
+
+      {/* IL RITORNO AI VALORI DI PARTENZA, per chi non ha una sala a cui
+          tornare. ⚠️ Non tocca logo e copertina: sono file caricati, e
+          buttarli dentro un "rimetti com'era" vorrebbe dire cancellare
+          immagini per una scelta di colore. Non tocca nemmeno foto e
+          descrizioni dei piatti, che non sono aspetto. */}
+      {resettingBrand && locale && (
+        <ConfirmDialog
+          title={d.menuEditor.appearanceResetTitle}
+          body={d.menuEditor.appearanceResetBody}
+          confirmLabel={d.menuEditor.appearanceResetConfirm}
+          onCancel={() => setResettingBrand(false)}
+          onConfirm={() => {
+            setIdentity(locale.id, {
+              accent: DEFAULT_ACCENT,
+              headingFont: 'modern',
+              sectionStyle: 'underline',
+              textScale: 'normal',
+              lineHeight: 'normal',
+              menuLayout: 'row',
+              dishSeparator: 'none',
+              dishPhotoShape: 'square',
+              allergenDisplay: 'text',
+            });
+            setResettingBrand(false);
           }}
         />
       )}

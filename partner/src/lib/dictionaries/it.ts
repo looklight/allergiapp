@@ -615,6 +615,14 @@ const it = {
     // stanza dove si mangia, non l'ultima versione pubblicata. "Pubblicato"
     // è la parola che il ristoratore ha già davanti sul bottone Pubblica e
     // nell'avviso delle modifiche — una parola sola per una cosa sola.
+    // Due vie d'uscita diverse per due situazioni diverse: chi ha una sala a
+    // cui tornare (abbonato, ha già pubblicato) e chi no — che prima di
+    // questo bottone doveva rimettere a mano ogni scelta provata.
+    appearanceReset: 'Rimetti i valori di partenza',
+    appearanceResetTitle: 'Rimettere i valori di partenza?',
+    appearanceResetBody:
+      'Colore, carattere, stile delle sezioni, grandezza dei testi e impaginazione tornano come erano all’inizio. Il logo, la copertina, le foto e le descrizioni dei piatti non si toccano.',
+    appearanceResetConfirm: 'Rimetti',
     appearanceRevert: 'Torna all’aspetto pubblicato',
     appearanceRevertTitle: 'Tornare all’aspetto pubblicato?',
     appearanceRevertBody:
@@ -801,17 +809,20 @@ const it = {
     noSubscription: 'Nessun abbonamento',
     linkCta: 'Associa al ristorante su AllergiApp',
     // Stato dell'abbonamento del locale
-    active: 'Abbonamento attivo',
+    active: 'Piano Pro attivo',
     renewsOn: 'Si rinnova il {data}',
     endsOn: 'Finisce il {data}',
     noEnd: 'Senza scadenza',
     pastDue: 'Pagamento in ritardo',
     pastDueHint: 'Stiamo riprovando con la tua carta. Il menù resta com’è.',
-    granted: 'Offerto da AllergiApp',
+    granted: 'Piano Pro offerto da AllergiApp',
     // ⚠️ I prezzi sono scritti qui E stanno su Stripe: se cambiano, vanno
     // cambiati in tutt'e due i posti. Il conto vero lo fa sempre Stripe.
-    monthly: '7,99 € al mese',
-    yearly: '60 € all’anno',
+    // Il PIANO ha un nome, ed è lo stesso del distintivo: così "Pro" è la
+    // cosa e "abbonamento" il gesto di comprarla, invece di due parole per
+    // la stessa cosa in due schermate.
+    monthly: 'Piano Pro · 7,99 € al mese',
+    yearly: 'Piano Pro · 60 € all’anno',
     yearlyHint: 'Due mesi in regalo',
     // Va detto PRIMA di pagare, non dopo: il rinnovo automatico scoperto al
     // secondo addebito è il modo più rapido di perdere un ristoratore, e verso

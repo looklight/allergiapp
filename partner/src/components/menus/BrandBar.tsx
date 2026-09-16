@@ -20,7 +20,7 @@
 // Il logo e il nome del locale non sono qui: il nome è il titolo in cima alla
 // pagina, il logo gli sta accanto (LogoPicker).
 import { useI18n } from '@/lib/i18n';
-import { accentiSceglibili, accentHex } from '@/lib/menuBrand';
+import { accentiSceglibili, accentHex, DEFAULT_ACCENT } from '@/lib/menuBrand';
 import { APPEARANCE_711, APPEARANCE_PREMIUM } from '@/lib/features';
 import ProTag from '@/components/ProTag';
 import { CURRENCIES } from '@/lib/menus';
@@ -63,6 +63,7 @@ export default function BrandBar({
   changed,
   esempio,
   onRevert,
+  onReset,
   onCurrency,
   onLayout,
   onSeparator,
@@ -113,6 +114,9 @@ export default function BrandBar({
   // suoi e non c'è niente da dimostrare.
   esempio: { acceso: boolean; cambia: () => void } | null;
   onRevert: () => void;
+  // La via d'uscita di chi NON è abbonato: non ha una sala a cui tornare, ma
+  // ha comunque provato delle cose e deve poterle disfare in un colpo.
+  onReset: () => void;
   onCurrency: (value: string) => void;
   onLayout: (value: MenuLayout) => void;
   onSeparator: (value: DishSeparator) => void;
@@ -134,6 +138,21 @@ export default function BrandBar({
   abbonato: boolean;
 }) {
   const { d, locale } = useI18n();
+
+  // Ha toccato qualcosa delle manopole che il reset rimette a posto? Si
+  // confronta con gli stessi valori di partenza del database
+  // (venue_appearance_defaults, migration 711): se i due elenchi divergono,
+  // il bottone offre di disfare qualcosa che non c'è.
+  const toccato =
+    accent !== DEFAULT_ACCENT ||
+    headingFont !== 'modern' ||
+    sectionStyle !== 'underline' ||
+    textScale !== 'normal' ||
+    lineHeight !== 'normal' ||
+    layout !== 'row' ||
+    separator !== 'none' ||
+    photoShape !== 'square' ||
+    allergenDisplay !== 'text';
 
 
   return (
@@ -663,7 +682,16 @@ export default function BrandBar({
 
           Testo grigio e non un bottone pieno: è la via d'uscita di chi ha
           provato qualcosa, non una delle scelte da fare qui. */}
-      {changed && (
+      {/* DUE VIE D'USCITA, mai insieme, perché rispondono a due domande
+          diverse: chi è abbonato torna a QUELLO CHE I CLIENTI STANNO
+          LEGGENDO; chi non lo è non ha una sala a cui tornare — il suo
+          aspetto al tavolo è quello di partenza — e allora la sola cosa
+          sensata è disfare le prove.
+
+          ⚠️ Per il non abbonato il bottone non compare se non ha toccato
+          niente: un "rimetti com'era" su una scatola già com'era è un invito
+          a chiedersi cosa si è rotto. */}
+      {changed ? (
         <div className="mt-4 flex justify-end border-t border-gray-100 pt-3">
           <button
             onClick={onRevert}
@@ -672,6 +700,17 @@ export default function BrandBar({
             {d.menuEditor.appearanceRevert}
           </button>
         </div>
+      ) : (
+        toccato && (
+          <div className="mt-4 flex justify-end border-t border-gray-100 pt-3">
+            <button
+              onClick={onReset}
+              className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+            >
+              {d.menuEditor.appearanceReset}
+            </button>
+          </div>
+        )
       )}
       </div>
     </details>
