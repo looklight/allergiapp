@@ -23,6 +23,7 @@ import {
 import { SUBSCRIPTIONS } from '@/lib/features';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import StatusPill from '@/components/StatusPill';
+import ProTag from '@/components/ProTag';
 
 // Tornando da Stripe la riga non c'è ancora: la scrive il webhook, che arriva
 // un attimo dopo il ritorno del browser. Invece di mostrare "nessun
@@ -173,8 +174,9 @@ function Abbonamenti() {
             return (
               <div key={v.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-center gap-3">
-                  <p className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
-                    {v.venueName.trim() || d.home.unnamed}
+                  <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-gray-900">
+                    <span className="truncate">{v.venueName.trim() || d.home.unnamed}</span>
+                    {sub && <ProTag variant="active" />}
                   </p>
                   <StatusPill stato={stato} label={label} />
                 </div>

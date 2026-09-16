@@ -12,6 +12,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { useSubscriptions, vale } from '@/lib/subscriptions';
+import ProTag from '@/components/ProTag';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { authErrorMessage, PARTNER_MIN_PASSWORD } from '@/lib/authErrors';
@@ -32,6 +34,7 @@ const cardClass = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm';
 export default function AccountPage() {
   const { session } = useAuth();
   const { d } = useI18n();
+  const { subs } = useSubscriptions();
   const profile = usePartnerProfile();
   const aggiornaProfilo = useUpdatePartnerProfile();
   const userId = session?.user.id ?? null;
@@ -295,7 +298,13 @@ export default function AccountPage() {
         <div className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-900">{d.account.subsTitle}</p>
+              <p className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                {d.account.subsTitle}
+                {/* Il distintivo ambra compare se ALMENO UN locale ha il piano:
+                    qui si parla dell'account, non di un locale in particolare
+                    — quale sia lo dice la pagina che si apre premendo. */}
+                {(subs ?? []).some(vale) && <ProTag variant="active" />}
+              </p>
               <p className="mt-0.5 text-xs text-gray-500">{d.account.subsHint}</p>
             </div>
             <Link

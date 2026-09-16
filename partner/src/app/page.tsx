@@ -649,8 +649,13 @@ export default function HomePage() {
             e i contatti stanno qui perché è qui che si vanno a scrivere. */}
         <section className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
+            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-900">
               {d.dashboard.cardTitle}
+              {/* La scheda in app è Pro: il distintivo viola lo dice qui, dove
+                  il riquadro si guarda ogni giorno, e non solo aprendola. Per
+                  chi è abbonato sparisce — ce l'ha, e l'ambra nella pastiglia
+                  del locale lo dice già. */}
+              {!abbonato && <ProTag variant="needed" />}
             </h2>
             <StatusPill
               stato={venue.cardId === null ? 'todo' : 'ready'}
