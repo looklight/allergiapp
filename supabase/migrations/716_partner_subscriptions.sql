@@ -1,6 +1,7 @@
 -- ============================================================
 -- 716_partner_subscriptions.sql
--- STATO: BOZZA, DA NON APPLICARE finché non è approvata.
+-- STATO: APPLICATA il 2026-09-16 e verificata (16 colonne,
+-- l'indice parziale, venue_subscription_active, 2 policy).
 -- Tracking fermo alla 045: a mano, MAI db push.
 --
 -- L'ABBONAMENTO, SUL LOCALE.

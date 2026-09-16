@@ -63,8 +63,12 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
 Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listino attuale»**
 (7,99 €/mese · 60 €/anno, forfettario, Stripe). L'ordine resta **abbonamento → associazione**.
 
-- [ ] **Migration 716** (`partner_subscriptions`, sul locale) — **BOZZA, non applicata** né provata
-  (nessun Postgres locale). Provenienza `stripe` o `manual` (concesso dall'admin, **non** "fondatori").
+- [x] ~~**Migration 716**~~ (`partner_subscriptions`, sul locale) — **APPLICATA e verificata il
+  2026-09-16** (16 colonne, indice parziale, `venue_subscription_active`, 2 policy). Provenienza
+  `stripe` o `manual` (concesso dall'admin, **non** "fondatori"). Tabella vuota: non la legge ancora
+  nessuno. Due scelte da ricordare: col pagamento in ritardo l'abbonamento **vale ancora** finché
+  Stripe ritenta, e un locale con abbonamento aperto **non si cancella** (il portale dovrà dirlo con
+  una frase, non con un errore del database).
 - [ ] **Il piano a passi** — scritto il 16/09 in `MONETIZATION.md`, «Piano operativo
   dell'abbonamento»: fondamenta web (716 + Stripe test + due Edge Function + `/abbonamenti` vero +
   «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù, migration 717 (l'unica
