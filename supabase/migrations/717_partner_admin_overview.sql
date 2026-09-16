@@ -72,7 +72,16 @@ RETURNS TABLE (
   sub_cancel_at_period_end boolean,
   sub_note text,
   -- Serve solo a costruire il link al cliente sulla dashboard di Stripe
-  sub_customer_id text
+  sub_customer_id text,
+  -- CHI SE N'È ANDATO. Senza queste, un ex abbonato è indistinguibile da chi
+  -- non si è mai abbonato — e sono due persone da trattare in modo opposto:
+  -- il primo ha già lavorato col portale ed è la leva di riconquista
+  -- (MONETIZATION.md, "win-back"), il secondo va ancora convinto.
+  past_subs bigint,
+  ex_canceled_at timestamptz,
+  ex_source text,
+  ex_started_at timestamptz,
+  ex_ends_at timestamptz
 )
 LANGUAGE sql
 SECURITY DEFINER
@@ -104,7 +113,13 @@ AS $$
     s.ends_at,
     s.cancel_at_period_end,
     s.note,
-    s.stripe_customer_id
+    s.stripe_customer_id,
+    (SELECT count(*) FROM partner_subscriptions p
+      WHERE p.venue_id = v.id AND p.status = 'canceled'),
+    ex.canceled_at,
+    ex.source,
+    ex.started_at,
+    ex.ends_at
   FROM partner_venues v
   JOIN partner_accounts a ON a.user_id = v.owner_user_id
   JOIN auth.users u ON u.id = v.owner_user_id
@@ -120,6 +135,17 @@ AS $$
     ORDER BY s2.created_at DESC
     LIMIT 1
   ) s ON true
+  -- L'ULTIMO ABBONAMENTO CHIUSO, che c'è anche quando ce n'è uno vivo (chi ha
+  -- disdetto e poi è tornato). Si ordina per la data della disdetta, con la
+  -- scadenza come ripiego: una riga chiusa da un pagamento fallito la
+  -- canceled_at ce l'ha, una scaduta e basta no.
+  LEFT JOIN LATERAL (
+    SELECT s3.canceled_at, s3.source, s3.started_at, s3.ends_at
+    FROM partner_subscriptions s3
+    WHERE s3.venue_id = v.id AND s3.status = 'canceled'
+    ORDER BY coalesce(s3.canceled_at, s3.ends_at) DESC NULLS LAST
+    LIMIT 1
+  ) ex ON true
   WHERE EXISTS (
     SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
   )
@@ -140,7 +166,10 @@ $$;
 -- (è una lista di locali): è proprio il primo gradino del percorso, e senza
 -- questo conteggio non si vedrebbe.
 -- ------------------------------------------------------------
-CREATE OR REPLACE FUNCTION get_partner_stats_admin()
+-- Anche questa cambia le colonne restituite, quindi DROP e non REPLACE.
+DROP FUNCTION IF EXISTS get_partner_stats_admin();
+
+CREATE FUNCTION get_partner_stats_admin()
 RETURNS TABLE (
   accounts bigint,
   accounts_with_venue bigint,
@@ -158,7 +187,10 @@ RETURNS TABLE (
   -- smette di essere letta, e si porta dietro le caselle accanto.
   new_accounts_30d bigint,
   new_subs_30d bigint,
-  canceled_subs_30d bigint
+  canceled_subs_30d bigint,
+  -- Locali che un abbonamento l'hanno avuto e oggi non ce l'hanno: la lista
+  -- da cui si riparte per riconquistarli.
+  venues_churned bigint
 )
 LANGUAGE sql
 SECURITY DEFINER
@@ -191,7 +223,10 @@ AS $$
     -- (cancel_at_period_end) porta canceled_at alla richiesta, non alla fine:
     -- è il momento in cui il ristoratore ha deciso, che è quello che interessa.
     (SELECT count(*) FROM partner_subscriptions
-      WHERE canceled_at IS NOT NULL AND canceled_at > now() - interval '30 days')
+      WHERE canceled_at IS NOT NULL AND canceled_at > now() - interval '30 days'),
+    (SELECT count(DISTINCT p.venue_id) FROM partner_subscriptions p
+      WHERE p.status = 'canceled'
+        AND NOT EXISTS (SELECT 1 FROM vive WHERE vive.venue_id = p.venue_id))
   WHERE EXISTS (
     SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
   );
