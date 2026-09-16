@@ -339,10 +339,15 @@ export default function PartnersPage() {
       <h1 className="text-2xl font-bold mb-6">Partner</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {/* Il movimento sta dentro la casella del totale, non in una fila a
+            parte: sono la stessa cosa guardata da vicino, e una riga di
+            caselle in più per dire "+2" occupava mezzo schermo. */}
         <StatCard
           label="Iscritti al portale"
           value={stats?.accounts ?? 0}
-          hint={`· ${stats?.accounts_with_venue ?? 0} con un locale`}
+          hint={`· ${stats?.accounts_with_venue ?? 0} con un locale${
+            stats?.new_accounts_30d ? ` · +${stats.new_accounts_30d} in 30gg` : ''
+          }`}
         />
         <StatCard
           label="Locali"
@@ -354,7 +359,11 @@ export default function PartnersPage() {
           label="Abbonati paganti"
           value={stats?.subs_paid ?? 0}
           color="text-success"
-          hint={`· ${stats?.subs_granted ?? 0} offerti`}
+          hint={`· ${stats?.subs_granted ?? 0} offerti${
+            stats?.new_subs_30d ? ` · +${stats.new_subs_30d}` : ''
+          }${stats?.canceled_subs_30d ? ` · −${stats.canceled_subs_30d}` : ''}${
+            stats?.new_subs_30d || stats?.canceled_subs_30d ? ' in 30gg' : ''
+          }`}
         />
         {/* Ricavo mensile ricorrente: l'annuale conta un dodicesimo al mese,
             o un mese con due annuali sembrerebbe un'impennata. */}
@@ -365,22 +374,6 @@ export default function PartnersPage() {
           hint={stats?.expiring_30d ? `· ${stats.expiring_30d} in scadenza a 30gg` : undefined}
         />
       </div>
-
-      {/* IL MOVIMENTO compare solo quando c'è: una fila di zeri fissi smette
-          di essere letta, e si porta dietro le caselle accanto. */}
-      {stats && (stats.new_accounts_30d > 0 || stats.new_subs_30d > 0 || stats.canceled_subs_30d > 0) && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {stats.new_accounts_30d > 0 && (
-            <StatCard label="Nuovi iscritti · 30gg" value={stats.new_accounts_30d} />
-          )}
-          {stats.new_subs_30d > 0 && (
-            <StatCard label="Nuovi abbonamenti · 30gg" value={stats.new_subs_30d} color="text-success" />
-          )}
-          {stats.canceled_subs_30d > 0 && (
-            <StatCard label="Disdette · 30gg" value={stats.canceled_subs_30d} color="text-danger" />
-          )}
-        </div>
-      )}
 
       <input
         type="text"
