@@ -423,6 +423,7 @@ const en: typeof it = {
     publish: 'Publish changes',
     publishFirst: 'Publish the menu',
     publishing: 'Publishing…',
+    publishNoDishes: 'Add at least one dish before publishing the menu.',
     publishNoActive: 'No active menus: nothing to publish. Turn at least one back on in "View menus".',
     publishPending: 'Unpublished changes: guests still see the previous version.',
     publishAllergens: 'Unpublished changes, allergens among them: guests still see the previous version.',

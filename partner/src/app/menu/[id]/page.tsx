@@ -392,6 +392,14 @@ export default function MenuEditorPage() {
           pubblica={() => void pubblicazione.pubblica()}
           inCorso={pubblicazione.inCorso}
           nessunMenuAttivo={pubblicazione.nessunMenuAttivo}
+          // Tutti i menù ATTIVI del locale, non solo quello aperto: premendo
+          // Pubblica si pubblicano insieme, e basta un piatto in uno qualsiasi
+          // perché la pagina al tavolo abbia qualcosa da mostrare.
+          senzaPiatti={
+            (menus ?? [])
+              .filter((m) => m.venueId === menu.venueId && m.active)
+              .every((m) => menuItems(m).length === 0)
+          }
         />
       </div>
 

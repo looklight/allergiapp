@@ -250,7 +250,15 @@ as $$
            c.created_at
       from carte c
   )
-  select case when (select count(*) from carte) = 0 then null else
+  -- ⚠️ NIENTE SCATTO SENZA PIATTI (16/09). Prima bastava un menù attivo, e
+  -- un menù attivo può essere vuoto: chi premeva Pubblica portava al tavolo
+  -- una pagina col nome del locale e il vuoto sotto. Il portale adesso
+  -- nasconde il bottone, ma quel QR è già stampato e incollato al tavolo e
+  -- non si corregge da remoto: la garanzia deve stare dove lo scatto nasce,
+  -- non solo dove si preme.
+  --
+  -- publish_menu tratta già NULL come «non pubblicare»: non serve altro.
+  select case when (select count(*) from righe) = 0 then null else
     jsonb_build_object(
       'slug', (select slug from locale),
       'venueName', (select name from locale),

@@ -46,6 +46,7 @@ export default function PublishBar({
   pubblica,
   inCorso,
   nessunMenuAttivo,
+  senzaPiatti,
 }: {
   // null = non ancora saputo. Lo stato lo tiene la pagina (usePublishState),
   // perché in questa schermata lo leggono in tre: questa riga, la sezione
@@ -59,6 +60,12 @@ export default function PublishBar({
   // messaggio "modifiche non pubblicate" — che resterebbe vero ma
   // fuorviante, perché suggerirebbe che basta ripremere lo stesso bottone.
   nessunMenuAttivo: boolean;
+  // Nessun piatto in nessuno dei menù attivi di questo locale. Il bottone non
+  // compare: pubblicare porterebbe al tavolo una pagina col nome del locale e
+  // il vuoto sotto — e quel QR è già stampato e incollato, non si corregge da
+  // remoto. Il conto guarda TUTTI i menù attivi e non solo quello aperto,
+  // perché a pubblicare si pubblicano tutti insieme.
+  senzaPiatti: boolean;
 }) {
   const { d, locale } = useI18n();
 
@@ -88,6 +95,8 @@ export default function PublishBar({
   // stesso bottone basti.
   const messaggio = nessunMenuAttivo
     ? d.menuEditor.publishNoActive
+    : senzaPiatti
+      ? d.menuEditor.publishNoDishes
     : !daPubblicare
       ? fill(d.menuEditor.publishedOn, { date: quandoLeggibile(stato.publishedAt, locale) })
       : mai
@@ -110,13 +119,15 @@ export default function PublishBar({
     <>
       <p
         className={`${spazio} ${
-          !daPubblicare ? 'text-gray-400' : allarme || nessunMenuAttivo ? 'text-amber-800' : 'text-gray-600'
+          !daPubblicare ? 'text-gray-400'
+            : allarme || nessunMenuAttivo || senzaPiatti ? 'text-amber-800'
+            : 'text-gray-600'
         }`}
         title={messaggio}
       >
         {messaggio}
       </p>
-      {daPubblicare && (
+      {daPubblicare && !senzaPiatti && (
         <button
           onClick={pubblica}
           disabled={inCorso}

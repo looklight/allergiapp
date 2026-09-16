@@ -597,6 +597,9 @@ const it = {
     // Il database rifiuta di pubblicare uno scatto vuoto: qui si dice perché,
     // così ripremere lo stesso bottone non sembra l'unica cosa da fare
     // (bug trovato durante il censimento richiesto dall'utente, 14/09).
+    // Manca la sola cosa che una carta deve avere. Dice cosa fare, non cosa
+    // è andato storto: non è un errore, è un menù non ancora finito.
+    publishNoDishes: 'Aggiungi almeno un piatto per pubblicare il menù.',
     publishNoActive: 'Nessun menù attivo: niente da pubblicare. Riaccendine almeno uno in "Vedi i menù".',
     publishPending: 'Modifiche non pubblicate: gli utenti vedono ancora la versione precedente.',
     // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
