@@ -180,7 +180,34 @@ function Abbonamenti() {
                 </div>
                 {nota && <p className="mt-1 text-xs text-gray-500">{nota}</p>}
 
-                {sub ? (
+                {sub && sub.source === 'manual' && SUBSCRIPTIONS ? (
+                  // CHI HA UN REGALO DEVE POTER PASSARE AL PAGATO quando
+                  // vuole (16/09): se dovesse aspettare la scadenza, fra
+                  // l'una e l'altro resterebbe scoperto — e il menù al tavolo
+                  // perderebbe l'aspetto per qualche giorno. Il regalo lo
+                  // chiude il webhook, dopo aver scritto il pagato.
+                  <div className="mt-4">
+                    <p className="mb-2 text-xs text-gray-500">{d.subs.switchNote}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => paga(v.id, 'monthly')}
+                        disabled={inCorso !== null}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-40"
+                      >
+                        {d.subs.monthly}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => paga(v.id, 'yearly')}
+                        disabled={inCorso !== null}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-40"
+                      >
+                        {d.subs.yearly}
+                      </button>
+                    </div>
+                  </div>
+                ) : sub ? (
                   // L'abbonamento offerto da noi non ha niente da gestire su
                   // Stripe: non c'è una carta dietro.
                   sub.source === 'stripe' && (

@@ -122,21 +122,6 @@ async function upsertSubscription(eventSub: Stripe.Subscription) {
     stripe_subscription_id: sub.id,
   };
 
-  // Un abbonamento concesso a mano sullo stesso locale va chiuso prima, o
-  // l'indice parziale della 716 rifiuta il secondo aperto. Succede davvero:
-  // il ristoratore a cui l'abbiamo regalato decide di pagare.
-  if (status !== "canceled") {
-    const { error: closeError } = await admin
-      .from("partner_subscriptions")
-      .update({ status: "canceled", canceled_at: new Date().toISOString() })
-      .eq("venue_id", venueId)
-      .eq("source", "manual")
-      .in("status", ["active", "past_due"]);
-    if (closeError) {
-      console.error("[stripe-webhook] chiusura del manuale fallita:", closeError);
-    }
-  }
-
   // Su stripe_subscription_id (UNIQUE): Stripe ripete gli eventi, e un
   // rinnovo è lo stesso abbonamento con una data nuova.
   const { error } = await admin
@@ -146,6 +131,23 @@ async function upsertSubscription(eventSub: Stripe.Subscription) {
     console.error("[stripe-webhook] scrittura fallita:", error, sub.id);
     // 500: Stripe riprova da solo nelle ore successive.
     throw error;
+  }
+
+  // ⚠️ IL REGALO SI CHIUDE DOPO, NON PRIMA (migration 720). Chiudendolo
+  // prima, fra le due scritture il locale risultava scoperto per un istante,
+  // e il trigger della 718 toglieva l'aspetto dalla sala: il menù diventava
+  // sobrio proprio nel momento in cui il ristoratore cominciava a pagare.
+  // In quest'ordine non c'è mai un istante senza copertura.
+  if (status !== "canceled") {
+    const { error: closeError } = await admin
+      .from("partner_subscriptions")
+      .update({ status: "canceled", canceled_at: new Date().toISOString() })
+      .eq("venue_id", venueId)
+      .eq("source", "manual")
+      .in("status", ["active", "past_due"]);
+    if (closeError) {
+      console.error("[stripe-webhook] chiusura del regalo fallita:", closeError);
+    }
   }
 }
 

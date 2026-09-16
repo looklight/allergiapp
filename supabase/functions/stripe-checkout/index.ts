@@ -78,16 +78,26 @@ Deno.serve(async (req) => {
     }
     if (!venue) return json(404, { error: "Venue not found" });
 
-    // Un abbonamento aperto per locale: è anche un vincolo del database
-    // (indice parziale della 716), ma qui si può dire con una frase invece
-    // che con un errore di chiave duplicata dopo aver pagato.
+    // Si blocca solo chi ha già un abbonamento PAGATO vivo, perché quello sì
+    // che diventerebbe un doppio addebito.
+    //
+    // ⚠️ Un REGALO non blocca (correzione del 16/09): chi ne ha uno deve
+    // poter passare al pagato quando vuole — se non potesse, l'unico modo
+    // sarebbe aspettare la scadenza e restare scoperto nel frattempo. Ci
+    // pensa il webhook a chiudere il regalo, dopo aver scritto il pagato.
+    // E si guarda anche la SCADENZA: una riga scaduta per data è ancora
+    // 'active' nel database, e senza questo controllo avrebbe bloccato il
+    // pagamento per sempre.
     const { data: existing } = await userClient
       .from("partner_subscriptions")
-      .select("id")
+      .select("id, ends_at")
       .eq("venue_id", venueId)
-      .in("status", ["active", "past_due"])
-      .maybeSingle();
-    if (existing) return json(409, { error: "Already subscribed" });
+      .eq("source", "stripe")
+      .in("status", ["active", "past_due"]);
+    const vivo = (existing ?? []).some(
+      (s: { ends_at: string | null }) => !s.ends_at || new Date(s.ends_at) > new Date(),
+    );
+    if (vivo) return json(409, { error: "Already subscribed" });
 
     const price = (await stripe.prices.list({
       lookup_keys: [LOOKUP_KEYS[plan]],

@@ -830,6 +830,10 @@ const it = {
     renewalNote:
       'Si rinnova da solo, mensile o annuale secondo la scelta. Puoi disdire quando vuoi: resti attivo fino alla fine del periodo già pagato.',
     manage: 'Gestisci pagamento e fatture',
+    // Il passaggio dal regalo al pagato: dice la cosa che toglie il dubbio —
+    // che al tavolo non cambia niente e non si resta scoperti in mezzo.
+    switchNote:
+      'Puoi attivare l’abbonamento quando vuoi, anche prima della scadenza: il menù e la sua personalizzazione restano come sono, senza interruzioni.',
     billingHint:
       'I dati della tua azienda (P.IVA, sede) si inseriscono al pagamento: servono per la fattura.',
     paidWait: 'Pagamento ricevuto. Stiamo registrando l’abbonamento…',

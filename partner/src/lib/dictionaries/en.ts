@@ -597,6 +597,8 @@ const en: typeof it = {
     renewalNote:
       'It renews on its own, monthly or yearly depending on your choice. You can cancel any time: you stay active until the end of the period you already paid for.',
     manage: 'Manage payment and invoices',
+    switchNote:
+      'You can start your subscription whenever you like, even before the end date: your menu and its look stay exactly as they are, with no gap in between.',
     billingHint:
       'Your company details (VAT number, address) are entered during payment: they go on the invoice.',
     paidWait: 'Payment received. We’re recording your subscription…',
