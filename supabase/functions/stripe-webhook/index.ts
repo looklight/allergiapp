@@ -11,7 +11,11 @@
 //
 // Variabili d'ambiente: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
+// ⚠️ `npm:` e non esm.sh: la build di esm.sh tira dentro i polyfill Node di
+// deno.land/std, che qui esplodono a runtime («Deno.core.runMicrotasks() is
+// not supported»). La funzione rispondeva, ma ogni consegna di Stripe
+// falliva — e falliva in silenzio, perché Stripe si limita a ritentare.
+import Stripe from "npm:stripe@17.7.0";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   httpClient: Stripe.createFetchHttpClient(),
@@ -69,13 +73,30 @@ async function upsertSubscription(eventSub: Stripe.Subscription) {
   }
 
   const venueId = sub.metadata?.venue_id;
-  const ownerUserId = sub.metadata?.owner_user_id;
-  if (!venueId || !ownerUserId) {
+  if (!venueId) {
     // Senza il locale non si sa cosa accendere: meglio fermarsi e lasciarne
     // traccia che scrivere una riga orfana.
     console.error("[stripe-webhook] abbonamento senza venue_id nei metadata:", sub.id);
     return;
   }
+
+  // Il proprietario NON si prende dai metadata ma dal locale: è lì che vive,
+  // e la coppia (locale, proprietario) è una chiave del database. Un dato
+  // copiato in due posti prima o poi diverge.
+  const { data: venue, error: venueError } = await admin
+    .from("partner_venues")
+    .select("owner_user_id")
+    .eq("id", venueId)
+    .maybeSingle();
+  if (venueError) {
+    console.error("[stripe-webhook] lettura del locale fallita:", venueError);
+    throw venueError;
+  }
+  if (!venue) {
+    console.error("[stripe-webhook] locale inesistente:", venueId, sub.id);
+    return;
+  }
+  const ownerUserId = venue.owner_user_id;
 
   const status = mapStatus(sub.status);
   if (!status) return;

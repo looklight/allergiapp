@@ -11,7 +11,9 @@
 //
 // Variabili d'ambiente: STRIPE_SECRET_KEY, PARTNER_PORTAL_URL.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
+// ⚠️ `npm:` e non esm.sh, v. la nota in stripe-webhook: la build di esm.sh
+// muore a runtime sui polyfill Node.
+import Stripe from "npm:stripe@17.7.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -745,8 +745,21 @@ nuovo)
    `allergiapp_yearly`), mai per id: i prezzi in Stripe non si modificano, si
    sostituiscono, e in modalità reale gli id saranno altri. Cambiare listino =
    creare il prezzo nuovo e spostargli l'etichetta.
-3. Due **Edge Function Supabase** accanto a `delete-account` — non route del
-   portale: il segreto di Stripe resta in un posto solo, vicino al database.
+3. ✅ **FATTO il 16/09** — due **Edge Function Supabase** accanto a
+   `delete-account` (non route del portale: il segreto di Stripe resta in un
+   posto solo, vicino al database), pubblicate e **provate da capo a fondo**:
+   abbonamento creato su Stripe → riga `active` in `partner_subscriptions`;
+   disdetta → riga `canceled` con le date giuste.
+   ⚠️ Tre trappole pagate per strada, da non ripetere:
+   - **La libreria di Stripe va importata con `npm:`, mai da esm.sh**: quella
+     build tira dentro i polyfill Node di deno.land e la funzione muore a
+     runtime. Il guaio è che falliva **in silenzio** — Stripe ritenta e basta,
+     e senza guardare i log della funzione sembrava tutto a posto.
+   - **Un endpoint webhook per volta**: due endpoint sullo stesso indirizzo
+     hanno firme diverse, e metà delle consegne viene rifiutata.
+   - **La chiave segreta e l'endpoint devono stare nella STESSA sandbox**
+     (qui `acct_1T8Pk3AWJFZcd82B`): con la chiave dell'altro ambiente la
+     rilettura risponde "No such subscription".
    - `stripe-checkout`: apre il pagamento per un locale del richiedente.
      Stripe raccoglie al checkout i dati aziendali (P.IVA, sede), che il
      webhook riversa in `partner_companies`.
