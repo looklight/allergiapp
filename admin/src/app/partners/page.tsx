@@ -73,6 +73,34 @@ const SITO = 'https://allergiapp.com';
 // Al passaggio in reale diventa 'https://dashboard.stripe.com/customers/'.
 const STRIPE_CLIENTI = 'https://dashboard.stripe.com/acct_1T8Pk3AWJFZcd82B/test/customers/';
 
+// IL PALLINO DELLO STATO, con gli stessi colori del portale partner
+// (components/StatusPill.tsx là): verde in sala, ambra preparato ma non
+// pubblicato, grigio niente. Gli esadecimali sono scritti a mano di
+// proposito — i due progetti non condividono i token, e quello che deve
+// combaciare è il COLORE visto da chi guarda le due schermate.
+//
+// ⚠️ Il colore non è mai l'unico canale: accanto resta scritto "in sala dal…"
+// o "mai pubblicato", per chi quei due colori non li distingue.
+const COLORI_STATO = { ready: '#4CAF50', draft: '#E8A33D', todo: '#D1D5DB' };
+
+function statoMenu(r: { published_at: string | null; menus_total: number }) {
+  if (r.published_at) return { colore: COLORI_STATO.ready, titolo: 'Menù in sala' };
+  if (r.menus_total > 0) return { colore: COLORI_STATO.draft, titolo: 'Menù preparato, non pubblicato' };
+  return { colore: COLORI_STATO.todo, titolo: 'Nessun menù' };
+}
+
+function Pallino({ r }: { r: PartnerVenue }) {
+  const { colore, titolo } = statoMenu(r);
+  return (
+    <span
+      className="h-2 w-2 shrink-0 rounded-full inline-block"
+      style={{ backgroundColor: colore }}
+      title={titolo}
+      aria-hidden="true"
+    />
+  );
+}
+
 function data(iso: string | null): string {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -502,7 +530,10 @@ export default function PartnersPage() {
               {visibili.map((r) => (
                 <tr key={r.venue_id} className="border-t hover:bg-background">
                   <td className="px-4 py-3">
-                    <p className="font-medium">{r.venue_name?.trim() || 'Locale senza nome'}</p>
+                    <p className="font-medium flex items-center gap-2">
+                      <Pallino r={r} />
+                      {r.venue_name?.trim() || 'Locale senza nome'}
+                    </p>
                     {/* Il menù pubblico si apre solo se è stato pubblicato:
                         prima di allora quell'indirizzo non risponde a nessuno. */}
                     {r.slug && r.published_at ? (
@@ -593,7 +624,8 @@ export default function PartnersPage() {
             <div key={r.venue_id} className="bg-card rounded-lg shadow p-3">
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">
+                  <p className="font-medium text-sm truncate flex items-center gap-2">
+                    <Pallino r={r} />
                     {r.venue_name?.trim() || 'Locale senza nome'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
