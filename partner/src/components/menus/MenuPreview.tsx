@@ -185,6 +185,31 @@ function esclusa(e: Esclusione): boolean {
   return e.contiene.length > 0 || e.nonPer.length > 0;
 }
 
+
+// LA FOTO FINTA DEI PIATTI D'ESEMPIO: una tinta piatta con posate al centro.
+//
+// Non è una fotografia di cibo e non deve sembrarlo — chi guarda deve capire
+// «qui ci andrà la tua foto», non credere che gliene abbiamo messa una. Per
+// la stessa ragione è neutra di colore: accanto al verde o al mattone scelti
+// dal ristoratore non deve competere.
+//
+// Scritta qui come immagine dentro il codice invece che come file: pesa due
+// righe, non aggiunge una richiesta di rete all'anteprima, e non c'è un file
+// in più da non perdere quando si toccano le cartelle.
+const FOTO_ESEMPIO =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+      <rect width="96" height="96" fill="#E7E5E4"/>
+      <g fill="none" stroke="#A8A29E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M36 26v20a6 6 0 0 0 12 0V26"/>
+        <path d="M42 46v24"/>
+        <path d="M62 26c-4 4-6 9-6 14s2 6 6 6"/>
+        <path d="M62 26v44"/>
+      </g>
+    </svg>`.replace(/\s+/g, ' ')
+  );
+
 export default function MenuPreview({
   menu,
   siblings,
@@ -282,8 +307,12 @@ export default function MenuPreview({
     name: p.name,
     description: p.description,
     category: '',
-    photoUrl: '',
-    photoThumbUrl: '',
+    // ⚠️ SENZA UNA FOTO FINTA, la colonna delle immagini non compare affatto:
+    // si mostra solo se almeno un piatto ce l'ha (v. conFoto). Nell'esempio
+    // era quindi impossibile giudicare la scelta fra miniature tonde e
+    // quadrate, che è una delle manopole che l'esempio esiste per mostrare.
+    photoUrl: FOTO_ESEMPIO,
+    photoThumbUrl: FOTO_ESEMPIO,
     allergens: ESEMPIO[i].allergens,
     dietTags: ESEMPIO[i].diets,
     notes: ESEMPIO[i].notes,
