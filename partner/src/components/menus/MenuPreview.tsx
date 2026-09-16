@@ -202,8 +202,12 @@ const FOTO_ESEMPIO =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
       <rect width="96" height="96" fill="#E7E5E4"/>
       <g fill="none" stroke="#A8A29E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M36 26v20a6 6 0 0 0 12 0V26"/>
-        <path d="M42 46v24"/>
+        <path d="M32 24v13"/>
+        <path d="M39 24v13"/>
+        <path d="M46 24v13"/>
+        <path d="M53 24v13"/>
+        <path d="M32 37c0 6 4 10 10 10h1c6 0 10-4 10-10"/>
+        <path d="M42 47v23"/>
         <path d="M62 26c-4 4-6 9-6 14s2 6 6 6"/>
         <path d="M62 26v44"/>
       </g>
