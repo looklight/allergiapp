@@ -109,9 +109,15 @@ export const MENU_ACCENTS = [
   // sala, senza che nessuno l'abbia toccato. La differenza è dichiarata in
   // SOLO_SITO dentro scripts/gemelle.mjs.
   //
-  // Il carbone resta PRIMO: DEFAULT_ACCENT legge la posizione 0.
-  { code: 'charcoal', hex: '#333333', it: 'Carbone', en: 'Charcoal' },
+  // ⚠️ IL VERDE BOSCO È PRIMO dal 2026-09-16 (scelta dell'utente), e la
+  // posizione 0 non è un dettaglio: DEFAULT_ACCENT legge di lì, ed è il
+  // colore di TUTTI i menù senza abbonamento — cioè la faccia più vista del
+  // prodotto, non più "come nasce un menù prima di essere sistemato".
+  // Il valore deve restare uguale a venue_appearance_defaults() nel database
+  // (migration 721): se i due divergono, il portale mostra un colore e il
+  // tavolo un altro.
   { code: 'forest', hex: '#2E6B4F', it: 'Verde bosco', en: 'Forest green' },
+  { code: 'charcoal', hex: '#333333', it: 'Carbone', en: 'Charcoal' },
   { code: 'navy', hex: '#1F4E79', it: 'Blu notte', en: 'Navy' },
   { code: 'brick', hex: '#8C3A2B', it: 'Mattone', en: 'Brick' },
   { code: 'plum', hex: '#6B3F6E', it: 'Prugna', en: 'Plum' },

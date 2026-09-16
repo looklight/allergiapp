@@ -150,7 +150,7 @@ export default function BrandBar({
     textScale !== 'normal' ||
     lineHeight !== 'normal' ||
     layout !== 'row' ||
-    separator !== 'none' ||
+    separator !== 'rule' ||   // v. migration 720
     photoShape !== 'square' ||
     allergenDisplay !== 'text';
 

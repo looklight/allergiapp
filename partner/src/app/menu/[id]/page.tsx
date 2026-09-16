@@ -1012,7 +1012,7 @@ export default function MenuEditorPage() {
               textScale: 'normal',
               lineHeight: 'normal',
               menuLayout: 'row',
-              dishSeparator: 'none',
+              dishSeparator: 'rule',
               dishPhotoShape: 'square',
               allergenDisplay: 'text',
             });

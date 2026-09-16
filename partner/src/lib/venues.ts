@@ -20,6 +20,7 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from './supabase';
 import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList } from './storage';
 import { APPEARANCE_711 } from './features';
+import { DEFAULT_ACCENT } from './menuBrand';
 import { deleteCover, deleteLogo } from './photos';
 import { write } from './saveState';
 
@@ -379,7 +380,7 @@ async function loadVenues(): Promise<Venue[]> {
       id: row.id,
       venueName: row.name ?? '',
       logoUrl: row.logo_url ?? '',
-      accent: row.accent ?? 'charcoal',
+      accent: row.accent ?? DEFAULT_ACCENT,
       tableConditions: row.table_conditions ?? '',
       slug: row.slug ?? '',
       showDishPhotos: row.show_dish_photos ?? true,
@@ -560,13 +561,17 @@ export async function revertAppearance(venueId: string): Promise<VenueAppearance
   const scatto = data as Record<string, unknown>;
   return {
     logoUrl: String(scatto.logoUrl ?? ''),
-    accent: String(scatto.accent ?? 'charcoal'),
+    accent: String(scatto.accent ?? DEFAULT_ACCENT),
     coverUrl: String(scatto.coverUrl ?? ''),
     headingFont: (scatto.headingFont ?? 'modern') as HeadingFont,
     sectionStyle: (scatto.sectionStyle ?? 'underline') as SectionStyle,
     textScale: (scatto.textScale ?? 'normal') as TextScale,
     lineHeight: (scatto.lineHeight ?? 'normal') as LineHeight,
     menuLayout: (scatto.menuLayout ?? 'row') as MenuLayout,
+    // ⚠️ Il ripiego resta 'none' anche dopo la 720: qui si legge uno SCATTO
+    // già pubblicato, e uno fatto prima di quella migration il filo non
+    // l'aveva. Mettere 'rule' cambierebbe l'aspetto di menù già in sala che
+    // nessuno ha toccato.
     dishSeparator: (scatto.dishSeparator ?? 'none') as DishSeparator,
     allergenDisplay: (scatto.allergenDisplay ?? 'text') as AllergenDisplay,
     showDishPhotos: scatto.showPhotos !== false,
@@ -618,7 +623,11 @@ export function useVenues() {
       id: data.id,
       venueName,
       logoUrl: '',
-      accent: 'charcoal',
+      // ⚠️ Lo stesso valore del default della colonna (migration 721): questa
+      // riga è la copia che il portale tiene in mano appena creato il locale,
+      // e il database intanto ne scrive un'altra. Se divergono, il colore
+      // cambia da solo al primo ricaricamento.
+      accent: DEFAULT_ACCENT,
       tableConditions: '',
       slug: '',
       showDishPhotos: true,
@@ -630,7 +639,7 @@ export function useVenues() {
       textScale: 'normal',
       lineHeight: 'normal',
       menuLayout: 'row',
-      dishSeparator: 'none',
+      dishSeparator: 'rule',   // v. migration 720: stesso default della colonna
       allergenDisplay: 'text',
       coverUrl: '',
       cardId: null,
