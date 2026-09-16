@@ -3,7 +3,8 @@
 -- STATO: BOZZA, da applicare a mano dal SQL editor.
 -- Tracking fermo alla 045: a mano, MAI db push.
 --
--- I VALORI DI PARTENZA DEL MENÙ GRATUITO, E I LINK DEL RISTORATORE.
+-- I VALORI DI PARTENZA DEL MENÙ GRATUITO, I LINK DEL RISTORATORE, E GLI
+-- INDIRIZZI CHE NON TORNANO PIÙ LIBERI.
 --
 -- Due cose decise lo stesso giorno e applicate insieme: quello che si vede
 -- in fondo alla pagina al tavolo e il modo in cui si presenta quella di chi
@@ -391,5 +392,134 @@ as $$
   )
   where exists (select 1 from locale);
 $$;
+
+
+
+-- ============================================================
+-- TERZA PARTE: UN INDIRIZZO DI MENÙ NON TORNA MAI LIBERO
+--
+-- Il buco, trovato da una domanda dell'utente (16/09): «se vado in ferie e
+-- tolgo il menù dal pubblico, qualcuno può prendersi il mio indirizzo?».
+--
+-- In ferie no — l'interruttore non tocca lo slug, che resta sulla riga del
+-- locale con la sua unicità. Ma CANCELLANDO il locale (o l'account, che se
+-- li porta dietro) la riga sparisce e l'indirizzo torna libero all'istante:
+-- da quel momento chiunque può prenderselo, e il QR plastificato sul tavolo
+-- porta al menù di un altro ristorante. In un'app dove quel menù dichiara
+-- gli allergeni è il peggior tipo di errore silenzioso.
+--
+-- ⚠️ NON È UNA SVISTA NUOVA: è una decisione già presa e mai costruita
+-- (DIGITAL_MENU.md, Tema 17 del 31/08) — gli slug del menù non si
+-- riassegnano MAI automaticamente, a differenza di quelli dei ristoranti.
+-- La ragione sta tutta nella differenza fra i due: un link /r/ vive in una
+-- chat, un link /menu/ vive plastificato su un tavolo, e il ristoratore non
+-- può né accorgersene né rimediare.
+--
+-- Niente quarantena a tempo: la durata non è tarabile, dipende da quanto
+-- resta attaccato un adesivo su una vetrina. Un indirizzo ritirato si libera
+-- solo con una cancellazione a mano di questa riga, cioè da noi, su
+-- richiesta.
+-- ============================================================
+
+create table if not exists partner_retired_slugs (
+  slug text primary key,
+  -- Di chi era. Serve a una cosa sola, ma essenziale: chi rimette in piedi
+  -- un locale cancellato per sbaglio (l'annulla del portale) deve ritrovare
+  -- il SUO indirizzo, non trovarselo murato.
+  owner_user_id uuid,
+  retired_at timestamptz not null default now()
+);
+
+alter table partner_retired_slugs enable row level security;
+
+-- Nessuno lo legge dal browser: risponde partner_slug_taken, che dice sì/no
+-- e non rivela di chi fosse. L'admin sì, per liberarne uno su richiesta.
+create policy partner_retired_slugs_admin on partner_retired_slugs
+  for all using (is_admin());
+
+comment on table partner_retired_slugs is
+  'Gli indirizzi di menù già usati: non tornano mai liberi da soli. Un QR stampato non si corregge da remoto, e riassegnare l''indirizzo manderebbe un allergico sul menù di un altro. Si libera a mano, su richiesta.';
+
+
+-- Quando un locale sparisce, il suo indirizzo entra qui.
+create or replace function retire_venue_slug()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if old.slug is not null then
+    insert into partner_retired_slugs (slug, owner_user_id)
+    values (old.slug, old.owner_user_id)
+    on conflict (slug) do nothing;
+  end if;
+  return old;
+end;
+$$;
+
+drop trigger if exists partner_venues_retire_slug on partner_venues;
+
+create trigger partner_venues_retire_slug
+after delete on partner_venues
+for each row execute function retire_venue_slug();
+
+
+-- ⚠️ IL CONTROLLO VERO STA QUI, non nel portale: dal portale si scrive sul
+-- database col proprio token, quindi un indirizzo ritirato si potrebbe
+-- prendere lo stesso scrivendolo a mano. Chi lo aveva può riprenderselo —
+-- è il caso dell'annulla dopo una cancellazione per sbaglio.
+create or replace function reject_retired_slug()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  ex partner_retired_slugs%rowtype;
+begin
+  if new.slug is null then
+    return new;
+  end if;
+
+  select * into ex from partner_retired_slugs where slug = new.slug;
+  if not found then
+    return new;
+  end if;
+
+  if ex.owner_user_id is distinct from new.owner_user_id then
+    raise exception 'slug ritirato: %', new.slug
+      using errcode = 'unique_violation';
+  end if;
+
+  -- Torna a chi ce l'aveva: l'indirizzo esce dai ritirati e torna a vivere
+  -- sulla riga del locale, dove l'unicità lo protegge come prima.
+  delete from partner_retired_slugs where slug = new.slug;
+  return new;
+end;
+$$;
+
+drop trigger if exists partner_venues_check_retired_slug on partner_venues;
+
+create trigger partner_venues_check_retired_slug
+before insert or update of slug on partner_venues
+for each row execute function reject_retired_slug();
+
+
+-- «È libero?» guarda tutt'e due gli elenchi. Il portale non cambia: continua
+-- a chiedere a questa funzione, che ora sa di più.
+create or replace function partner_slug_taken(candidate text)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from partner_venues where slug = candidate)
+      or exists (select 1 from partner_retired_slugs where slug = candidate);
+$$;
+
+comment on function partner_slug_taken(text) is
+  'Dice solo se un indirizzo di menù è occupato: da un locale vivo o perché già usato in passato (partner_retired_slugs). Non rivela da chi.';
 
 COMMIT;

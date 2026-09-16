@@ -126,7 +126,29 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
 - [ ] **Decisioni aperte sulle icone del piatto**: l'icona «crudo» a 14px; a icone, allergeni e
   note che diventano un unico blocco di simboli.
 
-### I link del ristoratore in fondo al menù al tavolo (voluta 2026-09-06, da costruire)
+### Menù al tavolo — fatto il 2026-09-16, resta da applicare la 720
+
+- [ ] **Applicare la `720_menu_defaults_and_links.sql`** — una sola esecuzione per tre cose:
+  valori di partenza del menù gratuito (**verde bosco** e **filo fra i piatti**), i **link del
+  ristoratore** in fondo alla pagina, e gli **indirizzi ritirati** (v. sotto). Contiene anche il
+  rifiuto di costruire uno scatto **senza nemmeno un piatto**: il bottone Pubblica è già nascosto
+  nel portale, ma quel QR è stampato e non si corregge da remoto.
+- [x] ~~**I link del ristoratore**~~ — FATTI il 16/09, in tutt'e tre i posti: il gruppo «I tuoi
+  link» in fondo alla scatola dell'aspetto, la fila in fondo al menù al tavolo (sito e anteprima),
+  e il controllo dello schema **in tre punti** (portale, scatto, resa) come chiedeva la nota qui
+  sotto. Solo `social` e `website`, mai il telefono. Il servizio si **deduce** dall'indirizzo, si
+  legge il **nome della pagina** e non quello del servizio, e le pastiglie prendono il colore del
+  menù. **Sono premium**, come il logo: passano dal muro dell'aspetto.
+  - [ ] **I simboli sono forme nostre, non i loghi ufficiali**: quelli sono marchi altrui e vanno
+    presi dai kit dei rispettivi proprietari, con le loro regole d'uso. Da rifare il giorno che si
+    vuole la fila con i marchi veri.
+- [x] ~~**Gli indirizzi dei menù non si riassegnano**~~ — nella 720: tabella degli indirizzi
+  ritirati, un locale cancellato ci lascia il suo, e chi ce l'aveva se lo riprende (l'annulla dopo
+  una cancellazione per sbaglio). Era la decisione del Tema 17 del 31/08, mai costruita.
+  - [ ] **La pagina di un indirizzo ritirato dovrebbe dire «questo menù non è più attivo»**, non
+    dare 404: chi inquadra un QR vecchio deve capire cos'è successo. Lavoro sul sito, non fatto.
+
+### I link del ristoratore in fondo al menù al tavolo (voluta 2026-09-06, COSTRUITA il 2026-09-16)
 
 **Stato verificato il 2026-09-15**: sul database c'è **solo** il tipo `social` ammesso da
 `partner_links` (711) — nessun link social salvato. Mancano tutti gli altri pezzi qui sotto: il

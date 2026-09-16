@@ -312,6 +312,32 @@ separato — si tiene l'indirizzo e si fa servire da un progetto suo con una ris
 
 ---
 
+## Tema 35 — Quello che il muro ha portato con sé (2026-09-16)
+
+Costruendo il muro dell'aspetto (migration 718-719) sono venute a galla tre cose che il muro non
+c'entrava, e che erano lì da prima.
+
+**I valori di partenza hanno cambiato mestiere.** Non sono più «com'è un menù prima che il
+ristoratore lo sistemi»: sono il menù di chi non paga, cioè quasi tutti. Meritavano una scelta, e
+adesso sono **verde bosco** col **filo fra un piatto e l'altro** — che su una carta lunga letta da
+un telefono è il segno che impedisce di perdere la riga.
+
+**Si poteva pubblicare una pagina vuota.** Il bottone Pubblica compariva appena c'era qualcosa di
+non pubblicato, e su un menù appena creato c'è sempre: bastava premerlo per portare al tavolo il
+nome del locale e il vuoto sotto. Ora il bottone non c'è finché non c'è un piatto, e lo scatto non
+si costruisce comunque — la garanzia sta dove lo scatto nasce, perché quel QR è già incollato al
+tavolo e non si corregge da remoto.
+
+**Un indirizzo di menù poteva essere rubato.** Non andando in ferie — l'interruttore non tocca lo
+slug — ma cancellando il locale: la riga spariva e l'indirizzo tornava libero, col QR plastificato
+sul tavolo che avrebbe portato al menù di un altro. Era già scritto nel Tema 17 che non doveva
+succedere, e non era mai stato costruito: adesso c'è una tabella di indirizzi ritirati, e chi ce
+l'aveva se lo riprende se rimette in piedi il locale.
+
+**I link del ristoratore** (Tema 18) sono stati costruiti nella stessa giornata: social e sito in
+fondo alla pagina, il servizio dedotto dall'indirizzo, il nome della pagina scritto accanto al
+simbolo. Sono premium come il logo — il locale che si presenta — e passano dallo stesso muro.
+
 ## Aperto, non deciso
 
 **Il contenuto gratuito entra in AllergiApp?** È il bivio che discende dal Tema 10, e oggi la 700
