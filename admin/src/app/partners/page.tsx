@@ -37,6 +37,7 @@ interface PartnerVenue {
   sub_source: 'stripe' | 'manual' | null;
   sub_status: 'active' | 'past_due' | null;
   sub_plan: 'monthly' | 'yearly' | null;
+  sub_started_at: string | null;
   sub_ends_at: string | null;
   sub_cancel_at_period_end: boolean | null;
   sub_note: string | null;
@@ -71,6 +72,19 @@ function data(iso: string | null): string {
   return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+// Da quanto dura, detto come lo direbbe una persona. È il senso della
+// colonna: "dal 3 marzo" non risponde da solo alla domanda sulla permanenza.
+function daQuando(iso: string | null): string {
+  if (!iso) return '';
+  const giorni = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (giorni < 1) return 'da oggi';
+  if (giorni < 30) return `da ${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`;
+  const mesi = Math.floor(giorni / 30);
+  if (mesi < 12) return `da ${mesi} ${mesi === 1 ? 'mese' : 'mesi'}`;
+  const anni = Math.floor(giorni / 365);
+  return `da ${anni} ${anni === 1 ? 'anno' : 'anni'}`;
+}
+
 function euro(cents: number): string {
   return `${(cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 }
@@ -79,6 +93,11 @@ export default function PartnersPage() {
   const [rows, setRows] = useState<PartnerVenue[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [search, setSearch] = useState('');
+  // Filtro e ordinamento vivono QUI e non nella funzione del database: le
+  // righe sono poche e già scaricate, quindi si riordinano senza un viaggio
+  // in più, e aggiungere un modo di guardarle non è una migration.
+  const [filtro, setFiltro] = useState<'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati'>('tutti');
+  const [ordine, setOrdine] = useState<'recenti' | 'nome' | 'abbonato' | 'scadenza'>('recenti');
   const [loading, setLoading] = useState(true);
   // Il locale a cui si sta concedendo l'abbonamento: null = nessun modulo aperto
   const [granting, setGranting] = useState<PartnerVenue | null>(null);
@@ -104,6 +123,52 @@ export default function PartnersPage() {
     const id = setTimeout(load, 300);
     return () => clearTimeout(id);
   }, [load]);
+
+  const visibili = rows
+    .filter((r) => {
+      switch (filtro) {
+        case 'paganti':
+          return r.sub_source === 'stripe';
+        case 'offerti':
+          return r.sub_source === 'manual';
+        case 'senza':
+          return !r.sub_id;
+        case 'ritardo':
+          return r.sub_status === 'past_due';
+        case 'pubblicati':
+          return r.published_at !== null;
+        default:
+          return true;
+      }
+    })
+    .sort((a, b) => {
+      switch (ordine) {
+        case 'nome':
+          return (a.venue_name ?? '').localeCompare(b.venue_name ?? '', 'it');
+        case 'abbonato':
+          // I più vecchi per primi: chi resta da più tempo è la notizia buona.
+          // Chi non è abbonato non ha una data e scende in fondo.
+          if (!a.sub_started_at) return 1;
+          if (!b.sub_started_at) return -1;
+          return a.sub_started_at.localeCompare(b.sub_started_at);
+        case 'scadenza':
+          // Le scadenze vicine per prime; senza scadenza, in fondo.
+          if (!a.sub_ends_at) return 1;
+          if (!b.sub_ends_at) return -1;
+          return a.sub_ends_at.localeCompare(b.sub_ends_at);
+        default:
+          return b.created_at.localeCompare(a.created_at);
+      }
+    });
+
+  const FILTRI: { id: typeof filtro; label: string }[] = [
+    { id: 'tutti', label: 'Tutti' },
+    { id: 'paganti', label: 'Paganti' },
+    { id: 'offerti', label: 'Offerti' },
+    { id: 'senza', label: 'Senza abbonamento' },
+    { id: 'ritardo', label: 'In ritardo' },
+    { id: 'pubblicati', label: 'Menù in sala' },
+  ];
 
   async function concedi() {
     if (!granting) return;
@@ -181,11 +246,15 @@ export default function PartnersPage() {
     const quando = r.sub_ends_at
       ? `${r.sub_cancel_at_period_end || r.sub_source === 'manual' ? 'fino al' : 'rinnovo'} ${data(r.sub_ends_at)}`
       : 'senza scadenza';
+    // Da quando dura, e da qui la permanenza: "da 7 mesi" dice in un colpo
+    // quello che una data da sola costringe a calcolare.
+    const durata = daQuando(r.sub_started_at);
     if (r.sub_source === 'manual') {
       return (
         <div>
           <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-muted text-foreground">Offerto</span>
-          <p className="text-xs text-faint mt-0.5">{quando}</p>
+          {durata && <p className="text-xs mt-0.5">{durata}</p>}
+          <p className="text-xs text-faint">{quando}</p>
           {r.sub_note && <p className="text-xs text-faint italic">{r.sub_note}</p>}
         </div>
       );
@@ -195,7 +264,11 @@ export default function PartnersPage() {
         <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-success-soft text-success-soft-foreground">
           {r.sub_plan === 'yearly' ? 'Annuale' : 'Mensile'}
         </span>
-        <p className="text-xs text-faint mt-0.5">{quando}</p>
+        {durata && <p className="text-xs mt-0.5">{durata}</p>}
+        <p className="text-xs text-faint">{quando}</p>
+        {r.sub_started_at && (
+          <p className="text-xs text-faint">dal {data(r.sub_started_at)}</p>
+        )}
       </div>
     );
   }
@@ -253,13 +326,55 @@ export default function PartnersPage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Cerca per locale, nome o email…"
-        className="w-full md:w-96 mb-4 px-3 py-2 rounded border border-border bg-card text-sm"
+        className="w-full md:w-96 mb-3 px-3 py-2 rounded border border-border bg-card text-sm"
       />
+
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {FILTRI.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setFiltro(f.id)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
+              filtro === f.id
+                ? 'bg-primary text-white border-primary'
+                : 'border-border text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            {f.label}
+            {/* Il numero accanto evita il filtro che non mostra niente: si
+                vede prima di premere quanto c'è dentro. */}
+            {f.id !== 'tutti' && (
+              <span className="ml-1.5 opacity-60">
+                {rows.filter((r) =>
+                  f.id === 'paganti' ? r.sub_source === 'stripe'
+                  : f.id === 'offerti' ? r.sub_source === 'manual'
+                  : f.id === 'senza' ? !r.sub_id
+                  : f.id === 'ritardo' ? r.sub_status === 'past_due'
+                  : r.published_at !== null,
+                ).length}
+              </span>
+            )}
+          </button>
+        ))}
+
+        <select
+          value={ordine}
+          onChange={(e) => setOrdine(e.target.value as typeof ordine)}
+          className="ml-auto px-3 py-1.5 rounded border border-border bg-card text-xs"
+        >
+          <option value="recenti">Locali più recenti</option>
+          <option value="nome">Nome del locale</option>
+          <option value="abbonato">Abbonati da più tempo</option>
+          <option value="scadenza">Scadenza più vicina</option>
+        </select>
+      </div>
 
       {loading ? (
         <p className="text-muted-foreground">Caricamento...</p>
-      ) : rows.length === 0 ? (
-        <p className="text-muted-foreground">Nessun locale partner.</p>
+      ) : visibili.length === 0 ? (
+        <p className="text-muted-foreground">
+          {rows.length === 0 ? 'Nessun locale partner.' : 'Nessun locale con questo filtro.'}
+        </p>
       ) : (
         <div className="bg-card rounded-lg shadow overflow-x-auto">
           <table className="w-full text-sm">
@@ -273,7 +388,7 @@ export default function PartnersPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {visibili.map((r) => (
                 <tr key={r.venue_id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3">
                     <p className="font-medium">{r.venue_name?.trim() || 'Locale senza nome'}</p>
