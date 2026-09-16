@@ -69,6 +69,17 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   nessuno. Due scelte da ricordare: col pagamento in ritardo l'abbonamento **vale ancora** finché
   Stripe ritenta, e un locale con abbonamento aperto **non si cancella** (il portale dovrà dirlo con
   una frase, non con un errore del database).
+- [x] ~~**Passo 1: le fondamenta, tutte lato web**~~ — FATTO il 16/09. Migration **716 e 717
+  APPLICATE**; su Stripe (sandbox `acct_1T8Pk3AWJFZcd82B`) prodotto e due prezzi cercati per
+  **lookup key**; tre Edge Function (`stripe-checkout`, `stripe-webhook`, `stripe-portal`)
+  pubblicate; `/abbonamenti` nel portale con stato vero, pagamento e pannello cliente; pagina
+  **Partner** in admin (su `admin-prod`) con «Concedi»/«Revoca» e il registro delle decisioni.
+  Provato da capo a fondo: pagamento → riga attiva, disdetta → riga chiusa.
+  - [ ] **Rimettere `PARTNER_PORTAL_URL`** sui segreti di Supabase a `https://partner.allergiapp.com`:
+    per le prove punta a `localhost:3001`.
+  - [ ] **Il link «Apri su Stripe» in admin punta alla sandbox** (costante `STRIPE_CLIENTI` in
+    `admin/src/app/partners/page.tsx`): una riga da cambiare al passaggio in reale.
+  - [ ] **Ripulire le prove**: abbonamento di test su «Hugo Bistrot» e cliente finto su Stripe.
 - [ ] **Il piano a passi** — scritto il 16/09 in `MONETIZATION.md`, «Piano operativo
   dell'abbonamento»: fondamenta web (716 + Stripe test + due Edge Function + `/abbonamenti` vero +
   «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù, migration 717 (l'unica

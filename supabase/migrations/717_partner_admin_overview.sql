@@ -1,7 +1,19 @@
 -- ============================================================
 -- 717_partner_admin_overview.sql
--- STATO: BOZZA, da applicare a mano dal SQL editor.
+-- STATO: APPLICATA il 2026-09-16 dal SQL editor, poi RIVISTA e DA
+-- RIESEGUIRE INTERA lo stesso giorno (aggiunta `sub_started_at`).
 -- Tracking fermo alla 045: a mano, MAI db push.
+--
+-- ⚠️ SI RIESEGUE TUTTA, e il file comincia con un DROP: cambiando l'elenco
+-- delle colonne restituite, PostgreSQL non lascia sostituire la funzione con
+-- un semplice CREATE OR REPLACE. Il DROP qui è innocuo (la legge solo la
+-- pagina Partner dell'admin, e per un istante), ma va eseguito FUORI da
+-- BEGIN/COMMIT: nel SQL editor un DROP+CREATE dentro una transazione
+-- risponde «success» senza installare niente (TODO.md, lezione del
+-- 2026-09-05). Dopo, confermare che la funzione viva sia quella nuova:
+--   SELECT pg_get_functiondef(p.oid) LIKE '%started_at%'
+--   FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+--   WHERE n.nspname = 'public' AND p.proname = 'get_partner_venues_admin';
 --
 -- QUELLO CHE L'ADMIN DEVE VEDERE DEI PARTNER, in una riga per locale.
 --
@@ -20,7 +32,9 @@
 -- più da sorvegliare, per risparmiare una insert.
 -- ============================================================
 
-CREATE OR REPLACE FUNCTION get_partner_venues_admin(
+DROP FUNCTION IF EXISTS get_partner_venues_admin(text);
+
+CREATE FUNCTION get_partner_venues_admin(
   search_query text DEFAULT NULL
 )
 RETURNS TABLE (
@@ -46,6 +60,14 @@ RETURNS TABLE (
   sub_source text,
   sub_status text,
   sub_plan text,
+  -- DA QUANDO dura questo abbonamento: senza, guardando la tabella non si
+  -- capisce se un ristoratore è con noi da una settimana o da un anno, che è
+  -- la domanda sulla permanenza.
+  -- ⚠️ È l'inizio della riga CORRENTE, non della storia del locale: chi
+  -- disdice e torna riparte da capo, e un offerto che poi paga comincia il
+  -- giorno del primo pagamento. Per la permanenza vera servirà guardare anche
+  -- le righe chiuse, il giorno che ce ne saranno.
+  sub_started_at timestamptz,
   sub_ends_at timestamptz,
   sub_cancel_at_period_end boolean,
   sub_note text,
@@ -78,6 +100,7 @@ AS $$
     s.source,
     s.status,
     s.plan,
+    s.started_at,
     s.ends_at,
     s.cancel_at_period_end,
     s.note,
