@@ -677,30 +677,87 @@
         </div>
     </section>
 
-    <!-- PRIMA E DOPO. Sta qui, dopo aver mostrato come funziona il menù e
-         cosa vuol dire stare su AllergiApp, e non prima: qui non spiega più
-         perché leggere il resto — lo riassume. È l'ultimo argomento prima
-         del bottone finale, il contrasto che lascia la sala di oggi alle
-         spalle appena prima di chiedere il clic. -->
+    <!-- PRIMA E DOPO, DISEGNATO E NON ELENCATO. Sta qui, dopo aver mostrato
+         come funziona il menù e cosa vuol dire stare su AllergiApp: lo
+         riassume appena prima del bottone finale.
+
+         LE DUE CORSIE RACCONTANO LA STESSA SERATA DEL CLIENTE, con gli stessi
+         tre passi e le stesse icone di «Come funziona»: cambia una cosa sola,
+         la barra sotto i passi, che dice DA QUANDO il cliente vede il menù.
+         Senza menù digitale si accende solo sull'ultimo passo, al tavolo;
+         con il menù digitale corre dal primo. Passi uguali apposta: se
+         cambiassero anche loro, l'occhio cercherebbe la differenza nel posto
+         sbagliato.
+
+         ⚠️ LA BARRA SI ALLINEA AI PASSI PERCHÉ NE COPIA LE MISURE: pezzi larghi
+         quanto un passo (stessa base, stesso tetto in em) e giunti larghi
+         quanto freccia più i due spazi (26 + 10 + 10). Chi cambia `.ml-how-step`
+         o `.ml-how-verso` deve rifare i conti in `.ml-friction-traccia`. -->
     <section class="ml-friction">
         <div class="container">
             <h2 class="ml-friction-title anim-ready" data-i18n="menuLanding.frictionTitle">Prima e dopo</h2>
-            <div class="ml-friction-cards">
-                <div class="ml-friction-card is-prima anim-ready">
-                    <p class="ml-friction-label" data-i18n="menuLanding.frictionBeforeLabel">Senza menù digitale</p>
-                    <ul>
-                        <li data-i18n="menuLanding.frictionBefore1">Il menù è su carta: ogni cambio è una ristampa</li>
-                        <li data-i18n="menuLanding.frictionBefore2">Chi ha un’esigenza deve chiedere, e il cameriere va a controllare</li>
-                        <li data-i18n="menuLanding.frictionBefore3">Chi ti cerca online trova un PDF, quando lo trova</li>
-                    </ul>
+
+            <div class="ml-how-lanes">
+                <div class="ml-how-lane is-cliente anim-ready">
+                    <p class="ml-how-who" data-i18n="menuLanding.frictionBeforeLabel">Senza menù digitale</p>
+                    <ol class="ml-how-steps">
+                        <li class="ml-how-step anim-ready">
+                            <span class="ml-how-icona" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></span>
+                            <span class="ml-how-label" data-i18n="menuLanding.frictionStep1">Cerca dove mangiare</span>
+                        </li>
+                        <li class="ml-how-verso anim-ready" aria-hidden="true">
+                            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><path d="M1 6h21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </li>
+                        <li class="ml-how-step anim-ready">
+                            <span class="ml-how-icona" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+                            <span class="ml-how-label" data-i18n="menuLanding.frictionStep2">Sceglie il locale</span>
+                        </li>
+                        <li class="ml-how-verso anim-ready" aria-hidden="true">
+                            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><path d="M1 6h21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </li>
+                        <li class="ml-how-step anim-ready">
+                            <span class="ml-how-icona" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7a2 2 0 0 0 2 2v9M11 3v7a2 2 0 0 1-2 2M9 3v6"/><path d="M17 21V3c-2 1.5-3 4-3 7v3h3"/></svg></span>
+                            <span class="ml-how-label" data-i18n="menuLanding.frictionStep3">Si siede al tavolo</span>
+                        </li>
+                    </ol>
+                    <ol class="ml-friction-traccia anim-ready" aria-hidden="true">
+                        <li></li><li class="is-giunto"></li><li></li><li class="is-giunto"></li><li class="is-on"></li>
+                    </ol>
+                    <p class="ml-friction-esito">
+                        <span class="ml-friction-esito-icona" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+                        <span data-i18n="menuLanding.frictionBeforeText" data-i18n-html>Vede il tuo menù <b>solo quando è già al tavolo</b>, e per sapere cosa può mangiare deve chiedere.</span>
+                    </p>
                 </div>
-                <div class="ml-friction-card is-dopo anim-ready anim-d1">
-                    <p class="ml-friction-label" data-i18n="menuLanding.frictionAfterLabel">Con il menù digitale</p>
-                    <ul>
-                        <li data-i18n="menuLanding.frictionAfter1">Cambi un piatto o un prezzo e il menù è già aggiornato, con lo stesso QR</li>
-                        <li data-i18n="menuLanding.frictionAfter2">Il cliente filtra da solo e vede subito cosa fa per lui</li>
-                        <li data-i18n="menuLanding.frictionAfter3">E il tuo menù potrà comparire anche dentro AllergiApp, davanti a chi sta cercando dove mangiare</li>
-                    </ul>
+
+                <div class="ml-how-lane is-tua anim-ready anim-d1">
+                    <p class="ml-how-who" data-i18n="menuLanding.frictionAfterLabel">Con il menù digitale</p>
+                    <ol class="ml-how-steps">
+                        <li class="ml-how-step anim-ready">
+                            <span class="ml-how-icona" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></span>
+                            <span class="ml-how-label" data-i18n="menuLanding.frictionStep1">Cerca dove mangiare</span>
+                        </li>
+                        <li class="ml-how-verso anim-ready" aria-hidden="true">
+                            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><path d="M1 6h21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </li>
+                        <li class="ml-how-step anim-ready">
+                            <span class="ml-how-icona" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+                            <span class="ml-how-label" data-i18n="menuLanding.frictionStep2">Sceglie il locale</span>
+                        </li>
+                        <li class="ml-how-verso anim-ready" aria-hidden="true">
+                            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><path d="M1 6h21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </li>
+                        <li class="ml-how-step anim-ready">
+                            <span class="ml-how-icona" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7a2 2 0 0 0 2 2v9M11 3v7a2 2 0 0 1-2 2M9 3v6"/><path d="M17 21V3c-2 1.5-3 4-3 7v3h3"/></svg></span>
+                            <span class="ml-how-label" data-i18n="menuLanding.frictionStep3">Si siede al tavolo</span>
+                        </li>
+                    </ol>
+                    <ol class="ml-friction-traccia anim-ready" aria-hidden="true">
+                        <li class="is-on"></li><li class="is-giunto is-on"></li><li class="is-on"></li><li class="is-giunto is-on"></li><li class="is-on"></li>
+                    </ol>
+                    <p class="ml-friction-esito">
+                        <span class="ml-friction-esito-icona" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+                        <span data-i18n="menuLanding.frictionAfterText" data-i18n-html>Vede il tuo menù e le compatibilità <b>già da quando ti cerca</b>, sempre aggiornati.</span>
+                    </p>
                 </div>
             </div>
         </div>

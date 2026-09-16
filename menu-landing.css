@@ -1994,16 +1994,14 @@
 }
 
 /* ── PRIMA E DOPO ───────────────────────────────────────────────────── */
-/* Stessa grammatica visiva di «Come funziona» qui sopra — due corsie, una
- * colorata e una neutra — ma qui il colore non segna «di chi è il lavoro»,
- * segna «con o senza»: la corsia grigia è la sala oggi, quella verde è la
- * sala con AllergiApp. Chi arriva qui l'ha già vista più su, e la
- * riconosce prima ancora di leggere il testo. Sta dopo la sezione
- * dell'app e non prima di «Come funziona» — non prepara più il discorso,
- * lo riassume appena prima del bottone finale. */
+/* Le corsie, i tondi e le frecce sono quelli di «Come funziona» (stesse
+ * classi): qui si aggiunge solo la barra che dice da quando il cliente vede
+ * il menù, e la riga che la spiega. La corsia grigia è la sala oggi, quella
+ * verde la sala con il menù digitale — lo stesso verde della corsia «tua»,
+ * perché è la stessa promessa. */
 
 .ml-friction {
-    padding: 50px 0 60px;
+    padding: 66px 0 60px;
 }
 
 .ml-friction-title {
@@ -2011,85 +2009,131 @@
     font-size: var(--ml-titolo-sezione);
     font-weight: 800;
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 44px;
 }
 
-.ml-friction-cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    max-width: 62em;
-    margin: 0 auto;
-}
+/* Qui la corsia grigia viene prima: la sua fila parte per prima, e quella
+   verde le va dietro. In «Come funziona» è il contrario. */
+.ml-friction .ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(1) { transition-delay: 60ms; }
+.ml-friction .ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(2) { transition-delay: 150ms; }
+.ml-friction .ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(3) { transition-delay: 240ms; }
+.ml-friction .ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(4) { transition-delay: 330ms; }
+.ml-friction .ml-how-lane.is-cliente .ml-how-steps .anim-ready:nth-child(5) { transition-delay: 420ms; }
+.ml-friction .ml-how-lane.is-tua .ml-how-steps .anim-ready:nth-child(1) { transition-delay: 190ms; }
+.ml-friction .ml-how-lane.is-tua .ml-how-steps .anim-ready:nth-child(2) { transition-delay: 280ms; }
+.ml-friction .ml-how-lane.is-tua .ml-how-steps .anim-ready:nth-child(3) { transition-delay: 370ms; }
+.ml-friction .ml-how-lane.is-tua .ml-how-steps .anim-ready:nth-child(4) { transition-delay: 460ms; }
+.ml-friction .ml-how-lane.is-tua .ml-how-steps .anim-ready:nth-child(5) { transition-delay: 550ms; }
 
-.ml-friction-card {
-    border-radius: 18px;
-    padding: 22px 24px 24px;
-}
-
-.ml-friction-card ul {
-    margin: 0;
-    padding: 0;
+/* LA BARRA. Stessa fila dei passi qui sopra, misura per misura: i pezzi
+   crescono come un passo (base zero, tetto di 9em allo stesso corpo di
+   testo), i giunti sono larghi quanto la freccia con i due spazi che la
+   separano dai passi. Così ogni pezzo cade esattamente sotto il suo tondo. */
+.ml-friction-traccia {
+    display: flex;
+    justify-content: center;
     list-style: none;
-    display: grid;
-    gap: 10px;
+    /* Non più larga della fila dei passi (tre tetti da 9em e due giunti),
+       o su schermo largo il tratteggio uscirebbe dai lati dei passi. */
+    max-width: calc(27em + 92px);
+    margin: 16px auto 0;
+    padding: 0;
+    font-size: 14px;
+    /* SPENTO: un tratteggio sottile, il menù che c'è ma non si vede. Sta
+       sotto l'intera fila e non sui singoli pezzi, o il passo del
+       tratteggio ripartirebbe a ogni giunto; il verde gli passa sopra. */
+    background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0 6px, transparent 6px 11px) center / 100% 2px no-repeat;
 }
 
-.ml-friction-card li {
-    padding-left: 20px;
+.ml-friction-traccia > li {
+    flex: 1 1 0;
+    max-width: 9em;
+    height: 6px;
+}
+
+.ml-friction-traccia > li.is-giunto {
+    flex: 0 0 46px;
+}
+
+/* ACCESO: pieno e verde, dove il cliente il menù lo ha davanti. Il verde è lo
+   stesso in tutte e due le corsie: è la stessa cosa, vista in due momenti. */
+.ml-friction-traccia > li.is-on {
     position: relative;
 }
 
-.ml-friction-label {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin: 0 0 18px;
-}
-
-/* «SENZA»: grigio e una crocetta minuta — non un rosso d'allarme, è
-   fastidio quotidiano, non un errore. */
-.ml-friction-card.is-prima {
-    background: var(--bg-alt);
-}
-
-.ml-friction-card.is-prima .ml-friction-label {
-    color: var(--text-secondary);
-}
-
-.ml-friction-card.is-prima li {
-    color: var(--text-secondary);
-}
-
-.ml-friction-card.is-prima li::before {
-    content: '×';
+.ml-friction-traccia > li.is-on::before {
+    content: '';
     position: absolute;
-    left: 0;
+    inset: 0;
+    background: #2E7D32;
+    transform-origin: left center;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.5s;
+}
+
+/* Il verde si arrotonda solo alle estremità della sua corsa: nella corsia
+   verde è una barra sola, in quella grigia un pezzo solo. */
+.ml-friction-traccia > li.is-on:first-child::before,
+.ml-friction-traccia > li:not(.is-on) + li.is-giunto + li.is-on::before {
+    border-radius: 3px 0 0 3px;
+}
+
+.ml-friction-traccia > li.is-on:last-child::before {
+    border-radius: 0 3px 3px 0;
+}
+
+.ml-friction-traccia > li:not(.is-on) + li.is-giunto + li.is-on:last-child::before {
+    border-radius: 3px;
+}
+
+/* LA BARRA SI RIEMPIE da sinistra quando la corsia entra in vista: è il
+   tempo che passa, e nella corsia verde il menù c'è da subito. */
+.ml-friction-traccia.anim-ready > li.is-on::before {
+    transform: scaleX(0);
+}
+
+.ml-friction-traccia.anim-ready.anim-done > li.is-on::before {
+    transform: scaleX(1);
+}
+
+/* La barra è un pezzo solo che si riempie: niente salita dal basso, che
+   la staccherebbe dai passi per mezzo secondo. */
+.ml-friction-traccia.anim-ready {
+    transform: none;
+}
+
+.ml-friction-esito {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    max-width: 30em;
+    margin: 18px auto 0;
+    font-size: 15px;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.ml-friction-esito-icona {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ml-how-lane.is-cliente .ml-friction-esito {
     color: var(--text-secondary);
-    font-weight: 700;
 }
 
-/* «CON»: lo stesso verde della corsia «tua» di «Come funziona» — è la
-   stessa promessa, ripetuta con lo stesso colore. */
-.ml-friction-card.is-dopo {
-    background: var(--primary-light);
-}
-
-.ml-friction-card.is-dopo .ml-friction-label {
-    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
-}
-
-.ml-friction-card.is-dopo li {
+.ml-how-lane.is-tua .ml-friction-esito {
     color: var(--text);
 }
 
-.ml-friction-card.is-dopo li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: #1B5E20;
-    font-weight: 700;
+.ml-how-lane.is-tua .ml-friction-esito-icona,
+.ml-how-lane.is-tua .ml-friction-esito b {
+    color: #1B5E20; /* v. .ml-eyebrow: contrasto su fondo chiaro */
+}
+
+.ml-how-lane.is-cliente .ml-friction-esito b {
+    color: var(--text);
 }
 
 /* ── CHIUSURA ───────────────────────────────────────────────────────── */
@@ -2224,6 +2268,13 @@
     .ml-swatch:hover,
     .ml-cta:hover {
         transform: none;
+    }
+
+    /* La barra di «Prima e dopo» si riempie su uno pseudo-elemento, che la
+       regola qui sopra non raggiunge: già piena. */
+    .ml-friction-traccia.anim-ready > li.is-on::before {
+        transform: none;
+        transition: none;
     }
 }
 
@@ -2524,6 +2575,16 @@
         font-size: 14px;
     }
 
+    /* ⚠️ MENO ARIA IN CIMA DA QUI IN GIÙ. Gli 88 punti di schermo largo
+     * servono lì, dove il fumetto sta a fianco di un telefono alto mezza
+     * pagina; incolonnato, il primo pezzo della sezione è il fumetto stesso
+     * — un riquadro, che pesa più di un titolo — e sopra restava un vuoto
+     * più alto di quello di ogni altra sezione (66 sopra «Come funziona»).
+     * Qui si tiene allineato a quello. */
+    .ml-page .ml-app {
+        padding: 56px 0 66px;
+    }
+
     .ml-page .ml-app-inner {
         grid-template-columns: minmax(0, 1fr);
         max-width: 34em;
@@ -2618,15 +2679,14 @@
         margin-right: auto;
     }
 
-    /* Le due carte una sotto l'altra, stessa ragione delle corsie di «Come
-       funziona» qui sotto. */
-    .ml-page .ml-friction-cards {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 14px;
+    /* Stesso corpo dei passi qui sotto (`.ml-how-step`): la barra misura i
+       suoi pezzi in em, e con un corpo diverso non cadrebbe sotto i tondi. */
+    .ml-page .ml-friction-traccia {
+        font-size: 13px;
     }
 
-    .ml-page .ml-friction-card {
-        padding: 20px 16px 22px;
+    .ml-page .ml-friction-esito {
+        font-size: 14px;
     }
 
     /* Le due corsie una sotto l'altra: affiancate, su schermo stretto,
