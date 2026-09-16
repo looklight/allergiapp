@@ -30,6 +30,8 @@ interface PartnerVenue {
   signed_up_at: string;
   menus_total: number;
   published_at: string | null;
+  dishes_total: number;
+  card_dishes_total: number;
   card_id: string | null;
   sub_id: string | null;
   sub_source: 'stripe' | 'manual' | null;
@@ -38,6 +40,7 @@ interface PartnerVenue {
   sub_ends_at: string | null;
   sub_cancel_at_period_end: boolean | null;
   sub_note: string | null;
+  sub_customer_id: string | null;
 }
 
 interface PartnerStats {
@@ -50,7 +53,18 @@ interface PartnerStats {
   subs_past_due: number;
   mrr_cents: number;
   expiring_30d: number;
+  new_accounts_30d: number;
+  new_subs_30d: number;
+  canceled_subs_30d: number;
 }
+
+// Il menù pubblico del locale, quello che si apre col QR.
+const SITO = 'https://allergiapp.com';
+
+// ⚠️ La dashboard di Stripe cambia indirizzo fra la prova e i pagamenti veri:
+// oggi siamo nella sandbox, e il link va costruito col suo identificativo.
+// Al passaggio in reale diventa 'https://dashboard.stripe.com/customers/'.
+const STRIPE_CLIENTI = 'https://dashboard.stripe.com/acct_1T8Pk3AWJFZcd82B/test/customers/';
 
 function data(iso: string | null): string {
   if (!iso) return '—';
@@ -99,19 +113,24 @@ export default function PartnersPage() {
       Number.isFinite(n) && n > 0
         ? new Date(new Date().setMonth(new Date().getMonth() + n)).toISOString()
         : null; // senza mesi = senza scadenza
-    const { error } = await supabase.from('partner_subscriptions').insert({
-      venue_id: granting.venue_id,
-      owner_user_id: granting.owner_user_id,
-      source: 'manual',
-      status: 'active',
-      note: note.trim() || null,
-      ends_at: ends,
-    });
+    const { data: nuovo, error } = await supabase
+      .from('partner_subscriptions')
+      .insert({
+        venue_id: granting.venue_id,
+        owner_user_id: granting.owner_user_id,
+        source: 'manual',
+        status: 'active',
+        note: note.trim() || null,
+        ends_at: ends,
+      })
+      .select('id')
+      .single();
     setBusy(false);
     if (error) {
       alert(`Errore: ${error.message}`);
       return;
     }
+    await registra('subscription_granted', granting, { note: note.trim() || null, ends_at: ends, subscription_id: nuovo?.id });
     setGranting(null);
     setNote('');
     setMesi('12');
@@ -129,7 +148,25 @@ export default function PartnersPage() {
       alert(`Errore: ${error.message}`);
       return;
     }
+    await registra('subscription_revoked', r, { subscription_id: r.sub_id, note: r.sub_note });
     load();
+  }
+
+  // Concedere e revocare sono decisioni, non dati: se non si scrivono mentre
+  // accadono non si ricostruiscono più. Il registro esiste dalla 700 e la sua
+  // policy vuole che chi scrive firmi con la propria identità.
+  async function registra(azione: string, r: PartnerVenue, dettagli: Record<string, unknown>) {
+    const { data: sessione } = await supabase.auth.getUser();
+    const { error } = await supabase.from('partner_audit_log').insert({
+      actor_user_id: sessione.user?.id,
+      venue_id: r.venue_id,
+      card_id: r.card_id,
+      action: azione,
+      details: dettagli,
+    });
+    // Un registro che non scrive non deve far fallire il gesto: l'abbonamento
+    // è già stato concesso, e questo si vede nei log del browser.
+    if (error) console.error('[partner_audit_log]', error.message, error);
   }
 
   function abbonamento(r: PartnerVenue) {
@@ -195,6 +232,22 @@ export default function PartnersPage() {
         />
       </div>
 
+      {/* IL MOVIMENTO compare solo quando c'è: una fila di zeri fissi smette
+          di essere letta, e si porta dietro le caselle accanto. */}
+      {stats && (stats.new_accounts_30d > 0 || stats.new_subs_30d > 0 || stats.canceled_subs_30d > 0) && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {stats.new_accounts_30d > 0 && (
+            <StatCard label="Nuovi iscritti · 30gg" value={stats.new_accounts_30d} />
+          )}
+          {stats.new_subs_30d > 0 && (
+            <StatCard label="Nuovi abbonamenti · 30gg" value={stats.new_subs_30d} color="text-success" />
+          )}
+          {stats.canceled_subs_30d > 0 && (
+            <StatCard label="Disdette · 30gg" value={stats.canceled_subs_30d} color="text-danger" />
+          )}
+        </div>
+      )}
+
       <input
         type="text"
         value={search}
@@ -224,17 +277,44 @@ export default function PartnersPage() {
                 <tr key={r.venue_id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3">
                     <p className="font-medium">{r.venue_name?.trim() || 'Locale senza nome'}</p>
-                    <p className="text-xs text-faint">{r.slug ? `/menu/${r.slug}` : 'nessun indirizzo'}</p>
+                    {/* Il menù pubblico si apre solo se è stato pubblicato:
+                        prima di allora quell'indirizzo non risponde a nessuno. */}
+                    {r.slug && r.published_at ? (
+                      <a
+                        href={`${SITO}/menu/${r.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        /menu/{r.slug}
+                      </a>
+                    ) : (
+                      <p className="text-xs text-faint">{r.slug ? `/menu/${r.slug}` : 'nessun indirizzo'}</p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <p>{`${r.first_name} ${r.last_name}`.trim()}</p>
-                    <p className="text-xs text-faint">{r.email ?? '—'}</p>
+                    {r.email ? (
+                      <a href={`mailto:${r.email}`} className="text-xs text-primary hover:underline">
+                        {r.email}
+                      </a>
+                    ) : (
+                      <p className="text-xs text-faint">—</p>
+                    )}
                     <p className="text-xs text-faint">iscritto il {data(r.signed_up_at)}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <p>{r.menus_total}</p>
+                    <p>
+                      {r.menus_total} {r.menus_total === 1 ? 'menù' : 'menù'}
+                    </p>
                     <p className="text-xs text-faint">
                       {r.published_at ? `pubblicato il ${data(r.published_at)}` : 'mai pubblicato'}
+                    </p>
+                    {/* Cosa ha costruito: il catalogo è dell'iscritto, i piatti
+                        scelti sono di questo locale. */}
+                    <p className="text-xs text-faint">
+                      {r.dishes_total} in catalogo
+                      {r.card_dishes_total > 0 && ` · ${r.card_dishes_total} sulla scheda`}
                     </p>
                   </td>
                   <td className="px-4 py-3">{abbonamento(r)}</td>
@@ -259,7 +339,18 @@ export default function PartnersPage() {
                       </button>
                     )}
                     {r.sub_id && r.sub_source === 'stripe' && (
-                      <span className="text-xs text-faint">su Stripe</span>
+                      r.sub_customer_id ? (
+                        <a
+                          href={`${STRIPE_CLIENTI}${r.sub_customer_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded border border-border text-xs font-medium hover:bg-muted inline-block"
+                        >
+                          Apri su Stripe
+                        </a>
+                      ) : (
+                        <span className="text-xs text-faint">su Stripe</span>
+                      )
                     )}
                   </td>
                 </tr>
