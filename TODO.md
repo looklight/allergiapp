@@ -75,8 +75,11 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   pubblicate; `/abbonamenti` nel portale con stato vero, pagamento e pannello cliente; pagina
   **Partner** in admin (su `admin-prod`) con «Concedi»/«Revoca» e il registro delle decisioni.
   Provato da capo a fondo: pagamento → riga attiva, disdetta → riga chiusa.
-  - [ ] **Rimettere `PARTNER_PORTAL_URL`** sui segreti di Supabase a `https://partner.allergiapp.com`:
-    per le prove punta a `localhost:3001`.
+  - [x] ~~**Rimettere `PARTNER_PORTAL_URL`**~~ — rimesso a `https://partner.allergiapp.com` il 16/09.
+    ⚠️ Per provare il pagamento in locale va riportato a `localhost:3001` e poi rimesso.
+  - [ ] **Accendere `SUBSCRIPTIONS`** (`partner/src/lib/features.ts`): i bottoni di pagamento sono
+    spenti finché Stripe è in sandbox — acceso, un ristoratore vero pagherebbe per finta. Si
+    accende insieme al passaggio in modalità reale (passo 4 del piano).
   - [ ] **Il link «Apri su Stripe» in admin punta alla sandbox** (costante `STRIPE_CLIENTI` in
     `admin/src/app/partners/page.tsx`): una riga da cambiare al passaggio in reale.
   - [ ] **Ripulire le prove**: abbonamento di test su «Hugo Bistrot» e cliente finto su Stripe.
