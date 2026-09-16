@@ -17,6 +17,8 @@ import Interruttore from '@/components/menus/Interruttore';
 import NewMenuDialog from '@/components/menus/NewMenuDialog';
 import UndoToast from '@/components/UndoToast';
 import { StatusDot } from '@/components/StatusPill';
+import ProTag from '@/components/ProTag';
+import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { usePublishStates } from '@/lib/publish';
 import { CreateButton, PageIntro, PageTitleRow } from '@/components/PageHeading';
 
@@ -26,6 +28,7 @@ export default function MenusPage() {
   const { dishes } = useDishes();
   const { menus, create, remove, rename, setActive, restore } = useMenus();
   const { venues, create: createVenue } = useVenues();
+  const { subs } = useSubscriptions();
   const [deleting, setDeleting] = useState<Menu | null>(null);
   // Menù appena eliminato: finché il toast è in piedi si può rimettere.
   //
@@ -163,6 +166,9 @@ export default function MenusPage() {
   const conMenu = (venues ?? []).filter((v) =>
     (menus ?? []).some((m) => m.venueId === v.id)
   );
+  // Con un locale solo il distintivo del piano non distingue niente: qui
+  // serve a dire QUALE dei tuoi ha il Pro.
+  const piùLocali = conMenu.length > 1;
   // Se ogni locale è online: il pallino accanto al suo nome
   const pubblicazioni = usePublishStates(conMenu.map((v) => v.id));
 
@@ -240,6 +246,15 @@ export default function MenusPage() {
                       <span className="shrink-0 text-xs font-normal text-gray-500">
                         {online ? d.dashboard.liveOn : d.dashboard.liveNever}
                       </span>
+                    )}
+                    {/* Il distintivo solo con PIÙ LOCALI (richiesta dell'utente,
+                        16/09): qui serve a distinguere chi ha il piano da chi
+                        no, e con un locale solo non c'è niente da distinguere —
+                        sarebbe un'etichetta che dice una cosa che la home ha
+                        già detto. Mai il viola: questa è una lista, non il
+                        posto dove si decide di comprare. */}
+                    {piùLocali && abbonamentoDi(subs, venue.id) !== null && (
+                      <ProTag variant="active" />
                     )}
                   </h2>
                 );
