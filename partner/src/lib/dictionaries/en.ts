@@ -171,10 +171,11 @@ const en: typeof it = {
   editor: {
     title: 'AllergiApp listing',
     draftBadge: 'Private draft',
+    premium: 'Premium',
     intro:
       'The page of {venue} inside the app: links and contacts on one side, the dishes you choose on the other. The preview shows how it will look.',
     linkNote:
-      'You can set up the listing right now: it stays saved, and it will be visible in the app once the venue is linked to your restaurant on AllergiApp.',
+      'You can set up the listing right now: it stays saved and you can see it in the preview. It appears in the app with a subscription and once the venue is linked to your restaurant on AllergiApp.',
     linkNoteCta: 'How it works',
     linkBoxTitle: 'Your restaurant on AllergiApp',
     linkBoxText:

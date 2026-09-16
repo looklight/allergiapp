@@ -444,6 +444,14 @@ export default function VenueEditorPage() {
           <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
             {d.editor.draftBadge}
           </span>
+          {/* Due pastiglie che dicono due cose diverse: dov'è questo lavoro
+              adesso (bozza privata) e cosa servirà perché esca (abbonamento).
+              La seconda è scritta più piano — è una condizione, non lo stato
+              di quello che stai guardando. Non è un lucchetto: la scheda si
+              compila tutta e l'anteprima la mostra. */}
+          <span className="rounded-full border border-gray-300 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+            {d.editor.premium}
+          </span>
         </div>
         {/* Senza il richiamo qui sotto, lo stacco dal contenuto lo dà la frase */}
         <PageIntro className={venue.cardId === null ? '' : 'mb-10 md:mb-12'}>

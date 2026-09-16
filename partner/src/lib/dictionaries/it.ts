@@ -218,12 +218,17 @@ const it = {
   editor: {
     title: 'Scheda AllergiApp',
     draftBadge: 'Bozza privata',
+    premium: 'Premium',
     intro:
       'La pagina di {venue} dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
     // Il richiamo sotto il titolo (v. page.tsx): dice che si può lavorare
     // adesso e cosa serve perché si veda, senza mettere un "paga" in cima
+    // ⚠️ Adesso nomina anche l'abbonamento (16/09), perché accanto al titolo
+    // c'è l'etichetta Premium e tacerlo qui la farebbe scoprire altrove. Resta
+    // però una frase sul LAVORO e non sul prezzo: prima cosa puoi fare adesso,
+    // poi cosa serve perché la scheda compaia. Il "quanto" lo dice /abbonamenti.
     linkNote:
-      'Puoi preparare la scheda già adesso: resta salvata, e sarà visibile nell’app dopo aver associato il locale al tuo ristorante su AllergiApp.',
+      'Puoi preparare la scheda già adesso: resta salvata e la vedi in anteprima. Compare nell’app con l’abbonamento e l’associazione del locale al tuo ristorante su AllergiApp.',
     linkNoteCta: 'Come funziona',
     // Il box in fondo alla pagina: l'ultimo passo, dopo link e piatti
     linkBoxTitle: 'Il tuo ristorante su AllergiApp',
