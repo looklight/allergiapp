@@ -79,12 +79,12 @@ const STRIPE_CLIENTI = 'https://dashboard.stripe.com/acct_1T8Pk3AWJFZcd82B/test/
 // proposito — i due progetti non condividono i token, e quello che deve
 // combaciare è il COLORE visto da chi guarda le due schermate.
 //
-// ⚠️ Il colore non è mai l'unico canale: accanto resta scritto "in sala dal…"
+// ⚠️ Il colore non è mai l'unico canale: accanto resta scritto "pubblicato il…"
 // o "mai pubblicato", per chi quei due colori non li distingue.
 const COLORI_STATO = { ready: '#4CAF50', draft: '#E8A33D', todo: '#D1D5DB' };
 
 function statoMenu(r: { published_at: string | null; menus_total: number }) {
-  if (r.published_at) return { colore: COLORI_STATO.ready, titolo: 'Menù in sala' };
+  if (r.published_at) return { colore: COLORI_STATO.ready, titolo: 'Menù pubblicato' };
   if (r.menus_total > 0) return { colore: COLORI_STATO.draft, titolo: 'Menù preparato, non pubblicato' };
   return { colore: COLORI_STATO.todo, titolo: 'Nessun menù' };
 }
@@ -274,8 +274,8 @@ export default function PartnersPage() {
     { id: 'senza', label: 'Senza abbonamento' },
     { id: 'disdetti', label: 'Ex abbonati' },
     { id: 'ritardo', label: 'In ritardo' },
-    { id: 'pubblicati', label: 'Menù in sala' },
-    { id: 'nonPubblicati', label: 'Menù fermo in bozza' },
+    { id: 'pubblicati', label: 'Menù pubblicato' },
+    { id: 'nonPubblicati', label: 'Pronto, non pubblicato' },
   ];
 
   async function concedi() {
@@ -641,7 +641,7 @@ export default function PartnersPage() {
                   </p>
                   <p className="text-xs text-faint mt-0.5">
                     {r.menus_total} menù ·{' '}
-                    {r.published_at ? `in sala dal ${data(r.published_at)}` : 'mai pubblicato'}
+                    {r.published_at ? `pubblicato il ${data(r.published_at)}` : 'mai pubblicato'}
                   </p>
                 </div>
                 <div className="shrink-0 text-right">{abbonamento(r)}</div>
