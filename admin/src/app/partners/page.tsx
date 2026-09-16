@@ -108,16 +108,19 @@ function Intestazione({
   children: React.ReactNode;
 }) {
   const scelta = campo === attivo;
+  // Stesso bottone e stesse frecce della pagina Utenti: due tabelle che si
+  // ordinano allo stesso modo non devono sembrare due prodotti diversi.
   return (
     <th className="px-4 py-3 font-medium">
       <button
+        type="button"
         onClick={() => onClick(campo)}
-        className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-foreground ${
-          scelta ? 'text-foreground' : ''
-        }`}
+        className="inline-flex items-center gap-1 -mx-2 px-2 py-1 rounded hover:bg-muted"
       >
         {children}
-        <span className={scelta ? '' : 'opacity-0'}>{crescente ? '↑' : '↓'}</span>
+        <span className="text-faint text-xs w-3 text-center">
+          {scelta ? (crescente ? '▲' : '▼') : ''}
+        </span>
       </button>
     </th>
   );
@@ -392,10 +395,10 @@ export default function PartnersPage() {
           <button
             key={f.id}
             onClick={() => setFiltro(f.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border ${
               filtro === f.id
-                ? 'bg-primary text-white border-primary'
-                : 'border-border text-muted-foreground hover:bg-muted'
+                ? 'bg-selected text-selected-foreground border-selected'
+                : 'bg-card text-foreground-secondary border-border'
             }`}
           >
             {f.label}
@@ -424,9 +427,12 @@ export default function PartnersPage() {
           {rows.length === 0 ? 'Nessun locale partner.' : 'Nessun locale con questo filtro.'}
         </p>
       ) : (
-        <div className="bg-card rounded-lg shadow overflow-x-auto">
+        <>
+        {/* Desktop: tabella */}
+        <div className="hidden md:block bg-card rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-wide text-faint border-b border-border">
+            <thead className="bg-background text-left">
               <tr>
                 <Intestazione campo="locale" attivo={ordine} crescente={crescente} onClick={ordina}>
                   Locale
@@ -445,7 +451,7 @@ export default function PartnersPage() {
             </thead>
             <tbody>
               {visibili.map((r) => (
-                <tr key={r.venue_id} className="border-b border-border last:border-0">
+                <tr key={r.venue_id} className="border-t hover:bg-background">
                   <td className="px-4 py-3">
                     <p className="font-medium">{r.venue_name?.trim() || 'Locale senza nome'}</p>
                     {/* Il menù pubblico si apre solo se è stato pubblicato:
@@ -528,12 +534,73 @@ export default function PartnersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
+
+        {/* Mobile: card. Stessa scelta della pagina Utenti — una tabella a
+            cinque colonne su un telefono si legge solo trascinandola. */}
+        <div className="md:hidden space-y-2">
+          {visibili.map((r) => (
+            <div key={r.venue_id} className="bg-card rounded-lg shadow p-3">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">
+                    {r.venue_name?.trim() || 'Locale senza nome'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {`${r.first_name} ${r.last_name}`.trim()}
+                    {r.email && ` · ${r.email}`}
+                  </p>
+                  <p className="text-xs text-faint mt-0.5">
+                    {r.menus_total} menù ·{' '}
+                    {r.published_at ? `in sala dal ${data(r.published_at)}` : 'mai pubblicato'}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">{abbonamento(r)}</div>
+              </div>
+              <div className="mt-2 flex justify-end gap-2">
+                {!r.sub_id && (
+                  <button
+                    onClick={() => setGranting(r)}
+                    className="px-3 py-1.5 rounded border border-border text-xs font-medium"
+                  >
+                    Concedi
+                  </button>
+                )}
+                {r.sub_id && r.sub_source === 'manual' && (
+                  <button
+                    onClick={() => revoca(r)}
+                    className="px-3 py-1.5 rounded border border-border text-xs font-medium text-danger"
+                  >
+                    Revoca
+                  </button>
+                )}
+                {r.sub_id && r.sub_source === 'stripe' && r.sub_customer_id && (
+                  <a
+                    href={`${STRIPE_CLIENTI}${r.sub_customer_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded border border-border text-xs font-medium"
+                  >
+                    Apri su Stripe
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
 
       {granting && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg shadow-lg p-5 w-full max-w-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setGranting(null)}
+        >
+          <div
+            className="bg-card rounded-xl shadow-xl max-w-lg w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="font-bold mb-1">Concedi l&apos;abbonamento</h2>
             <p className="text-sm text-muted-foreground mb-4">
               {granting.venue_name?.trim() || 'Locale senza nome'}
