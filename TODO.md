@@ -6,7 +6,7 @@
 
 ### Azioni manuali Supabase
 - [x] ~~**Migration 711 — le manopole dell'aspetto del menù**~~ — **APPLICATA il 2026-09-06** e verificata contro il database di produzione (Management API): cinque colonne su `partner_venues` (`dish_photo_shape`, `line_height`, `menu_layout`, `dish_separator`, `allergen_display`), `partner_links.kind` ammette `social`, e `pg_get_functiondef` conferma che `venue_appearance`, `venue_appearance_defaults` e `revert_appearance` sono davvero le nuove. Controllato anche che nessuna delle manopole nuove accenda da sola l'avviso «non ancora in sala»: le uniche differenze sono modifiche vere non pubblicate (MMm: colore e stile sezioni; Trattoria da Maria: grandezza testi).
-- [x] ~~**`APPEARANCE_711 = true`**~~ — acceso il 2026-09-06 (le quattro manopole sono state accese una per una nel browser mentre si rifaceva la scatola). ⚠️ **Resta da TOGLIERE l'interruttore** e le guardie `APPEARANCE_711 &&` in `BrandBar` e `venues.ts`, quando le manopole saranno state usate per qualche giorno: finché c'è, è la leva per tornare indietro senza revert. Spegnerlo non è una rollback completa — `allergen_display` e il kind `social` non passano di lì.
+- [x] ~~**`APPEARANCE_711`**~~ — acceso il 2026-09-06, **TOLTO il 2026-09-16** insieme alle sue guardie in `BrandBar.tsx` e `venues.ts`: le quattro manopole della 711 sono ora sempre presenti. Non c'è più la leva per nasconderle senza revert.
 - [ ] **Ripulire le funzioni parcheggiate della 085** (non urgente, solo a scelta definitiva). Dopo lo scambio restano nel DB `get_pins_in_bounds_073` (la versione precedente, che È il rollback) e nessun'altra. Toglierla solo quando si è certi di non tornare indietro: `DROP FUNCTION get_pins_in_bounds_073(double precision, double precision, double precision, double precision, integer, boolean);`
 - ⚠️ **NON eseguire MAI la migration 084** (`084_pins_is_premium.sql`, esiste solo sul branch abbandonato `feature/map-thinning`): è un DROP+CREATE della stessa funzione e sovrascriverebbe la 085. Quello che portava è già dentro la 085, col premium protetto meglio.
 - ⚠️ **Come si applicano le migration su FUNZIONE** (scoperto a caro prezzo il 2026-09-05): `DROP` + `CREATE` dentro `BEGIN`/`COMMIT` nel SQL editor di Supabase **risponde "success" senza installare niente** — successo due volte, e per due giri si è misurata una funzione non cambiata credendo a un miglioramento inesistente. Procedura corretta, e più sicura comunque (nessun DROP, nessuna finestra in cui la funzione non esiste, rollback per rinomina): creare con un **nome nuovo** → misurarla accanto alla viva → scambiare con due `ALTER FUNCTION … RENAME` → **confermare sempre** con `SELECT pg_get_functiondef(p.oid) LIKE '%…%' FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname='public' AND p.proname='…'`.
@@ -31,7 +31,7 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
 
 - [x] ~~**Il comando nel portale**~~ — FATTO 2026-09-06: «Come si leggono gli allergeni» (A parole / A icone), ultima voce de «La carta», con `allergenDisplay` cablato end-to-end in `venues.ts` (lettura, salvataggio, annulla dell'aspetto, ripristino del locale) e reso dall'anteprima. La legenda sta in fondo alla carta, elenca **solo gli allergeni che quella carta dichiara** (stessa lista delle pastiglie del filtro) e si apre premendo.
 - [x] ~~**Le 15 icone, prima stesura**~~ — in `partner/src/lib/allergenIcons.ts`, a tratto su griglia 24 e tratto 2, disegnate a 16px (non a 11 come il testo: **le icone in quella riga non fanno risparmiare spazio, ne chiedono**).
-- [x] ~~**AL TAVOLO NON SI VEDONO ANCORA**~~ — FATTO il 2026-09-15: `render-menu.js` legge `allergenDisplay` dallo scatto e disegna la riga a icone (note in coda dopo un filo, note di riserva a sole icone sul piatto escluso dal filtro) e la **legenda** in fondo alla carta (`<details>`, nessuno script). ⚠️ La legenda ha due titoletti, «Contiene:» e «Da sapere»: è lì che sta la **polarità**, e prima nell'anteprima allergeni e note erano mescolati sotto un titolo che non la diceva — allineata anche l'anteprima. `npm run gemelle` verde. Mai visto in un browser.
+- [x] ~~**AL TAVOLO NON SI VEDONO ANCORA**~~ — FATTO il 2026-09-15: `render-menu.js` legge `allergenDisplay` dallo scatto e disegna la riga a icone (note in coda dopo un filo, note di riserva a sole icone sul piatto escluso dal filtro) e la **legenda** in fondo alla carta (`<details>`, nessuno script). ⚠️ La legenda ha due titoletti, «Contiene:» e «Da sapere»: è lì che sta la **polarità**, e prima nell'anteprima allergeni e note erano mescolati sotto un titolo che non la diceva — allineata anche l'anteprima. `npm run gemelle` verde. Visto nel browser dall'utente il 16/09.
 - [x] ~~**Le icone da rivedere**~~ — RIVISTE il 2026-09-15 guardandole a 16px una accanto all'altra: latte → cartone, frutta a guscio → ghianda, sedano → gambi con foglie, lupini → ciotola di semi, fave → seme. Dettaglio nel commento di `partner/src/lib/allergenIcons.ts`. Restano aperte le due decisioni sulle icone delle note (crudo, blocco unico). Era: **Le icone da rivedere** (l'utente le ha approvate come punto di partenza, «nel caso le cambieremo in seguito»). I difetti già visti a misura vera: **latte e uova si somigliano troppo** (due macchie chiuse quasi identiche); **soia, lupini e fave** sono tre baccelle simili fra loro; la **frutta a guscio** resta la più debole — non ha un profilo distintivo. Reggono bene chiocciola (molluschi), arachide, pesce, sedano e calice (solfiti).
 - [ ] **Il vecchio elenco dei pittogrammi**, tenuto per memoria del metodo: ⚠️ **Primo giro fatto il 2026-09-06** («poi le rivedremo meglio»). Quello che si è imparato, per non ripartire da zero:
   - **Stile deciso: a TRATTO sottile**, non a silhouette piena. Provate tutt'e due, l'utente preferisce il tratto. Conseguenza tecnica: a 12px una linea da 1,5 su griglia 24 diventa mezzo pixel e impasta — servono **tratto ~2, poche linee interne, e l'icona un filo più grande del testo** (14-16px contro un testo da 11). ⚠️ **Le icone non fanno risparmiare spazio nella riga: ne chiedono.**
@@ -89,9 +89,15 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   sala da solo quando l'abbonamento finisce, e un giro quotidiano copre le scadenze per data.
   Nel portale: distintivo **Pro** viola sulle funzioni, ambra accanto al nome del locale abbonato,
   e «Rimetti i valori di partenza» per chi non paga.
-  - [ ] **Accendere pg_cron** (Database → Extensions) e pianificare il giro: il pezzo `cron.schedule`
-    è in fondo alla 719, commentato. Senza, le concessioni scadute per data tengono l'aspetto in
-    sala fino alla pubblicazione successiva o a una revoca.
+  - [x] ~~**Accendere pg_cron** e pianificare il giro~~ — FATTO il 16/09: `create extension pg_cron`
+    dal SQL editor, job `sweep_public_appearance` (jobid 1) alle 3:15 UTC. Giri fatti:
+    `cron.job_run_details`; per toglierlo `cron.unschedule('sweep_public_appearance')`.
+  - [ ] **Da ripensare: il giro notturno è la strada più pulita?** Tenuto acceso per ora, ma è un
+    pezzo in più da sorvegliare (fuori dalle migration, fallisce in silenzio se nessuno guarda
+    `job_run_details`). Alternative da valutare: verificare l'abbonamento **alla lettura** (la
+    pagina del menù chiede `venue_subscription_active()` e sceglie l'aspetto, niente scatto da
+    correggere); oppure far scrivere a Stripe/admin la scadenza come evento, così basta il
+    trigger della 718. Criterio: meno parti mobili, e il menù al tavolo resta veloce (cache).
 - [ ] **Il piano a passi** — scritto il 16/09 in `MONETIZATION.md`, «Piano operativo
   dell'abbonamento»: fondamenta web (716 + Stripe test + due Edge Function + `/abbonamenti` vero +
   «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù, migration 717 (l'unica
@@ -387,6 +393,21 @@ Non fatto ora perché nel portale non esiste ancora niente che sappia se un loca
 - ⚠️ A `H` il codice è **più fitto** a parità di indirizzo: il file per la tipografia regge, un adesivo piccolo va provato. **Un QR sul tavolo non si corregge da remoto** — non si tocca il file da stampare senza averlo provato stampato.
 - I "QR strani" (puntini tondi, angoli sagomati, gradienti) sono un'altra cosa: la libreria `qrcode` disegna solo quadratini, servirebbe cambiarla. E costano leggibilità nella stessa direzione del logo: farli insieme è la ricetta per un QR che funziona sul tuo telefono e non su quello di un cliente.
 - Voce a sé, se si vuole il nostro ritorno prima del premium: una riga **sotto** il codice nel file da stampare («Menù con filtro allergeni di AllergiApp»), che il premium toglie insieme al logo e non mangia correzione d'errore. Non decisa.
+
+### Dominio personalizzato per il menù (2026-09-16) — da investigare, non deciso
+
+Oggi il menù vive su `allergiapp.com/menu/nomeristorante`. Idea: dare ai ristoratori un dominio proprio (es. `trattoriadamario.it`) che punta lì. Da investigare meglio prima di costruire.
+
+Discusso finora, non ancora verificato tecnicamente:
+- **Non fare reselling di domini**: comprare/gestire il dominio per conto del ristoratore lo trasforma di fatto in un registrar (rinnovi, WHOIS, dispute) — complessità sproporzionata.
+- **BYOD (bring your own domain) puro** — il ristoratore compra altrove e configura lui il CNAME — è troppo tecnico per un utente non smanettone: si perderebbe al primo passaggio DNS.
+- **Ipotesi migliore**: gestito interamente da AllergiApp via **Vercel Domains API** (partner/admin sono già su Vercel) — il ristoratore digita solo il nome desiderato nel portale, voi comprate/collegate il dominio via API, zero DNS manuale per lui. Costo dominio ~10-15€/anno, da far passare nell'abbonamento premium.
+- Nodi aperti da chiarire prima di procedere: a chi è intestato il dominio (voi o lui — questione di portabilità se lascia AllergiApp), chi tiene traccia dei rinnovi, come si integra con l'abbonamento partner.
+- Candidato premium B2B, in linea con la direzione di monetizzazione già decisa (app free utenti, premium B2B ristoratori) — non un piano a sé, verificare come si incastra nei 6 passi già scritti in `MONETIZATION.md`.
+
+### Sito del ristorante (pagine, foto, ecc.) oltre al menù (2026-09-16) — da investigare, non deciso
+
+Idea affiancata al dominio personalizzato: dare al ristoratore la possibilità di costruire un piccolo sito (pagine, foto, orari, contatti) oltre al solo menù digitale. Solo abbozzata, tutta da definire — non chiaro se editor visuale, template fissi, o estensione del portale partner esistente. Da riprendere quando si affronta il dominio personalizzato, probabilmente la stessa conversazione di prodotto.
 
 ### Ristoranti Premium (certificati)
 **Priorità: media — da pianificare dopo la stabilizzazione del lancio**
