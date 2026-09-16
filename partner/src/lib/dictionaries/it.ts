@@ -800,6 +800,7 @@ const it = {
     paidWait: 'Pagamento ricevuto. Stiamo registrando l’abbonamento…',
     canceledPayment: 'Pagamento annullato: non ti è stato addebitato niente.',
     openError: 'Non è stato possibile aprire il pagamento. Riprova fra poco.',
+    soon: 'L’abbonamento arriverà presto: il menù resta tuo e gratuito, e non devi fare niente per tenerlo.',
     notFoundBridge:
       'Non trovi il tuo ristorante? Aggiungilo dall’app AllergiApp, poi torna qui per associarlo.',
   },

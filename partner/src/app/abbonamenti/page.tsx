@@ -20,6 +20,7 @@ import {
   type Plan,
   type Subscription,
 } from '@/lib/subscriptions';
+import { SUBSCRIPTIONS } from '@/lib/features';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import StatusPill from '@/components/StatusPill';
 
@@ -192,6 +193,10 @@ function Abbonamenti() {
                       {d.subs.manage}
                     </button>
                   )
+                ) : !SUBSCRIPTIONS ? (
+                  // Interruttore spento: si dice al futuro, invece di mostrare
+                  // un pagamento che oggi non darebbe niente.
+                  <p className="mt-4 text-sm text-gray-500">{d.subs.soon}</p>
                 ) : (
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <button
@@ -213,7 +218,7 @@ function Abbonamenti() {
                     <span className="text-xs text-gray-500">{d.subs.yearlyHint}</span>
                   </div>
                 )}
-                {!sub && (
+                {!sub && SUBSCRIPTIONS && (
                   <p className="mt-2 text-xs text-gray-500">{d.subs.renewalNote}</p>
                 )}
 

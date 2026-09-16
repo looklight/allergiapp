@@ -48,3 +48,19 @@ export const MULTI_MENU: boolean = true;
 // 'social', arrivati con la stessa migration, non passano di qui perché le
 // loro colonne esistono già.
 export const APPEARANCE_711: boolean = true;
+
+// L'ABBONAMENTO: i due bottoni che aprono il pagamento su Stripe.
+//
+// ⚠️ SPENTO fino al passaggio ai pagamenti veri. La catena funziona tutta
+// (migration 716, tre funzioni su Supabase, pagina Abbonamenti), ma Stripe è
+// ancora in sandbox: acceso, un ristoratore vero si troverebbe davanti un
+// pagamento finto che non gli dà niente.
+//
+// Cosa resta visibile da spento: lo STATO dell'abbonamento del locale. Serve
+// agli abbonamenti concessi a mano dall'admin, che esistono già e devono
+// potersi vedere.
+//
+// Si accende quando: l'account Stripe è attivato e intestato alla P.IVA, i
+// prezzi sono rifatti in modalità reale, e le condizioni d'uso col P2B sono
+// online (MONETIZATION.md, «Piano operativo dell'abbonamento», passo 4).
+export const SUBSCRIPTIONS: boolean = false;

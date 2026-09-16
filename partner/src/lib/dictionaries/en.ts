@@ -588,6 +588,7 @@ const en: typeof it = {
     paidWait: 'Payment received. We’re recording your subscription…',
     canceledPayment: 'Payment cancelled: you haven’t been charged.',
     openError: 'We couldn’t open the payment page. Please try again shortly.',
+    soon: 'Subscriptions are coming soon: your menu stays yours and free, and you don’t need to do anything to keep it.',
     notFoundBridge:
       'Can’t find your restaurant? Add it from the AllergiApp app, then come back here to link it.',
   },
