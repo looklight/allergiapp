@@ -253,6 +253,84 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
      campi liberi tipo "adatto ai celiaci"** — solo checkbox strutturate con
      wording nostro, vagliato legalmente.
 
+## Associazione locale ↔ ristorante (design 2026-09-17)
+
+> Ripassa il «Claim self-service» di luglio qui sotto alla luce di
+> abbonamenti (716), listino del 15/09 e piatti sul locale (715). Dove dice
+> altro, vale questa. In costruzione un nodo alla volta.
+
+**Resta valido da luglio**: nessuna approvazione umana né documenti nel caso
+normale (dichiarazione + difese a valle); un solo locale collegato per
+ristorante (indice unico già nella 703); il ristorante deve esistere
+nell'app (altrimenti messaggio ponte); a abbonamento finito il collegamento
+resta, sparisce solo la scheda.
+
+**Cambiato**: prima l'abbonamento, poi il collegamento; il collegamento non
+porta dati, aggancia soltanto (i piatti della scheda stanno sul locale).
+
+**Nodo 1 — quando la scheda si vede in app** (deciso 17/09):
+- Nessuno scrive «pubblicata». Visibile = **abbonamento attivo** sul locale
+  **e** collegamento non in pausa/sospeso/revocato **e almeno un piatto**
+  scelto per la scheda. Calcolato dal database a ogni lettura.
+- Il ristoratore può solo mettere in pausa e riattivare; l'admin sospende e
+  revoca. Chiude la falla di `partner_cards_owner` (703, `FOR ALL`): lo
+  stato `published`/`expired` sparisce come valore scrivibile.
+- Stesso criterio per contorno del pin e scheda. Senza piatti niente scheda:
+  il contorno dice «c'è il menù del ristorante».
+
+**Dati aziendali al collegamento** (deciso 17/09):
+- Chiesti **sempre al collegamento**, pagato o regalato: **paese, ragione
+  sociale, P.IVA** + spunta «Dichiaro di essere titolare o di agire per
+  conto dell'azienda che gestisce questo locale». Sede ed email di
+  fatturazione restano a Stripe.
+- Una volta per azienda, riusati sui locali successivi (`partner_companies`).
+- **VIES** per l'UE: P.IVA inesistente → collegamento bloccato con messaggio
+  chiaro; VIES non risponde → passa, segnato «da verificare» in admin; fuori
+  UE → dichiarato, «da verificare». Nome e sede restituiti da VIES visibili
+  in admin, accanto al nome del locale.
+- ⚠️ Scoperto il 17/09: il webhook Stripe **non** scrive `partner_companies`
+  (il piano lo diceva): la P.IVA di chi paga oggi resta solo in Stripe.
+
+**Nodo 2 — ristorante già collegato a un altro account** (deciso 17/09;
+sostituisce il contro-claim automatico di luglio):
+- In ricerca: «Già gestito da un altro account», senza dire da chi.
+- Pulsante «È il mio locale» → **richiesta all'admin** (testo libero + dati
+  aziendali come un collegamento normale).
+- **Decide l'admin a mano**: le due aziende affiancate coi dati VIES,
+  documenti se servono. Se passa al nuovo: revoca del vecchio + nuovo
+  collegamento, motivazione al vecchio gestore (DSA art. 17).
+- Il gestore attuale **non** è avvisato della richiesta, solo della decisione.
+- Nessun passaggio automatico: si aggiunge solo se le richieste diventano tante.
+
+**Nodo 3 — scollegare o cambiare ristorante** (deciso 17/09):
+- Il ristoratore **scollega da solo** dal portale, con conferma: scheda e
+  contorno del pin spariscono subito; piatti, menù e abbonamento restano sul
+  locale.
+- **Cambiare** = scollegare + ricollegare, senza richiedere la P.IVA.
+- **Risposte alle recensioni** legate al collegamento: scollegando si
+  nascondono (mai cancellate), tornano ricollegando lo stesso ristorante,
+  restano nascoste per sempre se il ristorante passa a un altro gestore.
+- Nessun limite ai cambi; ogni cambio nel registro, l'admin vede gli eccessi.
+- Ristorante cancellato nell'app → collegamento cade (CASCADE della 703),
+  locale e abbonamento restano, il portale dice di collegarne un altro.
+
+**L'admin ha sempre il controllo** (principio dell'utente, 17/09): dall'admin
+si può fare tutto quello che fa il ristoratore e di più — collegare,
+scollegare, mettere in pausa, sospendere, revocare, riassegnare un
+ristorante a un altro locale — ogni azione con motivo e riga in
+`partner_audit_log`.
+
+**Nodo 4 — la ricerca nel portale** (deciso 17/09):
+- **Solo ristoranti che esistono già su AllergiApp.** Nessun inserimento dal
+  portale.
+- Un campo unico nome + città, precompilato col nome del locale; risultati
+  con nome, indirizzo, categoria; i già collegati con la scritta del nodo 2.
+- Conferma prima di collegare: indirizzo + piccola mappa, «È questo il tuo
+  locale?».
+- **Non si trova**: suggerire di aggiungerlo dall'app **lasciando almeno una
+  recensione** (il flusso di aggiunta dell'app la chiede già insieme al
+  ristorante), oppure di scrivere a **info@allergiapp.com** per problemi.
+
 ## Claim self-service (design 2026-07-27)
 
 ### Principio cardine (v3, 2026-07-27)
