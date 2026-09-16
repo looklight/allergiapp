@@ -32,7 +32,7 @@ import { DISH_NOTES, noteName } from '@/lib/dishNotes';
 import { ALLERGEN_ICON_PATHS, hasAllergenIcon } from '@/lib/allergenIcons';
 import { DIETS, dietNeedName } from '@/lib/diets';
 import { dishThumb, type Dish } from '@/lib/dishes';
-import { socialName } from '@/lib/socials';
+import { socialHandle, socialName } from '@/lib/socials';
 import SocialIcon from './SocialIcon';
 import {
   displayPrice,
@@ -822,17 +822,29 @@ export default function MenuPreview({
             cibo, e un invito a seguire il locale in cima alla carta è una
             distrazione messa prima della cosa che serve (Tema 7).
             Su un menù vuoto non compare, come le condizioni. */}
-        {gruppiResi.length > 0 && socials.length > 0 && (
+        {/* ⚠️ Si vedono ANCHE a menù vuoto (16/09): qui si sta costruendo, e
+            una cosa che hai appena aggiunto deve comparire subito — nascosta
+            finché non ci sono piatti sembrerebbe non aver funzionato. Al
+            tavolo invece la pagina di un menù senza piatti non esiste
+            proprio, quindi la differenza non si vede da nessuna parte. */}
+        {socials.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-100 pt-3">
             {socials.map((social, i) => (
               <span
                 key={i}
-                className="riga-minuta inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-gray-600"
-                // Nell'anteprima non si naviga: è il telefono finto, e un
-                // link che porta via da qui perderebbe il lavoro in corso.
+                className="riga-minuta inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1"
+                // Il colore scelto per il menù vale anche qui: una fila
+                // grigia in fondo a una carta verde bosco sembra roba
+                // nostra, non sua.
+                style={{ color: accent, borderColor: accent }}
+                // Il servizio, per chi ascolta la pagina: scritto si legge
+                // solo il nome del profilo. Nell'anteprima non si naviga —
+                // è il telefono finto, e un link che porta via da qui
+                // perderebbe il lavoro in corso.
+                title={socialName(social.url, social.label)}
               >
                 <SocialIcon url={social.url} className="h-3.5 w-3.5" />
-                {socialName(social.url, social.label)}
+                {socialHandle(social.url, social.label)}
               </span>
             ))}
           </div>

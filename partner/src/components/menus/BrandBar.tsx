@@ -663,9 +663,12 @@ export default function BrandBar({
           — ma per PESO no. Un campo di testo con un bottone «Aggiungi» non è
           una manopola come le altre: è una cosa che si compila, e infilata
           in coda a un gruppo sembrava un ripensamento invece di una voce. */}
-      <div className="border-t border-gray-100" />
-
-      <div>
+      {/* ⚠️ Questo blocco sta FUORI dal contenitore che spazia i tre gruppi
+          (space-y-5), quindi la riga di separazione qui va staccata a mano:
+          messa senza margini si incollava a quello che ha sopra e sotto. Lo
+          stesso ritmo del blocco della valuta qui sotto — 24px sopra la
+          riga, 20px fra la riga e il titolo. */}
+      <div className="mt-6 border-t border-gray-100 pt-5">
         <p className="text-sm font-medium text-gray-900">{d.menuEditor.socialsGroup}</p>
         <p className="mt-0.5 text-xs text-gray-500">{d.menuEditor.socialsGroupHint}</p>
         <div className="mt-3">

@@ -42,9 +42,8 @@ export function socialProvider(url: string): string {
 }
 
 /**
- * Come si chiama, per chi legge. Per i servizi noti il nome proprio; per gli
- * altri il dominio così com'è (`ilmiosito.it`), che dice al ristoratore cosa
- * ha incollato meglio di un generico «Sito».
+ * Il nome del SERVIZIO (Instagram, Facebook…). Serve a chi ascolta la pagina
+ * e come ripiego quando dall'indirizzo non si ricava un nome di pagina.
  */
 export function socialName(url: string, label = ''): string {
   if (label.trim() !== '') return label.trim();
@@ -52,6 +51,34 @@ export function socialName(url: string, label = ''): string {
   const noto = SOCIALS.find((s) => s.code === code);
   if (noto) return noto.name;
   return hostDi(url) || '';
+}
+
+/**
+ * QUELLO CHE SI LEGGE NELLA PASTIGLIA: il nome della pagina, non quello del
+ * servizio — «iltuolocale» e non «Instagram» (scelta dell'utente, 16/09). Il
+ * servizio lo dice già il simbolo accanto, e ripeterlo scritto vuol dire
+ * riempire la fila con quattro volte la stessa informazione mentre quella
+ * che manca — di CHI è quel profilo — resta fuori.
+ *
+ * Sul sito del locale non c'è un nome di pagina da mostrare: lì si legge il
+ * dominio, che è esattamente come uno lo direbbe a voce.
+ */
+export function socialHandle(url: string, label = ''): string {
+  if (label.trim() !== '') return label.trim();
+  const host = hostDi(url);
+  if (host === '') return '';
+  const code = socialProvider(url);
+  if (code === 'other') return host;
+  try {
+    const completo = /^https?:\/\//i.test(url) ? url : `https://${url.trim()}`;
+    const pezzi = new URL(completo).pathname.split('/').filter((p) => p !== '');
+    // Il primo pezzo del percorso è il profilo in quasi tutti i servizi;
+    // dove non c'è (un link alla home del servizio) si ripiega sul nome.
+    const primo = (pezzi[0] ?? '').replace(/^@/, '');
+    return primo !== '' ? primo : socialName(url);
+  } catch {
+    return socialName(url);
+  }
 }
 
 function hostDi(url: string): string {
