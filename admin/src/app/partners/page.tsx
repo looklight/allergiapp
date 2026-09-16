@@ -89,6 +89,40 @@ function euro(cents: number): string {
   return `${(cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 }
 
+// L'intestazione che ordina. La freccia sta solo sulla colonna attiva: una
+// freccia su ognuna direbbe "ordinate per quattro cose insieme", che non
+// vuol dire niente.
+type Campo = 'locale' | 'iscritto' | 'menu' | 'abbonamento';
+
+function Intestazione({
+  campo,
+  attivo,
+  crescente,
+  onClick,
+  children,
+}: {
+  campo: Campo;
+  attivo: Campo;
+  crescente: boolean;
+  onClick: (campo: Campo) => void;
+  children: React.ReactNode;
+}) {
+  const scelta = campo === attivo;
+  return (
+    <th className="px-4 py-3 font-medium">
+      <button
+        onClick={() => onClick(campo)}
+        className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-foreground ${
+          scelta ? 'text-foreground' : ''
+        }`}
+      >
+        {children}
+        <span className={scelta ? '' : 'opacity-0'}>{crescente ? '↑' : '↓'}</span>
+      </button>
+    </th>
+  );
+}
+
 export default function PartnersPage() {
   const [rows, setRows] = useState<PartnerVenue[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
@@ -97,7 +131,11 @@ export default function PartnersPage() {
   // righe sono poche e già scaricate, quindi si riordinano senza un viaggio
   // in più, e aggiungere un modo di guardarle non è una migration.
   const [filtro, setFiltro] = useState<'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati'>('tutti');
-  const [ordine, setOrdine] = useState<'recenti' | 'nome' | 'abbonato' | 'scadenza'>('recenti');
+  // L'ordinamento si comanda dalle intestazioni della tabella, come in ogni
+  // tabella che si rispetti: il verso si inverte ripremendo la stessa.
+  // Di partenza, i locali più recenti in cima.
+  const [ordine, setOrdine] = useState<'locale' | 'iscritto' | 'menu' | 'abbonamento'>('iscritto');
+  const [crescente, setCrescente] = useState(false);
   const [loading, setLoading] = useState(true);
   // Il locale a cui si sta concedendo l'abbonamento: null = nessun modulo aperto
   const [granting, setGranting] = useState<PartnerVenue | null>(null);
@@ -142,24 +180,44 @@ export default function PartnersPage() {
       }
     })
     .sort((a, b) => {
+      // Chi non ha il dato finisce in fondo in tutt'e due i versi: un locale
+      // senza abbonamento non è "il più vecchio", semplicemente non c'entra
+      // con quella domanda.
+      const vuoti = (x: string | null, y: string | null) =>
+        !x && !y ? 0 : !x ? 1 : !y ? -1 : null;
+      const verso = crescente ? 1 : -1;
+      let cmp = 0;
       switch (ordine) {
-        case 'nome':
-          return (a.venue_name ?? '').localeCompare(b.venue_name ?? '', 'it');
-        case 'abbonato':
-          // I più vecchi per primi: chi resta da più tempo è la notizia buona.
-          // Chi non è abbonato non ha una data e scende in fondo.
-          if (!a.sub_started_at) return 1;
-          if (!b.sub_started_at) return -1;
-          return a.sub_started_at.localeCompare(b.sub_started_at);
-        case 'scadenza':
-          // Le scadenze vicine per prime; senza scadenza, in fondo.
-          if (!a.sub_ends_at) return 1;
-          if (!b.sub_ends_at) return -1;
-          return a.sub_ends_at.localeCompare(b.sub_ends_at);
+        case 'locale':
+          cmp = (a.venue_name ?? '').localeCompare(b.venue_name ?? '', 'it');
+          break;
+        case 'menu': {
+          const v = vuoti(a.published_at, b.published_at);
+          if (v !== null) return v;
+          cmp = a.published_at!.localeCompare(b.published_at!);
+          break;
+        }
+        case 'abbonamento': {
+          const v = vuoti(a.sub_started_at, b.sub_started_at);
+          if (v !== null) return v;
+          cmp = a.sub_started_at!.localeCompare(b.sub_started_at!);
+          break;
+        }
         default:
-          return b.created_at.localeCompare(a.created_at);
+          cmp = a.signed_up_at.localeCompare(b.signed_up_at);
       }
+      return cmp * verso;
     });
+
+  function ordina(campo: typeof ordine) {
+    if (campo === ordine) setCrescente((c) => !c);
+    else {
+      setOrdine(campo);
+      // Le date partono dalla più recente, i nomi dalla A: è quello che si
+      // aspetta chi preme.
+      setCrescente(campo === 'locale');
+    }
+  }
 
   const FILTRI: { id: typeof filtro; label: string }[] = [
     { id: 'tutti', label: 'Tutti' },
@@ -357,16 +415,6 @@ export default function PartnersPage() {
           </button>
         ))}
 
-        <select
-          value={ordine}
-          onChange={(e) => setOrdine(e.target.value as typeof ordine)}
-          className="ml-auto px-3 py-1.5 rounded border border-border bg-card text-xs"
-        >
-          <option value="recenti">Locali più recenti</option>
-          <option value="nome">Nome del locale</option>
-          <option value="abbonato">Abbonati da più tempo</option>
-          <option value="scadenza">Scadenza più vicina</option>
-        </select>
       </div>
 
       {loading ? (
@@ -380,10 +428,18 @@ export default function PartnersPage() {
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-faint border-b border-border">
               <tr>
-                <th className="px-4 py-3">Locale</th>
-                <th className="px-4 py-3">Iscritto</th>
-                <th className="px-4 py-3">Menù</th>
-                <th className="px-4 py-3">Abbonamento</th>
+                <Intestazione campo="locale" attivo={ordine} crescente={crescente} onClick={ordina}>
+                  Locale
+                </Intestazione>
+                <Intestazione campo="iscritto" attivo={ordine} crescente={crescente} onClick={ordina}>
+                  Iscritto
+                </Intestazione>
+                <Intestazione campo="menu" attivo={ordine} crescente={crescente} onClick={ordina}>
+                  Menù
+                </Intestazione>
+                <Intestazione campo="abbonamento" attivo={ordine} crescente={crescente} onClick={ordina}>
+                  Abbonamento
+                </Intestazione>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
