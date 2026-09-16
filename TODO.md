@@ -112,6 +112,8 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   - [ ] **Configurare il pannello del cliente** su Stripe (cosa può fare il ristoratore da solo:
     carta, disdetta, fatture) e **cosa succede dopo i tentativi di pagamento falliti** — oggi è il
     comportamento predefinito, ed è quello che fa finire l'abbonamento.
+- [ ] **Collegamento locale ↔ ristorante — DESIGN CHIUSO il 17/09**, in `MONETIZATION.md` «Associazione locale ↔ ristorante». **Da qui si riprende**: scrivere in parole semplici cosa cambia nel database (parte 1), rivederlo insieme, poi il codice. Ordine: 1) database · 2) portale (ricerca, conferma con mappa, P.IVA + dichiarazione, scollega, pausa) · 3) admin (azioni, richieste contese, registro) · 4) app, con la build nativa (scheda, contorno pin, risposte). Le parti 1-3 non chiedono build.
+- [ ] **Controllare il primo giro di pg_cron** (dopo le 5:15 del 17/09): `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;` — atteso `succeeded`.
 - [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
   `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. Innocuo oggi (nessuna
   scheda, l'app non legge le tabelle partner): va chiuso nella migration dell'associazione.

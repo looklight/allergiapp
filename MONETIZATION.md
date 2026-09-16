@@ -257,7 +257,7 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 
 > Ripassa il «Claim self-service» di luglio qui sotto alla luce di
 > abbonamenti (716), listino del 15/09 e piatti sul locale (715). Dove dice
-> altro, vale questa. In costruzione un nodo alla volta.
+> altro, vale questa. Design chiuso il 17/09 (quattro nodi + dati aziendali).
 
 **Resta valido da luglio**: nessuna approvazione umana né documenti nel caso
 normale (dichiarazione + difese a valle); un solo locale collegato per
