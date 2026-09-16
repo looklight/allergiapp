@@ -2566,6 +2566,28 @@
         max-width: none;
     }
 
+    /* LO SCONTO DELLO SPOILER (v. sopra, «IL RIQUADRO SULL'ASSE DELLA
+     * COLONNA») RIMANE SOLO DA LARGO: da qui in giù la colonna è già stretta
+     * e quello sconto toglieva al fumetto la stessa misura del piatto UNA
+     * SECONDA VOLTA, lasciandogli meno di metà della corsia — la frase andava
+     * a capo anche quattro volte. Tolto il compenso la coppia si centra come
+     * un blocco solo (stessa idea del fumetto qui sopra): il fumetto perde
+     * un filo di perfezione nel centrare se stesso rispetto al piatto, ma
+     * guadagna tutta la larghezza che il compenso gli portava via. */
+    .ml-page .ml-dialogo--spoiler {
+        padding-right: 0;
+    }
+
+    /* IL FUMETTO PRENDE TUTTO QUELLO CHE RESTA, IN NUMERI E NON A OCCHIO.
+     * `text-wrap: balance` sceglie da sé quanto stringersi per righe pari, e
+     * lasciato libero (larghezza auto) si stringe MOLTO più del necessario —
+     * lo stesso testo, con una larghezza scritta invece che indovinata, va a
+     * capo una volta di meno. La misura è la corsia vera: tutta la riga meno
+     * il piatto e il suo stacco, le stesse due variabili di sempre. */
+    .ml-page .ml-dialogo--spoiler .ml-fumetto {
+        width: calc(100% - var(--ml-piatto) - var(--ml-stacco));
+    }
+
     .ml-page .ml-app-intro,
     .ml-page .ml-app-claim-lead,
     .ml-page .ml-app-claim-note,

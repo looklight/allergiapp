@@ -42,6 +42,7 @@
   var PASSO = 12;   // una lettera ogni 12 millesimi: veloce, come nei giochi
   var PAUSA = 120;  // il fiato dopo la punteggiatura
   var TIENI = 400;  // quanto resta una battuta prima che la casella si svuoti
+  var ATTESA_SPOILER = 500; // lo spoiler in testata è il primo fumetto che si vede: parte un attimo dopo, non appena la pagina si apre
 
   function recita(dialogo) {
     var battute = Array.prototype.slice.call(dialogo.querySelectorAll('.ml-battuta'));
@@ -116,16 +117,18 @@
       });
     }
 
+    var ritardo = dialogo.classList.contains('ml-dialogo--spoiler') ? ATTESA_SPOILER : 0;
+
     dialogo.classList.add('is-attesa');
     if ('IntersectionObserver' in window) {
       var vedetta = new IntersectionObserver(function (voci) {
         if (!voci[0].isIntersecting) return;
         vedetta.disconnect();
-        entraInScena();
+        setTimeout(entraInScena, ritardo);
       }, { threshold: 0.6 });
       vedetta.observe(dialogo);
     } else {
-      entraInScena();
+      setTimeout(entraInScena, ritardo);
     }
   }
 
@@ -152,7 +155,20 @@
   function abbraccia(fumetto) {
     var battute = fumetto.querySelectorAll('.ml-battuta:not(.ml-copia)');
     if (!battute.length) return;
-    fumetto.style.width = '';
+    // LA MISURA DI PARTENZA È TUTTA LA CORSIA, NON "AUTO". Lasciato libero
+    // (larghezza auto) il riquadro si stringe da solo — `text-wrap: balance`
+    // sceglie una larghezza "bilanciata" che ignora quanto posto c'è davvero,
+    // e su schermo stretto la frase andava a capo molto più del necessario.
+    // Dando come base tutto quello che resta dopo il piatto, il bilanciamento
+    // lavora sulla corsia vera; il riquadro si stringe comunque, subito dopo,
+    // sulla riga più lunga che ne è uscita.
+    var dialogo = fumetto.closest('.ml-dialogo');
+    var corsia = dialogo ? getComputedStyle(dialogo) : null;
+    var piatto = corsia ? parseFloat(corsia.getPropertyValue('--ml-piatto')) || 0 : 0;
+    var stacco = corsia ? parseFloat(corsia.getPropertyValue('--ml-stacco')) || 0 : 0;
+    fumetto.style.width = (dialogo && corsia)
+      ? Math.max(0, dialogo.getBoundingClientRect().width - piatto - stacco) + 'px'
+      : '';
     var scala = fumetto.getBoundingClientRect().width / (fumetto.offsetWidth || 1);
     if (!scala) return;
     var riga = 0;
