@@ -77,6 +77,12 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   statistiche.
 - [ ] **Prima di incassare davvero**: strumento per la fattura elettronica SdI (Stripe non la
   invia; da scegliere col commercialista), condizioni d'uso + P2B. La P.IVA c'è già.
+  - [ ] **Attivare l'account Stripe** (oggi è una sandbox: `charges_enabled` falso), intestato alla
+    P.IVA e non alla persona; poi rifare prodotto, prezzi e webhook in modalità reale — il codice
+    non cambia perché i prezzi si cercano per **lookup key** (`allergiapp_monthly`/`_yearly`).
+  - [ ] **Configurare il pannello del cliente** su Stripe (cosa può fare il ristoratore da solo:
+    carta, disdetta, fatture) e **cosa succede dopo i tentativi di pagamento falliti** — oggi è il
+    comportamento predefinito, ed è quello che fa finire l'abbonamento.
 - [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
   `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. Innocuo oggi (nessuna
   scheda, l'app non legge le tabelle partner): va chiuso nella migration dell'associazione.

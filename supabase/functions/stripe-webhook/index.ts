@@ -55,7 +55,19 @@ function planFromInterval(interval?: string): "monthly" | "yearly" | null {
   return null;
 }
 
-async function upsertSubscription(sub: Stripe.Subscription) {
+async function upsertSubscription(eventSub: Stripe.Subscription) {
+  // ⚠️ NON si scrive quello che l'evento contiene: Stripe non garantisce
+  // l'ordine di consegna, e un evento vecchio arrivato tardi riscriverebbe
+  // uno stato più recente ("attivo" dopo una disdetta). Si richiede a Stripe
+  // com'è ADESSO quell'abbonamento, e si scrive quello. Se la chiamata non
+  // riesce si usa l'evento, che è comunque meglio di niente.
+  let sub = eventSub;
+  try {
+    sub = await stripe.subscriptions.retrieve(eventSub.id);
+  } catch (e) {
+    console.error("[stripe-webhook] rilettura fallita, uso l'evento:", eventSub.id, e);
+  }
+
   const venueId = sub.metadata?.venue_id;
   const ownerUserId = sub.metadata?.owner_user_id;
   if (!venueId || !ownerUserId) {
