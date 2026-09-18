@@ -114,16 +114,16 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
     comportamento predefinito, ed è quello che fa finire l'abbonamento.
 - [ ] **Collegamento locale ↔ ristorante — DESIGN CHIUSO il 17/09**, in `MONETIZATION.md` «Associazione locale ↔ ristorante». Ordine: 1) database · 2) portale (ricerca, conferma con mappa, P.IVA + dichiarazione, scollega, pausa) · 3) admin (azioni, richieste contese, registro) · 4) app, con la build nativa (scheda, contorno pin, risposte). Le parti 1-3 non chiedono build.
   - [x] **Parte 1 scritta il 18/09**: `721_venue_restaurant_link.sql`, provata per intero sul database vero con annullamento finale (link, pausa, scollega, revoca che tiene, richiesta accolta dall'admin, registro, letture pubbliche chiuse).
-  - [ ] **Applicare la 721** dal SQL editor (poi le tre query di verifica in fondo al file).
+  - [x] **721 APPLICATA il 18/09** e verificata sul database.
   - [ ] Parte 2 — portale. Serve anche la funzione sul server per VIES (scrive `partner_companies`, il gestore non può) e la ricerca che dice «Già gestito da un altro account» senza dire da chi (le letture pubbliche di `partner_cards` non ci sono più). La funzione VIES controlla prima la cifra di controllo della P.IVA (italiana) e toglie il prefisso del paese; esiti: `vies_valid` collega, `vies_not_found`/`unverified` → il portale propone la richiesta all'admin (errore `company_unverified`).
   - [x] **Deciso il 18/09 — il ristorante che non c'è nell'app**: resta la strada del design, aggiungerlo dall'app con una recensione (nel 99% dei casi va bene, e una recensione in più fa comodo); in alternativa lo aggiunge l'admin su richiesta a info@allergiapp.com. Il portale dice tutte e due le cose.
   - [ ] **Prima dell'uscita della parte 4**: scollegare i collegamenti di prova (account di test, Hugo Bistrot con l'abbonamento Stripe sandbox che il database conta come attivo), o un ristorante vero mostrerà la scheda di prova.
   - [ ] Fuori tema, da sistemare a parte: la policy «Users can delete restaurants they added» lascia cancellare un ristorante a chi l'ha aggiunto anche con recensioni di altri (il controllo sta solo nell'app, `removeOwnRestaurant`). La 721 lo blocca solo per i ristoranti collegati.
   - [ ] Parte 3 — admin: la **coda dei collegamenti da controllare** (`partner_cards.reviewed_at` NULL, anche i chiusi) con azienda/P.IVA/esito VIES/ristorante e i gesti «Visto», sospendi, revoca; la coda delle richieste. Poi togliere `registra()` da `partners/page.tsx` (il registro lo scrivono i trigger della 721; la sua insert ora fallisce in silenzio); `get_partner_venues_admin` prende `partner_cards` con `LIMIT 1` senza guardare lo stato: con lo storico va preso solo il collegamento vivo.
 - [x] **Controllare il primo giro di pg_cron** — ✅ 18/09: i giri del 17 e del 18 alle 5:15 sono `succeeded`. Per ricontrollare: `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;`
-- [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
-  `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. **Chiuso dalla 721** (da applicare).
-- [ ] ⚠️ **Applicare la 722** (trovata il 18/09): il gestore può scrivere da sé il menù pubblicato
+- [x] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
+  `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. **Chiuso dalla 721** (applicata 18/09).
+- [ ] ⚠️ **722 APPLICATA il 18/09** — resta da provare dal portale «Pubblica le modifiche» (trovata il 18/09): il gestore può scrivere da sé il menù pubblicato
   (`published_menu`, `published_at`) con una chiamata diretta all'API, e così aggirare il muro
   sull'aspetto (718). La 722 lo impedisce con un trigger; provata insieme alla 721. Dopo, verificare
   dal portale che «Pubblica le modifiche» funzioni ancora.

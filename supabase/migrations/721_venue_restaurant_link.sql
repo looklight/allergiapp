@@ -1,7 +1,7 @@
 -- ============================================================
 -- 721_venue_restaurant_link.sql
--- STATO: DA APPLICARE via SQL editor. Tracking fermo alla 045: a mano,
--- MAI db push.
+-- STATO: APPLICATA il 2026-09-18 (verificata: tabelle, vincoli, policy, 9 trigger, 10 funzioni, indici; nessuna lettura pubblica rimasta).
+-- Tracking fermo alla 045: a mano, MAI db push.
 --
 -- IL COLLEGAMENTO FRA LOCALE E RISTORANTE (parte 1 di 4: database).
 -- Design chiuso il 2026-09-17, in MONETIZATION.md «Associazione locale ↔

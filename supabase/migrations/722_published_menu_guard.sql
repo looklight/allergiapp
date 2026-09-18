@@ -1,7 +1,7 @@
 -- ============================================================
 -- 722_published_menu_guard.sql
--- STATO: DA APPLICARE via SQL editor. Tracking fermo alla 045: a mano,
--- MAI db push.
+-- STATO: APPLICATA il 2026-09-18 (verificata: trigger presente).
+-- Tracking fermo alla 045: a mano, MAI db push.
 --
 -- IL MENÙ PUBBLICATO CAMBIA SOLO DAL PULSANTE «PUBBLICA».
 --

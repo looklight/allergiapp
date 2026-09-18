@@ -258,7 +258,7 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 > Ripassa il «Claim self-service» di luglio qui sotto alla luce di
 > abbonamenti (716), listino del 15/09 e piatti sul locale (715). Dove dice
 > altro, vale questa. Design chiuso il 17/09 (quattro nodi + dati aziendali).
-> **Parte 1 (database) scritta il 18/09**: migration 721, da applicare.
+> **Parte 1 (database) FATTA il 18/09**: migration 721, applicata e verificata.
 > Rivedendola sono emerse quattro regole che il design dava per implicite
 > e che ora il database fa rispettare: per collegare serve un abbonamento
 > attivo; un locale ha un solo collegamento vivo alla volta; chi è
