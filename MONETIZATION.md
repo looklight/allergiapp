@@ -359,6 +359,9 @@ ristorante a un altro locale — ogni azione con motivo e riga in
 - **Non si trova**: suggerire di aggiungerlo dall'app **lasciando almeno una
   recensione** (il flusso di aggiunta dell'app la chiede già insieme al
   ristorante), oppure di scrivere a **info@allergiapp.com** per problemi.
+  Confermato il 18/09: l'app con la recensione è la strada normale (una
+  recensione in più fa comodo); se non va, **lo aggiunge l'admin** su
+  richiesta a info@.
 
 ## Claim self-service (design 2026-07-27)
 
