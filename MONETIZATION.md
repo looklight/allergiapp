@@ -264,6 +264,9 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 > attivo; un locale ha un solo collegamento vivo alla volta; chi è
 > sospeso non può scollegarsi (azzererebbe la sospensione); dopo una
 > revoca quel ristorante lo ridà solo l'admin, tramite una richiesta.
+> Rivedendola coi dati veri (18/09) sono cambiate due regole, qui sotto
+> barrate e riscritte: la P.IVA che VIES non trova passa dall'admin invece
+> di bloccare, e un ristorante collegato non si cancella.
 
 **Resta valido da luglio**: nessuna approvazione umana né documenti nel caso
 normale (dichiarazione + difese a valle); un solo locale collegato per
@@ -290,10 +293,18 @@ porta dati, aggancia soltanto (i piatti della scheda stanno sul locale).
   conto dell'azienda che gestisce questo locale». Sede ed email di
   fatturazione restano a Stripe.
 - Una volta per azienda, riusati sui locali successivi (`partner_companies`).
-- **VIES** per l'UE: P.IVA inesistente → collegamento bloccato con messaggio
-  chiaro; VIES non risponde → passa, segnato «da verificare» in admin; fuori
-  UE → dichiarato, «da verificare». Nome e sede restituiti da VIES visibili
-  in admin, accanto al nome del locale.
+- ~~VIES: P.IVA inesistente → collegamento bloccato; VIES giù o fuori UE →
+  passa «da verificare».~~ **Cambiato il 18/09**: VIES non conosce le P.IVA
+  che non hanno chiesto di fare scambi UE, cioè la maggior parte delle
+  trattorie italiane (e spagnole): «non trovata» non vuol dire «non esiste».
+  Ora **si collega da soli solo con la P.IVA confermata** (da VIES o
+  dall'admin); VIES che non la trova, VIES giù o azienda fuori UE → il
+  collegamento diventa una **richiesta all'admin**, la stessa strada dei
+  ristoranti contesi. L'admin che la accoglie segna l'azienda come
+  verificata, e i locali successivi passano da soli. Gli errori di
+  battitura li ferma la cifra di controllo della P.IVA, prima di VIES.
+  Nome e sede restituiti da VIES visibili in admin, accanto al nome del
+  locale.
 - ⚠️ Scoperto il 17/09: il webhook Stripe **non** scrive `partner_companies`
   (il piano lo diceva): la P.IVA di chi paga oggi resta solo in Stripe.
 
@@ -317,8 +328,12 @@ sostituisce il contro-claim automatico di luglio):
   nascondono (mai cancellate), tornano ricollegando lo stesso ristorante,
   restano nascoste per sempre se il ristorante passa a un altro gestore.
 - Nessun limite ai cambi; ogni cambio nel registro, l'admin vede gli eccessi.
-- Ristorante cancellato nell'app → collegamento cade (CASCADE della 703),
-  locale e abbonamento restano, il portale dice di collegarne un altro.
+- ~~Ristorante cancellato nell'app → collegamento cade (CASCADE della 703).~~
+  **Cambiato il 18/09**: un ristorante con un collegamento in corso **non si
+  cancella**, nemmeno dall'admin — prima si scollega con un motivo. Chi
+  aggiunge un ristorante dall'app può cancellarlo, e l'80% dei ristoranti
+  ha una recensione sola: senza il blocco, il cliente che l'aveva aggiunto
+  toglieva recensione e ristorante e il ristoratore perdeva la scheda.
 
 **L'admin ha sempre il controllo** (principio dell'utente, 17/09): dall'admin
 si può fare tutto quello che fa il ristoratore e di più — collegare,

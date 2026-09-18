@@ -26,14 +26,16 @@
 --      riattiva, scollega e chiede un ristorante conteso da funzioni
 --      che controllano. Chiude la falla della 703 (FOR ALL sul gestore,
 --      che poteva scriversi 'published').
---   5. partner_card_requests: «È il mio locale» per un ristorante già
---      gestito da un altro account. Decide l'admin a mano.
+--   5. partner_card_requests: la strada per tutto quello che non fila
+--      liscio — ristorante già gestito da un altro account, P.IVA che VIES
+--      non conferma, ritorno dopo una revoca. Decide l'admin a mano.
 --   6. Il registro lo scrive il DATABASE, con dei trigger: ogni cambio
 --      di collegamenti, richieste e abbonamenti lascia la sua riga,
 --      chiunque lo faccia (gestore, admin, webhook di Stripe).
 --   7. «La scheda si vede?» ha una risposta sola: partner_card_visible().
 --   8. Via le sei letture pubbliche sulle tabelle grezze: l'app leggerà
 --      la scheda da una funzione sola, come il sito legge il menù.
+--   9. Un ristorante con un collegamento in corso non si cancella.
 --
 -- ------------------------------------------------------------
 -- L'ADMIN SCRIVE DIRETTAMENTE, come per gli abbonamenti (717): sospendere,
@@ -98,14 +100,23 @@ alter table partner_companies
   add column vies_name text,
   add column vies_address text;
 
--- Tre esiti, non quattro: una P.IVA che VIES dice inesistente non entra
--- mai (il collegamento si ferma lì, con un messaggio chiaro).
---   vies_valid      confermata da VIES
---   unverified      VIES non ha risposto, o azienda fuori UE: «da verificare»
---   admin_verified  controllata a mano dall'admin
+-- ⚠️ «VIES NON LA TROVA» NON VUOL DIRE «NON ESISTE» (18/09, cambia la
+-- regola del 17/09). In Italia una P.IVA entra in VIES solo se l'azienda
+-- ha chiesto di fare scambi con altri paesi UE: la trattoria che compra e
+-- vende in Italia di solito non l'ha fatto, e VIES la dà per non valida.
+-- Stesso discorso in Spagna. Bloccare lì avrebbe lasciato fuori la
+-- maggior parte dei ristoratori veri.
+-- Quindi quattro esiti, e solo due fanno collegare da soli:
+--   vies_valid      confermata da VIES                     → collega
+--   admin_verified  controllata a mano dall'admin          → collega
+--   vies_not_found  VIES non la conosce                    → richiesta all'admin
+--   unverified      VIES non ha risposto, o azienda fuori UE → richiesta all'admin
+-- Gli errori di battitura li ferma prima la funzione sul server, con la
+-- cifra di controllo che la P.IVA italiana ha già: quella non chiede
+-- niente a nessuno.
 alter table partner_companies drop constraint partner_companies_vat_status_check;
 alter table partner_companies add constraint partner_companies_vat_status_check
-  check (vat_status in ('unverified', 'vies_valid', 'admin_verified'));
+  check (vat_status in ('unverified', 'vies_valid', 'vies_not_found', 'admin_verified'));
 
 -- La P.IVA si salva in una forma sola — maiuscole, niente spazi né
 -- punteggiatura — o l'unicità qui sotto la aggira uno spazio. Il
@@ -240,11 +251,47 @@ create trigger partner_cards_guard
   before update on partner_cards
   for each row execute function partner_cards_guard();
 
+-- UN RISTORANTE COLLEGATO NON SI CANCELLA. Chi l'ha aggiunto dall'app può
+-- cancellarlo (policy «Users can delete restaurants they added»), e il
+-- controllo dell'app guarda restaurants.owner_id, la colonna di marzo che
+-- il collegamento non usa. Senza questo blocco: il cliente che l'ha
+-- aggiunto toglie la sua recensione — spesso l'unica — poi il ristorante,
+-- e il CASCADE si porta via il collegamento di chi paga, senza che nessuno
+-- glielo dica. Vale anche per l'admin: prima si scollega con un motivo,
+-- che il gestore legge, poi si cancella. Le righe chiuse no: quelle il
+-- CASCADE le può portare via insieme al ristorante.
+-- SECURITY DEFINER perché chi cancella dall'app partner_cards non la vede:
+-- senza, l'exists qui sotto risponderebbe sempre «nessuno».
+create function restaurants_guard_partner_link()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if exists (select 1 from partner_cards
+             where restaurant_id = old.id
+               and status in ('active', 'paused', 'suspended')) then
+    raise exception 'restaurant_has_partner'
+      using hint = 'Il ristorante è collegato a un locale partner: prima si scollega.';
+  end if;
+  return old;
+end;
+$$;
+
+create trigger restaurants_guard_partner_link
+  before delete on restaurants
+  for each row execute function restaurants_guard_partner_link();
+
 
 -- ============================================================
--- 4. «È IL MIO LOCALE»: LE RICHIESTE PER UN RISTORANTE CONTESO
--- Nodo 2. Il gestore attuale non è avvisato della richiesta, solo della
--- decisione. Un'altra tabella e non uno stato in più su partner_cards:
+-- 4. LE RICHIESTE ALL'ADMIN
+-- Tre casi, una strada: il ristorante è già gestito da un altro account
+-- (nodo 2: il gestore attuale non è avvisato della richiesta, solo della
+-- decisione), la P.IVA non è confermata (sezione 2), o il ristorante era
+-- stato revocato proprio a chi chiede. Il motivo non si salva: si legge
+-- dai dati, che l'admin ha davanti comunque.
+-- Un'altra tabella e non uno stato in più su partner_cards:
 -- una richiesta non è un collegamento, e non deve mai poter contare come
 -- tale in un indice o in una lettura.
 -- ============================================================
@@ -436,7 +483,8 @@ create trigger partner_subscriptions_audit_change
 --   restaurant_taken       il ristorante è già gestito da un altro account
 --   restaurant_yours       il ristorante è già collegato a un tuo locale
 --   restaurant_revoked     il ristorante ti è stato revocato: serve l'admin
---   restaurant_free        (richiesta) il ristorante è libero: collegalo
+--   company_unverified     P.IVA non confermata: serve l'admin
+--   no_request_needed      (richiesta) niente da chiedere: collegalo
 --   request_open           c'è già una richiesta aperta per questo locale
 --   invalid_state          il gesto non vale nello stato attuale
 -- ============================================================
@@ -497,6 +545,14 @@ begin
                and owner_user_id = v_uid
                and status = 'revoked') then
     raise exception 'restaurant_revoked';
+  end if;
+
+  -- Per ultimo, così gli errori più precisi vengono prima: con la P.IVA
+  -- non confermata si passa dall'admin (sezione 2).
+  if not exists (select 1 from partner_companies
+                 where id = p_company_id
+                   and vat_status in ('vies_valid', 'admin_verified')) then
+    raise exception 'company_unverified';
   end if;
 
   -- Gli indici parziali restano l'ultima parola: due collegamenti allo
@@ -560,10 +616,9 @@ begin
 end;
 $$;
 
--- «È IL MIO LOCALE». Vale quando il ristorante è di un altro account, o
--- quando è stato revocato proprio a chi chiede (l'unica strada per
--- tornare). Stesse condizioni di un collegamento: abbonamento, e il
--- locale libero.
+-- LA RICHIESTA. Vale nei tre casi della sezione 4; negli altri il
+-- ristorante si collega da sé, e una richiesta sarebbe solo attesa.
+-- Stesse condizioni di un collegamento: abbonamento, e il locale libero.
 create function partner_request_restaurant(
   p_venue_id uuid,
   p_restaurant_id uuid,
@@ -613,8 +668,11 @@ begin
         and not exists (select 1 from partner_cards
                         where restaurant_id = p_restaurant_id
                           and owner_user_id = v_uid
-                          and status = 'revoked') then
-    raise exception 'restaurant_free';
+                          and status = 'revoked')
+        and exists (select 1 from partner_companies
+                    where id = p_company_id
+                      and vat_status in ('vies_valid', 'admin_verified')) then
+    raise exception 'no_request_needed';
   end if;
 
   insert into partner_card_requests
@@ -673,6 +731,9 @@ grant execute on function partner_card_visible(uuid) to anon, authenticated;
 -- va a tutti e due (al vecchio gestore per DSA art. 17).
 -- SECURITY INVOKER: gira coi permessi dell'admin e sotto le sue policy.
 -- Non serve l'abbonamento di chi ha chiesto: l'admin può tutto.
+-- Accogliere vuol dire anche aver guardato l'azienda: se la P.IVA non era
+-- confermata diventa admin_verified, e i prossimi locali della stessa
+-- azienda si collegano da soli.
 -- ============================================================
 create function admin_decide_card_request(
   p_request_id uuid,
@@ -706,6 +767,11 @@ begin
 
     insert into partner_cards (venue_id, owner_user_id, restaurant_id, company_id)
     values (r.venue_id, r.owner_user_id, r.restaurant_id, r.company_id);
+
+    update partner_companies
+       set vat_status = 'admin_verified', vat_checked_at = now()
+     where id = r.company_id
+       and vat_status not in ('vies_valid', 'admin_verified');
   end if;
 
   update partner_card_requests
@@ -759,4 +825,7 @@ COMMIT;
 --   select tgname from pg_trigger
 --    where tgname like '%audit%' and not tgisinternal order by 1;
 --   (attesi sei: card ×2, request ×2, subscription ×2)
+--
+-- Il blocco sulla cancellazione dei ristoranti:
+--   select tgname from pg_trigger where tgname = 'restaurants_guard_partner_link';
 -- ============================================================
