@@ -335,6 +335,14 @@ sostituisce il contro-claim automatico di luglio):
   ha una recensione sola: senza il blocco, il cliente che l'aveva aggiunto
   toglieva recensione e ristorante e il ristoratore perdeva la scheda.
 
+**L'admin vede ogni collegamento** (deciso il 18/09): anche quelli
+automatici nascono «da controllare» e finiscono in una coda in admin, con
+azienda, P.IVA e ristorante affiancati, finché l'admin non li segna come
+visti (o sospende, o revoca). Il ristoratore non aspetta nessuno: il
+controllo è dopo, non prima. Restano in coda anche i collegamenti già
+chiusi (chi collega e scollega in fretta è uno schema da vedere). Quelli
+decisi dall'admin nascono già visti.
+
 **L'admin ha sempre il controllo** (principio dell'utente, 17/09): dall'admin
 si può fare tutto quello che fa il ristoratore e di più — collegare,
 scollegare, mettere in pausa, sospendere, revocare, riassegnare un

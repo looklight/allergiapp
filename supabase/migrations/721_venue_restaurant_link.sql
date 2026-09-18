@@ -36,6 +36,8 @@
 --   8. Via le sei letture pubbliche sulle tabelle grezze: l'app leggerà
 --      la scheda da una funzione sola, come il sito legge il menù.
 --   9. Un ristorante con un collegamento in corso non si cancella.
+--  10. Ogni collegamento passa sotto gli occhi dell'admin, anche quelli
+--      automatici: nasce «da controllare» finché l'admin non lo segna.
 --
 -- ------------------------------------------------------------
 -- L'ADMIN SCRIVE DIRETTAMENTE, come per gli abbonamenti (717): sospendere,
@@ -206,6 +208,46 @@ create unique index partner_cards_one_live_per_venue
 -- Per lo storico di un ristorante (chi l'ha avuto, chi è stato revocato).
 create index partner_cards_restaurant_idx on partner_cards (restaurant_id);
 
+-- L'ADMIN VEDE TUTTO, ANCHE QUELLO CHE È PASSATO DA SOLO (deciso il 18/09).
+-- Il collegamento automatico resta automatico — nessuna attesa per il
+-- ristoratore — ma nasce «da controllare»: in admin c'è una coda dei
+-- collegamenti non ancora guardati, con azienda, P.IVA e ristorante
+-- affiancati. L'admin lo segna come visto, o sospende e revoca. Restano in
+-- coda anche quelli già chiusi: chi collega e scollega in fretta è
+-- proprio uno schema da vedere.
+-- Quelli che crea l'admin (a mano o accogliendo una richiesta) nascono
+-- già visti: li ha decisi lui. Lo stabilisce un trigger e non chi scrive,
+-- così nessuna funzione del gestore può nascere «già vista».
+alter table partner_cards
+  add column reviewed_at timestamptz,
+  add column reviewed_by uuid references auth.users(id) on delete set null;
+
+create index partner_cards_to_review_idx
+  on partner_cards (created_at)
+  where reviewed_at is null;
+
+create function partner_cards_set_review()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if is_admin() then
+    new.reviewed_at := now();
+    new.reviewed_by := auth.uid();
+  else
+    new.reviewed_at := null;
+    new.reviewed_by := null;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger partner_cards_set_review
+  before insert on partner_cards
+  for each row execute function partner_cards_set_review();
+
 -- Serviva ai piatti accesi, che dalla 715 stanno sul locale.
 alter table partner_cards drop constraint partner_cards_id_owner_key;
 
@@ -223,7 +265,12 @@ returns trigger
 language plpgsql
 as $$
 begin
-  if old.status in ('revoked', 'unlinked') then
+  -- L'unica cosa che su una riga chiusa si può ancora scrivere è il
+  -- «visto» dell'admin: la coda comprende anche i collegamenti chiusi.
+  if old.status in ('revoked', 'unlinked')
+     and (to_jsonb(new) - 'reviewed_at' - 'reviewed_by' - 'updated_at')
+         is distinct from
+         (to_jsonb(old) - 'reviewed_at' - 'reviewed_by' - 'updated_at') then
     raise exception 'card_closed'
       using hint = 'Un collegamento chiuso resta com''è: se ne apre uno nuovo.';
   end if;
@@ -825,6 +872,10 @@ COMMIT;
 --   select tgname from pg_trigger
 --    where tgname like '%audit%' and not tgisinternal order by 1;
 --   (attesi sei: card ×2, request ×2, subscription ×2)
+--
+-- La coda dei collegamenti da controllare:
+--   select id, created_at, status from partner_cards
+--    where reviewed_at is null order by created_at;
 --
 -- Il blocco sulla cancellazione dei ristoranti:
 --   select tgname from pg_trigger where tgname = 'restaurants_guard_partner_link';
