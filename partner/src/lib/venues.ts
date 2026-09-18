@@ -643,7 +643,7 @@ export function useVenues() {
       id: data.id,
       venueName,
       logoUrl: '',
-      // ⚠️ Lo stesso valore del default della colonna (migration 721): questa
+      // ⚠️ Lo stesso valore del default della colonna (migration 720): questa
       // riga è la copia che il portale tiene in mano appena creato il locale,
       // e il database intanto ne scrive un'altra. Se divergono, il colore
       // cambia da solo al primo ricaricamento.

@@ -851,10 +851,46 @@ const it = {
       'I dati della tua azienda (P.IVA, sede) si inseriscono al pagamento: servono per la fattura.',
     paidWait: 'Pagamento ricevuto. Stiamo registrando l’abbonamento…',
     canceledPayment: 'Pagamento annullato: non ti è stato addebitato niente.',
-    openError: 'Non è stato possibile aprire il pagamento. Riprova fra poco.',
+    openError: 'Non è stato possibile aprire il pagamento.',
     soon: 'L’abbonamento arriverà presto: il menù resta tuo e gratuito, e non devi fare niente per tenerlo.',
     notFoundBridge:
       'Non trovi il tuo ristorante? Aggiungilo dall’app AllergiApp, poi torna qui per associarlo.',
+  },
+  // L'associazione del locale al ristorante su AllergiApp (/locale/[id]/collega)
+  link: {
+    back: 'Scheda AllergiApp',
+    title: 'Associa il ristorante',
+    // {venue} = il nome del locale, in grassetto (si spezza sul segnaposto)
+    intro: 'Cerca {venue} fra i ristoranti di AllergiApp, con il nome e la città.',
+    nameLabel: 'Nome del ristorante',
+    namePlaceholder: 'Es. Trattoria da Mario',
+    cityLabel: 'Città o CAP',
+    cityPlaceholder: 'Es. Bologna o 40121',
+    searchButton: 'Cerca',
+    tooMany: 'Ci sono molti risultati: scrivi il nome completo del ristorante.',
+    searching: 'Ricerca…',
+    noResults: 'Nessun ristorante di AllergiApp corrisponde a queste parole.',
+    // Un guasto (rete, server), non «nessun risultato»: si dice cosa è
+    // successo e basta, senza promettere che riprovando passa
+    searchError: 'La ricerca non ha funzionato.',
+    choose: 'Scegli',
+    taken: 'Già gestito da un altro account',
+    yours: 'Già associato a un tuo locale',
+    // Il ristorante che non c'è (deciso il 18/09): l'app, o scriverci
+    notFoundTitle: 'Non trovi il tuo ristorante?',
+    notFoundText:
+      'Aggiungilo dall’app AllergiApp lasciando una recensione, poi torna qui a cercarlo.',
+    notFoundContact: 'Se qualcosa non va, scrivici:',
+    notFoundSubject: 'Ristorante da aggiungere su AllergiApp',
+    // La conferma, con la mappa
+    confirmTitle: 'È questo il tuo locale?',
+    confirmYes: 'Sì, è questo',
+    confirmNo: 'No, cerca ancora',
+    mapLabel: 'Mappa della zona di {name}',
+    // Chi arriva qui senza abbonamento o già associato
+    needsSubscription: 'Per associare il ristorante serve prima l’abbonamento del locale.',
+    needsSubscriptionCta: 'Vai agli abbonamenti',
+    alreadyLinked: 'Questo locale è già associato al suo ristorante su AllergiApp.',
   },
   account: {
     title: 'Account',

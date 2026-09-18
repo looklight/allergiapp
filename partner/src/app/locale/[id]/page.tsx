@@ -838,8 +838,10 @@ export default function VenueEditorPage() {
             </div>
             {venue.cardId === null && (
               <div className="mt-4 flex justify-end">
+                {/* Senza abbonamento si passa prima di là: l'associazione
+                    viene dopo (15/09), e il database la rifiuterebbe. */}
                 <Link
-                  href="/abbonamenti"
+                  href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}
                   className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
                 >
                   {d.editor.linkBoxCta}

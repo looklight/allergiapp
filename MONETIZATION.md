@@ -352,7 +352,14 @@ ristorante a un altro locale — ogni azione con motivo e riga in
 **Nodo 4 — la ricerca nel portale** (deciso 17/09):
 - **Solo ristoranti che esistono già su AllergiApp.** Nessun inserimento dal
   portale.
-- Un campo unico nome + città, precompilato col nome del locale; risultati
+- ~~Un campo unico nome + città~~ **Due campi, prima «Città o CAP» poi il nome,
+  e un pulsante Cerca** (18/09: con un campo solo «trattoria roma» a Milano
+  trovava anche i locali di Roma; col solo nome un «Pizzeria…» ne trova
+  centinaia e il limite di 20 taglia fuori quello giusto). La città è
+  obbligatoria, il nome parte col nome del locale; niente risultati a ogni
+  lettera. Arrivati a 20 risultati la pagina lo dice. Le parole generiche
+  (ristorante, trattoria, restaurant, gluten free…) possono mancare dal nome
+  (19/09): «Ristorante Linfa» trova «Linfa Milano». Risultati
   con nome, indirizzo, categoria; i già collegati con la scritta del nodo 2.
 - Conferma prima di collegare: indirizzo + piccola mappa, «È questo il tuo
   locale?».

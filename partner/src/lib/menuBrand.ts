@@ -114,7 +114,7 @@ export const MENU_ACCENTS = [
   // colore di TUTTI i menù senza abbonamento — cioè la faccia più vista del
   // prodotto, non più "come nasce un menù prima di essere sistemato".
   // Il valore deve restare uguale a venue_appearance_defaults() nel database
-  // (migration 721): se i due divergono, il portale mostra un colore e il
+  // (migration 720): se i due divergono, il portale mostra un colore e il
   // tavolo un altro.
   { code: 'forest', hex: '#2E6B4F', it: 'Verde bosco', en: 'Forest green' },
   { code: 'charcoal', hex: '#333333', it: 'Carbone', en: 'Charcoal' },
