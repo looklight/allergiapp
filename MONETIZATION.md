@@ -258,6 +258,12 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 > Ripassa il «Claim self-service» di luglio qui sotto alla luce di
 > abbonamenti (716), listino del 15/09 e piatti sul locale (715). Dove dice
 > altro, vale questa. Design chiuso il 17/09 (quattro nodi + dati aziendali).
+> **Parte 1 (database) scritta il 18/09**: migration 721, da applicare.
+> Rivedendola sono emerse quattro regole che il design dava per implicite
+> e che ora il database fa rispettare: per collegare serve un abbonamento
+> attivo; un locale ha un solo collegamento vivo alla volta; chi è
+> sospeso non può scollegarsi (azzererebbe la sospensione); dopo una
+> revoca quel ristorante lo ridà solo l'admin, tramite una richiesta.
 
 **Resta valido da luglio**: nessuna approvazione umana né documenti nel caso
 normale (dichiarazione + difese a valle); un solo locale collegato per

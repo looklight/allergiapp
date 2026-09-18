@@ -112,11 +112,18 @@ Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listi
   - [ ] **Configurare il pannello del cliente** su Stripe (cosa può fare il ristoratore da solo:
     carta, disdetta, fatture) e **cosa succede dopo i tentativi di pagamento falliti** — oggi è il
     comportamento predefinito, ed è quello che fa finire l'abbonamento.
-- [ ] **Collegamento locale ↔ ristorante — DESIGN CHIUSO il 17/09**, in `MONETIZATION.md` «Associazione locale ↔ ristorante». **Da qui si riprende**: scrivere in parole semplici cosa cambia nel database (parte 1), rivederlo insieme, poi il codice. Ordine: 1) database · 2) portale (ricerca, conferma con mappa, P.IVA + dichiarazione, scollega, pausa) · 3) admin (azioni, richieste contese, registro) · 4) app, con la build nativa (scheda, contorno pin, risposte). Le parti 1-3 non chiedono build.
-- [ ] **Controllare il primo giro di pg_cron** (dopo le 5:15 del 17/09): `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;` — atteso `succeeded`.
+- [ ] **Collegamento locale ↔ ristorante — DESIGN CHIUSO il 17/09**, in `MONETIZATION.md` «Associazione locale ↔ ristorante». Ordine: 1) database · 2) portale (ricerca, conferma con mappa, P.IVA + dichiarazione, scollega, pausa) · 3) admin (azioni, richieste contese, registro) · 4) app, con la build nativa (scheda, contorno pin, risposte). Le parti 1-3 non chiedono build.
+  - [x] **Parte 1 scritta il 18/09**: `721_venue_restaurant_link.sql`, provata per intero sul database vero con annullamento finale (link, pausa, scollega, revoca che tiene, richiesta accolta dall'admin, registro, letture pubbliche chiuse).
+  - [ ] **Applicare la 721** dal SQL editor (poi le tre query di verifica in fondo al file).
+  - [ ] Parte 2 — portale. Serve anche la funzione sul server per VIES (scrive `partner_companies`, il gestore non può) e la ricerca che dice «Già gestito da un altro account» senza dire da chi (le letture pubbliche di `partner_cards` non ci sono più).
+  - [ ] Parte 3 — admin: togliere `registra()` da `partners/page.tsx` (il registro lo scrivono i trigger della 721; la sua insert ora fallisce in silenzio); `get_partner_venues_admin` prende `partner_cards` con `LIMIT 1` senza guardare lo stato: con lo storico va preso solo il collegamento vivo.
+- [x] **Controllare il primo giro di pg_cron** — ✅ 18/09: i giri del 17 e del 18 alle 5:15 sono `succeeded`. Per ricontrollare: `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;`
 - [ ] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
-  `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. Innocuo oggi (nessuna
-  scheda, l'app non legge le tabelle partner): va chiuso nella migration dell'associazione.
+  `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. **Chiuso dalla 721** (da applicare).
+- [ ] ⚠️ **Applicare la 722** (trovata il 18/09): il gestore può scrivere da sé il menù pubblicato
+  (`published_menu`, `published_at`) con una chiamata diretta all'API, e così aggirare il muro
+  sull'aspetto (718). La 722 lo impedisce con un trigger; provata insieme alla 721. Dopo, verificare
+  dal portale che «Pubblica le modifiche» funzioni ancora.
 - [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC delle ricerche dell'app prima del primo abbonamento vero. ⚠️ NON quello della mappa (085): lì la precedenza nel quadretto resta, serve solo a non far sparire il locale.
 - [ ] **Contorno del pin per i locali col menù del ristorante** (deciso 16/09, regole in `MONETIZATION.md` «Principio guida»): pallini identici, contorno di altro colore solo sul pin, guidato dalla scheda pubblicata, mai la parola "certificato". Esce con la scheda in app (passo 5), stessa build.
 - [x] ~~**Account Stripe**: da verificare se esiste~~ — esiste (sandbox `acct_1T8Pk3AWJFZcd82B`); l'attivazione in reale è nella voce «Prima di incassare davvero».
