@@ -11,6 +11,7 @@ import type { UserProfile, Restaurant, Review, MenuPhoto } from '@/lib/types';
 import { useBusyIds } from '@/hooks/useBusyIds';
 import UserProfileCard from './components/UserProfileCard';
 import MediaGallery, { type MediaItem } from './components/MediaGallery';
+import PartnerAccountCard, { type PartnerAccount } from './components/PartnerAccountCard';
 import DietaryBadges from '@/components/DietaryBadges';
 import Link from 'next/link';
 import { useLightbox } from '@/contexts/LightboxContext';
@@ -21,6 +22,10 @@ export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
+  // Il profilo partner della stessa credenziale, se c'è. Chi si iscrive solo
+  // dal portale non ha una riga in profiles: senza questo la scheda diceva
+  // «Utente non trovato» e non c'era modo di eliminarlo.
+  const [partner, setPartner] = useState<PartnerAccount | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [menuPhotos, setMenuPhotos] = useState<EnrichedMenuPhoto[]>([]);
@@ -33,9 +38,11 @@ export default function UserDetailPage() {
     if (!id) return;
 
     async function load() {
-      const { data: profileRows } = await supabase.rpc('get_profile_with_email', {
-        target_user_id: id,
-      });
+      const [{ data: profileRows }, { data: partnerRows }] = await Promise.all([
+        supabase.rpc('get_profile_with_email', { target_user_id: id }),
+        supabase.rpc('get_partner_account_admin', { p_user_id: id }),
+      ]);
+      setPartner((partnerRows?.[0] as PartnerAccount | undefined) ?? null);
 
       const profileData = profileRows?.[0];
       if (!profileData) {
@@ -142,8 +149,16 @@ export default function UserDetailPage() {
   };
 
   const deleteUser = async () => {
-    const name = user?.username || user?.email || id;
-    if (!confirmDestructive(`Eliminerai definitivamente l'utente "${name}" e tutti i suoi dati.`)) return;
+    const name = user?.username || user?.email
+      || (partner && `${partner.first_name} ${partner.last_name}`.trim()) || partner?.email || id;
+    let message = `Eliminerai definitivamente l'account "${name}" e tutti i suoi dati.`;
+    if (partner) {
+      message += `\n\nÈ anche partner: si eliminano i suoi ${partner.venues} locali col portale partner — menù al tavolo offline, piatti, foto, associazioni, dati aziendali.`;
+      if (partner.renewing_subscriptions > 0) {
+        message += '\n\nHa un abbonamento in corso: si chiude subito su Stripe, senza rimborso.';
+      }
+    }
+    if (!confirmDestructive(message)) return;
 
     setIsDeleting(true);
     const res = await supabase.functions.invoke('delete-account', {
@@ -151,15 +166,30 @@ export default function UserDetailPage() {
     });
 
     if (res.error) {
-      alert(`Errore: ${res.error.message}`);
+      // Il motivo vero sta nel corpo della risposta: il messaggio della
+      // libreria dice solo «non-2xx status code».
+      let detail = res.error.message;
+      try {
+        const body = await (res.error as { context?: Response }).context?.json();
+        if (body?.error) detail = body.error;
+      } catch { /* resta il messaggio generico */ }
+      alert(`Errore: ${detail}`);
       setIsDeleting(false);
       return;
     }
 
-    router.push('/users');
+    router.push(user ? '/users' : '/partners');
   };
 
   if (loading) return <p className="text-muted-foreground">Caricamento...</p>;
+  if (!user && partner) {
+    return (
+      <div>
+        <Link href="/partners" className="text-primary hover:underline text-sm">&larr; Torna ai partner</Link>
+        <PartnerAccountCard partner={partner} standalone isDeleting={isDeleting} onDelete={deleteUser} />
+      </div>
+    );
+  }
   if (!user) return <p className="text-danger">Utente non trovato</p>;
 
   return (
@@ -171,6 +201,10 @@ export default function UserDetailPage() {
         isDeleting={isDeleting}
         onDelete={deleteUser}
       />
+
+      {partner && (
+        <PartnerAccountCard partner={partner} standalone={false} isDeleting={isDeleting} onDelete={deleteUser} />
+      )}
 
       <MediaGallery
         items={allMedia}

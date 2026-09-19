@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabase';
 import { safeQuery } from '@/lib/safeQuery';
 import { confirmDestructive } from '@/lib/confirm';
 import StatCard from '@/components/StatCard';
+import Link from 'next/link';
 
 interface PartnerVenue {
   venue_id: string;
@@ -565,7 +566,9 @@ export default function PartnersPage() {
             <ul className="divide-y divide-border">
               {senzaLocale.map((a) => (
                 <li key={a.user_id} className="px-4 py-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 text-sm">
-                  <span className="font-medium">{`${a.first_name} ${a.last_name}`.trim()}</span>
+                  <Link href={`/users/${a.user_id}`} className="font-medium text-primary hover:underline">
+                    {`${a.first_name} ${a.last_name}`.trim()}
+                  </Link>
                   <span className="text-muted-foreground">
                     {a.email}
                     {a.phone && ` · ${a.phone}`}
@@ -629,7 +632,9 @@ export default function PartnersPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <p>{`${r.first_name} ${r.last_name}`.trim()}</p>
+                    <Link href={`/users/${r.owner_user_id}`} className="text-primary hover:underline">
+                      {`${r.first_name} ${r.last_name}`.trim()}
+                    </Link>
                     {r.email ? (
                       <a href={`mailto:${r.email}`} className="text-xs text-primary hover:underline">
                         {r.email}
@@ -708,7 +713,9 @@ export default function PartnersPage() {
                     {r.venue_name?.trim() || 'Locale senza nome'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {`${r.first_name} ${r.last_name}`.trim()}
+                    <Link href={`/users/${r.owner_user_id}`} className="text-primary hover:underline">
+                      {`${r.first_name} ${r.last_name}`.trim()}
+                    </Link>
                     {r.email && ` · ${r.email}`}
                   </p>
                   <p className="text-xs text-faint mt-0.5">
