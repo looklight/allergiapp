@@ -49,6 +49,17 @@ interface PartnerVenue {
   ex_ends_at: string | null;
 }
 
+// Chi si è iscritto e non ha ancora creato un locale (725): nella tabella,
+// che ha una riga per locale, non ci sarebbe.
+interface AccountWithoutVenue {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  signed_up_at: string;
+}
+
 interface PartnerStats {
   accounts: number;
   accounts_with_venue: number;
@@ -168,8 +179,21 @@ export default function PartnersPage() {
   // righe sono poche e già scaricate, quindi si riordinano senza un viaggio
   // in più, e aggiungere un modo di guardarle non è una migration.
   const [filtro, setFiltro] = useState<
-    'tutti' | 'paganti' | 'offerti' | 'senza' | 'ritardo' | 'pubblicati' | 'nonPubblicati' | 'disdetti'
+    | 'tutti'
+    | 'paganti'
+    | 'offerti'
+    | 'senza'
+    | 'ritardo'
+    | 'pubblicati'
+    | 'nonPubblicati'
+    | 'disdetti'
   >('tutti');
+  // DUE COSE DIVERSE, DUE LINGUETTE (richiesta dell'utente, 19/09): i locali,
+  // con i loro filtri, e le persone iscritte che un locale non l'hanno
+  // ancora. Stavano nella stessa fila di filtri, e «Tutti» sembrava dire
+  // tutti gli iscritti mentre voleva dire tutti i locali.
+  const [sezione, setSezione] = useState<'locali' | 'iscritti'>('locali');
+  const [senzaLocale, setSenzaLocale] = useState<AccountWithoutVenue[]>([]);
   // L'ordinamento si comanda dalle intestazioni della tabella, come in ogni
   // tabella che si rispetti: il verso si inverte ripremendo la stessa.
   // Di partenza, i locali più recenti in cima.
@@ -183,14 +207,24 @@ export default function PartnersPage() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const [venues, stat] = await Promise.all([
+    const [venues, stat, iscritti] = await Promise.all([
       safeQuery(
         () => supabase.rpc('get_partner_venues_admin', { search_query: search.trim() || null }),
         'Partner',
       ),
       safeQuery(() => supabase.rpc('get_partner_stats_admin'), 'Numeri partner'),
+      safeQuery(() => supabase.rpc('get_partner_accounts_without_venue_admin'), 'Iscritti senza locale'),
     ]);
     setRows((venues as PartnerVenue[]) ?? []);
+    // La ricerca vale anche qui: nome, cognome, email
+    const q = search.trim().toLowerCase();
+    setSenzaLocale(
+      ((iscritti as AccountWithoutVenue[]) ?? []).filter(
+        (a) =>
+          !q ||
+          `${a.first_name} ${a.last_name} ${a.email ?? ''}`.toLowerCase().includes(q),
+      ),
+    );
     setStats(((stat as PartnerStats[]) ?? [])[0] ?? null);
     setLoading(false);
   }, [search]);
@@ -286,7 +320,8 @@ export default function PartnersPage() {
       Number.isFinite(n) && n > 0
         ? new Date(new Date().setMonth(new Date().getMonth() + n)).toISOString()
         : null; // senza mesi = senza scadenza
-    const { data: nuovo, error } = await supabase
+    // Il registro lo scrive il database (trigger della 721): qui niente.
+    const { error } = await supabase
       .from('partner_subscriptions')
       .insert({
         venue_id: granting.venue_id,
@@ -295,15 +330,12 @@ export default function PartnersPage() {
         status: 'active',
         note: note.trim() || null,
         ends_at: ends,
-      })
-      .select('id')
-      .single();
+      });
     setBusy(false);
     if (error) {
       alert(`Errore: ${error.message}`);
       return;
     }
-    await registra('subscription_granted', granting, { note: note.trim() || null, ends_at: ends, subscription_id: nuovo?.id });
     setGranting(null);
     setNote('');
     setMesi('12');
@@ -321,26 +353,14 @@ export default function PartnersPage() {
       alert(`Errore: ${error.message}`);
       return;
     }
-    await registra('subscription_revoked', r, { subscription_id: r.sub_id, note: r.sub_note });
     load();
   }
 
-  // Concedere e revocare sono decisioni, non dati: se non si scrivono mentre
-  // accadono non si ricostruiscono più. Il registro esiste dalla 700 e la sua
-  // policy vuole che chi scrive firmi con la propria identità.
-  async function registra(azione: string, r: PartnerVenue, dettagli: Record<string, unknown>) {
-    const { data: sessione } = await supabase.auth.getUser();
-    const { error } = await supabase.from('partner_audit_log').insert({
-      actor_user_id: sessione.user?.id,
-      venue_id: r.venue_id,
-      card_id: r.card_id,
-      action: azione,
-      details: dettagli,
-    });
-    // Un registro che non scrive non deve far fallire il gesto: l'abbonamento
-    // è già stato concesso, e questo si vede nei log del browser.
-    if (error) console.error('[partner_audit_log]', error.message, error);
-  }
+  // IL REGISTRO NON SI SCRIVE PIÙ DA QUI (19/09). Concedere e revocare sono
+  // decisioni e vanno registrate, ma dalla 721 lo fa il database con un
+  // trigger su partner_subscriptions, con l'identità di chi ha agito: non
+  // dipende più dal fatto che il browser si ricordi di farlo, e la policy
+  // che lasciava scrivere nel registro a qualunque utente non c'è più.
 
   // Quanto è durato l'abbonamento che si è chiuso: dice se quel ristoratore
   // ha provato una settimana o è stato con noi un anno, cioè quanto vale
@@ -423,12 +443,15 @@ export default function PartnersPage() {
         {/* Il movimento sta dentro la casella del totale, non in una fila a
             parte: sono la stessa cosa guardata da vicino, e una riga di
             caselle in più per dire "+2" occupava mezzo schermo. */}
+        {/* Dal numero ai nomi: porta alla linguetta di chi un locale non
+            l'ha ancora (19/09) */}
         <StatCard
           label="Iscritti al portale"
           value={stats?.accounts ?? 0}
           hint={`· ${stats?.accounts_with_venue ?? 0} con un locale${
             stats?.new_accounts_30d ? ` · +${stats.new_accounts_30d} in 30g` : ''
           }`}
+          onClick={() => setSezione('iscritti')}
         />
         <StatCard
           label="Locali"
@@ -464,14 +487,40 @@ export default function PartnersPage() {
         />
       </div>
 
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cerca per locale, nome o email…"
-        className="w-full md:w-96 mb-3 px-3 py-2 rounded border border-border bg-card text-sm"
-      />
+      {/* Una riga sola per le due linguette e la ricerca: lo spazio sopra la
+          tabella resta quello di prima, e la ricerca vale per tutt'e due. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div className="inline-flex rounded-lg border border-border bg-card p-0.5" role="tablist">
+          {(
+            [
+              { id: 'locali', label: 'Locali', n: rows.length },
+              { id: 'iscritti', label: 'Iscritti senza locale', n: senzaLocale.length },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={sezione === t.id}
+              onClick={() => setSezione(t.id)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap ${
+                sezione === t.id ? 'bg-selected text-selected-foreground' : 'text-foreground-secondary hover:bg-muted'
+              }`}
+            >
+              {t.label}
+              <span className="ml-1.5 opacity-60">{t.n}</span>
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={sezione === 'locali' ? 'Cerca per locale, nome o email…' : 'Cerca per nome o email…'}
+          className="w-full md:w-80 px-3 py-2 rounded border border-border bg-card text-sm"
+        />
+      </div>
 
+      {sezione === 'locali' && (
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {FILTRI.map((f) => (
           <button
@@ -501,11 +550,34 @@ export default function PartnersPage() {
             )}
           </button>
         ))}
-
       </div>
+      )}
 
       {loading ? (
         <p className="text-muted-foreground">Caricamento...</p>
+      ) : sezione === 'iscritti' ? (
+        // Persone e non locali: una lista a sé, con quello che serve per
+        // ricontattarle. Il più recente in cima.
+        senzaLocale.length === 0 ? (
+          <p className="text-muted-foreground">Nessun iscritto senza locale.</p>
+        ) : (
+          <div className="bg-card rounded-lg shadow overflow-hidden">
+            <ul className="divide-y divide-border">
+              {senzaLocale.map((a) => (
+                <li key={a.user_id} className="px-4 py-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 text-sm">
+                  <span className="font-medium">{`${a.first_name} ${a.last_name}`.trim()}</span>
+                  <span className="text-muted-foreground">
+                    {a.email}
+                    {a.phone && ` · ${a.phone}`}
+                  </span>
+                  <span className="text-xs text-faint">
+                    iscritto il {data(a.signed_up_at)} · {daQuando(a.signed_up_at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
       ) : visibili.length === 0 ? (
         <p className="text-muted-foreground">
           {rows.length === 0 ? 'Nessun locale partner.' : 'Nessun locale con questo filtro.'}

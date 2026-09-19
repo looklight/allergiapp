@@ -5,6 +5,7 @@ export default function StatCard({
   value,
   color,
   href,
+  onClick,
   hint,
 }: {
   label: string;
@@ -12,6 +13,8 @@ export default function StatCard({
   color?: string;
   /** Se presente, la card diventa un link cliccabile verso la sezione. */
   href?: string;
+  /** In alternativa a href: un gesto nella stessa pagina (es. cambiare linguetta). */
+  onClick?: () => void;
   /** Testo piccolo sotto il numero (es. un sotto-dato). */
   hint?: string;
 }) {
@@ -36,6 +39,18 @@ export default function StatCard({
       >
         {content}
       </Link>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="bg-card rounded-lg shadow p-4 flex flex-col h-full text-left hover:shadow-md hover:ring-1 hover:ring-border transition-shadow"
+      >
+        {content}
+      </button>
     );
   }
 
