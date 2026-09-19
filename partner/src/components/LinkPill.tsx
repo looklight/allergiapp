@@ -31,19 +31,22 @@ export default function LinkPill({
   label,
   active,
   selected = false,
+  compact = false,
   action,
 }: {
   kind: LinkKind;
   label: string;
   active: boolean;
   selected?: boolean; // aperto in modifica: colore pieno, testo bianco
+  compact?: boolean; // versione ridotta, per l'infografica della maschera
   action?: 'add' | 'edit'; // l'icona del gesto al posto di quella del tipo
 }) {
   const { bg, fg } = LINK_COLORS[kind];
   const ink = selected ? '#FFFFFF' : fg;
+  const iconSize = compact ? 12 : 15;
   const icon = (paths: React.ReactNode, className = '') => (
     <svg
-      width={15} height={15} viewBox="0 0 24 24" fill="none" stroke={ink}
+      width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke={ink}
       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 ${className}`}
       aria-hidden="true"
     >
@@ -52,7 +55,9 @@ export default function LinkPill({
   );
   return (
     <span
-      className="group inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium"
+      className={`group inline-flex items-center rounded-full border font-medium ${
+        compact ? 'gap-1 px-2 py-0.5 text-[11px]' : 'gap-1.5 px-3 py-1.5 text-sm'
+      }`}
       style={{
         backgroundColor: selected ? fg : active ? bg : 'transparent',
         // il bordino resta anche da attiva: stesso contorno delle pill

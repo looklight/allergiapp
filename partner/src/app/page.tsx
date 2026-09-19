@@ -51,7 +51,6 @@ import StatusPill, { type Stato } from '@/components/StatusPill';
 import { cardState, type CardState } from '@/lib/association';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import UndoToast from '@/components/UndoToast';
-import VenuePaths from '@/components/VenuePaths';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
 
 // La pallina di un piatto: la foto ritagliata in tondo, come le mostra l'app,
@@ -255,30 +254,25 @@ export default function HomePage() {
     return <p className="text-sm text-gray-500">{d.common.loading}</p>;
   }
 
-  // Nessun locale: è l'ONBOARDING (19/09). Prima un riquadro vuoto e un
-  // pulsante; ora le due cose che si fanno con un locale (VenuePaths, versione
-  // grande), poi il pulsante. Sparisce da sola col primo locale.
+  // Nessun locale: non c'è niente da riassumere, si chiede il primo
   if (!venue) {
     return (
       <div>
         <Saluto saluto={saluto} intro={d.dashboard.intro} />
-        <section className="mt-10 max-w-3xl md:mt-12">
-          <h2 className="text-base font-semibold text-gray-900">{d.paths.title}</h2>
-          <p className="mt-1 max-w-xl text-sm text-gray-600">{d.paths.intro}</p>
-          <div className="mt-5">
-            <VenuePaths size="full" />
-          </div>
+        <div className="mt-10 max-w-xl rounded-2xl border border-dashed md:mt-12 border-gray-300 bg-white p-8 text-center">
+          <p className="text-sm font-medium text-gray-900">{d.dashboard.emptyTitle}</p>
+          <p className="mt-1 text-sm text-gray-500">{d.dashboard.emptyHint}</p>
           <button
             ref={addButton}
             onClick={() => setCreating(true)}
-            className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
             </svg>
-            {d.paths.createFirst}
+            {d.home.create}
           </button>
-        </section>
+        </div>
         {creating && (
           <NewVenueDialog onCancel={() => setCreating(false)} onCreate={handleCreate} />
         )}

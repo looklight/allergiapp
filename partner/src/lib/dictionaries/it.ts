@@ -221,37 +221,25 @@ const it = {
     statusDraft: 'da finire',
     statusTodo: 'da fare',
     deleteVenue: 'Elimina questo locale',
+    emptyTitle: 'Non hai ancora nessun locale.',
+    emptyHint: 'Creane uno: il nome è quello che i tuoi clienti leggeranno in cima al menù.',
   },
   newVenue: {
     title: 'Nuovo locale',
     nameHint: 'Lo leggono i tuoi clienti in cima al menù. Puoi cambiarlo quando vuoi dalla lista.',
-  },
-  // Le due cose che si fanno con un locale (components/VenuePaths.tsx):
-  // l'onboarding della home vuota e il promemoria in «Nuovo locale». Stesso
-  // ordine e stesse parole della pagina d'accesso (pitch).
-  paths: {
-    title: 'Cosa puoi fare con AllergiApp',
-    intro:
-      'Tutto parte da un locale: da lì crei il menù digitale e la scheda nell’app. Sono indipendenti, puoi fare anche solo la prima.',
-    label: 'Cosa puoi fare con questo locale',
-    free: 'Gratis',
+    how: 'Come funziona?',
+    // Il primo blocco: il menù al tavolo (19/09)
     menuTitle: 'Il menù al tavolo',
-    menuText:
-      'Sezioni, piatti, prezzi e allergeni. Il cliente inquadra il QR e sceglie la sua allergia: il menù mette per primi i piatti che può mangiare.',
-    menuShort: 'Il menù digitale col QR: il cliente lo filtra per le sue allergie.',
+    menuStep1: 'Prepari il menù digitale e metti il QR sul tavolo',
+    menuParts: ['Sezioni', 'Piatti', 'Prezzi', 'Allergeni'],
+    menuStep2: 'Il cliente lo apre dal suo telefono e sceglie le sue allergie: vede per primi i piatti che può mangiare',
+    // Il secondo: la scheda, coi due passi di prima
     appTitle: 'La scheda su AllergiApp',
-    // ⚠️ «In arrivo» come nella pagina d'accesso: finché l'app non legge le
-    // schede (parte 4, build nativa) la scheda si prepara e si associa, ma
-    // nell'app non si vede. Si toglie qui e in pitch.appText insieme.
-    appText:
-      'I tuoi link e i piatti che scegli, nella pagina del tuo ristorante dentro l’app, dove chi ha un’allergia cerca dove mangiare. In arrivo.',
-    appShort: 'Link e piatti nella pagina del tuo ristorante dentro l’app.',
-    sampleFilter: 'Senza',
-    sampleDishOk: 'Insalata di mare',
-    sampleDishNo: 'Spaghetti alla carbonara',
-    sampleVenue: 'Il tuo locale',
-    sampleRestaurant: 'Il tuo ristorante su AllergiApp',
-    createFirst: 'Crea il tuo primo locale',
+    step1: 'Aggiungi i tuoi link e scegli i piatti da mostrare',
+    step2: 'Lo associ al tuo ristorante già presente su AllergiApp',
+    sampleDishes: ['Spaghetti alla carbonara', 'Insalata di mare', 'Tiramisù'],
+    yourVenue: 'Il tuo locale',
+    venueOnApp: 'Il tuo ristorante su AllergiApp',
   },
   editor: {
     title: 'Scheda AllergiApp',
