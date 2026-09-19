@@ -303,7 +303,9 @@ export default function DishesPage() {
       {!dishes || !venues ? (
         <p className="text-sm text-gray-500">{d.common.loading}</p>
       ) : dishes.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        // Stessa larghezza del riquadro vuoto dei Menù: a tutta pagina il
+        // messaggio breve si perdeva in mezzo a un rettangolo enorme
+        <div className="max-w-xl rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
           <p className="text-sm font-medium text-gray-900">{d.dishes.empty}</p>
           <p className="mt-1 text-sm text-gray-500">{d.dishes.emptyHint}</p>
           <button

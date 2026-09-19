@@ -239,12 +239,24 @@ export default function CardDishesSelector({
                               </svg>
                             </span>
                           </span>
-                          <span
-                            className={`line-clamp-2 w-full text-center text-xs leading-tight transition-colors ${
-                              scelto ? 'font-medium text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
-                            }`}
-                          >
-                            {nome === '' ? d.dashboard.dishUnnamed : nome}
+                          {/* Il nome scelto passa in grassetto, che è più
+                              largo: un nome al limite della riga («Tagliata di
+                              manzo») andava a capo solo da scelto e spostava
+                              la griglia. Una copia invisibile in grassetto
+                              sotto quella vera tiene sempre la misura più
+                              larga, così il nome va a capo nello stesso punto
+                              da acceso e da spento. */}
+                          <span className="grid w-full text-center text-xs leading-tight">
+                            <span aria-hidden="true" className="invisible col-start-1 row-start-1 line-clamp-2 font-medium">
+                              {nome === '' ? d.dashboard.dishUnnamed : nome}
+                            </span>
+                            <span
+                              className={`col-start-1 row-start-1 line-clamp-2 transition-colors ${
+                                scelto ? 'font-medium text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
+                              }`}
+                            >
+                              {nome === '' ? d.dashboard.dishUnnamed : nome}
+                            </span>
                           </span>
                         </button>
                       );
