@@ -26,7 +26,16 @@ function detectLanguage() {
   }
 
   // 2. Preferenza salvata
-  const savedLang = localStorage.getItem(LANG_STORAGE_KEY);
+  // ⚠️ Dentro un try: con la memoria del browser bloccata (navigazione
+  // privata su certi browser, dati del sito negati) leggere non restituisce
+  // null, LANCIA — e senza il try si fermava tutto lo script, pagina senza
+  // traduzioni. Il portale e il menù al tavolo si proteggono già così.
+  let savedLang = null;
+  try {
+    savedLang = localStorage.getItem(LANG_STORAGE_KEY);
+  } catch (e) {
+    /* memoria negata: si prosegue con la lingua del browser */
+  }
   if (savedLang && SUPPORTED_LANGUAGES.includes(savedLang)) {
     return savedLang;
   }
@@ -68,13 +77,26 @@ function changeLanguage(newLang) {
     return;
   }
 
-  // Salva preferenza
-  localStorage.setItem(LANG_STORAGE_KEY, newLang);
+  // Salva preferenza (con la memoria negata, vale per questa visita e basta)
+  try {
+    localStorage.setItem(LANG_STORAGE_KEY, newLang);
+  } catch (e) {
+    /* memoria negata */
+  }
 
-  // Aggiorna URL senza ricaricare pagina
+  // LA LINGUA NON SI SCRIVE PIÙ NELL'INDIRIZZO (scelta dell'utente, 19/09):
+  // a chi cambia lingua la ricorda già la memoria del browser, e un
+  // «?lang=en» attaccato a ogni pagina sporcava l'indirizzo.
+  // ⚠️ Il parametro però RESTA VALIDO in entrata: è l'indirizzo della
+  // versione inglese che le pagine dichiarano ai motori di ricerca (i
+  // <link rel="alternate" hreflang="en"> in testa), e detectLanguage lo
+  // rispetta al punto 1. Qui lo si toglie solo dalla barra, così non resta
+  // attaccato dopo che si è cambiata lingua a mano.
   const url = new URL(window.location);
-  url.searchParams.set('lang', newLang);
-  window.history.replaceState({}, '', url);
+  if (url.searchParams.has('lang')) {
+    url.searchParams.delete('lang');
+    window.history.replaceState({}, '', url);
+  }
 
   // Applica traduzioni
   applyTranslations(newLang);
