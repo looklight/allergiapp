@@ -847,6 +847,7 @@ export default function HomePage() {
         <DeleteVenueDialog
           venue={deleting}
           menus={menus.filter((menu) => menu.venueId === deleting.id).length}
+          subscribed={abbonamentoDi(subs, deleting.id) !== null}
           onCancel={() => setDeleting(null)}
           onConfirm={() => confirmDelete(deleting)}
         />

@@ -147,6 +147,11 @@ const it = {
     deleteBodyMenus:
       'Spariscono i link e i menù di questo locale, con le loro sezioni e i loro prezzi. I piatti restano nel tuo catalogo, e finché il messaggio di annullamento è in piedi puoi rimettere tutto com’era.',
     deleteEmpty: 'Questo locale è ancora vuoto.',
+    // L'abbonamento è del locale (716): eliminandolo si butterebbe quello che
+    // resta del periodo pagato. Lo ferma anche il database (727).
+    deleteSubscribedTitle: 'Questo locale ha l’abbonamento attivo',
+    deleteSubscribedBody:
+      'Un locale con l’abbonamento attivo non si può eliminare. Disdici l’abbonamento da Abbonamenti: alla scadenza potrai eliminarlo.',
     deleted: 'Locale eliminato',
     undo: 'Annulla',
     notFound: 'Locale non trovato: forse è stato eliminato.',

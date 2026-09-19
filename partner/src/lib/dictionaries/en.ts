@@ -116,6 +116,9 @@ const en: typeof it = {
     deleteBodyMenus:
       'This venue’s links and menus go too, sections and prices included. Your dishes stay in your catalogue, and while the undo message is up you can put it all back.',
     deleteEmpty: 'This venue is still empty.',
+    deleteSubscribedTitle: 'This venue has an active subscription',
+    deleteSubscribedBody:
+      'A venue with an active subscription can’t be deleted. Cancel the subscription from Subscriptions: once it ends, you can delete the venue.',
     deleted: 'Venue deleted',
     undo: 'Undo',
     notFound: 'Venue not found: it may have been deleted.',

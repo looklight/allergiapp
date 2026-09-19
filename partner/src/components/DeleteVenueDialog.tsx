@@ -14,6 +14,7 @@ import { countLinks, type Venue } from '@/lib/venues';
 export default function DeleteVenueDialog({
   venue,
   menus,
+  subscribed,
   onCancel,
   onConfirm,
 }: {
@@ -22,6 +23,9 @@ export default function DeleteVenueDialog({
   // allora non si elimina: sapere cosa si perde è il senso di questa finestra,
   // e un attimo di attesa costa meno di una carta buttata via senza saperlo.
   menus: number | null;
+  // Con l'abbonamento attivo non si elimina (727): la finestra lo dice e
+  // basta, invece di lasciar premere e far rispondere di no al database.
+  subscribed: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -59,7 +63,9 @@ export default function DeleteVenueDialog({
         className="dialog-enter relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id={titleId} className="text-lg font-semibold text-gray-900">{d.home.deleteTitle}</h2>
+        <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+          {subscribed ? d.home.deleteSubscribedTitle : d.home.deleteTitle}
+        </h2>
 
         <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
           <p className="truncate text-sm font-medium text-gray-900">
@@ -69,7 +75,11 @@ export default function DeleteVenueDialog({
         </div>
 
         <p className="mt-3 text-sm text-gray-600">
-          {menus !== null && menus > 0 ? d.home.deleteBodyMenus : d.home.deleteBody}
+          {subscribed
+            ? d.home.deleteSubscribedBody
+            : menus !== null && menus > 0
+            ? d.home.deleteBodyMenus
+            : d.home.deleteBody}
         </p>
 
         <div className="mt-6 flex justify-end gap-3">
@@ -77,15 +87,17 @@ export default function DeleteVenueDialog({
             onClick={onCancel}
             className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
           >
-            {d.common.cancel}
+            {subscribed ? d.common.close : d.common.cancel}
           </button>
-          <button
-            onClick={onConfirm}
-            disabled={menus === null}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-40 disabled:hover:bg-red-600"
-          >
-            {d.common.delete}
-          </button>
+          {!subscribed && (
+            <button
+              onClick={onConfirm}
+              disabled={menus === null}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-40 disabled:hover:bg-red-600"
+            >
+              {d.common.delete}
+            </button>
+          )}
         </div>
       </div>
     </div>
