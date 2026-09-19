@@ -34,6 +34,11 @@ export default function LoginPage() {
   const [existingAccount, setExistingAccount] = useState(false);
   // Recupero password: quello che si dice dopo averlo chiesto
   const [recovery, setRecovery] = useState<string | null>(null);
+  // Iscrizione in corso: la sessione nasce PRIMA del profilo partner, e senza
+  // questo freno il reindirizzamento qui sotto portava alla home mentre la
+  // riga in partner_accounts era ancora per strada. Il guard non la trovava
+  // e richiedeva nome e cognome appena scritti (visto il 19/09).
+  const [creatingProfile, setCreatingProfile] = useState(false);
 
   const isSignUp = mode === 'signUp';
 
@@ -64,10 +69,10 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    if (!loading && session) {
+    if (!loading && session && !creatingProfile) {
       router.replace('/');
     }
-  }, [loading, session, router]);
+  }, [loading, session, creatingProfile, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,6 +97,7 @@ export default function LoginPage() {
     // creando il profilo partner sulla credenziale che c'è già.
     if (existingAccount) {
       setSubmitting(true);
+      setCreatingProfile(true);
       const { data: accesso, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -108,6 +114,7 @@ export default function LoginPage() {
         if (profileError) setError(authErrorMessage(profileError, d));
       }
       setSubmitting(false);
+      setCreatingProfile(false);
       return;
     }
 
@@ -117,6 +124,7 @@ export default function LoginPage() {
     }
 
     setSubmitting(true);
+    setCreatingProfile(true);
     // La credenziale e il profilo partner sono due cose diverse: qui nasce
     // la prima, la riga in partner_accounts subito dopo. È quella riga il
     // cancello del portale, protetta da RLS.
@@ -145,6 +153,7 @@ export default function LoginPage() {
       if (profileError) setError(authErrorMessage(profileError, d));
     }
     setSubmitting(false);
+    setCreatingProfile(false);
   }
 
   return (
