@@ -75,13 +75,21 @@ export default function PartnerTodoSection() {
   }, []);
 
   if (approvare.n === 0 && richieste.n === 0) return null;
+  const totale = approvare.n + richieste.n;
 
   return (
     <div className="mb-8 bg-card rounded-lg shadow p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-warning" aria-hidden="true" />
-          Associazioni partner da gestire
+          {/* IL NUMERO IN TESTA, IN EVIDENZA (richiesta dell'utente, 19/09):
+              il totale da gestire è la prima cosa che si legge, in una
+              pastiglia ambra dopo il pallino. I gruppi sotto non ripetono il
+              loro: le righe dicono già di chi si tratta. */}
+          <span className="inline-flex min-w-[1.75rem] items-center justify-center rounded-full bg-warning-soft px-2 py-0.5 text-sm font-bold tabular-nums text-warning-soft-foreground">
+            {totale}
+          </span>
+          {totale === 1 ? 'associazione partner' : 'associazioni partner'} da gestire
         </h2>
         <Link href="/associations" className="text-sm text-primary hover:underline">
           Apri Associazioni →
@@ -98,9 +106,7 @@ export default function PartnerTodoSection() {
 function Gruppo({ titolo, n, righe, verbo }: { titolo: string; n: number; righe: Riga[]; verbo: string }) {
   return (
     <div>
-      <p className="text-xs text-faint uppercase tracking-wide">
-        {titolo} <span className="font-semibold text-foreground">{n}</span>
-      </p>
+      <p className="text-xs text-faint uppercase tracking-wide">{titolo}</p>
       <ul className="mt-1.5 space-y-1 text-sm">
         {righe.map((r) => (
           <li key={r.id} className="truncate">
