@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import { venueDishes, useDishes } from '@/lib/dishes';
-import { hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
+import { countLinks, hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
 import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
@@ -16,6 +16,8 @@ import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 import ProTag from '@/components/ProTag';
+import { StatusDot } from '@/components/StatusPill';
+import { restaurantPageUrl } from '@/lib/association';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
 import CardDishesSelector from '@/components/CardDishesSelector';
@@ -298,6 +300,12 @@ export default function VenueEditorPage() {
   }
 
   const draft: VenueDraft = venue;
+  // Nella scheda c'è già qualcosa da mostrare: da qui il passo che manca è
+  // l'associazione, e lo dice la riga in cima invece del richiamo.
+  const haContenuto = countLinks(venue.links) > 0 || venue.dishIds.length > 0;
+  const mostraRichiamo = venue.cardId === null && !haContenuto;
+  // Il nome del ristorante è un link: si spezza la frase sul segnaposto
+  const fraseVerifica = d.editor.reviewText.split('{restaurant}');
   const venueId = venue.id;
   const setDraft = (next: VenueDraft) => update(venueId, next);
 
@@ -433,6 +441,54 @@ export default function VenueEditorPage() {
     <div className="lg:flex lg:items-start lg:gap-8">
       {/* Colonna editor */}
       <div className="min-w-0 flex-1">
+        {/* LA RIGA DELL'ASSOCIAZIONE, come quella di «Pubblica» nei menù
+            (richiesta dell'utente, 19/09): appena nella scheda c'è qualcosa
+            — un link, un piatto — e il locale non è associato, il passo che
+            manca resta in vista mentre si lavora, invece di stare solo in
+            fondo alla pagina. Sparisce ad associazione fatta. Senza
+            abbonamento porta prima agli abbonamenti. Stessa riga sticky e
+            stesse misure dell'editor del menù, così è riconoscibile. */}
+        {venue.cardId === null && haContenuto && (
+          <div className="sticky top-0 z-30 -mx-4 mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+            <p className="min-w-0 flex-1 text-xs text-gray-600 sm:text-sm">{d.editor.linkBar}</p>
+            <Link
+              href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}
+              className="ml-auto shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+            >
+              {d.editor.linkBoxCta}
+            </Link>
+          </div>
+        )}
+        {/* IN ATTESA DI VERIFICA (richiesta dell'utente, 19/09): associato, ma
+            il nostro team non ha ancora controllato (724), e in app non si
+            vede niente. Nello stesso posto della riga di prima, così chi ha
+            appena associato trova lì la risposta a «e adesso?». Dice cosa
+            succede e cosa viene dopo, senza tempi che non dipendono da lui, e
+            che intanto può lavorare: non c'è niente da fare, e va detto. */}
+        {venue.cardId !== null && !venue.cardReviewed && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-[#FDF3E3] p-4">
+            <p className="flex items-center gap-2 text-sm font-medium text-[#7A5418]">
+              <StatusDot stato="draft" />
+              {d.editor.reviewTitle}
+            </p>
+            <p className="mt-1 text-sm text-[#7A5418]">
+              {fraseVerifica[0]}
+              {venue.cardRestaurant?.slug ? (
+                <a
+                  href={restaurantPageUrl(venue.cardRestaurant.slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium underline"
+                >
+                  {venue.cardRestaurant.name}
+                </a>
+              ) : (
+                <span className="font-medium">{venue.cardRestaurant?.name ?? ''}</span>
+              )}
+              {fraseVerifica[1]}
+            </p>
+          </div>
+        )}
         {/* L'INTESTAZIONE COME LE ALTRE PAGINE PRINCIPALI (richiesta
             dell'utente, 15/09): titolo in cima, frase sotto, poi il lavoro.
             Prima sopra al titolo c'erano "← Home" e il nome del locale in
@@ -459,7 +515,7 @@ export default function VenueEditorPage() {
           {!abbonato && <ProTag variant="needed" />}
         </div>
         {/* Senza il richiamo qui sotto, lo stacco dal contenuto lo dà la frase */}
-        <PageIntro className={venue.cardId === null ? '' : 'mb-10 md:mb-12'}>
+        <PageIntro className={mostraRichiamo ? '' : 'mb-10 md:mb-12'}>
           {fraseIntro[0]}
           <span className="font-medium text-gray-900">{venue.venueName.trim() || d.home.unnamed}</span>
           {fraseIntro[1]}
@@ -472,8 +528,10 @@ export default function VenueEditorPage() {
             collegata al mio locale"). L'abbonamento, che viene prima, lo
             spiega la pagina a cui porta il link — qui un "attiva
             l'abbonamento" suonava come un "paga" messo in cima al lavoro.
-            Una volta associato il locale il richiamo non serve più. */}
-        {venue.cardId === null && (
+            Una volta associato il locale il richiamo non serve più, e non
+            serve nemmeno quando c'è la riga in cima (19/09): direbbero la
+            stessa cosa due volte. */}
+        {mostraRichiamo && (
           <div className="mb-10 mt-5 flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:mb-12">
             <svg className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="10" />
@@ -832,7 +890,11 @@ export default function VenueEditorPage() {
               <div className="min-w-0">
                 <h2 className="text-sm font-medium text-gray-900">{d.editor.linkBoxTitle}</h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  {venue.cardId === null ? d.editor.linkBoxText : d.editor.linkBoxDone}
+                  {venue.cardId === null
+                    ? d.editor.linkBoxText
+                    : venue.cardReviewed
+                      ? d.editor.linkBoxDone
+                      : d.editor.linkBoxInReview}
                 </p>
               </div>
             </div>

@@ -8,13 +8,19 @@
 // abbonamento, proprietà, P.IVA e ristoranti già presi, e ne traduce gli
 // errori.
 import { supabase } from './supabase';
-import { reportError } from './storage';
+import { reportError, useRemoteList } from './storage';
 
 // Chi tiene il ristorante, detto senza dire chi (nodo 2):
 //   free   libero
 //   yours  già associato a un tuo locale
 //   taken  gestito da un altro account
 export type Holder = 'free' | 'yours' | 'taken';
+
+// La pagina pubblica di un ristorante dell'app: la stessa che l'app usa per
+// condividerlo (services/shareRestaurant.ts), e che sul telefono apre l'app.
+export function restaurantPageUrl(slug: string): string {
+  return `https://allergiapp.com/r/${slug}`;
+}
 
 export type RestaurantHit = {
   id: string;
@@ -60,4 +66,126 @@ export async function searchRestaurants(name: string, city: string): Promise<Res
     longitude: row.longitude,
     holder: row.holder,
   }));
+}
+
+// ------------------------------------------------------------------
+// L'AZIENDA
+//
+// Il portale la legge e basta (721): la scrive la funzione sul server
+// `partner-company`, che pulisce la P.IVA, la controlla e chiede a VIES.
+
+// I quattro esiti della 721. Dal 19/09 (724) non decidono se si associa:
+// si associa sempre, e la scheda si vede dopo il controllo del nostro team.
+// L'esito di VIES gli serve per quel controllo; al ristoratore diciamo solo
+// «verificata» o «da verificare».
+export type VatStatus = 'vies_valid' | 'admin_verified' | 'vies_not_found' | 'unverified';
+
+export function vatConfirmed(status: VatStatus): boolean {
+  return status === 'vies_valid' || status === 'admin_verified';
+}
+
+export type Company = {
+  id: string;
+  countryCode: string;
+  legalName: string;
+  vatNumber: string;
+  vatStatus: VatStatus;
+};
+
+async function loadCompanies(): Promise<Company[]> {
+  // Le RLS mostrano solo le proprie
+  const { data, error } = await supabase
+    .from('partner_companies')
+    .select('id, country_code, legal_name, vat_number, vat_status')
+    .order('created_at', { ascending: true });
+  reportError('lettura aziende', error);
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    countryCode: row.country_code,
+    legalName: row.legal_name,
+    vatNumber: row.vat_number,
+    vatStatus: row.vat_status,
+  }));
+}
+
+export function useCompanies() {
+  const { list: companies, reload } = useRemoteList<Company>('aziende', loadCompanies);
+  return { companies, reload };
+}
+
+// Le risposte non riuscite arrivano come chiave (v. la funzione e la 721):
+// la traduce la pagina. 'error' = qualcosa che il ristoratore non può
+// correggere da sé.
+export type Esito<T = true> = { ok: T } | { error: string };
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function chiaveErrore(error: any): Promise<string> {
+  // Dalla funzione sul server il motivo sta nel corpo della risposta
+  try {
+    const body = await error?.context?.json?.();
+    if (body?.error) return String(body.error);
+  } catch {
+    // corpo non leggibile: vale il messaggio
+  }
+  return String(error?.message ?? 'error');
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** Controlla e salva l'azienda (o ritrova quella che c'è già). */
+export async function saveCompany(
+  countryCode: string,
+  legalName: string,
+  vatNumber: string
+): Promise<Esito<{ companyId: string; vatStatus: VatStatus }>> {
+  const { data, error } = await supabase.functions.invoke('partner-company', {
+    body: { country_code: countryCode, legal_name: legalName, vat_number: vatNumber },
+  });
+  if (error || !data?.company_id) {
+    reportError('salvataggio azienda', error);
+    return { error: await chiaveErrore(error) };
+  }
+  return { ok: { companyId: data.company_id, vatStatus: data.vat_status } };
+}
+
+// ------------------------------------------------------------------
+// COLLEGARE E CHIEDERE
+//
+// Le funzioni della 721 rispondono con chiavi stabili (not_owner,
+// company_unverified, restaurant_taken…): il messaggio d'errore È la chiave.
+
+export async function linkRestaurant(
+  venueId: string,
+  restaurantId: string,
+  companyId: string
+): Promise<Esito> {
+  const { error } = await supabase.rpc('partner_link_restaurant', {
+    p_venue_id: venueId,
+    p_restaurant_id: restaurantId,
+    p_company_id: companyId,
+  });
+  if (error) {
+    reportError('associazione ristorante', error);
+    return { error: error.message };
+  }
+  return { ok: true };
+}
+
+export async function requestRestaurant(
+  venueId: string,
+  restaurantId: string,
+  companyId: string,
+  message: string
+): Promise<Esito> {
+  const { error } = await supabase.rpc('partner_request_restaurant', {
+    p_venue_id: venueId,
+    p_restaurant_id: restaurantId,
+    p_company_id: companyId,
+    p_message: message,
+  });
+  if (error) {
+    reportError('richiesta ristorante', error);
+    return { error: error.message };
+  }
+  return { ok: true };
 }

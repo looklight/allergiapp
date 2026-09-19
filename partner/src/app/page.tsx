@@ -657,9 +657,17 @@ export default function HomePage() {
                   del locale lo dice già. */}
               {!abbonato && <ProTag variant="needed" />}
             </h2>
+            {/* Associata ma non ancora controllata dal nostro team (724): in
+                app non si vede, e dire «attiva» sarebbe falso. */}
             <StatusPill
-              stato={venue.cardId === null ? 'todo' : 'ready'}
-              label={venue.cardId === null ? d.dashboard.statusOff : d.dashboard.statusOn}
+              stato={venue.cardId === null ? 'todo' : venue.cardReviewed ? 'ready' : 'draft'}
+              label={
+                venue.cardId === null
+                  ? d.dashboard.statusOff
+                  : venue.cardReviewed
+                    ? d.dashboard.statusOn
+                    : d.dashboard.statusReview
+              }
             />
           </div>
           <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
@@ -684,12 +692,31 @@ export default function HomePage() {
               ? d.dashboard.cardSubsNone
               : venue.cardId === null
                 ? d.dashboard.cardSubsActive
-                : d.dashboard.cardSubsActiveLinked}
+                : !venue.cardReviewed
+                  ? d.dashboard.cardInReview
+                  : d.dashboard.cardSubsActiveLinked}
           </p>
 
+          {/* IL PASSO CHE MANCA DIVENTA IL BOTTONE (richiesta dell'utente,
+              19/09): con qualcosa dentro la scheda e il locale non ancora
+              associato, l'azione del giorno è associarlo — «Apri la scheda»
+              scende a link. Senza abbonamento il bottone porta prima agli
+              abbonamenti, che è anche dove portava «Gestisci abbonamento».
+              Associato il locale, si torna com'era. */}
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
-            <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
-            <SecondaryLink href="/abbonamenti">{d.dashboard.cardSubsManage}</SecondaryLink>
+            {venue.cardId === null && pezziScheda.length > 0 ? (
+              <>
+                <PrimaryLink href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}>
+                  {d.editor.linkBoxCta}
+                </PrimaryLink>
+                <SecondaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</SecondaryLink>
+              </>
+            ) : (
+              <>
+                <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
+                <SecondaryLink href="/abbonamenti">{d.dashboard.cardSubsManage}</SecondaryLink>
+              </>
+            )}
           </div>
         </section>
       </div>

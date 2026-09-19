@@ -240,6 +240,12 @@ export interface Venue extends VenueDraft {
   // ristorante associato: i piatti si scelgono lo stesso (715), ma in app non
   // compare niente.
   cardId: string | null;
+  // Il nostro team ha già controllato l'associazione (724): prima di allora
+  // la scheda resta «in verifica» e in app non si vede. false senza scheda.
+  cardReviewed: boolean;
+  // Il ristorante dell'app a cui il locale è associato: il nome, e lo slug
+  // della sua pagina pubblica (allergiapp.com/r/…). null senza scheda.
+  cardRestaurant: { name: string; slug: string } | null;
   // COME SI VEDE IL MENÙ AL TAVOLO. Sta sul locale e non sul menù come il
   // logo e il colore: al tavolo è UNA pagina sola (Tema 13).
   //
@@ -378,10 +384,13 @@ function fromLinks(venueId: string, links: DraftLinks) {
 
 // Una query sola con gli innesti: locali, i loro link e gli id dei piatti
 // accesi. Le RLS mostrano solo le proprie, quindi non serve filtrare.
+// Gli stati di un collegamento in corso (721): tengono il ristorante, anche
+// quando la scheda non si vede (in pausa, sospesa).
+const LIVE_CARD = ['active', 'paused', 'suspended'];
+
 async function loadVenues(): Promise<Venue[]> {
-  // Un innesto in più rispetto a prima: i piatti accesi stanno sotto la
-  // scheda, non sotto il locale. La scheda è al massimo una (indice unico
-  // sul ristorante), quindi si prende la prima e basta.
+  // Le schede arrivano tutte, storico compreso: quella in corso la sceglie
+  // LIVE_CARD qui sotto (una sola per locale, indice della 721).
   const { data, error } = await supabase
     .from('partner_venues')
     .select(
@@ -389,13 +398,17 @@ async function loadVenues(): Promise<Venue[]> {
         'dish_photo_shape, line_height, menu_layout, dish_separator, allergen_display, ' +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
-        'partner_links(*), partner_cards(id), partner_card_dishes(dish_id)'
+        'partner_links(*), partner_cards(id, status, reviewed_at, restaurants(name, slug)), ' +
+        'partner_card_dishes(dish_id)'
     )
     .order('created_at', { ascending: true });
   reportError('lettura locali', error);
 
   return (data ?? []).map((row: any) => {
-    const card = (row.partner_cards ?? [])[0] ?? null;
+    // Dalla 721 le schede restano come storico (scollegate, revocate): conta
+    // solo quella in corso, che per locale è al massimo una.
+    const card =
+      (row.partner_cards ?? []).find((c: any) => LIVE_CARD.includes(c.status)) ?? null;
     return {
       id: row.id,
       venueName: row.name ?? '',
@@ -415,6 +428,10 @@ async function loadVenues(): Promise<Venue[]> {
       allergenDisplay: (row.allergen_display ?? 'text') as AllergenDisplay,
       coverUrl: row.cover_url ?? '',
       cardId: card?.id ?? null,
+      cardReviewed: card?.reviewed_at != null,
+      cardRestaurant: card?.restaurants
+        ? { name: card.restaurants.name ?? '', slug: card.restaurants.slug ?? '' }
+        : null,
       dishIds: (row.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
     };
@@ -663,6 +680,8 @@ export function useVenues() {
       allergenDisplay: 'text',
       coverUrl: '',
       cardId: null,
+      cardReviewed: false,
+      cardRestaurant: null,
       dishIds: [],
       links: emptyLinks(),
     };
@@ -683,6 +702,8 @@ export function useVenues() {
             ...draft,
             id,
             cardId: s.cardId,
+            cardReviewed: s.cardReviewed,
+            cardRestaurant: s.cardRestaurant,
             logoUrl: s.logoUrl,
             accent: s.accent,
             tableConditions: s.tableConditions,
@@ -935,6 +956,9 @@ export function useVenues() {
 
   return {
     venues,
+    // Per chi cambia i locali fuori da qui: l'associazione al ristorante la
+    // scrive il database (721), e la scheda in corso va riletta.
+    reload,
     create,
     update,
     rename,

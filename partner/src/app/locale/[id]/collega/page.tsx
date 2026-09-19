@@ -6,20 +6,34 @@
 // Una pagina sola, a passi, nell'ordine in cui il ristoratore ragiona:
 //   1. cerca       città (o CAP) e nome, poi «Cerca» (18/09)
 //   2. conferma    indirizzo e mappa: «è questo il tuo locale?»
-//   3. azienda     paese, ragione sociale, P.IVA, dichiarazione (in arrivo)
-//   4. esito       associato, o richiesta all'admin (in arrivo)
+//   3. azienda     «conferma che il locale è tuo»: paese, ragione sociale,
+//                  P.IVA, dichiarazione — o un'azienda già inserita
+//   4. richiesta   se il ristorante è di un altro account, o era stato
+//                  revocato: due righe per il nostro team (721, 724)
+//   5. fatto       associato — la scheda in app dopo il controllo del nostro
+//                  team (724) — o richiesta inviata
 // Una pagina e non una finestra sopra la scheda: sul telefono i passi hanno
 // bisogno di tutto lo schermo, e un indirizzo proprio si può riaprire.
 //
 // Le regole non stanno qui: chi può associare cosa lo decide il database
 // (721, 723). La pagina chiede e mostra.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
 import { useVenues } from '@/lib/venues';
 import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
-import { MAX_RESULTS, searchRestaurants, type RestaurantHit } from '@/lib/association';
+import {
+  MAX_RESULTS,
+  linkRestaurant,
+  requestRestaurant,
+  restaurantPageUrl,
+  saveCompany,
+  searchRestaurants,
+  useCompanies,
+  type RestaurantHit,
+} from '@/lib/association';
+import { countries } from '@/lib/countries';
 import { cuisineLabels } from '@/lib/cuisines';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import StaticMap from '@/components/StaticMap';
@@ -27,12 +41,41 @@ import StaticMap from '@/components/StaticMap';
 // Sotto le due lettere il database non cerca (723): il pulsante resta spento.
 const MIN_LETTERE = 2;
 
-type Fase = 'cerca' | 'conferma' | 'azienda';
+type Fase = 'cerca' | 'conferma' | 'azienda' | 'richiesta' | 'fatto';
+// Perché serve il nostro team: le due strade della richiesta (724). La P.IVA
+// non confermata non è più una: si associa lo stesso, e il controllo viene
+// dopo, prima che la scheda si veda.
+type Motivo = 'taken' | 'revoked';
+
+const cardClass = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm';
+const inputClass =
+  'w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none';
+const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-wide text-gray-400';
+const primaryClass =
+  'rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40';
+const secondaryClass =
+  'rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-400';
+
+// Le chiavi d'errore (funzione sul server e 721) nelle parole del portale
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function messaggio(chiave: string, d: any): string {
+  const mappa: Record<string, string> = {
+    vat_invalid: d.link.errVat,
+    name_invalid: d.link.errName,
+    country_invalid: d.link.errCountry,
+    restaurant_yours: d.link.errYours,
+    venue_already_linked: d.link.errVenueLinked,
+    subscription_required: d.link.errSubscription,
+    request_open: d.link.errRequestOpen,
+    too_many: d.link.errTooMany,
+  };
+  return mappa[chiave] ?? d.link.errGeneric;
+}
 
 export default function LinkRestaurantPage() {
   const { d, locale } = useI18n();
   const params = useParams<{ id: string }>();
-  const { venues } = useVenues();
+  const { venues, reload: rileggiLocali } = useVenues();
   const { subs } = useSubscriptions();
   const venue = venues?.find((v) => v.id === params.id) ?? null;
 
@@ -44,6 +87,8 @@ export default function LinkRestaurantPage() {
   const [errore, setErrore] = useState(false);
   const [scelto, setScelto] = useState<RestaurantHit | null>(null);
   const [fase, setFase] = useState<Fase>('cerca');
+  const [richiesta, setRichiesta] = useState<{ companyId: string; motivo: Motivo } | null>(null);
+  const [esito, setEsito] = useState<'linked' | 'requested' | null>(null);
   // Scarta le risposte di una ricerca superata da una più nuova: la rete non
   // garantisce l'ordine, e la vecchia che arriva per ultima coprirebbe la
   // giusta.
@@ -112,7 +157,20 @@ export default function LinkRestaurantPage() {
         {fraseIntro[1]}
       </PageIntro>
 
-      {venue.cardId !== null ? (
+      {fase === 'fatto' && scelto && esito ? (
+        // Prima del controllo qui sotto: associato il locale, cardId si
+        // riempie, e senza questo passo la pagina direbbe «già associato»
+        // invece di «fatto».
+        <Fatto
+          venueId={venue.id}
+          hit={scelto}
+          // Arriva con la rilettura dei locali, un attimo dopo l'associazione:
+          // finché non c'è, il nome si legge senza link.
+          slug={venue.cardRestaurant?.slug ?? ''}
+          esito={esito}
+          senzaPiatti={venue.dishIds.length === 0}
+        />
+      ) : venue.cardId !== null ? (
         // Il riquadro della scheda dice già cosa fare di un locale associato
         // (scollegare, mettere in pausa): qui basta non ricominciare.
         <p className="text-sm text-gray-600">{d.link.alreadyLinked}</p>
@@ -141,7 +199,31 @@ export default function LinkRestaurantPage() {
           }}
         />
       ) : fase === 'azienda' && scelto ? (
-        <p className="text-sm text-gray-500">{d.common.comingSoon}</p>
+        <Azienda
+          venueId={venue.id}
+          hit={scelto}
+          onBack={() => setFase('conferma')}
+          onLinked={() => {
+            setEsito('linked');
+            setFase('fatto');
+            rileggiLocali();
+          }}
+          onRequest={(companyId, motivo) => {
+            setRichiesta({ companyId, motivo });
+            setFase('richiesta');
+          }}
+        />
+      ) : fase === 'richiesta' && scelto && richiesta ? (
+        <Richiesta
+          venueId={venue.id}
+          hit={scelto}
+          companyId={richiesta.companyId}
+          motivo={richiesta.motivo}
+          onSent={() => {
+            setEsito('requested');
+            setFase('fatto');
+          }}
+        />
       ) : (
         <>
           {/* DUE CAMPI E NON UNO (richiesta dell'utente, 18/09): il nome si
@@ -286,6 +368,8 @@ function Risultato({
   const { d } = useI18n();
   const cucine = cuisineLabels(hit.cuisines, locale);
   const libero = hit.holder === 'free';
+  // Di un altro account: non si associa, ma si può chiedere (nodo 2)
+  const altrui = hit.holder === 'taken';
 
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -299,13 +383,13 @@ function Risultato({
           </p>
         )}
       </div>
-      {libero && (
+      {(libero || altrui) && (
         <button
           type="button"
           onClick={onChoose}
           className="shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-400"
         >
-          {d.link.choose}
+          {libero ? d.link.choose : d.link.claimTaken}
         </button>
       )}
     </div>
@@ -344,6 +428,326 @@ function Conferma({ hit, onYes, onNo }: { hit: RestaurantHit; onYes: () => void;
         >
           {d.link.confirmYes}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// «CONFERMA CHE IL LOCALE È TUO» (19/09): i dati dell'azienda, detti con il
+// perché. La prima volta si scrivono; dalla seconda si sceglie un'azienda già
+// inserita. Poi si prova ad associare, e se serve il nostro team si passa alla
+// richiesta — il ristoratore non deve capire da solo quale delle due strade.
+function Azienda({
+  venueId,
+  hit,
+  onBack,
+  onLinked,
+  onRequest,
+}: {
+  venueId: string;
+  hit: RestaurantHit;
+  onBack: () => void;
+  onLinked: () => void;
+  onRequest: (companyId: string, motivo: Motivo) => void;
+}) {
+  const { d, locale } = useI18n();
+  const { companies, reload } = useCompanies();
+  // L'azienda scelta: un id, 'nuova', o null finché non si sa se ce ne sono
+  const [scelta, setScelta] = useState<string | null>(null);
+  // Il paese parte da quello del ristorante: quasi sempre è lo stesso
+  const [paese, setPaese] = useState(hit.countryCode || 'IT');
+  const [ragione, setRagione] = useState('');
+  const [piva, setPiva] = useState('');
+  const [dichiaro, setDichiaro] = useState(false);
+  const [inCorso, setInCorso] = useState(false);
+  const [errore, setErrore] = useState<string | null>(null);
+  const elenco = useMemo(() => countries(locale), [locale]);
+
+  useEffect(() => {
+    if (companies && scelta === null) setScelta(companies[0]?.id ?? 'nuova');
+  }, [companies, scelta]);
+
+  const nuova = scelta === 'nuova';
+  const pronto =
+    scelta !== null &&
+    dichiaro &&
+    !inCorso &&
+    (!nuova || (ragione.trim().length >= 2 && piva.trim().length >= 4));
+
+  async function conferma(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pronto || scelta === null) return;
+    setInCorso(true);
+    setErrore(null);
+
+    let companyId = scelta;
+    if (nuova) {
+      const salvata = await saveCompany(paese, ragione.trim(), piva.trim());
+      if ('error' in salvata) {
+        setErrore(salvata.error);
+        setInCorso(false);
+        return;
+      }
+      companyId = salvata.ok.companyId;
+      reload();
+    }
+
+    // Già gestito da un altro account: niente da provare, si chiede
+    if (hit.holder === 'taken') {
+      onRequest(companyId, 'taken');
+      return;
+    }
+
+    const esito = await linkRestaurant(venueId, hit.id, companyId);
+    if ('ok' in esito) {
+      onLinked();
+      return;
+    }
+    const motivo: Motivo | null =
+      esito.error === 'restaurant_taken'
+        ? 'taken'
+        : esito.error === 'restaurant_revoked'
+          ? 'revoked'
+          : null;
+    if (motivo) {
+      onRequest(companyId, motivo);
+      return;
+    }
+    setErrore(esito.error);
+    setInCorso(false);
+  }
+
+  return (
+    <form onSubmit={conferma} className={cardClass}>
+      <h2 className="text-base font-medium text-gray-900">{d.link.companyTitle}</h2>
+      <p className="mt-1 text-sm text-gray-600">{d.link.companyIntro}</p>
+
+      {companies && companies.length > 0 && (
+        <fieldset className="mt-5 space-y-2">
+          {companies.map((c) => (
+            <label key={c.id} className="flex cursor-pointer items-start gap-2.5 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="azienda"
+                checked={scelta === c.id}
+                onChange={() => setScelta(c.id)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
+              />
+              <span>
+                {fill(d.link.companyUse, { name: c.legalName })}
+                <span className="text-gray-500">
+                  {' · '}
+                  {c.countryCode} {c.vatNumber}
+                </span>
+              </span>
+            </label>
+          ))}
+          <label className="flex cursor-pointer items-start gap-2.5 text-sm text-gray-700">
+            <input
+              type="radio"
+              name="azienda"
+              checked={nuova}
+              onChange={() => setScelta('nuova')}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
+            />
+            {d.link.companyOther}
+          </label>
+        </fieldset>
+      )}
+
+      {nuova && (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="azienda-ragione">
+              {d.link.legalName}
+            </label>
+            <input
+              id="azienda-ragione"
+              value={ragione}
+              onChange={(e) => setRagione(e.target.value)}
+              placeholder={d.link.legalNamePlaceholder}
+              autoComplete="organization"
+              maxLength={200}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="azienda-paese">
+              {d.link.country}
+            </label>
+            <select
+              id="azienda-paese"
+              value={paese}
+              onChange={(e) => setPaese(e.target.value)}
+              className={inputClass}
+            >
+              {elenco.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="azienda-piva">
+              {d.link.vatNumber}
+            </label>
+            <input
+              id="azienda-piva"
+              value={piva}
+              onChange={(e) => setPiva(e.target.value)}
+              placeholder={d.link.vatPlaceholder}
+              autoComplete="off"
+              maxLength={30}
+              className={inputClass}
+            />
+          </div>
+        </div>
+      )}
+
+      <label className="mt-5 flex cursor-pointer gap-2.5 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={dichiaro}
+          onChange={(e) => setDichiaro(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
+        />
+        <span>{d.link.declaration}</span>
+      </label>
+
+      {errore && <p className="mt-4 text-sm text-[#C0392B]">{messaggio(errore, d)}</p>}
+
+      <div className="mt-5 flex flex-wrap justify-end gap-2">
+        <button type="button" onClick={onBack} className={secondaryClass}>
+          {d.link.companyBack}
+        </button>
+        <button type="submit" disabled={!pronto} className={primaryClass}>
+          {inCorso ? d.link.submitting : d.link.submit}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// LA RICHIESTA AL NOSTRO TEAM. Due motivi, una strada (724): il ristorante
+// di un altro account, il ritorno dopo una revoca. Il testo dice quale dei
+// due, perché «serve un controllo» da solo sembrerebbe un sospetto.
+function Richiesta({
+  venueId,
+  hit,
+  companyId,
+  motivo,
+  onSent,
+}: {
+  venueId: string;
+  hit: RestaurantHit;
+  companyId: string;
+  motivo: Motivo;
+  onSent: () => void;
+}) {
+  const { d } = useI18n();
+  const [testo, setTesto] = useState('');
+  const [inCorso, setInCorso] = useState(false);
+  const [errore, setErrore] = useState<string | null>(null);
+  const spiegazione = motivo === 'taken' ? d.link.requestTaken : d.link.requestRevoked;
+
+  async function invia(e: React.FormEvent) {
+    e.preventDefault();
+    if (!testo.trim() || inCorso) return;
+    setInCorso(true);
+    setErrore(null);
+    const esito = await requestRestaurant(venueId, hit.id, companyId, testo.trim());
+    if ('ok' in esito) {
+      onSent();
+      return;
+    }
+    setErrore(esito.error);
+    setInCorso(false);
+  }
+
+  return (
+    <form onSubmit={invia} className={cardClass}>
+      <h2 className="text-base font-medium text-gray-900">{d.link.requestTitle}</h2>
+      <p className="mt-1 text-sm text-gray-600">{spiegazione}</p>
+      <p className="mt-4 text-sm font-medium text-gray-900">{hit.name}</p>
+      <p className="mt-0.5 text-sm text-gray-600">{hit.address || hit.city}</p>
+
+      <label className={`mt-5 ${labelClass}`} htmlFor="richiesta-testo">
+        {d.link.requestLabel}
+      </label>
+      <textarea
+        id="richiesta-testo"
+        value={testo}
+        onChange={(e) => setTesto(e.target.value)}
+        placeholder={d.link.requestPlaceholder}
+        rows={4}
+        maxLength={2000}
+        className={inputClass}
+      />
+
+      {errore && <p className="mt-4 text-sm text-[#C0392B]">{messaggio(errore, d)}</p>}
+
+      <div className="mt-5 flex justify-end">
+        <button type="submit" disabled={!testo.trim() || inCorso} className={primaryClass}>
+          {inCorso ? d.link.submitting : d.link.requestSend}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function Fatto({
+  venueId,
+  hit,
+  slug,
+  esito,
+  senzaPiatti,
+}: {
+  venueId: string;
+  hit: RestaurantHit;
+  slug: string;
+  esito: 'linked' | 'requested';
+  senzaPiatti: boolean;
+}) {
+  const { d } = useI18n();
+  // Il nome del ristorante è un link: si spezza la frase sul segnaposto
+  const frase = d.link.doneLinked.split('{restaurant}');
+  return (
+    <div className={cardClass}>
+      <h2 className="text-base font-medium text-gray-900">{d.link.doneTitle}</h2>
+      <p className="mt-1 text-sm text-gray-600">
+        {esito === 'linked' ? (
+          <>
+            {frase[0]}
+            {slug ? (
+              <a
+                href={restaurantPageUrl(slug)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-gray-900 underline"
+              >
+                {hit.name}
+              </a>
+            ) : (
+              <span className="font-medium text-gray-900">{hit.name}</span>
+            )}
+            {frase[1]}
+          </>
+        ) : (
+          d.link.doneRequested
+        )}
+      </p>
+      {/* La scheda si vede con abbonamento, collegamento, il controllo del
+          nostro team (724) E almeno un piatto: va detto, o «associato»
+          sembra «visibile». */}
+      {esito === 'linked' && <p className="mt-2 text-sm text-gray-600">{d.link.doneReview}</p>}
+      {esito === 'linked' && senzaPiatti && (
+        <p className="mt-2 text-sm text-gray-600">{d.link.doneNeedsDishes}</p>
+      )}
+      <div className="mt-5 flex justify-end">
+        <Link href={`/locale/${venueId}`} className={primaryClass}>
+          {d.link.doneBack}
+        </Link>
       </div>
     </div>
   );

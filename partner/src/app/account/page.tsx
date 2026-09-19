@@ -13,6 +13,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useSubscriptions, vale } from '@/lib/subscriptions';
+import { useCompanies, vatConfirmed } from '@/lib/association';
+import { countryName } from '@/lib/countries';
 import ProTag from '@/components/ProTag';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -33,8 +35,9 @@ const cardClass = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm';
 
 export default function AccountPage() {
   const { session } = useAuth();
-  const { d } = useI18n();
+  const { d, locale } = useI18n();
   const { subs } = useSubscriptions();
+  const { companies } = useCompanies();
   const profile = usePartnerProfile();
   const aggiornaProfilo = useUpdatePartnerProfile();
   const userId = session?.user.id ?? null;
@@ -290,6 +293,37 @@ export default function AccountPage() {
             <span>{d.account.marketingLabel}</span>
           </label>
           <p className="mt-2 text-xs text-gray-500">{d.account.marketingHint}</p>
+        </div>
+
+        {/* LE AZIENDE (19/09): si inseriscono associando un locale al suo
+            ristorante, e qui si ritrovano — come promette la frase sotto il
+            modulo. Solo lettura per ora: la modifica deve ripassare dal
+            controllo sul server (il ristoratore non scrive questa tabella,
+            721), e arriva come passo a sé. */}
+        <div className={cardClass}>
+          <p className="mb-1 text-sm font-medium text-gray-900">{d.account.companiesTitle}</p>
+          {companies && companies.length > 0 ? (
+            <>
+              <p className="mb-4 text-xs text-gray-500">{d.account.companiesHint}</p>
+              <ul className="space-y-3">
+                {companies.map((c) => (
+                  <li key={c.id} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                    <div className="min-w-0">
+                      <p className="text-sm text-gray-900">{c.legalName}</p>
+                      <p className="text-xs text-gray-500">
+                        {countryName(c.countryCode, locale)} · {c.vatNumber}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs text-gray-500">
+                      {vatConfirmed(c.vatStatus) ? d.account.vatConfirmed : d.account.vatPending}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="text-xs text-gray-500">{d.account.companiesEmpty}</p>
+          )}
         </div>
 
         {/* Gli abbonamenti stanno qui dentro finché sono un tappo: una voce

@@ -195,6 +195,7 @@ const it = {
     // ancora, o sembrerebbe che la scheda sia già nell'app.
     cardSubsActive: 'Abbonamento attivo. La scheda comparirà nell’app appena il locale sarà associato al tuo ristorante.',
     cardSubsActiveLinked: 'Abbonamento attivo: la scheda è visibile nell’app.',
+    cardInReview: 'Locale associato: la scheda comparirà nell’app dopo un breve controllo del nostro team.',
     cardSubsManage: 'Gestisci abbonamento',
     cardEmpty: 'Ancora niente dentro',
     cardOpen: 'Apri la scheda',
@@ -215,6 +216,8 @@ const it = {
     statusDraft: 'da finire',
     statusTodo: 'da fare',
     statusOn: 'attiva',
+    // Associato ma non ancora controllato dal nostro team (724)
+    statusReview: 'in verifica',
     statusOff: 'non attiva',
     deleteVenue: 'Elimina questo locale',
     emptyTitle: 'Non hai ancora nessun locale.',
@@ -249,7 +252,17 @@ const it = {
     linkBoxText:
       'Link e piatti sono pronti? Associa il locale al tuo ristorante già presente nell’app: da lì la scheda diventa visibile a chi cerca dove mangiare.',
     linkBoxDone: 'Il locale è associato al tuo ristorante su AllergiApp.',
+    linkBoxInReview:
+      'Il locale è associato al tuo ristorante: la scheda comparirà nell’app dopo un breve controllo del nostro team.',
     linkBoxCta: 'Associa il ristorante',
+    // La riga in cima, appena la scheda ha qualcosa dentro (19/09)
+    linkBar: 'La scheda ha già dei contenuti: associa il locale al tuo ristorante per mostrarla nell’app.',
+    // Dopo l'associazione, finché il nostro team non ha controllato (724).
+    // Cosa succede e cosa viene dopo; nessun tempo promesso, che non
+    // dipende da chi legge.
+    reviewTitle: 'In attesa di verifica',
+    reviewText:
+      'Il locale è associato a {restaurant}. Il nostro team controlla l’associazione: la scheda comparirà nell’app subito dopo. Intanto puoi continuare a prepararla.',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Trattoria da Mario',
     dishesTitle: 'Piatti sulla scheda',
@@ -816,9 +829,11 @@ const it = {
     back: 'Indietro',
     title: 'Abbonamenti',
     intro:
-      'Qui attiverai l’abbonamento di ogni tuo locale e poi lo assocerai al ristorante corrispondente su AllergiApp, cercandolo per nome e città: insieme rendono visibile la sua scheda nell’app.',
+      'Qui attivi l’abbonamento di ogni tuo locale; poi lo associ al suo ristorante su AllergiApp. Insieme rendono visibile la scheda nell’app.',
     empty: 'Nessun locale ancora: creane uno dalla Home.',
     notLinked: 'Non associato',
+    inReview: 'In attesa di verifica',
+    linkedTo: 'Associato a {restaurant}',
     noSubscription: 'Nessun abbonamento',
     linkCta: 'Associa al ristorante su AllergiApp',
     // Stato dell'abbonamento del locale
@@ -848,7 +863,7 @@ const it = {
     switchNote:
       'Puoi attivare l’abbonamento quando vuoi, anche prima della scadenza: il menù e la sua personalizzazione restano come sono, senza interruzioni.',
     billingHint:
-      'I dati della tua azienda (P.IVA, sede) si inseriscono al pagamento: servono per la fattura.',
+      'I dati della tua azienda (P.IVA, sede) si inseriscono al pagamento: servono per la fattura, e li ritrovi già pronti quando associ il locale al suo ristorante.',
     paidWait: 'Pagamento ricevuto. Stiamo registrando l’abbonamento…',
     canceledPayment: 'Pagamento annullato: non ti è stato addebitato niente.',
     openError: 'Non è stato possibile aprire il pagamento.',
@@ -891,6 +906,53 @@ const it = {
     needsSubscription: 'Per associare il ristorante serve prima l’abbonamento del locale.',
     needsSubscriptionCta: 'Vai agli abbonamenti',
     alreadyLinked: 'Questo locale è già associato al suo ristorante su AllergiApp.',
+    // Il ristorante già gestito da un altro account: si può chiederlo
+    claimTaken: 'È il mio locale',
+    // «Conferma che il locale è tuo»: i dati aziendali (19/09). Si dice
+    // PERCHÉ li chiediamo, e cosa ci guadagna il ristoratore.
+    companyTitle: 'Conferma che il locale è tuo',
+    companyIntro:
+      'Per associare il ristorante ci servono i dati dell’azienda che lo gestisce. Così chi legge la scheda nell’app sa che a parlare è davvero il ristorante, e nessun altro può farlo al posto tuo.',
+    companyUse: 'Usa i dati di {name}',
+    companyOther: 'Un’altra azienda',
+    country: 'Paese',
+    legalName: 'Ragione sociale',
+    legalNamePlaceholder: 'Es. Trattoria da Mario S.r.l.',
+    vatNumber: 'Partita IVA',
+    vatPlaceholder: 'Es. 01234567890',
+    declaration:
+      'Dichiaro di essere titolare o di agire per conto dell’azienda che gestisce questo locale.',
+    companyBack: 'Indietro',
+    submit: 'Conferma e associa',
+    submitting: 'Un momento…',
+    // Quello che il ristoratore può correggere, e quello che no
+    errVat: 'Questa partita IVA non sembra corretta: controlla le cifre.',
+    errName: 'Scrivi la ragione sociale dell’azienda.',
+    errCountry: 'Scegli il paese dell’azienda.',
+    errYours: 'Questo ristorante è già associato a un altro tuo locale.',
+    errVenueLinked: 'Questo locale è già associato a un ristorante.',
+    errSubscription: 'Per associare il ristorante serve l’abbonamento attivo del locale.',
+    errRequestOpen: 'C’è già una richiesta in attesa per questo locale.',
+    errTooMany: 'Hai già inserito molte aziende: scrivici a info@allergiapp.com.',
+    errGeneric: 'Qualcosa non ha funzionato: non è stato salvato niente.',
+    // La richiesta al nostro team: due motivi, una strada (724)
+    requestTitle: 'Serve un controllo del nostro team',
+    requestTaken:
+      'Questo ristorante è già gestito da un altro account. Se è il tuo locale, raccontacelo: la richiesta la valuta il nostro team.',
+    requestRevoked:
+      'L’associazione a questo ristorante ti era stata tolta. Per riaverla, la richiesta la valuta il nostro team.',
+    requestLabel: 'Due righe per il nostro team',
+    requestPlaceholder: 'Chi sei, che ruolo hai nel locale, e quello che ci aiuta a verificare.',
+    requestSend: 'Invia la richiesta',
+    // La fine
+    doneTitle: 'Fatto',
+    // {restaurant} = il ristorante dell'app, col link alla sua pagina: il
+    // nome del locale qui no, spesso è lo stesso e la frase non diceva niente
+    doneLinked: 'Il locale è ora associato a {restaurant} su AllergiApp.',
+    doneReview: 'Il nostro team controlla l’associazione: la scheda comparirà nell’app subito dopo.',
+    doneNeedsDishes: 'Serve anche almeno un piatto sulla scheda: sceglilo quando vuoi.',
+    doneRequested: 'Richiesta inviata. L’esito lo trovi nella pagina della scheda.',
+    doneBack: 'Torna alla scheda',
   },
   account: {
     title: 'Account',
@@ -906,6 +968,13 @@ const it = {
     phone: 'Telefono',
     phoneHint: 'Facoltativo: serve solo a noi, se dobbiamo scriverti per il tuo account.',
     profileSaved: 'Dati aggiornati',
+    // Le aziende: si inseriscono associando un locale, qui si vedono (19/09).
+    // La modifica arriva dopo, e ripassa dal controllo sul server.
+    companiesTitle: 'Dati aziendali',
+    companiesHint: 'Le aziende con cui hai associato i tuoi locali ai ristoranti su AllergiApp.',
+    companiesEmpty: 'Li inserisci quando associ un locale al suo ristorante.',
+    vatConfirmed: 'Verificata',
+    vatPending: 'Da verificare',
     // Consenso marketing: si toglie con lo stesso gesto con cui si è dato
     marketingTitle: 'Comunicazioni',
     marketingLabel: 'Voglio ricevere aggiornamenti su AllergiApp Partner.',

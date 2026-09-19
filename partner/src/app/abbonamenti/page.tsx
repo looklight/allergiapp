@@ -3,8 +3,8 @@
 // Gli abbonamenti dei locali: stato vero, e il bottone che apre il pagamento.
 //
 // L'ordine della pagina è quello in cui si fanno le cose (15/09): prima
-// l'abbonamento, poi l'associazione al ristorante su AllergiApp — che non
-// esiste ancora ed è dichiarata come futura, non promessa.
+// l'abbonamento, poi l'associazione al ristorante su AllergiApp (dal 19/09
+// con lo stato vero e il bottone per farla).
 //
 // Qui non si scrive niente sull'abbonamento: le righe le porta il webhook di
 // Stripe. Questa pagina le legge e basta (v. lib/subscriptions.ts).
@@ -24,6 +24,8 @@ import { SUBSCRIPTIONS } from '@/lib/features';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import StatusPill from '@/components/StatusPill';
 import ProTag from '@/components/ProTag';
+import Link from 'next/link';
+import { restaurantPageUrl } from '@/lib/association';
 
 // Tornando da Stripe la riga non c'è ancora: la scrive il webhook, che arriva
 // un attimo dopo il ritorno del browser. Invece di mostrare "nessun
@@ -133,6 +135,9 @@ function Abbonamenti() {
       nota,
     };
   }
+
+  // «Associato a {restaurant}»: il nome è un link, si spezza sul segnaposto
+  const collegato = d.subs.linkedTo.split('{restaurant}');
 
   return (
     <div>
@@ -251,14 +256,44 @@ function Abbonamenti() {
                   <p className="mt-2 text-xs text-gray-500">{d.subs.renewalNote}</p>
                 )}
 
-                {/* L'associazione al ristorante su AllergiApp non è ancora
-                    costruita: si dice al futuro invece di promettere un
-                    bottone che non farebbe niente. */}
-                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
-                  <span className="rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600">
-                    {d.subs.notLinked}
-                  </span>
-                  <span className="text-xs text-gray-400">{d.common.comingSoon}</span>
+                {/* L'ASSOCIAZIONE, il secondo passo della pagina (19/09): dove
+                    c'era il segnaposto «in arrivo», lo stato vero. Il bottone
+                    solo con l'abbonamento, che viene prima: senza, la riga
+                    dice che manca e basta — il pagamento è qui sopra. */}
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
+                  {v.cardId === null ? (
+                    <>
+                      <StatusPill stato="todo" label={d.subs.notLinked} />
+                      {sub && (
+                        <Link
+                          href={`/locale/${v.id}/collega`}
+                          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-400"
+                        >
+                          {d.subs.linkCta}
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="min-w-0 text-sm text-gray-700">
+                        {collegato[0]}
+                        {v.cardRestaurant?.slug ? (
+                          <a
+                            href={restaurantPageUrl(v.cardRestaurant.slug)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-gray-900 underline"
+                          >
+                            {v.cardRestaurant.name}
+                          </a>
+                        ) : (
+                          <span className="font-medium text-gray-900">{v.cardRestaurant?.name ?? ''}</span>
+                        )}
+                        {collegato[1]}
+                      </span>
+                      {!v.cardReviewed && <StatusPill stato="draft" label={d.subs.inReview} />}
+                    </>
+                  )}
                 </div>
               </div>
             );

@@ -280,7 +280,8 @@ porta dati, aggancia soltanto (i piatti della scheda stanno sul locale).
 **Nodo 1 — quando la scheda si vede in app** (deciso 17/09):
 - Nessuno scrive «pubblicata». Visibile = **abbonamento attivo** sul locale
   **e** collegamento non in pausa/sospeso/revocato **e almeno un piatto**
-  scelto per la scheda. Calcolato dal database a ogni lettura.
+  scelto per la scheda **e il visto del nostro team** (aggiunto il 19/09,
+  migration 724). Calcolato dal database a ogni lettura.
 - Il ristoratore può solo mettere in pausa e riattivare; l'admin sospende e
   revoca. Chiude la falla di `partner_cards_owner` (703, `FOR ALL`): lo
   stato `published`/`expired` sparisce come valore scrivibile.
@@ -297,16 +298,38 @@ porta dati, aggancia soltanto (i piatti della scheda stanno sul locale).
   passa «da verificare».~~ **Cambiato il 18/09**: VIES non conosce le P.IVA
   che non hanno chiesto di fare scambi UE, cioè la maggior parte delle
   trattorie italiane (e spagnole): «non trovata» non vuol dire «non esiste».
-  Ora **si collega da soli solo con la P.IVA confermata** (da VIES o
-  dall'admin); VIES che non la trova, VIES giù o azienda fuori UE → il
-  collegamento diventa una **richiesta all'admin**, la stessa strada dei
-  ristoranti contesi. L'admin che la accoglie segna l'azienda come
-  verificata, e i locali successivi passano da soli. Gli errori di
-  battitura li ferma la cifra di controllo della P.IVA, prima di VIES.
-  Nome e sede restituiti da VIES visibili in admin, accanto al nome del
-  locale.
-- ⚠️ Scoperto il 17/09: il webhook Stripe **non** scrive `partner_companies`
-  (il piano lo diceva): la P.IVA di chi paga oggi resta solo in Stripe.
+  ~~Ora si collega da soli solo con la P.IVA confermata, il resto va in
+  richiesta all'admin.~~
+- **Rivisto il 19/09 — la certificazione è il controllo del nostro team.**
+  Nessun dato aziendale prova che un'azienda gestisce QUEL locale; la serietà
+  la danno insieme la persona che dichiara per un'azienda, l'abbonamento
+  pagato con la fattura a quella azienda, e il visto di una persona del
+  nostro team. Quindi:
+  - **i dati si danno una volta, al pagamento**: ragione sociale e P.IVA
+    sono quelle date a Stripe per la fattura, che `stripe-webhook` salva in
+    `partner_companies` alla nascita dell'abbonamento (l'indirizzo resta a
+    Stripe). All'associazione il portale le propone già compilate: si spunta
+    la dichiarazione e si conferma. Chi paga è per forza chi dichiara. A mano
+    solo senza Stripe (abbonamento offerto da noi): `partner-company`;
+  - **si associa sempre** (con l'abbonamento): il ristorante si prenota
+    subito, ma **la scheda compare in app solo dopo il visto dell'admin**
+    (724). Il ristoratore vede «in verifica»;
+  - **VIES resta, come controllo ufficiale per l'admin** (scelta
+    dell'utente: gratuito, ufficiale, a norma), non come cancello. Nome e
+    sede restituiti si tengono, visibili solo all'admin (per una ditta
+    individuale la sede è spesso la casa). Se VIES non la conosce, l'admin
+    guarda la P.IVA sul sito dell'Agenzia delle Entrate. La cifra di
+    controllo italiana ferma i refusi prima;
+  - la richiesta all'admin resta per due soli casi: ristorante di un altro
+    account, ritorno dopo una revoca.
+  - **nessuno approva la propria associazione, nemmeno un admin** (trovato
+    alla prima prova, 19/09): nasce già vista solo quella che l'admin crea
+    per il locale di un altro (o accogliendo una richiesta).
+  - **Solo aziende, anche all'estero** (19/09): la carta può essere
+    personale, la fattura e la dichiarazione sono dell'azienda del
+    ristorante. Niente vendita a privati.
+- ~~⚠️ Scoperto il 17/09: il webhook Stripe non scrive `partner_companies`.~~
+  Da scrivere il 19/09 (v. sopra).
 
 **Nodo 2 — ristorante già collegato a un altro account** (deciso 17/09;
 sostituisce il contro-claim automatico di luglio):
@@ -712,6 +735,12 @@ associazione il portale non sa quali recensioni mostrare.
   riabboni, torna»: la risposta resta salvata, l'app non la riceve. Il filtro
   sta nel database, non nel client. Conta l'abbonamento, **non** la scheda
   pubblicata (si risponde anche senza piatti caricati).
+- **E solo dopo il visto del nostro team sul collegamento** (aggiunto il
+  19/09 con la 724): senza, chi prende un locale non suo potrebbe rispondere
+  in pubblico alle recensioni prima del controllo. Quindi visibile =
+  abbonamento attivo **e** collegamento attivo e con `reviewed_at`, come la
+  scheda tranne i piatti. Da decidere quando si costruiscono: con la scheda
+  **in pausa** le risposte restano visibili o no?
 - **In app**: blocco rientrato sotto la recensione, **logo del locale come
   avatar** + nome del locale + «Risposta del ristorante». Senza logo, icona
   generica di ristorante (niente iniziali). Non porta a nessun profilo.
@@ -974,6 +1003,15 @@ contorno del pin per i locali con scheda pubblicata (v. «Principio guida»).
 
 **Passo 6 — le voci che danno un motivo per pagare ogni mese**: notifiche al
 gestore e statistiche.
+
+> **Le email al ristoratore** (idea dell'utente, 19/09): partono dal
+> registro `partner_audit_log`, che la 724 rende completo. Momenti:
+> `card_created` («stiamo controllando il tuo locale»), `card_reviewed`
+> («la tua scheda è pronta»), `card_status_changed` verso suspended/revoked
+> con la nota («sospeso: motivo…», dovuta per DSA art. 17),
+> `request_decided` («la tua richiesta è stata accolta/respinta»). Servono
+> un servizio di invio (Resend, Postmark…) sul dominio allergiapp.com e i
+> testi in due lingue. Non prima che ci sia qualcosa di live.
 
 ## Fasi (bozza, da trasformare in piano quando saremo pronti)
 
