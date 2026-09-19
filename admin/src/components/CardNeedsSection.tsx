@@ -67,7 +67,7 @@ function RankTable({
           <tbody>
             {rows.map((r) => (
               <tr key={r.key} className="border-b last:border-0">
-                <td className="py-2 truncate max-w-[220px]">{label(r.key)}</td>
+                <td className="py-2 pr-3 truncate max-w-0 w-full">{label(r.key)}</td>
                 <td className="py-2 text-right font-medium whitespace-nowrap">
                   {r.count}
                   {total > 0 && (

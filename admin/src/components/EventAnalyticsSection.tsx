@@ -276,7 +276,7 @@ export default function EventAnalyticsSection() {
                   <tbody>
                     {topRestaurants.map((r) => (
                       <tr key={r.restaurant_id} className="border-b last:border-0">
-                        <td className="py-2 truncate max-w-[220px]">
+                        <td className="py-2 pr-3 truncate max-w-0 w-full">
                           <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline" title={r.name}>
                             {r.name}
                           </Link>
@@ -305,7 +305,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {viewedCities.map((c) => (
                     <tr key={c.city} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">{c.city}</td>
+                      <td className="py-2 pr-3 truncate max-w-0 w-full">{c.city}</td>
                       <td className="py-2 text-right font-medium pl-4">{c.view_count}</td>
                       <td className="py-2 text-right text-muted-foreground pl-4">{c.restaurant_count}</td>
                     </tr>
@@ -336,7 +336,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {topSaved.map((r) => (
                     <tr key={r.restaurant_id} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">
+                      <td className="py-2 pr-3 truncate max-w-0 w-full">
                         <Link href={`/restaurants/${r.restaurant_id}`} className="text-primary hover:underline" title={r.name}>
                           {r.name}
                         </Link>
@@ -373,7 +373,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {topQueries.map((q) => (
                     <tr key={q.query} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[200px]" title={q.query}>{q.query}</td>
+                      <td className="py-2 pr-3 truncate max-w-0 w-full" title={q.query}>{q.query}</td>
                       <td className="py-2 text-right font-medium">{q.query_count}</td>
                       <td className="py-2 text-right text-muted-foreground">{q.place_count}</td>
                       <td className="py-2 text-right text-muted-foreground">{q.restaurant_count}</td>
@@ -405,7 +405,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {topCities.map((c) => (
                     <tr key={`${c.city}-${c.country_code ?? ''}`} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">
+                      <td className="py-2 pr-3 truncate max-w-0 w-full">
                         {c.city}
                         {c.country_code && <span className="text-xs text-faint ml-1.5 uppercase">{c.country_code}</span>}
                       </td>
@@ -438,7 +438,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {needsDistribution.map((n) => (
                     <tr key={n.code} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">{labelNeed(n.code)}</td>
+                      <td className="py-2 pr-3 truncate max-w-0 w-full">{labelNeed(n.code)}</td>
                       <td className="py-2 text-right font-medium">{n.user_count}</td>
                     </tr>
                   ))}
@@ -490,7 +490,7 @@ export default function EventAnalyticsSection() {
                 <tbody>
                   {filteredNeeds.map((n) => (
                     <tr key={n.code} className="border-b last:border-0">
-                      <td className="py-2 truncate max-w-[220px]">{labelNeed(n.code)}</td>
+                      <td className="py-2 pr-3 truncate max-w-0 w-full">{labelNeed(n.code)}</td>
                       <td className="py-2 text-right font-medium">{n.use_count}</td>
                       {/* '—' e non '0' finché il contatore anonimo non ha dati:
                           uno zero sembrerebbe una misura, questo dice "non ancora". */}
