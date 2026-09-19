@@ -9,8 +9,14 @@
 // Stripe, non un utente connesso. Al posto del token c'è la FIRMA di Stripe,
 // verificata qui sotto: senza quella non si scrive niente.
 //
+// Quando nasce un abbonamento, salva anche L'AZIENDA che il ristoratore ha
+// dato a Stripe per la fattura (19/09): all'associazione del locale il
+// portale gliela propone già compilata, e chi paga è per forza chi dichiara
+// di gestire il locale. V. _shared/company.ts.
+//
 // Variabili d'ambiente: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { salvaAzienda } from "../_shared/company.ts";
 // ⚠️ `npm:` e non esm.sh: la build di esm.sh tira dentro i polyfill Node di
 // deno.land/std, che qui esplodono a runtime («Deno.core.runMicrotasks() is
 // not supported»). La funzione rispondeva, ma ogni consegna di Stripe
@@ -59,7 +65,34 @@ function planFromInterval(interval?: string): "monthly" | "yearly" | null {
   return null;
 }
 
-async function upsertSubscription(eventSub: Stripe.Subscription) {
+// L'azienda della fattura, presa dal cliente Stripe: ragione sociale e P.IVA
+// raccolte al checkout (tax_id_collection). L'indirizzo resta a Stripe: da
+// noi non serve. Non deve mai far fallire la consegna: l'abbonamento è già
+// scritto, e senza azienda il ristoratore la scriverà a mano associando il
+// locale.
+async function aziendaDaStripe(customerId: string | undefined, ownerUserId: string) {
+  if (!customerId) return;
+  try {
+    const customer = await stripe.customers.retrieve(customerId, { expand: ["tax_ids"] });
+    if (customer.deleted) return;
+    const taxId = customer.tax_ids?.data?.[0];
+    if (!taxId || !customer.name) return;
+    const esito = await salvaAzienda(
+      admin,
+      ownerUserId,
+      taxId.country ?? customer.address?.country ?? "",
+      customer.name,
+      taxId.value,
+    );
+    if ("error" in esito) {
+      console.error("[stripe-webhook] azienda non salvata:", esito.error, customerId);
+    }
+  } catch (e) {
+    console.error("[stripe-webhook] lettura del cliente fallita:", customerId, e);
+  }
+}
+
+async function upsertSubscription(eventSub: Stripe.Subscription, nuovo = false) {
   // ⚠️ NON si scrive quello che l'evento contiene: Stripe non garantisce
   // l'ordine di consegna, e un evento vecchio arrivato tardi riscriverebbe
   // uno stato più recente ("attivo" dopo una disdetta). Si richiede a Stripe
@@ -133,6 +166,10 @@ async function upsertSubscription(eventSub: Stripe.Subscription) {
     throw error;
   }
 
+  // Solo alla nascita: ai rinnovi l'azienda c'è già, e una chiamata a Stripe
+  // al mese per locale per ritrovarla non serve a niente.
+  if (nuovo) await aziendaDaStripe(row.stripe_customer_id, ownerUserId);
+
   // ⚠️ IL REGALO SI CHIUDE DOPO, NON PRIMA (migration 720). Chiudendolo
   // prima, fra le due scritture il locale risultava scoperto per un istante,
   // e il trigger della 718 toglieva l'aspetto dalla sala: il menù diventava
@@ -176,6 +213,8 @@ Deno.serve(async (req) => {
   try {
     switch (event.type) {
       case "customer.subscription.created":
+        await upsertSubscription(event.data.object as Stripe.Subscription, true);
+        break;
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
         await upsertSubscription(event.data.object as Stripe.Subscription);
