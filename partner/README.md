@@ -1038,17 +1038,18 @@ Nota: la tabella qui sopra è di prima delle letture condivise (31/08), che
 hanno tolto due interrogazioni all'apertura di `/piatti` e una all'apertura
 di ogni piatto. I tempi del JS non cambiano; cambia quanto si aspetta dopo.
 
-## ⚠️ Deploy: l'ultimo commit del push deve toccare `partner/`
+## Deploy: si costruisce se `partner/` è cambiata dall'ultimo deploy
 
-Per non buildare a ogni push dell'app Expo, il progetto ha un Ignored
-Build Step: `git diff --quiet HEAD^ HEAD -- .` — builda solo se `partner/`
-è cambiata **nell'ultimo commit**, non nel push intero.
+Per non buildare a ogni push dell'app Expo, il progetto ha un Ignored Build
+Step: `scripts/vercel-ignore-build.sh`, puntato da `vercel.json` (e uguale
+nelle impostazioni del progetto su Vercel). Confronta `partner/` con l'ultimo
+commit andato online su questo branch (`VERCEL_GIT_PREVIOUS_SHA`, lo passa
+Vercel): costruisce se è cambiata, salta se no, e nel dubbio costruisce.
 
-Quindi con un push di più commit, se l'ultimo NON tocca `partner/` (es. un
-commit su `TODO.md`), Vercel salta la build e si porta via anche i commit
-sotto: il deployment risulta *Canceled* e in produzione resta la versione
-precedente (successo il 2026-08-23, commit `abe18e2` + `4c05f60`).
-
-Attenzione anche al rimedio: **Redeploy dalla dashboard NON serve**,
-ripete l'ultimo deployment *riuscito*, cioè ricostruisce il commit
-vecchio. Serve un nuovo commit che tocchi `partner/`.
+**Storia, superata dal 2026-09-19**: la regola di prima era `git diff --quiet
+HEAD^ HEAD -- .`, e guardava solo l'**ultimo commit** del push. Con un push di
+più commit, se l'ultimo non toccava `partner/` (una migration, `TODO.md`),
+Vercel saltava la build e si portava via anche i commit sotto: deployment
+*Canceled* e in produzione la versione precedente (successo il 2026-08-23,
+`abe18e2` + `4c05f60`, e il 2026-09-19, `4b19c06`). Il Redeploy dalla
+dashboard non rimediava: ripete l'ultimo deployment riuscito.
