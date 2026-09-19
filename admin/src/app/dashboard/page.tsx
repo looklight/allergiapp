@@ -74,7 +74,7 @@ export default function DashboardPage() {
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         <StatCard label="Ristoranti" value={stats.totalRestaurants} color="text-success" href="/restaurants" />
-        <StatCard label="Utenti" value={stats.totalUsers} color="text-primary" href="/users" hint={`· ${stats.activeUsers24h} oggi`} />
+        <StatCard label="Utenti" value={stats.totalUsers} color="text-primary" href="/users" hint={`· ${stats.activeUsers24h} /24h`} />
         <StatCard label="Recensioni" value={stats.totalReviews} color="text-purple-600" href="/reviews" />
         <StatCard label="Segnalazioni in attesa" value={stats.pendingReports} color="text-danger" href="/reports" />
       </div>

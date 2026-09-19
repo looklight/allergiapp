@@ -354,7 +354,7 @@ export default function ReportsPage() {
                     </td>
                     <td className="px-3 py-3 align-top overflow-hidden">
                       {r.status === 'pending' ? (
-                        <div className="flex gap-1.5">
+                        <div className="flex flex-wrap gap-1.5">
                           <button
                             onClick={() => {
                               if (r.menu_photo_id) deleteMenuPhoto(r);

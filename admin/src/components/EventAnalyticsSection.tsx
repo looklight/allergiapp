@@ -217,16 +217,24 @@ export default function EventAnalyticsSection() {
             ? realReviews?.v30 ?? 0
             : counts30d.find((c) => c.event_name === name)?.event_count ?? 0;
           return (
-            <div key={name} className="bg-card rounded-lg shadow p-4">
-              <div className="flex items-center justify-between gap-2">
+            <div key={name} className="bg-card rounded-lg shadow p-4 flex flex-col">
+              <div className="flex items-start justify-between gap-2">
                 <p className="text-xs text-faint uppercase tracking-wide">{eventLabel(name)}</p>
                 <InfoHint text={EVENT_HINTS[name] ?? HINT_FALLBACK} align="end" />
               </div>
-              <div className="flex items-baseline gap-3 mt-1">
-                <span className="text-2xl font-bold text-foreground">{v7}</span>
-                <span className="text-xs text-faint">| {v30} (30g)</span>
+              {/* Ogni numero con la sua didascalia sotto, in fondo alla card:
+                  i numeri restano allineati fra card vicine anche quando
+                  un'etichetta va su due righe. */}
+              <div className="mt-auto pt-2 grid grid-cols-2 gap-2 items-end">
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold text-foreground tabular-nums leading-tight">{v7}</p>
+                  <p className="text-[10px] text-faint">7 giorni</p>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-semibold text-muted-foreground tabular-nums leading-tight">{v30}</p>
+                  <p className="text-[10px] text-faint">30 giorni</p>
+                </div>
               </div>
-              <p className="text-[10px] text-faint mt-0.5">ultimi 7 giorni</p>
             </div>
           );
         })}

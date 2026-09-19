@@ -13,7 +13,7 @@ interface Props {
 export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDeletePhoto }: Props) {
   const { open: openLightbox } = useLightbox();
   return (
-    <div className="bg-card rounded-lg shadow p-6">
+    <div className="bg-card rounded-lg shadow p-4 sm:p-6">
       <h2 className="font-semibold mb-3">Recensioni ({reviews.length})</h2>
       {reviews.length === 0 ? (
         <p className="text-sm text-faint">Nessuna recensione</p>
@@ -21,7 +21,7 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
         <div className="space-y-3">
           {reviews.map((r) => (
             <div key={r.id} className="border rounded p-3 text-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   {r.user_id ? (
                     <Link href={`/users/${r.user_id}`} className="font-medium text-primary hover:underline">{r.reviewer_name ?? 'Anonimo'}</Link>
@@ -46,9 +46,9 @@ export default function ReviewsSection({ reviews, isBusy, onDeleteReview, onDele
                 </div>
               </div>
               <DietaryBadges allergens={r.allergens_snapshot} diets={r.dietary_snapshot} className="mt-1.5" />
-              {r.comment && <p className="text-foreground-secondary mt-1">{r.comment}</p>}
+              {r.comment && <p className="text-foreground-secondary mt-1 break-words">{r.comment}</p>}
               {r.photos?.length > 0 && (
-                <div className="flex gap-2 mt-2">
+                <div className="flex flex-wrap gap-2 mt-2">
                   {(r.photos as { url: string; thumbnailUrl?: string }[]).map((photo, i) => (
                     <div key={i} className="relative group">
                       <button type="button" onClick={() => openLightbox(r.photos, i)} className="block">

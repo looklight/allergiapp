@@ -142,7 +142,7 @@ export default function GrowthChartSection() {
           <h2 className="font-semibold">Crescita</h2>
           <InfoHint text={INFO} />
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex gap-1">
             <Chip active={mode === 'cumulative'} onClick={() => setMode('cumulative')}>Cumulato</Chip>
             <Chip active={mode === 'incremental'} onClick={() => setMode('incremental')}>Nuovi</Chip>

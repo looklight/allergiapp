@@ -89,7 +89,7 @@ function ViewStatsHint({ viewStats }: { viewStats: ViewStats }) {
       </button>
       <span
         role="tooltip"
-        className="pointer-events-none invisible absolute right-0 top-full z-30 mt-2 w-72 rounded-md border border-border bg-card p-3 text-left text-xs font-normal leading-snug text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+        className="pointer-events-none invisible fixed inset-x-4 bottom-4 z-30 sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 rounded-md border border-border bg-card p-3 text-left text-xs font-normal leading-snug text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
       >
         {rows.map((r, i) => (
           <span key={i} className={`flex justify-between gap-4 ${r.indent ? 'pl-3 text-muted-foreground' : i > 0 ? 'mt-1.5' : ''}`}>
@@ -241,9 +241,9 @@ export default function RestaurantHeader({ restaurant, stats, viewStats, reportC
   };
 
   return (
-    <div className="bg-card rounded-lg shadow p-6 mb-6">
+    <div className="bg-card rounded-lg shadow p-4 sm:p-6 mb-6">
       <div className="flex items-start justify-between">
-        <div>
+        <div className="min-w-0 break-words">
           <h1 className="text-2xl font-bold">{restaurant.name}</h1>
           <PartnerBadge restaurantId={restaurant.id} />
           <p className="text-muted-foreground">

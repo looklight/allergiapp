@@ -12,7 +12,7 @@ export default function MenuPhotosSection({ menuPhotos, isBusy, onDelete }: Prop
   const { open: openLightbox } = useLightbox();
   const photoUrls = menuPhotos.map((p) => p.image_url ?? p.thumbnail_url);
   return (
-    <div className="bg-card rounded-lg shadow p-6 mb-6">
+    <div className="bg-card rounded-lg shadow p-4 sm:p-6 mb-6">
       <h2 className="font-semibold mb-3">Foto menu ({menuPhotos.length})</h2>
       {menuPhotos.length === 0 ? (
         <p className="text-sm text-faint">Nessuna foto del menu</p>

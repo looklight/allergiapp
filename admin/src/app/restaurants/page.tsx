@@ -221,7 +221,7 @@ export default function RestaurantsPage() {
 
       {showMap && (
         <div className="fixed inset-0 z-50 bg-card flex flex-col">
-          <div className="flex items-center gap-3 px-4 py-3 border-b">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 border-b">
             <button
               onClick={() => setShowMap(false)}
               className="px-3 py-1.5 bg-selected text-selected-foreground rounded text-sm hover:bg-selected-hover"
@@ -233,7 +233,7 @@ export default function RestaurantsPage() {
                 ? `Mappa ristoranti${countryFilter !== 'all' ? ` — ${countries.find(c => c.code === countryFilter)?.name ?? countryFilter}` : ''}`
                 : 'Dove si guardano i ristoranti'}
             </h2>
-            <div className="flex gap-1 ml-auto items-center">
+            <div className="flex flex-wrap gap-1 ml-auto items-center">
               {mapMode === 'aperture' && (
                 <>
                   <InfoHint align="end" text={VIEWS_INFO} />

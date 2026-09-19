@@ -17,12 +17,12 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
   if (reports.length === 0) return null;
 
   return (
-    <div className="bg-card rounded-lg shadow p-6 mb-6">
+    <div className="bg-card rounded-lg shadow p-4 sm:p-6 mb-6">
       <div className="flex items-center gap-2 mb-3">
         <h2 className="font-semibold">Segnalazioni ({reports.length})</h2>
         <div className="group relative">
           <button className="w-5 h-5 rounded-full bg-muted text-foreground-secondary hover:bg-muted-hover text-xs font-bold flex items-center justify-center">i</button>
-          <div className="hidden group-hover:block absolute left-0 top-7 z-10 w-80 bg-card border rounded-lg shadow-lg p-3 text-xs text-foreground-secondary">
+          <div className="hidden group-hover:block absolute left-0 top-7 z-10 w-64 sm:w-80 bg-card border rounded-lg shadow-lg p-3 text-xs text-foreground-secondary">
             <strong>Elimina</strong> — rimuove foto, recensione o ristorante segnalato e chiude le segnalazioni associate.<br/>
             <strong>Ignora</strong> — segnalazione non fondata o già gestita, chiusa senza azione.
           </div>
@@ -31,9 +31,9 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
       <div className="space-y-3">
         {reports.map((r) => (
           <div key={r.id} className="border rounded p-3 text-sm">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
+              <div className="flex-1 min-w-0 break-words">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   {r.review_id ? (
                     <span className="inline-block px-2 py-0.5 bg-tag-review text-tag-review-foreground rounded text-xs">Recensione</span>
                   ) : r.menu_photo_id ? (
@@ -74,7 +74,7 @@ export default function ReportsSection({ reports, isBusy, onDismiss, onDeletePho
                 )}
                 {r.details && <p className="text-foreground-secondary mt-1">{r.details}</p>}
               </div>
-              <div className="flex gap-2 ml-4 shrink-0">
+              <div className="flex flex-wrap gap-2 sm:ml-4 sm:shrink-0">
                 <button
                   onClick={() => {
                     if (r.menu_photo_id) onDeletePhoto(r);
