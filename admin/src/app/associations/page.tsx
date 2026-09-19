@@ -65,7 +65,7 @@ interface CardRow {
 
 interface RequestRow {
   request_id: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
   message: string;
   decision_note: string | null;
   created_at: string;
@@ -127,6 +127,8 @@ const AZIONI: Record<string, string> = {
   card_reviewed: 'Approvata',
   request_created: 'Richiesta inviata',
   request_decided: 'Richiesta decisa',
+  request_withdrawn: 'Richiesta ritirata',
+  company_changed: 'Dati aziendali cambiati',
   subscription_created: 'Abbonamento nato',
   subscription_changed: 'Abbonamento cambiato',
 };
@@ -714,7 +716,9 @@ function Richiesta({
       ? { label: 'In attesa', stile: 'bg-warning-soft text-warning-soft-foreground' }
       : q.status === 'accepted'
         ? { label: 'Accolta', stile: 'bg-success-soft text-success-soft-foreground' }
-        : { label: 'Respinta', stile: 'bg-muted text-foreground' };
+        : q.status === 'withdrawn'
+          ? { label: 'Ritirata', stile: 'bg-muted text-foreground' }
+          : { label: 'Respinta', stile: 'bg-muted text-foreground' };
   return (
     <div className="bg-card rounded-lg shadow p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -824,7 +828,16 @@ function Storico({ righe, owner }: { righe: AuditRow[] | null; owner: string }) 
       {righe.map((r) => {
         const chi = r.actor_user_id === null ? 'sistema' : r.actor_user_id === owner ? 'ristoratore' : 'admin';
         const dettagli = r.details ?? {};
-        const stato = [dettagli.from, dettagli.to].filter(Boolean).join(' → ');
+        // I dati aziendali cambiano come «prima → dopo» (726); gli stati come
+        // «da → a». Una P.IVA cambiata rimanda l'associazione da approvare.
+        const azienda = r.action === 'company_changed';
+        const prima = dettagli.from as { legal_name?: string; vat?: string } | string | undefined;
+        const dopo = dettagli.to as { legal_name?: string; vat?: string } | string | undefined;
+        const stato = azienda
+          ? `${typeof prima === 'object' ? `${prima?.legal_name} (${prima?.vat})` : ''} → ${
+              typeof dopo === 'object' ? `${dopo?.legal_name} (${dopo?.vat})` : ''
+            }${dettagli.back_to_review ? ' · torna da approvare' : ''}`
+          : [prima, dopo].filter(Boolean).join(' → ');
         const nota = (dettagli.note ?? dettagli.decision_note) as string | undefined;
         return (
           <li key={r.id} className="text-xs flex flex-wrap gap-x-2">
