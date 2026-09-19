@@ -797,6 +797,27 @@ stampato non si corregge da remoto.
 Manca il **deploy** — finché il branch non è pushato, quell'indirizzo non
 risponde a nessuno.
 
+## L'associazione al ristorante dell'app (2026-09-19)
+
+Il locale si associa al suo ristorante su AllergiApp da `/locale/[id]/collega`.
+Design in `../MONETIZATION.md` «Associazione locale ↔ ristorante»; le regole
+stanno nel database (migration 721-726), qui si chiede e si mostra.
+
+- **Ricerca** (723): «Città o CAP» e nome, pulsante Cerca; le parole generiche
+  (ristorante, trattoria, gluten free…) possono mancare dal nome.
+- **Conferma** con una mappa fissa di OpenStreetMap (`components/StaticMap.tsx`).
+- **Azienda**: di solito arriva già dal pagamento (la salva `stripe-webhook`);
+  altrimenti si scrive e la controlla `supabase/functions/partner-company`
+  (cifra di controllo, VIES). Il portale la tabella la **legge** soltanto.
+- **Si associa sempre** con l'abbonamento, ma la scheda compare in app solo
+  dopo il **visto del nostro team** (724): fino ad allora «in attesa di
+  verifica». Il ristorante di un altro account si chiede con una richiesta,
+  che si può ritirare (726).
+- **Lo stato** della scheda lo decide una regola sola, `cardState` in
+  `lib/association.ts`, che leggono home, scheda e Abbonamenti.
+- In Account le aziende si correggono: cambiare P.IVA o paese rimanda in
+  verifica le associazioni (726).
+
 ## Il catalogo dei piatti (2026-09-15)
 
 `/piatti` è la **fonte dei dati**: nome, allergeni, foto, categoria. Dove un
