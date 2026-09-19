@@ -215,10 +215,6 @@ const it = {
     catalogOpen: 'Vedi tutti',
     statusDraft: 'da finire',
     statusTodo: 'da fare',
-    statusOn: 'attiva',
-    // Associato ma non ancora controllato dal nostro team (724)
-    statusReview: 'in verifica',
-    statusOff: 'non attiva',
     deleteVenue: 'Elimina questo locale',
     emptyTitle: 'Non hai ancora nessun locale.',
     emptyHint: 'Creane uno: il nome è quello che i tuoi clienti leggeranno in cima al menù.',
@@ -251,9 +247,6 @@ const it = {
     linkBoxTitle: 'Il tuo ristorante su AllergiApp',
     linkBoxText:
       'Link e piatti sono pronti? Associa il locale al tuo ristorante già presente nell’app: da lì la scheda diventa visibile a chi cerca dove mangiare.',
-    linkBoxDone: 'Il locale è associato al tuo ristorante su AllergiApp.',
-    linkBoxInReview:
-      'Il locale è associato al tuo ristorante: la scheda comparirà nell’app dopo un breve controllo del nostro team.',
     linkBoxCta: 'Associa il ristorante',
     // La riga in cima, appena la scheda ha qualcosa dentro (19/09)
     linkBar: 'La scheda ha già dei contenuti: associa il locale al tuo ristorante per mostrarla nell’app.',
@@ -832,8 +825,6 @@ const it = {
       'Qui attivi l’abbonamento di ogni tuo locale; poi lo associ al suo ristorante su AllergiApp. Insieme rendono visibile la scheda nell’app.',
     empty: 'Nessun locale ancora: creane uno dalla Home.',
     notLinked: 'Non associato',
-    inReview: 'In attesa di verifica',
-    linkedTo: 'Associato a {restaurant}',
     noSubscription: 'Nessun abbonamento',
     linkCta: 'Associa al ristorante su AllergiApp',
     // Stato dell'abbonamento del locale
@@ -953,6 +944,64 @@ const it = {
     doneNeedsDishes: 'Serve anche almeno un piatto sulla scheda: sceglilo quando vuoi.',
     doneRequested: 'Richiesta inviata. L’esito lo trovi nella pagina della scheda.',
     doneBack: 'Torna alla scheda',
+  },
+  // LO STATO DELLA SCHEDA (cardState in lib/association.ts), in tre misure:
+  // l'etichetta della pastiglia, la riga sotto in home, il riquadro in cima
+  // alla scheda. {restaurant} = il ristorante dell'app. Nessun tempo
+  // promesso: dipende da noi, non da chi legge.
+  cardState: {
+    pill: {
+      none: 'non attiva',
+      requested: 'richiesta in attesa',
+      rejected: 'non attiva',
+      suspended: 'sospesa',
+      review: 'in verifica',
+      paused: 'in pausa',
+      expired: 'non visibile',
+      noDishes: 'senza piatti',
+      live: 'attiva',
+    },
+    line: {
+      requested: 'Il nostro team sta valutando la tua richiesta per {restaurant}.',
+      rejected: 'La richiesta non è stata accolta: trovi il motivo nella scheda.',
+      suspended: 'Sospesa dal nostro team: trovi il motivo nella scheda.',
+      paused: 'In pausa: nell’app non si vede finché non la riattivi.',
+      expired: 'L’abbonamento è finito: la scheda resta associata ma non si vede nell’app.',
+      noDishes: 'Scegli almeno un piatto: senza, la scheda non compare nell’app.',
+    },
+    notice: {
+      requestedTitle: 'Richiesta in attesa',
+      requestedText:
+        'Hai chiesto di associare il locale a {restaurant}: la sta valutando il nostro team. L’esito lo trovi qui.',
+      rejectedTitle: 'Richiesta non accolta',
+      rejectedText: 'La richiesta per {restaurant} non è stata accolta.',
+      reason: 'Motivo:',
+      suspendedTitle: 'Scheda sospesa dal nostro team',
+      suspendedText: 'Nell’app non si vede finché la sospensione non viene tolta.',
+      contact: 'Per chiarimenti scrivici:',
+      pausedTitle: 'Scheda in pausa',
+      pausedText: 'Nell’app non si vede finché non la riattivi.',
+      expiredTitle: 'Abbonamento finito',
+      expiredText:
+        'La scheda resta associata a {restaurant}, ma nell’app non si vede. Con l’abbonamento torna com’era.',
+      noDishesTitle: 'Manca almeno un piatto',
+      noDishesText: 'La scheda è pronta, ma senza piatti non compare nell’app: scegline almeno uno qui sotto.',
+    },
+    // Il riquadro in fondo, dove si gestisce l'associazione
+    linkedTo: 'Associato a {restaurant}.',
+    pause: 'Metti in pausa',
+    resume: 'Riattiva',
+    unlink: 'Scollega',
+    // Le due finestre di conferma (19/09): ogni gesto si spiega quando lo si
+    // fa, nello stesso modo. La differenza che conta: la pausa si toglie da
+    // sola, scollegare vuol dire un nuovo controllo.
+    pauseTitle: 'Mettere in pausa la scheda?',
+    pauseBody:
+      'La scheda sparisce dall’app finché non la riattivi. Il ristorante resta associato a te e, riattivandola, non serve un nuovo controllo. Utile per una chiusura per ferie o mentre sistemi il menù.',
+    unlinkTitle: 'Scollegare il locale?',
+    unlinkBody:
+      'La scheda sparisce subito dall’app. Per associarlo di nuovo servirà un nuovo controllo del nostro team. Piatti, menù e abbonamento restano sul locale.',
+    actionError: 'Non è stato possibile: niente è cambiato.',
   },
   account: {
     title: 'Account',

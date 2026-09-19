@@ -9,6 +9,7 @@
 // errori.
 import { supabase } from './supabase';
 import { reportError, useRemoteList } from './storage';
+import type { Venue } from './venues';
 
 // Chi tiene il ristorante, detto senza dire chi (nodo 2):
 //   free   libero
@@ -185,6 +186,73 @@ export async function requestRestaurant(
   });
   if (error) {
     reportError('richiesta ristorante', error);
+    return { error: error.message };
+  }
+  return { ok: true };
+}
+
+// ------------------------------------------------------------------
+// LO STATO DELLA SCHEDA DI UN LOCALE, in un posto solo.
+//
+// Home, pagina della scheda e Abbonamenti dicono la stessa cosa con parole e
+// spazi diversi: la regola che la decide sta qui, così non possono
+// contraddirsi. Rispecchia partner_card_visible() nel database (721, 724):
+// la scheda si vede con collegamento attivo, visto del nostro team,
+// abbonamento e almeno un piatto. L'ordine conta — si dice la cosa che
+// blocca per prima, e quella che chiede un gesto al ristoratore prima di
+// quelle che aspettano noi:
+//   none       non associato
+//   requested  richiesta al nostro team in attesa
+//   rejected   l'ultima richiesta non è stata accolta
+//   suspended  sospesa dal nostro team (col motivo)
+//   review     associata, in attesa del nostro visto
+//   paused     messa in pausa dal ristoratore
+//   expired    associata, ma l'abbonamento è finito
+//   noDishes   tutto a posto, manca almeno un piatto
+//   live       si vede nell'app
+export type CardState =
+  | 'none'
+  | 'requested'
+  | 'rejected'
+  | 'suspended'
+  | 'review'
+  | 'paused'
+  | 'expired'
+  | 'noDishes'
+  | 'live';
+
+export function cardState(venue: Venue, subscribed: boolean): CardState {
+  if (venue.cardId === null) {
+    if (venue.request?.status === 'pending') return 'requested';
+    if (venue.request?.status === 'rejected') return 'rejected';
+    return 'none';
+  }
+  if (venue.cardStatus === 'suspended') return 'suspended';
+  if (!venue.cardReviewed) return 'review';
+  if (venue.cardStatus === 'paused') return 'paused';
+  if (!subscribed) return 'expired';
+  if (venue.dishIds.length === 0) return 'noDishes';
+  return 'live';
+}
+
+// I gesti del ristoratore sul collegamento: funzioni della 721, che
+// controllano da sé cosa si può fare in quale stato.
+export async function setCardPaused(cardId: string, paused: boolean): Promise<Esito> {
+  const { error } = await supabase.rpc('partner_set_card_paused', {
+    p_card_id: cardId,
+    p_paused: paused,
+  });
+  if (error) {
+    reportError(paused ? 'pausa scheda' : 'riattivazione scheda', error);
+    return { error: error.message };
+  }
+  return { ok: true };
+}
+
+export async function unlinkCard(cardId: string): Promise<Esito> {
+  const { error } = await supabase.rpc('partner_unlink_card', { p_card_id: cardId });
+  if (error) {
+    reportError('scollegamento scheda', error);
     return { error: error.message };
   }
   return { ok: true };

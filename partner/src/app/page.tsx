@@ -48,6 +48,7 @@ import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
 import OverflowMenu from '@/components/OverflowMenu';
 import StatusPill, { type Stato } from '@/components/StatusPill';
+import { cardState, type CardState } from '@/lib/association';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import UndoToast from '@/components/UndoToast';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
@@ -121,6 +122,21 @@ function Saluto({ saluto, intro }: { saluto: string; intro: string }) {
     </>
   );
 }
+
+// Il colore del pallino per ogni stato della scheda: verde solo quando si
+// vede nell'app, ambra quando si aspetta qualcosa (noi, o un piatto), grigio
+// quando tocca al ristoratore o non è ancora cominciata.
+const TONO_SCHEDA: Record<CardState, Stato> = {
+  none: 'todo',
+  requested: 'draft',
+  rejected: 'todo',
+  suspended: 'draft',
+  review: 'draft',
+  paused: 'todo',
+  expired: 'todo',
+  noDishes: 'draft',
+  live: 'ready',
+};
 
 function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -338,6 +354,23 @@ export default function HomePage() {
       : null,
   ].filter((pezzo): pezzo is string => pezzo !== null);
   const dettaglioScheda = pezziScheda.length === 0 ? d.dashboard.cardEmpty : pezziScheda.join(' · ');
+
+  // Lo stato della scheda: la stessa regola della pagina della scheda e di
+  // Abbonamenti (cardState in lib/association.ts). La riga sotto dice il
+  // perché in una frase; il dettaglio (il motivo di una sospensione, il
+  // bottone per riattivare) sta nella scheda.
+  const statoScheda = cardState(venue, abbonato);
+  const nomeRistorante = venue.cardRestaurant?.name ?? venue.request?.restaurantName ?? '';
+  const rigaScheda =
+    statoScheda === 'none'
+      ? abbonato
+        ? d.dashboard.cardSubsActive
+        : d.dashboard.cardSubsNone
+      : statoScheda === 'review'
+        ? d.dashboard.cardInReview
+        : statoScheda === 'live'
+          ? d.dashboard.cardSubsActiveLinked
+          : fill(d.cardState.line[statoScheda], { restaurant: nomeRistorante });
 
   return (
     <div>
@@ -657,18 +690,10 @@ export default function HomePage() {
                   del locale lo dice già. */}
               {!abbonato && <ProTag variant="needed" />}
             </h2>
-            {/* Associata ma non ancora controllata dal nostro team (724): in
-                app non si vede, e dire «attiva» sarebbe falso. */}
-            <StatusPill
-              stato={venue.cardId === null ? 'todo' : venue.cardReviewed ? 'ready' : 'draft'}
-              label={
-                venue.cardId === null
-                  ? d.dashboard.statusOff
-                  : venue.cardReviewed
-                    ? d.dashboard.statusOn
-                    : d.dashboard.statusReview
-              }
-            />
+            {/* Lo stato vero della scheda (cardState, 19/09): «attiva» solo
+                quando si vede davvero nell'app. Ambra dove si aspetta
+                qualcosa, grigio dove tocca al ristoratore. */}
+            <StatusPill stato={TONO_SCHEDA[statoScheda]} label={d.cardState.pill[statoScheda]} />
           </div>
           <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
 
@@ -688,13 +713,7 @@ export default function HomePage() {
           {/* ⚠️ AGGIORNATO IL 16/09: adesso gli abbonamenti esistono, e questa
               riga legge lo stato vero invece di dire a tutti la stessa cosa. */}
           <p className="mt-3 line-clamp-2 min-h-[2.75em] text-xs leading-snug text-gray-500">
-            {!abbonato
-              ? d.dashboard.cardSubsNone
-              : venue.cardId === null
-                ? d.dashboard.cardSubsActive
-                : !venue.cardReviewed
-                  ? d.dashboard.cardInReview
-                  : d.dashboard.cardSubsActiveLinked}
+            {rigaScheda}
           </p>
 
           {/* IL PASSO CHE MANCA DIVENTA IL BOTTONE (richiesta dell'utente,
@@ -704,7 +723,7 @@ export default function HomePage() {
               abbonamenti, che è anche dove portava «Gestisci abbonamento».
               Associato il locale, si torna com'era. */}
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
-            {venue.cardId === null && pezziScheda.length > 0 ? (
+            {(statoScheda === 'none' || statoScheda === 'rejected') && pezziScheda.length > 0 ? (
               <>
                 <PrimaryLink href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}>
                   {d.editor.linkBoxCta}

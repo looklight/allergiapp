@@ -246,6 +246,17 @@ export interface Venue extends VenueDraft {
   // Il ristorante dell'app a cui il locale è associato: il nome, e lo slug
   // della sua pagina pubblica (allergiapp.com/r/…). null senza scheda.
   cardRestaurant: { name: string; slug: string } | null;
+  // Lo stato del collegamento in corso (721) e la nota dell'admin che lo
+  // accompagna (il motivo di una sospensione). null senza scheda.
+  cardStatus: 'active' | 'paused' | 'suspended' | null;
+  cardNote: string;
+  // L'ULTIMA richiesta al nostro team per questo locale (ristorante di un
+  // altro account, o ritorno dopo una revoca): in attesa, o com'è finita.
+  request: {
+    status: 'pending' | 'accepted' | 'rejected';
+    restaurantName: string;
+    note: string;
+  } | null;
   // COME SI VEDE IL MENÙ AL TAVOLO. Sta sul locale e non sul menù come il
   // logo e il colore: al tavolo è UNA pagina sola (Tema 13).
   //
@@ -398,7 +409,8 @@ async function loadVenues(): Promise<Venue[]> {
         'dish_photo_shape, line_height, menu_layout, dish_separator, allergen_display, ' +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
-        'partner_links(*), partner_cards(id, status, reviewed_at, restaurants(name, slug)), ' +
+        'partner_links(*), partner_cards(id, status, status_note, reviewed_at, restaurants(name, slug)), ' +
+        'partner_card_requests(status, decision_note, created_at, restaurants(name)), ' +
         'partner_card_dishes(dish_id)'
     )
     .order('created_at', { ascending: true });
@@ -409,6 +421,12 @@ async function loadVenues(): Promise<Venue[]> {
     // solo quella in corso, che per locale è al massimo una.
     const card =
       (row.partner_cards ?? []).find((c: any) => LIVE_CARD.includes(c.status)) ?? null;
+    // La più recente: le vecchie restano come storia, conta com'è finita
+    // l'ultima (o che è ancora in attesa).
+    const richiesta =
+      [...(row.partner_card_requests ?? [])].sort((a: any, b: any) =>
+        String(b.created_at).localeCompare(String(a.created_at))
+      )[0] ?? null;
     return {
       id: row.id,
       venueName: row.name ?? '',
@@ -431,6 +449,15 @@ async function loadVenues(): Promise<Venue[]> {
       cardReviewed: card?.reviewed_at != null,
       cardRestaurant: card?.restaurants
         ? { name: card.restaurants.name ?? '', slug: card.restaurants.slug ?? '' }
+        : null,
+      cardStatus: card?.status ?? null,
+      cardNote: card?.status_note ?? '',
+      request: richiesta
+        ? {
+            status: richiesta.status,
+            restaurantName: richiesta.restaurants?.name ?? '',
+            note: richiesta.decision_note ?? '',
+          }
         : null,
       dishIds: (row.partner_card_dishes ?? []).map((d: any) => d.dish_id),
       links: toLinks(row.partner_links),
@@ -682,6 +709,9 @@ export function useVenues() {
       cardId: null,
       cardReviewed: false,
       cardRestaurant: null,
+      cardStatus: null,
+      cardNote: '',
+      request: null,
       dishIds: [],
       links: emptyLinks(),
     };
@@ -704,6 +734,9 @@ export function useVenues() {
             cardId: s.cardId,
             cardReviewed: s.cardReviewed,
             cardRestaurant: s.cardRestaurant,
+            cardStatus: s.cardStatus,
+            cardNote: s.cardNote,
+            request: s.request,
             logoUrl: s.logoUrl,
             accent: s.accent,
             tableConditions: s.tableConditions,

@@ -25,7 +25,8 @@ import { PageIntro, PageTitle } from '@/components/PageHeading';
 import StatusPill from '@/components/StatusPill';
 import ProTag from '@/components/ProTag';
 import Link from 'next/link';
-import { restaurantPageUrl } from '@/lib/association';
+import { cardState } from '@/lib/association';
+import RestaurantPhrase from '@/components/RestaurantPhrase';
 
 // Tornando da Stripe la riga non c'è ancora: la scrive il webhook, che arriva
 // un attimo dopo il ritorno del browser. Invece di mostrare "nessun
@@ -135,9 +136,6 @@ function Abbonamenti() {
       nota,
     };
   }
-
-  // «Associato a {restaurant}»: il nome è un link, si spezza sul segnaposto
-  const collegato = d.subs.linkedTo.split('{restaurant}');
 
   return (
     <div>
@@ -261,7 +259,7 @@ function Abbonamenti() {
                     solo con l'abbonamento, che viene prima: senza, la riga
                     dice che manca e basta — il pagamento è qui sopra. */}
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
-                  {v.cardId === null ? (
+                  {v.cardId === null && v.request?.status !== 'pending' ? (
                     <>
                       <StatusPill stato="todo" label={d.subs.notLinked} />
                       {sub && (
@@ -276,22 +274,29 @@ function Abbonamenti() {
                   ) : (
                     <>
                       <span className="min-w-0 text-sm text-gray-700">
-                        {collegato[0]}
-                        {v.cardRestaurant?.slug ? (
-                          <a
-                            href={restaurantPageUrl(v.cardRestaurant.slug)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-gray-900 underline"
-                          >
-                            {v.cardRestaurant.name}
-                          </a>
+                        {v.cardId === null ? (
+                          <RestaurantPhrase
+                            template={d.cardState.line.requested}
+                            name={v.request?.restaurantName ?? ''}
+                            slug=""
+                          />
                         ) : (
-                          <span className="font-medium text-gray-900">{v.cardRestaurant?.name ?? ''}</span>
+                          <RestaurantPhrase
+                            template={d.cardState.linkedTo}
+                            name={v.cardRestaurant?.name ?? ''}
+                            slug={v.cardRestaurant?.slug ?? ''}
+                          />
                         )}
-                        {collegato[1]}
                       </span>
-                      {!v.cardReviewed && <StatusPill stato="draft" label={d.subs.inReview} />}
+                      {/* Lo stato con la stessa regola di home e scheda; qui
+                          l'abbonamento è la riga sopra, quindi «attiva» non
+                          ripete niente e non si mostra. */}
+                      {(() => {
+                        const stato = cardState(v, sub !== null);
+                        return stato === 'live' ? null : (
+                          <StatusPill stato={stato === 'paused' || stato === 'expired' ? 'todo' : 'draft'} label={d.cardState.pill[stato]} />
+                        );
+                      })()}
                     </>
                   )}
                 </div>

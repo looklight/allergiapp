@@ -16,8 +16,10 @@ import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 import ProTag from '@/components/ProTag';
-import { StatusDot } from '@/components/StatusPill';
-import { restaurantPageUrl } from '@/lib/association';
+import { cardState, setCardPaused, unlinkCard } from '@/lib/association';
+import CardStateNotice from '@/components/CardStateNotice';
+import RestaurantPhrase from '@/components/RestaurantPhrase';
+import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
 import CardDishesSelector from '@/components/CardDishesSelector';
@@ -233,13 +235,18 @@ function MobilePreview({
 export default function VenueEditorPage() {
   const { d } = useI18n();
   const params = useParams<{ id: string }>();
-  const { venues, update, setDishesOn } = useVenues();
+  const { venues, update, setDishesOn, reload: rileggiLocali } = useVenues();
   // Se il locale è abbonato l'etichetta Pro sparisce: non c'è più niente da
   // sbloccare, e il distintivo ambra in home dice già che ce l'ha.
   const { subs } = useSubscriptions();
   // Il catalogo è del partner: la scheda dice solo quali piatti sono accesi
   const { dishes: catalog } = useDishes();
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  // I gesti sull'associazione (pausa, riattiva, scollega): uno alla volta
+  const [gesto, setGesto] = useState(false);
+  const [erroreGesto, setErroreGesto] = useState(false);
+  // La finestra aperta: pausa o scollega, ciascuno si spiega prima di farlo
+  const [conferma, setConferma] = useState<'pausa' | 'scollega' | null>(null);
   const [viewer, setViewer] = useState<ViewerNeeds>(NO_VIEWER);
   const [simOpen, setSimOpen] = useState(false);
   // Link accesi in questa sessione ma ancora vuoti: quelli con contenuto
@@ -303,9 +310,31 @@ export default function VenueEditorPage() {
   // Nella scheda c'è già qualcosa da mostrare: da qui il passo che manca è
   // l'associazione, e lo dice la riga in cima invece del richiamo.
   const haContenuto = countLinks(venue.links) > 0 || venue.dishIds.length > 0;
-  const mostraRichiamo = venue.cardId === null && !haContenuto;
-  // Il nome del ristorante è un link: si spezza la frase sul segnaposto
-  const fraseVerifica = d.editor.reviewText.split('{restaurant}');
+  // Lo stato della scheda, la stessa regola di home e Abbonamenti
+  const stato = cardState(venue, abbonato);
+  const mostraRichiamo = stato === 'none' && !haContenuto;
+  const verso = abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti';
+  const ristorante = {
+    name: venue.cardRestaurant?.name ?? '',
+    slug: venue.cardRestaurant?.slug ?? '',
+  };
+
+  // Pausa, riattiva, scollega: il database decide se si può (721), qui si
+  // chiede e si rilegge. Un errore non cambia niente, e lo si dice.
+  async function eseguiGesto(fai: () => Promise<{ ok: true } | { error: string }>) {
+    setGesto(true);
+    setErroreGesto(false);
+    const esito = await fai();
+    if ('error' in esito) setErroreGesto(true);
+    await rileggiLocali();
+    setGesto(false);
+  }
+  const pausa = (paused: boolean) =>
+    venue.cardId && eseguiGesto(() => setCardPaused(venue.cardId!, paused));
+  const scollega = () => {
+    setConferma(null);
+    if (venue.cardId) void eseguiGesto(() => unlinkCard(venue.cardId!));
+  };
   const venueId = venue.id;
   const setDraft = (next: VenueDraft) => update(venueId, next);
 
@@ -448,47 +477,29 @@ export default function VenueEditorPage() {
             fondo alla pagina. Sparisce ad associazione fatta. Senza
             abbonamento porta prima agli abbonamenti. Stessa riga sticky e
             stesse misure dell'editor del menù, così è riconoscibile. */}
-        {venue.cardId === null && haContenuto && (
+        {stato === 'none' && haContenuto && (
           <div className="sticky top-0 z-30 -mx-4 mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
             <p className="min-w-0 flex-1 text-xs text-gray-600 sm:text-sm">{d.editor.linkBar}</p>
             <Link
-              href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}
+              href={verso}
               className="ml-auto shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
             >
               {d.editor.linkBoxCta}
             </Link>
           </div>
         )}
-        {/* IN ATTESA DI VERIFICA (richiesta dell'utente, 19/09): associato, ma
-            il nostro team non ha ancora controllato (724), e in app non si
-            vede niente. Nello stesso posto della riga di prima, così chi ha
-            appena associato trova lì la risposta a «e adesso?». Dice cosa
-            succede e cosa viene dopo, senza tempi che non dipendono da lui, e
-            che intanto può lavorare: non c'è niente da fare, e va detto. */}
-        {venue.cardId !== null && !venue.cardReviewed && (
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-[#FDF3E3] p-4">
-            <p className="flex items-center gap-2 text-sm font-medium text-[#7A5418]">
-              <StatusDot stato="draft" />
-              {d.editor.reviewTitle}
-            </p>
-            <p className="mt-1 text-sm text-[#7A5418]">
-              {fraseVerifica[0]}
-              {venue.cardRestaurant?.slug ? (
-                <a
-                  href={restaurantPageUrl(venue.cardRestaurant.slug)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium underline"
-                >
-                  {venue.cardRestaurant.name}
-                </a>
-              ) : (
-                <span className="font-medium">{venue.cardRestaurant?.name ?? ''}</span>
-              )}
-              {fraseVerifica[1]}
-            </p>
-          </div>
-        )}
+        {/* LO STATO, QUANDO C'È QUALCOSA DA DIRE (richiesta dell'utente,
+            19/09): in verifica, richiesta in attesa o respinta, sospesa, in
+            pausa, abbonamento finito, senza piatti. Nello stesso posto della
+            riga «Associa», così chi apre la scheda trova qui il perché non si
+            vede. La regola è cardState(), la stessa di home e Abbonamenti. */}
+        <CardStateNotice
+          state={stato}
+          venue={venue}
+          linkHref={verso}
+          onResume={() => void pausa(false)}
+          busy={gesto}
+        />
         {/* L'INTESTAZIONE COME LE ALTRE PAGINE PRINCIPALI (richiesta
             dell'utente, 15/09): titolo in cima, frase sotto, poi il lavoro.
             Prima sopra al titolo c'erano "← Home" e il nome del locale in
@@ -890,27 +901,83 @@ export default function VenueEditorPage() {
               <div className="min-w-0">
                 <h2 className="text-sm font-medium text-gray-900">{d.editor.linkBoxTitle}</h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  {venue.cardId === null
-                    ? d.editor.linkBoxText
-                    : venue.cardReviewed
-                      ? d.editor.linkBoxDone
-                      : d.editor.linkBoxInReview}
+                  {stato === 'none' || stato === 'rejected' ? (
+                    d.editor.linkBoxText
+                  ) : stato === 'requested' ? (
+                    <RestaurantPhrase
+                      template={d.cardState.line.requested}
+                      name={venue.request?.restaurantName ?? ''}
+                      slug=""
+                    />
+                  ) : (
+                    <RestaurantPhrase template={d.cardState.linkedTo} {...ristorante} />
+                  )}
                 </p>
               </div>
             </div>
-            {venue.cardId === null && (
+            {/* IL POSTO DOVE SI GESTISCE L'ASSOCIAZIONE (19/09): associare
+                finché non c'è; poi pausa o riattiva, e scollega. Una scheda
+                sospesa non si tocca (la sospensione la toglie chi l'ha messa,
+                721), e mentre c'è una richiesta in attesa si aspetta. Senza
+                abbonamento il bottone porta prima di là: viene prima (15/09). */}
+            {(stato === 'none' || stato === 'rejected') && (
               <div className="mt-4 flex justify-end">
-                {/* Senza abbonamento si passa prima di là: l'associazione
-                    viene dopo (15/09), e il database la rifiuterebbe. */}
                 <Link
-                  href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}
+                  href={verso}
                   className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
                 >
                   {d.editor.linkBoxCta}
                 </Link>
               </div>
             )}
+            {(venue.cardStatus === 'active' || venue.cardStatus === 'paused') && (
+              <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConferma('scollega')}
+                  disabled={gesto}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 disabled:opacity-40"
+                >
+                  {d.cardState.unlink}
+                </button>
+                <button
+                  type="button"
+                  // Pausa con la finestra che la spiega; riattivare no: annulla
+                  // una pausa, e non c'è niente da sapere prima.
+                  onClick={() => (venue.cardStatus === 'active' ? setConferma('pausa') : void pausa(false))}
+                  disabled={gesto}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-40"
+                >
+                  {venue.cardStatus === 'active' ? d.cardState.pause : d.cardState.resume}
+                </button>
+              </div>
+            )}
+            {erroreGesto && <p className="mt-3 text-sm text-[#C0392B]">{d.cardState.actionError}</p>}
           </div>
+          {conferma === 'scollega' && (
+            <ConfirmDialog
+              title={d.cardState.unlinkTitle}
+              subject={venue.cardRestaurant?.name}
+              body={d.cardState.unlinkBody}
+              confirmLabel={d.cardState.unlink}
+              onCancel={() => setConferma(null)}
+              onConfirm={scollega}
+            />
+          )}
+          {conferma === 'pausa' && (
+            <ConfirmDialog
+              title={d.cardState.pauseTitle}
+              subject={venue.cardRestaurant?.name}
+              body={d.cardState.pauseBody}
+              confirmLabel={d.cardState.pause}
+              tone="neutral"
+              onCancel={() => setConferma(null)}
+              onConfirm={() => {
+                setConferma(null);
+                void pausa(true);
+              }}
+            />
+          )}
         </div>
       </div>
 

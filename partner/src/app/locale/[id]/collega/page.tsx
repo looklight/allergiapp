@@ -37,6 +37,7 @@ import { countries } from '@/lib/countries';
 import { cuisineLabels } from '@/lib/cuisines';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import StaticMap from '@/components/StaticMap';
+import CardStateNotice from '@/components/CardStateNotice';
 
 // Sotto le due lettere il database non cerca (723): il pulsante resta spento.
 const MIN_LETTERE = 2;
@@ -174,6 +175,16 @@ export default function LinkRestaurantPage() {
         // Il riquadro della scheda dice già cosa fare di un locale associato
         // (scollegare, mettere in pausa): qui basta non ricominciare.
         <p className="text-sm text-gray-600">{d.link.alreadyLinked}</p>
+      ) : venue.request?.status === 'pending' ? (
+        // Una richiesta in attesa tiene il locale (724): si dice subito,
+        // invece di far cercare e confermare per scoprirlo all'ultimo passo.
+        <CardStateNotice
+          state="requested"
+          venue={venue}
+          linkHref=""
+          onResume={() => {}}
+          busy={false}
+        />
       ) : subs !== null && !abbonato ? (
         // Prima l'abbonamento, poi l'associazione (15/09): lo pretende anche
         // il database, ma dirlo qui evita una ricerca che finirebbe in un

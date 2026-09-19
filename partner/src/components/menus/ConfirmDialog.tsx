@@ -1,7 +1,9 @@
 'use client';
 
 // La conferma di un'eliminazione, con il titolo e il corpo scritti da chi la
-// apre. DeleteVenueDialog e DeleteDishDialog restano a sé perché ognuno
+// apre. Anche di un gesto che non elimina ma va spiegato prima di farlo
+// (mettere in pausa la scheda, 19/09): lì il bottone è scuro e non rosso,
+// perché si annulla con un tocco. DeleteVenueDialog e DeleteDishDialog restano a sé perché ognuno
 // mostra un riepilogo suo di cosa si perde; qui il riepilogo È il corpo, e i
 // due punti in cui serve nei menù (il menù, la sezione) avrebbero prodotto
 // due copie della stessa finestra.
@@ -16,6 +18,7 @@ export default function ConfirmDialog({
   confirmLabel,
   onCancel,
   onConfirm,
+  tone = 'danger',
 }: {
   title: string;
   body: string;
@@ -26,6 +29,9 @@ export default function ConfirmDialog({
   confirmLabel: string;
   onCancel: () => void;
   onConfirm: () => void;
+  // 'danger' (predefinito) per quello che si perde; 'neutral' per un gesto
+  // che si annulla
+  tone?: 'danger' | 'neutral';
 }) {
   const { d } = useI18n();
   const panel = useModal<HTMLDivElement>(onCancel);
@@ -64,7 +70,9 @@ export default function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
+              tone === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-900 hover:bg-gray-700'
+            }`}
           >
             {confirmLabel}
           </button>
