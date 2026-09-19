@@ -208,7 +208,13 @@ export default function RestaurantDetailPage() {
     setIsDeleting(true);
     const { error } = await deleteRestaurantWithCleanup(supabase, id);
     if (error) {
-      alert(`Errore durante l'eliminazione: ${error}`);
+      // Il database non lascia eliminare un ristorante associato a un
+      // partner (721): prima si scollega o si revoca, dalle Associazioni.
+      alert(
+        error === 'restaurant_has_partner'
+          ? 'Questo ristorante è associato a un locale partner: prima revoca o scollega l’associazione dalla pagina Associazioni.'
+          : `Errore durante l'eliminazione: ${error}`,
+      );
       setIsDeleting(false);
       return;
     }

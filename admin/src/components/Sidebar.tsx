@@ -11,6 +11,7 @@ const navItems = [
   { href: '/users', label: 'Utenti' },
   { href: '/reviews', label: 'Recensioni' },
   { href: '/partners', label: 'Partner' },
+  { href: '/associations', label: 'Associazioni' },
   { href: '/media', label: 'Media' },
   { href: '/reports', label: 'Segnalazioni' },
   { href: '/announcements', label: 'Annunci' },
@@ -19,6 +20,9 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [pendingCount, setPendingCount] = useState(0);
+  // Quello che aspetta noi nelle associazioni: collegamenti senza visto (la
+  // scheda non si vede finché non arriva, 724) e richieste in attesa.
+  const [associationsCount, setAssociationsCount] = useState(0);
   const [hasActiveAnnouncement, setHasActiveAnnouncement] = useState(false);
   const [open, setOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -49,6 +53,13 @@ export default function Sidebar() {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .then(({ count }) => setPendingCount(count ?? 0));
+    Promise.all([
+      supabase.from('partner_cards').select('id', { count: 'exact', head: true }).is('reviewed_at', null),
+      supabase
+        .from('partner_card_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+    ]).then(([cards, requests]) => setAssociationsCount((cards.count ?? 0) + (requests.count ?? 0)));
     supabase
       .from('announcements')
       .select('id', { count: 'exact', head: true })
@@ -81,6 +92,11 @@ export default function Sidebar() {
             {item.href === '/reports' && pendingCount > 0 && (
               <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1.5">
                 {pendingCount}
+              </span>
+            )}
+            {item.href === '/associations' && associationsCount > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1.5">
+                {associationsCount}
               </span>
             )}
             {item.href === '/announcements' && hasActiveAnnouncement && (

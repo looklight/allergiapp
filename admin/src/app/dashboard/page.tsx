@@ -11,6 +11,7 @@ import DailyActiveUsersSection from '@/components/DailyActiveUsersSection';
 import CardOpensSection from '@/components/CardOpensSection';
 import CardNeedsSection from '@/components/CardNeedsSection';
 import Link from 'next/link';
+import PartnerTodoSection from '@/components/PartnerTodoSection';
 
 interface Stats {
   totalRestaurants: number;
@@ -66,6 +67,9 @@ export default function DashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+
+      {/* Quello che aspetta noi fra i partner: compare solo se c'è */}
+      <PartnerTodoSection />
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import type { Restaurant } from '@/lib/types';
@@ -17,6 +17,49 @@ interface Props {
 }
 
 type ViewStats = NonNullable<Props['viewStats']>;
+
+// LA TARGHETTA DEL PARTNER (richiesta dell'utente, 19/09): se il ristorante
+// è associato a un locale del portale, l'admin lo deve sapere guardando la
+// scheda — cambia il peso di quello che fa qui (un ristorante associato non
+// si elimina: il database lo rifiuta, 721). Dice di quale locale e a che
+// punto è l'associazione, e porta alla pagina dove si decide.
+// Una sola associazione in corso per ristorante (indice della 721).
+function PartnerBadge({ restaurantId }: { restaurantId: string }) {
+  const [card, setCard] = useState<{ status: string; reviewed_at: string | null; venue: string } | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('partner_cards')
+      .select('status, reviewed_at, partner_venues(name)')
+      .eq('restaurant_id', restaurantId)
+      .in('status', ['active', 'paused', 'suspended'])
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return setCard(null);
+        const venue = (data.partner_venues as unknown as { name: string | null } | null)?.name;
+        setCard({ status: data.status, reviewed_at: data.reviewed_at, venue: venue?.trim() || 'Locale senza nome' });
+      });
+  }, [restaurantId]);
+
+  if (!card) return null;
+  const stato =
+    card.status === 'suspended'
+      ? { label: 'sospesa', tono: 'bg-danger-soft text-danger-strong' }
+      : !card.reviewed_at
+        ? { label: 'da approvare', tono: 'bg-warning-soft text-warning-soft-foreground' }
+        : card.status === 'paused'
+          ? { label: 'in pausa', tono: 'bg-muted text-foreground' }
+          : { label: 'approvata', tono: 'bg-success-soft text-success-soft-foreground' };
+  return (
+    <a
+      href="/associations"
+      className={`inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 ${stato.tono}`}
+      title="Apri le associazioni"
+    >
+      Partner: {card.venue} · {stato.label}
+    </a>
+  );
+}
 
 // Popover con il dettaglio delle aperture scheda: stessa meccanica CSS di
 // InfoHint (hover + focus), ma con i numeri delle due sorgenti oltre alla
@@ -202,6 +245,7 @@ export default function RestaurantHeader({ restaurant, stats, viewStats, reportC
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">{restaurant.name}</h1>
+          <PartnerBadge restaurantId={restaurant.id} />
           <p className="text-muted-foreground">
             {restaurant.address}
             {' '}
