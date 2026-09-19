@@ -540,7 +540,8 @@
       "deleteWriteConfirm": "Type {{word}} to confirm",
       "deletePlaceholder": "Type {{word}}",
       "saveError": "Couldn't save changes. Please try again.",
-      "deleteError": "Couldn't delete the account. Please try again."
+      "deleteError": "Couldn't delete the account. Please try again.",
+      "deletePartnerAccount": "This account also manages one or more venues on the partner portal. To delete it, write to us at info@allergiapp.com."
     },
     "favorites": {
       "title": "My favorites",

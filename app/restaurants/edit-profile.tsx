@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AppTheme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
-import { AuthService } from '../../services/auth';
+import { AuthService, PARTNER_ACCOUNT_ERROR } from '../../services/auth';
 import { PG_UNIQUE_VIOLATION } from '../../services/restaurant.types';
 import { useUsernameValidation } from '../../hooks/useUsernameValidation';
 import AppHeader from '../components/AppHeader';
@@ -132,7 +132,12 @@ export default function EditProfileScreen() {
       router.dismissAll();
     } catch (error: any) {
       closeDeleteModal();
-      Alert.alert(i18n.t('common.error'), i18n.t('restaurants.editProfile.deleteError'));
+      Alert.alert(
+        i18n.t('common.error'),
+        error?.message === PARTNER_ACCOUNT_ERROR
+          ? i18n.t('restaurants.editProfile.deletePartnerAccount')
+          : i18n.t('restaurants.editProfile.deleteError'),
+      );
     } finally {
       setDeleting(false);
     }

@@ -540,7 +540,8 @@
       "deleteWriteConfirm": "Scrivi {{word}} per confermare",
       "deletePlaceholder": "Scrivi {{word}}",
       "saveError": "Impossibile salvare le modifiche. Riprova.",
-      "deleteError": "Impossibile eliminare l'account. Riprova."
+      "deleteError": "Impossibile eliminare l'account. Riprova.",
+      "deletePartnerAccount": "Questo account gestisce anche uno o più locali sul portale partner. Per eliminarlo scrivici a info@allergiapp.com."
     },
     "favorites": {
       "title": "I miei preferiti",

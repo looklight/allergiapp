@@ -135,6 +135,8 @@ async function updateUsername(userId: string, username: string): Promise<void> {
   if (error) throw error;
 }
 
+export const PARTNER_ACCOUNT_ERROR = 'partner_account';
+
 async function deleteAccount(userId: string): Promise<void> {
   // Chiama la Edge Function che elimina profilo + auth.users con service_role
   const { data: { session } } = await supabase.auth.getSession();
@@ -143,7 +145,14 @@ async function deleteAccount(userId: string): Promise<void> {
   const { data, error } = await supabase.functions.invoke('delete-account', {
     headers: { Authorization: `Bearer ${session.access_token}` },
   });
-  if (error) throw error;
+  if (error) {
+    // 409 = l'account ha anche un profilo partner: dall'app non si elimina,
+    // lo fa il nostro team su richiesta (delete-account, migration 727).
+    // Il codice sta nel corpo della risposta, non nel messaggio dell'errore.
+    const body = await (error as { context?: Response }).context?.json().catch(() => null);
+    if (body?.error === PARTNER_ACCOUNT_ERROR) throw new Error(PARTNER_ACCOUNT_ERROR);
+    throw error;
+  }
   if (data?.error) throw new Error(data.error);
 
   // Sign out locale (sessione non piu valida)
