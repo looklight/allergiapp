@@ -15,9 +15,11 @@
 //
 // Non compare per 'none' (lo fa la riga «Associa il ristorante», che ha il
 // suo bottone) né per 'live' (non c'è niente da dire).
+import { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
-import type { CardState } from '@/lib/association';
+import { withdrawRequest, type CardState } from '@/lib/association';
+import ConfirmDialog from './menus/ConfirmDialog';
 import type { Venue } from '@/lib/venues';
 import RestaurantPhrase from './RestaurantPhrase';
 
@@ -32,6 +34,7 @@ export default function CardStateNotice({
   venue,
   linkHref,
   onResume,
+  onChanged,
   busy,
 }: {
   state: CardState;
@@ -39,9 +42,25 @@ export default function CardStateNotice({
   // Dove porta «Associa il ristorante»: la ricerca, o prima gli abbonamenti
   linkHref: string;
   onResume: () => void;
+  // Dopo un gesto fatto da qui (ritirare la richiesta): rileggere i locali
+  onChanged: () => void;
   busy: boolean;
 }) {
   const { d } = useI18n();
+  const [ritira, setRitira] = useState(false);
+  const [ritirando, setRitirando] = useState(false);
+  const [errore, setErrore] = useState(false);
+
+  async function confermaRitiro() {
+    setRitira(false);
+    if (!venue.request) return;
+    setRitirando(true);
+    setErrore(false);
+    const esito = await withdrawRequest(venue.request.id);
+    setRitirando(false);
+    if ('error' in esito) setErrore(true);
+    else onChanged();
+  }
   const n = d.cardState.notice;
   const ristorante = {
     name: venue.cardRestaurant?.name ?? venue.request?.restaurantName ?? '',
@@ -58,6 +77,20 @@ export default function CardStateNotice({
       tono = 'amber';
       titolo = n.requestedTitle;
       testo = <RestaurantPhrase template={n.requestedText} {...ristorante} />;
+      // Il ripensamento (726): una richiesta in attesa tiene il locale, e
+      // senza questo bottone lo terrebbe fino alla nostra decisione
+      dopo = (
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setRitira(true)}
+            disabled={ritirando}
+            className="rounded-lg border border-current/30 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-white/50 disabled:opacity-40"
+          >
+            {d.cardState.withdraw}
+          </button>
+        </div>
+      );
       break;
     case 'rejected':
       tono = 'gray';
@@ -144,6 +177,18 @@ export default function CardStateNotice({
       <p className="text-sm font-medium">{titolo}</p>
       <p className="mt-1 text-sm">{testo}</p>
       {dopo}
+      {errore && <p className="mt-2 text-sm text-[#C0392B]">{d.cardState.actionError}</p>}
+      {ritira && (
+        <ConfirmDialog
+          title={d.cardState.withdrawTitle}
+          subject={venue.request?.restaurantName}
+          body={d.cardState.withdrawBody}
+          confirmLabel={d.cardState.withdraw}
+          tone="neutral"
+          onCancel={() => setRitira(false)}
+          onConfirm={() => void confermaRitiro()}
+        />
+      )}
     </div>
   );
 }

@@ -735,6 +735,10 @@ const en: typeof it = {
     unlinkBody:
       'The listing disappears from the app right away. Linking it again will need a new check by our team. Dishes, menus and subscription stay with the venue.',
     actionError: 'That didn’t work: nothing changed.',
+    withdraw: 'Withdraw the request',
+    withdrawTitle: 'Withdraw the request?',
+    withdrawBody:
+      'Our team won’t review it anymore. The venue becomes free again: you can link it to another restaurant or make a new request.',
   },
   account: {
     title: 'Account',
@@ -754,6 +758,11 @@ const en: typeof it = {
     companiesEmpty: 'You enter them when you link a venue to its restaurant.',
     vatConfirmed: 'Verified',
     vatPending: 'Being checked',
+    companyEdit: 'Edit',
+    companySave: 'Save',
+    companyVatWarning:
+      'If you change the VAT number or country, this company’s links go back to review: they aren’t shown in the app until our team checks them again.',
+    companyErrDuplicate: 'You already have a company with this VAT number.',
     marketingTitle: 'Emails from us',
     marketingLabel: 'I want updates about AllergiApp Partner.',
     marketingHint: 'Change your mind whenever you like: it takes effect straight away.',

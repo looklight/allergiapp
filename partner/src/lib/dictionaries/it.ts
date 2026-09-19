@@ -1002,6 +1002,12 @@ const it = {
     unlinkBody:
       'La scheda sparisce subito dall’app. Per associarlo di nuovo servirà un nuovo controllo del nostro team. Piatti, menù e abbonamento restano sul locale.',
     actionError: 'Non è stato possibile: niente è cambiato.',
+    // Ritirare una richiesta in attesa (726): la decisione è di chi l'aveva
+    // chiesta, e da lì il locale è libero
+    withdraw: 'Ritira la richiesta',
+    withdrawTitle: 'Ritirare la richiesta?',
+    withdrawBody:
+      'Il nostro team non la valuterà più. Il locale torna libero: potrai associarlo a un altro ristorante o fare una nuova richiesta.',
   },
   account: {
     title: 'Account',
@@ -1024,6 +1030,12 @@ const it = {
     companiesEmpty: 'Li inserisci quando associ un locale al suo ristorante.',
     vatConfirmed: 'Verificata',
     vatPending: 'Da verificare',
+    // La modifica (19/09): ripassa dal controllo sul server
+    companyEdit: 'Modifica',
+    companySave: 'Salva',
+    companyVatWarning:
+      'Cambiando partita IVA o paese, le associazioni di questa azienda tornano in verifica: nell’app non si vedono finché il nostro team non le riguarda.',
+    companyErrDuplicate: 'Hai già un’azienda con questa partita IVA.',
     // Consenso marketing: si toglie con lo stesso gesto con cui si è dato
     marketingTitle: 'Comunicazioni',
     marketingLabel: 'Voglio ricevere aggiornamenti su AllergiApp Partner.',

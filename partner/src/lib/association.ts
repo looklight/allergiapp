@@ -257,3 +257,34 @@ export async function unlinkCard(cardId: string): Promise<Esito> {
   }
   return { ok: true };
 }
+
+// Ritirare la propria richiesta in attesa (726): da lì il locale è libero.
+export async function withdrawRequest(requestId: string): Promise<Esito> {
+  const { error } = await supabase.rpc('partner_withdraw_request', { p_request_id: requestId });
+  if (error) {
+    reportError('ritiro richiesta', error);
+    return { error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Corregge un'azienda (19/09): la stessa funzione sul server, con l'id.
+ * Cambiando P.IVA o paese le associazioni in corso di quell'azienda tornano
+ * da approvare (726): la pagina lo dice prima di salvare.
+ */
+export async function updateCompany(
+  companyId: string,
+  countryCode: string,
+  legalName: string,
+  vatNumber: string
+): Promise<Esito<{ companyId: string; vatStatus: VatStatus }>> {
+  const { data, error } = await supabase.functions.invoke('partner-company', {
+    body: { company_id: companyId, country_code: countryCode, legal_name: legalName, vat_number: vatNumber },
+  });
+  if (error || !data?.company_id) {
+    reportError('modifica azienda', error);
+    return { error: await chiaveErrore(error) };
+  }
+  return { ok: { companyId: data.company_id, vatStatus: data.vat_status } };
+}

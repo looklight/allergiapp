@@ -183,6 +183,7 @@ export default function LinkRestaurantPage() {
           venue={venue}
           linkHref=""
           onResume={() => {}}
+          onChanged={() => void rileggiLocali()}
           busy={false}
         />
       ) : subs !== null && !abbonato ? (

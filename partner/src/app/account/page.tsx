@@ -13,8 +13,9 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useSubscriptions, vale } from '@/lib/subscriptions';
-import { useCompanies, vatConfirmed } from '@/lib/association';
-import { countryName } from '@/lib/countries';
+import { updateCompany, useCompanies, vatConfirmed, type Company } from '@/lib/association';
+import { countries, countryName } from '@/lib/countries';
+import { useVenues } from '@/lib/venues';
 import ProTag from '@/components/ProTag';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -35,9 +36,12 @@ const cardClass = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm';
 
 export default function AccountPage() {
   const { session } = useAuth();
-  const { d, locale } = useI18n();
+  const { d } = useI18n();
   const { subs } = useSubscriptions();
-  const { companies } = useCompanies();
+  const { companies, reload: rileggiAziende } = useCompanies();
+  // Una modifica della P.IVA rimanda in verifica le associazioni (726): i
+  // locali vanno riletti, o la home direbbe ancora «attiva».
+  const { reload: rileggiLocali } = useVenues();
   const profile = usePartnerProfile();
   const aggiornaProfilo = useUpdatePartnerProfile();
   const userId = session?.user.id ?? null;
@@ -295,11 +299,10 @@ export default function AccountPage() {
           <p className="mt-2 text-xs text-gray-500">{d.account.marketingHint}</p>
         </div>
 
-        {/* LE AZIENDE (19/09): si inseriscono associando un locale al suo
-            ristorante, e qui si ritrovano — come promette la frase sotto il
-            modulo. Solo lettura per ora: la modifica deve ripassare dal
-            controllo sul server (il ristoratore non scrive questa tabella,
-            721), e arriva come passo a sé. */}
+        {/* LE AZIENDE (19/09): arrivano dal pagamento o si scrivono associando
+            un locale, e qui si ritrovano e si correggono. La modifica
+            ripassa dal controllo sul server (il ristoratore non scrive
+            questa tabella, 721). */}
         <div className={cardClass}>
           <p className="mb-1 text-sm font-medium text-gray-900">{d.account.companiesTitle}</p>
           {companies && companies.length > 0 ? (
@@ -307,17 +310,14 @@ export default function AccountPage() {
               <p className="mb-4 text-xs text-gray-500">{d.account.companiesHint}</p>
               <ul className="space-y-3">
                 {companies.map((c) => (
-                  <li key={c.id} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-                    <div className="min-w-0">
-                      <p className="text-sm text-gray-900">{c.legalName}</p>
-                      <p className="text-xs text-gray-500">
-                        {countryName(c.countryCode, locale)} · {c.vatNumber}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-xs text-gray-500">
-                      {vatConfirmed(c.vatStatus) ? d.account.vatConfirmed : d.account.vatPending}
-                    </span>
-                  </li>
+                  <AziendaRiga
+                    key={c.id}
+                    c={c}
+                    onSaved={() => {
+                      rileggiAziende();
+                      rileggiLocali();
+                    }}
+                  />
                 ))}
               </ul>
             </>
@@ -358,5 +358,122 @@ export default function AccountPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// UN'AZIENDA, e la sua modifica sul posto (19/09). Ragione sociale, paese e
+// P.IVA: gli stessi campi dell'associazione, e lo stesso controllo sul
+// server. Se cambiano P.IVA o paese si dice PRIMA di salvare cosa succede
+// (726): le associazioni di quell'azienda tornano in verifica.
+function AziendaRiga({ c, onSaved }: { c: Company; onSaved: () => void }) {
+  const { d, locale } = useI18n();
+  const [aperta, setAperta] = useState(false);
+  const [ragione, setRagione] = useState(c.legalName);
+  const [paese, setPaese] = useState(c.countryCode);
+  const [piva, setPiva] = useState(c.vatNumber);
+  const [inCorso, setInCorso] = useState(false);
+  const [errore, setErrore] = useState<string | null>(null);
+
+  // Confronto largo, come fa il server: spazi e maiuscole non contano
+  const pulita = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const identitaCambiata = paese !== c.countryCode || pulita(piva) !== c.vatNumber;
+
+  function apri() {
+    setRagione(c.legalName);
+    setPaese(c.countryCode);
+    setPiva(c.vatNumber);
+    setErrore(null);
+    setAperta(true);
+  }
+
+  async function salva(e: React.FormEvent) {
+    e.preventDefault();
+    setInCorso(true);
+    setErrore(null);
+    const esito = await updateCompany(c.id, paese, ragione.trim(), piva.trim());
+    setInCorso(false);
+    if ('error' in esito) {
+      setErrore(esito.error);
+      return;
+    }
+    setAperta(false);
+    onSaved();
+  }
+
+  const messaggioErrore = (k: string) =>
+    k === 'vat_invalid'
+      ? d.link.errVat
+      : k === 'name_invalid'
+        ? d.link.errName
+        : k === 'duplicate'
+          ? d.account.companyErrDuplicate
+          : d.link.errGeneric;
+
+  if (!aperta) {
+    return (
+      <li className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+        <div className="min-w-0">
+          <p className="text-sm text-gray-900">{c.legalName}</p>
+          <p className="text-xs text-gray-500">
+            {countryName(c.countryCode, locale)} · {c.vatNumber}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-xs text-gray-500">
+            {vatConfirmed(c.vatStatus) ? d.account.vatConfirmed : d.account.vatPending}
+          </span>
+          <button type="button" onClick={apri} className="text-xs font-medium text-gray-700 underline hover:text-gray-900">
+            {d.account.companyEdit}
+          </button>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <form onSubmit={salva} className="space-y-3 rounded-xl border border-gray-200 p-3">
+        <div>
+          <label className={labelClass}>{d.link.legalName}</label>
+          <input value={ragione} onChange={(e) => setRagione(e.target.value)} maxLength={200} className={inputClass} />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className={labelClass}>{d.link.country}</label>
+            <select value={paese} onChange={(e) => setPaese(e.target.value)} className={inputClass}>
+              {countries(locale).map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>{d.link.vatNumber}</label>
+            <input value={piva} onChange={(e) => setPiva(e.target.value)} maxLength={30} className={inputClass} />
+          </div>
+        </div>
+        {identitaCambiata && (
+          <p className="rounded-lg bg-[#FDF3E3] px-3 py-2 text-xs text-[#7A5418]">{d.account.companyVatWarning}</p>
+        )}
+        {errore && <p className="text-sm text-[#C0392B]">{messaggioErrore(errore)}</p>}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setAperta(false)}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            {d.common.cancel}
+          </button>
+          <button
+            type="submit"
+            disabled={inCorso || ragione.trim().length < 2 || piva.trim().length < 4}
+            className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-40"
+          >
+            {inCorso ? d.link.submitting : d.account.companySave}
+          </button>
+        </div>
+      </form>
+    </li>
   );
 }

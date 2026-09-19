@@ -253,7 +253,8 @@ export interface Venue extends VenueDraft {
   // L'ULTIMA richiesta al nostro team per questo locale (ristorante di un
   // altro account, o ritorno dopo una revoca): in attesa, o com'è finita.
   request: {
-    status: 'pending' | 'accepted' | 'rejected';
+    id: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
     restaurantName: string;
     note: string;
   } | null;
@@ -410,7 +411,7 @@ async function loadVenues(): Promise<Venue[]> {
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
         'partner_links(*), partner_cards(id, status, status_note, reviewed_at, restaurants(name, slug)), ' +
-        'partner_card_requests(status, decision_note, created_at, restaurants(name)), ' +
+        'partner_card_requests(id, status, decision_note, created_at, restaurants(name)), ' +
         'partner_card_dishes(dish_id)'
     )
     .order('created_at', { ascending: true });
@@ -454,6 +455,7 @@ async function loadVenues(): Promise<Venue[]> {
       cardNote: card?.status_note ?? '',
       request: richiesta
         ? {
+            id: richiesta.id,
             status: richiesta.status,
             restaurantName: richiesta.restaurants?.name ?? '',
             note: richiesta.decision_note ?? '',

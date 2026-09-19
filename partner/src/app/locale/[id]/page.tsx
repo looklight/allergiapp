@@ -498,6 +498,7 @@ export default function VenueEditorPage() {
           venue={venue}
           linkHref={verso}
           onResume={() => void pausa(false)}
+          onChanged={() => void rileggiLocali()}
           busy={gesto}
         />
         {/* L'INTESTAZIONE COME LE ALTRE PAGINE PRINCIPALI (richiesta
