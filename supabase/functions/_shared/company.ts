@@ -107,7 +107,33 @@ async function chiediAVies(country: string, vat: string): Promise<EsitoVies> {
 export type EsitoAzienda =
   | { company_id: string; vat_status: string }
   // Chiavi che il portale traduce
-  | { error: "vat_invalid" | "name_invalid" | "country_invalid" | "too_many" | "save_failed" };
+  | {
+    error:
+      | "vat_invalid"
+      | "name_invalid"
+      | "country_invalid"
+      | "too_many"
+      | "save_failed"
+      | "not_found"
+      | "duplicate";
+  };
+
+// Paese, ragione sociale e P.IVA letti e controllati: la parte comune a
+// creare e modificare.
+function controlla(
+  rawCountry: string,
+  rawLegalName: string,
+  rawVat: string,
+): { country: string; legalName: string; vat: string } | { error: "vat_invalid" | "name_invalid" | "country_invalid" } {
+  const country = rawCountry.toUpperCase();
+  const legalName = rawLegalName.trim().replace(/\s+/g, " ");
+  if (!/^[A-Z]{2}$/.test(country)) return { error: "country_invalid" };
+  if (legalName.length < 2 || legalName.length > 200) return { error: "name_invalid" };
+  const vat = pulisci(country, rawVat);
+  if (vat.length < 4 || vat.length > 20) return { error: "vat_invalid" };
+  if (country === "IT" && !partitaIvaValida(vat)) return { error: "vat_invalid" };
+  return { country, legalName, vat };
+}
 
 /**
  * Salva l'azienda di un account, o ritrova quella che c'è già (una per
@@ -120,14 +146,9 @@ export async function salvaAzienda(
   rawLegalName: string,
   rawVat: string,
 ): Promise<EsitoAzienda> {
-  const country = rawCountry.toUpperCase();
-  const legalName = rawLegalName.trim().replace(/\s+/g, " ");
-  if (!/^[A-Z]{2}$/.test(country)) return { error: "country_invalid" };
-  if (legalName.length < 2 || legalName.length > 200) return { error: "name_invalid" };
-
-  const vat = pulisci(country, rawVat);
-  if (vat.length < 4 || vat.length > 20) return { error: "vat_invalid" };
-  if (country === "IT" && !partitaIvaValida(vat)) return { error: "vat_invalid" };
+  const letti = controlla(rawCountry, rawLegalName, rawVat);
+  if ("error" in letti) return letti;
+  const { country, legalName, vat } = letti;
 
   // Già c'è: si riusa. La ragione sociale non si riscrive da qui — per
   // cambiarla ci sarà la modifica dall'Account, che rifà il controllo.
@@ -180,4 +201,71 @@ export async function salvaAzienda(
     return { error: "save_failed" };
   }
   return { company_id: creata.id, vat_status: creata.vat_status };
+}
+
+/**
+ * Modifica un'azienda dell'account (19/09). La ragione sociale si corregge e
+ * basta; P.IVA o paese diversi rifanno il controllo su VIES e, per il
+ * trigger della 726, rimandano da approvare le associazioni in corso di
+ * quell'azienda. Non si può trasformarla in un'altra azienda che l'account
+ * ha già: si usa quella.
+ */
+export async function aggiornaAzienda(
+  admin: SupabaseClient,
+  ownerUserId: string,
+  companyId: string,
+  rawCountry: string,
+  rawLegalName: string,
+  rawVat: string,
+): Promise<EsitoAzienda> {
+  const letti = controlla(rawCountry, rawLegalName, rawVat);
+  if ("error" in letti) return letti;
+  const { country, legalName, vat } = letti;
+
+  const { data: attuale } = await admin
+    .from("partner_companies")
+    .select("id, country_code, vat_number, vat_status")
+    .eq("id", companyId)
+    .eq("owner_user_id", ownerUserId)
+    .maybeSingle();
+  if (!attuale) return { error: "not_found" };
+
+  const identitaCambiata = attuale.country_code !== country || attuale.vat_number !== vat;
+
+  if (!identitaCambiata) {
+    const { error } = await admin.from("partner_companies").update({ legal_name: legalName }).eq("id", companyId);
+    if (error) {
+      console.error("[company] modifica fallita:", error);
+      return { error: "save_failed" };
+    }
+    return { company_id: companyId, vat_status: attuale.vat_status };
+  }
+
+  const { data: doppione } = await admin
+    .from("partner_companies")
+    .select("id")
+    .eq("owner_user_id", ownerUserId)
+    .eq("country_code", country)
+    .eq("vat_number", vat)
+    .maybeSingle();
+  if (doppione) return { error: "duplicate" };
+
+  const esito: EsitoVies = VIES[country] ? await chiediAVies(country, vat) : { stato: "unverified" };
+  const { error } = await admin
+    .from("partner_companies")
+    .update({
+      country_code: country,
+      legal_name: legalName,
+      vat_number: vat,
+      vat_status: esito.stato,
+      vat_checked_at: esito.stato === "unverified" ? null : new Date().toISOString(),
+      vies_name: esito.stato === "vies_valid" ? esito.nome : null,
+      vies_address: esito.stato === "vies_valid" ? esito.sede : null,
+    })
+    .eq("id", companyId);
+  if (error) {
+    console.error("[company] modifica fallita:", error);
+    return { error: error.code === "23505" ? "duplicate" : "save_failed" };
+  }
+  return { company_id: companyId, vat_status: esito.stato };
 }

@@ -3,13 +3,16 @@
 // che la P.IVA non l'ha chiesta. Di solito invece arriva da sola al pagamento
 // (stripe-webhook), e il portale la propone già compilata.
 //
+// E la MODIFICA dall'Account (19/09): con `company_id` nel corpo si corregge
+// un'azienda che c'è già, invece di crearne una.
+//
 // Il controllo e il salvataggio stanno in _shared/company.ts, gli stessi del
 // webhook. Qui c'è solo chi chiama: un partner connesso, per la sua azienda.
 //
 // Risponde { company_id, vat_status } oppure { error } con una chiave che il
 // portale traduce (v. _shared/company.ts, più not_partner).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { salvaAzienda } from "../_shared/company.ts";
+import { aggiornaAzienda, salvaAzienda } from "../_shared/company.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,18 +52,28 @@ Deno.serve(async (req) => {
     if (!account) return json(403, { error: "not_partner" });
 
     const body = await req.json().catch(() => ({})) as {
+      company_id?: string;
       country_code?: string;
       legal_name?: string;
       vat_number?: string;
     };
 
-    const esito = await salvaAzienda(
-      admin,
-      caller.id,
-      body.country_code ?? "",
-      body.legal_name ?? "",
-      body.vat_number ?? "",
-    );
+    const esito = body.company_id
+      ? await aggiornaAzienda(
+        admin,
+        caller.id,
+        body.company_id,
+        body.country_code ?? "",
+        body.legal_name ?? "",
+        body.vat_number ?? "",
+      )
+      : await salvaAzienda(
+        admin,
+        caller.id,
+        body.country_code ?? "",
+        body.legal_name ?? "",
+        body.vat_number ?? "",
+      );
     if ("error" in esito) {
       return json(esito.error === "save_failed" ? 500 : 400, esito);
     }
