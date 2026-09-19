@@ -1,6 +1,7 @@
 -- ============================================================
 -- 726_request_withdraw_company_edit.sql
--- STATO: DA APPLICARE via SQL editor. Tracking fermo alla 045: a mano,
+-- STATO: APPLICATA il 2026-09-19 e verificata (funzione di ritiro, quarto
+-- stato, trigger sulle aziende, registro). Tracking fermo alla 045: a mano,
 -- MAI db push.
 --
 -- DUE PEZZI CHE CHIUDONO IL GIRO DEL PORTALE (19/09), prima della prova con
