@@ -928,8 +928,12 @@ Ricadute tecniche (già riportate nella bozza 700):
 > davvero. Scheda in app e risposte alle recensioni viaggiano insieme, in una
 > build nativa.
 
-> **Dove siamo (17/09):** passi 1 e 2 FATTI. Prossimo: passo 3 (fuori dal
-> codice) e, in parallelo, il design dell'associazione del passo 5.
+> **Dove siamo (19/09):** passi 1 e 2 FATTI. Del passo 5 è **fatta e online
+> l'associazione** (parti 1-3: database 721-726, portale, dashboard admin),
+> col visto del nostro team prima che una scheda si veda. Resta la **parte 4,
+> l'app** (scheda letta dall'app, contorno del pin, risposte alle recensioni,
+> `ORDER BY is_premium` neutralizzato), che chiede la build nativa. Da fare
+> anche il passo 3 (ristoratori veri) e il 4 (fatturazione, commercialista).
 
 **Passo 1 — le fondamenta, tutte lato web** ✅ FATTO il 16/09 (nessun
 incasso, nessun obbligo nuovo)
