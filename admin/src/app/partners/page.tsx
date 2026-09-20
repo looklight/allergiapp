@@ -50,6 +50,9 @@ interface PartnerVenue {
   ex_ends_at: string | null;
   // Com'è la scheda nell'app (729): la stessa regola del portale
   card_state: 'none' | 'requested' | 'review' | 'suspended' | 'paused' | 'live' | 'expired';
+  // Chi è ancora vivo (730): ultimo accesso al portale, ultima modifica qui
+  last_sign_in_at: string | null;
+  last_edit_at: string | null;
 }
 
 // Chi si è iscritto e non ha ancora creato un locale (725): nella tabella,
@@ -230,6 +233,9 @@ export default function PartnersPage() {
   const [loading, setLoading] = useState(true);
   // Il locale a cui si sta concedendo l'abbonamento: null = nessun modulo aperto
   const [granting, setGranting] = useState<PartnerVenue | null>(null);
+  // Ritirare dal web o liberare l'indirizzo: due gesti col loro motivo (730)
+  const [azione, setAzione] = useState<{ tipo: 'ritira' | 'libera'; r: PartnerVenue } | null>(null);
+  const [motivoAzione, setMotivoAzione] = useState('');
   const [note, setNote] = useState('');
   const [mesi, setMesi] = useState('12');
   const [busy, setBusy] = useState(false);
@@ -367,6 +373,29 @@ export default function PartnersPage() {
     setGranting(null);
     setNote('');
     setMesi('12');
+    load();
+  }
+
+  // RITIRA DAL WEB / LIBERA L'INDIRIZZO (730): il motivo è obbligatorio e
+  // finisce nel registro, come ogni gesto dell'admin su un locale.
+  async function confermaAzione() {
+    if (!azione || !motivoAzione.trim()) return;
+    setBusy(true);
+    const { error } = await supabase.rpc(
+      azione.tipo === 'ritira' ? 'admin_unpublish_menu' : 'admin_release_slug',
+      { p_venue_id: azione.r.venue_id, p_note: motivoAzione.trim() },
+    );
+    setBusy(false);
+    if (error) {
+      alert(
+        error.message === 'still_online'
+          ? 'Prima ritira il menù dal web: un menù online non può restare senza indirizzo.'
+          : `Errore: ${error.message}`,
+      );
+      return;
+    }
+    setAzione(null);
+    setMotivoAzione('');
     load();
   }
 
@@ -674,6 +703,12 @@ export default function PartnersPage() {
                       <p className="text-xs text-faint">—</p>
                     )}
                     <p className="text-xs text-faint">iscritto il {data(r.signed_up_at)}</p>
+                    {/* Chi ha mollato si riconosce da qui (730): se l'ultimo
+                        accesso è vecchio e non ha mai pubblicato, è andato. */}
+                    <p className="text-xs text-faint">
+                      ultimo accesso {r.last_sign_in_at ? data(r.last_sign_in_at) : 'mai'} · modificato{' '}
+                      {data(r.last_edit_at)}
+                    </p>
                   </td>
                   <td className="px-4 py-3">
                     <p>
@@ -709,6 +744,26 @@ export default function PartnersPage() {
                         className="px-3 py-1.5 rounded border border-border text-xs font-medium text-danger hover:bg-muted"
                       >
                         Revoca
+                      </button>
+                    )}
+                    {/* QUANDO UN RISTORATORE MOLLA (730): il menù esce dal
+                        web e l'indirizzo torna disponibile. Uno alla volta e
+                        in quest'ordine: il database non lascia liberare
+                        l'indirizzo di un menù ancora online. */}
+                    {r.published_at !== null && (
+                      <button
+                        onClick={() => setAzione({ tipo: 'ritira', r })}
+                        className="px-3 py-1.5 rounded border border-border text-xs font-medium hover:bg-muted"
+                      >
+                        Ritira dal web
+                      </button>
+                    )}
+                    {r.published_at === null && r.slug && (
+                      <button
+                        onClick={() => setAzione({ tipo: 'libera', r })}
+                        className="px-3 py-1.5 rounded border border-border text-xs font-medium hover:bg-muted"
+                      >
+                        Libera indirizzo
                       </button>
                     )}
                     {r.sub_id && r.sub_source === 'stripe' && (
@@ -792,6 +847,47 @@ export default function PartnersPage() {
           ))}
         </div>
         </>
+      )}
+
+      {azione && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setAzione(null)}
+        >
+          <div className="bg-card rounded-xl shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-bold mb-1">
+              {azione.tipo === 'ritira' ? 'Ritira il menù dal web' : 'Libera l’indirizzo'}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              {azione.r.venue_name?.trim() || 'Locale senza nome'}
+              {azione.r.slug ? ` · /menu/${azione.r.slug}` : ''}
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              {azione.tipo === 'ritira'
+                ? 'Chi inquadra il QR leggerà che il menù non è al momento disponibile. Menù, piatti e indirizzo restano al ristoratore, che può rimetterlo online.'
+                : 'L’indirizzo resta riservato per 30 giorni, poi torna disponibile per tutti. Il ristoratore può sceglierne un altro quando vuole.'}
+            </p>
+            <label className="block text-xs text-faint mb-1">Motivo (obbligatorio: resta nel registro)</label>
+            <input
+              value={motivoAzione}
+              onChange={(e) => setMotivoAzione(e.target.value)}
+              placeholder="es. account abbandonato da mesi"
+              className="w-full mb-4 px-3 py-2 rounded border border-border bg-card text-sm"
+            />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setAzione(null)} className="px-3 py-1.5 rounded border border-border text-sm">
+                Annulla
+              </button>
+              <button
+                onClick={confermaAzione}
+                disabled={busy || !motivoAzione.trim()}
+                className="px-3 py-1.5 rounded bg-danger text-white text-sm font-medium disabled:opacity-40"
+              >
+                {azione.tipo === 'ritira' ? 'Ritira' : 'Libera'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {granting && (
