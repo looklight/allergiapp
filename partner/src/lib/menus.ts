@@ -208,6 +208,9 @@ function toMenu(row: any): Menu {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 async function loadMenus(): Promise<Menu[]> {
+  // Solo i propri: v. currentUserId (un admin vedrebbe quelli di tutti)
+  const uid = await currentUserId();
+  if (!uid) return [];
   const { data, error } = await supabase
     .from('partner_menus')
     .select(
@@ -215,6 +218,7 @@ async function loadMenus(): Promise<Menu[]> {
         'partner_menu_sections(id, kind, name, description, sort_order), ' +
         'partner_menu_items(id, dish_id, section_id, price_cents, highlighted, highlight_note, sort_order)'
     )
+    .eq('owner_user_id', uid)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true });
   reportError('lettura menù', error);

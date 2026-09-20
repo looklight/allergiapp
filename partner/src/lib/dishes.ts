@@ -70,9 +70,13 @@ function fromDish(data: Omit<Dish, 'id'>) {
 }
 
 async function loadDishes(): Promise<Dish[]> {
+  // Solo i propri: v. currentUserId (un admin vedrebbe quelli di tutti)
+  const uid = await currentUserId();
+  if (!uid) return [];
   const { data, error } = await supabase
     .from('partner_dishes')
     .select('*, partner_dish_translations(language, name, description)')
+    .eq('owner_user_id', uid)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true });
   reportError('lettura piatti', error);

@@ -66,6 +66,28 @@ function subscribe(ascolta: () => void) {
 
 const fermo: SaveState = { saving: false, savedAt: null, failed: 0 };
 
+// Quando non c'è più nessuna scrittura in volo. Serve a PUBBLICARE: la
+// pubblicazione copia la bozza dal database, quindi deve partire dopo che
+// l'ultima modifica ci è arrivata — non prima, o pubblicherebbe la versione
+// di un attimo fa.
+export function whenIdle(): Promise<void> {
+  if (inCorso === 0) return Promise.resolve();
+  return new Promise((resolve) => {
+    const guarda = () => {
+      if (inCorso !== 0) return;
+      ascoltatori.delete(guarda);
+      resolve();
+    };
+    ascoltatori.add(guarda);
+  });
+}
+
+// Scritture rifiutate ancora da rifare: con una di queste in sospeso la
+// bozza nel database non è quella a schermo, e pubblicarla sarebbe sbagliato
+export function hasFailedWrites(): boolean {
+  return fallite.length > 0;
+}
+
 export function useSaveState(): SaveState {
   // Sul server non esistono scritture: l'istantanea è ferma, e sarebbe un
   // oggetto nuovo a ogni chiamata se non fosse una costante

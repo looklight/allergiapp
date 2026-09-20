@@ -11,7 +11,7 @@
 // perché hanno bisogno della chiave segreta di Stripe: aprire il pagamento e
 // aprire il pannello del cliente (carta, disdetta, fatture).
 import { supabase } from './supabase';
-import { reportError, useRemoteList } from './storage';
+import { currentUserId, reportError, useRemoteList } from './storage';
 
 export type Plan = 'monthly' | 'yearly';
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled';
@@ -31,10 +31,13 @@ export type Subscription = {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function loadSubscriptions(): Promise<Subscription[]> {
-  // Le RLS mostrano solo i propri, quindi non serve filtrare per utente.
+  // Solo i propri: v. currentUserId (un admin vedrebbe quelli di tutti)
+  const uid = await currentUserId();
+  if (!uid) return [];
   const { data, error } = await supabase
     .from('partner_subscriptions')
     .select('id, venue_id, source, plan, status, ends_at, cancel_at_period_end')
+    .eq('owner_user_id', uid)
     .order('created_at', { ascending: false });
   reportError('lettura abbonamenti', error);
 

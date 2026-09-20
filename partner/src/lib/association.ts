@@ -8,8 +8,9 @@
 // abbonamento, proprietà, P.IVA e ristoranti già presi, e ne traduce gli
 // errori.
 import { supabase } from './supabase';
-import { reportError, useRemoteList } from './storage';
+import { currentUserId, reportError, useRemoteList } from './storage';
 import type { Venue } from './venues';
+import type { Stato } from '@/components/StatusPill';
 
 // Chi tiene il ristorante, detto senza dire chi (nodo 2):
 //   free   libero
@@ -94,10 +95,13 @@ export type Company = {
 };
 
 async function loadCompanies(): Promise<Company[]> {
-  // Le RLS mostrano solo le proprie
+  // Solo le proprie: v. currentUserId (un admin vedrebbe quelle di tutti)
+  const uid = await currentUserId();
+  if (!uid) return [];
   const { data, error } = await supabase
     .from('partner_companies')
     .select('id, country_code, legal_name, vat_number, vat_status')
+    .eq('owner_user_id', uid)
     .order('created_at', { ascending: true });
   reportError('lettura aziende', error);
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -204,26 +208,46 @@ export async function requestRestaurant(
 //   none       non associato
 //   requested  richiesta al nostro team in attesa
 //   rejected   l'ultima richiesta non è stata accolta
+//   closed     l'associazione l'abbiamo chiusa noi (revocata o non
+//              approvata): col motivo
 //   suspended  sospesa dal nostro team (col motivo)
 //   review     associata, in attesa del nostro visto
 //   paused     messa in pausa dal ristoratore
 //   expired    associata, ma l'abbonamento è finito
-//   noDishes   tutto a posto, manca almeno un piatto
 //   live       si vede nell'app
 export type CardState =
   | 'none'
   | 'requested'
   | 'rejected'
+  | 'closed'
   | 'suspended'
   | 'review'
   | 'paused'
   | 'expired'
-  | 'noDishes'
   | 'live';
+
+// Il colore del pallino per ogni stato della scheda: verde solo quando si
+// vede nell'app, ambra quando si aspetta qualcosa (noi, o una richiesta),
+// grigio quando tocca al ristoratore o non è ancora cominciata. Un posto
+// solo: lo usano la home e la pagina della scheda, che devono dire la
+// stessa cosa.
+export const CARD_TONE: Record<CardState, Stato> = {
+  none: 'todo',
+  requested: 'draft',
+  rejected: 'todo',
+  closed: 'todo',
+  suspended: 'draft',
+  review: 'draft',
+  paused: 'todo',
+  expired: 'todo',
+  live: 'ready',
+};
 
 export function cardState(venue: Venue, subscribed: boolean): CardState {
   if (venue.cardId === null) {
     if (venue.request?.status === 'pending') return 'requested';
+    // closedByUs c'è solo se la chiusura è più recente dell'ultima richiesta
+    if (venue.closedByUs) return 'closed';
     if (venue.request?.status === 'rejected') return 'rejected';
     return 'none';
   }
@@ -231,7 +255,6 @@ export function cardState(venue: Venue, subscribed: boolean): CardState {
   if (!venue.cardReviewed) return 'review';
   if (venue.cardStatus === 'paused') return 'paused';
   if (!subscribed) return 'expired';
-  if (venue.dishIds.length === 0) return 'noDishes';
   return 'live';
 }
 

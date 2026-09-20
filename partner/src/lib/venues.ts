@@ -22,7 +22,7 @@ import { currentUserId, onForget, reportError, useDebouncedSave, useRemoteList }
 import { DEFAULT_ACCENT } from './menuBrand';
 import { socialProvider } from './socials';
 import { deleteCover, deleteLogo } from './photos';
-import { write } from './saveState';
+import { hasFailedWrites, whenIdle, write } from './saveState';
 
 // I tre stili dei titoli di sezione. Sono un elenco chiuso anche nel
 // database (CHECK della 709): aggiungerne uno vuol dire toccare tutte e due.
@@ -258,6 +258,24 @@ export interface Venue extends VenueDraft {
     restaurantName: string;
     note: string;
   } | null;
+  // L'ASSOCIAZIONE CHIUSA DAL NOSTRO TEAM (revocata, o rifiutata alla prima
+  // occhiata), col motivo che il ristoratore deve poter leggere (DSA art.
+  // 17). Solo quando è la cosa PIÙ RECENTE successa sul locale: se dopo c'è
+  // stata una richiesta o un'altra associazione, conta quella. null
+  // altrimenti.
+  closedByUs: {
+    restaurantName: string;
+    note: string;
+    // chiusa nell'istante in cui la guardavamo la prima volta: non è mai
+    // stata approvata (stessa regola della pagina Associazioni in admin)
+    neverApproved: boolean;
+  } | null;
+  // LA SCHEDA PUBBLICATA (728): link e piatti che l'app mostra quando la
+  // scheda è visibile. La BOZZA sono `links` e `dishIds` qui sopra, e si
+  // salvano da soli; questa cambia solo con Pubblica. null = mai
+  // pubblicata. I dati dei piatti (nome, allergeni) non ci sono di
+  // proposito: l'app li legge dal catalogo, e una correzione non aspetta.
+  published: { links: DraftLinks; dishIds: string[]; at: string } | null;
   // COME SI VEDE IL MENÙ AL TAVOLO. Sta sul locale e non sul menù come il
   // logo e il colore: al tavolo è UNA pagina sola (Tema 13).
   //
@@ -401,6 +419,9 @@ function fromLinks(venueId: string, links: DraftLinks) {
 const LIVE_CARD = ['active', 'paused', 'suspended'];
 
 async function loadVenues(): Promise<Venue[]> {
+  // Solo i propri: v. currentUserId (un admin vedrebbe quelli di tutti)
+  const uid = await currentUserId();
+  if (!uid) return [];
   // Le schede arrivano tutte, storico compreso: quella in corso la sceglie
   // LIVE_CARD qui sotto (una sola per locale, indice della 721).
   const { data, error } = await supabase
@@ -410,10 +431,12 @@ async function loadVenues(): Promise<Venue[]> {
         'dish_photo_shape, line_height, menu_layout, dish_separator, allergen_display, ' +
         'show_dish_descriptions, section_style, heading_font, ' +
         'text_scale, cover_url, ' +
-        'partner_links(*), partner_cards(id, status, status_note, reviewed_at, restaurants(name, slug)), ' +
-        'partner_card_requests(id, status, decision_note, created_at, restaurants(name)), ' +
-        'partner_card_dishes(dish_id)'
+        'partner_links(*), partner_cards(id, status, status_note, reviewed_at, status_changed_at, restaurants(name, slug)), ' +
+        'partner_card_requests(id, status, decision_note, created_at, decided_at, restaurants(name)), ' +
+        'partner_card_dishes(dish_id), ' +
+        'partner_card_published(links, published_at), partner_card_dishes_published(dish_id)'
     )
+    .eq('owner_user_id', uid)
     .order('created_at', { ascending: true });
   reportError('lettura locali', error);
 
@@ -428,6 +451,36 @@ async function loadVenues(): Promise<Venue[]> {
       [...(row.partner_card_requests ?? [])].sort((a: any, b: any) =>
         String(b.created_at).localeCompare(String(a.created_at))
       )[0] ?? null;
+    // L'ultima associazione chiusa, se il locale non ne ha una in corso: se è
+    // una revoca nostra e nient'altro è successo dopo, il ristoratore deve
+    // leggerne il motivo. Scollegata da lui = niente da spiegare.
+    const chiusa = card
+      ? null
+      : [...(row.partner_cards ?? [])].sort((a: any, b: any) =>
+          String(b.status_changed_at).localeCompare(String(a.status_changed_at))
+        )[0] ?? null;
+    const dopoLaRichiesta =
+      !richiesta ||
+      (chiusa != null &&
+        new Date(chiusa.status_changed_at).getTime() >
+          new Date(richiesta.decided_at ?? richiesta.created_at).getTime());
+    const closedByUs =
+      chiusa?.status === 'revoked' && dopoLaRichiesta
+        ? {
+            restaurantName: chiusa.restaurants?.name ?? '',
+            note: chiusa.status_note ?? '',
+            neverApproved:
+              chiusa.reviewed_at != null &&
+              Math.abs(
+                new Date(chiusa.reviewed_at).getTime() - new Date(chiusa.status_changed_at).getTime()
+              ) < 1000,
+          }
+        : null;
+    // Una per locale (la chiave è il locale): PostgREST la dà come oggetto,
+    // ma a seconda di come riconosce la relazione può arrivare in una lista
+    const pubblicata = Array.isArray(row.partner_card_published)
+      ? (row.partner_card_published[0] ?? null)
+      : (row.partner_card_published ?? null);
     return {
       id: row.id,
       venueName: row.name ?? '',
@@ -459,6 +512,14 @@ async function loadVenues(): Promise<Venue[]> {
             status: richiesta.status,
             restaurantName: richiesta.restaurants?.name ?? '',
             note: richiesta.decision_note ?? '',
+          }
+        : null,
+      closedByUs,
+      published: pubblicata
+        ? {
+            links: toLinks(pubblicata.links ?? []),
+            dishIds: (row.partner_card_dishes_published ?? []).map((d: any) => d.dish_id),
+            at: pubblicata.published_at,
           }
         : null,
       dishIds: (row.partner_card_dishes ?? []).map((d: any) => d.dish_id),
@@ -659,10 +720,67 @@ export async function unpublishMenu(venueId: string): Promise<boolean> {
 }
 
 // venues è null finché la prima lettura non è tornata
+// I tocchi sui piatti della scheda non ancora arrivati al database: Pubblica
+// li aspetta (v. publishCard)
+const piattiInVolo = new Set<Promise<void>>();
+
+// Accende o spegne piatti sulla bozza della scheda, nel database. Le
+// scritture sono IDEMPOTENTI — accendere un piatto già acceso non fa niente,
+// spegnerne uno spento nemmeno — così un "Riprova" arrivato tardi o un doppio
+// tocco non rompono niente. La chiave è il locale più l'insieme dei piatti:
+// due tocchi rapidi sullo stesso interruttore lasciano da rifare solo
+// l'ultimo.
+async function scriviPiattiDb(venueId: string, dishIds: string[], on: boolean) {
+  const chiave = sceltaPiatti(venueId, dishIds);
+  if (on) {
+    const ownerId = await currentUserId();
+    if (!ownerId) return;
+    await write(
+      dishIds.length === 1 ? 'accensione piatto' : 'accensione piatti',
+      () =>
+        supabase
+          .from('partner_card_dishes')
+          .upsert(
+            dishIds.map((dishId) => ({ venue_id: venueId, dish_id: dishId, owner_user_id: ownerId })),
+            { onConflict: 'venue_id,dish_id', ignoreDuplicates: true }
+          ),
+      chiave
+    );
+  } else {
+    await write(
+      dishIds.length === 1 ? 'spegnimento piatto' : 'spegnimento piatti',
+      () =>
+        supabase
+          .from('partner_card_dishes')
+          .delete()
+          .eq('venue_id', venueId)
+          .in('dish_id', dishIds),
+      chiave
+    );
+  }
+}
+
+// La scheda ha modifiche non ancora pubblicate? Si confrontano i link della
+// SCHEDA (i social no: sono del menù al tavolo) passati dalla stessa forma
+// con cui si scrivono, e l'insieme dei piatti. Mai pubblicata: ha modifiche
+// se c'è qualcosa da mostrare.
+function linkDellaScheda(links: DraftLinks): string {
+  return JSON.stringify(fromLinks('', { ...links, socials: [] }));
+}
+
+export function cardHasChanges(venue: Venue): boolean {
+  const pubblicata = venue.published;
+  if (!pubblicata) return countLinks(venue.links) > 0 || venue.dishIds.length > 0;
+  const stessiPiatti =
+    venue.dishIds.length === pubblicata.dishIds.length &&
+    venue.dishIds.every((id) => pubblicata.dishIds.includes(id));
+  return !stessiPiatti || linkDellaScheda(venue.links) !== linkDellaScheda(pubblicata.links);
+}
+
 export function useVenues() {
-  const { list: venues, setList, reload } = useRemoteList('locali', loadVenues);
+  const { list: venues, setList, reload, current } = useRemoteList('locali', loadVenues);
   // L'editor cambia la bozza a ogni tasto: si scrive dopo la pausa
-  const { schedule } = useDebouncedSave(saveVenueContent);
+  const { schedule, flush } = useDebouncedSave(saveVenueContent);
 
   async function create(venueName = ''): Promise<Venue | null> {
     const ownerId = await currentUserId();
@@ -714,6 +832,8 @@ export function useVenues() {
       cardStatus: null,
       cardNote: '',
       request: null,
+      closedByUs: null,
+      published: null,
       dishIds: [],
       links: emptyLinks(),
     };
@@ -739,6 +859,8 @@ export function useVenues() {
             cardStatus: s.cardStatus,
             cardNote: s.cardNote,
             request: s.request,
+            closedByUs: s.closedByUs,
+            published: s.published,
             logoUrl: s.logoUrl,
             accent: s.accent,
             tableConditions: s.tableConditions,
@@ -921,17 +1043,24 @@ export function useVenues() {
   // scheda ha "Seleziona tutti" e un "tutti" per categoria, e quaranta
   // scritture per un tocco sarebbero quaranta occasioni di fallirne una.
   //
-  // Le scritture sono IDEMPOTENTI — accendere un piatto già acceso non fa
-  // niente, spegnerne uno spento nemmeno — così un "Riprova" arrivato tardi
-  // o un doppio tocco non rompono niente. La chiave è il locale più l'insieme
-  // dei piatti: due tocchi rapidi sullo stesso interruttore lasciano da rifare
-  // solo l'ultimo.
-  //
-  // Funziona anche senza scheda (715): la scelta si prepara prima del claim.
+  // La scrittura è scriviPiattiDb, qui sopra. Funziona anche senza scheda (715): la scelta si prepara prima del claim.
   async function setDishesOn(venueId: string, dishIds: string[], on: boolean) {
     if (dishIds.length === 0) return;
+    // Il tocco resta «in volo» finché la scrittura non è partita e tornata:
+    // Pubblica lo aspetta, anche se è arrivato un attimo prima del clic
+    const lavoro = scriviPiatti(venueId, dishIds, on);
+    piattiInVolo.add(lavoro);
+    try {
+      await lavoro;
+    } finally {
+      piattiInVolo.delete(lavoro);
+    }
+  }
+
+  // La lista si aggiorna subito (scrittura ottimistica), il database dopo
+  async function scriviPiatti(venueId: string, dishIds: string[], on: boolean) {
     setList(
-      (venues ?? []).map((s) =>
+      (current() ?? []).map((s) =>
         s.id !== venueId
           ? s
           : {
@@ -942,33 +1071,7 @@ export function useVenues() {
             }
       )
     );
-    const chiave = sceltaPiatti(venueId, dishIds);
-    if (on) {
-      const ownerId = await currentUserId();
-      if (!ownerId) return;
-      await write(
-        dishIds.length === 1 ? 'accensione piatto' : 'accensione piatti',
-        () =>
-          supabase
-            .from('partner_card_dishes')
-            .upsert(
-              dishIds.map((dishId) => ({ venue_id: venueId, dish_id: dishId, owner_user_id: ownerId })),
-              { onConflict: 'venue_id,dish_id', ignoreDuplicates: true }
-            ),
-        chiave
-      );
-    } else {
-      await write(
-        dishIds.length === 1 ? 'spegnimento piatto' : 'spegnimento piatti',
-        () =>
-          supabase
-            .from('partner_card_dishes')
-            .delete()
-            .eq('venue_id', venueId)
-            .in('dish_id', dishIds),
-        chiave
-      );
-    }
+    await scriviPiattiDb(venueId, dishIds, on);
   }
 
   // RIMETTE L'ASPETTO COM'È IN SALA. La scrittura la fa il database in un
@@ -989,11 +1092,70 @@ export function useVenues() {
     return true;
   }
 
+  // PUBBLICA LA SCHEDA (728). Prima si aspetta che la bozza sia tutta nel
+  // database — il nome/link in pausa di battitura, i tocchi sui piatti in
+  // volo, qualunque scrittura in corso — perché la pubblicazione la copia da
+  // lì. Con una scrittura rifiutata ancora da rifare non si pubblica: la
+  // bozza nel database non sarebbe quella a schermo.
+  async function publishCard(venueId: string): Promise<boolean> {
+    await flush();
+    await Promise.all([...piattiInVolo]);
+    await whenIdle();
+    if (hasFailedWrites()) return false;
+    const { data, error } = await write('pubblicazione della scheda', () =>
+      supabase.rpc('partner_publish_card', { p_venue_id: venueId })
+    );
+    if (error) return false;
+    setList(
+      (current() ?? []).map((s) =>
+        s.id === venueId
+          ? { ...s, published: { links: s.links, dishIds: [...s.dishIds], at: String(data) } }
+          : s
+      )
+    );
+    return true;
+  }
+
+  // ANNULLA: la bozza torna la versione pubblicata. Nessuna funzione nel
+  // database: sono le scritture di sempre (link dopo la pausa, piatti
+  // accesi e spenti), quindi passano dagli stessi controlli. I social non si
+  // toccano: non sono della scheda.
+  function revertCard(venueId: string) {
+    const lista = current() ?? [];
+    const venue = lista.find((s) => s.id === venueId);
+    if (!venue?.published) return;
+    const pubblicata = venue.published;
+    const tornata: Venue = {
+      ...venue,
+      links: { ...pubblicata.links, socials: venue.links.socials },
+      dishIds: [...pubblicata.dishIds],
+    };
+    const daAccendere = pubblicata.dishIds.filter((id) => !venue.dishIds.includes(id));
+    const daSpegnere = venue.dishIds.filter((id) => !pubblicata.dishIds.includes(id));
+    setList(lista.map((s) => (s.id === venueId ? tornata : s)));
+    schedule(tornata);
+    if (daAccendere.length > 0) void scriviPiattiInVolo(venueId, daAccendere, true);
+    if (daSpegnere.length > 0) void scriviPiattiInVolo(venueId, daSpegnere, false);
+  }
+
+  // La sola scrittura, senza toccare la lista (l'ha già sistemata chi chiama)
+  async function scriviPiattiInVolo(venueId: string, dishIds: string[], on: boolean) {
+    const lavoro = scriviPiattiDb(venueId, dishIds, on);
+    piattiInVolo.add(lavoro);
+    try {
+      await lavoro;
+    } finally {
+      piattiInVolo.delete(lavoro);
+    }
+  }
+
   return {
     venues,
     // Per chi cambia i locali fuori da qui: l'associazione al ristorante la
     // scrive il database (721), e la scheda in corso va riletta.
     reload,
+    publishCard,
+    revertCard,
     create,
     update,
     rename,

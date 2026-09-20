@@ -21,6 +21,12 @@ export function reportError(dove: string, error: any) {
 
 // L'id del partner autenticato. Serve a scrivere le righe: le RLS pretendono
 // che owner_user_id sia il proprio, e la colonna non ha default.
+// ⚠️ LE LISTE DEL PORTALE SI FILTRANO SEMPRE PER PROPRIETARIO, con questo
+// id. Non basta contare sulle RLS: per un account ADMIN le RLS aprono tutto
+// (policy `is_admin()`), e il portale gli mostrava i locali e i piatti degli
+// altri ristoratori — toccarne uno scriveva a nome suo, e il database lo
+// rifiutava (visto il 19/09). Le RLS decidono cosa è PERMESSO, non cosa è
+// tuo: stessa lezione di loadPartnerProfile.
 export async function currentUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
   return data.session?.user.id ?? null;
@@ -118,6 +124,10 @@ export function useRemoteList<T>(chiave: string, carica: () => Promise<T[]>) {
   );
 
   const reload = useCallback(() => rileggi(l), [l]);
+  // Le righe di ADESSO, non quelle del disegno in cui è nata la funzione:
+  // serve a chi aggiorna la lista dopo un'attesa (una pubblicazione), che
+  // altrimenti riscriverebbe sopra le modifiche fatte nel frattempo
+  const current = useCallback(() => l.righe as T[] | null, [l]);
 
   // Riparte anche dopo resetLists(), che riporta le righe a null
   useEffect(() => {
@@ -136,7 +146,7 @@ export function useRemoteList<T>(chiave: string, carica: () => Promise<T[]>) {
     [l]
   );
 
-  return { list, setList, reload };
+  return { list, setList, reload, current };
 }
 
 // Salvataggio che aspetta la fine della battitura.
@@ -156,14 +166,16 @@ export function useDebouncedSave<T>(save: (valore: T) => Promise<void>) {
     saveRef.current = save;
   });
 
-  const flush = useCallback(() => {
+  // Restituisce il salvataggio, così chi deve aspettarlo (la pubblicazione
+  // della scheda) può farlo; gli altri lo ignorano
+  const flush = useCallback((): Promise<void> => {
     if (timer.current) {
       clearTimeout(timer.current);
       timer.current = null;
     }
     const valore = inSospeso.current;
     inSospeso.current = null;
-    if (valore !== null) void saveRef.current(valore);
+    return valore !== null ? saveRef.current(valore) : Promise.resolve();
   }, []);
 
   const schedule = useCallback(
@@ -177,11 +189,11 @@ export function useDebouncedSave<T>(save: (valore: T) => Promise<void>) {
 
   // Chiudere la scheda o cambiare pagina non deve costare l'ultima modifica
   useEffect(() => {
-    const onLeave = () => flush();
+    const onLeave = () => void flush();
     window.addEventListener('pagehide', onLeave);
     return () => {
       window.removeEventListener('pagehide', onLeave);
-      flush();
+      void flush();
     };
   }, [flush]);
 
