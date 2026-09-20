@@ -106,13 +106,16 @@ function Saluto({ saluto, intro }: { saluto: string; intro: string }) {
   return (
     <>
       <div className="flex items-center gap-3">
+        {/* Il logo senza sfondo (la mascotte su trasparente), più grande e
+            senza cornice: in cima alla home è il marchio, non una icona di
+            applicazione (20/09). */}
         <Image
-          src="/icons/icon-192.png"
+          src="/icons/logo-piatto.png"
           alt=""
-          width={40}
-          height={40}
+          width={56}
+          height={56}
           priority
-          className="h-10 w-10 shrink-0 rounded-2xl shadow-sm ring-1 ring-black/5"
+          className="h-14 w-14 shrink-0"
         />
         <PageTitle className="min-w-0">{saluto}</PageTitle>
       </div>

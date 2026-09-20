@@ -524,12 +524,20 @@ export default function VenueEditorPage() {
             ) : (
               <>
                 <p className="min-w-0 flex-1 text-xs text-gray-600 sm:text-sm">{d.editor.linkBar}</p>
-                <Link
-                  href={verso}
+                {/* Porta alla sezione in fondo, non all'associazione vera:
+                    il gesto si fa da un posto solo, come «Vai alla
+                    pubblicazione» nell'editor del menù (20/09). */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    document
+                      .getElementById('associazione')
+                      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
                   className="ml-auto shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
                 >
-                  {d.editor.linkBoxCta}
-                </Link>
+                  {d.editor.goToLink}
+                </button>
               </>
             )}
           </div>
@@ -1048,13 +1056,26 @@ export default function VenueEditorPage() {
             }`}
           >
             <div className="flex items-start gap-3">
-              <Image
-                src="/icons/icon-192.png"
-                alt=""
-                width={40}
-                height={40}
-                className="h-10 w-10 shrink-0 rounded-xl shadow-sm ring-1 ring-black/5"
-              />
+              {/* Una freccia che scende dentro l'icona di AllergiApp: dice
+                  con un segno quello che il titolo dice a parole — il tuo
+                  locale finisce dentro l'app (20/09). In colonna e non in
+                  fila: di larghezza ce n'è poca, di altezza sì. Qui è
+                  l'ICONA dell'app, con il suo fondo: è l'app che si nomina,
+                  non il marchio. ⚠️ È `logo-app.png` (l'icona vera, quella
+                  del sito e degli store, col piatto in mezzo agli allergeni),
+                  non `icon-192.png`, che è l'icona del PORTALE. */}
+              <span className="flex shrink-0 flex-col items-center gap-1">
+                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 4v14M6 12l6 6 6-6" />
+                </svg>
+                <Image
+                  src="/icons/logo-app.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-xl shadow-sm"
+                />
+              </span>
               <div className="min-w-0">
                 <h2 className="flex flex-wrap items-center gap-2 text-sm font-medium text-gray-900">
                   {d.editor.linkBoxTitle}
