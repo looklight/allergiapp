@@ -10,6 +10,10 @@
       "main": false
     }
   },
+  "redirects": [
+    { "source": "/menu/:slug/:lang", "destination": "/v/:slug?lang=:lang", "permanent": true },
+    { "source": "/menu/:slug", "destination": "/v/:slug", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/contacts", "destination": "/contacts.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
@@ -21,8 +25,7 @@
     { "source": "/menu", "destination": "/menu.html" },
     { "source": "/menu-demo", "destination": "/api/menu-demo" },
     { "source": "/menu-demo/:lang", "destination": "/api/menu-demo?lang=:lang" },
-    { "source": "/menu/:slug", "destination": "/api/menu/:slug" },
-    { "source": "/menu/:slug/:lang", "destination": "/api/menu/:slug?lang=:lang" },
+    { "source": "/v/:slug", "destination": "/api/menu/:slug" },
     { "source": "/u/:username", "destination": "/api/u/:username" }
   ],
   "headers": [

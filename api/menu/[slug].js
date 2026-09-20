@@ -1,4 +1,4 @@
-// Vercel serverless function: /menu/[slug] e /menu/[slug]/[lang]
+// Vercel serverless function: /v/[slug]
 // La pagina che il cliente apre col QR sul tavolo.
 // Routing via vercel.json.
 //
@@ -8,9 +8,15 @@
 // 11) — così il menù si apre anche in una sala interrata con due tacche e il
 // filtro allergeni risponde senza chiedere niente alla rete.
 //
-// LA LINGUA non sta nell'indirizzo stampato (Tema 21): /menu/<slug> è il
-// canonico e sceglie la lingua dal browser. /menu/<slug>/en esiste per chi
+// L'INDIRIZZO È /v/<slug>, e la lettera non nomina il contenuto: la pagina
+// oggi è il menù e domani può essere il locale intero. Il vecchio
+// /menu/<slug> risponde per sempre con un 301 (vercel.json).
+//
+// LA LINGUA non sta nell'indirizzo stampato (Tema 21): /v/<slug> è il
+// canonico e sceglie la lingua dal browser. /v/<slug>?lang=en esiste per chi
 // vuole mandare il menù a qualcuno nella sua lingua e per farsi indicizzare.
+// Sta in coda e non in un segmento perché i segmenti sotto il locale
+// serviranno alle pagine di domani, non a una lingua.
 //
 // SI LEGGE SOLO IL PUBBLICATO: get_public_menu restituisce lo scatto preso
 // quando il ristoratore ha premuto "Pubblica" (Tema 24). Un menù mai
@@ -24,7 +30,7 @@ const { renderMenuPage } = require('../../lib/render-menu');
 module.exports = async function handler(req, res) {
   const { slug, lang } = req.query;
   // La lingua nell'indirizzo vince su quella del browser: chi apre
-  // /menu/mario/en l'ha chiesta lui. Una lingua che non sappiamo parlare si
+  // /v/mario?lang=en l'ha chiesta lui. Una lingua che non sappiamo parlare si
   // ignora invece di dare errore — l'indirizzo può essere stato scritto a
   // mano o essere rimasto in giro da una lingua che abbiamo tolto.
   const scelta = typeof lang === 'string' && SUPPORTED.includes(lang) ? lang : null;
@@ -59,7 +65,7 @@ module.exports = async function handler(req, res) {
     }
     if (typeof nuovo === 'string' && nuovo !== '' && nuovo !== slug) {
       res.setHeader('Cache-Control', 'no-store');
-      res.setHeader('Location', `/menu/${encodeURIComponent(nuovo)}${scelta ? `/${scelta}` : ''}`);
+      res.setHeader('Location', `/v/${encodeURIComponent(nuovo)}${scelta ? `?lang=${scelta}` : ''}`);
       return res.status(302).end();
     }
     return sendNotFound(res, locale);
