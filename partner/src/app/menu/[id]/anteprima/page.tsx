@@ -6,7 +6,7 @@
 // ⚠️ NON È ANCORA L'INDIRIZZO PUBBLICO. Questa pagina sta DENTRO il portale,
 // quindi è dietro l'autenticazione e la vede solo chi ha fatto l'accesso.
 // L'indirizzo vero — quello del QR sul tavolo — sarà
-// allergiapp.com/menu/<slug>, servito da un progetto suo e generato al
+// allergiapp.com/v/<slug>, servito da un progetto suo e generato al
 // salvataggio (DIGITAL_MENU.md, Temi 6, 11 e 13). Quando quello esisterà,
 // questa route può restare come "vedi come viene" o sparire: quello che non
 // deve succedere è che qualcuno stampi un QR che punta qui.

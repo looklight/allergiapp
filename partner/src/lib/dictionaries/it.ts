@@ -473,7 +473,7 @@ const it = {
     liveOpenShort: 'Apri online',
     liveQrShort: 'Scarica QR',
     // "Indirizzo web" e non "indirizzo": questa riga si legge anche dalla
-    // home, lontana dal campo che mostra allergiapp.com/menu/…, e lì
+    // home, lontana dal campo che mostra allergiapp.com/v/…, e lì
     // "indirizzo" da solo si legge come la via del ristorante.
     liveNoAddress: 'Questo menù non ha ancora un indirizzo web: è il link che si apre col QR.',
     liveNotYet: 'Non ancora pubblicato: questo indirizzo non risponde a nessuno.',

@@ -431,7 +431,7 @@ Non fatto ora perché nel portale non esiste ancora niente che sappia se un loca
 
 ### Dominio personalizzato per il menù (2026-09-16) — da investigare, non deciso
 
-Oggi il menù vive su `allergiapp.com/menu/nomeristorante`. Idea: dare ai ristoratori un dominio proprio (es. `trattoriadamario.it`) che punta lì. Da investigare meglio prima di costruire.
+Oggi il menù vive su `allergiapp.com/v/nomeristorante` (dal 2026-09-20, Tema 36 di DIGITAL_MENU.md: la lettera non nomina il contenuto proprio perché lì sotto domani può starci il locale intero). Idea: dare ai ristoratori un dominio proprio (es. `trattoriadamario.it`) che punta lì. Da investigare meglio prima di costruire.
 
 Discusso finora, non ancora verificato tecnicamente:
 - **Non fare reselling di domini**: comprare/gestire il dominio per conto del ristoratore lo trasforma di fatto in un registrar (rinnovi, WHOIS, dispute) — complessità sproporzionata.

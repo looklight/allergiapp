@@ -314,7 +314,7 @@ export interface Venue extends VenueDraft {
   // Vuota = resta il colore. Sotto ci va SEMPRE una velatura scura, o il nome
   // del locale sopra una foto chiara sparisce (DIGITAL_MENU, Tema 25).
   coverUrl: string;
-  // L'indirizzo pubblico del menù: allergiapp.com/menu/<slug>. Vuoto = non
+  // L'indirizzo pubblico del menù: allergiapp.com/v/<slug>. Vuoto = non
   // ancora scelto, ed è lo stato di tutti i locali che esistono oggi. Ne
   // esiste UNO alla volta e cambiandolo il precedente torna libero
   // (migration 707, DIGITAL_MENU.md Tema 17). NON è ancora attivo: la

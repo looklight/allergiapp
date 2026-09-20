@@ -1,4 +1,10 @@
-// L'indirizzo pubblico del menù: `allergiapp.com/menu/<slug>`.
+// L'indirizzo pubblico del menù: `allergiapp.com/v/<slug>`.
+//
+// La lettera non nomina il contenuto di proposito (deciso il 2026-09-20):
+// oggi lì sotto c'è il menù, domani può starci il locale intero, e un
+// prefisso che dice «menu» sarebbe già sbagliato quel giorno — stampato su
+// un QR incollato al tavolo. Il vecchio `/menu/<slug>` risponde per sempre
+// con un 301 permanente (landing/vercel.json).
 //
 // Lo slug è del LOCALE (DIGITAL_MENU.md, Temi 13 e 17) e ne ha UNO alla
 // volta: cambiandolo il precedente torna libero, senza storico e senza
@@ -48,8 +54,6 @@ export function slugProposto(nome: string): string {
 // il ristoratore deve riconoscere sulla locandina è il dominio più il suo
 // nome, e il protocollo è rumore che allunga la riga.
 //
-// ⚠️ NON È ANCORA ATTIVO. La pagina pubblica è la fase 2 (DIGITAL_MENU.md,
-// Temi 11 e 13): oggi questo indirizzo si sceglie e si mette al sicuro, non si
-// può aprire. Chi lo rende cliccabile prima che la pagina esista sta
-// consegnando al ristoratore un link da stampare.
-export const MENU_DOMINIO = 'allergiapp.com/menu/';
+// La pagina pubblica è viva dal 2026-09-02: questo indirizzo si apre davvero,
+// e quello che il ristoratore legge qui è quello che finisce sul QR.
+export const MENU_DOMINIO = 'allergiapp.com/v/';

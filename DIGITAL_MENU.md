@@ -35,7 +35,8 @@ stesso locale resta nel modello dati e nel codice, ma è **spento** da `MULTI_ME
 è una voce del futuro premium, e finché non si vende complicava la creazione per tutti. Nessuna
 migration, nessun vincolo sul database.
 
-**Aggiornamento 2026-09-02: LA FASE 2 È FATTA E IL MENÙ È ONLINE.** `allergiapp.com/menu/<slug>`
+**Aggiornamento 2026-09-02: LA FASE 2 È FATTA E IL MENÙ È ONLINE.** `allergiapp.com/v/<slug>`
+(era `/menu/<slug>` fino al 2026-09-20, Tema 36)
 risponde davvero. Vive sul branch `landing` (`api/menu/[slug].js`, `lib/render-menu.js`) e riusa la
 ricetta già in piedi per `/r/` e `/u/`: una funzione che rende HTML dal server, niente framework —
 **non è servito un progetto Vercel nuovo**, come invece diceva il Tema 13. Migrations **707, 708 e
@@ -271,6 +272,9 @@ il cliente deve vedere. È un isolamento più forte di quello che darebbero due 
 **Decisione**: indirizzo sull'apice, nella forma `allergiapp.com/menu/<slug>`, copiabile e
 trasformabile in QR dal portale.
 
+  > ⚠️ **SUPERATO il 2026-09-20 (Tema 36)**: l'indirizzo è `allergiapp.com/v/<slug>`. Il
+  > resto di questa decisione — il dominio nostro e non un sottodominio — resta in piedi.
+
 **Perché l'apice e non un sottodominio**: ogni cliente a ogni tavolo legge il nome AllergiApp
 mentre fa una cosa che gli è utile. Sui gratuiti, che saranno i più (Tema 10), è forse il ritorno
 principale. Attrito da mettere in conto: l'apice oggi è del progetto landing, che sta su un branch
@@ -302,7 +306,7 @@ separato — si tiene l'indirizzo e si fa servire da un progetto suo con una ris
   > il nome del menù?"* — e non ne aveva.
 - Il QR lo genera il portale, in PNG **e in vettoriale**: chi lo porta in tipografia ha bisogno del
   secondo, e se non glielo diamo se lo fa fare male altrove.
-- Da decidere come convivono `/menu/<slug>` e `/r/<slug>` per un locale rivendicato: sono due pagine
+- Da decidere come convivono `/v/<slug>` e `/r/<slug>` per un locale rivendicato: sono due pagine
   pubbliche dello stesso posto e devono almeno rimandarsi a vicenda.
 - **Aggiunta 2026-08-31 — nel portale esiste `/menu/<id>/anteprima`, e NON è questo indirizzo.**
   È un'anteprima a tutta pagina dietro l'autenticazione, aperta in una scheda a parte dall'editor,
@@ -730,8 +734,9 @@ dall'abbonamento. Il menù al tavolo è del ristoratore, e lì la domanda è un'
 **Domanda**: ha senso un `/it` o un `/en` nell'indirizzo del menù?
 
 **Decisione**: sì per gli indirizzi in più, **no per quello che finisce sul QR**.
-`allergiapp.com/menu/<slug>` resta senza lingua ed è il canonico; le versioni per lingua esistono
-come indirizzi aggiuntivi (`/menu/<slug>/en`), e non si stampano mai.
+`allergiapp.com/v/<slug>` resta senza lingua ed è il canonico; le versioni per lingua esistono
+come indirizzi aggiuntivi (`/v/<slug>?lang=en` — era un segmento fino al Tema 36), e non si
+stampano mai.
 
 **Perché**: il QR sul tavolo è **uno** e lo inquadrano un tedesco, un francese e uno del posto. Con
 la lingua nell'indirizzo stampato restano due strade, entrambe sbagliate: un QR per lingua (nessun
@@ -1306,7 +1311,7 @@ scrivere il trasloco fra loro.
 
 **Cosa si fa invece: `allergiapp.com/menu`**, una pagina di vendita sul sito — non nel portale — che
 spiega la cosa e mostra subito il menù da personalizzare. L'indirizzo l'ha scelto l'utente: funziona
-anche in inglese. Non si scontra con `/menu/<slug>`, che resta i menù veri dei clienti al tavolo,
+anche in inglese. Non si scontra con `/v/<slug>`, che resta i menù veri dei clienti al tavolo,
 perché quella riscrittura pretende un segmento in più.
 
 **La prova è un'anteprima nel browser, non un menù pubblicato**: niente slug da riservare, niente
@@ -1625,9 +1630,78 @@ portano entrambi i richiami.
 
 ---
 
+### 2026-09-20 — Tema 36: L'indirizzo diventa `/v/<slug>`, e perché il prefisso non deve dire niente
+
+**Questo tema CORREGGE il Tema 13** (`allergiapp.com/menu/<slug>`) e la riga corrispondente del
+Tema 22. Il dominio e tutto il resto di quelle decisioni restano in piedi: cambia solo il pezzo
+davanti allo slug.
+
+**La domanda dell'utente**: se un giorno il ristoratore potrà pubblicare non solo il menù ma il
+suo ristorante intero — orari, prenotazione, chi siamo — l'indirizzo confezionato come oggi regge?
+
+**No, e il motivo è preciso: `/menu/` nomina il CONTENUTO della pagina.** Il contenuto cresce, e
+quel giorno l'indirizzo direbbe una cosa falsa — stampato su un QR plastificato sul tavolo, dove
+il ristoratore non può né accorgersene né rimediare. Il prefisso giusto nomina il **soggetto**, e
+il soggetto è il locale, non quello che in questo momento c'è dentro la pagina.
+
+**Decisione: `allergiapp.com/v/<slug>`.**
+
+- **Il dominio non si tocca.** Il Tema 13 aveva ragione: ogni cliente a ogni tavolo legge il nome
+  AllergiApp mentre fa una cosa che gli è utile, e sui gratuiti è il ritorno principale. Il dominio
+  proprio resta una voce premium, e la struttura è pensata per funzionare identica sotto
+  `allergiapp.com/v/<slug>` e sotto `ristorantedamario.it/`.
+- **Una lettera, e vuota di proposito.** Tutta la lezione di questo tema è che un'etichetta che
+  vuole dire qualcosa invecchia; quella che non dice niente no. `/v/` non può diventare sbagliata
+  qualunque cosa la pagina diventi.
+- **Non `/ristorante/`**: gli hotel e i B&B sono in programma, sarebbe lo stesso errore spostato
+  dal contenuto al tipo di attività. Non `/locale/`: lungo e in una lingua sola. Non `/p/`:
+  Instagram e Substack lo usano tutti e due per dire «post». Non alla radice
+  (`allergiapp.com/da-mario`): su quel dominio ci vive anche il sito, quindi servirebbe per sempre
+  una lista di parole riservate e ogni pagina nuova ruberebbe un nome a un ristorante.
+- **Confronto guardato prima di scegliere**: le lettere singole, nei prodotti grossi, le prendono i
+  contenuti e le maniglie (`/r/` `/u/` Reddit, `/p/` Instagram, `/c/` YouTube, `/e/` Eventbrite),
+  mentre la pagina di un'attività prende quasi sempre una parola (`/biz/` Yelp, `/shop/` Etsy,
+  `/hotel/` Booking, `/ristorante/` TheFork). Il precedente più calzante sarebbe `/biz/`, e vale
+  poco: questo indirizzo non lo legge nessuno — il cliente inquadra un QR, il ristoratore lo copia
+  dal portale, Google non ci guarda dentro.
+- **`/v/` sta nella famiglia che c'era già**: `/r/` la nostra scheda del ristorante, `/u/` il
+  profilo di un utente, `/v/` la pagina del locale. Uno spazio per tipo di oggetto, e mai due tipi
+  nello stesso: così un utente `damario` e un locale `da-mario` non si pestano i piedi.
+
+**Cosa NON è cambiato**: lo slug. Nessuna migration, nessuna colonna, nessun valore riscritto —
+`partner_venues.slug` è identico a prima. Non sono stati toccati `/r/`, `/u/`, i Universal Link
+(l'app rivendica solo `/r/*` e `/u/*`: il menù non è mai stato un deep link), il `sitemap.xml` (che
+elenca `/menu`, la pagina per i ristoratori, non i menù) né l'etichetta di cache `menu-<slug>`.
+
+**Il vecchio indirizzo non muore**: `/menu/<slug>` risponde con un **301 permanente** verso
+`/v/<slug>`, e continuerà a farlo. È una riga in `vercel.json` e non scade.
+
+**La lingua passa da segmento a coda**: non più `/menu/<slug>/en` ma `/v/<slug>?lang=en`. La
+riscrittura faceva già esattamente quello, e il canonico non è mai stato l'indirizzo con la lingua
+(Tema 21). Serviva a liberare i segmenti sotto il locale: `/v/<slug>/menu` domani è una pagina, e
+non deve litigare con `en`.
+
+**Il momento**: fatto oggi perché era l'ultima finestra gratis. Verificato in produzione prima di
+toccare qualsiasi cosa — quattro locali, tre account (l'utente, il suo alias `+test2`, e Marta),
+due indirizzi pubblicati, tre abbonamenti tutti di prova, **nessun ristoratore vero e nessun QR
+stampato**. Anche la lettera andava decisa prima del rilascio e non dopo: un 301 i browser se lo
+tengono per sempre.
+
+**File toccati**: su `landing` `vercel.json` (riscrittura `/v/:slug` + i due 301),
+`lib/render-menu.js` (canonico, `og:url`, `hreflang`, bottoni della lingua) e `api/menu/[slug].js`
+(il rimando del periodo di grazia della 729, che costruiva `/menu/<nuovo>` a mano); su `main`
+`partner/src/lib/slug.ts`, dove `MENU_DOMINIO` è l'unica sorgente che i quattro posti del portale
+— home, `LiveBox`, `MenuQr`, `MenuAddress` — leggono per mostrare l'indirizzo e generare il QR.
+
+**Resta aperto**, e non è di oggi: le pagine sotto il locale (`/v/<slug>/menu` e le altre), i domini
+propri, e il rimando reciproco fra `/r/` e `/v/`.
+
+---
+
 ## Prossimo passo
 
-**Aggiornato il 2026-09-15.** Il menù al tavolo è in produzione da `allergiapp.com/menu/<slug>`.
+**Aggiornato il 2026-09-15.** Il menù al tavolo è in produzione da `allergiapp.com/v/<slug>` (era `/menu/<slug>` fino al
+2026-09-20, v. Tema 36; il vecchio indirizzo risponde con un 301 permanente).
 Migrations **707-715 tutte APPLICATE** (la 711 il 06/09, la 715 il 15/09): le manopole
 dell'aspetto sono accese, i menù multipli pure. Dal 15/09 le pagine generate del sito girano a
 **Stoccolma** (`arn1`, accanto a Supabase `eu-north-1`), non più a Washington.
