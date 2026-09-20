@@ -23,7 +23,8 @@
 // Il bottone porta agli abbonamenti, dove si paga davvero. Finché i pagamenti
 // sono spenti (SUBSCRIPTIONS) l'etichetta lo dice senza promettere: «Vai agli
 // abbonamenti» invece di «Attiva il Piano Pro».
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
@@ -48,6 +49,13 @@ export default function PaywallDialog({
   const { d } = useI18n();
   const panel = useModal<HTMLDivElement>(onClose);
   const titleId = useId();
+  // ⚠️ LA FINESTRA NASCE ATTACCATA ALLA PAGINA, non dove sta il bottone che
+  // l'ha aperta: in home il distintivo «Pro» vive dentro un titolo scritto in
+  // maiuscoletto, e la finestra ne ereditava il maiuscolo — tutto il paywall
+  // in maiuscolo (visto dall'utente, 20/09). Un modale dentro un <h2> non è
+  // nemmeno HTML valido. Con createPortal esce da lì e non eredita più niente.
+  const [montato, setMontato] = useState(false);
+  useEffect(() => setMontato(true), []);
   const [inCorso, setInCorso] = useState<'monthly' | 'yearly' | null>(null);
   const [errore, setErrore] = useState(false);
   // Si paga da qui solo quando i pagamenti sono accesi e sappiamo il locale
@@ -72,7 +80,9 @@ export default function PaywallDialog({
     { testo: d.paywall.replies, arriva: true },
   ];
 
-  return (
+  if (!montato) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="backdrop-enter absolute inset-0 bg-black/40" />
       <div
@@ -219,6 +229,7 @@ export default function PaywallDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
