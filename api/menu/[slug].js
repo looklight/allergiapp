@@ -16,7 +16,7 @@
 // quando il ristoratore ha premuto "Pubblica" (Tema 24). Un menù mai
 // pubblicato non esiste per questa pagina.
 
-const { fetchPublicMenu } = require('../../lib/supabase');
+const { fetchPublicMenu, fetchMenuRedirect } = require('../../lib/supabase');
 const { detectLocale, createT, SUPPORTED } = require('../../lib/i18n');
 const { escapeHtml } = require('../../lib/render-helpers');
 const { renderMenuPage } = require('../../lib/render-menu');
@@ -44,6 +44,24 @@ module.exports = async function handler(req, res) {
   }
 
   if (!dati) {
+    // UN INDIRIZZO CAMBIATO DA POCO (729): per 30 giorni porta al nuovo, così
+    // i QR già stampati continuano a funzionare mentre il ristoratore li
+    // ristampa. Temporaneo (302) e mai in cache: passata la grazia, o se il
+    // ristoratore si riprende l'indirizzo vecchio, il browser non deve
+    // ricordarsi un rimando che non vale più. Un guasto qui non è un errore
+    // per chi è al tavolo: si mostra il «non disponibile» di sempre.
+    let nuovo = null;
+    try {
+      nuovo = await fetchMenuRedirect(slug);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[menu/slug] redirect RPC error', err);
+    }
+    if (typeof nuovo === 'string' && nuovo !== '' && nuovo !== slug) {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Location', `/menu/${encodeURIComponent(nuovo)}${scelta ? `/${scelta}` : ''}`);
+      return res.status(302).end();
+    }
     return sendNotFound(res, locale);
   }
 
