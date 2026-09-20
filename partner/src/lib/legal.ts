@@ -14,4 +14,4 @@ export const SITO = 'https://allergiapp.com';
 export const URL_CONDIZIONI = `${SITO}/terms`;
 export const URL_INFORMATIVA = `${SITO}/privacy`;
 
-export const TERMS_VERSION = '2026-09-19';
+export const TERMS_VERSION = '2026-09-20';

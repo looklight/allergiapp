@@ -37,7 +37,7 @@ migration, nessun vincolo sul database.
 
 **Aggiornamento 2026-09-02: LA FASE 2 È FATTA E IL MENÙ È ONLINE.** `allergiapp.com/v/<slug>`
 (era `/menu/<slug>` fino al 2026-09-20, Tema 36)
-risponde davvero. Vive sul branch `landing` (`api/menu/[slug].js`, `lib/render-menu.js`) e riusa la
+risponde davvero. Vive sul branch `landing` (`api/v/[slug].js`, `lib/render-menu.js`) e riusa la
 ricetta già in piedi per `/r/` e `/u/`: una funzione che rende HTML dal server, niente framework —
 **non è servito un progetto Vercel nuovo**, come invece diceva il Tema 13. Migrations **707, 708 e
 709 APPLICATE**: slug sul locale; pubblicazione, scatto e manopole d'aspetto; ritiro dalla sala,
@@ -1673,7 +1673,7 @@ il soggetto è il locale, non quello che in questo momento c'è dentro la pagina
 (l'app rivendica solo `/r/*` e `/u/*`: il menù non è mai stato un deep link), il `sitemap.xml` (che
 elenca `/menu`, la pagina per i ristoratori, non i menù) né l'etichetta di cache `menu-<slug>`.
 
-**Il vecchio indirizzo non muore**: `/menu/<slug>` risponde con un **301 permanente** verso
+**Il vecchio indirizzo non muore**: `/menu/<slug>` risponde con un **308 permanente** verso
 `/v/<slug>`, e continuerà a farlo. È una riga in `vercel.json` e non scade.
 
 **La lingua passa da segmento a coda**: non più `/menu/<slug>/en` ma `/v/<slug>?lang=en`. La
@@ -1684,14 +1684,29 @@ non deve litigare con `en`.
 **Il momento**: fatto oggi perché era l'ultima finestra gratis. Verificato in produzione prima di
 toccare qualsiasi cosa — quattro locali, tre account (l'utente, il suo alias `+test2`, e Marta),
 due indirizzi pubblicati, tre abbonamenti tutti di prova, **nessun ristoratore vero e nessun QR
-stampato**. Anche la lettera andava decisa prima del rilascio e non dopo: un 301 i browser se lo
+stampato**. Anche la lettera andava decisa prima del rilascio e non dopo: un permanente i browser se lo
 tengono per sempre.
 
-**File toccati**: su `landing` `vercel.json` (riscrittura `/v/:slug` + i due 301),
-`lib/render-menu.js` (canonico, `og:url`, `hreflang`, bottoni della lingua) e `api/menu/[slug].js`
+**File toccati**: su `landing` `vercel.json` (riscrittura `/v/:slug` + i due permanenti),
+`lib/render-menu.js` (canonico, `og:url`, `hreflang`, bottoni della lingua) e `api/v/[slug].js`
+(rinominata da `api/menu/`: qui la cartella della function rispecchia la rotta pubblica)
 (il rimando del periodo di grazia della 729, che costruiva `/menu/<nuovo>` a mano); su `main`
 `partner/src/lib/slug.ts`, dove `MENU_DOMINIO` è l'unica sorgente che i quattro posti del portale
 — home, `LiveBox`, `MenuQr`, `MenuAddress` — leggono per mostrare l'indirizzo e generare il QR.
+
+**La ripulitura completa, stesso giorno.** Un indirizzo non è solo la riga che lo serve: va
+cercato dappertutto, o resta scritto da qualche parte a dire il falso. Trovati e sistemati —
+`README.landing.md`, `partner/README.md`, il punto ancora aperto qui in fondo, e soprattutto le
+**condizioni di servizio**. La clausola «L'indirizzo del menù» diceva due cose non più vere: la
+forma dell'indirizzo, e «il precedente non viene reindirizzato, i QR smettono di funzionare» —
+falso dalla 729, che tiene il vecchio per 30 giorni e lo fa portare al nuovo. Verificato sul
+database prima di riscriverla (`partner_slug_hold()` torna `30 days`), e `TERMS_VERSION` portata
+al 2026-09-20 con la data delle due pagine, come vuole `legal.ts`.
+
+**Lasciati apposta**: le due regole di reindirizzamento in `vercel.json` (sono il 308, devono
+restare), il Tema 13 qui sopra con la nota di superamento, la migration 707 che nomina l'indirizzo
+vecchio (una migration applicata non si riscrive), e `/menu-demo/:lang`, che resta un ingresso
+valido per la demo (scelta dell'utente).
 
 **Resta aperto**, e non è di oggi: le pagine sotto il locale (`/v/<slug>/menu` e le altre), i domini
 propri, e il rimando reciproco fra `/r/` e `/v/`.
@@ -1701,7 +1716,7 @@ propri, e il rimando reciproco fra `/r/` e `/v/`.
 ## Prossimo passo
 
 **Aggiornato il 2026-09-15.** Il menù al tavolo è in produzione da `allergiapp.com/v/<slug>` (era `/menu/<slug>` fino al
-2026-09-20, v. Tema 36; il vecchio indirizzo risponde con un 301 permanente).
+2026-09-20, v. Tema 36; il vecchio indirizzo risponde con un 308 permanente).
 Migrations **707-715 tutte APPLICATE** (la 711 il 06/09, la 715 il 15/09): le manopole
 dell'aspetto sono accese, i menù multipli pure. Dal 15/09 le pagine generate del sito girano a
 **Stoccolma** (`arn1`, accanto a Supabase `eu-north-1`), non più a Washington.
@@ -1756,7 +1771,7 @@ copie — portale e sito — e sotto le tre scelte il portale lo dice anche al r
    discussione coi dati: il pannello dei filtri **gratis per tutti** (è la miccia che genera da
    sé la frase di vendita) e a pagamento i numeri del lato **AllergiApp**. Prima di tutto questo,
    però, i due o tre ristoratori qui sotto.
-3. **Il rimando reciproco `/menu/<slug>` ↔ `/r/<slug>`** per un locale rivendicato (aperto dal
+3. **Il rimando reciproco `/v/<slug>` ↔ `/r/<slug>`** per un locale rivendicato (aperto dal
    Tema 13): sono due pagine pubbliche dello stesso posto e non si conoscono.
 4. **Svuotare la cache alla pubblicazione**, quando le letture del menù cominceranno a vedersi nel
    traffico di Supabase: l'etichetta `Vercel-Cache-Tag` è già sulle risposte, manca il segreto

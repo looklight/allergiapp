@@ -793,7 +793,7 @@ scarico: è lì che qualcuno sta per portare un file in stampa, e un QR
 stampato non si corregge da remoto.
 
 **La pagina pubblica esiste** e sta sul branch `landing`
-(`/menu/[slug]`): legge `get_public_menu`, cioè solo lo scatto pubblicato.
+(`/v/[slug]`): legge `get_public_menu`, cioè solo lo scatto pubblicato.
 Manca il **deploy** — finché il branch non è pushato, quell'indirizzo non
 risponde a nessuno.
 

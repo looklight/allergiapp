@@ -4,7 +4,7 @@
 // oggi lì sotto c'è il menù, domani può starci il locale intero, e un
 // prefisso che dice «menu» sarebbe già sbagliato quel giorno — stampato su
 // un QR incollato al tavolo. Il vecchio `/menu/<slug>` risponde per sempre
-// con un 301 permanente (landing/vercel.json).
+// con un 308 permanente (landing/vercel.json).
 //
 // Lo slug è del LOCALE (DIGITAL_MENU.md, Temi 13 e 17) e ne ha UNO alla
 // volta: cambiandolo il precedente torna libero, senza storico e senza
