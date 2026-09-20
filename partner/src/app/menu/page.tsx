@@ -244,7 +244,7 @@ export default function MenusPage() {
                   // del gruppo), ma la forma è la stessa, e il pallino dello
                   // stato resta dov'era, dentro.
                   <h2 className="flex min-w-0 flex-wrap items-center gap-2">
-                    <span className="inline-flex min-w-0 max-w-[16rem] items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm font-medium text-gray-900">
+                    <span className="inline-flex min-w-0 max-w-[16rem] items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-1.5 text-sm font-medium text-white">
                       <StatusDot stato={stato === null ? null : online ? 'ready' : 'draft'} />
                       <span className="truncate">{venue.venueName.trim() || d.home.unnamed}</span>
                       {/* DENTRO la pill, come in home: il piano appartiene al
