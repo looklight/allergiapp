@@ -633,16 +633,17 @@ export default function HomePage() {
                   menù e l'altro, quell'azione si fa già sulla scheda che
                   vedono i clienti (richiesta dell'utente, 14/09). Restano
                   raccolti nel pulsante "···" per non affollare la riga.
-                  "Anteprima" resta invece del solo menù singolo: è
-                  l'anteprima di UN contenuto preciso, prima che sia
-                  pubblicato — con più menù non saprebbe quale mostrare, e da
-                  pubblicato non serve comunque più (si apre la pagina vera). */}
+                  "Anteprima" qui non c'è più (richiesta dell'utente, 20/09):
+                  portava via dalla dashboard per far vedere una cosa che si
+                  guarda mentre la si scrive — sta nell'editor, accanto al
+                  telefono, e da lì si apre. In home restano il pulsante che
+                  porta al menù e le due voci dei "···". */}
               {suoiMenu.length > 1 ? (
                 <PrimaryLink href="/menu">{d.dashboard.menusAll}</PrimaryLink>
               ) : (
                 <PrimaryLink href={`/menu/${suoiMenu[0].id}`}>{d.dashboard.menusOpen}</PrimaryLink>
               )}
-              {pubblicazioneIgnota ? null : online ? (
+              {!pubblicazioneIgnota && online && (
                 <OverflowMenu
                   etichetta={d.dashboard.moreActions}
                   voci={[
@@ -653,12 +654,6 @@ export default function HomePage() {
                     },
                   ]}
                 />
-              ) : (
-                suoiMenu.length === 1 && (
-                  <SecondaryLink href={`/menu/${suoiMenu[0].id}/anteprima`}>
-                    {d.menuEditor.previewTitle}
-                  </SecondaryLink>
-                )
               )}
             </div>
           )}
