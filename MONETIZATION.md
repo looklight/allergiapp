@@ -277,11 +277,22 @@ resta, sparisce solo la scheda.
 **Cambiato**: prima l'abbonamento, poi il collegamento; il collegamento non
 porta dati, aggancia soltanto (i piatti della scheda stanno sul locale).
 
-**Nodo 1 — quando la scheda si vede in app** (deciso 17/09):
+**Nodo 1 — quando la scheda si vede in app** (deciso 17/09, ~~almeno un
+piatto~~ **tolto il 19/09**):
 - Nessuno scrive «pubblicata». Visibile = **abbonamento attivo** sul locale
-  **e** collegamento non in pausa/sospeso/revocato **e almeno un piatto**
-  scelto per la scheda **e il visto del nostro team** (aggiunto il 19/09,
-  migration 724). Calcolato dal database a ogni lettura.
+  **e** collegamento non in pausa/sospeso/revocato **e il visto del nostro
+  team** (aggiunto il 19/09, migration 724). Calcolato dal database a ogni
+  lettura.
+- ~~e almeno un piatto scelto per la scheda~~ **Tolto il 19/09** (decisione
+  dell'utente): «il partner ha pagato per il collegamento, decide lui come
+  gestire la sua scheda — link, piatti, tutti e due o niente: ne risponde
+  lui». Il **contorno del pin** resta invece legato ai piatti PUBBLICATI
+  (`partner_card_dishes_published`, 728): dice «c'è il menù del ristorante»,
+  e senza piatti non c'è. Da scrivere nella parte 4.
+- **La scheda si PUBBLICA** (728, 19/09), come il menù al tavolo: la bozza è
+  quella che si compila, l'app mostra la versione pubblicata. Si pubblica
+  QUALI piatti e i link; nomi, foto e allergeni l'app li legge dal catalogo,
+  quindi una correzione di allergeni non aspetta nessun bottone.
 - Il ristoratore può solo mettere in pausa e riattivare; l'admin sospende e
   revoca. Chiude la falla di `partner_cards_owner` (703, `FOR ALL`): lo
   stato `published`/`expired` sparisce come valore scrivibile.
