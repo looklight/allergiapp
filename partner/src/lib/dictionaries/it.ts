@@ -128,6 +128,9 @@ const it = {
   // direbbe quale delle due.
   pro: {
     label: 'Pro',
+    // Il distintivo viola è un bottone che apre il paywall: dice cosa fa,
+    // non come si chiama il piano (19/09). L'ambra resta «Pro».
+    upgrade: 'Passa a Pro',
     neededTitle: 'Si prova subito; arriva ai clienti con l’abbonamento',
     activeTitle: 'Questo locale ha l’abbonamento attivo',
   },
@@ -243,18 +246,16 @@ const it = {
   },
   editor: {
     title: 'Scheda AllergiApp',
-    draftBadge: 'Bozza privata',
     intro:
       'La pagina di {venue} dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
-    // Il richiamo sotto il titolo (v. page.tsx): dice che si può lavorare
-    // adesso e cosa serve perché si veda, senza mettere un "paga" in cima
-    // ⚠️ Adesso nomina anche l'abbonamento (16/09), perché accanto al titolo
-    // c'è l'etichetta Premium e tacerlo qui la farebbe scoprire altrove. Resta
-    // però una frase sul LAVORO e non sul prezzo: prima cosa puoi fare adesso,
-    // poi cosa serve perché la scheda compaia. Il "quanto" lo dice /abbonamenti.
-    linkNote:
-      'Puoi preparare la scheda già adesso: resta salvata e la vedi in anteprima. Compare nell’app con l’abbonamento e l’associazione del locale al tuo ristorante su AllergiApp.',
-    linkNoteCta: 'Come funziona',
+    // Il richiamo in cima a una scheda nuova: tre passi (19/09)
+    // Il rimando in cima alla sezione dell'associazione, in fondo alla pagina
+    goToLink: 'Associazione',
+    stepsTitle: 'Per mostrare la scheda nell’app',
+    stepPrepare: 'Prepara link e piatti qui sotto: puoi farlo già adesso',
+    stepSubscribe: 'Attiva l’abbonamento del locale',
+    stepLink: 'Associa il locale al tuo ristorante su AllergiApp e pubblica',
+    stepsSeeSubscription: 'Vai agli abbonamenti',
     // Il box in fondo alla pagina: l'ultimo passo, dopo link e piatti
     linkBoxTitle: 'Il tuo ristorante su AllergiApp',
     linkBoxText:
@@ -262,6 +263,17 @@ const it = {
     linkBoxCta: 'Associa il ristorante',
     // La riga in cima, appena la scheda ha qualcosa dentro (19/09)
     linkBar: 'La scheda ha già dei contenuti: associa il locale al tuo ristorante per mostrarla nell’app.',
+    // PUBBLICARE LA SCHEDA (728): la riga in cima quando la bozza è diversa
+    // da quello che l'app mostra. «Non ancora pubblicate» e non «non
+    // salvate»: il lavoro è al sicuro, manca il passaggio nell'app.
+    publishPending: 'Modifiche non pubblicate',
+    publishNever: 'Non ancora pubblicata',
+    publish: 'Pubblica',
+    publishing: 'Pubblico…',
+    publishRevert: 'Annulla',
+    publishFailed: 'Non pubblicata: alcune modifiche non sono salvate. Riprova.',
+    // Sotto la scelta dei piatti, quando non ne è acceso nessuno
+    noDishesSelected: 'Nessun piatto scelto: nell’app la sezione dei piatti non compare.',
     // Dopo l'associazione, finché il nostro team non ha controllato (724).
     // Cosa succede e cosa viene dopo; nessun tempo promesso, che non
     // dipende da chi legge.
@@ -442,6 +454,9 @@ const it = {
     // perde, e che per qualche secondo si può ancora rimettere
     deleteBody:
       'Spariscono le sezioni, l’ordine e i prezzi. I piatti restano nel tuo catalogo, e finché il messaggio di annullamento è in piedi puoi rimettere tutto com’era.',
+    // Aggiunte davanti a deleteBody quando il locale è online (729)
+    deleteOnline: 'Al tavolo resta finché non pubblichi le modifiche.',
+    deleteLastOnline: 'È l’ultimo menù attivo: il menù al tavolo va offline.',
     deleted: 'Menù eliminato',
     undo: 'Annulla',
   },
@@ -610,7 +625,8 @@ const it = {
     // PUBBLICAZIONE. "Modifiche non pubblicate" e non "non salvate": il
     // lavoro è già al sicuro, quello che manca è il passaggio in sala.
     publish: 'Pubblica le modifiche',
-    publishFirst: 'Pubblica il menù',
+    // Mai pubblicato: il bottone porta alla sezione «Online», non pubblica
+    publishFirst: 'Vai alla pubblicazione',
     publishing: 'Pubblico…',
     // Il database rifiuta di pubblicare uno scatto vuoto: qui si dice perché,
     // così ripremere lo stesso bottone non sembra l'unica cosa da fare
@@ -619,7 +635,8 @@ const it = {
     // è andato storto: non è un errore, è un menù non ancora finito.
     publishNoDishes: 'Aggiungi almeno un piatto per pubblicare il menù.',
     publishNoActive: 'Nessun menù attivo: niente da pubblicare. Riaccendine almeno uno in "Vedi i menù".',
-    publishPending: 'Modifiche non pubblicate: gli utenti vedono ancora la versione precedente.',
+    publishPending: 'Ci sono modifiche non ancora visibili ai clienti.',
+    publishAfterSave: 'Salva le modifiche dell’aspetto per poterle pubblicare.',
     // L'avviso che nomina il rischio, invece di essere l'ennesima scritta
     // grigia: è la mitigazione della scelta di avere una bozza (Tema 24).
     //
@@ -629,14 +646,14 @@ const it = {
     // che sembrava parlare d'altro — mentre invece era vera, per una modifica
     // fatta mezz'ora prima. Il neutro puro non va bene: sarebbe tornare a non
     // dire mai che in ballo c'è un allergene.
-    publishAllergens: 'Modifiche non pubblicate, allergeni compresi: gli utenti vedono ancora la versione precedente.',
+    publishAllergens: 'Ci sono modifiche non ancora visibili ai clienti, allergeni compresi.',
     // Solo l'aspetto è cambiato. Vale la pena dirlo invece di dire
     // genericamente "modifiche": chi ha scelto un colore mezz'ora fa e legge
     // "modifiche non pubblicate" si mette a cercare cos'altro ha toccato.
-    publishAppearance:
-      'Modifiche all’aspetto non pubblicate: al tavolo si vede ancora quello di prima.',
+    publishAppearance: 'L’aspetto non è ancora visibile ai clienti.',
     publishNever: 'Questo menù non è ancora pubblicato.',
     publishedOn: 'Pubblicato il {date}',
+    goToSubscriptions: 'Vai agli abbonamenti',
     // ANNULLARE L'ASPETTO. "L'aspetto pubblicato" e non "annulla tutto":
     // quello che torna indietro è solo questa scatola, e il menù non si
     // tocca. Il bottone sta QUI dentro e non accanto a Pubblica, dove
@@ -670,25 +687,18 @@ const it = {
     // dell'area, che diceva "Indirizzo web del menù" e funzionava; adesso che
     // il titolo è "Online" servirebbe una parola che non dice cos'è il campo.
     addressField: 'Indirizzo web del menù',
-    // UN'ETICHETTA SOLA, e lo stato lo dice l'interruttore accanto. Prima la
-    // pastiglia scriveva "Attivo" o "Inattivo" a seconda dei casi: leggeva
-    // come un'etichetta di stato, non come una cosa da premere — e infatti
-    // nessuno la premeva. "Pubblicato" e non più "Attivo": la stessa parola
-    // in /menu vuol dire un'altra cosa, se un singolo menù entra o no in
-    // quello che si pubblica, e le due notizie mescolate confondevano
-    // (censimento richiesto dall'utente, 14/09).
+    // L'etichetta è una sola e ferma: lo stato lo dice l'interruttore
     addressActive: 'Pubblicato',
     // Dicono la CONSEGUENZA e non il posto: "sala" in un ristorante è la
-    // stanza dove si mangia, e chi legge non deve tradurre una metafora
-    // nostra per capire cosa fa premendo.
+    // stanza dove si mangia.
     addressTurnOn: 'Rendi il menù visibile ai clienti',
     addressTurnOff: 'Nascondi il menù ai clienti',
     addressHintOffline:
       'Il link e il QR esistono ma non mostrano il menù: chi li apre legge che non è al momento disponibile. Puoi rimetterlo online quando vuoi.',
     addressHintLive:
-      'Questo è l’indirizzo che i tuoi clienti aprono col QR. Cambiandolo, i QR già stampati smettono di funzionare.',
+      'Questo è l’indirizzo che i tuoi clienti aprono col QR. Se lo cambi, ricordati di ristampare i QR.',
     addressHint:
-      'È l’indirizzo che finirà sul QR del tavolo. Scegliendolo adesso lo metti al sicuro: la pagina pubblica arriva più avanti.',
+      'È l’indirizzo che finirà sul QR del tavolo. Puoi sceglierlo adesso o alla prima pubblicazione.',
     addressNeedName: 'Scrivi prima il nome del locale: l’indirizzo si propone da lì.',
     addressNotChosen: 'Non ancora scelto.',
     addressChecking: 'Controllo…',
@@ -704,7 +714,10 @@ const it = {
     // volta, ma ripeterla proprio nell'istante che conta è il punto.
     addressChangeConfirmTitle: 'Cambiare l’indirizzo?',
     addressChangeConfirmBody:
-      'I QR e i link già stampati con questo indirizzo smetteranno di funzionare: chi li usa troverà un errore. Il nuovo indirizzo funzionerà da subito.',
+      'Il menù risponderà al nuovo indirizzo. I QR già stampati portano al vecchio: ristampali dopo il cambio.',
+    addressChangeSureTitle: 'Sei sicuro?',
+    addressChangeSureBody: 'I QR già stampati smetteranno di funzionare.',
+    addressChangeSureConfirm: 'Sì, cambia indirizzo',
     addressSaved: 'Indirizzo salvato.',
     addressFailed: 'Non è stato salvato: qualcuno potrebbe averlo preso in questo momento.',
     // IL QR. Prima versione: l'indirizzo non è ancora attivo, e l'avviso sta
@@ -830,6 +843,53 @@ const it = {
     samplePillGreen: 'Senza glutine',
     samplePillAmber: 'Senza lattosio',
   },
+  // IL PAYWALL (19/09). È una pagina di vendita, e segue le poche regole che
+  // valgono davvero: si apre con il BENEFICIO e non col prodotto; dice cosa
+  // ottieni in tre righe concrete; mostra il prezzo con l'alternativa annuale
+  // accanto (che vale come ancora: due mesi in regalo); toglie il rischio
+  // («disdici quando vuoi») e ricorda cosa resta gratis, perché la paura di
+  // perdere il menù è l'obiezione vera. Un solo bottone che conta, e la via
+  // d'uscita in grigio.
+  //
+  // ⚠️ Niente conti alla rovescia, niente «offerta che scade», niente numeri
+  // inventati sui ristoranti iscritti: di ristoratori veri non ne abbiamo
+  // ancora, e una prova sociale finta si paga con la fiducia.
+  paywall: {
+    lookTitle: 'Il menù al tavolo con la tua faccia',
+    lookLead: 'Hai scelto colore e carattere: col Piano Pro arrivano anche ai tuoi clienti.',
+    cardTitle: 'Fatti trovare da chi ha un’allergia',
+    cardLead: 'Il Piano Pro porta il tuo locale dentro l’app, dove si cerca dove mangiare.',
+    look: 'Il menù al tavolo con il tuo logo, i tuoi colori e il tuo carattere',
+    card: 'La scheda del locale dentro l’app, con i tuoi piatti e i tuoi link',
+    replies: 'Le risposte alle recensioni, firmate dal tuo locale',
+    soon: 'in arrivo',
+    // IL PREZZO COME LO FANNO QUELLI BRAVI: due riquadri accostati, e
+    // l'annuale vince da solo. Il trucco non è uno sconto gridato ma il
+    // PREZZO AL MESE messo a confronto: 5 € contro 7,99 €, e il totale
+    // annuale scritto piccolo sotto, perché è l'unica cifra che spaventa.
+    // ⚠️ I numeri sono veri e vanno tenuti allineati a Stripe: 12 × 7,99 =
+    // 95,88, contro 60 → 35,88 in meno, cioè il 37%.
+    monthlyName: 'Mensile',
+    monthlyPrice: '7,99 €',
+    perMonth: 'al mese',
+    yearlyName: 'Annuale',
+    yearlyPrice: '5 €',
+    yearlyBilled: '60 € una volta l’anno',
+    yearlySave: 'Risparmi 35,88 € — il 37%',
+    yearlyBest: 'Conviene',
+    perVenue: 'per locale',
+    noLock: 'Disdici quando vuoi: resti attivo fino alla fine del periodo già pagato.',
+    // Il pagamento parte da qui (19/09): meno attrito, ma prima si dice che
+    // si rinnova da solo — verso le imprese è anche dovuto (P2B).
+    renewal: 'Si rinnova da solo. Disdici quando vuoi: resti attivo fino alla fine del periodo già pagato.',
+    seeAll: 'Vedi gli abbonamenti',
+    payError: 'Non è stato possibile aprire il pagamento. Riprova.',
+    opening: 'Apro…',
+    free: 'Il menù, il QR e il filtro allergeni restano gratis, sempre.',
+    cta: 'Attiva il Piano Pro',
+    ctaSoon: 'Vai agli abbonamenti',
+    later: 'Non ora',
+  },
   subs: {
     back: 'Indietro',
     title: 'Abbonamenti',
@@ -854,7 +914,8 @@ const it = {
     // la stessa cosa in due schermate.
     monthly: 'Piano Pro · 7,99 € al mese',
     yearly: 'Piano Pro · 60 € all’anno',
-    yearlyHint: 'Due mesi in regalo',
+    // 12 × 7,99 = 95,88 contro 60: il risparmio vero è il 37%, non due mesi
+    yearlyHint: 'Risparmi il 37%',
     // Va detto PRIMA di pagare, non dopo: il rinnovo automatico scoperto al
     // secondo addebito è il modo più rapido di perdere un ristoratore, e verso
     // le imprese la chiarezza su durata e disdetta è anche dovuta (P2B).
@@ -953,7 +1014,6 @@ const it = {
     // nome del locale qui no, spesso è lo stesso e la frase non diceva niente
     doneLinked: 'Il locale è ora associato a {restaurant} su AllergiApp.',
     doneReview: 'Il nostro team controlla l’associazione: la scheda comparirà nell’app subito dopo.',
-    doneNeedsDishes: 'Serve anche almeno un piatto sulla scheda: sceglilo quando vuoi.',
     doneRequested: 'Richiesta inviata. L’esito lo trovi nella pagina della scheda.',
     doneBack: 'Torna alla scheda',
   },
@@ -966,20 +1026,20 @@ const it = {
       none: 'non attiva',
       requested: 'richiesta in attesa',
       rejected: 'non attiva',
+      closed: 'non attiva',
       suspended: 'sospesa',
       review: 'in verifica',
       paused: 'in pausa',
       expired: 'non visibile',
-      noDishes: 'senza piatti',
       live: 'attiva',
     },
     line: {
       requested: 'Il nostro team sta valutando la tua richiesta per {restaurant}.',
       rejected: 'La richiesta non è stata accolta: trovi il motivo nella scheda.',
+      closed: 'L’associazione è stata chiusa dal nostro team: trovi il motivo nella scheda.',
       suspended: 'Sospesa dal nostro team: trovi il motivo nella scheda.',
       paused: 'In pausa: nell’app non si vede finché non la riattivi.',
       expired: 'L’abbonamento è finito: la scheda resta associata ma non si vede nell’app.',
-      noDishes: 'Scegli almeno un piatto: senza, la scheda non compare nell’app.',
     },
     notice: {
       requestedTitle: 'Richiesta in attesa',
@@ -988,6 +1048,12 @@ const it = {
       rejectedTitle: 'Richiesta non accolta',
       rejectedText: 'La richiesta per {restaurant} non è stata accolta.',
       reason: 'Motivo:',
+      // L'associazione chiusa da noi (closedByUs in venues.ts): revocata, o
+      // rifiutata la prima volta che la guardavamo. Il motivo è dovuto (DSA
+      // art. 17); il ristorante non si riassocia da solo, ma un altro sì.
+      closedTitle: 'Associazione revocata dal nostro team',
+      closedNeverApprovedTitle: 'Associazione non approvata',
+      closedText: 'L’associazione a {restaurant} è stata chiusa e la scheda non si vede nell’app.',
       suspendedTitle: 'Scheda sospesa dal nostro team',
       suspendedText: 'Nell’app non si vede finché la sospensione non viene tolta.',
       contact: 'Per chiarimenti scrivici:',
@@ -996,8 +1062,6 @@ const it = {
       expiredTitle: 'Abbonamento finito',
       expiredText:
         'La scheda resta associata a {restaurant}, ma nell’app non si vede. Con l’abbonamento torna com’era.',
-      noDishesTitle: 'Manca almeno un piatto',
-      noDishesText: 'La scheda è pronta, ma senza piatti non compare nell’app: scegline almeno uno qui sotto.',
     },
     // Il riquadro in fondo, dove si gestisce l'associazione
     linkedTo: 'Associato a {restaurant}.',
@@ -1032,8 +1096,6 @@ const it = {
     // Dati personali
     profileTitle: 'I tuoi dati',
     profileHint: 'Il nome con cui ti salutiamo qui dentro. I clienti non lo vedono.',
-    phone: 'Telefono',
-    phoneHint: 'Facoltativo: serve solo a noi, se dobbiamo scriverti per il tuo account.',
     profileSaved: 'Dati aggiornati',
     // Le aziende: si inseriscono associando un locale, qui si vedono (19/09).
     // La modifica arriva dopo, e ripassa dal controllo sul server.
@@ -1054,7 +1116,6 @@ const it = {
     marketingHint: 'Puoi cambiare idea quando vuoi: vale da subito.',
     // Password
     passwordTitle: 'Password',
-    passwordHint: 'Cambiala quando vuoi. Ti servirà al prossimo accesso.',
     passwordNew: 'Nuova password',
     passwordRepeat: 'Ripeti la password',
     passwordMismatch: 'Le due password non coincidono.',
