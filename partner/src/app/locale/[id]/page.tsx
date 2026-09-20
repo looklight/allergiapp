@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { useModal } from '@/lib/useModal';
 import { venueDishes, useDishes } from '@/lib/dishes';
-import { countLinks, hasBooking, normalizeUrl, useVenues, type VenueDraft } from '@/lib/venues';
+import { cardHasChanges, countLinks, hasBooking, normalizeUrl, useVenueChoice, useVenues, type DraftLinks, type VenueDraft } from '@/lib/venues';
 import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { ALLERGENS } from '@/lib/allergens';
 import { DIETS } from '@/lib/diets';
@@ -16,13 +16,15 @@ import { DELIVERY_PROVIDERS } from '@/lib/providers';
 import { LINK_COLORS, LINK_ORDER, type LinkKind } from '@/lib/linkKinds';
 import LinkPill from '@/components/LinkPill';
 import ProTag from '@/components/ProTag';
-import { cardState, setCardPaused, unlinkCard } from '@/lib/association';
+import { CARD_TONE, cardState, setCardPaused, unlinkCard } from '@/lib/association';
+import StatusPill from '@/components/StatusPill';
 import CardStateNotice from '@/components/CardStateNotice';
 import RestaurantPhrase from '@/components/RestaurantPhrase';
 import ConfirmDialog from '@/components/menus/ConfirmDialog';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview/SchedaPreview';
 import CardDishesSelector from '@/components/CardDishesSelector';
+import CardPublishBar from '@/components/CardPublishBar';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 
 function ViewerChips({
@@ -235,7 +237,9 @@ function MobilePreview({
 export default function VenueEditorPage() {
   const { d } = useI18n();
   const params = useParams<{ id: string }>();
-  const { venues, update, setDishesOn, reload: rileggiLocali } = useVenues();
+  const { venues, update, setDishesOn, reload: rileggiLocali, publishCard, revertCard } = useVenues();
+  // La scelta del locale è la stessa della home e del menù laterale
+  const { scegli } = useVenueChoice();
   // Se il locale è abbonato l'etichetta Pro sparisce: non c'è più niente da
   // sbloccare, e il distintivo ambra in home dice già che ce l'ha.
   const { subs } = useSubscriptions();
@@ -256,6 +260,9 @@ export default function VenueEditorPage() {
   // null = lascia decidere alla bozza (v. showBookingUrl/showBookingPhone)
   // Link aperto in modifica: gli altri restano pill. null = tutti chiusi
   const [openKind, setOpenKind] = useState<LinkKind | null>(null);
+  // Com'erano i link quando si è aperto quello in modifica: «Annulla» nel
+  // riquadro rimette quel link così e lo chiude
+  const [linkPrima, setLinkPrima] = useState<DraftLinks | null>(null);
   const [bookingUrlOpen, setBookingUrlOpen] = useState<boolean | null>(null);
   const [bookingPhoneOpen, setBookingPhoneOpen] = useState<boolean | null>(null);
   const viewerCount = viewer.allergens.length + viewer.diets.length;
@@ -312,6 +319,8 @@ export default function VenueEditorPage() {
   const haContenuto = countLinks(venue.links) > 0 || venue.dishIds.length > 0;
   // Lo stato della scheda, la stessa regola di home e Abbonamenti
   const stato = cardState(venue, abbonato);
+  // Link o piatti diversi da quello che l'app mostra (728)
+  const modifiche = cardHasChanges(venue);
   const mostraRichiamo = stato === 'none' && !haContenuto;
   const verso = abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti';
   const ristorante = {
@@ -414,7 +423,31 @@ export default function VenueEditorPage() {
   // se era rimasto vuoto lo spegne, così negli attivi resta solo ciò che ha un dato
   function openLink(kind: LinkKind) {
     if (openKind && openKind !== kind && !filled[openKind]) removeLink(openKind);
+    setLinkPrima(draft.links);
     setOpenKind(kind);
+  }
+
+  // ANNULLA nel riquadro di un link: quel link torna com'era quando lo si è
+  // aperto (gli altri non si toccano) e il riquadro si chiude. Se prima era
+  // vuoto, torna fra quelli da aggiungere.
+  function cancelLink(kind: LinkKind) {
+    const prima = linkPrima ?? draft.links;
+    const parte =
+      kind === 'delivery'
+        ? { deliveries: prima.deliveries }
+        : kind === 'menu'
+          ? { menus: prima.menus }
+          : kind === 'booking'
+            ? { booking: prima.booking }
+            : { website: prima.website };
+    setDraft({ ...draft, links: { ...draft.links, ...parte } });
+    setActivated((prev) => prev.filter((k) => k !== kind));
+    if (kind === 'booking') {
+      setBookingUrlOpen(null);
+      setBookingPhoneOpen(null);
+    }
+    setOpenKind(null);
+    setLinkPrima(null);
   }
 
   function closeLink(kind: LinkKind) {
@@ -477,20 +510,33 @@ export default function VenueEditorPage() {
             fondo alla pagina. Sparisce ad associazione fatta. Senza
             abbonamento porta prima agli abbonamenti. Stessa riga sticky e
             stesse misure dell'editor del menù, così è riconoscibile. */}
-        {stato === 'none' && haContenuto && (
+        {/* Una riga sola, la cosa più urgente: prima «Pubblica» se ci
+            sono modifiche che l'app non ha ancora (728), altrimenti
+            «Associa» se il locale non è associato. */}
+        {(modifiche || (stato === 'none' && haContenuto)) && (
           <div className="sticky top-0 z-30 -mx-4 mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
-            <p className="min-w-0 flex-1 text-xs text-gray-600 sm:text-sm">{d.editor.linkBar}</p>
-            <Link
-              href={verso}
-              className="ml-auto shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-            >
-              {d.editor.linkBoxCta}
-            </Link>
+            {modifiche ? (
+              <CardPublishBar
+                venue={venue}
+                onPublish={() => publishCard(venue.id)}
+                onRevert={() => revertCard(venue.id)}
+              />
+            ) : (
+              <>
+                <p className="min-w-0 flex-1 text-xs text-gray-600 sm:text-sm">{d.editor.linkBar}</p>
+                <Link
+                  href={verso}
+                  className="ml-auto shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                >
+                  {d.editor.linkBoxCta}
+                </Link>
+              </>
+            )}
           </div>
         )}
         {/* LO STATO, QUANDO C'È QUALCOSA DA DIRE (richiesta dell'utente,
             19/09): in verifica, richiesta in attesa o respinta, sospesa, in
-            pausa, abbonamento finito, senza piatti. Nello stesso posto della
+            pausa, abbonamento finito, revocata. Nello stesso posto della
             riga «Associa», così chi apre la scheda trova qui il perché non si
             vede. La regola è cardState(), la stessa di home e Abbonamenti. */}
         <CardStateNotice
@@ -513,18 +559,62 @@ export default function VenueEditorPage() {
             Resta nella colonna dell'editor e non sopra le due: l'anteprima
             accanto parte dall'alto della pagina, alla pari del titolo
             (provato a spostarla sopra e scartato dall'utente, 15/09). */}
+        {/* I LOCALI, con più d'uno (19/09): le stesse pill della home, per
+            passare da una scheda all'altra senza tornare indietro. Solo per
+            spostarsi: rinominare ed eliminare restano in home. */}
+        {venues.length > 1 && (
+          <div className="mb-5 flex flex-wrap items-center gap-2" aria-label={d.dashboard.switchLabel} role="group">
+            {venues.map((v) => {
+              const acceso = v.id === venue.id;
+              return (
+                <Link
+                  key={v.id}
+                  href={`/locale/${v.id}`}
+                  onClick={() => scegli(v.id)}
+                  aria-current={acceso ? 'page' : undefined}
+                  className={`max-w-[16rem] rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                    acceso
+                      ? 'bg-gray-900 text-white'
+                      : 'border border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-900'
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="truncate">{v.venueName.trim() || d.home.unnamed}</span>
+                    {abbonamentoDi(subs, v.id) !== null && <ProTag variant="active" />}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <PageTitle>{d.editor.title}</PageTitle>
-          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-            {d.editor.draftBadge}
-          </span>
-          {/* Due pastiglie che dicono due cose diverse: dov'è questo lavoro
-              adesso (bozza privata) e cosa servirà perché esca (Pro). La
+          {/* Com'è la scheda nell'app: lo stesso pallino e la stessa parola
+              della home (cardState). Fino al 19/09 qui c'era «Bozza
+              privata» fisso, che restava anche a scheda attiva nell'app. */}
+          <StatusPill stato={CARD_TONE[stato]} label={d.cardState.pill[stato]} />
+          {/* Due pastiglie che dicono due cose diverse: com'è la scheda
+              adesso e cosa servirà perché esca (Pro). La
               seconda sparisce per chi è abbonato — non ha più niente da
               sbloccare, e il distintivo ambra accanto al nome del locale in
               home dice già che ce l'ha. Non è un lucchetto: la scheda si
               compila tutta e l'anteprima la mostra. */}
-          {!abbonato && <ProTag variant="needed" />}
+          {!abbonato && <ProTag variant="needed" contesto="card" venueId={venue.id} />}
+          {/* L'associazione sta in fondo, dopo link e piatti: con tanti piatti
+              la pagina è lunga, e da qui ci si arriva con un tocco */}
+          <a
+            href="#associazione"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('associazione')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-gray-600 underline-offset-2 transition-colors hover:text-gray-900 hover:underline"
+          >
+            {d.editor.goToLink}
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 5v14M6 13l6 6 6-6" />
+            </svg>
+          </a>
         </div>
         {/* Senza il richiamo qui sotto, lo stacco dal contenuto lo dà la frase */}
         <PageIntro className={mostraRichiamo ? '' : 'mb-10 md:mb-12'}>
@@ -542,7 +632,13 @@ export default function VenueEditorPage() {
             l'abbonamento" suonava come un "paga" messo in cima al lavoro.
             Una volta associato il locale il richiamo non serve più, e non
             serve nemmeno quando c'è la riga in cima (19/09): direbbero la
-            stessa cosa due volte. */}
+            stessa cosa due volte.
+
+            TRE PASSI (19/09): la frase lunga di prima non si capiva, e il suo
+            «Come funziona» portava agli abbonamenti senza spiegare niente.
+            L'abbonamento è nominato fra i passi, ma il collegamento resta
+            neutro («Vedi l'abbonamento», non «Attiva»): per la scelta del
+            15/09. Il passo fatto ha la spunta. */}
         {mostraRichiamo && (
           <div className="mb-10 mt-5 flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:mb-12">
             <svg className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -550,15 +646,35 @@ export default function VenueEditorPage() {
               <line x1="12" y1="16" x2="12" y2="12" />
               <line x1="12" y1="8" x2="12.01" y2="8" />
             </svg>
-            <p className="text-sm text-gray-600">
-              {d.editor.linkNote}{' '}
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="font-medium text-gray-900">{d.editor.stepsTitle}</p>
+              <ol className="mt-1.5 space-y-1 text-gray-600">
+                {[
+                  { testo: d.editor.stepPrepare, fatto: false },
+                  { testo: d.editor.stepSubscribe, fatto: abbonato },
+                  { testo: d.editor.stepLink, fatto: false },
+                ].map(({ testo, fatto }, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="flex w-4 shrink-0 justify-center text-gray-400">
+                      {fatto ? (
+                        <svg className="mt-0.5 h-4 w-4 text-[#4CAF50]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M5 12.5l4.5 4.5L19 7.5" />
+                        </svg>
+                      ) : (
+                        `${i + 1}.`
+                      )}
+                    </span>
+                    {testo}
+                  </li>
+                ))}
+              </ol>
               <Link
-                href="/abbonamenti"
-                className="font-medium text-gray-700 underline transition-colors hover:text-gray-900"
+                href={verso}
+                className="mt-2 inline-block font-medium text-gray-700 underline transition-colors hover:text-gray-900"
               >
-                {d.editor.linkNoteCta}
+                {abbonato ? d.editor.linkBoxCta : d.editor.stepsSeeSubscription}
               </Link>
-            </p>
+            </div>
           </div>
         )}
 
@@ -799,9 +915,16 @@ export default function VenueEditorPage() {
                       </div>
                     )}
 
-                    {/* Salva qui non "invia" niente (la bozza è già scritta):
-                        chiude il link e lo riporta a pill, come nel form piatto */}
-                    <div className="mt-3 flex justify-end">
+                    {/* Salva tiene il link nella bozza e lo riporta a pill;
+                        Annulla lo rimette com'era quando l'hai aperto. Nell'app
+                        va solo con Pubblica, in cima alla pagina (728). */}
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        onClick={() => cancelLink(kind)}
+                        className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
+                      >
+                        {d.common.cancel}
+                      </button>
                       <button
                         onClick={() => setOpenKind(null)}
                         disabled={!filled[kind]}
@@ -871,11 +994,28 @@ export default function VenueEditorPage() {
                 </Link>
               </div>
             ) : (
-              <CardDishesSelector
-                catalog={catalog}
-                chosen={draft.dishIds}
-                onChange={(dishIds, on) => setDishesOn(venueId, dishIds, on)}
-              />
+              <>
+                {/* Nessun piatto acceso: si dice qui, dove si sceglie, cosa
+                    comporta — nell'app la sezione dei piatti non c'è. È
+                    un'informazione, non un errore: la scheda con i soli
+                    link va benissimo (728) */}
+                {/* In evidenza (richiesta dell'utente): è l'effetto di una
+                    scelta che si fa qui, e va visto prima di pubblicare */}
+                {draft.dishIds.length === 0 && (
+                  <p className="mb-3 flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2 text-[13px] text-gray-700">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8v5M12 16.5v.01" />
+                    </svg>
+                    {d.editor.noDishesSelected}
+                  </p>
+                )}
+                <CardDishesSelector
+                  catalog={catalog}
+                  chosen={draft.dishIds}
+                  onChange={(dishIds, on) => setDishesOn(venueId, dishIds, on)}
+                />
+              </>
             )}
           </div>
 
@@ -889,8 +1029,22 @@ export default function VenueEditorPage() {
               più forte. Col marchio dell'app perché è lì che la scheda andrà.
               Come il richiamo in cima, nomina l'associazione e non il
               pagamento: l'ordine dei due passi lo spiega /abbonamenti.
-              Associato il locale, il box dice solo che è fatto. */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+              Associato il locale, il box dice solo che è fatto.
+              `scroll-mt-20`: il rimando in cima ci scorre, e la riga fissa
+              in alto non deve coprirne il titolo. */}
+          {/* Lo stesso colore della sezione «Online» dell'editor del menù
+              (MenuAddress): verde quando la scheda si vede davvero nell'app,
+              tratteggiata finché non ci siamo. Due superfici che dicono la
+              stessa cosa — «questo è quello che vedono fuori» — si
+              riconoscono dallo stesso fondo. */}
+          <div
+            id="associazione"
+            className={`scroll-mt-20 rounded-2xl border p-5 ${
+              stato === 'live'
+                ? 'border-emerald-200 bg-emerald-50/60'
+                : 'border-dashed border-gray-300 bg-gray-100/70'
+            }`}
+          >
             <div className="flex items-start gap-3">
               <Image
                 src="/icons/icon-192.png"
@@ -900,9 +1054,14 @@ export default function VenueEditorPage() {
                 className="h-10 w-10 shrink-0 rounded-xl shadow-sm ring-1 ring-black/5"
               />
               <div className="min-w-0">
-                <h2 className="text-sm font-medium text-gray-900">{d.editor.linkBoxTitle}</h2>
+                <h2 className="flex flex-wrap items-center gap-2 text-sm font-medium text-gray-900">
+                  {d.editor.linkBoxTitle}
+                  {/* Qui l'abbonamento è il passo che manca prima
+                      dell'associazione: l'invito sta accanto al titolo */}
+                  {!abbonato && <ProTag variant="needed" contesto="card" venueId={venue.id} />}
+                </h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  {stato === 'none' || stato === 'rejected' ? (
+                  {stato === 'none' || stato === 'rejected' || stato === 'closed' ? (
                     d.editor.linkBoxText
                   ) : stato === 'requested' ? (
                     <RestaurantPhrase
@@ -921,7 +1080,7 @@ export default function VenueEditorPage() {
                 sospesa non si tocca (la sospensione la toglie chi l'ha messa,
                 721), e mentre c'è una richiesta in attesa si aspetta. Senza
                 abbonamento il bottone porta prima di là: viene prima (15/09). */}
-            {(stato === 'none' || stato === 'rejected') && (
+            {(stato === 'none' || stato === 'rejected' || stato === 'closed') && (
               <div className="mt-4 flex justify-end">
                 <Link
                   href={verso}

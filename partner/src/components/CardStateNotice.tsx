@@ -63,7 +63,7 @@ export default function CardStateNotice({
   }
   const n = d.cardState.notice;
   const ristorante = {
-    name: venue.cardRestaurant?.name ?? venue.request?.restaurantName ?? '',
+    name: venue.cardRestaurant?.name ?? venue.closedByUs?.restaurantName ?? venue.request?.restaurantName ?? '',
     slug: venue.cardRestaurant?.slug ?? '',
   };
 
@@ -99,6 +99,33 @@ export default function CardStateNotice({
       dopo = (
         <>
           <Motivo nota={venue.request?.note ?? ''} etichetta={n.reason} />
+          <div className="mt-3 flex justify-end">
+            <Link
+              href={linkHref}
+              className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+            >
+              {d.editor.linkBoxCta}
+            </Link>
+          </div>
+        </>
+      );
+      break;
+    // Chiusa da noi: il motivo (DSA art. 17), dove scriverci, e la strada
+    // per ripartire — un altro ristorante si associa da sé, lo stesso passa
+    // da una richiesta (lo dice la pagina di associazione)
+    case 'closed':
+      tono = 'gray';
+      titolo = venue.closedByUs?.neverApproved ? n.closedNeverApprovedTitle : n.closedTitle;
+      testo = <RestaurantPhrase template={n.closedText} {...ristorante} />;
+      dopo = (
+        <>
+          <Motivo nota={venue.closedByUs?.note ?? ''} etichetta={n.reason} />
+          <p className="mt-2 text-sm">
+            {n.contact}{' '}
+            <a href="mailto:info@allergiapp.com" className="font-medium underline">
+              info@allergiapp.com
+            </a>
+          </p>
           <div className="mt-3 flex justify-end">
             <Link
               href={linkHref}
@@ -162,11 +189,6 @@ export default function CardStateNotice({
           </Link>
         </div>
       );
-      break;
-    case 'noDishes':
-      tono = 'amber';
-      titolo = n.noDishesTitle;
-      testo = n.noDishesText;
       break;
     default:
       return null;

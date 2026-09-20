@@ -169,7 +169,6 @@ export default function LinkRestaurantPage() {
           // finché non c'è, il nome si legge senza link.
           slug={venue.cardRestaurant?.slug ?? ''}
           esito={esito}
-          senzaPiatti={venue.dishIds.length === 0}
         />
       ) : venue.cardId !== null ? (
         // Il riquadro della scheda dice già cosa fare di un locale associato
@@ -713,13 +712,11 @@ function Fatto({
   hit,
   slug,
   esito,
-  senzaPiatti,
 }: {
   venueId: string;
   hit: RestaurantHit;
   slug: string;
   esito: 'linked' | 'requested';
-  senzaPiatti: boolean;
 }) {
   const { d } = useI18n();
   // Il nome del ristorante è un link: si spezza la frase sul segnaposto
@@ -749,13 +746,10 @@ function Fatto({
           d.link.doneRequested
         )}
       </p>
-      {/* La scheda si vede con abbonamento, collegamento, il controllo del
-          nostro team (724) E almeno un piatto: va detto, o «associato»
-          sembra «visibile». */}
+      {/* La scheda si vede con abbonamento, collegamento e il controllo del
+          nostro team (724): va detto, o «associato» sembra «visibile». I
+          piatti non contano più (728): cosa mettere lo decide il partner. */}
       {esito === 'linked' && <p className="mt-2 text-sm text-gray-600">{d.link.doneReview}</p>}
-      {esito === 'linked' && senzaPiatti && (
-        <p className="mt-2 text-sm text-gray-600">{d.link.doneNeedsDishes}</p>
-      )}
       <div className="mt-5 flex justify-end">
         <Link href={`/locale/${venueId}`} className={primaryClass}>
           {d.link.doneBack}
