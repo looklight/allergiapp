@@ -1065,8 +1065,8 @@ export default function VenueEditorPage() {
                   del sito e degli store, col piatto in mezzo agli allergeni),
                   non `icon-192.png`, che è l'icona del PORTALE. */}
               <span className="flex shrink-0 flex-col items-center gap-1">
-                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 4v14M6 12l6 6 6-6" />
+                <svg className="h-6 w-6 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 3v15M6 12.5l6 6 6-6" />
                 </svg>
                 <Image
                   src="/icons/logo-app.png"
