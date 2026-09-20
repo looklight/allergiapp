@@ -397,9 +397,9 @@ const it = {
     undo: 'Annulla',
   },
   menus: {
-    title: 'I tuoi menù',
+    title: 'I tuoi menù digitali',
     intro:
-      'Il menù che i tuoi clienti aprono al tavolo, costruito con i piatti che hai già in catalogo. Crea le sezioni, scegli i piatti, metti i prezzi.',
+      'I menù che i tuoi clienti aprono al tavolo inquadrando il QR, o dal link. Li costruisci coi piatti che hai già in catalogo: crea le sezioni, scegli i piatti, metti i prezzi.',
     create: 'Nuovo menù',
     // Un menù può non avere nome, e per il primo è la norma: il nome serve
     // a distinguerlo dagli altri, e finché è solo non c'è nessuno da cui.

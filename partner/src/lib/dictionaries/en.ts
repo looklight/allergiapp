@@ -323,9 +323,9 @@ const en: typeof it = {
     undo: 'Undo',
   },
   menus: {
-    title: 'Your menus',
+    title: 'Your digital menus',
     intro:
-      'The menu your guests open at the table, built from the dishes already in your catalogue. Create sections, pick the dishes, set the prices.',
+      'The menus your guests open at the table by scanning the QR code, or from the link. You build them with the dishes already in your catalogue: create sections, pick dishes, set prices.',
     create: 'New menu',
     unnamed: 'Untitled menu',
     genericTab: 'Menu',
