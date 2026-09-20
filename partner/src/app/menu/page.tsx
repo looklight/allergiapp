@@ -239,22 +239,27 @@ export default function MenusPage() {
                 const stato = pubblicazioni[venue.id];
                 const online = stato?.publishedAt != null;
                 return (
-                  <h2 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-gray-900">
-                    <StatusDot stato={stato === null ? null : online ? 'ready' : 'draft'} />
-                    <span className="truncate">{venue.venueName.trim() || d.home.unnamed}</span>
+                  // Il nome del locale nella stessa pill che si usa in home e
+                  // nella scheda: qui non si sceglie niente (è l'intestazione
+                  // del gruppo), ma la forma è la stessa, e il pallino dello
+                  // stato resta dov'era, dentro.
+                  <h2 className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="inline-flex min-w-0 max-w-[16rem] items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm font-medium text-gray-900">
+                      <StatusDot stato={stato === null ? null : online ? 'ready' : 'draft'} />
+                      <span className="truncate">{venue.venueName.trim() || d.home.unnamed}</span>
+                      {/* DENTRO la pill, come in home: il piano appartiene al
+                          locale, non alla riga. Solo con PIÙ LOCALI (richiesta
+                          dell'utente, 16/09): con un locale solo non c'è niente
+                          da distinguere. Mai il viola: questa è una lista, non
+                          il posto dove si decide di comprare. */}
+                      {piùLocali && abbonamentoDi(subs, venue.id) !== null && (
+                        <ProTag variant="active" />
+                      )}
+                    </span>
                     {stato !== null && (
                       <span className="shrink-0 text-xs font-normal text-gray-500">
                         {online ? d.dashboard.liveOn : d.dashboard.liveNever}
                       </span>
-                    )}
-                    {/* Il distintivo solo con PIÙ LOCALI (richiesta dell'utente,
-                        16/09): qui serve a distinguere chi ha il piano da chi
-                        no, e con un locale solo non c'è niente da distinguere —
-                        sarebbe un'etichetta che dice una cosa che la home ha
-                        già detto. Mai il viola: questa è una lista, non il
-                        posto dove si decide di comprare. */}
-                    {piùLocali && abbonamentoDi(subs, venue.id) !== null && (
-                      <ProTag variant="active" />
                     )}
                   </h2>
                 );
@@ -419,7 +424,15 @@ export default function MenusPage() {
       {deleting && (
         <ConfirmDialog
           title={d.menus.deleteTitle}
-          body={d.menus.deleteBody}
+          // Cosa succede AL TAVOLO, se il menù è online (729): l'ultimo
+          // menù attivo porta il locale offline; gli altri restano al tavolo
+          // finché non si ripubblica, come ogni modifica
+          body={(() => {
+            const online = pubblicazioni[deleting.venueId]?.publishedAt != null;
+            const attivi = (menus ?? []).filter((m) => m.venueId === deleting.venueId && m.active).length;
+            if (!online || !deleting.active) return d.menus.deleteBody;
+            return `${attivi === 1 ? d.menus.deleteLastOnline : d.menus.deleteOnline} ${d.menus.deleteBody}`;
+          })()}
           subject={deleting.name.trim() || ripiego}
           confirmLabel={d.common.delete}
           onCancel={() => setDeleting(null)}

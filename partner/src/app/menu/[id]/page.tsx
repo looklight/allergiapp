@@ -12,7 +12,7 @@ import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import { useModal } from '@/lib/useModal';
 import { useDishes, type Dish } from '@/lib/dishes';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
-import { useVenues } from '@/lib/venues';
+import { useVenues, type Venue } from '@/lib/venues';
 import {
   addDishes,
   addNote,
@@ -45,11 +45,31 @@ import BrandBar from '@/components/menus/BrandBar';
 import LogoPicker from '@/components/menus/LogoPicker';
 import MenuPreview, { NO_NEEDS, type ViewerNeeds } from '@/components/menus/MenuPreview';
 import MenuAddress, { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
+import PaywallDialog from '@/components/PaywallDialog';
 import LiveBox from '@/components/menus/LiveBox';
+import ProTag from '@/components/ProTag';
 import PublishBar from '@/components/menus/PublishBar';
 import { usePublishState } from '@/lib/publish';
 import PhoneFrame from '@/components/preview/PhoneFrame';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
+
+// Le manopole del riquadro dell'aspetto mentre si provano: gli stessi campi
+// del locale (più la valuta, che sta sul menù) tenuti a parte finché non si
+// preme Salva.
+type Prove = {
+  accent: string;
+  menuLayout: Venue['menuLayout'];
+  dishSeparator: Venue['dishSeparator'];
+  showDishPhotos: boolean;
+  dishPhotoShape: Venue['dishPhotoShape'];
+  showDishDescriptions: boolean;
+  sectionStyle: Venue['sectionStyle'];
+  headingFont: Venue['headingFont'];
+  textScale: Venue['textScale'];
+  lineHeight: Venue['lineHeight'];
+  allergenDisplay: Venue['allergenDisplay'];
+  currency: string;
+};
 
 export default function MenuEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -80,6 +100,15 @@ export default function MenuEditorPage() {
   // La conferma prima di rimettere l'aspetto com'è in sala: si buttano via
   // scelte fatte a mano — e una copertina caricata poco fa — quindi si
   // chiede, come per l'eliminazione di una sezione.
+  // LE PROVE DELL'ASPETTO (19/09, scelta dell'utente). Le manopole del
+  // riquadro dell'aspetto non scrivono più a ogni tocco: cambiano
+  // l'ANTEPRIMA, e finiscono nella bozza del locale solo premendo Salva.
+  // Due passi in fila, come se li aspetta chi guarda: prima salvo le
+  // modifiche, poi le pubblico. Logo e copertina restano immediati: sono
+  // caricamenti di file, non manopole.
+  // null = nessuna prova in corso, si guarda quello che è salvato.
+  const [prove, setProve] = useState<Prove | null>(null);
+  const [paywall, setPaywall] = useState(false);
   const [revertingBrand, setRevertingBrand] = useState(false);
   const [resettingBrand, setResettingBrand] = useState(false);
   // Maschera di un piatto NUOVO aperta dal menù: si ricorda in quale sezione
@@ -200,10 +229,49 @@ export default function MenuEditorPage() {
   // Se il locale è abbonato, l'aspetto arriva al tavolo e non c'è più niente
   // da segnalare nella scatola (v. ProTag).
   const abbonato = abbonamentoDi(subs, menu.venueId) !== null;
+  // Quello che è salvato adesso, e quello che si sta guardando: se ci sono
+  // prove in corso vincono loro (solo nell'anteprima e nelle manopole).
+  const salvato: Prove = {
+    accent: locale?.accent ?? DEFAULT_ACCENT,
+    menuLayout: locale?.menuLayout ?? 'row',
+    dishSeparator: locale?.dishSeparator ?? 'none',
+    showDishPhotos: locale?.showDishPhotos ?? true,
+    dishPhotoShape: locale?.dishPhotoShape ?? 'square',
+    showDishDescriptions: locale?.showDishDescriptions ?? false,
+    sectionStyle: locale?.sectionStyle ?? 'underline',
+    headingFont: locale?.headingFont ?? 'modern',
+    textScale: locale?.textScale ?? 'normal',
+    lineHeight: locale?.lineHeight ?? 'normal',
+    allergenDisplay: locale?.allergenDisplay ?? 'text',
+    currency: menu.currency,
+  };
+  const vista = prove ?? salvato;
+  // Fra le prove c'è qualcosa che al tavolo arriva solo col Piano Pro? Le
+  // due manopole gratis (foto e descrizioni dei piatti) e la valuta no.
+  const proveConPro =
+    prove !== null &&
+    (['accent', 'menuLayout', 'dishSeparator', 'dishPhotoShape', 'sectionStyle',
+      'headingFont', 'textScale', 'lineHeight', 'allergenDisplay'] as const)
+      .some((k) => prove[k] !== salvato[k]);
+
+  function tocca(patch: Partial<Prove>) {
+    setProve({ ...vista, ...patch });
+  }
+
+  // SALVA: le prove diventano la bozza del locale, in una scrittura sola.
+  // La valuta sta sul MENÙ e non sul locale, quindi va per la sua strada.
+  function salvaAspetto() {
+    if (!locale || !prove || !menu) return;
+    const { currency, ...aspetto } = prove;
+    setIdentity(locale.id, aspetto);
+    if (currency !== menu.currency) save(setMenuCurrency(menu, currency));
+    setProve(null);
+  }
+
   const brand: MenuBrand = {
     name: locale?.venueName ?? '',
     logoUrl: locale?.logoUrl ?? '',
-    accent: locale?.accent ?? DEFAULT_ACCENT,
+    accent: vista.accent,
   };
 
   // Il NOME passa da update(), che aspetta la fine della battitura e non
@@ -279,16 +347,16 @@ export default function MenuEditorPage() {
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
       socials={locale?.links.socials ?? []}
-      layout={locale?.menuLayout ?? 'row'}
-      separator={locale?.dishSeparator ?? 'none'}
-      showPhotos={locale?.showDishPhotos ?? true}
-      photoShape={locale?.dishPhotoShape ?? 'square'}
-      showDescriptions={locale?.showDishDescriptions ?? false}
-      sectionStyle={locale?.sectionStyle ?? 'underline'}
-      headingFont={locale?.headingFont ?? 'modern'}
-      textScale={locale?.textScale ?? 'normal'}
-      lineHeight={locale?.lineHeight ?? 'normal'}
-      allergenDisplay={locale?.allergenDisplay ?? 'text'}
+      layout={vista.menuLayout}
+      separator={vista.dishSeparator}
+      showPhotos={vista.showDishPhotos}
+      photoShape={vista.dishPhotoShape}
+      showDescriptions={vista.showDishDescriptions}
+      sectionStyle={vista.sectionStyle}
+      headingFont={vista.headingFont}
+      textScale={vista.textScale}
+      lineHeight={vista.lineHeight}
+      allergenDisplay={vista.allergenDisplay}
       needs={needs}
       mostraEsempio={esempio}
       onToggleNeed={toggleNeed}
@@ -389,8 +457,21 @@ export default function MenuEditorPage() {
         <BackLink />
         <PublishBar
           stato={pubblicazione.stato}
-          pubblica={() => void pubblicazione.pubblica()}
+          // MAI PUBBLICATO: il bottone non pubblica, porta alla sezione
+          // «Online» in fondo (19/09, scelta dell'utente). È lì che si
+          // sceglie l'indirizzo e si accende l'interruttore: la prima volta
+          // si governa da un posto solo, non da due.
+          pubblica={() => {
+            if (pubblicazione.stato?.publishedAt == null) {
+              document
+                .getElementById(ANCORA_INDIRIZZO)
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              return;
+            }
+            void pubblicazione.pubblica();
+          }}
           inCorso={pubblicazione.inCorso}
+          sospeso={prove !== null}
           nessunMenuAttivo={pubblicazione.nessunMenuAttivo}
           // Tutti i menù ATTIVI del locale, non solo quello aperto: premendo
           // Pubblica si pubblicano insieme, e basta un piatto in uno qualsiasi
@@ -401,6 +482,32 @@ export default function MenuEditorPage() {
               .every((m) => menuItems(m).length === 0)
           }
         />
+        {/* SALVA E PUBBLICA, in quest'ordine (19/09): prima le prove
+            dell'aspetto diventano la bozza, poi la bozza va al tavolo. I due
+            bottoni non convivono mai, e stanno nello STESSO POSTO — in fondo
+            alla riga — così quello da premere si trova sempre lì. Il
+            distintivo Pro solo se fra le prove c'è qualcosa che al tavolo
+            arriva con l'abbonamento; da lì si apre il paywall invece di
+            salvare. */}
+        {prove !== null && (
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setProve(null)}
+              className="rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+            >
+              {d.common.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={() => (proveConPro && !abbonato ? setPaywall(true) : salvaAspetto())}
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+            >
+              {d.common.save}
+              {proveConPro && !abbonato && <ProTag variant="needed" statico />}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* L'ASPETTO PRIMA DEL NOME (scelta dell'utente, 03/09): il flusso è
@@ -412,18 +519,20 @@ export default function MenuEditorPage() {
       <div className="mt-4">
         <BrandBar
           abbonato={abbonato}
-          accent={brand.accent}
-          currency={menu.currency}
-          layout={locale?.menuLayout ?? 'row'}
-          separator={locale?.dishSeparator ?? 'none'}
-          showPhotos={locale?.showDishPhotos ?? true}
-          photoShape={locale?.dishPhotoShape ?? 'square'}
-          showDescriptions={locale?.showDishDescriptions ?? false}
-          sectionStyle={locale?.sectionStyle ?? 'underline'}
-          headingFont={locale?.headingFont ?? 'modern'}
-          textScale={locale?.textScale ?? 'normal'}
-          lineHeight={locale?.lineHeight ?? 'normal'}
-          allergenDisplay={locale?.allergenDisplay ?? 'text'}
+          venueId={locale?.id}
+          proveInCorso={prove !== null}
+          accent={vista.accent}
+          currency={vista.currency}
+          layout={vista.menuLayout}
+          separator={vista.dishSeparator}
+          showPhotos={vista.showDishPhotos}
+          photoShape={vista.dishPhotoShape}
+          showDescriptions={vista.showDishDescriptions}
+          sectionStyle={vista.sectionStyle}
+          headingFont={vista.headingFont}
+          textScale={vista.textScale}
+          lineHeight={vista.lineHeight}
+          allergenDisplay={vista.allergenDisplay}
           // Una sezione senza nome al tavolo non mostra nessun titolo, e i
           // blocchi di testo hanno un aspetto loro: né gli uni né le altre
           // fanno comparire la voce «Titoli delle sezioni».
@@ -435,24 +544,19 @@ export default function MenuEditorPage() {
           esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
           onRevert={() => setRevertingBrand(true)}
           onReset={() => setResettingBrand(true)}
-          onCurrency={(valuta) => save(setMenuCurrency(menu, valuta))}
-          onLayout={(menuLayout) => locale && setIdentity(locale.id, { menuLayout })}
-          onSeparator={(dishSeparator) => locale && setIdentity(locale.id, { dishSeparator })}
-          onAccent={(accent) => setBrand({ accent })}
+          onCurrency={(currency) => tocca({ currency })}
+          onLayout={(menuLayout) => tocca({ menuLayout })}
+          onSeparator={(dishSeparator) => tocca({ dishSeparator })}
+          onAccent={(accent) => tocca({ accent })}
           onPhotos={({ showPhotos, photoShape }) =>
-            locale &&
-            setIdentity(locale.id, { showDishPhotos: showPhotos, dishPhotoShape: photoShape })
+            tocca({ showDishPhotos: showPhotos, dishPhotoShape: photoShape })
           }
-          onShowDescriptions={(showDishDescriptions) =>
-            locale && setIdentity(locale.id, { showDishDescriptions })
-          }
-          onSectionStyle={(sectionStyle) => locale && setIdentity(locale.id, { sectionStyle })}
-          onHeadingFont={(headingFont) => locale && setIdentity(locale.id, { headingFont })}
-          onTextScale={(textScale) => locale && setIdentity(locale.id, { textScale })}
-          onLineHeight={(lineHeight) => locale && setIdentity(locale.id, { lineHeight })}
-          onAllergenDisplay={(allergenDisplay) =>
-            locale && setIdentity(locale.id, { allergenDisplay })
-          }
+          onShowDescriptions={(showDishDescriptions) => tocca({ showDishDescriptions })}
+          onSectionStyle={(sectionStyle) => tocca({ sectionStyle })}
+          onHeadingFont={(headingFont) => tocca({ headingFont })}
+          onTextScale={(textScale) => tocca({ textScale })}
+          onLineHeight={(lineHeight) => tocca({ lineHeight })}
+          onAllergenDisplay={(allergenDisplay) => tocca({ allergenDisplay })}
           onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
           socials={locale?.links.socials ?? []}
           // I link non sono aspetto e non passano da setIdentity: sono righe
@@ -820,14 +924,16 @@ export default function MenuEditorPage() {
       {/* L'INDIRIZZO PUBBLICO, in fondo insieme alle altre cose del locale:
           la terza area, dopo la riga. */}
       <hr className="mt-8 border-gray-200" aria-hidden="true" />
+      {paywall && <PaywallDialog onClose={() => setPaywall(false)} venueId={locale?.id} />}
+
       {locale && (
         <MenuAddress
           venue={locale}
           online={pubblicazione.online}
           onSave={(slug) => setSlug(locale.id, slug)}
-          onOnline={(acceso) =>
-            void (acceso ? pubblicazione.pubblica() : pubblicazione.ritira())
-          }
+          // Acceso senza indirizzo non si può (l'interruttore è bloccato):
+          // da lì si passa dalla riga in cima, che apre la finestra
+          onOnline={(acceso) => void (acceso ? pubblicazione.pubblica() : pubblicazione.ritira())}
           inCorso={pubblicazione.inCorso}
         />
       )}

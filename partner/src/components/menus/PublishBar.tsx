@@ -47,6 +47,7 @@ export default function PublishBar({
   inCorso,
   nessunMenuAttivo,
   senzaPiatti,
+  sospeso,
 }: {
   // null = non ancora saputo. Lo stato lo tiene la pagina (usePublishState),
   // perché in questa schermata lo leggono in tre: questa riga, la sezione
@@ -66,6 +67,10 @@ export default function PublishBar({
   // remoto. Il conto guarda TUTTI i menù attivi e non solo quello aperto,
   // perché a pubblicare si pubblicano tutti insieme.
   senzaPiatti: boolean;
+  // Ci sono prove dell'aspetto non ancora salvate: prima si salva (o si
+  // annulla), poi si pubblica. I due bottoni non convivono — uno dopo
+  // l'altro guida, insieme fanno scegliere (scelta dell'utente, 19/09).
+  sospeso: boolean;
 }) {
   const { d, locale } = useI18n();
 
@@ -93,7 +98,9 @@ export default function PublishBar({
   // Ha la priorità su tutto: se l'ultimo tentativo è stato rifiutato, dire
   // ancora "modifiche non pubblicate" farebbe credere che ripremere lo
   // stesso bottone basti.
-  const messaggio = nessunMenuAttivo
+  const messaggio = sospeso
+    ? d.menuEditor.publishAfterSave
+    : nessunMenuAttivo
     ? d.menuEditor.publishNoActive
     : senzaPiatti
       ? d.menuEditor.publishNoDishes
@@ -119,7 +126,8 @@ export default function PublishBar({
     <>
       <p
         className={`${spazio} ${
-          !daPubblicare ? 'text-gray-400'
+          sospeso ? 'text-gray-600'
+            : !daPubblicare ? 'text-gray-400'
             : allarme || nessunMenuAttivo || senzaPiatti ? 'text-amber-800'
             : 'text-gray-600'
         }`}
@@ -127,7 +135,7 @@ export default function PublishBar({
       >
         {messaggio}
       </p>
-      {daPubblicare && !senzaPiatti && (
+      {daPubblicare && !senzaPiatti && !sospeso && (
         <button
           onClick={pubblica}
           disabled={inCorso}

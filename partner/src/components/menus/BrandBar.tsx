@@ -1,5 +1,7 @@
 'use client';
 
+
+
 // L'ASPETTO DEL MENÙ AL TAVOLO: il colore e le poche manopole che decidono
 // quanto è densa la carta.
 //
@@ -81,6 +83,8 @@ export default function BrandBar({
   socials,
   onSocials,
   abbonato,
+  venueId,
+  proveInCorso,
 }: {
   accent: string;
   // ⚠️ LA VALUTA NON È ASPETTO, sta qui solo perché è qui che si va a
@@ -142,6 +146,12 @@ export default function BrandBar({
   // quindi l'etichetta grigia sparisce: il distintivo ambra accanto al nome
   // del locale, in home, dice già che ce l'ha (v. ProTag).
   abbonato: boolean;
+  // Il locale, per il paywall del distintivo Pro qui accanto
+  venueId?: string;
+  // Ci sono prove non ancora salvate? Allora le due vie d'uscita qui sotto
+  // spariscono: scrivono subito, e mentre si prova direbbero il contrario di
+  // quello che si vede. Si esce con Annulla, in cima alla pagina (19/09).
+  proveInCorso: boolean;
 }) {
   const { d, locale } = useI18n();
 
@@ -202,7 +212,7 @@ export default function BrandBar({
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</span>
-            {APPEARANCE_PREMIUM && !abbonato && <ProTag variant="needed" />}
+            {APPEARANCE_PREMIUM && !abbonato && <ProTag variant="needed" venueId={venueId} />}
           </span>
           <span className="block text-xs text-gray-500">{d.menuEditor.brandTeaser}</span>
         </span>
@@ -709,7 +719,7 @@ export default function BrandBar({
           ⚠️ Per il non abbonato il bottone non compare se non ha toccato
           niente: un "rimetti com'era" su una scatola già com'era è un invito
           a chiedersi cosa si è rotto. */}
-      {changed ? (
+      {proveInCorso ? null : changed ? (
         <div className="mt-4 flex justify-end border-t border-gray-100 pt-3">
           <button
             onClick={onRevert}

@@ -10,11 +10,13 @@
 // metterlo al sicuro prima che qualcun altro lo prenda, e cambiarlo è un
 // gesto senza conseguenze — non c'è niente di stampato.
 //
-// UN INDIRIZZO ALLA VOLTA: cambiandolo, il precedente torna libero e nessuno
-// reindirizza. Da quando esiste la pubblicazione (Tema 20) questo NON è più
-// gratis: se il menù è online, il sottotesto sotto l'interruttore (v.
-// `addressHintLive`) avvisa SEMPRE — non solo nell'istante in cui si tocca il
-// campo — che i QR già stampati smetteranno di funzionare.
+// UN INDIRIZZO ALLA VOLTA. Dietro le quinte il precedente non torna libero
+// subito e per un periodo porta al nuovo (729), così un QR già stampato
+// continua a funzionare: è una rete di sicurezza NOSTRA e non si racconta al
+// ristoratore (scelta dell'utente, 19/09) — i testi dicono solo di
+// ristampare i QR, che è quello che deve fare comunque. Se il menù è online
+// il sottotesto (`addressHintLive`) lo ricorda sempre, non solo nell'istante
+// in cui si tocca il campo.
 //
 // ⚠️ IL SOTTOTESTO NON BASTA A FERMARE NESSUNO: è un avviso passivo, e chi ha
 // fretta lo scavalca senza leggerlo. Il gesto vero e proprio — premere "Cambia
@@ -26,9 +28,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { MENU_DOMINIO, SLUG_MAX, slugProposto, slugValido } from '@/lib/slug';
-import { slugOccupato, type Venue } from '@/lib/venues';
+import type { Venue } from '@/lib/venues';
 import ConfirmDialog from './ConfirmDialog';
 import Interruttore from './Interruttore';
+import { useSlugCheck } from '@/lib/useSlugCheck';
 import MenuQr from './MenuQr';
 
 // L'ancora a cui punta il "Modifica" del riquadro sotto l'anteprima
@@ -36,9 +39,6 @@ import MenuQr from './MenuQr';
 // la stampa è uno solo, e ci si arriva scorrendo invece di ripeterlo.
 export const ANCORA_INDIRIZZO = 'indirizzo-del-menu';
 
-// Cosa sappiamo del testo che c'è nel campo adesso. "ignoto" non è "libero":
-// il controllo può non essere riuscito, e le due cose non vanno confuse.
-type Stato = 'fermo' | 'controllo' | 'libero' | 'occupato' | 'ignoto' | 'malformato';
 
 export default function MenuAddress({
   venue,
@@ -52,10 +52,14 @@ export default function MenuAddress({
   // davvero, e da quel momento il QR si può stampare
   online: boolean;
   onSave: (slug: string) => Promise<boolean>;
-  // L'interruttore: acceso mette il menù in sala (ne prende uno scatto
-  // nuovo), spento lo stacca. Non c'è una finestra di conferma perché il
-  // ripensamento è un tocco — e perché la conferma diceva quello che adesso
-  // dice il sottotesto, sempre e non solo al momento del gesto.
+  // L'interruttore: acceso mette il menù online (ne prende uno scatto
+  // nuovo), spento lo stacca. Spento e bloccato finché non c'è un indirizzo
+  // — dal 19/09 anche il database rifiuta di pubblicare senza (729), e la
+  // riga in cima, se manca, lo chiede con una finestra.
+  //
+  // ⚠️ Tenuto dopo averlo provato a sostituire con un «Ritira dal web»
+  // (19/09): l'utente lo rivuole, perché acceso/spento col pallino colorato
+  // si legge e si governa a colpo d'occhio.
   onOnline: (online: boolean) => void;
   inCorso: boolean;
 }) {
@@ -65,13 +69,17 @@ export default function MenuAddress({
   // ricavata dal nome del locale — che è la risposta giusta nove volte su
   // dieci, e va comunque confermata da un clic.
   const [bozza, setBozza] = useState(venue.slug || slugProposto(venue.venueName));
-  const [stato, setStato] = useState<Stato>('fermo');
   const [salvato, setSalvato] = useState(false);
   const [fallito, setFallito] = useState(false);
   // La conferma prima di cambiare un indirizzo che risponde già: si apre solo
   // premendo "Cambia indirizzo" mentre il menù è online (v. il commento in
   // cima al file). Da vuota non c'è nessuna finestra: il bottone stesso salva.
+  // DUE CONFERME per cambiare un indirizzo che risponde già (19/09, scelta
+  // dell'utente): la prima spiega, la seconda chiede se sei sicuro. Un QR è
+  // incollato al tavolo e non si corregge da remoto, quindi qui un errore
+  // costa più di un fastidio in più.
   const [confermaCambio, setConfermaCambio] = useState(false);
+  const [confermaCambio2, setConfermaCambio2] = useState(false);
   const scatola = useRef<HTMLDivElement>(null);
 
   // QUANDO L'INDIRIZZO NASCE, il riquadro si allunga di colpo: sotto al campo
@@ -91,39 +99,9 @@ export default function MenuAddress({
   const suo = pulita === venue.slug && venue.slug !== '';
   const valido = slugValido(pulita);
 
-  // Il controllo di disponibilità parte dopo una pausa, non a ogni tasto: chi
-  // scrive "trattoria" passerebbe per nove indirizzi che non ha mai avuto
-  // intenzione di usare. Nessun controllo sul PROPRIO indirizzo, che
-  // risulterebbe "occupato" da sé stesso.
-  //
-  // La risposta che arriva tardi si butta (`vivo`): scrivendo ancora, quella
-  // della richiesta precedente racconterebbe di un testo che non c'è più nel
-  // campo.
-  useEffect(() => {
-    if (venue.slug === pulita) {
-      setStato('fermo');
-      return;
-    }
-    if (pulita === '') {
-      setStato('fermo');
-      return;
-    }
-    if (!slugValido(pulita)) {
-      setStato('malformato');
-      return;
-    }
-    let vivo = true;
-    setStato('controllo');
-    const attesa = setTimeout(async () => {
-      const esito = await slugOccupato(pulita);
-      if (!vivo) return;
-      setStato(esito === null ? 'ignoto' : esito ? 'occupato' : 'libero');
-    }, 500);
-    return () => {
-      vivo = false;
-      clearTimeout(attesa);
-    };
-  }, [pulita, venue.slug]);
+  // È libero? (v. useSlugCheck, condiviso con la finestra della prima
+  // pubblicazione)
+  const { stato, setStato } = useSlugCheck(pulita, venue.slug);
 
   // La conferma sparisce da sola: è un "fatto", non uno stato della pagina, e
   // lasciarla lì la farebbe leggere come l'esito di qualcosa fatto adesso.
@@ -195,15 +173,9 @@ export default function MenuAddress({
         <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
           {d.menuEditor.addressTitle}
         </h2>
-        {/* L'INTERRUTTORE, e adesso si vede che lo è. Prima qui c'era una
-            pastiglia che scriveva "Attivo" o "Inattivo": diceva lo stato e lo
-            cambiava anche, ma letta com'era — una parola sola su fondo
-            colorato — sembrava un'etichetta, e nessuno la premeva. Adesso
-            l'etichetta è una sola e ferma ("Attivo"), e accanto c'è la cosa
-            che tutti riconoscono come premibile, accesa o spenta.
-
-            Spento e bloccato finché non c'è un indirizzo: non si mette in
-            sala un menù che non ha un posto dove stare. */}
+        {/* L'INTERRUTTORE: dice lo stato e lo cambia. Bloccato senza
+            indirizzo — non si mette online un menù che non ha un posto dove
+            stare (e il database lo rifiuterebbe, 729). */}
         <Interruttore
           acceso={online}
           disabilitato={venue.slug === '' || inCorso}
@@ -303,6 +275,23 @@ export default function MenuAddress({
           }}
           onConfirm={() => {
             setConfermaCambio(false);
+            setConfermaCambio2(true);
+          }}
+        />
+      )}
+
+      {/* LA SECONDA: nient'altro da spiegare, solo la domanda secca */}
+      {confermaCambio2 && (
+        <ConfirmDialog
+          title={d.menuEditor.addressChangeSureTitle}
+          body={d.menuEditor.addressChangeSureBody}
+          confirmLabel={d.menuEditor.addressChangeSureConfirm}
+          onCancel={() => {
+            setConfermaCambio2(false);
+            setBozza(venue.slug);
+          }}
+          onConfirm={() => {
+            setConfermaCambio2(false);
             void conferma();
           }}
         />
