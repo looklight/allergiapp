@@ -222,7 +222,7 @@
     "privacy": {
       "backHome": "← Torna alla home",
       "title": "Privacy Policy",
-      "lastUpdated": "Ultimo aggiornamento: 19 Settembre 2026",
+      "lastUpdated": "Ultimo aggiornamento: 20 Settembre 2026",
       "controllerTitle": "Titolare del trattamento",
       "controllerText": "Marta Di Muro (AllergiApp) — contatto:",
       "dataTitle": "Dati che raccogliamo",
@@ -319,7 +319,7 @@
     "terms": {
       "backHome": "← Torna alla home",
       "title": "Termini di Servizio",
-      "lastUpdated": "Ultimo aggiornamento: 19 Settembre 2026",
+      "lastUpdated": "Ultimo aggiornamento: 20 Settembre 2026",
       "descriptionTitle": "Cos'è AllergiApp",
       "descriptionText1": "App gratuita per comunicare allergie alimentari in diverse lingue e trovare ristoranti compatibili.",
       "descriptionText2": "NON è un dispositivo medico. NON sostituisce il parere medico.",
@@ -373,7 +373,7 @@
       "partnerAllergensTitle": "Allergeni",
       "partnerAllergensText": "La dichiarazione degli allergeni è un obbligo di legge a tuo carico (Reg. UE 1169/2011). Il portale è uno strumento per comunicarla: non la sostituisce, non la verifica e non ne risponde. Il filtro riordina i piatti in base a quello che hai dichiarato tu — se la dichiarazione è incompleta, il risultato che il cliente vede è incompleto.",
       "partnerAddressTitle": "L'indirizzo del menù",
-      "partnerAddressText": "Ogni menù pubblicato ha un indirizzo del tipo allergiapp.com/menu/nome-del-locale. Puoi cambiarlo, ma il precedente torna disponibile e non viene reindirizzato: i QR già stampati con il vecchio indirizzo smettono di funzionare.",
+      "partnerAddressText": "Ogni menù pubblicato ha un indirizzo del tipo allergiapp.com/v/nome-del-locale. Puoi cambiarlo quando vuoi: per 30 giorni il vecchio indirizzo porta al nuovo, così i QR già stampati continuano a funzionare mentre li ristampi. Passati i 30 giorni il vecchio indirizzo torna disponibile per chiunque e smette di portare al tuo menù.",
       "partnerServiceTitle": "Il servizio",
       "partnerServiceText": "Il portale è oggi gratuito e le funzioni disponibili possono cambiare. Eventuali condizioni economiche saranno comunicate e accettate prima di qualsiasi attivazione a pagamento. Possiamo sospendere o rimuovere contenuti che violano queste regole o la legge, con preavviso salvo violazioni gravi. Puoi chiedere la cancellazione dell'account scrivendo a info@allergiapp.com.",
       "deleteAccountTitle": "Cancellazione account",
@@ -737,7 +737,7 @@
     "privacy": {
       "backHome": "← Back to home",
       "title": "Privacy Policy",
-      "lastUpdated": "Last updated: September 19, 2026",
+      "lastUpdated": "Last updated: September 20, 2026",
       "controllerTitle": "Data Controller",
       "controllerText": "Marta Di Muro (AllergiApp) — contact:",
       "dataTitle": "Data we collect",
@@ -834,7 +834,7 @@
     "terms": {
       "backHome": "← Back to home",
       "title": "Terms of Service",
-      "lastUpdated": "Last updated: September 19, 2026",
+      "lastUpdated": "Last updated: September 20, 2026",
       "descriptionTitle": "What is AllergiApp",
       "descriptionText1": "Free app to communicate food allergies in different languages and find compatible restaurants.",
       "descriptionText2": "NOT a medical device. Does NOT replace medical advice.",
@@ -888,7 +888,7 @@
       "partnerAllergensTitle": "Allergens",
       "partnerAllergensText": "Declaring allergens is a legal obligation that rests with you (EU Reg. 1169/2011). The portal is a tool for communicating it: it does not replace it, does not verify it, and is not answerable for it. The filter reorders dishes based on what you have declared — if the declaration is incomplete, what the customer sees is incomplete.",
       "partnerAddressTitle": "The menu address",
-      "partnerAddressText": "Every published menu has an address such as allergiapp.com/menu/your-venue-name. You may change it, but the previous one becomes available again and is not redirected: QR codes already printed with the old address stop working.",
+      "partnerAddressText": "Every published menu has an address such as allergiapp.com/v/your-venue-name. You may change it whenever you like: for 30 days the old address leads to the new one, so QR codes already printed keep working while you reprint them. After those 30 days the old address becomes available to anyone again and stops leading to your menu.",
       "partnerServiceTitle": "The service",
       "partnerServiceText": "The portal is free today and the available features may change. Any pricing terms will be communicated and accepted before any paid activation. We may suspend or remove content that breaches these rules or the law, with notice except in cases of serious breach. You can request account deletion by writing to info@allergiapp.com.",
       "deleteAccountTitle": "Account deletion",
