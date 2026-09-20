@@ -10,7 +10,8 @@
 //
 // L'INDIRIZZO È /v/<slug>, e la lettera non nomina il contenuto: la pagina
 // oggi è il menù e domani può essere il locale intero. Il vecchio
-// /menu/<slug> risponde per sempre con un 301 (vercel.json).
+// /menu/<slug> risponde per sempre con un 308 (vercel.json): Vercel usa il
+// permanente che conserva il metodo, non il 301.
 //
 // LA LINGUA non sta nell'indirizzo stampato (Tema 21): /v/<slug> è il
 // canonico e sceglie la lingua dal browser. /v/<slug>?lang=en esiste per chi
@@ -45,7 +46,7 @@ module.exports = async function handler(req, res) {
     dati = await fetchPublicMenu(slug, locale);
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('[menu/slug] RPC error', err);
+    console.error('[v/slug] RPC error', err);
     return sendError(res, locale);
   }
 
@@ -61,7 +62,7 @@ module.exports = async function handler(req, res) {
       nuovo = await fetchMenuRedirect(slug);
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('[menu/slug] redirect RPC error', err);
+      console.error('[v/slug] redirect RPC error', err);
     }
     if (typeof nuovo === 'string' && nuovo !== '' && nuovo !== slug) {
       res.setHeader('Cache-Control', 'no-store');

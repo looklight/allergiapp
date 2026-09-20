@@ -15,19 +15,19 @@ landing/
 ├── i18n-site.js        # Sistema traduzioni IT/EN
 ├── translations.json   # Testi tradotti per tutte le pagine
 ├── vercel.json         # Configurazione deploy Vercel
-├── menu-page.css       # Stili del menù al tavolo (/menu/[slug])
+├── menu-page.css       # Stili del menù al tavolo (/v/[slug])
 ├── menu-page.js        # Filtro allergeni e fogli del menù al tavolo
 ├── lib/                # Render server-side delle pagine pubbliche
 └── images/             # Immagini del sito
 ```
 
-### Il menù al tavolo — `/menu/[slug]`
+### Il menù al tavolo — `/v/[slug]`
 
 La pagina che il cliente apre col QR sul tavolo, **online dal 2026-09-02**:
-rotta in `vercel.json`, funzione in `api/menu/[slug].js`, resa in
+rotta in `vercel.json`, funzione in `api/v/[slug].js`, resa in
 `lib/render-menu.js`. Legge `get_public_menu` (migration 708/709), cioè
 **solo lo scatto pubblicato** dal ristoratore: la bozza non esce mai di lì.
-`/menu/<slug>/<lingua>` esiste per la condivisione e l'indicizzazione, e
+`/v/<slug>?lang=<lingua>` esiste per la condivisione e l'indicizzazione, e
 l'indirizzo canonico resta senza lingua.
 
 Per guardarla **senza database**, con i dati finti di `lib/menu-sample.js`

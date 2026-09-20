@@ -25,7 +25,7 @@
     { "source": "/menu", "destination": "/menu.html" },
     { "source": "/menu-demo", "destination": "/api/menu-demo" },
     { "source": "/menu-demo/:lang", "destination": "/api/menu-demo?lang=:lang" },
-    { "source": "/v/:slug", "destination": "/api/menu/:slug" },
+    { "source": "/v/:slug", "destination": "/api/v/:slug" },
     { "source": "/u/:username", "destination": "/api/u/:username" }
   ],
   "headers": [
