@@ -765,21 +765,28 @@ corretto resta fermo perché qualcuno ha provato un carattere che non ha
 pagato.
 
 **L'indirizzo del menù c'è dal 2026-09-01** (migration 707, applicata il
-02/09), ma **non è
-attivo**: in fondo all'editor una card lo propone dal nome del locale,
-controlla che sia libero e lo salva su `partner_venues.slug`. Serve a
-mettere il nome al sicuro, non a distribuirlo — la pagina pubblica non
-esiste ancora, e la card lo dichiara con una pastiglia. Chi la rende
-cliccabile prima che la pagina risponda sta consegnando un indirizzo da
-stampare che porta a un errore.
+02/09) ed è **attivo e pubblico dal 02/09**: in fondo all'editor una card
+lo propone dal nome del locale, controlla che sia libero e lo salva su
+`partner_venues.slug`. La forma è `allergiapp.com/v/<slug>` — dal
+2026-09-20, prima era `/menu/<slug>`, che risponde per sempre con un 308
+(DIGITAL_MENU.md, Tema 36). L'unica sorgente della parte fissa è
+`MENU_DOMINIO` in `src/lib/slug.ts`: la home, `LiveBox`, `MenuQr` e
+`MenuAddress` leggono tutti da lì.
 
 **Un locale, un indirizzo alla volta** (Tema 22, che rovescia il 17):
-cambiarlo libera il precedente, senza storico e senza reindirizzamenti.
-La conseguenza — un QR stampato che smette di funzionare — la produce il
-ristoratore con un gesto suo, e si copre con un avviso al momento del
-cambio: **il posto dove metterlo è `MenuAddress.tsx`**, il giorno in cui
-esisterà la pubblicazione. Non aggiungere una tabella di slug ritirati
-senza rileggere il Tema 22.
+cambiarlo libera il precedente. ⚠️ **La riga «senza storico e senza
+reindirizzamenti» non vale più**, ed è cambiata due volte:
+
+- dal **2026-09-16** esiste `partner_retired_slugs` (migration 720): uno
+  slug lasciato non torna a chiunque, e chi ce l'aveva se lo riprende;
+- dal **2026-09-20** c'è il **periodo di grazia della 729**: per 30 giorni
+  (`partner_slug_hold()`) il vecchio indirizzo porta al nuovo con un 302
+  mai messo in cache, così i QR già stampati funzionano mentre il
+  ristoratore li ristampa. Poi torna libero davvero.
+
+I 30 giorni sono scritti anche nelle **condizioni di servizio**
+(`landing/terms.html`, clausola «L'indirizzo del menù»): cambiare la
+finestra vuol dire cambiare un testo legale e muovere `TERMS_VERSION`.
 
 Il controllo di disponibilità passa dalla funzione `partner_slug_taken` e
 non da una select: le RLS mostrano a ogni partner solo i propri locali,
@@ -789,13 +796,13 @@ quindi una select direbbe "libero" anche per un indirizzo già preso.
 stato scelto): anteprima, copia del link, PNG e vettoriale — il secondo
 non è un lusso, è quello che chiede la tipografia. Finché la pagina
 pubblica non è **online** porta un avviso ambra attaccato ai bottoni di
-scarico: è lì che qualcuno sta per portare un file in stampa, e un QR
-stampato non si corregge da remoto.
+scarico (`online` in `MenuQr`, cioè il menù pubblicato e non ritirato): è
+lì che qualcuno sta per portare un file in stampa, e un QR stampato non si
+corregge da remoto.
 
-**La pagina pubblica esiste** e sta sul branch `landing`
-(`/v/[slug]`): legge `get_public_menu`, cioè solo lo scatto pubblicato.
-Manca il **deploy** — finché il branch non è pushato, quell'indirizzo non
-risponde a nessuno.
+**La pagina pubblica è in produzione** dal 2026-09-02 e sta sul branch
+`landing` (`api/v/[slug].js`, rotta `/v/:slug` in `vercel.json`): legge
+`get_public_menu`, cioè solo lo scatto pubblicato.
 
 ## L'associazione al ristorante dell'app (2026-09-19)
 
