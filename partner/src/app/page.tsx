@@ -48,7 +48,7 @@ import NewVenueDialog from '@/components/NewVenueDialog';
 import DeleteVenueDialog from '@/components/DeleteVenueDialog';
 import OverflowMenu from '@/components/OverflowMenu';
 import StatusPill, { type Stato } from '@/components/StatusPill';
-import { cardState, type CardState } from '@/lib/association';
+import { CARD_TONE, cardState } from '@/lib/association';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
 import UndoToast from '@/components/UndoToast';
 import { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
@@ -122,21 +122,6 @@ function Saluto({ saluto, intro }: { saluto: string; intro: string }) {
     </>
   );
 }
-
-// Il colore del pallino per ogni stato della scheda: verde solo quando si
-// vede nell'app, ambra quando si aspetta qualcosa (noi, o un piatto), grigio
-// quando tocca al ristoratore o non è ancora cominciata.
-const TONO_SCHEDA: Record<CardState, Stato> = {
-  none: 'todo',
-  requested: 'draft',
-  rejected: 'todo',
-  suspended: 'draft',
-  review: 'draft',
-  paused: 'todo',
-  expired: 'todo',
-  noDishes: 'draft',
-  live: 'ready',
-};
 
 function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -688,12 +673,12 @@ export default function HomePage() {
                   il riquadro si guarda ogni giorno, e non solo aprendola. Per
                   chi è abbonato sparisce — ce l'ha, e l'ambra nella pastiglia
                   del locale lo dice già. */}
-              {!abbonato && <ProTag variant="needed" />}
+              {!abbonato && <ProTag variant="needed" contesto="card" venueId={venue.id} />}
             </h2>
             {/* Lo stato vero della scheda (cardState, 19/09): «attiva» solo
                 quando si vede davvero nell'app. Ambra dove si aspetta
                 qualcosa, grigio dove tocca al ristoratore. */}
-            <StatusPill stato={TONO_SCHEDA[statoScheda]} label={d.cardState.pill[statoScheda]} />
+            <StatusPill stato={CARD_TONE[statoScheda]} label={d.cardState.pill[statoScheda]} />
           </div>
           <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
 
@@ -723,7 +708,7 @@ export default function HomePage() {
               abbonamenti, che è anche dove portava «Gestisci abbonamento».
               Associato il locale, si torna com'era. */}
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
-            {(statoScheda === 'none' || statoScheda === 'rejected') && pezziScheda.length > 0 ? (
+            {(statoScheda === 'none' || statoScheda === 'rejected' || statoScheda === 'closed') && pezziScheda.length > 0 ? (
               <>
                 <PrimaryLink href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}>
                   {d.editor.linkBoxCta}

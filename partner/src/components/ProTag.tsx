@@ -21,23 +21,67 @@
 // le grigie e nessuna ambra. Senza questa regola lo stesso distintivo direbbe
 // «ti manca» e «ce l'hai» nella stessa schermata, e chi guarda dovrebbe
 // indovinare ogni volta da che parte sta.
+import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
+import PaywallDialog from '@/components/PaywallDialog';
 
-export default function ProTag({ variant }: { variant: 'needed' | 'active' }) {
+export default function ProTag({
+  variant,
+  // Il distintivo VIOLA è un bottone: premendolo si apre il paywall, dove si
+  // legge cosa c'è nel piano (19/09, richiesta dell'utente). È il gesto che
+  // chiunque prova su un'etichetta «Pro» — prima non faceva niente.
+  //
+  // `statico` serve dove il distintivo sta DENTRO un altro bottone (il
+  // «Salva Pro» dell'editor): un bottone dentro un bottone non si può, e lì
+  // il paywall lo apre già quello che lo contiene.
+  statico = false,
+  // Cosa si stava guardando: il paywall apre con quel beneficio
+  contesto = 'look',
+  // Il locale di cui si parla: con questo il paywall porta dritto al
+  // pagamento di quel locale invece che alla pagina degli abbonamenti
+  venueId,
+}: {
+  variant: 'needed' | 'active';
+  statico?: boolean;
+  contesto?: 'look' | 'card';
+  venueId?: string;
+}) {
   const { d } = useI18n();
+  const [paywall, setPaywall] = useState(false);
   const attivo = variant === 'active';
+  const classe = attivo
+    ? 'shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800'
+    : 'shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700';
+  // Il colore non basta: chi usa un lettore di schermo sente la parola "Pro"
+  // e basta, che da sola non dice quale delle due cose sia.
+  const titolo = attivo ? d.pro.activeTitle : d.pro.neededTitle;
+
+  if (attivo || statico) {
+    return (
+      <span className={classe} title={titolo}>
+        {d.pro.label}
+      </span>
+    );
+  }
+
   return (
-    <span
-      className={
-        attivo
-          ? 'shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800'
-          : 'shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700'
-      }
-      // Il colore non basta: chi usa un lettore di schermo sente la parola
-      // "Pro" e basta, che da sola non dice quale delle due cose sia.
-      title={attivo ? d.pro.activeTitle : d.pro.neededTitle}
-    >
-      {d.pro.label}
-    </span>
+    <>
+      <button
+        type="button"
+        onClick={(e) => {
+          // Sta dentro righe e titoli che a volte sono già cliccabili
+          e.stopPropagation();
+          e.preventDefault();
+          setPaywall(true);
+        }}
+        title={titolo}
+        className={`${classe} cursor-pointer transition-colors hover:bg-violet-200`}
+      >
+        {d.pro.upgrade}
+      </button>
+      {paywall && (
+        <PaywallDialog onClose={() => setPaywall(false)} contesto={contesto} venueId={venueId} />
+      )}
+    </>
   );
 }

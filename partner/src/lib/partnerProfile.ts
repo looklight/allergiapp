@@ -94,8 +94,9 @@ export async function loadPartnerProfile(userId: string): Promise<PartnerProfile
 // ------------------------------------------------------------------
 // LE MODIFICHE AL PROFILO
 //
-// Nome, cognome e telefono si correggono: la registrazione li chiede di
-// fretta e un refuso nel nome resta poi in cima a ogni saluto.
+// Nome e cognome si correggono: la registrazione li chiede di fretta e un
+// refuso nel nome resta poi in cima a ogni saluto. (Il telefono non si
+// chiede più dal 19/09: la colonna resta, per chi l'aveva già dato.)
 //
 // Il CONSENSO MARKETING sta qui e non con gli altri due, pur essendo la
 // stessa riga, perché non è un dato anagrafico: è una revoca, e va scritta
@@ -109,7 +110,7 @@ export async function loadPartnerProfile(userId: string): Promise<PartnerProfile
 // ------------------------------------------------------------------
 export async function updatePartnerProfile(
   userId: string,
-  fields: { firstName: string; lastName: string; phone: string }
+  fields: { firstName: string; lastName: string }
 ): Promise<void> {
   await write(
     'salvataggio profilo',
@@ -119,9 +120,6 @@ export async function updatePartnerProfile(
         .update({
           first_name: fields.firstName.trim(),
           last_name: fields.lastName.trim(),
-          // il telefono è facoltativo: vuoto vuol dire "non ce l'ho", che sul
-          // database è NULL e non una stringa vuota
-          phone: fields.phone.trim() || null,
         })
         .eq('user_id', userId),
     `profilo:${userId}`

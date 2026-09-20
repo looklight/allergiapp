@@ -9,6 +9,12 @@
 // soprattutto RITIRARE il consenso marketing. L'ultimo non è una comodità:
 // un consenso si revoca con la stessa facilità con cui si dà, e darlo era
 // una casella nella registrazione.
+//
+// RIORDINATA IL 19/09 (richiesta dell'utente): in cima gli abbonamenti, che
+// sono la cosa che conta; il telefono non si chiede più (non lo usavamo:
+// dato in meno, GDPR art. 5.1.c); la password non si cambia da qui ma col
+// «Password dimenticata?» dell'accesso, come in quasi tutte le app — il
+// riquadro compare solo arrivando dal link di quella email.
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -48,7 +54,6 @@ export default function AccountPage() {
 
   const [firstName, setFirstName] = useState(profile?.firstName ?? '');
   const [lastName, setLastName] = useState(profile?.lastName ?? '');
-  const [phone, setPhone] = useState(profile?.phone ?? '');
   const [profileSaved, setProfileSaved] = useState(false);
 
   const [password, setPassword] = useState('');
@@ -74,7 +79,6 @@ export default function AccountPage() {
     // consumato subito: ricaricando la pagina non deve ricomparire l'avviso
     window.history.replaceState(null, '', '/account');
     setFromRecovery(true);
-    document.getElementById('password')?.scrollIntoView({ block: 'start' });
   }, []);
 
   async function salvaProfilo(e: React.FormEvent) {
@@ -83,8 +87,8 @@ export default function AccountPage() {
     setProfileSaved(false);
     // Lo stato condiviso si aggiorna subito, come ovunque nel portale: senza,
     // la home continuerebbe a salutarti col nome vecchio fino al ricaricamento
-    aggiornaProfilo({ ...profile, firstName, lastName, phone: phone.trim() || null });
-    await updatePartnerProfile(userId, { firstName, lastName, phone });
+    aggiornaProfilo({ ...profile, firstName, lastName });
+    await updatePartnerProfile(userId, { firstName, lastName });
     setProfileSaved(true);
   }
 
@@ -117,7 +121,6 @@ export default function AccountPage() {
       setPassword('');
       setRepeat('');
       setPasswordSaved(true);
-      setFromRecovery(false);
     }
     setChanging(false);
   }
@@ -127,101 +130,15 @@ export default function AccountPage() {
       <PageTitle className="mb-8 md:mb-10">{d.account.title}</PageTitle>
 
       <div className="max-w-xl space-y-4">
-        {/* Chi sei. L'email sta qui dentro e non in un riquadro suo: è un dato
-            anagrafico come gli altri, solo che non si cambia da qui — cambiarla
-            vuol dire cambiare la credenziale, che è un'altra cosa. */}
-        <form onSubmit={salvaProfilo} className={cardClass}>
-          <p className="mb-1 text-sm font-medium text-gray-900">{d.account.profileTitle}</p>
-          <p className="mb-4 text-xs text-gray-500">{d.account.profileHint}</p>
-
-          <div className="mb-3">
-            <label className={labelClass}>{d.account.email}</label>
-            <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
-              {session?.user.email}
-            </p>
-          </div>
-
-          <div className="mb-3 grid gap-3 sm:grid-cols-2">
-            <div>
-              <label htmlFor="firstName" className={labelClass}>
-                {d.login.firstName}
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                required
-                autoComplete="given-name"
-                value={firstName}
-                onChange={(e) => {
-                  setFirstName(e.target.value);
-                  setProfileSaved(false);
-                }}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label htmlFor="lastName" className={labelClass}>
-                {d.login.lastName}
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                required
-                autoComplete="family-name"
-                value={lastName}
-                onChange={(e) => {
-                  setLastName(e.target.value);
-                  setProfileSaved(false);
-                }}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="phone" className={labelClass}>
-              {d.account.phone}
-            </label>
-            <input
-              id="phone"
-              type="tel"
-              autoComplete="tel"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                setProfileSaved(false);
-              }}
-              className={inputClass}
-            />
-            <p className="mt-1 text-xs text-gray-500">{d.account.phoneHint}</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={firstName.trim() === '' || lastName.trim() === ''}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
-            >
-              {d.common.save}
-            </button>
-            {profileSaved && (
-              <span className="text-xs text-[#2E7D32]">{d.account.profileSaved}</span>
-            )}
-          </div>
-        </form>
-
-        {/* La password. scroll-mt perché ci si atterra dal link del recupero,
-            e finire col riquadro incollato al bordo superiore non fa capire
-            dove si è arrivati. */}
-        <form onSubmit={cambiaPassword} id="password" className={`scroll-mt-6 ${cardClass}`}>
+        {/* LA PASSWORD NUOVA, solo arrivando dal link del recupero: per
+            cambiarla c'è «Password dimenticata?» all'accesso (19/09). Sta in
+            cima perché è l'unica cosa per cui si è arrivati qui. */}
+        {fromRecovery && (
+        <form onSubmit={cambiaPassword} id="password" className={cardClass}>
           <p className="mb-1 text-sm font-medium text-gray-900">{d.account.passwordTitle}</p>
-          {fromRecovery ? (
-            <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              {d.account.passwordFromRecovery}
-            </p>
-          ) : (
-            <p className="mb-4 text-xs text-gray-500">{d.account.passwordHint}</p>
-          )}
+          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            {d.account.passwordFromRecovery}
+          </p>
 
           <div className="mb-3 grid gap-3 sm:grid-cols-2">
             <div>
@@ -276,28 +193,96 @@ export default function AccountPage() {
             )}
           </div>
         </form>
+        )}
 
+        {/* GLI ABBONAMENTI, in cima (19/09): sono la cosa dell'account che
+            conta di più. Stanno qui dentro e non nella barra laterale, dove
+            ci sono le cose su cui si lavora ogni giorno. */}
         <div className={cardClass}>
-          <p className="mb-3 text-sm font-medium text-gray-900">{d.account.language}</p>
-          <LanguageSwitcher />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                {d.account.subsTitle}
+                {/* Il distintivo ambra compare se ALMENO UN locale ha il piano:
+                    qui si parla dell'account, non di un locale in particolare
+                    — quale sia lo dice la pagina che si apre premendo. */}
+                {(subs ?? []).some(vale) && <ProTag variant="active" />}
+              </p>
+              <p className="mt-0.5 text-xs text-gray-500">{d.account.subsHint}</p>
+            </div>
+            <Link
+              href="/abbonamenti"
+              className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              {d.account.subsOpen}
+            </Link>
+          </div>
         </div>
 
-        {/* Il consenso marketing. Un interruttore che scrive subito, non un
-            modulo da confermare: darlo è costato una casella spuntata, e
-            toglierlo non può costare di più. */}
-        <div className={cardClass}>
-          <p className="mb-3 text-sm font-medium text-gray-900">{d.account.marketingTitle}</p>
-          <label className="flex gap-2.5 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={profile?.marketing ?? false}
-              onChange={(e) => void cambiaConsenso(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
-            />
-            <span>{d.account.marketingLabel}</span>
-          </label>
-          <p className="mt-2 text-xs text-gray-500">{d.account.marketingHint}</p>
-        </div>
+        {/* Chi sei. L'email sta qui dentro e non in un riquadro suo: è un dato
+            anagrafico come gli altri, solo che non si cambia da qui — cambiarla
+            vuol dire cambiare la credenziale, che è un'altra cosa. */}
+        <form onSubmit={salvaProfilo} className={cardClass}>
+          <p className="mb-1 text-sm font-medium text-gray-900">{d.account.profileTitle}</p>
+          <p className="mb-4 text-xs text-gray-500">{d.account.profileHint}</p>
+
+          <div className="mb-3">
+            <label className={labelClass}>{d.account.email}</label>
+            <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
+              {session?.user.email}
+            </p>
+          </div>
+
+          <div className="mb-3 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="firstName" className={labelClass}>
+                {d.login.firstName}
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                required
+                autoComplete="given-name"
+                value={firstName}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setProfileSaved(false);
+                }}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className={labelClass}>
+                {d.login.lastName}
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                required
+                autoComplete="family-name"
+                value={lastName}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  setProfileSaved(false);
+                }}
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={firstName.trim() === '' || lastName.trim() === ''}
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
+            >
+              {d.common.save}
+            </button>
+            {profileSaved && (
+              <span className="text-xs text-[#2E7D32]">{d.account.profileSaved}</span>
+            )}
+          </div>
+        </form>
 
         {/* LE AZIENDE (19/09): arrivano dal pagamento o si scrivono associando
             un locale, e qui si ritrovano e si correggono. La modifica
@@ -326,28 +311,26 @@ export default function AccountPage() {
           )}
         </div>
 
-        {/* Gli abbonamenti stanno qui dentro finché sono un tappo: una voce
-            nella barra laterale prometteva una sezione, e dietro c'è una
-            pagina che non fa ancora niente. */}
         <div className={cardClass}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                {d.account.subsTitle}
-                {/* Il distintivo ambra compare se ALMENO UN locale ha il piano:
-                    qui si parla dell'account, non di un locale in particolare
-                    — quale sia lo dice la pagina che si apre premendo. */}
-                {(subs ?? []).some(vale) && <ProTag variant="active" />}
-              </p>
-              <p className="mt-0.5 text-xs text-gray-500">{d.account.subsHint}</p>
-            </div>
-            <Link
-              href="/abbonamenti"
-              className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              {d.account.subsOpen}
-            </Link>
-          </div>
+          <p className="mb-3 text-sm font-medium text-gray-900">{d.account.language}</p>
+          <LanguageSwitcher />
+        </div>
+
+        {/* Il consenso marketing. Un interruttore che scrive subito, non un
+            modulo da confermare: darlo è costato una casella spuntata, e
+            toglierlo non può costare di più. */}
+        <div className={cardClass}>
+          <p className="mb-3 text-sm font-medium text-gray-900">{d.account.marketingTitle}</p>
+          <label className="flex gap-2.5 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={profile?.marketing ?? false}
+              onChange={(e) => void cambiaConsenso(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-gray-900"
+            />
+            <span>{d.account.marketingLabel}</span>
+          </label>
+          <p className="mt-2 text-xs text-gray-500">{d.account.marketingHint}</p>
         </div>
 
         <button
