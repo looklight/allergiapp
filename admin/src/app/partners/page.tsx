@@ -48,6 +48,8 @@ interface PartnerVenue {
   ex_source: 'stripe' | 'manual' | null;
   ex_started_at: string | null;
   ex_ends_at: string | null;
+  // Com'è la scheda nell'app (729): la stessa regola del portale
+  card_state: 'none' | 'requested' | 'review' | 'suspended' | 'paused' | 'live' | 'expired';
 }
 
 // Chi si è iscritto e non ha ancora creato un locale (725): nella tabella,
@@ -110,6 +112,31 @@ function Pallino({ r }: { r: PartnerVenue }) {
       title={titolo}
       aria-hidden="true"
     />
+  );
+}
+
+// LA SCHEDA NELL'APP, una riga sola sotto il menù: pallino e parola. Verde
+// solo se si vede davvero; ambra quando aspetta noi; rosso se l'abbiamo
+// sospesa; grigio il resto. Il dettaglio sta nella pagina Associazioni.
+const STATO_SCHEDA: Record<PartnerVenue['card_state'], { label: string; colore: string }> = {
+  live: { label: 'attiva nell’app', colore: COLORI_STATO.ready },
+  review: { label: 'in verifica', colore: COLORI_STATO.draft },
+  requested: { label: 'richiesta in attesa', colore: COLORI_STATO.draft },
+  suspended: { label: 'sospesa', colore: '#C0392B' },
+  paused: { label: 'in pausa', colore: COLORI_STATO.todo },
+  expired: { label: 'abbonamento finito', colore: COLORI_STATO.todo },
+  none: { label: 'non associata', colore: COLORI_STATO.todo },
+};
+
+function RigaScheda({ r }: { r: PartnerVenue }) {
+  // Prima della 729 la funzione non lo diceva: niente riga, invece di una sbagliata
+  const stato = STATO_SCHEDA[r.card_state];
+  if (!stato) return null;
+  return (
+    <p className="text-xs text-faint flex items-center gap-1.5">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full inline-block" style={{ backgroundColor: stato.colore }} aria-hidden="true" />
+      Scheda {stato.label}
+    </p>
   );
 }
 
@@ -657,6 +684,7 @@ export default function PartnersPage() {
                       {r.dishes_total} in catalogo
                       {r.card_dishes_total > 0 && ` · ${r.card_dishes_total} sulla scheda`}
                     </p>
+                    <RigaScheda r={r} />
                   </td>
                   <td className="px-4 py-3">{abbonamento(r)}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -722,6 +750,9 @@ export default function PartnersPage() {
                     {r.menus_total} menù ·{' '}
                     {r.published_at ? `pubblicato il ${data(r.published_at)}` : 'mai pubblicato'}
                   </p>
+                  <div className="mt-0.5">
+                    <RigaScheda r={r} />
+                  </div>
                 </div>
                 <div className="shrink-0 text-right">{abbonamento(r)}</div>
               </div>

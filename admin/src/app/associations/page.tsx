@@ -184,11 +184,9 @@ function statoAdmin(r: CardRow): { label: string; tono: keyof typeof TONI; detta
   return {
     label: 'Approvata, non visibile',
     tono: 'neutro',
-    dettaglio: !r.subscription_active
-      ? 'L’abbonamento è finito'
-      : r.card_dishes_total === 0
-        ? 'Nessun piatto sulla scheda'
-        : undefined,
+    // Dalla 728 i piatti non contano per la visibilità: il partner decide
+    // cosa mettere nella scheda. Approvata e non visibile = abbonamento.
+    dettaglio: !r.subscription_active ? 'L’abbonamento è finito' : undefined,
   };
 }
 
@@ -209,6 +207,10 @@ export default function AssociationsPage() {
   const [busy, setBusy] = useState(false);
   const [gesto, setGesto] = useState<Gesto | null>(null);
   const [motivo, setMotivo] = useState('');
+  // Accogliendo una richiesta per un ristorante già gestito, il gestore
+  // attuale viene revocato: legge un motivo suo, non quello scritto per chi
+  // ha chiesto (728)
+  const [motivoGestore, setMotivoGestore] = useState('');
   // Lo storico aperto: un locale alla volta, letto quando si apre
   const [storico, setStorico] = useState<{ venueId: string; righe: AuditRow[] | null } | null>(null);
 
@@ -266,8 +268,11 @@ export default function AssociationsPage() {
     load();
   }
 
+  // Serve anche il motivo per il gestore attuale?
+  const conGestore = gesto !== null && 'richiesta' in gesto && gesto.tipo === 'accogli' && gesto.richiesta.reason === 'taken';
+
   async function conferma() {
-    if (!gesto || !motivo.trim()) return;
+    if (!gesto || !motivo.trim() || (conGestore && !motivoGestore.trim())) return;
     setBusy(true);
     let error: { message: string } | null = null;
     if ('card' in gesto) {
@@ -286,6 +291,7 @@ export default function AssociationsPage() {
         p_request_id: gesto.richiesta.request_id,
         p_accept: gesto.tipo === 'accogli',
         p_note: motivo.trim(),
+        ...(conGestore ? { p_note_holder: motivoGestore.trim() } : {}),
       }));
     }
     setBusy(false);
@@ -293,6 +299,8 @@ export default function AssociationsPage() {
       alert(
         error.message === 'own_request'
           ? 'Non puoi decidere una tua richiesta: lo deve fare un altro admin.'
+          : error.message === 'holder_note_required'
+            ? 'Scrivi anche il motivo per il gestore attuale: la sua associazione viene revocata.'
           : error.message === 'own_review'
             ? 'Non puoi rifiutare una tua associazione: lo deve fare un altro admin.'
             : `Errore: ${error.message}`,
@@ -301,6 +309,7 @@ export default function AssociationsPage() {
     }
     setGesto(null);
     setMotivo('');
+    setMotivoGestore('');
     load();
   }
 
@@ -373,6 +382,7 @@ export default function AssociationsPage() {
                 busy={busy}
                 onDecidi={(tipo) => {
                   setMotivo('');
+                  setMotivoGestore('');
                   setGesto({ tipo, richiesta: q });
                 }}
               />
@@ -474,6 +484,7 @@ export default function AssociationsPage() {
                   onTogliSospensione={() => togliSospensione(c)}
                   onMotivo={(tipo) => {
                     setMotivo('');
+                    setMotivoGestore('');
                     setGesto({ tipo, card: c });
                   }}
                 />
@@ -518,17 +529,14 @@ export default function AssociationsPage() {
                   ? 'L’associazione si chiude e il ristorante torna libero. Il ristoratore legge il motivo e non può riassociarlo da solo: servirà una richiesta.'
                   : gesto.tipo === 'accogli'
                     ? gesto.richiesta.reason === 'taken'
-                      ? 'Il gestore attuale viene revocato con questo motivo, e chi ha chiesto è associato subito, già controllato.'
+                      ? 'Chi ha chiesto è associato subito, già controllato. Il gestore attuale viene revocato: ognuno dei due legge nel portale il motivo scritto per lui.'
                       : 'Chi ha chiesto è associato di nuovo, già controllato.'
                     : 'La richiesta si chiude. Chi l’ha fatta legge il motivo nel portale.'}
             </p>
             <label className="block text-xs text-faint mb-1">
-              Motivo (obbligatorio: lo legge il ristoratore
-              {'richiesta' in gesto &&
-                gesto.tipo === 'accogli' &&
-                gesto.richiesta.reason === 'taken' &&
-                ', e anche il gestore revocato'}
-              )
+              {conGestore
+                ? 'Motivo per chi ha chiesto (obbligatorio: lo legge nel portale)'
+                : 'Motivo (obbligatorio: lo legge il ristoratore)'}
             </label>
             <textarea
               value={motivo}
@@ -536,13 +544,28 @@ export default function AssociationsPage() {
               rows={3}
               className="w-full mb-4 px-3 py-2 rounded border border-border bg-card text-sm"
             />
+            {conGestore && 'richiesta' in gesto && (
+              <>
+                <label className="block text-xs text-faint mb-1">
+                  Motivo per il gestore attuale
+                  {gesto.richiesta.holder_venue_name ? ` (${gesto.richiesta.holder_venue_name.trim()})` : ''}
+                  {' '}(obbligatorio: lo legge nel portale al posto della sua scheda)
+                </label>
+                <textarea
+                  value={motivoGestore}
+                  onChange={(e) => setMotivoGestore(e.target.value)}
+                  rows={3}
+                  className="w-full mb-4 px-3 py-2 rounded border border-border bg-card text-sm"
+                />
+              </>
+            )}
             <div className="flex justify-end gap-2">
               <button onClick={() => setGesto(null)} className="px-3 py-1.5 rounded border border-border text-sm">
                 Annulla
               </button>
               <button
                 onClick={conferma}
-                disabled={busy || !motivo.trim()}
+                disabled={busy || !motivo.trim() || (conGestore && !motivoGestore.trim())}
                 className={`px-3 py-1.5 rounded text-white text-sm font-medium disabled:opacity-40 ${
                   gesto.tipo === 'accogli' ? 'bg-primary' : 'bg-danger'
                 }`}
