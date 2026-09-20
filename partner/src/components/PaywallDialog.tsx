@@ -145,11 +145,11 @@ export default function PaywallDialog({
               const dentro = (
                 <>
                   {meglio && (
-                    <span className="absolute -top-2 right-3 rounded-full bg-gray-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                    <span className="absolute -top-2 right-3 rounded-full bg-gray-900 px-2 py-0.5 text-[11px] font-medium text-white">
                       {d.paywall.yearlyBest}
                     </span>
                   )}
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-400">{nome}</p>
+                  <p className="text-xs font-medium text-gray-500">{nome}</p>
                   <p className="mt-1 flex flex-wrap items-baseline gap-x-1.5">
                     <span className="text-lg font-semibold text-gray-900">
                       {inCorso === plan ? d.paywall.opening : prezzo}

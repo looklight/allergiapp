@@ -855,13 +855,13 @@ const it = {
   // inventati sui ristoranti iscritti: di ristoratori veri non ne abbiamo
   // ancora, e una prova sociale finta si paga con la fiducia.
   paywall: {
-    lookTitle: 'Il menù al tavolo con la tua faccia',
-    lookLead: 'Hai scelto colore e carattere: col Piano Pro arrivano anche ai tuoi clienti.',
-    cardTitle: 'Fatti trovare da chi ha un’allergia',
-    cardLead: 'Il Piano Pro porta il tuo locale dentro l’app, dove si cerca dove mangiare.',
-    look: 'Il menù al tavolo con il tuo logo, i tuoi colori e il tuo carattere',
-    card: 'La scheda del locale dentro l’app, con i tuoi piatti e i tuoi link',
-    replies: 'Le risposte alle recensioni, firmate dal tuo locale',
+    lookTitle: 'Personalizza il tuo menù digitale',
+    lookLead: 'L’aspetto che scegli qui arriva anche ai tuoi clienti, al tavolo.',
+    cardTitle: 'Fatti trovare su AllergiApp',
+    cardLead: 'Chi ha esigenze specifiche apre l’app prima di scegliere il ristorante.',
+    look: 'Personalizzare l’aspetto del menù in ogni dettaglio',
+    card: 'La scheda del tuo locale dentro l’app, con i tuoi piatti e le compatibilità',
+    replies: 'Rispondere alle recensioni del tuo locale',
     soon: 'in arrivo',
     // IL PREZZO COME LO FANNO QUELLI BRAVI: due riquadri accostati, e
     // l'annuale vince da solo. Il trucco non è uno sconto gridato ma il
@@ -885,7 +885,7 @@ const it = {
     seeAll: 'Vedi gli abbonamenti',
     payError: 'Non è stato possibile aprire il pagamento. Riprova.',
     opening: 'Apro…',
-    free: 'Il menù, il QR e il filtro allergeni restano gratis, sempre.',
+    free: 'Creare e pubblicare il tuo menù resta gratis, e lo sarà sempre.',
     cta: 'Attiva il Piano Pro',
     ctaSoon: 'Vai agli abbonamenti',
     later: 'Non ora',
