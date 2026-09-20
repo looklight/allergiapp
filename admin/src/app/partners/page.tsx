@@ -592,15 +592,19 @@ export default function PartnersPage() {
           <div className="bg-card rounded-lg shadow overflow-hidden">
             <ul className="divide-y divide-border">
               {senzaLocale.map((a) => (
-                <li key={a.user_id} className="px-4 py-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 text-sm">
-                  <Link href={`/users/${a.user_id}`} className="font-medium text-primary hover:underline">
-                    {`${a.first_name} ${a.last_name}`.trim()}
-                  </Link>
-                  <span className="text-muted-foreground">
-                    {a.email}
-                    {a.phone && ` · ${a.phone}`}
-                  </span>
-                  <span className="text-xs text-faint">
+                // Nome sopra, contatti sotto: in fila finivano attaccati
+                // appena la riga si stringeva (segnalato dall'utente, 20/09)
+                <li key={a.user_id} className="px-4 py-3 flex flex-wrap items-start justify-between gap-x-4 gap-y-1 text-sm">
+                  <div className="min-w-0">
+                    <Link href={`/users/${a.user_id}`} className="font-medium text-primary hover:underline">
+                      {`${a.first_name} ${a.last_name}`.trim()}
+                    </Link>
+                    <p className="text-xs text-muted-foreground break-all">
+                      {a.email}
+                      {a.phone && ` · ${a.phone}`}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs text-faint">
                     iscritto il {data(a.signed_up_at)} · {daQuando(a.signed_up_at)}
                   </span>
                 </li>
