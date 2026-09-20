@@ -1071,9 +1071,9 @@ export default function VenueEditorPage() {
                 <Image
                   src="/icons/logo-app.png"
                   alt=""
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-xl shadow-sm"
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 rounded-2xl shadow-sm"
                 />
               </span>
               <div className="min-w-0">
