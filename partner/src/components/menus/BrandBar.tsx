@@ -21,6 +21,7 @@
 //
 // Il logo e il nome del locale non sono qui: il nome è il titolo in cima alla
 // pagina, il logo gli sta accanto (LogoPicker).
+import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { accentiSceglibili, accentHex, DEFAULT_ACCENT } from '@/lib/menuBrand';
 import { APPEARANCE_PREMIUM } from '@/lib/features';
@@ -154,6 +155,7 @@ export default function BrandBar({
   proveInCorso: boolean;
 }) {
   const { d, locale } = useI18n();
+  const [aperta, setAperta] = useState(true);
 
   // Ha toccato qualcosa delle manopole che il reset rimette a posto? Si
   // confronta con gli stessi valori di partenza del database
@@ -174,10 +176,24 @@ export default function BrandBar({
   return (
     // <details> e non un interruttore fatto da noi: apre e chiude da solo,
     // funziona da tastiera e i lettori di schermo lo annunciano senza che
-    // dobbiamo scrivere niente. CHIUSA di partenza: l'aspetto si sceglie una
-    // volta, il menù si tocca ogni giorno. Com'è messa lo mostra
-    // l'anteprima accanto, non la riga chiusa (v. sotto).
-    <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm">
+    // dobbiamo scrivere niente.
+    //
+    // APERTA di partenza e su fondo COLORATO (20/09, scelta dell'utente): da
+    // quando la pagina è in tre passi, una riga chiusa e bianca si leggeva
+    // come l'ultimo pezzo del passo 1 invece che come il passo 2. Aperta si
+    // vede subito cos'è, e il fondo la stacca dai riquadri del contenuto.
+    // Il fondo è il COLORE SCELTO PER IL MENÙ, appena accennato: il grigio
+    // era anonimo, e qui il colore non è decorazione — è la cosa di cui
+    // parla questa sezione, e cambia insieme alla scelta.
+    // ⚠️ Era CHIUSA di partenza dal 03/09 («l'aspetto si sceglie una volta,
+    // il menù si tocca ogni giorno»): se un giorno si torna indietro, il
+    // motivo è quello.
+    <details
+      open={aperta}
+      onToggle={(e) => setAperta(e.currentTarget.open)}
+      className="group rounded-2xl border shadow-sm transition-colors"
+      style={{ backgroundColor: `${accentHex(accent)}12`, borderColor: `${accentHex(accent)}40` }}
+    >
       {/* LA RIGA CHIUSA È UN INVITO, NON UN RIASSUNTO (richiesta dell'utente,
           15/09). Prima elencava le scelte fatte ("€ · Moderno · Sottolineato ·
           foto quadrate…"): una fila di parole grigie che chi non ha ancora
@@ -195,9 +211,12 @@ export default function BrandBar({
           718 rende vero quello che dice. Resta un'etichetta, non un lucchetto:
           le manopole si toccano tutte, e l'anteprima le mostra. Serve a non
           far scoprire il confine DOPO mezz'ora di lavoro. */}
-      <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+      {/* Stesse misure delle altre schede della pagina (p-5, titolo di peso
+          medio): chiusa era una riga bassa e stretta, che accanto ai riquadri
+          del contenuto sembrava un'altra cosa (20/09). */}
+      <summary className="flex cursor-pointer list-none items-center gap-3.5 p-5 [&::-webkit-details-marker]:hidden">
         <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-inset ring-black/10"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-inset ring-black/10"
           style={{ backgroundColor: accentHex(accent) }}
           aria-hidden="true"
         >
@@ -211,10 +230,10 @@ export default function BrandBar({
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-900">{d.menuEditor.brandTitle}</span>
+            <span className="text-sm font-medium text-gray-900">{d.menuEditor.brandTitle}</span>
             {APPEARANCE_PREMIUM && !abbonato && <ProTag variant="needed" venueId={venueId} />}
           </span>
-          <span className="block text-xs text-gray-500">{d.menuEditor.brandTeaser}</span>
+          <span className="mt-0.5 block text-xs text-gray-500">{d.menuEditor.brandTeaser}</span>
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 transition-colors group-hover:border-gray-400 group-open:border-gray-200 group-open:text-gray-500">
           <span className="group-open:hidden">{d.menuEditor.brandOpen}</span>
@@ -234,20 +253,13 @@ export default function BrandBar({
         </span>
       </summary>
 
-      <div className="@container border-t border-gray-100 p-4">
+      <div
+        className="@container border-t p-5"
+        style={{ borderColor: `${accentHex(accent)}33` }}
+      >
       {/* La riga che dice cosa si fa qui, e accanto il modo di vederlo
           succedere: con un menù ancora vuoto l'anteprima è uno schermo
           bianco, e ogni scelta di questa scatola si farebbe alla cieca. */}
-      {/* Il confine si dice APRENDO la scatola, dove si sta per lavorare, e
-          non solo con l'etichetta sulla riga chiusa: chi arriva qui dentro
-          deve sapere prima di scegliere un colore che al tavolo ci arriva
-          con l'abbonamento — e che foto e descrizioni restano sue comunque. */}
-      {APPEARANCE_PREMIUM && !abbonato && (
-        <p className="mb-3 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
-          {d.menuEditor.brandPremiumNote}
-        </p>
-      )}
-
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="min-w-0 flex-1 text-xs text-gray-500">{d.menuEditor.brandHint}</p>
         {esempio && (

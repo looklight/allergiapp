@@ -360,6 +360,9 @@ const en: typeof it = {
   },
   menuEditor: {
     back: 'All menus',
+    step1Title: 'Create your digital menu',
+    step2Title: 'Customise the look',
+    step3Title: 'Publish the menu',
     previewTitle: 'Preview',
     previewCaption: 'What your guests see at the table.',
     fullPreview: 'Open full page',
@@ -391,8 +394,6 @@ const en: typeof it = {
     socialsAdd: 'Add a link',
     socialsHint:
       'Paste the address: we work out which service it is. Guests at the table see these at the bottom of the page.',
-    brandPremiumNote:
-      'Try them whenever you like and watch the preview: taking them to the table needs a subscription. Your dish photos and descriptions always stay yours.',
     brandClose: 'Close',
     venueNameLabel: 'Venue name',
     venueNamePlaceholder: 'Venue name (your guests read it)',

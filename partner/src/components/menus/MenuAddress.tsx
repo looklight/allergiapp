@@ -45,6 +45,7 @@ export default function MenuAddress({
   online,
   onSave,
   onOnline,
+  richiama,
   inCorso,
 }: {
   venue: Venue;
@@ -61,6 +62,10 @@ export default function MenuAddress({
   // (19/09): l'utente lo rivuole, perché acceso/spento col pallino colorato
   // si legge e si governa a colpo d'occhio.
   onOnline: (online: boolean) => void;
+  // Si è appena arrivati qui dal «Vai alla pubblicazione» in cima: per un
+  // attimo l'interruttore si fa notare, o dopo lo scorrimento si resta
+  // davanti a un riquadro senza capire cosa premere (20/09).
+  richiama: boolean;
   inCorso: boolean;
 }) {
   const { d } = useI18n();
@@ -176,6 +181,11 @@ export default function MenuAddress({
         {/* L'INTERRUTTORE: dice lo stato e lo cambia. Bloccato senza
             indirizzo — non si mette online un menù che non ha un posto dove
             stare (e il database lo rifiuterebbe, 729). */}
+        <span
+          className={`rounded-full ${
+            richiama ? 'animate-pulse ring-2 ring-emerald-400 ring-offset-8' : ''
+          }`}
+        >
         <Interruttore
           acceso={online}
           disabilitato={venue.slug === '' || inCorso}
@@ -189,6 +199,7 @@ export default function MenuAddress({
           }
           onChange={() => onOnline(!online)}
         />
+        </span>
       </div>
       {/* Il sottotesto dice COSA VEDE CHI APRE il link e il QR, sempre e non
           solo nel momento in cui si tocca l'interruttore: è l'unica cosa che

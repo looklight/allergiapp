@@ -51,7 +51,9 @@ export default function ProTag({
   const attivo = variant === 'active';
   const classe = attivo
     ? 'shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800'
-    : 'shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700';
+    // Il filo viola attorno: dentro la scatola dell'aspetto, che ha il fondo
+    // del colore del menù, il lilla da solo si confondeva (20/09)
+    : 'shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 ring-1 ring-inset ring-violet-300';
   // Il colore non basta: chi usa un lettore di schermo sente la parola "Pro"
   // e basta, che da sola non dice quale delle due cose sia.
   const titolo = attivo ? d.pro.activeTitle : d.pro.neededTitle;

@@ -462,6 +462,9 @@ const it = {
   },
   menuEditor: {
     back: 'Tutti i menù',
+    step1Title: 'Crea il tuo menù digitale',
+    step2Title: 'Personalizza l’aspetto',
+    step3Title: 'Pubblica il menù',
     previewTitle: 'Anteprima',
     previewCaption: 'Come lo vedono i tuoi clienti al tavolo.',
     fullPreview: 'Apri a tutta pagina',
@@ -535,8 +538,6 @@ const it = {
     // L'etichetta è una parola sola e sobria: dice il confine senza vendere
     // niente. La frase accanto dice le due cose che contano — che si possono
     // provare subito, e cosa resta gratis comunque.
-    brandPremiumNote:
-      'Provale quando vuoi e guarda l’anteprima: per portarle al tavolo serve l’abbonamento. Le foto e le descrizioni dei piatti restano sempre tue.',
     brandClose: 'Chiudi',
     venueNameLabel: 'Nome del locale',
     venueNamePlaceholder: 'Nome del locale (lo leggono i tuoi clienti)',

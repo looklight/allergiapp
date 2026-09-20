@@ -71,6 +71,25 @@ type Prove = {
   currency: string;
 };
 
+// L'INTESTAZIONE DI UN PASSO: numero, titolo e una riga che dice cosa si fa.
+// Stessa forma dei passi della finestra «Nuovo locale», perché è lo stesso
+// modo di raccontare: si fa questo, poi quello.
+function Passo({ n, titolo, primo = false }: { n: number; titolo: string; primo?: boolean }) {
+  return (
+    // Il primo non ha la riga sopra né lo stacco grande: sopra c'è già la
+    // riga fissa della pubblicazione, e i due spazi si sommavano in un vuoto
+    // che non c'entrava con le altre pagine (20/09).
+    <div className={primo ? 'mb-4 mt-5' : 'mt-10 mb-4 border-t border-gray-200 pt-4'}>
+      {/* Stessa riga in maiuscoletto grigio delle altre sezioni del portale
+          («Aspetto del menù», «Online»), col numero davanti: si legge come
+          una sezione, e il numero dice in che ordine si fanno. */}
+      <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+        {n} · {titolo}
+      </h2>
+    </div>
+  );
+}
+
 export default function MenuEditorPage() {
   const { id } = useParams<{ id: string }>();
   const { d, locale: lingua } = useI18n();
@@ -109,6 +128,9 @@ export default function MenuEditorPage() {
   // null = nessuna prova in corso, si guarda quello che è salvato.
   const [prove, setProve] = useState<Prove | null>(null);
   const [paywall, setPaywall] = useState(false);
+  // L'interruttore della pubblicazione che lampeggia per un attimo, quando
+  // ci si arriva dal bottone in cima
+  const [richiamo, setRichiamo] = useState(false);
   const [revertingBrand, setRevertingBrand] = useState(false);
   const [resettingBrand, setResettingBrand] = useState(false);
   // Maschera di un piatto NUOVO aperta dal menù: si ricorda in quale sezione
@@ -466,6 +488,9 @@ export default function MenuEditorPage() {
               document
                 .getElementById(ANCORA_INDIRIZZO)
                 ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // e una volta arrivati, l'interruttore si fa notare
+              setRichiamo(true);
+              window.setTimeout(() => setRichiamo(false), 1600);
               return;
             }
             void pubblicazione.pubblica();
@@ -510,75 +535,13 @@ export default function MenuEditorPage() {
         )}
       </div>
 
-      {/* L'ASPETTO PRIMA DEL NOME (scelta dell'utente, 03/09): il flusso è
-          "decido come si vede, poi lo riempio", e la scatola stava in mezzo
-          fra il titolo e i piatti — cioè dopo che il ristoratore aveva già
-          cominciato a comporre. Chiusa è una riga sola, quindi in cima non
-          ruba niente a nessuno; e col menù ancora vuoto adesso c'è un esempio
-          da guardare mentre si sceglie (v. previewSampleShow). */}
-      <div className="mt-4">
-        <BrandBar
-          abbonato={abbonato}
-          venueId={locale?.id}
-          proveInCorso={prove !== null}
-          accent={vista.accent}
-          currency={vista.currency}
-          layout={vista.menuLayout}
-          separator={vista.dishSeparator}
-          showPhotos={vista.showDishPhotos}
-          photoShape={vista.dishPhotoShape}
-          showDescriptions={vista.showDishDescriptions}
-          sectionStyle={vista.sectionStyle}
-          headingFont={vista.headingFont}
-          textScale={vista.textScale}
-          lineHeight={vista.lineHeight}
-          allergenDisplay={vista.allergenDisplay}
-          // Una sezione senza nome al tavolo non mostra nessun titolo, e i
-          // blocchi di testo hanno un aspetto loro: né gli uni né le altre
-          // fanno comparire la voce «Titoli delle sezioni».
-          haSezioni={menu.sections.some(
-            (s) => s.kind === 'section' && s.name.trim() !== ''
-          )}
-          coverUrl={locale?.coverUrl ?? ''}
-          changed={pubblicazione.stato?.appearanceChanged ?? false}
-          esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
-          onRevert={() => setRevertingBrand(true)}
-          onReset={() => setResettingBrand(true)}
-          onCurrency={(currency) => tocca({ currency })}
-          onLayout={(menuLayout) => tocca({ menuLayout })}
-          onSeparator={(dishSeparator) => tocca({ dishSeparator })}
-          onAccent={(accent) => tocca({ accent })}
-          onPhotos={({ showPhotos, photoShape }) =>
-            tocca({ showDishPhotos: showPhotos, dishPhotoShape: photoShape })
-          }
-          onShowDescriptions={(showDishDescriptions) => tocca({ showDishDescriptions })}
-          onSectionStyle={(sectionStyle) => tocca({ sectionStyle })}
-          onHeadingFont={(headingFont) => tocca({ headingFont })}
-          onTextScale={(textScale) => tocca({ textScale })}
-          onLineHeight={(lineHeight) => tocca({ lineHeight })}
-          onAllergenDisplay={(allergenDisplay) => tocca({ allergenDisplay })}
-          onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
-          socials={locale?.links.socials ?? []}
-          // I link non sono aspetto e non passano da setIdentity: sono righe
-          // di partner_links, e si salvano come gli altri link del locale.
-          onSocials={(socials) =>
-            locale && updateVenue(locale.id, { ...locale, links: { ...locale.links, socials } })
-          }
-        />
-      </div>
-
-      {/* LE TRE AREE — aspetto, contenuto, pubblicazione — si separano con
-          una riga sottile e basta (richiesta dell'utente, 15/09). Prima qui
-          c'era un'etichetta "CONTENUTO" con una frase sotto: un titolo in più
-          da leggere per dire una cosa che la pagina dice già da sola, perché
-          l'aspetto è una scatola che si apre e l'indirizzo ha il suo titolo e
-          il suo colore. La riga raggruppa senza chiedere attenzione.
-
-          Il contenuto va da qui alle condizioni al tavolo: nome del locale,
-          descrizione, sezioni, piatti, blocchi di testo e fondo del menù. */}
-      {/* mb-6 più il mt-2 del nome: 32px sopra e sotto, come la riga prima
-          dell'indirizzo */}
-      <hr className="mb-6 mt-8 border-gray-200" aria-hidden="true" />
+      {/* TRE PASSI NUMERATI (20/09, scelta dell'utente): crei il menù,
+          scegli come si vede, lo pubblichi. Prima l'aspetto stava in cima
+          (scelta del 03/09, «decido come si vede e poi lo riempio») e le tre
+          aree erano separate solo da una riga sottile: chi arrivava non
+          capiva da dove si comincia. L'ordine adesso è quello in cui le cose
+          si fanno davvero. */}
+      <Passo n={1} titolo={d.menuEditor.step1Title} primo />
 
       {/* Il nome del LOCALE apre il contenuto: è la prima cosa che il cliente
           legge, in cima a ogni menù di questo ristorante (vale per tutti, come
@@ -921,9 +884,64 @@ export default function MenuEditorPage() {
         </div>
       )}
 
-      {/* L'INDIRIZZO PUBBLICO, in fondo insieme alle altre cose del locale:
-          la terza area, dopo la riga. */}
-      <hr className="mt-8 border-gray-200" aria-hidden="true" />
+      <Passo n={2} titolo={d.menuEditor.step2Title} />
+      {/* Col menù ancora vuoto qui c'è un esempio da guardare mentre si
+          sceglie (v. previewSampleShow). */}
+      <div className="mt-4">
+        <BrandBar
+          abbonato={abbonato}
+          venueId={locale?.id}
+          proveInCorso={prove !== null}
+          accent={vista.accent}
+          currency={vista.currency}
+          layout={vista.menuLayout}
+          separator={vista.dishSeparator}
+          showPhotos={vista.showDishPhotos}
+          photoShape={vista.dishPhotoShape}
+          showDescriptions={vista.showDishDescriptions}
+          sectionStyle={vista.sectionStyle}
+          headingFont={vista.headingFont}
+          textScale={vista.textScale}
+          lineHeight={vista.lineHeight}
+          allergenDisplay={vista.allergenDisplay}
+          // Una sezione senza nome al tavolo non mostra nessun titolo, e i
+          // blocchi di testo hanno un aspetto loro: né gli uni né le altre
+          // fanno comparire la voce «Titoli delle sezioni».
+          haSezioni={menu.sections.some(
+            (s) => s.kind === 'section' && s.name.trim() !== ''
+          )}
+          coverUrl={locale?.coverUrl ?? ''}
+          changed={pubblicazione.stato?.appearanceChanged ?? false}
+          esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
+          onRevert={() => setRevertingBrand(true)}
+          onReset={() => setResettingBrand(true)}
+          onCurrency={(currency) => tocca({ currency })}
+          onLayout={(menuLayout) => tocca({ menuLayout })}
+          onSeparator={(dishSeparator) => tocca({ dishSeparator })}
+          onAccent={(accent) => tocca({ accent })}
+          onPhotos={({ showPhotos, photoShape }) =>
+            tocca({ showDishPhotos: showPhotos, dishPhotoShape: photoShape })
+          }
+          onShowDescriptions={(showDishDescriptions) => tocca({ showDishDescriptions })}
+          onSectionStyle={(sectionStyle) => tocca({ sectionStyle })}
+          onHeadingFont={(headingFont) => tocca({ headingFont })}
+          onTextScale={(textScale) => tocca({ textScale })}
+          onLineHeight={(lineHeight) => tocca({ lineHeight })}
+          onAllergenDisplay={(allergenDisplay) => tocca({ allergenDisplay })}
+          onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
+          socials={locale?.links.socials ?? []}
+          // I link non sono aspetto e non passano da setIdentity: sono righe
+          // di partner_links, e si salvano come gli altri link del locale.
+          onSocials={(socials) =>
+            locale && updateVenue(locale.id, { ...locale, links: { ...locale.links, socials } })
+          }
+        />
+      </div>
+
+
+      {/* L'INDIRIZZO PUBBLICO, il terzo passo: l'indirizzo del QR e
+          l'interruttore che mette il menù online. */}
+      <Passo n={3} titolo={d.menuEditor.step3Title} />
       {paywall && <PaywallDialog onClose={() => setPaywall(false)} venueId={locale?.id} />}
 
       {locale && (
@@ -934,6 +952,7 @@ export default function MenuEditorPage() {
           // Acceso senza indirizzo non si può (l'interruttore è bloccato):
           // da lì si passa dalla riga in cima, che apre la finestra
           onOnline={(acceso) => void (acceso ? pubblicazione.pubblica() : pubblicazione.ritira())}
+          richiama={richiamo}
           inCorso={pubblicazione.inCorso}
         />
       )}
