@@ -131,8 +131,16 @@ export default function PaywallDialog({
           {/* IL PREZZO: due riquadri accostati, e l'annuale vince da solo.
               Non uno sconto gridato ma il PREZZO AL MESE messo a confronto —
               5 € contro 7,99 € — col totale annuale piccolo sotto, perché è
-              l'unica cifra che spaventa. Qui non si sceglie: si sceglie in
-              Abbonamenti, dove si paga. */}
+              l'unica cifra che spaventa.
+
+              ⚠️ QUI SI SCEGLIE, quando `siPaga`: ogni riquadro è un bottone
+              che porta dritto al pagamento di quel piano per questo locale
+              (19/09: ogni schermata in mezzo perde gente). Questa riga
+              diceva il contrario — «qui non si sceglie, si sceglie in
+              Abbonamenti» — ed era rimasta dal disegno di prima, smentita
+              venti righe più sotto. Finché i pagamenti sono spenti, o se non
+              sappiamo di che locale si parla, tornano due riquadri da
+              leggere e basta, e a portare avanti è il bottone scuro. */}
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             {([
               {
