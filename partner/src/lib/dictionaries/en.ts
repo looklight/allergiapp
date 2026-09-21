@@ -191,7 +191,7 @@ const en: typeof it = {
       'The page of {venue} inside AllergiApp: links and contacts on one side, the dishes you choose on the other. The preview shows how it will look.',
     goToLink: 'Restaurant link',
     step1Title: 'Add links and contacts',
-    step2Title: 'Choose the dishes',
+    step2Title: 'Choose the dishes to show',
     step3Title: 'Link the restaurant',
     stepsTitle: 'To show the listing in the app',
     stepPrepare: 'Prepare links and dishes below: you can start right away',

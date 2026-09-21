@@ -403,9 +403,14 @@ export default function HomePage() {
             placeholder={d.editor.venueNamePlaceholder}
             className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium focus:border-gray-900 focus:outline-none"
           />
-        ) : venues.length > 1 ? (
+        ) : (
           <>
-            {/* Non è una fila di linguette da tastiera (role=tablist): sono
+            {/* SEMPRE LE PILL, anche con un locale solo (richiesta
+                dell'utente, 21/09): con uno c'è la sua pill, accesa, invece
+                del nome in testo libero — la riga non cambia forma quando
+                se ne aggiunge un secondo.
+
+                Non è una fila di linguette da tastiera (role=tablist): sono
                 bottoni che scelgono, e aria-pressed dice quale è acceso. */}
             <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label={d.dashboard.switchLabel} role="group">
               {venues.map((v) => {
@@ -432,27 +437,6 @@ export default function HomePage() {
                 );
               })}
             </div>
-            <button
-              onClick={() => {
-                setNameDraft(venue.venueName);
-                setRenaming(true);
-              }}
-              aria-label={d.home.rename}
-              title={d.home.rename}
-              className="shrink-0 text-gray-300 transition-colors hover:text-gray-700"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
-              </svg>
-            </button>
-          </>
-        ) : (
-          <>
-            <h2 className="flex min-w-0 items-center gap-2 text-base font-semibold text-gray-900">
-              <span className="truncate">{venue.venueName.trim() || d.home.unnamed}</span>
-              {abbonato && <ProTag variant="active" />}
-            </h2>
             <button
               onClick={() => {
                 setNameDraft(venue.venueName);

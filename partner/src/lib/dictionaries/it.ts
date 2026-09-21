@@ -257,7 +257,7 @@ const it = {
     goToLink: 'Associazione',
     // I tre passi della pagina, numerati come quelli del menù (21/09)
     step1Title: 'Aggiungi link e contatti',
-    step2Title: 'Scegli i piatti',
+    step2Title: 'Scegli i piatti da mostrare',
     step3Title: 'Associa il ristorante',
     stepsTitle: 'Per mostrare la scheda nell’app',
     stepPrepare: 'Prepara link e piatti qui sotto: puoi farlo già adesso',
