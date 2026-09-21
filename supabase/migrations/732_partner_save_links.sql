@@ -1,6 +1,8 @@
 -- ============================================================
 -- 732_partner_save_links.sql
--- STATO: DA APPLICARE (scritta il 2026-09-21).
+-- STATO: APPLICATA il 2026-09-21 (success dal SQL editor), portale online
+-- dopo. Si può rilanciare: `create or replace` con la stessa firma,
+-- permessi idempotenti.
 -- Tracking fermo alla 045: a mano dal SQL editor, MAI db push.
 --
 -- SALVARE I LINK NON DEVE POTER LASCIARE UN LOCALE SENZA LINK.
