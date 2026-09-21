@@ -359,6 +359,14 @@ function toLinks(righe: any[]): DraftLinks {
 // …e viceversa. Solo le righe che portano da qualche parte: il database ha un
 // vincolo che rifiuta un link senza indirizzo (tranne la prenotazione col
 // telefono), e comunque una riga vuota non è un link.
+//
+// ⚠️ OGNI RIGA PORTA IL SUO sort_order, anche quelle che sono una sola
+// (prenotazione e sito). Il valore di partenza della colonna non basta: le
+// righe si scrivono in un colpo solo, e in una scrittura multipla PostgREST
+// mette insieme le colonne di TUTTE le righe — quelle a cui il campo manca
+// diventano NULL, non il valore di partenza, e la colonna non lo ammette.
+// Si vedeva solo salvando insieme una prenotazione (senza) e un delivery
+// (con): da soli funzionavano tutti e due.
 function fromLinks(venueId: string, links: DraftLinks) {
   const righe: Record<string, unknown>[] = [];
   const booking = links.booking;
@@ -368,10 +376,11 @@ function fromLinks(venueId: string, links: DraftLinks) {
       kind: 'booking',
       url: booking.url.trim() || null,
       phone: booking.phone.trim() || null,
+      sort_order: 0,
     });
   }
   if (links.website.trim() !== '') {
-    righe.push({ venue_id: venueId, kind: 'website', url: links.website.trim() });
+    righe.push({ venue_id: venueId, kind: 'website', url: links.website.trim(), sort_order: 0 });
   }
   links.deliveries.forEach((del, i) => {
     if (del.url.trim() === '') return;
