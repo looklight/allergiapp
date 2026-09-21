@@ -262,12 +262,12 @@ const it = {
       'Link e piatti sono pronti? Associa il locale al tuo ristorante già presente nell’app: da lì la scheda diventa visibile a chi cerca dove mangiare.',
     linkBoxCta: 'Associa il ristorante',
     // La riga in cima, appena la scheda ha qualcosa dentro (19/09)
-    linkBar: 'La scheda ha già dei contenuti: associa il locale al tuo ristorante per mostrarla nell’app.',
+    linkBar: 'Bozza salvata. Associa il locale al tuo ristorante per mostrarla nell’app.',
     // PUBBLICARE LA SCHEDA (728): la riga in cima quando la bozza è diversa
     // da quello che l'app mostra. «Non ancora pubblicate» e non «non
     // salvate»: il lavoro è al sicuro, manca il passaggio nell'app.
     publishPending: 'Modifiche non pubblicate',
-    publishNever: 'Non ancora pubblicata',
+    publishNever: 'Pronta: pubblicala per metterla online',
     publish: 'Pubblica',
     publishing: 'Pubblico…',
     publishRevert: 'Annulla',

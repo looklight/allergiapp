@@ -321,6 +321,7 @@ export default function VenueEditorPage() {
   const stato = cardState(venue, abbonato);
   // Link o piatti diversi da quello che l'app mostra (728)
   const modifiche = cardHasChanges(venue);
+  const modificheDaPubblicare = stato === 'live' && modifiche;
   const mostraRichiamo = stato === 'none' && !haContenuto;
   const verso = abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti';
   const ristorante = {
@@ -510,12 +511,14 @@ export default function VenueEditorPage() {
             fondo alla pagina. Sparisce ad associazione fatta. Senza
             abbonamento porta prima agli abbonamenti. Stessa riga sticky e
             stesse misure dell'editor del menù, così è riconoscibile. */}
-        {/* Una riga sola, la cosa più urgente: prima «Pubblica» se ci
-            sono modifiche che l'app non ha ancora (728), altrimenti
-            «Associa» se il locale non è associato. */}
-        {(modifiche || (stato === 'none' && haContenuto)) && (
+        {/* Una riga sola, il passo che manca per andare online. «Pubblica»
+            (728) compare solo a scheda visibile (stato 'live'): prima non
+            pubblicherebbe niente, e premerlo faceva credere di essere
+            online (21/09). Prima c'è la bozza, e «Associa» se il locale
+            non è associato; gli altri stati li dice il riquadro sotto. */}
+        {(modificheDaPubblicare || (stato === 'none' && haContenuto)) && (
           <div className="sticky top-0 z-30 -mx-4 mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-100 bg-gray-50/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
-            {modifiche ? (
+            {modificheDaPubblicare ? (
               <CardPublishBar
                 venue={venue}
                 onPublish={() => publishCard(venue.id)}

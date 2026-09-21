@@ -197,9 +197,9 @@ const en: typeof it = {
     linkBoxText:
       'Links and dishes ready? Link the venue to your restaurant already in the app: from there the listing becomes visible to people looking for somewhere to eat.',
     linkBoxCta: 'Link the restaurant',
-    linkBar: 'Your listing already has content: link the venue to your restaurant to show it in the app.',
+    linkBar: 'Draft saved. Link the venue to your restaurant to show it in the app.',
     publishPending: 'Unpublished changes',
-    publishNever: 'Not published yet',
+    publishNever: 'Ready: publish it to put it online',
     publish: 'Publish',
     publishing: 'Publishing…',
     publishRevert: 'Undo',

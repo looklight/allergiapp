@@ -6,10 +6,10 @@
 // Stesso gesto del menù al tavolo (PublishBar), così il ristoratore lo
 // riconosce: prepari, poi decidi tu quando va online.
 //
-// Sta nella riga fissa in cima alla scheda e ci compare solo quando c'è
-// qualcosa da pubblicare: in quel momento è la cosa più urgente della
-// pagina, e la riga «Associa il ristorante» le cede il posto finché non si
-// è pubblicato o annullato.
+// Sta nella riga fissa in cima alla scheda e ci compare solo quando la
+// scheda può andare online (stato 'live') e c'è qualcosa da pubblicare.
+// Prima non pubblicherebbe niente di visibile: lì la riga dice «Bozza
+// salvata» e porta all'associazione (21/09).
 //
 // SOBRIA (richiesta dell'utente): due parole e due bottoni. Che senza
 // piatti la scheda non compare lo dice la sezione dei piatti, dove si
