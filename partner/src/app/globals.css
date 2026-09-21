@@ -5,6 +5,15 @@ body {
   overscroll-behavior: none;
 }
 
+/* Una fila che scorre di lato senza mostrare la barra: si scorre col dito o
+   la rotella, come le file di chip dei telefoni. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Spazio per la bottom nav su mobile (safe area iOS inclusa).
    La media query è necessaria: queste regole stanno fuori dai layer di
    Tailwind, quindi vincono su qualunque utility (md:pb-0 compreso) e

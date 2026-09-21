@@ -378,6 +378,11 @@ export default function DishesPage() {
             </button>
           </div>
 
+          {/* Su telefono la fila esce fino ai bordi dello schermo (-mx-4 px-4,
+              come nell'anteprima del menù) e senza barra di scorrimento:
+              prima i chip venivano tagliati sul filo del contenuto, a 16px
+              dal bordo (21/09). Da tablet in su la pagina ha più margine e
+              la fila resta com'era. */}
           {/* Categorie: una riga sola, scorre se non ci sta. I filtri solo con
               almeno due categorie in uso — con una non c'è niente da scegliere.
 
@@ -390,7 +395,7 @@ export default function DishesPage() {
               <CategoryManager onDone={() => setGestisciCategorie(false)} />
             </div>
           ) : (
-          <div className="-mx-0.5 mb-4 flex items-center gap-1.5 overflow-x-auto px-0.5 pb-0.5">
+          <div className="scrollbar-none -mx-4 mb-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-0.5 md:-mx-0.5 md:px-0.5">
             {usedCategories.length > 1 &&
               [{ code: null as string | null, label: d.dishes.allCategories }, ...usedCategories].map(({ code, label }) => (
               <button
