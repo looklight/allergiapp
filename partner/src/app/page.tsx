@@ -34,7 +34,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
-import { useVenues, useVenueChoice, currentVenue, countLinks, type Venue } from '@/lib/venues';
+import { useVenues, useVenueChoice, currentVenue, countLinks, discardVenueFiles, type Venue } from '@/lib/venues';
 import { abbonamentoDi, useSubscriptions } from '@/lib/subscriptions';
 import ProTag from '@/components/ProTag';
 import { menuItems, useMenus, type Menu } from '@/lib/menus';
@@ -174,6 +174,17 @@ export default function HomePage() {
   const [undoable, setUndoable] = useState<{ venue: Venue; menus: Menu[] } | null>(null);
   // Punto fermo dove torna il fuoco quando il toast se ne va
   const addButton = useRef<HTMLButtonElement>(null);
+  // Il locale che si potrebbe ancora rimettere, per scartarne i file quando
+  // l'annulla non è più possibile: scade il toast, ne arriva un altro, o si
+  // lascia la pagina. Un ref e non lo stato: la pulizia all'uscita deve
+  // vedere il valore di adesso, non quello del primo render.
+  const inAttesa = useRef<Venue | null>(null);
+  function scartaFile() {
+    const vecchio = inAttesa.current;
+    inAttesa.current = null;
+    if (vecchio) void discardVenueFiles(vecchio);
+  }
+  useEffect(() => scartaFile, []);
 
   const venue = currentVenue(venues ?? null, venueId);
   const router = useRouter();
@@ -212,6 +223,9 @@ export default function HomePage() {
     // La finestra non lascia confermare finché i menù non sono arrivati,
     // quindi qui la lista c'è davvero
     const suoi = (menus ?? []).filter((menu) => menu.venueId === target.id);
+    // Un'eliminazione precedente non si può più annullare: il toast è sostituito
+    scartaFile();
+    inAttesa.current = target;
     remove(target.id);
     forgetVenue(target.id);
     setDeleting(null);
@@ -221,6 +235,7 @@ export default function HomePage() {
   async function undoDelete() {
     if (!undoable) return;
     const { venue: tornato, menus: suoi } = undoable;
+    inAttesa.current = null;
     setUndoable(null);
     // Prima il locale, poi i menù: al contrario la chiave esterna li rifiuta
     await restore(tornato);
@@ -831,6 +846,7 @@ export default function HomePage() {
           venue={deleting}
           menus={menus.filter((menu) => menu.venueId === deleting.id).length}
           subscribed={abbonamentoDi(subs, deleting.id) !== null}
+          linked={deleting.cardId !== null || deleting.request?.status === 'pending'}
           onCancel={() => setDeleting(null)}
           onConfirm={() => confirmDelete(deleting)}
         />
@@ -842,7 +858,10 @@ export default function HomePage() {
           message={d.home.deleted}
           undoLabel={d.home.undo}
           onUndo={() => void undoDelete()}
-          onExpire={() => setUndoable(null)}
+          onExpire={() => {
+            scartaFile();
+            setUndoable(null);
+          }}
           returnFocusTo={addButton}
         />
       )}

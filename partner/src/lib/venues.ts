@@ -774,6 +774,24 @@ export function cardHasChanges(venue: Venue): boolean {
   return !stessiPiatti || linkDellaScheda(venue.links) !== linkDellaScheda(pubblicata.links);
 }
 
+// I file di un locale già eliminato: logo e copertina. Non partono con
+// l'eliminazione perché l'annulla li rimette per indirizzo e senza file
+// tornerebbe un'immagine rotta: si scartano quando la finestra dell'annulla
+// si chiude. Prima si RILEGGE il database: se il locale c'è ancora (annullato,
+// o l'eliminazione rifiutata — ad esempio per l'abbonamento) i file sono
+// suoi e non si toccano. Come deleteLogo non blocca chi chiama: un file
+// rimasto sono byte.
+export async function discardVenueFiles(venue: Venue): Promise<void> {
+  const files = [venue.logoUrl, venue.coverUrl].filter(Boolean);
+  if (files.length === 0) return;
+  const { data, error } = await supabase.from('partner_venues').select('id').eq('id', venue.id).maybeSingle();
+  if (error || data) {
+    reportError('controllo locale eliminato', error);
+    return;
+  }
+  await Promise.all([venue.logoUrl && deleteLogo(venue.logoUrl), venue.coverUrl && deleteCover(venue.coverUrl)]);
+}
+
 export function useVenues() {
   const { list: venues, setList, reload, current } = useRemoteList('locali', loadVenues);
   // L'editor cambia la bozza a ogni tasto: si scrive dopo la pausa

@@ -148,8 +148,12 @@ const it = {
     // Con i menù dentro si perde molto di più, e va detto PRIMA: sezioni,
     // ordine e prezzi sono il lavoro di un pomeriggio.
     deleteBodyMenus:
-      'Spariscono i link e i menù di questo locale, con le loro sezioni e i loro prezzi. I piatti restano nel tuo catalogo, e finché il messaggio di annullamento è in piedi puoi rimettere tutto com’era.',
+      'Spariscono i link e i menù di questo locale, con le loro sezioni e i loro prezzi. I piatti restano nel tuo catalogo, e finché il messaggio di annullamento è in piedi puoi rimettere il locale con i suoi link e i suoi menù.',
     deleteEmpty: 'Questo locale è ancora vuoto.',
+    // Il collegamento al ristorante lo approva il nostro team: l'annulla
+    // dell'eliminazione non può rimetterlo
+    deleteLinked:
+      'Si scollega anche dal ristorante, e annullando il collegamento non torna: per riaverlo va richiesto di nuovo.',
     // L'abbonamento è del locale (716): eliminandolo si butterebbe quello che
     // resta del periodo pagato. Lo ferma anche il database (727).
     deleteSubscribedTitle: 'Questo locale ha l’abbonamento attivo',

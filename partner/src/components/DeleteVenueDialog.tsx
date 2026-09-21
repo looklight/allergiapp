@@ -15,6 +15,7 @@ export default function DeleteVenueDialog({
   venue,
   menus,
   subscribed,
+  linked,
   onCancel,
   onConfirm,
 }: {
@@ -26,6 +27,9 @@ export default function DeleteVenueDialog({
   // Con l'abbonamento attivo non si elimina (727): la finestra lo dice e
   // basta, invece di lasciar premere e far rispondere di no al database.
   subscribed: boolean;
+  // Associato a un ristorante, o con la richiesta in attesa: il collegamento
+  // se ne va col locale e l'annulla NON lo rimette (lo decide il nostro team)
+  linked: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -81,6 +85,7 @@ export default function DeleteVenueDialog({
             ? d.home.deleteBodyMenus
             : d.home.deleteBody}
         </p>
+        {linked && !subscribed && <p className="mt-2 text-sm text-gray-600">{d.home.deleteLinked}</p>}
 
         <div className="mt-6 flex justify-end gap-3">
           <button
