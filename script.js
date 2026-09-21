@@ -50,27 +50,10 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 // Observe all cards and features
-document.querySelectorAll('.step, .feature-highlights').forEach(el => {
+document.querySelectorAll('.info-step, .home-rest-map').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
-});
-
-// Observe features logo with scale animation
-document.querySelectorAll('.features-logo').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'scale(0.5)';
-    el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-    observer.observe(el);
-});
-
-// Observe timeline items with sequential animation
-document.querySelectorAll('.timeline-item').forEach((el, index) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    el.style.transitionDelay = `${index * 0.2}s`;
     observer.observe(el);
 });
 

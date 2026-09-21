@@ -1,74 +1,29 @@
 {
   "it": {
     "meta": {
-      "description": "AllergiApp - Comunica le tue allergie in qualsiasi lingua. L'app essenziale per viaggiare sereni con allergie alimentari.",
-      "keywords": "allergie, allergie alimentari, viaggi, traduzione allergie, esigenze alimentari",
-      "ogTitle": "AllergiApp - Allergie senza confini",
-      "ogDescription": "Comunica le tue allergie in qualsiasi lingua quando viaggi",
-      "title": "AllergiApp - Comunica le tue allergie in qualsiasi lingua"
+      "description": "La travel card per allergie e celiachia in 60+ lingue, da mostrare a camerieri e chef quando viaggi. Trova ristoranti senza glutine consigliati dalla community. Gratis e offline.",
+      "keywords": "travel card allergie, card celiachia viaggio, app allergie alimentari, ristoranti senza glutine, allergie in viaggio, comunicare allergie estero, card allergie ristorante, traduttore allergie, intolleranze alimentari, celiaci viaggio",
+      "ogTitle": "AllergiApp - Travel Card per Allergie e Celiachia in 60+ Lingue",
+      "ogDescription": "Mostra la tua card tradotta a camerieri e chef in tutto il mondo e trova ristoranti adatti a te. Gratis e offline.",
+      "title": "AllergiApp - Travel Card per Allergie e Celiachia in 60+ Lingue"
     },
     "nav": {
-      "features": "Funzionalità",
-      "howItWorks": "Come funziona",
-      "aboutUs": "Il progetto",
-      "support": "❤️ Supporta",
       "download": "Scarica",
-      "restaurants": "Ristoranti"
+      "restaurants": "Ristoranti",
+      "card": "Card",
+      "contacts": "Contatti",
+      "menu": "Menu"
     },
     "hero": {
       "title1": "Viaggia sereno.",
       "title2": "Le tue esigenze, in ogni lingua.",
       "subtitle1": "Comunica le tue esigenze alimentari in più di 60 lingue.",
       "subtitle2": "Mostra una card chiara e comprensibile a camerieri e chef in tutto il mondo.",
-      "cta": "Scopri come funziona",
-      "stat1Number": "60+",
-      "stat1Label": "Lingue disponibili",
-      "stat2Number": "100%",
-      "stat2Label": "Gratuita"
-    },
-    "problem": {
-      "title": "Hai mai provato questa situazione?",
-      "timeline1Title": "Sei all'estero, al ristorante",
-      "timeline1Text": "Hai timore di non riuscire a comunicare le tue allergie nella lingua locale",
-      "timeline2Title": "Barriera linguistica",
-      "timeline2Text": "Il cameriere non parla la tua lingua e tu non parli la sua",
-      "timeline3Title": "Usi il traduttore",
-      "timeline3Text": "Ma spesso rischi fraintendimenti e non sempre funziona offline",
-      "timeline4Title": "Rischio per la salute",
-      "timeline4Text": "Un malinteso potrebbe portare a una reazione allergica (e rovinarti il viaggio)"
-    },
-    "features": {
-      "title": "La soluzione è semplice",
-      "subtitle": "AllergiApp ti permette di comunicare con chiarezza, sempre."
-    },
-    "howItWorks": {
-      "title": "Come funziona",
-      "step1Title": "Seleziona le tue allergie",
-      "step1Text": "Scegli una o più allergie dalla lista completa degli allergeni",
-      "step2Title": "Scegli la lingua",
-      "step2Text": "Imposta la lingua del paese in cui ti trovi o scaricala per usarla offline",
-      "step3Title": "Mostra la card",
-      "step3Text": "Presenta il tuo telefono al personale del ristorante con una card chiara e professionale",
-      "highlight1Title": "Card universale tradotta",
-      "highlight1Text": "Mostra una card visiva chiara con emoji, nomi e esempi di alimenti",
-      "highlight2Title": "Veloce e intuitiva",
-      "highlight2Text": "Mostra le tue allergie in secondi, anche in situazioni di emergenza",
-      "highlight3Title": "Nessuna registrazione",
-      "highlight3Text": "Per usare la card non devi creare un account: le tue allergie restano sul tuo telefono.",
-      "ctaTitle": "Provaci anche tu",
-      "ctaButton": "Scarica gratis"
-    },
-    "cardTypes": {
-      "title": "Cosa puoi comunicare",
-      "allergies": "Allergie o esigenze alimentari",
-      "vegetarian": "Diete vegetariane o vegane",
-      "pregnancy": "Gravidanza",
-      "nickel": "Allergia al nichel",
-      "histamine": "Allergia all'istamina",
-      "diabetes": "Diabete"
+      "cta": "Scopri le Card",
+      "ctaRestaurants": "Scopri i ristoranti"
     },
     "story": {
-      "title": "Perché è gratuita?",
+      "title": "Come nasce il progetto",
       "intro": "Questa app nasce da un'esperienza personale. Come persona con allergie alimentari, ho sempre amato viaggiare e scoprire nuove culture attraverso il cibo.",
       "paragraph1": "Durante i miei viaggi, ho imparato che la barriera linguistica può trasformare un'esperienza culinaria in un momento di ansia. Ho iniziato a scrivere a mano piccole card con le mie allergie, poi a stamparle, e ho scoperto quanto fossero preziose per comunicare con camerieri e chef che non parlavano la mia lingua.",
       "paragraph2": "Un gesto semplice - mostrare una card - cambiava tutto.",
@@ -78,10 +33,11 @@
       "paragraph3End": "non un privilegio. Se questa app può aiutare anche solo una persona a godersi un pasto in più durante un viaggio, avrà raggiunto il suo scopo.",
       "quoteText": "La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo anche attraverso il cibo, con serenità e con gioia.",
       "quoteAuthor": "Marta Di Muro",
-      "learnMoreButton": "Scopri di più"
+      "learnMoreButton": "Supporta il progetto",
+      "paragraph4": "Col tempo AllergiApp è cresciuta. La sezione ristoranti è nata dal desiderio di condividere i posti in cui ero stata: è partita da una semplice lista di locali ed è diventata una mappa in cui la community aggiunge ristoranti, li recensisce e aiuta chi ha le sue stesse esigenze a trovare dove mangiare, ovunque nel mondo."
     },
     "allergens": {
-      "title": "Allergeni supportati",
+      "title": "50+ allergeni supportati",
       "peanuts": "Arachidi",
       "nuts": "Frutta a guscio",
       "dairy": "Latticini",
@@ -110,12 +66,10 @@
       "contacts": "Contatti",
       "privacy": "Privacy Policy",
       "terms": "Termini di Servizio",
-      "copyright": "2026 AllergiApp. Tutti i diritti riservati."
+      "copyright": "2026 AllergiApp. Tutti i diritti riservati.",
+      "instagram": "Instagram"
     },
     "contacts": {
-      "pageTitle": "Come nasce",
-      "storyQuote": "La mia missione? Rendere il mondo più accessibile e aiutare le persone con allergie a esplorarlo attraverso il cibo, con serenità e con gioia.",
-      "storySummary": "AllergiApp nasce dalla mia esperienza personale con le allergie alimentari. Ho creato quest'app perché credo che viaggiare e gustare il cibo del mondo sia un diritto di tutti.",
       "socialCta": "I miei canali social",
       "supportTitle": "Supporta il progetto",
       "supportSubtitle1": "AllergiApp è un progetto che aiuta molte persone e per questo l'app è",
@@ -145,17 +99,9 @@
       "formNamePlaceholder": "Il tuo nome",
       "formEmailPlaceholder": "tua@email.com",
       "formMessagePlaceholder": "Come posso aiutarti?",
-      "orText": "oppure",
-      "instagramTitle": "💬 Scrivimi su Instagram",
       "instagramText": "Preferisci Instagram? Scrivimi in DM!",
       "instagramButton": "@martadimuro_",
-      "faqTitle": "Domande Frequenti",
-      "faq1Question": "Come posso segnalare un bug?",
-      "faq1Answer": "Scrivimi descrivendo il problema riscontrato. Se possibile, includi uno screenshot e indica quale dispositivo stai usando.",
-      "faq2Question": "Posso richiedere una nuova funzionalità?",
-      "faq2Answer": "Certo! Sono sempre aperta a nuove idee. Scrivimi con la tua proposta e valuterò di implementarla in futuro.",
-      "faq3Question": "Posso richiedere l'aggiunta di una lingua?",
-      "faq3Answer": "L'app include già diverse lingue di default e molte altre scaricabili per l'uso offline. Se hai bisogno di una lingua specifica che non è ancora disponibile, scrivimi e farò del mio meglio per aggiungerla."
+      "instagramTitle": "Scrivimi su Instagram"
     },
     "restaurants": {
       "badge": "Come funziona?",
@@ -165,7 +111,7 @@
       "introText": "Con la sezione <span class=\"gradient-text\">Ristoranti</span> puoi cercare locali in tutto il mondo o vicino a te, e vedere quanto possono essere compatibili con le tue esigenze alimentari.",
       "sec1Tag": "Community",
       "sec1Title": "Una community di persone come te",
-      "sec1Text": "La community fa funzionare tutto. Le esperienze segnalate sono il motore dell'app. Puoi scegliere se condividere la tua esperienza o rimanere anonimo.",
+      "sec1Text": "La community fa funzionare tutto. Le esperienze segnalate sono il motore dell'app. Puoi scegliere se condividere la tua esperienza o restare nell'anonimato.",
       "anonymousUser": "Utente Anonimo",
       "cycleGiveLabel": "Tu condividi",
       "cycleGiveText": "Le tue recensioni aiutano chi ha le tue stesse esigenze a trovare dove mangiare",
@@ -206,16 +152,17 @@
       "title": "Domande Frequenti",
       "q1": "Come funziona AllergiApp?",
       "a1": "AllergiApp ti permette di creare card personalizzate con le tue allergie e esigenze alimentari. Puoi tradurle in oltre 60 lingue e mostrarle a camerieri e chef quando viaggi all'estero, comunicando in modo chiaro ed efficace.",
+      "a1b": "Non solo la card: AllergiApp ti aiuta anche a scegliere dove mangiare. Sulla mappa dei ristoranti trovi locali in tutto il mondo già recensiti da persone con le tue stesse esigenze, e vedi subito quanto sono adatti a te.",
       "q2": "L'app funziona offline?",
       "a2": "La card e le traduzioni funzionano offline: una volta scaricate le lingue che ti servono, non serve connessione. Per cercare ristoranti e leggere le recensioni serve invece internet.",
       "q3": "Quali allergie e esigenze sono supportate?",
       "a3": "Praticamente tutte le principali. Allergeni come glutine, lattosio, uova, arachidi, frutta a guscio, pesce, crostacei, soia, sesamo e molti altri. Ma anche esigenze specifiche come diete vegetariane e vegane, gravidanza, allergia al nichel, intolleranza all'istamina e diabete.",
       "q4": "È davvero gratuita?",
-      "a4": "Sì, ed è gratuita per chi la usa: nessun acquisto in-app, nessun abbonamento, nessuna pubblicità. I ristoranti che vogliono gestire il proprio menù digitale hanno strumenti dedicati a pagamento.",
+      "a4": "Sì, ed è gratuita per chi la usa: nessun acquisto in-app, nessun abbonamento, nessuna pubblicità.",
       "a4donate": "Per mantenere l'app attiva e migliorarla continuamente, contiamo sulle donazioni volontarie.",
       "a4donateLink": "Supporta il progetto",
       "q5": "Serve registrazione?",
-      "a5": "Per la card no: scegli le tue allergie, scegli la lingua e la mostri, e le tue esigenze restano sul telefono. L'account serve solo se vuoi partecipare alla community dei ristoranti. In quel caso recensioni e nickname sono pubblici, e puoi comunque scegliere di restare anonimo.",
+      "a5": "Per la card no: scegli le tue allergie, scegli la lingua e la mostri, e le tue esigenze restano sul telefono. L'account serve solo se vuoi partecipare alla community dei ristoranti. In quel caso recensioni e nickname sono pubblici, e puoi comunque scegliere di restare nell'anonimato.",
       "q6": "Su quali dispositivi posso usarla?",
       "a6": "AllergiApp è disponibile per iPhone (iOS) e per dispositivi Android. Scaricala gratuitamente da App Store o Google Play."
     },
@@ -511,78 +458,72 @@
       "keywords": "menu digitale ristorante, menu QR code, menu allergeni, allergeni ristorante 1169, menu online ristorante, carta digitale ristorante",
       "ogTitle": "Il menù del tuo ristorante, con il filtro allergeni",
       "ogDescription": "I clienti inquadrano un QR e trovano la tua carta. Chi ha un'allergia tocca la sua e i piatti si riordinano. Provalo qui."
+    },
+    "results": {
+      "downloadsNumber": "30.000+",
+      "downloadsLabel": "download",
+      "languagesNumber": "60+",
+      "languagesLabel": "lingue disponibili"
+    },
+    "infographic": {
+      "title": "Come funziona",
+      "subtitle": "Tre passaggi e la tua card è pronta: chiara, tradotta, sempre con te.",
+      "step1Title": "Scegli le tue esigenze",
+      "step1Text": "Glutine, lattosio, uova, frutta a guscio e non solo: allergie, intolleranze o diete.",
+      "step2Title": "Scegli la lingua",
+      "step2Text": "Quella del paese in cui ti trovi. Scaricala e funziona anche senza connessione.",
+      "step3Title": "Mostra la card",
+      "step3Text": "Camerieri e chef capiscono al volo, e tu puoi mangiare con serenità.",
+      "perk1": "Nessuna registrazione",
+      "perk2": "Funziona offline",
+      "perk3": "Gratuita"
+    },
+    "homeRestaurants": {
+      "mapAlt": "Mappa del mondo con i ristoranti recensiti dalla community",
+      "title": "Trova ristoranti <span class=\"gradient-text\">adatti a te, in tutto il mondo.</span>",
+      "text": "La card ti fa capire al ristorante. Ma come scegli il posto giusto prima di sederti a tavola? Sulla mappa di AllergiApp trovi locali valutati dalle recensioni della community, cioè di persone che hanno le tue stesse esigenze, ovunque nel mondo.",
+      "button": "Scopri di più",
+      "eyebrow": "Oltre le card",
+      "step1Title": "Imposta le tue esigenze",
+      "step1Text": "Scegli allergie, intolleranze o diete: da qui in poi tutto si adatta a te.",
+      "step2Title": "Cerca un locale",
+      "step2Text": "In città o dall'altra parte del mondo: sulla mappa trovi i locali recensiti dalla community, persone con esigenze come le tue.",
+      "step3Title": "Scopri quanto fa per te",
+      "step3Text": "Ogni locale mostra quante delle tue esigenze sono già state segnalate nelle recensioni di chi le ha come te.",
+      "reviewQuote": "Staff gentilissimo, hanno capito subito le mie esigenze.",
+      "searchPlaceholder": "Roma, Italia",
+      "needsLabel": "Le tue esigenze",
+      "matchNote": "8 recensioni di persone con le tue esigenze",
+      "contributeTitle": "E puoi contribuire anche tu",
+      "contributeText": "Ti è piaciuto un ristorante? Racconta la tua esperienza: la community cresce con le recensioni, e ogni recensione aiuta chi ha le tue stesse esigenze a scegliere con serenità. Se preferisci, puoi restare nell'anonimato.",
+      "communityChip": "Community come te"
     }
   },
   "en": {
     "meta": {
-      "description": "AllergiApp - Communicate your allergies in any language. The essential app for stress-free travel with food allergies.",
-      "keywords": "allergies, food allergies, travel, allergy translation, dietary needs",
-      "ogTitle": "AllergiApp - Allergies without borders",
-      "ogDescription": "Communicate your allergies in any language when you travel",
-      "title": "AllergiApp - Communicate your allergies in any language"
+      "description": "The allergy and celiac travel card in 60+ languages, ready to show waiters and chefs abroad. Find gluten-free and allergy-friendly restaurants recommended by the community. Free and offline.",
+      "keywords": "allergy travel card, gluten free travel card, celiac travel card, food allergy app, gluten free restaurants, travel with food allergies, allergy translation card, dietary needs abroad, restaurant allergy card",
+      "ogTitle": "AllergiApp - Food Allergy & Gluten-Free Travel Card in 60+ Languages",
+      "ogDescription": "Show your translated card to waiters and chefs around the world and find restaurants that suit you. Free and offline.",
+      "title": "AllergiApp - Food Allergy & Gluten-Free Travel Card in 60+ Languages"
     },
     "nav": {
-      "features": "Features",
-      "howItWorks": "How it works",
-      "aboutUs": "The project",
-      "support": "❤️ Support",
       "download": "Download",
-      "restaurants": "Restaurants"
+      "restaurants": "Restaurants",
+      "card": "Card",
+      "contacts": "Contact",
+      "menu": "Menu"
     },
     "hero": {
       "title1": "Travel with confidence.",
       "title2": "Your needs, in every language.",
       "subtitle1": "Communicate your dietary needs in 60+ languages.",
       "subtitle2": "Show a clear, easy-to-understand card to waiters and chefs around the world.",
-      "cta": "See how it works",
-      "stat1Number": "60+",
-      "stat1Label": "Languages",
-      "stat2Number": "100%",
-      "stat2Label": "Free"
-    },
-    "problem": {
-      "title": "Sound familiar?",
-      "timeline1Title": "You're abroad, dining out",
-      "timeline1Text": "You're worried you won't be able to communicate your allergies in the local language",
-      "timeline2Title": "Language barrier",
-      "timeline2Text": "Neither you nor the waiter speak the same language",
-      "timeline3Title": "You try a translator app",
-      "timeline3Text": "But it often causes misunderstandings and doesn't always work offline",
-      "timeline4Title": "Health risk",
-      "timeline4Text": "One misunderstanding could trigger an allergic reaction and ruin your trip"
-    },
-    "features": {
-      "title": "The solution is simple",
-      "subtitle": "AllergiApp helps you communicate clearly, anywhere."
-    },
-    "howItWorks": {
-      "title": "How it works",
-      "step1Title": "Select your allergies",
-      "step1Text": "Choose one or more allergies from a comprehensive list of allergens",
-      "step2Title": "Choose your language",
-      "step2Text": "Select the language of the country you're visiting or download it for offline use",
-      "step3Title": "Show the card",
-      "step3Text": "Present your phone to restaurant staff with a clear, professional card",
-      "highlight1Title": "Universal translated card",
-      "highlight1Text": "Display a clear visual card with emojis, allergen names, and food examples",
-      "highlight2Title": "Fast and intuitive",
-      "highlight2Text": "Show your allergies in seconds, even in emergencies",
-      "highlight3Title": "No registration",
-      "highlight3Text": "You don't need an account to use the card: your allergies stay on your phone.",
-      "ctaTitle": "Try it yourself",
-      "ctaButton": "Download for free"
-    },
-    "cardTypes": {
-      "title": "What you can communicate",
-      "allergies": "Food allergies or dietary needs",
-      "vegetarian": "Vegetarian or vegan diets",
-      "pregnancy": "Pregnancy",
-      "nickel": "Nickel allergy",
-      "histamine": "Histamine intolerance",
-      "diabetes": "Diabetes"
+      "cta": "Discover the Cards",
+      "ctaRestaurants": "Discover restaurants"
     },
     "story": {
-      "title": "Why is it free?",
+      "title": "How the project started",
       "intro": "This app was born from personal experience. As someone with food allergies, I've always loved traveling and discovering new cultures through food.",
       "paragraph1": "During my travels, I learned that language barriers can turn a dining experience into a moment of anxiety. I started handwriting small cards listing my allergies, then printing them, and discovered how invaluable they were for communicating with waiters and chefs who didn't speak my language.",
       "paragraph2": "One simple gesture—showing a card—changed everything.",
@@ -592,10 +533,11 @@
       "paragraph3End": "not a privilege. If this app helps even one person enjoy an extra meal while traveling, it will have achieved its purpose.",
       "quoteText": "My mission? Make the world more accessible and help people with allergies explore it through food—with peace of mind and joy.",
       "quoteAuthor": "Marta Di Muro",
-      "learnMoreButton": "Learn more"
+      "learnMoreButton": "Support the project",
+      "paragraph4": "Over time AllergiApp has grown. The restaurants section came from my wish to share the places I had been to: it started as a simple list of venues and became a map where the community adds restaurants, reviews them and helps people with the same needs find where to eat, anywhere in the world."
     },
     "allergens": {
-      "title": "Supported allergens",
+      "title": "50+ supported allergens",
       "peanuts": "Peanuts",
       "nuts": "Tree nuts",
       "dairy": "Dairy",
@@ -624,12 +566,10 @@
       "contacts": "Contacts",
       "privacy": "Privacy Policy",
       "terms": "Terms of Service",
-      "copyright": "2026 AllergiApp. All rights reserved."
+      "copyright": "2026 AllergiApp. All rights reserved.",
+      "instagram": "Instagram"
     },
     "contacts": {
-      "pageTitle": "The story behind",
-      "storyQuote": "My mission? Make the world more accessible and help people with allergies explore it through food—with peace of mind and joy.",
-      "storySummary": "AllergiApp was born from my personal experience with food allergies. I created this app because I believe traveling and enjoying the world's food should be a right for everyone.",
       "socialCta": "My social channels",
       "supportTitle": "Support the project",
       "supportSubtitle1": "AllergiApp is a project that helps many people, which is why the app is",
@@ -659,17 +599,9 @@
       "formNamePlaceholder": "Your name",
       "formEmailPlaceholder": "your@email.com",
       "formMessagePlaceholder": "How can I help you?",
-      "orText": "or",
-      "instagramTitle": "💬 Write to me on Instagram",
       "instagramText": "Prefer Instagram? Send me a DM!",
       "instagramButton": "@martadimuro_",
-      "faqTitle": "Frequently Asked Questions",
-      "faq1Question": "How can I report a bug?",
-      "faq1Answer": "Write to me describing the issue you encountered. If possible, include a screenshot and indicate which device you're using.",
-      "faq2Question": "Can I request a new feature?",
-      "faq2Answer": "Of course! I'm always open to new ideas. Write to me with your proposal and I'll consider implementing it in the future.",
-      "faq3Question": "Can I request adding a language?",
-      "faq3Answer": "The app already includes several default languages and many more that can be downloaded for offline use. If you need a specific language that isn't available yet, write to me and I'll do my best to add it."
+      "instagramTitle": "Write to me on Instagram"
     },
     "restaurants": {
       "badge": "How does it work?",
@@ -721,12 +653,13 @@
       "title": "Frequently Asked Questions",
       "q1": "How does AllergiApp work?",
       "a1": "AllergiApp allows you to create personalized cards with your food allergies and dietary needs. You can translate them into over 60 languages and show them to waiters and chefs when traveling abroad, communicating clearly and effectively.",
+      "a1b": "Not just the card: AllergiApp also helps you choose where to eat. On the restaurant map you find places all over the world already reviewed by people with your same needs, and you see right away how well they suit you.",
       "q2": "Does the app work offline?",
       "a2": "The card and the translations work offline: once you download the languages you need, no connection is required. Searching for restaurants and reading reviews does need internet.",
       "q3": "Which allergies and dietary needs are supported?",
       "a3": "Virtually all major ones. Allergens like gluten, lactose, eggs, peanuts, tree nuts, fish, shellfish, soy, sesame, and many more. Plus specific needs like vegetarian and vegan diets, pregnancy, nickel allergy, histamine intolerance, and diabetes.",
       "q4": "Is it really free?",
-      "a4": "Yes, and it's free for the people who use it: no in-app purchases, no subscriptions, no ads. Restaurants that want to manage their digital menu have dedicated paid tools.",
+      "a4": "Yes, and it's free for the people who use it: no in-app purchases, no subscriptions, no ads.",
       "a4donate": "To keep the app running and continually improve it, we rely on voluntary donations.",
       "a4donateLink": "Support the project",
       "q5": "Do I need to register?",
@@ -1026,6 +959,45 @@
       "keywords": "digital restaurant menu, QR code menu, allergen menu, restaurant allergens 1169, online restaurant menu",
       "ogTitle": "Your restaurant menu, with an allergen filter",
       "ogDescription": "Guests scan a QR code and find your menu. Anyone with an allergy taps theirs and the dishes reorder. Try it here."
+    },
+    "results": {
+      "downloadsNumber": "30,000+",
+      "downloadsLabel": "downloads",
+      "languagesNumber": "60+",
+      "languagesLabel": "languages available"
+    },
+    "infographic": {
+      "title": "How it works",
+      "subtitle": "Three steps and your card is ready: clear, translated, always with you.",
+      "step1Title": "Choose your needs",
+      "step1Text": "Gluten, lactose, eggs, tree nuts and more: allergies, intolerances or diets.",
+      "step2Title": "Choose the language",
+      "step2Text": "The one spoken where you are. Download it and it works offline too.",
+      "step3Title": "Show your card",
+      "step3Text": "Waiters and chefs understand at a glance, and you can eat with peace of mind.",
+      "perk1": "No sign-up",
+      "perk2": "Works offline",
+      "perk3": "Free"
+    },
+    "homeRestaurants": {
+      "mapAlt": "World map with restaurants reviewed by the community",
+      "title": "Find restaurants <span class=\"gradient-text\">that suit you, all over the world.</span>",
+      "text": "The card helps you be understood at the table. But how do you pick the right place before you sit down? On the AllergiApp map you find venues rated through the reviews of the community, people who have your same needs, all over the world.",
+      "button": "Learn more",
+      "eyebrow": "Beyond the cards",
+      "step1Title": "Set your needs",
+      "step1Text": "Pick allergies, intolerances or diets: from here on, everything adapts to you.",
+      "step2Title": "Search for a place",
+      "step2Text": "In your city or on the other side of the world: the map shows places reviewed by the community, people with needs like yours.",
+      "step3Title": "See how well it suits you",
+      "step3Text": "Each place shows how many of your needs have already been reported in reviews by people who share them.",
+      "reviewQuote": "Lovely staff, they understood my needs right away.",
+      "searchPlaceholder": "Rome, Italy",
+      "needsLabel": "Your needs",
+      "matchNote": "8 reviews from people with your needs",
+      "contributeTitle": "And you can contribute too",
+      "contributeText": "Did you enjoy a restaurant? Share your experience: the community grows through reviews, and every review helps people with your same needs choose with peace of mind. You can stay anonymous, too.",
+      "communityChip": "Community like you"
     }
   }
 }
