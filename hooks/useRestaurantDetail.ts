@@ -13,6 +13,7 @@ import { useUnlockedAvatars } from '../contexts/UnlockedAvatarsContext';
 import { useReviewsPaginated } from './useReviewsPaginated';
 import { useRestaurantCollections } from './useRestaurantCollections';
 import { FavoriteNoteService } from '../services/favoriteNoteService';
+import { PartnerCardService, type PartnerCard } from '../services/partnerCardService';
 import { getDisplayName } from '../utils/getDisplayName';
 
 export interface UnifiedReview {
@@ -75,6 +76,9 @@ export function useRestaurantDetail(
   const [userReport, setUserReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [cuisineVotes, setCuisineVotes] = useState<CuisineVote[]>([]);
+  // La scheda del ristoratore: un di piu' che arriva insieme al resto e non
+  // blocca niente. null = questo ristorante non ne ha una visibile.
+  const [partnerCard, setPartnerCard] = useState<PartnerCard | null>(null);
   const loadIdRef = useRef(0);
 
   // ─── Liste custom + appartenenza (per il bottom sheet "Salva in…" e le pill) ─
@@ -123,6 +127,7 @@ export function useRestaurantDetail(
         fetchReviewsFirstPage(),
         RestaurantService.getReports(restaurantId),
         RestaurantService.getCuisineVotes(restaurantId),
+        PartnerCardService.getRestaurantCard(restaurantId),
       ]);
       const userPromise = user?.uid
         ? Promise.all([
@@ -133,13 +138,14 @@ export function useRestaurantDetail(
           ])
         : Promise.resolve([null, false, null, null] as const);
 
-      const [[rest, , rp, cv], [ur, fav, urp, noteVal]] = await Promise.all([basePromise, userPromise]);
+      const [[rest, , rp, cv, card], [ur, fav, urp, noteVal]] = await Promise.all([basePromise, userPromise]);
 
       if (loadId !== loadIdRef.current) return;
 
       setRestaurant(rest);
       setReports(rp);
       setCuisineVotes(cv);
+      setPartnerCard(card);
       setUserReview(ur);
       setIsFavorite(fav ?? false);
       setUserReport(urp);
@@ -277,6 +283,7 @@ export function useRestaurantDetail(
     isLoadingMoreReviews,
     reports,
     cuisineVotes,
+    partnerCard,
     userReview,
     userReport,
     isFavorite,
