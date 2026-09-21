@@ -686,12 +686,27 @@ export default function HomePage() {
                   il riquadro si guarda ogni giorno, e non solo aprendola. Per
                   chi è abbonato sparisce — ce l'ha, e l'ambra nella pastiglia
                   del locale lo dice già. */}
-              {!abbonato && <ProTag variant="needed" contesto="card" venueId={venue.id} />}
+              {/* Su telefono il distintivo scende sotto la pastiglia di
+                  stato (richiesta dell'utente, 21/09): accanto al titolo
+                  allargava la riga e sformava la card. Da sm in su resta
+                  qui. Due copie, una per misura, mostrate a turno. */}
+              {!abbonato && (
+                <span className="hidden sm:inline-flex">
+                  <ProTag variant="needed" contesto="card" venueId={venue.id} />
+                </span>
+              )}
             </h2>
             {/* Lo stato vero della scheda (cardState, 19/09): «attiva» solo
                 quando si vede davvero nell'app. Ambra dove si aspetta
                 qualcosa, grigio dove tocca al ristoratore. */}
-            <StatusPill stato={CARD_TONE[statoScheda]} label={d.cardState.pill[statoScheda]} />
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <StatusPill stato={CARD_TONE[statoScheda]} label={d.cardState.pill[statoScheda]} />
+              {!abbonato && (
+                <span className="sm:hidden">
+                  <ProTag variant="needed" contesto="card" venueId={venue.id} />
+                </span>
+              )}
+            </div>
           </div>
           <p className="mt-1.5 text-sm text-gray-900">{dettaglioScheda}</p>
 
