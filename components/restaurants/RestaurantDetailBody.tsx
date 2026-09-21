@@ -23,6 +23,7 @@ import RestaurantHeader from './RestaurantHeader';
 import CollectionPills from './CollectionPills';
 import SaveToCollectionSheet from './SaveToCollectionSheet';
 import ReviewsSection from './ReviewsSection';
+import PartnerCardSection from './PartnerCardSection';
 import ReportsSection from './ReportsSection';
 import PhotoGalleryModal from './PhotoGalleryModal';
 import LoginGateCta from './LoginGateCta';
@@ -77,7 +78,7 @@ export default function RestaurantDetailBody({
 
   const {
     restaurant, allReviews, reviewsTotalCount, hasMoreReviews, loadMoreReviews, isLoadingMoreReviews,
-    reports, cuisineVotes, userReview, userReport, isFavorite,
+    reports, cuisineVotes, partnerCard, userReview, userReport, isFavorite,
     isLoading, error,
     reviewSortOrder, setReviewSortOrder, hasUserNeeds, effectiveNeeds, needsOverridden,
     setFavorite, handleToggleReviewLike, navigateToContribute,
@@ -335,6 +336,17 @@ export default function RestaurantDetailBody({
             <Text style={styles.savedNoteText} numberOfLines={2}>{savedNote}</Text>
           </TouchableOpacity>
         ) : null}
+
+        {/* La scheda del ristoratore: sotto il banner della compatibilita',
+            prima delle foto della community. Chi non ha un partner non vede
+            niente — nessun riquadro vuoto, nessuna spiegazione. */}
+        {partnerCard && (
+          <PartnerCardSection
+            card={partnerCard}
+            needs={effectiveNeeds}
+            onSeeAll={() => router.push({ pathname: '/restaurants/menu', params: { restaurantId } })}
+          />
+        )}
 
         <View style={styles.photoAndMenuSection}>
           {reviewPhotos.length > 0 && (

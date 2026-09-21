@@ -220,6 +220,22 @@
     "readLess": "Mostra meno"
   },
   "restaurants": {
+    "partnerCard": {
+      "title": "Menù",
+      "seeAll": "Vedi tutto",
+      "disclaimer": "Dichiarato dal ristorante, non verificato da AllergiApp. Verifica sempre con il personale prima di ordinare.",
+      "link_booking": "Prenota",
+      "link_delivery": "Delivery",
+      "link_menu": "Menù",
+      "link_website": "Sito web",
+      "bookOnline": "Prenota online",
+      "contains": "Contiene:",
+      "containsPrefix": "Contiene",
+      "withoutPrefix": "Senza",
+      "notDeclared": "non indicato",
+      "noAllergensDeclared": "Nessuno dei 15 allergeni indicato dal ristoratore",
+      "bookByPhone": "Chiama il ristorante"
+    },
     "locationDenied": {
       "title": "Posizione non attiva",
       "message": "Per mostrarti i locali vicino a te, attiva la posizione nelle Impostazioni.",
