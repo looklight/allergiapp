@@ -35,6 +35,13 @@ export default function ProTag({
   // «Salva Pro» dell'editor): un bottone dentro un bottone non si può, e lì
   // il paywall lo apre già quello che lo contiene.
   statico = false,
+  // IN UN ANGOLO, sopra a qualcos'altro (il cerchio del logo): il distintivo
+  // si stringe e dice solo «Pro», perché «Passa a Pro» su una pastiglia da
+  // 56 pixel diventa il pezzo più grosso della riga e sposta tutto quello
+  // che ha intorno (scelta dell'utente, 21/09). Resta un bottone e apre lo
+  // stesso paywall: quello che la parola non dice più lo dicono il
+  // `title` e il nome per i lettori di schermo.
+  angolo = false,
   // Cosa si stava guardando: il paywall apre con quel beneficio
   contesto = 'look',
   // Il locale di cui si parla: con questo il paywall porta dritto al
@@ -43,6 +50,7 @@ export default function ProTag({
 }: {
   variant: 'needed' | 'active';
   statico?: boolean;
+  angolo?: boolean;
   contesto?: 'look' | 'card';
   venueId?: string;
 }) {
@@ -53,7 +61,11 @@ export default function ProTag({
     ? 'shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800'
     // Il filo viola attorno: dentro la scatola dell'aspetto, che ha il fondo
     // del colore del menù, il lilla da solo si confondeva (20/09)
-    : 'shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 ring-1 ring-inset ring-violet-300';
+    : angolo
+      // Più piccolo e con l'ombra: sta appoggiato su un'immagine, dove il
+      // filo da solo non basta a staccarlo da quello che ha sotto.
+      ? 'shrink-0 rounded-full bg-violet-100 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide leading-none text-violet-700 shadow-sm ring-1 ring-inset ring-violet-300'
+      : 'shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 ring-1 ring-inset ring-violet-300';
   // Il colore non basta: chi usa un lettore di schermo sente la parola "Pro"
   // e basta, che da sola non dice quale delle due cose sia.
   const titolo = attivo ? d.pro.activeTitle : d.pro.neededTitle;
@@ -77,9 +89,12 @@ export default function ProTag({
           setPaywall(true);
         }}
         title={titolo}
+        // Il nome per chi non vede la pastiglia resta quello lungo: «Pro» da
+        // solo non dice che è un bottone né cosa fa premendolo.
+        aria-label={angolo ? d.pro.upgrade : undefined}
         className={`${classe} cursor-pointer transition-colors hover:bg-violet-200`}
       >
-        {d.pro.upgrade}
+        {angolo ? d.pro.label : d.pro.upgrade}
       </button>
       {paywall && (
         <PaywallDialog onClose={() => setPaywall(false)} contesto={contesto} venueId={venueId} />

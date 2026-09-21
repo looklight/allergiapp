@@ -779,7 +779,20 @@ era l'unico pezzo del portale che si salvava senza dire che era a pagamento:
 si caricava un'immagine, spariva dal tavolo, e da nessuna parte c'era scritto
 perché. Adesso la copertina è un campo di `Prove` come il colore. Il logo
 resta immediato — sta nel passo del contenuto, accanto al nome, dove non c'è
-nessun Salva — e porta il **distintivo Pro sotto il cerchio**.
+nessun Salva — e porta il **distintivo Pro nell'angolo in alto a sinistra
+del cerchio**: piccolo, con scritto solo «Pro» (`angolo` su `ProTag`), e
+appoggiato sopra, così non cambia le proporzioni della riga. Provato prima
+sotto al cerchio con l'etichetta intera «Passa a Pro» ed era il pezzo più
+grosso della riga; l'angolo in alto a destra è già della ✕ che toglie il
+logo.
+
+**Compare al passaggio del mouse**, con la stessa ricetta del cestino delle
+righe del catalogo: `[@media(hover:hover)]:opacity-0` +
+`[@media(hover:hover)]:group-hover:opacity-100`. ⚠️ La prova è il
+**puntatore**, non la larghezza della finestra: dove non c'è — telefono e
+tablet — il distintivo **resta visibile**, o non lo troverebbe nessuno. Col
+fuoco da tastiera ricompare (`group-focus-within`, e non `focus-visible` come
+là, perché qui a prendere il fuoco è il bottone dentro).
 
 Il file però parte per lo Storage appena si sceglie il ritaglio, perché senza
 file l'anteprima non ha niente da mostrare: quindi **le copertine caricate

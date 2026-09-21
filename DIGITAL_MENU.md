@@ -1740,11 +1740,23 @@ quello che passava dalle prove era segnalato bene, e il buco era solo nei due ch
   locale ci finisce solo col Salva — che da adesso porta il distintivo anche per lei, e apre il
   paywall invece di salvare. È quello che l'utente aveva chiesto: «renderla salvabile come le
   altre funzioni dell'aspetto».
-- **Il logo resta immediato e prende un distintivo suo**, sotto il cerchio (scelta dell'utente
+- **Il logo resta immediato e prende un distintivo suo**, piccolo e nell'angolo del cerchio (scelta dell'utente
   fra tre strade: spostarlo nell'aspetto, lasciarlo lì col distintivo, o renderlo gratis). Sta nel
   passo del **contenuto**, accanto al nome, perché in cima al menù si leggono insieme — e lì non
   c'è nessun Salva da cui passare. ⚠️ Il distintivo **non impedisce il caricamento**: è
   un'etichetta, non un lucchetto, ed è la regola della casa da sempre (Tema 27).
+- **Un distintivo che sta in un angolo dice una parola sola.** La prima versione stava sotto al
+  cerchio e portava l'etichetta intera «Passa a Pro»: su un logo da 56 pixel diventava il pezzo
+  più grosso della riga — urlava dove doveva solo esserci — e allungando il blocco spostava il
+  logo rispetto al nome. Adesso è una pastiglia piccola appoggiata **nell'angolo in alto a
+  sinistra** (a destra c'è la ✕ che toglie il logo) con scritto solo «Pro»: non cambia le
+  proporzioni di niente. Resta un bottone e apre lo stesso paywall — quello che la parola corta
+  non dice più lo tiene il nome per i lettori di schermo.
+- **E si mostra al passaggio del mouse**, come il cestino delle righe del catalogo (15/09). ⚠️ La
+  prova è il **puntatore** e non la larghezza della finestra: su telefono e tablet non esiste un
+  "prima di premere", quindi lì il distintivo **resta visibile** — nasconderlo dietro un gesto che
+  non c'è vorrebbe dire non mostrarlo mai, proprio a chi il portale lo usa dal telefono. Col mouse
+  invece l'angolo del logo si accende tutto insieme: velatura, ✕ e distintivo.
 - **I file caricati e poi abbandonati si portano via.** La copertina parte per lo Storage appena
   si sceglie il ritaglio — senza file l'anteprima non ha niente da mostrare — quindi quelle
   caricate durante le prove si tengono in conto e si cancellano all'Annulla **e all'uscita dalla

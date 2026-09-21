@@ -49,6 +49,7 @@ import MenuAddress, { ANCORA_INDIRIZZO } from '@/components/menus/MenuAddress';
 import PaywallDialog from '@/components/PaywallDialog';
 import LiveBox from '@/components/menus/LiveBox';
 import ProTag from '@/components/ProTag';
+import { APPEARANCE_PREMIUM } from '@/lib/features';
 import PublishBar from '@/components/menus/PublishBar';
 import { usePublishState } from '@/lib/publish';
 import PhoneFrame from '@/components/preview/PhoneFrame';
@@ -601,7 +602,29 @@ export default function MenuEditorPage() {
           cliente legge, quindi è contenuto. Resta grande e si corregge sul
           posto. */}
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <LogoPicker logoUrl={brand.logoUrl} onChange={(logoUrl) => setBrand({ logoUrl })} />
+        {/* IL LOGO STA NEL CONTENUTO MA È ASPETTO. È accanto al nome perché
+            in cima al menù si vedono insieme, ma al tavolo ci arriva solo
+            con l'abbonamento (migration 718: logo e copertina sono due
+            delle undici voci dietro al muro). Senza questo distintivo era
+            l'unica voce a pagamento del portale che non lo diceva da
+            nessuna parte — si caricava un logo e non compariva, e il
+            perché non stava scritto.
+
+            NELL'ANGOLO DEL CERCHIO e piccolo, con scritto solo «Pro»
+            (scelta dell'utente, 21/09): provato prima sotto al cerchio
+            col testo intero «Passa a Pro», ed era il pezzo più grosso
+            della riga — un'etichetta che urla dove doveva solo esserci, e
+            per giunta allungava il blocco del logo spostandolo rispetto al
+            nome. Qui non cambia le proporzioni di niente. */}
+        <LogoPicker
+          logoUrl={brand.logoUrl}
+          onChange={(logoUrl) => setBrand({ logoUrl })}
+          pro={
+            APPEARANCE_PREMIUM && !abbonato ? (
+              <ProTag variant="needed" angolo venueId={locale?.id} />
+            ) : null
+          }
+        />
         <input
           type="text"
           value={brand.name}

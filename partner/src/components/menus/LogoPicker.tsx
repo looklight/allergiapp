@@ -13,7 +13,7 @@
 // riga del locale: quindi il caricamento può volerci un attimo e può fallire,
 // e tutte e due le cose si vedono — prima il cerchio cambiava e basta, perché
 // non usciva niente dal browser.
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { MAX_FILE_BYTES, PhotoError, uploadLogo, type Crop } from '@/lib/photos';
 import PhotoCropDialog from '../PhotoCropDialog';
@@ -21,9 +21,21 @@ import PhotoCropDialog from '../PhotoCropDialog';
 export default function LogoPicker({
   logoUrl,
   onChange,
+  // Quello che va appoggiato NELL'ANGOLO IN ALTO A SINISTRA del cerchio —
+  // oggi il distintivo Pro, perché al tavolo il logo ci arriva solo con
+  // l'abbonamento (migration 718). Sta appoggiato sopra e non in una riga
+  // sua: una riga in più sposterebbe il cerchio rispetto al nome, che è
+  // esattamente il difetto che questo blocco ha già risolto una volta (v.
+  // la didascalia dentro al cerchio, qui sopra).
+  //
+  // Arriva già confezionato invece che come un sì/no, così il logo non deve
+  // sapere niente di abbonamenti né di paywall: sa solo che in quell'angolo
+  // ci può stare qualcosa. L'angolo in alto a DESTRA è occupato dalla ✕.
+  pro,
 }: {
   logoUrl: string;
   onChange: (logoUrl: string) => void;
+  pro?: ReactNode;
 }) {
   const { d } = useI18n();
   const file = useRef<HTMLInputElement>(null);
@@ -81,6 +93,25 @@ export default function LogoPicker({
         />
       )}
     <div className="group relative inline-block">
+      {/* Sopra alla velatura del "Sostituisci" (z-10): senza, passandoci
+          sopra col dito il distintivo finiva sotto e non si premeva più.
+
+          COMPARE AL PASSAGGIO DEL MOUSE (scelta dell'utente, 21/09), con la
+          ricetta già usata dal cestino delle righe del catalogo: solo dove
+          c'è un puntatore (`[@media(hover:hover)]`), e dove non c'è —
+          telefono e tablet — resta visibile, o non ci sarebbe modo di
+          trovarlo. È lo stesso momento in cui compaiono la velatura e la ✕,
+          quindi l'angolo del logo si accende tutto insieme.
+
+          `group-focus-within` e non `focus-visible` come là: qui a prendere
+          il fuoco è il bottone DENTRO, e da spento è comunque raggiungibile
+          col tabulatore — senza questa riga si arriverebbe a premere un
+          bottone invisibile. */}
+      {pro && (
+        <span className="absolute -left-1 -top-1 z-10 transition-opacity group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
+          {pro}
+        </span>
+      )}
       {/* Si mostra quello che comparirà DAVVERO. Senza logo il cliente non
           vedrà niente (v. MenuPreview), quindi qui non si mette il piattino di
           AllergiApp: sarebbe una promessa che il menù non mantiene. Resta un
