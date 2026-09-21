@@ -632,6 +632,32 @@ Android (Google Maps) risolto: `customMapStyle={ANDROID_MAP_STYLE}` in `Restaura
 
 **Approccio consigliato:** valutare patch nativa iOS (1) se il fastidio giustifica la complessità.
 
+### Schermi larghi: la scheda a destra invece che dal basso (2026-09-21) — bassa priorità
+
+Su iPad in orizzontale, iPhone pieghevole o pieghevoli Android: mappa intera, e la scheda del
+ristorante che si apre come **pannello a destra** invece che a pieno schermo dal basso. Idea
+dell'utente, **da fare senza fretta**: è una build nativa su una superficie che oggi vale pochissimo
+del traffico. Cosa si è già verificato, per non rifare l'analisi:
+
+- **Il grosso c'è già**: la mappa è già a tutto schermo con ricerca, filtri, banner e scheda
+  appoggiati sopra (`app/(tabs)/restaurants.tsx`), e `RestaurantDetailSheet.tsx` è un guscio di 200
+  righe attorno a `RestaurantDetailBody.tsx`. Cambia il contenitore, non la scheda.
+- ⚠️ **Il blocco vero: oggi l'app non ruota.** `app.config.ts` ha `orientation: "portrait"` e quasi
+  ogni schermata richiama `ScreenOrientation.lockAsync(PORTRAIT_UP)` all'apertura. L'unica che ruota
+  è la card allergeni (`app/card.tsx`), che si sblocca da sola e rimette il lock all'uscita.
+- **Sbloccare solo la schermata mappa**, con lo stesso schema per-schermata già in uso: il resto
+  resta verticale e non c'è da rivedere in orizzontale schermate che nessuno ha mai visto girate.
+- **Soglia di larghezza** (~700dp, via `useWindowDimensions`): sopra la scheda va a destra, sotto
+  resta il foglio dal basso di oggi. Si ricalcola da sola alla piega — il manifest Android ha già
+  `screenSize|screenLayout` in `configChanges`, quindi niente riavvio dell'activity.
+- **Contenitore laterale** che riusa lo stesso corpo: niente snap verticali, niente trascinamento,
+  si chiude con la X. Stesso discorso per la lista "ristoranti in zona" (`NearbyListSheet.tsx`).
+- ⚠️ **Il punto delicato è il pin selezionato.** Oggi la mappa lo sposta SOPRA il foglio: su iOS con
+  uno scostamento in latitudine (`centerOn.sheetFraction`), su Android con `mapPadding.bottom` fisso
+  al 55% dell'altezza (`RestaurantMap.native.tsx`, ~riga 194). Con il pannello a destra lo
+  scostamento va girato di 90°, altrimenti il locale appena toccato finisce sotto la scheda. Il
+  commento lì avverte già che quel padding non va reso dinamico (race col tap nativo sul marker).
+
 ### Galleria avatar ("Pokedex")
 Pagina `app/restaurants/avatar-gallery.tsx` con sistema unlock già funzionante. Resta:
 - [ ] Creare le immagini per gli avatar bloccati (attualmente placeholder)
