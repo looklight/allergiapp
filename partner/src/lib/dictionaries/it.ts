@@ -209,7 +209,7 @@ const it = {
     cardSubsActiveLinked: 'Abbonamento attivo: la scheda è visibile nell’app.',
     cardInReview: 'Locale associato: la scheda comparirà nell’app dopo un breve controllo del nostro team.',
     cardSubsManage: 'Gestisci abbonamento',
-    cardEmpty: 'Ancora niente dentro',
+    cardEmpty: 'Nessun link o piatto inserito.',
     cardOpen: 'Apri la scheda',
     dishesChosen: 'piatti scelti',
     dishChosen: 'piatto scelto',

@@ -153,7 +153,7 @@ const en: typeof it = {
     cardSubsActiveLinked: 'Subscription active: your listing is visible in the app.',
     cardInReview: 'Venue linked: the listing will appear in the app after a quick check by our team.',
     cardSubsManage: 'Manage subscription',
-    cardEmpty: 'Nothing in it yet',
+    cardEmpty: 'No links or dishes added yet.',
     cardOpen: 'Open the listing',
     dishesChosen: 'dishes chosen',
     dishChosen: 'dish chosen',
