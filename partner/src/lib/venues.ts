@@ -360,19 +360,15 @@ function toLinks(righe: any[]): DraftLinks {
 // vincolo che rifiuta un link senza indirizzo (tranne la prenotazione col
 // telefono), e comunque una riga vuota non è un link.
 //
-// ⚠️ OGNI RIGA PORTA IL SUO sort_order, anche quelle che sono una sola
-// (prenotazione e sito). Il valore di partenza della colonna non basta: le
-// righe si scrivono in un colpo solo, e in una scrittura multipla PostgREST
-// mette insieme le colonne di TUTTE le righe — quelle a cui il campo manca
-// diventano NULL, non il valore di partenza, e la colonna non lo ammette.
-// Si vedeva solo salvando insieme una prenotazione (senza) e un delivery
-// (con): da soli funzionavano tutti e due.
-function fromLinks(venueId: string, links: DraftLinks) {
+// Le righe vanno a `partner_save_links` (732), che le scrive tutte insieme o
+// nessuna: il locale non resta mai senza link. Il locale non si ripete su
+// ogni riga — lo sa la funzione — e `sort_order` c'e' sempre, anche dove non
+// conta (prenotazione e sito sono uno solo).
+function fromLinks(links: DraftLinks) {
   const righe: Record<string, unknown>[] = [];
   const booking = links.booking;
   if (booking.url.trim() !== '' || booking.phone.trim() !== '') {
     righe.push({
-      venue_id: venueId,
       kind: 'booking',
       url: booking.url.trim() || null,
       phone: booking.phone.trim() || null,
@@ -380,12 +376,11 @@ function fromLinks(venueId: string, links: DraftLinks) {
     });
   }
   if (links.website.trim() !== '') {
-    righe.push({ venue_id: venueId, kind: 'website', url: links.website.trim(), sort_order: 0 });
+    righe.push({ kind: 'website', url: links.website.trim(), sort_order: 0 });
   }
   links.deliveries.forEach((del, i) => {
     if (del.url.trim() === '') return;
     righe.push({
-      venue_id: venueId,
       kind: 'delivery',
       url: del.url.trim(),
       provider: del.provider || null,
@@ -396,7 +391,6 @@ function fromLinks(venueId: string, links: DraftLinks) {
   links.menus.forEach((menu, i) => {
     if (menu.url.trim() === '') return;
     righe.push({
-      venue_id: venueId,
       kind: 'menu',
       url: menu.url.trim(),
       language: menu.language || null,
@@ -407,7 +401,6 @@ function fromLinks(venueId: string, links: DraftLinks) {
     const url = social.url.trim();
     if (url === '') return;
     righe.push({
-      venue_id: venueId,
       kind: 'social',
       url,
       // Il servizio si RICALCOLA qui, a ogni salvataggio, invece di
@@ -551,7 +544,7 @@ onForget(() => ultimoSalvato.clear());
 // conta, e calcolare la differenza costerebbe più di quanto faccia risparmiare.
 // Quello che si evita è riscrivere un blocco che non è stato toccato affatto.
 async function saveVenueContent(venue: Venue) {
-  const righe = fromLinks(venue.id, venue.links);
+  const righe = fromLinks(venue.links);
   const nome = venue.venueName;
   const link = JSON.stringify(righe);
   const condizioni = venue.tableConditions;
@@ -596,20 +589,15 @@ async function saveVenueContent(venue: Venue) {
   }
 
   if (precedente?.link !== link) {
-    const { error: cancellati } = await write(
-      'cancellazione link',
-      () => supabase.from('partner_links').delete().eq('venue_id', venue.id),
-      `link-cancella:${venue.id}`
+    // UN GESTO SOLO (732). Prima erano due viaggi — cancella tutto, poi
+    // riscrivi — e fra l'uno e l'altro il locale era senza link: se il
+    // secondo non arrivava, quello restava lo stato finale.
+    const { error } = await write(
+      'scrittura link',
+      () => supabase.rpc('partner_save_links', { p_venue_id: venue.id, p_links: righe }),
+      `link:${venue.id}`
     );
-    let scritti = null;
-    if (righe.length > 0) {
-      ({ error: scritti } = await write(
-        'scrittura link',
-        () => supabase.from('partner_links').insert(righe),
-        `link-scrivi:${venue.id}`
-      ));
-    }
-    if (!cancellati && !scritti) fatto.link = link;
+    if (!error) fatto.link = link;
   }
 
   ultimoSalvato.set(venue.id, fatto);
@@ -774,7 +762,7 @@ async function scriviPiattiDb(venueId: string, dishIds: string[], on: boolean) {
 // con cui si scrivono, e l'insieme dei piatti. Mai pubblicata: ha modifiche
 // se c'è qualcosa da mostrare.
 function linkDellaScheda(links: DraftLinks): string {
-  return JSON.stringify(fromLinks('', { ...links, socials: [] }));
+  return JSON.stringify(fromLinks({ ...links, socials: [] }));
 }
 
 export function cardHasChanges(venue: Venue): boolean {
@@ -1027,9 +1015,11 @@ export function useVenues() {
           cover_url: venue.coverUrl || null,
         })
     );
-    const righe = fromLinks(venue.id, venue.links);
+    const righe = fromLinks(venue.links);
     if (righe.length > 0) {
-      await write('ripristino link', () => supabase.from('partner_links').insert(righe));
+      await write('ripristino link', () =>
+        supabase.rpc('partner_save_links', { p_venue_id: venue.id, p_links: righe })
+      );
     }
     // I piatti scelti per la scheda stanno sul locale (715): tornano con lui,
     // che la scheda ci sia o no
