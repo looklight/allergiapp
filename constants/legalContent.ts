@@ -117,7 +117,7 @@ Recensioni, voti, foto e informazioni sui ristoranti che frequenti.
 - No contenuti promozionali o falsi
 
 ### Licenza
-Pubblicando contenuti ci autorizzi a mostrarli nell'app. Puoi modificarli o rimuoverli in qualsiasi momento.
+Pubblicando contenuti ci concedi una licenza non esclusiva e gratuita per mostrarli e distribuirli nei nostri servizi, presenti e futuri. Resti titolare di quello che scrivi: puoi modificarlo o rimuoverlo in qualsiasi momento, e la rimozione vale ovunque il contenuto sia mostrato.
 
 ### Moderazione
 Possiamo rimuovere contenuti che violano queste regole e sospendere account, anche senza preavviso in caso di violazioni gravi.
@@ -264,7 +264,7 @@ Reviews, votes, photos, and restaurant information based on your personal experi
 - No promotional or false content
 
 ### License
-By posting content, you allow us to show it in the app. You can edit or remove it at any time.
+By posting content, you grant us a non-exclusive, free licence to show and distribute it across our services, present and future. You remain the owner of what you write: you can edit or remove it at any time, and removal applies everywhere the content is shown.
 
 ### Moderation
 We can remove content that violates these rules and suspend accounts, even without notice in case of serious violations.
