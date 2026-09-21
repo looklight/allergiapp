@@ -666,9 +666,11 @@ export default function VenueEditorPage() {
             tablet in su. */}
         {/* Nello stile del banner «Nessun piatto scelto» (21/09): fondo grigio
             chiaro, icona ambra, testo piccolo; l'ambra torna nelle frecce e
-            nel filo delle caselle, che sono l'unico altro colore. */}
+            nel filo delle caselle, che sono l'unico altro colore. Col bordo
+            grigio delle card della pagina, così si legge come un riquadro
+            (richiesta dell'utente, 21/09). */}
         {mostraRichiamo && (
-          <div className="mt-5 flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-[13px] text-gray-700">
+          <div className="mt-5 flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-[13px] text-gray-700">
             <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <path d="M12 8v5M12 16.5v.01" />

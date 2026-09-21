@@ -38,7 +38,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <SaveStatus />
               <div className="flex min-h-screen">
                 <Nav />
-                <main className="flex-1 pb-bottom-nav">
+                {/* min-w-0: un elemento di una flex row non scende sotto la
+                    larghezza del suo contenuto, e una fila che scorre da sé
+                    (le categorie in Piatti: chip che non si stringono) allargava
+                    la colonna intera fino alla somma dei chip — su telefono la
+                    pagina si muoveva di lato (21/09). Con min-w-0 la colonna
+                    resta larga quanto lo schermo e scorre solo la fila. */}
+                <main className="min-w-0 flex-1 pb-bottom-nav">
                   {/* Più aria in cima che in fondo: i titoli attaccati al
                       bordo sembravano schiacciati (richiesta dell'utente,
                       15/09) */}
