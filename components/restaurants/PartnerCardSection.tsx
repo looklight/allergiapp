@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { View, ScrollView, FlatList, Image, TouchableOpacity, StyleSheet, Linking, Modal, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolate, runOnJS } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAppContext } from '../../contexts/AppContext';
 import type { AppTheme } from '../../constants/theme';
 import i18n from '../../utils/i18n';
 import { categoryName } from '../../constants/dishCategories';
@@ -37,12 +40,21 @@ const LINK_STYLES: Record<PartnerLinkKind, { bg: string; fg: string; bgDark: str
 
 const LINK_ORDER: PartnerLinkKind[] = ['booking', 'delivery', 'menu', 'website'];
 
+// I servizi di delivery si chiamano col loro nome (copia di
+// partner/src/lib/providers.ts): sono nomi propri, non si traducono.
+const DELIVERY_NAMES: Record<string, string> = {
+  glovo: 'Glovo',
+  deliveroo: 'Deliveroo',
+  justeat: 'Just Eat',
+  ubereats: 'Uber Eats',
+};
+
 type Props = {
   card: PartnerCard;
   /** Esigenze di chi guarda: riordinano il carosello e colorano i pallini. */
   needs: ViewerNeeds;
-  /** Apre la schermata con tutti i piatti. */
-  onSeeAll: () => void;
+  /** Apre la schermata con tutti i piatti; con un piatto, lo apre gia' aperto. */
+  onSeeAll: (dishId?: string) => void;
 };
 
 export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
@@ -53,6 +65,14 @@ export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
   // scelta si fa qui.
   const [choice, setChoice] = useState<PartnerCardLink[] | null>(null);
 
+  // L'avviso si comporta come quello delle recensioni: la ⓘ accanto al titolo
+  // lo apre e lo chiude, «Nascondi» lo mette via per sempre. Chi l'ha gia'
+  // letto una volta non se lo ritrova addosso a ogni ristorante — e nella
+  // schermata «Vedi tutto», dove i piatti si leggono davvero uno per uno,
+  // resta scritto comunque.
+  const { settings, dismissMenuDisclaimer } = useAppContext();
+  const [noticeOpen, setNoticeOpen] = useState(!(settings.menuDisclaimerDismissed ?? false));
+
   const pills = useMemo(() => buildPills(card.links), [card.links]);
 
   const carousel = useMemo(
@@ -62,8 +82,18 @@ export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
   const hidden = card.dishes.length - carousel.length;
 
   const open = (link: PartnerCardLink) => {
-    const target = link.kind === 'booking' && !link.url ? `tel:${link.phone}` : link.url;
-    if (target) Linking.openURL(target).catch(() => {});
+    // Il numero come lo ha scritto il ristoratore puo' avere spazi e
+    // parentesi: `tel:` non li digerisce su Android.
+    if (link.kind === 'booking' && !link.url) {
+      const numero = link.phone.replace(/[^\d+]/g, '');
+      if (numero) Linking.openURL(`tel:${numero}`).catch(() => {});
+      return;
+    }
+    if (!link.url) return;
+    // Un indirizzo salvato senza «https://» non si apre e il tocco sembra
+    // rotto: il portale normalizza, ma qui non costa niente assicurarsene.
+    const url = /^[a-z][a-z0-9+.-]*:/i.test(link.url) ? link.url : `https://${link.url}`;
+    Linking.openURL(url).catch(() => {});
   };
 
   const onPillPress = (group: PartnerCardLink[]) => {
@@ -84,9 +114,11 @@ export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
                 key={kind}
                 style={[styles.pill, { backgroundColor: bg }]}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t(`restaurants.partnerCard.link_${kind}`)}
                 onPress={() => onPillPress(group)}
               >
-                <MaterialCommunityIcons name={c.icon} size={14} color={fg} />
+                <MaterialCommunityIcons name={c.icon} size={16} color={fg} />
                 <Text style={[styles.pillLabel, { color: fg }]}>
                   {i18n.t(`restaurants.partnerCard.link_${kind}`)}
                 </Text>
@@ -104,15 +136,36 @@ export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
               <Text style={styles.title}>
                 {i18n.t('restaurants.partnerCard.title')} ({card.dishes.length})
               </Text>
-              <TouchableOpacity style={styles.seeAll} activeOpacity={0.7} onPress={onSeeAll}>
+              <TouchableOpacity
+                onPress={() => setNoticeOpen((v) => !v)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <MaterialCommunityIcons
+                  name="information-outline"
+                  size={16}
+                  color={noticeOpen ? theme.colors.primary : theme.colors.textDisabled}
+                />
+              </TouchableOpacity>
+              <View style={styles.titleSpacer} />
+              <TouchableOpacity style={styles.seeAll} activeOpacity={0.7} onPress={() => onSeeAll()}>
                 <Text style={styles.seeAllText}>{i18n.t('restaurants.partnerCard.seeAll')}</Text>
                 <MaterialCommunityIcons name="chevron-right" size={16} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
 
-            {/* Stesso trattamento del disclaimer delle recensioni: piccolo,
-                grigio, senza riquadro. Detto una volta, non su ogni piatto. */}
-            <Text style={styles.disclaimer}>{i18n.t('restaurants.partnerCard.disclaimer')}</Text>
+            {noticeOpen && (
+              <TouchableOpacity
+                style={styles.disclaimerBox}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                onPress={() => { setNoticeOpen(false); void dismissMenuDisclaimer(); }}
+              >
+                <Text style={styles.disclaimer}>
+                  {i18n.t('restaurants.partnerCard.disclaimer')}{' '}
+                  <Text style={styles.disclaimerHide}>{i18n.t('restaurants.partnerCard.hide')}</Text>
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <FlatList
               data={carousel}
@@ -124,11 +177,17 @@ export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
               initialNumToRender={4}
               windowSize={3}
               renderItem={({ item }) => (
-                <DishCircle dish={item} needs={needs} styles={styles} theme={theme} onPress={onSeeAll} />
+                <DishCircle
+                  dish={item}
+                  needs={needs}
+                  styles={styles}
+                  theme={theme}
+                  onPress={() => onSeeAll(item.id)}
+                />
               )}
               ListFooterComponent={
                 hidden > 0 ? (
-                  <TouchableOpacity style={styles.dish} activeOpacity={0.7} onPress={onSeeAll}>
+                  <TouchableOpacity style={styles.dish} activeOpacity={0.7} onPress={() => onSeeAll()}>
                     <View style={[styles.photo, styles.morePhoto]}>
                       <Text style={styles.moreCount}>+{hidden}</Text>
                     </View>
@@ -141,26 +200,17 @@ export default function PartnerCardSection({ card, needs, onSeeAll }: Props) {
               }
             />
           </View>
+          {/* Chiusa anche sotto: i piatti sono una sezione a se', come «La tua
+              opinione» e «Recensioni», non un pezzo appeso alle foto. */}
+          <View style={styles.separator} />
         </>
       )}
 
-      <Modal visible={choice !== null} transparent animationType="fade" onRequestClose={() => setChoice(null)} statusBarTranslucent>
-        <Pressable style={styles.backdrop} onPress={() => setChoice(null)}>
-          <Pressable style={styles.sheet}>
-            {(choice ?? []).map((link, i) => (
-              <TouchableOpacity
-                key={`${link.kind}-${i}`}
-                style={styles.sheetRow}
-                activeOpacity={0.7}
-                onPress={() => { setChoice(null); open(link); }}
-              >
-                <Text style={styles.sheetLabel}>{choiceLabel(link)}</Text>
-                <MaterialCommunityIcons name="open-in-new" size={16} color={theme.colors.textSecondary} />
-              </TouchableOpacity>
-            ))}
-          </Pressable>
-        </Pressable>
-      </Modal>
+      <ChoiceSheet
+        choice={choice}
+        onPick={(link) => open(link)}
+        onClose={() => setChoice(null)}
+      />
     </View>
   );
 }
@@ -227,6 +277,16 @@ function buildPills(links: PartnerCardLink[]): { kind: PartnerLinkKind; group: P
   for (const kind of LINK_ORDER) {
     let group = links.filter((l) => l.kind === kind && (l.url !== '' || l.phone !== ''));
     if (group.length === 0) continue;
+    // LA PRENOTAZIONE ARRIVA IN UNA RIGA SOLA anche quando il ristoratore ha
+    // dato tutti e due i modi (sito e telefono): il database la tiene cosi'.
+    // Qui diventa due scelte, o il telefono non lo chiamerebbe mai nessuno.
+    if (kind === 'booking') {
+      group = group.flatMap((l) =>
+        l.url !== '' && l.phone !== ''
+          ? [{ ...l, phone: '' }, { ...l, url: '' }]
+          : [l],
+      );
+    }
     if (kind === 'menu' && group.length > 1) {
       const mine = group.find((l) => l.language === i18n.locale) ?? group.find((l) => l.language === '');
       group = [mine ?? group[0]];
@@ -236,16 +296,116 @@ function buildPills(links: PartnerCardLink[]): { kind: PartnerLinkKind; group: P
   return out;
 }
 
-/** Cosa si legge nella finestra di scelta: il servizio, o come si prenota. */
-function choiceLabel(link: PartnerCardLink): string {
-  if (link.label) return link.label;
-  if (link.provider) return link.provider;
-  if (link.kind === 'booking') {
-    return link.url
-      ? i18n.t('restaurants.partnerCard.bookOnline')
-      : i18n.t('restaurants.partnerCard.bookByPhone');
+/**
+ * Cosa si legge, e con che icona, in ogni riga della scelta. Come
+ * nell'anteprima del portale: il delivery col nome del servizio, la
+ * prenotazione al telefono col NUMERO — che e' l'informazione utile, non
+ * «chiama il ristorante».
+ */
+function choiceRow(link: PartnerCardLink): {
+  label: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+} {
+  if (link.kind === 'booking' && link.url === '') {
+    return { label: link.phone, icon: 'phone-outline' };
   }
-  return i18n.t(`restaurants.partnerCard.link_${link.kind}`);
+  if (link.kind === 'booking') {
+    return { label: i18n.t('restaurants.partnerCard.bookOnline'), icon: LINK_STYLES.booking.icon };
+  }
+  if (link.kind === 'delivery') {
+    const nome =
+      (link.provider !== 'other' ? DELIVERY_NAMES[link.provider] : '') ||
+      link.label ||
+      i18n.t('restaurants.partnerCard.link_delivery');
+    return { label: nome, icon: LINK_STYLES.delivery.icon };
+  }
+  return {
+    label: link.label || i18n.t(`restaurants.partnerCard.link_${link.kind}`),
+    icon: LINK_STYLES[link.kind].icon,
+  };
+}
+
+/**
+ * LA SCELTA, quando una pill porta a piu' posti: tre servizi di delivery, o
+ * una prenotazione che si puo' fare online e al telefono.
+ *
+ * Stesso stampo degli altri fogli dell'app (ShareProfileSheet,
+ * ListEditorSheet, SaveToCollectionSheet): la finestra nativa non anima
+ * niente, sale il solo pannello mentre il velo sfuma. L'animazione nativa di
+ * iOS portava su anche la sua ombra, e si vedeva.
+ */
+function ChoiceSheet({
+  choice, onPick, onClose,
+}: {
+  choice: PartnerCardLink[] | null;
+  onPick: (link: PartnerCardLink) => void;
+  onClose: () => void;
+}) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const insets = useSafeAreaInsets();
+  const visible = choice !== null;
+
+  const progress = useSharedValue(0);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const finishClose = useCallback(() => onCloseRef.current(), []);
+
+  const overlayStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  const contentStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [400, 0]) }],
+  }));
+
+  useEffect(() => {
+    if (!visible) return;
+    progress.value = 0;
+    progress.value = withTiming(1, { duration: 280 });
+  }, [visible, progress]);
+
+  const close = useCallback(() => {
+    progress.value = withTiming(0, { duration: 200 }, (finished) => {
+      if (finished) runOnJS(finishClose)();
+    });
+  }, [progress, finishClose]);
+
+  return (
+    <Modal visible={visible} animationType="none" transparent statusBarTranslucent onRequestClose={close}>
+      <View style={styles.sheetContainer}>
+        <Animated.View style={[styles.sheetOverlay, overlayStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={close} />
+        </Animated.View>
+
+        <Animated.View
+          style={[styles.sheetContent, { paddingBottom: insets.bottom + theme.spacing.md }, contentStyle]}
+        >
+          {/* La maniglia dice «questo foglio e' salito dal basso», come
+              nell'anteprima del portale. Niente titolo: si arriva qui da una
+              pill che dice gia' cosa stai facendo, e le righe si leggono da
+              sole (il nome del servizio, il numero di telefono). */}
+          <View style={styles.sheetGrabber} />
+
+          {(choice ?? []).map((link, i) => {
+            const riga = choiceRow(link);
+            const tinta = theme.dark ? LINK_STYLES[link.kind].fgDark : LINK_STYLES[link.kind].fg;
+            return (
+              <TouchableOpacity
+                key={`${link.kind}-${i}`}
+                style={[styles.sheetRow, i > 0 && styles.sheetRowDivided]}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={riga.label}
+                onPress={() => { onPick(link); close(); }}
+              >
+                <MaterialCommunityIcons name={riga.icon} size={20} color={tinta} />
+                <Text style={styles.sheetLabel}>{riga.label}</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.textDisabled} />
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
+      </View>
+    </Modal>
+  );
 }
 
 const makeStyles = (theme: AppTheme) => StyleSheet.create({
@@ -253,35 +413,49 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   pillRow: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
-    paddingHorizontal: 16,
-    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.sm,
+    // Sotto c'e' il filo che apre la sezione dei piatti: senza questo stacco
+    // le pill gli si appoggiavano sopra.
+    paddingBottom: theme.spacing.md,
   },
+  // Sono BOTTONI, non etichette: portano fuori dall'app (prenoti, ordini,
+  // apri il sito). Piu' alti delle pill delle liste anche perche' 26 punti
+  // erano un bersaglio piccolo per un dito.
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 11,
-    borderRadius: 14,
+    gap: 6,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 18,
   },
-  pillLabel: { fontSize: 12, fontWeight: '500' },
+  pillLabel: { fontSize: 13, fontWeight: '600' },
 
   separator: { height: 8, backgroundColor: theme.colors.detailMuted },
 
   dishes: { paddingTop: 12, paddingBottom: 16 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
-  title: { flex: 1, fontSize: 16, fontWeight: '600', color: theme.colors.textPrimary },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: theme.spacing.lg },
+  title: { fontSize: 16, fontWeight: '600', color: theme.colors.textPrimary },
+  titleSpacer: { flex: 1 },
   seeAll: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   seeAllText: { fontSize: 13, fontWeight: '500', color: theme.colors.primary },
+  // Le stesse misure dell'avviso delle recensioni (ReviewsSection)
+  disclaimerBox: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
   disclaimer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
     fontSize: 11,
     lineHeight: 15,
     color: theme.colors.textDisabled,
   },
+  disclaimerHide: {
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
 
-  carousel: { gap: 8, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
+  carousel: { gap: theme.spacing.sm, paddingHorizontal: theme.spacing.lg, paddingTop: 8, paddingBottom: 4 },
   dish: { width: DISH_SIZE },
   photo: {
     width: DISH_SIZE,
@@ -320,20 +494,37 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   moreRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2, marginTop: 5 },
   moreLabel: { fontSize: 12, fontWeight: '600', lineHeight: 15, color: theme.colors.primary },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingVertical: 8,
-    paddingBottom: 28,
+  // Le stesse misure degli altri fogli dell'app
+  sheetContainer: { flex: 1, justifyContent: 'flex-end' },
+  sheetOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.overlay },
+  sheetContent: {
+    backgroundColor: theme.colors.detailSurface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
+  sheetGrabber: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.border,
+    alignSelf: 'center',
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  // Righe alte: sono l'unica cosa da premere in questo foglio, e il dito non
+  // deve cercarle.
   sheetRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
   },
-  sheetLabel: { fontSize: 15, color: theme.colors.textPrimary },
+  sheetRowDivided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.colors.border },
+  sheetLabel: { flex: 1, fontSize: 16, fontWeight: '500', color: theme.colors.textPrimary },
 });

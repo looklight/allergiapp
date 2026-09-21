@@ -148,6 +148,8 @@ export interface UserSettings {
   appLanguage: AppLanguage;
   /** L'utente ha scelto "Nascondi" sul disclaimer recensioni: non auto-aprirlo più. */
   reviewsDisclaimerDismissed?: boolean;
+  /** Avviso sui piatti del ristoratore: nascosto una volta, resta nascosto. */
+  menuDisclaimerDismissed?: boolean;
   /** Sezione mostrata all'apertura dell'app da chiusa. Default 'card'. */
   defaultTab?: DefaultTab;
 }

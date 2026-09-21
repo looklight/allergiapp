@@ -224,6 +224,7 @@
       "title": "Menù",
       "seeAll": "Vedi tutto",
       "disclaimer": "Dichiarato dal ristorante, non verificato da AllergiApp. Verifica sempre con il personale prima di ordinare.",
+      "hide": "Nascondi",
       "link_booking": "Prenota",
       "link_delivery": "Delivery",
       "link_menu": "Menù",
@@ -234,7 +235,9 @@
       "withoutPrefix": "Senza",
       "notDeclared": "non indicato",
       "noAllergensDeclared": "Nessuno dei 15 allergeni indicato dal ristoratore",
-      "bookByPhone": "Chiama il ristorante"
+      "allergensTitle": "Allergeni dichiarati",
+      "dietsTitle": "Adatto a",
+      "notesTitle": "Note"
     },
     "locationDenied": {
       "title": "Posizione non attiva",
@@ -358,6 +361,7 @@
         "placeholder": "Aggiungi una nota personale"
       },
       "notFound": "Locale non trovato.",
+      "customerPhotos": "Foto dei clienti",
       "noReviews": "Nessuna recensione",
       "directions": "Apri in Google Maps",
       "mapsError": "Impossibile aprire Maps",

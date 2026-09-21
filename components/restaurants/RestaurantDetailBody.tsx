@@ -344,11 +344,24 @@ export default function RestaurantDetailBody({
           <PartnerCardSection
             card={partnerCard}
             needs={effectiveNeeds}
-            onSeeAll={() => router.push({ pathname: '/restaurants/menu', params: { restaurantId } })}
+            onSeeAll={(dishId) =>
+              router.push({
+                pathname: '/restaurants/menu',
+                params: dishId ? { restaurantId, dishId } : { restaurantId },
+              })
+            }
           />
         )}
 
         <View style={styles.photoAndMenuSection}>
+          {/* Il titolo compare solo quando sopra ci sono i piatti del
+              ristoratore: senza di loro queste sono le uniche foto della
+              scheda e non serve dire di chi sono. */}
+          {reviewPhotos.length > 0 && (partnerCard?.dishes.length ?? 0) > 0 && (
+            <Text style={styles.communityPhotosTitle}>
+              {i18n.t('restaurants.detail.customerPhotos')}
+            </Text>
+          )}
           {reviewPhotos.length > 0 && (
               <FlatList
                 data={reviewPhotos.slice(0, MAX_CAROUSEL_PHOTOS)}
@@ -631,6 +644,13 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   },
   photoAndMenuSection: {
     backgroundColor: theme.colors.detailSurface,
+  },
+  communityPhotosTitle: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   photoThumb: {
     width: THUMB_SIZE,

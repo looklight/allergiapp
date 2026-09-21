@@ -939,12 +939,51 @@ Ricadute tecniche (già riportate nella bozza 700):
 > davvero. Scheda in app e risposte alle recensioni viaggiano insieme, in una
 > build nativa.
 
-> **Dove siamo (19/09):** passi 1 e 2 FATTI. Del passo 5 è **fatta e online
+> **Dove siamo (21/09):** passi 1 e 2 FATTI. Del passo 5 è **fatta e online
 > l'associazione** (parti 1-3: database 721-726, portale, dashboard admin),
-> col visto del nostro team prima che una scheda si veda. Resta la **parte 4,
-> l'app** (scheda letta dall'app, contorno del pin, risposte alle recensioni,
-> `ORDER BY is_premium` neutralizzato), che chiede la build nativa. Da fare
-> anche il passo 3 (ristoratori veri) e il 4 (fatturazione, commercialista).
+> col visto del nostro team prima che una scheda si veda. Della **parte 4,
+> l'app**, è scritta la scheda: la 731 fa da sportello unico, il riquadro e la
+> schermata «Vedi tutto» sono in `main` e girano sul simulatore — non sono
+> ancora uscite, perché chiedono una build nativa. Restano, nella stessa
+> build: **contorno del pin**, **risposte alle recensioni** e `ORDER BY
+> is_premium` neutralizzato. Da fare anche il passo 3 (ristoratori veri) e il
+> 4 (fatturazione, commercialista).
+
+> **La scheda nell'app, com'è venuta (21/09).** L'anteprima del portale
+> (`SchedaPreview`) era il disegno: si è trascritta, non riprogettata. Ordine
+> nella scheda del ristorante: banner della compatibilità → **pill dei
+> collegamenti** → sezione **Menù (N)** chiusa da un filo sopra e sotto, come
+> «La tua opinione» e «Recensioni» → **Foto dei clienti** (il titolo compare
+> solo quando sopra ci sono i piatti: senza, quelle sono le uniche foto della
+> scheda) → il resto.
+>
+> Quello che si è deciso strada facendo, guardandola girare:
+> - **L'avviso si comporta come quello delle recensioni**: ⓘ accanto al
+>   titolo, «Nascondi» che se lo ricorda (`menuDisclaimerDismissed`). Nella
+>   schermata «Vedi tutto» resta invece sempre scritto: il carosello è
+>   un'occhiata, quella schermata è dove uno decide se ordinare.
+> - **Il piatto si apre**, con la stessa finestra del menù al tavolo (popup al
+>   centro, foto 4:3, freccine ‹ › fra un piatto e l'altro) e con TUTTI gli
+>   allergeni dichiarati, non solo quelli di chi guarda. Dal carosello si
+>   arriva direttamente al piatto toccato.
+> - **La scelta fra più destinazioni** (tre delivery, o prenotazione online e
+>   telefono) è un foglio che sale dal basso, con lo stampo degli altri fogli
+>   dell'app (`ShareProfileSheet`, `ListEditorSheet`): niente animazione
+>   nativa, che porta su anche l'ombra. Senza titolo: ci si arriva da una pill
+>   che dice già cosa stai facendo. Il telefono mostra il NUMERO.
+> - **Le pill dei collegamenti sono bottoni**, non etichette: portano fuori
+>   dall'app, quindi 13 semigrassetto e ~35 punti di altezza.
+> - **Le foto**: solo miniature nelle liste, la grande solo aprendo il piatto.
+>   La 731 tiene le due misure separate senza ripiego, così una lista non può
+>   scaricare i 900px nemmeno per sbaglio.
+> - **Categorie e note dei piatti** sono copie gemelle del portale in
+>   `constants/` (le note senza icone: quelle restano di là finché non è
+>   deciso come si vedono qui).
+> - **Le stringhe stanno solo in it/en**: l'area ristoranti dell'app non
+>   esiste nelle altre quattro lingue, che ripiegano sull'inglese.
+> - **Filo aperto**: la 731 restituisce anche `menuSlug` (l'indirizzo del menù
+>   al tavolo, solo se online) e l'app non lo usa. O gli si dà un posto nella
+>   scheda, o si smette di chiederlo.
 
 **Passo 1 — le fondamenta, tutte lato web** ✅ FATTO il 16/09 (nessun
 incasso, nessun obbligo nuovo)

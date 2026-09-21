@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, FlatList, ScrollView, Image, TouchableOpacity, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
@@ -11,7 +11,6 @@ import { dishCompat, type DishCompat, type ViewerNeeds } from '../../utils/partn
 import { DISH_CATEGORIES, categoryName } from '../../constants/dishCategories';
 import { sortNotes, noteName } from '../../constants/dishNotes';
 import { getRestrictionById } from '../../constants/foodRestrictions';
-import ImageFullscreenModal from '../../components/ImageFullscreenModal';
 import AppHeader from '../components/AppHeader';
 import i18n from '../../utils/i18n';
 import type { Language } from '../../types';
@@ -34,12 +33,16 @@ export default function PartnerMenuScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
-  const { restaurantId } = useLocalSearchParams<{ restaurantId: string }>();
+  // dishId: si arriva qui toccando un piatto nel carosello della scheda, e
+  // quel piatto si apre da solo. Senza, si atterra sulla lista.
+  const { restaurantId, dishId } = useLocalSearchParams<{ restaurantId: string; dishId?: string }>();
   const { dietaryNeeds } = useAuth();
 
   const [dishes, setDishes] = useState<PartnerCardDish[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [fullscreen, setFullscreen] = useState<string | null>(null);
+  // Il piatto aperto, come posizione nella lista stesa: da li' le freccine
+  // sanno qual e' quello prima e quello dopo.
+  const [openAt, setOpenAt] = useState<number | null>(null);
 
   const needs: ViewerNeeds = useMemo(
     () => ({ allergens: dietaryNeeds.allergens ?? [], diets: dietaryNeeds.diets ?? [] }),
@@ -68,6 +71,17 @@ export default function PartnerMenuScreen() {
     ];
   }, [dishes]);
 
+  // La lista stesa in una fila sola, nell'ordine in cui si legge.
+  const inFila = useMemo(() => groups.flatMap((g) => g.dishes), [groups]);
+
+  useEffect(() => {
+    if (!dishId || inFila.length === 0) return;
+    const i = inFila.findIndex((d) => d.id === dishId);
+    if (i >= 0) setOpenAt(i);
+    // solo all'arrivo: richiuso il piatto, non si riapre da solo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dishId, inFila.length]);
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -86,7 +100,13 @@ export default function PartnerMenuScreen() {
           keyExtractor={(g) => g.code || 'none'}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
-            <Text style={styles.disclaimer}>{i18n.t('restaurants.partnerCard.disclaimer')}</Text>
+            // Senza piatti non c'e' niente da avvisare: succede solo se la
+            // scheda sparisce fra un tocco e l'altro (abbonamento scaduto,
+            // collegamento sospeso), e un avviso da solo su una pagina vuota
+            // sarebbe peggio del vuoto.
+            groups.length === 0 ? null : (
+              <Text style={styles.disclaimer}>{i18n.t('restaurants.partnerCard.disclaimer')}</Text>
+            )
           }
           renderItem={({ item: group }) => (
             <View style={styles.group}>
@@ -102,7 +122,7 @@ export default function PartnerMenuScreen() {
                   first={i === 0}
                   styles={styles}
                   theme={theme}
-                  onPhotoPress={() => dish.photoUrl && setFullscreen(dish.photoUrl)}
+                  onPress={() => setOpenAt(inFila.findIndex((d) => d.id === dish.id))}
                 />
               ))}
             </View>
@@ -110,17 +130,156 @@ export default function PartnerMenuScreen() {
         />
       )}
 
-      <ImageFullscreenModal
-        visible={fullscreen !== null}
-        imageUrl={fullscreen}
-        onClose={() => setFullscreen(null)}
-      />
+      {openAt !== null && inFila[openAt] && (
+        <DishDetail
+          dish={inFila[openAt]}
+          needs={needs}
+          styles={styles}
+          theme={theme}
+          onPrev={openAt > 0 ? () => setOpenAt(openAt - 1) : null}
+          onNext={openAt < inFila.length - 1 ? () => setOpenAt(openAt + 1) : null}
+          onClose={() => setOpenAt(null)}
+        />
+      )}
     </View>
   );
 }
 
+/**
+ * IL PIATTO APERTO. Serve perche' la riga della lista mostra quello che
+ * riguarda chi guarda, mentre qui c'e' TUTTO: la foto grande, la descrizione
+ * intera, e soprattutto l'elenco completo degli allergeni dichiarati — chi ha
+ * un'allergia vuole controllare la lista intera prima di ordinare, non solo
+ * il pezzo che lo riguarda.
+ *
+ * E' la stessa finestra del menu' al tavolo (partner: DishDetailSheet): un
+ * popup al centro, la foto 4:3 cosi' gli allergeni stanno nella stessa
+ * schermata del piatto, e le freccine per passare al piatto prima o dopo —
+ * chi legge un menu' confronta due o tre piatti, e senza di quelle ogni
+ * confronto costa chiudi-scorri-riapri.
+ */
+function DishDetail({
+  dish, needs, styles, theme, onPrev, onNext, onClose,
+}: {
+  dish: PartnerCardDish;
+  needs: ViewerNeeds;
+  styles: ReturnType<typeof makeStyles>;
+  theme: AppTheme;
+  onPrev: (() => void) | null;
+  onNext: (() => void) | null;
+  onClose: () => void;
+}) {
+  const lang = i18n.locale as Language;
+  const nome = (code: string) => getRestrictionById(code)?.translations[lang] ?? code;
+  const daEvitare = new Set(needs.allergens.filter((c) => dish.allergens.includes(c)));
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <View style={styles.detailBackdrop}>
+        {/* Il velo e' un fratello della finestra, non suo genitore: un
+            Pressable senza onPress non trattiene il tocco, e toccare la
+            finestra chiudeva il piatto. */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={styles.detailCard}>
+          {/* I comandi restano in vista: la X di un popup che se ne va in
+              cima e' la X che non si trova piu'. */}
+          <View style={styles.detailBar}>
+            <Comando icon="chevron-left" onPress={onPrev} theme={theme} styles={styles} />
+            <Comando icon="chevron-right" onPress={onNext} theme={theme} styles={styles} />
+            <View style={styles.titleSpacer} />
+            <Comando icon="close" onPress={onClose} theme={theme} styles={styles} />
+          </View>
+
+          <ScrollView contentContainerStyle={styles.detailBody}>
+            {dish.photoUrl !== '' && (
+              <Image source={{ uri: dish.photoUrl }} style={styles.detailPhoto} resizeMode="cover" />
+            )}
+            <Text style={styles.detailName}>{dish.name}</Text>
+            {dish.description.trim() !== '' && (
+              <Text style={styles.detailDescription}>{dish.description}</Text>
+            )}
+
+            <Text style={styles.detailLabel}>{i18n.t('restaurants.partnerCard.allergensTitle')}</Text>
+            {dish.allergens.length === 0 ? (
+              <Text style={styles.detailEmpty}>{i18n.t('restaurants.partnerCard.noAllergensDeclared')}</Text>
+            ) : (
+              <View style={styles.detailChips}>
+                {dish.allergens.map((code) => {
+                  // In ambra solo quelli che riguardano chi guarda: gli altri
+                  // restano neutri, non e' colpa loro.
+                  const evitare = daEvitare.has(code);
+                  return (
+                    <View key={code} style={[styles.pill, evitare ? styles.pillAmber : styles.pillGray]}>
+                      <Text style={evitare ? styles.pillAmberText : styles.pillGrayText}>{nome(code)}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
+            {dish.diets.length > 0 && (
+              <>
+                <Text style={styles.detailLabel}>{i18n.t('restaurants.partnerCard.dietsTitle')}</Text>
+                <View style={styles.detailChips}>
+                  {dish.diets.map((code) => (
+                    <View key={code} style={[styles.pill, styles.pillGreen]}>
+                      <MaterialCommunityIcons name="check" size={11} color={theme.colors.success} />
+                      <Text style={styles.pillGreenText}>{nome(code)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* Le note ULTIME, dopo le compatibilita': prima a chi va bene il
+                piatto, poi com'e' fatto. */}
+            {dish.notes.length > 0 && (
+              <>
+                <Text style={styles.detailLabel}>{i18n.t('restaurants.partnerCard.notesTitle')}</Text>
+                <View style={styles.detailChips}>
+                  {sortNotes(dish.notes).map((code) => (
+                    <View key={code} style={[styles.pill, styles.pillGray]}>
+                      <Text style={styles.pillGrayText}>{noteName(code, i18n.locale)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// Le freccine non spariscono mai: si spengono. Arrivati in fondo, l'altra si
+// sposterebbe sotto il dito.
+function Comando({
+  icon, onPress, theme, styles,
+}: {
+  icon: 'chevron-left' | 'chevron-right' | 'close';
+  onPress: (() => void) | null;
+  theme: AppTheme;
+  styles: ReturnType<typeof makeStyles>;
+}) {
+  return (
+    <TouchableOpacity
+      style={styles.detailCommand}
+      onPress={onPress ?? undefined}
+      disabled={onPress === null}
+      activeOpacity={0.6}
+    >
+      <MaterialCommunityIcons
+        name={icon}
+        size={22}
+        color={onPress === null ? theme.colors.textDisabled : theme.colors.textPrimary}
+      />
+    </TouchableOpacity>
+  );
+}
+
 function DishRow({
-  dish, compat, needs, first, styles, theme, onPhotoPress,
+  dish, compat, needs, first, styles, theme, onPress,
 }: {
   dish: PartnerCardDish;
   compat: DishCompat | null;
@@ -128,11 +287,17 @@ function DishRow({
   first: boolean;
   styles: ReturnType<typeof makeStyles>;
   theme: AppTheme;
-  onPhotoPress: () => void;
+  onPress: () => void;
 }) {
   return (
-    <View style={[styles.row, !first && styles.rowDivided]}>
-      <TouchableOpacity activeOpacity={dish.photoUrl ? 0.8 : 1} onPress={onPhotoPress} disabled={!dish.photoUrl}>
+    <TouchableOpacity
+      style={[styles.row, !first && styles.rowDivided]}
+      activeOpacity={0.7}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={dish.name}
+    >
+      <View>
         {dish.thumbUrl ? (
           <Image
             source={{ uri: dish.thumbUrl }}
@@ -143,7 +308,7 @@ function DishRow({
             <MaterialCommunityIcons name="silverware-fork-knife" size={22} color={theme.colors.textDisabled} />
           </View>
         )}
-      </TouchableOpacity>
+      </View>
 
       <View style={styles.rowBody}>
         <Text style={styles.dishName}>{dish.name}</Text>
@@ -154,7 +319,7 @@ function DishRow({
           <DishPills dish={dish} compat={compat} needs={needs} styles={styles} theme={theme} />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -297,4 +462,36 @@ const makeStyles = (theme: AppTheme) => StyleSheet.create({
   pillGreenText: { fontSize: 11, fontWeight: '500', color: theme.colors.success },
   pillGray: { backgroundColor: theme.colors.surfaceMuted, borderWidth: 1, borderColor: theme.colors.border },
   pillGrayText: { fontSize: 11, fontWeight: '500', color: theme.colors.textDisabled },
+
+  titleSpacer: { flex: 1 },
+  detailBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+  },
+  detailCard: {
+    width: '100%',
+    maxHeight: '100%',
+    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+    overflow: 'hidden',
+  },
+  detailBar: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: 8, paddingTop: 8 },
+  detailCommand: { padding: 6 },
+  detailBody: { paddingHorizontal: 16, paddingBottom: 20 },
+  detailPhoto: { width: '100%', aspectRatio: 4 / 3, borderRadius: 12, backgroundColor: theme.colors.surfaceMuted },
+  detailName: { marginTop: 12, fontSize: 19, fontWeight: '600', color: theme.colors.textPrimary },
+  detailDescription: { marginTop: 6, fontSize: 15, lineHeight: 21, color: theme.colors.textSecondary },
+  detailLabel: {
+    marginTop: 14,
+    fontSize: 10,
+    fontWeight: '500',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: theme.colors.textDisabled,
+  },
+  detailEmpty: { marginTop: 4, fontSize: 15, color: theme.colors.textSecondary },
+  detailChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
 });
