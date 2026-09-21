@@ -759,10 +759,34 @@ Aspetto in `BrandBar`, e compare solo se c'è qualcosa da annullare. ⚠️ Vale
 **solo per l'aspetto** e non va "completato" con l'annullamento del
 contenuto: i fatti dei piatti stanno nel catalogo, condiviso con la scheda
 AllergiApp, e riportarli indietro vorrebbe dire disfare una correzione di
-allergeni. Quando l'aspetto diventerà premium, il muro va in
-`build_public_menu()` e non sul bottone Pubblica — altrimenti un allergene
-corretto resta fermo perché qualcuno ha provato un carattere che non ha
+allergeni. **Dal 2026-09-16 l'aspetto È premium** e il muro sta dove era
+previsto: in `build_public_menu()` via `venue_appearance_public()`
+(migration 718), **non** sul bottone Pubblica — altrimenti un allergene
+corretto resterebbe fermo perché qualcuno ha provato un carattere che non ha
 pagato.
+
+**LE PROVE DELL'ASPETTO** (19/09). Le manopole della scatola non scrivono a
+ogni tocco: cambiano l'**anteprima** e finiscono nella bozza del locale solo
+col **«Salva»**, che porta il distintivo Pro quando fra le prove c'è qualcosa
+che al tavolo arriva con l'abbonamento (e allora apre il paywall invece di
+salvare). L'elenco di cosa è "Pro" sta in `proveConPro`
+(`src/app/menu/[id]/page.tsx`) e **deve restare il complemento delle due voci
+gratis della 718** — foto e descrizioni dei piatti, che sono contenuto.
+
+⚠️ **La copertina ci passa dal 2026-09-21, il logo no.** Erano rimasti fuori
+tutti e due perché sono caricamenti di file e non manopole, e il risultato
+era l'unico pezzo del portale che si salvava senza dire che era a pagamento:
+si caricava un'immagine, spariva dal tavolo, e da nessuna parte c'era scritto
+perché. Adesso la copertina è un campo di `Prove` come il colore. Il logo
+resta immediato — sta nel passo del contenuto, accanto al nome, dove non c'è
+nessun Salva — e porta il **distintivo Pro sotto il cerchio**.
+
+Il file però parte per lo Storage appena si sceglie il ritaglio, perché senza
+file l'anteprima non ha niente da mostrare: quindi **le copertine caricate
+durante le prove si tengono in conto** (`copertineProvate`) e quelle che il
+Salva non prende si cancellano all'Annulla e all'uscita dalla pagina. È lo
+stesso conto che tiene `DishForm` per le foto dei piatti, e per lo stesso
+motivo: dalla pagina si esce anche col tasto indietro.
 
 **L'indirizzo del menù c'è dal 2026-09-01** (migration 707, applicata il
 02/09) ed è **attivo e pubblico dal 02/09**: in fondo all'editor una card

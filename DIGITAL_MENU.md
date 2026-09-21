@@ -1713,6 +1713,52 @@ propri, e il rimando reciproco fra `/r/` e `/v/`.
 
 ---
 
+### 2026-09-21 — Tema 37: Le due immagini erano l'unico pezzo a pagamento che non lo diceva
+
+**L'osservazione dell'utente**: la copertina si carica senza passare dal «Salva Pro» come tutte le
+altre voci dell'aspetto, e poi al tavolo non compare.
+
+**Era vero, e il buco era largo quanto due voci.** Il muro dell'aspetto (718) blocca undici campi
+su tredici, e fra quegli undici ci sono `logoUrl` e `coverUrl`. Ma quei due, nel portale, erano
+rimasti **gesti immediati** da quando l'aspetto si salvava a ogni tocco: si sceglie il ritaglio e
+la riga è già scritta. Risultato, per un locale senza abbonamento:
+
+- si carica un'immagine e **nessuno dice che è a pagamento** — il distintivo Pro sta sul «Salva»,
+  e lì non si passava;
+- al tavolo non arriva, perché lo scatto pesca dai valori di partenza;
+- e **non compare nemmeno l'avviso «modifiche non pubblicate»**: `menu_publish_state` confronta
+  l'aspetto *pubblico* con lo scatto, e per chi non paga sono tutti e due i default. Zero segnali,
+  in nessun punto. L'unica voce a pagamento del portale che non lo diceva da nessuna parte.
+
+**La prova che il resto era in ordine**: l'elenco che accende il distintivo sul Salva erano nove
+campi, il muro ne blocca undici. La differenza erano **esattamente** logo e copertina — cioè tutto
+quello che passava dalle prove era segnalato bene, e il buco era solo nei due che le saltavano.
+
+**Deciso:**
+
+- **La copertina entra nelle prove**, come il colore: si carica, la si vede nell'anteprima, e nel
+  locale ci finisce solo col Salva — che da adesso porta il distintivo anche per lei, e apre il
+  paywall invece di salvare. È quello che l'utente aveva chiesto: «renderla salvabile come le
+  altre funzioni dell'aspetto».
+- **Il logo resta immediato e prende un distintivo suo**, sotto il cerchio (scelta dell'utente
+  fra tre strade: spostarlo nell'aspetto, lasciarlo lì col distintivo, o renderlo gratis). Sta nel
+  passo del **contenuto**, accanto al nome, perché in cima al menù si leggono insieme — e lì non
+  c'è nessun Salva da cui passare. ⚠️ Il distintivo **non impedisce il caricamento**: è
+  un'etichetta, non un lucchetto, ed è la regola della casa da sempre (Tema 27).
+- **I file caricati e poi abbandonati si portano via.** La copertina parte per lo Storage appena
+  si sceglie il ritaglio — senza file l'anteprima non ha niente da mostrare — quindi quelle
+  caricate durante le prove si tengono in conto e si cancellano all'Annulla **e all'uscita dalla
+  pagina**: dall'editor si esce anche col tasto indietro. Stesso conto che la maschera del piatto
+  tiene per le sue foto.
+
+**Rimasto com'è, e con la sua ragione**: eliminare un singolo locale **non** cancella logo e
+copertina dallo Storage. C'è l'annullamento — il locale torna con id, logo e copertina — quindi i
+file devono sopravvivere alla finestra dell'undo, e la cascata dell'eliminazione dell'account
+(`delete-account` porta via l'intera cartella `<userId>/`) copre il caso finale. Una macchina per
+cancellarli dopo il toast costerebbe più dei byte che salva.
+
+---
+
 ## Prossimo passo
 
 **Aggiornato il 2026-09-15.** Il menù al tavolo è in produzione da `allergiapp.com/v/<slug>` (era `/menu/<slug>` fino al

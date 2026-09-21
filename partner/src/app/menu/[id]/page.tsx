@@ -4,7 +4,7 @@
 // Tutta la logica di struttura sta in menus.ts come funzioni pure: qui si
 // compone la modifica e si passa il risultato a save(), così non c'è uno
 // stato locale che possa divergere da quello mostrato.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fill, useI18n } from '@/lib/i18n';
@@ -13,6 +13,7 @@ import { useModal } from '@/lib/useModal';
 import { useDishes, type Dish } from '@/lib/dishes';
 import { DEFAULT_ACCENT, type MenuBrand } from '@/lib/menuBrand';
 import { useVenues, type Venue } from '@/lib/venues';
+import { deleteCover } from '@/lib/photos';
 import {
   addDishes,
   addNote,
@@ -68,6 +69,9 @@ type Prove = {
   textScale: Venue['textScale'];
   lineHeight: Venue['lineHeight'];
   allergenDisplay: Venue['allergenDisplay'];
+  // La copertina è una prova come le altre, anche se dietro c'è un file:
+  // quello che si prova qui è l'indirizzo, non il caricamento (v. onCover).
+  coverUrl: string;
   currency: string;
 };
 
@@ -123,10 +127,23 @@ export default function MenuEditorPage() {
   // riquadro dell'aspetto non scrivono più a ogni tocco: cambiano
   // l'ANTEPRIMA, e finiscono nella bozza del locale solo premendo Salva.
   // Due passi in fila, come se li aspetta chi guarda: prima salvo le
-  // modifiche, poi le pubblico. Logo e copertina restano immediati: sono
-  // caricamenti di file, non manopole.
+  // modifiche, poi le pubblico. Dal 21/09 ci passa anche la COPERTINA: era
+  // rimasta immediata perché è un caricamento di file, ma per chi guarda è
+  // una scelta d'aspetto come le altre — e senza il Salva non prendeva
+  // nemmeno il distintivo Pro, cioè si caricava un'immagine che al tavolo
+  // non sarebbe mai arrivata senza che niente lo dicesse. Il logo resta
+  // immediato: sta nel passo del contenuto, accanto al nome, e ha un
+  // distintivo suo.
   // null = nessuna prova in corso, si guarda quello che è salvato.
   const [prove, setProve] = useState<Prove | null>(null);
+  // LE COPERTINE CARICATE MENTRE SI PROVA. Il file parte per lo Storage
+  // appena si sceglie il ritaglio — senza file l'anteprima non avrebbe
+  // niente da mostrare — ma nel locale ci finisce solo col Salva. Quelle che
+  // il Salva non prende non sono di nessuno, e vanno portate via: è lo
+  // stesso conto che tiene la maschera del piatto per le sue foto
+  // (DishForm). La lista si svuota sia salvando sia annullando, quindi
+  // quello che ci resta dentro è per definizione un file abbandonato.
+  const copertineProvate = useRef<string[]>([]);
   const [paywall, setPaywall] = useState(false);
   // L'interruttore della pubblicazione che lampeggia per un attimo, quando
   // ci si arriva dal bottone in cima
@@ -177,6 +194,16 @@ export default function MenuEditorPage() {
   // "Nuova sezione" e non si vede succedere niente. Su telefono è la
   // differenza fra un bottone che funziona e uno che sembra rotto.
   const [appenaCreata, setAppenaCreata] = useState<string | null>(null);
+
+  // Dalla pagina si esce anche senza toccare Annulla — il menù di un altro
+  // locale, il tasto indietro — e una copertina caricata per sbaglio non
+  // deve restare sullo Storage per la strada scelta per uscire.
+  useEffect(
+    () => () => {
+      for (const url of copertineProvate.current) void deleteCover(url);
+    },
+    []
+  );
 
   // Si aspetta che la sezione sia RESA, non solo salvata: `save` cambia lo
   // stato e la nuova scheda compare al giro dopo. Se il nodo non c'è ancora
@@ -265,6 +292,7 @@ export default function MenuEditorPage() {
     textScale: locale?.textScale ?? 'normal',
     lineHeight: locale?.lineHeight ?? 'normal',
     allergenDisplay: locale?.allergenDisplay ?? 'text',
+    coverUrl: locale?.coverUrl ?? '',
     currency: menu.currency,
   };
   const vista = prove ?? salvato;
@@ -273,11 +301,22 @@ export default function MenuEditorPage() {
   const proveConPro =
     prove !== null &&
     (['accent', 'menuLayout', 'dishSeparator', 'dishPhotoShape', 'sectionStyle',
-      'headingFont', 'textScale', 'lineHeight', 'allergenDisplay'] as const)
+      'headingFont', 'textScale', 'lineHeight', 'allergenDisplay', 'coverUrl'] as const)
       .some((k) => prove[k] !== salvato[k]);
 
   function tocca(patch: Partial<Prove>) {
     setProve({ ...vista, ...patch });
+  }
+
+  // Le copertine caricate durante le prove che NON restano: si portano via.
+  // `tenere` è quella che ha vinto — la salvata, o quella di prima se si è
+  // annullato. La vecchia copertina del locale non passa di qui: quella la
+  // cancella setIdentity, e solo se la riga è stata scritta davvero.
+  function scartaCopertine(tenere: string) {
+    for (const url of copertineProvate.current) {
+      if (url !== tenere) void deleteCover(url);
+    }
+    copertineProvate.current = [];
   }
 
   // SALVA: le prove diventano la bozza del locale, in una scrittura sola.
@@ -287,6 +326,14 @@ export default function MenuEditorPage() {
     const { currency, ...aspetto } = prove;
     setIdentity(locale.id, aspetto);
     if (currency !== menu.currency) save(setMenuCurrency(menu, currency));
+    scartaCopertine(prove.coverUrl);
+    setProve(null);
+  }
+
+  // ANNULLA: si torna a quello che è salvato, e le copertine caricate nel
+  // frattempo non sono di nessuno.
+  function annullaProve() {
+    scartaCopertine(locale?.coverUrl ?? '');
     setProve(null);
   }
 
@@ -365,7 +412,7 @@ export default function MenuEditorPage() {
       siblings={fratelli}
       dishes={catalogo}
       brand={brand}
-      coverUrl={locale?.coverUrl ?? ''}
+      coverUrl={vista.coverUrl}
       venueName={brand.name.trim() || d.preview.venueName}
       tableConditions={locale?.tableConditions ?? ''}
       socials={locale?.links.socials ?? []}
@@ -518,7 +565,7 @@ export default function MenuEditorPage() {
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              onClick={() => setProve(null)}
+              onClick={annullaProve}
               className="rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
             >
               {d.common.cancel}
@@ -910,7 +957,7 @@ export default function MenuEditorPage() {
           haSezioni={menu.sections.some(
             (s) => s.kind === 'section' && s.name.trim() !== ''
           )}
-          coverUrl={locale?.coverUrl ?? ''}
+          coverUrl={vista.coverUrl}
           changed={pubblicazione.stato?.appearanceChanged ?? false}
           esempio={vuoto ? { acceso: esempio, cambia: () => setEsempio(!esempio) } : null}
           onRevert={() => setRevertingBrand(true)}
@@ -928,7 +975,13 @@ export default function MenuEditorPage() {
           onTextScale={(textScale) => tocca({ textScale })}
           onLineHeight={(lineHeight) => tocca({ lineHeight })}
           onAllergenDisplay={(allergenDisplay) => tocca({ allergenDisplay })}
-          onCover={(coverUrl) => locale && setIdentity(locale.id, { coverUrl })}
+          // Il file è già sullo Storage quando arriva qui (serve
+          // all'anteprima): si segna in lista, così se il Salva non lo
+          // prende sappiamo quale portare via.
+          onCover={(coverUrl) => {
+            if (coverUrl !== '') copertineProvate.current.push(coverUrl);
+            tocca({ coverUrl });
+          }}
           socials={locale?.links.socials ?? []}
           // I link non sono aspetto e non passano da setIdentity: sono righe
           // di partner_links, e si salvano come gli altri link del locale.
