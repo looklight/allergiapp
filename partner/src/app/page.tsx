@@ -714,26 +714,14 @@ export default function HomePage() {
             {rigaScheda}
           </p>
 
-          {/* IL PASSO CHE MANCA DIVENTA IL BOTTONE (richiesta dell'utente,
-              19/09): con qualcosa dentro la scheda e il locale non ancora
-              associato, l'azione del giorno è associarlo — «Apri la scheda»
-              scende a link. Senza abbonamento il bottone porta prima agli
-              abbonamenti, che è anche dove portava «Gestisci abbonamento».
-              Associato il locale, si torna com'era. */}
+          {/* SEMPRE LO STESSO BOTTONE (richiesta dell'utente, 21/09): «Apri
+              la scheda». Il 19/09 diventava «Associa il ristorante» appena la
+              scheda aveva qualcosa dentro, e il bottone cambiava sotto gli
+              occhi dopo una modifica. L'associazione si fa da dentro la
+              scheda, dove la riga in cima e il riquadro in fondo la portano. */}
           <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
-            {(statoScheda === 'none' || statoScheda === 'rejected' || statoScheda === 'closed') && pezziScheda.length > 0 ? (
-              <>
-                <PrimaryLink href={abbonato ? `/locale/${venue.id}/collega` : '/abbonamenti'}>
-                  {d.editor.linkBoxCta}
-                </PrimaryLink>
-                <SecondaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</SecondaryLink>
-              </>
-            ) : (
-              <>
-                <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
-                <SecondaryLink href="/abbonamenti">{d.dashboard.cardSubsManage}</SecondaryLink>
-              </>
-            )}
+            <PrimaryLink href={`/locale/${venue.id}`}>{d.dashboard.cardOpen}</PrimaryLink>
+            <SecondaryLink href="/abbonamenti">{d.dashboard.cardSubsManage}</SecondaryLink>
           </div>
         </section>
       </div>

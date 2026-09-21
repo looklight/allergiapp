@@ -188,8 +188,11 @@ const en: typeof it = {
   editor: {
     title: 'AllergiApp listing',
     intro:
-      'The page of {venue} inside the app: links and contacts on one side, the dishes you choose on the other. The preview shows how it will look.',
+      'The page of {venue} inside AllergiApp: links and contacts on one side, the dishes you choose on the other. The preview shows how it will look.',
     goToLink: 'Restaurant link',
+    step1Title: 'Add links and contacts',
+    step2Title: 'Choose the dishes',
+    step3Title: 'Link the restaurant',
     stepsTitle: 'To show the listing in the app',
     stepPrepare: 'Prepare links and dishes below: you can start right away',
     stepSubscribe: 'Activate the venue’s subscription',

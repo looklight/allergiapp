@@ -53,6 +53,7 @@ import { APPEARANCE_PREMIUM } from '@/lib/features';
 import PublishBar from '@/components/menus/PublishBar';
 import { usePublishState } from '@/lib/publish';
 import PhoneFrame from '@/components/preview/PhoneFrame';
+import Passo from '@/components/StepHeading';
 import { DISH_CATEGORIES, categoryName } from '@/lib/categories';
 
 // Le manopole del riquadro dell'aspetto mentre si provano: gli stessi campi
@@ -75,25 +76,6 @@ type Prove = {
   coverUrl: string;
   currency: string;
 };
-
-// L'INTESTAZIONE DI UN PASSO: numero, titolo e una riga che dice cosa si fa.
-// Stessa forma dei passi della finestra «Nuovo locale», perché è lo stesso
-// modo di raccontare: si fa questo, poi quello.
-function Passo({ n, titolo, primo = false }: { n: number; titolo: string; primo?: boolean }) {
-  return (
-    // Il primo non ha la riga sopra né lo stacco grande: sopra c'è già la
-    // riga fissa della pubblicazione, e i due spazi si sommavano in un vuoto
-    // che non c'entrava con le altre pagine (20/09).
-    <div className={primo ? 'mb-4 mt-5' : 'mt-10 mb-4 border-t border-gray-200 pt-4'}>
-      {/* Stessa riga in maiuscoletto grigio delle altre sezioni del portale
-          («Aspetto del menù», «Online»), col numero davanti: si legge come
-          una sezione, e il numero dice in che ordine si fanno. */}
-      <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
-        {n} · {titolo}
-      </h2>
-    </div>
-  );
-}
 
 export default function MenuEditorPage() {
   const { id } = useParams<{ id: string }>();

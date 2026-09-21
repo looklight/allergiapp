@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -26,6 +26,7 @@ import SchedaPreview, { NO_VIEWER, type ViewerNeeds } from '@/components/preview
 import CardDishesSelector from '@/components/CardDishesSelector';
 import CardPublishBar from '@/components/CardPublishBar';
 import { PageIntro, PageTitle } from '@/components/PageHeading';
+import Passo from '@/components/StepHeading';
 
 function ViewerChips({
   viewer,
@@ -216,12 +217,18 @@ function MobilePreview({
       role="dialog"
       aria-modal="true"
       aria-label={d.editor.previewButton}
+      // Un tocco fuori dall'anteprima la chiude, oltre a «Chiudi» e a Esc:
+      // tutto quello che sta dentro (interruttori e telefono) è segnato con
+      // data-anteprima, il resto è sfondo.
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest('[data-anteprima]')) onClose();
+      }}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/75 p-4 outline-none lg:hidden"
     >
-      <div className="w-full max-w-[380px]">
+      <div data-anteprima className="w-full max-w-[380px]">
         <ViewerChips viewer={viewer} onToggle={onToggleViewer} compact />
       </div>
-      <div className="max-h-full origin-center scale-[0.85] overflow-visible sm:scale-100">
+      <div data-anteprima className="max-h-full origin-center scale-[0.85] overflow-visible sm:scale-100">
         <PhoneFrame>{children}</PhoneFrame>
       </div>
       <button
@@ -628,7 +635,7 @@ export default function VenueEditorPage() {
           </a>
         </div>
         {/* Senza il richiamo qui sotto, lo stacco dal contenuto lo dà la frase */}
-        <PageIntro className={mostraRichiamo ? '' : 'mb-10 md:mb-12'}>
+        <PageIntro>
           {fraseIntro[0]}
           <span className="font-medium text-gray-900">{venue.venueName.trim() || d.home.unnamed}</span>
           {fraseIntro[1]}
@@ -650,44 +657,45 @@ export default function VenueEditorPage() {
             L'abbonamento è nominato fra i passi, ma il collegamento resta
             neutro («Vedi l'abbonamento», non «Attiva»): per la scelta del
             15/09. Il passo fatto ha la spunta. */}
-        {/* Stessa forma della riga «Nessun piatto scelto» nella sezione dei
-            piatti: fondo grigio chiaro, icona ambra, testo piccolo. È
-            un'informazione, non un riquadro da guardare prima di tutto. */}
+        {/* IL PERCORSO IN UN BOX (richiesta dell'utente, 21/09): i tre passi
+            per andare online stanno in un riquadro che si distingue dal
+            resto, in sequenza con le frecce e SENZA numeri — i numeri sono
+            delle tre sezioni qui sotto (Passo), come nell'editor del menù, e
+            due serie di numeri diversi si confonderebbero. Il passo fatto ha
+            la spunta. In colonna su telefono (freccia in giù), in fila da
+            tablet in su. */}
         {mostraRichiamo && (
-          <div className="mb-10 mt-5 flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-[13px] text-gray-700 md:mb-12">
-            <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 8v5M12 16.5v.01" />
-            </svg>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-gray-900">{d.editor.stepsTitle}</p>
-              <ol className="mt-1 space-y-0.5 text-gray-600">
-                {[
-                  { testo: d.editor.stepPrepare, fatto: false },
-                  { testo: d.editor.stepSubscribe, fatto: abbonato },
-                  { testo: d.editor.stepLink, fatto: false },
-                ].map(({ testo, fatto }, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="flex w-4 shrink-0 justify-center text-gray-400">
-                      {fatto ? (
-                        <svg className="mt-0.5 h-3.5 w-3.5 text-[#4CAF50]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M5 12.5l4.5 4.5L19 7.5" />
-                        </svg>
-                      ) : (
-                        `${i + 1}.`
-                      )}
-                    </span>
-                    {testo}
+          <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+            <p className="text-sm font-medium text-gray-900">{d.editor.stepsTitle}</p>
+            <ol className="mt-3 flex flex-col gap-2 text-[13px] text-gray-700 sm:flex-row sm:items-stretch">
+              {[
+                { testo: d.editor.stepPrepare, fatto: false },
+                { testo: d.editor.stepSubscribe, fatto: abbonato },
+                { testo: d.editor.stepLink, fatto: false },
+              ].map(({ testo, fatto }, i) => (
+                <Fragment key={i}>
+                  {i > 0 && (
+                    <svg className="mx-auto h-4 w-4 shrink-0 rotate-90 self-center text-gray-400 sm:rotate-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  )}
+                  <li className="flex flex-1 items-start gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5">
+                    {fatto && (
+                      <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4CAF50]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    )}
+                    <span>{testo}</span>
                   </li>
-                ))}
-              </ol>
-              <Link
-                href={verso}
-                className="mt-1.5 inline-block font-medium text-gray-700 underline underline-offset-2 transition-colors hover:text-gray-900"
-              >
-                {abbonato ? d.editor.linkBoxCta : d.editor.stepsSeeSubscription}
-              </Link>
-            </div>
+                </Fragment>
+              ))}
+            </ol>
+            <Link
+              href={verso}
+              className="mt-3 inline-block text-sm font-medium text-gray-700 underline underline-offset-2 transition-colors hover:text-gray-900"
+            >
+              {abbonato ? d.editor.linkBoxCta : d.editor.stepsSeeSubscription}
+            </Link>
           </div>
         )}
 
@@ -696,6 +704,7 @@ export default function VenueEditorPage() {
             stesso segno dell'editor del menù fra aspetto, contenuto e
             pubblicazione (richiesta dell'utente, 15/09). 32px sopra e sotto. */}
         <div>
+          <Passo n={1} titolo={d.editor.step1Title} primo />
           {/* Link. L'id è il bersaglio della panoramica: da lì "Modifica"
               deve arrivare QUI e non in cima alla pagina, o si atterra su una
               schermata lunga senza sapere cosa si era chiesto. */}
@@ -971,7 +980,7 @@ export default function VenueEditorPage() {
             )}
           </div>
 
-          <hr className="my-8 border-gray-200" aria-hidden="true" />
+          <Passo n={2} titolo={d.editor.step2Title} />
 
           {/* Piatti: qui si sceglie solo cosa mostrare su questa scheda.
               Il piatto in sé (foto, allergeni, categoria) si cura nel
@@ -1032,7 +1041,7 @@ export default function VenueEditorPage() {
             )}
           </div>
 
-          <hr className="my-8 border-gray-200" aria-hidden="true" />
+          <Passo n={3} titolo={d.editor.step3Title} />
 
           {/* L'ULTIMO PASSO, IN FONDO AL LAVORO (richiesta dell'utente, 15/09):
               la pagina si legge nell'ordine in cui la scheda si fa — i link,
@@ -1214,7 +1223,7 @@ export default function VenueEditorPage() {
       {/* Anteprima mobile: bottone flottante + overlay */}
       <button
         onClick={() => setShowMobilePreview(true)}
-        className="fixed bottom-20 right-4 z-30 flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg lg:hidden"
+        className="fixed bottom-24 right-4 z-30 flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg lg:hidden"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <rect x="7" y="2" width="10" height="20" rx="2.5" />

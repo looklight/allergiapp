@@ -251,10 +251,14 @@ const it = {
   editor: {
     title: 'Scheda AllergiApp',
     intro:
-      'La pagina di {venue} dentro l’app: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
+      'La pagina di {venue} dentro AllergiApp: i link e i contatti da una parte, i piatti che scegli dall’altra. L’anteprima mostra come apparirà.',
     // Il richiamo in cima a una scheda nuova: tre passi (19/09)
     // Il rimando in cima alla sezione dell'associazione, in fondo alla pagina
     goToLink: 'Associazione',
+    // I tre passi della pagina, numerati come quelli del menù (21/09)
+    step1Title: 'Aggiungi link e contatti',
+    step2Title: 'Scegli i piatti',
+    step3Title: 'Associa il ristorante',
     stepsTitle: 'Per mostrare la scheda nell’app',
     stepPrepare: 'Prepara link e piatti qui sotto: puoi farlo già adesso',
     stepSubscribe: 'Attiva l’abbonamento del locale',
