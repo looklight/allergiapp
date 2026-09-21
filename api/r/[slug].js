@@ -33,6 +33,10 @@ module.exports = async function handler(req, res) {
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
+  // La lingua della pagina dipende dall'header Accept-Language: senza Vary la
+  // cache condivisa potrebbe servire a un italiano la copia inglese (e
+  // viceversa). Chi non manda l'header — i crawler — riceve l'italiano.
+  res.setHeader('Vary', 'Accept-Language');
   return res.status(200).send(html);
 };
 
