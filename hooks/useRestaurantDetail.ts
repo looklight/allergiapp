@@ -17,6 +17,10 @@ import { PartnerCardService, type PartnerCard } from '../services/partnerCardSer
 import { getDisplayName } from '../utils/getDisplayName';
 import type { ReviewReply } from '../services/restaurant.types';
 
+// Quante miniature scaricare in anticipo: quelle visibili nel carosello
+// all'apertura della scheda.
+const PREFETCHED_THUMBNAILS = 6;
+
 export interface UnifiedReview {
   key: string;
   reviewId: string;
@@ -164,14 +168,19 @@ export function useRestaurantDetail(
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  // Prefetch thumbnail URLs appena i dati arrivano: riduce il lag visivo
-  // tra il mount della FlatList/ScrollView e la comparsa delle immagini.
+  // Prefetch delle miniature appena arrivano i dati: toglie lo scatto fra la
+  // comparsa della scheda e quella delle foto. SOLO LE PRIME (25/09): quelle
+  // che il carosello «Foto dei clienti» mostra all'apertura, nello stesso
+  // ordine (recensioni × foto). Le altre si scaricano quando entrano in
+  // scena: scaricarle tutte costava traffico Supabase per foto che spesso
+  // nessuno arriva a vedere, e sulle reti lente competeva coi dati.
   useEffect(() => {
-    for (const r of rawReviews) {
-      for (const photo of r.photos ?? []) {
-        if (photo.thumbnailUrl) Image.prefetch(photo.thumbnailUrl).catch(() => {});
-      }
-    }
+    rawReviews
+      .flatMap(r => r.photos ?? [])
+      .map(photo => photo.thumbnailUrl)
+      .filter((url): url is string => !!url)
+      .slice(0, PREFETCHED_THUMBNAILS)
+      .forEach(url => { Image.prefetch(url).catch(() => {}); });
   }, [rawReviews]);
 
   // ─── Derived state ─────────────────────────────────────────────────────────
