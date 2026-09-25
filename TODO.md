@@ -12,6 +12,12 @@
 - ⚠️ **Come si applicano le migration su FUNZIONE** (scoperto a caro prezzo il 2026-09-05): `DROP` + `CREATE` dentro `BEGIN`/`COMMIT` nel SQL editor di Supabase **risponde "success" senza installare niente** — successo due volte, e per due giri si è misurata una funzione non cambiata credendo a un miglioramento inesistente. Procedura corretta, e più sicura comunque (nessun DROP, nessuna finestra in cui la funzione non esiste, rollback per rinomina): creare con un **nome nuovo** → misurarla accanto alla viva → scambiare con due `ALTER FUNCTION … RENAME` → **confermare sempre** con `SELECT pg_get_functiondef(p.oid) LIKE '%…%' FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname='public' AND p.proname='…'`.
 - [ ] **Conferma email / anti-spam** — attualmente disabilitata. Verificare schermate per conferma email.
 
+### Sito allergiapp.com — SEO (2026-09-21)
+- [x] ~~**Sitemap delle schede `/r/<slug>`**~~ — NON FATTA per scelta dell'utente il 2026-09-21: la SEO riguarda il sito allergiapp.com, i locali si cercano nell'app. Non riproporla. Se in futuro si vorranno indicizzare: le schede mostrano i nickname dei recensori (i profili `/u/` sono `noindex` di proposito), quindi prima nasconderli ai motori di ricerca. Lasciato sulle schede solo `Vary: Accept-Language` (bug di cache: la lingua dipende dall'header).
+- [ ] **Pagine inglesi vere (`/en/…`) — RIMANDATE per scelta dell'utente il 2026-09-21.** Oggi l'inglese è lo stesso indirizzo tradotto dal browser (`?lang=en`, canonical sulla versione italiana): Google non lo indicizza, quindi «gluten travel card» e simili non posizionano. Proposta già discussa: `/` italiano, `/en/` inglese, generato a ogni deploy da `translations.json` (niente copie da tenere allineate a mano); a chi ha il browser in inglese un avviso «Read this page in English →» al posto del cambio automatico di oggi; `hreflang` e sitemap con le due versioni. ⚠️ **NON fare il reindirizzamento automatico per lingua del browser**: il bot di Google si presenta con browser inglese e verrebbe portato via dall'italiano. Per ora gli `hreflang` sono stati TOLTI dalle pagine e dalla sitemap (puntavano a `?lang=en`, che ha il canonical sull'italiano: segnale incoerente) — rimetterli con le pagine `/en/`.
+- [ ] **Decidere su `/menu`**: è nella sitemap ma la funzione non è ancora live e la pagina non è collegata da nessuna parte (decisione 15/09). Opzioni: toglierla dalla sitemap, oppure `noindex` fino al lancio.
+- [ ] **Pagine dedicate per le ricerche lunghe** (es. «card celiachia da viaggio»): il ritocco dei meta non basta da solo; servono pagine con contenuto proprio.
+
 ### Menù al tavolo — da guardare con gli occhi (2026-09-03)
 - [ ] **Le sei anteprime**: `cd landing && python3 -m http.server 8099`, poi `_preview-{row,block}-{none,rule,ornament}.html`. Niente di quella giornata è mai stato aperto in un browser (estensione Chrome non collegata): tipi, regole, build e HTML generato non dicono se una carta si legge. **L'impaginazione a blocco poggia su `display: contents` + `order`**, scritto in due copie senza vederlo rendere — è il punto più esposto.
 - [x] ~~**La UI della scatola "Aspetto"**~~ — RIFATTA il 2026-09-06 in **tre gruppi** (La carta · L'identità · Il testo), con «La carta» a tutta larghezza e i due gruppi piccoli affiancati sotto. Diario: Tema 33; tecnica in `partner/README.md`. La valuta è uscita dai gruppi (non è aspetto) e sta in fondo staccata.
@@ -58,121 +64,73 @@ icona+parola e scartato dall'utente — è prassi comune e la legenda copre l'am
   restano **a parole**.
 - [x] ~~**La manopola nel portale**~~ — fatta il 2026-09-06 (v. «Il comando nel portale» qui sopra).
 
-### Abbonamento partner — piano in `MONETIZATION.md`, passi 1 e 2 fatti (17/09)
+### Partner Pro — cosa resta (riordinato il 2026-09-25)
 
-Listino, cosa è gratis e cosa a pagamento: `MONETIZATION.md`, sezione **«Listino attuale»**
-(7,99 €/mese · 60 €/anno, forfettario, Stripe). L'ordine resta **abbonamento → associazione**.
+Piano, listino e decisioni: `MONETIZATION.md` («Piano operativo dell'abbonamento», «Dove siamo»).
+Fatto e online: abbonamento con Stripe in sandbox e muro dell'aspetto (passi 1-2), collegamento
+locale ↔ ristorante con il visto dell'admin, scheda con Pubblica/Annulla, sicurezza (721-732).
+Fatto e in attesa della build nativa: la scheda nell'app e le risposte alle recensioni (733-735).
+Qui sotto solo quello che è ancora da fare.
 
-- [x] ~~**Migration 716**~~ (`partner_subscriptions`, sul locale) — **APPLICATA e verificata il
-  2026-09-16** (16 colonne, indice parziale, `venue_subscription_active`, 2 policy). Provenienza
-  `stripe` o `manual` (concesso dall'admin, **non** "fondatori"). Tabella vuota: non la legge ancora
-  nessuno. Due scelte da ricordare: col pagamento in ritardo l'abbonamento **vale ancora** finché
-  Stripe ritenta, e un locale con abbonamento aperto **non si cancella** (il portale dovrà dirlo con
-  una frase, non con un errore del database).
-- [x] ~~**Passo 1: le fondamenta, tutte lato web**~~ — FATTO il 16/09. Migration **716 e 717
-  APPLICATE**; su Stripe (sandbox `acct_1T8Pk3AWJFZcd82B`) prodotto e due prezzi cercati per
-  **lookup key**; tre Edge Function (`stripe-checkout`, `stripe-webhook`, `stripe-portal`)
-  pubblicate; `/abbonamenti` nel portale con stato vero, pagamento e pannello cliente; pagina
-  **Partner** in admin (su `admin-prod`) con «Concedi»/«Revoca» e il registro delle decisioni.
-  Provato da capo a fondo: pagamento → riga attiva, disdetta → riga chiusa.
-  - [x] ~~**Rimettere `PARTNER_PORTAL_URL`**~~ — rimesso a `https://partner.allergiapp.com` il 16/09.
-    ⚠️ Per provare il pagamento in locale va riportato a `localhost:3001` e poi rimesso.
-  - [ ] **Accendere `SUBSCRIPTIONS`** (`partner/src/lib/features.ts`): i bottoni di pagamento sono
-    spenti finché Stripe è in sandbox — acceso, un ristoratore vero pagherebbe per finta. Si
-    accende insieme al passaggio in modalità reale (passo 4 del piano).
-  - [ ] **Il link «Apri su Stripe» in admin punta alla sandbox** (costante `STRIPE_CLIENTI` in
-    `admin/src/app/partners/page.tsx`): una riga da cambiare al passaggio in reale.
-  - [ ] **Ripulire le prove**: abbonamento di test su «Hugo Bistrot» e cliente finto su Stripe.
-- [x] ~~**Passo 2: il muro dell'aspetto**~~ — FATTO il 16/09. Migration **718 e 719 APPLICATE**:
-  undici manopole su tredici passano dal muro (foto e descrizioni dei piatti restano gratis, sono
-  contenuto), il muro sta nello **scatto di pubblicazione** e non sui comandi, l'aspetto esce dalla
-  sala da solo quando l'abbonamento finisce, e un giro quotidiano copre le scadenze per data.
-  Nel portale: distintivo **Pro** viola sulle funzioni, ambra accanto al nome del locale abbonato,
-  e «Rimetti i valori di partenza» per chi non paga.
-  - [x] ~~**Accendere pg_cron** e pianificare il giro~~ — FATTO il 16/09: `create extension pg_cron`
-    dal SQL editor, job `sweep_public_appearance` (jobid 1) alle 3:15 UTC. Giri fatti:
-    `cron.job_run_details`; per toglierlo `cron.unschedule('sweep_public_appearance')`.
-  - [ ] **Da ripensare: il giro notturno è la strada più pulita?** Tenuto acceso per ora, ma è un
-    pezzo in più da sorvegliare (fuori dalle migration, fallisce in silenzio se nessuno guarda
-    `job_run_details`). Alternative da valutare: verificare l'abbonamento **alla lettura** (la
-    pagina del menù chiede `venue_subscription_active()` e sceglie l'aspetto, niente scatto da
-    correggere); oppure far scrivere a Stripe/admin la scadenza come evento, così basta il
-    trigger della 718. Criterio: meno parti mobili, e il menù al tavolo resta veloce (cache).
-- [ ] **Il piano a passi** — scritto il 16/09 in `MONETIZATION.md`, «Piano operativo
-  dell'abbonamento»: fondamenta web (716 + Stripe test + due Edge Function + `/abbonamenti` vero +
-  «Concedi abbonamento» in admin) → primo muro sull'**estetica** del menù, migration 717 (l'unica
-  voce che non chiede una build) → due o tre ristoratori con abbonamento regalato → fatture e P2B →
-  associazione + scheda in app + risposte alle recensioni nella stessa build nativa → notifiche e
-  statistiche.
-- [ ] **Prima di incassare davvero**: strumento per la fattura elettronica SdI (Stripe non la
-  invia; da scegliere col commercialista), condizioni d'uso + P2B. La P.IVA c'è già.
-  - [ ] **Attivare l'account Stripe** (oggi è una sandbox: `charges_enabled` falso), intestato alla
-    P.IVA e non alla persona; poi rifare prodotto, prezzi e webhook in modalità reale — il codice
-    non cambia perché i prezzi si cercano per **lookup key** (`allergiapp_monthly`/`_yearly`).
-  - [ ] **Configurare il pannello del cliente** su Stripe (cosa può fare il ristoratore da solo:
-    carta, disdetta, fatture) e **cosa succede dopo i tentativi di pagamento falliti** — oggi è il
-    comportamento predefinito, ed è quello che fa finire l'abbonamento.
-- [ ] **Collegamento locale ↔ ristorante — PARTI 1-3 FATTE E ONLINE il 19/09** (design in `MONETIZATION.md` «Associazione locale ↔ ristorante»; mig 721-726 applicate; portale su `main`, admin su `admin-prod`, informativa su `landing`, tutto pushato). **Resta la parte 4, l'app, con la build nativa**: scheda letta dall'app, contorno del pin, risposte alle recensioni. Prima: la prova completa con un secondo account (voce qui sotto). Dettaglio delle parti fatte nelle voci che seguono.
-  - [x] **Parte 1 scritta il 18/09**: `721_venue_restaurant_link.sql`, provata per intero sul database vero con annullamento finale (link, pausa, scollega, revoca che tiene, richiesta accolta dall'admin, registro, letture pubbliche chiuse).
-  - [x] **721 APPLICATA il 18/09** e verificata sul database.
-  - [x] **19/09**: 724 applicata (versione finale), `partner-company` pubblicata, `stripe-webhook` ripubblicata con `--no-verify-jwt` (v9). Provato dal portale: dati aziendali → associato «in attesa di verifica». Da provare: la strada Stripe (abbonamento di prova su Nuovo Locale 1 → azienda già proposta).
-  - [x] **Informativa aggiornata il 19/09** (branch `landing`, committata, non pushata): dati aziendali dalla fattura o scritti dal ristoratore, verifica su **VIES**, legittimo interesse per la verifica, **Stripe** e VIES fra i fornitori (Stripe mancava), una frase sul sito senza cookie. Data delle due pagine legali e `TERMS_VERSION` del portale al **2026-09-19**: vanno online insieme (push di `landing` e di `main`).
-  - [x] **726 APPLICATA il 19/09** (ritirare una richiesta, modificare i dati aziendali); `partner-company` (v2) e `stripe-webhook` (v10, `--no-verify-jwt`) ripubblicate.
-  - [x] **Prova completa con un secondo account** — fatta (confermata il 2026-09-21); `main`, `admin-prod` e `landing` pushati il 19/09.
-  - [ ] **Col commercialista (passo 4)**: fatturare ad aziende estere senza numero IVA (oggi Stripe lo pretende dove lo sa controllare: un pub inglese sotto soglia non riesce a pagare) e come fattura un forfettario ad aziende di altri paesi UE.
-  - [x] **Parte 2 — portale, FATTA il 19/09**: ricerca e conferma (723), dati aziendali e richiesta, «in attesa di verifica», riquadro dello stato (una regola sola, `cardState`, per scheda, home e Abbonamenti), pausa/riattiva/scollega con le finestre di conferma. Dettaglio qui sotto.
-  - [x] Parte 2 — portale. **Fatti il 19/09** (723 applicata): ricerca «Città o CAP» + nome col pulsante Cerca, parole generiche facoltative, avviso a 20 risultati, conferma con mappa OpenStreetMap, rimando all'app o a info@ se il ristorante manca (`/locale/[id]/collega`). **Prossimo**: dati aziendali + funzione VIES, poi esito, poi lo stato nel riquadro della scheda. Serve anche la funzione sul server per VIES (scrive `partner_companies`, il gestore non può) e la ricerca che dice «Già gestito da un altro account» senza dire da chi (le letture pubbliche di `partner_cards` non ci sono più). La funzione VIES controlla prima la cifra di controllo della P.IVA (italiana) e toglie il prefisso del paese; esiti: `vies_valid` collega, `vies_not_found`/`unverified` → il portale propone la richiesta all'admin (errore `company_unverified`).
-  - [ ] *Se servirà* — **ricerca per città con Photon** (OpenStreetMap, niente Google): suggerimenti di città in ogni lingua («Munich» → München) e ristoranti cercati per distanza dal punto scelto invece che per nome della città. È come fanno Google e TripAdvisor nel riscatto di un locale. Oggi non serve: il ristoratore scrive la propria città come sul posto, e il campo accetta anche il CAP. Da fare solo se qualcuno non trova il locale per colpa del nome della città.
-  - [x] **Deciso il 18/09 — il ristorante che non c'è nell'app**: resta la strada del design, aggiungerlo dall'app con una recensione (nel 99% dei casi va bene, e una recensione in più fa comodo); in alternativa lo aggiunge l'admin su richiesta a info@allergiapp.com. Il portale dice tutte e due le cose.
-  - [x] **Hugo Bistrot ripulito il 2026-09-21**: il collegamento a «Pizzeria Farina e Pomodoro» è `unlinked` (con motivo: lo storico non si cancella) e l'abbonamento Stripe sandbox è `canceled`. Fatto dal SQL editor, quindi nel registro l'attore è NULL.
-  - [ ] ⚠️ **Prima della build di rilascio: scollegare anche «Luca's Pizza» → «Pizzeria Errico Porzio Milano»**, l'unica scheda ancora visibile. È il banco di prova e serve finché si lavora al contorno del pin e alle ricerche: va tolta per ultima, o un ristorante vero mostrerà una scheda di prova. Stesso script usato per Hugo Bistrot.
-  - [ ] Da guardare: Hugo Bistrot ha un menù al tavolo pubblicato? Se sì, `/v/<slug>` è una pagina viva con dati di prova — si ritira col comando admin della 730, che libera l'indirizzo con la regola dei 30 giorni.
-  - [ ] Fuori tema, da sistemare a parte: **`revoke ... from public` non toglie il permesso ad `anon`** su Supabase (i privilegi di partenza lo danno per nome a ogni funzione nuova). La 723 lo chiude per le funzioni del collegamento; tutte le altre (es. `publish_menu`, `get_partner_venues_admin`) sono chiamabili senza accesso — innocue perché controllano `auth.uid()`, ma da ripulire in blocco, e d'ora in poi scrivere `from public, anon`.
-  - [ ] Fuori tema, da sistemare a parte: la policy «Users can delete restaurants they added» lascia cancellare un ristorante a chi l'ha aggiunto anche con recensioni di altri (il controllo sta solo nell'app, `removeOwnRestaurant`). La 721 lo blocca solo per i ristoranti collegati.
-  - [x] **Parte 3 — admin, FATTA il 19/09** (branch `admin-prod`, cartella `AllergiApp/admin-prod`, non pushata): pagina **Associazioni** (Da approvare · Richieste · Approvate · Chiuse, un'etichetta sola per stato, Approva/Rifiuta/Sospendi/Revoca col motivo, storico dal registro), numerino nella barra laterale, riquadro «da gestire» in Dashboard, targhetta del partner nella scheda del ristorante, Partner con le linguette Locali / Iscritti senza locale, `registra()` tolta. Mig **725** applicata. Da provare con un secondo account.
-  - [ ] Rumore innocuo su Vercel: i push su `landing` e `admin-prod` creano anteprime in *Error* sul progetto del portale (lì `partner/` non esiste). Si tolgono spegnendo le anteprime del progetto `allergiapp-partner` dalla dashboard.
-  - [ ] Piccolo, quando si ritocca la 717: `get_partner_venues_admin` restituisce `card_id` con `LIMIT 1` senza guardare lo stato (con lo storico può essere un collegamento chiuso). Oggi l'admin non lo usa più (`registra()` tolta), quindi innocuo: toglierlo o filtrare sui collegamenti vivi.
-- [x] **Controllare il primo giro di pg_cron** — ✅ 18/09: i giri del 17 e del 18 alle 5:15 sono `succeeded`. Per ricontrollare: `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;`
-- [x] ⚠️ **Buco da chiudere prima che l'abbonamento valga qualcosa**: `partner_cards_owner` (703) è
-  `FOR ALL` sul gestore, che può scriversi da solo `status = 'published'`. **Chiuso dalla 721** (applicata 18/09).
-- [ ] ⚠️ **722 APPLICATA il 18/09** — resta da provare dal portale «Pubblica le modifiche» (trovata il 18/09): il gestore può scrivere da sé il menù pubblicato
-  (`published_menu`, `published_at`) con una chiamata diretta all'API, e così aggirare il muro
-  sull'aspetto (718). La 722 lo impedisce con un trigger; provata insieme alla 721. Dopo, verificare
-  dal portale che «Pubblica le modifiche» funzioni ancora.
-- [ ] **Eliminare un ristoratore (19/09)** — si chiede a info@allergiapp.com (come dice l'informativa) e lo fa l'admin dalla scheda utente, che ora esiste anche per chi usa solo il portale (i nomi nella pagina Partner ci portano). Dall'app un account con profilo partner NON si elimina: `delete-account` risponde 409 `partner_account` (l'app lo dice dalla prossima build; fino ad allora errore generico). L'eliminazione chiude Stripe (cliente eliminato, senza rimborso), cancella le foto e poi l'account: il resto va via a catena dal database (migration **727**, provata sul database vero con annullamento). Resta solo una riga in `account_deletions`, senza dati della persona. Nel portale un locale con l'abbonamento attivo non si elimina (finestra con la frase, e il database lo ferma).
-  - [x] **727 APPLICATA il 19/09** e verificata; `delete-account` pubblicata dopo.
-  - [x] **Provata il 19/09**: `lucapuliga+test1` eliminato dall'admin, zero righe e zero foto rimaste, una riga in `account_deletions`. Non ancora provato il ramo Stripe (quell'account non aveva abbonamenti).
-  - [ ] Da scrivere nelle condizioni d'uso (passo 4): eliminare l'account chiude l'abbonamento senza rimborso.
-- [x] **Scheda: si pubblica (mig 728, APPLICATA 19/09)** — bozza e versione pubblicata (`partner_card_published`, `partner_card_dishes_published`), scritta solo da `partner_publish_card()`. Nel portale: riga in cima «Ci sono modifiche non ancora visibili ai clienti · Annulla · Pubblica», Annulla/Salva nel riquadro di un link. Si pubblica QUALI piatti e i link; nomi e allergeni restano live dal catalogo (una correzione non aspetta nessuno).
-  - **Regola di visibilità cambiata**: la scheda si vede con abbonamento + associazione attiva e approvata, **senza vincolo sui piatti** (decisione utente 19/09: il partner ha pagato, decide lui cosa metterci). ⚠️ Il **contorno del pin** resta invece legato ai piatti PUBBLICATI: regola propria, da scrivere nella parte 4.
-- [x] **Due motivi quando si accoglie una richiesta (728)** — uno per chi ha chiesto, uno per il gestore revocato (`holder_note_required`); nel portale il riquadro «Associazione revocata/non approvata» col motivo.
-- [x] **Controllo di sicurezza + mig 729, APPLICATA 20/09** — provato entrando come ristoratore e come visitatore: 0 righe altrui viste o toccate su 18 tabelle. Chiusi: elenco dello Storage (`images` e `partner`: ognuno vede la sua cartella, le foto pubbliche si aprono lo stesso), 2 funzioni interne, 7 funzioni aperte agli anonimi, e la policy che lasciava **cancellare i ristoranti con recensioni di altri** (907 esposti). ⚠️ Il portale ora filtra per proprietario in tutti i loader: con un account ADMIN mostrava i locali altrui (RLS `is_admin()` apre tutto).
-- [x] **Indirizzo e menù online (729)** — niente pubblicazione senza indirizzo (vincolo nel DB); eliminato l'ultimo menù attivo il locale va offline da solo; l'indirizzo lasciato non torna libero subito: per `partner_slug_hold()` (30 giorni) porta al nuovo e nessun altro lo prende, poi `purge_retired_slugs` lo libera. ⚠️ **I 30 giorni non si dicono al ristoratore** (scelta utente): i testi dicono solo di ristampare i QR.
-- [x] **Editor del menù: due passi** — le manopole dell'aspetto cambiano solo l'anteprima, si confermano con **Salva** (col distintivo Pro se fra le prove c'è qualcosa a pagamento: apre il paywall), poi **Pubblica**. I due bottoni non convivono mai e stanno nello stesso posto. Mai pubblicato = il bottone in alto porta alla sezione «Online».
-- [x] **Paywall (`components/PaywallDialog.tsx`)** — l'unico posto dove si racconta il piano: titolo sul beneficio, tre voci, prezzo mensile e annuale a confronto (5 € contro 7,99 €, risparmio **37%** — «due mesi in regalo» era sbagliato ed è stato corretto), rinnovo e disdetta, cosa resta gratis. Si apre dai distintivi **«Passa a Pro»** (Home, Scheda, riquadro associazione, aspetto del menù, Abbonamenti). Con `SUBSCRIPTIONS` acceso i due riquadri del prezzo portano **dritti a Stripe** per quel locale.
-- [ ] **Quando si accendono i pagamenti**: chi passa dal regalo al pagato perde i giorni rimasti — far partire il primo addebito alla scadenza del regalo (periodo di prova su Stripe). E avviso di scadenza del regalo con le email ai ristoratori.
-- [ ] **Parte 4 — l'app** (esce con una build nativa; le OTA sono bloccate, quindi si accumula su `main`).
-  - [x] **731 APPLICATA il 2026-09-21** (`731_app_restaurant_card.sql`): `get_restaurant_card(ristorante, lingua)`, lo sportello unico da cui l'app chiede la scheda. Risponde NULL se non c'è, se l'abbonamento non c'è più, se manca il visto o se la scheda pubblicata è vuota — casi indistinguibili di proposito. Piatti e link dalla **versione pubblicata** (728), nomi/foto/allergeni **vivi dal catalogo**, lingua risolta nel database come `get_public_menu`. Aperta ad `anon`: nell'app un ristorante si apre anche senza accesso.
-    - **Niente data di freschezza**: `last_confirmed_at` (700) non la aggiorna nessuno e nel portale non esiste il gesto «confermo che è ancora così». «Aggiornato il…» direbbe una cosa falsa a chi ha un'allergia. Torna con la riconferma periodica (`MONETIZATION.md`, «Freschezza del dato»).
-    - **Due misure delle foto separate per costruzione**: la funzione dà la miniatura (240px) e la grande (900px) senza ripiego dall'una all'altra — dal 702 o arrivano entrambe su Storage o non resta niente, quindi una lista non può scaricare l'immagine pesante nemmeno per sbaglio.
-  - [x] **La schermata — FATTA il 2026-09-21** e provata sul simulatore (build nativa nuova: `npx expo run:ios`; le volte dopo basta `npm run start:local`). Carosello di max 8 piatti + «+N · Vedi tutto», pill dei link, riordino per compatibilità **nell'app** (le esigenze di chi guarda non si mandano al database: sono dati sanitari). Il modello è `SchedaPreview` nel portale: trascritto, non riprogettato. Dettaglio delle scelte in `MONETIZATION.md`, «La scheda nell'app, com'è venuta».
-    - **Niente caricamento anticipato delle foto**: la lista carica le miniature che entrano in scena, e la foto grande solo al tocco. È la regola che oggi manca alle recensioni (`hooks/useRestaurantDetail.ts:158` scarica le miniature di tutte e 15): da togliere nello stesso passaggio.
-    - Pezzi nuovi: `services/partnerCardService.ts`, `utils/partnerDish.ts` (la compatibilità si calcola nell'app), `components/restaurants/PartnerCardSection.tsx` (pill dei link + carosello), `app/restaurants/menu.tsx` (tutti i piatti per categoria), `constants/dishCategories.ts` e `constants/dishNotes.ts` (**copie gemelle** del portale, senza le icone delle note).
-    - ⚠️ **Le stringhe stanno solo in `it` e `en`**: l'intera area ristoranti non esiste in es/de/fr/pt, che ripiegano sull'inglese (`enableFallback`). Aggiungere qui le quattro lingue vorrebbe dire una frase tradotta in mezzo a una schermata inglese.
-    - La finestra di scelta (tre delivery, o prenotazione online + telefono) è un `Modal` semplice, non un bottom sheet: la scheda ristorante È già dentro un bottom sheet e non se ne annidano due.
-    - Una richiesta in più all'apertura di un ristorante, **in parallelo** alle otto che ci sono già (di cui una è una catena di due: `restaurants` e poi `get_restaurant_stats`, `services/restaurantService.ts:43`). Non allunga l'attesa. Se un domani si vuole zero sprecate: un segnale sul ristorante — che serve anche al contorno del pin — arriva da solo, perché la lettura del ristorante chiede già `*`.
-  - [x] **Il piatto si apre** (21/09): stessa finestra del menù al tavolo — popup al centro, foto 4:3, freccine fra un piatto e l'altro, TUTTI gli allergeni dichiarati e non solo i tuoi. Dal carosello si arriva al piatto toccato (`dishId` fra i parametri).
-  - [x] **Il foglio di scelta** (delivery con più servizi, prenotazione online + telefono) con lo stampo degli altri fogli dell'app. ⚠️ Lo stampo è **copiato**, non condiviso: `ShareProfileSheet`, `ListEditorSheet`, `SaveToCollectionSheet` e ora questo hanno lo stesso codice di animazione. Estrarlo in un componente solo è un lavoro a sé, da fare quando non c'è un rilascio per le mani.
-  - [ ] **Da guardare su un telefono vero**: le quattro tinte scure delle pill (scelte a tavolino), e i gesti del carosello dentro il pannello scorrevole dentro l'altro.
-  - [ ] **Filo aperto**: la 731 restituisce `menuSlug` (l'indirizzo del menù al tavolo, solo se online) e l'app non lo usa. O gli si dà un posto nella scheda, o si smette di chiederlo.
-  - [ ] **Contorno del pin** (voce sotto) e **risposte alle recensioni** (blocco a sé: serve una migration nuova, il portale per scriverle, il pallino, e il logo su Storage).
+**Prima di incassare davvero** (passo 4, col commercialista)
+- [ ] Strumento per la fattura elettronica SdI (Stripe non la invia).
+- [ ] Fatturare ad aziende estere senza numero IVA (oggi Stripe lo pretende dove sa controllarlo: un
+  pub inglese sotto soglia non riesce a pagare) e ad aziende di altri paesi UE da forfettario.
+- [ ] **Condizioni d'uso del portale + P2B**, con dentro almeno: **nelle risposte alle recensioni non
+  si promette che un piatto è sicuro per un'allergia** (è la regola su cui poggia la rimozione
+  dall'admin: il consiglio nel portale non ne parla, per scelta); eliminare l'account chiude
+  l'abbonamento **senza rimborso**.
+- [ ] Attivare l'account Stripe **intestato alla P.IVA** (oggi sandbox, `charges_enabled` falso), poi
+  rifare prodotto, prezzi e webhook in reale — il codice non cambia, i prezzi si cercano per lookup
+  key (`allergiapp_monthly`/`_yearly`).
+- [ ] Configurare su Stripe il pannello del cliente (carta, disdetta, fatture) e cosa succede dopo i
+  pagamenti falliti (oggi il predefinito, che fa finire l'abbonamento).
+- [ ] Al passaggio in reale: accendere `SUBSCRIPTIONS` (`partner/src/lib/features.ts`) e cambiare
+  `STRIPE_CLIENTI` in `admin/src/app/partners/page.tsx` (oggi punta alla sandbox).
+- [ ] Dal regalo al pagato non si perdono i giorni rimasti: primo addebito alla scadenza del regalo
+  (periodo di prova su Stripe). Con l'avviso di scadenza nelle email ai ristoratori (passo 6).
+- [ ] Passo 3: due o tre ristoratori veri con l'abbonamento concesso a mano.
 
-- [x] **Migration 732 — i link si salvano in un gesto solo** (`732_partner_save_links.sql`, **APPLICATA il 21/09**, portale pushato dopo). Il portale faceva due viaggi (cancella tutti i link del locale, poi riscrivi) e fra l'uno e l'altro il locale era **senza link**: se il secondo falliva, quello restava lo stato finale. È successo il 21/09 con l'errore `sort_order` (PostgREST in una scrittura multipla unisce le colonne di tutte le righe e mette NULL dove manca il campo, invece del valore di partenza della colonna). Ora `partner_save_links(locale, link)` fa delete+insert in una transazione, SECURITY INVOKER (la difesa resta la policy `partner_links_owner` della 703), e scrive le colonne una per una: la trappola di PostgREST non si ripresenta.
-  - [ ] **Da cercare altrove**: lo stesso schema cancella-e-riscrivi c'è anche per i piatti della scheda (`partner_card_dishes`) e per i piatti nei menù. Stessa forma, stesso rischio — da guardare con calma, non nella fretta di questo giro.
+**Prima della build nativa di rilascio** (la stessa che porta scheda e risposte)
+- [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC delle ricerche dell'app. ⚠️ NON quello della
+  mappa (085): lì la precedenza nel quadretto resta, serve solo a non far sparire il locale.
+- [ ] **Contorno del pin** per i locali con piatti PUBBLICATI nella scheda (deciso 16/09, regole in
+  `MONETIZATION.md` «Principio guida»): pallini identici, contorno solo sul pin, mai "certificato".
+- [ ] ⚠️ **Togliere il collegamento di prova** «Luca's Pizza» → «Pizzeria Farina e Pomodoro» e
+  l'abbonamento concesso su quel locale, **per ultimi** (servono finché si prova): altrimenti un
+  ristorante vero mostra una scheda e una risposta di prova.
+- [ ] Filo aperto: la 731 restituisce `menuSlug` (menù al tavolo online) e l'app non lo usa. O gli si
+  dà un posto nella scheda, o si smette di chiederlo.
+- [ ] Le miniature di tutte le recensioni si scaricano in anticipo (`hooks/useRestaurantDetail.ts`,
+  `Image.prefetch`): la scheda carica solo quelle in scena, le recensioni no. Da allineare.
+- [ ] Da guardare su un telefono vero: le quattro tinte scure delle pill dei link, e i gesti del
+  carosello dentro il pannello scorrevole.
 
-- [ ] **Neutralizzare `ORDER BY is_premium`** negli RPC delle ricerche dell'app prima del primo abbonamento vero. ⚠️ NON quello della mappa (085): lì la precedenza nel quadretto resta, serve solo a non far sparire il locale.
-- [ ] **Contorno del pin per i locali col menù del ristorante** (deciso 16/09, regole in `MONETIZATION.md` «Principio guida»): pallini identici, contorno di altro colore solo sul pin, guidato dalla scheda pubblicata, mai la parola "certificato". Esce con la scheda in app (passo 5), stessa build.
-- [x] ~~**Account Stripe**: da verificare se esiste~~ — esiste (sandbox `acct_1T8Pk3AWJFZcd82B`); l'attivazione in reale è nella voce «Prima di incassare davvero».
+**Da verificare**
+- [ ] «Pubblica le modifiche» dal portale dopo la 722 (il trigger che impedisce al gestore di
+  scriversi da solo il menù pubblicato).
+- [ ] Eliminare un ristoratore **con abbonamento Stripe** (provato solo senza: `delete-account`
+  chiude il cliente su Stripe prima di cancellare).
+- [ ] Hugo Bistrot ha un menù al tavolo pubblicato? Se sì, `/v/<slug>` è una pagina viva con dati di
+  prova: si ritira col comando admin della 730.
+- [ ] Ripulire il cliente di prova su Stripe (sandbox).
+
+**Debiti tecnici** (non urgenti)
+- [ ] Il giro notturno `sweep_public_appearance` (pg_cron) è la strada più pulita? Alternative:
+  verificare l'abbonamento alla lettura del menù, o far arrivare la scadenza come evento. Criterio:
+  meno parti mobili, menù al tavolo veloce. Per controllarlo: `cron.job_run_details`.
+- [ ] Cancella-e-riscrivi in due viaggi resta su `partner_card_dishes` e sui piatti nei menù: stesso
+  rischio corretto per i link dalla 732 (un errore a metà lascia la lista vuota).
+- [ ] `revoke ... from public` su Supabase **non toglie `anon`**: le funzioni più vecchie (es.
+  `publish_menu`) sono chiamabili senza accesso — innocue perché controllano `auth.uid()`, ma da
+  ripulire in blocco. Da ora si scrive `from public, anon`.
+- [ ] Lo stampo del foglio che sale dal basso è copiato in quattro componenti (`ShareProfileSheet`,
+  `ListEditorSheet`, `SaveToCollectionSheet`, la scelta delle destinazioni della scheda): estrarlo
+  quando non c'è un rilascio per le mani.
+- [ ] Rumore innocuo su Vercel: i push su `landing` e `admin-prod` creano anteprime in errore sul
+  progetto del portale. Si tolgono spegnendo le anteprime di `allergiapp-partner` dalla dashboard.
+- [ ] *Solo se servirà*: ricerca del ristorante per città con Photon (OpenStreetMap), per chi non
+  trova il locale per colpa del nome della città.
 
 ### Rimandati di proposito il 2026-09-15 (da riaprire coi dati, non dimenticati)
 

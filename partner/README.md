@@ -19,24 +19,23 @@ Catalogo piatti ──┬── Menù (QR al tavolo)      non tocca l'app
                   │
                   └── piatti sulla scheda ─┐
       Link e contatti ───────────────────  ├── Scheda AllergiApp
-                                           ┘   (claim + abbonamento)
+                                           ┘   (abbonamento + associazione + visto)
 ```
 
 La "vetrina" faceva da contenitore a tutto ed è stata spaccata in due: il
 locale (che hanno tutti, dal primo giorno) e `partner_cards`, la presenza
-dentro l'app, che esiste **solo dopo il claim**. I link stanno sul locale —
+dentro l'app, che esiste **solo dopo l'associazione** al ristorante. I link stanno sul locale —
 il numero per prenotare è lo stesso ovunque compaia. Il ragionamento per
 esteso è il Tema 16 di `../DIGITAL_MENU.md`.
 
 **Dal 2026-09-15 (migration 715) anche i piatti scelti per la scheda stanno
-sul locale** (`partner_card_dishes.venue_id`, non più `card_id`): si
-preparano prima del claim e restano salvati, e `partner_cards` decide solo
-*se* compaiono in app (lettura pubblica solo con scheda `published`). Il
-paragrafo qui sotto sul debito chiuso descrive lo stato fra la 703 e la 715,
-ed è superato: i blocchi "prima associa il locale" sono stati tolti, e il
-**catalogo non sa più niente della scheda** — niente colonna "Sulla scheda",
-selettore o caselle in `/piatti` e nel pannello del piatto. La scelta dei
-piatti si fa solo nella pagina della scheda, come il menù sceglie i suoi.
+sul locale** (`partner_card_dishes.venue_id`): si preparano prima
+dell'associazione e restano salvati. Se compaiono in app lo decide il
+database (`partner_card_visible`, 721/724: abbonamento + associazione attiva
++ visto), e l'app li legge da una funzione sola (`get_restaurant_card`, 731).
+Il **catalogo non sa niente della scheda**: la scelta dei piatti si fa solo
+nella pagina della scheda (`CardDishesSelector`, `setDishesOn`), come il menù
+sceglie i suoi.
 
 **La parola "vetrina" non esiste più** (rinomina fatta il 2026-08-31, dopo
 lo schema): il tipo è `Venue`, il modulo è `src/lib/venues.ts`, la rotta è
@@ -45,13 +44,6 @@ lo schema): il tipo è `Venue`, il modulo è `src/lib/venues.ts`, la rotta è
 stessa riga si chiamava "Nome della vetrina" nell'editor e "Nome del locale"
 nel menù, e il ristoratore scriveva un'etichetta privata dove poi i clienti
 leggevano l'intestazione del menù al tavolo.
-
-**Storia, superata dalla 715**: fra la 703 e la 715 un piatto si accendeva
-sulla **scheda**, che senza claim non esiste, e tre schermate spegnevano i loro
-comandi con un filtro `cardId !== null` (`venuesConScheda` in `/piatti`,
-`conScheda` in `DishPanel`, il tappo `needsCard` nell'editor del locale). Tutto
-questo non c'è più: la scelta si fa solo nella pagina della scheda
-(`CardDishesSelector`, `setDishesOn`) e funziona anche senza claim.
 
 ## La home è una home (2026-09-01)
 
@@ -316,7 +308,17 @@ e in `next-env.d.ts` un percorso che su Vercel non esiste.
   l'AuthGuard e la passa alle schermate col contesto, che porta anche **come
   aggiornarla**: `/account` la corregge, e senza quello la home continuerebbe
   a salutarti col nome vecchio fino al ricaricamento.
+- `src/lib/reviews.ts` — le recensioni del ristorante associato e le
+  risposte (733), tutte da funzioni del database. `canManageReviews` è la
+  stessa regola di `partner_can_reply` e decide se la voce «Recensioni» c'è.
+- `src/lib/otherFoods.ts` — i nomi dei ~97 altri alimenti dell'app, copia
+  gemella **solo per mostrarli** nelle esigenze dei recensori: ai piatti si
+  associano sempre e solo i 15 allergeni di `allergens.ts`.
+- `src/components/TouchLastSeen.tsx` — l'ultimo accesso del ristoratore
+  (v. «L'account e l'accesso»).
 - Le pagine: `/` la **home**, `/locale/[id]` la **scheda AllergiApp** (link, piatti, anteprima; ci si arriva anche dalla barra laterale),
+  `/locale/[id]/collega` l'associazione, `/recensioni` le recensioni e le
+  risposte, `/account` e `/abbonamenti`,
   `/piatti` il gestionale del catalogo, `/menu` l'elenco dei menù,
   `/menu/[id]` l'editor col telefono a lato, `/menu/[id]/anteprima` la stessa
   anteprima a tutta pagina — che si apre in una scheda a parte e porta una
@@ -619,7 +621,7 @@ digita (nome, condizioni) va con la stessa pausa dei link, i gesti singoli
 Alla creazione la domanda è **"di quale ristorante?"**, non "che nome dai al
 menù": il nome del menù è solo l'etichetta della linguetta e si chiede dal
 secondo menù dello stesso locale in poi. Il nome del ristorante invece non ha
-nessun'altra fonte — chi non fa il claim non ce l'ha da nessuna parte.
+nessun'altra fonte — chi non associa il locale non ce l'ha da nessuna parte.
 
 > ⚠️ **Superato il 2026-09-06**: `MULTI_MENU` è di nuovo `true` e la
 > migration 714 porta in sala tutte le carte attive, come linguette. Il
@@ -862,6 +864,29 @@ stanno nel database (migration 721-726), qui si chiede e si mostra.
 - In Account le aziende si correggono: cambiare P.IVA o paese rimanda in
   verifica le associazioni (726).
 
+## Le recensioni e le risposte (2026-09-25)
+
+`/recensioni`: il ristoratore legge le recensioni del ristorante associato e
+risponde. Design in `../MONETIZATION.md` «Risposte alle recensioni»; le regole
+stanno nel database (733), qui si legge e si scrive con le sue funzioni.
+
+- **La voce c'è solo quando si può rispondere** (`canManageReviews` in
+  `lib/reviews.ts`, la stessa regola di `partner_can_reply`): abbonamento che
+  vale, associazione attiva o in pausa, visto del nostro team. Chi arriva
+  all'indirizzo senza averne diritto trova una frase e il rimando alla scheda.
+- **Il ristoratore vede quello che l'app mostra a tutti** e niente di più: il
+  nome di chi ha scelto l'anonimato non esce dal database
+  (`partner_venue_reviews`).
+- **In cima, due riquadri affiancati** da `md` in su: «Come appari nelle
+  risposte» (il `LogoPicker` dell'editor del menù: è lo stesso logo del
+  locale, `setIdentity`) e il riepilogo dei voti, le cui barre sono il
+  filtro per stelle. La firma è il nome del **ristorante nell'app**
+  (`cardRestaurant.name`), come la mostra l'app, non il nome del locale.
+- **La lingua della risposta** è quella del browser (`navigator.language`,
+  ridotta a due lettere dal database): serve al «Traduci» dell'app.
+- **Una risposta rimossa dal nostro team** resta visibile qui col motivo e non
+  si modifica né si cancella più: il database lo impedisce, non il portale.
+
 ## Il catalogo dei piatti (2026-09-15)
 
 `/piatti` è la **fonte dei dati**: nome, allergeni, foto, categoria. Dove un
@@ -901,6 +926,15 @@ conservare la prova di un permesso che non c'è più.
 
 Nessuna migration serve: `partner_accounts_own` è già `FOR ALL` sulla propria
 riga (700), e `updated_at` lo muove il trigger.
+
+**Ultimo accesso** (735): `TouchLastSeen`, montato nella Shell, chiama
+`touch_partner_last_seen()` all'apertura e quando si torna sulla pagina, al
+massimo una volta all'ora (l'ora dell'ultima chiamata riuscita sta in
+`localStorage`; una chiamata fallita non la segna). La data la mette il
+server. Serve all'admin: l'ultimo login di Supabase, con la sessione aperta
+per settimane e il portale installato come app, non dice se il ristoratore
+lo usa. Il trigger di `updated_at` ignora questa colonna: «ultima attività»
+non è «profilo modificato».
 
 **Password dimenticata** (`/login`): al portale si entra una volta al mese,
 quindi dimenticarla è il caso normale e non l'eccezione. Due cose da non
@@ -998,8 +1032,7 @@ Annulla, perché da lì si esce anche con la ✕ e con Esc.
 Il **logo** segue la stessa regola della foto sostituita: si porta via il
 precedente solo **dopo** che la riga è stata scritta davvero (`setIdentity` in
 `venues.ts`). Cancellando prima, una scrittura fallita lascerebbe la riga a
-puntare a un file distrutto da noi. Sui loghi vecchi, che sono data URL e non
-file, la cancellazione non fa niente.
+puntare a un file distrutto da noi.
 
 Restano fuori portata gli orfani da scheda chiusa al momento sbagliato o da
 scrittura rifiutata. Una passata di pulizia è stata **valutata e rimandata**:

@@ -56,49 +56,23 @@ link al cliente Stripe; portale = pagamento e carta del ristoratore;
 webhook Stripe = funzione Supabase; rimborsi e disdette forzate dalla
 dashboard Stripe.
 
-## Stato attuale in breve (al 2026-07-27 — per lo stato di oggi v. «Piano operativo dell'abbonamento»)
+## In breve (aggiornato al 2026-09-25)
 
-- **Portale partner**: progetto Next.js separato su `partner.allergiapp.com`
-  (cartella `partner/` nel repo, Vercel deploya da `main`). L'admin non si tocca.
-- **Modello**: app gratis per gli utenti; lato ristoratori **premium-only**
-  (abbonamento mensile/annuale via Stripe, **solo B2B a P.IVA**, nessun
-  payout). Eventuale piano free deciso in seguito, sui dati dei fondatori.
-- **Utenti e partner = due entità diverse, due percorsi di iscrizione
-  separati** (deciso 22/08, modello Uber utente/driver): credenziale
-  condivisa (stessa email possibile), profili distinti (`profiles` vs
-  `partner_accounts`), nessun accesso automatico dall'app. Sezione dedicata
-  più sotto.
-- **Flusso**: iscrizione partner (persona: nome, cognome, contatto) →
-  dashboard compilabile come **bozza privata** → claim = 5 campi aziendali
-  (paese, denominazione, P.IVA/VAT validata via VIES, sede, email
-  fatturazione) + associazione a una scheda dell'app → abbonamento =
-  pubblicazione.
-  > ⚠️ **ORDINE CAMBIATO il 2026-09-15 (decisione dell'utente): prima
-  > l'abbonamento, poi l'associazione.** Il pagamento diventa il primo
-  > cancello — chi associa un ristorante ha già carta e fattura intestate —
-  > e la bozza privata resta compilabile prima di entrambi (migration 715:
-  > anche i piatti della scheda stanno sul locale). Il resto di questo
-  > documento descrive ancora l'ordine vecchio (claim → abbonamento) e va
-  > riletto con questa correzione; nel portale l'ordine nuovo si vede in
-  > `/abbonamenti`, mentre la pagina Scheda nomina solo l'associazione, con
-  > garbo, senza un "attiva l'abbonamento" in cima al lavoro. Da decidere quando si
-  > disegna il checkout: l'anagrafica aziendale del punto 3 del claim serve
-  > alla fattura, quindi probabilmente si sposta al pagamento.
-- **Verifica**: identica in ogni paese, nessun documento nel flusso normale;
-  i cancelli sono dichiarazione tracciabile + carta + fattura + moderazione a
-  valle. Documento+selfie solo in escalation nei casi contesi.
-- **Il premium vende strumenti** (piatti+allergeni, link, risposte,
-  analytics, certificazioni), **mai visibilità o sicurezza**: pin e
-  ordinamento restano community-driven.
-- **Abbonamento scaduto** = downgrade morbido (contenuti mai cancellati,
-  vetrina spenta, win-back al rinnovo).
-- **Cold start**: fondatori con premium regalato 6–12 mesi nelle città dense.
-- **Fattura elettronica**: la emettiamo noi via SdI (Stripe non la fa).
-- **Fondazioni (27/07, seconda sessione)**: portale IT+EN con i18n dal
-  giorno 1; un solo gestore per locale (un account può gestire più locali,
-  mai il contrario); 1 abbonamento = 1 locale, non trasferibile; fase 1 solo
-  claim di schede esistenti (locale mancante → messaggio ponte verso l'app);
-  migrations partner in serie 7xx su main.
+- **Modello**: app gratis per gli utenti; lato ristoratori **premium-only**,
+  un abbonamento per locale (7,99 €/mese · 60 €/anno, Stripe), **solo
+  aziende**. Il premium vende strumenti, **mai visibilità o sicurezza**.
+- **Portale partner** separato su `partner.allergiapp.com` (`partner/`,
+  deploy da `main`); **admin** su `admin-prod`. Utenti e partner sono due
+  profili distinti con la stessa credenziale (sezione dedicata più sotto).
+- **Ordine**: il ristoratore prepara tutto in bozza → si abbona → collega il
+  locale al ristorante dell'app → il nostro team dà il visto → la scheda si
+  vede dopo «Pubblica». Nessun documento: dichiarazione + dati aziendali dal
+  pagamento + controllo dell'admin dopo.
+- **Scade, sparisce; ti riabboni, torna**: niente si cancella, si spegne
+  quello che si vede (aspetto del menù, scheda, risposte).
+- **Stato del lavoro**: sezione «Piano operativo dell'abbonamento», blocco
+  «Dove siamo». Le cose ancora da fare stanno in `TODO.md`, «Partner Pro —
+  cosa resta».
 
 ## Principio guida
 
@@ -160,10 +134,10 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 
 ### I quattro pezzi
 
-1. **Claim automatico della scheda** ("Sei il proprietario?")
-   - Il claim è il **cancello d'ingresso di tutto**: primo pezzo da disegnare.
-   - Design dettagliato nella sezione "Claim self-service" più sotto
-     (definito 2026-07-27).
+1. **Collegamento del locale alla scheda dell'app** ("Sei il proprietario?")
+   - Nato a luglio come «claim» gratuito; dal 17/09 è l'**associazione**, che
+     chiede l'abbonamento e passa dal visto dell'admin. Design nella sezione
+     «Associazione locale ↔ ristorante» più sotto.
 
 2. **Dashboard ristoratore — prodotto web separato dall'app**
    - **DECISO (2026-07-27): progetto Next.js separato su
@@ -255,9 +229,9 @@ essere il collo di bottiglia di claim, contenuti e fatturazione.
 
 ## Associazione locale ↔ ristorante (design 2026-09-17)
 
-> Ripassa il «Claim self-service» di luglio qui sotto alla luce di
-> abbonamenti (716), listino del 15/09 e piatti sul locale (715). Dove dice
-> altro, vale questa. Design chiuso il 17/09 (quattro nodi + dati aziendali).
+> Sostituisce il «Claim self-service» di luglio (tolto dal documento il
+> 25/09: gratuito, senza abbonamento né visto, con contro-claim e decadenza
+> — tutto superato). Design chiuso il 17/09 (quattro nodi + dati aziendali).
 > **Parte 1 (database) FATTA il 18/09**: migration 721, applicata e verificata.
 > Rivedendola sono emerse quattro regole che il design dava per implicite
 > e che ora il database fa rispettare: per collegare serve un abbonamento
@@ -403,183 +377,6 @@ ristorante a un altro locale — ogni azione con motivo e riga in
   Confermato il 18/09: l'app con la recensione è la strada normale (una
   recensione in più fa comodo); se non va, **lo aggiunge l'admin** su
   richiesta a info@.
-
-## Claim self-service (design 2026-07-27)
-
-### Principio cardine (v3, 2026-07-27)
-
-**Stesso identico percorso in qualsiasi paese; ogni claim è ancorato a una
-persona identificata e a un'azienda dichiarata tracciabile.** Persona = nome,
-cognome, email (già verificata: è l'accesso al portale). Azienda =
-anagrafica fiscale con **P.IVA/VAT come identificativo universale**. Il
-collegamento col locale è dichiarato, sempre revocabile, protetto dalla
-moderazione a posteriori; i cancelli "duri" del caso normale sono la carta al
-checkout e la fattura intestata all'azienda dichiarata (col premium-only
-nessuno pubblica senza pagare). La verifica forte dell'identità (documento +
-selfie) è **arma di escalation** per i contesi, non un passo del flusso.
-Requisito internazionale (scelta utente 2026-07-27): il prodotto nasce
-uniforme come Airbnb/Booking — **nessun primitivo solo-locale nel percorso
-utente** (niente PEC, registri camerali, SIRET…); le differenze paese vivono
-solo nel backend (SdI, regimi IVA) o negli strumenti admin.
-
-### Il flusso
-
-1. **Account** — registrazione normale su partner.allergiapp.com, stesso pool
-   auth Supabase. L'account da solo non dà poteri: si è partner solo dopo il
-   claim (anagrafica + associazione). L'accesso deriva dalle righe di `restaurant_managers`
-   (utente → ristorante), NON dal campo `role` su profiles (evita superfici
-   di role-escalation). **Uno-a-molti (deciso 2026-07-27)**: un account può
-   gestire più locali (catene oggi, hotel domani), ma ogni locale ha **un
-   solo gestore** — vincolo di unicità sul claim *attivo* (indice parziale:
-   le righe contese/storiche con altri stati restano possibili), niente
-   inviti co-gestori, il subentro passa solo dal contro-claim. Nota per la
-   bozza SQL: il nome `restaurant_managers` nasceva many-to-many — valutare
-   un nome più fedele.
-2. **Trova il tuo locale** — ricerca per nome/città. Il ramo "non c'è?
-   aggiungilo" è **rimandato (deciso 2026-07-27)**: in fase 1 si claimano
-   solo schede esistenti; a ricerca vuota un messaggio ponte ("Non trovi il
-   tuo locale? Aggiungilo dall'app AllergiApp, poi torna qui a richiederne
-   la gestione") — il flusso community `app/restaurants/add.tsx` esiste già
-   e la scheda creata appare subito nella ricerca del portale.
-   L'inserimento nativo nel portale (inserimento + claim in un colpo,
-   moderazione a posteriori) diventa **prerequisito della fase 4**: quando
-   arriva il partner organico, non deve passare dall'app consumer.
-3. **Anagrafica aziendale (al primo claim)** — form unico mondiale, 5 campi:
-   **paese, denominazione, identificativo fiscale (P.IVA/VAT), sede, email di
-   fatturazione**; blocco condizionale invisibile dove serve (es. codice SDI
-   *facoltativo* per l'Italia — senza, si emette con 0000000 → cassetto
-   fiscale). Validazione uniforme in tutta l'UE via **VIES** (gratis),
-   best-effort altrove. Dati chiesti una volta per azienda, riusati su tutti
-   i suoi locali e passati al checkout (mai doppio inserimento). Doppio
-   servizio: fatturazione + **deterrente** (chi non è il titolare deve
-   dichiarare il falso su un'azienda reale e tracciabile). L'account resta
-   leggero (email+password): l'anagrafica scatta al primo claim, la vera
-   "registrazione da partner".
-4. **Identificazione della persona** — nome, cognome, email: l'email è già
-   verificata (è l'accesso al portale), nome e cognome sono dichiarati.
-   Niente documento nel flusso normale (scelta 2026-07-27, semplicità): la
-   verifica forte documento+selfie via provider globale (candidato: **Stripe
-   Identity** — stesso vendor del billing, ~100 paesi, ~1,5–2 € a verifica)
-   è riservata all'**escalation** nei casi contesi, dove l'admin può
-   pretenderla.
-5. **Collegamento persona → azienda → locale: dichiarato** — nessun registro
-   lo "prova" in modo trasversale (insegna ≠ ragione sociale, sede ≠
-   indirizzo del locale), quindi non ci si prova: il collegamento è
-   dichiarato e protetto dalle difese a valle (contro-claim, segnalazioni,
-   moderazione a posteriori, audit, rate limit, decadenza per inattività) più
-   i cancelli economici (carta + fattura: chi dichiara la P.IVA altrui fa
-   arrivare fatture nel cassetto fiscale della vittima — anomalia che emerge
-   da sola). Scommessa alla Airbnb, sostenibile con economia a basso
-   incentivo.
-6. **Casi contesi** — un solo claim attivo per locale. Contro-claim sempre
-   possibile: il gestore attuale è notificato e deve ri-verificarsi entro X
-   giorni, altrimenti la gestione passa. Conflitti veri (es. cambio gestione)
-   → coda admin con documenti aziendali (SCIA/licenza, visura, contratto) o
-   video-verifica: lì serve un occhio umano, e lì l'admin può usare anche
-   strumenti locali (per l'Italia: PEC, registri camerali) — dietro le
-   quinte, mai nel percorso utente.
-7. **Checkout** — la carta aggiunge tracciabilità (può essere personale:
-   l'intestatario fattura resta l'azienda, v. billing).
-
-> **Archivio metodi superati (tutti il 2026-07-27):**
-> - **v1** — codice via email su dominio del sito o SMS/chiamata vocale
->   on-demand al numero pubblico del locale (modello Yelp/Google), fallback
->   documenti. Scartato: macchinoso e frustrante (titolare remoto, dettatura
->   codici, social engineering sulla chiamata).
-> - **v2** — codice alla PEC aziendale ricavata da INI-PEC a partire dalla
->   P.IVA (primitivo forte ma solo italiano). Scartato per il requisito di
->   uniformità internazionale: nessun primitivo solo-locale nel percorso
->   utente. La PEC resta utilizzabile dall'admin come prova nei contesi
->   italiani.
-
-### Taratura della semplicità (2026-07-27)
-
-Senza soldi che girano lato partner l'incentivo alla frode è basso →
-controlli proporzionati: leggeri ma reali. La semplificazione sta nel
-**come**, non nel **se** — gli allergeni per piatto sono informazione di
-sicurezza e l'etichetta "secondo il ristoratore" vale solo se chi parla è
-davvero il ristoratore. Nel v3 i cancelli sono: dichiarazione tracciabile
-(anagrafica + P.IVA), pagamento, moderazione a valle:
-
-- **Burocrazia solo se serve due volte**: si chiedono soltanto dati che
-  servono comunque (anagrafica per fatturare, identità per rispondere del
-  claim) e **mai attese di revisione umana né documenti nel caso normale** —
-  VIES valida la P.IVA in tempo reale, il resto è dichiarativo. Il
-  design di marzo 2026 (`restaurant_claims` con documento + verifica manuale
-  di OGNI claim) resta superato: NON copiarlo. (Stessa sorte per il "badge
-  premium" e l'`ORDER BY is_premium` di quello schema: violano il principio
-  guida.)
-- **Verifica al momento di pubblicare, non all'ingresso** (raffinato
-  2026-07-27): account leggero e dashboard subito **compilabile come bozza
-  privata** — il ristoratore inserisce piatti, dettagli e foto prima ancora
-  del claim, senza che nulla appaia nell'app. Anagrafica + associazione alla
-  scheda + abbonamento scattano solo per pubblicare. Leva di conversione: al
-  paywall non compra una promessa, **pubblica un lavoro già fatto**.
-  Implicazioni: i contenuti partner vivono in tabelle proprie legate
-  all'account (stato bozza), agganciate al `restaurant_id` solo al claim; nel
-  ramo "il locale non c'è" la scheda base creata (nome, indirizzo, posizione)
-  può andare live subito come contenuto community — solo la vetrina resta
-  dietro claim + abbonamento.
-- **Google Business Profile OAuth rimandata**: elegante ma è una nuova
-  integrazione Google mentre la direzione è rimuoverle; l'identity
-  verification copre già tutto il mondo con un metodo solo.
-
-### Benchmark (come verificano gli altri, lug 2026)
-
-- **Yelp/Google**: codice al contatto pubblico in scheda — il modello
-  classico dei listing (era il nostro v1). Google in più: video-verifica
-  (vetrina, interni, prova d'accesso) come metodo forte; cartolina postale
-  ormai residuale.
-- **TripAdvisor**: email dominio + telefono in scheda + verifica via carta di
-  credito (il circuito pagamenti come KYC).
-- **Booking/delivery/TheFork**: documenti + KYC completo o contratto
-  commerciale — sostenibile solo perché gestiscono transazioni; per noi no.
-- **Airbnb**: verifica l'identità della *persona*, non la titolarità
-  dell'asset — l'asset è dichiarato e la fiducia si gestisce a valle.
-- Da tenere come **arma di riserva**: video-verifica per le contese serie;
-  carta salvata / micro-addebito alla TripAdvisor se il gratuito venisse
-  abusato (v. sotto).
-- Il modello scelto (v3) è un **Airbnb alleggerito**: persona identificata
-  (nome/cognome/email) + azienda e asset dichiarati + cancelli economici
-  (carta, fattura) + fiducia gestita a valle; verifica documentale solo in
-  escalation. Nota storica: la
-  PEC italiana (recapito legale certificato, indice pubblico INI-PEC) era
-  stata scelta come metodo principale (v2) perché più forte di qualsiasi
-  primitivo dei player globali, poi accantonata per il requisito di
-  uniformità internazionale — resta un asso nella manica dell'admin per i
-  contesi italiani.
-
-### Anti-squatting e account fraudolenti
-
-Caso: riscatto il locale perché è gratis, poi zero contenuti o intralcio al
-vero titolare. Tre meccanismi (in ordine di importanza):
-
-1. **Il claim decade se non usato** ("use it or lose it"): zero contenuti e
-   zero accessi dopo N mesi → promemoria → auto-revoca, scheda torna "non
-   gestita". Stesso principio della scadenza morbida delle dichiarazioni: il
-   diritto sulla scheda si mantiene vivo, non è un possesso perpetuo.
-2. **Il claim non è mai un lucchetto**: contro-claim con ri-verifica (v. casi
-   contesi sopra).
-3. **Segnali in admin, non burocrazia in ingresso**: rate limit sui claim per
-   account; pannello admin che evidenzia pattern sospetti (stesso account su
-   città diverse, claim con zero contenuti, link modificati subito dopo il
-   claim — l'unico vettore di phishing); segnalazione dall'app "profilo
-   gestito dalla persona sbagliata"; audit log di claim e modifiche, revoca
-   sempre possibile.
-
-Requisito tecnico dal giorno 1: lo schema del claim deve avere **stati e
-timestamp** che rendano possibili revoca, scadenza e ri-verifica senza
-migrazioni dolorose. I meccanismi si attivano quando servono.
-
-**Decisione (2026-07-27): il claim resta gratuito, gli strumenti sono
-premium.** Nota di percorso: l'idea del pagamento come *deterrente
-anti-disturbo* era stata scartata (il troll non passa comunque la verifica; il
-truffatore con carta valida passerebbe anche il paywall — niente KYB, v.
-billing); è poi prevalso l'argomento di *posizionamento* — la dichiarazione
-del ristoratore è una vetrina, e le vetrine si pagano (v. sezione "Modello
-commerciale: premium-only al lancio"). Effetto collaterale benvenuto: col
-premium-only il contenimento abusi è totale, perché ogni strumento di
-contenuto sta dietro il paywall.
 
 ## Menù con allergeni per piatto (la feature più forte)
 
@@ -734,75 +531,60 @@ ciò che c'è ("menù dichiarato dal ristoratore"), mai l'assenza come mancanza.
 > col premium; downgrade morbido (piatti oltre cap nascosti, mai cancellati).
 > Resta la candidata naturale se un giorno si introdurrà un piano free.
 
-## Risposte alle recensioni (design 2026-09-16)
+## Risposte alle recensioni (disegnate il 16/09, costruite il 25/09)
 
-Esce nel passo 5 del piano, con associazione e scheda in app: senza
-associazione il portale non sa quali recensioni mostrare.
+Fatte e provate (migrations **733-735** applicate, portale e admin online);
+nell'app escono con la build nativa del passo 5, insieme alla scheda.
 
-- **Si scrive solo dal portale**, mai dall'app. Il ristoratore vede solo
-  quello che l'app mostra già a tutti, con lo stesso rispetto di
-  `is_anonymous`: mai altro sull'utente (allergie = art. 9).
-- **Visibile solo con abbonamento attivo**, regola «scade, sparisce; ti
-  riabboni, torna»: la risposta resta salvata, l'app non la riceve. Il filtro
-  sta nel database, non nel client. Conta l'abbonamento, **non** la scheda
-  pubblicata (si risponde anche senza piatti caricati).
-- **E solo dopo il visto del nostro team sul collegamento** (aggiunto il
-  19/09 con la 724): senza, chi prende un locale non suo potrebbe rispondere
-  in pubblico alle recensioni prima del controllo. Quindi visibile =
-  abbonamento attivo **e** collegamento attivo e con `reviewed_at`, come la
-  scheda tranne i piatti. Da decidere quando si costruiscono: con la scheda
-  **in pausa** le risposte restano visibili o no?
-- **In app**: blocco rientrato sotto la recensione, **logo del locale come
-  avatar** + nome del locale + «Risposta del ristorante». Senza logo, icona
-  generica di ristorante (niente iniziali). Non porta a nessun profilo.
-  Niente etichetta «modificata».
-- **Una risposta per recensione**, modificabile e cancellabile, lunghezza
-  limitata; recensione cancellata → risposta cancellata.
-- **Anche alle recensioni vecchie**, di prima dell'abbonamento (deciso 16/09).
-- **L'utente non risponde alla risposta**: nessuna conversazione (deciso 16/09).
-- **L'autore della recensione viene avvisato** della risposta con un
-  **pallino nell'app**, come per i like (deciso 16/09). La notifica push
-  arriverà quando si costruiscono le notifiche per tutti (passo 6).
-- **Traduzione**: stesso pulsante delle recensioni (mig 074).
-- **Moderazione**: testo libero, quindi può contenere promesse di sicurezza
-  («da noi i celiaci sono al sicuro»). Non si blocca prima: risposta
-  segnalabile come le recensioni, rimozione dall'admin con motivazione (DSA
-  art. 17), divieto esplicito nelle condizioni d'uso del portale.
-- **Prerequisito**: il logo oggi è un data URL dentro `partner_venues`; va
-  portato su Storage prima che l'app lo mostri in ogni lista di recensioni.
+**Chi scrive e cosa vede**
+- **Solo dal portale**, mai dall'app. Il ristoratore vede quello che l'app
+  mostra già a tutti — nome (o «Utente anonimo»), voto, testo, foto, esigenze
+  dichiarate — e niente altro sull'autore (allergie = art. 9).
+- **Una risposta per recensione**, fino a 1000 caratteri, modificabile e
+  cancellabile; **anche alle recensioni vecchie**. Recensione cancellata →
+  risposta cancellata. **L'utente non risponde alla risposta**: nessuna
+  conversazione.
+- **Lingua** salvata dal browser del ristoratore (`it-IT` → `it`), così
+  «Traduci» si comporta come per le recensioni.
 
-> **Com'è venuta (25/09) — costruita, provata sul simulatore, non ancora
-> uscita** (chiede la build nativa, come la scheda). Migrations **733-735
-> applicate**. Cosa è cambiato rispetto al disegno qui sopra:
-> - **Il logo era già su Storage dal 02/09**: il prerequisito non c'era più.
-> - **Visibile = abbonamento in corso + collegamento attivo O IN PAUSA +
->   visto del team + non rimossa**: la pausa ferma la scheda, non la voce del
->   ristoratore. Una regola sola nel database, `partner_can_reply()`, uguale
->   per scrivere e per mostrare.
-> - **Firma = nome del RISTORANTE nell'app** (quello in cima alla scheda),
->   non il nome del locale nel portale, che può essere un altro. Sotto:
->   «Risposta del ristorante · mese anno». Senza logo, icona di posate.
-> - **La risposta NON si segnala** (ripensato il 25/09): darebbe solo lavoro
->   all'admin; chi non è d'accordo modifica la recensione, il ristoratore la
->   sua risposta. La moderazione è dell'admin, dalla pagina dell'account del
->   ristoratore (Rimuovi con motivo / Rimetti, nel registro partner). Nel
->   database restano, non usati, `reports.reply_id` e l'`id` restituito da
->   `get_review_replies` (734).
-> - **Lingua salvata** dal browser del ristoratore (`it-IT` → `it`), così
->   «Traduci» si comporta come per le recensioni.
-> - **Il consiglio sotto il campo** parla di come rispondere bene, non di
->   allergie (testo dell'utente). ⚠️ Il divieto di promettere sicurezza va
->   quindi scritto **nelle condizioni d'uso del portale** — DA FARE prima del
->   rilascio, o una rimozione non avrebbe una regola a cui appoggiarsi.
-> - **Nel portale** è una voce della barra, «Recensioni», che c'è solo quando
->   si può rispondere. Dentro: «Come appari nelle risposte» (il logo del
->   locale si sceglie anche da qui: nell'app subito, al tavolo dopo
->   Pubblica), il riepilogo dei voti alla Google Maps (le barre sono il
->   filtro per stelle), «Da rispondere / Tutte», le esigenze dell'autore come
->   pill ambra. I nomi dei ~97 altri alimenti sono una copia gemella SOLO per
->   mostrarli: ai piatti si associano sempre e solo i 15 allergeni.
-> - **Pallino** per data (`profiles.last_seen_review_replies_at`), dentro
->   `useNotificationDot` insieme ai like; si spegne aprendo il profilo.
+**Quando si vede** — una regola sola nel database, `partner_can_reply()`,
+uguale per scrivere e per mostrare: abbonamento in corso (anche col
+pagamento in ritardo, come tutto il Pro) + collegamento **attivo o in
+pausa** + visto del nostro team. La pausa ferma la scheda, non la voce del
+ristoratore. «Scade, sparisce; ti riabboni, torna»: la risposta resta
+salvata, l'app non la riceve. La risposta è del **locale**: chi scollega e
+ricollega lo stesso ristorante la ritrova.
+
+**Nell'app**: blocco rientrato sotto la recensione, dopo like e segnala.
+Avatar = logo del locale (senza logo, icona di posate — niente iniziali);
+**firma = nome del ristorante com'è nell'app**, non il nome del locale nel
+portale, che può essere un altro; sotto «Risposta del ristorante · mese
+anno». Non porta a nessun profilo, niente «modificata». L'autore della
+recensione è avvisato col **pallino** dei like (per data:
+`profiles.last_seen_review_replies_at`), che si spegne aprendo il profilo,
+dove la risposta compare sotto la recensione. La push arriverà con le
+notifiche per tutti (passo 6).
+
+**Nel portale**: voce «Recensioni» nella barra, solo quando si può
+rispondere. Dentro: «Come appari nelle risposte» (il logo si sceglie anche
+da qui: è quello del locale, nell'app cambia subito, al tavolo dopo
+Pubblica); il riepilogo dei voti alla Google Maps, con le barre che fanno da
+filtro per stelle; «Da rispondere / Tutte»; le esigenze dell'autore come
+pill ambra. Il consiglio sotto il campo parla di come rispondere bene,
+anche alle critiche — non di allergie. I nomi dei ~97 altri alimenti
+dell'app sono copiati nel portale **solo per mostrarli**: ai piatti si
+associano sempre e solo i 15 allergeni.
+
+**Moderazione**: il testo è libero, e il rischio vero sono le promesse di
+sicurezza («da noi i celiaci sono al sicuro»). Non si blocca prima e **la
+risposta non si segnala** (deciso il 25/09: darebbe solo lavoro all'admin;
+chi non è d'accordo modifica la recensione). L'admin la toglie dalla pagina
+dell'account del ristoratore con un motivo (DSA art. 17), che il
+ristoratore legge nel portale; la riga resta, non si modifica più, e l'admin
+può rimetterla. Ogni gesto va nel registro partner. ⚠️ Il divieto va scritto
+**nelle condizioni d'uso del portale** prima del rilascio (in `TODO.md`).
+Nel database restano, non usati, `reports.reply_id` e l'`id` restituito da
+`get_review_replies`.
 
 ## Certificazioni
 
@@ -966,21 +748,19 @@ Ricadute tecniche (già riportate nella bozza 700):
 
 ## Piano operativo dell'abbonamento (2026-09-16)
 
-> Sostituisce le "Fasi (bozza)" qui sotto, che restano come traccia storica.
 > Criterio dell'ordine: **l'estetica del menù è l'unica voce a pagamento che
 > non chiede una versione nuova dell'app**, quindi è la prima che può valere
 > davvero. Scheda in app e risposte alle recensioni viaggiano insieme, in una
 > build nativa.
 
-> **Dove siamo (21/09):** passi 1 e 2 FATTI. Del passo 5 è **fatta e online
-> l'associazione** (parti 1-3: database 721-726, portale, dashboard admin),
-> col visto del nostro team prima che una scheda si veda. Della **parte 4,
-> l'app**, è scritta la scheda: la 731 fa da sportello unico, il riquadro e la
-> schermata «Vedi tutto» sono in `main` e girano sul simulatore — non sono
-> ancora uscite, perché chiedono una build nativa. **Le risposte alle
-> recensioni sono fatte (25/09)**, stessa build. Restano: **contorno del
-> pin** e `ORDER BY is_premium` neutralizzato. Da fare anche il passo 3 (ristoratori veri) e il
-> 4 (fatturazione, commercialista).
+> **Dove siamo (25/09):** passi 1 e 2 FATTI. Del passo 5 sono **fatte e
+> online** l'associazione (721-726, portale, admin, col visto del nostro team)
+> e la parte web delle **risposte alle recensioni** (733-735). **Nell'app**
+> sono scritte e provate sul simulatore la scheda (731) e le risposte: escono
+> con la build nativa, dove restano da fare il **contorno del pin** e
+> `ORDER BY is_premium` neutralizzato. Da fare anche il passo 3 (ristoratori
+> veri) e il 4 (fatturazione, condizioni d'uso, Stripe in reale). Elenco
+> puntuale in `TODO.md`, «Partner Pro — cosa resta».
 
 > **La scheda nell'app, com'è venuta (21/09).** L'anteprima del portale
 > (`SchedaPreview`) era il disegno: si è trascritta, non riprogettata. Ordine
@@ -1100,43 +880,11 @@ gestore e statistiche.
 > un servizio di invio (Resend, Postmark…) sul dominio allergiapp.com e i
 > testi in due lingue. Non prima che ci sia qualcosa di live.
 
-## Fasi (bozza, da trasformare in piano quando saremo pronti)
-
-1. Claim self-service + dashboard in anteprima
-2. Strumenti premium base: sezioni info/link + menù piatti con matching —
-   rilasciati alla coorte fondatori (premium regalato), che fa da seeding e
-   da beta
-3. Mini-analytics nella dashboard ristoratore
-4. Billing Stripe: apertura della vendita vera (prerequisito: inserimento
-   locale nativo nel portale, v. flusso claim punto 2)
-5. Risposte alle recensioni (+ moderazione/segnalazioni)
-6. Certificazioni (prima "as is" con disclaimer, poi verificate)
-
-Trasversali: lavoro legale P2B/ROC prima del primo incasso (fase 4);
-programma fondatori a cavallo delle fasi 2–4; a valle, decisione su un
-eventuale piano free coi dati della coorte fondatori.
-
 ## Questioni aperte
 
-- ~~Prezzo del premium~~ — di partenza 7,99 €/mese o 60 €/anno (15/09), v. "Listino attuale"
-- Criteri per valutare l'eventuale piano free futuro (dati coorte fondatori:
+- Criteri per un eventuale piano free futuro (dai dati dei primi ristoratori:
   compilazione menù, conversione a pagamento, abusi)
-- Quali città per i ristoranti fondatori (guardare densità utenti/recensioni)
-- Wording esatto di disclaimer e checkbox allergeni (vaglio legale)
-- Soglia X mesi per la scadenza morbida delle dichiarazioni
-- Provider di identity verification per l'escalation nei contesi (candidato:
-  Stripe Identity): costi reali, copertura paesi, retention documenti,
-  DPA/GDPR
-- Wording e UX dell'anagrafica al claim (chiarire perché chiediamo la P.IVA:
-  fatturazione + responsabilità del claim, non schedatura)
-- Validazione dell'identificativo fiscale fuori UE (VIES copre solo l'UE):
-  quali equivalenti best-effort per paese
-- Soglie temporali del claim: N mesi di inattività per la decadenza, X giorni
-  per la ri-verifica su contro-claim
-- Fatturazione elettronica SdI: connettore Stripe → gestionale vs
-  commercialista; da definire col commercialista prima del primo incasso
-
-> **Chiuse il 2026-07-27 (seconda sessione)**: gestori multipli (no: un solo
-> gestore per locale, uno-a-molti), granularità abbonamento (1 per locale,
-> non trasferibile), lingue (IT+EN con i18n dal giorno 1) — v. sezioni
-> relative.
+- Quali città per i primi ristoratori (densità di utenti e recensioni)
+- Wording esatto di disclaimer e dichiarazioni sugli allergeni (vaglio legale)
+- Soglia per la scadenza morbida delle dichiarazioni (riconferma periodica)
+- Aziende fuori UE: VIES copre solo l'UE, quali controlli equivalenti per paese
