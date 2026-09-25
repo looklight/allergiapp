@@ -7,6 +7,7 @@ import AuthGuard from './AuthGuard';
 import Nav from './Nav';
 import RegisterSW from './RegisterSW';
 import SaveStatus from './SaveStatus';
+import TouchLastSeen from './TouchLastSeen';
 
 // Tutto ciò che ha bisogno del browser (sessione, lingua, nav). Sta fuori dal
 // layout perché la radice deve restare un componente server: è l'unico posto
@@ -29,6 +30,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             children
           ) : (
             <AuthGuard>
+              <TouchLastSeen />
               {isFullPreview ? (
                 children
               ) : (
