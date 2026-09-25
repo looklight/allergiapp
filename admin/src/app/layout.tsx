@@ -13,7 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const isLoginPage = pathname === '/login';
 
   return (
-    <html lang="it">
+    // suppressHydrationWarning: lo script qui sotto mette `dark` su <html>
+    // prima che React idrati, apposta (niente lampo chiaro). Vale solo per
+    // gli attributi di questo tag, non per i figli.
+    <html lang="it" suppressHydrationWarning>
       <head>
         <title>AllergiApp Admin</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -53,6 +53,19 @@ interface PartnerVenue {
   // Chi è ancora vivo (730): ultimo accesso al portale, ultima modifica qui
   last_sign_in_at: string | null;
   last_edit_at: string | null;
+  // Ultima attività sul portale (735), letta a parte da partner_accounts
+  last_seen_at?: string | null;
+}
+
+// «Ultimo accesso» come nella pagina Utenti: l'ultima volta che ha USATO il
+// portale (735, aggiornata al massimo ogni ora), non l'ultimo login — che con
+// la sessione aperta resta fermo per settimane. Il più recente dei due: anche
+// un login è attività, e per chi non ha ancora riaperto il portale dopo la
+// 735 resta almeno quello.
+function ultimoAccesso(r: PartnerVenue): string | null {
+  const date = [r.last_seen_at, r.last_sign_in_at].filter((x): x is string => !!x);
+  if (date.length === 0) return null;
+  return date.reduce((a, b) => (new Date(a) > new Date(b) ? a : b));
 }
 
 // Chi si è iscritto e non ha ancora creato un locale (725): nella tabella,
@@ -249,7 +262,22 @@ export default function PartnersPage() {
       safeQuery(() => supabase.rpc('get_partner_stats_admin'), 'Numeri partner'),
       safeQuery(() => supabase.rpc('get_partner_accounts_without_venue_admin'), 'Iscritti senza locale'),
     ]);
-    setRows((venues as PartnerVenue[]) ?? []);
+    // L'ultima attività sul portale (735): da partner_accounts, che l'admin
+    // legge direttamente. Se la colonna non c'è ancora, o la lettura fallisce,
+    // resta l'ultimo login — non si rompe la pagina per un dato in più.
+    const venueRows = (venues as PartnerVenue[]) ?? [];
+    const ids = [...new Set(venueRows.map((r) => r.owner_user_id))];
+    const visti = new Map<string, string | null>();
+    if (ids.length > 0) {
+      const { data: accounts } = await supabase
+        .from('partner_accounts')
+        .select('user_id, last_seen_at')
+        .in('user_id', ids);
+      for (const a of (accounts ?? []) as { user_id: string; last_seen_at: string | null }[]) {
+        visti.set(a.user_id, a.last_seen_at);
+      }
+    }
+    setRows(venueRows.map((r) => ({ ...r, last_seen_at: visti.get(r.owner_user_id) ?? null })));
     // La ricerca vale anche qui: nome, cognome, email
     const q = search.trim().toLowerCase();
     setSenzaLocale(
@@ -692,22 +720,32 @@ export default function PartnersPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/users/${r.owner_user_id}`} className="text-primary hover:underline">
+                    {/* Nome e email su due righe: sono due link in linea, e
+                        senza `block` finivano attaccati sulla stessa riga */}
+                    <Link href={`/users/${r.owner_user_id}`} className="block text-primary hover:underline">
                       {`${r.first_name} ${r.last_name}`.trim()}
                     </Link>
                     {r.email ? (
-                      <a href={`mailto:${r.email}`} className="text-xs text-primary hover:underline">
-                        {r.email}
+                      <a href={`mailto:${r.email}`} className="flex items-start gap-1 text-xs text-primary hover:underline">
+                        {/* La busta: dice che il link apre una mail */}
+                        <svg className="mt-px h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <rect x="3" y="5" width="18" height="14" rx="2" />
+                          <path d="M3.5 6.5L12 13l8.5-6.5" />
+                        </svg>
+                        <span className="min-w-0 break-all">{r.email}</span>
                       </a>
                     ) : (
                       <p className="text-xs text-faint">—</p>
                     )}
                     <p className="text-xs text-faint">iscritto il {data(r.signed_up_at)}</p>
                     {/* Chi ha mollato si riconosce da qui (730): se l'ultimo
-                        accesso è vecchio e non ha mai pubblicato, è andato. */}
+                        accesso è vecchio e non ha mai pubblicato, è andato.
+                        «Modificato il…» tolto il 25/09 (scelta dell'utente):
+                        contava solo locale e menù, non catalogo, scheda e
+                        risposte, e faceva sembrare fermo chi non lo era.
+                        `last_edit_at` resta nella funzione, non letto. */}
                     <p className="text-xs text-faint">
-                      ultimo accesso {r.last_sign_in_at ? data(r.last_sign_in_at) : 'mai'} · modificato{' '}
-                      {data(r.last_edit_at)}
+                      ultimo accesso {ultimoAccesso(r) ? data(ultimoAccesso(r)!) : 'mai'}
                     </p>
                   </td>
                   <td className="px-4 py-3">
@@ -720,8 +758,8 @@ export default function PartnersPage() {
                     {/* Cosa ha costruito: il catalogo è dell'iscritto, i piatti
                         scelti sono di questo locale. */}
                     <p className="text-xs text-faint">
-                      {r.dishes_total} in catalogo
-                      {r.card_dishes_total > 0 && ` · ${r.card_dishes_total} sulla scheda`}
+                      {r.dishes_total} {r.dishes_total === 1 ? 'piatto' : 'piatti'}
+                      {r.card_dishes_total > 0 && ` (${r.card_dishes_total} sulla scheda)`}
                     </p>
                     <RigaScheda r={r} />
                   </td>
