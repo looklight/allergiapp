@@ -12,6 +12,7 @@ import { useBusyIds } from '@/hooks/useBusyIds';
 import UserProfileCard from './components/UserProfileCard';
 import MediaGallery, { type MediaItem } from './components/MediaGallery';
 import PartnerAccountCard, { type PartnerAccount } from './components/PartnerAccountCard';
+import PartnerRepliesSection from './components/PartnerRepliesSection';
 import DietaryBadges from '@/components/DietaryBadges';
 import Link from 'next/link';
 import { useLightbox } from '@/contexts/LightboxContext';
@@ -187,6 +188,7 @@ export default function UserDetailPage() {
       <div>
         <Link href="/partners" className="text-primary hover:underline text-sm">&larr; Torna ai partner</Link>
         <PartnerAccountCard partner={partner} standalone isDeleting={isDeleting} onDelete={deleteUser} />
+        <PartnerRepliesSection userId={id} />
       </div>
     );
   }
@@ -205,6 +207,7 @@ export default function UserDetailPage() {
       {partner && (
         <PartnerAccountCard partner={partner} standalone={false} isDeleting={isDeleting} onDelete={deleteUser} />
       )}
+      {partner && <PartnerRepliesSection userId={id} />}
 
       <MediaGallery
         items={allMedia}
