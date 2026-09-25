@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { useVenues, useVenueChoice, currentVenue } from '@/lib/venues';
+import { useSubscriptions } from '@/lib/subscriptions';
+import { canManageReviews } from '@/lib/reviews';
 
 function HomeIcon({ className }: { className?: string }) {
   return (
@@ -46,6 +48,16 @@ function CardIcon({ className }: { className?: string }) {
   );
 }
 
+// Fumetto con la stella: la recensione, non una chat
+function ReviewsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z" />
+      <path d="M12 6.5l1.1 2.2 2.4.35-1.75 1.7.4 2.4L12 12l-2.15 1.15.4-2.4-1.75-1.7 2.4-.35z" />
+    </svg>
+  );
+}
+
 function UserIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -63,6 +75,7 @@ export default function Nav() {
   const { venues } = useVenues();
   const { venueId } = useVenueChoice();
   const venue = currentVenue(venues ?? null, venueId);
+  const { subs } = useSubscriptions();
 
   const items = [
     { href: '/', label: d.nav.home, short: d.nav.home, Icon: HomeIcon },
@@ -79,6 +92,12 @@ export default function Nav() {
             Icon: CardIcon,
           },
         ]
+      : []),
+    // Le recensioni (25/09): solo quando il locale scelto può rispondere —
+    // abbonamento che vale e ristorante associato e approvato. Prima di
+    // allora la voce non promette niente che non si possa fare.
+    ...(canManageReviews(venue, subs ?? null)
+      ? [{ href: '/recensioni', label: d.nav.reviews, short: d.nav.reviews, Icon: ReviewsIcon }]
       : []),
     // Gli abbonamenti sono finiti DENTRO Account (01/09): finché sono un
     // tappo, una voce di primo livello prometteva più di quanto c'è

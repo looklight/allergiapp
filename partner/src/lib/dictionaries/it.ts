@@ -25,6 +25,7 @@ const it = {
     // "Scheda AllergiApp" verrebbe tagliata a metà parola
     card: 'Scheda AllergiApp',
     cardShort: 'Scheda',
+    reviews: 'Recensioni',
     account: 'Account',
   },
   login: {
@@ -1132,6 +1133,50 @@ const it = {
     passwordChanged: 'Password aggiornata',
     // Si arriva qui col link della mail di recupero (v. login.forgot)
     passwordFromRecovery: 'Scegli la password nuova: da qui in poi userai questa.',
+  },
+  // Le recensioni del ristorante collegato e le risposte (733)
+  reviews: {
+    title: 'Recensioni',
+    intro: 'Le recensioni di {restaurant} su AllergiApp. La tua risposta compare sotto la recensione, col logo del locale.',
+    filterTodo: 'Da rispondere ({n})',
+    filterAll: 'Tutte ({n})',
+    empty: 'Ancora nessuna recensione su AllergiApp.',
+    emptyTodo: 'Hai risposto a tutte le recensioni.',
+    emptyStars: 'Nessuna recensione con queste stelle.',
+    loadError: 'Non siamo riusciti a leggere le recensioni. Riprova tra poco.',
+    retry: 'Riprova',
+    anonymous: 'Utente anonimo',
+    needs: 'Le sue esigenze',
+    edited: 'Modificata dopo la tua risposta',
+    reply: 'Rispondi',
+    yourReply: 'La tua risposta',
+    placeholder: 'Scrivi una risposta…',
+    // Il consiglio accanto al campo: aiuta a rispondere bene, anche alle
+    // critiche (testo dell'utente, 25/09). Il divieto delle promesse di
+    // sicurezza sta nelle condizioni d'uso, non qui.
+    tips: 'Cerca di ringraziare e di rispondere nel merito in modo cordiale. Davanti a una critica mantieni la calma: chi legge guarda soprattutto come rispondi.',
+    // Come appare il ristoratore accanto alle risposte: il logo del LOCALE,
+    // lo stesso del menù al tavolo (703: un logo per locale)
+    identityTitle: 'Come appari nelle risposte',
+    starsAll: 'Tutte le stelle',
+    starsLabel: 'Filtra per stelle',
+    summaryCount: '{n} recensioni',
+    summaryRow: '{n} stelle: {count}',
+    counter: '{n}/{max}',
+    save: 'Pubblica',
+    cancel: 'Annulla',
+    edit: 'Modifica',
+    delete: 'Elimina',
+    saveError: 'La risposta non è stata salvata. Riprova.',
+    deleteError: 'La risposta non è stata eliminata. Riprova.',
+    deleteTitle: 'Eliminare la risposta?',
+    deleteBody: 'Sparisce dall’app. Potrai scriverne un’altra quando vuoi.',
+    removedTitle: 'Rimossa dal team AllergiApp',
+    removedReason: 'Motivo: {note}',
+    removedHint: 'Non è più visibile nell’app e non si può modificare. Per chiarimenti scrivi a info@allergiapp.com.',
+    unavailableTitle: 'Le risposte alle recensioni sono Pro',
+    unavailableBody: 'Si risponde con l’abbonamento attivo e il locale associato al suo ristorante su AllergiApp, dopo il controllo del nostro team.',
+    unavailableCta: 'Apri la scheda',
   },
 };
 
