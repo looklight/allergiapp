@@ -771,6 +771,39 @@ associazione il portale non sa quali recensioni mostrare.
 - **Prerequisito**: il logo oggi è un data URL dentro `partner_venues`; va
   portato su Storage prima che l'app lo mostri in ogni lista di recensioni.
 
+> **Com'è venuta (25/09) — costruita, provata sul simulatore, non ancora
+> uscita** (chiede la build nativa, come la scheda). Migrations **733-735
+> applicate**. Cosa è cambiato rispetto al disegno qui sopra:
+> - **Il logo era già su Storage dal 02/09**: il prerequisito non c'era più.
+> - **Visibile = abbonamento in corso + collegamento attivo O IN PAUSA +
+>   visto del team + non rimossa**: la pausa ferma la scheda, non la voce del
+>   ristoratore. Una regola sola nel database, `partner_can_reply()`, uguale
+>   per scrivere e per mostrare.
+> - **Firma = nome del RISTORANTE nell'app** (quello in cima alla scheda),
+>   non il nome del locale nel portale, che può essere un altro. Sotto:
+>   «Risposta del ristorante · mese anno». Senza logo, icona di posate.
+> - **La risposta NON si segnala** (ripensato il 25/09): darebbe solo lavoro
+>   all'admin; chi non è d'accordo modifica la recensione, il ristoratore la
+>   sua risposta. La moderazione è dell'admin, dalla pagina dell'account del
+>   ristoratore (Rimuovi con motivo / Rimetti, nel registro partner). Nel
+>   database restano, non usati, `reports.reply_id` e l'`id` restituito da
+>   `get_review_replies` (734).
+> - **Lingua salvata** dal browser del ristoratore (`it-IT` → `it`), così
+>   «Traduci» si comporta come per le recensioni.
+> - **Il consiglio sotto il campo** parla di come rispondere bene, non di
+>   allergie (testo dell'utente). ⚠️ Il divieto di promettere sicurezza va
+>   quindi scritto **nelle condizioni d'uso del portale** — DA FARE prima del
+>   rilascio, o una rimozione non avrebbe una regola a cui appoggiarsi.
+> - **Nel portale** è una voce della barra, «Recensioni», che c'è solo quando
+>   si può rispondere. Dentro: «Come appari nelle risposte» (il logo del
+>   locale si sceglie anche da qui: nell'app subito, al tavolo dopo
+>   Pubblica), il riepilogo dei voti alla Google Maps (le barre sono il
+>   filtro per stelle), «Da rispondere / Tutte», le esigenze dell'autore come
+>   pill ambra. I nomi dei ~97 altri alimenti sono una copia gemella SOLO per
+>   mostrarli: ai piatti si associano sempre e solo i 15 allergeni.
+> - **Pallino** per data (`profiles.last_seen_review_replies_at`), dentro
+>   `useNotificationDot` insieme ai like; si spegne aprendo il profilo.
+
 ## Certificazioni
 
 L'unica voce che sfiora la promessa di sicurezza (coerenza con la rimozione
@@ -944,9 +977,9 @@ Ricadute tecniche (già riportate nella bozza 700):
 > col visto del nostro team prima che una scheda si veda. Della **parte 4,
 > l'app**, è scritta la scheda: la 731 fa da sportello unico, il riquadro e la
 > schermata «Vedi tutto» sono in `main` e girano sul simulatore — non sono
-> ancora uscite, perché chiedono una build nativa. Restano, nella stessa
-> build: **contorno del pin**, **risposte alle recensioni** e `ORDER BY
-> is_premium` neutralizzato. Da fare anche il passo 3 (ristoratori veri) e il
+> ancora uscite, perché chiedono una build nativa. **Le risposte alle
+> recensioni sono fatte (25/09)**, stessa build. Restano: **contorno del
+> pin** e `ORDER BY is_premium` neutralizzato. Da fare anche il passo 3 (ristoratori veri) e il
 > 4 (fatturazione, commercialista).
 
 > **La scheda nell'app, com'è venuta (21/09).** L'anteprima del portale
