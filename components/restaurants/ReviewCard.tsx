@@ -20,6 +20,7 @@ import i18n, { getAppLanguage } from '../../utils/i18n';
 import { getAuthorLabel } from '../../utils/getDisplayName';
 import { shouldOfferTranslation, translateReview } from '../../services/reviewTranslationService';
 import type { UnifiedReview } from '../../hooks/useRestaurantDetail';
+import ReviewReplyBlock from './ReviewReplyBlock';
 
 interface ReviewCardProps {
   review: UnifiedReview;
@@ -29,11 +30,13 @@ interface ReviewCardProps {
   onReport?: () => void;
   isReported?: boolean;
   isOwnReview?: boolean;
+  /** Nome del ristorante, per la firma della risposta del ristoratore */
+  restaurantName?: string;
 }
 
 const REVIEW_PHOTO_SIZE = 80;
 
-export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview }: ReviewCardProps) {
+export default function ReviewCard({ review: item, onImagePress, userNeeds, onLike, onReport, isReported, isOwnReview, restaurantName }: ReviewCardProps) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const router = useRouter();
@@ -260,6 +263,14 @@ export default function ReviewCard({ review: item, onImagePress, userNeeds, onLi
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Risposta del ristoratore: dopo like e segnala, che sono della
+          recensione. La risposta non si segnala (scelta dell'utente, 25/09):
+          chi non è d'accordo modifica la recensione, e il ristoratore la sua
+          risposta. La moderazione resta all'admin, dalla pagina dell'account. */}
+      {item.reply && (
+        <ReviewReplyBlock reply={item.reply} restaurantName={restaurantName ?? item.reply.venue_name} />
+      )}
 
       {/* Burst del doppio-tap: posizionato sull'intera card così l'icona da 56px
           ha sempre spazio verticale anche con testo di una sola riga. */}

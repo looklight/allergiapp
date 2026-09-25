@@ -15,6 +15,7 @@ import { useRestaurantCollections } from './useRestaurantCollections';
 import { FavoriteNoteService } from '../services/favoriteNoteService';
 import { PartnerCardService, type PartnerCard } from '../services/partnerCardService';
 import { getDisplayName } from '../utils/getDisplayName';
+import type { ReviewReply } from '../services/restaurant.types';
 
 export interface UnifiedReview {
   key: string;
@@ -35,6 +36,8 @@ export interface UnifiedReview {
   likedByMe: boolean;
   /** Lingua in cui è stata scritta la recensione (reviews.language); sorgente per la traduzione. */
   language?: string | null;
+  /** Risposta del ristoratore, solo se visibile (mig 733). */
+  reply?: ReviewReply | null;
 }
 
 export type { ReviewSortOrder } from '../services/restaurant.types';
@@ -197,6 +200,7 @@ export function useRestaurantDetail(
       likesCount: r.likes_count ?? 0,
       likedByMe: r.liked_by_me ?? false,
       language: r.language ?? null,
+      reply: r.reply ?? null,
     })),
   [rawReviews]);
 

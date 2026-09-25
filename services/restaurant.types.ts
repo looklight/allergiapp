@@ -106,6 +106,18 @@ export interface Review {
   user_username?: string | null;
   user_avatar_url?: string | null;
   user_is_anonymous?: boolean;
+  // La risposta del ristoratore (mig 733), se c'è ed è visibile
+  reply?: ReviewReply | null;
+}
+
+/** Risposta del ristoratore a una recensione: esce solo se visibile (733). */
+export interface ReviewReply {
+  id: string;
+  body: string;
+  language: string | null;
+  created_at: string;
+  venue_name: string;
+  venue_logo_url: string | null;
 }
 
 export interface Favorite {

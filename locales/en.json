@@ -444,6 +444,9 @@
         "showOriginal": "Show original",
         "translatedAuto": "Translated automatically",
         "translateError": "Translation unavailable"
+      },
+      "reply": {
+        "label": "Reply from the restaurant"
       }
     },
     "reports": {

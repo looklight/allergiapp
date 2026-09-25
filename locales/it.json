@@ -444,6 +444,9 @@
         "showOriginal": "Mostra originale",
         "translatedAuto": "Tradotta automaticamente",
         "translateError": "Traduzione non disponibile"
+      },
+      "reply": {
+        "label": "Risposta del ristorante"
       }
     },
     "reports": {

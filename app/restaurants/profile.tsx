@@ -21,6 +21,7 @@ import AnimatedLikesCounter from '../../components/AnimatedLikesCounter';
 import AppHeader from '../components/AppHeader';
 import { useUserItemList } from '../../hooks/useUserItemList';
 import { useLikesNotification } from '../../hooks/useLikesNotification';
+import { useReviewRepliesNotification } from '../../hooks/useReviewRepliesNotification';
 import { useProfileCounts } from '../../hooks/useProfileCounts';
 import { useCachedCollections } from '../../hooks/useCachedCollections';
 import { storage, type CollectionMeta } from '../../utils/storage';
@@ -71,6 +72,13 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (currentLikes < lastSeenLikes) markAsSeen();
   }, [currentLikes, lastSeenLikes, markAsSeen]);
+
+  // Le risposte dei ristoratori (mig 733) si vedono qui, sotto le recensioni:
+  // aprire il profilo spegne il pallino.
+  const { unseen: unseenReplies, markAsSeen: markRepliesSeen } = useReviewRepliesNotification();
+  useEffect(() => {
+    if (unseenReplies > 0) markRepliesSeen();
+  }, [unseenReplies, markRepliesSeen]);
 
   const reviewsList = useUserItemList<UserReview>(RestaurantService.getReviewsByUser);
   const favoritesList = useUserItemList<MyRestaurantItem>(getMyRestaurants);

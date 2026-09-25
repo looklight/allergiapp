@@ -4,8 +4,10 @@
  */
 
 import { useLikesNotification } from './useLikesNotification';
+import { useReviewRepliesNotification } from './useReviewRepliesNotification';
 
 export function useNotificationDot(): boolean {
   const { unseen: unseenLikes } = useLikesNotification();
-  return unseenLikes > 0;
+  const { unseen: unseenReplies } = useReviewRepliesNotification();
+  return unseenLikes > 0 || unseenReplies > 0;
 }

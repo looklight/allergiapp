@@ -469,6 +469,7 @@ export default function RestaurantDetailBody({
           }}
           onReportReview={handleReportReview}
           reportedReviewIds={reportedReviewIds}
+          restaurantName={restaurant?.name}
           currentUserId={user?.uid}
           sheetFullyOpen={sheetFullyOpen}
         />

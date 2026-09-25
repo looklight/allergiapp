@@ -24,6 +24,7 @@ type Props = {
   onImagePress: (url: string) => void;
   onReportReview: (reviewId: string) => void;
   reportedReviewIds: Set<string>;
+  restaurantName?: string;
   currentUserId?: string;
   /** True quando il bottom sheet è a tutta altezza: apre automaticamente il
    *  disclaimer (che parte chiuso a mezza altezza per dare spazio alle recensioni). */
@@ -45,6 +46,7 @@ export default function ReviewsSection({
   onImagePress,
   onReportReview,
   reportedReviewIds,
+  restaurantName,
   currentUserId,
   sheetFullyOpen,
 }: Props) {
@@ -170,6 +172,7 @@ export default function ReviewsSection({
             onReport={() => onReportReview(item.reviewId)}
             isReported={reportedReviewIds.has(item.reviewId)}
             isOwnReview={item.userId === currentUserId}
+            restaurantName={restaurantName}
           />
         </View>
       ))}

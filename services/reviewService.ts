@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 import { fetchRestaurantPositionsByIds } from './restaurantPositions';
 import { StorageService, type UploadResult } from './storageService';
 import { isRemoteUrl } from '../utils/url';
+import { getReviewReplies } from './reviewReplyService';
 import {
   REVIEWS_PAGE_SIZE,
   type Review,
@@ -66,6 +67,11 @@ export async function getReviews(
     user_avatar_url: r.user_avatar_url ?? null,
     user_is_anonymous: r.user_is_anonymous ?? false,
   }));
+
+  // Le risposte dei ristoratori (mig 733) arrivano con una seconda richiesta,
+  // pagina per pagina: fail-soft, senza risposte la lista resta com'era.
+  const replies = await getReviewReplies(reviews.map(r => r.id));
+  for (const r of reviews) r.reply = replies.get(r.id) ?? null;
 
   // I bloccati sono esclusi dalla RPC stessa (mig 077): righe e totalCount
   // restano coerenti anche in paginazione. I loro voti contano comunque
@@ -145,7 +151,12 @@ export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     if (error) throw error;
-    const positions = await fetchRestaurantPositionsByIds((data ?? []).map((r: any) => r.restaurant_id));
+    const [positions, replies] = await Promise.all([
+      fetchRestaurantPositionsByIds((data ?? []).map((r: any) => r.restaurant_id)),
+      // Le risposte dei ristoratori (733): anche nel profilo, dove l'autore le
+      // ritrova sotto le sue recensioni
+      getReviewReplies((data ?? []).map((r: any) => r.id)),
+    ]);
     return (data ?? []).map((r: any) => {
       const pos = positions.get(r.restaurant_id);
       return {
@@ -157,6 +168,7 @@ export async function getReviewsByUser(userId: string): Promise<UserReview[]> {
         restaurant_offers_lodging: r.restaurant?.offers_lodging ?? null,
         restaurant_lat: pos?.latitude ?? null,
         restaurant_lng: pos?.longitude ?? null,
+        reply: replies.get(r.id) ?? null,
       };
     });
   } catch (error) {

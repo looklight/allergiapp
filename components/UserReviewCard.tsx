@@ -10,6 +10,7 @@ import StarRating from './StarRating';
 import Avatar from './Avatar';
 import type { UserReview } from '../services/restaurantService';
 import { venueIconName } from '../constants/restaurantCategories';
+import ReviewReplyBlock from './restaurants/ReviewReplyBlock';
 
 interface Props {
   review: UserReview;
@@ -70,6 +71,9 @@ function UserReviewCard({ review, onPress, author }: Props) {
         {review.comment ? (
           <Text style={styles.comment} numberOfLines={3}>{review.comment}</Text>
         ) : null}
+
+        {/* La risposta del ristoratore, in breve: il resto si legge aprendo il locale */}
+        {review.reply ? <ReviewReplyBlock reply={review.reply} restaurantName={review.restaurant_name ?? review.reply.venue_name} compact /> : null}
 
         <View style={styles.footer}>
           {photosCount > 0 ? (
